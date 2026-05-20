@@ -32,6 +32,7 @@
 #include <QTimer>
 
 #include "DocCache.h"
+#include "DrawerCreateDialog.h"
 #include "DrawerListPanel.h"
 #include "EditorHost.h"
 #include "ElementCreateDialog.h"
@@ -193,9 +194,14 @@ void MainWindow::setupEditor()
     layout->setContentsMargins(10, 10, 10, 10);
     layout->setSpacing(10);
     layout->addWidget(leftBar);
-    layout->addWidget(drawerListPanel);
-    layout->addWidget(manuscriptPanel);
     layout->addStretch();
+
+    // Drawer/Manuscript panels não entram no layout — flutuam ao lado da
+    // LeftBar pra não empurrar o editor.
+    drawerListPanel->setParent(container);
+    manuscriptPanel->setParent(container);
+    drawerListPanel->hide();
+    manuscriptPanel->hide();
 
     // Coluna do editor: VariationBar (auto-hide) acima + editor
     auto* editorColumn = new QWidget(this);
@@ -211,6 +217,11 @@ void MainWindow::setupEditor()
     layout->addStretch();
 
     setCentralWidget(container);
+
+    // Painéis laterais flutuantes: ficam acima do conteúdo, à direita da LeftBar.
+    drawerListPanel->raise();
+    manuscriptPanel->raise();
+    positionSidePanels();
 
     // Painel flutuante de word count — bottom-left, ao lado da LeftBar.
     wordCountPanel = new WordCountPanel(wordCounter, editorHost, projectModel, container);
@@ -242,8 +253,12 @@ void MainWindow::setupEditor()
         manuscriptPanel->closePanel();
         if (drawerListPanel->isPanelOpen() && drawerListPanel->currentDrawerKey() == key) {
             drawerListPanel->closePanel();
+            leftBar->clearSelection();
         } else {
             drawerListPanel->openDrawer(key);
+            positionSidePanels();
+            drawerListPanel->raise();
+            leftBar->setActiveDrawer(key);
         }
     });
     connect(leftBar, &LeftBar::fixedActionTriggered, this, [this](LeftBar::FixedAction action) {
@@ -251,8 +266,12 @@ void MainWindow::setupEditor()
             drawerListPanel->closePanel();
             if (manuscriptPanel->isPanelOpen()) {
                 manuscriptPanel->closePanel();
+                leftBar->clearSelection();
             } else {
                 manuscriptPanel->open();
+                positionSidePanels();
+                manuscriptPanel->raise();
+                leftBar->setActiveFixedAction(LeftBar::Manuscripts);
             }
         }
     });
@@ -298,23 +317,21 @@ void MainWindow::setupEditor()
         projectModel->addChapter(c);
     });
     connect(leftBar, &LeftBar::newDrawerRequested, this, [this]() {
-        bool ok = false;
-        const QString title = QInputDialog::getText(this, tr("Nova gaveta"),
-            tr("Nome da gaveta:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        if (!ok || title.isEmpty()) return;
-        // Escolher tipo de elemento
-        const QStringList typeLabels = { tr("Documentos comuns"), tr("Personagens"), tr("Cenários"), tr("Objetos") };
-        const QStringList typeIds    = { QString(), QStringLiteral("character"), QStringLiteral("setting"), QStringLiteral("object") };
-        bool ok2 = false;
-        const QString chosen = QInputDialog::getItem(this, tr("Tipo de gaveta"),
-            tr("Tipo de elemento:"), typeLabels, 0, false, &ok2);
-        if (!ok2) return;
-        const int idx = typeLabels.indexOf(chosen);
+        DrawerCreateDialog dlg(elementsStore, this);
+        if (dlg.exec() != QDialog::Accepted) return;
+        if (dlg.title().isEmpty()) return;
         Drawer d;
         d.key = ProjectModel::uid();
-        d.title = title;
-        d.color = Theme::accentDefault();
-        d.drawerElementType = idx >= 0 ? typeIds.at(idx) : QString();
+        d.title = dlg.title();
+        d.color = dlg.color();
+        d.drawerElementType = dlg.elementTypeId();
+        d.drawerIcon = dlg.iconId();
+        // Se há tipo de elemento, herda o ícone canônico do tipo (compat Mira 1).
+        if (!d.drawerElementType.isEmpty() && elementsStore) {
+            if (const ElementType* t = elementsStore->findType(d.drawerElementType)) {
+                d.drawerElementIcon = t->icon;
+            }
+        }
         projectModel->addDrawer(d);
     });
     connect(drawerListPanel, &DrawerListPanel::newItemRequested, this, [this](const QString& drawerKey, const QString& folderId) {
@@ -1023,16 +1040,38 @@ void MainWindow::positionWordCountPanel()
     if (!wordCountPanel || !wordCountPanel->parentWidget()) return;
     QWidget* parent = wordCountPanel->parentWidget();
     wordCountPanel->adjustSize();
-    const int leftBarOffset = 56 + 10 + 10; // largura LeftBar + spacing do layout + margem
+    const int leftBarOffset = LeftBar::barWidth() + 10 + 10; // largura LeftBar + spacing do layout + margem
     const int x = leftBarOffset;
     const int y = parent->height() - wordCountPanel->height() - 10;
     wordCountPanel->move(x, y);
+}
+
+void MainWindow::positionSidePanels()
+{
+    // Posiciona o DrawerListPanel e o ManuscriptPanel como overlays flutuantes
+    // logo à direita da LeftBar — não entram no layout pra não empurrar o editor.
+    if (!leftBar) return;
+    QWidget* parent = drawerListPanel ? drawerListPanel->parentWidget() : nullptr;
+    if (!parent) return;
+    const int margin = 10;
+    const int x = margin + leftBar->width() + margin; // após margem esquerda + LeftBar + spacing
+    const int y = margin;
+    const int h = qMax(0, parent->height() - margin * 2);
+    auto place = [&](QWidget* w) {
+        if (!w) return;
+        w->move(x, y);
+        w->resize(w->width(), h);
+        if (w->isVisible()) w->raise();
+    };
+    place(drawerListPanel);
+    place(manuscriptPanel);
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     positionWordCountPanel();
+    positionSidePanels();
     if (refMenuPanel && refMenuPanel->isVisible()) {
         QWidget* parent = refMenuPanel->parentWidget();
         if (parent) {

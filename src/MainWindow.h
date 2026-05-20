@@ -53,6 +53,7 @@ private:
     void onNewProjectRequested();
     void onOpenProjectRequested();
     void positionWordCountPanel();
+    void positionSidePanels();
     bool confirmDiscardOrSave();
     bool loadProjectFrom(const QString& root, QString* errorOut = nullptr);
     void rememberLastProject(const QString& root);

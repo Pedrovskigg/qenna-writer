@@ -6,6 +6,7 @@
         <file alias="focusmode-off.svg">../src/assets/icons/focusmode-off.svg</file>
         <file alias="focusmode-on.svg">../src/assets/icons/focusmode-on.svg</file>
         <file alias="font-size.svg">../src/assets/icons/font-size.svg</file>
+        <file alias="folder.svg">../src/assets/icons/folder.svg</file>
         <file alias="fullscreen.svg">../src/assets/icons/fullscreen.svg</file>
         <file alias="glossary.svg">../src/assets/icons/glossary.svg</file>
         <file alias="immersive-sound.svg">../src/assets/icons/immersive-sound.svg</file>
@@ -22,5 +23,29 @@
         <file alias="theme-panel.svg">../src/assets/icons/theme-panel.svg</file>
         <file alias="leftbar/manuscriptpanel.svg">../src/assets/icons/leftbar/manuscriptpanel.svg</file>
         <file alias="leftbar/projectinfo.svg">../src/assets/icons/leftbar/projectinfo.svg</file>
+        <file alias="leftbar/whiteboard.svg">../src/assets/icons/leftbar/whiteboard.svg</file>
+        <file alias="leftbar/consistency.svg">../src/assets/icons/leftbar/consistency.svg</file>
+        <file alias="elements/user.svg">../src/assets/icons/elements/user.svg</file>
+        <file alias="elements/map.svg">../src/assets/icons/elements/map.svg</file>
+        <file alias="elements/cube.svg">../src/assets/icons/elements/cube.svg</file>
+        <file alias="elements/planet.svg">../src/assets/icons/elements/planet.svg</file>
+        <file alias="elements/moon.svg">../src/assets/icons/elements/moon.svg</file>
+        <file alias="elements/sun.svg">../src/assets/icons/elements/sun.svg</file>
+        <file alias="elements/sword.svg">../src/assets/icons/elements/sword.svg</file>
+        <file alias="elements/gun.svg">../src/assets/icons/elements/gun.svg</file>
+        <file alias="elements/car.svg">../src/assets/icons/elements/car.svg</file>
+        <file alias="elements/pin.svg">../src/assets/icons/elements/pin.svg</file>
+        <file alias="elements/star.svg">../src/assets/icons/elements/star.svg</file>
+        <file alias="elements/crown.svg">../src/assets/icons/elements/crown.svg</file>
+        <file alias="elements/heart.svg">../src/assets/icons/elements/heart.svg</file>
+        <file alias="elements/tree.svg">../src/assets/icons/elements/tree.svg</file>
+        <file alias="elements/castle.svg">../src/assets/icons/elements/castle.svg</file>
+        <file alias="elements/flask.svg">../src/assets/icons/elements/flask.svg</file>
+        <file alias="elements/skull.svg">../src/assets/icons/elements/skull.svg</file>
+        <file alias="elements/book.svg">../src/assets/icons/elements/book.svg</file>
+        <file alias="elements/file.svg">../src/assets/icons/elements/file.svg</file>
+        <file alias="elements/drawer.svg">../src/assets/icons/elements/drawer.svg</file>
+        <file alias="elements/manuscript.svg">../src/assets/icons/elements/manuscript.svg</file>
+        <file alias="elements/chapter.svg">../src/assets/icons/elements/chapter.svg</file>
     </qresource>
 </RCC>

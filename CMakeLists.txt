@@ -51,6 +51,8 @@ qt_add_executable(mira-writing
     src/LeftBar.h
     src/DrawerListPanel.cpp
     src/DrawerListPanel.h
+    src/DrawerCreateDialog.cpp
+    src/DrawerCreateDialog.h
     src/ManuscriptPanel.cpp
     src/ManuscriptPanel.h
     src/SceneUtils.cpp
