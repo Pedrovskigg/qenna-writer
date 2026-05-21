@@ -34,6 +34,9 @@ ProjectSaver::ProjectSaver(ProjectModel* model, DocCache* cache, EditorHost* hos
     if (m_host) {
         connect(m_host, &EditorHost::contentFlushed, this, &ProjectSaver::onContentFlushed);
     }
+    if (m_model) {
+        connect(m_model, &ProjectModel::settingsChanged, this, &ProjectSaver::onSettingsChanged);
+    }
 }
 
 void ProjectSaver::setProjectRoot(const QString& root) {
@@ -54,6 +57,7 @@ void ProjectSaver::setPerDocDebounceMs(int ms) {
 }
 
 bool ProjectSaver::hasDirtyContent() const {
+    if (m_settingsDirty) return true;
     return m_cache && !m_cache->dirtyKeys().isEmpty();
 }
 
@@ -65,6 +69,12 @@ void ProjectSaver::onContentFlushed(const QString& /*key*/) {
 void ProjectSaver::onAutosaveTimeout() {
     if (!hasDirtyContent()) return;
     saveProject();
+}
+
+void ProjectSaver::onSettingsChanged() {
+    m_settingsDirty = true;
+    if (!m_perDocTimer->isActive()) m_perDocTimer->start();
+    else m_perDocTimer->start();
 }
 
 void ProjectSaver::setSaving(bool saving) {
@@ -159,7 +169,11 @@ bool ProjectSaver::flushDirtyDocsNow() {
     if (m_host) m_host->syncEditorToCache();
 
     QString err;
-    const bool ok = writeDirtyDocs(&err);
+    bool ok = writeDirtyDocs(&err);
+    if (ok && m_settingsDirty) {
+        ok = writeIndexNow(&err);
+        if (ok) m_settingsDirty = false;
+    }
     if (!ok) {
         m_lastError = err;
         setSaving(false);
@@ -188,6 +202,7 @@ bool ProjectSaver::saveProject() {
     bool ok = writeDirtyDocs(&err);
     if (ok) {
         ok = writeIndexNow(&err);
+        if (ok) m_settingsDirty = false;
     }
     if (ok && m_elementsStore && m_elementsStore->isDirty()) {
         if (!m_elementsStore->save()) {

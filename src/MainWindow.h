@@ -47,6 +47,8 @@ private:
     void setFontSize(int pt);
     void setLineHeight(int percent);
     void setFirstLineIndent(bool enabled);
+    void setParagraphSpacingBefore(int px);
+    void setParagraphSpacingAfter(int px);
     void setFocusMode(bool enabled);
     void updateFocusedBlock();
     void onAddImageRequested();
@@ -91,6 +93,8 @@ private:
     int currentFontSize;
     int currentLineHeight;
     bool firstLineIndentEnabled;
+    int paragraphSpacingBefore;
+    int paragraphSpacingAfter;
     bool focusModeEnabled;
     QColor baseTextColor;
     QTextCursor selectedImageCursor;

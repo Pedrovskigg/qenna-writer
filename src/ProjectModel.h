@@ -84,6 +84,18 @@ public:
     QJsonObject ui() const { return m_ui; }
     QJsonObject dataExtras() const { return m_dataExtras; }
 
+    bool firstLineIndentEnabled() const;
+    void setFirstLineIndentEnabled(bool enabled);
+
+    int paragraphSpacingBefore() const;
+    void setParagraphSpacingBefore(int px);
+
+    int paragraphSpacingAfter() const;
+    void setParagraphSpacingAfter(int px);
+
+    int lineHeightPercent() const;
+    void setLineHeightPercent(int percent);
+
     void setProjectName(const QString& name);
     void setManuscripts(const QList<Manuscript>& list);
     void setChapters(const QList<Chapter>& list);
@@ -98,16 +110,32 @@ public:
     bool addDrawerItem(const QString& drawerKey, const DrawerItem& item);
     bool addDrawerFolder(const QString& drawerKey, const Folder& folder);
     bool moveDrawerItem(const QString& drawerKey, const QString& itemId, const QString& newFolderId);
+    bool moveDrawerItemToDrawer(const QString& srcDrawerKey, const QString& itemId,
+                                const QString& destDrawerKey, const QString& destFolderId);
     bool moveDrawerFolder(const QString& drawerKey, const QString& folderId, const QString& newParentId);
+    bool reorderDrawer(const QString& drawerKey, int targetIndex);
+    bool reorderDrawerItem(const QString& drawerKey, const QString& itemId, int targetIndex);
+    bool removeDrawerItem(const QString& itemId);
+    bool removeDrawerFolder(const QString& drawerKey, const QString& folderId);
+    bool removeDrawer(const QString& drawerKey);
+    bool drawerIsEmpty(const QString& drawerKey) const;
+    bool updateDrawer(const QString& drawerKey, const QString& title, const QString& color,
+                      const QString& iconId, const QString& elementType, const QString& elementIcon);
     const Drawer* findDrawer(const QString& key) const;
 
     bool updateDrawerItemHtml(const QString& itemId, const QString& html);
     bool updateDrawerItemMeta(const QString& itemId, const QString& title, const QString& role);
+    bool setDrawerItemElement(const QString& itemId, const QString& elementType,
+                              const QString& elementIcon, const QString& elementId);
     const DrawerItem* findDrawerItem(const QString& itemId, QString* outDrawerKey = nullptr) const;
 
     void addManuscript(const Manuscript& manuscript);
     void addChapter(const Chapter& chapter);
     bool updateChapterScenes(const QString& chapterId, const QList<Scene>& scenes);
+    bool updateChapterTitle(const QString& chapterId, const QString& title);
+    bool removeChapter(const QString& chapterId);
+    bool reorderChapter(const QString& chapterId, int targetIndex);
+    bool updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title);
     const Chapter* findChapter(const QString& chapterId) const;
     const Scene* findScene(const QString& chapterId, int sceneIndex) const;
 

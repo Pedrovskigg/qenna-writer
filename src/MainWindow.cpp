@@ -1,10 +1,12 @@
 #include "MainWindow.h"
 
+#include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFont>
 #include <QHBoxLayout>
+#include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QResizeEvent>
@@ -45,6 +47,7 @@
 #include "ProjectSaver.h"
 #include "ProjectStorage.h"
 #include "RefMenuPanel.h"
+#include "SceneUtils.h"
 #include "WordCountPanel.h"
 #include "WordCounter.h"
 #include "Theme.h"
@@ -89,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent)
     , currentFontSize(16)
     , currentLineHeight(170)
     , firstLineIndentEnabled(true)
+    , paragraphSpacingBefore(0)
+    , paragraphSpacingAfter(0)
     , focusModeEnabled(false)
     , baseTextColor(QColor("#e8e3d6"))
 {
@@ -131,11 +136,73 @@ void MainWindow::setupEditor()
 
     leftBar = new LeftBar(projectModel, this);
     drawerListPanel = new DrawerListPanel(projectModel, this);
+    connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
+    connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
     manuscriptPanel = new ManuscriptPanel(projectModel, this);
     editorHost = new EditorHost(editor, docCache, projectModel, this);
     editor->setEnabled(false);
     variationBar = new VariationBar(projectModel, editorHost, this);
     connect(editorHost, &EditorHost::viewModeChanged, variationBar, &VariationBar::refresh);
+
+    // Atualiza o título do doc na TopToolbar conforme troca viewMode ou metadata muda.
+    auto refreshDocTitle = [this]() {
+        if (!toolbar || !editorHost || !projectModel) return;
+        const auto vm = editorHost->viewMode();
+        QString title;
+        switch (vm.type) {
+        case EditorHost::ChapterDoc: {
+            if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
+                title = ch->title.isEmpty() ? tr("(capítulo sem título)") : ch->title;
+            }
+            break;
+        }
+        case EditorHost::SceneDoc: {
+            if (const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex)) {
+                title = sc->title.isEmpty()
+                    ? tr("Cena %1").arg(vm.sceneIndex + 1)
+                    : sc->title;
+            }
+            break;
+        }
+        case EditorHost::DrawerDoc: {
+            if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) {
+                title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
+            }
+            break;
+        }
+        case EditorHost::ManuscriptDoc:
+        case EditorHost::Disabled:
+        default:
+            title.clear();
+            break;
+        }
+        toolbar->setDocumentTitle(title);
+    };
+    connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
+    connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
+    connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
+    connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
+
+    // Toda vez que um doc é carregado no editor, reaplica o style do projeto
+    // (font, line-height, indent) — caso contrário, o HTML serializado do doc
+    // sobrescreve os settings com formatação antiga.
+    connect(editorHost, &EditorHost::contentLoaded, this, &MainWindow::applyEditorStyle);
+
+    // Sincroniza settings do projeto ao carregar (line-height + indent + paragraph spacing).
+    connect(projectModel, &ProjectModel::loaded, this, [this]() {
+        if (!projectModel) return;
+        firstLineIndentEnabled = projectModel->firstLineIndentEnabled();
+        paragraphSpacingBefore = projectModel->paragraphSpacingBefore();
+        paragraphSpacingAfter = projectModel->paragraphSpacingAfter();
+        currentLineHeight = projectModel->lineHeightPercent();
+        if (toolbar) {
+            toolbar->setFirstLineIndentEnabled(firstLineIndentEnabled);
+            toolbar->setParagraphSpacingBefore(paragraphSpacingBefore);
+            toolbar->setParagraphSpacingAfter(paragraphSpacingAfter);
+            toolbar->setLineHeightPercent(currentLineHeight);
+        }
+        applyEditorStyle();
+    });
 
     sceneDetectTimer = new QTimer(this);
     sceneDetectTimer->setSingleShot(true);
@@ -187,6 +254,89 @@ void MainWindow::setupEditor()
         if (projectSaver) projectSaver->saveProject();
     });
 
+    // Ctrl+Shift+N → novo capítulo no manuscrito ativo.
+    auto* newChapterShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+N")), this);
+    connect(newChapterShortcut, &QShortcut::activated, this, [this]() {
+        if (!projectModel) return;
+        const QString msId = projectModel->activeManuscriptId();
+        if (msId.isEmpty()) return;
+        bool ok = false;
+        const QString title = QInputDialog::getText(this, tr("Novo capítulo"),
+            tr("Título do capítulo:"), QLineEdit::Normal, QString(), &ok).trimmed();
+        if (!ok || title.isEmpty()) return;
+        Chapter c;
+        c.id = ProjectModel::uid();
+        c.manuscriptId = msId;
+        c.title = title;
+        if (!projectRoot.isEmpty()) {
+            ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
+        }
+        projectModel->addChapter(c);
+    });
+
+    // Ctrl+N → novo item na gaveta aberta (sem efeito quando nenhuma gaveta).
+    auto* newItemShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+N")), this);
+    connect(newItemShortcut, &QShortcut::activated, this, [this]() {
+        if (!drawerListPanel || !drawerListPanel->isPanelOpen()) return;
+        emit drawerListPanel->newItemRequested(drawerListPanel->currentDrawerKey(), QString());
+    });
+
+    // Ctrl+F10 → toggle Focus Mode.
+    auto* focusShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+F10")), this);
+    connect(focusShortcut, &QShortcut::activated, this, [this]() {
+        setFocusMode(!focusModeEnabled);
+    });
+
+    // Shift+PageDown / Shift+PageUp → próximo/anterior capítulo ou drawer item.
+    // (PageUp/Down "puros" foram preservados pro QTextEdit fazer scroll nativo.)
+    auto navigateRelative = [this](int delta) {
+        if (!projectModel || !editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type == EditorHost::ChapterDoc) {
+            const QString msId = vm.manuscriptId;
+            QList<Chapter> list;
+            for (const auto& c : projectModel->chapters()) {
+                if (c.manuscriptId == msId) list.append(c);
+            }
+            std::sort(list.begin(), list.end(), [](const Chapter& a, const Chapter& b) {
+                return a.order < b.order;
+            });
+            int idx = -1;
+            for (int i = 0; i < list.size(); ++i) if (list.at(i).id == vm.chapterId) { idx = i; break; }
+            if (idx < 0) return;
+            const int next = idx + delta;
+            if (next < 0 || next >= list.size()) return;
+            EditorHost::ViewMode nm;
+            nm.type = EditorHost::ChapterDoc;
+            nm.manuscriptId = msId;
+            nm.chapterId = list.at(next).id;
+            editorHost->setViewMode(nm);
+        } else if (vm.type == EditorHost::DrawerDoc) {
+            QString drawerKey;
+            const DrawerItem* current = projectModel->findDrawerItem(vm.itemId, &drawerKey);
+            if (!current) return;
+            const Drawer* d = projectModel->findDrawer(drawerKey);
+            if (!d) return;
+            // Mantém só items na mesma pasta do atual (consistente com a UI).
+            QList<QString> ids;
+            for (const auto& it : d->items) {
+                if (it.folderId == current->folderId) ids.append(it.id);
+            }
+            int idx = ids.indexOf(vm.itemId);
+            if (idx < 0) return;
+            const int next = idx + delta;
+            if (next < 0 || next >= ids.size()) return;
+            EditorHost::ViewMode nm;
+            nm.type = EditorHost::DrawerDoc;
+            nm.itemId = ids.at(next);
+            editorHost->setViewMode(nm);
+        }
+    };
+    auto* nextDocShortcut = new QShortcut(QKeySequence(QStringLiteral("Shift+PgDown")), this);
+    connect(nextDocShortcut, &QShortcut::activated, this, [navigateRelative]() { navigateRelative(+1); });
+    auto* prevDocShortcut = new QShortcut(QKeySequence(QStringLiteral("Shift+PgUp")), this);
+    connect(prevDocShortcut, &QShortcut::activated, this, [navigateRelative]() { navigateRelative(-1); });
+
     auto *container = new QWidget(this);
     container->setObjectName(QStringLiteral("editorContainer"));
     container->setStyleSheet(QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
@@ -229,24 +379,13 @@ void MainWindow::setupEditor()
     connect(wordCountPanel, &WordCountPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     positionWordCountPanel();
 
-    // Painel flutuante de Referência — canto superior direito.
-    refMenuPanel = new RefMenuPanel(projectModel, editorHost, docCache, container);
+    // Painel flutuante de Referência — drag/resize livres, geometria persistida em QSettings.
+    refMenuPanel = new RefMenuPanel(projectModel, editorHost, docCache, elementsStore, container);
     refMenuPanel->setProjectRoot(projectRoot);
     refMenuPanel->raise();
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
-        if (refMenuPanel) {
-            refMenuPanel->togglePanel();
-            // Posicionar manualmente ao abrir
-            if (refMenuPanel->isVisible()) {
-                QWidget* parent = refMenuPanel->parentWidget();
-                if (parent) {
-                    const int margin = 10;
-                    refMenuPanel->resize(refMenuPanel->width(), parent->height() - margin * 2);
-                    refMenuPanel->move(parent->width() - refMenuPanel->width() - margin, margin);
-                }
-            }
-        }
+        if (refMenuPanel) refMenuPanel->togglePanel();
     });
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
@@ -315,6 +454,138 @@ void MainWindow::setupEditor()
             ProjectStorage::ensureManuscriptDirs(projectRoot, manuscriptId);
         }
         projectModel->addChapter(c);
+    });
+
+    // ---- Context menu / drag handlers do ManuscriptPanel ----
+    connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
+        const Chapter* c = projectModel->findChapter(chapterId);
+        if (!c) return;
+        bool ok = false;
+        const QString newTitle = QInputDialog::getText(this, tr("Renomear capítulo"),
+            tr("Novo título:"), QLineEdit::Normal, c->title, &ok).trimmed();
+        if (!ok || newTitle.isEmpty()) return;
+        projectModel->updateChapterTitle(chapterId, newTitle);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::deleteChapterRequested, this, [this](const QString& chapterId) {
+        const Chapter* c = projectModel->findChapter(chapterId);
+        if (!c) return;
+        const QString title = c->title.isEmpty() ? tr("(sem título)") : c->title;
+        const auto ret = QMessageBox::question(this, tr("Excluir capítulo"),
+            tr("Excluir \"%1\"? O texto do capítulo será removido. Esta ação não pode ser desfeita.").arg(title),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+
+        // Se o capítulo está aberto no editor, desabilita primeiro.
+        if (editorHost) {
+            const auto vm = editorHost->viewMode();
+            if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) && vm.chapterId == chapterId) {
+                editorHost->disable();
+            }
+        }
+        projectModel->removeChapter(chapterId);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::renameSceneRequested, this, [this](const QString& chapterId, int sceneIndex) {
+        const Scene* s = projectModel->findScene(chapterId, sceneIndex);
+        if (!s) return;
+        const QString current = s->title.isEmpty() ? tr("Cena %1").arg(sceneIndex + 1) : s->title;
+        bool ok = false;
+        const QString newTitle = QInputDialog::getText(this, tr("Renomear cena"),
+            tr("Novo título:"), QLineEdit::Normal, current, &ok).trimmed();
+        if (!ok || newTitle.isEmpty()) return;
+        projectModel->updateSceneTitle(chapterId, sceneIndex, newTitle);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::createVariationRequested, this, [this](const QString& chapterId, int sceneIndex) {
+        projectModel->createSceneVariation(chapterId, sceneIndex, QString());
+    });
+
+    auto reloadActiveEditorIfMatches = [this](const QString& chapterId) {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) && vm.chapterId == chapterId) {
+            EditorHost::ViewMode tmp; tmp.type = EditorHost::Disabled;
+            editorHost->setViewMode(tmp);
+            editorHost->setViewMode(vm);
+        }
+    };
+
+    connect(manuscriptPanel, &ManuscriptPanel::deleteSceneRequested, this, [this, reloadActiveEditorIfMatches](const QString& chapterId, int sceneIndex) {
+        const Chapter* ch = projectModel->findChapter(chapterId);
+        if (!ch) return;
+        if (ch->scenes.size() <= 1) {
+            QMessageBox::information(this, tr("Excluir cena"),
+                tr("Não dá pra excluir a única cena de um capítulo. Apague o texto manualmente se quiser limpar."));
+            return;
+        }
+        const auto ret = QMessageBox::question(this, tr("Excluir cena"),
+            tr("Excluir esta cena? O texto da cena será removido."),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+
+        // Garante que o editor sincronizou pro cache antes de mexer.
+        if (editorHost) editorHost->syncEditorToCache();
+
+        const QString key = DocCache::chapterKey(ch->manuscriptId, chapterId);
+        QString html = docCache && docCache->has(key) ? docCache->get(key) : QString();
+        if (html.isEmpty() && !projectRoot.isEmpty()) {
+            bool ok = false;
+            html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+        }
+        QStringList segments = SceneUtils::splitHtmlIntoScenes(html);
+        if (sceneIndex < 0 || sceneIndex >= segments.size()) return;
+        segments.removeAt(sceneIndex);
+        const QString newHtml = SceneUtils::joinScenesHtml(segments);
+        if (docCache) docCache->set(key, newHtml, /*markDirty=*/true);
+
+        // Atualiza metadados de cenas no model.
+        QList<Scene> remaining = ch->scenes;
+        if (sceneIndex < remaining.size()) remaining.removeAt(sceneIndex);
+        for (int i = 0; i < remaining.size(); ++i) remaining[i].order = i;
+        projectModel->updateChapterScenes(chapterId, remaining);
+
+        reloadActiveEditorIfMatches(chapterId);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::reorderChapterRequested, this, [this](const QString& chapterId, int targetIndex) {
+        projectModel->reorderChapter(chapterId, targetIndex);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::reorderSceneRequested, this, [this, reloadActiveEditorIfMatches](const QString& chapterId, int srcIdx, int targetIdx) {
+        const Chapter* ch = projectModel->findChapter(chapterId);
+        if (!ch) return;
+
+        if (editorHost) editorHost->syncEditorToCache();
+
+        const QString key = DocCache::chapterKey(ch->manuscriptId, chapterId);
+        QString html = docCache && docCache->has(key) ? docCache->get(key) : QString();
+        if (html.isEmpty() && !projectRoot.isEmpty()) {
+            bool ok = false;
+            html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+        }
+        QStringList segments = SceneUtils::splitHtmlIntoScenes(html);
+        if (srcIdx < 0 || srcIdx >= segments.size()) return;
+        if (targetIdx < 0) targetIdx = 0;
+        if (targetIdx > segments.size()) targetIdx = segments.size();
+        if (srcIdx < targetIdx) --targetIdx;
+        if (srcIdx == targetIdx) return;
+        const QString moved = segments.takeAt(srcIdx);
+        segments.insert(targetIdx, moved);
+        const QString newHtml = SceneUtils::joinScenesHtml(segments);
+        if (docCache) docCache->set(key, newHtml, /*markDirty=*/true);
+
+        // Atualiza metadados de cenas (mantém títulos/variations).
+        QList<Scene> scenes = ch->scenes;
+        if (srcIdx < scenes.size()) {
+            Scene movedScene = scenes.takeAt(srcIdx);
+            const int insertAt = qBound(0, targetIdx, scenes.size());
+            scenes.insert(insertAt, movedScene);
+            for (int i = 0; i < scenes.size(); ++i) scenes[i].order = i;
+            projectModel->updateChapterScenes(chapterId, scenes);
+        }
+
+        reloadActiveEditorIfMatches(chapterId);
     });
     connect(leftBar, &LeftBar::newDrawerRequested, this, [this]() {
         DrawerCreateDialog dlg(elementsStore, this);
@@ -395,6 +666,171 @@ void MainWindow::setupEditor()
         f.title = title;
         f.parentId = parentFolderId;
         projectModel->addDrawerFolder(drawerKey, f);
+    });
+
+    // ---- Context menu dos cards: editar / add+remove elemento / refMenu / excluir ----
+    connect(drawerListPanel, &DrawerListPanel::editItemRequested, this,
+            [this](const QString& drawerKey, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (!item) return;
+        const QString elemType = item->elementType;
+        ElementCreateDialog dlg(elemType, this);
+        // Pré-preenche valores atuais — pega foto/role do Element vinculado se houver.
+        QString imageDataUrl;
+        QString role = item->role;
+        if (!item->elementId.isEmpty() && elementsStore) {
+            if (const Element* e = elementsStore->findElement(item->elementId)) {
+                imageDataUrl = e->image;
+                if (role.isEmpty()) role = e->role;
+            }
+        }
+        dlg.setInitial(item->title, role, imageDataUrl);
+        if (dlg.exec() != QDialog::Accepted) return;
+        const QString newTitle = dlg.title();
+        const QString newRole = dlg.role();
+        const QString newImage = dlg.imageDataUrl();
+
+        projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
+
+        // Sincroniza Element vinculado, se houver. Foto só é editável quando há elementId.
+        if (!item->elementId.isEmpty() && elementsStore) {
+            if (const Element* existing = elementsStore->findElement(item->elementId)) {
+                Element copy = *existing;
+                copy.name = newTitle;
+                copy.role = newRole;
+                copy.image = newImage;
+                elementsStore->updateElement(copy.id, copy);
+            }
+        } else if (!elemType.isEmpty() && !newImage.isEmpty() && elementsStore) {
+            // Item tem tipo mas ainda não tinha Element vinculado e o usuário colocou foto agora —
+            // cria Element novo e amarra ao item.
+            Element elem;
+            elem.name = newTitle;
+            elem.type = elemType;
+            elem.icon = elemType == QStringLiteral("character") ? QStringLiteral("user")
+                      : elemType == QStringLiteral("setting") ? QStringLiteral("map")
+                      : QStringLiteral("cube");
+            elem.role = newRole;
+            elem.image = newImage;
+            const QString newElementId = elementsStore->addElement(elem);
+            projectModel->setDrawerItemElement(itemId, elemType, item->elementIcon, newElementId);
+        }
+        Q_UNUSED(drawerKey);
+    });
+
+    connect(drawerListPanel, &DrawerListPanel::addElementRequested, this,
+            [this](const QString& /*drawerKey*/, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (!item) return;
+        // Pergunta o tipo via menu pop-up
+        QStringList typeIds;
+        QStringList labels;
+        if (elementsStore) {
+            for (const auto& t : elementsStore->elementTypes()) {
+                typeIds.append(t.id);
+                labels.append(t.label);
+            }
+        }
+        if (typeIds.isEmpty()) return;
+        bool ok = false;
+        const QString chosenLabel = QInputDialog::getItem(this, tr("Adicionar elemento"),
+            tr("Tipo do elemento:"), labels, 0, false, &ok);
+        if (!ok || chosenLabel.isEmpty()) return;
+        const int idx = labels.indexOf(chosenLabel);
+        if (idx < 0) return;
+        const QString chosenType = typeIds.at(idx);
+        QString icon;
+        if (elementsStore) {
+            if (const ElementType* t = elementsStore->findType(chosenType)) icon = t->icon;
+        }
+        projectModel->setDrawerItemElement(itemId, chosenType, icon, QString());
+    });
+
+    connect(drawerListPanel, &DrawerListPanel::removeElementRequested, this,
+            [this](const QString& /*drawerKey*/, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (!item) return;
+        // Limpa elementType/Icon/Id — o doc puro permanece (html/file inalterados).
+        // O Element no ElementsStore continua existindo (pode estar vinculado em outro lugar).
+        projectModel->setDrawerItemElement(itemId, QString(), QString(), QString());
+    });
+
+    connect(drawerListPanel, &DrawerListPanel::openInRefMenuRequested, this,
+            [this](const QString& drawerKey, const QString& itemId) {
+        if (refMenuPanel) refMenuPanel->openForDrawer(drawerKey, itemId);
+    });
+
+    connect(drawerListPanel, &DrawerListPanel::deleteItemRequested, this,
+            [this](const QString& /*drawerKey*/, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (!item) return;
+        const QString title = item->title.isEmpty() ? tr("(sem título)") : item->title;
+        const auto ret = QMessageBox::question(this, tr("Excluir item"),
+            tr("Excluir \"%1\" da gaveta? Esta ação não pode ser desfeita.").arg(title),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+        projectModel->removeDrawerItem(itemId);
+    });
+
+    // ---- Context menu da gaveta (LeftBar) ----
+    connect(leftBar, &LeftBar::drawerContextRequested, this,
+            [this](const QString& drawerKey, const QPoint& globalPos) {
+        const Drawer* drawer = projectModel->findDrawer(drawerKey);
+        if (!drawer) return;
+
+        QMenu menu(this);
+        menu.setStyleSheet(QStringLiteral(R"(
+            QMenu {
+                background: %1;
+                color: %2;
+                border: 1px solid %3;
+                border-radius: 6px;
+                padding: 4px;
+            }
+            QMenu::item { padding: 6px 16px; border-radius: 4px; }
+            QMenu::item:selected { background: %4; color: %5; }
+            QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
+        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+               Theme::hoverOverlay(), Theme::textBright()));
+
+        auto* editAct = menu.addAction(tr("Editar gaveta…"));
+        connect(editAct, &QAction::triggered, this, [this, drawerKey]() {
+            const Drawer* d = projectModel->findDrawer(drawerKey);
+            if (!d) return;
+            DrawerCreateDialog dlg(elementsStore, this);
+            dlg.configureForEdit(d->title, d->drawerIcon, d->color, d->drawerElementType);
+            if (dlg.exec() != QDialog::Accepted) return;
+            QString newElementIcon;
+            const QString newElemType = dlg.elementTypeId();
+            if (!newElemType.isEmpty() && elementsStore) {
+                if (const ElementType* t = elementsStore->findType(newElemType)) {
+                    newElementIcon = t->icon;
+                }
+            }
+            projectModel->updateDrawer(drawerKey, dlg.title(), dlg.color(),
+                                       dlg.iconId(), newElemType, newElementIcon);
+        });
+
+        menu.addSeparator();
+
+        auto* deleteAct = menu.addAction(tr("Excluir gaveta"));
+        connect(deleteAct, &QAction::triggered, this, [this, drawerKey]() {
+            const Drawer* d = projectModel->findDrawer(drawerKey);
+            if (!d) return;
+            if (!projectModel->drawerIsEmpty(drawerKey)) {
+                QMessageBox::information(this, tr("Excluir gaveta"),
+                    tr("Esta gaveta não está vazia. Esvazie os itens e pastas antes de excluí-la."));
+                return;
+            }
+            const QString title = d->title.isEmpty() ? tr("(sem nome)") : d->title;
+            const auto ret = QMessageBox::question(this, tr("Excluir gaveta"),
+                tr("Excluir a gaveta \"%1\"?").arg(title),
+                QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+            if (ret != QMessageBox::Yes) return;
+            projectModel->removeDrawer(drawerKey);
+        });
+
+        menu.exec(globalPos);
     });
 
     // Seed opcional pra screenshots e dev local: setar env MIRA_DEMO_SEED=1
@@ -481,11 +917,15 @@ void MainWindow::setupToolbar()
     toolbar->setFontSize(currentFontSize);
     toolbar->setLineHeightPercent(currentLineHeight);
     toolbar->setFirstLineIndentEnabled(firstLineIndentEnabled);
+    toolbar->setParagraphSpacingBefore(paragraphSpacingBefore);
+    toolbar->setParagraphSpacingAfter(paragraphSpacingAfter);
 
     connect(toolbar, &TopToolbar::fontFamilyChanged, this, &MainWindow::setFontFamily);
     connect(toolbar, &TopToolbar::fontSizeChanged, this, &MainWindow::setFontSize);
     connect(toolbar, &TopToolbar::lineHeightChanged, this, &MainWindow::setLineHeight);
     connect(toolbar, &TopToolbar::firstLineIndentToggled, this, &MainWindow::setFirstLineIndent);
+    connect(toolbar, &TopToolbar::paragraphSpacingBeforeChanged, this, &MainWindow::setParagraphSpacingBefore);
+    connect(toolbar, &TopToolbar::paragraphSpacingAfterChanged, this, &MainWindow::setParagraphSpacingAfter);
     connect(toolbar, &TopToolbar::focusModeToggled, this, &MainWindow::setFocusMode);
     connect(toolbar, &TopToolbar::addImageRequested, this, &MainWindow::onAddImageRequested);
     connect(toolbar, &TopToolbar::newProjectRequested, this, &MainWindow::onNewProjectRequested);
@@ -526,6 +966,8 @@ void MainWindow::applyEditorStyle()
     QTextBlockFormat blockFormat;
     blockFormat.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
     blockFormat.setTextIndent(firstLineIndentEnabled ? 30 : 0);
+    blockFormat.setTopMargin(paragraphSpacingBefore);
+    blockFormat.setBottomMargin(paragraphSpacingAfter);
     cursor.mergeBlockFormat(blockFormat);
 }
 
@@ -544,12 +986,28 @@ void MainWindow::setFontSize(int pt)
 void MainWindow::setLineHeight(int percent)
 {
     currentLineHeight = percent;
+    if (projectModel) projectModel->setLineHeightPercent(percent);
     applyEditorStyle();
 }
 
 void MainWindow::setFirstLineIndent(bool enabled)
 {
     firstLineIndentEnabled = enabled;
+    if (projectModel) projectModel->setFirstLineIndentEnabled(enabled);
+    applyEditorStyle();
+}
+
+void MainWindow::setParagraphSpacingBefore(int px)
+{
+    paragraphSpacingBefore = px;
+    if (projectModel) projectModel->setParagraphSpacingBefore(px);
+    applyEditorStyle();
+}
+
+void MainWindow::setParagraphSpacingAfter(int px)
+{
+    paragraphSpacingAfter = px;
+    if (projectModel) projectModel->setParagraphSpacingAfter(px);
     applyEditorStyle();
 }
 
@@ -1054,17 +1512,32 @@ void MainWindow::positionSidePanels()
     QWidget* parent = drawerListPanel ? drawerListPanel->parentWidget() : nullptr;
     if (!parent) return;
     const int margin = 10;
-    const int x = margin + leftBar->width() + margin; // após margem esquerda + LeftBar + spacing
+    const int x = margin + leftBar->width() + margin;
     const int y = margin;
-    const int h = qMax(0, parent->height() - margin * 2);
-    auto place = [&](QWidget* w) {
-        if (!w) return;
-        w->move(x, y);
-        w->resize(w->width(), h);
-        if (w->isVisible()) w->raise();
-    };
-    place(drawerListPanel);
-    place(manuscriptPanel);
+    const int maxH = qMax(0, parent->height() - margin * 2);
+
+    // DrawerListPanel: respeita altura escolhida pelo usuário (se houver),
+    // só clampa pra caber. Senão, expande full-height (comportamento antigo).
+    if (drawerListPanel) {
+        drawerListPanel->move(x, y);
+        int targetH;
+        if (drawerListPanel->heightIsUserSet()) {
+            // Usa desiredHeight, não height() — pode ter sido encolhido por show().
+            const int desired = drawerListPanel->desiredHeight();
+            targetH = qMin(desired > 0 ? desired : drawerListPanel->height(), maxH);
+        } else {
+            targetH = maxH;
+        }
+        drawerListPanel->resize(drawerListPanel->width(), targetH);
+        if (drawerListPanel->isVisible()) drawerListPanel->raise();
+    }
+
+    // ManuscriptPanel: continua sempre full-height por enquanto.
+    if (manuscriptPanel) {
+        manuscriptPanel->move(x, y);
+        manuscriptPanel->resize(manuscriptPanel->width(), maxH);
+        if (manuscriptPanel->isVisible()) manuscriptPanel->raise();
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -1072,14 +1545,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     positionWordCountPanel();
     positionSidePanels();
-    if (refMenuPanel && refMenuPanel->isVisible()) {
-        QWidget* parent = refMenuPanel->parentWidget();
-        if (parent) {
-            const int margin = 10;
-            refMenuPanel->resize(refMenuPanel->width(), parent->height() - margin * 2);
-            refMenuPanel->move(parent->width() - refMenuPanel->width() - margin, margin);
-        }
-    }
+    // RefMenuPanel: drag/resize livres. O showEvent dele já mantém dentro do pai
+    // quando reaberto, e a geometria persiste em QSettings.
 }
 
 void MainWindow::onOpenProjectRequested()

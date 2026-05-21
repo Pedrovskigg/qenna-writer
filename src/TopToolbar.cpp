@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QMenu>
 #include <QPair>
+#include <QSignalBlocker>
 #include <QToolButton>
 #include <QWidgetAction>
 
@@ -90,6 +91,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     , settingsButton(makeIconButton(this))
     , fullscreenButton(makeIconButton(this))
     , refMenuButton(makeIconButton(this))
+    , docTitleLabel(new QLabel(this))
     , fontPicker(nullptr)
     , sizeStepperValueLabel(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
@@ -192,7 +194,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     lineHeightButton->setIcon(loadIcon(QStringLiteral("text-spacing.svg")));
     lineHeightButton->setIconSize(iconSize);
     lineHeightButton->setText(QString::number(currentLineHeightPercent / 100.0, 'f', 1));
-    lineHeightButton->setToolTip(tr("Espaçamento da linha"));
+    lineHeightButton->setToolTip(tr("Espaçamento"));
 
     indentButton->setObjectName(QStringLiteral("ttbIndent"));
     indentButton->setText(QStringLiteral("¶"));
@@ -239,26 +241,34 @@ TopToolbar::TopToolbar(QWidget *parent)
     refMenuButton->setToolTip(tr("Painel de Referência"));
     connect(refMenuButton, &QToolButton::clicked, this, &TopToolbar::refMenuToggleRequested);
 
+    // ---------------- Título do documento (centro) ----------------
+    docTitleLabel->setObjectName(QStringLiteral("ttbDocTitle"));
+    docTitleLabel->setAlignment(Qt::AlignCenter);
+    docTitleLabel->setStyleSheet(QStringLiteral(
+        "QLabel#ttbDocTitle {"
+        "  color: #f0e8d8;"
+        "  font-family: 'Lora','Crimson Text',serif;"
+        "  font-size: 18px;"
+        "  font-weight: 700;"
+        "}"));
+    docTitleLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    docTitleLabel->setText(QString());
+
     // ---------------- Layout ----------------
+    // Esquerda: Projeto (new/open/save) + Editor (font/size/lineHeight/indent/B/I)
+    // Centro: título do documento
+    // Direita: Ferramentas + Mídia + Sistema + RefMenu
     auto *layout = new QHBoxLayout(this);
     layout->setContentsMargins(14, 4, 14, 4);
     layout->setSpacing(6);
 
-    // Projeto
+    // --- Esquerda: Projeto ---
     layout->addWidget(newProjectButton);
     layout->addWidget(openProjectButton);
     layout->addWidget(saveProjectButton);
     layout->addWidget(makeVSeparator(this));
 
-    // Ferramentas
-    layout->addWidget(glossaryButton);
-    layout->addWidget(readModeButton);
-    layout->addWidget(focusButton);
-    layout->addWidget(searchButton);
-
-    layout->addStretch();
-
-    // Tipografia
+    // --- Esquerda: Editor (tipografia + inline) ---
     layout->addWidget(fontButton);
     layout->addWidget(sizeButton);
     layout->addWidget(lineHeightButton);
@@ -266,15 +276,25 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(boldButton);
     layout->addWidget(italicButton);
 
-    layout->addStretch();
+    // --- Centro: título do doc ---
+    layout->addStretch(1);
+    layout->addWidget(docTitleLabel);
+    layout->addStretch(1);
 
-    // Mídia
+    // --- Direita: Ferramentas ---
+    layout->addWidget(glossaryButton);
+    layout->addWidget(readModeButton);
+    layout->addWidget(focusButton);
+    layout->addWidget(searchButton);
+    layout->addWidget(makeVSeparator(this));
+
+    // --- Direita: Mídia ---
     layout->addWidget(imageButton);
     layout->addWidget(reminderButton);
     layout->addWidget(immersiveSoundButton);
     layout->addWidget(makeVSeparator(this));
 
-    // Sistema
+    // --- Direita: Sistema ---
     layout->addWidget(themePanelButton);
     layout->addWidget(settingsButton);
     layout->addWidget(fullscreenButton);
@@ -282,7 +302,13 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(refMenuButton);
 
     buildSizeMenu();
-    buildLineHeightMenu();
+    buildSpacingMenu();
+}
+
+void TopToolbar::setDocumentTitle(const QString &title)
+{
+    if (!docTitleLabel) return;
+    docTitleLabel->setText(title);
 }
 
 void TopToolbar::setFontFamilies(const QStringList &families, const QString &current)
@@ -303,12 +329,47 @@ void TopToolbar::setLineHeightPercent(int percent)
 {
     currentLineHeightPercent = percent;
     lineHeightButton->setText(QString::number(percent / 100.0, 'f', 1));
-    buildLineHeightMenu();
+    updateSpacingMenuChecks();
 }
 
 void TopToolbar::setFirstLineIndentEnabled(bool enabled)
 {
+    QSignalBlocker block(indentButton);
     indentButton->setChecked(enabled);
+}
+
+void TopToolbar::setParagraphSpacingBefore(int px)
+{
+    currentParaSpaceBefore = qBound(0, px, 32);
+    if (paraBeforeValueLabel) {
+        paraBeforeValueLabel->setText(QStringLiteral("%1 px").arg(currentParaSpaceBefore));
+    }
+}
+
+void TopToolbar::setParagraphSpacingAfter(int px)
+{
+    currentParaSpaceAfter = qBound(0, px, 32);
+    if (paraAfterValueLabel) {
+        paraAfterValueLabel->setText(QStringLiteral("%1 px").arg(currentParaSpaceAfter));
+    }
+}
+
+void TopToolbar::applyParaSpaceBefore(int px)
+{
+    const int next = qBound(0, px, 32);
+    if (next == currentParaSpaceBefore) return;
+    currentParaSpaceBefore = next;
+    if (paraBeforeValueLabel) paraBeforeValueLabel->setText(QStringLiteral("%1 px").arg(next));
+    emit paragraphSpacingBeforeChanged(next);
+}
+
+void TopToolbar::applyParaSpaceAfter(int px)
+{
+    const int next = qBound(0, px, 32);
+    if (next == currentParaSpaceAfter) return;
+    currentParaSpaceAfter = next;
+    if (paraAfterValueLabel) paraAfterValueLabel->setText(QStringLiteral("%1 px").arg(next));
+    emit paragraphSpacingAfterChanged(next);
 }
 
 void TopToolbar::buildSizeMenu()
@@ -388,9 +449,18 @@ void TopToolbar::applyFontButtonStyle()
     fontButton->setFont(f);
 }
 
-void TopToolbar::buildLineHeightMenu()
+void TopToolbar::buildSpacingMenu()
 {
+    auto *menu = new QMenu(lineHeightButton);
+    menu->setObjectName(QStringLiteral("ttbSpacingMenu"));
+
+    // ---- Seção 1: Espaçamento entre linhas (presets) ----
+    auto *headerLine = menu->addAction(tr("Entre linhas"));
+    headerLine->setEnabled(false);
+
     const QList<QPair<int, QString>> spacings = {
+        { 100, tr("Simples (1.0)") },
+        { 115, tr("Justo (1.15)") },
         { 130, tr("Compacto (1.3)") },
         { 150, tr("Confortável (1.5)") },
         { 170, tr("Padrão (1.7)") },
@@ -398,20 +468,117 @@ void TopToolbar::buildLineHeightMenu()
         { 220, tr("Espaçoso (2.2)") },
     };
 
-    auto *menu = new QMenu(lineHeightButton);
     for (const auto &sp : spacings) {
         const int percent = sp.first;
         QAction *a = menu->addAction(sp.second);
         a->setCheckable(true);
         a->setChecked(percent == currentLineHeightPercent);
+        a->setData(percent);
+        a->setProperty("ttbRole", QStringLiteral("lineHeight"));
         connect(a, &QAction::triggered, this, [this, percent]() {
             currentLineHeightPercent = percent;
-            lineHeightButton->setText(QStringLiteral("AA  %1").arg(percent / 100.0, 0, 'f', 1));
+            lineHeightButton->setText(QString::number(percent / 100.0, 'f', 1));
             emit lineHeightChanged(percent);
-            buildLineHeightMenu();
+            updateSpacingMenuChecks();
         });
     }
+
+    menu->addSeparator();
+
+    // ---- Seção 2: Espaçamento ANTES do parágrafo ----
+    auto *headerBefore = menu->addAction(tr("Antes do parágrafo"));
+    headerBefore->setEnabled(false);
+
+    auto *stepperBefore = new QWidget(menu);
+    auto *layoutBefore = new QHBoxLayout(stepperBefore);
+    layoutBefore->setContentsMargins(10, 4, 10, 4);
+    layoutBefore->setSpacing(6);
+
+    auto *minusBefore = new QToolButton(stepperBefore);
+    minusBefore->setObjectName(QStringLiteral("ttbSizeStep"));
+    minusBefore->setText(QStringLiteral("−"));
+    minusBefore->setFixedSize(28, 28);
+    minusBefore->setCursor(Qt::PointingHandCursor);
+    minusBefore->setAutoRaise(true);
+
+    paraBeforeValueLabel = new QLabel(stepperBefore);
+    paraBeforeValueLabel->setObjectName(QStringLiteral("ttbSizeValue"));
+    paraBeforeValueLabel->setText(QStringLiteral("%1 px").arg(currentParaSpaceBefore));
+    paraBeforeValueLabel->setAlignment(Qt::AlignCenter);
+    paraBeforeValueLabel->setFixedWidth(56);
+
+    auto *plusBefore = new QToolButton(stepperBefore);
+    plusBefore->setObjectName(QStringLiteral("ttbSizeStep"));
+    plusBefore->setText(QStringLiteral("+"));
+    plusBefore->setFixedSize(28, 28);
+    plusBefore->setCursor(Qt::PointingHandCursor);
+    plusBefore->setAutoRaise(true);
+
+    layoutBefore->addWidget(minusBefore);
+    layoutBefore->addWidget(paraBeforeValueLabel);
+    layoutBefore->addWidget(plusBefore);
+
+    connect(minusBefore, &QToolButton::clicked, this, [this]() { applyParaSpaceBefore(currentParaSpaceBefore - 2); });
+    connect(plusBefore, &QToolButton::clicked, this, [this]() { applyParaSpaceBefore(currentParaSpaceBefore + 2); });
+
+    auto *actionBefore = new QWidgetAction(menu);
+    actionBefore->setDefaultWidget(stepperBefore);
+    menu->addAction(actionBefore);
+
+    menu->addSeparator();
+
+    // ---- Seção 3: Espaçamento DEPOIS do parágrafo ----
+    auto *headerAfter = menu->addAction(tr("Depois do parágrafo"));
+    headerAfter->setEnabled(false);
+
+    auto *stepperAfter = new QWidget(menu);
+    auto *layoutAfter = new QHBoxLayout(stepperAfter);
+    layoutAfter->setContentsMargins(10, 4, 10, 4);
+    layoutAfter->setSpacing(6);
+
+    auto *minusAfter = new QToolButton(stepperAfter);
+    minusAfter->setObjectName(QStringLiteral("ttbSizeStep"));
+    minusAfter->setText(QStringLiteral("−"));
+    minusAfter->setFixedSize(28, 28);
+    minusAfter->setCursor(Qt::PointingHandCursor);
+    minusAfter->setAutoRaise(true);
+
+    paraAfterValueLabel = new QLabel(stepperAfter);
+    paraAfterValueLabel->setObjectName(QStringLiteral("ttbSizeValue"));
+    paraAfterValueLabel->setText(QStringLiteral("%1 px").arg(currentParaSpaceAfter));
+    paraAfterValueLabel->setAlignment(Qt::AlignCenter);
+    paraAfterValueLabel->setFixedWidth(56);
+
+    auto *plusAfter = new QToolButton(stepperAfter);
+    plusAfter->setObjectName(QStringLiteral("ttbSizeStep"));
+    plusAfter->setText(QStringLiteral("+"));
+    plusAfter->setFixedSize(28, 28);
+    plusAfter->setCursor(Qt::PointingHandCursor);
+    plusAfter->setAutoRaise(true);
+
+    layoutAfter->addWidget(minusAfter);
+    layoutAfter->addWidget(paraAfterValueLabel);
+    layoutAfter->addWidget(plusAfter);
+
+    connect(minusAfter, &QToolButton::clicked, this, [this]() { applyParaSpaceAfter(currentParaSpaceAfter - 2); });
+    connect(plusAfter, &QToolButton::clicked, this, [this]() { applyParaSpaceAfter(currentParaSpaceAfter + 2); });
+
+    auto *actionAfter = new QWidgetAction(menu);
+    actionAfter->setDefaultWidget(stepperAfter);
+    menu->addAction(actionAfter);
+
     lineHeightButton->setMenu(menu);
+}
+
+void TopToolbar::updateSpacingMenuChecks()
+{
+    QMenu *menu = lineHeightButton ? lineHeightButton->menu() : nullptr;
+    if (!menu) return;
+    for (QAction *a : menu->actions()) {
+        if (a->property("ttbRole").toString() == QLatin1String("lineHeight")) {
+            a->setChecked(a->data().toInt() == currentLineHeightPercent);
+        }
+    }
 }
 
 void TopToolbar::applySize(int pt)

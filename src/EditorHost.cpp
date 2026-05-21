@@ -341,5 +341,6 @@ void EditorHost::replaceContent(const QString& html) {
     } else {
         m_editor->setHtml(html);
     }
+    emit contentLoaded();
     m_loadingContent = false;
 }

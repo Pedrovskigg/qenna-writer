@@ -44,6 +44,7 @@ signals:
 private slots:
     void onContentFlushed(const QString& key);
     void onAutosaveTimeout();
+    void onSettingsChanged();
 
 private:
     bool writeDirtyDocs(QString* errorOut);
@@ -59,5 +60,6 @@ private:
     QTimer* m_autosaveTimer;
     bool m_saving = false;
     bool m_pendingFullSave = false;
+    bool m_settingsDirty = false;
     QString m_lastError;
 };

@@ -58,6 +58,7 @@ protected:
 signals:
     void viewModeChanged();
     void contentFlushed(QString key);
+    void contentLoaded();
 
 private slots:
     void onEditorTextChanged();

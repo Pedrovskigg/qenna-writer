@@ -239,6 +239,57 @@ void ProjectModel::setSettings(const QJsonObject& s) {
     emit settingsChanged();
 }
 
+bool ProjectModel::firstLineIndentEnabled() const {
+    const auto v = m_settings.value(QStringLiteral("firstLineIndent"));
+    if (v.isUndefined() || v.isNull()) return true;
+    return v.toBool(true);
+}
+
+void ProjectModel::setFirstLineIndentEnabled(bool enabled) {
+    if (firstLineIndentEnabled() == enabled) return;
+    m_settings.insert(QStringLiteral("firstLineIndent"), enabled);
+    emit settingsChanged();
+}
+
+int ProjectModel::paragraphSpacingBefore() const {
+    const auto v = m_settings.value(QStringLiteral("paragraphSpacingBefore"));
+    if (v.isUndefined() || v.isNull()) return 0;
+    return qBound(0, v.toInt(0), 32);
+}
+
+void ProjectModel::setParagraphSpacingBefore(int px) {
+    const int clamped = qBound(0, px, 32);
+    if (paragraphSpacingBefore() == clamped) return;
+    m_settings.insert(QStringLiteral("paragraphSpacingBefore"), clamped);
+    emit settingsChanged();
+}
+
+int ProjectModel::paragraphSpacingAfter() const {
+    const auto v = m_settings.value(QStringLiteral("paragraphSpacingAfter"));
+    if (v.isUndefined() || v.isNull()) return 0;
+    return qBound(0, v.toInt(0), 32);
+}
+
+void ProjectModel::setParagraphSpacingAfter(int px) {
+    const int clamped = qBound(0, px, 32);
+    if (paragraphSpacingAfter() == clamped) return;
+    m_settings.insert(QStringLiteral("paragraphSpacingAfter"), clamped);
+    emit settingsChanged();
+}
+
+int ProjectModel::lineHeightPercent() const {
+    const auto v = m_settings.value(QStringLiteral("lineHeightPercent"));
+    if (v.isUndefined() || v.isNull()) return 170;
+    return qBound(80, v.toInt(170), 400);
+}
+
+void ProjectModel::setLineHeightPercent(int percent) {
+    const int clamped = qBound(80, percent, 400);
+    if (lineHeightPercent() == clamped) return;
+    m_settings.insert(QStringLiteral("lineHeightPercent"), clamped);
+    emit settingsChanged();
+}
+
 void ProjectModel::setUi(const QJsonObject& u) {
     m_ui = u;
     emit uiChanged();
@@ -290,6 +341,39 @@ bool ProjectModel::moveDrawerItem(const QString& drawerKey, const QString& itemI
     return false;
 }
 
+bool ProjectModel::moveDrawerItemToDrawer(const QString& srcDrawerKey, const QString& itemId,
+                                          const QString& destDrawerKey, const QString& destFolderId) {
+    if (srcDrawerKey == destDrawerKey) {
+        return moveDrawerItem(srcDrawerKey, itemId, destFolderId);
+    }
+    int srcIdx = -1, destIdx = -1;
+    for (int i = 0; i < m_drawers.size(); ++i) {
+        if (m_drawers.at(i).key == srcDrawerKey)  srcIdx = i;
+        if (m_drawers.at(i).key == destDrawerKey) destIdx = i;
+    }
+    if (srcIdx < 0 || destIdx < 0) return false;
+
+    DrawerItem moved;
+    bool found = false;
+    {
+        Drawer& src = m_drawers[srcIdx];
+        for (int j = 0; j < src.items.size(); ++j) {
+            if (src.items.at(j).id == itemId) {
+                moved = src.items.at(j);
+                src.items.removeAt(j);
+                found = true;
+                break;
+            }
+        }
+    }
+    if (!found) return false;
+
+    moved.folderId = destFolderId;
+    m_drawers[destIdx].items.append(moved);
+    emit drawersChanged();
+    return true;
+}
+
 bool ProjectModel::moveDrawerFolder(const QString& drawerKey, const QString& folderId, const QString& newParentId) {
     if (folderId == newParentId) return false; // não pode ser pai de si
     for (auto& d : m_drawers) {
@@ -313,6 +397,117 @@ const Drawer* ProjectModel::findDrawer(const QString& key) const {
     return nullptr;
 }
 
+bool ProjectModel::reorderDrawer(const QString& drawerKey, int targetIndex) {
+    int srcIdx = -1;
+    for (int i = 0; i < m_drawers.size(); ++i) {
+        if (m_drawers.at(i).key == drawerKey) { srcIdx = i; break; }
+    }
+    if (srcIdx < 0) return false;
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex > m_drawers.size()) targetIndex = m_drawers.size();
+    // Ajuste: ao remover antes do índice destino, o índice cai 1
+    if (srcIdx < targetIndex) --targetIndex;
+    if (srcIdx == targetIndex) return true;
+    Drawer moved = m_drawers.takeAt(srcIdx);
+    m_drawers.insert(targetIndex, moved);
+    emit drawersChanged();
+    return true;
+}
+
+bool ProjectModel::reorderDrawerItem(const QString& drawerKey, const QString& itemId, int targetIndex) {
+    for (auto& d : m_drawers) {
+        if (d.key != drawerKey) continue;
+        int srcIdx = -1;
+        for (int i = 0; i < d.items.size(); ++i) {
+            if (d.items.at(i).id == itemId) { srcIdx = i; break; }
+        }
+        if (srcIdx < 0) return false;
+        if (targetIndex < 0) targetIndex = 0;
+        if (targetIndex > d.items.size()) targetIndex = d.items.size();
+        if (srcIdx < targetIndex) --targetIndex;
+        if (srcIdx == targetIndex) return true;
+        DrawerItem moved = d.items.takeAt(srcIdx);
+        d.items.insert(targetIndex, moved);
+        emit drawersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::removeDrawerItem(const QString& itemId) {
+    for (auto& d : m_drawers) {
+        for (int i = 0; i < d.items.size(); ++i) {
+            if (d.items.at(i).id == itemId) {
+                d.items.removeAt(i);
+                emit drawersChanged();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::removeDrawerFolder(const QString& drawerKey, const QString& folderId) {
+    for (auto& d : m_drawers) {
+        if (d.key != drawerKey) continue;
+        // Bloqueia se tiver items ou subpastas dentro
+        for (const auto& it : d.items) {
+            if (it.folderId == folderId) return false;
+        }
+        for (const auto& f : d.folders) {
+            if (f.parentId == folderId) return false;
+        }
+        for (int i = 0; i < d.folders.size(); ++i) {
+            if (d.folders.at(i).id == folderId) {
+                d.folders.removeAt(i);
+                emit drawersChanged();
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::removeDrawer(const QString& drawerKey) {
+    for (int i = 0; i < m_drawers.size(); ++i) {
+        if (m_drawers.at(i).key != drawerKey) continue;
+        // Só permite remover se vazia (sem items e sem folders)
+        if (!m_drawers.at(i).items.isEmpty() || !m_drawers.at(i).folders.isEmpty()) return false;
+        m_drawers.removeAt(i);
+        emit drawersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::drawerIsEmpty(const QString& drawerKey) const {
+    const Drawer* d = findDrawer(drawerKey);
+    if (!d) return true;
+    return d->items.isEmpty() && d->folders.isEmpty();
+}
+
+bool ProjectModel::updateDrawer(const QString& drawerKey, const QString& title, const QString& color,
+                                const QString& iconId, const QString& elementType, const QString& elementIcon) {
+    for (auto& d : m_drawers) {
+        if (d.key != drawerKey) continue;
+        bool changed = false;
+        if (!title.isNull() && d.title != title) { d.title = title; changed = true; }
+        if (!color.isNull() && d.color != color) { d.color = color; changed = true; }
+        if (!iconId.isNull() && d.drawerIcon != iconId) { d.drawerIcon = iconId; changed = true; }
+        if (!elementType.isNull() && d.drawerElementType != elementType) {
+            d.drawerElementType = elementType;
+            changed = true;
+        }
+        if (!elementIcon.isNull() && d.drawerElementIcon != elementIcon) {
+            d.drawerElementIcon = elementIcon;
+            changed = true;
+        }
+        if (changed) emit drawersChanged();
+        return true;
+    }
+    return false;
+}
+
 bool ProjectModel::updateDrawerItemHtml(const QString& itemId, const QString& html) {
     for (auto& d : m_drawers) {
         for (auto& it : d.items) {
@@ -334,6 +529,22 @@ bool ProjectModel::updateDrawerItemMeta(const QString& itemId, const QString& ti
             bool changed = false;
             if (!title.isNull() && it.title != title) { it.title = title; changed = true; }
             if (it.role != role) { it.role = role; changed = true; }
+            if (changed) emit drawersChanged();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::setDrawerItemElement(const QString& itemId, const QString& elementType,
+                                        const QString& elementIcon, const QString& elementId) {
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.id != itemId) continue;
+            bool changed = false;
+            if (it.elementType != elementType) { it.elementType = elementType; changed = true; }
+            if (it.elementIcon != elementIcon) { it.elementIcon = elementIcon; changed = true; }
+            if (it.elementId != elementId)     { it.elementId = elementId;     changed = true; }
             if (changed) emit drawersChanged();
             return true;
         }
@@ -392,6 +603,104 @@ bool ProjectModel::updateChapterScenes(const QString& chapterId, const QList<Sce
             emit chaptersChanged();
             return true;
         }
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterTitle(const QString& chapterId, const QString& title) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.title == title) return true;
+        c.title = title;
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::removeChapter(const QString& chapterId) {
+    for (int i = 0; i < m_chapters.size(); ++i) {
+        if (m_chapters.at(i).id != chapterId) continue;
+        const QString msId = m_chapters.at(i).manuscriptId;
+        m_chapters.removeAt(i);
+        // Re-numerar a ordem dos capítulos restantes do mesmo manuscrito.
+        int n = 1;
+        for (auto& c : m_chapters) {
+            if (c.manuscriptId == msId) { c.order = n++; }
+        }
+        if (m_activeChapterId == chapterId) m_activeChapterId.clear();
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::reorderChapter(const QString& chapterId, int targetIndex) {
+    // Reordena entre os capítulos do mesmo manuscrito.
+    int srcIdx = -1;
+    QString msId;
+    for (int i = 0; i < m_chapters.size(); ++i) {
+        if (m_chapters.at(i).id == chapterId) {
+            srcIdx = i;
+            msId = m_chapters.at(i).manuscriptId;
+            break;
+        }
+    }
+    if (srcIdx < 0) return false;
+
+    // Lista de índices globais dos capítulos do manuscrito, na ordem atual.
+    QList<int> indicesInMs;
+    for (int i = 0; i < m_chapters.size(); ++i) {
+        if (m_chapters.at(i).manuscriptId == msId) indicesInMs.append(i);
+    }
+    const int posInMs = indicesInMs.indexOf(srcIdx);
+    if (posInMs < 0) return false;
+
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex > indicesInMs.size()) targetIndex = indicesInMs.size();
+    if (posInMs < targetIndex) --targetIndex;
+    if (posInMs == targetIndex) return true;
+
+    Chapter moved = m_chapters.takeAt(srcIdx);
+    // Após remover, recomputa onde inserir no array global.
+    int globalInsertPos;
+    if (targetIndex >= indicesInMs.size() - 1) {
+        // Inserir depois do último cap do manuscrito.
+        int lastIdx = -1;
+        for (int i = 0; i < m_chapters.size(); ++i) {
+            if (m_chapters.at(i).manuscriptId == msId) lastIdx = i;
+        }
+        globalInsertPos = lastIdx + 1;
+    } else {
+        // Pegar o targetIndex-ésimo cap do manuscrito no array recalculado.
+        int seen = 0;
+        globalInsertPos = m_chapters.size();
+        for (int i = 0; i < m_chapters.size(); ++i) {
+            if (m_chapters.at(i).manuscriptId == msId) {
+                if (seen == targetIndex) { globalInsertPos = i; break; }
+                ++seen;
+            }
+        }
+    }
+    m_chapters.insert(globalInsertPos, moved);
+
+    // Re-numerar a ordem dos capítulos do manuscrito.
+    int n = 1;
+    for (auto& c : m_chapters) {
+        if (c.manuscriptId == msId) c.order = n++;
+    }
+    emit chaptersChanged();
+    return true;
+}
+
+bool ProjectModel::updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].title == title) return true;
+        c.scenes[sceneIndex].title = title;
+        emit chaptersChanged();
+        return true;
     }
     return false;
 }
