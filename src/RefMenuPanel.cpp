@@ -2,286 +2,1075 @@
 
 #include "DocCache.h"
 #include "EditorHost.h"
+#include "ElementsStore.h"
+#include "IconUtils.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
+#include "Theme.h"
 
-#include <QComboBox>
+#include <QApplication>
+#include <QBuffer>
+#include <QByteArray>
+#include <QEvent>
+#include <QFile>
+#include <QFontMetrics>
+#include <QFrame>
+#include <QGridLayout>
 #include <QHBoxLayout>
+#include <QImageReader>
 #include <QLabel>
 #include <QListWidget>
 #include <QListWidgetItem>
-#include <QSplitter>
+#include <QMenu>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QPixmap>
+#include <QRegularExpression>
+#include <QScrollArea>
+#include <QSettings>
+#include <QShowEvent>
+#include <QSizePolicy>
 #include <QTextBrowser>
+#include <QTextDocument>
+#include <QTimer>
 #include <QToolButton>
+#include <QUrl>
 #include <QVBoxLayout>
+#include <QWidgetAction>
+#include <algorithm>
 
 namespace {
-constexpr int kPanelWidth = 320;
+constexpr int kDefaultW = 380;
+constexpr int kDefaultH = 720;
+constexpr int kMinW = 280;
+constexpr int kMinH = 360;
+constexpr int kHandleW = 6;     // espessura das faixas de resize
+constexpr int kCornerSz = 12;   // tamanho dos handles de canto
+constexpr int kHeaderH = 38;
 
-// Source ID schema:
-// "ms:<id>"   → manuscrito
-// "dr:<key>"  → gaveta
+const char* kKeyGeom        = "ui/refMenuPanel/geometry";
+const char* kKeyNavHidden   = "ui/refMenuPanel/navHidden";
+const char* kKeyVisualMode  = "ui/refMenuPanel/visualMode";
+const char* kKeyPinned      = "ui/refMenuPanel/pinned";
+const char* kKeyFontPt      = "ui/refMenuPanel/previewFontPt";
+
+// keys de seleção (UserRole nos QListWidgetItem):
+//   ms:<msId>            → manuscrito
+//   ch:<msId>:<chId>     → capítulo
+//   sc:<msId>:<chId>:<i> → cena
+//   it:<itemId>          → item de gaveta
+//   fl:<folderId>        → folder (drilling)
 }
 
-RefMenuPanel::RefMenuPanel(ProjectModel* model, EditorHost* host, DocCache* cache, QWidget* parent)
+// =========================================================================
+// Construção e ciclo de vida
+// =========================================================================
+
+RefMenuPanel::RefMenuPanel(ProjectModel* model, EditorHost* host, DocCache* cache,
+                           ElementsStore* elements, QWidget* parent)
     : QWidget(parent)
     , m_model(model)
     , m_host(host)
     , m_cache(cache)
-    , m_sourceCombo(nullptr)
-    , m_docList(nullptr)
-    , m_preview(nullptr)
-    , m_emptyLabel(nullptr)
-    , m_splitter(nullptr)
-    , m_closeBtn(nullptr)
+    , m_elements(elements)
 {
-    setAttribute(Qt::WA_StyledBackground, true);
     setObjectName(QStringLiteral("refMenuPanel"));
-    setFixedWidth(kPanelWidth);
+    setAttribute(Qt::WA_StyledBackground, true);
+    setMinimumSize(kMinW, kMinH);
+    resize(kDefaultW, kDefaultH);
+
     buildUi();
+    loadGeometryFromSettings();
+    applyPreviewFont();
+    applyNavVisibility();
+
     if (m_model) {
         connect(m_model, &ProjectModel::manuscriptsChanged, this, &RefMenuPanel::refresh);
         connect(m_model, &ProjectModel::chaptersChanged, this, &RefMenuPanel::refresh);
         connect(m_model, &ProjectModel::drawersChanged, this, &RefMenuPanel::refresh);
         connect(m_model, &ProjectModel::loaded, this, &RefMenuPanel::refresh);
     }
+    if (m_elements) {
+        connect(m_elements, &ElementsStore::changed, this, &RefMenuPanel::refresh);
+    }
+
     hide();
 }
 
+void RefMenuPanel::setProjectRoot(const QString& root)
+{
+    m_projectRoot = root;
+}
+
+// =========================================================================
+// UI
+// =========================================================================
+
 void RefMenuPanel::buildUi()
 {
+    // Layout externo: sem margem — os handles dedicados cobrem as bordas.
     auto* outer = new QVBoxLayout(this);
     outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(0);
 
-    // Header
-    auto* header = new QWidget(this);
-    header->setObjectName(QStringLiteral("refHeader"));
-    header->setAttribute(Qt::WA_StyledBackground, true);
-    auto* headerLay = new QHBoxLayout(header);
-    headerLay->setContentsMargins(12, 6, 6, 6);
-    headerLay->setSpacing(6);
-    auto* title = new QLabel(tr("Referência"), header);
-    title->setObjectName(QStringLiteral("refTitle"));
-    headerLay->addWidget(title);
-    headerLay->addStretch();
-    m_closeBtn = new QToolButton(header);
-    m_closeBtn->setObjectName(QStringLiteral("refCloseBtn"));
+    m_frame = new QWidget(this);
+    m_frame->setObjectName(QStringLiteral("refFrame"));
+    m_frame->setAttribute(Qt::WA_StyledBackground, true);
+    outer->addWidget(m_frame, /*stretch=*/1);
+
+    m_frameLay = new QVBoxLayout(m_frame);
+    m_frameLay->setContentsMargins(0, 0, 0, 0);
+    m_frameLay->setSpacing(0);
+
+    // ---- Header ----
+    m_header = new QWidget(m_frame);
+    m_header->setObjectName(QStringLiteral("refHeader"));
+    m_header->setAttribute(Qt::WA_StyledBackground, true);
+    m_header->setFixedHeight(kHeaderH);
+    auto* hLay = new QHBoxLayout(m_header);
+    hLay->setContentsMargins(8, 4, 6, 4);
+    hLay->setSpacing(6);
+
+    m_dragHandle = new QToolButton(m_header);
+    m_dragHandle->setObjectName(QStringLiteral("refDragHandle"));
+    m_dragHandle->setText(QStringLiteral(":::"));
+    m_dragHandle->setToolTip(tr("Arrastar (duplo clique pra resetar)"));
+    m_dragHandle->setCursor(Qt::OpenHandCursor);
+    m_dragHandle->installEventFilter(this);
+    hLay->addWidget(m_dragHandle);
+
+    m_title = new QLabel(tr("Referência"), m_header);
+    m_title->setObjectName(QStringLiteral("refTitle"));
+    hLay->addWidget(m_title);
+
+    hLay->addStretch();
+
+    m_toggleNavBtn = new QToolButton(m_header);
+    m_toggleNavBtn->setObjectName(QStringLiteral("refTinyBtn"));
+    m_toggleNavBtn->setText(QStringLiteral("▾"));
+    m_toggleNavBtn->setToolTip(tr("Ocultar/Mostrar explorador"));
+    m_toggleNavBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_toggleNavBtn, &QToolButton::clicked, this, &RefMenuPanel::onToggleNav);
+    hLay->addWidget(m_toggleNavBtn);
+
+    m_searchBtn = new QToolButton(m_header);
+    m_searchBtn->setObjectName(QStringLiteral("refTinyBtn"));
+    {
+        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/search.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        if (!ic.isNull()) m_searchBtn->setIcon(ic);
+    }
+    m_searchBtn->setToolTip(tr("Pesquisar (em breve)"));
+    m_searchBtn->setCursor(Qt::PointingHandCursor);
+    m_searchBtn->setEnabled(false);
+    hLay->addWidget(m_searchBtn);
+
+    m_fontSizeBtn = new QToolButton(m_header);
+    m_fontSizeBtn->setObjectName(QStringLiteral("refTinyBtn"));
+    m_fontSizeBtn->setText(QStringLiteral("Aa"));
+    m_fontSizeBtn->setToolTip(tr("Tamanho do texto do preview"));
+    m_fontSizeBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_fontSizeBtn, &QToolButton::clicked, this, &RefMenuPanel::onCycleFontSize);
+    hLay->addWidget(m_fontSizeBtn);
+
+    m_editBtn = new QToolButton(m_header);
+    m_editBtn->setObjectName(QStringLiteral("refTinyBtn"));
+    m_editBtn->setText(QStringLiteral("/"));
+    m_editBtn->setToolTip(tr("Editar (em breve)"));
+    m_editBtn->setEnabled(false);
+    hLay->addWidget(m_editBtn);
+
+    m_pinBtn = new QToolButton(m_header);
+    m_pinBtn->setObjectName(QStringLiteral("refTinyBtn"));
+    {
+        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/pin.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        if (!ic.isNull()) m_pinBtn->setIcon(ic);
+    }
+    m_pinBtn->setToolTip(tr("Fixar"));
+    m_pinBtn->setCheckable(true);
+    m_pinBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_pinBtn, &QToolButton::clicked, this, &RefMenuPanel::onTogglePin);
+    hLay->addWidget(m_pinBtn);
+
+    m_closeBtn = new QToolButton(m_header);
+    m_closeBtn->setObjectName(QStringLiteral("refTinyBtn"));
     m_closeBtn->setText(QStringLiteral("✕"));
-    m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setToolTip(tr("Fechar"));
-    connect(m_closeBtn, &QToolButton::clicked, this, &RefMenuPanel::closePanel);
-    headerLay->addWidget(m_closeBtn);
-    outer->addWidget(header);
+    m_closeBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_closeBtn, &QToolButton::clicked, this, &RefMenuPanel::onCloseClicked);
+    hLay->addWidget(m_closeBtn);
 
-    // Body
-    auto* body = new QWidget(this);
-    body->setObjectName(QStringLiteral("refBody"));
-    body->setAttribute(Qt::WA_StyledBackground, true);
-    auto* bodyLay = new QVBoxLayout(body);
-    bodyLay->setContentsMargins(12, 10, 12, 12);
-    bodyLay->setSpacing(8);
+    m_frameLay->addWidget(m_header);
 
-    m_sourceCombo = new QComboBox(body);
-    m_sourceCombo->setObjectName(QStringLiteral("refSourceCombo"));
-    connect(m_sourceCombo, &QComboBox::currentIndexChanged, this, &RefMenuPanel::onSourceChanged);
-    bodyLay->addWidget(m_sourceCombo);
+    // ---- Tabs row ----
+    m_tabsRow = new QWidget(m_frame);
+    m_tabsRow->setObjectName(QStringLiteral("refTabsRow"));
+    m_tabsRow->setAttribute(Qt::WA_StyledBackground, true);
+    auto* tabsLay = new QHBoxLayout(m_tabsRow);
+    tabsLay->setContentsMargins(8, 6, 8, 6);
+    tabsLay->setSpacing(6);
 
-    m_splitter = new QSplitter(Qt::Vertical, body);
-    m_splitter->setObjectName(QStringLiteral("refSplitter"));
-    m_splitter->setChildrenCollapsible(false);
-    m_splitter->setHandleWidth(4);
+    m_msTabBtn = new QToolButton(m_tabsRow);
+    m_msTabBtn->setObjectName(QStringLiteral("refTabBtn"));
+    {
+        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        if (!ic.isNull()) m_msTabBtn->setIcon(ic);
+    }
+    m_msTabBtn->setText(tr("Manuscritos ▾"));
+    m_msTabBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_msTabBtn->setCheckable(true);
+    m_msTabBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_msTabBtn, &QToolButton::clicked, this, [this]() { enterManuscriptMode(); });
+    tabsLay->addWidget(m_msTabBtn);
 
-    m_docList = new QListWidget(m_splitter);
-    m_docList->setObjectName(QStringLiteral("refDocList"));
-    m_docList->setSelectionMode(QAbstractItemView::SingleSelection);
-    connect(m_docList, &QListWidget::itemClicked, this, &RefMenuPanel::onItemActivated);
-    connect(m_docList, &QListWidget::currentItemChanged, this,
-        [this](QListWidgetItem* current, QListWidgetItem*) { onItemActivated(current); });
-    m_splitter->addWidget(m_docList);
+    m_timelineTabBtn = new QToolButton(m_tabsRow);
+    m_timelineTabBtn->setObjectName(QStringLiteral("refTabBtn"));
+    m_timelineTabBtn->setText(tr("Timeline"));
+    m_timelineTabBtn->setToolTip(tr("Linha do tempo (em breve)"));
+    m_timelineTabBtn->setEnabled(false);
+    tabsLay->addWidget(m_timelineTabBtn);
 
-    m_preview = new QTextBrowser(m_splitter);
+    m_viewModeBtn = new QToolButton(m_tabsRow);
+    m_viewModeBtn->setObjectName(QStringLiteral("refTabBtnSmall"));
+    m_viewModeBtn->setText(QStringLiteral("≡"));
+    m_viewModeBtn->setToolTip(tr("Alternar modo visual/lista"));
+    m_viewModeBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_viewModeBtn, &QToolButton::clicked, this, &RefMenuPanel::onToggleVisualMode);
+    tabsLay->addWidget(m_viewModeBtn);
+
+    m_drawerPickerBtn = new QToolButton(m_tabsRow);
+    m_drawerPickerBtn->setObjectName(QStringLiteral("refTabBtn"));
+    m_drawerPickerBtn->setText(tr("Gaveta ▾"));
+    m_drawerPickerBtn->setCheckable(true);
+    m_drawerPickerBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_drawerPickerBtn, &QToolButton::clicked, this, &RefMenuPanel::onDrawerPickerClicked);
+    tabsLay->addWidget(m_drawerPickerBtn);
+
+    tabsLay->addStretch();
+
+    m_frameLay->addWidget(m_tabsRow);
+
+    // ---- Nav body ----
+    m_navScroll = new QScrollArea(m_frame);
+    m_navScroll->setObjectName(QStringLiteral("refNavScroll"));
+    m_navScroll->setWidgetResizable(true);
+    m_navScroll->setFrameShape(QFrame::NoFrame);
+    m_navScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    m_navInner = new QWidget(m_navScroll);
+    m_navInner->setObjectName(QStringLiteral("refNavInner"));
+    m_navInner->setAttribute(Qt::WA_StyledBackground, true);
+    m_navInnerLay = new QVBoxLayout(m_navInner);
+    m_navInnerLay->setContentsMargins(10, 6, 10, 10);
+    m_navInnerLay->setSpacing(6);
+    m_navInnerLay->addStretch();
+    m_navScroll->setWidget(m_navInner);
+    m_frameLay->addWidget(m_navScroll, /*stretch=*/3);
+
+    // ---- Preview ----
+    m_previewWrap = new QWidget(m_frame);
+    m_previewWrap->setObjectName(QStringLiteral("refPreviewWrap"));
+    m_previewWrap->setAttribute(Qt::WA_StyledBackground, true);
+    auto* pvLay = new QVBoxLayout(m_previewWrap);
+    pvLay->setContentsMargins(12, 10, 12, 12);
+    pvLay->setSpacing(6);
+
+    m_previewTitle = new QLabel(m_previewWrap);
+    m_previewTitle->setObjectName(QStringLiteral("refPreviewTitle"));
+    m_previewTitle->setWordWrap(true);
+    m_previewTitle->setVisible(false);
+    pvLay->addWidget(m_previewTitle);
+
+    m_previewRole = new QLabel(m_previewWrap);
+    m_previewRole->setObjectName(QStringLiteral("refPreviewRole"));
+    m_previewRole->setVisible(false);
+    pvLay->addWidget(m_previewRole);
+
+    m_previewImagesScroll = new QScrollArea(m_previewWrap);
+    m_previewImagesScroll->setObjectName(QStringLiteral("refImagesScroll"));
+    m_previewImagesScroll->setWidgetResizable(true);
+    m_previewImagesScroll->setFrameShape(QFrame::NoFrame);
+    m_previewImagesScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_previewImagesScroll->setFixedHeight(120);
+    m_previewImagesScroll->setVisible(false);
+    m_previewImagesHost = new QWidget(m_previewImagesScroll);
+    m_previewImagesLay = new QHBoxLayout(m_previewImagesHost);
+    m_previewImagesLay->setContentsMargins(0, 0, 0, 0);
+    m_previewImagesLay->setSpacing(6);
+    m_previewImagesLay->addStretch();
+    m_previewImagesScroll->setWidget(m_previewImagesHost);
+    pvLay->addWidget(m_previewImagesScroll);
+
+    m_preview = new QTextBrowser(m_previewWrap);
     m_preview->setObjectName(QStringLiteral("refPreview"));
     m_preview->setReadOnly(true);
     m_preview->setOpenExternalLinks(false);
-    m_preview->setPlaceholderText(tr("Selecione um documento acima pra visualizar aqui."));
-    m_splitter->addWidget(m_preview);
+    m_preview->setFrameShape(QFrame::NoFrame);
+    pvLay->addWidget(m_preview, /*stretch=*/1);
 
-    m_splitter->setStretchFactor(0, 1);
-    m_splitter->setStretchFactor(1, 2);
-    bodyLay->addWidget(m_splitter, /*stretch=*/1);
+    m_previewPlaceholder = new QLabel(tr("Selecione um documento acima pra visualizar aqui."), m_previewWrap);
+    m_previewPlaceholder->setObjectName(QStringLiteral("refPreviewPlaceholder"));
+    m_previewPlaceholder->setAlignment(Qt::AlignCenter);
+    m_previewPlaceholder->setWordWrap(true);
+    pvLay->addWidget(m_previewPlaceholder);
 
-    m_emptyLabel = new QLabel(tr("Nenhum item encontrado."), body);
-    m_emptyLabel->setObjectName(QStringLiteral("refEmpty"));
-    m_emptyLabel->setAlignment(Qt::AlignCenter);
-    m_emptyLabel->setVisible(false);
-    bodyLay->addWidget(m_emptyLabel);
+    m_preview->setVisible(false);
 
-    outer->addWidget(body, /*stretch=*/1);
+    m_frameLay->addWidget(m_previewWrap, /*stretch=*/4);
 
+    // ---- Resize handles (estilo DrawerListPanel) ----
+    auto makeHandle = [this](const QString& name, Qt::CursorShape cur) {
+        auto* h = new QWidget(this);
+        h->setObjectName(name);
+        h->setAttribute(Qt::WA_StyledBackground, true);
+        h->setCursor(cur);
+        h->installEventFilter(this);
+        h->raise();
+        return h;
+    };
+    m_hL  = makeHandle(QStringLiteral("refHandleL"),  Qt::SizeHorCursor);
+    m_hR  = makeHandle(QStringLiteral("refHandleR"),  Qt::SizeHorCursor);
+    m_hT  = makeHandle(QStringLiteral("refHandleT"),  Qt::SizeVerCursor);
+    m_hB  = makeHandle(QStringLiteral("refHandleB"),  Qt::SizeVerCursor);
+    m_hTL = makeHandle(QStringLiteral("refHandleTL"), Qt::SizeFDiagCursor);
+    m_hTR = makeHandle(QStringLiteral("refHandleTR"), Qt::SizeBDiagCursor);
+    m_hBL = makeHandle(QStringLiteral("refHandleBL"), Qt::SizeBDiagCursor);
+    m_hBR = makeHandle(QStringLiteral("refHandleBR"), Qt::SizeFDiagCursor);
+    layoutResizeHandles();
+
+    // ---- Style ----
     setStyleSheet(QStringLiteral(R"(
-        QWidget#refMenuPanel {
-            background: rgba(20, 20, 20, 240);
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
+        QWidget#refMenuPanel { background: transparent; }
+        QWidget#refFrame {
+            background: rgba(20, 20, 22, 245);
+            border: 1px solid #2c2c2e;
+            border-radius: 10px;
         }
         QWidget#refHeader {
-            background: #161616;
-            border-bottom: 1px solid #232323;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
+            background: #161618;
+            border-bottom: 1px solid #232325;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
         }
-        QLabel#refTitle {
-            color: #e8e3d6; font-size: 13px; font-weight: 600;
-        }
-        QToolButton#refCloseBtn {
-            background: transparent;
-            color: #8a857a;
-            border: none;
-            min-width: 22px; min-height: 22px;
+        QLabel#refTitle { color: #e8e3d6; font-size: 13px; font-weight: 600; }
+        QToolButton#refTinyBtn {
+            background: transparent; color: #9a958a;
+            border: none; border-radius: 4px;
+            min-width: 24px; min-height: 24px;
+            padding: 0 4px;
             font-size: 13px;
         }
-        QToolButton#refCloseBtn:hover { color: #e8e3d6; }
-        QWidget#refBody { background: transparent; }
-        QComboBox#refSourceCombo {
-            background: #1a1a1a;
-            color: #e8e3d6;
-            border: 1px solid #2a2a2a;
-            border-radius: 4px;
-            padding: 6px 8px;
-            min-height: 26px;
+        QToolButton#refTinyBtn:hover { background: #232325; color: #e8e3d6; }
+        QToolButton#refTinyBtn:checked { background: #2c3a5e; color: #f0e8d8; }
+        QToolButton#refTinyBtn:disabled { color: #545049; }
+        QToolButton#refDragHandle {
+            background: transparent; color: #8a857a;
+            border: none; padding: 0 6px; font-size: 14px;
         }
-        QComboBox#refSourceCombo::drop-down { border: none; width: 16px; }
-        QComboBox#refSourceCombo QAbstractItemView {
-            background: #1a1a1a; color: #e8e3d6;
-            selection-background-color: #2c3a5e;
-            border: 1px solid #2a2a2a;
+        QToolButton#refDragHandle:hover { color: #e8e3d6; }
+        QWidget#refTabsRow {
+            background: #18181b;
+            border-bottom: 1px solid #232325;
         }
-        QListWidget#refDocList {
-            background: #161616;
+        QToolButton#refTabBtn, QToolButton#refTabBtnSmall {
+            background: transparent;
             color: #c8c3b6;
-            border: 1px solid #2a2a2a;
-            border-radius: 4px;
-            outline: none;
-            padding: 4px;
-        }
-        QListWidget#refDocList::item {
-            padding: 6px 8px;
-            border-radius: 3px;
-        }
-        QListWidget#refDocList::item:hover { background: #1f1f1f; color: #e8e3d6; }
-        QListWidget#refDocList::item:selected { background: #2c3a5e; color: #f0e8d8; }
-        QLabel#refEmpty { color: #6a6558; font-size: 11px; padding: 18px 0; }
-        QTextBrowser#refPreview {
-            background: #161616;
-            color: #d8d3c6;
-            border: 1px solid #2a2a2a;
-            border-radius: 4px;
-            padding: 10px 12px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 4px 10px;
             font-size: 12px;
         }
-        QSplitter#refSplitter::handle {
-            background: #232323;
-            border-radius: 2px;
+        QToolButton#refTabBtnSmall {
+            padding: 2px 7px;
+            min-width: 24px;
+            font-size: 13px;
         }
-        QSplitter#refSplitter::handle:hover { background: #2c2c2c; }
+        QToolButton#refTabBtn:hover, QToolButton#refTabBtnSmall:hover {
+            background: #232325; color: #e8e3d6;
+        }
+        QToolButton#refTabBtn:checked {
+            background: #2c3a5e;
+            border-color: #3b5188;
+            color: #f0e8d8;
+        }
+        QToolButton#refTabBtn:disabled { color: #56514a; }
+        QScrollArea#refNavScroll { background: transparent; border: none; }
+        QWidget#refNavInner { background: transparent; }
+        QWidget#refPreviewWrap {
+            background: transparent;
+            border-top: 1px solid #232325;
+        }
+        QLabel#refPreviewTitle {
+            color: #f0e8d8; font-size: 14px; font-weight: 700;
+        }
+        QLabel#refPreviewRole {
+            color: #c97aa0; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        QTextBrowser#refPreview {
+            background: transparent;
+            color: #d8d3c6;
+            padding: 0;
+        }
+        QLabel#refPreviewPlaceholder {
+            color: #6a6558; font-size: 11px; padding: 12px 0;
+        }
+        QScrollArea#refImagesScroll { background: transparent; border: none; }
+        QWidget#refHandleL, QWidget#refHandleR, QWidget#refHandleT, QWidget#refHandleB,
+        QWidget#refHandleTL, QWidget#refHandleTR, QWidget#refHandleBL, QWidget#refHandleBR {
+            background: transparent;
+        }
+        QWidget#refHandleL:hover, QWidget#refHandleR:hover,
+        QWidget#refHandleT:hover, QWidget#refHandleB:hover,
+        QWidget#refHandleTL:hover, QWidget#refHandleTR:hover,
+        QWidget#refHandleBL:hover, QWidget#refHandleBR:hover {
+            background: rgba(255,255,255,0.10);
+        }
     )"));
 }
 
-void RefMenuPanel::rebuildSourceCombo()
+void RefMenuPanel::layoutResizeHandles()
 {
-    if (!m_sourceCombo || !m_model) return;
-    const QString prev = m_sourceCombo->currentData().toString();
-    QSignalBlocker block(m_sourceCombo);
-    m_sourceCombo->clear();
-    // Manuscritos
-    for (const auto& m : m_model->manuscripts()) {
-        m_sourceCombo->addItem(tr("📖 %1").arg(m.title),
-                               QStringLiteral("ms:%1").arg(m.id));
-    }
-    // Drawers
-    for (const auto& d : m_model->drawers()) {
-        m_sourceCombo->addItem(tr("📂 %1").arg(d.title),
-                               QStringLiteral("dr:%1").arg(d.key));
-    }
-    // Restaura seleção anterior se possível
-    if (!prev.isEmpty()) {
-        const int idx = m_sourceCombo->findData(prev);
-        if (idx >= 0) m_sourceCombo->setCurrentIndex(idx);
+    if (!m_hL || !m_hR || !m_hT || !m_hB) return;
+    const int w = width();
+    const int h = height();
+    const int hw = kHandleW;
+    const int cs = kCornerSz;
+
+    // Faixas: cobrem a borda inteira menos os cantos
+    m_hL->setGeometry(0,        cs,       hw,       h - 2 * cs);
+    m_hR->setGeometry(w - hw,   cs,       hw,       h - 2 * cs);
+    m_hT->setGeometry(cs,       0,        w - 2*cs, hw);
+    m_hB->setGeometry(cs,       h - hw,   w - 2*cs, hw);
+    // Cantos: quadrados acima das faixas
+    m_hTL->setGeometry(0,        0,        cs, cs);
+    m_hTR->setGeometry(w - cs,   0,        cs, cs);
+    m_hBL->setGeometry(0,        h - cs,   cs, cs);
+    m_hBR->setGeometry(w - cs,   h - cs,   cs, cs);
+
+    for (QWidget* h : { m_hL, m_hR, m_hT, m_hB, m_hTL, m_hTR, m_hBL, m_hBR }) {
+        h->raise();
     }
 }
 
-void RefMenuPanel::rebuildDocList()
-{
-    if (!m_docList || !m_model || !m_sourceCombo) return;
-    m_docList->clear();
-    const QString src = m_sourceCombo->currentData().toString();
-    if (src.isEmpty()) {
-        if (m_emptyLabel) m_emptyLabel->setVisible(true);
-        return;
-    }
-
-    if (src.startsWith(QStringLiteral("ms:"))) {
-        const QString msId = src.mid(3);
-        QList<Chapter> chs;
-        for (const auto& c : m_model->chapters()) if (c.manuscriptId == msId) chs.append(c);
-        std::sort(chs.begin(), chs.end(), [](const Chapter& a, const Chapter& b) {
-            return a.order < b.order;
-        });
-        for (const auto& c : chs) {
-            auto* it = new QListWidgetItem(c.title.isEmpty() ? tr("(sem título)") : c.title);
-            it->setData(Qt::UserRole, QStringLiteral("ch:%1:%2").arg(msId, c.id));
-            m_docList->addItem(it);
-            // Cenas indentadas (se houver mais de 1)
-            if (c.scenes.size() > 1) {
-                for (int i = 0; i < c.scenes.size(); ++i) {
-                    const auto& sc = c.scenes.at(i);
-                    auto* si = new QListWidgetItem(QStringLiteral("    %1").arg(
-                        sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title));
-                    QFont f = si->font(); f.setItalic(true); si->setFont(f);
-                    si->setData(Qt::UserRole, QStringLiteral("sc:%1:%2:%3").arg(msId, c.id).arg(i));
-                    m_docList->addItem(si);
-                }
-            }
-        }
-    } else if (src.startsWith(QStringLiteral("dr:"))) {
-        const QString drawerKey = src.mid(3);
-        const Drawer* d = m_model->findDrawer(drawerKey);
-        if (!d) return;
-
-        // Agrupa por folder (raíz primeiro, depois cada pasta)
-        auto addItem = [this](const DrawerItem& it) {
-            auto* li = new QListWidgetItem(it.title.isEmpty() ? tr("(sem título)") : it.title);
-            li->setData(Qt::UserRole, QStringLiteral("it:%1").arg(it.id));
-            m_docList->addItem(li);
-        };
-
-        // Raíz
-        for (const auto& it : d->items) if (it.folderId.isEmpty()) addItem(it);
-        // Cada pasta
-        for (const auto& f : d->folders) {
-            // header da pasta (não selecionável)
-            auto* hdr = new QListWidgetItem(QStringLiteral("📁 %1").arg(f.title));
-            hdr->setFlags(hdr->flags() & ~Qt::ItemIsSelectable & ~Qt::ItemIsEnabled);
-            QFont hf = hdr->font(); hf.setBold(true); hdr->setFont(hf);
-            m_docList->addItem(hdr);
-            for (const auto& it : d->items) if (it.folderId == f.id) addItem(it);
-        }
-    }
-
-    if (m_emptyLabel) m_emptyLabel->setVisible(m_docList->count() == 0);
-}
+// =========================================================================
+// Reconstrução dos painéis
+// =========================================================================
 
 void RefMenuPanel::refresh()
 {
-    rebuildSourceCombo();
-    rebuildDocList();
+    rebuildTabs();
+    rebuildNavBody();
+    rebuildPreview();
 }
 
-void RefMenuPanel::onSourceChanged(int)
+void RefMenuPanel::rebuildTabs()
 {
-    rebuildDocList();
+    if (!m_model || !m_drawerPickerBtn) return;
+
+    const bool inMs = (m_sourceKind == SourceKind::Manuscript);
+    if (m_msTabBtn) {
+        QSignalBlocker block(m_msTabBtn);
+        m_msTabBtn->setChecked(inMs);
+    }
+
+    // Tab da gaveta atual (ou placeholder ativo).
+    QString label;
+    QIcon ic;
+    bool visualDrawer = false;
+    if (m_sourceKind == SourceKind::Drawer) {
+        const Drawer* d = m_model->findDrawer(m_currentDrawerKey);
+        if (d) {
+            label = d->title;
+            visualDrawer = drawerIsVisual(d);
+            const QString iconId = !d->drawerIcon.isEmpty() ? d->drawerIcon : d->drawerElementIcon;
+            if (!iconId.isEmpty()) {
+                ic = IconUtils::loadToolbarIcon(
+                    QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
+                    QColor(d->color.isEmpty() ? Theme::accentDefault() : d->color),
+                    QColor(d->color.isEmpty() ? Theme::accentDefault() : d->color),
+                    QColor(Theme::textBright()),
+                    QSize(14, 14));
+            }
+        } else {
+            label = tr("Gaveta");
+        }
+    } else if (m_sourceKind == SourceKind::MarkersPlaceholder) {
+        label = tr("Marcadores");
+    } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
+        label = tr("Timelines");
+    } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
+        label = tr("Elementos");
+    } else if (m_sourceKind == SourceKind::MemoriesPlaceholder) {
+        label = tr("Memórias");
+    } else {
+        label = tr("Gaveta");
+    }
+
+    if (!ic.isNull()) m_drawerPickerBtn->setIcon(ic);
+    else m_drawerPickerBtn->setIcon(QIcon());
+    m_drawerPickerBtn->setText(QString::fromUtf8(" %1  ▾").arg(label));
+    {
+        QSignalBlocker block(m_drawerPickerBtn);
+        m_drawerPickerBtn->setChecked(m_sourceKind != SourceKind::Manuscript);
+    }
+
+    // Botão de visualMode só visível em drawer visual.
+    if (m_viewModeBtn) {
+        m_viewModeBtn->setVisible(m_sourceKind == SourceKind::Drawer && visualDrawer);
+        m_viewModeBtn->setText(m_visualMode ? QStringLiteral("≡") : QStringLiteral("⊞"));
+        m_viewModeBtn->setToolTip(m_visualMode ? tr("Modo lista") : tr("Modo visual"));
+    }
+}
+
+void RefMenuPanel::rebuildNavBody()
+{
+    if (!m_navInner || !m_navInnerLay) return;
+    // Limpa filhos do layout (mantendo o stretch no final).
+    while (m_navInnerLay->count() > 0) {
+        QLayoutItem* item = m_navInnerLay->takeAt(0);
+        if (auto* w = item->widget()) w->deleteLater();
+        delete item;
+    }
+
+    if (m_sourceKind == SourceKind::Manuscript) {
+        buildManuscriptsView();
+    } else if (m_sourceKind == SourceKind::Drawer) {
+        buildDrawerView();
+    } else if (m_sourceKind == SourceKind::MarkersPlaceholder) {
+        buildPlaceholderView(tr("Marcadores"), tr("Em breve. Vai listar os marcadores do projeto."));
+    } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
+        buildPlaceholderView(tr("Timelines"), tr("Em breve. Vai listar as linhas do tempo."));
+    } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
+        buildPlaceholderView(tr("Elementos usados"), tr("Em breve. Gráficos de participação dos elementos."));
+    } else if (m_sourceKind == SourceKind::MemoriesPlaceholder) {
+        buildPlaceholderView(tr("Memórias"), tr("Em breve. Suas memórias do projeto."));
+    }
+
+    m_navInnerLay->addStretch();
+}
+
+void RefMenuPanel::buildManuscriptsView()
+{
+    if (!m_model || !m_navInner || !m_navInnerLay) return;
+
+    // ---- Seção Manuscritos ----
+    auto* msTitle = new QLabel(tr("MANUSCRITOS"), m_navInner);
+    msTitle->setStyleSheet(QStringLiteral("color:#7a7568; font-size:10px; font-weight:700; letter-spacing:1px; padding:6px 6px 2px;"));
+    m_navInnerLay->addWidget(msTitle);
+
+    auto* msList = new QListWidget(m_navInner);
+    msList->setObjectName(QStringLiteral("refListMs"));
+    msList->setSelectionMode(QAbstractItemView::SingleSelection);
+    msList->setFrameShape(QFrame::NoFrame);
+    msList->setUniformItemSizes(true);
+    msList->setIconSize(QSize(14, 14));
+    msList->setStyleSheet(QStringLiteral(R"(
+        QListWidget {
+            background: #161618; color: #c8c3b6;
+            border: 1px solid #232325; border-radius: 6px;
+            outline: none; padding: 4px;
+        }
+        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item:hover { background: #1f1f22; color: #e8e3d6; }
+        QListWidget::item:selected { background: #2c3a5e; color: #f0e8d8; }
+    )"));
+    QIcon icMs = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
+        QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+        QSize(14, 14));
+    for (const auto& m : m_model->manuscripts()) {
+        auto* it = new QListWidgetItem(m.title.isEmpty() ? tr("Manuscrito") : m.title);
+        if (!icMs.isNull()) it->setIcon(icMs);
+        it->setData(Qt::UserRole, QStringLiteral("ms:%1").arg(m.id));
+        msList->addItem(it);
+        if (m.id == m_currentManuscriptId) {
+            it->setSelected(true);
+        }
+    }
+    msList->setFixedHeight(qMin(120, 6 + 30 * m_model->manuscripts().size() + 4));
+    connect(msList, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+        if (!it) return;
+        const QString key = it->data(Qt::UserRole).toString();
+        if (key.startsWith(QStringLiteral("ms:"))) {
+            const QString id = key.mid(3);
+            if (id != m_currentManuscriptId) {
+                m_currentManuscriptId = id;
+                m_selectedKey.clear();
+                rebuildNavBody();
+                rebuildPreview();
+            }
+        }
+    });
+    m_navInnerLay->addWidget(msList);
+
+    // ---- Seção Capítulos ----
+    auto* chTitle = new QLabel(tr("CAPÍTULOS"), m_navInner);
+    chTitle->setStyleSheet(QStringLiteral("color:#7a7568; font-size:10px; font-weight:700; letter-spacing:1px; padding:10px 6px 2px;"));
+    m_navInnerLay->addWidget(chTitle);
+
+    auto* chList = new QListWidget(m_navInner);
+    chList->setObjectName(QStringLiteral("refListCh"));
+    chList->setSelectionMode(QAbstractItemView::SingleSelection);
+    chList->setFrameShape(QFrame::NoFrame);
+    chList->setIconSize(QSize(14, 14));
+    chList->setStyleSheet(QStringLiteral(R"(
+        QListWidget {
+            background: #161618; color: #c8c3b6;
+            border: 1px solid #232325; border-radius: 6px;
+            outline: none; padding: 4px;
+        }
+        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item:hover { background: #1f1f22; color: #e8e3d6; }
+        QListWidget::item:selected { background: #2c3a5e; color: #f0e8d8; }
+    )"));
+    QIcon icCh = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/chapter.svg"),
+        QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+        QSize(14, 14));
+
+    QList<Chapter> chs;
+    QString msId = m_currentManuscriptId;
+    if (msId.isEmpty() && !m_model->manuscripts().isEmpty()) {
+        msId = m_model->manuscripts().first().id;
+        m_currentManuscriptId = msId;
+    }
+    for (const auto& c : m_model->chapters()) {
+        if (c.manuscriptId == msId) chs.append(c);
+    }
+    std::sort(chs.begin(), chs.end(), [](const Chapter& a, const Chapter& b) {
+        return a.order < b.order;
+    });
+    for (const auto& c : chs) {
+        auto* it = new QListWidgetItem(c.title.isEmpty() ? tr("(sem título)") : c.title);
+        if (!icCh.isNull()) it->setIcon(icCh);
+        const QString key = QStringLiteral("ch:%1:%2").arg(msId, c.id);
+        it->setData(Qt::UserRole, key);
+        chList->addItem(it);
+        if (key == m_selectedKey) it->setSelected(true);
+        if (c.scenes.size() > 1) {
+            for (int i = 0; i < c.scenes.size(); ++i) {
+                const auto& sc = c.scenes.at(i);
+                auto* si = new QListWidgetItem(QStringLiteral("       ") + (sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title));
+                QFont f = si->font(); f.setItalic(true); si->setFont(f);
+                const QString skey = QStringLiteral("sc:%1:%2:%3").arg(msId, c.id).arg(i);
+                si->setData(Qt::UserRole, skey);
+                chList->addItem(si);
+                if (skey == m_selectedKey) si->setSelected(true);
+            }
+        }
+    }
+    if (chs.isEmpty()) {
+        chList->addItem(tr("(nenhum capítulo)"));
+        chList->item(0)->setFlags(Qt::NoItemFlags);
+    }
+    connect(chList, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+        if (!it) return;
+        const QString key = it->data(Qt::UserRole).toString();
+        if (key.isEmpty()) return;
+        setSelected(key);
+    });
+    m_navInnerLay->addWidget(chList);
+}
+
+void RefMenuPanel::buildDrawerView()
+{
+    if (!m_model || !m_navInner || !m_navInnerLay) return;
+    const Drawer* d = m_model->findDrawer(m_currentDrawerKey);
+    if (!d) {
+        buildPlaceholderView(tr("Gaveta"), tr("Selecione uma gaveta acima."));
+        return;
+    }
+
+    // Breadcrumb se em pasta
+    if (!m_currentFolderId.isEmpty()) {
+        const Folder* folder = nullptr;
+        for (const auto& f : d->folders) if (f.id == m_currentFolderId) { folder = &f; break; }
+        auto* row = new QWidget(m_navInner);
+        auto* rowLay = new QHBoxLayout(row);
+        rowLay->setContentsMargins(0, 0, 0, 4);
+        rowLay->setSpacing(6);
+        auto* back = new QToolButton(row);
+        back->setObjectName(QStringLiteral("refTinyBtn"));
+        back->setText(QStringLiteral("←"));
+        back->setCursor(Qt::PointingHandCursor);
+        connect(back, &QToolButton::clicked, this, [this]() {
+            m_currentFolderId.clear();
+            rebuildNavBody();
+        });
+        rowLay->addWidget(back);
+        auto* lab = new QLabel(folder ? folder->title : tr("Pasta"), row);
+        lab->setStyleSheet(QStringLiteral("color:#9a958a; font-size:12px; font-weight:600;"));
+        rowLay->addWidget(lab);
+        rowLay->addStretch();
+        m_navInnerLay->addWidget(row);
+    }
+
+    // Folders strip — pastas em chips horizontais (estilo Mira 1 drawer strip)
+    QList<Folder> childFolders;
+    for (const auto& f : d->folders) {
+        if ((f.parentId.isEmpty() && m_currentFolderId.isEmpty())
+            || (f.parentId == m_currentFolderId && !m_currentFolderId.isEmpty())) {
+            childFolders.append(f);
+        }
+    }
+    if (!childFolders.isEmpty()) {
+        auto* foldersScroll = new QScrollArea(m_navInner);
+        foldersScroll->setWidgetResizable(true);
+        foldersScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        foldersScroll->setFrameShape(QFrame::NoFrame);
+        foldersScroll->setFixedHeight(36);
+        foldersScroll->setStyleSheet(QStringLiteral("background:transparent;"));
+        auto* host = new QWidget(foldersScroll);
+        auto* hLay = new QHBoxLayout(host);
+        hLay->setContentsMargins(0, 0, 0, 0);
+        hLay->setSpacing(6);
+        QIcon icFolder = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/folder.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(12, 12));
+        for (const auto& f : childFolders) {
+            auto* chip = new QToolButton(host);
+            chip->setObjectName(QStringLiteral("refFolderChip"));
+            chip->setText(f.title.isEmpty() ? tr("Pasta") : f.title);
+            if (!icFolder.isNull()) {
+                chip->setIcon(icFolder);
+                chip->setIconSize(QSize(12, 12));
+                chip->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            }
+            chip->setCursor(Qt::PointingHandCursor);
+            chip->setStyleSheet(QStringLiteral(R"(
+                QToolButton {
+                    background: #1f1f22; color: #c8c3b6;
+                    border: 1px solid #2c2c2f; border-radius: 14px;
+                    padding: 4px 10px; font-size: 11px;
+                }
+                QToolButton:hover { background: #2a2a2e; color: #e8e3d6; }
+            )"));
+            const QString folderId = f.id;
+            connect(chip, &QToolButton::clicked, this, [this, folderId]() {
+                m_currentFolderId = folderId;
+                rebuildNavBody();
+            });
+            hLay->addWidget(chip);
+        }
+        hLay->addStretch();
+        foldersScroll->setWidget(host);
+        m_navInnerLay->addWidget(foldersScroll);
+    }
+
+    // Items da pasta atual (ou raiz)
+    QList<DrawerItem> items;
+    for (const auto& it : d->items) {
+        if (it.folderId == m_currentFolderId) items.append(it);
+    }
+
+    const bool visualDrawer = drawerIsVisual(d);
+    const bool useVisual = visualDrawer && m_visualMode;
+
+    if (items.isEmpty()) {
+        auto* empty = new QLabel(tr("Sem itens nesta gaveta."), m_navInner);
+        empty->setStyleSheet(QStringLiteral("color:#6a6558; font-size:11px; padding:8px;"));
+        empty->setAlignment(Qt::AlignCenter);
+        m_navInnerLay->addWidget(empty);
+        return;
+    }
+
+    if (useVisual) {
+        auto* gridHost = new QWidget(m_navInner);
+        auto* gridLay = new QGridLayout(gridHost);
+        gridLay->setContentsMargins(0, 0, 0, 0);
+        gridLay->setSpacing(8);
+        int row = 0;
+        const QString accent = d->color.isEmpty() ? Theme::accentDefault() : d->color;
+        for (const auto& it : items) {
+            const QString key = QStringLiteral("it:%1").arg(it.id);
+            auto* card = new QToolButton(gridHost);
+            card->setObjectName(QStringLiteral("refVisualCard"));
+            card->setCheckable(true);
+            card->setAutoExclusive(false);
+            card->setChecked(key == m_selectedKey);
+            card->setCursor(Qt::PointingHandCursor);
+            card->setMinimumHeight(72);
+            card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            card->setStyleSheet(QStringLiteral(R"(
+                QToolButton#refVisualCard {
+                    background: #18181b;
+                    border: 1px solid #2a2a2d;
+                    border-radius: 8px;
+                    text-align: left;
+                    padding: 0;
+                }
+                QToolButton#refVisualCard:hover { background: #1f1f23; border-color: #3a3a3e; }
+                QToolButton#refVisualCard:checked { border-color: %1; background: #1c2230; }
+            )").arg(accent));
+
+            // Layout interno (foto à esquerda, infos à direita)
+            auto* inner = new QWidget(card);
+            inner->setAttribute(Qt::WA_TransparentForMouseEvents);
+            auto* inLay = new QHBoxLayout(inner);
+            inLay->setContentsMargins(8, 8, 10, 8);
+            inLay->setSpacing(10);
+
+            auto* photo = new QLabel(inner);
+            photo->setFixedSize(56, 56);
+            photo->setStyleSheet(QStringLiteral("background:#0e0e10; border-radius:6px;"));
+            photo->setAlignment(Qt::AlignCenter);
+            const QString img = imageForItem(it);
+            QPixmap pm;
+            if (!img.isEmpty()) {
+                if (img.startsWith(QStringLiteral("data:"))) {
+                    const int comma = img.indexOf(',');
+                    if (comma > 0) {
+                        QByteArray b64 = img.mid(comma + 1).toUtf8();
+                        QByteArray bin = QByteArray::fromBase64(b64);
+                        pm.loadFromData(bin);
+                    }
+                } else if (!m_projectRoot.isEmpty()) {
+                    const QString path = ProjectStorage::joinPath(m_projectRoot, img);
+                    pm.load(path);
+                }
+            }
+            if (!pm.isNull()) {
+                photo->setPixmap(pm.scaled(56, 56, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+                photo->setScaledContents(false);
+            } else {
+                photo->setText(QStringLiteral("?"));
+                photo->setStyleSheet(QStringLiteral("background:#0e0e10; border-radius:6px; color:#3a3a3e; font-size:22px; font-weight:700;"));
+            }
+            inLay->addWidget(photo);
+
+            auto* info = new QWidget(inner);
+            auto* infoLay = new QVBoxLayout(info);
+            infoLay->setContentsMargins(0, 4, 0, 4);
+            infoLay->setSpacing(2);
+            auto* name = new QLabel(it.title.isEmpty() ? tr("(sem título)") : it.title, info);
+            name->setStyleSheet(QStringLiteral("color:#e8e3d6; font-size:13px; font-weight:600;"));
+            infoLay->addWidget(name);
+            const QString roleText = roleOrLabelForItem(it);
+            if (!roleText.isEmpty()) {
+                auto* roleLab = new QLabel(roleText.toUpper(), info);
+                roleLab->setStyleSheet(QStringLiteral("color:%1; font-size:9px; font-weight:700; letter-spacing:1px;").arg(accent));
+                infoLay->addWidget(roleLab);
+            }
+            infoLay->addStretch();
+            inLay->addWidget(info, /*stretch=*/1);
+
+            // monta o "ícone" do toolbutton como o widget interno via setLayout no card
+            auto* cardLay = new QVBoxLayout(card);
+            cardLay->setContentsMargins(0, 0, 0, 0);
+            cardLay->addWidget(inner);
+
+            connect(card, &QToolButton::clicked, this, [this, key]() { setSelected(key); });
+            gridLay->addWidget(card, row++, 0);
+        }
+        m_navInnerLay->addWidget(gridHost);
+    } else {
+        auto* list = new QListWidget(m_navInner);
+        list->setSelectionMode(QAbstractItemView::SingleSelection);
+        list->setFrameShape(QFrame::NoFrame);
+        list->setIconSize(QSize(14, 14));
+        list->setStyleSheet(QStringLiteral(R"(
+            QListWidget {
+                background: #161618; color: #c8c3b6;
+                border: 1px solid #232325; border-radius: 6px;
+                outline: none; padding: 4px;
+            }
+            QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+            QListWidget::item:hover { background: #1f1f22; color: #e8e3d6; }
+            QListWidget::item:selected { background: #2c3a5e; color: #f0e8d8; }
+        )"));
+        QIcon icItemDefault = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/file.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        for (const auto& it : items) {
+            const QString key = QStringLiteral("it:%1").arg(it.id);
+            QString text = it.title.isEmpty() ? tr("(sem título)") : it.title;
+            const QString roleText = roleOrLabelForItem(it);
+            if (!roleText.isEmpty()) text.append(QStringLiteral("   ·  ") + roleText);
+            auto* li = new QListWidgetItem(text);
+            // Ícone: prefere o elementIcon do item (se mapeia uma gaveta visual);
+            // senão cai pro default file.svg.
+            QIcon used;
+            if (!it.elementIcon.isEmpty()) {
+                QIcon ic = IconUtils::loadToolbarIcon(
+                    QStringLiteral(":/icons/elements/%1.svg").arg(it.elementIcon),
+                    QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+                    QSize(14, 14));
+                if (!ic.isNull()) used = ic;
+            }
+            if (used.isNull()) used = icItemDefault;
+            if (!used.isNull()) li->setIcon(used);
+            li->setData(Qt::UserRole, key);
+            list->addItem(li);
+            if (key == m_selectedKey) li->setSelected(true);
+        }
+        connect(list, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            setSelected(it->data(Qt::UserRole).toString());
+        });
+        m_navInnerLay->addWidget(list);
+    }
+}
+
+void RefMenuPanel::buildPlaceholderView(const QString& title, const QString& subtitle)
+{
+    auto* card = new QFrame(m_navInner);
+    card->setStyleSheet(QStringLiteral(R"(
+        QFrame {
+            background: #161618;
+            border: 1px dashed #2c2c2f;
+            border-radius: 8px;
+        }
+    )"));
+    auto* lay = new QVBoxLayout(card);
+    lay->setContentsMargins(16, 16, 16, 16);
+    lay->setSpacing(6);
+    auto* t = new QLabel(title, card);
+    t->setStyleSheet(QStringLiteral("color:#e8e3d6; font-size:13px; font-weight:700;"));
+    t->setAlignment(Qt::AlignCenter);
+    lay->addWidget(t);
+    auto* s = new QLabel(subtitle, card);
+    s->setStyleSheet(QStringLiteral("color:#7a7568; font-size:11px;"));
+    s->setAlignment(Qt::AlignCenter);
+    s->setWordWrap(true);
+    lay->addWidget(s);
+    m_navInnerLay->addWidget(card);
+}
+
+// =========================================================================
+// Preview
+// =========================================================================
+
+void RefMenuPanel::rebuildPreview()
+{
+    if (!m_preview || !m_previewTitle || !m_previewRole) return;
+
+    // limpa imagens anteriores
+    while (m_previewImagesLay && m_previewImagesLay->count() > 1) {
+        QLayoutItem* item = m_previewImagesLay->takeAt(0);
+        if (auto* w = item->widget()) w->deleteLater();
+        delete item;
+    }
+    m_previewImagesScroll->setVisible(false);
+
+    if (m_selectedKey.isEmpty()) {
+        m_previewTitle->setVisible(false);
+        m_previewRole->setVisible(false);
+        m_preview->setVisible(false);
+        m_previewPlaceholder->setVisible(true);
+        return;
+    }
+    m_previewPlaceholder->setVisible(false);
+    m_preview->setVisible(true);
+
+    // Resolve título e role
+    QString title;
+    QString role;
+    if (m_selectedKey.startsWith(QStringLiteral("ch:"))) {
+        const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
+        if (parts.size() >= 3 && m_model) {
+            const Chapter* ch = m_model->findChapter(parts.at(2));
+            if (ch) title = ch->title;
+        }
+    } else if (m_selectedKey.startsWith(QStringLiteral("sc:"))) {
+        const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
+        if (parts.size() >= 4 && m_model) {
+            const Chapter* ch = m_model->findChapter(parts.at(2));
+            int idx = parts.at(3).toInt();
+            if (ch && idx >= 0 && idx < ch->scenes.size()) {
+                const Scene& sc = ch->scenes.at(idx);
+                title = sc.title.isEmpty() ? tr("Cena %1").arg(idx + 1) : sc.title;
+            }
+        }
+    } else if (m_selectedKey.startsWith(QStringLiteral("it:"))) {
+        const QString itemId = m_selectedKey.mid(3);
+        const DrawerItem* it = m_model ? m_model->findDrawerItem(itemId) : nullptr;
+        if (it) {
+            title = it->title;
+            role = roleOrLabelForItem(*it);
+        }
+    }
+
+    m_previewTitle->setText(title.isEmpty() ? tr("(sem título)") : title);
+    m_previewTitle->setVisible(true);
+    if (!role.isEmpty()) {
+        m_previewRole->setText(role.toUpper());
+        m_previewRole->setVisible(true);
+    } else {
+        m_previewRole->setVisible(false);
+    }
+
+    // HTML
+    const QString html = resolveDocHtml(m_selectedKey);
+    QStringList images;
+    QString rest;
+    extractImagesFromHtml(html, &images, &rest);
+
+    // Imagens no topo
+    if (!images.isEmpty() && m_previewImagesLay) {
+        for (const QString& imgHtml : images) {
+            QRegularExpression re(QStringLiteral("src=\"([^\"]*)\""));
+            QRegularExpressionMatch m = re.match(imgHtml);
+            QString src = m.hasMatch() ? m.captured(1) : QString();
+            QString resolved = resolveImageSrc(src);
+            QPixmap pm;
+            if (resolved.startsWith(QStringLiteral("data:"))) {
+                const int comma = resolved.indexOf(',');
+                if (comma > 0) {
+                    QByteArray bin = QByteArray::fromBase64(resolved.mid(comma + 1).toUtf8());
+                    pm.loadFromData(bin);
+                }
+            } else if (!resolved.isEmpty()) {
+                pm.load(resolved);
+            }
+            if (pm.isNull()) continue;
+            auto* lab = new QLabel(m_previewImagesHost);
+            lab->setFixedHeight(108);
+            const int targetW = qMin(180, pm.width() * 108 / qMax(1, pm.height()));
+            lab->setPixmap(pm.scaled(targetW, 108, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            lab->setStyleSheet(QStringLiteral("border-radius:6px;"));
+            // insere antes do stretch
+            m_previewImagesLay->insertWidget(m_previewImagesLay->count() - 1, lab);
+        }
+        if (m_previewImagesLay->count() > 1) {
+            m_previewImagesScroll->setVisible(true);
+        }
+    }
+
+    // Conteúdo HTML
+    if (rest.trimmed().isEmpty()) {
+        m_preview->setHtml(QStringLiteral("<p style='color:#6a6558;'>%1</p>").arg(tr("(documento vazio)")));
+    } else {
+        m_preview->setHtml(rest);
+    }
+
+    // Resolve src de imagens internas remanescentes para QTextBrowser (caso restem inline)
+    // Simples: o QTextDocument resolve via setSearchPaths se houver projectRoot.
+    if (!m_projectRoot.isEmpty()) {
+        QStringList paths;
+        paths << m_projectRoot << ProjectStorage::joinPath(m_projectRoot, QStringLiteral("content/images"));
+        m_preview->setSearchPaths(paths);
+    }
+}
+
+void RefMenuPanel::applyPreviewFont()
+{
+    if (!m_preview) return;
+    QFont f = m_preview->font();
+    f.setPointSize(m_previewFontPt);
+    m_preview->setFont(f);
+    QFontMetrics fm(f);
+    // título escala junto
+    if (m_previewTitle) {
+        QFont tf = m_previewTitle->font();
+        tf.setPointSize(m_previewFontPt + 2);
+        tf.setBold(true);
+        m_previewTitle->setFont(tf);
+    }
 }
 
 QString RefMenuPanel::resolveDocHtml(const QString& key) const
@@ -331,20 +1120,141 @@ QString RefMenuPanel::resolveDocHtml(const QString& key) const
     return QString();
 }
 
-void RefMenuPanel::onItemActivated(QListWidgetItem* item)
+void RefMenuPanel::extractImagesFromHtml(const QString& html, QStringList* imagesOut, QString* restOut) const
 {
-    if (!item || !m_preview) return;
-    const QString key = item->data(Qt::UserRole).toString();
-    if (key.isEmpty()) {
-        m_preview->clear();
-        return;
+    if (restOut) restOut->clear();
+    if (imagesOut) imagesOut->clear();
+    if (html.isEmpty()) return;
+
+    QRegularExpression re(QStringLiteral("<img\\b[^>]*?>"),
+                          QRegularExpression::CaseInsensitiveOption);
+    int last = 0;
+    QString out;
+    auto it = re.globalMatch(html);
+    while (it.hasNext()) {
+        QRegularExpressionMatch m = it.next();
+        if (m.capturedStart() > last) out.append(html.mid(last, m.capturedStart() - last));
+        if (imagesOut) imagesOut->append(m.captured(0));
+        last = m.capturedEnd();
     }
-    const QString html = resolveDocHtml(key);
-    m_preview->setHtml(html.isEmpty() ? QStringLiteral("<p style='color:#6a6558;'>(documento vazio)</p>") : html);
+    if (last < html.size()) out.append(html.mid(last));
+    if (restOut) *restOut = out;
 }
+
+QString RefMenuPanel::resolveImageSrc(const QString& src) const
+{
+    if (src.isEmpty()) return src;
+    if (src.startsWith(QStringLiteral("data:"))) return src;
+    if (m_projectRoot.isEmpty()) return src;
+    QString s = src;
+    if (s.startsWith(QStringLiteral("./"))) s = s.mid(2);
+    return ProjectStorage::joinPath(m_projectRoot, s);
+}
+
+// =========================================================================
+// Drawer picker menu
+// =========================================================================
+
+void RefMenuPanel::onDrawerPickerClicked()
+{
+    if (!m_model || !m_drawerPickerBtn) return;
+    QMenu menu(this);
+    menu.setStyleSheet(QStringLiteral(R"(
+        QMenu {
+            background: #18181b; color: #c8c3b6;
+            border: 1px solid #2c2c2f; border-radius: 6px;
+            padding: 4px;
+        }
+        QMenu::item { padding: 6px 24px 6px 28px; border-radius: 4px; }
+        QMenu::item:selected { background: #2c3a5e; color: #f0e8d8; }
+        QMenu::separator { height: 1px; background: #2a2a2d; margin: 4px 6px; }
+    )"));
+
+    auto addPlaceholder = [&](const QString& svgId, const QString& label, SourceKind kind) {
+        QAction* a = menu.addAction(label);
+        if (!svgId.isEmpty()) {
+            QIcon ic = IconUtils::loadToolbarIcon(
+                QStringLiteral(":/icons/elements/%1.svg").arg(svgId),
+                QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+                QSize(14, 14));
+            if (!ic.isNull()) a->setIcon(ic);
+        }
+        connect(a, &QAction::triggered, this, [this, kind]() { enterPlaceholderMode(kind); });
+    };
+    addPlaceholder(QStringLiteral("star"),  tr("Marcadores"),        SourceKind::MarkersPlaceholder);
+    addPlaceholder(QStringLiteral("pin"),   tr("Timelines"),         SourceKind::TimelinesPlaceholder);
+    addPlaceholder(QStringLiteral("cube"),  tr("Elementos usados"),  SourceKind::ElementsPlaceholder);
+    addPlaceholder(QStringLiteral("heart"), tr("Memórias"),          SourceKind::MemoriesPlaceholder);
+    menu.addSeparator();
+
+    for (const auto& d : m_model->drawers()) {
+        QAction* a = menu.addAction(d.title.isEmpty() ? tr("Gaveta") : d.title);
+        const QString iconId = !d.drawerIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon;
+        if (!iconId.isEmpty()) {
+            QIcon ic = IconUtils::loadToolbarIcon(
+                QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
+                QColor(d.color.isEmpty() ? Theme::accentDefault() : d.color),
+                QColor(d.color.isEmpty() ? Theme::accentDefault() : d.color),
+                QColor(Theme::textBright()),
+                QSize(14, 14));
+            if (!ic.isNull()) a->setIcon(ic);
+        }
+        const QString key = d.key;
+        connect(a, &QAction::triggered, this, [this, key]() { enterDrawerMode(key); });
+    }
+
+    QPoint at = m_drawerPickerBtn->mapToGlobal(QPoint(0, m_drawerPickerBtn->height()));
+    menu.exec(at);
+    m_drawerPickerBtn->setChecked(m_sourceKind != SourceKind::Manuscript);
+}
+
+// =========================================================================
+// Estado: modos
+// =========================================================================
+
+void RefMenuPanel::enterManuscriptMode(const QString& msId)
+{
+    m_sourceKind = SourceKind::Manuscript;
+    if (!msId.isEmpty()) m_currentManuscriptId = msId;
+    if (m_currentManuscriptId.isEmpty() && m_model && !m_model->manuscripts().isEmpty()) {
+        m_currentManuscriptId = m_model->manuscripts().first().id;
+    }
+    m_currentFolderId.clear();
+    refresh();
+}
+
+void RefMenuPanel::enterDrawerMode(const QString& drawerKey)
+{
+    m_sourceKind = SourceKind::Drawer;
+    m_currentDrawerKey = drawerKey;
+    m_currentFolderId.clear();
+    m_selectedKey.clear();
+    refresh();
+}
+
+void RefMenuPanel::enterPlaceholderMode(SourceKind kind)
+{
+    m_sourceKind = kind;
+    m_selectedKey.clear();
+    refresh();
+}
+
+void RefMenuPanel::setSelected(const QString& key)
+{
+    m_selectedKey = key;
+    rebuildPreview();
+}
+
+// =========================================================================
+// Open / close / toggles
+// =========================================================================
 
 void RefMenuPanel::openPanel()
 {
+    if (m_sourceKind == SourceKind::Manuscript && m_currentManuscriptId.isEmpty() && m_model
+        && !m_model->manuscripts().isEmpty()) {
+        m_currentManuscriptId = m_model->manuscripts().first().id;
+    }
     refresh();
     show();
     raise();
@@ -361,4 +1271,316 @@ void RefMenuPanel::togglePanel()
 {
     if (isVisible()) closePanel();
     else openPanel();
+}
+
+void RefMenuPanel::openForDrawer(const QString& drawerKey, const QString& itemId)
+{
+    enterDrawerMode(drawerKey);
+    if (!itemId.isEmpty()) {
+        m_selectedKey = QStringLiteral("it:%1").arg(itemId);
+        rebuildPreview();
+    }
+    if (!isVisible()) openPanel();
+    else { show(); raise(); }
+}
+
+void RefMenuPanel::onCloseClicked()
+{
+    closePanel();
+}
+
+void RefMenuPanel::onToggleNav()
+{
+    m_navHidden = !m_navHidden;
+    applyNavVisibility();
+    QSettings().setValue(QString::fromLatin1(kKeyNavHidden), m_navHidden);
+}
+
+void RefMenuPanel::applyNavVisibility()
+{
+    if (m_toggleNavBtn) {
+        m_toggleNavBtn->setText(m_navHidden ? QStringLiteral("▸") : QStringLiteral("▾"));
+        m_toggleNavBtn->setToolTip(m_navHidden ? tr("Mostrar explorador") : tr("Ocultar explorador"));
+    }
+    // Esconde tabs + nav. O preview ocupa todo o frame.
+    if (m_tabsRow) m_tabsRow->setVisible(!m_navHidden);
+    if (m_navScroll) m_navScroll->setVisible(!m_navHidden);
+    if (!m_navHidden) rebuildNavBody();
+}
+
+void RefMenuPanel::onTogglePin()
+{
+    m_pinned = m_pinBtn->isChecked();
+    QSettings().setValue(QString::fromLatin1(kKeyPinned), m_pinned);
+}
+
+void RefMenuPanel::onCycleFontSize()
+{
+    // 11 → 13 → 15 → 17 → 11
+    int next = m_previewFontPt + 2;
+    if (next > 17) next = 11;
+    m_previewFontPt = next;
+    applyPreviewFont();
+    QSettings().setValue(QString::fromLatin1(kKeyFontPt), m_previewFontPt);
+}
+
+void RefMenuPanel::onToggleVisualMode()
+{
+    m_visualMode = !m_visualMode;
+    rebuildTabs();
+    rebuildNavBody();
+    QSettings().setValue(QString::fromLatin1(kKeyVisualMode), m_visualMode);
+}
+
+// =========================================================================
+// Helpers (drawer/visual heuristic)
+// =========================================================================
+
+bool RefMenuPanel::drawerIsVisual(const Drawer* d) const
+{
+    if (!d) return false;
+    const QString t = d->drawerElementType.toLower();
+    if (t.isEmpty()) return false;
+    QRegularExpression re(QStringLiteral("personagem|character|cen[aá]rios?|setting|objeto|object"),
+                          QRegularExpression::CaseInsensitiveOption);
+    return re.match(t).hasMatch();
+}
+
+QString RefMenuPanel::roleOrLabelForItem(const DrawerItem& it) const
+{
+    if (!it.role.isEmpty()) return it.role;
+    if (m_elements && !it.elementId.isEmpty()) {
+        const Element* el = m_elements->findElement(it.elementId);
+        if (el && !el->role.isEmpty()) return el->role;
+    }
+    return QString();
+}
+
+QString RefMenuPanel::imageForItem(const DrawerItem& it) const
+{
+    if (!m_elements) return QString();
+    if (it.elementId.isEmpty()) return QString();
+    const Element* el = m_elements->findElement(it.elementId);
+    if (!el) return QString();
+    return el->image;
+}
+
+// =========================================================================
+// Drag livre via ⠿ + Resize livre via handles dedicados (estilo Drawer)
+// =========================================================================
+
+void RefMenuPanel::moveEvent(QMoveEvent* event)
+{
+    QWidget::moveEvent(event);
+    emit geometryChanged();
+    scheduleGeometrySave();
+}
+
+void RefMenuPanel::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    layoutResizeHandles();
+    emit geometryChanged();
+    scheduleGeometrySave();
+}
+
+void RefMenuPanel::showEvent(QShowEvent* event)
+{
+    QWidget::showEvent(event);
+    // Garante que se a geometria salva nos colocou fora do pai (resize do
+    // app, etc.), recolocamos pra dentro.
+    if (auto* p = parentWidget()) {
+        QRect pg = p->rect();
+        QRect g = geometry();
+        if (g.right() > pg.right()) g.moveRight(pg.right() - 4);
+        if (g.bottom() > pg.bottom()) g.moveBottom(pg.bottom() - 4);
+        if (g.left() < pg.left() + 4) g.moveLeft(pg.left() + 4);
+        if (g.top() < pg.top() + 4) g.moveTop(pg.top() + 4);
+        if (g != geometry()) setGeometry(g);
+    }
+}
+
+// Event filter: handles de resize (8 widgets) + drag handle ⠿.
+bool RefMenuPanel::eventFilter(QObject* watched, QEvent* event)
+{
+    // Mapa watched -> ResizeEdge.
+    auto edgeOf = [this](QObject* o) -> ResizeEdge {
+        if (o == m_hL)  return ResizeEdge::Left;
+        if (o == m_hR)  return ResizeEdge::Right;
+        if (o == m_hT)  return ResizeEdge::Top;
+        if (o == m_hB)  return ResizeEdge::Bottom;
+        if (o == m_hTL) return ResizeEdge::TL;
+        if (o == m_hTR) return ResizeEdge::TR;
+        if (o == m_hBL) return ResizeEdge::BL;
+        if (o == m_hBR) return ResizeEdge::BR;
+        return ResizeEdge::None;
+    };
+    ResizeEdge edge = edgeOf(watched);
+    if (edge != ResizeEdge::None) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_resizing = true;
+                m_activeEdge = edge;
+                m_resizeStartGeom = geometry();
+                m_resizeStartMouse = me->globalPosition().toPoint();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            if (m_resizing) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                const QPoint g = me->globalPosition().toPoint();
+                const int dx = g.x() - m_resizeStartMouse.x();
+                const int dy = g.y() - m_resizeStartMouse.y();
+                int newX = m_resizeStartGeom.x();
+                int newY = m_resizeStartGeom.y();
+                int newW = m_resizeStartGeom.width();
+                int newH = m_resizeStartGeom.height();
+
+                switch (m_activeEdge) {
+                    case ResizeEdge::Left:
+                        newW = m_resizeStartGeom.width() - dx;
+                        newX = m_resizeStartGeom.x() + dx;
+                        break;
+                    case ResizeEdge::Right:
+                        newW = m_resizeStartGeom.width() + dx;
+                        break;
+                    case ResizeEdge::Top:
+                        newH = m_resizeStartGeom.height() - dy;
+                        newY = m_resizeStartGeom.y() + dy;
+                        break;
+                    case ResizeEdge::Bottom:
+                        newH = m_resizeStartGeom.height() + dy;
+                        break;
+                    case ResizeEdge::TL:
+                        newW = m_resizeStartGeom.width() - dx;
+                        newH = m_resizeStartGeom.height() - dy;
+                        newX = m_resizeStartGeom.x() + dx;
+                        newY = m_resizeStartGeom.y() + dy;
+                        break;
+                    case ResizeEdge::TR:
+                        newW = m_resizeStartGeom.width() + dx;
+                        newH = m_resizeStartGeom.height() - dy;
+                        newY = m_resizeStartGeom.y() + dy;
+                        break;
+                    case ResizeEdge::BL:
+                        newW = m_resizeStartGeom.width() - dx;
+                        newH = m_resizeStartGeom.height() + dy;
+                        newX = m_resizeStartGeom.x() + dx;
+                        break;
+                    case ResizeEdge::BR:
+                        newW = m_resizeStartGeom.width() + dx;
+                        newH = m_resizeStartGeom.height() + dy;
+                        break;
+                    default: break;
+                }
+                // Clamp pelos mínimos sem deixar a borda fixa pular.
+                if (newW < kMinW) {
+                    if (m_activeEdge == ResizeEdge::Left || m_activeEdge == ResizeEdge::TL || m_activeEdge == ResizeEdge::BL) {
+                        newX = m_resizeStartGeom.right() - kMinW + 1;
+                    }
+                    newW = kMinW;
+                }
+                if (newH < kMinH) {
+                    if (m_activeEdge == ResizeEdge::Top || m_activeEdge == ResizeEdge::TL || m_activeEdge == ResizeEdge::TR) {
+                        newY = m_resizeStartGeom.bottom() - kMinH + 1;
+                    }
+                    newH = kMinH;
+                }
+                setGeometry(newX, newY, newW, newH);
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            if (m_resizing) {
+                m_resizing = false;
+                m_activeEdge = ResizeEdge::None;
+                scheduleGeometrySave();
+                return true;
+            }
+        }
+    }
+
+    if (watched == m_dragHandle) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_dragging = true;
+                m_dragOffset = me->globalPosition().toPoint() - pos();
+                m_dragHandle->setCursor(Qt::ClosedHandCursor);
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            if (m_dragging) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                QPoint newPos = me->globalPosition().toPoint() - m_dragOffset;
+                // clamp dentro do pai
+                if (auto* p = parentWidget()) {
+                    const QRect pg = p->rect();
+                    newPos.setX(qBound(pg.left() + 4, newPos.x(), pg.right() - width() + 4));
+                    newPos.setY(qBound(pg.top() + 4, newPos.y(), pg.bottom() - height() + 4));
+                }
+                move(newPos);
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            if (m_dragging) {
+                m_dragging = false;
+                m_dragHandle->setCursor(Qt::OpenHandCursor);
+                scheduleGeometrySave();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonDblClick) {
+            // duplo clique no drag handle → reseta posição/tamanho ao canto direito
+            if (auto* p = parentWidget()) {
+                const int margin = 12;
+                resize(kDefaultW, qMax(kMinH, p->height() - margin * 2));
+                move(p->width() - width() - margin, margin);
+                scheduleGeometrySave();
+            }
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+// =========================================================================
+// Persistência QSettings
+// =========================================================================
+
+void RefMenuPanel::loadGeometryFromSettings()
+{
+    QSettings s;
+    QVariant geomVar = s.value(QString::fromLatin1(kKeyGeom));
+    if (geomVar.isValid()) {
+        const QByteArray ba = geomVar.toByteArray();
+        if (!ba.isEmpty()) restoreGeometry(ba);
+    }
+    m_navHidden = s.value(QString::fromLatin1(kKeyNavHidden), false).toBool();
+    m_visualMode = s.value(QString::fromLatin1(kKeyVisualMode), true).toBool();
+    m_pinned = s.value(QString::fromLatin1(kKeyPinned), false).toBool();
+    m_previewFontPt = qBound(9, s.value(QString::fromLatin1(kKeyFontPt), 13).toInt(), 24);
+
+    if (m_pinBtn) {
+        QSignalBlocker b(m_pinBtn);
+        m_pinBtn->setChecked(m_pinned);
+    }
+    if (m_toggleNavBtn) {
+        m_toggleNavBtn->setText(m_navHidden ? QStringLiteral("▸") : QStringLiteral("▾"));
+    }
+}
+
+void RefMenuPanel::saveGeometryToSettings()
+{
+    QSettings s;
+    s.setValue(QString::fromLatin1(kKeyGeom), saveGeometry());
+}
+
+void RefMenuPanel::scheduleGeometrySave()
+{
+    if (m_savePending) return;
+    m_savePending = true;
+    QTimer::singleShot(400, this, [this]() {
+        m_savePending = false;
+        saveGeometryToSettings();
+    });
 }

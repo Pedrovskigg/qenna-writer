@@ -1,11 +1,13 @@
 #pragma once
 
 #include <QHash>
+#include <QPoint>
 #include <QString>
 #include <QWidget>
 
 class QVBoxLayout;
 class QToolButton;
+class QEvent;
 class ProjectModel;
 
 class LeftBar : public QWidget {
@@ -36,11 +38,23 @@ signals:
     void fixedActionTriggered(LeftBar::FixedAction action);
     void drawerSelected(QString drawerKey);
     void newDrawerRequested();
+    void drawerContextRequested(QString drawerKey, QPoint globalPos);
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private slots:
     void rebuildDrawerButtons();
 
 private:
+    int drawerInsertIndexAt(const QPoint& posInBar) const;
+    void updateDropIndicator(int targetIndex);
+    void clearDropIndicator();
+    void startDrawerDrag(QToolButton* btn, const QString& drawerKey);
     QToolButton* makeFixedButton(const QString& iconResource,
                                  const QString& placeholderLetter,
                                  const QString& tooltip,
@@ -62,4 +76,10 @@ private:
     QHash<QString, QToolButton*> m_drawerButtons;   // drawerKey → button
     int m_activeFixed = -1;                          // -1 = nenhum
     QString m_activeDrawer;                          // vazio = nenhum
+
+    // Drag state
+    QPoint m_dragStartPos;
+    QString m_pressedDrawerKey;                      // drawerKey do botão sob press
+    QWidget* m_dropIndicator = nullptr;
+    int m_dropTargetIndex = -1;
 };

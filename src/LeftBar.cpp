@@ -3,16 +3,29 @@
 #include "ProjectModel.h"
 #include "Theme.h"
 
+#include <QApplication>
 #include <QColor>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QFrame>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QPixmap>
 #include <QToolButton>
 #include <QVBoxLayout>
+
+namespace {
+constexpr const char* kDrawerMime = "application/x-mira-drawer-key";
+}
 
 namespace {
 
 constexpr int kBarWidth = 60;
 constexpr int kBtnSize  = 40;
-constexpr int kIconSize = 20;
+constexpr int kIconSize = 26;
 
 constexpr auto kIconNormal   = "#8a857a"; // textMuted
 constexpr auto kIconHover    = "#d8d3c6"; // textPrimary
@@ -132,6 +145,7 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     setAttribute(Qt::WA_StyledBackground, true);
     setFixedWidth(kBarWidth);
     setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+    setAcceptDrops(true);
 
     m_rootLayout = new QVBoxLayout(this);
     m_rootLayout->setContentsMargins(8, 10, 8, 10);
@@ -313,6 +327,14 @@ QToolButton* LeftBar::makeDrawerButton(const QString& drawerKey,
         emit drawerSelected(drawerKey);
     });
 
+    btn->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(btn, &QToolButton::customContextMenuRequested, this, [this, btn, drawerKey](const QPoint& pos) {
+        emit drawerContextRequested(drawerKey, btn->mapToGlobal(pos));
+    });
+
+    btn->installEventFilter(this);
+    btn->setProperty("drawerKey", drawerKey);
+
     m_drawerButtons.insert(drawerKey, btn);
     return btn;
 }
@@ -326,6 +348,124 @@ QToolButton* LeftBar::makeNewDrawerButton() {
     btn->setStyleSheet(newDrawerQss());
     connect(btn, &QToolButton::clicked, this, &LeftBar::newDrawerRequested);
     return btn;
+}
+
+bool LeftBar::eventFilter(QObject* watched, QEvent* event) {
+    auto* btn = qobject_cast<QToolButton*>(watched);
+    if (btn && m_drawerButtons.values().contains(btn)) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_dragStartPos = me->pos();
+                m_pressedDrawerKey = btn->property("drawerKey").toString();
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if ((me->buttons() & Qt::LeftButton) && !m_pressedDrawerKey.isEmpty()) {
+                if ((me->pos() - m_dragStartPos).manhattanLength() >= QApplication::startDragDistance()) {
+                    const QString key = m_pressedDrawerKey;
+                    m_pressedDrawerKey.clear();
+                    startDrawerDrag(btn, key);
+                    return true; // consome o move para não disparar click
+                }
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            m_pressedDrawerKey.clear();
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void LeftBar::startDrawerDrag(QToolButton* btn, const QString& drawerKey) {
+    QDrag* drag = new QDrag(btn);
+    auto* mime = new QMimeData();
+    mime->setData(QLatin1String(kDrawerMime), drawerKey.toUtf8());
+    drag->setMimeData(mime);
+    const QPixmap pm = btn->grab();
+    drag->setPixmap(pm);
+    drag->setHotSpot(QPoint(pm.width() / 2, pm.height() / 2));
+    drag->exec(Qt::MoveAction);
+    clearDropIndicator();
+}
+
+int LeftBar::drawerInsertIndexAt(const QPoint& posInBar) const {
+    // Calcula índice de inserção (0..N) com base na coordenada Y dentro da barra.
+    // Pega o midpoint vertical de cada drawer button; se posY < midpoint, insere antes.
+    if (!m_drawerLayout) return 0;
+    const int count = m_model ? m_model->drawers().size() : 0;
+    int idx = 0;
+    for (const auto& d : (m_model ? m_model->drawers() : QList<Drawer>{})) {
+        QToolButton* b = m_drawerButtons.value(d.key, nullptr);
+        if (!b) { ++idx; continue; }
+        const QPoint topLeft = b->mapTo(const_cast<LeftBar*>(this), QPoint(0, 0));
+        const int mid = topLeft.y() + b->height() / 2;
+        if (posInBar.y() < mid) return idx;
+        ++idx;
+    }
+    return count;
+}
+
+void LeftBar::updateDropIndicator(int targetIndex) {
+    if (targetIndex == m_dropTargetIndex && m_dropIndicator && m_dropIndicator->isVisible()) return;
+    m_dropTargetIndex = targetIndex;
+
+    if (!m_dropIndicator) {
+        m_dropIndicator = new QWidget(this);
+        m_dropIndicator->setFixedHeight(2);
+        m_dropIndicator->setStyleSheet(QStringLiteral(
+            "background: %1; border-radius: 1px;").arg(Theme::accentDefault()));
+        m_dropIndicator->hide();
+    }
+
+    // Posição Y do indicador: topo do botão no targetIndex, ou base do último se idx == count.
+    int y = 0;
+    const QList<Drawer>& list = m_model ? m_model->drawers() : QList<Drawer>{};
+    if (targetIndex >= list.size()) {
+        if (!list.isEmpty()) {
+            QToolButton* b = m_drawerButtons.value(list.last().key);
+            if (b) y = b->mapTo(this, QPoint(0, b->height())).y();
+        }
+    } else {
+        QToolButton* b = m_drawerButtons.value(list.at(targetIndex).key);
+        if (b) y = b->mapTo(this, QPoint(0, 0)).y();
+    }
+
+    const int margin = 6;
+    m_dropIndicator->setGeometry(margin, y - 1, width() - margin * 2, 2);
+    m_dropIndicator->raise();
+    m_dropIndicator->show();
+}
+
+void LeftBar::clearDropIndicator() {
+    if (m_dropIndicator) m_dropIndicator->hide();
+    m_dropTargetIndex = -1;
+}
+
+void LeftBar::dragEnterEvent(QDragEnterEvent* event) {
+    if (event->mimeData()->hasFormat(QLatin1String(kDrawerMime))) {
+        event->acceptProposedAction();
+    }
+}
+
+void LeftBar::dragMoveEvent(QDragMoveEvent* event) {
+    if (!event->mimeData()->hasFormat(QLatin1String(kDrawerMime))) return;
+    updateDropIndicator(drawerInsertIndexAt(event->position().toPoint()));
+    event->acceptProposedAction();
+}
+
+void LeftBar::dragLeaveEvent(QDragLeaveEvent* /*event*/) {
+    clearDropIndicator();
+}
+
+void LeftBar::dropEvent(QDropEvent* event) {
+    if (!event->mimeData()->hasFormat(QLatin1String(kDrawerMime))) return;
+    const QString key = QString::fromUtf8(event->mimeData()->data(QLatin1String(kDrawerMime)));
+    const int target = drawerInsertIndexAt(event->position().toPoint());
+    clearDropIndicator();
+    if (m_model && !key.isEmpty()) {
+        m_model->reorderDrawer(key, target);
+    }
+    event->acceptProposedAction();
 }
 
 void LeftBar::rebuildDrawerButtons() {

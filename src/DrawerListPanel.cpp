@@ -5,13 +5,20 @@
 #include "Theme.h"
 
 #include <QAction>
+#include <QApplication>
 #include <QByteArray>
 #include <QColor>
+#include <QDrag>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLocale>
 #include <QMenu>
+#include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
@@ -19,17 +26,27 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSizePolicy>
+#include <QSettings>
+#include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
 
 #include <algorithm>
 
 namespace {
+constexpr const char* kItemMime = "application/x-mira-drawer-item";
+}
 
-constexpr int kPanelWidth = 290;
-constexpr int kCardWidth  = 120;
-constexpr int kCardHeight = 152;
-constexpr int kCardPhoto  = 96;
+namespace {
+
+constexpr int kPanelWidth = 300;
+constexpr int kCardWidth  = 134;   // (300 - 24 padding - 8 gap) / 2 = 134
+constexpr int kCardHeight = 118;   // foto 70 + nome + role + paddings
+constexpr int kCardPhoto  = 70;
+constexpr int kMinPanelWidth = 240;
+constexpr int kMaxPanelWidth = 600;
+constexpr int kMinPanelHeight = 220;
+constexpr int kResizeHandleWidth = 5;
 
 QString sortLabelFor(DrawerListPanel::SortMode mode, bool asc) {
     switch (mode) {
@@ -222,7 +239,13 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
 {
     setObjectName(QStringLiteral("drawerListPanel"));
     setAttribute(Qt::WA_StyledBackground, true);
-    setFixedWidth(kPanelWidth);
+    {
+        const int stored = loadStoredWidth();
+        const int w = stored > 0 ? qBound(kMinPanelWidth, stored, kMaxPanelWidth) : kPanelWidth;
+        setMinimumWidth(kMinPanelWidth);
+        setMaximumWidth(kMaxPanelWidth);
+        resize(w, height());
+    }
     setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel")));
 
     auto* root = new QVBoxLayout(this);
@@ -372,7 +395,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     listHost->setStyleSheet(QStringLiteral("background: transparent;"));
     m_listLayout = new QVBoxLayout(listHost);
     m_listLayout->setContentsMargins(12, 0, 12, 12);
-    m_listLayout->setSpacing(6);
+    m_listLayout->setSpacing(8);
     m_listLayout->addStretch();
     m_scroll->setWidget(listHost);
     root->addWidget(m_scroll, /*stretch=*/1);
@@ -383,6 +406,42 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
 
     updateSortButton();
     updateViewButton();
+
+    // ---- Resize handle (borda direita) ----
+    m_resizeHandle = new QWidget(this);
+    m_resizeHandle->setObjectName(QStringLiteral("drawerResizeHandle"));
+    m_resizeHandle->setCursor(Qt::SizeHorCursor);
+    m_resizeHandle->setStyleSheet(QStringLiteral(
+        "#drawerResizeHandle { background: transparent; }"
+        "#drawerResizeHandle:hover { background: rgba(255,255,255,0.10); }"));
+    m_resizeHandle->setAttribute(Qt::WA_StyledBackground, true);
+    m_resizeHandle->installEventFilter(this);
+    m_resizeHandle->setGeometry(width() - kResizeHandleWidth, 0, kResizeHandleWidth, height());
+    m_resizeHandle->raise();
+
+    // ---- Resize handle (borda inferior) ----
+    m_resizeHandleBottom = new QWidget(this);
+    m_resizeHandleBottom->setObjectName(QStringLiteral("drawerResizeHandleBottom"));
+    m_resizeHandleBottom->setCursor(Qt::SizeVerCursor);
+    m_resizeHandleBottom->setStyleSheet(QStringLiteral(
+        "#drawerResizeHandleBottom { background: transparent; }"
+        "#drawerResizeHandleBottom:hover { background: rgba(255,255,255,0.10); }"));
+    m_resizeHandleBottom->setAttribute(Qt::WA_StyledBackground, true);
+    m_resizeHandleBottom->installEventFilter(this);
+    m_resizeHandleBottom->setGeometry(0, height() - kResizeHandleWidth,
+                                      width() - kResizeHandleWidth, kResizeHandleWidth);
+    m_resizeHandleBottom->raise();
+
+    // Restaurar altura salva, se houver
+    {
+        const int storedH = loadStoredHeight();
+        if (storedH > 0) {
+            m_heightUserSet = true;
+            m_desiredHeight = qMax(kMinPanelHeight, storedH);
+            resize(width(), m_desiredHeight);
+        }
+    }
+
     hide();
 }
 
@@ -594,6 +653,7 @@ void DrawerListPanel::rebuildFolderStrip() {
         connect(chip, &QPushButton::customContextMenuRequested, this, [this, chip, fid](const QPoint& pos) {
             showFolderContextMenu(fid, chip->mapToGlobal(pos));
         });
+        installDropTargetOnFolderChip(chip, fid);
         m_folderStripLayout->insertWidget(insertAt++, chip, 0, Qt::AlignLeft);
     }
 }
@@ -703,6 +763,9 @@ void DrawerListPanel::rebuildContents() {
 
     const bool gridView = m_gridView && currentDrawerIsElement();
     if (gridView) {
+        // Distribui os cards com stretches iguais antes, entre e depois — assim o
+        // espaço extra (quando o painel é alargado) vira afastamento proporcional
+        // entre os cards, deixando respiro pra linhas de vínculo entre eles.
         QHBoxLayout* currentRow = nullptr;
         int colInRow = 0;
         for (const auto& it : items) {
@@ -711,20 +774,27 @@ void DrawerListPanel::rebuildContents() {
                 rowWrap->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
                 rowWrap->setFixedHeight(kCardHeight);
                 currentRow = new QHBoxLayout(rowWrap);
-                currentRow->setSpacing(8);
+                currentRow->setSpacing(0);
                 currentRow->setContentsMargins(0, 0, 0, 0);
+                currentRow->addStretch(1); // antes do primeiro
                 m_listLayout->insertWidget(row++, rowWrap, /*stretch=*/0, Qt::AlignTop);
             }
             currentRow->addWidget(makeElementCard(it.id, it.title, effectiveRole(it), it.elementId));
             ++colInRow;
             ++displayedCount;
-            if (colInRow >= 2) {
+            if (colInRow < 2) {
+                currentRow->addStretch(1); // entre os dois
+            } else {
+                currentRow->addStretch(1); // depois do segundo
                 colInRow = 0;
-                currentRow->addStretch();
                 currentRow = nullptr;
             }
         }
-        if (currentRow) currentRow->addStretch();
+        if (currentRow) {
+            // Linha ímpar no fim — fecha com stretches pros lados ficarem balanceados.
+            currentRow->addStretch(1);
+            currentRow->addStretch(1);
+        }
     } else {
         for (const auto& it : items) {
             m_listLayout->insertWidget(row++, makeRow(it.title, /*isFolder=*/false, it.id, effectiveRole(it)));
@@ -778,6 +848,11 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     } else {
         photo->setText(tr("sem foto"));
     }
+    // Foto vira handle de drag: instala event filter para interceptar press/move.
+    photo->setCursor(Qt::OpenHandCursor);
+    photo->setProperty("itemId", itemId);
+    photo->setProperty("isItemPhoto", true);
+    photo->installEventFilter(this);
     lay->addWidget(photo, 0, Qt::AlignHCenter);
 
     auto* nameLbl = new QLabel(title.isEmpty() ? tr("(sem nome)") : title, card);
@@ -803,6 +878,8 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     });
     card->setProperty("itemId", itemId);
     card->setProperty("drawerKey", drawerKey);
+
+    installDropTargetOnCard(card, itemId);
 
     return card;
 }
@@ -853,8 +930,108 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
 
 bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    auto* w = qobject_cast<QWidget*>(watched);
+
+    // ---- Resize handle (borda direita / largura) ----
+    if (w && w == m_resizeHandle) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_resizing = true;
+                m_resizeStartGlobalX = me->globalPosition().toPoint().x();
+                m_resizeStartWidth = width();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            if (m_resizing) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                const int dx = me->globalPosition().toPoint().x() - m_resizeStartGlobalX;
+                int newW = m_resizeStartWidth + dx;
+                newW = qBound(kMinPanelWidth, newW, kMaxPanelWidth);
+                if (newW != width()) {
+                    resize(newW, height());
+                    emit panelWidthChanged();
+                }
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            if (m_resizing) {
+                m_resizing = false;
+                saveStoredWidth();
+                return true;
+            }
+        }
+    }
+
+    // ---- Resize handle (borda inferior / altura) ----
+    if (w && w == m_resizeHandleBottom) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_resizingV = true;
+                m_resizeStartGlobalY = me->globalPosition().toPoint().y();
+                m_resizeStartHeight = height();
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            if (m_resizingV) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                const int dy = me->globalPosition().toPoint().y() - m_resizeStartGlobalY;
+                int newH = m_resizeStartHeight + dy;
+                // Limite máximo: até onde o parent permite (- margem 10*2)
+                int maxH = QWIDGETSIZE_MAX;
+                if (parentWidget()) maxH = parentWidget()->height() - 20;
+                newH = qBound(kMinPanelHeight, newH, maxH);
+                if (newH != height()) {
+                    m_heightUserSet = true;
+                    m_desiredHeight = newH;
+                    resize(width(), newH);
+                    emit panelHeightChanged();
+                }
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            if (m_resizingV) {
+                m_resizingV = false;
+                saveStoredHeight();
+                return true;
+            }
+        }
+    }
+
+    // ---- Foto do card vira handle de drag ----
+    if (w && w->property("isItemPhoto").toBool()) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_dragStartPos = me->pos();
+                m_pressedItemId = w->property("itemId").toString();
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if ((me->buttons() & Qt::LeftButton) && !m_pressedItemId.isEmpty()) {
+                if ((me->pos() - m_dragStartPos).manhattanLength() >= QApplication::startDragDistance()) {
+                    const QString itemId = m_pressedItemId;
+                    m_pressedItemId.clear();
+                    startItemDrag(w, itemId);
+                    return true;
+                }
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            // Click curto na foto = abrir o item (mesmo comportamento do card).
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton && !m_pressedItemId.isEmpty()) {
+                const QString itemId = m_pressedItemId;
+                m_pressedItemId.clear();
+                emit itemActivated(m_currentKey, itemId);
+                return true;
+            }
+            m_pressedItemId.clear();
+        }
+    }
+
+    // ---- Click no card abre o item ----
     if (event->type() == QEvent::MouseButtonRelease) {
-        auto* w = qobject_cast<QWidget*>(watched);
         if (w && w->objectName() == QStringLiteral("elemCard")) {
             auto* me = static_cast<QMouseEvent*>(event);
             if (me->button() == Qt::LeftButton) {
@@ -911,6 +1088,11 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
     if (!m_model) return;
     const Drawer* drawer = m_model->findDrawer(m_currentKey);
     if (!drawer) return;
+    const DrawerItem* item = m_model->findDrawerItem(itemId);
+    if (!item) return;
+
+    const QString drawerKey = m_currentKey;
+    const bool hasElement = !item->elementType.isEmpty();
 
     QMenu menu(this);
     menu.setStyleSheet(QStringLiteral(R"(
@@ -923,23 +1105,95 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
         }
         QMenu::item { padding: 6px 16px; border-radius: 4px; }
         QMenu::item:selected { background: %4; color: %5; }
+        QMenu::item:disabled { color: %6; }
+        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
     )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
-           Theme::hoverOverlay(), Theme::textBright()));
+           Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted()));
+
+    auto* editAct = menu.addAction(tr("Editar metadados…"));
+    connect(editAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+        emit editItemRequested(drawerKey, itemId);
+    });
+
+    if (hasElement) {
+        auto* removeElemAct = menu.addAction(tr("Remover elemento"));
+        connect(removeElemAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+            emit removeElementRequested(drawerKey, itemId);
+        });
+    } else {
+        auto* addElemAct = menu.addAction(tr("Adicionar elemento…"));
+        connect(addElemAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+            emit addElementRequested(drawerKey, itemId);
+        });
+    }
+
+    auto* markerAct = menu.addAction(tr("Adicionar marcador"));
+    markerAct->setEnabled(false);
+    markerAct->setToolTip(tr("Em breve"));
+
+    auto* refMenuAct = menu.addAction(tr("Abrir no Menu de Referência"));
+    connect(refMenuAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+        emit openInRefMenuRequested(drawerKey, itemId);
+    });
+
+    menu.addSeparator();
 
     QMenu* moveMenu = menu.addMenu(tr("Mover para"));
+
+    // ---- Dentro desta gaveta ----
+    auto* hereLabel = moveMenu->addSection(drawer->title.isEmpty() ? tr("Esta gaveta") : drawer->title);
+    Q_UNUSED(hereLabel);
     auto* rootAction = moveMenu->addAction(tr("Raiz da gaveta"));
     connect(rootAction, &QAction::triggered, this, [this, itemId]() {
         m_model->moveDrawerItem(m_currentKey, itemId, QString());
     });
-    if (!drawer->folders.isEmpty()) moveMenu->addSeparator();
     for (const auto& f : drawer->folders) {
         const QString fid = f.id;
-        const QString ftitle = f.title;
-        auto* a = moveMenu->addAction(ftitle);
+        auto* a = moveMenu->addAction(QStringLiteral("📁 %1").arg(f.title));
         connect(a, &QAction::triggered, this, [this, itemId, fid]() {
             m_model->moveDrawerItem(m_currentKey, itemId, fid);
         });
     }
+
+    // ---- Outras gavetas ----
+    const QString srcKey = m_currentKey;
+    bool firstOther = true;
+    for (const auto& other : m_model->drawers()) {
+        if (other.key == srcKey) continue;
+        if (firstOther) {
+            moveMenu->addSection(tr("Outras gavetas"));
+            firstOther = false;
+        }
+        const QString destKey = other.key;
+        const QString destTitle = other.title.isEmpty() ? tr("(sem nome)") : other.title;
+        if (other.folders.isEmpty()) {
+            auto* a = moveMenu->addAction(destTitle);
+            connect(a, &QAction::triggered, this, [this, srcKey, itemId, destKey]() {
+                m_model->moveDrawerItemToDrawer(srcKey, itemId, destKey, QString());
+            });
+        } else {
+            QMenu* sub = moveMenu->addMenu(destTitle);
+            auto* rootA = sub->addAction(tr("Raiz da gaveta"));
+            connect(rootA, &QAction::triggered, this, [this, srcKey, itemId, destKey]() {
+                m_model->moveDrawerItemToDrawer(srcKey, itemId, destKey, QString());
+            });
+            for (const auto& f : other.folders) {
+                const QString fid = f.id;
+                auto* a = sub->addAction(QStringLiteral("📁 %1").arg(f.title));
+                connect(a, &QAction::triggered, this, [this, srcKey, itemId, destKey, fid]() {
+                    m_model->moveDrawerItemToDrawer(srcKey, itemId, destKey, fid);
+                });
+            }
+        }
+    }
+
+    menu.addSeparator();
+
+    auto* deleteAct = menu.addAction(tr("Excluir"));
+    connect(deleteAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+        emit deleteItemRequested(drawerKey, itemId);
+    });
+
     menu.exec(globalPos);
 }
 
@@ -992,4 +1246,208 @@ void DrawerListPanel::showFolderContextMenu(const QString& folderId, const QPoin
         });
     }
     menu.exec(globalPos);
+}
+
+void DrawerListPanel::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    if (m_resizeHandle) {
+        m_resizeHandle->setGeometry(width() - kResizeHandleWidth, 0, kResizeHandleWidth, height());
+        m_resizeHandle->raise();
+    }
+    if (m_resizeHandleBottom) {
+        m_resizeHandleBottom->setGeometry(0, height() - kResizeHandleWidth,
+                                          width() - kResizeHandleWidth, kResizeHandleWidth);
+        m_resizeHandleBottom->raise();
+    }
+    // Os stretches do row se ajustam automaticamente — não precisa rebuild,
+    // o QHBoxLayout redistribui o espaço extra entre/ao redor dos cards.
+}
+
+void DrawerListPanel::saveStoredWidth() {
+    QSettings settings;
+    settings.setValue(QStringLiteral("ui/drawerListPanelWidth"), width());
+}
+
+int DrawerListPanel::loadStoredWidth() const {
+    QSettings settings;
+    return settings.value(QStringLiteral("ui/drawerListPanelWidth"), 0).toInt();
+}
+
+void DrawerListPanel::saveStoredHeight() {
+    QSettings settings;
+    // Salva a altura DESEJADA (não o height() atual, que pode ter sido encolhido
+    // por show/hide reaplicando o sizeHint do layout interno).
+    settings.setValue(QStringLiteral("ui/drawerListPanelHeight"),
+                      m_desiredHeight > 0 ? m_desiredHeight : height());
+}
+
+int DrawerListPanel::loadStoredHeight() const {
+    QSettings settings;
+    return settings.value(QStringLiteral("ui/drawerListPanelHeight"), 0).toInt();
+}
+
+void DrawerListPanel::startItemDrag(QWidget* photoLabel, const QString& itemId) {
+    if (!photoLabel || itemId.isEmpty()) return;
+    QDrag* drag = new QDrag(photoLabel);
+    auto* mime = new QMimeData();
+    // Mime carrega "drawerKey|itemId" — drop targets sabem da origem.
+    const QByteArray payload = (m_currentKey + QLatin1Char('|') + itemId).toUtf8();
+    mime->setData(QLatin1String(kItemMime), payload);
+    drag->setMimeData(mime);
+    const QPixmap pm = photoLabel->grab();
+    drag->setPixmap(pm);
+    drag->setHotSpot(QPoint(pm.width() / 2, pm.height() / 2));
+    drag->exec(Qt::MoveAction);
+    clearItemDropIndicator();
+}
+
+void DrawerListPanel::clearItemDropIndicator() {
+    if (m_dropIndicator) {
+        m_dropIndicator->hide();
+        m_dropIndicator->deleteLater();
+        m_dropIndicator = nullptr;
+    }
+}
+
+void DrawerListPanel::showItemDropIndicatorAt(QWidget* targetCard, bool before) {
+    if (!targetCard) return;
+    if (!m_dropIndicator) {
+        // Indicador é uma linha fina filha do mesmo parent do card.
+        m_dropIndicator = new QWidget(targetCard->parentWidget());
+        m_dropIndicator->setFixedHeight(2);
+        m_dropIndicator->setStyleSheet(QStringLiteral(
+            "background: %1; border-radius: 1px;").arg(Theme::accentDefault()));
+        m_dropIndicator->setAttribute(Qt::WA_TransparentForMouseEvents);
+    } else if (m_dropIndicator->parentWidget() != targetCard->parentWidget()) {
+        m_dropIndicator->setParent(targetCard->parentWidget());
+    }
+    const int y = before ? targetCard->y() - 2 : targetCard->y() + targetCard->height();
+    m_dropIndicator->setGeometry(targetCard->x(), y, targetCard->width(), 2);
+    m_dropIndicator->raise();
+    m_dropIndicator->show();
+}
+
+// Decompõe payload "drawerKey|itemId" do MIME.
+static bool parseItemPayload(const QByteArray& payload, QString& drawerKey, QString& itemId) {
+    const QString s = QString::fromUtf8(payload);
+    const int sep = s.indexOf(QLatin1Char('|'));
+    if (sep < 0) return false;
+    drawerKey = s.left(sep);
+    itemId = s.mid(sep + 1);
+    return !drawerKey.isEmpty() && !itemId.isEmpty();
+}
+
+void DrawerListPanel::installDropTargetOnCard(QWidget* card, const QString& targetItemId) {
+    card->setAcceptDrops(true);
+    // Filtro de eventos pra responder a drag enter/move/leave/drop sem subclassar.
+    class CardDropFilter : public QObject {
+    public:
+        CardDropFilter(DrawerListPanel* panel, QWidget* card, QString targetItemId)
+            : QObject(card), m_panel(panel), m_card(card), m_targetItemId(std::move(targetItemId)) {}
+    protected:
+        bool eventFilter(QObject* obj, QEvent* ev) override {
+            if (obj != m_card) return QObject::eventFilter(obj, ev);
+            // Só aceita drag de item se sort = SortCreation (reorder)
+            //   OU dst é card de outra pasta (mover entre pastas dentro da mesma gaveta).
+            // Pra simplificar: aceitamos só reorder em SortCreation. Mover entre pastas
+            // só funciona soltando no chip da pasta.
+            if (ev->type() == QEvent::DragEnter) {
+                auto* de = static_cast<QDragEnterEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                if (m_panel->m_sortMode != DrawerListPanel::SortCreation) return false;
+                QString srcKey, srcId; parseItemPayload(de->mimeData()->data(QLatin1String(kItemMime)), srcKey, srcId);
+                if (srcKey != m_panel->m_currentKey) return false; // só dentro da mesma gaveta
+                if (srcId == m_targetItemId) return false;
+                de->acceptProposedAction();
+                return true;
+            } else if (ev->type() == QEvent::DragMove) {
+                auto* de = static_cast<QDragMoveEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                const bool before = de->position().y() < m_card->height() / 2;
+                m_panel->showItemDropIndicatorAt(m_card, before);
+                de->acceptProposedAction();
+                return true;
+            } else if (ev->type() == QEvent::DragLeave) {
+                m_panel->clearItemDropIndicator();
+                return true;
+            } else if (ev->type() == QEvent::Drop) {
+                auto* de = static_cast<QDropEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                QString srcKey, srcId; parseItemPayload(de->mimeData()->data(QLatin1String(kItemMime)), srcKey, srcId);
+                m_panel->clearItemDropIndicator();
+                if (srcKey != m_panel->m_currentKey || srcId == m_targetItemId || !m_panel->m_model) {
+                    return false;
+                }
+                // Localiza índice do alvo no array geral da gaveta.
+                const Drawer* d = m_panel->m_model->findDrawer(m_panel->m_currentKey);
+                if (!d) return false;
+                int targetIdx = -1;
+                for (int i = 0; i < d->items.size(); ++i) {
+                    if (d->items.at(i).id == m_targetItemId) { targetIdx = i; break; }
+                }
+                if (targetIdx < 0) return false;
+                const bool before = de->position().y() < m_card->height() / 2;
+                if (!before) targetIdx += 1;
+                m_panel->m_model->reorderDrawerItem(m_panel->m_currentKey, srcId, targetIdx);
+                de->acceptProposedAction();
+                return true;
+            }
+            return false;
+        }
+    private:
+        DrawerListPanel* m_panel;
+        QWidget* m_card;
+        QString m_targetItemId;
+    };
+    card->installEventFilter(new CardDropFilter(this, card, targetItemId));
+}
+
+void DrawerListPanel::installDropTargetOnFolderChip(QWidget* chip, const QString& folderId) {
+    chip->setAcceptDrops(true);
+    class ChipDropFilter : public QObject {
+    public:
+        ChipDropFilter(DrawerListPanel* panel, QWidget* chip, QString folderId)
+            : QObject(chip), m_panel(panel), m_chip(chip), m_folderId(std::move(folderId)) {}
+    protected:
+        bool eventFilter(QObject* obj, QEvent* ev) override {
+            if (obj != m_chip) return QObject::eventFilter(obj, ev);
+            if (ev->type() == QEvent::DragEnter) {
+                auto* de = static_cast<QDragEnterEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                QString srcKey, srcId; parseItemPayload(de->mimeData()->data(QLatin1String(kItemMime)), srcKey, srcId);
+                if (srcKey != m_panel->m_currentKey) return false;
+                de->acceptProposedAction();
+                m_chip->setProperty("dropHover", true);
+                m_chip->setStyleSheet(m_chip->styleSheet() + QStringLiteral(
+                    "QPushButton { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.32); }"));
+                return true;
+            } else if (ev->type() == QEvent::DragMove) {
+                auto* de = static_cast<QDragMoveEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                de->acceptProposedAction();
+                return true;
+            } else if (ev->type() == QEvent::DragLeave) {
+                if (m_chip->property("dropHover").toBool()) {
+                    m_chip->setProperty("dropHover", false);
+                    m_chip->style()->unpolish(m_chip);
+                    m_chip->style()->polish(m_chip);
+                }
+                return true;
+            } else if (ev->type() == QEvent::Drop) {
+                auto* de = static_cast<QDropEvent*>(ev);
+                if (!de->mimeData()->hasFormat(QLatin1String(kItemMime))) return false;
+                QString srcKey, srcId; parseItemPayload(de->mimeData()->data(QLatin1String(kItemMime)), srcKey, srcId);
+                if (srcKey != m_panel->m_currentKey || !m_panel->m_model) return false;
+                m_panel->m_model->moveDrawerItem(m_panel->m_currentKey, srcId, m_folderId);
+                de->acceptProposedAction();
+                return true;
+            }
+            return false;
+        }
+    private:
+        DrawerListPanel* m_panel;
+        QWidget* m_chip;
+        QString m_folderId;
+    };
+    chip->installEventFilter(new ChipDropFilter(this, chip, folderId));
 }

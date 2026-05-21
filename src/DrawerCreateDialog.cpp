@@ -134,6 +134,7 @@ DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
     , m_iconCombo(new QComboBox(this))
     , m_colorBtn(new QPushButton(this))
     , m_typeCombo(new QComboBox(this))
+    , m_buttons(nullptr)
     , m_color(QStringLiteral("#2b79ff"))
 {
     setWindowTitle(tr("Nova gaveta"));
@@ -175,17 +176,17 @@ DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
     form->addRow(tr("Elemento"), m_typeCombo);
 
     // ---- Botões OK/Cancelar ----
-    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    buttons->button(QDialogButtonBox::Ok)->setText(tr("Criar"));
-    buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
-    connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
+    m_buttons->button(QDialogButtonBox::Ok)->setText(tr("Criar"));
+    m_buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
+    connect(m_buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(m_buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(20, 20, 20, 16);
     mainLayout->setSpacing(16);
     mainLayout->addLayout(form);
-    mainLayout->addWidget(buttons);
+    mainLayout->addWidget(m_buttons);
 
     setMinimumWidth(420);
 
@@ -268,4 +269,38 @@ QString DrawerCreateDialog::color() const {
 
 QString DrawerCreateDialog::elementTypeId() const {
     return m_typeCombo->currentData().toString();
+}
+
+void DrawerCreateDialog::configureForEdit(const QString& title,
+                                          const QString& iconId,
+                                          const QString& color,
+                                          const QString& elementTypeId) {
+    setWindowTitle(tr("Editar gaveta"));
+    if (m_buttons) m_buttons->button(QDialogButtonBox::Ok)->setText(tr("Salvar"));
+
+    // Bloqueia auto-segue de ícone por nome — o usuário já escolheu antes.
+    m_iconManual = true;
+
+    {
+        QSignalBlocker block(m_nameEdit);
+        m_nameEdit->setText(title);
+    }
+
+    if (!iconId.isEmpty()) {
+        const int idx = m_iconCombo->findData(iconId);
+        if (idx >= 0) {
+            QSignalBlocker block(m_iconCombo);
+            m_iconCombo->setCurrentIndex(idx);
+        }
+    }
+
+    if (!color.isEmpty()) {
+        m_color = color;
+        updateColorSwatch();
+    }
+
+    if (!elementTypeId.isNull()) {
+        const int idx = m_typeCombo->findData(elementTypeId);
+        if (idx >= 0) m_typeCombo->setCurrentIndex(idx);
+    }
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QPoint>
+#include <QString>
 #include <QWidget>
 
 class QLabel;
@@ -24,15 +26,25 @@ public:
     void closePanel();
     bool isPanelOpen() const { return !m_currentKey.isEmpty(); }
     QString currentDrawerKey() const { return m_currentKey; }
+    bool heightIsUserSet() const { return m_heightUserSet; }
+    int desiredHeight() const { return m_desiredHeight; }
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
 
 signals:
     void itemActivated(QString drawerKey, QString itemId);
     void newItemRequested(QString drawerKey, QString folderId);
     void newFolderRequested(QString drawerKey, QString parentFolderId);
     void panelClosed();
+    void editItemRequested(QString drawerKey, QString itemId);
+    void deleteItemRequested(QString drawerKey, QString itemId);
+    void openInRefMenuRequested(QString drawerKey, QString itemId);
+    void addElementRequested(QString drawerKey, QString itemId);
+    void removeElementRequested(QString drawerKey, QString itemId);
+    void panelWidthChanged();
+    void panelHeightChanged();
 
 private slots:
     void onDrawersChanged();
@@ -82,4 +94,30 @@ private:
     bool m_sortAscending = true;
     bool m_gridView = true;
     bool m_pinned = false;
+
+    // Drag state (foto -> reorder/mover)
+    QPoint m_dragStartPos;
+    QString m_pressedItemId;
+    QWidget* m_dropIndicator = nullptr;
+
+    // Resize state (handles direita / inferior)
+    QWidget* m_resizeHandle = nullptr;       // borda direita (largura)
+    QWidget* m_resizeHandleBottom = nullptr; // borda inferior (altura)
+    bool m_resizing = false;                 // resize horizontal em curso
+    bool m_resizingV = false;                // resize vertical em curso
+    int m_resizeStartGlobalX = 0;
+    int m_resizeStartGlobalY = 0;
+    int m_resizeStartWidth = 0;
+    int m_resizeStartHeight = 0;
+    bool m_heightUserSet = false;            // se true, MainWindow respeita altura escolhida
+    int m_desiredHeight = 0;                 // altura escolhida pelo user (preserva entre show/hide)
+    void saveStoredWidth();
+    int loadStoredWidth() const;
+    void saveStoredHeight();
+    int loadStoredHeight() const;
+    void startItemDrag(QWidget* photoLabel, const QString& itemId);
+    void clearItemDropIndicator();
+    void showItemDropIndicatorAt(QWidget* targetCard, bool before);
+    void installDropTargetOnCard(QWidget* card, const QString& itemId);
+    void installDropTargetOnFolderChip(QWidget* chip, const QString& folderId);
 };
