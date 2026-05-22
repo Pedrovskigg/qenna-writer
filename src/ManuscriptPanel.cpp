@@ -101,6 +101,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
 
     // Header --------------------------------------------------------------
     auto* header = new QWidget(this);
+    m_header = header;
     header->setObjectName(QStringLiteral("manuscriptHeader"));
     header->setStyleSheet(QStringLiteral(
         "#manuscriptHeader { border-bottom: 1px solid %1; }").arg(Theme::panelBorder()));
@@ -153,6 +154,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
                 border-color: %4;
             }
         )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+        m_headerIconBtns.append(b);
         return b;
     };
 
@@ -175,6 +177,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
 
     const QString accent = Theme::accentDefault();
     auto* createChapterBtn = new QPushButton(actionBar);
+    m_createChapterBtn = createChapterBtn;
     createChapterBtn->setCursor(Qt::PointingHandCursor);
     createChapterBtn->setIconSize(QSize(18, 18));
     createChapterBtn->setMinimumHeight(40);
@@ -209,7 +212,65 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
         connect(m_model, &ProjectModel::loaded, this, [this]() { syncCombo(); rebuildList(); });
     }
 
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &ManuscriptPanel::applyTheme);
+
     hide();
+}
+
+void ManuscriptPanel::applyTheme() {
+    setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel")));
+    applyHeaderStyles();
+    if (isPanelOpen()) rebuildList();
+}
+
+void ManuscriptPanel::applyHeaderStyles() {
+    if (m_header) {
+        m_header->setStyleSheet(QStringLiteral(
+            "#manuscriptHeader { border-bottom: 1px solid %1; }").arg(Theme::panelBorder()));
+    }
+    if (m_combo) {
+        m_combo->setStyleSheet(QStringLiteral(R"(
+            QComboBox {
+                background: transparent;
+                color: %1;
+                border: 1px solid %2;
+                border-radius: 6px;
+                padding: 4px 10px;
+                font-family: 'Lora','Crimson Text',serif;
+                font-size: 13px;
+            }
+            QComboBox:hover { border-color: %3; }
+            QComboBox::drop-down { border: none; width: 18px; }
+            QComboBox QAbstractItemView {
+                background: %4;
+                color: %1;
+                border: 1px solid %2;
+                selection-background-color: %5;
+            }
+        )").arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
+               Theme::panelBackground(), Theme::hoverOverlay()));
+    }
+    for (auto* b : m_headerIconBtns) {
+        if (!b) continue;
+        b->setStyleSheet(QStringLiteral(R"(
+            QToolButton {
+                background: transparent;
+                color: %1;
+                border: 1px solid transparent;
+                border-radius: 6px;
+                font-size: 15px;
+            }
+            QToolButton:hover {
+                background: %2;
+                color: %3;
+                border-color: %4;
+            }
+        )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+    }
+    if (m_createChapterBtn) {
+        m_createChapterBtn->setStyleSheet(createButtonQss(Theme::accentDefault()));
+    }
 }
 
 void ManuscriptPanel::open() {

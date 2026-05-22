@@ -48,6 +48,7 @@ signals:
 
 private slots:
     void onDrawersChanged();
+    void applyTheme();
 
 private:
     void rebuildContents();

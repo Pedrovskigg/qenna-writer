@@ -95,7 +95,21 @@ RefMenuPanel::RefMenuPanel(ProjectModel* model, EditorHost* host, DocCache* cach
         connect(m_elements, &ElementsStore::changed, this, &RefMenuPanel::refresh);
     }
 
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &RefMenuPanel::applyTheme);
+
     hide();
+}
+
+void RefMenuPanel::applyTheme()
+{
+    // Reaplica o panelQss no widget root + frame interno; o conteúdo (header,
+    // tabs, preview) tem stylesheets locais e atualiza no próximo refresh.
+    setStyleSheet(Theme::panelQss(QStringLiteral("refMenuPanel")));
+    if (m_frame) {
+        m_frame->setStyleSheet(Theme::panelQss(QStringLiteral("refFrame")));
+    }
+    refresh();
 }
 
 void RefMenuPanel::setProjectRoot(const QString& root)

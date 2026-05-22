@@ -28,6 +28,7 @@ class SpellHighlighter;
 class SpellEditor;
 class SettingsPanel;
 class SelectionPopup;
+class ThemesPanel;
 class QToolButton;
 
 class MainWindow : public QMainWindow
@@ -48,6 +49,7 @@ private:
     void setupEditor();
     void setupToolbar();
     void applyEditorStyle();
+    void applyTextColor();
 
     void setFontFamily(const QString &family);
     void setFontSize(int pt);
@@ -66,6 +68,9 @@ private:
     void onNewProjectRequested();
     void onOpenProjectRequested();
     void onSettingsRequested();
+    void onThemePanelRequested();
+    void onThemeChanged();
+    void applyPageShadow();
     void applySpellLanguageFromModel();
     void positionWordCountPanel();
     void positionSidePanels();
@@ -101,7 +106,11 @@ private:
     SpellChecker *spellChecker;
     SpellHighlighter *spellHighlighter;
     SettingsPanel *settingsPanel;
+    ThemesPanel *themesPanel;
     SelectionPopup *selectionPopup;
+    QWidget *editorContainer;
+    QWidget *editorColumn;
+    QWidget *toolbarHolder;
     QToolButton *selBoldBtn;
     QToolButton *selItalicBtn;
     QToolButton *selUnderlineBtn;

@@ -38,6 +38,9 @@ signals:
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
+private slots:
+    void applyThemeStyle();
+
 private:
     void buildUi();
     void updateToggleArrow();

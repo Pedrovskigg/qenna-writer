@@ -18,6 +18,9 @@ public:
 public slots:
     void refresh();
 
+private slots:
+    void applyThemeStyle();
+
 signals:
     void geometryChanged();
 

@@ -8,6 +8,7 @@ class QComboBox;
 class QVBoxLayout;
 class QScrollArea;
 class QToolButton;
+class QPushButton;
 class ProjectModel;
 
 class ManuscriptPanel : public QWidget {
@@ -46,6 +47,7 @@ private slots:
     void onManuscriptsChanged();
     void onChaptersChanged();
     void onComboChanged(int index);
+    void applyTheme();
 
 private:
     void rebuildList();
@@ -58,10 +60,15 @@ private:
     void clearDropIndicator();
     void showDropIndicatorAt(QWidget* target, bool before);
 
+    void applyHeaderStyles();
+
     ProjectModel* m_model;
     QComboBox* m_combo;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;
+    QWidget* m_header = nullptr;
+    QPushButton* m_createChapterBtn = nullptr;
+    QList<QToolButton*> m_headerIconBtns;
 
     // Drag state
     QPoint m_dragStartPos;

@@ -12,12 +12,15 @@
 
 #include "FontPickerPopup.h"
 #include "IconUtils.h"
+#include "Theme.h"
 
 namespace {
 
-constexpr auto kIconNormal   = "#8a857a";
-constexpr auto kIconHover    = "#d8d3c6";
-constexpr auto kIconSelected = "#f0e8d8";
+// Cores dos ícones vêm do tema; reavaliadas em cada loadIcon, pra que reload
+// após troca de tema reflita as cores atuais (e nunca fiquem invisíveis).
+QString iconNormalColor()   { return Theme::textMuted(); }
+QString iconHoverColor()    { return Theme::textPrimary(); }
+QString iconSelectedColor() { return Theme::textBright(); }
 
 constexpr int kBarHeight = 48;
 constexpr int kIconButtonSize = 32;
@@ -47,9 +50,9 @@ QIcon loadIcon(const QString &name)
 {
     return IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/%1").arg(name),
-        QColor(kIconNormal),
-        QColor(kIconHover),
-        QColor(kIconSelected));
+        QColor(iconNormalColor()),
+        QColor(iconHoverColor()),
+        QColor(iconSelectedColor()));
 }
 
 QFrame *makeVSeparator(QWidget *parent)
@@ -101,60 +104,66 @@ TopToolbar::TopToolbar(QWidget *parent)
     , currentLineHeightPercent(170)
 {
     setObjectName(QStringLiteral("topToolbar"));
+    setAttribute(Qt::WA_StyledBackground, true);
     setFixedHeight(kBarHeight);
 
     focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
 
+    auto bindIcon = [this](QToolButton* b, const QString& name) {
+        b->setIcon(loadIcon(name));
+        iconBindings.append({b, name});
+    };
+
     // ---------------- Grupo A: Projeto ----------------
     newProjectButton->setObjectName(QStringLiteral("ttbProject"));
-    newProjectButton->setIcon(loadIcon(QStringLiteral("newproject.svg")));
+    bindIcon(newProjectButton, QStringLiteral("newproject.svg"));
     newProjectButton->setToolTip(tr("Novo projeto"));
     connect(newProjectButton, &QToolButton::clicked, this, &TopToolbar::newProjectRequested);
 
     openProjectButton->setObjectName(QStringLiteral("ttbProject"));
-    openProjectButton->setIcon(loadIcon(QStringLiteral("loadproject.svg")));
+    bindIcon(openProjectButton, QStringLiteral("loadproject.svg"));
     openProjectButton->setToolTip(tr("Abrir projeto"));
     connect(openProjectButton, &QToolButton::clicked, this, &TopToolbar::openProjectRequested);
 
     saveProjectButton->setObjectName(QStringLiteral("ttbProject"));
-    saveProjectButton->setIcon(loadIcon(QStringLiteral("save-project.svg")));
+    bindIcon(saveProjectButton, QStringLiteral("save-project.svg"));
     saveProjectButton->setToolTip(tr("Salvar projeto (Ctrl+S)"));
     connect(saveProjectButton, &QToolButton::clicked, this, &TopToolbar::saveProjectRequested);
 
     // ---------------- Grupo B: Formatação inline ----------------
     boldButton->setObjectName(QStringLiteral("ttbInline"));
-    boldButton->setIcon(loadIcon(QStringLiteral("bold.svg")));
+    bindIcon(boldButton, QStringLiteral("bold.svg"));
     boldButton->setCheckable(true);
     boldButton->setToolTip(tr("Negrito (Ctrl+B)"));
     connect(boldButton, &QToolButton::toggled, this, &TopToolbar::boldToggled);
 
     italicButton->setObjectName(QStringLiteral("ttbInline"));
-    italicButton->setIcon(loadIcon(QStringLiteral("italic.svg")));
+    bindIcon(italicButton, QStringLiteral("italic.svg"));
     italicButton->setCheckable(true);
     italicButton->setToolTip(tr("Itálico (Ctrl+I)"));
     connect(italicButton, &QToolButton::toggled, this, &TopToolbar::italicToggled);
 
     underlineButton->setObjectName(QStringLiteral("ttbInline"));
-    underlineButton->setIcon(loadIcon(QStringLiteral("underline.svg")));
+    bindIcon(underlineButton, QStringLiteral("underline.svg"));
     underlineButton->setCheckable(true);
     underlineButton->setToolTip(tr("Sublinhado (Ctrl+U)"));
     connect(underlineButton, &QToolButton::toggled, this, &TopToolbar::underlineToggled);
 
     strikethroughButton->setObjectName(QStringLiteral("ttbInline"));
-    strikethroughButton->setIcon(loadIcon(QStringLiteral("strikethrough.svg")));
+    bindIcon(strikethroughButton, QStringLiteral("strikethrough.svg"));
     strikethroughButton->setCheckable(true);
     strikethroughButton->setToolTip(tr("Tachado (Ctrl+Shift+S)"));
     connect(strikethroughButton, &QToolButton::toggled, this, &TopToolbar::strikethroughToggled);
 
     // ---------------- Grupo C: Ferramentas ----------------
     glossaryButton->setObjectName(QStringLiteral("ttbTool"));
-    glossaryButton->setIcon(loadIcon(QStringLiteral("glossary.svg")));
+    bindIcon(glossaryButton, QStringLiteral("glossary.svg"));
     glossaryButton->setToolTip(tr("Glossário"));
     connect(glossaryButton, &QToolButton::clicked, this, &TopToolbar::glossaryRequested);
 
     readModeButton->setObjectName(QStringLiteral("ttbTool"));
-    readModeButton->setIcon(loadIcon(QStringLiteral("readmode.svg")));
+    bindIcon(readModeButton, QStringLiteral("readmode.svg"));
     readModeButton->setCheckable(true);
     readModeButton->setToolTip(tr("Modo leitura"));
     connect(readModeButton, &QToolButton::toggled, this, &TopToolbar::readModeToggled);
@@ -164,12 +173,13 @@ TopToolbar::TopToolbar(QWidget *parent)
     focusButton->setCheckable(true);
     focusButton->setToolTip(tr("Modo foco"));
     connect(focusButton, &QToolButton::toggled, this, [this](bool on) {
+        focusCheckedCache = on;
         focusButton->setIcon(on ? focusOnIcon : focusOffIcon);
         emit focusModeToggled(on);
     });
 
     searchButton->setObjectName(QStringLiteral("ttbTool"));
-    searchButton->setIcon(loadIcon(QStringLiteral("search.svg")));
+    bindIcon(searchButton, QStringLiteral("search.svg"));
     searchButton->setToolTip(tr("Buscar"));
     connect(searchButton, &QToolButton::clicked, this, &TopToolbar::searchRequested);
 
@@ -197,7 +207,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     sizeButton->setObjectName(QStringLiteral("ttbSize"));
     sizeButton->setPopupMode(QToolButton::InstantPopup);
     sizeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    sizeButton->setIcon(loadIcon(QStringLiteral("font-size.svg")));
+    bindIcon(sizeButton, QStringLiteral("font-size.svg"));
     sizeButton->setIconSize(iconSize);
     sizeButton->setText(QString::number(currentFontSize));
     sizeButton->setToolTip(tr("Tamanho da fonte"));
@@ -205,7 +215,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     lineHeightButton->setObjectName(QStringLiteral("ttbLineHeight"));
     lineHeightButton->setPopupMode(QToolButton::InstantPopup);
     lineHeightButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    lineHeightButton->setIcon(loadIcon(QStringLiteral("text-spacing.svg")));
+    bindIcon(lineHeightButton, QStringLiteral("text-spacing.svg"));
     lineHeightButton->setIconSize(iconSize);
     lineHeightButton->setText(QString::number(currentLineHeightPercent / 100.0, 'f', 1));
     lineHeightButton->setToolTip(tr("Espaçamento"));
@@ -219,52 +229,45 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     // ---------------- Grupo E: Mídia ----------------
     imageButton->setObjectName(QStringLiteral("ttbMedia"));
-    imageButton->setIcon(loadIcon(QStringLiteral("add-image.svg")));
+    bindIcon(imageButton, QStringLiteral("add-image.svg"));
     imageButton->setToolTip(tr("Adicionar imagem"));
     connect(imageButton, &QToolButton::clicked, this, &TopToolbar::addImageRequested);
 
     reminderButton->setObjectName(QStringLiteral("ttbMedia"));
-    reminderButton->setIcon(loadIcon(QStringLiteral("reminder.svg")));
+    bindIcon(reminderButton, QStringLiteral("reminder.svg"));
     reminderButton->setToolTip(tr("Lembretes"));
     connect(reminderButton, &QToolButton::clicked, this, &TopToolbar::reminderRequested);
 
     immersiveSoundButton->setObjectName(QStringLiteral("ttbMedia"));
-    immersiveSoundButton->setIcon(loadIcon(QStringLiteral("immersive-sound.svg")));
+    bindIcon(immersiveSoundButton, QStringLiteral("immersive-sound.svg"));
     immersiveSoundButton->setToolTip(tr("Som imersivo"));
     connect(immersiveSoundButton, &QToolButton::clicked, this, &TopToolbar::immersiveSoundRequested);
 
     // ---------------- Grupo F: Sistema ----------------
     themePanelButton->setObjectName(QStringLiteral("ttbSystem"));
-    themePanelButton->setIcon(loadIcon(QStringLiteral("theme-panel.svg")));
+    bindIcon(themePanelButton, QStringLiteral("theme-panel.svg"));
     themePanelButton->setToolTip(tr("Temas"));
     connect(themePanelButton, &QToolButton::clicked, this, &TopToolbar::themePanelRequested);
 
     settingsButton->setObjectName(QStringLiteral("ttbSystem"));
-    settingsButton->setIcon(loadIcon(QStringLiteral("settings.svg")));
+    bindIcon(settingsButton, QStringLiteral("settings.svg"));
     settingsButton->setToolTip(tr("Configurações"));
     connect(settingsButton, &QToolButton::clicked, this, &TopToolbar::settingsRequested);
 
     fullscreenButton->setObjectName(QStringLiteral("ttbSystem"));
-    fullscreenButton->setIcon(loadIcon(QStringLiteral("fullscreen.svg")));
+    bindIcon(fullscreenButton, QStringLiteral("fullscreen.svg"));
     fullscreenButton->setCheckable(true);
     fullscreenButton->setToolTip(tr("Tela cheia"));
     connect(fullscreenButton, &QToolButton::toggled, this, &TopToolbar::fullscreenToggled);
 
     refMenuButton->setObjectName(QStringLiteral("ttbSystem"));
-    refMenuButton->setIcon(loadIcon(QStringLiteral("refmenu.svg")));
+    bindIcon(refMenuButton, QStringLiteral("refmenu.svg"));
     refMenuButton->setToolTip(tr("Painel de Referência"));
     connect(refMenuButton, &QToolButton::clicked, this, &TopToolbar::refMenuToggleRequested);
 
     // ---------------- Título do documento (centro) ----------------
     docTitleLabel->setObjectName(QStringLiteral("ttbDocTitle"));
     docTitleLabel->setAlignment(Qt::AlignCenter);
-    docTitleLabel->setStyleSheet(QStringLiteral(
-        "QLabel#ttbDocTitle {"
-        "  color: #f0e8d8;"
-        "  font-family: 'Lora','Crimson Text',serif;"
-        "  font-size: 18px;"
-        "  font-weight: 700;"
-        "}"));
     docTitleLabel->setTextInteractionFlags(Qt::NoTextInteraction);
     docTitleLabel->setText(QString());
     // Sai do fluxo do layout: posicionado manualmente sobre o centro real da
@@ -320,6 +323,78 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     buildSizeMenu();
     buildSpacingMenu();
+    applyRootStyle();
+
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &TopToolbar::applyTheme);
+}
+
+void TopToolbar::applyRootStyle()
+{
+    // Background da toolbar segue o app (sem caixa), botões transparentes com
+    // hover sutil. As cores dos ícones já vêm tintadas via loadIcon().
+    setStyleSheet(QStringLiteral(R"(
+        QWidget#topToolbar {
+            background: %1;
+        }
+        QToolButton {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: %2;
+        }
+        QToolButton:hover {
+            background: %3;
+            border-color: %4;
+            color: %5;
+        }
+        QToolButton:checked {
+            background: %6;
+            border-color: %5;
+            color: %5;
+        }
+        QToolButton::menu-indicator { image: none; width: 0; }
+        QFrame#ttbVSep {
+            color: %4;
+            background: %4;
+        }
+    )").arg(
+        Theme::appBackground(),    // 1 — fundo
+        Theme::textPrimary(),      // 2 — texto dos botões em estado normal
+        Theme::hoverOverlay(),     // 3 — hover bg
+        Theme::subtleBorder(),     // 4 — borda hover / separador
+        Theme::textBright(),       // 5 — texto hover/checked
+        Theme::pressedOverlay()    // 6 — checked bg
+    ));
+
+    if (docTitleLabel) {
+        docTitleLabel->setStyleSheet(QStringLiteral(
+            "QLabel#ttbDocTitle {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Lora','Crimson Text',serif;"
+            "  font-size: 18px;"
+            "  font-weight: 700;"
+            "}").arg(Theme::textBright()));
+    }
+}
+
+void TopToolbar::reloadIcons()
+{
+    focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
+    focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
+    if (focusButton) {
+        focusButton->setIcon(focusCheckedCache ? focusOnIcon : focusOffIcon);
+    }
+    for (const auto& pair : iconBindings) {
+        if (pair.first) pair.first->setIcon(loadIcon(pair.second));
+    }
+}
+
+void TopToolbar::applyTheme()
+{
+    applyRootStyle();
+    reloadIcons();
 }
 
 void TopToolbar::setDocumentTitle(const QString &title)

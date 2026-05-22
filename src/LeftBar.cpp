@@ -18,6 +18,14 @@
 #include <QVBoxLayout>
 
 namespace {
+QString separatorQss() {
+    return QStringLiteral(
+        "background: %1; border: none; max-height: 1px; margin: 2px 6px;"
+    ).arg(Theme::subtleBorder());
+}
+}
+
+namespace {
 constexpr const char* kDrawerMime = "application/x-mira-drawer-key";
 }
 
@@ -123,9 +131,7 @@ QFrame* makeGroupSeparator(QWidget* parent) {
     auto* line = new QFrame(parent);
     line->setFrameShape(QFrame::HLine);
     line->setFixedHeight(1);
-    line->setStyleSheet(QStringLiteral(
-        "background: %1; border: none; max-height: 1px; margin: 2px 6px;"
-    ).arg(Theme::subtleBorder()));
+    line->setStyleSheet(separatorQss());
     return line;
 }
 
@@ -158,7 +164,11 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
         tr("Informações do projeto"),
         Info));
 
-    m_rootLayout->addWidget(makeGroupSeparator(this));
+    {
+        auto* sep = makeGroupSeparator(this);
+        m_groupSeparators.append(sep);
+        m_rootLayout->addWidget(sep);
+    }
 
     // ---- Grupo 2: Planejamento ----
     m_rootLayout->addWidget(makeFixedButton(
@@ -167,7 +177,11 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
         tr("Lousa de planejamento"),
         Whiteboard));
 
-    m_rootLayout->addWidget(makeGroupSeparator(this));
+    {
+        auto* sep = makeGroupSeparator(this);
+        m_groupSeparators.append(sep);
+        m_rootLayout->addWidget(sep);
+    }
 
     // ---- Grupo 3: Escrita ----
     m_rootLayout->addWidget(makeFixedButton(
@@ -181,10 +195,15 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
         tr("Consistência narrativa"),
         Consistency));
 
-    m_rootLayout->addWidget(makeGroupSeparator(this));
+    {
+        auto* sep = makeGroupSeparator(this);
+        m_groupSeparators.append(sep);
+        m_rootLayout->addWidget(sep);
+    }
 
     // ---- Botão "+" (nova gaveta) — fica logo acima da lista, igual Mira 1
-    m_rootLayout->addWidget(makeNewDrawerButton());
+    m_newDrawerBtn = makeNewDrawerButton();
+    m_rootLayout->addWidget(m_newDrawerBtn);
 
     // ---- Gavetas ----
     m_drawerLayout = new QVBoxLayout();
@@ -199,6 +218,22 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
         connect(m_model, &ProjectModel::loaded, this, &LeftBar::rebuildDrawerButtons);
         rebuildDrawerButtons();
     }
+
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &LeftBar::applyTheme);
+}
+
+void LeftBar::applyTheme() {
+    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+    for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it) {
+        if (auto* btn = it.value()) btn->setStyleSheet(fixedButtonQss());
+    }
+    if (m_newDrawerBtn) m_newDrawerBtn->setStyleSheet(newDrawerQss());
+    for (auto* sep : m_groupSeparators) {
+        if (sep) sep->setStyleSheet(separatorQss());
+    }
+    // Recria botões de gaveta pra refletirem accent/textBright atualizados.
+    rebuildDrawerButtons();
 }
 
 void LeftBar::setMirrored(bool mirrored) {

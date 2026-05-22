@@ -5,6 +5,7 @@
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QFont>
+#include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMessageBox>
@@ -54,6 +55,7 @@
 #include "SpellChecker.h"
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
+#include "ThemesPanel.h"
 #include "WordCountPanel.h"
 #include "WordCounter.h"
 #include "Theme.h"
@@ -61,6 +63,24 @@
 #include "VariationBar.h"
 
 namespace {
+// Parseia uma cor no formato "rgba(r,g,b,a)" (o resto fica como hex). A versão
+// do QColor antes do Qt 6.6 não cobre essa sintaxe.
+QColor parseColor(const QString& s)
+{
+    if (!s.startsWith(QLatin1String("rgba("))) return QColor(s);
+    QString inner = s.mid(5);
+    if (inner.endsWith(QChar(')'))) inner.chop(1);
+    const QStringList parts = inner.split(QChar(','));
+    if (parts.size() != 4) return QColor(s);
+    bool ok = false;
+    const int r = parts.at(0).trimmed().toInt(&ok); if (!ok) return QColor();
+    const int g = parts.at(1).trimmed().toInt(&ok); if (!ok) return QColor();
+    const int b = parts.at(2).trimmed().toInt(&ok); if (!ok) return QColor();
+    // Alpha: 0..255 inteiro (formato simplificado que usamos no MiraTheme).
+    const int a = parts.at(3).trimmed().toInt(&ok); if (!ok) return QColor();
+    return QColor(r, g, b, a);
+}
+
 // Configura margens externas do frame float. O lado virado pra borda da página
 // fica em 0 (não há texto pra afastar); o lado do texto recebe o gap real.
 void applyFloatFrameStyle(QTextFrameFormat &ff, bool isLeft, int w)
@@ -96,7 +116,11 @@ MainWindow::MainWindow(QWidget *parent)
     , spellChecker(nullptr)
     , spellHighlighter(nullptr)
     , settingsPanel(nullptr)
+    , themesPanel(nullptr)
     , selectionPopup(nullptr)
+    , editorContainer(nullptr)
+    , editorColumn(nullptr)
+    , toolbarHolder(nullptr)
     , selBoldBtn(nullptr)
     , selItalicBtn(nullptr)
     , selUnderlineBtn(nullptr)
@@ -109,25 +133,29 @@ MainWindow::MainWindow(QWidget *parent)
     , paragraphSpacingBefore(0)
     , paragraphSpacingAfter(0)
     , focusModeEnabled(false)
-    , baseTextColor(QColor("#e8e3d6"))
+    , baseTextColor(QColor(Theme::editorTextColor()))
 {
     baseWindowTitle = tr("Mira Writing");
     setWindowTitle(baseWindowTitle);
 
     // Toolbar flutuante: holder com margem em volta da TopToolbar
-    auto *toolbarHolder = new QWidget(this);
-    toolbarHolder->setObjectName(QStringLiteral("topToolbarHolder"));
-    auto *holderLayout = new QHBoxLayout(toolbarHolder);
+    auto *holder = new QWidget(this);
+    holder->setObjectName(QStringLiteral("topToolbarHolder"));
+    holder->setAttribute(Qt::WA_StyledBackground, true);
+    holder->setStyleSheet(QStringLiteral("#topToolbarHolder { background: %1; }").arg(Theme::appBackground()));
+    toolbarHolder = holder;
+    auto *holderLayout = new QHBoxLayout(holder);
     holderLayout->setContentsMargins(12, 10, 12, 4);
     holderLayout->setSpacing(0);
     holderLayout->addWidget(toolbar);
-    setMenuWidget(toolbarHolder);
+    setMenuWidget(holder);
 
     resize(1100, 800);
 
     setupEditor();
     setupToolbar();
     applyEditorStyle();
+    applyPageShadow();
 
     QPalette p = editor->palette();
     p.setColor(QPalette::Text, baseTextColor);
@@ -146,7 +174,7 @@ void MainWindow::setupEditor()
 {
     editor->setFrameStyle(0);
     editor->setAcceptRichText(false);
-    editor->setFixedWidth(820);
+    editor->setFixedWidth(Theme::pageWidth());
 
     leftBar = new LeftBar(projectModel, this);
     drawerListPanel = new DrawerListPanel(projectModel, this);
@@ -398,6 +426,7 @@ void MainWindow::setupEditor()
 
     auto *container = new QWidget(this);
     container->setObjectName(QStringLiteral("editorContainer"));
+    editorContainer = container;
     container->setStyleSheet(QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
     auto *layout = new QHBoxLayout(container);
     layout->setContentsMargins(10, 10, 10, 10);
@@ -413,15 +442,16 @@ void MainWindow::setupEditor()
     manuscriptPanel->hide();
 
     // Coluna do editor: VariationBar (auto-hide) acima + editor
-    auto* editorColumn = new QWidget(this);
-    editorColumn->setFixedWidth(820);
-    auto* editorColumnLayout = new QVBoxLayout(editorColumn);
+    auto* editorColumnWidget = new QWidget(this);
+    editorColumnWidget->setFixedWidth(Theme::pageWidth());
+    editorColumn = editorColumnWidget;
+    auto* editorColumnLayout = new QVBoxLayout(editorColumnWidget);
     editorColumnLayout->setContentsMargins(0, 0, 0, 0);
     editorColumnLayout->setSpacing(8);
     editorColumnLayout->addWidget(variationBar);
-    editor->setFixedWidth(820); // já tava; reafirma
+    editor->setFixedWidth(Theme::pageWidth());
     editorColumnLayout->addWidget(editor, /*stretch=*/1);
-    layout->addWidget(editorColumn);
+    layout->addWidget(editorColumnWidget);
 
     layout->addStretch();
 
@@ -993,6 +1023,9 @@ void MainWindow::setupToolbar()
         if (projectSaver) projectSaver->saveProject();
     });
     connect(toolbar, &TopToolbar::settingsRequested, this, &MainWindow::onSettingsRequested);
+    connect(toolbar, &TopToolbar::themePanelRequested, this, &MainWindow::onThemePanelRequested);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &MainWindow::onThemeChanged);
 
     connect(toolbar, &TopToolbar::boldToggled, this, &MainWindow::setBold);
     connect(toolbar, &TopToolbar::italicToggled, this, &MainWindow::setItalic);
@@ -1048,6 +1081,28 @@ void MainWindow::applyEditorStyle()
     editor->setFont(font);
     editor->document()->setDefaultFont(font);
 
+    // Cor de texto do tema é a base; baseTextColor segue o tema atual.
+    baseTextColor = QColor(Theme::editorTextColor());
+    QPalette p = editor->palette();
+    p.setColor(QPalette::Base, QColor(Theme::editorBackground()));
+    editor->setPalette(p);
+
+    // Fundo da "página" via stylesheet — palette sozinha não vence o styling
+    // padrão do QTextEdit/viewport. NÃO setamos `color` aqui: o focus mode
+    // depende de mexer em QPalette::Text pra fazer o dim dos blocos não focados,
+    // e CSS-color sobrepõe palette, quebrando o efeito.
+    editor->setStyleSheet(QStringLiteral(
+        "QTextEdit { background-color: %1; selection-background-color: %2; }")
+        .arg(Theme::editorBackground(),
+             Theme::accentDefault()));
+    if (editor->viewport()) {
+        editor->viewport()->setAutoFillBackground(true);
+        QPalette vp = editor->viewport()->palette();
+        vp.setColor(QPalette::Base, QColor(Theme::editorBackground()));
+        vp.setColor(QPalette::Window, QColor(Theme::editorBackground()));
+        editor->viewport()->setPalette(vp);
+    }
+
     QTextCursor cursor(editor->document());
     cursor.select(QTextCursor::Document);
     QTextBlockFormat blockFormat;
@@ -1056,6 +1111,35 @@ void MainWindow::applyEditorStyle()
     blockFormat.setTopMargin(paragraphSpacingBefore);
     blockFormat.setBottomMargin(paragraphSpacingAfter);
     cursor.mergeBlockFormat(blockFormat);
+
+    // Aplica a cor de texto do tema em todo o documento (charFormat foreground
+    // sobrepõe palette nos blocos já existentes; sem isso, texto fica preso na
+    // cor antiga ao trocar de tema).
+    applyTextColor();
+}
+
+void MainWindow::applyTextColor()
+{
+    if (!editor || !editor->document()) return;
+
+    QColor textColor = baseTextColor;
+    textColor.setAlpha(focusModeEnabled ? 100 : 255);
+
+    QPalette p = editor->palette();
+    p.setColor(QPalette::Text, textColor);
+    editor->setPalette(p);
+
+    // mergeCharFormat preserva bold/italic/etc. Salvar/restaurar isModified
+    // pra não marcar o doc como sujo por causa de mudança visual de tema.
+    const bool wasModified = editor->document()->isModified();
+    QTextCursor cursor(editor->document());
+    cursor.select(QTextCursor::Document);
+    QTextCharFormat fmt;
+    fmt.setForeground(textColor);
+    cursor.mergeCharFormat(fmt);
+    editor->document()->setModified(wasModified);
+
+    if (editor->viewport()) editor->viewport()->update();
 }
 
 void MainWindow::setFontFamily(const QString &family)
@@ -1166,11 +1250,8 @@ void MainWindow::setFocusMode(bool enabled)
 {
     focusModeEnabled = enabled;
 
-    QColor dimmed = baseTextColor;
-    dimmed.setAlpha(enabled ? 100 : 255);
-    QPalette p = editor->palette();
-    p.setColor(QPalette::Text, dimmed);
-    editor->setPalette(p);
+    // Atualiza a cor base do texto em todo o documento (dim ou full).
+    applyTextColor();
 
     if (enabled) {
         connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateFocusedBlock);
@@ -1763,6 +1844,57 @@ void MainWindow::onSettingsRequested()
     settingsPanel->show();
     settingsPanel->raise();
     settingsPanel->activateWindow();
+}
+
+void MainWindow::onThemePanelRequested()
+{
+    if (!themesPanel) {
+        themesPanel = new ThemesPanel(this);
+    }
+    themesPanel->show();
+    themesPanel->raise();
+    themesPanel->activateWindow();
+}
+
+void MainWindow::onThemeChanged()
+{
+    // Largura/margens da "página" são propriedade do tema.
+    const int pw = Theme::pageWidth();
+    if (editor) editor->setFixedWidth(pw);
+    if (editorColumn) editorColumn->setFixedWidth(pw);
+
+    if (editorContainer) {
+        editorContainer->setStyleSheet(
+            QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
+    }
+    if (toolbarHolder) {
+        toolbarHolder->setStyleSheet(
+            QStringLiteral("#topToolbarHolder { background: %1; }").arg(Theme::appBackground()));
+    }
+
+    applyEditorStyle();
+    applyPageShadow();
+
+    // Reposiciona painéis flutuantes (largura mudou pode afetar layout).
+    positionSidePanels();
+    positionWordCountPanel();
+}
+
+void MainWindow::applyPageShadow()
+{
+    if (!editorColumn) return;
+    if (Theme::pageShadowEnabled()) {
+        auto* effect = qobject_cast<QGraphicsDropShadowEffect*>(editorColumn->graphicsEffect());
+        if (!effect) {
+            effect = new QGraphicsDropShadowEffect(editorColumn);
+            editorColumn->setGraphicsEffect(effect);
+        }
+        effect->setBlurRadius(Theme::pageShadowRadius());
+        effect->setOffset(0, Theme::pageShadowOffset());
+        effect->setColor(parseColor(Theme::pageShadowColor()));
+    } else {
+        editorColumn->setGraphicsEffect(nullptr);
+    }
 }
 
 void MainWindow::applySpellLanguageFromModel()

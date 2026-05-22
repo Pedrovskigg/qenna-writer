@@ -1,5 +1,6 @@
 #include "WordCounterCalendar.h"
 
+#include "Theme.h"
 #include "WordCounter.h"
 
 #include <QAction>
@@ -37,6 +38,8 @@ WordCounterCalendar::WordCounterCalendar(WordCounter* counter, QWidget* parent)
         connect(m_counter, &WordCounter::progressChanged, this, &WordCounterCalendar::refresh);
         connect(m_counter, &WordCounter::settingsChanged, this, &WordCounterCalendar::refresh);
     }
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &WordCounterCalendar::applyThemeStyle);
     refresh();
 }
 
@@ -92,50 +95,76 @@ void WordCounterCalendar::buildUi()
     }
     outer->addLayout(m_grid);
 
+    applyThemeStyle();
+}
+
+void WordCounterCalendar::applyThemeStyle()
+{
+    const QString bgPanel    = Theme::panelBackground();
+    const QString bgCard     = Theme::appBackground();
+    const QString bgHover    = Theme::hoverOverlay();
+    const QString border     = Theme::panelBorder();
+    const QString borderSub  = Theme::subtleBorder();
+    const QString txtPrimary = Theme::textPrimary();
+    const QString txtMuted   = Theme::textMuted();
+    const QString txtBright  = Theme::textBright();
+    const QString accent     = Theme::accentDefault();
+
     setStyleSheet(QStringLiteral(R"(
         QWidget#wcpCalendar {
-            background: rgba(20, 20, 20, 235);
-            border: 1px solid #2a2a2a;
+            background: %1;
+            border: 1px solid %4;
             border-radius: 6px;
         }
         QLabel#wcpCalMonth {
-            color: #e8e3d6; font-size: 12px; font-weight: 600;
+            color: %8; font-size: 12px; font-weight: 600;
         }
         QLabel#wcpCalDow {
-            color: #8a857a; font-size: 10px; font-weight: 600;
+            color: %7; font-size: 10px; font-weight: 600;
         }
         QToolButton#wcpCalNav, QToolButton#wcpCalToday {
-            background: #1a1a1a; color: #c8c3b6;
-            border: 1px solid #2a2a2a; border-radius: 3px;
+            background: %2; color: %6;
+            border: 1px solid %5; border-radius: 3px;
             padding: 2px 6px; min-height: 18px;
         }
         QToolButton#wcpCalNav:hover, QToolButton#wcpCalToday:hover {
-            background: #232323; color: #e8e3d6;
+            background: %3; color: %8;
         }
         QLabel#wcpCalDay {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            border: 1px solid %5;
             border-radius: 3px;
-            color: #c8c3b6;
+            color: %6;
             padding: 2px;
             min-height: 30px;
         }
         QLabel#wcpCalDay[isToday="true"] {
-            border: 1px solid #6a8d4a;
+            border: 1px solid %9;
         }
         QLabel#wcpCalDay[isEmpty="true"] {
             background: transparent;
             border: 1px solid transparent;
         }
         QLabel#wcpCalDay[offType="legit"] {
-            border: 1px dashed #d8d3c6;
-            background: #1d1d1d;
+            border: 1px dashed %6;
+            background: %3;
         }
         QLabel#wcpCalDay[offType="stolen"] {
             border: 1px dashed #d66060;
-            background: #2a1818;
         }
-    )"));
+    )")
+        .arg(bgPanel,    // 1
+             bgCard,     // 2
+             bgHover,    // 3
+             border,     // 4
+             borderSub,  // 5
+             txtPrimary, // 6
+             txtMuted,   // 7
+             txtBright,  // 8
+             accent)     // 9
+    );
+    // refresh rebui​lda os labels dos dias (que têm cor inline) com cores do tema.
+    refresh();
 }
 
 void WordCounterCalendar::shiftMonth(int delta)
@@ -230,11 +259,14 @@ void WordCounterCalendar::refresh()
             offType == WordCounter::OffDayType::Legit ? "legit" :
             offType == WordCounter::OffDayType::Stolen ? "stolen" : "none");
 
-        const QString numColor = isToday ? QStringLiteral("#f0e8d8") : QStringLiteral("#c8c3b6");
+        const QString numColor = isToday ? Theme::textBright() : Theme::textPrimary();
+        // Estrela dourada mantém cor própria (semântica de "ouro" não muda por tema).
         const QString starColor = QStringLiteral("#e6c45a");
         QString moon;
-        if (offType == WordCounter::OffDayType::Legit) moon = QStringLiteral(" <span style='color:#f0e8d8;'>☾</span>");
-        else if (offType == WordCounter::OffDayType::Stolen) moon = QStringLiteral(" <span style='color:#d66060;'>☾</span>");
+        if (offType == WordCounter::OffDayType::Legit)
+            moon = QStringLiteral(" <span style='color:%1;'>☾</span>").arg(Theme::textBright());
+        else if (offType == WordCounter::OffDayType::Stolen)
+            moon = QStringLiteral(" <span style='color:#d66060;'>☾</span>");
 
         cell->setText(QStringLiteral(
             "<div style='color:%1; font-size:11px; font-weight:600; line-height:1;'>%2%3</div>"

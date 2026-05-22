@@ -1,6 +1,9 @@
 #ifndef TOPTOOLBAR_H
 #define TOPTOOLBAR_H
 
+#include <QList>
+#include <QPair>
+#include <QString>
 #include <QStringList>
 #include <QWidget>
 
@@ -112,6 +115,12 @@ private:
     void applyParaSpaceBefore(int px);
     void applyParaSpaceAfter(int px);
     void applyFontButtonStyle();
+    void applyTheme();
+    void applyRootStyle();
+    void reloadIcons();
+
+    QList<QPair<QToolButton*, QString>> iconBindings;
+    bool focusCheckedCache = false;
 };
 
 #endif

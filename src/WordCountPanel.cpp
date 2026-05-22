@@ -2,6 +2,7 @@
 
 #include "EditorHost.h"
 #include "ProjectModel.h"
+#include "Theme.h"
 #include "WordCounter.h"
 #include "WordCounterCalendar.h"
 
@@ -162,65 +163,85 @@ void WordCountPanel::buildUi()
     m_fullBody->setVisible(false);
     outer->addWidget(m_fullBody);
 
+    applyThemeStyle();
+
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &WordCountPanel::applyThemeStyle);
+}
+
+void WordCountPanel::applyThemeStyle()
+{
+    // Stylesheet inteira derivada do Theme::, com fallback semântico em vermelho
+    // pra "lazyass" (warning) que não muda por tema.
+    const QString bgPanel    = Theme::panelBackground();
+    const QString bgCard     = Theme::appBackground();
+    const QString bgHover    = Theme::hoverOverlay();
+    const QString border     = Theme::panelBorder();
+    const QString borderSub  = Theme::subtleBorder();
+    const QString txtPrimary = Theme::textPrimary();
+    const QString txtMuted   = Theme::textMuted();
+    const QString txtBright  = Theme::textBright();
+    const QString accent     = Theme::accentDefault();
+
     setStyleSheet(QStringLiteral(R"(
         QWidget#wordCountPanel { background: transparent; }
         QFrame#wcpBody, QFrame#wcpFullBody, QFrame#wcpSection {
-            background: rgba(20, 20, 20, 235);
-            border: 1px solid #2a2a2a;
+            background: %1;
+            border: 1px solid %4;
             border-radius: 6px;
         }
         QToolButton#wcpToggle {
-            background: rgba(20, 20, 20, 235);
-            color: #c8c3b6;
-            border: 1px solid #2a2a2a;
+            background: %1;
+            color: %6;
+            border: 1px solid %4;
             border-bottom: none;
             border-top-left-radius: 4px;
             border-top-right-radius: 4px;
             font-size: 10px;
             padding: 0;
         }
-        QToolButton#wcpToggle:hover { color: #f0e8d8; }
+        QToolButton#wcpToggle:hover { color: %8; }
         QLabel#wcpSectionTitle {
-            color: #e8e3d6; font-size: 12px; font-weight: 600;
+            color: %8; font-size: 12px; font-weight: 600;
         }
-        QLabel#wcpMeta { color: #8a857a; font-size: 11px; }
+        QLabel#wcpMeta { color: %7; font-size: 11px; }
         QFrame#wcpCard {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            border: 1px solid %5;
             border-radius: 4px;
         }
-        QLabel#wcpCardTitle { color: #8a857a; font-size: 11px; }
-        QLabel#wcpCardValue { color: #e8e3d6; font-size: 15px; font-weight: 600; }
+        QLabel#wcpCardTitle { color: %7; font-size: 11px; }
+        QLabel#wcpCardValue { color: %8; font-size: 15px; font-weight: 600; }
         QPushButton#wcpScopeBtn {
-            background: #1a1a1a;
-            color: #c8c3b6;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            color: %6;
+            border: 1px solid %5;
             border-radius: 4px;
             padding: 6px 10px;
             text-align: left;
         }
-        QPushButton#wcpScopeBtn:hover { background: #232323; color: #e8e3d6; }
+        QPushButton#wcpScopeBtn:hover { background: %3; color: %8; }
         QPushButton#wcpScopeBtn[selected="true"] {
-            background: #2c3a5e;
-            color: #f0e8d8;
-            border-color: #3a4d7a;
+            background: %3;
+            color: %8;
+            border-color: %9;
         }
         QProgressBar#wcpProgress {
-            background: #1a1a1a;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            border: 1px solid %5;
             border-radius: 3px;
             height: 6px;
             text-align: center;
             color: transparent;
         }
         QProgressBar#wcpProgress::chunk {
-            background: #6a8d4a;
+            background: %9;
             border-radius: 2px;
         }
         QComboBox, QSpinBox {
-            background: #1a1a1a;
-            color: #e8e3d6;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            color: %8;
+            border: 1px solid %5;
             border-radius: 3px;
             padding: 3px 6px;
             min-height: 26px;
@@ -228,7 +249,7 @@ void WordCountPanel::buildUi()
         QComboBox::drop-down { border: none; width: 16px; }
         QComboBox[lazyass="true"] {
             border: 1px solid #d66060;
-            color: #f0c8c8;
+            color: #d66060;
         }
         QLabel#wcpLazyass {
             color: #d66060;
@@ -236,23 +257,23 @@ void WordCountPanel::buildUi()
             font-style: italic;
         }
         QFrame#wcpFolgaPanel {
-            background: #161616;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            border: 1px solid %5;
             border-radius: 4px;
         }
         QToolButton#wcpCalToggleBtn {
             background: transparent;
-            color: #8a857a;
+            color: %7;
             border: none;
             font-size: 11px;
             padding: 4px 0;
             text-align: left;
         }
-        QToolButton#wcpCalToggleBtn:hover { color: #d8d3c6; }
+        QToolButton#wcpCalToggleBtn:hover { color: %6; }
         QToolButton#wcpSpinBtn {
-            background: #1a1a1a;
-            color: #c8c3b6;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            color: %6;
+            border: 1px solid %5;
             border-radius: 3px;
             font-size: 8px;
             min-width: 20px;
@@ -261,23 +282,33 @@ void WordCountPanel::buildUi()
             max-height: 14px;
             padding: 0;
         }
-        QToolButton#wcpSpinBtn:hover { background: #232323; color: #e8e3d6; }
+        QToolButton#wcpSpinBtn:hover { background: %3; color: %8; }
         QComboBox QAbstractItemView {
-            background: #1a1a1a;
-            color: #e8e3d6;
-            selection-background-color: #2c3a5e;
-            border: 1px solid #2a2a2a;
+            background: %1;
+            color: %8;
+            selection-background-color: %3;
+            border: 1px solid %4;
         }
         QToolButton#wcpResetBtn {
-            background: #1a1a1a;
-            color: #c8c3b6;
-            border: 1px solid #2a2a2a;
+            background: %2;
+            color: %6;
+            border: 1px solid %5;
             border-radius: 3px;
             padding: 3px 6px;
             min-width: 22px;
         }
-        QToolButton#wcpResetBtn:hover { background: #232323; color: #e8e3d6; }
-    )"));
+        QToolButton#wcpResetBtn:hover { background: %3; color: %8; }
+    )")
+        .arg(bgPanel,    // 1
+             bgCard,     // 2
+             bgHover,    // 3
+             border,     // 4
+             borderSub,  // 5
+             txtPrimary, // 6
+             txtMuted,   // 7
+             txtBright,  // 8
+             accent)     // 9
+    );
 }
 
 QFrame* WordCountPanel::buildScopeSection()

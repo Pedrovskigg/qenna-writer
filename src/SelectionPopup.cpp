@@ -48,23 +48,7 @@ SelectionPopup::SelectionPopup(QTextEdit *editor, QWidget *parent)
     m_layout->setContentsMargins(6, 4, 6, 4);
     m_layout->setSpacing(2);
 
-    setStyleSheet(QStringLiteral(
-        "QFrame#selectionPopup {"
-        "  background: %1;"
-        "  border: 1px solid %2;"
-        "  border-radius: 8px;"
-        "}"
-        "QToolButton#selPopupBtn {"
-        "  background: transparent;"
-        "  border: none;"
-        "  border-radius: 6px;"
-        "}"
-        "QToolButton#selPopupBtn:hover { background: %3; }"
-        "QToolButton#selPopupBtn:checked { background: %4; }"
-    ).arg(Theme::panelBackground(),
-          Theme::panelBorder(),
-          Theme::hoverOverlay(),
-          Theme::pressedOverlay()));
+    applyRootStyle();
 
     auto *shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(18);
@@ -90,6 +74,38 @@ SelectionPopup::SelectionPopup(QTextEdit *editor, QWidget *parent)
                     this, &SelectionPopup::onScrollChanged);
         }
     }
+
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &SelectionPopup::applyTheme);
+}
+
+void SelectionPopup::applyRootStyle()
+{
+    setStyleSheet(QStringLiteral(
+        "QFrame#selectionPopup {"
+        "  background: %1;"
+        "  border: 1px solid %2;"
+        "  border-radius: 8px;"
+        "}"
+        "QToolButton#selPopupBtn {"
+        "  background: transparent;"
+        "  border: none;"
+        "  border-radius: 6px;"
+        "}"
+        "QToolButton#selPopupBtn:hover { background: %3; }"
+        "QToolButton#selPopupBtn:checked { background: %4; }"
+    ).arg(Theme::panelBackground(),
+          Theme::panelBorder(),
+          Theme::hoverOverlay(),
+          Theme::pressedOverlay()));
+}
+
+void SelectionPopup::applyTheme()
+{
+    applyRootStyle();
+    // Ícones dos botões já existentes seguem com a cor antiga até a próxima
+    // criação — o ganho visual aqui é o background/border do popup, que é
+    // o que mais salta aos olhos. MVP aceita.
 }
 
 QToolButton* SelectionPopup::addAction(const QString &iconAlias,

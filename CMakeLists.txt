@@ -72,7 +72,10 @@ qt_add_executable(mira-writing
     src/SettingsPanel.h
     src/SelectionPopup.cpp
     src/SelectionPopup.h
+    src/Theme.cpp
     src/Theme.h
+    src/ThemesPanel.cpp
+    src/ThemesPanel.h
     resources/icons.qrc
 )
 

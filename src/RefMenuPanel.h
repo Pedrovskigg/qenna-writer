@@ -59,6 +59,7 @@ private slots:
     void onCycleFontSize();
     void onToggleVisualMode();
     void onCloseClicked();
+    void applyTheme();
 
 private:
     enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder, MemoriesPlaceholder };

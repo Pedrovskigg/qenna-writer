@@ -70,13 +70,7 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
 {
     setObjectName(QStringLiteral("variationBar"));
     setAttribute(Qt::WA_StyledBackground, true);
-    setStyleSheet(QStringLiteral(R"(
-        #variationBar {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: 8px;
-        }
-    )").arg(Theme::panelBackground(), Theme::panelBorder()));
+    applyRootStyle();
 
     auto* root = new QHBoxLayout(this);
     root->setContentsMargins(10, 6, 10, 6);
@@ -144,7 +138,32 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
     if (m_model) {
         connect(m_model, &ProjectModel::chaptersChanged, this, &VariationBar::refresh);
     }
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &VariationBar::applyTheme);
     hide();
+}
+
+void VariationBar::applyRootStyle() {
+    setStyleSheet(QStringLiteral(R"(
+        #variationBar {
+            background: %1;
+            border: 1px solid %2;
+            border-radius: 8px;
+        }
+    )").arg(Theme::panelBackground(), Theme::panelBorder()));
+}
+
+void VariationBar::applyTheme() {
+    applyRootStyle();
+    if (m_label) {
+        m_label->setStyleSheet(QStringLiteral(
+            "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 12px; font-weight: 600;")
+            .arg(Theme::textMuted()));
+    }
+    if (m_newBtn) m_newBtn->setStyleSheet(iconBtnQss());
+    if (m_primaryBtn) m_primaryBtn->setStyleSheet(iconBtnQss());
+    if (m_deleteBtn) m_deleteBtn->setStyleSheet(iconBtnQss());
+    if (isVisible()) rebuildButtons();
 }
 
 void VariationBar::refresh() {

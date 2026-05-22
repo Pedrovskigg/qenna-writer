@@ -1,9 +1,12 @@
 #pragma once
 
 #include <QHash>
+#include <QList>
 #include <QPoint>
 #include <QString>
 #include <QWidget>
+
+class QFrame;
 
 class QVBoxLayout;
 class QToolButton;
@@ -49,6 +52,7 @@ protected:
 
 private slots:
     void rebuildDrawerButtons();
+    void applyTheme();
 
 private:
     int drawerInsertIndexAt(const QPoint& posInBar) const;
@@ -64,6 +68,8 @@ private:
                                   const QString& color,
                                   const QString& iconId);
     QToolButton* makeNewDrawerButton();
+    QToolButton* m_newDrawerBtn = nullptr;
+    QList<QFrame*> m_groupSeparators;
     void applyMirrorStyle();
     void refreshActiveStates();
 

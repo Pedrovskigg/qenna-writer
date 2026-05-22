@@ -442,7 +442,18 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         }
     }
 
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &DrawerListPanel::applyTheme);
+
     hide();
+}
+
+void DrawerListPanel::applyTheme() {
+    setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel")));
+    // Os elementos internos (header, cards, chips, action bar) são reconstruídos
+    // ao reabrir o painel — basta reaplicar a base do painel pro background/border
+    // novo aparecerem imediatamente.
+    if (isPanelOpen()) rebuildContents();
 }
 
 void DrawerListPanel::setElementsStore(ElementsStore* store) {

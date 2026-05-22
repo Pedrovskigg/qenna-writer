@@ -30,10 +30,12 @@ protected:
 private slots:
     void onSelectionChanged();
     void onScrollChanged();
+    void applyTheme();
 
 private:
     void updatePosition();
     bool hasSelection() const;
+    void applyRootStyle();
 
     QTextEdit *m_editor;
     QHBoxLayout *m_layout;

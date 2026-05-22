@@ -16,9 +16,13 @@ public:
 public slots:
     void refresh();
 
+private slots:
+    void applyTheme();
+
 private:
     void rebuildButtons();
     void setEmptyState(bool empty);
+    void applyRootStyle();
 
     ProjectModel* m_model;
     EditorHost* m_host;

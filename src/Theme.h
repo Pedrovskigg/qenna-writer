@@ -1,34 +1,91 @@
 #pragma once
 
+#include <QList>
+#include <QObject>
 #include <QString>
 
-// Constantes de tema centralizadas. Quando virar editável, basta trocar pra
-// QSettings ou um struct lido de arquivo — os call-sites já estão prontos.
 namespace Theme {
 
-inline QString appBackground()      { return QStringLiteral("#08080a"); }
-inline QString panelBackground()    { return QStringLiteral("#1c1c22"); }
-inline QString panelBorder()        { return QStringLiteral("#52525e"); }
-inline QString panelBorderRadius()  { return QStringLiteral("10px"); }
+// Bundle de propriedades visuais de um tema. Cores em #rrggbb ou rgba(...).
+// pageWidth/pageVerticalMargin controlam o layout da página de escrita.
+struct MiraTheme {
+    QString id;
+    QString name;
+    bool bundled = true;
 
-inline QString textPrimary()        { return QStringLiteral("#d8d3c6"); }
-inline QString textMuted()          { return QStringLiteral("#8a857a"); }
-inline QString textBright()         { return QStringLiteral("#f0e8d8"); }
+    // Cores principais (painéis, app)
+    QString appBackground;
+    QString panelBackground;
+    QString panelBorder;
+    QString textPrimary;
+    QString textMuted;
+    QString textBright;
+    QString hoverOverlay;
+    QString pressedOverlay;
+    QString subtleBorder;
+    QString accentDefault;
 
-inline QString hoverOverlay()       { return QStringLiteral("rgba(255,255,255,0.06)"); }
-inline QString pressedOverlay()     { return QStringLiteral("rgba(255,255,255,0.04)"); }
-inline QString subtleBorder()       { return QStringLiteral("rgba(255,255,255,0.10)"); }
+    // Editor — "página" de escrita
+    QString editorBackground;
+    QString editorTextColor;
+    int pageWidth = 820;
+    int pageVerticalMargin = 10;
 
-inline QString accentDefault()      { return QStringLiteral("#3a8c7a"); }
+    // Sombra projetada da página (estilo FocusWriter). Quando enabled, o
+    // editorColumn ganha QGraphicsDropShadowEffect.
+    bool pageShadowEnabled = false;
+    QString pageShadowColor = QStringLiteral("rgba(0,0,0,140)");
+    int pageShadowRadius = 24;
+    int pageShadowOffset = 6;
+};
 
-inline QString panelQss(const QString& objectName) {
-    return QStringLiteral(R"(
-        #%1 {
-            background: %2;
-            border: 1px solid %3;
-            border-radius: %4;
-        }
-    )").arg(objectName, panelBackground(), panelBorder(), panelBorderRadius());
-}
+// Singleton observável. Quem precisa reagir a troca de tema deve conectar
+// ao sinal themeChanged() e reaplicar suas stylesheets.
+class Manager : public QObject {
+    Q_OBJECT
+public:
+    static Manager* instance();
+
+    const MiraTheme& current() const;
+    const QList<MiraTheme>& available() const;
+    void setCurrent(const QString& id);
+
+signals:
+    void themeChanged();
+
+private:
+    Manager();
+    void loadBundled();
+    void loadFromSettings();
+    void saveToSettings() const;
+
+    QList<MiraTheme> m_themes;
+    int m_currentIndex = 0;
+};
+
+// API legada — chamadas existentes (`Theme::appBackground()` etc.) seguem
+// funcionando e passam a refletir o tema atual.
+QString appBackground();
+QString panelBackground();
+QString panelBorder();
+QString panelBorderRadius();
+QString textPrimary();
+QString textMuted();
+QString textBright();
+QString hoverOverlay();
+QString pressedOverlay();
+QString subtleBorder();
+QString accentDefault();
+QString panelQss(const QString& objectName);
+
+// Novos acessores específicos do editor.
+int pageWidth();
+int pageVerticalMargin();
+QString editorBackground();
+QString editorTextColor();
+bool pageShadowEnabled();
+QString pageShadowColor();
+int pageShadowRadius();
+int pageShadowOffset();
 
 } // namespace Theme
