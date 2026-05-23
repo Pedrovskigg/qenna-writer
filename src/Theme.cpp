@@ -37,8 +37,6 @@ void Manager::loadBundled()
         t.accentDefault    = QStringLiteral("#3a8c7a");
         t.editorBackground = QStringLiteral("#101010");  // R16 G16 B16
         t.editorTextColor  = QStringLiteral("#e0e0e0");  // R224 G224 B224
-        t.pageWidth = 820;
-        t.pageVerticalMargin = 10;
         // Sombra sutil em fundo escuro: só pra dar volume.
         t.pageShadowEnabled = true;
         t.pageShadowColor = QStringLiteral("rgba(0,0,0,160)");
@@ -66,8 +64,6 @@ void Manager::loadBundled()
         t.accentDefault    = QStringLiteral("#3a8c7a");
         t.editorBackground = QStringLiteral("#ffffff");
         t.editorTextColor  = QStringLiteral("#141414");
-        t.pageWidth = 820;
-        t.pageVerticalMargin = 10;
         t.pageShadowEnabled = true;
         t.pageShadowColor = QStringLiteral("rgba(0,0,0,90)");
         t.pageShadowRadius = 28;
@@ -144,8 +140,6 @@ QString panelQss(const QString& objectName)
     )").arg(objectName, panelBackground(), panelBorder(), panelBorderRadius());
 }
 
-int pageWidth()              { return Manager::instance()->current().pageWidth; }
-int pageVerticalMargin()     { return Manager::instance()->current().pageVerticalMargin; }
 QString editorBackground()   { return Manager::instance()->current().editorBackground; }
 QString editorTextColor()    { return Manager::instance()->current().editorTextColor; }
 bool pageShadowEnabled()     { return Manager::instance()->current().pageShadowEnabled; }

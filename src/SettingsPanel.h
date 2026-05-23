@@ -7,6 +7,8 @@
 
 class QCheckBox;
 class QComboBox;
+class QLabel;
+class QSlider;
 
 class SettingsPanel : public QDialog {
     Q_OBJECT
@@ -28,8 +30,16 @@ signals:
 private:
     void onCheckToggled(bool checked);
     void onLanguageChanged(int index);
+    void syncPageLayoutFromManager();
 
     QCheckBox* m_spellCheck;
     QComboBox* m_langCombo;
+    QSlider* m_pageWidthSlider = nullptr;
+    QSlider* m_hMarginSlider = nullptr;
+    QSlider* m_vMarginSlider = nullptr;
+    QLabel* m_pageWidthValue = nullptr;
+    QLabel* m_hMarginValue = nullptr;
+    QLabel* m_vMarginValue = nullptr;
     bool m_blockSignals = false;
+    bool m_blockLayoutSignals = false;
 };

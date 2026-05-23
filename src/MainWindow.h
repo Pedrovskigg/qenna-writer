@@ -7,6 +7,8 @@
 #include <QTextCursor>
 
 class QLabel;
+class QScrollArea;
+class QScrollBar;
 class QTextEdit;
 class QTimer;
 class TopToolbar;
@@ -70,6 +72,9 @@ private:
     void onSettingsRequested();
     void onThemePanelRequested();
     void onThemeChanged();
+    void onEditorLayoutChanged();
+    void applyEditorLayout();
+    void resizeEditorColumnToViewport();
     void applyPageShadow();
     void applySpellLanguageFromModel();
     void positionWordCountPanel();
@@ -78,6 +83,8 @@ private:
     bool loadProjectFrom(const QString& root, QString* errorOut = nullptr);
     void rememberLastProject(const QString& root);
     QString loadLastProjectPath() const;
+    void rememberLastDocFor(const QString& root);
+    void restoreLastDocFor(const QString& root);
     void applyProjectRoot(const QString& root);
 
     bool findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const;
@@ -110,6 +117,8 @@ private:
     SelectionPopup *selectionPopup;
     QWidget *editorContainer;
     QWidget *editorColumn;
+    QScrollArea *editorScroll = nullptr;
+    QScrollBar *externalScrollBar = nullptr;
     QWidget *toolbarHolder;
     QToolButton *selBoldBtn;
     QToolButton *selItalicBtn;

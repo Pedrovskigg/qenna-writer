@@ -7,7 +7,8 @@
 namespace Theme {
 
 // Bundle de propriedades visuais de um tema. Cores em #rrggbb ou rgba(...).
-// pageWidth/pageVerticalMargin controlam o layout da página de escrita.
+// Layout da página (largura/margens) NÃO é responsabilidade do tema — fica
+// em EditorLayout.
 struct MiraTheme {
     QString id;
     QString name;
@@ -25,11 +26,9 @@ struct MiraTheme {
     QString subtleBorder;
     QString accentDefault;
 
-    // Editor — "página" de escrita
+    // Editor — "página" de escrita (apenas cor; largura/margens vivem em EditorLayout)
     QString editorBackground;
     QString editorTextColor;
-    int pageWidth = 820;
-    int pageVerticalMargin = 10;
 
     // Sombra projetada da página (estilo FocusWriter). Quando enabled, o
     // editorColumn ganha QGraphicsDropShadowEffect.
@@ -79,8 +78,6 @@ QString accentDefault();
 QString panelQss(const QString& objectName);
 
 // Novos acessores específicos do editor.
-int pageWidth();
-int pageVerticalMargin();
 QString editorBackground();
 QString editorTextColor();
 bool pageShadowEnabled();

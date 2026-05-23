@@ -29,6 +29,7 @@ public:
     void setItalicChecked(bool checked);
     void setUnderlineChecked(bool checked);
     void setStrikethroughChecked(bool checked);
+    void setFocusModeChecked(bool checked);
     void setDocumentTitle(const QString &title);
     // x em coords locais da TopToolbar; passe -1 para retomar o centro geométrico.
     void setTitleAnchorX(int x);

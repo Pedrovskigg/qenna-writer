@@ -214,10 +214,13 @@ void WordCounterCalendar::refresh()
 
     // Limpa células antigas (qualquer label de dia). Os DOW (row 0) têm objectName
     // "wcpCalDow" e ficam intactos.
+    // NÃO usar setParent(nullptr) aqui — isso promove o widget a top-level
+    // (janela nativa do Windows) por um event loop antes de deleteLater destruir.
+    // Resultado: 31 janelinhas brancas piscam ao marcar folga com calendário aberto.
     const auto oldCells = findChildren<QLabel*>(QStringLiteral("wcpCalDay"));
     for (auto* c : oldCells) {
+        c->hide();
         m_grid->removeWidget(c);
-        c->setParent(nullptr);
         c->deleteLater();
     }
 

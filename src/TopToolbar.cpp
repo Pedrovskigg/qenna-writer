@@ -478,6 +478,15 @@ void TopToolbar::setStrikethroughChecked(bool checked)
     strikethroughButton->setChecked(checked);
 }
 
+void TopToolbar::setFocusModeChecked(bool checked)
+{
+    if (!focusButton) return;
+    QSignalBlocker block(focusButton);
+    focusButton->setChecked(checked);
+    focusCheckedCache = checked;
+    focusButton->setIcon(checked ? focusOnIcon : focusOffIcon);
+}
+
 void TopToolbar::setParagraphSpacingBefore(int px)
 {
     currentParaSpaceBefore = qBound(0, px, 32);

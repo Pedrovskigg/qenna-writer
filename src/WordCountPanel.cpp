@@ -529,7 +529,7 @@ QFrame* WordCountPanel::buildGoalSection()
     selectsGrid->addWidget(m_goalValueLabel, 2, 0);
 
     m_goalValueSpin = new QSpinBox(section);
-    m_goalValueSpin->setRange(0, 100000);
+    m_goalValueSpin->setRange(1, 100000);
     m_goalValueSpin->setSingleStep(50);
     m_goalValueSpin->setFixedWidth(80);
     m_goalValueSpin->setAlignment(Qt::AlignCenter);
@@ -680,9 +680,10 @@ void WordCountPanel::refreshFromSettings()
     if (m_goalValueSpin && m_goalValueLabel) {
         const bool isTime = s.goalType == QStringLiteral("time");
         m_goalValueLabel->setText(isTime ? tr("Minutos") : tr("Palavras"));
-        m_goalValueSpin->setRange(0, isTime ? 1440 : 100000);
+        m_goalValueSpin->setRange(1, isTime ? 1440 : 100000);
         m_goalValueSpin->setSingleStep(isTime ? 5 : 50);
-        m_goalValueSpin->setValue(isTime ? s.goalTargetMinutes : s.goalTargetWords);
+        const int v = isTime ? s.goalTargetMinutes : s.goalTargetWords;
+        m_goalValueSpin->setValue(qMax(1, v));
     }
 
     if (m_folgaEveryCombo) {

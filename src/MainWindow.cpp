@@ -11,6 +11,8 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QCryptographicHash>
+#include <QScrollArea>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QSizePolicy>
@@ -39,6 +41,7 @@
 #include "DrawerCreateDialog.h"
 #include "DrawerListPanel.h"
 #include "EditorHost.h"
+#include "EditorLayout.h"
 #include "ElementCreateDialog.h"
 #include "ElementsStore.h"
 #include "ImageInsertDialog.h"
@@ -151,6 +154,7 @@ MainWindow::MainWindow(QWidget *parent)
     setMenuWidget(holder);
 
     resize(1100, 800);
+    setWindowState(windowState() | Qt::WindowMaximized);
 
     setupEditor();
     setupToolbar();
@@ -174,7 +178,7 @@ void MainWindow::setupEditor()
 {
     editor->setFrameStyle(0);
     editor->setAcceptRichText(false);
-    editor->setFixedWidth(Theme::pageWidth());
+    editor->setFixedWidth(EditorLayout::pageWidth());
 
     leftBar = new LeftBar(projectModel, this);
     drawerListPanel = new DrawerListPanel(projectModel, this);
@@ -183,6 +187,14 @@ void MainWindow::setupEditor()
     manuscriptPanel = new ManuscriptPanel(projectModel, this);
     editorHost = new EditorHost(editor, docCache, projectModel, this);
     editor->setEnabled(false);
+
+    // Persiste o último doc aberto por projeto — restaurado no próximo load.
+    // Ignora Disabled (estado transitório durante troca de projeto).
+    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+        if (projectRoot.isEmpty()) return;
+        if (editorHost->viewMode().type == EditorHost::Disabled) return;
+        rememberLastDocFor(projectRoot);
+    });
 
     // Spell checker + highlighter. Idioma e custom dict são aplicados a partir
     // do projectModel quando ele carrega (onLoaded → applySpellLanguageFromModel).
@@ -326,6 +338,16 @@ void MainWindow::setupEditor()
             tr("Não foi possível salvar o projeto:\n%1").arg(err));
     });
 
+    // Restaura o modo foco como estava na sessão anterior.
+    {
+        const bool savedFocus = QSettings()
+            .value(QStringLiteral("editor/focusMode"), false).toBool();
+        if (savedFocus) {
+            toolbar->setFocusModeChecked(true);
+            setFocusMode(true);
+        }
+    }
+
     // Autoload do último projeto (se houver).
     const QString lastPath = loadLastProjectPath();
     if (!lastPath.isEmpty() && QDir(lastPath).exists()) {
@@ -432,7 +454,6 @@ void MainWindow::setupEditor()
     layout->setContentsMargins(10, 10, 10, 10);
     layout->setSpacing(10);
     layout->addWidget(leftBar);
-    layout->addStretch();
 
     // Drawer/Manuscript panels não entram no layout — flutuam ao lado da
     // LeftBar pra não empurrar o editor.
@@ -441,19 +462,63 @@ void MainWindow::setupEditor()
     drawerListPanel->hide();
     manuscriptPanel->hide();
 
-    // Coluna do editor: VariationBar (auto-hide) acima + editor
+    // Coluna do editor: VariationBar (auto-hide) acima + [editor | scrollbar externo]
     auto* editorColumnWidget = new QWidget(this);
-    editorColumnWidget->setFixedWidth(Theme::pageWidth());
     editorColumn = editorColumnWidget;
     auto* editorColumnLayout = new QVBoxLayout(editorColumnWidget);
     editorColumnLayout->setContentsMargins(0, 0, 0, 0);
     editorColumnLayout->setSpacing(8);
     editorColumnLayout->addWidget(variationBar);
-    editor->setFixedWidth(Theme::pageWidth());
-    editorColumnLayout->addWidget(editor, /*stretch=*/1);
-    layout->addWidget(editorColumnWidget);
 
-    layout->addStretch();
+    // Linha do editor + scrollbar externa (fora da "folha").
+    auto* editorRow = new QWidget(editorColumnWidget);
+    auto* editorRowLayout = new QHBoxLayout(editorRow);
+    editorRowLayout->setContentsMargins(0, 0, 0, 0);
+    editorRowLayout->setSpacing(6);
+
+    // Esconde o scrollbar nativo — o externo cuida do scroll.
+    editor->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    externalScrollBar = new QScrollBar(Qt::Vertical, editorRow);
+    externalScrollBar->setObjectName(QStringLiteral("externalEditorScroll"));
+    // Espelha o estado da scrollbar interna do editor.
+    auto* innerSb = editor->verticalScrollBar();
+    externalScrollBar->setRange(innerSb->minimum(), innerSb->maximum());
+    externalScrollBar->setPageStep(innerSb->pageStep());
+    externalScrollBar->setSingleStep(innerSb->singleStep());
+    externalScrollBar->setValue(innerSb->value());
+    connect(innerSb, &QAbstractSlider::rangeChanged, externalScrollBar, &QScrollBar::setRange);
+    connect(innerSb, &QAbstractSlider::valueChanged, externalScrollBar, &QScrollBar::setValue);
+    connect(externalScrollBar, &QAbstractSlider::valueChanged, innerSb, &QScrollBar::setValue);
+    // pageStep/singleStep podem mudar quando a fonte ou tamanho do widget muda;
+    // re-sincroniza sob demanda.
+    connect(innerSb, &QAbstractSlider::actionTriggered, this, [this, innerSb]() {
+        externalScrollBar->setPageStep(innerSb->pageStep());
+        externalScrollBar->setSingleStep(innerSb->singleStep());
+    });
+
+    editorRowLayout->addWidget(editor, /*stretch=*/1);
+    editorRowLayout->addWidget(externalScrollBar);
+
+    editorColumnLayout->addWidget(editorRow, /*stretch=*/1);
+
+    // Envelopa o editorColumn numa QScrollArea: garante centralização robusta
+    // mesmo quando a página é mais larga que a janela (e nesse caso aparece
+    // scroll horizontal em vez de empurrar a UI).
+    editorScroll = new QScrollArea(container);
+    editorScroll->setObjectName(QStringLiteral("editorScroll"));
+    editorScroll->setWidget(editorColumnWidget);
+    editorScroll->setWidgetResizable(false);
+    editorScroll->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    editorScroll->setFrameShape(QFrame::NoFrame);
+    editorScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    editorScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    editorScroll->viewport()->setAutoFillBackground(false);
+    editorScroll->setStyleSheet(QStringLiteral("QScrollArea, QScrollArea > QWidget, QScrollArea > QWidget > QWidget { background: transparent; }"));
+    layout->addWidget(editorScroll, /*stretch=*/1);
+
+    // Largura e margens internas — vêm do EditorLayout (global, QSettings).
+    applyEditorLayout();
 
     setCentralWidget(container);
 
@@ -1026,6 +1091,8 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::themePanelRequested, this, &MainWindow::onThemePanelRequested);
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &MainWindow::onThemeChanged);
+    connect(EditorLayout::Manager::instance(), &EditorLayout::Manager::layoutChanged,
+            this, &MainWindow::onEditorLayoutChanged);
 
     connect(toolbar, &TopToolbar::boldToggled, this, &MainWindow::setBold);
     connect(toolbar, &TopToolbar::italicToggled, this, &MainWindow::setItalic);
@@ -1249,6 +1316,9 @@ void MainWindow::syncInlineFormatButtons()
 void MainWindow::setFocusMode(bool enabled)
 {
     focusModeEnabled = enabled;
+
+    // Persiste a preferência — ao reabrir o app, o modo foco volta como estava.
+    QSettings().setValue(QStringLiteral("editor/focusMode"), enabled);
 
     // Atualiza a cor base do texto em todo o documento (dim ou full).
     applyTextColor();
@@ -1664,6 +1734,7 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
     if (elementsStore) elementsStore->load();
 
     rememberLastProject(root);
+    restoreLastDocFor(root);
     return true;
 }
 
@@ -1677,6 +1748,49 @@ QString MainWindow::loadLastProjectPath() const
 {
     QSettings settings;
     return settings.value(QStringLiteral("lastProjectPath")).toString();
+}
+
+static QString lastDocGroupFor(const QString& root)
+{
+    const QByteArray hash = QCryptographicHash::hash(
+        QDir::cleanPath(root).toUtf8(), QCryptographicHash::Md5).toHex();
+    return QStringLiteral("lastDoc/") + QString::fromLatin1(hash);
+}
+
+void MainWindow::rememberLastDocFor(const QString& root)
+{
+    if (!editorHost || root.isEmpty()) return;
+    const EditorHost::ViewMode vm = editorHost->viewMode();
+    QSettings s;
+    s.beginGroup(lastDocGroupFor(root));
+    s.setValue(QStringLiteral("type"), int(vm.type));
+    s.setValue(QStringLiteral("manuscriptId"), vm.manuscriptId);
+    s.setValue(QStringLiteral("chapterId"), vm.chapterId);
+    s.setValue(QStringLiteral("sceneIndex"), vm.sceneIndex);
+    s.setValue(QStringLiteral("itemId"), vm.itemId);
+    s.endGroup();
+}
+
+void MainWindow::restoreLastDocFor(const QString& root)
+{
+    if (!editorHost || root.isEmpty()) return;
+    QSettings s;
+    s.beginGroup(lastDocGroupFor(root));
+    if (!s.contains(QStringLiteral("type"))) {
+        s.endGroup();
+        return;
+    }
+    EditorHost::ViewMode vm;
+    vm.type = static_cast<EditorHost::ViewModeType>(
+        s.value(QStringLiteral("type"), int(EditorHost::Disabled)).toInt());
+    vm.manuscriptId = s.value(QStringLiteral("manuscriptId")).toString();
+    vm.chapterId    = s.value(QStringLiteral("chapterId")).toString();
+    vm.sceneIndex   = s.value(QStringLiteral("sceneIndex"), -1).toInt();
+    vm.itemId       = s.value(QStringLiteral("itemId")).toString();
+    s.endGroup();
+    if (vm.type == EditorHost::Disabled) return;
+    // EditorHost valida IDs e cai pra Disabled se não conseguir resolver — ok.
+    editorHost->setViewMode(vm);
 }
 
 void MainWindow::onNewProjectRequested()
@@ -1776,6 +1890,7 @@ void MainWindow::positionSidePanels()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
+    resizeEditorColumnToViewport();
     positionWordCountPanel();
     positionSidePanels();
     if (toolbar && editor) {
@@ -1858,11 +1973,7 @@ void MainWindow::onThemePanelRequested()
 
 void MainWindow::onThemeChanged()
 {
-    // Largura/margens da "página" são propriedade do tema.
-    const int pw = Theme::pageWidth();
-    if (editor) editor->setFixedWidth(pw);
-    if (editorColumn) editorColumn->setFixedWidth(pw);
-
+    // Tema cuida só de cores/aparência. Largura/margens são do EditorLayout.
     if (editorContainer) {
         editorContainer->setStyleSheet(
             QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
@@ -1875,9 +1986,60 @@ void MainWindow::onThemeChanged()
     applyEditorStyle();
     applyPageShadow();
 
-    // Reposiciona painéis flutuantes (largura mudou pode afetar layout).
+    // Reposiciona painéis flutuantes.
     positionSidePanels();
     positionWordCountPanel();
+}
+
+void MainWindow::onEditorLayoutChanged()
+{
+    applyEditorLayout();
+    applyPageShadow();
+    positionSidePanels();
+    positionWordCountPanel();
+}
+
+void MainWindow::applyEditorLayout()
+{
+    const int pw = EditorLayout::pageWidth();
+    const int hm = EditorLayout::horizontalMargin();
+    const int vm = EditorLayout::verticalMargin();
+
+    if (editor) {
+        editor->setFixedWidth(pw);
+        // Margens internas entre a borda da "página" e o texto.
+        editor->setPageMargins(hm, vm, hm, vm);
+    }
+    if (editorColumn) {
+        // editorColumn = página + scrollbar externa (fora da folha).
+        const int scrollExtra = externalScrollBar
+            ? (externalScrollBar->sizeHint().width() + 6 /*spacing*/)
+            : 0;
+        editorColumn->setFixedWidth(pw + scrollExtra);
+    }
+
+    // editorColumn vive dentro de uma QScrollArea (widgetResizable=false), então
+    // sua altura precisa ser ajustada manualmente ao tamanho da viewport.
+    resizeEditorColumnToViewport();
+
+    // Reposiciona o título da toolbar — ele segue o centro horizontal do editor.
+    if (toolbar && editor) {
+        const QPoint editorCenterGlobal =
+            editor->mapToGlobal(QPoint(editor->width() / 2, 0));
+        const int anchorX = toolbar->mapFromGlobal(editorCenterGlobal).x();
+        toolbar->setTitleAnchorX(anchorX);
+    }
+}
+
+void MainWindow::resizeEditorColumnToViewport()
+{
+    if (!editorScroll || !editorColumn) return;
+    const int vpH = editorScroll->viewport()->height();
+    const int vpW = editorScroll->viewport()->width();
+    const int colW = editorColumn->width();
+    // Se a página é menor que a viewport, mantém ela centralizada (a viewport
+    // tem hScrollBar oculto). Se é maior, deixa o scroll horizontal aparecer.
+    editorColumn->resize(qMax(colW, vpW > colW ? colW : colW), vpH);
 }
 
 void MainWindow::applyPageShadow()
