@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Svg LinguistTools)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Svg Multimedia LinguistTools)
 
 qt_standard_project_setup()
 
@@ -72,12 +72,36 @@ qt_add_executable(mira-writing
     src/SettingsPanel.h
     src/SelectionPopup.cpp
     src/SelectionPopup.h
+    src/MarkerStore.cpp
+    src/MarkerStore.h
+    src/MarkerPickPopup.cpp
+    src/MarkerPickPopup.h
+    src/MarkerHoverPopup.cpp
+    src/MarkerHoverPopup.h
     src/Theme.cpp
     src/Theme.h
     src/EditorLayout.cpp
     src/EditorLayout.h
     src/ThemesPanel.cpp
     src/ThemesPanel.h
+    src/BondTypes.cpp
+    src/BondTypes.h
+    src/BondsLayer.cpp
+    src/BondsLayer.h
+    src/BondPopup.cpp
+    src/BondPopup.h
+    src/BondViewPanel.cpp
+    src/BondViewPanel.h
+    src/AmbienceManager.cpp
+    src/AmbienceManager.h
+    src/AmbiencePanel.cpp
+    src/AmbiencePanel.h
+    src/GlossaryStore.cpp
+    src/GlossaryStore.h
+    src/GlossaryPanel.cpp
+    src/GlossaryPanel.h
+    src/GlossaryAddPopup.cpp
+    src/GlossaryAddPopup.h
     resources/icons.qrc
 )
 
@@ -93,6 +117,7 @@ target_link_libraries(mira-writing PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Svg
+    Qt6::Multimedia
     hunspell
 )
 

@@ -9,8 +9,11 @@
 #include <QTimer>
 
 namespace {
-constexpr int kDefaultPerDocMs = 800;
-constexpr int kDefaultAutosaveMs = 10 * 60 * 1000; // 10 minutos
+// Per-doc debounce DESLIGADO por padrão (0 = desativado). Ligar isso fazia o
+// app gravar no disco a cada pausa de digitação >800ms — barulhento e
+// desnecessário. Quem persiste é o autosave + Ctrl+S + close.
+constexpr int kDefaultPerDocMs = 0;
+constexpr int kDefaultAutosaveMs = 4 * 60 * 1000; // 4 minutos
 }
 
 ProjectSaver::ProjectSaver(ProjectModel* model, DocCache* cache, EditorHost* host, QObject* parent)
@@ -53,7 +56,9 @@ void ProjectSaver::setAutosaveIntervalMs(int ms) {
 }
 
 void ProjectSaver::setPerDocDebounceMs(int ms) {
-    m_perDocTimer->setInterval(qMax(0, ms));
+    const int clamped = qMax(0, ms);
+    m_perDocTimer->setInterval(clamped);
+    if (clamped == 0 && m_perDocTimer->isActive()) m_perDocTimer->stop();
 }
 
 bool ProjectSaver::hasDirtyContent() const {
@@ -62,8 +67,8 @@ bool ProjectSaver::hasDirtyContent() const {
 }
 
 void ProjectSaver::onContentFlushed(const QString& /*key*/) {
-    if (!m_perDocTimer->isActive()) m_perDocTimer->start();
-    else m_perDocTimer->start(); // restart
+    if (m_perDocTimer->interval() <= 0) return; // desligado
+    m_perDocTimer->start(); // (re)start
 }
 
 void ProjectSaver::onAutosaveTimeout() {
@@ -73,8 +78,8 @@ void ProjectSaver::onAutosaveTimeout() {
 
 void ProjectSaver::onSettingsChanged() {
     m_settingsDirty = true;
-    if (!m_perDocTimer->isActive()) m_perDocTimer->start();
-    else m_perDocTimer->start();
+    if (m_perDocTimer->interval() <= 0) return; // desligado: settings persiste no próx autosave/Ctrl+S
+    m_perDocTimer->start();
 }
 
 void ProjectSaver::setSaving(bool saving) {

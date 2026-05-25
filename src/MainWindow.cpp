@@ -3,7 +3,12 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QComboBox>
+#include <QDialog>
 #include <QFileDialog>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
 #include <QFont>
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
@@ -37,6 +42,8 @@
 #include <QStandardPaths>
 #include <QTimer>
 
+#include "BondPopup.h"
+#include "BondViewPanel.h"
 #include "DocCache.h"
 #include "DrawerCreateDialog.h"
 #include "DrawerListPanel.h"
@@ -53,6 +60,14 @@
 #include "ProjectStorage.h"
 #include "RefMenuPanel.h"
 #include "SceneUtils.h"
+#include "AmbienceManager.h"
+#include "AmbiencePanel.h"
+#include "GlossaryAddPopup.h"
+#include "GlossaryPanel.h"
+#include "GlossaryStore.h"
+#include "MarkerHoverPopup.h"
+#include "MarkerPickPopup.h"
+#include "MarkerStore.h"
 #include "SelectionPopup.h"
 #include "SettingsPanel.h"
 #include "SpellChecker.h"
@@ -171,7 +186,14 @@ MainWindow::MainWindow(QWidget *parent)
     connect(imageOverlay, &ImageOverlay::alignmentRequested, this, &MainWindow::changeSelectedImageAlignment);
 
     editor->viewport()->installEventFilter(this);
-    connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { hideOverlay(); });
+    editor->viewport()->setMouseTracking(true);
+    connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() {
+        hideOverlay();
+        if (markerHoverPopup && markerHoverPopup->isVisible()) {
+            markerHoverPopup->hide();
+            markerHoverId.clear();
+        }
+    });
 }
 
 void MainWindow::setupEditor()
@@ -239,6 +261,28 @@ void MainWindow::setupEditor()
             syncInlineFormatButtons();
         });
     selStrikeBtn->setCheckable(true);
+
+    selectionPopup->addSeparator();
+    selectionPopup->addAction(QStringLiteral("marker.svg"), tr("Marcador"),
+        [this]() { openMarkerPickerForSelection(/*withComment=*/false); });
+    selectionPopup->addAction(QStringLiteral("marker-comment.svg"), tr("Marcador com comentário"),
+        [this]() { openMarkerPickerForSelection(/*withComment=*/true); });
+    selectionPopup->addAction(QStringLiteral("glossary.svg"), tr("Adicionar ao Glossário"),
+        [this]() {
+            if (!editor || !glossaryAddPopup) return;
+            QTextCursor cur = editor->textCursor();
+            if (!cur.hasSelection()) return;
+            QString seed = cur.selectedText();
+            seed = seed.trimmed();
+            seed.remove(QChar(0x2029));
+            // Posiciona o popup logo abaixo do fim da seleção.
+            QTextCursor end(editor->document()); end.setPosition(cur.selectionEnd());
+            const QRect r = editor->cursorRect(end);
+            const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft())
+                              + QPoint(0, 6);
+            glossaryAddPopup->presentAt(gp, seed);
+        });
+
     variationBar = new VariationBar(projectModel, editorHost, this);
     connect(editorHost, &EditorHost::viewModeChanged, variationBar, &VariationBar::refresh);
 
@@ -316,6 +360,102 @@ void MainWindow::setupEditor()
     projectSaver = new ProjectSaver(projectModel, docCache, editorHost, this);
     elementsStore = new ElementsStore(this);
     projectSaver->setElementsStore(elementsStore);
+
+    // MarkerStore: sidecar de markers comentados. Carrega ao abrir projeto,
+    // re-aplica GUIDs no contentLoaded, captura ao flush e salva ao saveProject.
+    markerStore = new MarkerStore(this);
+    markerPickPopup = new MarkerPickPopup(this);
+    markerHoverPopup = new MarkerHoverPopup(this);
+
+    connect(markerPickPopup, &MarkerPickPopup::confirmed,
+            this, &MainWindow::applyMarkerFromPicker);
+    connect(markerPickPopup, &MarkerPickPopup::cancelled,
+            this, [this]() { markerEditId.clear(); });
+    connect(markerHoverPopup, &MarkerHoverPopup::deleteRequested,
+            this, [this](const QString& id) {
+        if (!markerStore || !editor || !editorHost) return;
+        const QString key = editorHost->activeKey();
+        markerStore->removeMarker(key, editor->document(), id);
+        markerHoverId.clear();
+    });
+    connect(markerHoverPopup, &MarkerHoverPopup::editRequested,
+            this, [this](const QString& id) {
+        openMarkerPickerForEdit(id);
+    });
+
+    // contentLoaded: reaplica markers depois que o style padrão foi reaplicado
+    // (applyEditorStyle conectado ANTES vai pintar tudo com baseTextColor; nosso
+    // applyToDocument depois reinjeta cor+GUID nos ranges salvos).
+    connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
+        if (!markerStore || !editor || !editorHost) return;
+        const QString key = editorHost->activeKey();
+        if (key.isEmpty()) return;
+        markerStore->applyToDocument(key, editor->document());
+    });
+    // contentFlushed: captura posições atuais dos markers no doc. Roda DEPOIS
+    // do cache.set, mas o doc do editor ainda contém os GUIDs vivos.
+    connect(editorHost, &EditorHost::contentFlushed, this, [this](const QString& key) {
+        if (!markerStore || !editor) return;
+        markerStore->captureFromDocument(key, editor->document());
+    });
+    // Saveproject já flushou (no syncEditorToCache), então captura já rodou —
+    // basta persistir o sidecar.
+    connect(projectSaver, &ProjectSaver::projectSaved, this, [this]() {
+        if (markerStore) markerStore->save();
+    });
+    // Troca de tema chama applyTextColor (pinta tudo de baseTextColor) — perde
+    // cor dos markers. Reaplica em seguida.
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, [this]() {
+        if (markerStore && editor && editorHost) {
+            markerStore->applyToDocument(editorHost->activeKey(), editor->document());
+        }
+    });
+
+    // Som imersivo: manager (varre assets/ambience-sounds, persiste em QSettings)
+    // + painel flutuante invocado pelo botão da TopToolbar.
+    ambienceManager = new AmbienceManager(this);
+    ambiencePanel = new AmbiencePanel(ambienceManager, this);
+    connect(toolbar, &TopToolbar::immersiveSoundRequested, this, [this]() {
+        if (!ambiencePanel || !toolbar) return;
+        if (ambiencePanel->isVisible()) {
+            ambiencePanel->hide();
+            return;
+        }
+        ambiencePanel->showNear(toolbar->immersiveSoundButtonGlobalRect());
+    });
+
+    // Glossário: store (sidecar JSON), painel flutuante (TopToolbar) e popup de
+    // "Adicionar ao Glossário..." (context menu do editor). Termos alimentam o
+    // spell-checker pra nunca virarem erro.
+    glossaryStore = new GlossaryStore(this);
+    glossaryPanel = new GlossaryPanel(glossaryStore, this);
+    glossaryAddPopup = new GlossaryAddPopup(this);
+
+    connect(toolbar, &TopToolbar::glossaryRequested, this, [this]() {
+        if (!glossaryPanel || !toolbar) return;
+        if (glossaryPanel->isVisible()) {
+            glossaryPanel->hide();
+            return;
+        }
+        glossaryPanel->showNear(toolbar->glossaryButtonGlobalRect());
+    });
+    connect(editor, &SpellEditor::addToGlossaryRequested, this,
+            [this](const QString& word, const QPoint& gp) {
+        if (!glossaryAddPopup) return;
+        glossaryAddPopup->presentAt(gp, word);
+    });
+    connect(glossaryAddPopup, &GlossaryAddPopup::confirmed, this,
+            [this](const QString& term, const QString& def) {
+        if (glossaryStore) glossaryStore->add(term, def);
+    });
+    // Persiste sidecar + alimenta spell-checker sempre que o store muda.
+    connect(glossaryStore, &GlossaryStore::changed, this, [this]() {
+        if (!glossaryStore) return;
+        glossaryStore->save();
+        if (spellChecker) spellChecker->setGlossaryWords(glossaryStore->terms());
+    });
+
     drawerListPanel->setElementsStore(elementsStore);
     wordCounter = new WordCounter(projectModel, docCache, editorHost, this);
     // Tracking de tempo: cursor/texto/seleção contam como atividade.
@@ -924,6 +1064,41 @@ void MainWindow::setupEditor()
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
         projectModel->removeDrawerItem(itemId);
+        projectModel->removeBondsForItem(itemId);
+    });
+
+    // ---- Vínculos: drag-to-create e clique numa linha ----
+    connect(drawerListPanel, &DrawerListPanel::bondCreateRequested, this,
+            [this](const QString& drawerKey, const QString& fromItemId,
+                   const QString& toItemId, const QPoint& spawn) {
+        // Se já existe bond entre os dois, abre o view em vez do popup de criação.
+        for (const auto& b : projectModel->characterBonds()) {
+            if (b.drawerKey != drawerKey) continue;
+            if ((b.fromItemId == fromItemId && b.toItemId == toItemId) ||
+                (b.fromItemId == toItemId && b.toItemId == fromItemId)) {
+                openBondViewPanel(drawerKey, b.id, spawn);
+                return;
+            }
+        }
+        openBondCreatePopup(drawerKey, fromItemId, toItemId, spawn);
+    });
+    connect(drawerListPanel, &DrawerListPanel::bondViewRequested, this,
+            [this](const QString& drawerKey, const QString& bondId, const QPoint& spawn) {
+        openBondViewPanel(drawerKey, bondId, spawn);
+    });
+    // Re-render dos bonds quando a lista global mudar (criar/editar/excluir).
+    connect(projectModel, &ProjectModel::characterBondsChanged, this, [this]() {
+        if (drawerListPanel) drawerListPanel->refreshBonds();
+    });
+    // Quando uma gaveta é removida ou drawer items mudam, limpa bonds órfãos.
+    connect(projectModel, &ProjectModel::drawersChanged, this, [this]() {
+        // Bonds cujo from/to não existe mais somem silenciosamente.
+        const auto allBonds = projectModel->characterBonds();
+        for (const auto& b : allBonds) {
+            const bool fromMissing = projectModel->findDrawerItem(b.fromItemId) == nullptr;
+            const bool toMissing = projectModel->findDrawerItem(b.toItemId) == nullptr;
+            if (fromMissing || toMissing) projectModel->removeCharacterBond(b.id);
+        }
     });
 
     // ---- Context menu da gaveta (LeftBar) ----
@@ -1437,6 +1612,34 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
                 return true;
             }
             hideOverlay();
+        } else if (event->type() == QEvent::MouseMove) {
+            auto *me = static_cast<QMouseEvent*>(event);
+            QString id;
+            QRect boundsGlobal;
+            if (markerStore && markerAtViewportPos(me->pos(), id, boundsGlobal)) {
+                const MarkerStore::Entry e = markerStore->findById(editorHost->activeKey(), id);
+                if (!e.id.isEmpty() && !e.comment.trimmed().isEmpty()) {
+                    if (markerHoverPopup && id != markerHoverId) {
+                        markerHoverId = id;
+                        markerHoverPopup->showFor(id, QColor(e.color), e.comment, boundsGlobal);
+                    } else if (markerHoverPopup) {
+                        markerHoverPopup->cancelClose();
+                    }
+                }
+            } else {
+                // Mouse fora de qualquer marker — limpa o id sentinela mesmo
+                // que o popup não esteja visível (caso contrário, o id ficaria
+                // travado depois de criar um marker e o hover nunca abriria).
+                if (!markerHoverId.isEmpty()) markerHoverId.clear();
+                if (markerHoverPopup && markerHoverPopup->isVisible()) {
+                    markerHoverPopup->scheduleClose();
+                }
+            }
+        } else if (event->type() == QEvent::Leave) {
+            if (markerHoverPopup && markerHoverPopup->isVisible()) {
+                markerHoverPopup->scheduleClose();
+                markerHoverId.clear();
+            }
         } else if (event->type() == QEvent::Resize) {
             hideOverlay();
         }
@@ -1672,6 +1875,15 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
     if (elementsStore) elementsStore->setProjectRoot(root);
     if (spellChecker) spellChecker->setProjectRoot(root);
+    if (markerStore) {
+        markerStore->setProjectRoot(root);
+        markerStore->load();
+    }
+    if (glossaryStore) {
+        glossaryStore->setProjectRoot(root);
+        glossaryStore->load();
+        if (spellChecker) spellChecker->setGlossaryWords(glossaryStore->terms());
+    }
     // Atualiza o título com o nome da pasta do projeto.
     const QString name = QDir(root).dirName();
     baseWindowTitle = name.isEmpty() ? tr("Mira Writing") : tr("Mira Writing — %1").arg(name);
@@ -2068,4 +2280,387 @@ void MainWindow::applySpellLanguageFromModel()
         settingsPanel->setSpellEnabled(!code.isEmpty());
         if (!code.isEmpty()) settingsPanel->setSpellLanguage(code);
     }
+}
+
+void MainWindow::openMarkerPickerForSelection(bool withComment)
+{
+    if (!editor || !markerPickPopup || !editor->textCursor().hasSelection()) return;
+    if (markerHoverPopup) markerHoverPopup->hide();
+    markerEditId.clear();
+
+    // Captura o range AGORA — o popup vai ativar e a seleção visual do editor
+    // perde efeito quando outro top-level rouba foco. apply usa essas posições.
+    QTextCursor cur = editor->textCursor();
+    markerPendingStart = cur.selectionStart();
+    markerPendingEnd = cur.selectionEnd();
+
+    // Cor inicial: do char format atual da seleção, se já tem marker;
+    // senão amarelo padrão. Marker é background (igual marca-texto).
+    QColor seed = cur.charFormat().background().color();
+    if (!seed.isValid() || seed.alpha() == 0) {
+        seed = QColor(QStringLiteral("#FFD54F"));
+    }
+    markerPickPopup->setMode(withComment ? MarkerPickPopup::WithComment
+                                         : MarkerPickPopup::ColorOnly);
+    markerPickPopup->setColor(seed);
+    markerPickPopup->setComment(QString());
+
+    // Anchor: retângulo da seleção em coords globais.
+    QTextCursor a(editor->document()); a.setPosition(markerPendingStart);
+    QTextCursor b(editor->document()); b.setPosition(markerPendingEnd);
+    QRect ra = editor->cursorRect(a);
+    QRect rb = editor->cursorRect(b);
+    QRect bounds = ra.united(rb);
+    QPoint topLeft = editor->viewport()->mapToGlobal(bounds.topLeft());
+    QPoint bottomRight = editor->viewport()->mapToGlobal(bounds.bottomRight());
+    markerPickPopup->showAbove(QRect(topLeft, bottomRight));
+}
+
+void MainWindow::openMarkerPickerForEdit(const QString& markerId)
+{
+    if (!markerStore || !editor || !editorHost || !markerPickPopup) return;
+    const MarkerStore::Entry e = markerStore->findById(editorHost->activeKey(), markerId);
+    if (e.id.isEmpty()) return;
+
+    markerEditId = markerId;
+    markerPickPopup->setMode(MarkerPickPopup::WithComment);
+    markerPickPopup->setColor(QColor(e.color));
+    markerPickPopup->setComment(e.comment);
+
+    // Anchor no range do marker.
+    QTextCursor a(editor->document()); a.setPosition(e.start);
+    QTextCursor b(editor->document()); b.setPosition(e.end);
+    QRect ra = editor->cursorRect(a);
+    QRect rb = editor->cursorRect(b);
+    QRect bounds = ra.united(rb);
+    QPoint topLeft = editor->viewport()->mapToGlobal(bounds.topLeft());
+    QPoint bottomRight = editor->viewport()->mapToGlobal(bounds.bottomRight());
+    markerPickPopup->showAbove(QRect(topLeft, bottomRight));
+}
+
+void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comment)
+{
+    if (!markerStore || !editor || !editorHost) return;
+    const QString key = editorHost->activeKey();
+    if (key.isEmpty()) return;
+
+    QString appliedId;
+
+    if (!markerEditId.isEmpty()) {
+        markerStore->updateMarker(key, editor->document(), markerEditId, color, comment);
+        appliedId = markerEditId;
+        markerEditId.clear();
+    } else {
+        // Usa range capturado em openMarkerPickerForSelection — não confia na
+        // seleção atual do editor (popup ativo pode tê-la perdido).
+        int s = markerPendingStart;
+        int e = markerPendingEnd;
+        markerPendingStart = -1;
+        markerPendingEnd = -1;
+        if (s < 0 || e <= s) return;
+        const int docLen = editor->document()->characterCount();
+        s = qBound(0, s, docLen);
+        e = qBound(0, e, docLen);
+        if (e <= s) return;
+        // Usa um cursor "ativo" do editor e devolve com setTextCursor — força
+        // o QTextEdit a invalidar a region e repintar com o novo charFormat.
+        // QTextCursor(doc) "solto" modifica o documento mas o editor pode não
+        // perceber pra repaint imediato.
+        QTextCursor cur = editor->textCursor();
+        cur.setPosition(s);
+        cur.setPosition(e, QTextCursor::KeepAnchor);
+        appliedId = markerStore->applyMarkerToSelection(key, cur, color, comment);
+        editor->setTextCursor(cur);
+        editor->viewport()->update();
+    }
+
+    // Esconde o hover popup e marca o id atual — assim ele não reaparece
+    // grudado em cima do trecho recém-marcado. Só abre quando o user sai e
+    // volta com o mouse.
+    if (markerHoverPopup) {
+        markerHoverPopup->hide();
+    }
+    if (!appliedId.isEmpty()) {
+        markerHoverId = appliedId;
+    } else {
+        markerHoverId.clear();
+    }
+}
+
+bool MainWindow::markerAtViewportPos(const QPoint& viewportPos, QString& outId,
+                                     QRect& outBoundsGlobal) const
+{
+    if (!editor) return false;
+    QTextCursor probe = editor->cursorForPosition(viewportPos);
+    const int pos = probe.position();
+    QTextBlock block = editor->document()->findBlock(pos);
+    if (!block.isValid()) return false;
+
+    for (auto it = block.begin(); !it.atEnd(); ++it) {
+        QTextFragment frag = it.fragment();
+        if (!frag.isValid()) continue;
+        if (pos < frag.position() || pos >= frag.position() + frag.length()) continue;
+        const QString id = frag.charFormat().property(MarkerStore::MarkerIdProperty).toString();
+        if (id.isEmpty()) return false;
+
+        // Estende pra todos os fragments contíguos com mesmo id no bloco.
+        int rangeStart = frag.position();
+        int rangeEnd = frag.position() + frag.length();
+        for (auto jt = block.begin(); !jt.atEnd(); ++jt) {
+            QTextFragment f = jt.fragment();
+            if (!f.isValid()) continue;
+            if (f.charFormat().property(MarkerStore::MarkerIdProperty).toString() != id) continue;
+            rangeStart = qMin(rangeStart, f.position());
+            rangeEnd = qMax(rangeEnd, f.position() + f.length());
+        }
+
+        QTextCursor a(editor->document()); a.setPosition(rangeStart);
+        QTextCursor b(editor->document()); b.setPosition(rangeEnd);
+        QRect ra = editor->cursorRect(a);
+        QRect rb = editor->cursorRect(b);
+        QRect bounds = ra.united(rb);
+        QPoint topLeft = editor->viewport()->mapToGlobal(bounds.topLeft());
+        QPoint bottomRight = editor->viewport()->mapToGlobal(bounds.bottomRight());
+        outBoundsGlobal = QRect(topLeft, bottomRight);
+        outId = id;
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::closeBondPopup()
+{
+    if (bondPopup) {
+        bondPopup->hide();
+        bondPopup->deleteLater();
+        bondPopup = nullptr;
+    }
+}
+
+void MainWindow::closeBondViewPanel()
+{
+    if (bondViewPanel) {
+        bondViewPanel->hide();
+        bondViewPanel->deleteLater();
+        bondViewPanel = nullptr;
+    }
+}
+
+namespace {
+// Posiciona o popup à direita da gaveta (drawerListPanel), respeitando o
+// container central. Espelha o getDrawerSpawn() do Mira 1.
+QPoint computeBondSpawnPos(QWidget* container, QWidget* anchor, int popupW, int popupH) {
+    if (!container) return QPoint(80, 80);
+    int x, y;
+    if (anchor) {
+        const QPoint right = anchor->mapTo(container, QPoint(anchor->width() + 16, 20));
+        x = right.x();
+        y = right.y();
+    } else {
+        x = 80;
+        y = 80;
+    }
+    const int maxX = container->width() - popupW - 10;
+    const int maxY = container->height() - popupH - 10;
+    if (x > maxX) x = maxX;
+    if (y > maxY) y = maxY;
+    if (x < 10) x = 10;
+    if (y < 10) y = 10;
+    return QPoint(x, y);
+}
+}
+
+void MainWindow::openBondCreatePopup(const QString& drawerKey, const QString& fromItemId,
+                                     const QString& toItemId, const QPoint& /*spawnGlobal*/)
+{
+    if (!projectModel) return;
+    const DrawerItem* fromIt = projectModel->findDrawerItem(fromItemId);
+    const DrawerItem* toIt = projectModel->findDrawerItem(toItemId);
+    if (!fromIt || !toIt) return;
+
+    closeBondPopup();
+    closeBondViewPanel();
+
+    CharacterBond seed;
+    seed.color = QStringLiteral("#4a9eff");
+    bondPopup = new BondPopup(editorContainer, BondPopup::Create,
+                              fromIt->title, toIt->title, seed);
+    bondPopup->setAttribute(Qt::WA_DeleteOnClose, false);
+    const QPoint p = computeBondSpawnPos(editorContainer, drawerListPanel,
+                                         bondPopup->width(), bondPopup->minimumHeight());
+    bondPopup->move(p);
+    bondPopup->show();
+    bondPopup->raise();
+
+    connect(bondPopup, &BondPopup::closeRequested, this, &MainWindow::closeBondPopup);
+    connect(bondPopup, &BondPopup::confirmed, this,
+            [this, drawerKey, fromItemId, toItemId](const QString& type, const QString& desc, const QString& color) {
+        projectModel->addCharacterBond(drawerKey, fromItemId, toItemId, type, desc, color);
+        closeBondPopup();
+    });
+}
+
+void MainWindow::openBondViewPanel(const QString& drawerKey, const QString& bondId,
+                                   const QPoint& /*spawnGlobal*/)
+{
+    if (!projectModel) return;
+    const CharacterBond* bond = projectModel->findCharacterBond(bondId);
+    if (!bond) return;
+    const DrawerItem* fromIt = projectModel->findDrawerItem(bond->fromItemId);
+    const DrawerItem* toIt = projectModel->findDrawerItem(bond->toItemId);
+    if (!fromIt || !toIt) return;
+
+    closeBondViewPanel();
+    closeBondPopup();
+
+    bondViewPanel = new BondViewPanel(editorContainer, *bond, fromIt->title, toIt->title);
+    const QPoint p = computeBondSpawnPos(editorContainer, drawerListPanel,
+                                         bondViewPanel->width(), bondViewPanel->minimumHeight());
+    bondViewPanel->move(p);
+    bondViewPanel->show();
+    bondViewPanel->raise();
+
+    connect(bondViewPanel, &BondViewPanel::closeRequested, this, &MainWindow::closeBondViewPanel);
+    connect(bondViewPanel, &BondViewPanel::editRequested, this,
+            [this, drawerKey, bondId]() {
+        const QPoint dummy(0, 0);
+        openBondEditPopup(drawerKey, bondId, dummy);
+    });
+    connect(bondViewPanel, &BondViewPanel::deleteRequested, this,
+            [this, bondId]() {
+        const auto ret = QMessageBox::question(this, tr("Excluir vínculo"),
+            tr("Excluir este vínculo? Esta ação não pode ser desfeita."),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+        projectModel->removeCharacterBond(bondId);
+        closeBondViewPanel();
+    });
+    connect(bondViewPanel, &BondViewPanel::createDocRequested, this,
+            [this, drawerKey, bondId]() {
+        createDocFromBond(drawerKey, bondId);
+        closeBondViewPanel();
+    });
+}
+
+void MainWindow::openBondEditPopup(const QString& drawerKey, const QString& bondId,
+                                   const QPoint& /*spawnGlobal*/)
+{
+    if (!projectModel) return;
+    const CharacterBond* bond = projectModel->findCharacterBond(bondId);
+    if (!bond) return;
+    const DrawerItem* fromIt = projectModel->findDrawerItem(bond->fromItemId);
+    const DrawerItem* toIt = projectModel->findDrawerItem(bond->toItemId);
+    if (!fromIt || !toIt) return;
+
+    closeBondPopup();
+    closeBondViewPanel();
+
+    bondPopup = new BondPopup(editorContainer, BondPopup::Edit,
+                              fromIt->title, toIt->title, *bond);
+    const QPoint p = computeBondSpawnPos(editorContainer, drawerListPanel,
+                                         bondPopup->width(), bondPopup->minimumHeight());
+    bondPopup->move(p);
+    bondPopup->show();
+    bondPopup->raise();
+
+    connect(bondPopup, &BondPopup::closeRequested, this, &MainWindow::closeBondPopup);
+    connect(bondPopup, &BondPopup::confirmed, this,
+            [this, bondId](const QString& type, const QString& desc, const QString& color) {
+        projectModel->updateCharacterBond(bondId, type, desc, color);
+        closeBondPopup();
+    });
+    connect(bondPopup, &BondPopup::deleteRequested, this,
+            [this, bondId]() {
+        const auto ret = QMessageBox::question(this, tr("Excluir vínculo"),
+            tr("Excluir este vínculo? Esta ação não pode ser desfeita."),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (ret != QMessageBox::Yes) return;
+        projectModel->removeCharacterBond(bondId);
+        closeBondPopup();
+    });
+    Q_UNUSED(drawerKey);
+}
+
+void MainWindow::createDocFromBond(const QString& drawerKey, const QString& bondId)
+{
+    if (!projectModel) return;
+    const CharacterBond* bond = projectModel->findCharacterBond(bondId);
+    if (!bond) return;
+    const DrawerItem* fromIt = projectModel->findDrawerItem(bond->fromItemId);
+    const DrawerItem* toIt = projectModel->findDrawerItem(bond->toItemId);
+    if (!fromIt || !toIt) return;
+
+    const QString suggested = QStringLiteral("%1 ↔ %2").arg(fromIt->title, toIt->title);
+
+    // Dialog próprio: campo de nome + combo de gaveta destino.
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Documento do vínculo"));
+    dlg.setModal(true);
+    dlg.setMinimumWidth(380);
+
+    auto* root = new QVBoxLayout(&dlg);
+    root->setContentsMargins(16, 16, 16, 12);
+    root->setSpacing(10);
+
+    auto* nameLab = new QLabel(tr("Nome do documento:"), &dlg);
+    root->addWidget(nameLab);
+    auto* nameEdit = new QLineEdit(suggested, &dlg);
+    nameEdit->selectAll();
+    root->addWidget(nameEdit);
+
+    auto* drawerLab = new QLabel(tr("Gaveta de destino:"), &dlg);
+    root->addWidget(drawerLab);
+    auto* drawerCombo = new QComboBox(&dlg);
+    int defaultIdx = 0;
+    int i = 0;
+    for (const auto& d : projectModel->drawers()) {
+        const QString label = d.title.isEmpty() ? tr("(sem nome)") : d.title;
+        drawerCombo->addItem(label, d.key);
+        if (d.key == drawerKey) defaultIdx = i;
+        ++i;
+    }
+    drawerCombo->setCurrentIndex(defaultIdx);
+    root->addWidget(drawerCombo);
+
+    root->addStretch();
+
+    auto* btnRow = new QHBoxLayout();
+    btnRow->addStretch();
+    auto* cancel = new QPushButton(tr("Cancelar"), &dlg);
+    auto* ok = new QPushButton(tr("Criar"), &dlg);
+    ok->setDefault(true);
+    btnRow->addWidget(cancel);
+    btnRow->addWidget(ok);
+    root->addLayout(btnRow);
+
+    connect(cancel, &QPushButton::clicked, &dlg, &QDialog::reject);
+    connect(ok, &QPushButton::clicked, &dlg, &QDialog::accept);
+
+    if (dlg.exec() != QDialog::Accepted) return;
+    const QString title = nameEdit->text().trimmed();
+    if (title.isEmpty()) return;
+    const QString destKey = drawerCombo->currentData().toString();
+    if (destKey.isEmpty()) return;
+
+    QString html = QStringLiteral("<h2>%1</h2>").arg(title.toHtmlEscaped());
+    if (!bond->type.isEmpty()) {
+        html += QStringLiteral("<p><em>%1</em></p>")
+            .arg(QStringLiteral("%1 — %2 de %3").arg(bond->type, fromIt->title, toIt->title).toHtmlEscaped());
+    }
+    if (!bond->description.isEmpty()) {
+        const QStringList paras = bond->description.split(QChar('\n'), Qt::SkipEmptyParts);
+        for (const auto& p : paras) {
+            html += QStringLiteral("<p>%1</p>").arg(p.toHtmlEscaped());
+        }
+    } else {
+        html += QStringLiteral("<p></p>");
+    }
+
+    DrawerItem it;
+    it.id = ProjectModel::uid();
+    it.title = title;
+    it.folderId = QString();
+    it.hasInlineHtml = true;
+    it.html = html;
+    projectModel->addDrawerItem(destKey, it);
 }

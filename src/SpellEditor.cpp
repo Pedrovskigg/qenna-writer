@@ -26,6 +26,10 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu* menu = createStandardContextMenu(event->pos());
 
+    // Marcador de inserção — tudo que adicionamos (spell + glossário) vai antes
+    // das ações padrão (Undo, Cut, Copy...).
+    QAction* stdAnchor = menu->actions().isEmpty() ? nullptr : menu->actions().first();
+
     if (m_checker && m_checker->isEnabled()) {
         QTextCursor cursor = cursorForPosition(event->pos());
         cursor.select(QTextCursor::WordUnderCursor);
@@ -71,6 +75,36 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
 
             menu->insertSeparator(firstStandardAction);
         }
+    }
+
+    // "Adicionar ao Glossário..." — SEMPRE disponível, mesmo sem seleção.
+    // Usa a seleção atual ou, se vazia, a palavra sob o cursor. Inserido logo
+    // antes das ações padrão (Undo, Cut, Copy...). Trim de paragraph-separator
+    // ( ) e whitespace pra label não vir vazia com "lixo".
+    {
+        QString glossarySeed;
+        QTextCursor selCursor = textCursor();
+        if (selCursor.hasSelection()) {
+            glossarySeed = selCursor.selectedText();
+        } else {
+            QTextCursor probe = cursorForPosition(event->pos());
+            probe.select(QTextCursor::WordUnderCursor);
+            glossarySeed = probe.selectedText();
+        }
+        glossarySeed = glossarySeed.trimmed();
+        glossarySeed.remove(QChar(0x2029));
+
+        const QString label = glossarySeed.isEmpty()
+            ? tr("Adicionar ao Glossário...")
+            : tr("Adicionar \"%1\" ao Glossário...").arg(glossarySeed.left(40));
+        QAction* glsAct = new QAction(label, menu);
+        const QPoint globalPos = event->globalPos();
+        const QString seedCopy = glossarySeed;
+        connect(glsAct, &QAction::triggered, this, [this, seedCopy, globalPos]() {
+            emit addToGlossaryRequested(seedCopy, globalPos);
+        });
+        menu->insertAction(stdAnchor, glsAct);
+        menu->insertSeparator(stdAnchor);
     }
 
     menu->exec(event->globalPos());

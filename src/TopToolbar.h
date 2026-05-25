@@ -34,6 +34,9 @@ public:
     // x em coords locais da TopToolbar; passe -1 para retomar o centro geométrico.
     void setTitleAnchorX(int x);
 
+    QRect immersiveSoundButtonGlobalRect() const;
+    QRect glossaryButtonGlobalRect() const;
+
 protected:
     void resizeEvent(QResizeEvent *event) override;
 

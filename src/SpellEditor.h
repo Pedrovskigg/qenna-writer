@@ -20,6 +20,11 @@ public:
         setViewportMargins(left, top, right, bottom);
     }
 
+signals:
+    // Disparado quando o usuário escolhe "Adicionar ao Glossário..." no menu de
+    // contexto. word = texto selecionado (ou WordUnderCursor), pos = global.
+    void addToGlossaryRequested(QString word, QPoint globalPos);
+
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
 

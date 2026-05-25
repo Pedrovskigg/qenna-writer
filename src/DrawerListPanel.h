@@ -1,6 +1,8 @@
 #pragma once
 
+#include <QHash>
 #include <QPoint>
+#include <QPointF>
 #include <QString>
 #include <QWidget>
 
@@ -12,6 +14,7 @@ class QHBoxLayout;
 class QScrollArea;
 class ProjectModel;
 class ElementsStore;
+class BondsLayer;
 
 class DrawerListPanel : public QWidget {
     Q_OBJECT
@@ -45,6 +48,15 @@ signals:
     void removeElementRequested(QString drawerKey, QString itemId);
     void panelWidthChanged();
     void panelHeightChanged();
+    // Vínculos: arrastar nome de personagem em outro card
+    void bondCreateRequested(QString drawerKey, QString fromItemId, QString toItemId,
+                             QPoint spawnGlobalPos);
+    void bondViewRequested(QString drawerKey, QString bondId, QPoint spawnGlobalPos);
+
+public slots:
+    // Re-emitidos pelo MainWindow após characterBondsChanged: dão a chance
+    // do painel atualizar a BondsLayer e expandir a largura interna.
+    void refreshBonds();
 
 private slots:
     void onDrawersChanged();
@@ -73,6 +85,16 @@ private:
     bool currentDrawerIsCharacter() const;
     bool currentDrawerIsElement() const;
 
+    void recomputeCardPositions();
+    void positionBondsLayer();
+    QPointF mapToListHost(const QPoint& globalPos) const;
+    void updateBondHover(const QPoint& globalPos);
+    void dispatchBondClick(const QPoint& globalPos);
+    void startBondDrag(const QString& fromItemId);
+    void updateBondDragPreview(const QPoint& globalPos);
+    void finishBondDrag(const QPoint& globalPos);
+    void cancelBondDrag();
+
     ProjectModel* m_model;
     ElementsStore* m_elementsStore = nullptr;
     QString m_currentKey;
@@ -80,6 +102,16 @@ private:
     QLabel* m_titleLabel;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;
+    QWidget* m_listHost = nullptr;
+
+    // Vínculos
+    BondsLayer* m_bondsLayer = nullptr;
+    QHash<QString, QWidget*> m_cardByItemId;
+    QString m_bondDragSource;            // itemId em drag de criação de bond
+    QPointF m_bondDragFromLocal;         // anchor no listHost
+    QPoint  m_bondDragStartGlobal;       // ponto inicial do press (pra threshold)
+    bool m_bondDragActive = false;
+    QLabel* m_bondHintLabel = nullptr;
 
     // Header / action bar
     QToolButton* m_pinBtn;

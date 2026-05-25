@@ -1,4 +1,5 @@
 #include "DrawerListPanel.h"
+#include "BondsLayer.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
 #include "ProjectModel.h"
@@ -390,15 +391,21 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     m_scroll->setFrameShape(QFrame::NoFrame);
     m_scroll->setStyleSheet(QStringLiteral("#drawerListScroll { background: transparent; }"));
 
-    auto* listHost = new QWidget(m_scroll);
-    listHost->setObjectName(QStringLiteral("drawerListHost"));
-    listHost->setStyleSheet(QStringLiteral("background: transparent;"));
-    m_listLayout = new QVBoxLayout(listHost);
+    m_listHost = new QWidget(m_scroll);
+    m_listHost->setObjectName(QStringLiteral("drawerListHost"));
+    m_listHost->setStyleSheet(QStringLiteral("background: transparent;"));
+    m_listLayout = new QVBoxLayout(m_listHost);
     m_listLayout->setContentsMargins(12, 0, 12, 12);
     m_listLayout->setSpacing(8);
     m_listLayout->addStretch();
-    m_scroll->setWidget(listHost);
+    m_scroll->setWidget(m_listHost);
     root->addWidget(m_scroll, /*stretch=*/1);
+
+    // Overlay de vínculos — desenha por cima dos rowWraps (transparente p/ mouse).
+    m_bondsLayer = new BondsLayer(m_listHost);
+    m_bondsLayer->raise();
+    m_listHost->setMouseTracking(true);
+    m_listHost->installEventFilter(this);
 
     if (m_model) {
         connect(m_model, &ProjectModel::drawersChanged, this, &DrawerListPanel::onDrawersChanged);
@@ -695,15 +702,30 @@ void DrawerListPanel::updateViewButton() {
 void DrawerListPanel::rebuildContents() {
     if (!m_listLayout) return;
 
+    m_cardByItemId.clear();
+    m_bondHintLabel = nullptr;
+
     while (m_listLayout->count() > 1) {
         QLayoutItem* item = m_listLayout->takeAt(0);
         if (auto* w = item->widget()) w->deleteLater();
         delete item;
     }
 
-    if (!m_model || m_currentKey.isEmpty()) return;
+    if (!m_model || m_currentKey.isEmpty()) {
+        if (m_bondsLayer) {
+            m_bondsLayer->setBonds({});
+            m_bondsLayer->setCardPositions({});
+        }
+        return;
+    }
     const Drawer* drawer = m_model->findDrawer(m_currentKey);
-    if (!drawer) return;
+    if (!drawer) {
+        if (m_bondsLayer) {
+            m_bondsLayer->setBonds({});
+            m_bondsLayer->setCardPositions({});
+        }
+        return;
+    }
 
     updateBreadcrumb();
     updateViewButton();
@@ -784,6 +806,9 @@ void DrawerListPanel::rebuildContents() {
                 auto* rowWrap = new QWidget(this);
                 rowWrap->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
                 rowWrap->setFixedHeight(kCardHeight);
+                rowWrap->setMouseTracking(true);
+                rowWrap->setProperty("isBondRow", true);
+                rowWrap->installEventFilter(this);
                 currentRow = new QHBoxLayout(rowWrap);
                 currentRow->setSpacing(0);
                 currentRow->setContentsMargins(0, 0, 0, 0);
@@ -816,6 +841,27 @@ void DrawerListPanel::rebuildContents() {
     if (displayedCount == 0) {
         m_listLayout->insertWidget(row++, makeEmptyState());
     }
+
+    // Hint de vínculos no rodapé (só em gavetas de personagem)
+    if (currentDrawerIsCharacter() && displayedCount > 0) {
+        m_bondHintLabel = new QLabel(this);
+        m_bondHintLabel->setText(tr("Clique e arraste no nome dos personagens pra criar vínculos entre eles."));
+        m_bondHintLabel->setAlignment(Qt::AlignCenter);
+        m_bondHintLabel->setWordWrap(true);
+        m_bondHintLabel->setStyleSheet(QStringLiteral(
+            "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 11px; "
+            "font-style: italic; padding: 14px 8px 4px 8px;").arg(Theme::textMuted()));
+        m_listLayout->insertWidget(row++, m_bondHintLabel);
+    }
+
+    // Após o rebuild, agenda recompute de posições e atualiza overlay de bonds.
+    QMetaObject::invokeMethod(this, [this]() {
+        recomputeCardPositions();
+        if (m_bondsLayer && m_model) {
+            m_bondsLayer->setBonds(m_model->characterBondsForDrawer(m_currentKey));
+        }
+        positionBondsLayer();
+    }, Qt::QueuedConnection);
 }
 
 QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& title, const QString& role, const QString& elementId)
@@ -873,6 +919,14 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     nameLbl->setWordWrap(true);
     lay->addWidget(nameLbl);
 
+    // Nome vira handle pra arrastar e criar vínculo (gavetas de personagem).
+    if (currentDrawerIsCharacter()) {
+        nameLbl->setCursor(Qt::OpenHandCursor);
+        nameLbl->setProperty("isBondDragHandle", true);
+        nameLbl->setProperty("itemId", itemId);
+        nameLbl->installEventFilter(this);
+    }
+
     if (!role.isEmpty()) {
         auto* roleLbl = new QLabel(role.toUpper(), card);
         roleLbl->setStyleSheet(QStringLiteral(
@@ -891,6 +945,8 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     card->setProperty("drawerKey", drawerKey);
 
     installDropTargetOnCard(card, itemId);
+
+    m_cardByItemId.insert(itemId, card);
 
     return card;
 }
@@ -942,6 +998,81 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
 bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
 {
     auto* w = qobject_cast<QWidget*>(watched);
+
+    // ---- listHost OU rowWrap: hover/click em bonds (overlay é click-through) ----
+    const bool isBondHitSurface = w && (w == m_listHost
+        || (w->property("isBondRow").toBool()));
+    if (isBondHitSurface) {
+        if (event->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            updateBondHover(me->globalPosition().toPoint());
+        } else if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                const QPoint global = me->globalPosition().toPoint();
+                if (m_bondsLayer && m_model) {
+                    const QPointF local = mapToListHost(global);
+                    const QString bondId = m_bondsLayer->hitTestBond(local);
+                    if (!bondId.isEmpty()) {
+                        emit bondViewRequested(m_currentKey, bondId, global);
+                        return true;
+                    }
+                }
+            }
+        } else if (event->type() == QEvent::Resize && w == m_listHost) {
+            // Quando o listHost muda (scroll content cresce ou painel resize),
+            // re-alinha a overlay e recompute as posições.
+            QMetaObject::invokeMethod(this, [this]() {
+                recomputeCardPositions();
+                positionBondsLayer();
+            }, Qt::QueuedConnection);
+        }
+    }
+
+    // ---- Name label: drag-to-create bond (gaveta de personagem) ----
+    if (w && w->property("isBondDragHandle").toBool()) {
+        if (event->type() == QEvent::MouseButtonPress) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                m_bondDragSource = w->property("itemId").toString();
+                m_bondDragStartGlobal = me->globalPosition().toPoint();
+                m_bondDragActive = false;
+                w->setCursor(Qt::ClosedHandCursor);
+                return true;
+            }
+        } else if (event->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (!m_bondDragSource.isEmpty() && (me->buttons() & Qt::LeftButton)) {
+                const QPoint global = me->globalPosition().toPoint();
+                if (!m_bondDragActive) {
+                    const int d = (global - m_bondDragStartGlobal).manhattanLength();
+                    if (d >= QApplication::startDragDistance()) {
+                        startBondDrag(m_bondDragSource);
+                    }
+                }
+                if (m_bondDragActive) {
+                    updateBondDragPreview(global);
+                    return true;
+                }
+            }
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                w->setCursor(Qt::OpenHandCursor);
+                if (m_bondDragActive) {
+                    finishBondDrag(me->globalPosition().toPoint());
+                    return true;
+                }
+                if (!m_bondDragSource.isEmpty()) {
+                    // Clique curto: abre o item como doc.
+                    const QString itemId = m_bondDragSource;
+                    m_bondDragSource.clear();
+                    emit itemActivated(m_currentKey, itemId);
+                    return true;
+                }
+            }
+        }
+    }
 
     // ---- Resize handle (borda direita / largura) ----
     if (w && w == m_resizeHandle) {
@@ -1272,6 +1403,11 @@ void DrawerListPanel::resizeEvent(QResizeEvent* event) {
     }
     // Os stretches do row se ajustam automaticamente — não precisa rebuild,
     // o QHBoxLayout redistribui o espaço extra entre/ao redor dos cards.
+    // Bonds: recomputa após o layout assentar.
+    QMetaObject::invokeMethod(this, [this]() {
+        recomputeCardPositions();
+        positionBondsLayer();
+    }, Qt::QueuedConnection);
 }
 
 void DrawerListPanel::saveStoredWidth() {
@@ -1411,6 +1547,117 @@ void DrawerListPanel::installDropTargetOnCard(QWidget* card, const QString& targ
         QString m_targetItemId;
     };
     card->installEventFilter(new CardDropFilter(this, card, targetItemId));
+}
+
+void DrawerListPanel::recomputeCardPositions() {
+    if (!m_listHost || !m_bondsLayer) return;
+    QHash<QString, BondCardPos> positions;
+    for (auto it = m_cardByItemId.cbegin(); it != m_cardByItemId.cend(); ++it) {
+        QWidget* card = it.value();
+        if (!card || !card->isVisible()) continue;
+        // Mapeia geometria do card para coords do m_listHost.
+        const QPoint topLeftLocal = card->mapTo(m_listHost, QPoint(0, 0));
+        BondCardPos p;
+        p.left = topLeftLocal.x();
+        p.top = topLeftLocal.y();
+        p.right = p.left + card->width();
+        p.bottom = p.top + card->height();
+        p.x = p.left + card->width() / 2.0;
+        p.y = p.top + card->height() / 2.0;
+        // anchor Y = centro da foto (padding 8 + metade da foto 35 = 43)
+        p.ay = p.top + 8 + 35;
+        positions.insert(it.key(), p);
+    }
+    m_bondsLayer->setCardPositions(positions);
+    m_bondsLayer->setDrawerWidth(m_listHost->width());
+}
+
+void DrawerListPanel::positionBondsLayer() {
+    if (!m_bondsLayer || !m_listHost) return;
+    m_bondsLayer->setGeometry(0, 0, m_listHost->width(), m_listHost->height());
+    m_bondsLayer->raise();
+}
+
+QPointF DrawerListPanel::mapToListHost(const QPoint& globalPos) const {
+    if (!m_listHost) return QPointF();
+    return QPointF(m_listHost->mapFromGlobal(globalPos));
+}
+
+void DrawerListPanel::updateBondHover(const QPoint& globalPos) {
+    if (!m_bondsLayer) return;
+    const QPointF local = mapToListHost(globalPos);
+    const QString bondId = m_bondsLayer->hitTestBond(local);
+    m_bondsLayer->setHoveredBond(bondId);
+    if (m_listHost) {
+        m_listHost->setCursor(bondId.isEmpty() ? Qt::ArrowCursor : Qt::PointingHandCursor);
+    }
+}
+
+void DrawerListPanel::dispatchBondClick(const QPoint& globalPos) {
+    if (!m_bondsLayer || !m_model) return;
+    const QPointF local = mapToListHost(globalPos);
+    const QString bondId = m_bondsLayer->hitTestBond(local);
+    if (!bondId.isEmpty()) emit bondViewRequested(m_currentKey, bondId, globalPos);
+}
+
+void DrawerListPanel::startBondDrag(const QString& fromItemId) {
+    if (fromItemId.isEmpty()) return;
+    m_bondDragActive = true;
+    auto it = m_cardByItemId.find(fromItemId);
+    if (it == m_cardByItemId.end() || !it.value()) return;
+    QWidget* card = it.value();
+    // Anchor inicial = centro da foto desse card.
+    const QPoint topLeftLocal = card->mapTo(m_listHost, QPoint(0, 0));
+    m_bondDragFromLocal = QPointF(topLeftLocal.x() + card->width() / 2.0,
+                                  topLeftLocal.y() + 8 + 35);
+    if (m_bondsLayer) {
+        m_bondsLayer->setDragPreview(true, m_bondDragFromLocal, m_bondDragFromLocal);
+    }
+    // Grab mouse no name label fica via Qt::ClosedHandCursor; eventFilter cuida.
+}
+
+void DrawerListPanel::updateBondDragPreview(const QPoint& globalPos) {
+    if (!m_bondsLayer || !m_bondDragActive) return;
+    const QPointF local = mapToListHost(globalPos);
+    m_bondsLayer->setDragPreview(true, m_bondDragFromLocal, local);
+}
+
+void DrawerListPanel::finishBondDrag(const QPoint& globalPos) {
+    if (!m_bondDragActive) { m_bondDragSource.clear(); return; }
+    m_bondDragActive = false;
+    const QString fromId = m_bondDragSource;
+    m_bondDragSource.clear();
+    if (m_bondsLayer) m_bondsLayer->clearDragPreview();
+
+    // Localiza o card de destino sob o ponteiro.
+    QWidget* under = QApplication::widgetAt(globalPos);
+    QWidget* card = under;
+    QString toId;
+    while (card) {
+        if (card->objectName() == QStringLiteral("elemCard")) {
+            toId = card->property("itemId").toString();
+            break;
+        }
+        card = card->parentWidget();
+    }
+    if (toId.isEmpty() || toId == fromId) return;
+
+    emit bondCreateRequested(m_currentKey, fromId, toId, globalPos);
+}
+
+void DrawerListPanel::cancelBondDrag() {
+    m_bondDragActive = false;
+    m_bondDragSource.clear();
+    if (m_bondsLayer) m_bondsLayer->clearDragPreview();
+}
+
+void DrawerListPanel::refreshBonds() {
+    if (!m_bondsLayer || !m_model) return;
+    if (m_currentKey.isEmpty()) {
+        m_bondsLayer->setBonds({});
+    } else {
+        m_bondsLayer->setBonds(m_model->characterBondsForDrawer(m_currentKey));
+    }
 }
 
 void DrawerListPanel::installDropTargetOnFolderChip(QWidget* chip, const QString& folderId) {

@@ -98,3 +98,8 @@ Thumbs.db
 
 # Third-party sources (clonar manualmente — veja cmake/Hunspell.cmake)
 third_party/hunspell/
+
+# Sons de ambiente bundled (~540MB). Não vão no git, mas SIM no pacote final
+# distribuído. Em dev: copiar da pasta correspondente do Mira 1
+# (mira-writing/assets/ambience-sounds/) ou baixar separadamente.
+src/assets/ambience-sounds/

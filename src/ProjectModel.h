@@ -69,6 +69,16 @@ struct Drawer {
     QList<DrawerItem> items;
 };
 
+struct CharacterBond {
+    QString id;
+    QString drawerKey;
+    QString fromItemId;
+    QString toItemId;
+    QString type;
+    QString description;
+    QString color;
+};
+
 class ProjectModel : public QObject {
     Q_OBJECT
 public:
@@ -133,6 +143,18 @@ public:
                               const QString& elementIcon, const QString& elementId);
     const DrawerItem* findDrawerItem(const QString& itemId, QString* outDrawerKey = nullptr) const;
 
+    const QList<CharacterBond>& characterBonds() const { return m_characterBonds; }
+    QList<CharacterBond> characterBondsForDrawer(const QString& drawerKey) const;
+    QString addCharacterBond(const QString& drawerKey, const QString& fromItemId,
+                             const QString& toItemId, const QString& type,
+                             const QString& description, const QString& color);
+    bool updateCharacterBond(const QString& bondId, const QString& type,
+                             const QString& description, const QString& color);
+    bool removeCharacterBond(const QString& bondId);
+    void removeBondsForItem(const QString& itemId);
+    void removeBondsForDrawer(const QString& drawerKey);
+    const CharacterBond* findCharacterBond(const QString& bondId) const;
+
     void addManuscript(const Manuscript& manuscript);
     void addChapter(const Chapter& chapter);
     bool updateChapterScenes(const QString& chapterId, const QList<Scene>& scenes);
@@ -162,6 +184,7 @@ signals:
     void manuscriptsChanged();
     void chaptersChanged();
     void drawersChanged();
+    void characterBondsChanged();
     void activeManuscriptChanged();
     void activeChapterChanged();
     void settingsChanged();
@@ -178,4 +201,5 @@ private:
     QJsonObject m_settings;
     QJsonObject m_ui;
     QJsonObject m_dataExtras;
+    QList<CharacterBond> m_characterBonds;
 };

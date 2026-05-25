@@ -23,6 +23,13 @@
         <file alias="text-spacing.svg">../src/assets/icons/text-spacing.svg</file>
         <file alias="underline.svg">../src/assets/icons/underline.svg</file>
         <file alias="theme-panel.svg">../src/assets/icons/theme-panel.svg</file>
+        <file alias="edit.svg">../src/assets/icons/edit.svg</file>
+        <file alias="trash.svg">../src/assets/icons/trash.svg</file>
+        <file alias="doc-plus.svg">../src/assets/icons/doc-plus.svg</file>
+        <file alias="close.svg">../src/assets/icons/close.svg</file>
+        <file alias="drag-handle.svg">../src/assets/icons/drag-handle.svg</file>
+        <file alias="marker.svg">../src/assets/icons/marker.svg</file>
+        <file alias="marker-comment.svg">../src/assets/icons/marker-comment.svg</file>
         <file alias="leftbar/manuscriptpanel.svg">../src/assets/icons/leftbar/manuscriptpanel.svg</file>
         <file alias="leftbar/projectinfo.svg">../src/assets/icons/leftbar/projectinfo.svg</file>
         <file alias="leftbar/whiteboard.svg">../src/assets/icons/leftbar/whiteboard.svg</file>

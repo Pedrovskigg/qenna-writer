@@ -181,6 +181,30 @@ QJsonObject drawerToJson(const Drawer& d) {
     return o;
 }
 
+QJsonObject characterBondToJson(const CharacterBond& b) {
+    QJsonObject o;
+    o.insert(QStringLiteral("id"), b.id);
+    o.insert(QStringLiteral("drawerKey"), b.drawerKey);
+    o.insert(QStringLiteral("fromItemId"), b.fromItemId);
+    o.insert(QStringLiteral("toItemId"), b.toItemId);
+    o.insert(QStringLiteral("type"), b.type);
+    o.insert(QStringLiteral("description"), b.description);
+    o.insert(QStringLiteral("color"), b.color);
+    return o;
+}
+
+CharacterBond characterBondFromJson(const QJsonObject& o) {
+    CharacterBond b;
+    b.id = jsonString(o.value(QStringLiteral("id")));
+    b.drawerKey = jsonString(o.value(QStringLiteral("drawerKey")));
+    b.fromItemId = jsonString(o.value(QStringLiteral("fromItemId")));
+    b.toItemId = jsonString(o.value(QStringLiteral("toItemId")));
+    b.type = jsonString(o.value(QStringLiteral("type")));
+    b.description = jsonString(o.value(QStringLiteral("description")));
+    b.color = jsonString(o.value(QStringLiteral("color")));
+    return b;
+}
+
 Drawer drawerFromJson(const QJsonObject& o) {
     Drawer d;
     d.key = jsonString(o.value(QStringLiteral("key")));
@@ -580,6 +604,90 @@ const DrawerItem* ProjectModel::findDrawerItem(const QString& itemId, QString* o
     return nullptr;
 }
 
+QList<CharacterBond> ProjectModel::characterBondsForDrawer(const QString& drawerKey) const {
+    QList<CharacterBond> out;
+    for (const auto& b : m_characterBonds) {
+        if (b.drawerKey == drawerKey) out.append(b);
+    }
+    return out;
+}
+
+QString ProjectModel::addCharacterBond(const QString& drawerKey, const QString& fromItemId,
+                                       const QString& toItemId, const QString& type,
+                                       const QString& description, const QString& color) {
+    if (drawerKey.isEmpty() || fromItemId.isEmpty() || toItemId.isEmpty()) return QString();
+    if (fromItemId == toItemId) return QString();
+    // Não duplica: se já existe um bond ligando esses dois itens nesta gaveta
+    // (independente da direção), retorna o id existente.
+    for (const auto& b : m_characterBonds) {
+        if (b.drawerKey != drawerKey) continue;
+        if ((b.fromItemId == fromItemId && b.toItemId == toItemId) ||
+            (b.fromItemId == toItemId && b.toItemId == fromItemId)) {
+            return b.id;
+        }
+    }
+    CharacterBond b;
+    b.id = ProjectModel::uid();
+    b.drawerKey = drawerKey;
+    b.fromItemId = fromItemId;
+    b.toItemId = toItemId;
+    b.type = type;
+    b.description = description;
+    b.color = color.isEmpty() ? QStringLiteral("#4a9eff") : color;
+    m_characterBonds.append(b);
+    emit characterBondsChanged();
+    return b.id;
+}
+
+bool ProjectModel::updateCharacterBond(const QString& bondId, const QString& type,
+                                       const QString& description, const QString& color) {
+    for (auto& b : m_characterBonds) {
+        if (b.id != bondId) continue;
+        bool changed = false;
+        if (b.type != type) { b.type = type; changed = true; }
+        if (b.description != description) { b.description = description; changed = true; }
+        const QString newColor = color.isEmpty() ? b.color : color;
+        if (b.color != newColor) { b.color = newColor; changed = true; }
+        if (changed) emit characterBondsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::removeCharacterBond(const QString& bondId) {
+    for (int i = 0; i < m_characterBonds.size(); ++i) {
+        if (m_characterBonds.at(i).id == bondId) {
+            m_characterBonds.removeAt(i);
+            emit characterBondsChanged();
+            return true;
+        }
+    }
+    return false;
+}
+
+void ProjectModel::removeBondsForItem(const QString& itemId) {
+    const int before = m_characterBonds.size();
+    m_characterBonds.erase(std::remove_if(m_characterBonds.begin(), m_characterBonds.end(),
+        [&](const CharacterBond& b) { return b.fromItemId == itemId || b.toItemId == itemId; }),
+        m_characterBonds.end());
+    if (m_characterBonds.size() != before) emit characterBondsChanged();
+}
+
+void ProjectModel::removeBondsForDrawer(const QString& drawerKey) {
+    const int before = m_characterBonds.size();
+    m_characterBonds.erase(std::remove_if(m_characterBonds.begin(), m_characterBonds.end(),
+        [&](const CharacterBond& b) { return b.drawerKey == drawerKey; }),
+        m_characterBonds.end());
+    if (m_characterBonds.size() != before) emit characterBondsChanged();
+}
+
+const CharacterBond* ProjectModel::findCharacterBond(const QString& bondId) const {
+    for (const auto& b : m_characterBonds) {
+        if (b.id == bondId) return &b;
+    }
+    return nullptr;
+}
+
 void ProjectModel::addManuscript(const Manuscript& manuscript) {
     m_manuscripts.append(manuscript);
     emit manuscriptsChanged();
@@ -857,6 +965,13 @@ QJsonObject ProjectModel::toJson() const {
     data.insert(QStringLiteral("manuscripts"), manuscripts);
     data.insert(QStringLiteral("activeManuscriptId"), stringOrNull(m_activeManuscriptId));
     data.insert(QStringLiteral("activeChapterId"), stringOrNull(m_activeChapterId));
+
+    // Vínculos entre personagens — compat 1:1 com Mira 1 (data.characterBonds,
+    // array plano com 7 campos por bond).
+    QJsonArray bonds;
+    for (const auto& b : m_characterBonds) bonds.append(characterBondToJson(b));
+    data.insert(QStringLiteral("characterBonds"), bonds);
+
     root.insert(QStringLiteral("data"), data);
 
     return root;
@@ -883,10 +998,15 @@ void ProjectModel::loadFromJson(const QJsonObject& root) {
     m_activeManuscriptId = jsonStringOrEmpty(data.value(QStringLiteral("activeManuscriptId")));
     m_activeChapterId = jsonStringOrEmpty(data.value(QStringLiteral("activeChapterId")));
 
+    m_characterBonds.clear();
+    const QJsonArray bonds = data.value(QStringLiteral("characterBonds")).toArray();
+    for (const auto& bv : bonds) m_characterBonds.append(characterBondFromJson(bv.toObject()));
+
     QJsonObject extras = data;
     extras.remove(QStringLiteral("manuscripts"));
     extras.remove(QStringLiteral("activeManuscriptId"));
     extras.remove(QStringLiteral("activeChapterId"));
+    extras.remove(QStringLiteral("characterBonds"));
     m_dataExtras = extras;
 
     emit projectNameChanged();
@@ -897,6 +1017,7 @@ void ProjectModel::loadFromJson(const QJsonObject& root) {
     emit activeChapterChanged();
     emit settingsChanged();
     emit uiChanged();
+    emit characterBondsChanged();
     emit loaded();
 }
 
@@ -905,6 +1026,7 @@ void ProjectModel::clear() {
     m_manuscripts.clear();
     m_chapters.clear();
     m_drawers.clear();
+    m_characterBonds.clear();
     m_activeManuscriptId.clear();
     m_activeChapterId.clear();
     m_settings = QJsonObject();
@@ -918,6 +1040,7 @@ void ProjectModel::clear() {
     emit activeChapterChanged();
     emit settingsChanged();
     emit uiChanged();
+    emit characterBondsChanged();
 }
 
 QString ProjectModel::uid() {

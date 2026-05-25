@@ -31,6 +31,16 @@ class SpellEditor;
 class SettingsPanel;
 class SelectionPopup;
 class ThemesPanel;
+class BondPopup;
+class BondViewPanel;
+class MarkerStore;
+class MarkerPickPopup;
+class MarkerHoverPopup;
+class AmbienceManager;
+class AmbiencePanel;
+class GlossaryStore;
+class GlossaryPanel;
+class GlossaryAddPopup;
 class QToolButton;
 
 class MainWindow : public QMainWindow
@@ -87,6 +97,22 @@ private:
     void restoreLastDocFor(const QString& root);
     void applyProjectRoot(const QString& root);
 
+    void openMarkerPickerForSelection(bool withComment);
+    void openMarkerPickerForEdit(const QString& markerId);
+    void applyMarkerFromPicker(const QColor& color, const QString& comment);
+    bool markerAtViewportPos(const QPoint& viewportPos, QString& outId,
+                             QRect& outBoundsGlobal) const;
+
+    void closeBondPopup();
+    void closeBondViewPanel();
+    void openBondCreatePopup(const QString& drawerKey, const QString& fromItemId,
+                             const QString& toItemId, const QPoint& spawnGlobal);
+    void openBondViewPanel(const QString& drawerKey, const QString& bondId,
+                           const QPoint& spawnGlobal);
+    void openBondEditPopup(const QString& drawerKey, const QString& bondId,
+                           const QPoint& spawnGlobal);
+    void createDocFromBond(const QString& drawerKey, const QString& bondId);
+
     bool findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const;
     int detectAlignmentForImage(const QTextCursor &imageCursor) const;
     void showOverlayForImage(const QTextCursor &imageCursor);
@@ -115,6 +141,20 @@ private:
     SettingsPanel *settingsPanel;
     ThemesPanel *themesPanel;
     SelectionPopup *selectionPopup;
+    BondPopup *bondPopup = nullptr;
+    BondViewPanel *bondViewPanel = nullptr;
+    MarkerStore *markerStore = nullptr;
+    MarkerPickPopup *markerPickPopup = nullptr;
+    MarkerHoverPopup *markerHoverPopup = nullptr;
+    AmbienceManager *ambienceManager = nullptr;
+    AmbiencePanel *ambiencePanel = nullptr;
+    GlossaryStore *glossaryStore = nullptr;
+    GlossaryPanel *glossaryPanel = nullptr;
+    GlossaryAddPopup *glossaryAddPopup = nullptr;
+    QString markerEditId; // GUID em edição (vazio = aplicar novo)
+    QString markerHoverId; // GUID hover atual (pra evitar reabrir)
+    int markerPendingStart = -1; // seleção capturada antes do popup abrir
+    int markerPendingEnd = -1;
     QWidget *editorContainer;
     QWidget *editorColumn;
     QScrollArea *editorScroll = nullptr;

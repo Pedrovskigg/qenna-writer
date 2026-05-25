@@ -418,6 +418,20 @@ void TopToolbar::setTitleAnchorX(int x)
     positionDocTitle();
 }
 
+QRect TopToolbar::immersiveSoundButtonGlobalRect() const
+{
+    if (!immersiveSoundButton) return QRect();
+    const QPoint topLeft = immersiveSoundButton->mapToGlobal(QPoint(0, 0));
+    return QRect(topLeft, immersiveSoundButton->size());
+}
+
+QRect TopToolbar::glossaryButtonGlobalRect() const
+{
+    if (!glossaryButton) return QRect();
+    const QPoint topLeft = glossaryButton->mapToGlobal(QPoint(0, 0));
+    return QRect(topLeft, glossaryButton->size());
+}
+
 void TopToolbar::positionDocTitle()
 {
     if (!docTitleLabel) return;
