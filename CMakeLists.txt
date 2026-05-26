@@ -106,6 +106,12 @@ qt_add_executable(mira-writing
     src/GlossaryPanel.h
     src/GlossaryAddPopup.cpp
     src/GlossaryAddPopup.h
+    src/Quotes.cpp
+    src/Quotes.h
+    src/MainMenuDialog.cpp
+    src/MainMenuDialog.h
+    src/NewProjectFlow.cpp
+    src/NewProjectFlow.h
     resources/icons.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )

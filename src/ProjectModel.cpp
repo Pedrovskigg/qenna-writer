@@ -398,6 +398,69 @@ void ProjectModel::addDrawer(const Drawer& drawer) {
     emit drawersChanged();
 }
 
+void ProjectModel::seedFromTemplate(const QString& templateId) {
+    auto mkItem = [](const QString& title) {
+        DrawerItem it;
+        it.id = uid();
+        it.title = title;
+        it.html = QStringLiteral("<p></p>");
+        it.hasInlineHtml = true;
+        return it;
+    };
+    auto mkDrawer = [](const QString& title, const QString& color,
+                       const QString& elementType = QString(),
+                       const QString& elementIcon = QString(),
+                       const QList<DrawerItem>& items = {}) {
+        Drawer d;
+        d.key = QStringLiteral("drawer_") + uid();
+        d.title = title;
+        d.color = color;
+        d.drawerElementType = elementType;
+        d.drawerElementIcon = elementIcon;
+        d.items = items;
+        return d;
+    };
+
+    QList<Drawer> seeds;
+    if (templateId == QLatin1String("basic")) {
+        seeds << mkDrawer(QStringLiteral("Planejamento"), QStringLiteral("#2b79ff"),
+                          QString(), QString(),
+                          { mkItem(QStringLiteral("Sinopse")),
+                            mkItem(QStringLiteral("Fios narrativos")),
+                            mkItem(QStringLiteral("Ambientação")) });
+        seeds << mkDrawer(QStringLiteral("Personagens"), QStringLiteral("#ff4d4d"),
+                          QStringLiteral("character"), QStringLiteral("user"));
+        seeds << mkDrawer(QStringLiteral("Cenários"), QStringLiteral("#39d98a"),
+                          QStringLiteral("setting"), QStringLiteral("map"));
+        seeds << mkDrawer(QStringLiteral("Objetos"), QStringLiteral("#ff9f43"),
+                          QStringLiteral("object"), QStringLiteral("cube"));
+        seeds << mkDrawer(QStringLiteral("Notas"), QStringLiteral("#ffd84d"));
+    } else if (templateId == QLatin1String("advanced")) {
+        seeds << mkDrawer(QStringLiteral("Planejamento"), QStringLiteral("#2b79ff"),
+                          QString(), QString(),
+                          { mkItem(QStringLiteral("Sinopse")),
+                            mkItem(QStringLiteral("Ambientação")),
+                            mkItem(QStringLiteral("Fios narrativos")),
+                            mkItem(QStringLiteral("Trama")),
+                            mkItem(QStringLiteral("Fábula")),
+                            mkItem(QStringLiteral("Roteiro")) });
+        seeds << mkDrawer(QStringLiteral("Lore"), QStringLiteral("#9b59b6"));
+        seeds << mkDrawer(QStringLiteral("Base de dados"), QStringLiteral("#1abc9c"));
+        seeds << mkDrawer(QStringLiteral("Pesquisa"), QStringLiteral("#e67e22"));
+        seeds << mkDrawer(QStringLiteral("Personagens"), QStringLiteral("#ff4d4d"),
+                          QStringLiteral("character"), QStringLiteral("user"));
+        seeds << mkDrawer(QStringLiteral("Cenários"), QStringLiteral("#39d98a"),
+                          QStringLiteral("setting"), QStringLiteral("map"));
+        seeds << mkDrawer(QStringLiteral("Objetos"), QStringLiteral("#ff9f43"),
+                          QStringLiteral("object"), QStringLiteral("cube"));
+        seeds << mkDrawer(QStringLiteral("Notas"), QStringLiteral("#ffd84d"));
+    }
+    // "blank" ou desconhecido → nenhum drawer.
+
+    for (const Drawer& d : seeds) m_drawers.append(d);
+    if (!seeds.isEmpty()) emit drawersChanged();
+}
+
 bool ProjectModel::addDrawerItem(const QString& drawerKey, const DrawerItem& item) {
     for (auto& d : m_drawers) {
         if (d.key == drawerKey) {

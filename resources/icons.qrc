@@ -17,6 +17,8 @@
         <file alias="italic.svg">../src/assets/icons/italic.svg</file>
         <file alias="loadproject.svg">../src/assets/icons/loadproject.svg</file>
         <file alias="newproject.svg">../src/assets/icons/newproject.svg</file>
+        <file alias="home.svg">../src/assets/icons/home.svg</file>
+        <file alias="check.svg">../src/assets/icons/check.svg</file>
         <file alias="readmode.svg">../src/assets/icons/readmode.svg</file>
         <file alias="refmenu.svg">../src/assets/icons/refmenu.svg</file>
         <file alias="reminder.svg">../src/assets/icons/reminder.svg</file>

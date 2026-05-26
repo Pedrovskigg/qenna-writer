@@ -120,6 +120,11 @@ public:
     void setUi(const QJsonObject& u);
     void setDataExtras(const QJsonObject& d);
 
+    // Semeia drawers iniciais do projeto a partir de um template. Compat com
+    // os templates do Mira 1 (buildTemplateDrawers em App.jsx).
+    // templateId: "blank" | "basic" | "advanced".
+    void seedFromTemplate(const QString& templateId);
+
     void addDrawer(const Drawer& drawer);
     bool addDrawerItem(const QString& drawerKey, const DrawerItem& item);
     bool addDrawerFolder(const QString& drawerKey, const Folder& folder);

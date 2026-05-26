@@ -1,5 +1,8 @@
 #include "MainWindow.h"
 
+#include "MainMenuDialog.h"
+#include "NewProjectFlow.h"
+
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
@@ -116,6 +119,13 @@ void applyFloatFrameStyle(QTextFrameFormat &ff, bool isLeft, int w)
     ff.setBottomMargin(4);
     ff.setWidth(QTextLength(QTextLength::FixedLength, w));
 }
+}
+
+MainWindow::~MainWindow() {
+    // mainMenuDialog é criado sem parent (pra ter taskbar entry própria),
+    // então não morre junto com o MainWindow — temos que deletar à mão.
+    delete mainMenuDialog;
+    mainMenuDialog = nullptr;
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -494,13 +504,23 @@ void MainWindow::setupEditor()
         }
     }
 
-    // Autoload do último projeto (se houver).
-    const QString lastPath = loadLastProjectPath();
-    if (!lastPath.isEmpty() && QDir(lastPath).exists()) {
-        QString loadErr;
-        if (!loadProjectFrom(lastPath, &loadErr)) {
-            qWarning("Falha ao recarregar último projeto: %s", qUtf8Printable(loadErr));
+    // Autoload do projeto marcado como "abrir automaticamente" (opt-in via
+    // checkbox no Main Menu). Sem opt-in, o app abre direto no Main Menu.
+    {
+        const QString autoPath = QSettings()
+            .value(QStringLiteral("autoOpenProject")).toString();
+        if (!autoPath.isEmpty() && QDir(autoPath).exists()) {
+            QString loadErr;
+            if (!loadProjectFrom(autoPath, &loadErr)) {
+                qWarning("Falha no autoload: %s", qUtf8Printable(loadErr));
+            }
         }
+    }
+
+    // Sem projeto carregado? Abre o Main Menu no próximo tick — espera a
+    // window aparecer pra o dialog ter parent visível.
+    if (projectRoot.isEmpty()) {
+        QTimer::singleShot(0, this, &MainWindow::openMainMenu);
     }
 
     // Ctrl+S → paulada.
@@ -1301,6 +1321,7 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::paragraphSpacingAfterChanged, this, &MainWindow::setParagraphSpacingAfter);
     connect(toolbar, &TopToolbar::focusModeToggled, this, &MainWindow::setFocusMode);
     connect(toolbar, &TopToolbar::addImageRequested, this, &MainWindow::onAddImageRequested);
+    connect(toolbar, &TopToolbar::mainMenuRequested, this, &MainWindow::openMainMenu);
     connect(toolbar, &TopToolbar::newProjectRequested, this, &MainWindow::onNewProjectRequested);
     connect(toolbar, &TopToolbar::openProjectRequested, this, &MainWindow::onOpenProjectRequested);
     connect(toolbar, &TopToolbar::saveProjectRequested, this, [this]() {
@@ -2042,6 +2063,10 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     rememberLastProject(root);
     restoreLastDocFor(root);
+
+    // Mostra a janela principal agora que tem projeto pra editar. Útil quando
+    // o app começou escondido (sem autoOpen) e o user escolheu pelo menu.
+    if (!isVisible()) show();
     return true;
 }
 
@@ -2049,12 +2074,126 @@ void MainWindow::rememberLastProject(const QString& root)
 {
     QSettings settings;
     settings.setValue(QStringLiteral("lastProjectPath"), root);
+
+    // Atualiza lista de recentes: move/insere no topo, limita a 12.
+    QStringList list = settings.value(QStringLiteral("recentProjects/list"))
+                           .toStringList();
+    const QString clean = QDir::cleanPath(root);
+    list.removeAll(clean);
+    for (int i = list.size() - 1; i >= 0; --i) {
+        if (QDir::cleanPath(list.at(i)) == clean) list.removeAt(i);
+    }
+    list.prepend(clean);
+    while (list.size() > 12) list.removeLast();
+    settings.setValue(QStringLiteral("recentProjects/list"), list);
 }
 
 QString MainWindow::loadLastProjectPath() const
 {
     QSettings settings;
     return settings.value(QStringLiteral("lastProjectPath")).toString();
+}
+
+QStringList MainWindow::loadRecentProjects() const
+{
+    QSettings settings;
+    QStringList list = settings.value(QStringLiteral("recentProjects/list"))
+                           .toStringList();
+    // Compat: se a lista não existir, semeia com o último projeto, se houver.
+    if (list.isEmpty()) {
+        const QString last = settings.value(QStringLiteral("lastProjectPath")).toString();
+        if (!last.isEmpty()) list << QDir::cleanPath(last);
+    }
+    // Filtra paths que não existem mais — não regrava (deixa pro próximo save).
+    QStringList alive;
+    for (const QString& p : list) {
+        if (!p.isEmpty() && QDir(p).exists()) alive << p;
+    }
+    return alive;
+}
+
+void MainWindow::saveRecentProjects(const QStringList& list)
+{
+    QSettings settings;
+    settings.setValue(QStringLiteral("recentProjects/list"), list);
+}
+
+void MainWindow::openMainMenu()
+{
+    if (!mainMenuDialog) {
+        // Sem parent: garante que vire uma janela top-level real do Windows
+        // (item de taskbar próprio, minimizar/restaurar nativos). Quando o
+        // dialog tem parent, o Windows o trata como "owned window" e ele só
+        // aparece na taskbar do dono — o que falha se o MainWindow estiver
+        // hidden, deixando o menu impossível de recuperar após minimizar.
+        mainMenuDialog = new MainMenuDialog(nullptr);
+
+        connect(mainMenuDialog, &MainMenuDialog::autoOpenChanged,
+                this, [this](const QString& path, bool enabled) {
+                    QSettings s;
+                    if (enabled) {
+                        s.setValue(QStringLiteral("autoOpenProject"),
+                                   QDir::cleanPath(path));
+                        QMessageBox::information(mainMenuDialog,
+                            tr("Abertura automática ativada"),
+                            tr("O app agora sempre abrirá esse projeto de forma "
+                               "automática. Caso queira desabilitar isso depois, "
+                               "basta desmarcar essa opção."));
+                    } else {
+                        s.remove(QStringLiteral("autoOpenProject"));
+                    }
+                });
+
+        connect(mainMenuDialog, &MainMenuDialog::newProjectRequested,
+                this, [this]() {
+                    onNewProjectRequested();
+                    if (mainMenuDialog && !projectRoot.isEmpty()) {
+                        mainMenuDialog->accept();
+                    }
+                });
+        connect(mainMenuDialog, &MainMenuDialog::loadProjectRequested,
+                this, [this]() {
+                    if (!confirmDiscardOrSave()) return;
+                    const QString startDir = QStandardPaths::writableLocation(
+                        QStandardPaths::DocumentsLocation);
+                    const QString chosen = QFileDialog::getExistingDirectory(
+                        mainMenuDialog,
+                        tr("Abrir projeto"),
+                        startDir,
+                        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                    if (chosen.isEmpty()) return;
+                    QString err;
+                    if (!loadProjectFrom(chosen, &err)) {
+                        QMessageBox::warning(mainMenuDialog, tr("Erro ao abrir"),
+                            tr("Não foi possível abrir o projeto:\n%1").arg(err));
+                        return;
+                    }
+                    if (mainMenuDialog) mainMenuDialog->accept();
+                });
+        connect(mainMenuDialog, &MainMenuDialog::openRecentRequested,
+                this, [this](const QString& path) {
+                    if (!confirmDiscardOrSave()) return;
+                    QString err;
+                    if (!loadProjectFrom(path, &err)) {
+                        // Path caiu — remove dos recentes e atualiza a lista.
+                        QStringList list = loadRecentProjects();
+                        list.removeAll(path);
+                        list.removeAll(QDir::cleanPath(path));
+                        saveRecentProjects(list);
+                        if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
+                        QMessageBox::warning(mainMenuDialog, tr("Erro ao abrir"),
+                            tr("Não foi possível abrir o projeto:\n%1").arg(err));
+                        return;
+                    }
+                    if (mainMenuDialog) mainMenuDialog->accept();
+                });
+    }
+    mainMenuDialog->setRecentProjects(loadRecentProjects());
+    mainMenuDialog->setAutoOpenPath(
+        QSettings().value(QStringLiteral("autoOpenProject")).toString());
+    mainMenuDialog->show();
+    mainMenuDialog->raise();
+    mainMenuDialog->activateWindow();
 }
 
 static QString lastDocGroupFor(const QString& root)
@@ -2104,20 +2243,20 @@ void MainWindow::onNewProjectRequested()
 {
     if (!confirmDiscardOrSave()) return;
 
-    const QString startDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    const QString chosen = QFileDialog::getExistingDirectory(this,
-        tr("Escolher pasta para o novo projeto"),
-        startDir,
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (chosen.isEmpty()) return;
+    // Etapa 1 — template.
+    NewProjectTemplateDialog tplDlg(this);
+    if (tplDlg.exec() != QDialog::Accepted) return;
+    const QString templateId = tplDlg.templateId();
 
-    bool ok = false;
-    const QString name = QInputDialog::getText(this, tr("Novo projeto"),
-        tr("Nome do projeto:"), QLineEdit::Normal,
-        tr("Meu Projeto"), &ok).trimmed();
-    if (!ok || name.isEmpty()) return;
+    // Etapa 2 — detalhes da obra.
+    NewProjectDetailsDialog detailsDlg(this);
+    if (detailsDlg.exec() != QDialog::Accepted) return;
 
-    const QString fullPath = QDir(chosen).absoluteFilePath(name);
+    // Etapa 3 — pasta-pai.
+    NewProjectFolderDialog folderDlg(detailsDlg.projectName(), this);
+    if (folderDlg.exec() != QDialog::Accepted) return;
+    const QString fullPath = folderDlg.fullPath();
+
     if (QDir(fullPath).exists() && !QDir(fullPath).isEmpty()) {
         const auto answer = QMessageBox::question(this, tr("Pasta já existe"),
             tr("A pasta '%1' já existe e não está vazia. Usar mesmo assim?\n"
@@ -2128,23 +2267,36 @@ void MainWindow::onNewProjectRequested()
 
     QString err;
     if (!ProjectStorage::ensureProjectDirs(fullPath, &err)) {
-        QMessageBox::warning(this, tr("Erro"), tr("Falha ao criar o projeto:\n%1").arg(err));
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Falha ao criar o projeto:\n%1").arg(err));
         return;
     }
 
-    // Limpa o estado, monta projeto vazio com nome.
+    // Monta o projeto em memória.
     if (editorHost) editorHost->disable();
     if (docCache) docCache->clear();
     if (projectModel) projectModel->clear();
-    projectModel->setProjectName(name);
+    if (elementsStore) elementsStore->clear();
+    projectModel->setProjectName(detailsDlg.projectName());
+    projectModel->seedFromTemplate(templateId);
+    projectModel->setProjectDetails(
+        detailsDlg.projectName(),
+        detailsDlg.author(),
+        detailsDlg.genres(),
+        detailsDlg.synopsis(),
+        detailsDlg.coverDataUrl());
     applyProjectRoot(fullPath);
 
-    // Grava o index inicial.
     if (projectSaver && !projectSaver->saveProject()) {
         QMessageBox::warning(this, tr("Erro"),
-            tr("Projeto criado, mas falha ao salvar índice inicial:\n%1").arg(projectSaver->lastError()));
+            tr("Projeto criado, mas falha ao salvar índice inicial:\n%1")
+                .arg(projectSaver->lastError()));
     }
     rememberLastProject(fullPath);
+
+    // Fecha o Main Menu se estiver aberto e mostra a janela principal.
+    if (mainMenuDialog && mainMenuDialog->isVisible()) mainMenuDialog->accept();
+    if (!isVisible()) show();
 }
 
 void MainWindow::positionWordCountPanel()
@@ -2212,20 +2364,10 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 
 void MainWindow::onOpenProjectRequested()
 {
-    if (!confirmDiscardOrSave()) return;
-
-    const QString startDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    const QString chosen = QFileDialog::getExistingDirectory(this,
-        tr("Abrir projeto"),
-        startDir,
-        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if (chosen.isEmpty()) return;
-
-    QString err;
-    if (!loadProjectFrom(chosen, &err)) {
-        QMessageBox::warning(this, tr("Erro ao abrir"),
-            tr("Não foi possível abrir o projeto:\n%1").arg(err));
-    }
+    // Botão "Carregar" da TopToolbar agora abre o Main Menu, que lista os
+    // recentes e tem os botões Novo/Carregar lá dentro — entrega mais
+    // informação do que o QFileDialog puro.
+    openMainMenu();
 }
 
 void MainWindow::onSettingsRequested()

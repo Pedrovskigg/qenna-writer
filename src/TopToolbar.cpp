@@ -74,6 +74,7 @@ int fontButtonPointSize(int editorPt)
 
 TopToolbar::TopToolbar(QWidget *parent)
     : QWidget(parent)
+    , homeButton(makeIconButton(this))
     , newProjectButton(makeIconButton(this))
     , openProjectButton(makeIconButton(this))
     , saveProjectButton(makeIconButton(this))
@@ -116,6 +117,11 @@ TopToolbar::TopToolbar(QWidget *parent)
     };
 
     // ---------------- Grupo A: Projeto ----------------
+    homeButton->setObjectName(QStringLiteral("ttbProject"));
+    bindIcon(homeButton, QStringLiteral("home.svg"));
+    homeButton->setToolTip(tr("Voltar ao menu principal"));
+    connect(homeButton, &QToolButton::clicked, this, &TopToolbar::mainMenuRequested);
+
     newProjectButton->setObjectName(QStringLiteral("ttbProject"));
     bindIcon(newProjectButton, QStringLiteral("newproject.svg"));
     newProjectButton->setToolTip(tr("Novo projeto"));
@@ -283,6 +289,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->setSpacing(6);
 
     // --- Esquerda: Projeto ---
+    layout->addWidget(homeButton);
     layout->addWidget(newProjectButton);
     layout->addWidget(openProjectButton);
     layout->addWidget(saveProjectButton);

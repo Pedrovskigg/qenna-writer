@@ -43,6 +43,7 @@ class AmbiencePanel;
 class GlossaryStore;
 class GlossaryPanel;
 class GlossaryAddPopup;
+class MainMenuDialog;
 class QToolButton;
 
 class MainWindow : public QMainWindow
@@ -51,8 +52,10 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow() override;
 
     void setAvailableFontFamilies(const QStringList &families);
+    bool hasProjectLoaded() const { return !projectRoot.isEmpty(); }
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -95,6 +98,9 @@ private:
     bool loadProjectFrom(const QString& root, QString* errorOut = nullptr);
     void rememberLastProject(const QString& root);
     QString loadLastProjectPath() const;
+    QStringList loadRecentProjects() const;
+    void saveRecentProjects(const QStringList& list);
+    void openMainMenu();
     void rememberLastDocFor(const QString& root);
     void restoreLastDocFor(const QString& root);
     void applyProjectRoot(const QString& root);
@@ -158,6 +164,7 @@ private:
     GlossaryStore *glossaryStore = nullptr;
     GlossaryPanel *glossaryPanel = nullptr;
     GlossaryAddPopup *glossaryAddPopup = nullptr;
+    MainMenuDialog *mainMenuDialog = nullptr;
     QString markerEditId; // GUID em edição (vazio = aplicar novo)
     QString markerHoverId; // GUID hover atual (pra evitar reabrir)
     int markerPendingStart = -1; // seleção capturada antes do popup abrir

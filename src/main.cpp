@@ -80,8 +80,16 @@ int main(int argc, char *argv[])
 
     MainWindow window;
     window.setAvailableFontFamilies(customFontFamilies);
-    window.show();
-    splash.finish(&window);
+
+    // Só revela a janela se já tem projeto carregado (autoOpen). Sem projeto,
+    // o construtor agenda a abertura do Main Menu — e a MainWindow ganha
+    // show() depois, quando o usuário escolher/criar um projeto.
+    if (window.hasProjectLoaded()) {
+        window.show();
+        splash.finish(&window);
+    } else {
+        splash.close();
+    }
 
     return app.exec();
 }

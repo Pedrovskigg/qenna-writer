@@ -49,6 +49,7 @@ signals:
     void paragraphSpacingAfterChanged(int px);
     void addImageRequested();
     void focusModeToggled(bool enabled);
+    void mainMenuRequested();
     void newProjectRequested();
     void openProjectRequested();
     void saveProjectRequested();
@@ -68,6 +69,7 @@ signals:
     void themePanelRequested();
 
 private:
+    QToolButton *homeButton;
     QToolButton *newProjectButton;
     QToolButton *openProjectButton;
     QToolButton *saveProjectButton;
