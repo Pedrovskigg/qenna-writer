@@ -31,6 +31,8 @@ class SpellEditor;
 class SettingsPanel;
 class SelectionPopup;
 class ThemesPanel;
+class ProjectInfoPanel;
+class ProjectInfoHover;
 class BondPopup;
 class BondViewPanel;
 class MarkerStore;
@@ -112,6 +114,7 @@ private:
     void openBondEditPopup(const QString& drawerKey, const QString& bondId,
                            const QPoint& spawnGlobal);
     void createDocFromBond(const QString& drawerKey, const QString& bondId);
+    void createDocFromSelection();
 
     bool findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const;
     int detectAlignmentForImage(const QTextCursor &imageCursor) const;
@@ -140,6 +143,10 @@ private:
     SpellHighlighter *spellHighlighter;
     SettingsPanel *settingsPanel;
     ThemesPanel *themesPanel;
+    ProjectInfoPanel *projectInfoPanel = nullptr;
+    ProjectInfoHover *projectInfoHover = nullptr;
+    QTimer *projectInfoHoverOpenTimer = nullptr;
+    QTimer *projectInfoHoverCloseTimer = nullptr;
     SelectionPopup *selectionPopup;
     BondPopup *bondPopup = nullptr;
     BondViewPanel *bondViewPanel = nullptr;

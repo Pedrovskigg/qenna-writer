@@ -37,6 +37,9 @@ public:
     void setActiveDrawer(const QString& drawerKey);
     void clearSelection();
 
+    // Acesso pontual a um botão fixo (pra plugar hover/tooltips externos).
+    QToolButton* fixedButton(FixedAction action) const;
+
 signals:
     void fixedActionTriggered(LeftBar::FixedAction action);
     void drawerSelected(QString drawerKey);

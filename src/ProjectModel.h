@@ -137,6 +137,16 @@ public:
                       const QString& iconId, const QString& elementType, const QString& elementIcon);
     const Drawer* findDrawer(const QString& key) const;
 
+    // Detalhes da obra (autor, gêneros, sinopse, capa). Compat com Mira 1:
+    // ficam em data.projectDetails no JSON, preservados pelo m_dataExtras.
+    QString projectAuthor() const;
+    QString projectGenres() const;
+    QString projectSynopsis() const;
+    QString projectCoverDataUrl() const;
+    void setProjectDetails(const QString& name, const QString& author,
+                           const QString& genres, const QString& synopsis,
+                           const QString& coverDataUrl);
+
     bool updateDrawerItemHtml(const QString& itemId, const QString& html);
     bool updateDrawerItemMeta(const QString& itemId, const QString& title, const QString& role);
     bool setDrawerItemElement(const QString& itemId, const QString& elementType,
@@ -189,6 +199,7 @@ signals:
     void activeChapterChanged();
     void settingsChanged();
     void uiChanged();
+    void projectDetailsChanged();
     void loaded();
 
 private:

@@ -278,6 +278,10 @@ void LeftBar::refreshActiveStates() {
     }
 }
 
+QToolButton* LeftBar::fixedButton(FixedAction action) const {
+    return m_fixedButtons.value(static_cast<int>(action), nullptr);
+}
+
 QToolButton* LeftBar::makeFixedButton(const QString& iconResource,
                                      const QString& placeholderLetter,
                                      const QString& tooltip,

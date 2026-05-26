@@ -37,7 +37,9 @@
 
 #include <QDir>
 #include <QInputDialog>
+#include <QLineEdit>
 #include <QLocale>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QTimer>
@@ -55,6 +57,8 @@
 #include "ImageOverlay.h"
 #include "LeftBar.h"
 #include "ManuscriptPanel.h"
+#include "ProjectInfoHover.h"
+#include "ProjectInfoPanel.h"
 #include "ProjectModel.h"
 #include "ProjectSaver.h"
 #include "ProjectStorage.h"
@@ -282,6 +286,8 @@ void MainWindow::setupEditor()
                               + QPoint(0, 6);
             glossaryAddPopup->presentAt(gp, seed);
         });
+    selectionPopup->addAction(QStringLiteral("doc-plus.svg"), tr("Criar documento disso..."),
+        [this]() { createDocFromSelection(); });
 
     variationBar = new VariationBar(projectModel, editorHost, this);
     connect(editorHost, &EditorHost::viewModeChanged, variationBar, &VariationBar::refresh);
@@ -706,8 +712,46 @@ void MainWindow::setupEditor()
                 manuscriptPanel->raise();
                 leftBar->setActiveFixedAction(LeftBar::Manuscripts);
             }
+        } else if (action == LeftBar::Info) {
+            if (!projectInfoPanel) {
+                projectInfoPanel = new ProjectInfoPanel(projectModel, this);
+                connect(projectInfoPanel, &QDialog::finished, this, [this](int) {
+                    leftBar->clearSelection();
+                });
+            }
+            // Esconde o hover preview se estava aberto pra evitar sobreposição.
+            if (projectInfoHover && projectInfoHover->isVisible()) projectInfoHover->hide();
+            projectInfoPanel->show();
+            projectInfoPanel->raise();
+            projectInfoPanel->activateWindow();
+            leftBar->setActiveFixedAction(LeftBar::Info);
         }
     });
+
+    // Hover preview no botão Info da LeftBar (read-only). Igual Mira 1.
+    if (auto* infoBtn = leftBar->fixedButton(LeftBar::Info)) {
+        projectInfoHover = new ProjectInfoHover(projectModel, nullptr);
+        projectInfoHoverOpenTimer = new QTimer(this);
+        projectInfoHoverOpenTimer->setSingleShot(true);
+        projectInfoHoverOpenTimer->setInterval(350);
+        projectInfoHoverCloseTimer = new QTimer(this);
+        projectInfoHoverCloseTimer->setSingleShot(true);
+        projectInfoHoverCloseTimer->setInterval(220);
+
+        connect(projectInfoHoverOpenTimer, &QTimer::timeout, this, [this, infoBtn]() {
+            // Reaberto pela posição atual do botão (handles repaginação).
+            const QPoint topRight = infoBtn->mapToGlobal(QPoint(infoBtn->width(), 0));
+            projectInfoHover->presentNear(topRight);
+        });
+        connect(projectInfoHoverCloseTimer, &QTimer::timeout, this, [this]() {
+            if (projectInfoHover && !projectInfoHover->underMouse()) projectInfoHover->hide();
+        });
+        connect(projectInfoHover, &ProjectInfoHover::hoverLeft, this, [this]() {
+            if (projectInfoHover) projectInfoHover->hide();
+        });
+
+        infoBtn->installEventFilter(this);
+    }
     connect(manuscriptPanel, &ManuscriptPanel::chapterActivated, this, [this](const QString& manuscriptId, const QString& chapterId) {
         EditorHost::ViewMode vm;
         vm.type = EditorHost::ChapterDoc;
@@ -1528,14 +1572,35 @@ void MainWindow::setFocusMode(bool enabled)
 
 void MainWindow::updateFocusedBlock()
 {
-    QTextEdit::ExtraSelection selection;
+    QList<QTextEdit::ExtraSelection> selections;
+    QTextBlock block = editor->textCursor().block();
+    if (!block.isValid()) {
+        editor->setExtraSelections(selections);
+        return;
+    }
+
     QColor focused = baseTextColor;
     focused.setAlpha(255);
-    selection.format.setForeground(focused);
-    selection.cursor = editor->textCursor();
-    selection.cursor.movePosition(QTextCursor::EndOfBlock);
-    selection.cursor.movePosition(QTextCursor::StartOfBlock, QTextCursor::KeepAnchor);
-    editor->setExtraSelections({selection});
+
+    // Uma ExtraSelection por fragmento, pulando fragmentos com background
+    // (markers). Sem isso, o foreground da ExtraSelection sobrepõe o
+    // foreground de contraste do marker e o texto highlighted vira a cor
+    // do tema — invisível contra o fundo claro do marker.
+    for (auto it = block.begin(); !it.atEnd(); ++it) {
+        const QTextFragment frag = it.fragment();
+        if (!frag.isValid() || frag.length() == 0) continue;
+        const QBrush bg = frag.charFormat().background();
+        if (bg.style() != Qt::NoBrush && bg.color().alpha() > 0) continue;
+
+        QTextEdit::ExtraSelection sel;
+        sel.format.setForeground(focused);
+        sel.cursor = QTextCursor(editor->document());
+        sel.cursor.setPosition(frag.position());
+        sel.cursor.setPosition(frag.position() + frag.length(),
+                               QTextCursor::KeepAnchor);
+        selections.append(sel);
+    }
+    editor->setExtraSelections(selections);
 }
 
 void MainWindow::onAddImageRequested()
@@ -1618,6 +1683,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+    // Hover preview do botão Info da LeftBar.
+    if (leftBar && watched == leftBar->fixedButton(LeftBar::Info)) {
+        const QEvent::Type t = event->type();
+        if (t == QEvent::Enter) {
+            if (projectInfoHoverCloseTimer) projectInfoHoverCloseTimer->stop();
+            // Não abre o hover enquanto o painel de edição está aberto.
+            if (!projectInfoPanel || !projectInfoPanel->isVisible()) {
+                if (projectInfoHoverOpenTimer) projectInfoHoverOpenTimer->start();
+            }
+        } else if (t == QEvent::Leave) {
+            if (projectInfoHoverOpenTimer) projectInfoHoverOpenTimer->stop();
+            if (projectInfoHoverCloseTimer) projectInfoHoverCloseTimer->start();
+        }
+    }
+
     if (watched == editor->viewport()) {
         if (event->type() == QEvent::MouseButtonPress) {
             auto *me = static_cast<QMouseEvent*>(event);
@@ -2683,5 +2763,173 @@ void MainWindow::createDocFromBond(const QString& drawerKey, const QString& bond
     it.folderId = QString();
     it.hasInlineHtml = true;
     it.html = html;
+    projectModel->addDrawerItem(destKey, it);
+}
+
+void MainWindow::createDocFromSelection()
+{
+    if (!editor || !projectModel) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    // Texto bruto: Qt usa U+2029 como separador de parágrafo no selectedText().
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString trimmed = raw.trimmed();
+    if (trimmed.isEmpty()) return;
+
+    if (projectModel->drawers().isEmpty()) {
+        QMessageBox::warning(this, tr("Criar documento"),
+            tr("Crie uma gaveta antes de usar este recurso."));
+        return;
+    }
+
+    // Sugere nome a partir das primeiras palavras (limite ~48 chars, máx 8 palavras).
+    auto suggestNameFrom = [](const QString& text) -> QString {
+        QString flat = text;
+        flat.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+        flat = flat.trimmed();
+        const QStringList words = flat.split(QChar(' '), Qt::SkipEmptyParts);
+        QStringList picked;
+        int total = 0;
+        for (const QString& w : words) {
+            if (picked.size() >= 8) break;
+            if (total + w.size() + (picked.isEmpty() ? 0 : 1) > 48) break;
+            picked.append(w);
+            total += w.size() + (picked.isEmpty() ? 0 : 1);
+        }
+        QString s = picked.join(QChar(' '));
+        if (s.isEmpty()) s = flat.left(48);
+        return s;
+    };
+    const QString suggested = suggestNameFrom(trimmed);
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Criar documento"));
+    dlg.setModal(true);
+    dlg.setMinimumWidth(380);
+
+    auto* root = new QVBoxLayout(&dlg);
+    root->setContentsMargins(16, 16, 16, 12);
+    root->setSpacing(10);
+
+    auto* nameLab = new QLabel(tr("Nome do documento:"), &dlg);
+    root->addWidget(nameLab);
+    auto* nameEdit = new QLineEdit(suggested, &dlg);
+    nameEdit->selectAll();
+    root->addWidget(nameEdit);
+
+    auto* drawerLab = new QLabel(tr("Gaveta de destino:"), &dlg);
+    root->addWidget(drawerLab);
+    auto* drawerCombo = new QComboBox(&dlg);
+    for (const auto& d : projectModel->drawers()) {
+        const QString label = d.title.isEmpty() ? tr("(sem nome)") : d.title;
+        drawerCombo->addItem(label, d.key);
+    }
+    drawerCombo->setCurrentIndex(0);
+    root->addWidget(drawerCombo);
+
+    // Hint dinâmico pra gavetas visuais (personagem/cenário/objeto).
+    auto* hint = new QLabel(&dlg);
+    hint->setWordWrap(true);
+    hint->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;").arg(Theme::textMuted()));
+    root->addWidget(hint);
+    auto refreshHint = [this, drawerCombo, hint]() {
+        const QString key = drawerCombo->currentData().toString();
+        const Drawer* d = projectModel->findDrawer(key);
+        const QString et = d ? d->drawerElementType : QString();
+        if (et == QStringLiteral("character"))      hint->setText(tr("Vai abrir o cadastro de personagem em seguida (foto e papel)."));
+        else if (et == QStringLiteral("setting"))   hint->setText(tr("Vai abrir o cadastro de cenário em seguida (foto)."));
+        else if (et == QStringLiteral("object"))    hint->setText(tr("Vai abrir o cadastro de objeto em seguida (foto)."));
+        else hint->clear();
+    };
+    refreshHint();
+    connect(drawerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), &dlg,
+            [refreshHint](int) { refreshHint(); });
+
+    root->addStretch();
+
+    auto* btnRow = new QHBoxLayout();
+    btnRow->addStretch();
+    auto* cancel = new QPushButton(tr("Cancelar"), &dlg);
+    auto* ok = new QPushButton(tr("Criar"), &dlg);
+    ok->setDefault(true);
+    btnRow->addWidget(cancel);
+    btnRow->addWidget(ok);
+    root->addLayout(btnRow);
+
+    connect(cancel, &QPushButton::clicked, &dlg, &QDialog::reject);
+    connect(ok, &QPushButton::clicked, &dlg, &QDialog::accept);
+
+    if (dlg.exec() != QDialog::Accepted) return;
+    const QString title = nameEdit->text().trimmed();
+    if (title.isEmpty()) return;
+    const QString destKey = drawerCombo->currentData().toString();
+    if (destKey.isEmpty()) return;
+
+    // Constrói o HTML a partir do texto selecionado: parágrafos separados por
+    // linhas em branco, quebras simples viram <br>.
+    auto buildHtmlFromText = [](const QString& text) -> QString {
+        const QString normalized = QString(text).replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+        const QStringList paras = normalized.split(QRegularExpression(QStringLiteral("\n{2,}")),
+                                                   Qt::SkipEmptyParts);
+        QString out;
+        for (const QString& p : paras) {
+            QString chunk = p.trimmed();
+            if (chunk.isEmpty()) continue;
+            chunk = chunk.toHtmlEscaped();
+            chunk.replace(QChar('\n'), QStringLiteral("<br/>"));
+            out += QStringLiteral("<p>%1</p>").arg(chunk);
+        }
+        if (out.isEmpty()) out = QStringLiteral("<p></p>");
+        return out;
+    };
+
+    const Drawer* destDrawer = projectModel->findDrawer(destKey);
+    const QString elemType = destDrawer ? destDrawer->drawerElementType : QString();
+    const bool isVisual = elemType == QStringLiteral("character")
+        || elemType == QStringLiteral("setting")
+        || elemType == QStringLiteral("object");
+
+    QString role;
+    QString imageDataUrl;
+    if (isVisual) {
+        ElementCreateDialog edlg(elemType, this);
+        edlg.setInitial(title, QString(), QString());
+        if (edlg.exec() != QDialog::Accepted) return;
+        const QString finalTitle = edlg.title().trimmed();
+        if (finalTitle.isEmpty()) return;
+        role = edlg.role();
+        imageDataUrl = edlg.imageDataUrl();
+
+        Element elem;
+        elem.name = finalTitle;
+        elem.type = elemType;
+        elem.icon = elemType == QStringLiteral("character") ? QStringLiteral("user")
+                  : elemType == QStringLiteral("setting")   ? QStringLiteral("map")
+                  : QStringLiteral("cube");
+        elem.role = role;
+        elem.image = imageDataUrl;
+        const QString elementId = elementsStore->addElement(elem);
+
+        DrawerItem it;
+        it.id = ProjectModel::uid();
+        it.title = finalTitle;
+        it.folderId = QString();
+        it.hasInlineHtml = true;
+        it.html = buildHtmlFromText(raw);
+        it.elementType = elemType;
+        it.elementId = elementId;
+        it.role = role;
+        projectModel->addDrawerItem(destKey, it);
+        return;
+    }
+
+    DrawerItem it;
+    it.id = ProjectModel::uid();
+    it.title = title;
+    it.folderId = QString();
+    it.hasInlineHtml = true;
+    it.html = buildHtmlFromText(raw);
     projectModel->addDrawerItem(destKey, it);
 }

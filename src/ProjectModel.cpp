@@ -339,6 +339,60 @@ void ProjectModel::setDataExtras(const QJsonObject& d) {
     m_dataExtras = d;
 }
 
+QString ProjectModel::projectAuthor() const {
+    return m_dataExtras.value(QStringLiteral("projectDetails")).toObject()
+        .value(QStringLiteral("author")).toString();
+}
+
+QString ProjectModel::projectGenres() const {
+    return m_dataExtras.value(QStringLiteral("projectDetails")).toObject()
+        .value(QStringLiteral("genres")).toString();
+}
+
+QString ProjectModel::projectSynopsis() const {
+    return m_dataExtras.value(QStringLiteral("projectDetails")).toObject()
+        .value(QStringLiteral("synopsis")).toString();
+}
+
+QString ProjectModel::projectCoverDataUrl() const {
+    const QJsonObject pd = m_dataExtras.value(QStringLiteral("projectDetails")).toObject();
+    const QString full = pd.value(QStringLiteral("coverFull")).toString();
+    if (!full.isEmpty()) return full;
+    return pd.value(QStringLiteral("cover")).toString();
+}
+
+void ProjectModel::setProjectDetails(const QString& name, const QString& author,
+                                     const QString& genres, const QString& synopsis,
+                                     const QString& coverDataUrl) {
+    bool changed = false;
+
+    if (m_projectName != name) {
+        m_projectName = name;
+        emit projectNameChanged();
+        changed = true;
+    }
+
+    QJsonObject pd = m_dataExtras.value(QStringLiteral("projectDetails")).toObject();
+    auto setStr = [&](const QString& key, const QString& value) {
+        const QString cur = pd.value(key).toString();
+        if (cur == value) return;
+        if (value.isEmpty()) pd.remove(key);
+        else pd.insert(key, value);
+        changed = true;
+    };
+    setStr(QStringLiteral("author"), author);
+    setStr(QStringLiteral("genres"), genres);
+    setStr(QStringLiteral("synopsis"), synopsis);
+    // Compat Mira 1: gravamos em ambas as chaves (cover e coverFull).
+    setStr(QStringLiteral("cover"), coverDataUrl);
+    setStr(QStringLiteral("coverFull"), coverDataUrl);
+
+    if (!pd.isEmpty()) m_dataExtras.insert(QStringLiteral("projectDetails"), pd);
+    else m_dataExtras.remove(QStringLiteral("projectDetails"));
+
+    if (changed) emit projectDetailsChanged();
+}
+
 void ProjectModel::addDrawer(const Drawer& drawer) {
     m_drawers.append(drawer);
     emit drawersChanged();

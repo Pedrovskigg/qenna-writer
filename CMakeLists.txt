@@ -84,6 +84,10 @@ qt_add_executable(mira-writing
     src/EditorLayout.h
     src/ThemesPanel.cpp
     src/ThemesPanel.h
+    src/ProjectInfoPanel.cpp
+    src/ProjectInfoPanel.h
+    src/ProjectInfoHover.cpp
+    src/ProjectInfoHover.h
     src/BondTypes.cpp
     src/BondTypes.h
     src/BondsLayer.cpp

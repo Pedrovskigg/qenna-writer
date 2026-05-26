@@ -39,6 +39,8 @@ ProjectSaver::ProjectSaver(ProjectModel* model, DocCache* cache, EditorHost* hos
     }
     if (m_model) {
         connect(m_model, &ProjectModel::settingsChanged, this, &ProjectSaver::onSettingsChanged);
+        // projectDetails muda dataExtras → precisa flush no autosave/Ctrl+S.
+        connect(m_model, &ProjectModel::projectDetailsChanged, this, &ProjectSaver::onSettingsChanged);
     }
 }
 
