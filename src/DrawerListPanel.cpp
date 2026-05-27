@@ -17,6 +17,7 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QLocale>
 #include <QMenu>
 #include <QMimeData>
@@ -24,6 +25,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSizePolicy>
@@ -40,9 +42,66 @@ constexpr const char* kItemMime = "application/x-mira-drawer-item";
 
 namespace {
 
+const QStringList kPresetStatuses = {
+    QStringLiteral("Morto"),       QStringLiteral("Desaparecido"), QStringLiteral("Ferido"),
+    QStringLiteral("Curado"),      QStringLiteral("Apaixonado"),   QStringLiteral("Raivoso"),
+    QStringLiteral("Feliz"),       QStringLiteral("Triste"),       QStringLiteral("Confuso"),
+    QStringLiteral("Traído"),      QStringLiteral("Com medo"),     QStringLiteral("Em fuga"),
+    QStringLiteral("Preso"),       QStringLiteral("Transformado"), QStringLiteral("Aliviado"),
+    QStringLiteral("Perdido"),
+};
+
+QString pickerPopupQss() {
+    return QStringLiteral(R"(
+        QFrame#consistencyPicker {
+            background: %1;
+            border: 1px solid %2;
+            border-radius: 8px;
+        }
+        QPushButton#pickerOption {
+            background: transparent;
+            color: %3;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            text-align: left;
+            font-family: 'Lora','Crimson Text',serif;
+            font-size: 12px;
+        }
+        QPushButton#pickerOption:hover { background: %4; color: %5; }
+        QPushButton#pickerOptionClear {
+            background: transparent;
+            color: %6;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            text-align: left;
+            font-family: 'Lora','Crimson Text',serif;
+            font-size: 11px;
+            font-style: italic;
+        }
+        QPushButton#pickerOptionClear:hover { background: %4; color: %7; }
+        QLineEdit#pickerInput {
+            background: %8;
+            color: %3;
+            border: 1px solid %2;
+            border-radius: 5px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+    )").arg(Theme::panelBackground(), Theme::panelBorder(),
+            Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(),
+            Theme::textMuted(), Theme::accentDanger(), Theme::inputBackground());
+}
+
+} // namespace (presets + picker QSS)
+
+namespace {
+
 constexpr int kPanelWidth = 300;
 constexpr int kCardWidth  = 134;   // (300 - 24 padding - 8 gap) / 2 = 134
 constexpr int kCardHeight = 118;   // foto 70 + nome + role + paddings
+constexpr int kCardHeightConsistency = 192; // + barra de presença + status + local
 constexpr int kCardPhoto  = 70;
 constexpr int kMinPanelWidth = 240;
 constexpr int kMaxPanelWidth = 600;
@@ -298,6 +357,38 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     });
     headerLayout->addWidget(m_pinBtn);
 
+    // Botão de modo consistência — só visível em gavetas de personagem
+    m_consistencyBtn = new QToolButton(this);
+    m_consistencyBtn->setToolTip(tr("Modo consistência narrativa"));
+    m_consistencyBtn->setCursor(Qt::PointingHandCursor);
+    m_consistencyBtn->setCheckable(true);
+    m_consistencyBtn->setAutoRaise(true);
+    m_consistencyBtn->setMinimumHeight(24);
+    m_consistencyBtn->setFixedWidth(28);
+    m_consistencyBtn->setStyleSheet(miniIconBtnQss());
+    m_consistencyBtn->setVisible(false);
+    {
+        QIcon ic = IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/leftbar/consistency.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textPrimary()),
+            QColor(Theme::textBright()), QSize(16, 16));
+        if (!ic.isNull()) {
+            m_consistencyBtn->setIcon(ic);
+            m_consistencyBtn->setIconSize(QSize(16, 16));
+            m_consistencyBtn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        } else {
+            m_consistencyBtn->setText(QStringLiteral("C"));
+            m_consistencyBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        }
+    }
+    connect(m_consistencyBtn, &QToolButton::toggled, this, [this](bool on) {
+        m_consistencyMode = on;
+        if (on) refreshPresenceCache();
+        rebuildContents();
+        emit consistencyModeChanged(on);
+    });
+    headerLayout->addWidget(m_consistencyBtn);
+
     m_viewBtn = makeMiniBtn(QStringLiteral("⊞"), tr("Alternar exibição"), /*checkable=*/false);
     m_viewBtn->setFixedWidth(28);
     connect(m_viewBtn, &QToolButton::clicked, this, [this]() {
@@ -480,6 +571,16 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
         m_currentFolderId.clear();
         // Reset view mode default por gaveta: grid pra element drawer, list pra genérica.
         m_gridView = currentDrawerIsElement();
+        // Reset modo consistência ao trocar de gaveta
+        if (m_consistencyMode) {
+            m_consistencyMode = false;
+            if (m_consistencyBtn) {
+                m_consistencyBtn->blockSignals(true);
+                m_consistencyBtn->setChecked(false);
+                m_consistencyBtn->blockSignals(false);
+            }
+            emit consistencyModeChanged(false);
+        }
     }
     if (!folderId.isEmpty()) {
         m_currentFolderId = folderId;
@@ -497,6 +598,240 @@ void DrawerListPanel::closePanel() {
     m_currentFolderId.clear();
     hide();
     emit panelClosed();
+}
+
+void DrawerListPanel::openInConsistencyMode(const QString& drawerKey) {
+    // Se drawerKey foi especificada, usa ela; senão, procura a primeira gaveta de personagem
+    QString targetKey = drawerKey;
+    if (targetKey.isEmpty() && m_model) {
+        for (const auto& d : m_model->drawers()) {
+            if (d.drawerElementType == QStringLiteral("character")) {
+                targetKey = d.key;
+                break;
+            }
+        }
+    }
+    if (targetKey.isEmpty()) return;
+
+    // Abre a gaveta (resetará consistency se era outro drawer)
+    openDrawer(targetKey);
+
+    // Ativa modo consistência
+    if (!m_consistencyMode) {
+        m_consistencyMode = true;
+        if (m_consistencyBtn) {
+            m_consistencyBtn->blockSignals(true);
+            m_consistencyBtn->setChecked(true);
+            m_consistencyBtn->blockSignals(false);
+        }
+        refreshPresenceCache();
+        rebuildContents();
+        emit consistencyModeChanged(true);
+    }
+}
+
+void DrawerListPanel::refreshPresenceCache() {
+    m_presenceCache.clear();
+    m_totalChapters = 0;
+    if (!m_model || !m_presenceProvider) return;
+
+    // Coleta nomes de todos os personagens na gaveta atual
+    const Drawer* drawer = m_model->findDrawer(m_currentKey);
+    if (!drawer) return;
+
+    QStringList names;
+    for (const auto& it : drawer->items) {
+        if (!it.title.isEmpty()) names.append(it.title);
+    }
+    if (names.isEmpty()) return;
+
+    m_presenceProvider(names, &m_presenceCache, &m_totalChapters);
+}
+
+void DrawerListPanel::showStatusPicker(const QString& itemId, const QPoint& globalPos) {
+    if (!m_model) return;
+    const DrawerItem* item = m_model->findDrawerItem(itemId);
+    if (!item) return;
+
+    const QString currentStatus = item->charStatus;
+    const QString currentDetail = item->charStatusDetail;
+    const QString currentLocation = item->charLocation;
+
+    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setObjectName(QStringLiteral("consistencyPicker"));
+    popup->setStyleSheet(pickerPopupQss());
+    popup->setFixedWidth(180);
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(6, 6, 6, 6);
+    lay->setSpacing(2);
+
+    // Campo de input personalizado
+    auto* customInput = new QLineEdit(popup);
+    customInput->setObjectName(QStringLiteral("pickerInput"));
+    customInput->setPlaceholderText(tr("Status personalizado..."));
+    customInput->setFixedHeight(28);
+    lay->addWidget(customInput);
+
+    // Separador
+    auto* sep = new QFrame(popup);
+    sep->setFrameShape(QFrame::HLine);
+    sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
+    sep->setFixedHeight(1);
+    lay->addWidget(sep);
+
+    // Limpar status (se tiver)
+    if (!currentStatus.isEmpty()) {
+        auto* clearBtn = new QPushButton(tr("Limpar status"), popup);
+        clearBtn->setObjectName(QStringLiteral("pickerOptionClear"));
+        clearBtn->setFixedHeight(26);
+        clearBtn->setCursor(Qt::PointingHandCursor);
+        connect(clearBtn, &QPushButton::clicked, popup, [this, popup, itemId, currentLocation]() {
+            emit consistencyUpdateRequested(itemId, QString(), QString(), currentLocation);
+            popup->close();
+        });
+        lay->addWidget(clearBtn);
+    }
+
+    // Presets
+    for (const auto& s : kPresetStatuses) {
+        auto* btn = new QPushButton(s, popup);
+        btn->setObjectName(QStringLiteral("pickerOption"));
+        btn->setFixedHeight(26);
+        btn->setCursor(Qt::PointingHandCursor);
+        if (s == currentStatus) {
+            btn->setStyleSheet(QStringLiteral(
+                "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+                "padding: 0 10px; text-align: left; font-size: 12px; "
+                "font-family: 'Lora','Crimson Text',serif; }")
+                .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+        }
+        connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentLocation]() {
+            emit consistencyUpdateRequested(itemId, s, QString(), currentLocation);
+            popup->close();
+        });
+        lay->addWidget(btn);
+    }
+
+    // Confirma campo personalizado
+    connect(customInput, &QLineEdit::returnPressed, popup, [this, popup, customInput, itemId, currentLocation]() {
+        const QString val = customInput->text().trimmed();
+        if (!val.isEmpty()) {
+            emit consistencyUpdateRequested(itemId, val, QString(), currentLocation);
+            popup->close();
+        }
+    });
+
+    popup->adjustSize();
+    // Posiciona para não sair da tela
+    QPoint pos = globalPos;
+    const QRect screen = popup->screen() ? popup->screen()->availableGeometry() : QRect(0, 0, 1920, 1080);
+    if (pos.x() + popup->width() > screen.right())  pos.setX(screen.right() - popup->width());
+    if (pos.y() + popup->height() > screen.bottom()) pos.setY(globalPos.y() - popup->height() - 30);
+    popup->move(pos);
+    popup->show();
+    customInput->setFocus();
+}
+
+void DrawerListPanel::showLocationPicker(const QString& itemId, const QPoint& globalPos) {
+    if (!m_model) return;
+    const DrawerItem* item = m_model->findDrawerItem(itemId);
+    if (!item) return;
+
+    const QString currentStatus = item->charStatus;
+    const QString currentDetail = item->charStatusDetail;
+    const QString currentLocation = item->charLocation;
+
+    // Coleta cenários de todas as gavetas com drawerElementType == "setting"
+    QStringList settingNames;
+    for (const auto& d : m_model->drawers()) {
+        if (d.drawerElementType == QStringLiteral("setting")) {
+            for (const auto& it : d.items) {
+                if (!it.title.isEmpty()) settingNames.append(it.title);
+            }
+        }
+    }
+
+    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setObjectName(QStringLiteral("consistencyPicker"));
+    popup->setStyleSheet(pickerPopupQss());
+    popup->setFixedWidth(180);
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(6, 6, 6, 6);
+    lay->setSpacing(2);
+
+    // Campo personalizado
+    auto* customInput = new QLineEdit(popup);
+    customInput->setObjectName(QStringLiteral("pickerInput"));
+    customInput->setPlaceholderText(tr("Local personalizado..."));
+    customInput->setFixedHeight(28);
+    lay->addWidget(customInput);
+
+    // Separador
+    auto* sep = new QFrame(popup);
+    sep->setFrameShape(QFrame::HLine);
+    sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
+    sep->setFixedHeight(1);
+    lay->addWidget(sep);
+
+    // Limpar local (se tiver)
+    if (!currentLocation.isEmpty()) {
+        auto* clearBtn = new QPushButton(tr("Limpar local"), popup);
+        clearBtn->setObjectName(QStringLiteral("pickerOptionClear"));
+        clearBtn->setFixedHeight(26);
+        clearBtn->setCursor(Qt::PointingHandCursor);
+        connect(clearBtn, &QPushButton::clicked, popup, [this, popup, itemId, currentStatus, currentDetail]() {
+            emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, QString());
+            popup->close();
+        });
+        lay->addWidget(clearBtn);
+    }
+
+    if (settingNames.isEmpty()) {
+        auto* emptyLbl = new QLabel(tr("Nenhum cenário criado."), popup);
+        emptyLbl->setStyleSheet(QStringLiteral(
+            "color: %1; font-size: 11px; padding: 4px 10px; font-style: italic;").arg(Theme::textMuted()));
+        lay->addWidget(emptyLbl);
+    } else {
+        for (const auto& s : settingNames) {
+            auto* btn = new QPushButton(s, popup);
+            btn->setObjectName(QStringLiteral("pickerOption"));
+            btn->setFixedHeight(26);
+            btn->setCursor(Qt::PointingHandCursor);
+            if (s == currentLocation) {
+                btn->setStyleSheet(QStringLiteral(
+                    "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+                    "padding: 0 10px; text-align: left; font-size: 12px; "
+                    "font-family: 'Lora','Crimson Text',serif; }")
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+            }
+            connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentStatus, currentDetail]() {
+                emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, s);
+                popup->close();
+            });
+            lay->addWidget(btn);
+        }
+    }
+
+    connect(customInput, &QLineEdit::returnPressed, popup, [this, popup, customInput, itemId, currentStatus, currentDetail]() {
+        const QString val = customInput->text().trimmed();
+        if (!val.isEmpty()) {
+            emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, val);
+            popup->close();
+        }
+    });
+
+    popup->adjustSize();
+    QPoint pos = globalPos;
+    const QRect screen = popup->screen() ? popup->screen()->availableGeometry() : QRect(0, 0, 1920, 1080);
+    if (pos.x() + popup->width() > screen.right())  pos.setX(screen.right() - popup->width());
+    if (pos.y() + popup->height() > screen.bottom()) pos.setY(globalPos.y() - popup->height() - 30);
+    popup->move(pos);
+    popup->show();
+    customInput->setFocus();
 }
 
 void DrawerListPanel::onDrawersChanged() {
@@ -701,6 +1036,20 @@ void DrawerListPanel::updateViewButton() {
     m_viewBtn->setToolTip(m_gridView
         ? tr("Exibição: Blocos — clique para Lista")
         : tr("Exibição: Lista — clique para Blocos"));
+    updateConsistencyBtn();
+}
+
+void DrawerListPanel::updateConsistencyBtn() {
+    if (!m_consistencyBtn) return;
+    const bool isChar = currentDrawerIsCharacter();
+    m_consistencyBtn->setVisible(isChar);
+    if (!isChar && m_consistencyMode) {
+        m_consistencyMode = false;
+        m_consistencyBtn->blockSignals(true);
+        m_consistencyBtn->setChecked(false);
+        m_consistencyBtn->blockSignals(false);
+    }
+    m_consistencyBtn->setChecked(m_consistencyMode);
 }
 
 void DrawerListPanel::rebuildContents() {
@@ -809,7 +1158,8 @@ void DrawerListPanel::rebuildContents() {
             if (colInRow == 0) {
                 auto* rowWrap = new QWidget(this);
                 rowWrap->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-                rowWrap->setFixedHeight(kCardHeight);
+                rowWrap->setFixedHeight(
+                    (m_consistencyMode && currentDrawerIsCharacter()) ? kCardHeightConsistency : kCardHeight);
                 rowWrap->setMouseTracking(true);
                 rowWrap->setProperty("isBondRow", true);
                 rowWrap->installEventFilter(this);
@@ -876,12 +1226,24 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
             imageDataUrl = e->image;
         }
     }
+
+    // Dados de consistência do item (pode ser nulo se não for personagem)
+    QString charStatus, charStatusDetail, charLocation;
+    if (m_consistencyMode && currentDrawerIsCharacter()) {
+        if (const DrawerItem* it = m_model ? m_model->findDrawerItem(itemId) : nullptr) {
+            charStatus       = it->charStatus;
+            charStatusDetail = it->charStatusDetail;
+            charLocation     = it->charLocation;
+        }
+    }
+    const bool showConsistency = m_consistencyMode && currentDrawerIsCharacter();
+
     auto* card = new QFrame(this);
     card->setObjectName(QStringLiteral("elemCard"));
     card->setAttribute(Qt::WA_StyledBackground, true);
     card->setCursor(Qt::PointingHandCursor);
     card->setContextMenuPolicy(Qt::CustomContextMenu);
-    card->setFixedSize(kCardWidth, kCardHeight);
+    card->setFixedSize(kCardWidth, showConsistency ? kCardHeightConsistency : kCardHeight);
     card->setStyleSheet(QStringLiteral(R"(
         QFrame#elemCard {
             background: %1;
@@ -940,7 +1302,104 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         roleLbl->setAlignment(Qt::AlignHCenter);
         lay->addWidget(roleLbl);
     }
-    lay->addStretch();
+
+    if (showConsistency) {
+        // Separador fino
+        auto* sep = new QFrame(card);
+        sep->setFrameShape(QFrame::HLine);
+        sep->setFixedHeight(1);
+        sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
+        lay->addWidget(sep);
+
+        // Barra de presença (QProgressBar com estilo flat)
+        const int chapCount = m_presenceCache.value(title.toLower(), 0);
+        const int pct = (m_totalChapters > 0) ? qMin(100, (chapCount * 100) / m_totalChapters) : 0;
+        auto* presenceBar = new QProgressBar(card);
+        presenceBar->setRange(0, 100);
+        presenceBar->setValue(pct);
+        presenceBar->setFixedHeight(8);
+        presenceBar->setTextVisible(false);
+        presenceBar->setToolTip(tr("Aparece em %1 de %2 capítulo(s) (%3%)")
+            .arg(chapCount).arg(m_totalChapters).arg(pct));
+        presenceBar->setStyleSheet(QStringLiteral(R"(
+            QProgressBar {
+                background: %1;
+                border: none;
+                border-radius: 3px;
+            }
+            QProgressBar::chunk {
+                background: %2;
+                border-radius: 3px;
+            }
+        )").arg(Theme::hoverOverlay(), Theme::accentDefault()));
+        lay->addWidget(presenceBar);
+
+        // Botão Status
+        auto* statusBtn = new QPushButton(card);
+        statusBtn->setObjectName(QStringLiteral("pickerOption"));
+        statusBtn->setCursor(Qt::PointingHandCursor);
+        statusBtn->setFixedHeight(22);
+        const QString statusText = charStatus.isEmpty()
+            ? tr("Status: —")
+            : tr("Status: %1").arg(charStatus);
+        statusBtn->setText(statusText);
+        statusBtn->setStyleSheet(QStringLiteral(R"(
+            QPushButton {
+                background: %1;
+                color: %2;
+                border: 1px solid %3;
+                border-radius: 5px;
+                padding: 0 6px;
+                text-align: left;
+                font-family: 'Lora','Crimson Text',serif;
+                font-size: 10px;
+            }
+            QPushButton:hover { background: %4; color: %5; border-color: %6; }
+        )").arg(Theme::pressedOverlay(),
+                charStatus.isEmpty() ? Theme::textMuted() : Theme::textBright(),
+                Theme::subtleBorder(), Theme::hoverOverlay(),
+                Theme::textBright(), Theme::borderStrong()));
+        if (!charStatusDetail.isEmpty())
+            statusBtn->setToolTip(charStatusDetail);
+        connect(statusBtn, &QPushButton::clicked, this, [this, itemId, statusBtn]() {
+            showStatusPicker(itemId, statusBtn->mapToGlobal(
+                QPoint(0, statusBtn->height() + 2)));
+        });
+        lay->addWidget(statusBtn);
+
+        // Botão Último local
+        auto* locBtn = new QPushButton(card);
+        locBtn->setObjectName(QStringLiteral("pickerOption"));
+        locBtn->setCursor(Qt::PointingHandCursor);
+        locBtn->setFixedHeight(22);
+        const QString locText = charLocation.isEmpty()
+            ? tr("Local: —")
+            : tr("Local: %1").arg(charLocation);
+        locBtn->setText(locText);
+        locBtn->setStyleSheet(QStringLiteral(R"(
+            QPushButton {
+                background: %1;
+                color: %2;
+                border: 1px solid %3;
+                border-radius: 5px;
+                padding: 0 6px;
+                text-align: left;
+                font-family: 'Lora','Crimson Text',serif;
+                font-size: 10px;
+            }
+            QPushButton:hover { background: %4; color: %5; border-color: %6; }
+        )").arg(Theme::pressedOverlay(),
+                charLocation.isEmpty() ? Theme::textMuted() : Theme::textBright(),
+                Theme::subtleBorder(), Theme::hoverOverlay(),
+                Theme::textBright(), Theme::borderStrong()));
+        connect(locBtn, &QPushButton::clicked, this, [this, itemId, locBtn]() {
+            showLocationPicker(itemId, locBtn->mapToGlobal(
+                QPoint(0, locBtn->height() + 2)));
+        });
+        lay->addWidget(locBtn);
+    } else {
+        lay->addStretch();
+    }
 
     const QString drawerKey = m_currentKey;
     card->installEventFilter(this);

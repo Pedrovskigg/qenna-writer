@@ -227,6 +227,47 @@ void MainWindow::setupEditor()
     drawerListPanel = new DrawerListPanel(projectModel, this);
     connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
     connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
+    connect(drawerListPanel, &DrawerListPanel::consistencyModeChanged, this, [this](bool on) {
+        if (on) {
+            leftBar->setActiveFixedAction(LeftBar::Consistency);
+            // Atualiza a gaveta selecionada visualmente (já foi aberta)
+            if (!drawerListPanel->currentDrawerKey().isEmpty())
+                leftBar->setActiveDrawer(drawerListPanel->currentDrawerKey());
+        } else if (!drawerListPanel->isPanelOpen()) {
+            leftBar->clearSelection();
+        }
+    });
+    connect(drawerListPanel, &DrawerListPanel::consistencyUpdateRequested, this,
+            [this](const QString& itemId, const QString& status,
+                   const QString& statusDetail, const QString& location) {
+        projectModel->updateDrawerItemConsistency(itemId, status, statusDetail, location);
+    });
+    drawerListPanel->setPresenceProvider([this](const QStringList& names,
+                                                QHash<QString,int>* counts, int* total) {
+        if (projectRoot.isEmpty() || !projectModel) return;
+        const auto& chapters = projectModel->chapters();
+        *total = chapters.size();
+
+        // Prepara versões lowercase dos nomes para busca case-insensitive
+        QHash<QString, QString> lowerToOrig;
+        for (const auto& n : names) lowerToOrig[n.toLower()] = n;
+
+        for (const auto& ch : chapters) {
+            if (ch.file.isEmpty()) continue;
+            bool ok = false;
+            const QString html = ProjectStorage::readChapter(projectRoot, ch.file, &ok);
+            if (!ok || html.isEmpty()) continue;
+            // Remove tags HTML para busca em texto puro
+            QString text = html;
+            text.remove(QRegularExpression(QStringLiteral("<[^>]*>")));
+            const QString textLower = text.toLower();
+            for (auto it = lowerToOrig.cbegin(); it != lowerToOrig.cend(); ++it) {
+                if (textLower.contains(it.key())) {
+                    (*counts)[it.value()]++;
+                }
+            }
+        }
+    });
     manuscriptPanel = new ManuscriptPanel(projectModel, this);
     editorHost = new EditorHost(editor, docCache, projectModel, this);
     editor->setEnabled(false);
@@ -816,6 +857,19 @@ void MainWindow::setupEditor()
             projectInfoPanel->raise();
             projectInfoPanel->activateWindow();
             leftBar->setActiveFixedAction(LeftBar::Info);
+        } else if (action == LeftBar::Consistency) {
+            manuscriptPanel->closePanel();
+            if (drawerListPanel->isConsistencyMode() && drawerListPanel->isPanelOpen()) {
+                // Toggle off: fecha o modo consistência desativando o botão interno
+                // (openInConsistencyMode só abre; fechar é via closePanel ou clique no btn)
+                drawerListPanel->closePanel();
+                leftBar->clearSelection();
+            } else {
+                drawerListPanel->openInConsistencyMode();
+                positionSidePanels();
+                drawerListPanel->raise();
+                leftBar->setActiveFixedAction(LeftBar::Consistency);
+            }
         }
     });
 

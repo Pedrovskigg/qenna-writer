@@ -141,6 +141,9 @@ QJsonObject drawerItemToJson(const DrawerItem& it) {
     o.insert(QStringLiteral("isChapter"), it.isChapter);
     o.insert(QStringLiteral("chapterRef"), stringOrNull(it.chapterRef));
     o.insert(QStringLiteral("role"), stringOrNull(it.role));
+    if (!it.charStatus.isEmpty())       o.insert(QStringLiteral("charStatus"), it.charStatus);
+    if (!it.charStatusDetail.isEmpty()) o.insert(QStringLiteral("charStatusDetail"), it.charStatusDetail);
+    if (!it.charLocation.isEmpty())     o.insert(QStringLiteral("charLocation"), it.charLocation);
     return o;
 }
 
@@ -161,6 +164,9 @@ DrawerItem drawerItemFromJson(const QJsonObject& o) {
     it.isChapter = o.value(QStringLiteral("isChapter")).toBool(false);
     it.chapterRef = jsonStringOrEmpty(o.value(QStringLiteral("chapterRef")));
     it.role = jsonStringOrEmpty(o.value(QStringLiteral("role")));
+    it.charStatus       = jsonStringOrEmpty(o.value(QStringLiteral("charStatus")));
+    it.charStatusDetail = jsonStringOrEmpty(o.value(QStringLiteral("charStatusDetail")));
+    it.charLocation     = jsonStringOrEmpty(o.value(QStringLiteral("charLocation")));
     return it;
 }
 
@@ -686,6 +692,22 @@ bool ProjectModel::updateDrawerItemMeta(const QString& itemId, const QString& ti
             bool changed = false;
             if (!title.isNull() && it.title != title) { it.title = title; changed = true; }
             if (it.role != role) { it.role = role; changed = true; }
+            if (changed) emit drawersChanged();
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::updateDrawerItemConsistency(const QString& itemId, const QString& status,
+                                               const QString& statusDetail, const QString& location) {
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.id != itemId) continue;
+            bool changed = false;
+            if (it.charStatus != status)             { it.charStatus = status;             changed = true; }
+            if (it.charStatusDetail != statusDetail) { it.charStatusDetail = statusDetail; changed = true; }
+            if (it.charLocation != location)         { it.charLocation = location;         changed = true; }
             if (changed) emit drawersChanged();
             return true;
         }

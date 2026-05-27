@@ -4,7 +4,9 @@
 #include <QPoint>
 #include <QPointF>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
+#include <functional>
 
 class QLabel;
 class QPushButton;
@@ -26,11 +28,19 @@ public:
     void setElementsStore(ElementsStore* store);
 
     void openDrawer(const QString& drawerKey, const QString& folderId = QString());
+    void openInConsistencyMode(const QString& drawerKey = QString());
     void closePanel();
     bool isPanelOpen() const { return !m_currentKey.isEmpty(); }
     QString currentDrawerKey() const { return m_currentKey; }
+    bool isConsistencyMode() const { return m_consistencyMode; }
     bool heightIsUserSet() const { return m_heightUserSet; }
     int desiredHeight() const { return m_desiredHeight; }
+
+    // Fornece os dados de presença. fn(charNames, outCounts, outTotal):
+    //   outCounts[name] = número de capítulos que mencionam o nome
+    //   *outTotal = total de capítulos no projeto
+    using PresenceProvider = std::function<void(const QStringList&, QHash<QString,int>*, int*)>;
+    void setPresenceProvider(PresenceProvider fn) { m_presenceProvider = std::move(fn); }
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -52,6 +62,9 @@ signals:
     void bondCreateRequested(QString drawerKey, QString fromItemId, QString toItemId,
                              QPoint spawnGlobalPos);
     void bondViewRequested(QString drawerKey, QString bondId, QPoint spawnGlobalPos);
+    // Consistência: solicitação de atualização de status/local de personagem
+    void consistencyUpdateRequested(QString itemId, QString status, QString statusDetail, QString location);
+    void consistencyModeChanged(bool on);
 
 public slots:
     // Re-emitidos pelo MainWindow após characterBondsChanged: dão a chance
@@ -68,6 +81,10 @@ private:
     void updateActionBar();
     void updateSortButton();
     void updateViewButton();
+    void updateConsistencyBtn();
+    void refreshPresenceCache();
+    void showStatusPicker(const QString& itemId, const QPoint& globalPos);
+    void showLocationPicker(const QString& itemId, const QPoint& globalPos);
     void enterFolder(const QString& folderId);
     void goUpOneLevel();
     void updateBreadcrumb();
@@ -127,6 +144,13 @@ private:
     bool m_sortAscending = true;
     bool m_gridView = true;
     bool m_pinned = false;
+
+    // Modo consistência narrativa
+    bool m_consistencyMode = false;
+    QToolButton* m_consistencyBtn = nullptr;
+    QHash<QString,int> m_presenceCache;  // charTitle (lowercase) → count de capítulos
+    int m_totalChapters = 0;
+    PresenceProvider m_presenceProvider;
 
     // Drag state (foto -> reorder/mover)
     QPoint m_dragStartPos;

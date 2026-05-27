@@ -56,6 +56,10 @@ struct DrawerItem {
     bool isChapter = false;
     QString chapterRef;
     QString role;
+    // Campos de consistência narrativa (só usados em gavetas de personagem)
+    QString charStatus;
+    QString charStatusDetail;
+    QString charLocation;
 };
 
 struct Drawer {
@@ -156,6 +160,8 @@ public:
     bool updateDrawerItemMeta(const QString& itemId, const QString& title, const QString& role);
     bool setDrawerItemElement(const QString& itemId, const QString& elementType,
                               const QString& elementIcon, const QString& elementId);
+    bool updateDrawerItemConsistency(const QString& itemId, const QString& status,
+                                     const QString& statusDetail, const QString& location);
     const DrawerItem* findDrawerItem(const QString& itemId, QString* outDrawerKey = nullptr) const;
 
     const QList<CharacterBond>& characterBonds() const { return m_characterBonds; }
