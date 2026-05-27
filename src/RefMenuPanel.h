@@ -7,6 +7,7 @@
 
 class QHBoxLayout;
 class QLabel;
+class QLineEdit;
 class QListWidget;
 class QListWidgetItem;
 class QMenu;
@@ -15,6 +16,7 @@ class QStackedWidget;
 class QTextBrowser;
 class QToolButton;
 class QVBoxLayout;
+class FindBar;
 struct Drawer;
 struct DrawerItem;
 class ProjectModel;
@@ -40,6 +42,16 @@ public:
     void closePanel();
     void openForDrawer(const QString& drawerKey, const QString& itemId = QString());
 
+    // Busca dentro do RefMenu (Ctrl+Alt+F). Abre o painel se fechado e foca o
+    // campo de busca. Filtra a navegação por nome em todas as fontes
+    // (manuscritos, capítulos, cenas, gavetas) ao mesmo tempo.
+    void openSearch();
+    void closeSearch();
+
+    // Find inline no preview (Alt+F). Abre uma FindBar atrelada ao
+    // QTextBrowser do preview, com navegação anterior/próximo e contador.
+    void openPreviewFind();
+
 signals:
     void geometryChanged();
 
@@ -59,6 +71,8 @@ private slots:
     void onCycleFontSize();
     void onToggleVisualMode();
     void onCloseClicked();
+    void onToggleSearch();
+    void onSearchQueryChanged(const QString& q);
     void applyTheme();
 
 private:
@@ -73,6 +87,7 @@ private:
     void rebuildNavBody();
     void buildManuscriptsView();
     void buildDrawerView();
+    void buildSearchAllView();
     void buildPlaceholderView(const QString& title, const QString& subtitle);
     void rebuildPreview();
     void applyNavVisibility();
@@ -81,6 +96,8 @@ private:
     void enterPlaceholderMode(SourceKind kind);
     void setSelected(const QString& selectionKey);
     void applyPreviewFont();
+    bool matchesSearch(const QString& text) const;
+    void positionPreviewFindBar();
     void setupCharacterDrawerVisualDefault();
 
     QString resolveDocHtml(const QString& key) const;
@@ -125,6 +142,16 @@ private:
     QToolButton* m_editBtn = nullptr;
     QToolButton* m_pinBtn = nullptr;
     QToolButton* m_closeBtn = nullptr;
+
+    // Search inline. Aparece abaixo do header quando ativado via m_searchBtn
+    // ou Ctrl+Alt+F. Filtra a nav em todas as fontes.
+    QWidget* m_searchRow = nullptr;
+    QLineEdit* m_searchInput = nullptr;
+    QString m_searchQuery;
+
+    // FindBar do preview (Alt+F). Flutua sobre o canto superior direito do
+    // m_previewWrap; opera no QTextBrowser m_preview.
+    FindBar* m_previewFind = nullptr;
 
     // tabs row
     QWidget* m_tabsRow = nullptr;

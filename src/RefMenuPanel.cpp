@@ -3,7 +3,9 @@
 #include "DocCache.h"
 #include "EditorHost.h"
 #include "ElementsStore.h"
+#include "FindBar.h"
 #include "IconUtils.h"
+#include "MarkerStore.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
@@ -20,6 +22,7 @@
 #include <QHBoxLayout>
 #include <QImageReader>
 #include <QLabel>
+#include <QLineEdit>
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QMenu>
@@ -31,10 +34,12 @@
 #include <QSettings>
 #include <QShowEvent>
 #include <QSizePolicy>
+#include <QTextBlock>
 #include <QTextBrowser>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QTextFragment>
 #include <QTimer>
 #include <QToolButton>
 #include <QUrl>
@@ -175,9 +180,10 @@ void RefMenuPanel::buildUi()
             QSize(14, 14));
         if (!ic.isNull()) m_searchBtn->setIcon(ic);
     }
-    m_searchBtn->setToolTip(tr("Pesquisar (em breve)"));
+    m_searchBtn->setToolTip(tr("Pesquisar no RefMenu (Ctrl+Alt+F)"));
     m_searchBtn->setCursor(Qt::PointingHandCursor);
-    m_searchBtn->setEnabled(false);
+    m_searchBtn->setCheckable(true);
+    connect(m_searchBtn, &QToolButton::clicked, this, &RefMenuPanel::onToggleSearch);
     hLay->addWidget(m_searchBtn);
 
     m_fontSizeBtn = new QToolButton(m_header);
@@ -218,6 +224,24 @@ void RefMenuPanel::buildUi()
     hLay->addWidget(m_closeBtn);
 
     m_frameLay->addWidget(m_header);
+
+    // ---- Search row (oculto por padrão) ----
+    m_searchRow = new QWidget(m_frame);
+    m_searchRow->setObjectName(QStringLiteral("refSearchRow"));
+    m_searchRow->setAttribute(Qt::WA_StyledBackground, true);
+    {
+        auto* sLay = new QHBoxLayout(m_searchRow);
+        sLay->setContentsMargins(10, 6, 10, 6);
+        sLay->setSpacing(6);
+        m_searchInput = new QLineEdit(m_searchRow);
+        m_searchInput->setObjectName(QStringLiteral("refSearchInput"));
+        m_searchInput->setPlaceholderText(tr("Filtrar e destacar..."));
+        m_searchInput->setClearButtonEnabled(true);
+        connect(m_searchInput, &QLineEdit::textChanged, this, &RefMenuPanel::onSearchQueryChanged);
+        sLay->addWidget(m_searchInput, 1);
+    }
+    m_searchRow->setVisible(false);
+    m_frameLay->addWidget(m_searchRow);
 
     // ---- Tabs row ----
     m_tabsRow = new QWidget(m_frame);
@@ -337,6 +361,19 @@ void RefMenuPanel::buildUi()
 
     m_frameLay->addWidget(m_previewWrap, /*stretch=*/4);
 
+    // FindBar do preview (Alt+F). Não entra no layout — flutua sobre o
+    // m_previewWrap, posicionada em positionPreviewFindBar().
+    m_previewFind = new FindBar(this);
+    m_previewFind->attachTo(m_preview);
+    connect(m_previewFind, &FindBar::selectionsChanged, this, [this]() {
+        if (m_preview) m_preview->setExtraSelections(m_previewFind->findSelections());
+    });
+    connect(m_previewFind, &FindBar::closed, this, [this]() {
+        if (m_preview) m_preview->setExtraSelections({});
+    });
+    m_previewFind->hide();
+    m_previewFind->raise();
+
     // ---- Resize handles (estilo DrawerListPanel) ----
     auto makeHandle = [this](const QString& name, Qt::CursorShape cur) {
         auto* h = new QWidget(this);
@@ -403,6 +440,19 @@ void RefMenuPanel::applyMainStyleSheet()
             border: none; padding: 0 6px; font-size: 14px;
         }
         QToolButton#refDragHandle:hover { color: %7; }
+        QWidget#refSearchRow {
+            background: %2;
+            border-bottom: 1px solid %4;
+        }
+        QLineEdit#refSearchInput {
+            background: %1;
+            color: %7;
+            border: 1px solid %4;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        QLineEdit#refSearchInput:focus { border-color: %10; }
         QWidget#refTabsRow {
             background: %2;
             border-bottom: 1px solid %4;
@@ -580,6 +630,14 @@ void RefMenuPanel::rebuildNavBody()
         delete item;
     }
 
+    // Com busca ativa, varre tudo (manuscritos, capítulos+cenas, gavetas)
+    // independente do source/drawer aberto. Sem busca, segue o source normal.
+    if (!m_searchQuery.isEmpty()) {
+        buildSearchAllView();
+        m_navInnerLay->addStretch();
+        return;
+    }
+
     if (m_sourceKind == SourceKind::Manuscript) {
         buildManuscriptsView();
     } else if (m_sourceKind == SourceKind::Drawer) {
@@ -631,16 +689,22 @@ void RefMenuPanel::buildManuscriptsView()
     QIcon icMs = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
         QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
         QSize(14, 14));
+    int msShown = 0;
     for (const auto& m : m_model->manuscripts()) {
-        auto* it = new QListWidgetItem(m.title.isEmpty() ? tr("Manuscrito") : m.title);
+        const QString title = m.title.isEmpty() ? tr("Manuscrito") : m.title;
+        // Manuscritos sempre aparecem (são poucos e servem de contexto pra
+        // filtragem dos capítulos), exceto se busca ativa e nada bate.
+        if (!m_searchQuery.isEmpty() && !matchesSearch(title)) continue;
+        auto* it = new QListWidgetItem(title);
         if (!icMs.isNull()) it->setIcon(icMs);
         it->setData(Qt::UserRole, QStringLiteral("ms:%1").arg(m.id));
         msList->addItem(it);
         if (m.id == m_currentManuscriptId) {
             it->setSelected(true);
         }
+        ++msShown;
     }
-    msList->setFixedHeight(qMin(120, 6 + 30 * m_model->manuscripts().size() + 4));
+    msList->setFixedHeight(qMin(120, 6 + 30 * qMax(1, msShown) + 4));
     connect(msList, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
         if (!it) return;
         const QString key = it->data(Qt::UserRole).toString();
@@ -699,16 +763,38 @@ void RefMenuPanel::buildManuscriptsView()
         return a.order < b.order;
     });
     for (const auto& c : chs) {
-        auto* it = new QListWidgetItem(c.title.isEmpty() ? tr("(sem título)") : c.title);
+        const QString chTitle = c.title.isEmpty() ? tr("(sem título)") : c.title;
+        const bool chTitleHit = matchesSearch(chTitle);
+
+        // Coleta cenas que batem na busca (se houver query).
+        QList<int> matchedScenes;
+        if (c.scenes.size() > 1) {
+            for (int i = 0; i < c.scenes.size(); ++i) {
+                const auto& sc = c.scenes.at(i);
+                const QString scTitle = sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title;
+                if (matchesSearch(scTitle)) matchedScenes.append(i);
+            }
+        }
+
+        // Pula capítulo se busca ativa e nem ele nem nenhuma cena batem.
+        if (!m_searchQuery.isEmpty() && !chTitleHit && matchedScenes.isEmpty()) {
+            continue;
+        }
+
+        auto* it = new QListWidgetItem(chTitle);
         if (!icCh.isNull()) it->setIcon(icCh);
         const QString key = QStringLiteral("ch:%1:%2").arg(msId, c.id);
         it->setData(Qt::UserRole, key);
         chList->addItem(it);
         if (key == m_selectedKey) it->setSelected(true);
+
         if (c.scenes.size() > 1) {
             for (int i = 0; i < c.scenes.size(); ++i) {
                 const auto& sc = c.scenes.at(i);
-                auto* si = new QListWidgetItem(QStringLiteral("       ") + (sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title));
+                const QString scTitle = sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title;
+                // Com busca ativa: só cenas que batem; sem busca: todas.
+                if (!m_searchQuery.isEmpty() && !matchedScenes.contains(i)) continue;
+                auto* si = new QListWidgetItem(QStringLiteral("       ") + scTitle);
                 QFont f = si->font(); f.setItalic(true); si->setFont(f);
                 const QString skey = QStringLiteral("sc:%1:%2:%3").arg(msId, c.id).arg(i);
                 si->setData(Qt::UserRole, skey);
@@ -717,8 +803,8 @@ void RefMenuPanel::buildManuscriptsView()
             }
         }
     }
-    if (chs.isEmpty()) {
-        chList->addItem(tr("(nenhum capítulo)"));
+    if (chList->count() == 0) {
+        chList->addItem(chs.isEmpty() ? tr("(nenhum capítulo)") : tr("(nenhum resultado)"));
         chList->item(0)->setFlags(Qt::NoItemFlags);
     }
     connect(chList, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
@@ -819,17 +905,22 @@ void RefMenuPanel::buildDrawerView()
         m_navInnerLay->addWidget(foldersScroll);
     }
 
-    // Items da pasta atual (ou raiz)
+    // Items da pasta atual (ou raiz) — com filtro de busca
     QList<DrawerItem> items;
     for (const auto& it : d->items) {
-        if (it.folderId == m_currentFolderId) items.append(it);
+        if (it.folderId != m_currentFolderId) continue;
+        const QString title = it.title.isEmpty() ? tr("(sem título)") : it.title;
+        if (!matchesSearch(title)) continue;
+        items.append(it);
     }
 
     const bool visualDrawer = drawerIsVisual(d);
     const bool useVisual = visualDrawer && m_visualMode;
 
     if (items.isEmpty()) {
-        auto* empty = new QLabel(tr("Sem itens nesta gaveta."), m_navInner);
+        auto* empty = new QLabel(
+            m_searchQuery.isEmpty() ? tr("Sem itens nesta gaveta.") : tr("Nada encontrado."),
+            m_navInner);
         empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
         empty->setAlignment(Qt::AlignCenter);
         m_navInnerLay->addWidget(empty);
@@ -984,6 +1075,189 @@ void RefMenuPanel::buildDrawerView()
     }
 }
 
+void RefMenuPanel::buildSearchAllView()
+{
+    if (!m_model || !m_navInner || !m_navInnerLay) return;
+
+    auto sectionTitle = [this](const QString& text) {
+        auto* lab = new QLabel(text, m_navInner);
+        lab->setStyleSheet(QStringLiteral("color:%1; font-size:10px; font-weight:700; letter-spacing:1px; padding:8px 6px 2px;")
+                               .arg(Theme::textMuted()));
+        m_navInnerLay->addWidget(lab);
+    };
+
+    auto makeList = [this]() {
+        auto* lw = new QListWidget(m_navInner);
+        lw->setFrameShape(QFrame::NoFrame);
+        lw->setIconSize(QSize(14, 14));
+        lw->setStyleSheet(QStringLiteral(R"(
+            QListWidget {
+                background: %1; color: %2;
+                border: 1px solid %3; border-radius: 6px;
+                outline: none; padding: 4px;
+            }
+            QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+            QListWidget::item:hover { background: %4; color: %5; }
+            QListWidget::item:selected { background: %6; color: %5; }
+        )").arg(Theme::appBackground(),
+               Theme::textPrimary(),
+               Theme::panelBorder(),
+               Theme::hoverOverlay(),
+               Theme::textBright(),
+               Theme::accentInfoSoft()));
+        return lw;
+    };
+
+    // ===== Manuscritos =====
+    QList<Manuscript> msHits;
+    for (const auto& m : m_model->manuscripts()) {
+        if (matchesSearch(m.title)) msHits.append(m);
+    }
+    if (!msHits.isEmpty()) {
+        sectionTitle(tr("MANUSCRITOS"));
+        auto* lw = makeList();
+        const QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        for (const auto& m : msHits) {
+            auto* it = new QListWidgetItem(m.title.isEmpty() ? tr("Manuscrito") : m.title);
+            if (!ic.isNull()) it->setIcon(ic);
+            it->setData(Qt::UserRole, QStringLiteral("ms:%1").arg(m.id));
+            lw->addItem(it);
+        }
+        lw->setFixedHeight(qMin(160, 6 + 30 * msHits.size() + 4));
+        connect(lw, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            const QString key = it->data(Qt::UserRole).toString();
+            if (!key.startsWith(QStringLiteral("ms:"))) return;
+            m_currentManuscriptId = key.mid(3);
+            m_sourceKind = SourceKind::Manuscript;
+            m_selectedKey.clear();
+            // sair do modo de busca pra revelar o manuscrito escolhido
+            m_searchQuery.clear();
+            if (m_searchInput) m_searchInput->clear();
+            rebuildTabs();
+            rebuildNavBody();
+            rebuildPreview();
+        });
+        m_navInnerLay->addWidget(lw);
+    }
+
+    // ===== Capítulos + Cenas =====
+    struct ChHit {
+        QString msId;
+        QString chId;
+        QString title;
+        QList<QPair<int, QString>> sceneHits; // (sceneIndex, sceneTitle)
+    };
+    QList<ChHit> chHits;
+    for (const auto& c : m_model->chapters()) {
+        const QString chTitle = c.title.isEmpty() ? tr("(sem título)") : c.title;
+        const bool chHit = matchesSearch(chTitle);
+        QList<QPair<int, QString>> sceneHits;
+        if (c.scenes.size() > 1) {
+            for (int i = 0; i < c.scenes.size(); ++i) {
+                const auto& sc = c.scenes.at(i);
+                const QString scTitle = sc.title.isEmpty() ? tr("Cena %1").arg(i + 1) : sc.title;
+                if (matchesSearch(scTitle)) sceneHits.append({ i, scTitle });
+            }
+        }
+        if (chHit || !sceneHits.isEmpty()) {
+            ChHit h;
+            h.msId = c.manuscriptId;
+            h.chId = c.id;
+            h.title = chTitle;
+            h.sceneHits = sceneHits;
+            chHits.append(h);
+        }
+    }
+    if (!chHits.isEmpty()) {
+        sectionTitle(tr("CAPÍTULOS"));
+        auto* lw = makeList();
+        const QIcon icCh = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/chapter.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        for (const auto& h : chHits) {
+            auto* it = new QListWidgetItem(h.title);
+            if (!icCh.isNull()) it->setIcon(icCh);
+            const QString key = QStringLiteral("ch:%1:%2").arg(h.msId, h.chId);
+            it->setData(Qt::UserRole, key);
+            lw->addItem(it);
+            for (const auto& p : h.sceneHits) {
+                auto* si = new QListWidgetItem(QStringLiteral("       ") + p.second);
+                QFont f = si->font(); f.setItalic(true); si->setFont(f);
+                const QString skey = QStringLiteral("sc:%1:%2:%3").arg(h.msId, h.chId).arg(p.first);
+                si->setData(Qt::UserRole, skey);
+                lw->addItem(si);
+            }
+        }
+        connect(lw, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            const QString key = it->data(Qt::UserRole).toString();
+            if (key.isEmpty()) return;
+            // Atualiza source/manuscriptId pra coerência caso o usuário tire a busca depois.
+            if (key.startsWith(QStringLiteral("ch:")) || key.startsWith(QStringLiteral("sc:"))) {
+                const QStringList parts = key.split(QLatin1Char(':'));
+                if (parts.size() >= 3) {
+                    m_currentManuscriptId = parts.at(1);
+                    m_sourceKind = SourceKind::Manuscript;
+                }
+            }
+            setSelected(key);
+        });
+        m_navInnerLay->addWidget(lw);
+    }
+
+    // ===== Gavetas =====
+    bool anyDrawerHit = false;
+    for (const auto& d : m_model->drawers()) {
+        QList<DrawerItem> hits;
+        for (const auto& it : d.items) {
+            const QString title = it.title.isEmpty() ? tr("(sem título)") : it.title;
+            if (matchesSearch(title)) hits.append(it);
+        }
+        if (hits.isEmpty()) continue;
+        anyDrawerHit = true;
+
+        const QString label = d.title.isEmpty() ? tr("Gaveta") : d.title;
+        sectionTitle(label.toUpper());
+        auto* lw = makeList();
+        const QString iconId = d.drawerElementIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon;
+        QIcon ic;
+        if (!iconId.isEmpty()) {
+            ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
+                QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+                QSize(14, 14));
+        }
+        for (const auto& it : hits) {
+            auto* row = new QListWidgetItem(it.title.isEmpty() ? tr("(sem título)") : it.title);
+            if (!ic.isNull()) row->setIcon(ic);
+            row->setData(Qt::UserRole, QStringLiteral("it:%1").arg(it.id));
+            // chave secundária pra navegar pra drawer correta ao clicar
+            row->setData(Qt::UserRole + 1, d.key);
+            lw->addItem(row);
+        }
+        const QString drawerKey = d.key;
+        connect(lw, &QListWidget::itemClicked, this, [this, drawerKey](QListWidgetItem* it) {
+            if (!it) return;
+            const QString key = it->data(Qt::UserRole).toString();
+            if (!key.startsWith(QStringLiteral("it:"))) return;
+            // Move pro modo Drawer correto, mas mantém o resultado destacado.
+            m_currentDrawerKey = drawerKey;
+            m_sourceKind = SourceKind::Drawer;
+            setSelected(key);
+        });
+        m_navInnerLay->addWidget(lw);
+    }
+
+    if (msHits.isEmpty() && chHits.isEmpty() && !anyDrawerHit) {
+        auto* empty = new QLabel(tr("Nada encontrado."), m_navInner);
+        empty->setStyleSheet(QStringLiteral("color:%1; font-size:12px; padding:16px;").arg(Theme::textMuted()));
+        empty->setAlignment(Qt::AlignCenter);
+        m_navInnerLay->addWidget(empty);
+    }
+}
+
 void RefMenuPanel::buildPlaceholderView(const QString& title, const QString& subtitle)
 {
     auto* card = new QFrame(m_navInner);
@@ -1119,13 +1393,29 @@ void RefMenuPanel::rebuildPreview()
 
     // O HTML salvo vem com `color:` inline do tema da hora em que foi escrito
     // (charformat embutido pelo toHtml). Sobrescreve com a cor do tema atual
-    // pra não ficar branco no tema claro.
+    // pra não ficar branco no tema claro. Onde houver background de marker,
+    // foreground vai por contraste WCAG (mesma lógica do editor).
     {
-        QTextCursor cur(m_preview->document());
-        cur.select(QTextCursor::Document);
-        QTextCharFormat fmt;
-        fmt.setForeground(QColor(Theme::textPrimary()));
-        cur.mergeCharFormat(fmt);
+        const QColor textColor(Theme::textPrimary());
+        QTextDocument* doc = m_preview->document();
+        for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
+            for (auto it = block.begin(); !it.atEnd(); ++it) {
+                const QTextFragment frag = it.fragment();
+                if (!frag.isValid() || frag.length() == 0) continue;
+                const QTextCharFormat existing = frag.charFormat();
+                QColor fg = textColor;
+                const QBrush bgBrush = existing.background();
+                if (bgBrush.style() != Qt::NoBrush && bgBrush.color().alpha() > 0) {
+                    fg = MarkerStore::pickContrastingFg(bgBrush.color());
+                }
+                QTextCursor c(doc);
+                c.setPosition(frag.position());
+                c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
+                QTextCharFormat fmt;
+                fmt.setForeground(fg);
+                c.mergeCharFormat(fmt);
+            }
+        }
     }
 
     // Resolve src de imagens internas remanescentes para QTextBrowser (caso restem inline)
@@ -1135,6 +1425,10 @@ void RefMenuPanel::rebuildPreview()
         paths << m_projectRoot << ProjectStorage::joinPath(m_projectRoot, QStringLiteral("content/images"));
         m_preview->setSearchPaths(paths);
     }
+
+    // Doc novo herda o tamanho de fonte do ciclo Aa, vencendo o font-size
+    // inline do HTML salvo.
+    applyPreviewFont();
 }
 
 void RefMenuPanel::applyPreviewFont()
@@ -1143,7 +1437,17 @@ void RefMenuPanel::applyPreviewFont()
     QFont f = m_preview->font();
     f.setPointSize(m_previewFontPt);
     m_preview->setFont(f);
-    QFontMetrics fm(f);
+
+    // HTML salvo do Mira 1 vem com font-size inline em cada bloco (toHtml do
+    // QTextDocument embute charformat). Sem isso, setFont é silenciosamente
+    // derrotado. mergeCharFormat só toca charFormat — não mexe em indent,
+    // line-height nem espaçamento de parágrafo (esses ficam em blockFormat).
+    QTextCursor cur(m_preview->document());
+    cur.select(QTextCursor::Document);
+    QTextCharFormat fmt;
+    fmt.setFontPointSize(m_previewFontPt);
+    cur.mergeCharFormat(fmt);
+
     // título escala junto
     if (m_previewTitle) {
         QFont tf = m_previewTitle->font();
@@ -1398,6 +1702,76 @@ void RefMenuPanel::onTogglePin()
     QSettings().setValue(QString::fromLatin1(kKeyPinned), m_pinned);
 }
 
+void RefMenuPanel::onToggleSearch()
+{
+    if (!m_searchRow) return;
+    const bool willShow = !m_searchRow->isVisible();
+    m_searchRow->setVisible(willShow);
+    if (m_searchBtn) m_searchBtn->setChecked(willShow);
+    if (willShow) {
+        if (m_searchInput) {
+            m_searchInput->setFocus();
+            m_searchInput->selectAll();
+        }
+    } else {
+        if (m_searchInput) m_searchInput->clear();
+        // textChanged limpa m_searchQuery via onSearchQueryChanged
+    }
+}
+
+void RefMenuPanel::onSearchQueryChanged(const QString& q)
+{
+    m_searchQuery = q.trimmed();
+    rebuildNavBody();
+}
+
+void RefMenuPanel::openSearch()
+{
+    if (!isVisible()) openPanel();
+    if (m_searchRow && !m_searchRow->isVisible()) onToggleSearch();
+    else if (m_searchInput) {
+        m_searchInput->setFocus();
+        m_searchInput->selectAll();
+    }
+}
+
+void RefMenuPanel::closeSearch()
+{
+    if (m_searchRow && m_searchRow->isVisible()) onToggleSearch();
+}
+
+void RefMenuPanel::openPreviewFind()
+{
+    if (!isVisible()) openPanel();
+    if (!m_previewFind) return;
+    positionPreviewFindBar();
+    m_previewFind->openBar();
+    m_previewFind->raise();
+}
+
+void RefMenuPanel::positionPreviewFindBar()
+{
+    if (!m_previewFind || !m_previewWrap) return;
+    m_previewFind->adjustSize();
+    const int margin = 8;
+    const int w = qMax(280, m_previewFind->sizeHint().width());
+    const int h = m_previewFind->height();
+    m_previewFind->resize(w, h);
+    // Coordenadas do canto sup. direito do previewWrap relativas ao painel.
+    const QPoint topRight = m_previewWrap->mapTo(this, QPoint(m_previewWrap->width(), 0));
+    int x = topRight.x() - w - margin;
+    int y = topRight.y() + margin;
+    x = qMax(margin, x);
+    m_previewFind->move(x, y);
+}
+
+bool RefMenuPanel::matchesSearch(const QString& text) const
+{
+    if (m_searchQuery.isEmpty()) return true;
+    return text.contains(m_searchQuery, Qt::CaseInsensitive);
+}
+
+
 void RefMenuPanel::onCycleFontSize()
 {
     // 11 → 13 → 15 → 17 → 11
@@ -1464,6 +1838,7 @@ void RefMenuPanel::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     layoutResizeHandles();
+    if (m_previewFind && m_previewFind->isVisible()) positionPreviewFindBar();
     emit geometryChanged();
     scheduleGeometrySave();
 }

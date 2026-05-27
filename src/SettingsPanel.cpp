@@ -85,11 +85,14 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     m_pageWidthSlider = makeSlider(EditorLayout::Manager::minPageWidth(),
                                    EditorLayout::Manager::maxPageWidth(), 20);
+    m_pageHeightSlider = makeSlider(EditorLayout::Manager::minPageHeight(),
+                                    EditorLayout::Manager::maxPageHeight(), 20);
     m_hMarginSlider = makeSlider(EditorLayout::Manager::minHorizontalMargin(),
                                  EditorLayout::Manager::maxHorizontalMargin(), 2);
     m_vMarginSlider = makeSlider(EditorLayout::Manager::minVerticalMargin(),
                                  EditorLayout::Manager::maxVerticalMargin(), 2);
     m_pageWidthValue = makeValueLabel();
+    m_pageHeightValue = makeValueLabel();
     m_hMarginValue = makeValueLabel();
     m_vMarginValue = makeValueLabel();
 
@@ -103,19 +106,25 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     grid->addWidget(m_pageWidthSlider,                                    0, 1);
     grid->addWidget(m_pageWidthValue,                                     0, 2);
 
-    grid->addWidget(new QLabel(tr("Margem lateral"), pageGroup),          1, 0);
-    grid->addWidget(m_hMarginSlider,                                      1, 1);
-    grid->addWidget(m_hMarginValue,                                       1, 2);
+    grid->addWidget(new QLabel(tr("Comprimento da página"), pageGroup),   1, 0);
+    grid->addWidget(m_pageHeightSlider,                                   1, 1);
+    grid->addWidget(m_pageHeightValue,                                    1, 2);
 
-    grid->addWidget(new QLabel(tr("Margem topo/base"), pageGroup),        2, 0);
-    grid->addWidget(m_vMarginSlider,                                      2, 1);
-    grid->addWidget(m_vMarginValue,                                       2, 2);
+    grid->addWidget(new QLabel(tr("Margem lateral"), pageGroup),          2, 0);
+    grid->addWidget(m_hMarginSlider,                                      2, 1);
+    grid->addWidget(m_hMarginValue,                                       2, 2);
+
+    grid->addWidget(new QLabel(tr("Margem topo/base"), pageGroup),        3, 0);
+    grid->addWidget(m_vMarginSlider,                                      3, 1);
+    grid->addWidget(m_vMarginValue,                                       3, 2);
 
     pageLayout->addLayout(grid);
 
     m_pageHint = new QLabel(
-        tr("Define a largura da \"folha\" e o respiro interno entre a borda "
-           "e o texto. Vale para todos os projetos."),
+        tr("Define o tamanho da \"folha\" e o respiro interno entre a borda "
+           "e o texto. O comprimento em \"Automático\" preenche a tela; com "
+           "um valor fixo, a folha ganha altura definida e o fundo aparece "
+           "em volta. Vale para todos os projetos."),
         pageGroup);
     m_pageHint->setObjectName(QStringLiteral("settingsHint"));
     m_pageHint->setWordWrap(true);
@@ -144,6 +153,13 @@ SettingsPanel::SettingsPanel(QWidget* parent)
                 if (m_blockLayoutSignals) return;
                 layoutMgr->setPageWidth(v);
             });
+    connect(m_pageHeightSlider, &QSlider::valueChanged, this,
+            [this, layoutMgr](int v) {
+                m_pageHeightValue->setText(v <= 0 ? tr("Automático")
+                                                  : QStringLiteral("%1 px").arg(v));
+                if (m_blockLayoutSignals) return;
+                layoutMgr->setPageHeight(v);
+            });
     connect(m_hMarginSlider, &QSlider::valueChanged, this,
             [this, layoutMgr](int v) {
                 m_hMarginValue->setText(QStringLiteral("%1 px").arg(v));
@@ -167,9 +183,12 @@ void SettingsPanel::syncPageLayoutFromManager()
     m_blockLayoutSignals = true;
     auto* mgr = EditorLayout::Manager::instance();
     m_pageWidthSlider->setValue(mgr->pageWidth());
+    m_pageHeightSlider->setValue(mgr->pageHeight());
     m_hMarginSlider->setValue(mgr->horizontalMargin());
     m_vMarginSlider->setValue(mgr->verticalMargin());
     m_pageWidthValue->setText(QStringLiteral("%1 px").arg(mgr->pageWidth()));
+    m_pageHeightValue->setText(mgr->pageHeight() <= 0 ? tr("Automático")
+                               : QStringLiteral("%1 px").arg(mgr->pageHeight()));
     m_hMarginValue->setText(QStringLiteral("%1 px").arg(mgr->horizontalMargin()));
     m_vMarginValue->setText(QStringLiteral("%1 px").arg(mgr->verticalMargin()));
     m_blockLayoutSignals = false;

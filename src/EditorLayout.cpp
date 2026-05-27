@@ -7,6 +7,7 @@ namespace EditorLayout {
 
 namespace {
 constexpr const char* kKeyPageWidth  = "editor/pageWidth";
+constexpr const char* kKeyPageHeight = "editor/pageHeight";
 constexpr const char* kKeyHMargin    = "editor/horizontalMargin";
 constexpr const char* kKeyVMargin    = "editor/verticalMargin";
 }
@@ -28,6 +29,9 @@ void Manager::load()
     m_pageWidth        = qBound(minPageWidth(),
                                 s.value(kKeyPageWidth, m_pageWidth).toInt(),
                                 maxPageWidth());
+    m_pageHeight       = qBound(minPageHeight(),
+                                s.value(kKeyPageHeight, m_pageHeight).toInt(),
+                                maxPageHeight());
     m_horizontalMargin = qBound(minHorizontalMargin(),
                                 s.value(kKeyHMargin, m_horizontalMargin).toInt(),
                                 maxHorizontalMargin());
@@ -40,6 +44,7 @@ void Manager::save() const
 {
     QSettings s;
     s.setValue(kKeyPageWidth, m_pageWidth);
+    s.setValue(kKeyPageHeight, m_pageHeight);
     s.setValue(kKeyHMargin,   m_horizontalMargin);
     s.setValue(kKeyVMargin,   m_verticalMargin);
 }
@@ -49,6 +54,15 @@ void Manager::setPageWidth(int px)
     px = qBound(minPageWidth(), px, maxPageWidth());
     if (px == m_pageWidth) return;
     m_pageWidth = px;
+    save();
+    emit layoutChanged();
+}
+
+void Manager::setPageHeight(int px)
+{
+    px = qBound(minPageHeight(), px, maxPageHeight());
+    if (px == m_pageHeight) return;
+    m_pageHeight = px;
     save();
     emit layoutChanged();
 }
@@ -72,6 +86,7 @@ void Manager::setVerticalMargin(int px)
 }
 
 int pageWidth()        { return Manager::instance()->pageWidth(); }
+int pageHeight()       { return Manager::instance()->pageHeight(); }
 int horizontalMargin() { return Manager::instance()->horizontalMargin(); }
 int verticalMargin()   { return Manager::instance()->verticalMargin(); }
 

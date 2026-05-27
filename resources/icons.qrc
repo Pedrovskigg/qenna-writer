@@ -9,6 +9,8 @@
         <file alias="change-font.svg">../src/assets/icons/change-font.svg</file>
         <file alias="focusmode-off.svg">../src/assets/icons/focusmode-off.svg</file>
         <file alias="focusmode-on.svg">../src/assets/icons/focusmode-on.svg</file>
+        <file alias="focusededitor-off.svg">../src/assets/icons/focusededitor-off.svg</file>
+        <file alias="focusededitor-on.svg">../src/assets/icons/focusededitor-on.svg</file>
         <file alias="font-size.svg">../src/assets/icons/font-size.svg</file>
         <file alias="folder.svg">../src/assets/icons/folder.svg</file>
         <file alias="fullscreen.svg">../src/assets/icons/fullscreen.svg</file>

@@ -96,6 +96,8 @@ private:
 
     QIcon focusOffIcon;
     QIcon focusOnIcon;
+    QIcon readModeOffIcon;
+    QIcon readModeOnIcon;
 
     FontPickerPopup *fontPicker;
 
@@ -127,6 +129,7 @@ private:
 
     QList<QPair<QToolButton*, QString>> iconBindings;
     bool focusCheckedCache = false;
+    bool readModeOn = false;
 };
 
 #endif

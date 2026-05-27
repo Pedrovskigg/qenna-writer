@@ -2,9 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QColor>
+#include <QList>
 #include <QMainWindow>
+#include <QMap>
 #include <QString>
 #include <QTextCursor>
+#include <QTextEdit>
 
 class QLabel;
 class QScrollArea;
@@ -46,6 +49,8 @@ class GlossaryAddPopup;
 class MainMenuDialog;
 class BackgroundWidget;
 class QToolButton;
+class FindBar;
+class GlobalSearchPanel;
 
 class MainWindow : public QMainWindow
 {
@@ -69,6 +74,14 @@ private:
     void applyEditorStyle();
     void applyTextColor();
 
+    // Camadas de ExtraSelections do editor — focus mode (cor do bloco focado)
+    // e find (highlight da busca local) precisam coexistir. Cada chamador
+    // atualiza só a sua camada via setEditorSelectionsLayer e o helper aplica
+    // a união no editor.
+    void setEditorSelectionsLayer(const QString& layer, const QList<QTextEdit::ExtraSelection>& sels);
+    void positionFindBar();
+    void positionGlobalSearchPanel();
+
     void setFontFamily(const QString &family);
     void setFontSize(int pt);
     void setLineHeight(int percent);
@@ -81,6 +94,8 @@ private:
     void setStrikethrough(bool enabled);
     void syncInlineFormatButtons();
     void setFocusMode(bool enabled);
+    void setReadMode(bool enabled);
+    void positionReadModeHotzones();
     void updateFocusedBlock();
     void onAddImageRequested();
     void onNewProjectRequested();
@@ -168,6 +183,8 @@ private:
     GlossaryAddPopup *glossaryAddPopup = nullptr;
     MainMenuDialog *mainMenuDialog = nullptr;
     BackgroundWidget *backgroundWidget = nullptr;
+    FindBar *findBar = nullptr;
+    GlobalSearchPanel *globalSearchPanel = nullptr;
     QString markerEditId; // GUID em edição (vazio = aplicar novo)
     QString markerHoverId; // GUID hover atual (pra evitar reabrir)
     int markerPendingStart = -1; // seleção capturada antes do popup abrir
@@ -192,8 +209,13 @@ private:
     int paragraphSpacingBefore;
     int paragraphSpacingAfter;
     bool focusModeEnabled;
+    bool readModeEnabled = false;
+    QWidget *readModeHotTop = nullptr;   // faixa de hover no topo (filho de this)
+    QWidget *readModeHotLeft = nullptr;  // faixa de hover à esquerda (filho do container)
+    int savedHolderHeight = 0;
     QColor baseTextColor;
     QTextCursor selectedImageCursor;
+    QMap<QString, QList<QTextEdit::ExtraSelection>> editorSelectionLayers;
 };
 
 #endif

@@ -235,6 +235,20 @@ void LeftBar::applyTheme() {
     rebuildDrawerButtons();
 }
 
+void LeftBar::setChromeHidden(bool hidden) {
+    for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it)
+        if (it.value()) it.value()->setVisible(!hidden);
+    for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)
+        if (it.value()) it.value()->setVisible(!hidden);
+    if (m_newDrawerBtn) m_newDrawerBtn->setVisible(!hidden);
+    for (auto* sep : m_groupSeparators)
+        if (sep) sep->setVisible(!hidden);
+    if (hidden)
+        setStyleSheet(QStringLiteral("#leftBar { background: transparent; }"));
+    else
+        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+}
+
 void LeftBar::setMirrored(bool mirrored) {
     if (m_mirrored == mirrored) return;
     m_mirrored = mirrored;

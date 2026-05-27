@@ -17,6 +17,7 @@
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMessageBox>
+#include <QCursor>
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QCryptographicHash>
@@ -56,6 +57,8 @@
 #include "EditorLayout.h"
 #include "ElementCreateDialog.h"
 #include "ElementsStore.h"
+#include "FindBar.h"
+#include "GlobalSearchPanel.h"
 #include "ImageInsertDialog.h"
 #include "ImageOverlay.h"
 #include "LeftBar.h"
@@ -182,6 +185,7 @@ MainWindow::MainWindow(QWidget *parent)
     holderLayout->setSpacing(0);
     holderLayout->addWidget(toolbar);
     setMenuWidget(holder);
+    toolbar->installEventFilter(this); // auto-hide da toolbar no modo focado
 
     resize(1100, 800);
     setWindowState(windowState() | Qt::WindowMaximized);
@@ -219,6 +223,7 @@ void MainWindow::setupEditor()
     editor->setFixedWidth(EditorLayout::pageWidth());
 
     leftBar = new LeftBar(projectModel, this);
+    leftBar->installEventFilter(this); // auto-hide no modo focado
     drawerListPanel = new DrawerListPanel(projectModel, this);
     connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
     connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
@@ -619,9 +624,11 @@ void MainWindow::setupEditor()
     editorContainer = container;
     container->setStyleSheet(QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
 
-    // Background pintado atrás de tudo (cobre o container quando o tema tem imagem).
-    backgroundWidget = new BackgroundWidget(container);
-    backgroundWidget->setGeometry(container->rect());
+    // Background pintado atrás de tudo. Filho da janela (não do container) pra
+    // cobrir TAMBÉM a área da toolbar no topo — assim, no modo focado, a imagem
+    // do tema aparece no lugar das barras escondidas (sem faixa sólida).
+    backgroundWidget = new BackgroundWidget(this);
+    backgroundWidget->setGeometry(rect());
     backgroundWidget->lower();
     backgroundWidget->hide(); // só ativa quando o tema atual tem imagem
 
@@ -684,7 +691,10 @@ void MainWindow::setupEditor()
     editorScroll->setObjectName(QStringLiteral("editorScroll"));
     editorScroll->setWidget(editorColumnWidget);
     editorScroll->setWidgetResizable(false);
-    editorScroll->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    // VCenter pra que, com comprimento fixo, a folha fique centrada na vertical
+    // e a imagem de fundo apareça acima/abaixo. No modo "Automático" a coluna
+    // tem a altura da viewport, então centralizar não muda nada.
+    editorScroll->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     editorScroll->setFrameShape(QFrame::NoFrame);
     editorScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     editorScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -715,6 +725,58 @@ void MainWindow::setupEditor()
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
         if (refMenuPanel) refMenuPanel->togglePanel();
+    });
+
+    // FindBar (Ctrl+F) — busca no doc em edição.
+    findBar = new FindBar(container);
+    findBar->attachTo(editor);
+    connect(findBar, &FindBar::selectionsChanged, this, [this]() {
+        setEditorSelectionsLayer(QStringLiteral("find"), findBar->findSelections());
+    });
+    connect(findBar, &FindBar::closed, this, [this]() {
+        if (editor) editor->setFocus();
+    });
+
+    // GlobalSearchPanel (Ctrl+Shift+F) — busca no projeto inteiro.
+    globalSearchPanel = new GlobalSearchPanel(projectModel, docCache, projectRoot, container);
+    connect(globalSearchPanel, &GlobalSearchPanel::openRequested, this,
+            [this](EditorHost::ViewMode vm, QString query) {
+        if (editorHost) editorHost->setViewMode(vm);
+        // Após carregar, dispara FindBar com a query pra mostrar onde está.
+        if (!query.isEmpty() && findBar) {
+            QTimer::singleShot(60, this, [this, query]() {
+                if (!findBar) return;
+                findBar->openBar();
+                // Reabrir já chamou refreshMatches sem query; refletir a query
+                // injetando via QLineEdit é o caminho — mas como o input do
+                // FindBar é privado, faz-se via openBar+findChild:
+                if (auto* in = findBar->findChild<QLineEdit*>(QStringLiteral("findBarInput"))) {
+                    in->setText(query);
+                }
+            });
+        }
+    });
+
+    // Atalhos das 3 buscas.
+    auto* findShortcut = new QShortcut(QKeySequence::Find, this);
+    connect(findShortcut, &QShortcut::activated, this, [this]() {
+        if (!findBar) return;
+        positionFindBar();
+        findBar->openBar();
+    });
+    auto* globalSearchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+F")), this);
+    connect(globalSearchShortcut, &QShortcut::activated, this, [this]() {
+        if (!globalSearchPanel) return;
+        positionGlobalSearchPanel();
+        globalSearchPanel->openPanel();
+    });
+    auto* refSearchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Alt+F")), this);
+    connect(refSearchShortcut, &QShortcut::activated, this, [this]() {
+        if (refMenuPanel) refMenuPanel->openSearch();
+    });
+    auto* refPreviewFindShortcut = new QShortcut(QKeySequence(QStringLiteral("Alt+F")), this);
+    connect(refPreviewFindShortcut, &QShortcut::activated, this, [this]() {
+        if (refMenuPanel) refMenuPanel->openPreviewFind();
     });
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
@@ -1329,6 +1391,7 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::paragraphSpacingBeforeChanged, this, &MainWindow::setParagraphSpacingBefore);
     connect(toolbar, &TopToolbar::paragraphSpacingAfterChanged, this, &MainWindow::setParagraphSpacingAfter);
     connect(toolbar, &TopToolbar::focusModeToggled, this, &MainWindow::setFocusMode);
+    connect(toolbar, &TopToolbar::readModeToggled, this, &MainWindow::setReadMode);
     connect(toolbar, &TopToolbar::addImageRequested, this, &MainWindow::onAddImageRequested);
     connect(toolbar, &TopToolbar::mainMenuRequested, this, &MainWindow::openMainMenu);
     connect(toolbar, &TopToolbar::newProjectRequested, this, &MainWindow::onNewProjectRequested);
@@ -1605,7 +1668,7 @@ void MainWindow::setFocusMode(bool enabled)
         disconnect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateFocusedBlock);
         disconnect(editor, &QTextEdit::textChanged, this, &MainWindow::updateFocusedBlock);
         disconnect(editor, &QTextEdit::selectionChanged, this, &MainWindow::updateFocusedBlock);
-        editor->setExtraSelections({});
+        setEditorSelectionsLayer(QStringLiteral("focus"), {});
     }
 }
 
@@ -1614,7 +1677,7 @@ void MainWindow::updateFocusedBlock()
     QList<QTextEdit::ExtraSelection> selections;
     QTextBlock block = editor->textCursor().block();
     if (!block.isValid()) {
-        editor->setExtraSelections(selections);
+        setEditorSelectionsLayer(QStringLiteral("focus"), selections);
         return;
     }
 
@@ -1639,7 +1702,89 @@ void MainWindow::updateFocusedBlock()
                                QTextCursor::KeepAnchor);
         selections.append(sel);
     }
-    editor->setExtraSelections(selections);
+    setEditorSelectionsLayer(QStringLiteral("focus"), selections);
+}
+
+void MainWindow::setReadMode(bool enabled)
+{
+    readModeEnabled = enabled;
+
+    // Painéis flutuantes que somem no modo focado.
+    if (drawerListPanel) drawerListPanel->hide();
+    if (manuscriptPanel) manuscriptPanel->hide();
+    if (refMenuPanel && refMenuPanel->isVisible()) refMenuPanel->hide();
+    if (leftBar) leftBar->clearSelection();
+
+    if (enabled) {
+        // Toolbar e LeftBar continuam ocupando o MESMO espaço (editor ancorado,
+        // não se mexe), mas o conteúdo some e o fundo fica transparente —
+        // deixando a imagem do tema aparecer no lugar, sem faixa sólida.
+        if (toolbarHolder && toolbar) {
+            savedHolderHeight = toolbarHolder->height();
+            toolbarHolder->setFixedHeight(savedHolderHeight); // não colapsa ao esconder
+            toolbar->hide();
+        }
+        if (leftBar) leftBar->setChromeHidden(true);
+        if (wordCountPanel) wordCountPanel->hide();
+
+        // Hotzones finas e transparentes pra revelar cada barra no hover.
+        if (!readModeHotTop) {
+            readModeHotTop = new QWidget(this);
+            readModeHotTop->setObjectName(QStringLiteral("readModeHotTop"));
+            readModeHotTop->setAttribute(Qt::WA_NoSystemBackground, true);
+            readModeHotTop->installEventFilter(this);
+        }
+        if (!readModeHotLeft && editorContainer) {
+            readModeHotLeft = new QWidget(editorContainer);
+            readModeHotLeft->setObjectName(QStringLiteral("readModeHotLeft"));
+            readModeHotLeft->setAttribute(Qt::WA_NoSystemBackground, true);
+            readModeHotLeft->installEventFilter(this);
+        }
+        positionReadModeHotzones();
+        if (readModeHotTop) { readModeHotTop->show(); readModeHotTop->raise(); }
+        if (readModeHotLeft) { readModeHotLeft->show(); readModeHotLeft->raise(); }
+    } else {
+        if (toolbarHolder && toolbar) {
+            toolbar->show();
+            toolbarHolder->setMinimumHeight(0);
+            toolbarHolder->setMaximumHeight(QWIDGETSIZE_MAX);
+        }
+        if (leftBar) leftBar->setChromeHidden(false);
+        if (wordCountPanel && hasProjectLoaded()) {
+            wordCountPanel->show();
+            positionWordCountPanel();
+        }
+        if (readModeHotTop) readModeHotTop->hide();
+        if (readModeHotLeft) readModeHotLeft->hide();
+    }
+
+    if (editor) editor->setFocus();
+}
+
+void MainWindow::positionReadModeHotzones()
+{
+    if (readModeHotTop) {
+        readModeHotTop->setGeometry(0, 0, width(), 6);
+        readModeHotTop->raise();
+    }
+    if (readModeHotLeft && editorContainer) {
+        readModeHotLeft->setGeometry(0, 0, 6, editorContainer->height());
+        readModeHotLeft->raise();
+    }
+}
+
+void MainWindow::setEditorSelectionsLayer(const QString& layer,
+                                          const QList<QTextEdit::ExtraSelection>& sels)
+{
+    if (!editor) return;
+    if (sels.isEmpty()) editorSelectionLayers.remove(layer);
+    else editorSelectionLayers[layer] = sels;
+    QList<QTextEdit::ExtraSelection> total;
+    for (auto it = editorSelectionLayers.constBegin();
+         it != editorSelectionLayers.constEnd(); ++it) {
+        total += it.value();
+    }
+    editor->setExtraSelections(total);
 }
 
 void MainWindow::onAddImageRequested()
@@ -1722,6 +1867,29 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+    // Modo focado: a hotzone revela a barra (o conteúdo reaparece no espaço
+    // já reservado, sem reflow); sair da barra a esconde de novo.
+    if (readModeEnabled) {
+        if (watched == readModeHotTop && event->type() == QEvent::Enter) {
+            if (toolbar) toolbar->show();
+            return false;
+        }
+        if (watched == readModeHotLeft && event->type() == QEvent::Enter) {
+            if (leftBar) leftBar->setChromeHidden(false);
+            return false;
+        }
+        if (toolbar && watched == toolbar && event->type() == QEvent::Leave) {
+            const QPoint g = QCursor::pos();
+            if (!toolbar->rect().contains(toolbar->mapFromGlobal(g)))
+                toolbar->hide();
+        }
+        if (leftBar && watched == leftBar && event->type() == QEvent::Leave) {
+            const QPoint g = QCursor::pos();
+            if (!leftBar->rect().contains(leftBar->mapFromGlobal(g)))
+                leftBar->setChromeHidden(true);
+        }
+    }
+
     // Hover preview do botão Info da LeftBar.
     if (leftBar && watched == leftBar->fixedButton(LeftBar::Info)) {
         const QEvent::Type t = event->type();
@@ -2007,6 +2175,7 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (projectSaver) projectSaver->setProjectRoot(root);
     if (wordCounter) wordCounter->setProjectRoot(root);
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
+    if (globalSearchPanel) globalSearchPanel->setProjectRoot(root);
     if (elementsStore) elementsStore->setProjectRoot(root);
     if (spellChecker) spellChecker->setProjectRoot(root);
     if (markerStore) {
@@ -2328,6 +2497,33 @@ void MainWindow::positionWordCountPanel()
     wordCountPanel->move(x, y);
 }
 
+void MainWindow::positionFindBar()
+{
+    if (!findBar || !editorContainer) return;
+    findBar->adjustSize();
+    const int margin = 12;
+    const int w = qMax(360, findBar->sizeHint().width());
+    findBar->resize(w, findBar->height());
+    const int x = editorContainer->width() - w - margin;
+    const int y = margin;
+    findBar->move(qMax(margin, x), y);
+    if (findBar->isVisible()) findBar->raise();
+}
+
+void MainWindow::positionGlobalSearchPanel()
+{
+    if (!globalSearchPanel || !editorContainer) return;
+    globalSearchPanel->adjustSize();
+    const int margin = 12;
+    const int w = globalSearchPanel->width();
+    const int h = qMin(520, editorContainer->height() - margin * 2);
+    globalSearchPanel->resize(w, h);
+    const int x = qMax(margin, (editorContainer->width() - w) / 2);
+    const int y = margin + 8;
+    globalSearchPanel->move(x, y);
+    if (globalSearchPanel->isVisible()) globalSearchPanel->raise();
+}
+
 void MainWindow::positionSidePanels()
 {
     // Posiciona o DrawerListPanel e o ManuscriptPanel como overlays flutuantes
@@ -2367,13 +2563,16 @@ void MainWindow::positionSidePanels()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
-    if (backgroundWidget && editorContainer) {
-        backgroundWidget->setGeometry(editorContainer->rect());
+    if (backgroundWidget) {
+        backgroundWidget->setGeometry(rect());
         backgroundWidget->lower();
     }
     resizeEditorColumnToViewport();
     positionWordCountPanel();
     positionSidePanels();
+    positionFindBar();
+    positionGlobalSearchPanel();
+    if (readModeEnabled) positionReadModeHotzones();
     if (toolbar && editor) {
         const QPoint editorCenterGlobal =
             editor->mapToGlobal(QPoint(editor->width() / 2, 0));
@@ -2472,6 +2671,7 @@ void MainWindow::onEditorLayoutChanged()
 void MainWindow::applyEditorLayout()
 {
     const int pw = EditorLayout::pageWidth();
+    const int ph = EditorLayout::pageHeight(); // 0 = automático (preenche viewport)
     const int hm = EditorLayout::horizontalMargin();
     const int vm = EditorLayout::verticalMargin();
 
@@ -2479,6 +2679,14 @@ void MainWindow::applyEditorLayout()
         editor->setFixedWidth(pw);
         // Margens internas entre a borda da "página" e o texto.
         editor->setPageMargins(hm, vm, hm, vm);
+        // Comprimento fixo: a folha vira uma página de altura definida; em
+        // "Automático" (0) volta a preencher a viewport.
+        if (ph > 0) {
+            editor->setFixedHeight(ph);
+        } else {
+            editor->setMinimumHeight(0);
+            editor->setMaximumHeight(QWIDGETSIZE_MAX);
+        }
     }
     if (editorColumn) {
         // editorColumn = página + scrollbar externa (fora da folha).
@@ -2505,11 +2713,20 @@ void MainWindow::resizeEditorColumnToViewport()
 {
     if (!editorScroll || !editorColumn) return;
     const int vpH = editorScroll->viewport()->height();
-    const int vpW = editorScroll->viewport()->width();
     const int colW = editorColumn->width();
-    // Se a página é menor que a viewport, mantém ela centralizada (a viewport
-    // tem hScrollBar oculto). Se é maior, deixa o scroll horizontal aparecer.
-    editorColumn->resize(qMax(colW, vpW > colW ? colW : colW), vpH);
+    const int ph = EditorLayout::pageHeight();
+    // Comprimento "Automático" (0): a coluna preenche a viewport (folha rola o
+    // conteúdo internamente). Comprimento fixo: a coluna usa a altura da folha
+    // (+ barra de variação); o QScrollArea a centraliza verticalmente, e a
+    // imagem de fundo aparece em volta.
+    int colH;
+    if (ph > 0) {
+        colH = editorColumn->sizeHint().height();
+        if (colH <= 0) colH = ph;
+    } else {
+        colH = vpH;
+    }
+    editorColumn->resize(colW, colH);
 }
 
 void MainWindow::applyPageShadow()
@@ -2539,7 +2756,7 @@ void MainWindow::applyBackgroundFromTheme()
     if (backgroundWidget) {
         backgroundWidget->setBackground(hasImage ? img : QString(), mode);
         backgroundWidget->setFillColor(QColor(Theme::appBackground()));
-        backgroundWidget->setGeometry(editorContainer->rect());
+        backgroundWidget->setGeometry(rect());
         backgroundWidget->setVisible(hasImage);
         backgroundWidget->lower();
     }

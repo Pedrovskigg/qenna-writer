@@ -36,9 +36,11 @@ private:
     QCheckBox* m_spellCheck;
     QComboBox* m_langCombo;
     QSlider* m_pageWidthSlider = nullptr;
+    QSlider* m_pageHeightSlider = nullptr;
     QSlider* m_hMarginSlider = nullptr;
     QSlider* m_vMarginSlider = nullptr;
     QLabel* m_pageWidthValue = nullptr;
+    QLabel* m_pageHeightValue = nullptr;
     QLabel* m_hMarginValue = nullptr;
     QLabel* m_vMarginValue = nullptr;
     QLabel* m_spellHint = nullptr;

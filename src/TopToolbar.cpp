@@ -110,6 +110,8 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
+    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"));
+    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"));
 
     auto bindIcon = [this](QToolButton* b, const QString& name) {
         b->setIcon(loadIcon(name));
@@ -168,11 +170,16 @@ TopToolbar::TopToolbar(QWidget *parent)
     glossaryButton->setToolTip(tr("Glossário"));
     connect(glossaryButton, &QToolButton::clicked, this, &TopToolbar::glossaryRequested);
 
+    // Editor focado (distraction-free). Toggle de preferência: alterna o ícone
+    // on/off mas NÃO mantém estado "checked" destacado na barra.
     readModeButton->setObjectName(QStringLiteral("ttbTool"));
-    bindIcon(readModeButton, QStringLiteral("readmode.svg"));
-    readModeButton->setCheckable(true);
-    readModeButton->setToolTip(tr("Modo leitura"));
-    connect(readModeButton, &QToolButton::toggled, this, &TopToolbar::readModeToggled);
+    readModeButton->setIcon(readModeOffIcon);
+    readModeButton->setToolTip(tr("Editor focado"));
+    connect(readModeButton, &QToolButton::clicked, this, [this]() {
+        readModeOn = !readModeOn;
+        readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
+        emit readModeToggled(readModeOn);
+    });
 
     focusButton->setObjectName(QStringLiteral("ttbTool"));
     focusButton->setIcon(focusOffIcon);
@@ -392,6 +399,11 @@ void TopToolbar::reloadIcons()
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
     if (focusButton) {
         focusButton->setIcon(focusCheckedCache ? focusOnIcon : focusOffIcon);
+    }
+    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"));
+    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"));
+    if (readModeButton) {
+        readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
     }
     for (const auto& pair : iconBindings) {
         if (pair.first) pair.first->setIcon(loadIcon(pair.second));

@@ -40,6 +40,11 @@ public:
     // Acesso pontual a um botão fixo (pra plugar hover/tooltips externos).
     QToolButton* fixedButton(FixedAction action) const;
 
+    // Modo focado: esconde botões/separadores e torna o fundo transparente,
+    // mantendo a largura (não sai do layout) pra não deslocar o editor. A
+    // imagem de fundo do tema aparece atrás.
+    void setChromeHidden(bool hidden);
+
 signals:
     void fixedActionTriggered(LeftBar::FixedAction action);
     void drawerSelected(QString drawerKey);
