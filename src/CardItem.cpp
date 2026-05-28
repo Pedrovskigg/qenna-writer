@@ -28,17 +28,14 @@ const QColor kNotePalette[] = {
     QColor(QStringLiteral("#f8f8f8")),
 };
 
-// Widget mínimo que hospeda o QTextEdit dentro do proxy.
+// Widget que hospeda o QTextEdit dentro do proxy.
+// SEM layout — o QTextEdit ocupa 100% via resizeEvent, igual ao Mira 1 (flex:1).
 class CardTextWidget : public QWidget {
 public:
     QTextEdit* edit = nullptr;
     explicit CardTextWidget(QWidget* parent = nullptr) : QWidget(parent) {
-        setAttribute(Qt::WA_OpaquePaintEvent, false);
+        setAttribute(Qt::WA_NoSystemBackground, true);
         setAttribute(Qt::WA_TranslucentBackground, true);
-        setStyleSheet(QStringLiteral("background: transparent;"));
-        auto* lay = new QVBoxLayout(this);
-        lay->setContentsMargins(6, 2, 6, 0);
-        lay->setSpacing(0);
         edit = new QTextEdit(this);
         edit->setFrameStyle(QFrame::NoFrame);
         edit->setAcceptRichText(false);
@@ -46,7 +43,10 @@ public:
             "QTextEdit { background: transparent; border: none; }"));
         edit->setPlaceholderText(QObject::tr("Escreva aqui..."));
         edit->setFont(QFont(QStringLiteral("Segoe UI"), 12));
-        lay->addWidget(edit);
+    }
+    void resizeEvent(QResizeEvent*) override {
+        // padding: top=6, sides=10, bottom=4 — igual ao Mira 1 (padding:"6px 10px")
+        if (edit) edit->setGeometry(10, 6, width() - 20, height() - 10);
     }
 };
 
@@ -124,9 +124,11 @@ QPainterPath CardItem::shape() const
 void CardItem::updateProxyGeometry()
 {
     if (!m_proxy) return;
-    const qreal pw = m_data.width  - 2.0;
-    const qreal ph = m_data.height - kHeaderH - 1.0;
-    m_proxy->setGeometry(QRectF(1, kHeaderH + 1, pw, ph));
+    // Proxy cobre do header até 17px do fundo — deixa a zona do resize handle livre.
+    const qreal pw = m_data.width;
+    const qreal ph = qMax(20.0, m_data.height - kHeaderH - 17.0);
+    m_proxy->setPos(0, kHeaderH);
+    m_proxy->resize(pw, ph);
 }
 
 // ── Pintura ────────────────────────────────────────────────────────────────
@@ -209,12 +211,18 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     p->drawLine(QPointF(xx - xr, xy - xr), QPointF(xx + xr, xy + xr));
     p->drawLine(QPointF(xx + xr, xy - xr), QPointF(xx - xr, xy + xr));
 
-    // Handle de resize (canto inf-esq da dobra)
-    if (m_hoverResize) {
-        p->setPen(Qt::NoPen);
-        p->setBrush(muted);
-        const qreal hx = w - f - 2, hy = h - 8;
-        p->drawRoundedRect(QRectF(hx - 10, hy - 4, 10, 4), 2, 2);
+    // Resize handle — 3 linhas diagonais (igual Mira 1: bottom:3 right:3, viewBox 10×10)
+    {
+        const qreal opacity = isDark() ? 0.35 : 0.25;
+        const QColor rhCol(tc.red(), tc.green(), tc.blue(),
+                           int((m_hoverResize ? 0.7 : opacity) * 255));
+        p->setPen(QPen(rhCol, 1.5, Qt::SolidLine, Qt::RoundCap));
+        // Âncora = canto inf-dir com offset 3px (igual Mira 1)
+        const qreal ox = w - 3 - 10, oy = h - 3 - 10; // origem do viewBox 10×10
+        // SVG: (2,9)→(9,2), (5,9)→(9,5), (8,9)→(9,8)
+        p->drawLine(QPointF(ox+2, oy+9), QPointF(ox+9, oy+2));
+        p->drawLine(QPointF(ox+5, oy+9), QPointF(ox+9, oy+5));
+        p->drawLine(QPointF(ox+8, oy+9), QPointF(ox+9, oy+8));
     }
 }
 
@@ -228,11 +236,8 @@ bool CardItem::isOnDeleteBtn(const QPointF& p) const
 
 bool CardItem::isOnResizeZone(const QPointF& p) const
 {
-    // Zona de resize = canto inf-dir, à esquerda da dobra
-    const qreal f  = kFoldSize + 2.0;
-    const qreal hz = 14.0;
-    return QRectF(m_data.width - f - hz, m_data.height - hz,
-                  hz, hz).contains(p);
+    // Mira 1: bottom:3, right:3, width:14, height:14 — zona 17px do canto inf-dir.
+    return QRectF(m_data.width - 17, m_data.height - 17, 17, 17).contains(p);
 }
 
 // ── Eventos de mouse ────────────────────────────────────────────────────────
