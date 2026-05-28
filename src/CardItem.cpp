@@ -5,6 +5,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsTextItem>
+#include <QStyleOption>
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
@@ -40,6 +41,13 @@ public:
         QPainterPath p;
         p.addRect(boundingRect());
         return p;
+    }
+
+    void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override {
+        QStyleOptionGraphicsItem opt = *option;
+        opt.state &= ~QStyle::State_Selected;
+        opt.state &= ~QStyle::State_HasFocus;
+        QGraphicsTextItem::paint(painter, &opt, widget);
     }
 };
 
