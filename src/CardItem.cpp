@@ -144,10 +144,13 @@ void CardItem::syncFromData()
 
 QRectF CardItem::boundingRect() const
 {
+    // kMargin cobre: sombra (6) + glow máximo do snap (12px pen width / 2 + margem)
+    // Sem isso o glow pintaria fora do rect e deixaria rastro ao mover o card.
+    constexpr qreal kMargin = 16.0;
     const qreal extraH = (m_data.type == QStringLiteral("comment")) ? kTailH : 0.0;
-    return QRectF(-kShadow, -kShadow,
-                  m_data.width  + kShadow * 2,
-                  m_data.height + extraH + kShadow * 2);
+    return QRectF(-kMargin, -kMargin,
+                  m_data.width  + kMargin * 2,
+                  m_data.height + extraH + kMargin * 2);
 }
 
 QPainterPath CardItem::shape() const

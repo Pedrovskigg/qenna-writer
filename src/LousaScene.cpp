@@ -277,7 +277,7 @@ void LousaScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 
 void LousaScene::checkSnapForCard(const QString& cardId, const QPointF& topCenter)
 {
-    constexpr qreal kSnapDist = 60.0;
+    constexpr qreal kSnapDist = 30.0;
 
     ConnectionItem* nearest = nullptr;
     qreal minDist = kSnapDist + 1.0;
