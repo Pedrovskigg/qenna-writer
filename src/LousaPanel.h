@@ -23,7 +23,7 @@ signals:
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
-    void showEvent(QShowEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
 
 private slots:
     void onPickColor();

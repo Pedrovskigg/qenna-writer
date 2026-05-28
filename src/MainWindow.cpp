@@ -1277,22 +1277,20 @@ void MainWindow::setupEditor()
             leftBar->setActiveFixedAction(LeftBar::Info);
         } else if (action == LeftBar::Whiteboard) {
             if (!lousaPanel) {
-                lousaPanel = new LousaPanel(editorContainer);
+                lousaPanel = new LousaPanel(this);
                 connect(lousaPanel, &LousaPanel::closeRequested, this, [this]() {
-                    lousaPanel->hide();
                     leftBar->clearSelection();
                 });
                 if (!projectRoot.isEmpty())
                     lousaPanel->setProjectRoot(projectRoot);
-                lousaPanel->hide();
             }
             if (lousaPanel->isVisible()) {
                 lousaPanel->hide();
                 leftBar->clearSelection();
             } else {
-                lousaPanel->setGeometry(editorContainer->rect());
                 lousaPanel->show();
                 lousaPanel->raise();
+                lousaPanel->activateWindow();
                 leftBar->setActiveFixedAction(LeftBar::Whiteboard);
             }
         } else if (action == LeftBar::Consistency) {
@@ -3367,7 +3365,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     positionExternalScrollBar();
     positionFindBar();
     positionGlobalSearchPanel();
-    if (lousaPanel && lousaPanel->isVisible()) lousaPanel->setGeometry(editorContainer->rect());
     if (m_reminderToast && m_reminderToast->isVisible()) positionReminderToast();
     if (readModeEnabled) positionReadModeHotzones();
     if (toolbar && editor) {

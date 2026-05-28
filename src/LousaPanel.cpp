@@ -4,6 +4,7 @@
 #include "LousaView.h"
 #include "Theme.h"
 
+#include <QCloseEvent>
 #include <QColorDialog>
 #include <QDir>
 #include <QFile>
@@ -35,9 +36,12 @@ QToolButton* makeBtn(const QString& text, const QString& tip, QWidget* parent)
 } // namespace
 
 LousaPanel::LousaPanel(QWidget* parent)
-    : QWidget(parent)
+    : QWidget(parent, Qt::Window)
 {
     setObjectName(QStringLiteral("lousaPanel"));
+    setWindowTitle(tr("Lousa"));
+    setMinimumSize(640, 420);
+    resize(960, 660);
     buildUi();
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -114,7 +118,7 @@ void LousaPanel::buildUi()
     closeBtn->setToolTip(tr("Fechar lousa"));
     closeBtn->setFixedSize(30, 30);
     closeBtn->setCursor(Qt::PointingHandCursor);
-    connect(closeBtn, &QToolButton::clicked, this, &LousaPanel::closeRequested);
+    connect(closeBtn, &QToolButton::clicked, this, &LousaPanel::close);
     tl->addWidget(closeBtn);
 
     root->addWidget(m_toolbar);
@@ -160,13 +164,12 @@ void LousaPanel::resizeEvent(QResizeEvent* event)
     refreshEmptyState();
 }
 
-void LousaPanel::showEvent(QShowEvent* event)
+void LousaPanel::closeEvent(QCloseEvent* event)
 {
-    // Cobre o widget pai inteiramente.
-    if (auto* p = qobject_cast<QWidget*>(parent()))
-        setGeometry(p->rect());
-    QWidget::showEvent(event);
-    refreshEmptyState();
+    // Esconde em vez de destruir — o estado fica vivo entre aberturas.
+    hide();
+    event->ignore();
+    emit closeRequested();
 }
 
 void LousaPanel::setProjectRoot(const QString& root)
