@@ -42,6 +42,13 @@ struct WordCounterSettings {
     QString offDayEveryChangedAt;
     int folgasEarnedAtChange = 0;
 
+    // Personalização do contador compacto
+    QString compactSlot1 = QStringLiteral("words");
+    QString compactSlot1Scope;          // "" | "manuscript" | "all" (relevante só em métricas "de sessão")
+    QString compactSlot2 = QStringLiteral("chars");
+    QString compactSlot2Scope;
+    bool compactShowGoalBar = true;
+
     QJsonObject toJson() const;
     static WordCounterSettings fromJson(const QJsonObject& o);
 };
@@ -107,6 +114,15 @@ public:
     int estimatedPages() const;   // palavras do escopo ativo / 250
     void writingAverages(int& activeDays, int& wordsPerDay, int& minutesPerDay) const;
 
+    // Palavras escritas hoje por escopo fixo (independente de goalScope)
+    int sessionWordsManuscript() const;
+    int sessionWordsAll() const;
+
+    // Personalização do contador compacto
+    void setCompactSlot1(const QString& metric, const QString& scope);
+    void setCompactSlot2(const QString& metric, const QString& scope);
+    void setCompactShowGoalBar(bool show);
+
     static int countWordsInHtml(const QString& html);
     static int countWordsInPlain(const QString& text);
     static int countCharsInHtml(const QString& html);
@@ -135,7 +151,7 @@ private:
     void loadSettingsFromModel();
     void writeSettingsToModel();
     void ensureCurrentDayKey();
-    void updateGoalProgress(int deltaWords, qint64 deltaTimeMs);
+    void updateGoalProgress(int deltaGoalWords, qint64 deltaTimeMs, int deltaSessionManuscript = 0, int deltaSessionAll = 0);
     bool shouldCountTimeNow() const;
     QString viewModeScope() const; // scope name pra rastrear baseline
     QString keyForCurrentEdit() const; // chapter ou item

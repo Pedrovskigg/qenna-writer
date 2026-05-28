@@ -63,6 +63,11 @@ QJsonObject WordCounterSettings::toJson() const {
     o.insert(QStringLiteral("offDayEvery"), offDayEvery);
     o.insert(QStringLiteral("offDayEveryChangedAt"), offDayEveryChangedAt);
     o.insert(QStringLiteral("folgasEarnedAtChange"), folgasEarnedAtChange);
+    o.insert(QStringLiteral("compactSlot1"), compactSlot1);
+    o.insert(QStringLiteral("compactSlot1Scope"), compactSlot1Scope);
+    o.insert(QStringLiteral("compactSlot2"), compactSlot2);
+    o.insert(QStringLiteral("compactSlot2Scope"), compactSlot2Scope);
+    o.insert(QStringLiteral("compactShowGoalBar"), compactShowGoalBar);
     return o;
 }
 
@@ -80,6 +85,11 @@ WordCounterSettings WordCounterSettings::fromJson(const QJsonObject& o) {
     s.offDayEvery = o.value(QStringLiteral("offDayEvery")).toInt(7);
     s.offDayEveryChangedAt = o.value(QStringLiteral("offDayEveryChangedAt")).toString();
     s.folgasEarnedAtChange = o.value(QStringLiteral("folgasEarnedAtChange")).toInt(0);
+    s.compactSlot1 = o.value(QStringLiteral("compactSlot1")).toString(s.compactSlot1);
+    s.compactSlot1Scope = o.value(QStringLiteral("compactSlot1Scope")).toString(s.compactSlot1Scope);
+    s.compactSlot2 = o.value(QStringLiteral("compactSlot2")).toString(s.compactSlot2);
+    s.compactSlot2Scope = o.value(QStringLiteral("compactSlot2Scope")).toString(s.compactSlot2Scope);
+    s.compactShowGoalBar = o.value(QStringLiteral("compactShowGoalBar")).toBool(true);
     return s;
 }
 
@@ -667,16 +677,59 @@ void WordCounter::writingAverages(int& activeDays, int& wordsPerDay, int& minute
     minutesPerDay = static_cast<int>((totalTimeMs / activeDays) / 60000);
 }
 
-void WordCounter::updateGoalProgress(int deltaWords, qint64 deltaTimeMs) {
-    if (deltaWords <= 0 && deltaTimeMs <= 0) return;
+int WordCounter::sessionWordsManuscript() const {
+    const QString key = currentGoalDayKey();
+    return m_settings.progress.value(key).toObject()
+        .value(QStringLiteral("wordsManuscript")).toInt(0);
+}
+
+int WordCounter::sessionWordsAll() const {
+    const QString key = currentGoalDayKey();
+    return m_settings.progress.value(key).toObject()
+        .value(QStringLiteral("wordsAll")).toInt(0);
+}
+
+void WordCounter::setCompactSlot1(const QString& metric, const QString& scope) {
+    if (m_settings.compactSlot1 == metric && m_settings.compactSlot1Scope == scope) return;
+    m_settings.compactSlot1 = metric;
+    m_settings.compactSlot1Scope = scope;
+    writeSettingsToModel();
+    emit settingsChanged();
+}
+
+void WordCounter::setCompactSlot2(const QString& metric, const QString& scope) {
+    if (m_settings.compactSlot2 == metric && m_settings.compactSlot2Scope == scope) return;
+    m_settings.compactSlot2 = metric;
+    m_settings.compactSlot2Scope = scope;
+    writeSettingsToModel();
+    emit settingsChanged();
+}
+
+void WordCounter::setCompactShowGoalBar(bool show) {
+    if (m_settings.compactShowGoalBar == show) return;
+    m_settings.compactShowGoalBar = show;
+    writeSettingsToModel();
+    emit settingsChanged();
+}
+
+void WordCounter::updateGoalProgress(int deltaGoalWords, qint64 deltaTimeMs, int deltaSessionManuscript, int deltaSessionAll) {
+    const bool any = deltaGoalWords > 0 || deltaTimeMs > 0 || deltaSessionManuscript > 0 || deltaSessionAll > 0;
+    if (!any) return;
     ensureCurrentDayKey();
     const QString key = m_settings.goalDayKey;
     QJsonObject today = m_settings.progress.value(key).toObject();
-    const int curW = today.value(QStringLiteral("words")).toInt(0);
-    const qint64 curT = static_cast<qint64>(today.value(QStringLiteral("timeMs")).toDouble(0));
-    today.insert(QStringLiteral("words"), curW + qMax(0, deltaWords));
-    today.insert(QStringLiteral("timeMs"), static_cast<double>(curT + qMax<qint64>(0, deltaTimeMs)));
-    // Snapshot da config na primeira escrita do dia.
+    if (deltaGoalWords > 0)
+        today.insert(QStringLiteral("words"),
+            today.value(QStringLiteral("words")).toInt(0) + deltaGoalWords);
+    if (deltaTimeMs > 0)
+        today.insert(QStringLiteral("timeMs"), static_cast<double>(
+            static_cast<qint64>(today.value(QStringLiteral("timeMs")).toDouble(0)) + deltaTimeMs));
+    if (deltaSessionManuscript > 0)
+        today.insert(QStringLiteral("wordsManuscript"),
+            today.value(QStringLiteral("wordsManuscript")).toInt(0) + deltaSessionManuscript);
+    if (deltaSessionAll > 0)
+        today.insert(QStringLiteral("wordsAll"),
+            today.value(QStringLiteral("wordsAll")).toInt(0) + deltaSessionAll);
     if (!today.contains(QStringLiteral("goalType"))) {
         today.insert(QStringLiteral("goalType"), m_settings.goalType);
         today.insert(QStringLiteral("goalTargetWords"), m_settings.goalTargetWords);
@@ -727,19 +780,15 @@ void WordCounter::onTimeTick() {
     if (!shouldCountTimeNow()) return;
     const qint64 delta = now - lastTick;
     if (delta > 0 && delta < kDeltaMaxMs) {
-        updateGoalProgress(0, delta);
+        updateGoalProgress(0, delta, 0, 0);
     }
 }
 
 void WordCounter::onEditorContentFlushed(const QString& key) {
     if (!m_model) return;
-    // Filtro de escopo da meta — só rastreia delta de palavras nos docs do escopo.
-    const QString gs = m_settings.goalScope;
     const bool isChapter = key.startsWith(QStringLiteral("ch:"));
     const bool isItem = key.startsWith(QStringLiteral("it:"));
-    if (gs == QStringLiteral("manuscript") && !isChapter) return;
-    if (gs == QStringLiteral("all-items") && !isItem) return;
-    // "all-items-manuscript" aceita ambos
+    if (!isChapter && !isItem) return;
 
     const QString html = m_cache ? m_cache->get(key) : QString();
     const int now = countWordsInHtml(html);
@@ -747,9 +796,21 @@ void WordCounter::onEditorContentFlushed(const QString& key) {
     const bool hasPrev = (it != m_goalWordSnapshot.constEnd());
     const int prev = hasPrev ? it.value() : 0;
     m_goalWordSnapshot.insert(key, now);
-    if (!hasPrev) return; // primeira vez, só baseline
+    if (!hasPrev) return;
     const int delta = now - prev;
-    if (delta > 0) {
-        updateGoalProgress(delta, 0);
-    }
+    if (delta <= 0) return;
+
+    // Filtra meta diária pelo goalScope; métricas de sessão sempre rastreiam.
+    const QString gs = m_settings.goalScope;
+    const bool countsForGoal =
+        (gs == QStringLiteral("manuscript") && isChapter) ||
+        (gs == QStringLiteral("all-items") && isItem) ||
+        gs == QStringLiteral("all-items-manuscript");
+
+    updateGoalProgress(
+        countsForGoal ? delta : 0,
+        0,
+        isChapter ? delta : 0,   // wordsManuscript
+        delta                    // wordsAll (capítulos + gavetas)
+    );
 }

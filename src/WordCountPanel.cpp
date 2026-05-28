@@ -8,9 +8,11 @@
 
 #include <QApplication>
 #include <QComboBox>
+#include <QContextMenuEvent>
 #include <QEvent>
 #include <QFrame>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QMessageBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -103,7 +105,7 @@ void WordCountPanel::buildUi()
     cards->setSpacing(8);
     cards->setContentsMargins(0, 0, 0, 0);
 
-    auto makeCard = [this](const QString& title, QLabel** outValue, QLabel** outTitle = nullptr) -> QFrame* {
+    auto makeCard = [this](const QString& title, QLabel** outValue, QLabel** outTitle) -> QFrame* {
         auto* card = new QFrame(m_body);
         card->setObjectName(QStringLiteral("wcpCard"));
         card->setAttribute(Qt::WA_StyledBackground, true);
@@ -118,13 +120,29 @@ void WordCountPanel::buildUi()
         lay->addWidget(lblTitle);
         lay->addWidget(lblValue);
         *outValue = lblValue;
-        if (outTitle) *outTitle = lblTitle;
+        *outTitle = lblTitle;
         return card;
     };
 
-    cards->addWidget(makeCard(tr("Palavras"), &m_wordsValue, &m_wordsTitle));
-    cards->addWidget(makeCard(tr("Caracteres"), &m_charsValue));
+    cards->addWidget(makeCard(tr("Palavras"),   &m_slot1Value, &m_slot1Title));
+    cards->addWidget(makeCard(tr("Caracteres"), &m_slot2Value, &m_slot2Title));
     bodyLayout->addLayout(cards);
+
+    // Barra de progresso compacta da meta diária
+    m_compactGoalBar = new QProgressBar(m_body);
+    m_compactGoalBar->setObjectName(QStringLiteral("wcpProgress"));
+    m_compactGoalBar->setRange(0, 100);
+    m_compactGoalBar->setValue(0);
+    m_compactGoalBar->setTextVisible(false);
+    m_compactGoalBar->setFixedHeight(5);
+    m_compactGoalBar->setVisible(false);
+    bodyLayout->addWidget(m_compactGoalBar);
+
+    m_compactGoalResetLabel = new QLabel(QString(), m_body);
+    m_compactGoalResetLabel->setObjectName(QStringLiteral("wcpMeta"));
+    m_compactGoalResetLabel->setAlignment(Qt::AlignCenter);
+    m_compactGoalResetLabel->setVisible(false);
+    bodyLayout->addWidget(m_compactGoalResetLabel);
 
     outer->addWidget(m_body);
 
@@ -624,6 +642,11 @@ bool WordCountPanel::eventFilter(QObject* watched, QEvent* event)
             return true;
         }
     }
+    if (watched == m_body && event->type() == QEvent::ContextMenu) {
+        auto* ce = static_cast<QContextMenuEvent*>(event);
+        openCompactContextMenu(ce->globalPos());
+        return true;
+    }
     // Cheat code global: Ctrl + l-a-z-y-a-s-s. Só checa enquanto o painel F está aberto.
     if (event->type() == QEvent::KeyPress && m_folgaPanel && m_folgaPanel->isVisible()) {
         auto* ke = static_cast<QKeyEvent*>(event);
@@ -711,33 +734,97 @@ void WordCountPanel::refreshFromSettings()
         }
     }
 
+    // Títulos dos slots compactos
+    const QString wordScope = s.scope;
+    auto slotLabel = [this, &wordScope](const QString& metric, const QString& scope) -> QString {
+        if (metric == QStringLiteral("words")) {
+            if (wordScope == QStringLiteral("manuscript")) return tr("Palavras (cap.)");
+            if (wordScope == QStringLiteral("active"))     return tr("Palavras (atual)");
+            if (wordScope == QStringLiteral("drawers"))    return tr("Palavras (gavetas)");
+            return tr("Palavras (tudo)");
+        }
+        if (metric == QStringLiteral("words-session"))
+            return scope == QStringLiteral("all") ? tr("Palavras hoje") : tr("Palavras hoje (cap.)");
+        if (metric == QStringLiteral("chars"))
+            return tr("Caracteres");
+        if (metric == QStringLiteral("pages"))
+            return tr("Páginas");
+        if (metric == QStringLiteral("pages-session"))
+            return scope == QStringLiteral("all") ? tr("Páginas hoje") : tr("Páginas hoje (cap.)");
+        if (metric == QStringLiteral("time-session"))
+            return tr("Tempo hoje");
+        return tr("Palavras");
+    };
+    if (m_slot1Title) m_slot1Title->setText(slotLabel(s.compactSlot1, s.compactSlot1Scope));
+    if (m_slot2Title) m_slot2Title->setText(slotLabel(s.compactSlot2, s.compactSlot2Scope));
+
+    const bool showBar = s.compactShowGoalBar;
+    if (m_compactGoalBar)        m_compactGoalBar->setVisible(showBar);
+    if (m_compactGoalResetLabel) m_compactGoalResetLabel->setVisible(showBar);
+
     m_updatingFromSettings = false;
 }
 
 void WordCountPanel::refresh()
 {
-    if (!m_counter || !m_wordsValue || !m_charsValue) return;
+    if (!m_counter || !m_slot1Value || !m_slot2Value) return;
 
     QLocale loc(QLocale::Portuguese, QLocale::Brazil);
-    const int words = m_counter->countActiveScopeWords();
-    const int chars = m_counter->countActiveScopeChars();
-    m_wordsValue->setText(loc.toString(words));
-    m_charsValue->setText(loc.toString(chars));
+    const auto s = m_counter->settings();
 
-    // Título do card de palavras espelha o escopo (Mira 1: "Palavras (Somente capítulos)").
-    if (m_wordsTitle) {
-        const QString sc = m_counter->settings().scope;
-        QString sub;
-        if (sc == QStringLiteral("manuscript")) sub = tr("Palavras (Somente capítulos)");
-        else if (sc == QStringLiteral("active")) sub = tr("Palavras (Doc atual)");
-        else if (sc == QStringLiteral("drawers")) sub = tr("Palavras (Gavetas)");
-        else sub = tr("Palavras (Tudo)");
-        m_wordsTitle->setText(sub);
+    auto slotValue = [&](const QString& metric, const QString& scope) -> QString {
+        if (metric == QStringLiteral("words"))
+            return loc.toString(m_counter->countActiveScopeWords());
+        if (metric == QStringLiteral("words-session")) {
+            const int w = (scope == QStringLiteral("all"))
+                ? m_counter->sessionWordsAll()
+                : m_counter->sessionWordsManuscript();
+            return loc.toString(w);
+        }
+        if (metric == QStringLiteral("chars"))
+            return loc.toString(m_counter->countActiveScopeChars());
+        if (metric == QStringLiteral("pages"))
+            return loc.toString(m_counter->estimatedPages());
+        if (metric == QStringLiteral("pages-session")) {
+            const int w = (scope == QStringLiteral("all"))
+                ? m_counter->sessionWordsAll()
+                : m_counter->sessionWordsManuscript();
+            return loc.toString(qMax(0, (w + 249) / 250));
+        }
+        if (metric == QStringLiteral("time-session"))
+            return fmtDuration(m_counter->progressTimeMs());
+        return loc.toString(m_counter->countActiveScopeWords());
+    };
+
+    m_slot1Value->setText(slotValue(s.compactSlot1, s.compactSlot1Scope));
+    m_slot2Value->setText(slotValue(s.compactSlot2, s.compactSlot2Scope));
+
+    // Barra de progresso compacta
+    if (m_compactGoalBar && s.compactShowGoalBar) {
+        const bool isTime = s.goalType == QStringLiteral("time");
+        int pct = 0;
+        if (isTime) {
+            const qint64 tMs = m_counter->progressTimeMs();
+            const int target = qMax(1, s.goalTargetMinutes);
+            pct = qMin(100, static_cast<int>((tMs * 100.0) / (target * 60000.0)));
+        } else {
+            const int w = m_counter->progressWords();
+            const int target = qMax(1, s.goalTargetWords);
+            pct = qMin(100, static_cast<int>((w * 100.0) / target));
+        }
+        m_compactGoalBar->setValue(pct);
+        if (m_compactGoalResetLabel) {
+            if (m_counter->isGoalMet()) {
+                m_compactGoalResetLabel->setText(tr("Meta atingida!"));
+            } else {
+                m_compactGoalResetLabel->setText(
+                    tr("Reinicia em %1").arg(fmtDuration(m_counter->goalDayRemainingMs())));
+            }
+        }
     }
 
-    // Meta diária
+    // Meta diária (modo full)
     if (m_goalStatus && m_goalProgress) {
-        const auto s = m_counter->settings();
         const bool isTime = s.goalType == QStringLiteral("time");
         if (isTime) {
             const qint64 tMs = m_counter->progressTimeMs();
@@ -778,5 +865,60 @@ void WordCountPanel::refresh()
         m_statAvgTime->setText(tr("Tempo: %1 min/dia").arg(minutesPerDay));
     }
 
-    setToolTip(tr("Clique no card pra abrir ou fechar a meta diária"));
+    setToolTip(tr("Clique para abrir a meta diária\nBotão direito para personalizar o contador"));
+}
+
+void WordCountPanel::openCompactContextMenu(const QPoint& globalPos)
+{
+    if (!m_counter) return;
+    const auto s = m_counter->settings();
+
+    struct MetricDef {
+        QString metric;
+        QString scope;
+        QString label;
+    };
+    const QList<MetricDef> defs = {
+        { QStringLiteral("words"),         QString(),                   tr("Palavras") },
+        { QStringLiteral("words-session"), QStringLiteral("manuscript"), tr("Palavras hoje (capítulos)") },
+        { QStringLiteral("words-session"), QStringLiteral("all"),        tr("Palavras hoje (projeto)") },
+        { QStringLiteral("chars"),         QString(),                   tr("Caracteres") },
+        { QStringLiteral("pages"),         QString(),                   tr("Páginas") },
+        { QStringLiteral("pages-session"), QStringLiteral("manuscript"), tr("Páginas hoje (capítulos)") },
+        { QStringLiteral("pages-session"), QStringLiteral("all"),        tr("Páginas hoje (projeto)") },
+        { QStringLiteral("time-session"),  QString(),                   tr("Tempo na sessão") },
+    };
+
+    QMenu menu(this);
+
+    auto buildSlot = [&](const QString& header, int slot) {
+        auto* hdr = menu.addAction(header);
+        hdr->setEnabled(false);
+        const QString curMetric = (slot == 1) ? s.compactSlot1 : s.compactSlot2;
+        const QString curScope  = (slot == 1) ? s.compactSlot1Scope : s.compactSlot2Scope;
+        for (const auto& def : defs) {
+            auto* act = menu.addAction(QStringLiteral("   ") + def.label);
+            act->setCheckable(true);
+            act->setChecked(def.metric == curMetric && def.scope == curScope);
+            connect(act, &QAction::triggered, this, [this, slot, def]() {
+                if (!m_counter) return;
+                if (slot == 1) m_counter->setCompactSlot1(def.metric, def.scope);
+                else           m_counter->setCompactSlot2(def.metric, def.scope);
+            });
+        }
+    };
+
+    buildSlot(tr("Slot 1"), 1);
+    menu.addSeparator();
+    buildSlot(tr("Slot 2"), 2);
+    menu.addSeparator();
+
+    auto* goalBarAct = menu.addAction(tr("Barra de progresso da meta"));
+    goalBarAct->setCheckable(true);
+    goalBarAct->setChecked(s.compactShowGoalBar);
+    connect(goalBarAct, &QAction::triggered, this, [this](bool checked) {
+        if (m_counter) m_counter->setCompactShowGoalBar(checked);
+    });
+
+    menu.exec(globalPos);
 }

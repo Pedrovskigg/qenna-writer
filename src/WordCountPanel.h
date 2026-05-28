@@ -46,6 +46,7 @@ private:
     void updateToggleArrow();
     QFrame* buildScopeSection();
     QFrame* buildGoalSection();
+    void openCompactContextMenu(const QPoint& globalPos);
 
     WordCounter* m_counter;
     EditorHost* m_host;
@@ -55,9 +56,12 @@ private:
     QFrame* m_body;          // cards (sempre visível em compact e full)
     QFrame* m_fullBody;      // scope + meta (só visível em full)
     QLabel* m_metaLine;
-    QLabel* m_wordsValue;
-    QLabel* m_charsValue;
-    QLabel* m_wordsTitle;
+    QLabel* m_slot1Value;
+    QLabel* m_slot1Title;
+    QLabel* m_slot2Value;
+    QLabel* m_slot2Title = nullptr;
+    QProgressBar* m_compactGoalBar = nullptr;
+    QLabel* m_compactGoalResetLabel = nullptr;
 
     // Scope picker
     QPushButton* m_scopeManuscriptBtn;
