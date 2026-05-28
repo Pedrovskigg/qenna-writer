@@ -20,6 +20,9 @@ public:
     void syncFromData();
     void setLinkedHtml(const QString& html);
     void setSnapping(bool active, const QColor& color = QColor());
+    // Chamado pelo LousaScene quando o card snapa em uma conexão:
+    // adota a cor da linha e registra linkedToConn.
+    void setSnapConnected(const QColor& color, const QString& connId);
 
     QRectF       boundingRect() const override;
     QPainterPath shape()        const override;

@@ -30,7 +30,8 @@ void ConnectionItem::setConnData(const CanvasConnection& d)
 
 void ConnectionItem::invalidateGeometry()
 {
-    prepareGeometryChange();
+    // Não chamamos prepareGeometryChange() — o boundingRect é fixo (sceneRect),
+    // então Qt sempre repinta a área correta sem deixar fantasmas.
     update();
 }
 
@@ -74,12 +75,11 @@ QVector<QPointF> ConnectionItem::computePoints() const
 
 QRectF ConnectionItem::boundingRect() const
 {
-    const auto pts = computePoints();
-    if (pts.size() < 2) return QRectF();
-    QRectF r(pts[0], pts[0]);
-    for (const QPointF& p : pts)
-        r |= QRectF(p, p);
-    return r.adjusted(-16, -16, 16, 16);
+    // Rect fixo = cena inteira. Equivalente ao SVG overflow:visible do Mira 1.
+    // Evita o bug de "linha fantasma" causado por boundingRect dinâmico que
+    // nunca apaga a área anterior quando um card se move.
+    return scene() ? scene()->sceneRect()
+                   : QRectF(-12000, -12000, 24000, 24000);
 }
 
 QPainterPath ConnectionItem::shape() const

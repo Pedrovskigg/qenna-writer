@@ -332,11 +332,9 @@ void LousaScene::onSnapTimerFired()
     const qreal newY   = proj.y();
     card->setPos(newX, newY);
 
-    // Vincula card à conexão: adota a cor + linkedToConn
-    CanvasCard cd = card->cardData();
-    cd.linkedToConn = m_snapConnId;
-    cd.color        = conn->connData().color;
+    // Vincula card à conexão: adota a cor + linkedToConn (igual ao Mira 1)
     card->setSnapping(false);
+    card->setSnapConnected(conn->connData().color, m_snapConnId);
 
     // Adiciona como waypoint na conexão
     CanvasConnection cd2 = conn->connData();

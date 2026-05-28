@@ -626,6 +626,15 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
 
 // ── Hit-test ────────────────────────────────────────────────────────────────
 
+void CardItem::setSnapConnected(const QColor& color, const QString& connId)
+{
+    m_data.color        = color;
+    m_data.linkedToConn = connId;
+    applyTextColor();  // recomputa contraste do texto com a nova cor
+    update();
+    emit dataChanged(m_data);
+}
+
 void CardItem::setSnapping(bool active, const QColor& color)
 {
     if (m_snapping == active && m_snapColor == color) return;
