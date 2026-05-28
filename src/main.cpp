@@ -6,7 +6,9 @@
 #include <QIcon>
 #include <QLocale>
 #include <QPixmap>
+#include <QRegularExpression>
 #include <QSet>
+#include <QSettings>
 #include <QSplashScreen>
 #include <QStringList>
 #include <QTranslator>
@@ -15,6 +17,11 @@
 #include "Theme.h"
 
 namespace {
+
+// Subfamílias de tamanho óptico (ex: "Bodoni Moda 11pt", "Bodoni Moda 11pt Black")
+// são registradas como famílias separadas pelo Qt mas são inúteis no picker —
+// a família base ("Bodoni Moda") já cobre todos os pesos via variable font.
+const QRegularExpression kOpticalSizeRe(QStringLiteral("\\d+pt"));
 
 QStringList registerCustomFonts()
 {
@@ -36,6 +43,7 @@ QStringList registerCustomFonts()
         const int id = QFontDatabase::addApplicationFont(path);
         if (id != -1) {
             for (const QString &family : QFontDatabase::applicationFontFamilies(id)) {
+                if (kOpticalSizeRe.match(family).hasMatch()) continue;
                 families.insert(family);
             }
         }
@@ -67,19 +75,39 @@ int main(int argc, char *argv[])
     app.setStyleSheet(Theme::globalStyleSheet());
 
     QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale : uiLanguages) {
-        const QString baseName = "mira_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            QApplication::installTranslator(&translator);
-            break;
+    {
+        // Preferência do usuário tem prioridade; cai no locale do sistema como fallback.
+        QSettings qs;
+        const QString prefLang = qs.value(QStringLiteral("app/language")).toString();
+        bool loaded = false;
+        if (!prefLang.isEmpty()) {
+            loaded = translator.load(QStringLiteral(":/i18n/mira_") + prefLang);
         }
+        if (!loaded) {
+            for (const QString &locale : QLocale::system().uiLanguages()) {
+                if (translator.load(QStringLiteral(":/i18n/mira_") + QLocale(locale).name())) {
+                    loaded = true;
+                    break;
+                }
+            }
+        }
+        if (loaded) QApplication::installTranslator(&translator);
     }
 
     const QStringList customFontFamilies = registerCustomFonts();
 
+    // Mescla fontes customizadas com fontes do sistema (Calibri, Arial, Times
+    // New Roman, Cambria, etc.), aplicando o mesmo filtro de subfamílias ópticas.
+    QSet<QString> allFamilies(customFontFamilies.begin(), customFontFamilies.end());
+    for (const QString &f : QFontDatabase::families()) {
+        if (!kOpticalSizeRe.match(f).hasMatch())
+            allFamilies.insert(f);
+    }
+    QStringList allFontFamilies = allFamilies.values();
+    allFontFamilies.sort(Qt::CaseInsensitive);
+
     MainWindow window;
-    window.setAvailableFontFamilies(customFontFamilies);
+    window.setAvailableFontFamilies(allFontFamilies);
 
     // Só revela a janela se já tem projeto carregado (autoOpen). Sem projeto,
     // o construtor agenda a abertura do Main Menu — e a MainWindow ganha

@@ -6,6 +6,8 @@
 
 #include <QBuffer>
 #include <QByteArray>
+#include <QComboBox>
+#include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -19,10 +21,12 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QProcess>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QCheckBox>
 #include <QIcon>
+#include <QSettings>
 #include <QShowEvent>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -346,8 +350,38 @@ void MainMenuDialog::buildUi()
     }
     rightCol->addWidget(m_logoLabel, 0, Qt::AlignCenter);
 
-    // Canto inferior direito reservado pra futura área de Patch Notes.
     rightCol->addStretch();
+
+    // Seletor de idioma — rodapé direito.
+    auto* langRow = new QHBoxLayout();
+    langRow->setSpacing(6);
+    langRow->setContentsMargins(0, 0, 0, 0);
+    auto* langLbl = new QLabel(tr("Idioma:"), rightFrame);
+    langLbl->setObjectName(QStringLiteral("menuLangLabel"));
+    m_langCombo = new QComboBox(rightFrame);
+    m_langCombo->setObjectName(QStringLiteral("menuLangCombo"));
+    m_langCombo->setCursor(Qt::PointingHandCursor);
+    m_langCombo->addItem(tr("Português (BR)"), QStringLiteral("pt_BR"));
+    m_langCombo->addItem(tr("English"),        QStringLiteral("en"));
+    {
+        QSettings qs;
+        const QString cur = qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString();
+        m_langCombo->setCurrentIndex(cur == QStringLiteral("en") ? 1 : 0);
+    }
+    connect(m_langCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        const QString lang = m_langCombo->itemData(idx).toString();
+        QSettings qs;
+        if (qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString() == lang) return;
+        qs.setValue(QStringLiteral("app/language"), lang);
+        qs.sync();
+        QProcess::startDetached(QCoreApplication::applicationFilePath(),
+                                QCoreApplication::arguments());
+        QCoreApplication::quit();
+    });
+    langRow->addStretch();
+    langRow->addWidget(langLbl);
+    langRow->addWidget(m_langCombo);
+    rightCol->addLayout(langRow);
 
     root->addWidget(rightFrame, /*stretch=*/1);
 }
@@ -522,6 +556,28 @@ void MainMenuDialog::applyDialogStyle()
             font-style: italic;
             line-height: 150%;
             padding: 4px 4px;
+        }
+        #menuLangLabel {
+            color: %4;
+            font-size: 11px;
+        }
+        QComboBox#menuLangCombo {
+            background: %1;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 11px;
+            min-width: 120px;
+        }
+        QComboBox#menuLangCombo:hover { border-color: %9; }
+        QComboBox#menuLangCombo::drop-down { border: none; width: 18px; }
+        QComboBox#menuLangCombo QAbstractItemView {
+            background: %5;
+            color: %2;
+            border: 1px solid %6;
+            selection-background-color: %7;
+            selection-color: %3;
         }
     )").arg(
         Theme::appBackground(),    // 1

@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 
+class QComboBox;
 class QFrame;
 class QLabel;
 class QPushButton;
@@ -56,6 +57,7 @@ private:
     QTimer* m_quoteTimer = nullptr;
     QPushButton* m_newBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;
+    QComboBox* m_langCombo = nullptr;
     QStringList m_recentPaths;
     QString m_autoOpenPath;
 };

@@ -1829,6 +1829,10 @@ void MainWindow::applyEditorStyle()
     // sobrepõe palette nos blocos já existentes; sem isso, texto fica preso na
     // cor antiga ao trocar de tema).
     applyTextColor();
+
+    // Força fonte/tamanho em todos os fragmentos — charFormats inline do HTML
+    // (carregados do Mira 1) sobrepõem setDefaultFont e ignoram a escolha do usuário.
+    applyEditorFont();
 }
 
 void MainWindow::applyTextColor()
@@ -1868,6 +1872,27 @@ void MainWindow::applyTextColor()
     doc->setModified(wasModified);
 
     if (editor->viewport()) editor->viewport()->update();
+}
+
+void MainWindow::applyEditorFont()
+{
+    if (!editor || !editor->document()) return;
+    const bool wasModified = editor->document()->isModified();
+    QTextDocument* doc = editor->document();
+    for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
+        for (auto it = block.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid() || frag.length() == 0) continue;
+            QTextCursor c(doc);
+            c.setPosition(frag.position());
+            c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
+            QTextCharFormat fmt;
+            fmt.setFontFamilies({currentFontFamily});
+            fmt.setFontPointSize(currentFontSize);
+            c.mergeCharFormat(fmt);
+        }
+    }
+    doc->setModified(wasModified);
 }
 
 void MainWindow::setFontFamily(const QString &family)
