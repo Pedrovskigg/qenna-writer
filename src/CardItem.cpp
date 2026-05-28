@@ -21,6 +21,28 @@ const QColor kNotePalette[] = {
     QColor(QStringLiteral("#c9b1ff")), QColor(QStringLiteral("#f8f8f8")),
 };
 
+// Subclasse com boundingRect fixo — garante que toda a área do card captura
+// cliques para edição, independente do tamanho real do texto.
+class BodyTextItem : public QGraphicsTextItem {
+public:
+    qreal bodyW = 180;
+    qreal bodyH = 100;
+
+    explicit BodyTextItem(QGraphicsItem* p) : QGraphicsTextItem(p) {}
+
+    QRectF boundingRect() const override {
+        QRectF r = QGraphicsTextItem::boundingRect();
+        r.setWidth(qMax(r.width(),  bodyW));
+        r.setHeight(qMax(r.height(), bodyH));
+        return r;
+    }
+    QPainterPath shape() const override {
+        QPainterPath p;
+        p.addRect(boundingRect());
+        return p;
+    }
+};
+
 bool calcIsDark(const QColor& c)
 {
     return (c.red() * 299 + c.green() * 587 + c.blue() * 114) / 1000 < 128;
@@ -40,8 +62,8 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
     setAcceptHoverEvents(true);
     setPos(m_data.x, m_data.y);
 
-    // QGraphicsTextItem: item nativo, setPos() funciona direto em coordenadas do pai.
-    m_textItem = new QGraphicsTextItem(this);
+    auto* bti  = new BodyTextItem(this);
+    m_textItem = bti;
     m_textItem->setTextInteractionFlags(Qt::TextEditorInteraction);
     m_textItem->setAcceptHoverEvents(false); // hover fica no CardItem
     m_textItem->document()->setPlainText(m_data.content);
@@ -98,10 +120,15 @@ QPainterPath CardItem::shape() const
 void CardItem::updateTextItem()
 {
     if (!m_textItem) return;
-    // Posição: logo abaixo do header, com padding lateral igual ao Mira 1.
-    constexpr qreal padL = 10.0, padR = 10.0, padTop = 4.0;
+    constexpr qreal padL = 10.0, padR = 10.0, padTop = 4.0, padBot = 21.0;
+    const qreal tw = qMax(10.0, m_data.width  - padL - padR);
+    const qreal th = qMax(10.0, m_data.height - kHeaderH - padTop - padBot);
+    if (auto* bti = static_cast<BodyTextItem*>(m_textItem)) {
+        bti->bodyW = tw;
+        bti->bodyH = th;
+    }
+    m_textItem->setTextWidth(tw);
     m_textItem->setPos(padL, kHeaderH + padTop);
-    m_textItem->setTextWidth(qMax(10.0, m_data.width - padL - padR));
 }
 
 // ── Cores ──────────────────────────────────────────────────────────────────
@@ -169,6 +196,17 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     const qreal xx = w-13.0, xy = kHeaderH/2.0, xr = 4.0;
     p->drawLine(QPointF(xx-xr,xy-xr), QPointF(xx+xr,xy+xr));
     p->drawLine(QPointF(xx+xr,xy-xr), QPointF(xx-xr,xy+xr));
+
+    // Placeholder quando vazio
+    if (m_textItem && m_textItem->document()->toPlainText().isEmpty()) {
+        constexpr qreal padL = 10.0, padTop = 4.0;
+        const QColor ph(tc.red(), tc.green(), tc.blue(), 80);
+        p->setPen(ph);
+        p->setFont(QFont(QStringLiteral("Segoe UI"), 12));
+        const QRectF phRect(padL, kHeaderH + padTop,
+                            w - 2*padL, h - kHeaderH - padTop - kFoldSize);
+        p->drawText(phRect, Qt::AlignLeft | Qt::AlignTop, tr("Escreva aqui..."));
+    }
 
     // Resize handle (3 linhas diagonais — igual Mira 1)
     const qreal opacity = isDark() ? 0.35 : 0.25;

@@ -50,7 +50,7 @@ private:
     bool   isDark() const;
 
     CanvasCard         m_data;
-    QGraphicsTextItem* m_textItem     = nullptr;
+    QGraphicsTextItem* m_textItem = nullptr;
 
     bool    m_dragging        = false;
     bool    m_resizing        = false;
