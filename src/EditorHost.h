@@ -59,6 +59,7 @@ signals:
     void viewModeChanged();
     void contentFlushed(QString key);
     void contentLoaded();
+    void hrInserted(QString chapterId); // atalho ---- confirmado; dispara sync imediato
 
 private slots:
     void onEditorTextChanged();

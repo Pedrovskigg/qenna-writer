@@ -23,9 +23,16 @@ public:
     bool spellEnabled() const;
     QString spellLanguage() const;
 
+    bool detectionEnabled() const;
+    bool detectionMarkAll() const;
+    void setDetectionEnabled(bool enabled);
+    void setDetectionMarkAll(bool markAll);
+
 signals:
     void spellEnabledChanged(bool enabled);
     void spellLanguageChanged(const QString& code);
+    void detectionEnabledChanged(bool enabled);
+    void detectionMarkAllChanged(bool markAll);
 
 private:
     void onCheckToggled(bool checked);
@@ -35,6 +42,8 @@ private:
 
     QCheckBox* m_spellCheck;
     QComboBox* m_langCombo;
+    QCheckBox* m_detectionCheck   = nullptr;
+    QCheckBox* m_detectionAllCheck = nullptr;
     QSlider* m_pageWidthSlider = nullptr;
     QSlider* m_pageHeightSlider = nullptr;
     QSlider* m_hMarginSlider = nullptr;

@@ -71,6 +71,12 @@ bool EditorHost::tryConvertHrShortcut() {
     edit.insertBlock();
     edit.endEditBlock();
     m_editor->setTextCursor(edit);
+
+    // Sincroniza imediatamente (sem esperar o debounce de 200ms) e avisa MainWindow
+    // para detectar cenas sem o delay adicional de 1,5s. Isso evita que o usuário
+    // tente criar a mesma cena múltiplas vezes por falta de feedback.
+    syncEditorToCache();
+    emit hrInserted(m_viewMode.chapterId);
     return true;
 }
 

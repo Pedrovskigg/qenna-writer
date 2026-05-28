@@ -4,6 +4,7 @@
 
 #include <QBuffer>
 #include <QByteArray>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -69,6 +70,7 @@ ElementCreateDialog::ElementCreateDialog(const QString& elementType, QWidget* pa
     , m_elementType(elementType)
     , m_titleEdit(nullptr)
     , m_roleCombo(nullptr)
+    , m_narratorCheck(nullptr)
     , m_imagePreview(nullptr)
     , m_pickImageBtn(nullptr)
     , m_clearImageBtn(nullptr)
@@ -124,7 +126,7 @@ void ElementCreateDialog::buildUi()
     m_titleEdit = new QLineEdit(this);
     outer->addWidget(m_titleEdit);
 
-    // Role (só personagem)
+    // Role + Narrador (só personagem)
     if (m_elementType == QStringLiteral("character")) {
         auto* roleLabel = new QLabel(tr("Papel:"), this);
         outer->addWidget(roleLabel);
@@ -139,6 +141,10 @@ void ElementCreateDialog::buildUi()
         m_roleCombo->addItem(tr("Figurante"), QStringLiteral("FIGURANTE"));
         m_roleCombo->setCurrentIndex(-1);
         outer->addWidget(m_roleCombo);
+
+        m_narratorCheck = new QCheckBox(tr("Narrador (voz em 1ª pessoa)"), this);
+        m_narratorCheck->setObjectName(QStringLiteral("ecdNarratorCheck"));
+        outer->addWidget(m_narratorCheck);
     }
 
     outer->addStretch();
@@ -182,6 +188,9 @@ void ElementCreateDialog::buildUi()
         }
         QPushButton#ecdBtn:hover { background: %9; color: %4; }
         QPushButton#ecdBtn:default { background: %6; color: %4; border-color: %10; }
+        QCheckBox#ecdNarratorCheck { color: %2; font-size: 12px; spacing: 6px; }
+        QCheckBox#ecdNarratorCheck::indicator { width: 14px; height: 14px; border: 1px solid %5; border-radius: 3px; background: %3; }
+        QCheckBox#ecdNarratorCheck::indicator:checked { background: %6; border-color: %10; }
     )").arg(Theme::panelBackground(),     // 1
            Theme::textPrimary(),          // 2
            Theme::inputBackground(),      // 3
@@ -195,7 +204,7 @@ void ElementCreateDialog::buildUi()
         ));
 }
 
-void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl)
+void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator)
 {
     if (m_titleEdit) m_titleEdit->setText(title);
     if (m_roleCombo) {
@@ -203,6 +212,7 @@ void ElementCreateDialog::setInitial(const QString& title, const QString& role, 
         if (idx >= 0) m_roleCombo->setCurrentIndex(idx);
         else m_roleCombo->setEditText(role);
     }
+    if (m_narratorCheck) m_narratorCheck->setChecked(narrator);
     m_imageDataUrl = imageDataUrl;
     updatePreview();
     if (m_okBtn) m_okBtn->setText(tr("Salvar"));
@@ -252,4 +262,9 @@ QString ElementCreateDialog::role() const
     const QString data = m_roleCombo->currentData().toString();
     if (!data.isEmpty()) return data;
     return m_roleCombo->currentText().trimmed().toUpper();
+}
+
+bool ElementCreateDialog::narrator() const
+{
+    return m_narratorCheck ? m_narratorCheck->isChecked() : false;
 }

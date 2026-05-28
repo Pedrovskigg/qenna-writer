@@ -1,13 +1,17 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "CharacterDetector.h"
+
 #include <QColor>
 #include <QList>
 #include <QMainWindow>
 #include <QMap>
+#include <QSet>
 #include <QString>
 #include <QTextCursor>
 #include <QTextEdit>
+#include <memory>
 
 class QLabel;
 class QScrollArea;
@@ -51,6 +55,7 @@ class BackgroundWidget;
 class QToolButton;
 class FindBar;
 class GlobalSearchPanel;
+class PresencePopup;
 
 class MainWindow : public QMainWindow
 {
@@ -202,6 +207,30 @@ private:
     QString baseWindowTitle;
     QTimer *sceneDetectTimer;
     QString sceneDetectKey;
+    QTimer *detectionTimer = nullptr;
+    QTimer *detectionBatchTimer = nullptr;
+    class PresencePopup *presencePopup = nullptr;
+    bool detectionEnabled = true;
+    bool detectionMarkAll = false;
+    QSet<QString> detectionAutoIds;
+    QSet<QString> detectionNeverIds;
+    QSet<QString> detectionRejectedKeys;
+    // Estado do scan incremental (válido enquanto detectionBatchTimer estiver ativo)
+    struct DetectionScanState {
+        QString plainText;
+        QString lowerText;
+        QString docKey;
+        QList<Element> elements;
+        QSet<QString> alreadyPresent;
+        QSet<QString> autoIds;
+        QSet<QString> neverIds;
+        QSet<QString> rejectedKeys;
+        bool markAll = false;
+        int wordCount = 0;
+        int idx = 0;
+        ScanResult result;
+    };
+    std::unique_ptr<DetectionScanState> m_scanState;
     QString currentFontFamily;
     int currentFontSize;
     int currentLineHeight;

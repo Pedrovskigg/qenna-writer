@@ -54,8 +54,12 @@ public:
     QList<ElementType> elementTypes() const { return m_elementTypes; }
     const ElementType* findType(const QString& id) const;
 
-    // docElements: chapter/scene key -> [elementId, ...] (pra futura detecção de presença)
+    // docElements: chapter/scene key -> [elementId, ...] (presença detectada)
     QJsonObject docElements() const { return m_docElements; }
+    QStringList docElementIds(const QString& docKey) const;
+    bool hasDocElement(const QString& docKey, const QString& elementId) const;
+    void addDocElement(const QString& docKey, const QString& elementId);
+    void removeDocElement(const QString& docKey, const QString& elementId);
 
 signals:
     void changed();

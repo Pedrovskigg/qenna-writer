@@ -85,6 +85,7 @@ void WordCountPanel::buildUi()
     m_body->setObjectName(QStringLiteral("wcpBody"));
     m_body->setAttribute(Qt::WA_StyledBackground, true);
     m_body->setCursor(Qt::PointingHandCursor);
+    m_body->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     m_body->installEventFilter(this);
     auto* bodyLayout = new QVBoxLayout(m_body);
     bodyLayout->setContentsMargins(12, 10, 12, 12);
@@ -147,8 +148,13 @@ void WordCountPanel::buildUi()
         m_calendarVisible = !m_calendarVisible;
         if (m_calendar) m_calendar->setVisible(m_calendarVisible);
         m_calendarToggleBtn->setText((m_calendarVisible ? QStringLiteral("▾ ") : QStringLiteral("▸ ")) + tr("Exibir calendário"));
-        adjustSize();
-        emit geometryChanged();
+        // Adia para o próximo ciclo do event loop: o layout recalcula o sizeHint
+        // correto ANTES do adjustSize, evitando que m_body estique para preencher
+        // o espaço sobrante do calendário que acabou de ser ocultado.
+        QMetaObject::invokeMethod(this, [this]() {
+            adjustSize();
+            emit geometryChanged();
+        }, Qt::QueuedConnection);
     });
     fullLayout->addWidget(m_calendarToggleBtn);
 

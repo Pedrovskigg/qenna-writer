@@ -16,13 +16,14 @@
 // quando recebe cliques na área e despacha pra cá.
 
 struct BondCardPos {
-    qreal x = 0;     // centro horizontal do card (no sistema do listHost)
-    qreal y = 0;     // centro vertical do card
-    qreal ay = 0;    // centro vertical da foto (anchor das linhas)
+    qreal x = 0;          // centro horizontal do card (no sistema do listHost)
+    qreal y = 0;          // centro vertical do card
+    qreal ay = 0;         // centro vertical da foto (anchor das linhas)
     qreal left = 0;
     qreal top = 0;
     qreal right = 0;
     qreal bottom = 0;
+    qreal photoHalf = 35; // metade do lado da foto — endpoint das linhas na borda, não dentro
 };
 
 class BondsLayer : public QWidget {

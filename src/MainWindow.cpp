@@ -50,6 +50,7 @@
 
 #include "BondPopup.h"
 #include "BondViewPanel.h"
+#include "CharacterDetector.h"
 #include "DocCache.h"
 #include "DrawerCreateDialog.h"
 #include "DrawerListPanel.h"
@@ -78,6 +79,7 @@
 #include "MarkerHoverPopup.h"
 #include "MarkerPickPopup.h"
 #include "MarkerStore.h"
+#include "PresencePopup.h"
 #include "SelectionPopup.h"
 #include "SettingsPanel.h"
 #include "SpellChecker.h"
@@ -242,28 +244,116 @@ void MainWindow::setupEditor()
                    const QString& statusDetail, const QString& location) {
         projectModel->updateDrawerItemConsistency(itemId, status, statusDetail, location);
     });
-    drawerListPanel->setPresenceProvider([this](const QStringList& names,
-                                                QHash<QString,int>* counts, int* total) {
-        if (projectRoot.isEmpty() || !projectModel) return;
+    drawerListPanel->setPresenceProvider([this](
+        const QStringList& names,
+        QHash<QString, CharPresenceResult>* out,
+        int* outTotalScenes,
+        int* outTotalChapters)
+    {
+        if (!projectModel) return;
+
         const auto& chapters = projectModel->chapters();
-        *total = chapters.size();
+        *outTotalChapters = chapters.size();
+        *outTotalScenes   = 0;
 
-        // Prepara versões lowercase dos nomes para busca case-insensitive
-        QHash<QString, QString> lowerToOrig;
-        for (const auto& n : names) lowerToOrig[n.toLower()] = n;
+        // Inicializa resultado vazio para cada personagem
+        for (const QString& n : names)
+            (*out)[n.toLower()] = CharPresenceResult{};
 
-        for (const auto& ch : chapters) {
-            if (ch.file.isEmpty()) continue;
-            bool ok = false;
-            const QString html = ProjectStorage::readChapter(projectRoot, ch.file, &ok);
-            if (!ok || html.isEmpty()) continue;
-            // Remove tags HTML para busca em texto puro
-            QString text = html;
-            text.remove(QRegularExpression(QStringLiteral("<[^>]*>")));
-            const QString textLower = text.toLower();
-            for (auto it = lowerToOrig.cbegin(); it != lowerToOrig.cend(); ++it) {
-                if (textLower.contains(it.key())) {
-                    (*counts)[it.value()]++;
+        // Tokeniza nomes: partes >= 3 chars usadas na busca por palavra-limite
+        QHash<QString, QStringList> nameTokens;
+        for (const QString& n : names) {
+            const QString nl = n.toLower();
+            QStringList toks;
+            const QRegularExpression wsRe(QStringLiteral("\\s+"));
+            for (const QString& t : nl.split(wsRe, Qt::SkipEmptyParts))
+                if (t.size() >= 3) toks.append(t);
+            if (!toks.isEmpty()) nameTokens[nl] = toks;
+        }
+
+        // Strip HTML simples para obter texto plano
+        const QRegularExpression tagRe(QStringLiteral("<[^>]+>"));
+        auto stripHtml = [&](const QString& html) -> QString {
+            QString t = html;
+            t.remove(tagRe);
+            t.replace(QStringLiteral("&nbsp;"), QStringLiteral(" "));
+            t.replace(QStringLiteral("&amp;"),  QStringLiteral("&"));
+            t.replace(QStringLiteral("&lt;"),   QStringLiteral("<"));
+            t.replace(QStringLiteral("&gt;"),   QStringLiteral(">"));
+            return t.toLower();
+        };
+
+        // Verifica se token aparece como palavra inteira no texto
+        auto tokenInText = [](const QString& tok, const QString& text) -> bool {
+            int pos = 0;
+            while ((pos = text.indexOf(tok, pos)) != -1) {
+                const bool prevOk = (pos == 0 || !text[pos - 1].isLetterOrNumber());
+                const bool nextOk = (pos + tok.size() >= text.size()
+                                     || !text[pos + tok.size()].isLetterOrNumber());
+                if (prevOk && nextOk) return true;
+                ++pos;
+            }
+            return false;
+        };
+
+        for (const Chapter& ch : chapters) {
+            const QString chKey = DocCache::chapterKey(ch.manuscriptId, ch.id);
+            QString html;
+            if (docCache && docCache->has(chKey)) {
+                html = docCache->get(chKey);
+            } else {
+                bool ok = false;
+                html = ProjectStorage::readChapter(projectRoot, ch.file, &ok);
+            }
+            if (html.isEmpty()) continue;
+
+            const QStringList sceneHtmls = SceneUtils::splitHtmlIntoScenes(html);
+            const bool multiScene = sceneHtmls.size() > 1;
+            *outTotalScenes += multiScene ? sceneHtmls.size() : 1;
+
+            const QString chTitle = ch.title.isEmpty()
+                ? tr("Capítulo %1").arg(ch.order + 1) : ch.title;
+
+            for (const QString& n : names) {
+                const QString nl = n.toLower();
+                const QStringList& toks = nameTokens.value(nl);
+                if (toks.isEmpty()) continue;
+
+                auto charPresent = [&](const QString& plainText) -> bool {
+                    for (const QString& tok : toks)
+                        if (tokenInText(tok, plainText)) return true;
+                    return false;
+                };
+
+                PresenceChapterEntry chEntry;
+                chEntry.id    = ch.id;
+                chEntry.title = chTitle;
+
+                if (!multiScene) {
+                    const QString plain = stripHtml(html);
+                    if (charPresent(plain)) {
+                        (*out)[nl].chapters.append(chEntry);
+                        (*out)[nl].chapterCount++;
+                        (*out)[nl].sceneCount++;
+                    }
+                } else {
+                    bool anyInChapter = false;
+                    for (int si = 0; si < sceneHtmls.size(); ++si) {
+                        const QString plain = stripHtml(sceneHtmls[si]);
+                        if (!charPresent(plain)) continue;
+
+                        PresenceSceneEntry scEntry;
+                        scEntry.index = si;
+                        scEntry.title = (si < ch.scenes.size())
+                            ? ch.scenes[si].title : QString();
+                        chEntry.scenes.append(scEntry);
+                        (*out)[nl].sceneCount++;
+                        anyInChapter = true;
+                    }
+                    if (anyInChapter) {
+                        (*out)[nl].chapters.append(chEntry);
+                        (*out)[nl].chapterCount++;
+                    }
                 }
             }
         }
@@ -421,9 +511,184 @@ void MainWindow::setupEditor()
         sceneDetectTimer->start();
     });
 
+    // hrInserted: atalho ---- disparado — sincroniza cenas imediatamente (sem o delay
+    // de 1,5s do sceneDetectTimer) e exibe toast visual para que o usuário saiba que
+    // a nova cena foi criada.
+    connect(editorHost, &EditorHost::hrInserted, this, [this](const QString& /*chId*/) {
+        sceneDetectTimer->stop();
+        detectScenesForPending();
+
+        // Toast "Nova cena" flutuante sobre o editor
+        if (!editorContainer) return;
+        auto* toast = new QLabel(tr("Nova cena criada"), editorContainer);
+        toast->setObjectName(QStringLiteral("sceneToast"));
+        toast->setAlignment(Qt::AlignCenter);
+        toast->setStyleSheet(QStringLiteral(
+            "QLabel#sceneToast {"
+            "  background: %1;"
+            "  color: %2;"
+            "  border: 1px solid %3;"
+            "  border-radius: 6px;"
+            "  padding: 6px 16px;"
+            "  font-family: 'Lora','Crimson Text',serif;"
+            "  font-size: 12px;"
+            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+        toast->adjustSize();
+        const QPoint center = editorContainer->rect().center();
+        toast->move(center.x() - toast->width() / 2,
+                    editorContainer->height() - toast->height() - 32);
+        toast->show();
+        toast->raise();
+
+        // Apaga após 1,5 s
+        QTimer::singleShot(1500, toast, [toast]() {
+            if (toast) toast->deleteLater();
+        });
+    });
+
     projectSaver = new ProjectSaver(projectModel, docCache, editorHost, this);
     elementsStore = new ElementsStore(this);
     projectSaver->setElementsStore(elementsStore);
+
+    // PresencePopup + detecção de presença idioma-agnóstica (scan incremental no event loop).
+    presencePopup = new PresencePopup(elementsStore, this);
+
+    // Timer de debounce: 3s após parar de digitar inicia o scan
+    detectionTimer = new QTimer(this);
+    detectionTimer->setSingleShot(true);
+    detectionTimer->setInterval(3000);
+
+    // Timer de lote: processa 2 personagens por ciclo do event loop, sem travar a UI
+    detectionBatchTimer = new QTimer(this);
+    detectionBatchTimer->setSingleShot(false);
+    detectionBatchTimer->setInterval(0);
+
+    connect(detectionTimer, &QTimer::timeout, this, [this]() {
+        if (!detectionEnabled || !elementsStore || !editorHost || !editor) return;
+        const QString key = editorHost->activeKey();
+        if (key.isEmpty()) return;
+
+        qDebug() << "[detect] iniciando scan para" << key;
+        // Cancela scan anterior e prepara novo estado
+        detectionBatchTimer->stop();
+        m_scanState = std::make_unique<DetectionScanState>();
+        auto& s = *m_scanState;
+        s.plainText = editor->toPlainText();
+        s.lowerText = s.plainText.toLower();
+        s.docKey    = key;
+        s.elements  = elementsStore->elements();
+        { const QStringList _p = elementsStore->docElementIds(key);
+          s.alreadyPresent = QSet<QString>(_p.cbegin(), _p.cend()); }
+        s.autoIds    = detectionAutoIds;
+        s.neverIds   = detectionNeverIds;
+        s.rejectedKeys = detectionRejectedKeys;
+        s.markAll    = detectionMarkAll;
+        s.wordCount  = s.lowerText.split(QRegularExpression(QStringLiteral("\\s+")),
+                                          Qt::SkipEmptyParts).size();
+        s.idx = 0;
+        detectionBatchTimer->start();
+    });
+
+    connect(detectionBatchTimer, &QTimer::timeout, this, [this]() {
+        if (!m_scanState) { detectionBatchTimer->stop(); return; }
+        auto& s = *m_scanState;
+
+        // Processa até 2 personagens por ciclo
+        int processed = 0;
+        while (s.idx < s.elements.size() && processed < 2) {
+            const Element& elem = s.elements.at(s.idx++);
+            ++processed;
+
+            if (elem.type != QStringLiteral("character")) continue;
+            if (s.alreadyPresent.contains(elem.id)) continue;
+            if (s.rejectedKeys.contains(s.docKey + QLatin1Char(':') + elem.id)) continue;
+
+            bool detected = false;
+            if (elem.narrator) {
+                detected = (s.wordCount >= CharacterDetector::kNarratorMinWords);
+            } else {
+                const QStringList tokens = CharacterDetector::buildTokensPublic(elem);
+                for (const QString& token : tokens) {
+                    const QString pattern = QStringLiteral("\\b")
+                        + QRegularExpression::escape(token) + QStringLiteral("\\b");
+                    QRegularExpression re(pattern, QRegularExpression::CaseInsensitiveOption);
+                    int count = 0;
+                    auto it = re.globalMatch(s.lowerText);
+                    while (it.hasNext()) { it.next(); if (++count >= CharacterDetector::kThreshold) { detected = true; break; } }
+                    if (detected) break;
+                }
+            }
+
+            if (!detected) continue;
+
+            CharacterDetection det{ elem.id, s.docKey };
+            if (elem.narrator || s.markAll || s.autoIds.contains(elem.id))
+                s.result.autoMark.append(det);
+            else if (!s.neverIds.contains(elem.id))
+                s.result.confirm.append(det);
+        }
+
+        // Scan completo
+        if (s.idx >= s.elements.size()) {
+            detectionBatchTimer->stop();
+            const ScanResult res = std::move(s.result);
+            m_scanState.reset();
+
+            qDebug() << "[detect] scan completo — autoMark:" << res.autoMark.size() << "confirm:" << res.confirm.size();
+
+            if (!res.autoMark.isEmpty() && elementsStore) {
+                qDebug() << "[detect] adicionando autoMark ao elementsStore";
+                for (const auto& d : res.autoMark)
+                    elementsStore->addDocElement(d.docKey, d.elementId);
+            }
+            if (!res.confirm.isEmpty() && presencePopup) {
+                qDebug() << "[detect] enqueue no presencePopup";
+                presencePopup->enqueue(res.confirm);
+                presencePopup->adjustSize();
+                const QRect win = this->geometry();
+                presencePopup->move(
+                    win.x() + win.width()  - presencePopup->width()  - 20,
+                    win.y() + win.height() - presencePopup->height() - 48);
+            }
+        }
+    });
+
+    // Reinicia o timer a cada mudança de texto
+    connect(editor, &QTextEdit::textChanged, this, [this]() {
+        if (detectionEnabled) detectionTimer->start();
+    });
+
+    // Ao carregar novo doc, reinicia o timer e atualiza docKey no painel de consistência
+    connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
+        if (detectionEnabled) detectionTimer->start();
+        if (drawerListPanel && editorHost)
+            drawerListPanel->setCurrentDocKey(editorHost->activeKey());
+    });
+
+    connect(presencePopup, &PresencePopup::markRequested,
+            this, [this](const QString& elementId, const QString& docKey) {
+        if (elementsStore) elementsStore->addDocElement(docKey, elementId);
+    });
+    connect(presencePopup, &PresencePopup::markAllActivated, this, [this]() {
+        detectionMarkAll = true;
+        if (settingsPanel) settingsPanel->setDetectionMarkAll(true);
+        if (!projectRoot.isEmpty()) {
+            QSettings qs;
+            qs.beginGroup(QStringLiteral("detectionState"));
+            qs.beginGroup(QString::fromLatin1(
+                QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
+            qs.setValue(QStringLiteral("markAll"), true);
+            qs.endGroup(); qs.endGroup();
+        }
+    });
+    connect(presencePopup, &PresencePopup::ignoredNow,
+            this, [this](const QString& elementId, const QString& docKey) {
+        detectionRejectedKeys.insert(docKey + QLatin1Char(':') + elementId);
+    });
+    connect(presencePopup, &PresencePopup::neverRequested,
+            this, [this](const QString& elementId, const QString& /*docKey*/) {
+        detectionNeverIds.insert(elementId);
+    });
 
     // MarkerStore: sidecar de markers comentados. Carrega ao abrir projeto,
     // re-aplica GUIDs no contentLoaded, captura ao flush e salva ao saveProject.
@@ -1107,6 +1372,7 @@ void MainWindow::setupEditor()
                       : QStringLiteral("cube");
             elem.role = dlg.role();
             elem.image = dlg.imageDataUrl();
+            elem.narrator = dlg.narrator();
             const QString elementId = elementsStore->addElement(elem);
             // Cria drawer item vinculado
             DrawerItem it;
@@ -1161,17 +1427,20 @@ void MainWindow::setupEditor()
         // Pré-preenche valores atuais — pega foto/role do Element vinculado se houver.
         QString imageDataUrl;
         QString role = item->role;
+        bool narratorVal = false;
         if (!item->elementId.isEmpty() && elementsStore) {
             if (const Element* e = elementsStore->findElement(item->elementId)) {
                 imageDataUrl = e->image;
                 if (role.isEmpty()) role = e->role;
+                narratorVal = e->narrator;
             }
         }
-        dlg.setInitial(item->title, role, imageDataUrl);
+        dlg.setInitial(item->title, role, imageDataUrl, narratorVal);
         if (dlg.exec() != QDialog::Accepted) return;
         const QString newTitle = dlg.title();
         const QString newRole = dlg.role();
         const QString newImage = dlg.imageDataUrl();
+        const bool newNarrator = dlg.narrator();
 
         projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
 
@@ -1182,6 +1451,7 @@ void MainWindow::setupEditor()
                 copy.name = newTitle;
                 copy.role = newRole;
                 copy.image = newImage;
+                copy.narrator = newNarrator;
                 elementsStore->updateElement(copy.id, copy);
             }
         } else if (!elemType.isEmpty() && !newImage.isEmpty() && elementsStore) {
@@ -1195,6 +1465,7 @@ void MainWindow::setupEditor()
                       : QStringLiteral("cube");
             elem.role = newRole;
             elem.image = newImage;
+            elem.narrator = newNarrator;
             const QString newElementId = elementsStore->addElement(elem);
             projectModel->setDrawerItemElement(itemId, elemType, item->elementIcon, newElementId);
         }
@@ -2302,6 +2573,19 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     if (elementsStore) elementsStore->load();
 
+    // Restaura estado de detecção (markAll) salvo por projeto
+    {
+        QSettings qs;
+        qs.beginGroup(QStringLiteral("detectionState"));
+        const QString phash = QString::fromLatin1(
+            QCryptographicHash::hash(root.toUtf8(), QCryptographicHash::Md5).toHex());
+        qs.beginGroup(phash);
+        detectionMarkAll = qs.value(QStringLiteral("markAll"), false).toBool();
+        qs.endGroup();
+        qs.endGroup();
+        if (settingsPanel) settingsPanel->setDetectionMarkAll(detectionMarkAll);
+    }
+
     rememberLastProject(root);
     restoreLastDocFor(root);
 
@@ -2673,12 +2957,29 @@ void MainWindow::onSettingsRequested()
             projectModel->setSpellLanguage(code);
             spellChecker->setLanguage(code);
         });
+        connect(settingsPanel, &SettingsPanel::detectionEnabledChanged, this, [this](bool enabled) {
+            detectionEnabled = enabled;
+            if (!enabled && detectionTimer) detectionTimer->stop();
+        });
+        connect(settingsPanel, &SettingsPanel::detectionMarkAllChanged, this, [this](bool markAll) {
+            detectionMarkAll = markAll;
+            if (!projectRoot.isEmpty()) {
+                QSettings qs;
+                qs.beginGroup(QStringLiteral("detectionState"));
+                qs.beginGroup(QString::fromLatin1(
+                    QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
+                qs.setValue(QStringLiteral("markAll"), markAll);
+                qs.endGroup(); qs.endGroup();
+            }
+        });
     }
 
     // Atualiza a UI do painel com o estado atual antes de mostrar.
     const QString lang = projectModel ? projectModel->spellLanguage() : QString();
     settingsPanel->setSpellEnabled(!lang.isEmpty());
     if (!lang.isEmpty()) settingsPanel->setSpellLanguage(lang);
+    settingsPanel->setDetectionEnabled(detectionEnabled);
+    settingsPanel->setDetectionMarkAll(detectionMarkAll);
 
     settingsPanel->show();
     settingsPanel->raise();

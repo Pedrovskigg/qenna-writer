@@ -3,6 +3,7 @@
 #include <QDialog>
 #include <QString>
 
+class QCheckBox;
 class QLineEdit;
 class QComboBox;
 class QLabel;
@@ -17,11 +18,12 @@ public:
     ElementCreateDialog(const QString& elementType, QWidget* parent = nullptr);
 
     // Pré-preencher pra modo de edição.
-    void setInitial(const QString& title, const QString& role, const QString& imageDataUrl);
+    void setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator = false);
 
     QString title() const;
     QString role() const;
     QString imageDataUrl() const { return m_imageDataUrl; }
+    bool narrator() const;
 
 private slots:
     void pickImage();
@@ -35,6 +37,7 @@ private:
 
     QLineEdit* m_titleEdit;
     QComboBox* m_roleCombo;
+    QCheckBox* m_narratorCheck;
     QLabel* m_imagePreview;
     QPushButton* m_pickImageBtn;
     QPushButton* m_clearImageBtn;

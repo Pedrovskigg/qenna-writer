@@ -98,11 +98,20 @@ QString pickerPopupQss() {
 
 namespace {
 
+struct CardSizeParams {
+    int cardW;
+    int cardH;
+    int cardHConsistency;
+    int cardPhoto;
+    int cols;
+};
+static const CardSizeParams kCardSizes[3] = {
+    {  90,  90, 145,  48, 3 },  // 0 = Small
+    { 134, 118, 192,  70, 2 },  // 1 = Medium (default)
+    { 134, 155, 245,  92, 2 },  // 2 = Large (foto maior, card mais alto, 2 colunas)
+};
+
 constexpr int kPanelWidth = 300;
-constexpr int kCardWidth  = 134;   // (300 - 24 padding - 8 gap) / 2 = 134
-constexpr int kCardHeight = 118;   // foto 70 + nome + role + paddings
-constexpr int kCardHeightConsistency = 192; // + barra de presença + status + local
-constexpr int kCardPhoto  = 70;
 constexpr int kMinPanelWidth = 240;
 constexpr int kMaxPanelWidth = 600;
 constexpr int kMinPanelHeight = 220;
@@ -298,6 +307,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     , m_pinBtn(nullptr)
     , m_viewBtn(nullptr)
     , m_sortBtn(nullptr)
+    , m_sizeBtn(nullptr)
     , m_createBtn(nullptr)
     , m_folderBtn(nullptr)
 {
@@ -309,6 +319,10 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         setMinimumWidth(kMinPanelWidth);
         setMaximumWidth(kMaxPanelWidth);
         resize(w, height());
+    }
+    {
+        QSettings qs;
+        m_cardSizeIdx = qBound(0, qs.value(QStringLiteral("ui/cardSizeIdx"), 1).toInt(), 2);
     }
     setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel")));
 
@@ -397,6 +411,18 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         rebuildContents();
     });
     headerLayout->addWidget(m_viewBtn);
+
+    m_sizeBtn = makeMiniBtn(QStringLiteral("M"), tr("Tamanho dos cards"));
+    m_sizeBtn->setFixedWidth(28);
+    m_sizeBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    connect(m_sizeBtn, &QToolButton::clicked, this, [this]() {
+        m_cardSizeIdx = (m_cardSizeIdx + 1) % 3;
+        QSettings qs;
+        qs.setValue(QStringLiteral("ui/cardSizeIdx"), m_cardSizeIdx);
+        updateSizeButton();
+        rebuildContents();
+    });
+    headerLayout->addWidget(m_sizeBtn);
 
     m_sortBtn = makeMiniBtn(QStringLiteral("⇅ Criação ↑"), tr("Ordem de exibição"));
     m_sortBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -561,7 +587,11 @@ void DrawerListPanel::applyTheme() {
 void DrawerListPanel::setElementsStore(ElementsStore* store) {
     m_elementsStore = store;
     if (store) {
-        connect(store, &ElementsStore::changed, this, [this]() { if (isPanelOpen()) rebuildContents(); });
+        connect(store, &ElementsStore::changed, this, [this]() {
+            if (!isPanelOpen()) return;
+            if (m_consistencyMode) refreshPresenceCache();
+            rebuildContents();
+        });
     }
 }
 
@@ -631,11 +661,11 @@ void DrawerListPanel::openInConsistencyMode(const QString& drawerKey) {
 }
 
 void DrawerListPanel::refreshPresenceCache() {
-    m_presenceCache.clear();
+    m_presenceResults.clear();
+    m_totalScenes   = 0;
     m_totalChapters = 0;
     if (!m_model || !m_presenceProvider) return;
 
-    // Coleta nomes de todos os personagens na gaveta atual
     const Drawer* drawer = m_model->findDrawer(m_currentKey);
     if (!drawer) return;
 
@@ -645,7 +675,14 @@ void DrawerListPanel::refreshPresenceCache() {
     }
     if (names.isEmpty()) return;
 
-    m_presenceProvider(names, &m_presenceCache, &m_totalChapters);
+    m_presenceProvider(names, &m_presenceResults, &m_totalScenes, &m_totalChapters);
+}
+
+void DrawerListPanel::setCurrentDocKey(const QString& key)
+{
+    if (m_currentDocKey == key) return;
+    m_currentDocKey = key;
+    if (m_consistencyMode && isPanelOpen()) rebuildContents();
 }
 
 void DrawerListPanel::showStatusPicker(const QString& itemId, const QPoint& globalPos) {
@@ -832,6 +869,169 @@ void DrawerListPanel::showLocationPicker(const QString& itemId, const QPoint& gl
     popup->move(pos);
     popup->show();
     customInput->setFocus();
+}
+
+void DrawerListPanel::showPresenceDetail(const QString& charName,
+                                         const CharPresenceResult& res,
+                                         QPoint globalPos)
+{
+    if (m_presenceDetailPopup) {
+        m_presenceDetailPopup->close();
+        m_presenceDetailPopup = nullptr;
+    }
+
+    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setObjectName(QStringLiteral("presenceDetail"));
+    popup->setStyleSheet(QStringLiteral(R"(
+        QFrame#presenceDetail {
+            background: %1;
+            border: 1px solid %2;
+            border-radius: 8px;
+        }
+        QLabel#pdTitle { color: %3; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; }
+        QLabel#pdEntry { color: %4; font-size: 11px; padding: 2px 0; }
+        QLabel#pdEmpty { color: %3; font-style: italic; font-size: 11px; }
+        QPushButton#pdModeBtn {
+            background: transparent; color: %4;
+            border: none; border-radius: 4px;
+            padding: 3px 8px; text-align: left; font-size: 11px;
+        }
+        QPushButton#pdModeBtn:hover { background: %5; }
+        QPushButton#pdModeBtnSel {
+            background: %5; color: %6;
+            border: none; border-radius: 4px;
+            padding: 3px 8px; text-align: left; font-size: 11px; font-weight: 600;
+        }
+    )").arg(Theme::panelBackground(), Theme::panelBorder(),
+            Theme::textMuted(), Theme::textPrimary(),
+            Theme::hoverOverlay(), Theme::textBright()));
+    popup->setFixedWidth(230);
+
+    auto* outerLay = new QVBoxLayout(popup);
+    outerLay->setContentsMargins(10, 8, 10, 10);
+    outerLay->setSpacing(5);
+
+    // Header: nome + gear
+    auto* headerRow = new QHBoxLayout();
+    headerRow->setSpacing(4);
+    auto* titleLbl = new QLabel(charName.toUpper() + QStringLiteral(" — APARECE EM"), popup);
+    titleLbl->setObjectName(QStringLiteral("pdTitle"));
+    headerRow->addWidget(titleLbl);
+    headerRow->addStretch();
+
+    auto* gearBtn = new QToolButton(popup);
+    gearBtn->setText(QStringLiteral("⚙"));
+    gearBtn->setStyleSheet(QStringLiteral(
+        "QToolButton { background: transparent; color: %1; border: none; font-size: 13px; }"
+        "QToolButton:hover { color: %2; }").arg(Theme::textMuted(), Theme::textPrimary()));
+    gearBtn->setCursor(Qt::PointingHandCursor);
+    gearBtn->setFixedSize(20, 20);
+    headerRow->addWidget(gearBtn);
+    outerLay->addLayout(headerRow);
+
+    // Painel de modo (toggle via gear)
+    auto* modePanel = new QWidget(popup);
+    auto* modeLay = new QVBoxLayout(modePanel);
+    modeLay->setContentsMargins(0, 2, 0, 2);
+    modeLay->setSpacing(2);
+    modePanel->setVisible(false);
+
+    for (int m = 0; m < 2; ++m) {
+        const QString label = (m == 0) ? tr("Contar somente cenas")
+                                       : tr("Contar somente capítulos inteiros");
+        const bool sel = (m == m_presenceMode);
+        auto* btn = new QPushButton(label, modePanel);
+        btn->setObjectName(sel ? QStringLiteral("pdModeBtnSel") : QStringLiteral("pdModeBtn"));
+        btn->setCursor(Qt::PointingHandCursor);
+        const int modeIdx = m;
+        connect(btn, &QPushButton::clicked, popup, [this, popup, modeIdx]() {
+            m_presenceMode = modeIdx;
+            popup->close();
+            rebuildContents();
+        });
+        modeLay->addWidget(btn);
+    }
+    outerLay->addWidget(modePanel);
+
+    connect(gearBtn, &QToolButton::clicked, popup, [modePanel, popup]() {
+        modePanel->setVisible(!modePanel->isVisible());
+        popup->adjustSize();
+    });
+
+    // Separador
+    auto* sep = new QFrame(popup);
+    sep->setFrameShape(QFrame::HLine);
+    sep->setStyleSheet(QStringLiteral("background: %1; border: none;").arg(Theme::subtleBorder()));
+    sep->setFixedHeight(1);
+    outerLay->addWidget(sep);
+
+    // Lista scrollável
+    auto* scroll = new QScrollArea(popup);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setWidgetResizable(true);
+
+    auto* listHost = new QWidget();
+    listHost->setStyleSheet(QStringLiteral("background: transparent;"));
+    auto* listLay = new QVBoxLayout(listHost);
+    listLay->setContentsMargins(0, 0, 4, 0);
+    listLay->setSpacing(0);
+
+    if (res.chapters.isEmpty()) {
+        auto* emptyLbl = new QLabel(tr("Sem ocorrências registradas."), listHost);
+        emptyLbl->setObjectName(QStringLiteral("pdEmpty"));
+        listLay->addWidget(emptyLbl);
+    } else if (m_presenceMode == 0) {
+        // Por cena
+        for (const auto& chEntry : res.chapters) {
+            if (chEntry.scenes.isEmpty()) {
+                auto* lbl = new QLabel(chEntry.title, listHost);
+                lbl->setObjectName(QStringLiteral("pdEntry"));
+                listLay->addWidget(lbl);
+            } else {
+                for (const auto& scEntry : chEntry.scenes) {
+                    const QString scTitle = scEntry.title.isEmpty()
+                        ? tr("Cena %1").arg(scEntry.index + 1) : scEntry.title;
+                    auto* lbl = new QLabel(
+                        QStringLiteral("%1: %2").arg(chEntry.title, scTitle), listHost);
+                    lbl->setObjectName(QStringLiteral("pdEntry"));
+                    listLay->addWidget(lbl);
+                }
+            }
+        }
+    } else {
+        // Por capítulo
+        for (const auto& chEntry : res.chapters) {
+            auto* lbl = new QLabel(chEntry.title, listHost);
+            lbl->setObjectName(QStringLiteral("pdEntry"));
+            listLay->addWidget(lbl);
+        }
+    }
+    listLay->addStretch();
+    scroll->setWidget(listHost);
+    scroll->viewport()->setStyleSheet(
+        QStringLiteral("background: %1;").arg(Theme::panelBackground()));
+
+    const int rows = qMax(1, (m_presenceMode == 0) ? res.sceneCount : res.chapterCount);
+    scroll->setFixedHeight(qBound(40, rows * 22 + 8, 200));
+    outerLay->addWidget(scroll);
+
+    m_presenceDetailPopup = popup;
+    connect(popup, &QObject::destroyed, this, [this]() {
+        m_presenceDetailPopup = nullptr;
+    });
+
+    popup->adjustSize();
+
+    QPoint pos = globalPos;
+    const QRect screen = popup->screen() ? popup->screen()->availableGeometry()
+                                         : QRect(0, 0, 1920, 1080);
+    if (pos.x() + popup->width()  > screen.right())  pos.setX(screen.right()  - popup->width());
+    if (pos.y() + popup->height() > screen.bottom())
+        pos.setY(globalPos.y() - popup->height() - 10);
+    popup->move(pos);
+    popup->show();
 }
 
 void DrawerListPanel::onDrawersChanged() {
@@ -1021,11 +1221,26 @@ void DrawerListPanel::updateActionBar() {
     m_createBtn->setText(QStringLiteral("  ") + createButtonLabel());
     m_createBtn->setIcon(QIcon(circlePlusPixmap(QColor(accent), 18)));
     m_createBtn->setStyleSheet(createButtonQss(accent));
+    updateSizeButton();
 }
 
 void DrawerListPanel::updateSortButton() {
     if (!m_sortBtn) return;
     m_sortBtn->setText(QStringLiteral("⇅ %1").arg(sortLabelFor(m_sortMode, m_sortAscending)));
+}
+
+void DrawerListPanel::updateSizeButton() {
+    if (!m_sizeBtn) return;
+    const bool visible = currentDrawerIsElement() && m_gridView;
+    m_sizeBtn->setVisible(visible);
+    const char* labels[] = { "S", "M", "G" };
+    m_sizeBtn->setText(QLatin1String(labels[m_cardSizeIdx]));
+    const char* tips[] = {
+        QT_TR_NOOP("Cards: Pequeno"),
+        QT_TR_NOOP("Cards: Médio"),
+        QT_TR_NOOP("Cards: Grande")
+    };
+    m_sizeBtn->setToolTip(tr(tips[m_cardSizeIdx]));
 }
 
 void DrawerListPanel::updateViewButton() {
@@ -1036,6 +1251,7 @@ void DrawerListPanel::updateViewButton() {
     m_viewBtn->setToolTip(m_gridView
         ? tr("Exibição: Blocos — clique para Lista")
         : tr("Exibição: Lista — clique para Blocos"));
+    updateSizeButton();
     updateConsistencyBtn();
 }
 
@@ -1152,14 +1368,17 @@ void DrawerListPanel::rebuildContents() {
         // Distribui os cards com stretches iguais antes, entre e depois — assim o
         // espaço extra (quando o painel é alargado) vira afastamento proporcional
         // entre os cards, deixando respiro pra linhas de vínculo entre eles.
+        const CardSizeParams& csz = kCardSizes[m_cardSizeIdx];
+        const int maxCols = csz.cols;
+        const int rowH = (m_consistencyMode && currentDrawerIsCharacter())
+                         ? csz.cardHConsistency : csz.cardH;
         QHBoxLayout* currentRow = nullptr;
         int colInRow = 0;
         for (const auto& it : items) {
             if (colInRow == 0) {
                 auto* rowWrap = new QWidget(this);
                 rowWrap->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-                rowWrap->setFixedHeight(
-                    (m_consistencyMode && currentDrawerIsCharacter()) ? kCardHeightConsistency : kCardHeight);
+                rowWrap->setFixedHeight(rowH);
                 rowWrap->setMouseTracking(true);
                 rowWrap->setProperty("isBondRow", true);
                 rowWrap->installEventFilter(this);
@@ -1172,17 +1391,20 @@ void DrawerListPanel::rebuildContents() {
             currentRow->addWidget(makeElementCard(it.id, it.title, effectiveRole(it), it.elementId));
             ++colInRow;
             ++displayedCount;
-            if (colInRow < 2) {
-                currentRow->addStretch(1); // entre os dois
+            if (colInRow < maxCols) {
+                currentRow->addStretch(1); // entre cards
             } else {
-                currentRow->addStretch(1); // depois do segundo
+                currentRow->addStretch(1); // após o último da linha
                 colInRow = 0;
                 currentRow = nullptr;
             }
         }
         if (currentRow) {
-            // Linha ímpar no fim — fecha com stretches pros lados ficarem balanceados.
-            currentRow->addStretch(1);
+            // Linha incompleta no fim — fecha com stretches pros lados ficarem balanceados.
+            for (int i = colInRow; i < maxCols; ++i) {
+                currentRow->addStretch(1); // célula vazia
+                currentRow->addStretch(1);
+            }
             currentRow->addStretch(1);
         }
     } else {
@@ -1209,10 +1431,15 @@ void DrawerListPanel::rebuildContents() {
     }
 
     // Após o rebuild, agenda recompute de posições e atualiza overlay de bonds.
+    // Modo S (3 colunas) não renderiza vínculos — o corredor central fica sobre
+    // a coluna do meio e o roteamento do BondsLayer atropela os cards.
     QMetaObject::invokeMethod(this, [this]() {
         recomputeCardPositions();
         if (m_bondsLayer && m_model) {
-            m_bondsLayer->setBonds(m_model->characterBondsForDrawer(m_currentKey));
+            const bool showBonds = (kCardSizes[m_cardSizeIdx].cols < 3);
+            m_bondsLayer->setBonds(showBonds
+                ? m_model->characterBondsForDrawer(m_currentKey)
+                : QList<CharacterBond>{});
         }
         positionBondsLayer();
     }, Qt::QueuedConnection);
@@ -1220,6 +1447,8 @@ void DrawerListPanel::rebuildContents() {
 
 QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& title, const QString& role, const QString& elementId)
 {
+    const CardSizeParams& csz = kCardSizes[m_cardSizeIdx];
+
     QString imageDataUrl;
     if (m_elementsStore && !elementId.isEmpty()) {
         if (const Element* e = m_elementsStore->findElement(elementId)) {
@@ -1238,38 +1467,48 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     }
     const bool showConsistency = m_consistencyMode && currentDrawerIsCharacter();
 
+    // Presença no documento atual (via ElementsStore::docElements)
+    const bool presentInDoc = showConsistency
+        && m_elementsStore
+        && !m_currentDocKey.isEmpty()
+        && !elementId.isEmpty()
+        && m_elementsStore->hasDocElement(m_currentDocKey, elementId);
+
     auto* card = new QFrame(this);
     card->setObjectName(QStringLiteral("elemCard"));
     card->setAttribute(Qt::WA_StyledBackground, true);
     card->setCursor(Qt::PointingHandCursor);
     card->setContextMenuPolicy(Qt::CustomContextMenu);
-    card->setFixedSize(kCardWidth, showConsistency ? kCardHeightConsistency : kCardHeight);
+    card->setFixedSize(csz.cardW, showConsistency ? csz.cardHConsistency : csz.cardH);
     card->setStyleSheet(QStringLiteral(R"(
         QFrame#elemCard {
             background: %1;
-            border: 1px solid %2;
+            border: %5 solid %2;
             border-radius: 8px;
         }
         QFrame#elemCard:hover {
             background: %3;
             border-color: %4;
         }
-    )").arg(Theme::pressedOverlay(), Theme::subtleBorder(),
-           Theme::hoverOverlay(), Theme::borderStrong()));
+    )").arg(Theme::pressedOverlay(),
+            presentInDoc ? Theme::accentDefault() : Theme::subtleBorder(),
+            Theme::hoverOverlay(),
+            presentInDoc ? Theme::accentDefault() : Theme::borderStrong(),
+            presentInDoc ? QStringLiteral("2px") : QStringLiteral("1px")));
 
     auto* lay = new QVBoxLayout(card);
     lay->setContentsMargins(8, 8, 8, 8);
     lay->setSpacing(4);
 
     auto* photo = new QLabel(card);
-    photo->setFixedSize(kCardPhoto, kCardPhoto);
+    photo->setFixedSize(csz.cardPhoto, csz.cardPhoto);
     photo->setAlignment(Qt::AlignCenter);
     photo->setStyleSheet(QStringLiteral(
         "background: %1; border-radius: 6px; color: %2; font-size: 9px;")
         .arg(Theme::inputBackground(), Theme::textMuted()));
     QPixmap pm = pixFromDataUrl(imageDataUrl);
     if (!pm.isNull()) {
-        photo->setPixmap(photoRounded(pm, kCardPhoto, 6));
+        photo->setPixmap(photoRounded(pm, csz.cardPhoto, 6));
     } else {
         photo->setText(tr("sem foto"));
     }
@@ -1280,19 +1519,59 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     photo->installEventFilter(this);
     lay->addWidget(photo, 0, Qt::AlignHCenter);
 
+    // Linha do nome: dot de presença + label
     auto* nameLbl = new QLabel(title.isEmpty() ? tr("(sem nome)") : title, card);
     nameLbl->setStyleSheet(QStringLiteral(
         "color: %1; font-size: 12px; font-weight: 700;").arg(Theme::textBright()));
     nameLbl->setAlignment(Qt::AlignHCenter);
     nameLbl->setWordWrap(true);
-    lay->addWidget(nameLbl);
 
-    // Nome vira handle pra arrastar e criar vínculo (gavetas de personagem).
+    if (presentInDoc) {
+        auto* nameRow = new QHBoxLayout();
+        nameRow->setSpacing(4);
+        nameRow->setContentsMargins(0, 0, 0, 0);
+        nameRow->setAlignment(Qt::AlignHCenter);
+        auto* dot = new QLabel(card);
+        dot->setFixedSize(7, 7);
+        dot->setStyleSheet(QStringLiteral(
+            "background: %1; border-radius: 3px;").arg(Theme::accentDefault()));
+        nameRow->addWidget(dot, 0, Qt::AlignVCenter);
+        nameRow->addWidget(nameLbl);
+        lay->addLayout(nameRow);
+    } else {
+        lay->addWidget(nameLbl);
+    }
+
+    // Botão discreto de criar vínculo — overlay no canto sup direito do card,
+    // só visível ao hover. Vira o handle de drag (substituindo o nome).
     if (currentDrawerIsCharacter()) {
-        nameLbl->setCursor(Qt::OpenHandCursor);
-        nameLbl->setProperty("isBondDragHandle", true);
-        nameLbl->setProperty("itemId", itemId);
-        nameLbl->installEventFilter(this);
+        constexpr int kBtnSize = 18;
+        auto* bondBtn = new QToolButton(card);
+        bondBtn->setObjectName(QStringLiteral("bondCreateBtn"));
+        bondBtn->setFixedSize(kBtnSize, kBtnSize);
+        bondBtn->move(csz.cardW - kBtnSize - 4, 4);
+        bondBtn->setCursor(Qt::OpenHandCursor);
+        bondBtn->setAutoRaise(true);
+        bondBtn->setVisible(false);
+        bondBtn->setToolTip(tr("Arrastar para criar vínculo"));
+        bondBtn->setStyleSheet(QStringLiteral(
+            "QToolButton { background: transparent; border: none; border-radius: 4px; }"
+            "QToolButton:hover { background: %1; }").arg(Theme::hoverOverlay()));
+        {
+            const QIcon ic = IconUtils::loadToolbarIcon(
+                QStringLiteral(":/icons/create-bond.svg"),
+                QColor(Theme::textMuted()), QColor(Theme::textPrimary()),
+                QColor(Theme::textBright()), QSize(14, 14));
+            if (!ic.isNull()) {
+                bondBtn->setIcon(ic);
+                bondBtn->setIconSize(QSize(14, 14));
+            }
+        }
+        bondBtn->setProperty("isBondDragHandle", true);
+        bondBtn->setProperty("itemId", itemId);
+        bondBtn->installEventFilter(this);
+        // WA_Hover no card → eventFilter recebe HoverEnter/HoverLeave para show/hide
+        card->setAttribute(Qt::WA_Hover);
     }
 
     if (!role.isEmpty()) {
@@ -1311,25 +1590,32 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
         lay->addWidget(sep);
 
-        // Barra de presença (QProgressBar com estilo flat)
-        const int chapCount = m_presenceCache.value(title.toLower(), 0);
-        const int pct = (m_totalChapters > 0) ? qMin(100, (chapCount * 100) / m_totalChapters) : 0;
+        // Barra de presença (clicável, exibe lista de cenas/capítulos)
+        const CharPresenceResult& presRes = m_presenceResults.value(title.toLower());
+        const int presCount = (m_presenceMode == 0) ? presRes.sceneCount : presRes.chapterCount;
+        const int presTotal = (m_presenceMode == 0) ? m_totalScenes    : m_totalChapters;
+        const int pct = (presTotal > 0) ? qMin(100, (presCount * 100) / presTotal) : 0;
+        const QString modeStr = (m_presenceMode == 0) ? tr("cena(s)") : tr("capítulo(s)");
+
         auto* presenceBar = new QProgressBar(card);
         presenceBar->setRange(0, 100);
         presenceBar->setValue(pct);
-        presenceBar->setFixedHeight(8);
+        presenceBar->setFixedHeight(5);
         presenceBar->setTextVisible(false);
-        presenceBar->setToolTip(tr("Aparece em %1 de %2 capítulo(s) (%3%)")
-            .arg(chapCount).arg(m_totalChapters).arg(pct));
+        presenceBar->setCursor(Qt::PointingHandCursor);
+        presenceBar->setToolTip(tr("Aparece em %1 de %2 %3 (%4%) — clique para detalhes")
+            .arg(presCount).arg(presTotal).arg(modeStr).arg(pct));
+        presenceBar->setProperty("presenceBarName", title);
+        presenceBar->installEventFilter(this);
         presenceBar->setStyleSheet(QStringLiteral(R"(
             QProgressBar {
                 background: %1;
                 border: none;
-                border-radius: 3px;
+                border-radius: 2px;
             }
             QProgressBar::chunk {
                 background: %2;
-                border-radius: 3px;
+                border-radius: 2px;
             }
         )").arg(Theme::hoverOverlay(), Theme::accentDefault()));
         lay->addWidget(presenceBar);
@@ -1503,6 +1789,9 @@ bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
                 m_bondDragStartGlobal = me->globalPosition().toPoint();
                 m_bondDragActive = false;
                 w->setCursor(Qt::ClosedHandCursor);
+                // Grab para receber todos os MouseMove/Release mesmo fora do label.
+                m_bondDragWidget = w;
+                w->grabMouse();
                 return true;
             }
         } else if (event->type() == QEvent::MouseMove) {
@@ -1523,6 +1812,11 @@ bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
         } else if (event->type() == QEvent::MouseButtonRelease) {
             auto* me = static_cast<QMouseEvent*>(event);
             if (me->button() == Qt::LeftButton) {
+                // Libera o grab antes de qualquer ação.
+                if (m_bondDragWidget) {
+                    m_bondDragWidget->releaseMouse();
+                    m_bondDragWidget = nullptr;
+                }
                 w->setCursor(Qt::OpenHandCursor);
                 if (m_bondDragActive) {
                     finishBondDrag(me->globalPosition().toPoint());
@@ -1634,6 +1928,31 @@ bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
                 return true;
             }
             m_pressedItemId.clear();
+        }
+    }
+
+    // ---- Hover no card: mostra/oculta o botão de criar vínculo ----
+    if (w && w->objectName() == QStringLiteral("elemCard")) {
+        if (event->type() == QEvent::HoverEnter) {
+            if (auto* btn = w->findChild<QToolButton*>(QStringLiteral("bondCreateBtn")))
+                btn->setVisible(true);
+        } else if (event->type() == QEvent::HoverLeave) {
+            if (auto* btn = w->findChild<QToolButton*>(QStringLiteral("bondCreateBtn")))
+                btn->setVisible(false);
+        }
+    }
+
+    // ---- Click na barra de presença abre popup de detalhes ----
+    if (w && w->property("presenceBarName").isValid()) {
+        if (event->type() == QEvent::MouseButtonRelease) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            if (me->button() == Qt::LeftButton) {
+                const QString charName = w->property("presenceBarName").toString();
+                const CharPresenceResult& res = m_presenceResults.value(charName.toLower());
+                showPresenceDetail(charName, res,
+                                   w->mapToGlobal(QPoint(0, w->height() + 4)));
+                return true;
+            }
         }
     }
 
@@ -2029,8 +2348,10 @@ void DrawerListPanel::recomputeCardPositions() {
         p.bottom = p.top + card->height();
         p.x = p.left + card->width() / 2.0;
         p.y = p.top + card->height() / 2.0;
-        // anchor Y = centro da foto (padding 8 + metade da foto 35 = 43)
-        p.ay = p.top + 8 + 35;
+        // anchor Y/X: usa o photoHalf real do tamanho atual
+        const qreal ph = kCardSizes[m_cardSizeIdx].cardPhoto / 2.0;
+        p.photoHalf = ph;
+        p.ay = p.top + 8 + ph; // padding 8 + metade da foto
         positions.insert(it.key(), p);
     }
     m_bondsLayer->setCardPositions(positions);
@@ -2111,6 +2432,10 @@ void DrawerListPanel::finishBondDrag(const QPoint& globalPos) {
 }
 
 void DrawerListPanel::cancelBondDrag() {
+    if (m_bondDragWidget) {
+        m_bondDragWidget->releaseMouse();
+        m_bondDragWidget = nullptr;
+    }
     m_bondDragActive = false;
     m_bondDragSource.clear();
     if (m_bondsLayer) m_bondsLayer->clearDragPreview();
@@ -2118,11 +2443,10 @@ void DrawerListPanel::cancelBondDrag() {
 
 void DrawerListPanel::refreshBonds() {
     if (!m_bondsLayer || !m_model) return;
-    if (m_currentKey.isEmpty()) {
-        m_bondsLayer->setBonds({});
-    } else {
-        m_bondsLayer->setBonds(m_model->characterBondsForDrawer(m_currentKey));
-    }
+    const bool showBonds = !m_currentKey.isEmpty() && (kCardSizes[m_cardSizeIdx].cols < 3);
+    m_bondsLayer->setBonds(showBonds
+        ? m_model->characterBondsForDrawer(m_currentKey)
+        : QList<CharacterBond>{});
 }
 
 void DrawerListPanel::installDropTargetOnFolderChip(QWidget* chip, const QString& folderId) {

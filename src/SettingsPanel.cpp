@@ -134,6 +134,35 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     syncPageLayoutFromManager();
 
+    // ---- Seção: Detecção de personagens ----
+    auto* detectGroup = new QGroupBox(tr("Detecção de personagens"), this);
+    auto* detectLayout = new QVBoxLayout(detectGroup);
+    detectLayout->setContentsMargins(14, 8, 14, 14);
+    detectLayout->setSpacing(8);
+
+    m_detectionCheck = new QCheckBox(tr("Detectar personagens automaticamente"), detectGroup);
+    detectLayout->addWidget(m_detectionCheck);
+
+    m_detectionAllCheck = new QCheckBox(tr("Marcar todos sem confirmar"), detectGroup);
+    detectLayout->addWidget(m_detectionAllCheck);
+
+    auto* detectHint = new QLabel(
+        tr("Quando ativado, o app detecta nomes de personagens no texto e sugere marcar a presença deles na cena."),
+        detectGroup);
+    detectHint->setObjectName(QStringLiteral("settingsHint"));
+    detectHint->setWordWrap(true);
+    detectLayout->addWidget(detectHint);
+
+    root->addWidget(detectGroup);
+
+    connect(m_detectionCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        m_detectionAllCheck->setEnabled(checked);
+        emit detectionEnabledChanged(checked);
+    });
+    connect(m_detectionAllCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        emit detectionMarkAllChanged(checked);
+    });
+
     root->addStretch();
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
@@ -380,4 +409,27 @@ void SettingsPanel::applyTheme()
              hover,     // 8
              hoverStr,  // 9
              accent));  // 10
+}
+
+bool SettingsPanel::detectionEnabled() const
+{
+    return m_detectionCheck ? m_detectionCheck->isChecked() : true;
+}
+
+bool SettingsPanel::detectionMarkAll() const
+{
+    return m_detectionAllCheck ? m_detectionAllCheck->isChecked() : false;
+}
+
+void SettingsPanel::setDetectionEnabled(bool enabled)
+{
+    if (m_detectionCheck) {
+        m_detectionCheck->setChecked(enabled);
+        if (m_detectionAllCheck) m_detectionAllCheck->setEnabled(enabled);
+    }
+}
+
+void SettingsPanel::setDetectionMarkAll(bool markAll)
+{
+    if (m_detectionAllCheck) m_detectionAllCheck->setChecked(markAll);
 }

@@ -12,7 +12,7 @@
 
 namespace {
 // Constantes do circuito — espelham o layout do Mira 1 ([[compaction-2026-04-26]]).
-constexpr qreal kPhotoHalf = 35.0;
+// kPhotoHalf removido: o valor real vem de BondCardPos::photoHalf (varia com o tamanho dos cards).
 constexpr qreal kEdgeGap   = 2.0;
 constexpr qreal kStrokeW   = 4.0;
 constexpr qreal kLineGap   = 4.0;
@@ -237,16 +237,16 @@ void BondsLayer::recompute() {
         qreal ep1x = 0, ep2x = 0;
         if (qAbs(dx) < 15.0) {
             const bool toLeft = laneX < p1.x;
-            ep1x = toLeft ? p1.x - kPhotoHalf - kEdgeGap : p1.x + kPhotoHalf + kEdgeGap;
-            ep2x = toLeft ? p2.x - kPhotoHalf - kEdgeGap : p2.x + kPhotoHalf + kEdgeGap;
+            ep1x = toLeft ? p1.x - p1.photoHalf - kEdgeGap : p1.x + p1.photoHalf + kEdgeGap;
+            ep2x = toLeft ? p2.x - p2.photoHalf - kEdgeGap : p2.x + p2.photoHalf + kEdgeGap;
             g.segments << QLineF(ep1x, ey1, laneX, ey1)
                        << QLineF(laneX, ey1, laneX, ey2)
                        << QLineF(laneX, ey2, ep2x, ey2);
             g.labelPos = QPointF(laneX, (ey1 + ey2) / 2.0 - 8);
         } else {
             const bool goRight = dx > 0;
-            ep1x = goRight ? p1.x + kPhotoHalf + kEdgeGap : p1.x - kPhotoHalf - kEdgeGap;
-            ep2x = goRight ? p2.x - kPhotoHalf - kEdgeGap : p2.x + kPhotoHalf + kEdgeGap;
+            ep1x = goRight ? p1.x + p1.photoHalf + kEdgeGap : p1.x - p1.photoHalf - kEdgeGap;
+            ep2x = goRight ? p2.x - p2.photoHalf - kEdgeGap : p2.x + p2.photoHalf + kEdgeGap;
             if (qAbs(dy) < 15.0) {
                 g.segments << QLineF(ep1x, ey1, ep2x, ey2);
                 g.labelPos = QPointF((ep1x + ep2x) / 2.0, ey1 - 8);

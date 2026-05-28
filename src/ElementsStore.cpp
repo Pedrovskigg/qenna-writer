@@ -213,3 +213,44 @@ bool ElementsStore::removeElement(const QString& id) {
     emit changed();
     return true;
 }
+
+QStringList ElementsStore::docElementIds(const QString& docKey) const {
+    const QJsonArray arr = m_docElements.value(docKey).toArray();
+    QStringList result;
+    result.reserve(arr.size());
+    for (const auto& v : arr) {
+        const QString s = v.toString();
+        if (!s.isEmpty()) result.append(s);
+    }
+    return result;
+}
+
+bool ElementsStore::hasDocElement(const QString& docKey, const QString& elementId) const {
+    const QJsonArray arr = m_docElements.value(docKey).toArray();
+    for (const auto& v : arr) {
+        if (v.toString() == elementId) return true;
+    }
+    return false;
+}
+
+void ElementsStore::addDocElement(const QString& docKey, const QString& elementId) {
+    if (hasDocElement(docKey, elementId)) return;
+    QJsonArray arr = m_docElements.value(docKey).toArray();
+    arr.append(elementId);
+    m_docElements.insert(docKey, arr);
+    m_dirty = true;
+    emit changed();
+}
+
+void ElementsStore::removeDocElement(const QString& docKey, const QString& elementId) {
+    if (!m_docElements.contains(docKey)) return;
+    QJsonArray arr = m_docElements.value(docKey).toArray();
+    QJsonArray filtered;
+    for (const auto& v : arr) {
+        if (v.toString() != elementId) filtered.append(v);
+    }
+    if (filtered.size() == arr.size()) return;
+    m_docElements.insert(docKey, filtered);
+    m_dirty = true;
+    emit changed();
+}

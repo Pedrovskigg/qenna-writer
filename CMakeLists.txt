@@ -50,6 +50,10 @@ qt_add_executable(mira-writing
     src/ElementCreateDialog.h
     src/ElementsStore.cpp
     src/ElementsStore.h
+    src/CharacterDetector.cpp
+    src/CharacterDetector.h
+    src/PresencePopup.cpp
+    src/PresencePopup.h
     src/DocCache.cpp
     src/DocCache.h
     src/EditorHost.cpp
@@ -147,6 +151,6 @@ target_compile_definitions(mira-writing PRIVATE
 )
 
 set_target_properties(mira-writing PROPERTIES
-    WIN32_EXECUTABLE ON
+    # WIN32_EXECUTABLE ON  # comentado para ver logs no terminal
     MACOSX_BUNDLE ON
 )
