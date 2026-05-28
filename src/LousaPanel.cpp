@@ -264,8 +264,14 @@ void LousaPanel::buildUi()
 
     // Grupo 3 — zona (desabilitado)
     auto* btnZone = makeIconBtn(tr("Definir área"), m_toolbar);
+    btnZone->setEnabled(true);
+    btnZone->setCheckable(true);
     m_iconBindings.append({btnZone, QStringLiteral(":/icons/canvasicons/add-plan-area.svg")});
     tl->addWidget(btnZone);
+    connect(btnZone, &QToolButton::toggled, this, [this, btnZone](bool on) {
+        if (m_view) m_view->setPlanMode(on);
+        if (!on) btnZone->setChecked(false);
+    });
 
 
     tl->addStretch(1);
@@ -309,6 +315,19 @@ void LousaPanel::buildUi()
     m_scene = new LousaScene(this);
     m_view  = new LousaView(m_scene, this);
     root->addWidget(m_view, 1);
+
+    connect(m_view, &LousaView::zoneDrawn, this, [this](const QRectF& r) {
+        if (!m_scene) return;
+        CanvasZone z;
+        z.id     = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        z.x      = r.x();  z.y = r.y();
+        z.width  = r.width(); z.height = r.height();
+        z.title  = tr("Área");
+        z.color  = QColor(QStringLiteral("#6ea8fe"));
+        m_scene->addZone(z);
+        refreshEmptyState();
+    });
+    connect(m_scene, &LousaScene::zoneDataChanged, this, [this]() { save(); });
 
     connect(m_view, &LousaView::zoomChanged, this, [this](qreal z) {
         if (m_zoomLabel) m_zoomLabel->setText(QStringLiteral("%1%").arg(qRound(z * 100)));
@@ -509,6 +528,7 @@ void LousaPanel::load()
 
     m_scene->clearCards();
     m_scene->clearConnections();
+    m_scene->clearZones();
     for (const auto& v : root.value(QStringLiteral("cards")).toArray()) {
         const CanvasCard c = cardFromJson(v.toObject());
         if (!c.id.isEmpty()) m_scene->addCard(c);
@@ -524,6 +544,18 @@ void LousaPanel::load()
             conn.waypointCardIds.append(wv.toString());
         if (!conn.id.isEmpty() && !conn.fromId.isEmpty() && !conn.toId.isEmpty())
             m_scene->addConnection(conn);
+    }
+    for (const auto& v : root.value(QStringLiteral("zones")).toArray()) {
+        const QJsonObject o = v.toObject();
+        CanvasZone z;
+        z.id     = o.value(QStringLiteral("id")).toString();
+        z.x      = o.value(QStringLiteral("x")).toDouble();
+        z.y      = o.value(QStringLiteral("y")).toDouble();
+        z.width  = o.value(QStringLiteral("width")).toDouble(300);
+        z.height = o.value(QStringLiteral("height")).toDouble(200);
+        z.title  = o.value(QStringLiteral("title")).toString();
+        z.color  = QColor(o.value(QStringLiteral("color")).toString(QStringLiteral("#6ea8fe")));
+        if (!z.id.isEmpty()) m_scene->addZone(z);
     }
     refreshEmptyState();
 }
@@ -555,7 +587,19 @@ void LousaPanel::save() const
         connections.append(o);
     }
     root.insert(QStringLiteral("connections"), connections);
-    root.insert(QStringLiteral("zones"),       QJsonArray{});
+    QJsonArray zones;
+    for (const CanvasZone& z : m_scene->allZoneData()) {
+        QJsonObject o;
+        o.insert(QStringLiteral("id"),     z.id);
+        o.insert(QStringLiteral("x"),      z.x);
+        o.insert(QStringLiteral("y"),      z.y);
+        o.insert(QStringLiteral("width"),  z.width);
+        o.insert(QStringLiteral("height"), z.height);
+        o.insert(QStringLiteral("title"),  z.title);
+        o.insert(QStringLiteral("color"),  z.color.name());
+        zones.append(o);
+    }
+    root.insert(QStringLiteral("zones"), zones);
 
     QSaveFile f(QDir::cleanPath(m_projectRoot + QStringLiteral("/canvas.json")));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;

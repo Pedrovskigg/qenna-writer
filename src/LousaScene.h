@@ -9,6 +9,7 @@
 
 class CardItem;
 class ConnectionItem;
+class ZoneItem;
 class QGraphicsLineItem;
 class QTimer;
 
@@ -36,6 +37,12 @@ public:
     QList<CanvasConnection> allConnectionData() const;
     ConnectionItem* findConnection(const QString& id) const;
 
+    // ── Zonas ────────────────────────────────────────────────────────────────
+    ZoneItem* addZone(const CanvasZone& data);
+    void      removeZone(const QString& id);
+    void      clearZones();
+    QList<CanvasZone> allZoneData() const;
+
     // ── Pin drag (chamado por CardItem) ──────────────────────────────────────
     void startPinDrag(const QString& fromCardId, const QPointF& fromScene);
     void updatePinDrag(const QPointF& cursorScene);
@@ -47,6 +54,7 @@ public:
 signals:
     void cardDataChanged();
     void connectionDataChanged();
+    void zoneDataChanged();
     void pendingConnection(const QString& fromId, const QString& toId);
 
 protected:
@@ -64,6 +72,7 @@ private:
     QColor m_color{QStringLiteral("#1a1a2e")};
     QList<CardItem*>       m_cards;
     QList<ConnectionItem*> m_connections;
+    QList<ZoneItem*>       m_zones;
 
     // Pin drag state
     QString            m_dragFromId;

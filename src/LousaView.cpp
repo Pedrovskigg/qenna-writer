@@ -1,7 +1,9 @@
 #include "LousaView.h"
 #include "LousaScene.h"
 
+#include <QGraphicsRectItem>
 #include <QMouseEvent>
+#include <QPen>
 #include <QScrollBar>
 #include <QWheelEvent>
 
@@ -60,8 +62,38 @@ void LousaView::wheelEvent(QWheelEvent* event)
     event->accept();
 }
 
+void LousaView::setPlanMode(bool on)
+{
+    m_planMode = on;
+    setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+    if (!on && m_planGhost) {
+        scene()->removeItem(m_planGhost);
+        delete m_planGhost;
+        m_planGhost = nullptr;
+    }
+    m_drawing = false;
+}
+
 void LousaView::mousePressEvent(QMouseEvent* event)
 {
+    // Plan mode: arrastar no canvas vazio cria zona
+    if (m_planMode && event->button() == Qt::LeftButton) {
+        m_drawing   = true;
+        m_drawStart = mapToScene(event->pos());
+        if (!m_planGhost) {
+            m_planGhost = new QGraphicsRectItem();
+            m_planGhost->setZValue(300);
+            QPen ghost(QColor(QStringLiteral("#6ea8fe")), 2, Qt::DashLine);
+            ghost.setDashPattern({6, 4});
+            m_planGhost->setPen(ghost);
+            m_planGhost->setBrush(QColor(110, 168, 254, 18));
+            scene()->addItem(m_planGhost);
+        }
+        m_planGhost->setRect(QRectF(m_drawStart, QSizeF(0, 0)));
+        event->accept();
+        return;
+    }
+
     // Pan com botão do meio, ou arrastar o fundo vazio com botão esquerdo.
     const bool isMiddle = (event->button() == Qt::MiddleButton);
     const bool isBgLeft = (event->button() == Qt::LeftButton) && !itemAt(event->pos());
@@ -77,6 +109,12 @@ void LousaView::mousePressEvent(QMouseEvent* event)
 
 void LousaView::mouseMoveEvent(QMouseEvent* event)
 {
+    if (m_drawing && m_planGhost) {
+        const QPointF cur = mapToScene(event->pos());
+        m_planGhost->setRect(QRectF(m_drawStart, cur).normalized());
+        event->accept();
+        return;
+    }
     if (m_panning) {
         const QPoint delta = event->pos() - m_panLast;
         horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
@@ -90,6 +128,20 @@ void LousaView::mouseMoveEvent(QMouseEvent* event)
 
 void LousaView::mouseReleaseEvent(QMouseEvent* event)
 {
+    if (m_drawing && event->button() == Qt::LeftButton) {
+        m_drawing = false;
+        const QRectF zone = m_planGhost ? m_planGhost->rect() : QRectF();
+        if (m_planGhost) {
+            scene()->removeItem(m_planGhost);
+            delete m_planGhost;
+            m_planGhost = nullptr;
+        }
+        setPlanMode(false);
+        if (zone.width() > 50 && zone.height() > 50)
+            emit zoneDrawn(zone);
+        event->accept();
+        return;
+    }
     if (m_panning && (event->button() == Qt::LeftButton || event->button() == Qt::MiddleButton)) {
         m_panning = false;
         setCursor(Qt::ArrowCursor);

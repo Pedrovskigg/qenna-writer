@@ -2,6 +2,7 @@
 
 #include "CardItem.h"
 #include "ConnectionItem.h"
+#include "ZoneItem.h"
 
 #include <QGraphicsLineItem>
 #include <QGraphicsSceneMouseEvent>
@@ -192,6 +193,56 @@ ConnectionItem* LousaScene::findConnection(const QString& id) const
 {
     for (ConnectionItem* c : m_connections) if (c->connData().id == id) return c;
     return nullptr;
+}
+
+// ─── Zonas ──────────────────────────────────────────────────────────────────
+
+ZoneItem* LousaScene::addZone(const CanvasZone& data)
+{
+    auto* item = new ZoneItem(data);
+    addItem(item);
+    m_zones.append(item);
+    connect(item, &ZoneItem::dataChanged, this, [this](const CanvasZone& d) {
+        // Actualiza m_data na lista
+        for (ZoneItem* zi : m_zones)
+            if (zi->zoneData().id == d.id) { /* ZoneItem já atualizou internamente */ break; }
+        emit zoneDataChanged();
+    });
+    connect(item, &ZoneItem::removeRequested, this, [this](const QString& id) {
+        removeZone(id);
+    });
+    return item;
+}
+
+void LousaScene::removeZone(const QString& id)
+{
+    for (int i = 0; i < m_zones.size(); ++i) {
+        if (m_zones[i]->zoneData().id == id) {
+            removeItem(m_zones[i]);
+            delete m_zones[i];
+            m_zones.removeAt(i);
+            emit zoneDataChanged();
+            return;
+        }
+    }
+}
+
+void LousaScene::clearZones()
+{
+    for (auto* z : m_zones) { removeItem(z); delete z; }
+    m_zones.clear();
+}
+
+QList<CanvasZone> LousaScene::allZoneData() const
+{
+    QList<CanvasZone> out;
+    for (const ZoneItem* z : m_zones) {
+        CanvasZone d = z->zoneData();
+        const QPointF p = z->pos();
+        d.x = p.x(); d.y = p.y();
+        out.append(d);
+    }
+    return out;
 }
 
 // ─── Atualização de conexões quando card se move ─────────────────────────────

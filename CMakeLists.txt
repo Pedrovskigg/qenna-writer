@@ -135,6 +135,8 @@ qt_add_executable(mira-writing
     src/CardItem.h
     src/ConnectionItem.cpp
     src/ConnectionItem.h
+    src/ZoneItem.cpp
+    src/ZoneItem.h
     src/Quotes.cpp
     src/Quotes.h
     src/MainMenuDialog.cpp
