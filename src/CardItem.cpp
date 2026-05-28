@@ -11,6 +11,7 @@
 #include <QPainterPath>
 #include <QPolygonF>
 #include <QTextEdit>
+#include <QTextOption>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -28,27 +29,22 @@ const QColor kNotePalette[] = {
     QColor(QStringLiteral("#f8f8f8")),
 };
 
-// Widget que hospeda o QTextEdit dentro do proxy.
-// SEM layout — o QTextEdit ocupa 100% via resizeEvent, igual ao Mira 1 (flex:1).
-class CardTextWidget : public QWidget {
-public:
-    QTextEdit* edit = nullptr;
-    explicit CardTextWidget(QWidget* parent = nullptr) : QWidget(parent) {
-        setAttribute(Qt::WA_NoSystemBackground, true);
-        setAttribute(Qt::WA_TranslucentBackground, true);
-        edit = new QTextEdit(this);
-        edit->setFrameStyle(QFrame::NoFrame);
-        edit->setAcceptRichText(false);
-        edit->setStyleSheet(QStringLiteral(
-            "QTextEdit { background: transparent; border: none; }"));
-        edit->setPlaceholderText(QObject::tr("Escreva aqui..."));
-        edit->setFont(QFont(QStringLiteral("Segoe UI"), 12));
-    }
-    void resizeEvent(QResizeEvent*) override {
-        // padding: top=6, sides=10, bottom=4 — igual ao Mira 1 (padding:"6px 10px")
-        if (edit) edit->setGeometry(10, 6, width() - 20, height() - 10);
-    }
-};
+QTextEdit* makeCardEdit()
+{
+    auto* e = new QTextEdit();
+    e->setFrameStyle(QFrame::NoFrame);
+    e->setAcceptRichText(false);
+    e->setStyleSheet(QStringLiteral(
+        "QTextEdit { background: transparent; border: none; }"));
+    e->viewport()->setAutoFillBackground(false);
+    e->setPlaceholderText(QObject::tr("Escreva aqui..."));
+    e->setFont(QFont(QStringLiteral("Segoe UI"), 12));
+    // Alinhamento esquerdo explícito (sem isso Qt pode usar center em proxy)
+    QTextOption opt;
+    opt.setAlignment(Qt::AlignLeft);
+    e->document()->setDefaultTextOption(opt);
+    return e;
+}
 
 bool calcIsDark(const QColor& c) {
     return (c.red() * 299 + c.green() * 587 + c.blue() * 114) / 1000 < 128;
@@ -68,13 +64,12 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
     setAcceptHoverEvents(true);
     setPos(m_data.x, m_data.y);
 
-    // Proxy + widget de texto
-    auto* tw = new CardTextWidget();
-    tw->edit->setPlainText(m_data.content);
-    m_textEdit = tw->edit;
+    // QTextEdit diretamente no proxy — sem wrapper, sem layout, sem ambiguidade.
+    m_textEdit = makeCardEdit();
+    m_textEdit->setPlainText(m_data.content);
 
     m_proxy = new QGraphicsProxyWidget(this);
-    m_proxy->setWidget(tw);
+    m_proxy->setWidget(m_textEdit);
     m_proxy->setZValue(1.0);
 
     updateProxyGeometry();
@@ -124,10 +119,12 @@ QPainterPath CardItem::shape() const
 void CardItem::updateProxyGeometry()
 {
     if (!m_proxy) return;
-    // Proxy cobre do header até 17px do fundo — deixa a zona do resize handle livre.
-    const qreal pw = m_data.width;
-    const qreal ph = qMax(20.0, m_data.height - kHeaderH - 17.0);
-    m_proxy->setPos(0, kHeaderH);
+    // pos absorve o padding (Mira 1: padding "6px 10px 20px")
+    // bottom: 17px de zona de resize + 4px de margem = 21px livres
+    constexpr qreal kPadH = 10.0, kPadTop = 6.0, kPadBot = 21.0;
+    m_proxy->setPos(kPadH, kHeaderH + kPadTop);
+    const qreal pw = qMax(10.0, m_data.width  - 2.0 * kPadH);
+    const qreal ph = qMax(10.0, m_data.height - kHeaderH - kPadTop - kPadBot);
     m_proxy->resize(pw, ph);
 }
 
