@@ -24,7 +24,7 @@
 #include <QGraphicsTextItem>
 #include <QGraphicsView>
 #include <QImage>
-#include <QInputDialog>
+#include <QKeyEvent>
 #include <QRadialGradient>
 #include <QRegularExpression>
 #include <QStyleOption>
@@ -102,6 +102,27 @@ public:
         QGraphicsTextItem::focusOutEvent(e);
         if (auto* card = dynamic_cast<CardItem*>(parentItem()))
             card->onTextEditFinished();
+    }
+};
+
+// Editor inline do título do card (note/comment). Uma linha: Enter/Esc encerram.
+class TitleEditItem : public QGraphicsTextItem {
+public:
+    explicit TitleEditItem(QGraphicsItem* p) : QGraphicsTextItem(p) {}
+protected:
+    void keyPressEvent(QKeyEvent* e) override {
+        if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter
+            || e->key() == Qt::Key_Escape) {
+            clearFocus();
+            e->accept();
+            return;
+        }
+        QGraphicsTextItem::keyPressEvent(e);
+    }
+    void focusOutEvent(QFocusEvent* e) override {
+        QGraphicsTextItem::focusOutEvent(e);
+        if (auto* card = dynamic_cast<CardItem*>(parentItem()))
+            card->onTitleEditFinished();
     }
 };
 
@@ -387,6 +408,51 @@ void CardItem::onTextEditFinished()
 {
     if (m_data.type == QStringLiteral("text") && m_textItem)
         m_textItem->setTextInteractionFlags(Qt::NoTextInteraction);
+}
+
+void CardItem::beginTitleEdit()
+{
+    if (m_data.type != QStringLiteral("note") && m_data.type != QStringLiteral("comment"))
+        return;
+    if (!m_titleEditor) {
+        m_titleEditor = new TitleEditItem(this);
+        m_titleEditor->setAcceptHoverEvents(false);
+        m_titleEditor->document()->setDocumentMargin(0);
+        m_titleEditor->setTextWidth(-1);  // uma linha (sem quebra)
+    }
+    QFont f(QStringLiteral("Segoe UI"), 9, QFont::Bold);
+    m_titleEditor->setFont(f);
+    m_titleEditor->setDefaultTextColor(contrastColor());
+    {
+        QSignalBlocker bl(m_titleEditor->document());
+        m_titleEditor->document()->setPlainText(m_data.title);
+    }
+    const qreal th = m_titleEditor->boundingRect().height();
+    m_titleEditor->setPos(20.0, (kHeaderH - th) / 2.0);
+    m_titleEditor->setVisible(true);
+    m_titleEditor->setTextInteractionFlags(Qt::TextEditorInteraction);
+
+    emit gestureStarted();  // snapshot p/ undo antes de mexer no título
+    m_editingTitle = true;
+    m_titleEditor->setFocus();
+    QTextCursor cur = m_titleEditor->textCursor();
+    cur.select(QTextCursor::Document);
+    m_titleEditor->setTextCursor(cur);
+    update();
+}
+
+void CardItem::onTitleEditFinished()
+{
+    if (!m_editingTitle || !m_titleEditor) return;
+    m_editingTitle = false;
+    const QString t = m_titleEditor->document()->toPlainText().simplified();
+    m_titleEditor->setTextInteractionFlags(Qt::NoTextInteraction);
+    m_titleEditor->setVisible(false);  // título passa a ser pintado pelo paint()
+    if (t != m_data.title) {
+        m_data.title = t;
+        emit dataChanged(m_data);
+    }
+    update();
 }
 
 void CardItem::setCardSelected(bool on)
@@ -1250,8 +1316,8 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
             p->drawEllipse(QPointF(gx + col*4.5, gy + row*4.5), 1.2, 1.2);
 
     // Título do card no header (entre o grip e os botões da direita).
-    // Duplo-clique no header abre o editor de título.
-    {
+    // Duplo-clique no header abre o editor inline; enquanto edita, não pinta o texto.
+    if (!m_editingTitle) {
         const qreal tx = 20.0;
         const qreal tw = qMax(10.0, w - 58.0 - tx);
         const QRectF titleRect(tx, 0, tw, kHeaderH);
@@ -1771,19 +1837,10 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
         e->accept();
         return;
     }
-    // note / comment: duplo-clique no header edita o título do card.
+    // note / comment: duplo-clique no header abre o editor inline do título.
     if ((m_data.type == QStringLiteral("note") || m_data.type == QStringLiteral("comment"))
         && e->pos().y() < kHeaderH) {
-        bool ok = false;
-        const QString t = QInputDialog::getText(
-            nullptr, tr("Título do card"), tr("Título:"),
-            QLineEdit::Normal, m_data.title, &ok);
-        if (ok) {
-            emit gestureStarted();
-            m_data.title = t.trimmed();
-            update();
-            emit dataChanged(m_data);
-        }
+        beginTitleEdit();
         e->accept();
         return;
     }

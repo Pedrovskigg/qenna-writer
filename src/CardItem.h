@@ -41,6 +41,9 @@ public:
     bool wheelScroll(int angleDeltaY);
     // Chamado pelo BodyTextItem do card de texto ao perder o foco (sai do modo edição).
     void onTextEditFinished();
+    // Edição inline do título (note/comment): abre a textbox direto no header.
+    void beginTitleEdit();
+    void onTitleEditFinished();   // chamado pelo editor de título ao perder o foco
 
     QRectF       boundingRect() const override;
     QPainterPath shape()        const override;
@@ -113,6 +116,8 @@ private:
     CanvasCard         m_data;
     QGraphicsRectItem* m_bodyClip = nullptr; // clipa o BodyTextItem ao corpo (note/comment/image)
     QGraphicsTextItem* m_textItem = nullptr; // note/comment textarea + image overlay
+    QGraphicsTextItem* m_titleEditor = nullptr; // editor inline do título (note/comment)
+    bool               m_editingTitle = false;
     QTextDocument*     m_richDoc  = nullptr; // conteúdo rico pintado (doc + character)
     QPixmap            m_pixmap;       // image + character photo
     bool               m_showDesc     = false;
