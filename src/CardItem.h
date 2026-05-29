@@ -19,6 +19,7 @@ public:
     CanvasCard cardData() const;
     void syncFromData();
     void setLinkedHtml(const QString& html);
+    void setCharacterPhoto(const QString& dataUrl); // re-carrega m_pixmap e repinta
     void setSnapping(bool active, const QColor& color = QColor());
     void toggleImageDesc(bool show);   // public: chamado pelo BodyTextItem
     // Chamado pelo LousaScene quando o card snapa em uma conexão:

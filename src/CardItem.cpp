@@ -130,12 +130,14 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
         } else if (isChar) {
             // Overlay do doc do personagem — rich text, read-only
             m_textItem->setTextInteractionFlags(Qt::NoTextInteraction);
-            // Limita largura das imagens ao card (padL=10 de cada lado)
-            const int maxImgW = qMax(10, qRound(m_data.width - 20.0));
-            const QString charHtml = m_data.content.isEmpty()
+            // Overlay do doc: texto sem imagens (QGraphicsTextItem não renderiza data-URL).
+            // Stripa <img> igual ao Mira 1 para o overlay do card.
+            static const QRegularExpression kImgTag(
+                QStringLiteral("<img[^>]*>"), QRegularExpression::CaseInsensitiveOption);
+            const QString docHtml = m_data.content.isEmpty()
                 ? QStringLiteral("<p style='color:rgba(255,255,255,0.55)'><em>Doc vazio</em></p>")
-                : htmlWithScaledImages(m_data.content, maxImgW);
-            m_textItem->setHtml(charHtml);
+                : QString(m_data.content).remove(kImgTag);
+            m_textItem->setHtml(docHtml);
         } else {
             m_textItem->setTextInteractionFlags(Qt::TextEditorInteraction);
             m_textItem->document()->setPlainText(m_data.content);
@@ -257,6 +259,13 @@ void CardItem::applyTextColor()
 void CardItem::setLinkedHtml(const QString& html)
 {
     m_data.content = html;
+    update();
+}
+
+void CardItem::setCharacterPhoto(const QString& dataUrl)
+{
+    m_data.photoDataUrl = dataUrl;
+    loadCharacterPhoto();
     update();
 }
 

@@ -14,6 +14,7 @@
 #include <QCloseEvent>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QTimer>
 #include <QColorDialog>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -521,13 +522,21 @@ void LousaPanel::refreshDocCards()
     if (!m_scene || !m_projectModel) return;
     for (CardItem* item : m_scene->cardItems()) {
         const CanvasCard d = item->cardData();
-        if (d.type != QStringLiteral("doc") && d.type != QStringLiteral("character")) continue;
-        const DrawerItem* di = m_projectModel->findDrawerItem(d.linkedItemId);
-        if (!di) continue;
-        if (d.type == QStringLiteral("doc"))
-            item->setLinkedHtml(di->html);
-        else
-            item->setLinkedHtml(di->html); // photo já está em photoDataUrl
+        if (d.type == QStringLiteral("doc")) {
+            const DrawerItem* di = m_projectModel->findDrawerItem(d.linkedItemId);
+            if (di) item->setLinkedHtml(di->html);
+        } else if (d.type == QStringLiteral("character")) {
+            const DrawerItem* di = m_projectModel->findDrawerItem(d.linkedItemId);
+            if (di) {
+                item->setLinkedHtml(di->html);
+                // Re-busca a foto do ElementsStore se não estiver salva
+                if (d.photoDataUrl.isEmpty() && m_elementsStore && !di->elementId.isEmpty()) {
+                    if (const Element* el = m_elementsStore->findElement(di->elementId)) {
+                        item->setCharacterPhoto(el->image);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -552,6 +561,7 @@ static CanvasCard cardFromJson(const QJsonObject& o)
     c.color   = QColor(o.value(QStringLiteral("color")).toString(QStringLiteral("#ffd060")));
     if (!c.color.isValid()) c.color = QColor(QStringLiteral("#ffd060"));
     c.description     = o.value(QStringLiteral("description")).toString();
+    c.photoDataUrl    = o.value(QStringLiteral("photoDataUrl")).toString();
     c.linkedItemId    = o.value(QStringLiteral("linkedItemId")).toString();
     c.linkedDrawerKey = o.value(QStringLiteral("linkedDrawerName")).toString();
     return c;
@@ -569,7 +579,8 @@ static QJsonObject cardToJson(const CanvasCard& c)
     o.insert(QStringLiteral("title"),           c.title);
     o.insert(QStringLiteral("content"),         c.content);
     o.insert(QStringLiteral("color"),           c.color.name());
-    o.insert(QStringLiteral("description"),      c.description);
+    o.insert(QStringLiteral("description"),   c.description);
+    o.insert(QStringLiteral("photoDataUrl"), c.photoDataUrl);
     o.insert(QStringLiteral("linkedItemId"),    c.linkedItemId);
     o.insert(QStringLiteral("linkedDrawerName"), c.linkedDrawerKey);
     return o;
@@ -626,6 +637,8 @@ void LousaPanel::load()
         z.color  = QColor(o.value(QStringLiteral("color")).toString(QStringLiteral("#6ea8fe")));
         if (!z.id.isEmpty()) m_scene->addZone(z);
     }
+    // Re-busca HTML e foto dos cards vinculados ao projeto
+    QTimer::singleShot(0, this, [this]() { refreshDocCards(); });
     refreshEmptyState();
 }
 
