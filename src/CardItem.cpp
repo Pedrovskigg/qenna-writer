@@ -139,18 +139,25 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
                     emit dataChanged(m_data);
                 });
             } else {
-                // Mira 1: position absolute inset:0, padding:34px 10px 10px,
-                // fontSize:13, lineHeight:1.6, color:#fff, background rgba(0,0,0,0.10)
+                // Mira 1: fontSize:13, lineHeight:1.6, color:#fff, text-align:left
+                // QTextDocument não respeita padding de <div> — usamos documentMargin + pos (0,34)
+                // setDefaultStyleSheet sobrescreve estilos herdados do doc (centralização, etc.)
                 static const QRegularExpression kImg(
                     QStringLiteral("<img[^>]*>"), QRegularExpression::CaseInsensitiveOption);
-                const QString inner = m_data.content.isEmpty()
-                    ? QStringLiteral("<em style='color:rgba(255,255,255,0.55)'>Doc vazio</em>")
+                const QString html = m_data.content.isEmpty()
+                    ? QStringLiteral("<p><em>Doc vazio</em></p>")
                     : QString(m_data.content).remove(kImg);
-                // Wrap com padding via HTML: 34px topo (protege overlay de nome), 10px lados
-                const QString wrapped = QStringLiteral(
-                    "<div style='padding:34px 10px 10px;font-size:13px;"
-                    "line-height:1.6;color:#ffffff;'>%1</div>").arg(inner);
-                m_textItem->setHtml(wrapped);
+                m_textItem->document()->setDefaultStyleSheet(QStringLiteral(
+                    "body, p, div, span, h1, h2, h3, h4, h5, h6, li {"
+                    "  font-family: 'Segoe UI', sans-serif;"
+                    "  font-size: 13px;"
+                    "  color: #ffffff;"
+                    "  text-align: left;"
+                    "}"
+                    "p { margin: 0 0 4px 0; line-height: 160%; }"));
+                m_textItem->document()->setDocumentMargin(0); // margem via pos
+                m_textItem->setHtml(html);
+                m_textItem->setDefaultTextColor(Qt::white);
             }
         } else {
             // note/comment: editável, clippado ao shape do card via ItemClipsChildrenToShape
@@ -229,13 +236,16 @@ void CardItem::updateTextItem()
 
     if (m_textItem) {
         if (isChar) {
-            // Mira 1: inset:0 — cobre o card inteiro; padding via HTML
+            // Posiciona abaixo do overlay de nome (y=34, igual ao padding-top do Mira 1)
+            // com 10px de margem lateral via documentMargin
+            const qreal charW = qMax(10.0, m_data.width - 20.0); // 10px cada lado
+            m_textItem->document()->setDocumentMargin(0);
             if (auto* bti = static_cast<BodyTextItem*>(m_textItem)) {
-                bti->bodyW = m_data.width;
-                bti->bodyH = m_data.height;
+                bti->bodyW = charW;
+                bti->bodyH = qMax(10.0, m_data.height - 34.0 - 10.0);
             }
-            m_textItem->setTextWidth(m_data.width);
-            m_textItem->setPos(0.0, -m_scrollOffset);
+            m_textItem->setTextWidth(charW);
+            m_textItem->setPos(10.0, 34.0 - m_scrollOffset);
         } else if (isImg) {
             if (auto* bti = static_cast<BodyTextItem*>(m_textItem)) {
                 bti->bodyW = tw; bti->bodyH = th;
@@ -287,12 +297,10 @@ void CardItem::setLinkedHtml(const QString& html)
     if (m_textItem && m_data.type == QStringLiteral("character")) {
         static const QRegularExpression kImg(
             QStringLiteral("<img[^>]*>"), QRegularExpression::CaseInsensitiveOption);
-        const QString inner = html.isEmpty()
-            ? QStringLiteral("<em style='color:rgba(255,255,255,0.55)'>Doc vazio</em>")
+        const QString clean = html.isEmpty()
+            ? QStringLiteral("<p><em>Doc vazio</em></p>")
             : QString(html).remove(kImg);
-        m_textItem->setHtml(QStringLiteral(
-            "<div style='padding:34px 10px 10px;font-size:13px;"
-            "line-height:1.6;color:#ffffff;'>%1</div>").arg(inner));
+        m_textItem->setHtml(clean);
     }
     update();
 }
@@ -367,22 +375,15 @@ void CardItem::wheelEvent(QGraphicsSceneWheelEvent* e)
     // note/comment: sempre scrollável; image/character: só quando overlay aberto
     if ((isImg || isChar) && !m_showDesc) { e->ignore(); return; }
 
+    const qreal baseY  = isChar ? 34.0 : (isImg ? 34.0 : kHeaderH + 4.0);
+    const qreal cardH  = m_data.height - baseY - (isChar ? 10.0 : 17.0);
     const qreal contentH = m_textItem->boundingRect().height();
-    const qreal cardH = isChar ? m_data.height
-                                : (m_data.height - (isImg ? 34.0 : kHeaderH + 4.0) - 17.0);
     const qreal maxScroll = qMax(0.0, contentH - cardH);
     if (maxScroll < 1.0) { e->ignore(); return; }
 
     const qreal delta = (e->delta() / 120.0) * 24.0;
     m_scrollOffset = qBound(0.0, m_scrollOffset - delta, maxScroll);
-
-    // Reposiciona usando a mesma lógica do updateTextItem
-    if (isChar)
-        m_textItem->setPos(0.0, -m_scrollOffset);
-    else if (isImg)
-        m_textItem->setPos(10.0, 34.0 - m_scrollOffset);
-    else
-        m_textItem->setPos(10.0, kHeaderH + 4.0 - m_scrollOffset);
+    m_textItem->setPos(10.0, baseY - m_scrollOffset);
     e->accept();
 }
 
@@ -587,6 +588,13 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
             p->drawText(QRectF(0,0,w,h), Qt::AlignCenter, initials);
         }
         p->restore();
+
+        // Mira 1: background rgba(0,0,0,0.10) sobre a foto quando overlay do doc aberto
+        if (m_showDesc) {
+            p->setPen(Qt::NoPen);
+            p->setBrush(QColor(0, 0, 0, 25)); // ~0.10 opacity
+            p->drawRect(QRectF(34, 0, w, h));  // só abaixo do overlay de nome
+        }
 
         // Overlay de nome no topo (se tem título)
         if (!m_data.title.isEmpty()) {
