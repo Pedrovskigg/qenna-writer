@@ -315,3 +315,9 @@ bool MarkerStore::hasMarker(const QString& docKey, const QString& id) const
 {
     return !findById(docKey, id).id.isEmpty();
 }
+
+bool MarkerStore::hasMarkersForKey(const QString& docKey) const
+{
+    auto it = m_entries.constFind(docKey);
+    return it != m_entries.constEnd() && !it->isEmpty();
+}

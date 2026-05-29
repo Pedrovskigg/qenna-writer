@@ -99,6 +99,10 @@
 #include "VariationBar.h"
 
 namespace {
+// Documentos com mais de este número de caracteres têm rehighlight do spell
+// diferido por 400ms para não bloquear a UI ao abrir o doc.
+constexpr int kLargeDocCharThreshold = 30'000;
+
 // Parseia uma cor no formato "rgba(r,g,b,a)" (o resto fica como hex). A versão
 // do QColor antes do Qt 6.6 não cobre essa sintaxe.
 QColor parseColor(const QString& s)
@@ -424,9 +428,17 @@ void MainWindow::setupEditor()
     editor->setSpellChecker(spellChecker);
     spellHighlighter = new SpellHighlighter(editor->document(), spellChecker, this);
     // Durante o load de um doc novo, o highlight roda numa thread única e pode
-    // engasgar — suspende durante o load, reaplica em seguida.
+    // engasgar — para docs grandes, difere o rehighlight pra depois da UI renderizar.
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
-        if (spellHighlighter) spellHighlighter->rehighlight();
+        if (!spellHighlighter || !editor) return;
+        const int charCount = editor->document()->characterCount();
+        if (charCount > kLargeDocCharThreshold) {
+            QTimer::singleShot(400, this, [this]() {
+                if (spellHighlighter) spellHighlighter->rehighlight();
+            });
+        } else {
+            spellHighlighter->rehighlight();
+        }
     });
 
     // Mini-toolbar de seleção (infra para CreateDocFrom, Marcadores, Glossário).
@@ -1954,6 +1966,10 @@ void MainWindow::setAvailableFontFamilies(const QStringList &families)
 
 void MainWindow::applyEditorStyle()
 {
+    // Suspende o spell checker durante as operações em massa — sem isso, cada
+    // mergeCharFormat dispara highlightBlock em todos os blocos afetados.
+    if (spellHighlighter) spellHighlighter->suspend();
+
     QFont font(currentFontFamily, currentFontSize);
     editor->setFont(font);
     editor->document()->setDefaultFont(font);
@@ -2006,6 +2022,8 @@ void MainWindow::applyEditorStyle()
     // Força fonte/tamanho em todos os fragmentos — charFormats inline do HTML
     // (carregados do Mira 1) sobrepõem setDefaultFont e ignoram a escolha do usuário.
     applyEditorFont();
+
+    if (spellHighlighter) spellHighlighter->resume();
 }
 
 void MainWindow::applyTextColor()
@@ -2019,11 +2037,26 @@ void MainWindow::applyTextColor()
     p.setColor(QPalette::Text, textColor);
     editor->setPalette(p);
 
-    // Itera por fragmentos pra preservar foreground custom dos markers:
-    // onde tem background (highlight), o foreground vem de pickContrastingFg
-    // baseado na cor do highlight; nos demais, usa textColor do tema.
     const bool wasModified = editor->document()->isModified();
     QTextDocument* doc = editor->document();
+
+    // Fast path: sem markers salvos para este doc, aplica foreground globalmente
+    // num único mergeCharFormat em vez de iterar fragmento por fragmento.
+    const QString activeKey = editorHost ? editorHost->activeKey() : QString();
+    const bool hasMarkers = markerStore && markerStore->hasMarkersForKey(activeKey);
+    if (!hasMarkers) {
+        QTextCursor c(doc);
+        c.select(QTextCursor::Document);
+        QTextCharFormat fmt;
+        fmt.setForeground(textColor);
+        c.mergeCharFormat(fmt);
+        doc->setModified(wasModified);
+        if (editor->viewport()) editor->viewport()->update();
+        return;
+    }
+
+    // Slow path: doc tem markers — itera por fragmento para preservar o foreground
+    // contrastante (preto/branco) sobre os highlights coloridos.
     for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
         for (auto it = block.begin(); !it.atEnd(); ++it) {
             const QTextFragment frag = it.fragment();
@@ -2052,19 +2085,12 @@ void MainWindow::applyEditorFont()
     if (!editor || !editor->document()) return;
     const bool wasModified = editor->document()->isModified();
     QTextDocument* doc = editor->document();
-    for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
-        for (auto it = block.begin(); !it.atEnd(); ++it) {
-            const QTextFragment frag = it.fragment();
-            if (!frag.isValid() || frag.length() == 0) continue;
-            QTextCursor c(doc);
-            c.setPosition(frag.position());
-            c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
-            QTextCharFormat fmt;
-            fmt.setFontFamilies({currentFontFamily});
-            fmt.setFontPointSize(currentFontSize);
-            c.mergeCharFormat(fmt);
-        }
-    }
+    QTextCursor c(doc);
+    c.select(QTextCursor::Document);
+    QTextCharFormat fmt;
+    fmt.setFontFamilies({currentFontFamily});
+    fmt.setFontPointSize(currentFontSize);
+    c.mergeCharFormat(fmt);
     doc->setModified(wasModified);
 }
 

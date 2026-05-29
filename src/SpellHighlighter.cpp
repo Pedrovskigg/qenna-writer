@@ -31,7 +31,7 @@ void SpellHighlighter::setEnabled(bool enabled)
 
 void SpellHighlighter::highlightBlock(const QString& text)
 {
-    if (!m_enabled || !m_checker || !m_checker->isEnabled()) return;
+    if (!m_enabled || m_suspended || !m_checker || !m_checker->isEnabled()) return;
     if (text.isEmpty()) return;
 
     auto it = m_wordRe.globalMatch(text);

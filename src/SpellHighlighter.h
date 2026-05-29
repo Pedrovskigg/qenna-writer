@@ -15,6 +15,12 @@ public:
     void setEnabled(bool enabled);
     bool isEnabled() const { return m_enabled; }
 
+    // suspend/resume: pausa highlightBlock sem disparar rehighlight.
+    // Usar em torno de operações que modificam o documento em massa;
+    // chamar rehighlight() manualmente após resume() se necessário.
+    void suspend() { m_suspended = true; }
+    void resume()  { m_suspended = false; }
+
 protected:
     void highlightBlock(const QString& text) override;
 
@@ -23,4 +29,5 @@ private:
     QTextCharFormat m_errorFormat;
     QRegularExpression m_wordRe;
     bool m_enabled = true;
+    bool m_suspended = false;
 };

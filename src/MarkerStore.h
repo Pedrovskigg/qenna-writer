@@ -66,6 +66,7 @@ public:
     // Lookup direto (usado pelo hover).
     Entry findById(const QString& docKey, const QString& id) const;
     bool hasMarker(const QString& docKey, const QString& id) const;
+    bool hasMarkersForKey(const QString& docKey) const;
 
 signals:
     void markersChanged(QString docKey);
