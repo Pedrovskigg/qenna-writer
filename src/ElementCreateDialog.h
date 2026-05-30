@@ -18,12 +18,14 @@ public:
     ElementCreateDialog(const QString& elementType, QWidget* parent = nullptr);
 
     // Pré-preencher pra modo de edição.
-    void setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator = false);
+    void setInitial(const QString& title, const QString& role, const QString& imageDataUrl,
+                    bool narrator = false, const QString& trackMode = QString());
 
     QString title() const;
     QString role() const;
     QString imageDataUrl() const { return m_imageDataUrl; }
     bool narrator() const;
+    QString trackMode() const;  // "" auto | "on" | "off" (trilha na linha do tempo)
 
 private slots:
     void pickImage();
@@ -37,6 +39,7 @@ private:
 
     QLineEdit* m_titleEdit;
     QComboBox* m_roleCombo;
+    QComboBox* m_trackCombo = nullptr;
     QCheckBox* m_narratorCheck;
     QLabel* m_imagePreview;
     QPushButton* m_pickImageBtn;

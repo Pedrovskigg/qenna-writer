@@ -6,6 +6,10 @@
 #include <QGraphicsObject>
 #include <QPointF>
 
+// Evento da linha do tempo renderizado como PONTO interativo:
+//  - hover  → rótulo flutuante (título + marcação temporal)
+//  - clique → popover com a descrição (e vínculos)
+//  - duplo  → abre o popup de edição
 class TimelineEventItem : public QGraphicsObject {
     Q_OBJECT
 public:
@@ -16,29 +20,32 @@ public:
     void setEventData(const TimelineEvent& d);
     void setTimelineColor(const QColor& c);
 
+    void setOpen(bool open);
+    bool isOpen() const { return m_open; }
+
     QRectF       boundingRect() const override;
     QPainterPath shape()        const override;
     void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*) override;
 
-    QPointF pinPos() const;
-    qreal   currentH() const; // altura real (collapsed ou expanded)
-
-    // Rola a descricao quando expandido. Retorna true se o scroll foi consumido.
+    // Rola a descrição quando o popover está aberto. true = scroll consumido.
     bool wheelScroll(int angleDeltaY);
 
-    static constexpr qreal kW        = 120.0;
-    static constexpr qreal kH        =  64.0; // altura colapsada
-    static constexpr qreal kHexpMin  = 120.0; // altura expandida mínima
-    static constexpr qreal kRadius   =   8.0;
-    static constexpr qreal kShadow   =   3.0;
+    // Raio do ponto: eventos autorais são cheios; eventos auto (presença) menores.
+    qreal dotRadius() const { return m_data.autoEvent ? kDotAutoR : kDotR; }
+
+    static constexpr qreal kDotR     = 7.0;   // ponto autoral
+    static constexpr qreal kDotAutoR = 4.5;   // ponto auto (presença)
+    static constexpr qreal kCardW    = 248.0; // largura do popover
+    static constexpr qreal kCardHMax = 220.0; // altura máxima do popover
 
 signals:
     void dataChanged(const TimelineEvent& data);
     void deleteRequested(const QString& id);
     void positionChanged(const QString& id);
-    void geometryChanged(const QString& id); // expand/resize
+    void geometryChanged(const QString& id);   // open/close → revalida bounds
     void editRequested(const QString& id);
-    void pinDragStarted(const QString& fromId, const QPointF& pinScenePos);
+    void movedByUser(const QString& id);        // soltou após arrastar → snap no rail
+    void openToggled(const QString& id, bool open);
     void exportAsDocRequested(TimelineEvent data);
 
 protected:
@@ -46,7 +53,7 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* e)         override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* e)      override;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)  override;
-    void hoverMoveEvent(QGraphicsSceneHoverEvent* e)         override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent* e)        override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* e)        override;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent* e) override;
     QVariant itemChange(GraphicsItemChange change,
@@ -54,23 +61,19 @@ protected:
 
 private:
     QColor effectiveColor() const;
-    QColor textColor() const;
-    bool   isOnPin(const QPointF& localPos) const;
-    bool   isOnResizeGrip(const QPointF& localPos) const;
-    QRectF resizeGripRect() const;
-    void   setExpandedH(qreal h);
-    qreal  descContentH() const; // altura total do texto da descricao
-    qreal  descVisH()     const; // altura visivel da area de descricao
-    void   paintScrollbar(QPainter* p) const;
+    QString labelText() const;
+    QRectF  labelRect() const;   // rótulo de hover (acima do ponto)
+    QRectF  cardRect()  const;   // popover (abaixo do ponto)
+    qreal   descVisH()     const;
+    qreal   descContentH() const;
+    void    paintScrollbar(QPainter* p, const QRectF& card) const;
 
     TimelineEvent m_data;
     QColor        m_timelineColor{QStringLiteral("#6c8ebf")};
 
-    bool   m_draggingPin      = false;
-    bool   m_hoverPin         = false;
-    bool   m_hoverGrip        = false;
-    bool   m_resizing         = false;
-    QPointF m_resizeDragStart;
-    qreal  m_resizeDragStartH = 0.0;
-    qreal  m_scrollOffset     = 0.0;
+    bool    m_hover        = false;
+    bool    m_open         = false;
+    bool    m_dragMoved    = false;
+    QPointF m_pressScenePos;
+    qreal   m_scrollOffset = 0.0;
 };

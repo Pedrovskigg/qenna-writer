@@ -40,13 +40,22 @@ QPainterPath TimelineConnItem::computePath() const
     auto* to   = m_scene->findEvent(m_data.toEventId);
     if (!from || !to) return QPainterPath();
 
-    const QPointF a = from->mapToScene(from->pinPos());
-    const QPointF b = to->mapToScene(QPointF(-2.0, to->currentH() / 2.0));
+    const QPointF a = from->mapToScene(QPointF(0, 0));
+    const QPointF b = to->mapToScene(QPointF(0, 0));
+
+    // recua as pontas para a borda do ponto, p/ não nascerem dentro do círculo
+    const QPointF raw = b - a;
+    const qreal   len = std::sqrt(raw.x() * raw.x() + raw.y() * raw.y());
+    if (len < 1.0) { QPainterPath pp; pp.moveTo(a); return pp; }
+    const QPointF u  = raw / len;
+    const QPointF a2 = a + u * (from->dotRadius() + 2.0);
+    const QPointF b2 = b - u * (to->dotRadius() + 2.0);
 
     QPainterPath path;
-    path.moveTo(a);
-    const qreal dx = qAbs(b.x() - a.x()) * 0.55;
-    path.cubicTo(a + QPointF(dx, 0), b - QPointF(dx, 0), b);
+    path.moveTo(a2);
+    const qreal dx = qAbs(b2.x() - a2.x()) * 0.4;
+    const qreal dy = (b2.y() - a2.y()) * 0.2;
+    path.cubicTo(a2 + QPointF(dx, dy), b2 - QPointF(dx, dy), b2);
     return path;
 }
 

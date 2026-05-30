@@ -49,6 +49,7 @@ QJsonObject sceneToJson(const Scene& s) {
     if (!s.activeVariationId.isEmpty()) {
         o.insert(QStringLiteral("activeVariationId"), s.activeVariationId);
     }
+    if (!s.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), s.timeMarker);
     return o;
 }
 
@@ -60,6 +61,7 @@ Scene sceneFromJson(const QJsonObject& o) {
     const QJsonArray vars = o.value(QStringLiteral("variations")).toArray();
     for (const auto& vv : vars) s.variations.append(variationFromJson(vv.toObject()));
     s.activeVariationId = jsonString(o.value(QStringLiteral("activeVariationId")));
+    s.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     return s;
 }
 
@@ -75,6 +77,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
         for (const auto& s : c.scenes) arr.append(sceneToJson(s));
         o.insert(QStringLiteral("scenes"), arr);
     }
+    if (!c.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), c.timeMarker);
     return o;
 }
 
@@ -87,6 +90,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     c.order = o.value(QStringLiteral("order")).toInt(0);
     const QJsonArray scenes = o.value(QStringLiteral("scenes")).toArray();
     for (const auto& sv : scenes) c.scenes.append(sceneFromJson(sv.toObject()));
+    c.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     return c;
 }
 
@@ -875,6 +879,17 @@ bool ProjectModel::updateChapterTitle(const QString& chapterId, const QString& t
         if (c.id != chapterId) continue;
         if (c.title == title) return true;
         c.title = title;
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterTimeMarker(const QString& chapterId, const QString& marker) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.timeMarker == marker) return true;
+        c.timeMarker = marker;
         emit chaptersChanged();
         return true;
     }

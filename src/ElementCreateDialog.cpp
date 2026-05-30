@@ -133,6 +133,7 @@ void ElementCreateDialog::buildUi()
         m_roleCombo = new QComboBox(this);
         m_roleCombo->setEditable(true);
         m_roleCombo->addItem(tr("Protagonista"), QStringLiteral("PROTAGONISTA"));
+        m_roleCombo->addItem(tr("Deuteragonista"), QStringLiteral("DEUTERAGONISTA"));
         m_roleCombo->addItem(tr("Coadjuvante"), QStringLiteral("COADJUVANTE"));
         m_roleCombo->addItem(tr("Antagonista"), QStringLiteral("ANTAGONISTA"));
         m_roleCombo->addItem(tr("Contraponto"), QStringLiteral("CONTRAPONTO"));
@@ -145,6 +146,14 @@ void ElementCreateDialog::buildUi()
         m_narratorCheck = new QCheckBox(tr("Narrador (voz em 1ª pessoa)"), this);
         m_narratorCheck->setObjectName(QStringLiteral("ecdNarratorCheck"));
         outer->addWidget(m_narratorCheck);
+
+        auto* trackLabel = new QLabel(tr("Trilha na linha do tempo:"), this);
+        outer->addWidget(trackLabel);
+        m_trackCombo = new QComboBox(this);
+        m_trackCombo->addItem(tr("Automático (pelo papel)"), QString());
+        m_trackCombo->addItem(tr("Sempre acompanhar"),       QStringLiteral("on"));
+        m_trackCombo->addItem(tr("Nunca acompanhar"),        QStringLiteral("off"));
+        outer->addWidget(m_trackCombo);
     }
 
     outer->addStretch();
@@ -204,7 +213,7 @@ void ElementCreateDialog::buildUi()
         ));
 }
 
-void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator)
+void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator, const QString& trackMode)
 {
     if (m_titleEdit) m_titleEdit->setText(title);
     if (m_roleCombo) {
@@ -213,6 +222,10 @@ void ElementCreateDialog::setInitial(const QString& title, const QString& role, 
         else m_roleCombo->setEditText(role);
     }
     if (m_narratorCheck) m_narratorCheck->setChecked(narrator);
+    if (m_trackCombo) {
+        const int idx = m_trackCombo->findData(trackMode);
+        m_trackCombo->setCurrentIndex(idx >= 0 ? idx : 0);
+    }
     m_imageDataUrl = imageDataUrl;
     updatePreview();
     if (m_okBtn) m_okBtn->setText(tr("Salvar"));
@@ -267,4 +280,9 @@ QString ElementCreateDialog::role() const
 bool ElementCreateDialog::narrator() const
 {
     return m_narratorCheck ? m_narratorCheck->isChecked() : false;
+}
+
+QString ElementCreateDialog::trackMode() const
+{
+    return m_trackCombo ? m_trackCombo->currentData().toString() : QString();
 }

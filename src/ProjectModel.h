@@ -18,6 +18,7 @@ struct Scene {
     int order = 0;
     QList<Variation> variations;
     QString activeVariationId;
+    QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
 };
 
 struct Chapter {
@@ -27,6 +28,7 @@ struct Chapter {
     QString file;
     int order = 0;
     QList<Scene> scenes;
+    QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
 };
 
 struct Manuscript {
@@ -180,6 +182,7 @@ public:
     void addChapter(const Chapter& chapter);
     bool updateChapterScenes(const QString& chapterId, const QList<Scene>& scenes);
     bool updateChapterTitle(const QString& chapterId, const QString& title);
+    bool updateChapterTimeMarker(const QString& chapterId, const QString& marker);
     bool removeChapter(const QString& chapterId);
     bool reorderChapter(const QString& chapterId, int targetIndex);
     bool updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title);

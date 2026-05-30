@@ -170,7 +170,6 @@ TimelineEvent TimelineEventPopup::eventData() const
     e.title       = m_title  ? m_title->text().trimmed()         : QString();
     e.timeMarker  = m_marker ? m_marker->text().trimmed()        : QString();
     e.description = m_desc   ? m_desc->toPlainText().trimmed()   : QString();
-    e.shape       = QStringLiteral("square");
     e.color       = m_color;
     if (m_timelineCombo)
         e.timelineId = m_timelineCombo->currentData().toString();

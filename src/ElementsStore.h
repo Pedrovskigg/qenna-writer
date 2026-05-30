@@ -21,6 +21,7 @@ struct Element {
     QString icon;
     QString image;            // data URL JPEG base64
     QString role;             // PROTAGONISTA, COADJUVANTE, etc. (Mira 2 extension)
+    QString trackMode;        // "" = auto por role | "on" = sempre | "off" = nunca (trilha da linha do tempo)
     bool narrator = false;
     QString textConcordance;  // letra única usada na detecção (compat Mira 1)
     QStringList aliases;

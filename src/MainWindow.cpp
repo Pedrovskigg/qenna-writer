@@ -42,6 +42,8 @@
 #include <QWidget>
 
 #include <QDir>
+#include <QDialogButtonBox>
+#include <QFormLayout>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QLocale>
@@ -103,6 +105,53 @@ namespace {
 // Documentos com mais de este número de caracteres têm rehighlight do spell
 // diferido por 400ms para não bloquear a UI ao abrir o doc.
 constexpr int kLargeDocCharThreshold = 30'000;
+
+// Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional).
+// Usado tanto na criação quanto na edição. Retorna false se cancelado.
+bool promptChapterDialog(QWidget* parent, bool editMode,
+                         QString* title, QString* marker)
+{
+    QDialog dlg(parent);
+    dlg.setWindowTitle(editMode ? QObject::tr("Editar capítulo")
+                                : QObject::tr("Novo capítulo"));
+    dlg.setMinimumWidth(340);
+    if (parent) dlg.setStyleSheet(parent->styleSheet());
+
+    auto* root = new QVBoxLayout(&dlg);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(10);
+
+    auto* form = new QFormLayout;
+    auto* titleEdit = new QLineEdit(*title, &dlg);
+    titleEdit->setPlaceholderText(QObject::tr("Título do capítulo"));
+    auto* markerEdit = new QLineEdit(*marker, &dlg);
+    markerEdit->setPlaceholderText(QObject::tr("ex.: Dia 5, Verão de 1999, há 10 anos…"));
+    form->addRow(QObject::tr("Título:"), titleEdit);
+    form->addRow(QObject::tr("Quando se passa:"), markerEdit);
+    root->addLayout(form);
+
+    auto* hint = new QLabel(QObject::tr("O marcador temporal é opcional e alimenta o "
+                                        "eixo História da linha do tempo."), &dlg);
+    hint->setWordWrap(true);
+    hint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+    root->addWidget(hint);
+
+    auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
+                                                         : QObject::tr("Criar"));
+    btns->button(QDialogButtonBox::Cancel)->setText(QObject::tr("Cancelar"));
+    QObject::connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    QObject::connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    root->addWidget(btns);
+
+    titleEdit->setFocus();
+    if (dlg.exec() != QDialog::Accepted) return false;
+    const QString t = titleEdit->text().trimmed();
+    if (t.isEmpty()) return false;
+    *title  = t;
+    *marker = markerEdit->text().trimmed();
+    return true;
+}
 
 // Parseia uma cor no formato "rgba(r,g,b,a)" (o resto fica como hex). A versão
 // do QColor antes do Qt 6.6 não cobre essa sintaxe.
@@ -949,14 +998,13 @@ void MainWindow::setupEditor()
         if (!projectModel) return;
         const QString msId = projectModel->activeManuscriptId();
         if (msId.isEmpty()) return;
-        bool ok = false;
-        const QString title = QInputDialog::getText(this, tr("Novo capítulo"),
-            tr("Título do capítulo:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        if (!ok || title.isEmpty()) return;
+        QString title, marker;
+        if (!promptChapterDialog(this, false, &title, &marker)) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
+        c.timeMarker = marker;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -1320,6 +1368,7 @@ void MainWindow::setupEditor()
                     leftBar->clearSelection();
                 });
                 timelinePanel->setProjectModel(projectModel);
+                timelinePanel->setElementsStore(elementsStore);
                 if (!projectRoot.isEmpty())
                     timelinePanel->setProjectRoot(projectRoot);
             }
@@ -1400,14 +1449,13 @@ void MainWindow::setupEditor()
     });
     connect(manuscriptPanel, &ManuscriptPanel::newChapterRequested, this, [this](const QString& manuscriptId) {
         if (manuscriptId.isEmpty()) return;
-        bool ok = false;
-        const QString title = QInputDialog::getText(this, tr("Novo capítulo"),
-            tr("Título do capítulo:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        if (!ok || title.isEmpty()) return;
+        QString title, marker;
+        if (!promptChapterDialog(this, false, &title, &marker)) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = manuscriptId;
         c.title = title;
+        c.timeMarker = marker;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, manuscriptId);
         }
@@ -1418,11 +1466,11 @@ void MainWindow::setupEditor()
     connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
         const Chapter* c = projectModel->findChapter(chapterId);
         if (!c) return;
-        bool ok = false;
-        const QString newTitle = QInputDialog::getText(this, tr("Renomear capítulo"),
-            tr("Novo título:"), QLineEdit::Normal, c->title, &ok).trimmed();
-        if (!ok || newTitle.isEmpty()) return;
+        QString newTitle = c->title;
+        QString newMarker = c->timeMarker;
+        if (!promptChapterDialog(this, true, &newTitle, &newMarker)) return;
         projectModel->updateChapterTitle(chapterId, newTitle);
+        projectModel->updateChapterTimeMarker(chapterId, newMarker);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteChapterRequested, this, [this](const QString& chapterId) {
@@ -1583,6 +1631,7 @@ void MainWindow::setupEditor()
             elem.role = dlg.role();
             elem.image = dlg.imageDataUrl();
             elem.narrator = dlg.narrator();
+            elem.trackMode = dlg.trackMode();
             const QString elementId = elementsStore->addElement(elem);
             // Cria drawer item vinculado
             DrawerItem it;
@@ -1638,19 +1687,22 @@ void MainWindow::setupEditor()
         QString imageDataUrl;
         QString role = item->role;
         bool narratorVal = false;
+        QString trackModeVal;
         if (!item->elementId.isEmpty() && elementsStore) {
             if (const Element* e = elementsStore->findElement(item->elementId)) {
                 imageDataUrl = e->image;
                 if (role.isEmpty()) role = e->role;
                 narratorVal = e->narrator;
+                trackModeVal = e->trackMode;
             }
         }
-        dlg.setInitial(item->title, role, imageDataUrl, narratorVal);
+        dlg.setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal);
         if (dlg.exec() != QDialog::Accepted) return;
         const QString newTitle = dlg.title();
         const QString newRole = dlg.role();
         const QString newImage = dlg.imageDataUrl();
         const bool newNarrator = dlg.narrator();
+        const QString newTrack = dlg.trackMode();
 
         projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
 
@@ -1662,6 +1714,7 @@ void MainWindow::setupEditor()
                 copy.role = newRole;
                 copy.image = newImage;
                 copy.narrator = newNarrator;
+                copy.trackMode = newTrack;
                 elementsStore->updateElement(copy.id, copy);
             }
         } else if (!elemType.isEmpty() && !newImage.isEmpty() && elementsStore) {
@@ -1676,6 +1729,7 @@ void MainWindow::setupEditor()
             elem.role = newRole;
             elem.image = newImage;
             elem.narrator = newNarrator;
+            elem.trackMode = newTrack;
             const QString newElementId = elementsStore->addElement(elem);
             projectModel->setDrawerItemElement(itemId, elemType, item->elementIcon, newElementId);
         }

@@ -26,6 +26,7 @@ QJsonObject elementToJson(const Element& e) {
     o.insert(QStringLiteral("icon"), e.icon);
     if (!e.image.isEmpty()) o.insert(QStringLiteral("image"), e.image);
     if (!e.role.isEmpty()) o.insert(QStringLiteral("role"), e.role);
+    if (!e.trackMode.isEmpty()) o.insert(QStringLiteral("trackMode"), e.trackMode);
     if (e.narrator) o.insert(QStringLiteral("narrator"), true);
     if (!e.textConcordance.isEmpty()) o.insert(QStringLiteral("textConcordance"), e.textConcordance);
     if (!e.aliases.isEmpty()) {
@@ -44,6 +45,7 @@ Element elementFromJson(const QJsonObject& o) {
     e.icon = jsonString(o.value(QStringLiteral("icon")));
     e.image = jsonString(o.value(QStringLiteral("image")));
     e.role = jsonString(o.value(QStringLiteral("role")));
+    e.trackMode = jsonString(o.value(QStringLiteral("trackMode")));
     e.narrator = o.value(QStringLiteral("narrator")).toBool(false);
     e.textConcordance = jsonString(o.value(QStringLiteral("textConcordance")));
     const QJsonArray aliases = o.value(QStringLiteral("aliases")).toArray();

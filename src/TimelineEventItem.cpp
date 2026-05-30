@@ -3,44 +3,24 @@
 #include <QAction>
 #include <QFont>
 #include <QFontMetrics>
-#include <QGraphicsScene>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
-#include <QLinearGradient>
+#include <QLineF>
 #include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
 
 namespace {
+constexpr qreal kLabelH    = 24.0;
+constexpr qreal kLabelGap  = 8.0;
+constexpr qreal kCardGap   = 12.0;
+constexpr qreal kCardPad   = 12.0;
+constexpr qreal kDragSlop  = 4.0;
 
-constexpr qreal kPinR    = 5.0;
-constexpr qreal kGripH   = 8.0;  // altura do grip de resize
-constexpr qreal kGripW   = 40.0; // largura do grip
-constexpr qreal kDescTop = 50.0; // onde começa a area de descricao (y local)
-constexpr qreal kDescBot = 20.0; // padding inferior (acima do grip)
-
-QRectF pinRect(const QPointF& c)
-{
-    return QRectF(c.x() - kPinR, c.y() - kPinR, kPinR * 2, kPinR * 2);
-}
-
-QBrush fillBrush(const QColor& base, const QRectF& r)
-{
-    QLinearGradient g(r.topLeft(), r.bottomLeft());
-    g.setColorAt(0.0, base.lighter(125));
-    g.setColorAt(0.5, base);
-    g.setColorAt(1.0, base.darker(120));
-    return QBrush(g);
-}
-
-QPainterPath roundedRect(const QRectF& r, qreal radius)
-{
-    QPainterPath p;
-    p.addRoundedRect(r, radius, radius);
-    return p;
-}
-
+QColor cardBg()     { return QColor(28, 28, 32, 246); }
+QColor cardBody()   { return QColor(232, 232, 234); }
+QColor cardMuted()  { return QColor(158, 158, 164); }
 } // namespace
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -54,20 +34,16 @@ TimelineEventItem::TimelineEventItem(const TimelineEvent& data,
              QGraphicsItem::ItemSendsGeometryChanges |
              QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
+    setZValue(1.0);
 }
 
 // ── Getters / setters ────────────────────────────────────────────────────────
-
-qreal TimelineEventItem::currentH() const
-{
-    return m_data.expanded ? m_data.expandedH : kH;
-}
 
 void TimelineEventItem::setEventData(const TimelineEvent& d)
 {
     prepareGeometryChange();
     m_data = d;
-    m_scrollOffset = 0.0; // reset ao carregar novo conteudo
+    m_scrollOffset = 0.0;
     setPos(d.x, d.y);
     update();
 }
@@ -78,9 +54,15 @@ void TimelineEventItem::setTimelineColor(const QColor& c)
     update();
 }
 
-QPointF TimelineEventItem::pinPos() const
+void TimelineEventItem::setOpen(bool open)
 {
-    return QPointF(kW + kShadow + kPinR, currentH() / 2.0);
+    if (m_open == open) return;
+    prepareGeometryChange();
+    m_open = open;
+    if (!m_open) m_scrollOffset = 0.0;
+    setZValue(m_open ? 50.0 : 1.0);
+    update();
+    emit geometryChanged(m_data.id);
 }
 
 QColor TimelineEventItem::effectiveColor() const
@@ -88,89 +70,93 @@ QColor TimelineEventItem::effectiveColor() const
     return m_data.color.isValid() ? m_data.color : m_timelineColor;
 }
 
-QColor TimelineEventItem::textColor() const
+QString TimelineEventItem::labelText() const
 {
-    const QColor bg = effectiveColor();
-    const qreal lum = 0.299 * bg.redF() + 0.587 * bg.greenF() + 0.114 * bg.blueF();
-    return lum > 0.5 ? QColor(30, 30, 30) : QColor(240, 240, 240);
+    QString t = m_data.title.isEmpty() ? tr("Evento") : m_data.title;
+    if (!m_data.timeMarker.isEmpty())
+        t += QStringLiteral("   ·   ") + m_data.timeMarker;
+    return t;
 }
 
-bool TimelineEventItem::isOnPin(const QPointF& p) const
+QRectF TimelineEventItem::labelRect() const
 {
-    return pinRect(pinPos()).contains(p);
-}
-
-QRectF TimelineEventItem::resizeGripRect() const
-{
-    const qreal cx = kW / 2.0;
-    const qreal y  = currentH() - kGripH - 4.0;
-    return QRectF(cx - kGripW / 2.0, y, kGripW, kGripH);
-}
-
-bool TimelineEventItem::isOnResizeGrip(const QPointF& p) const
-{
-    return m_data.expanded && resizeGripRect().adjusted(-4, -4, 4, 4).contains(p);
-}
-
-void TimelineEventItem::setExpandedH(qreal h)
-{
-    const qreal clamped = qMax(kHexpMin, h);
-    if (qFuzzyCompare(clamped, m_data.expandedH)) return;
-    prepareGeometryChange();
-    m_data.expandedH = clamped;
-    // clamp scroll para nao ultrapassar o novo maximo
-    const qreal maxS = qMax(0.0, descContentH() - descVisH());
-    m_scrollOffset = qBound(0.0, m_scrollOffset, maxS);
-    update();
-}
-
-qreal TimelineEventItem::descVisH() const
-{
-    return qMax(0.0, currentH() - kDescTop - kDescBot);
+    QFont f; f.setPointSizeF(8.5);
+    const QFontMetrics fm(f);
+    const qreal w = qMin(360.0, qreal(fm.horizontalAdvance(labelText())) + 22.0);
+    return QRectF(-w / 2.0,
+                  -(dotRadius() + kLabelGap + kLabelH),
+                  w, kLabelH);
 }
 
 qreal TimelineEventItem::descContentH() const
 {
     if (m_data.description.isEmpty()) return 0.0;
-    QFont f;
-    f.setPointSizeF(8.5);
+    QFont f; f.setPointSizeF(8.5);
     const QFontMetrics fm(f);
-    return fm.boundingRect(QRect(0, 0, qRound(kW - 22), 100000),
+    return fm.boundingRect(QRect(0, 0, qRound(kCardW - kCardPad * 2), 100000),
                            Qt::TextWordWrap, m_data.description).height();
+}
+
+QRectF TimelineEventItem::cardRect() const
+{
+    QFont ft; ft.setPointSizeF(9.5); ft.setBold(true);
+    const QFontMetrics fmT(ft);
+    const int titleH = fmT.boundingRect(QRect(0, 0, qRound(kCardW - kCardPad * 2), 100000),
+                                        Qt::TextWordWrap,
+                                        m_data.title.isEmpty() ? tr("Evento") : m_data.title)
+                          .height();
+    const qreal headerH = kCardPad + titleH
+                        + (m_data.timeMarker.isEmpty() ? 0.0 : 16.0)
+                        + 10.0; // até o separador
+    const qreal descH = qMax(20.0, descContentH());
+    qreal h = headerH + 6.0 + descH + kCardPad;
+    h = qBound(70.0, h, kCardHMax);
+    return QRectF(-kCardW / 2.0, dotRadius() + kCardGap, kCardW, h);
+}
+
+qreal TimelineEventItem::descVisH() const
+{
+    QFont ft; ft.setPointSizeF(9.5); ft.setBold(true);
+    const QFontMetrics fmT(ft);
+    const int titleH = fmT.boundingRect(QRect(0, 0, qRound(kCardW - kCardPad * 2), 100000),
+                                        Qt::TextWordWrap,
+                                        m_data.title.isEmpty() ? tr("Evento") : m_data.title)
+                          .height();
+    const qreal headerH = kCardPad + titleH
+                        + (m_data.timeMarker.isEmpty() ? 0.0 : 16.0)
+                        + 10.0;
+    return qMax(0.0, cardRect().height() - headerH - 6.0 - kCardPad);
 }
 
 bool TimelineEventItem::wheelScroll(int angleDeltaY)
 {
-    if (!m_data.expanded) return false;
-    const qreal visH    = descVisH();
-    const qreal contH   = descContentH();
-    const qreal maxScroll = qMax(0.0, contH - visH);
-    if (maxScroll < 1.0) return false; // sem overflow → deja zoom agir
-
+    if (!m_open) return false;
+    const qreal visH = descVisH();
+    const qreal maxScroll = qMax(0.0, descContentH() - visH);
+    if (maxScroll < 1.0) return false;
     const qreal delta = (angleDeltaY / 120.0) * 36.0;
     m_scrollOffset = qBound(0.0, m_scrollOffset - delta, maxScroll);
     update();
     return true;
 }
 
-void TimelineEventItem::paintScrollbar(QPainter* p) const
+void TimelineEventItem::paintScrollbar(QPainter* p, const QRectF& card) const
 {
-    const qreal visH    = descVisH();
-    const qreal contH   = descContentH();
+    const qreal visH = descVisH();
+    const qreal contH = descContentH();
     if (contH <= visH + 1.0 || visH <= 0.0) return;
 
     const qreal maxScroll = contH - visH;
-    const qreal thumbH    = qMax(14.0, visH * visH / contH);
-    const qreal trackX    = kW - 5.0;
-    const qreal thumbY    = kDescTop + (maxScroll > 0.0 ? (m_scrollOffset / maxScroll) : 0.0)
-                                        * (visH - thumbH);
+    const qreal thumbH = qMax(16.0, visH * visH / contH);
+    const qreal trackX = card.right() - 6.0;
+    const qreal trackTop = card.bottom() - kCardPad - visH;
+    const qreal thumbY = trackTop + (maxScroll > 0.0 ? (m_scrollOffset / maxScroll) : 0.0)
+                                      * (visH - thumbH);
     p->save();
     p->setPen(Qt::NoPen);
-    // track
-    p->setBrush(QColor(255, 255, 255, 28));
-    p->drawRoundedRect(QRectF(trackX, kDescTop, 3.0, visH), 1.5, 1.5);
-    // thumb
-    p->setBrush(QColor(255, 255, 255, 110));
+    p->setBrush(QColor(255, 255, 255, 26));
+    p->drawRoundedRect(QRectF(trackX, trackTop, 3.0, visH), 1.5, 1.5);
+    p->setBrush(QColor(255, 255, 255, 120));
     p->drawRoundedRect(QRectF(trackX, thumbY, 3.0, thumbH), 1.5, 1.5);
     p->restore();
 }
@@ -179,214 +165,211 @@ void TimelineEventItem::paintScrollbar(QPainter* p) const
 
 QRectF TimelineEventItem::boundingRect() const
 {
-    return QRectF(-kShadow, -kShadow,
-                  kW + kShadow * 2 + kPinR * 2 + 2,
-                  currentH() + kShadow * 2);
+    QRectF r(-dotRadius() - 3, -dotRadius() - 3,
+             dotRadius() * 2 + 6, dotRadius() * 2 + 6);
+    r = r.united(labelRect().adjusted(-2, -2, 2, 2)); // rótulo sempre reservado
+    if (m_open)
+        r = r.united(cardRect().adjusted(-4, -4, 4, 8)); // sombra do card
+    return r;
 }
 
 QPainterPath TimelineEventItem::shape() const
 {
-    QPainterPath p = roundedRect(QRectF(0, 0, kW, currentH()), kRadius);
-    QPainterPath pin;
-    pin.addEllipse(pinRect(pinPos()));
-    return p.united(pin);
+    QPainterPath p;
+    p.addEllipse(QPointF(0, 0), dotRadius() + 3, dotRadius() + 3);
+    if (m_open)
+        p.addRoundedRect(cardRect(), 10, 10);
+    return p;
 }
 
 // ── Paint ────────────────────────────────────────────────────────────────────
 
 void TimelineEventItem::paint(QPainter* p,
-                               const QStyleOptionGraphicsItem*,
-                               QWidget*)
+                              const QStyleOptionGraphicsItem*,
+                              QWidget*)
 {
     p->setRenderHint(QPainter::Antialiasing);
 
-    const qreal  h    = currentH();
-    const QRectF body(0, 0, kW, h);
-    const QColor fill   = effectiveColor();
-    const QColor border = fill.darker(155);
-    const QColor txt    = textColor();
+    const QColor fill = effectiveColor();
+    const qreal  r    = dotRadius();
 
-    // ── Sombra suave ────────────────────────────────────────────────────────
-    for (int i = 3; i >= 1; --i) {
-        const QRectF sh = body.adjusted(i, i, i, i);
+    // ── Halo de hover / seleção ──────────────────────────────────────────────
+    if (m_hover || isSelected() || m_open) {
         p->setPen(Qt::NoPen);
-        p->setBrush(QColor(0, 0, 0, 18 * i));
-        p->drawPath(roundedRect(sh, kRadius));
+        p->setBrush(QColor(fill.red(), fill.green(), fill.blue(), 60));
+        p->drawEllipse(QPointF(0, 0), r + 6, r + 6);
     }
 
-    // ── Corpo ───────────────────────────────────────────────────────────────
-    p->setBrush(fillBrush(fill, body));
-    p->setPen(QPen(border, isSelected() ? 2.0 : 1.0));
-    p->drawPath(roundedRect(body, kRadius));
-
-    // ── Anel de seleção ─────────────────────────────────────────────────────
-    if (isSelected()) {
-        p->setBrush(Qt::NoBrush);
-        p->setPen(QPen(QColor(255, 255, 255, 200), 1.5, Qt::DashLine));
-        p->drawPath(roundedRect(body.adjusted(-3, -3, 3, 3), kRadius + 3));
-    }
-
-    // ── Marcador de tempo (topo) ─────────────────────────────────────────────
-    if (!m_data.timeMarker.isEmpty()) {
-        QFont f;
-        f.setPointSizeF(7.0);
-        p->setFont(f);
-        p->setPen(QColor(txt.red(), txt.green(), txt.blue(), 150));
-        p->drawText(body.adjusted(8, 5, -8, 0),
-                    Qt::AlignTop | Qt::AlignHCenter,
-                    m_data.timeMarker);
-    }
-
-    // ── Título ──────────────────────────────────────────────────────────────
-    QFont fTitle;
-    fTitle.setPointSizeF(9.0);
-    fTitle.setBold(true);
-    p->setFont(fTitle);
-    p->setPen(txt);
-
-    if (!m_data.expanded) {
-        // Estado colapsado: título ocupa o centro vertical
-        const QRectF textRect = body.adjusted(8, 16, -8 - kPinR * 2 - kShadow, -6);
-        p->drawText(textRect,
-                    Qt::AlignVCenter | Qt::AlignHCenter | Qt::TextWordWrap,
-                    m_data.title.isEmpty() ? tr("Evento") : m_data.title);
+    // ── Ponto ─────────────────────────────────────────────────────────────────
+    if (m_data.autoEvent) {
+        // evento de presença: anel fino, miolo translúcido
+        p->setBrush(QColor(fill.red(), fill.green(), fill.blue(), 120));
+        p->setPen(QPen(fill, 1.4));
     } else {
-        // Estado expandido: título no terço superior, descrição abaixo
-        const QRectF titleRect(8, 18, kW - 16 - kPinR * 2 - kShadow, 22);
-        p->drawText(titleRect,
-                    Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap,
-                    m_data.title.isEmpty() ? tr("Evento") : m_data.title);
+        p->setBrush(fill);
+        p->setPen(QPen(fill.darker(150), 1.4));
+    }
+    p->drawEllipse(QPointF(0, 0), r, r);
 
-        // ── Separador ───────────────────────────────────────────────────────
-        p->setPen(QColor(txt.red(), txt.green(), txt.blue(), 50));
-        p->drawLine(QPointF(10, 44), QPointF(kW - 10, 44));
+    // brilho interno discreto
+    p->setPen(Qt::NoPen);
+    p->setBrush(QColor(255, 255, 255, m_data.autoEvent ? 40 : 70));
+    p->drawEllipse(QPointF(-r * 0.28, -r * 0.28), r * 0.45, r * 0.45);
 
-        // ── Descrição (com scroll) ───────────────────────────────────────────
-        if (!m_data.description.isEmpty()) {
-            QFont fDesc;
-            fDesc.setPointSizeF(8.5);
-            p->setFont(fDesc);
-            p->setPen(QColor(txt.red(), txt.green(), txt.blue(), 200));
+    // ── Rótulo de hover (acima do ponto) ──────────────────────────────────────
+    if (m_hover && !m_open) {
+        const QRectF lr = labelRect();
+        QPainterPath pill; pill.addRoundedRect(lr, kLabelH / 2.0, kLabelH / 2.0);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(20, 20, 24, 235));
+        p->drawPath(pill);
+        // barrinha de acento à esquerda
+        p->setBrush(fill);
+        p->drawEllipse(QPointF(lr.left() + kLabelH / 2.0, lr.center().y()), 3.0, 3.0);
 
-            // Clip para a área visível; texto arranca de (y = kDescTop - scrollOffset)
-            const QRectF visArea(10, kDescTop, kW - 22, descVisH());
-            const QRectF fullArea(10, kDescTop - m_scrollOffset, kW - 22, 100000);
-            p->setClipRect(visArea);
-            p->drawText(fullArea, Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap,
-                        m_data.description);
-            p->setClipping(false);
+        QFont f; f.setPointSizeF(8.5);
+        p->setFont(f);
+        p->setPen(QColor(238, 238, 240));
+        p->drawText(lr.adjusted(kLabelH * 0.72, 0, -10, 0),
+                    Qt::AlignVCenter | Qt::AlignLeft,
+                    p->fontMetrics().elidedText(labelText(), Qt::ElideRight,
+                                                qRound(lr.width() - kLabelH * 0.72 - 10)));
+    }
 
-            // Scrollbar discreta na direita
-            paintScrollbar(p);
+    // ── Popover (abaixo do ponto) ──────────────────────────────────────────────
+    if (m_open) {
+        const QRectF card = cardRect();
+
+        // sombra
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0, 0, 0, 70));
+        p->drawRoundedRect(card.adjusted(2, 4, 2, 4), 10, 10);
+
+        // corpo
+        p->setBrush(cardBg());
+        p->setPen(QPen(fill, 1.5));
+        p->drawRoundedRect(card, 10, 10);
+
+        // "biquinho" ligando ao ponto
+        QPainterPath beak;
+        beak.moveTo(-6, card.top());
+        beak.lineTo(0, card.top() - 6);
+        beak.lineTo(6, card.top());
+        beak.closeSubpath();
+        p->setPen(Qt::NoPen);
+        p->setBrush(cardBg());
+        p->drawPath(beak);
+
+        const qreal innerW = kCardW - kCardPad * 2;
+        qreal y = card.top() + kCardPad;
+
+        // título
+        QFont ft; ft.setPointSizeF(9.5); ft.setBold(true);
+        p->setFont(ft);
+        p->setPen(fill.lighter(150));
+        const QString title = m_data.title.isEmpty() ? tr("Evento") : m_data.title;
+        const QRectF titleR(card.left() + kCardPad, y, innerW,
+                            p->fontMetrics().boundingRect(
+                                QRect(0, 0, qRound(innerW), 100000),
+                                Qt::TextWordWrap, title).height());
+        p->drawText(titleR, Qt::TextWordWrap | Qt::AlignLeft, title);
+        y = titleR.bottom();
+
+        // marcação temporal
+        if (!m_data.timeMarker.isEmpty()) {
+            QFont fm; fm.setPointSizeF(7.5);
+            p->setFont(fm);
+            p->setPen(cardMuted());
+            p->drawText(QRectF(card.left() + kCardPad, y + 2, innerW, 14),
+                        Qt::AlignLeft | Qt::AlignVCenter, m_data.timeMarker);
+            y += 16;
         }
 
-        // ── Grip de resize ──────────────────────────────────────────────────
-        const QRectF grip = resizeGripRect();
-        const QColor gripColor = m_hoverGrip
-            ? QColor(255, 255, 255, 100)
-            : QColor(255, 255, 255, 45);
-        p->setBrush(gripColor);
-        p->setPen(Qt::NoPen);
-        p->drawRoundedRect(grip, 3, 3);
-    }
+        // separador
+        y += 8;
+        p->setPen(QColor(255, 255, 255, 30));
+        p->drawLine(QPointF(card.left() + kCardPad, y),
+                    QPointF(card.right() - kCardPad, y));
 
-    // ── Pin de conexão ───────────────────────────────────────────────────────
-    const QPointF pin = pinPos();
-    const QColor pinFill = m_hoverPin ? fill.lighter(160) : fill.darker(110);
-    p->setBrush(pinFill);
-    p->setPen(QPen(border, 1.0));
-    p->drawEllipse(pinRect(pin));
+        // descrição (com scroll)
+        const qreal descTop = y + 4;
+        const qreal visH = card.bottom() - kCardPad - descTop;
+        if (visH > 4.0) {
+            QFont fd; fd.setPointSizeF(8.5);
+            p->setFont(fd);
+            const QRectF vis(card.left() + kCardPad, descTop, innerW, visH);
+            p->setClipRect(vis);
+            if (m_data.description.isEmpty()) {
+                p->setPen(cardMuted());
+                p->drawText(vis, Qt::AlignLeft | Qt::AlignTop, tr("(sem descrição)"));
+            } else {
+                p->setPen(cardBody());
+                p->drawText(QRectF(vis.left(), descTop - m_scrollOffset, innerW, 100000),
+                            Qt::TextWordWrap | Qt::AlignLeft, m_data.description);
+            }
+            p->setClipping(false);
+            paintScrollbar(p, card);
+        }
+    }
 }
 
 // ── Eventos de mouse ─────────────────────────────────────────────────────────
 
 void TimelineEventItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 {
-    if (e->button() == Qt::LeftButton && isOnPin(e->pos())) {
-        m_draggingPin = true;
-        emit pinDragStarted(m_data.id, mapToScene(pinPos()));
-        e->accept();
-        return;
-    }
-    if (e->button() == Qt::LeftButton && isOnResizeGrip(e->pos())) {
-        m_resizing         = true;
-        m_resizeDragStart  = e->pos();
-        m_resizeDragStartH = m_data.expandedH;
-        e->accept();
-        return; // NÃO chama super → Qt não inicia o drag de movimento
+    if (e->button() == Qt::LeftButton) {
+        m_pressScenePos = e->scenePos();
+        m_dragMoved = false;
     }
     QGraphicsObject::mousePressEvent(e);
 }
 
 void TimelineEventItem::mouseMoveEvent(QGraphicsSceneMouseEvent* e)
 {
-    if (m_resizing) {
-        const qreal delta = e->pos().y() - m_resizeDragStart.y();
-        setExpandedH(m_resizeDragStartH + delta);
-        e->accept();
-        return;
-    }
+    if ((e->scenePos() - m_pressScenePos).manhattanLength() > kDragSlop)
+        m_dragMoved = true;
     QGraphicsObject::mouseMoveEvent(e);
 }
 
 void TimelineEventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
 {
-    if (m_draggingPin) {
-        m_draggingPin = false;
-        e->accept();
-        return;
-    }
-    if (m_resizing) {
-        m_resizing = false;
-        m_data.expandedH = qMax(kHexpMin, m_data.expandedH);
-        emit geometryChanged(m_data.id);
-        e->accept();
-        return;
-    }
     QGraphicsObject::mouseReleaseEvent(e);
+    if (e->button() != Qt::LeftButton) return;
+
+    if (m_dragMoved) {
+        emit movedByUser(m_data.id);
+        return;
+    }
+    // clique sem arrastar: só alterna o popover se foi no ponto (não no card)
+    if (QLineF(e->pos(), QPointF(0, 0)).length() <= dotRadius() + kDragSlop) {
+        setOpen(!m_open);
+        emit openToggled(m_data.id, m_open);
+    }
 }
 
 void TimelineEventItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
 {
-    if (e->button() == Qt::LeftButton && !isOnPin(e->pos()) && !isOnResizeGrip(e->pos())) {
-        prepareGeometryChange();
-        m_data.expanded = !m_data.expanded;
-        if (!m_data.expanded) m_scrollOffset = 0.0; // reset ao colapsar
-        update();
-        emit geometryChanged(m_data.id);
+    if (e->button() == Qt::LeftButton
+        && QLineF(e->pos(), QPointF(0, 0)).length() <= dotRadius() + kDragSlop) {
+        emit editRequested(m_data.id);
         e->accept();
         return;
     }
     QGraphicsObject::mouseDoubleClickEvent(e);
 }
 
-void TimelineEventItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
+void TimelineEventItem::hoverEnterEvent(QGraphicsSceneHoverEvent*)
 {
-    const bool onPin  = isOnPin(e->pos());
-    const bool onGrip = isOnResizeGrip(e->pos());
-
-    if (onPin != m_hoverPin) {
-        m_hoverPin = onPin;
-        update();
-    }
-    if (onGrip != m_hoverGrip) {
-        m_hoverGrip = onGrip;
-        update();
-    }
-
-    if (onPin)       setCursor(Qt::CrossCursor);
-    else if (onGrip) setCursor(Qt::SizeVerCursor);
-    else             setCursor(Qt::ArrowCursor);
+    m_hover = true;
+    setZValue(m_open ? 50.0 : 10.0);
+    update();
 }
 
 void TimelineEventItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
 {
-    if (m_hoverPin || m_hoverGrip) {
-        m_hoverPin  = false;
-        m_hoverGrip = false;
-        setCursor(Qt::ArrowCursor);
-        update();
-    }
+    m_hover = false;
+    setZValue(m_open ? 50.0 : 1.0);
+    update();
 }
 
 void TimelineEventItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)

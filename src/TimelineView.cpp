@@ -16,8 +16,10 @@ TimelineView::TimelineView(QGraphicsScene* scene, QWidget* parent)
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     setFrameShape(QFrame::NoFrame);
-    setCacheMode(QGraphicsView::CacheBackground);
-    setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    // O fundo desenha as faixas + rótulos grudados à esquerda (dependentes do
+    // scroll). Com CacheBackground/SmartViewportUpdate o pan arrasta os pixels
+    // antigos e deixa rastro dos rótulos. FullViewportUpdate repinta tudo.
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setInteractive(true);
     setMouseTracking(true);
 }
