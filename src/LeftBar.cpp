@@ -175,6 +175,11 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
         QStringLiteral("L"),
         tr("Lousa de planejamento"),
         Whiteboard));
+    m_rootLayout->addWidget(makeFixedButton(
+        QStringLiteral(""),
+        QStringLiteral("T"),
+        tr("Linha do tempo"),
+        Timeline));
 
     {
         auto* sep = makeGroupSeparator(this);

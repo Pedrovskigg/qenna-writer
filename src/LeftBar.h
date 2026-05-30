@@ -19,6 +19,7 @@ public:
     enum FixedAction {
         Info,
         Whiteboard,
+        Timeline,
         Manuscripts,
         Consistency,
     };

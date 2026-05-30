@@ -79,6 +79,7 @@
 #include "GlossaryPanel.h"
 #include "GlossaryStore.h"
 #include "LousaPanel.h"
+#include "TimelinePanel.h"
 #include "RemindersPanel.h"
 #include "RemindersStore.h"
 #include "MarkerHoverPopup.h"
@@ -1311,6 +1312,25 @@ void MainWindow::setupEditor()
                 lousaPanel->raise();
                 lousaPanel->activateWindow();
                 leftBar->setActiveFixedAction(LeftBar::Whiteboard);
+            }
+        } else if (action == LeftBar::Timeline) {
+            if (!timelinePanel) {
+                timelinePanel = new TimelinePanel(this);
+                connect(timelinePanel, &TimelinePanel::closeRequested, this, [this]() {
+                    leftBar->clearSelection();
+                });
+                timelinePanel->setProjectModel(projectModel);
+                if (!projectRoot.isEmpty())
+                    timelinePanel->setProjectRoot(projectRoot);
+            }
+            if (timelinePanel->isVisible()) {
+                timelinePanel->hide();
+                leftBar->clearSelection();
+            } else {
+                timelinePanel->show();
+                timelinePanel->raise();
+                timelinePanel->activateWindow();
+                leftBar->setActiveFixedAction(LeftBar::Timeline);
             }
         } else if (action == LeftBar::Consistency) {
             manuscriptPanel->closePanel();
@@ -2831,6 +2851,10 @@ void MainWindow::applyProjectRoot(const QString& root)
         lousaPanel->setProjectModel(projectModel);
         lousaPanel->setElementsStore(elementsStore);
         lousaPanel->setProjectRoot(root);
+    }
+    if (timelinePanel) {
+        timelinePanel->setProjectModel(projectModel);
+        timelinePanel->setProjectRoot(root);
     }
 
     if (remindersStore) {

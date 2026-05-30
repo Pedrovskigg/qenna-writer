@@ -131,6 +131,19 @@ qt_add_executable(mira-writing
     src/LousaPanel.cpp
     src/LousaPanel.h
     src/LousaTypes.h
+    src/TimelineTypes.h
+    src/TimelineScene.cpp
+    src/TimelineScene.h
+    src/TimelineView.cpp
+    src/TimelineView.h
+    src/TimelineEventItem.cpp
+    src/TimelineEventItem.h
+    src/TimelineConnItem.cpp
+    src/TimelineConnItem.h
+    src/TimelineEventPopup.cpp
+    src/TimelineEventPopup.h
+    src/TimelinePanel.cpp
+    src/TimelinePanel.h
     src/CardItem.cpp
     src/CardItem.h
     src/ConnectionItem.cpp
