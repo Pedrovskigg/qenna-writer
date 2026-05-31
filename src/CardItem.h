@@ -63,6 +63,7 @@ signals:
     void deleteRequested(const QString& id);   // remoção permanente (Shift+×)
     void stashRequested(const QString& id);    // guarda no stash (× simples)
     void createDocRequested(const QString& id);
+    void createTimelineEventRequested(const QString& id); // criar evento na Timeline (note/comment)
     void positionChanged(const QString& id);      // CardItem se moveu na cena
     void pinDragStarted(const QString& fromId, const QPointF& pinScenePos);
     void cardPressed();                            // qualquer clique no card (para seleção)
@@ -85,6 +86,7 @@ private:
     bool   isOnDeleteBtn(const QPointF& p) const;
     bool   isOnColorDot(const QPointF& p) const;
     bool   isOnDocBtn(const QPointF& p) const;
+    bool   isOnEventBtn(const QPointF& p) const;
     bool   isOnResizeZone(const QPointF& p) const;
     void   showColorMenu(const QPoint& screenPos);
     void   loadCharacterPhoto();
@@ -136,6 +138,7 @@ private:
     bool    m_hoverDelete     = false;
     bool    m_hoverColor      = false;
     bool    m_hoverDoc        = false;
+    bool    m_hoverEvent      = false;
     bool    m_hoverResize     = false;
     // text / symbol
     bool    m_hovered         = false;

@@ -34,7 +34,9 @@ public:
 
     // Abre o popup de novo evento já pré-preenchido (ex.: criado a partir de um
     // trecho selecionado no editor). Usado pelo MainWindow.
-    void promptNewEvent(const QString& description, const QString& marker);
+    // title vazio = sugere a partir das primeiras palavras da descrição.
+    void promptNewEvent(const QString& description, const QString& marker,
+                        const QString& title = QString());
 
 signals:
     void closeRequested();

@@ -98,6 +98,9 @@ CardItem* LousaScene::addCard(const CanvasCard& data)
     connect(item, &CardItem::createDocRequested, this, [this](const QString& id) {
         if (CardItem* c = findCard(id)) emit cardCreateDocRequested(c->cardData());
     });
+    connect(item, &CardItem::createTimelineEventRequested, this, [this](const QString& id) {
+        if (CardItem* c = findCard(id)) emit cardCreateTimelineEventRequested(c->cardData());
+    });
     connect(item, &CardItem::pinDragStarted, this,
             [this](const QString& fromId, const QPointF& pinScene) {
         startPinDrag(fromId, pinScene);

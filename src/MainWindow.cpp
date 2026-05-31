@@ -1351,6 +1351,15 @@ void MainWindow::setupEditor()
                 connect(lousaPanel, &LousaPanel::closeRequested, this, [this]() {
                     leftBar->clearSelection();
                 });
+                connect(lousaPanel, &LousaPanel::createTimelineEventRequested, this,
+                        [this](const QString& title, const QString& description) {
+                    auto* panel = ensureTimelinePanel();
+                    panel->show();
+                    panel->raise();
+                    panel->activateWindow();
+                    if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
+                    panel->promptNewEvent(description, QString(), title);
+                });
                 lousaPanel->setProjectModel(projectModel);
                 lousaPanel->setElementsStore(elementsStore);
                 if (!projectRoot.isEmpty())

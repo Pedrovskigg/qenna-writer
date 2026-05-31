@@ -499,6 +499,12 @@ void LousaPanel::buildUi()
     });
     connect(m_scene, &LousaScene::cardCreateDocRequested, this,
             [this](const CanvasCard& c) { createDocFromCard(c); });
+    connect(m_scene, &LousaScene::cardCreateTimelineEventRequested, this,
+            [this](const CanvasCard& c) {
+        // Título = título do card; descrição = corpo do card. O MainWindow
+        // abre a Timeline e o popup de criar evento já preenchido.
+        emit createTimelineEventRequested(c.title.trimmed(), c.content);
+    });
     connect(m_scene, &LousaScene::zoneExportRequested, this, [this](const QString& id) {
         for (const CanvasZone& z : m_scene->allZoneData())
             if (z.id == id) { exportZones({z}); break; }

@@ -30,6 +30,8 @@ public:
 
 signals:
     void closeRequested();
+    // Pedido para criar um evento na Timeline a partir de um card de texto.
+    void createTimelineEventRequested(const QString& title, const QString& description);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;

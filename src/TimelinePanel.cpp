@@ -444,7 +444,8 @@ void TimelinePanel::commitEvent(TimelineEvent e, const QPointF& scenePos)
     save();
 }
 
-void TimelinePanel::promptNewEvent(const QString& description, const QString& marker)
+void TimelinePanel::promptNewEvent(const QString& description, const QString& marker,
+                                   const QString& title)
 {
     // título sugerido a partir das primeiras palavras do trecho
     auto suggestTitle = [](const QString& text) -> QString {
@@ -463,7 +464,8 @@ void TimelinePanel::promptNewEvent(const QString& description, const QString& ma
     TimelineEventPopup dlg(m_timelines, m_projectModel, this);
     dlg.setDocTextResolver(m_docTextResolver);
     TimelineEvent seed;
-    seed.title       = suggestTitle(description);
+    seed.title       = title.trimmed().isEmpty() ? suggestTitle(description)
+                                                  : title.trimmed();
     seed.timeMarker  = marker;
     seed.description = description;
     dlg.setEventData(seed);

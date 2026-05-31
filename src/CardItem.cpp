@@ -1319,7 +1319,7 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     // Duplo-clique no header abre o editor inline; enquanto edita, não pinta o texto.
     if (!m_editingTitle) {
         const qreal tx = 20.0;
-        const qreal tw = qMax(10.0, w - 58.0 - tx);
+        const qreal tw = qMax(10.0, w - 73.0 - tx);
         const QRectF titleRect(tx, 0, tw, kHeaderH);
         QFontMetricsF fm(QFont(QStringLiteral("Segoe UI"), 9, QFont::Bold));
         if (m_data.title.trimmed().isEmpty()) {
@@ -1334,6 +1334,18 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
             p->drawText(titleRect, Qt::AlignVCenter | Qt::AlignLeft,
                         fm.elidedText(m_data.title, Qt::ElideRight, tw));
         }
+    }
+
+    // Timeline-event button (ponto sobre uma linha do tempo) — só note/comment
+    {
+        const qreal ebx = w - 60, eby = kHeaderH / 2.0;
+        const QColor ecol = m_hoverEvent ? tc : muted;
+        p->setPen(QPen(ecol, 1.2, Qt::SolidLine, Qt::RoundCap));
+        p->setBrush(Qt::NoBrush);
+        p->drawLine(QPointF(ebx - 5, eby + 2.5), QPointF(ebx + 5, eby + 2.5));
+        p->setPen(Qt::NoPen);
+        p->setBrush(ecol);
+        p->drawEllipse(QPointF(ebx, eby - 1.5), 2.6, 2.6);
     }
 
     // Doc+ button (SVG: rect + cruz, igual Mira 1)
@@ -1462,6 +1474,14 @@ bool CardItem::isOnColorDot(const QPointF& p) const
 bool CardItem::isOnDocBtn(const QPointF& p) const
 {
     return QRectF(m_data.width - 52, 0, 16, kHeaderH).contains(p);
+}
+bool CardItem::isOnEventBtn(const QPointF& p) const
+{
+    // Botão "criar evento na Timeline": só nos cards de texto (note/comment),
+    // à esquerda do botão de doc.
+    if (m_data.type != QStringLiteral("note") && m_data.type != QStringLiteral("comment"))
+        return false;
+    return QRectF(m_data.width - 68, 0, 16, kHeaderH).contains(p);
 }
 bool CardItem::isOnResizeZone(const QPointF& p) const
 {
@@ -1644,6 +1664,11 @@ void CardItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
         e->accept();
         return;
     }
+    if (isOnEventBtn(e->pos())) {
+        emit createTimelineEventRequested(m_data.id);
+        e->accept();
+        return;
+    }
     if (isOnResizeZone(e->pos())) {
         emit gestureStarted();
         m_resizing   = true;
@@ -1778,19 +1803,21 @@ void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
     const bool onDel    = isOnDeleteBtn(lp);
     const bool onColor  = isOnColorDot(lp);
     const bool onDoc    = isOnDocBtn(lp);
+    const bool onEvent  = isOnEventBtn(lp);
     const bool onResize = isOnResizeZone(lp);
     const bool onHeader = lp.y() < kHeaderH;
 
     if (onDel != m_hoverDelete || onColor != m_hoverColor ||
-        onDoc != m_hoverDoc || onResize != m_hoverResize) {
+        onDoc != m_hoverDoc || onEvent != m_hoverEvent || onResize != m_hoverResize) {
         m_hoverDelete = onDel;
         m_hoverColor  = onColor;
         m_hoverDoc    = onDoc;
+        m_hoverEvent  = onEvent;
         m_hoverResize = onResize;
         update();
     }
     if (isOnPin(lp))               setCursor(Qt::CrossCursor);
-    else if (onDel || onColor || onDoc) setCursor(Qt::PointingHandCursor);
+    else if (onDel || onColor || onDoc || onEvent) setCursor(Qt::PointingHandCursor);
     else if (onResize)             setCursor(Qt::SizeFDiagCursor);
     else if (onHeader)             setCursor(Qt::OpenHandCursor);
     else                           setCursor(Qt::ArrowCursor);
@@ -1798,8 +1825,8 @@ void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
 
 void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
 {
-    const bool needUpdate = m_hoverDelete || m_hoverColor || m_hoverDoc || m_hoverResize || m_hovered;
-    m_hoverDelete = m_hoverColor = m_hoverDoc = m_hoverResize = false;
+    const bool needUpdate = m_hoverDelete || m_hoverColor || m_hoverDoc || m_hoverEvent || m_hoverResize || m_hovered;
+    m_hoverDelete = m_hoverColor = m_hoverDoc = m_hoverEvent = m_hoverResize = false;
     m_hovered = false;
     if (needUpdate) update();
     setCursor(Qt::ArrowCursor);
