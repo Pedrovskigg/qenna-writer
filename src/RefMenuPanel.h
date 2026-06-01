@@ -23,6 +23,7 @@ class ProjectModel;
 class EditorHost;
 class DocCache;
 class ElementsStore;
+class MemoriesStore;
 
 // Painel flutuante de Referência. Reescrito 0.5.13 inspirado no RefPanels do Mira 1:
 // header com drag handle, tabs (Manuscritos / Timeline / view mode / Drawer picker ▾),
@@ -36,6 +37,7 @@ public:
                  ElementsStore* elements, QWidget* parent = nullptr);
 
     void setProjectRoot(const QString& root);
+    void setMemoriesStore(MemoriesStore* store);
 
     void togglePanel();
     void openPanel();
@@ -94,6 +96,10 @@ private:
     void buildDrawerView();
     void buildSearchAllView();
     void buildPlaceholderView(const QString& title, const QString& subtitle);
+    void buildMemoriesView();           // memórias do projeto (aba do topo)
+    void rebuildCharMemories();         // memórias do personagem no preview
+    QWidget* buildMemoryRow(const QString& memId, const QString& title,
+                            const QString& text, QWidget* parent);
     void rebuildPreview();
     void applyNavVisibility();
     void enterManuscriptMode(const QString& manuscriptId = QString());
@@ -121,6 +127,7 @@ private:
     EditorHost* m_host;
     DocCache* m_cache;
     ElementsStore* m_elements;
+    MemoriesStore* m_memories = nullptr;
     QString m_projectRoot;
 
     // Estado lógico
@@ -180,6 +187,14 @@ private:
     QHBoxLayout* m_previewImagesLay = nullptr;
     QTextBrowser* m_preview = nullptr;
     QLabel* m_previewPlaceholder = nullptr;
+
+    // Memórias do personagem dentro do preview (quando o doc selecionado é um
+    // personagem): um botão que alterna a lista das memórias dele.
+    QToolButton* m_charMemBtn = nullptr;
+    QWidget* m_charMemBox = nullptr;
+    QVBoxLayout* m_charMemLay = nullptr;
+    bool m_charMemVisible = false;
+    QString m_charMemElementId;   // personagem do doc atualmente no preview
 
     // drag/resize
     bool m_dragging = false;

@@ -3,6 +3,7 @@
 
 #include "CharacterDetector.h"
 #include "EditorHost.h"
+#include "MemoriesStore.h"
 #include "PresenceTypes.h"
 
 #include <QColor>
@@ -16,6 +17,7 @@
 #include <QTextEdit>
 #include <functional>
 #include <memory>
+#include <optional>
 
 class QLabel;
 class QScrollArea;
@@ -54,6 +56,8 @@ class AmbiencePanel;
 class GlossaryStore;
 class GlossaryPanel;
 class GlossaryAddPopup;
+class MemoriesStore;
+class MemoryAddPopup;
 class MainMenuDialog;
 class BackgroundWidget;
 class RemindersStore;
@@ -158,6 +162,8 @@ private:
     void createDocFromBond(const QString& drawerKey, const QString& bondId);
     void createDocFromSelection();
     void createTimelineEventFromSelection();
+    // Abre o popup de "Adicionar à memória…" a partir da seleção atual.
+    void addSelectionToMemory();
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
@@ -214,6 +220,11 @@ private:
     GlossaryStore *glossaryStore = nullptr;
     GlossaryPanel *glossaryPanel = nullptr;
     GlossaryAddPopup *glossaryAddPopup = nullptr;
+    MemoriesStore *memoriesStore = nullptr;
+    MemoryAddPopup *memoryAddPopup = nullptr;
+    // Memória sendo criada: preenchida em addSelectionToMemory() (texto + fonte)
+    // e completada no confirmed do popup (nome + destino).
+    std::optional<MemoriesStore::Memory> m_pendingMemory;
     RemindersStore *remindersStore = nullptr;
     RemindersPanel *remindersPanel = nullptr;
     QTimer *m_reminderPollTimer = nullptr;

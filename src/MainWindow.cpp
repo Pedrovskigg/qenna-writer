@@ -81,6 +81,8 @@
 #include "GlossaryAddPopup.h"
 #include "GlossaryPanel.h"
 #include "GlossaryStore.h"
+#include "MemoriesStore.h"
+#include "MemoryAddPopup.h"
 #include "LousaPanel.h"
 #include "TimelinePanel.h"
 #include "RemindersPanel.h"
@@ -554,6 +556,8 @@ void MainWindow::setupEditor()
         [this]() { createDocFromSelection(); });
     selectionPopup->addAction(QStringLiteral("leftbar/timeline.svg"), tr("Criar evento da linha do tempo..."),
         [this]() { createTimelineEventFromSelection(); });
+    selectionPopup->addAction(QStringLiteral("elements/heart.svg"), tr("Adicionar à memória..."),
+        [this]() { addSelectionToMemory(); });
 
     variationBar = new VariationBar(projectModel, editorHost, this);
     connect(editorHost, &EditorHost::viewModeChanged, variationBar, &VariationBar::refresh);
@@ -901,6 +905,33 @@ void MainWindow::setupEditor()
         if (!glossaryStore) return;
         glossaryStore->save();
         if (spellChecker) spellChecker->setGlossaryWords(glossaryStore->terms());
+    });
+
+    // Memórias: store (sidecar JSON) + popup de "Adicionar à memória..." (mini
+    // toolbar de seleção). O texto selecionado é salvo no projeto ou na
+    // memória de um personagem, com o rótulo da fonte (capítulo/cena).
+    memoriesStore = new MemoriesStore(this);
+    memoryAddPopup = new MemoryAddPopup(this);
+    connect(memoryAddPopup, &MemoryAddPopup::confirmed, this,
+            [this](const QString& name, const QString& targetType, const QString& elementId) {
+        if (!memoriesStore || !m_pendingMemory.has_value()) return;
+        MemoriesStore::Memory mem = *m_pendingMemory;
+        mem.name = name;
+        mem.targetType = targetType;
+        mem.elementId = (targetType == QStringLiteral("character")) ? elementId : QString();
+        memoriesStore->add(mem);
+        const QString where = (mem.targetType == QStringLiteral("character"))
+            ? tr("memória do personagem") : tr("memória do projeto");
+        m_pendingMemory.reset();
+        showReminderToast(tr("Memória salva"),
+            tr("Trecho guardado na %1.").arg(where));
+    });
+    connect(memoryAddPopup, &MemoryAddPopup::cancelled, this,
+            [this]() { m_pendingMemory.reset(); });
+    // Persiste o sidecar sempre que o store muda e atualiza o RefMenu.
+    connect(memoriesStore, &MemoriesStore::changed, this, [this]() {
+        if (memoriesStore) memoriesStore->save();
+        if (refMenuPanel) refMenuPanel->refresh();
     });
 
     // Lembretes: store (sidecar JSON) + painel flutuante + polling de notificações.
@@ -2905,6 +2936,11 @@ void MainWindow::applyProjectRoot(const QString& root)
         glossaryStore->load();
         if (spellChecker) spellChecker->setGlossaryWords(glossaryStore->terms());
     }
+    if (memoriesStore) {
+        memoriesStore->setProjectRoot(root);
+        if (refMenuPanel) refMenuPanel->setMemoriesStore(memoriesStore);
+        memoriesStore->load();
+    }
     if (lousaPanel) {
         lousaPanel->setProjectModel(projectModel);
         lousaPanel->setElementsStore(elementsStore);
@@ -4275,6 +4311,65 @@ void MainWindow::createTimelineEventFromSelection()
     panel->activateWindow();
     if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
     panel->promptNewEvent(text, marker);
+}
+
+void MainWindow::addSelectionToMemory()
+{
+    if (!editor || !projectModel || !editorHost || !memoryAddPopup) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString text = raw.trimmed();
+    if (text.isEmpty()) return;
+
+    // Monta a fonte (de onde o trecho veio) + um rótulo legível.
+    MemoriesStore::Memory mem;
+    mem.text = text;
+    QString sourceLabel;
+    const auto vm = editorHost->viewMode();
+    if (vm.type == EditorHost::SceneDoc) {
+        mem.sourceType = QStringLiteral("scene");
+        mem.chapterId = vm.chapterId;
+        mem.sceneIndex = vm.sceneIndex;
+        mem.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
+        const QString chTitle = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        const QString scTitle = (sc && !sc->title.isEmpty())
+            ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
+        sourceLabel = tr("%1 — %2").arg(chTitle, scTitle);
+    } else if (vm.type == EditorHost::ChapterDoc) {
+        mem.sourceType = QStringLiteral("chapter");
+        mem.chapterId = vm.chapterId;
+        mem.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        sourceLabel = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+    } else if (vm.type == EditorHost::DrawerDoc) {
+        mem.sourceType = QStringLiteral("drawer");
+        mem.itemId = vm.itemId;
+        const DrawerItem* it = projectModel->findDrawerItem(vm.itemId);
+        sourceLabel = (it && !it->title.isEmpty()) ? it->title : tr("Documento");
+    }
+    mem.sourceLabel = sourceLabel;
+    m_pendingMemory = mem;
+
+    // Lista de personagens (elementos do tipo "character") pro seletor.
+    QVector<QPair<QString, QString>> characters;
+    if (elementsStore) {
+        for (const Element& el : elementsStore->elements()) {
+            if (el.type == QStringLiteral("character"))
+                characters.append({ el.id, el.name.isEmpty() ? tr("(sem nome)") : el.name });
+        }
+    }
+
+    // Posiciona o popup logo abaixo do fim da seleção.
+    QTextCursor end(editor->document());
+    end.setPosition(cur.selectionEnd());
+    const QRect r = editor->cursorRect(end);
+    const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft()) + QPoint(0, 6);
+    memoryAddPopup->presentAt(gp, text, sourceLabel, characters);
 }
 
 void MainWindow::createDocFromSelection()
