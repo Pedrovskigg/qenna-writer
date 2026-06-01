@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/app">
         <file alias="mira.png">../src/assets/logo/app-icon-256.png</file>
+        <file alias="logo.png">../src/assets/logo/logo.png</file>
         <file alias="splash.png">../src/assets/logo/splash.png</file>
     </qresource>
     <qresource prefix="/icons">

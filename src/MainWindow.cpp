@@ -3220,6 +3220,45 @@ void MainWindow::openMainMenu()
                     }
                     if (mainMenuDialog) mainMenuDialog->accept();
                 });
+
+        // Remover dos recentes — só tira da lista, não toca no disco.
+        connect(mainMenuDialog, &MainMenuDialog::removeRecentRequested,
+                this, [this](const QString& path) {
+                    QStringList list = loadRecentProjects();
+                    list.removeAll(path);
+                    list.removeAll(QDir::cleanPath(path));
+                    saveRecentProjects(list);
+                    if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
+                });
+
+        // Excluir projeto — apaga a pasta do disco (a confirmação com countdown
+        // já passou no MainMenuDialog) e atualiza recentes + autoOpen.
+        connect(mainMenuDialog, &MainMenuDialog::deleteProjectRequested,
+                this, [this](const QString& path) {
+                    const QString clean = QDir::cleanPath(path);
+                    // Bloqueia excluir o projeto que está aberto agora.
+                    if (!projectRoot.isEmpty()
+                        && QDir::cleanPath(projectRoot) == clean) {
+                        QMessageBox::warning(mainMenuDialog, tr("Não é possível excluir"),
+                            tr("Este é o projeto aberto no momento. Feche-o antes de excluí-lo."));
+                        return;
+                    }
+                    QDir dir(path);
+                    if (dir.exists() && !dir.removeRecursively()) {
+                        QMessageBox::warning(mainMenuDialog, tr("Erro ao excluir"),
+                            tr("Não foi possível apagar a pasta do projeto."));
+                        return;
+                    }
+                    QStringList list = loadRecentProjects();
+                    list.removeAll(path);
+                    list.removeAll(clean);
+                    saveRecentProjects(list);
+                    QSettings s;
+                    if (QDir::cleanPath(s.value(QStringLiteral("autoOpenProject")).toString()) == clean) {
+                        s.remove(QStringLiteral("autoOpenProject"));
+                    }
+                    if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
+                });
     }
     mainMenuDialog->setRecentProjects(loadRecentProjects());
     mainMenuDialog->setAutoOpenPath(

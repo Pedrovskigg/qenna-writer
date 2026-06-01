@@ -4,28 +4,40 @@
 #include "Quotes.h"
 #include "Theme.h"
 
+#include <QAction>
 #include <QBuffer>
 #include <QByteArray>
+#include <QCheckBox>
 #include <QComboBox>
+#include <QContextMenuEvent>
 #include <QCoreApplication>
+#include <QDialogButtonBox>
 #include <QDir>
+#include <QEnterEvent>
 #include <QFile>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
+#include <QFormLayout>
+#include <QGridLayout>
 #include <QHBoxLayout>
+#include <QIcon>
+#include <QImage>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QLineEdit>
 #include <QLinearGradient>
+#include <QMenu>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QPlainTextEdit>
 #include <QProcess>
 #include <QPushButton>
 #include <QScrollArea>
-#include <QCheckBox>
-#include <QIcon>
 #include <QSettings>
 #include <QShowEvent>
 #include <QTimer>
@@ -35,11 +47,17 @@
 
 namespace {
 
-constexpr int kCardCoverW = 140;
-constexpr int kCardCoverH = 210;
-constexpr int kDialogW = 820;
-constexpr int kDialogH = 640;
-constexpr int kLogoSize = 315;
+constexpr int kCardCoverW = 240;
+constexpr int kCardCoverH = 360;
+constexpr int kDialogW = 1320;
+constexpr int kDialogH = 1000;
+constexpr int kLogoSize = 360;
+
+// Padding ao redor da capa pra acomodar sombra projetada + bloco de páginas.
+constexpr int kVitPadL = 2;
+constexpr int kVitPadT = 3;
+constexpr int kVitPadR = 19;
+constexpr int kVitPadB = 17;
 
 struct RecentInfo {
     bool valid = false;
@@ -138,90 +156,358 @@ QPixmap renderDefaultCover(const QString& name, const QString& author, int w, in
     return pm;
 }
 
-// Card clicável da lista de recentes. Sem Q_OBJECT — dispara callbacks pra
-// click (abrir) e pra toggle do checkbox "abrir automaticamente". Hover é
-// QSS puro via :hover no objeto.
-class RecentCard : public QFrame {
+// Embrulha a capa num "livro de vitrine": sombra projetada, bloco de páginas
+// na borda direita e vinco de lombada à esquerda — um 3D sutil, de frente.
+// A área de capa fica exatamente w×h; a sombra/páginas extrapolam via padding.
+QPixmap renderVitrineCover(const QPixmap& coverIn, int w, int h)
+{
+    const int cw = kVitPadL + w + kVitPadR;
+    const int ch = kVitPadT + h + kVitPadB;
+    QPixmap pm(cw, ch);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    const QRectF coverRect(kVitPadL, kVitPadT, w, h);
+    const qreal radius = 4.0;
+
+    // 1) Sombra projetada — empilha rects translúcidos pra aproximar um blur.
+    for (int i = 8; i >= 1; --i) {
+        const qreal off = i * 1.1;
+        QPainterPath sp;
+        sp.addRoundedRect(coverRect.translated(off * 0.45, off), radius + i, radius + i);
+        p.fillPath(sp, QColor(0, 0, 0, 14));
+    }
+
+    // 2) Bloco de páginas na borda direita (creme), recuado em cima/baixo.
+    for (int i = 5; i >= 1; --i) {
+        const qreal x = coverRect.right() - 1 + i * 1.5;
+        const qreal inset = i * 0.7;
+        const QColor edge = (i % 2 == 0) ? QColor(232, 226, 210) : QColor(208, 200, 182);
+        p.setPen(QPen(edge, 1.6));
+        p.drawLine(QPointF(x, coverRect.top() + 2 + inset),
+                   QPointF(x, coverRect.bottom() - 2 - inset));
+    }
+
+    // 3) Capa em si, recortada em cantos arredondados.
+    QPainterPath clip;
+    clip.addRoundedRect(coverRect, radius, radius);
+    p.save();
+    p.setClipPath(clip);
+    const QPixmap scaled = coverIn.scaled(int(coverRect.width()), int(coverRect.height()),
+                                          Qt::KeepAspectRatioByExpanding,
+                                          Qt::SmoothTransformation);
+    const qreal dx = coverRect.left() - (scaled.width() - coverRect.width()) / 2.0;
+    const qreal dy = coverRect.top() - (scaled.height() - coverRect.height()) / 2.0;
+    p.drawPixmap(QPointF(dx, dy), scaled);
+
+    // 4) Vinco de lombada: gradiente escuro→claro na borda esquerda.
+    QLinearGradient spine(coverRect.left(), 0, coverRect.left() + 13, 0);
+    spine.setColorAt(0.0, QColor(0, 0, 0, 90));
+    spine.setColorAt(0.35, QColor(0, 0, 0, 20));
+    spine.setColorAt(0.55, QColor(255, 255, 255, 28));
+    spine.setColorAt(1.0, QColor(255, 255, 255, 0));
+    p.fillRect(QRectF(coverRect.left(), coverRect.top(), 13, coverRect.height()), spine);
+    p.restore();
+
+    // 5) Contorno sutil.
+    p.setPen(QPen(QColor(255, 255, 255, 28), 1));
+    p.drawPath(clip);
+    return pm;
+}
+
+// Conjunto de callbacks do card — agrupados pra não inflar a assinatura.
+struct CardCallbacks {
+    std::function<void()> open;            // clique esquerdo → abrir projeto
+    std::function<void(bool)> autoOpen;    // toggle "abrir automaticamente"
+    std::function<void(QWidget*, bool)> hover; // enter/leave → escurecer outros
+    std::function<void()> edit;            // context menu → editar
+    std::function<void()> removeRecent;    // context menu → remover dos recentes
+    std::function<void()> del;             // context menu → excluir projeto
+};
+
+// Card de livro do grid de recentes. Sem Q_OBJECT — dispara callbacks. O
+// conteúdo é capa-vitrine + título + toggle. O escurecimento de hover NÃO usa
+// QGraphicsOpacityEffect (que corta o repaint dentro do QScrollArea): em vez
+// disso, um "véu" translúcido (filho da capa) é mostrado/escondido.
+class BookCard : public QFrame {
 public:
-    using OpenCallback = std::function<void()>;
-    using AutoOpenCallback = std::function<void(bool)>;
-
-    RecentCard(const QString& path, const RecentInfo& info, bool autoOpen,
-               OpenCallback openCb, AutoOpenCallback autoOpenCb,
-               QWidget* parent = nullptr)
-        : QFrame(parent), m_openCallback(std::move(openCb))
+    BookCard(const QString& path, const RecentInfo& info, bool autoOpen,
+             CardCallbacks cbs, QWidget* parent = nullptr)
+        : QFrame(parent), m_cbs(std::move(cbs))
     {
-        setObjectName(QStringLiteral("recentCard"));
+        setObjectName(QStringLiteral("bookCard"));
         setCursor(Qt::PointingHandCursor);
-        setFixedHeight(kCardCoverH + 18);
 
-        auto* row = new QHBoxLayout(this);
-        row->setContentsMargins(9, 9, 14, 9);
-        row->setSpacing(14);
+        auto* col = new QVBoxLayout(this);
+        col->setContentsMargins(0, 0, 0, 0);
+        col->setSpacing(7);
+        col->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+
+        QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+        if (cover.isNull()) {
+            cover = renderDefaultCover(info.name, info.author, kCardCoverW, kCardCoverH);
+        }
+        const QPixmap vit = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
 
         auto* coverLbl = new QLabel(this);
-        coverLbl->setFixedSize(kCardCoverW, kCardCoverH);
-        coverLbl->setAlignment(Qt::AlignCenter);
-        QPixmap pm = decodeCoverDataUrl(info.coverDataUrl);
-        if (pm.isNull()) {
-            pm = renderDefaultCover(info.name, info.author, kCardCoverW, kCardCoverH);
-        } else {
-            pm = pm.scaled(kCardCoverW, kCardCoverH,
-                           Qt::KeepAspectRatioByExpanding,
-                           Qt::SmoothTransformation);
-        }
-        coverLbl->setPixmap(pm);
-        row->addWidget(coverLbl);
+        coverLbl->setFixedSize(vit.size());
+        coverLbl->setPixmap(vit);
+        coverLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        col->addWidget(coverLbl, 0, Qt::AlignHCenter);
 
-        auto* col = new QVBoxLayout;
-        col->setSpacing(4);
-        col->setContentsMargins(0, 4, 0, 4);
-        col->setAlignment(Qt::AlignTop);
+        // Véu de escurecimento — cobre só a área da capa (sem o padding da
+        // sombra). Começa escondido; setDimmed() controla a visibilidade.
+        m_veil = new QWidget(coverLbl);
+        m_veil->setObjectName(QStringLiteral("bookCardVeil"));
+        m_veil->setAttribute(Qt::WA_StyledBackground, true);
+        m_veil->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        m_veil->setGeometry(kVitPadL, kVitPadT, kCardCoverW, kCardCoverH);
+        m_veil->hide();
 
         auto* nameLbl = new QLabel(info.name.isEmpty()
                                        ? QFileInfo(path).fileName()
                                        : info.name,
                                    this);
-        nameLbl->setObjectName(QStringLiteral("recentName"));
+        nameLbl->setObjectName(QStringLiteral("bookCardName"));
+        nameLbl->setAlignment(Qt::AlignHCenter);
         nameLbl->setWordWrap(true);
-        col->addWidget(nameLbl);
-
-        if (!info.author.isEmpty()) {
-            auto* authorLbl = new QLabel(info.author, this);
-            authorLbl->setObjectName(QStringLiteral("recentAuthor"));
-            col->addWidget(authorLbl);
-        }
-
-        if (!info.genres.isEmpty()) {
-            auto* genresLbl = new QLabel(info.genres, this);
-            genresLbl->setObjectName(QStringLiteral("recentGenres"));
-            genresLbl->setWordWrap(true);
-            col->addWidget(genresLbl);
-        }
-
-        col->addStretch();
+        nameLbl->setFixedWidth(vit.width());
+        nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        col->addWidget(nameLbl, 0, Qt::AlignHCenter);
 
         auto* autoOpenChk = new QCheckBox(tr("Abrir automaticamente"), this);
-        autoOpenChk->setObjectName(QStringLiteral("recentAutoOpen"));
+        autoOpenChk->setObjectName(QStringLiteral("bookCardAutoOpen"));
         autoOpenChk->setCursor(Qt::PointingHandCursor);
         autoOpenChk->setChecked(autoOpen);
         QObject::connect(autoOpenChk, &QCheckBox::toggled, this,
-            [cb = std::move(autoOpenCb)](bool checked) { if (cb) cb(checked); });
-        col->addWidget(autoOpenChk);
+            [cb = m_cbs.autoOpen](bool checked) { if (cb) cb(checked); });
+        col->addWidget(autoOpenChk, 0, Qt::AlignHCenter);
 
-        row->addLayout(col, /*stretch=*/1);
+        setFixedWidth(vit.width());
+    }
+
+    void setDimmed(bool dim) {
+        if (m_veil) m_veil->setVisible(dim);
     }
 
 protected:
     void mouseReleaseEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::LeftButton && rect().contains(event->pos()) && m_openCallback) {
-            m_openCallback();
+        if (event->button() == Qt::LeftButton && rect().contains(event->pos())
+            && m_cbs.open) {
+            m_cbs.open();
         }
         QFrame::mouseReleaseEvent(event);
     }
+    void enterEvent(QEnterEvent* event) override {
+        if (m_cbs.hover) m_cbs.hover(this, true);
+        QFrame::enterEvent(event);
+    }
+    void leaveEvent(QEvent* event) override {
+        if (m_cbs.hover) m_cbs.hover(this, false);
+        QFrame::leaveEvent(event);
+    }
+    void contextMenuEvent(QContextMenuEvent* event) override {
+        QMenu menu(this);
+        menu.setObjectName(QStringLiteral("bookCardMenu"));
+        QAction* aEdit   = menu.addAction(tr("Editar projeto"));
+        QAction* aRemove = menu.addAction(tr("Remover dos recentes"));
+        menu.addSeparator();
+        QAction* aDelete = menu.addAction(tr("Excluir projeto"));
+        QAction* chosen = menu.exec(event->globalPos());
+        if (chosen == aEdit && m_cbs.edit)            m_cbs.edit();
+        else if (chosen == aRemove && m_cbs.removeRecent) m_cbs.removeRecent();
+        else if (chosen == aDelete && m_cbs.del)      m_cbs.del();
+    }
 
 private:
-    OpenCallback m_openCallback;
+    CardCallbacks m_cbs;
+    QWidget* m_veil = nullptr;
+};
+
+// Diálogo de edição dos metadados do projeto: nome, autor, gêneros, sinopse e
+// capa. Não toca no ProjectModel — quem grava é o MainMenuDialog, direto no
+// índice. Sem Q_OBJECT: usa apenas accept()/reject() do QDialog + lambdas.
+class ProjectEditDialog : public QDialog {
+public:
+    explicit ProjectEditDialog(QWidget* parent = nullptr)
+        : QDialog(parent)
+    {
+        setObjectName(QStringLiteral("projectEditDialog"));
+        setWindowTitle(tr("Editar projeto"));
+        setModal(true);
+        resize(520, 560);
+
+        auto* root = new QVBoxLayout(this);
+        root->setContentsMargins(22, 22, 22, 18);
+        root->setSpacing(14);
+
+        auto* topRow = new QHBoxLayout();
+        topRow->setSpacing(16);
+
+        // Coluna da capa (preview + botões).
+        auto* coverCol = new QVBoxLayout();
+        coverCol->setSpacing(8);
+        m_coverPreview = new QLabel(this);
+        m_coverPreview->setObjectName(QStringLiteral("projectEditCover"));
+        m_coverPreview->setFixedSize(150, 225);
+        m_coverPreview->setAlignment(Qt::AlignCenter);
+        m_coverPreview->setScaledContents(false);
+        coverCol->addWidget(m_coverPreview, 0, Qt::AlignHCenter);
+
+        auto* changeCover = new QPushButton(tr("Trocar capa"), this);
+        changeCover->setCursor(Qt::PointingHandCursor);
+        QObject::connect(changeCover, &QPushButton::clicked, this, [this]() {
+            const QString file = QFileDialog::getOpenFileName(
+                this, tr("Escolher capa"), QString(),
+                tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
+            if (file.isEmpty()) return;
+            QImage img(file);
+            if (img.isNull()) return;
+            if (img.width() > 900)
+                img = img.scaledToWidth(900, Qt::SmoothTransformation);
+            QByteArray ba;
+            QBuffer buf(&ba);
+            buf.open(QIODevice::WriteOnly);
+            img.save(&buf, "PNG");
+            m_coverDataUrl = QStringLiteral("data:image/png;base64,")
+                             + QString::fromLatin1(ba.toBase64());
+            updateCoverPreview();
+        });
+        coverCol->addWidget(changeCover);
+
+        auto* clearCover = new QPushButton(tr("Remover capa"), this);
+        clearCover->setCursor(Qt::PointingHandCursor);
+        QObject::connect(clearCover, &QPushButton::clicked, this, [this]() {
+            m_coverDataUrl.clear();
+            updateCoverPreview();
+        });
+        coverCol->addWidget(clearCover);
+        coverCol->addStretch();
+        topRow->addLayout(coverCol);
+
+        // Coluna dos campos de texto.
+        auto* form = new QFormLayout();
+        form->setLabelAlignment(Qt::AlignLeft);
+        form->setSpacing(8);
+        m_nameEdit = new QLineEdit(this);
+        m_authorEdit = new QLineEdit(this);
+        m_genresEdit = new QLineEdit(this);
+        form->addRow(tr("Nome"), m_nameEdit);
+        form->addRow(tr("Autor"), m_authorEdit);
+        form->addRow(tr("Gêneros"), m_genresEdit);
+        topRow->addLayout(form, /*stretch=*/1);
+
+        root->addLayout(topRow);
+
+        auto* synLabel = new QLabel(tr("Sinopse"), this);
+        root->addWidget(synLabel);
+        m_synopsisEdit = new QPlainTextEdit(this);
+        m_synopsisEdit->setMinimumHeight(120);
+        root->addWidget(m_synopsisEdit, /*stretch=*/1);
+
+        auto* buttons = new QDialogButtonBox(
+            QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
+        buttons->button(QDialogButtonBox::Save)->setText(tr("Salvar"));
+        buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
+        QObject::connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+        QObject::connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        root->addWidget(buttons);
+    }
+
+    void setValues(const QString& name, const QString& author,
+                   const QString& genres, const QString& synopsis,
+                   const QString& coverDataUrl)
+    {
+        m_nameEdit->setText(name);
+        m_authorEdit->setText(author);
+        m_genresEdit->setText(genres);
+        m_synopsisEdit->setPlainText(synopsis);
+        m_coverDataUrl = coverDataUrl;
+        updateCoverPreview();
+    }
+
+    QString name() const     { return m_nameEdit->text().trimmed(); }
+    QString author() const   { return m_authorEdit->text().trimmed(); }
+    QString genres() const   { return m_genresEdit->text().trimmed(); }
+    QString synopsis() const { return m_synopsisEdit->toPlainText().trimmed(); }
+    QString coverDataUrl() const { return m_coverDataUrl; }
+
+private:
+    void updateCoverPreview() {
+        QPixmap pm = decodeCoverDataUrl(m_coverDataUrl);
+        if (pm.isNull()) {
+            m_coverPreview->setText(tr("Sem capa"));
+            return;
+        }
+        m_coverPreview->setPixmap(pm.scaled(m_coverPreview->size(),
+                                            Qt::KeepAspectRatio,
+                                            Qt::SmoothTransformation));
+    }
+
+    QLineEdit* m_nameEdit = nullptr;
+    QLineEdit* m_authorEdit = nullptr;
+    QLineEdit* m_genresEdit = nullptr;
+    QPlainTextEdit* m_synopsisEdit = nullptr;
+    QLabel* m_coverPreview = nullptr;
+    QString m_coverDataUrl;
+};
+
+// Confirmação de exclusão com trava de tempo: o botão "Excluir" só habilita
+// após um countdown de 5s, dando margem pra desistir de uma ação destrutiva.
+class DeleteConfirmDialog : public QDialog {
+public:
+    DeleteConfirmDialog(const QString& projectName, QWidget* parent = nullptr)
+        : QDialog(parent)
+    {
+        setObjectName(QStringLiteral("deleteConfirmDialog"));
+        setWindowTitle(tr("Excluir projeto"));
+        setModal(true);
+
+        auto* root = new QVBoxLayout(this);
+        root->setContentsMargins(24, 22, 24, 18);
+        root->setSpacing(16);
+
+        auto* msg = new QLabel(
+            tr("Tem certeza que deseja excluir \"%1\"?\n\n"
+               "A pasta do projeto será apagada do disco. "
+               "Esta ação NÃO pode ser desfeita.").arg(projectName),
+            this);
+        msg->setWordWrap(true);
+        root->addWidget(msg);
+
+        auto* buttons = new QDialogButtonBox(this);
+        auto* cancelBtn = buttons->addButton(tr("Cancelar"), QDialogButtonBox::RejectRole);
+        m_deleteBtn = buttons->addButton(tr("Excluir"), QDialogButtonBox::AcceptRole);
+        m_deleteBtn->setObjectName(QStringLiteral("deleteConfirmBtn"));
+        m_deleteBtn->setEnabled(false);
+        cancelBtn->setCursor(Qt::PointingHandCursor);
+        m_deleteBtn->setCursor(Qt::PointingHandCursor);
+        QObject::connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
+        QObject::connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
+        root->addWidget(buttons);
+
+        // Countdown 5 → 0.
+        m_remaining = 5;
+        m_deleteBtn->setText(tr("Excluir (%1)").arg(m_remaining));
+        auto* timer = new QTimer(this);
+        timer->setInterval(1000);
+        QObject::connect(timer, &QTimer::timeout, this, [this, timer]() {
+            if (--m_remaining <= 0) {
+                timer->stop();
+                m_deleteBtn->setEnabled(true);
+                m_deleteBtn->setText(tr("Excluir"));
+            } else {
+                m_deleteBtn->setText(tr("Excluir (%1)").arg(m_remaining));
+            }
+        });
+        timer->start();
+    }
+
+private:
+    QPushButton* m_deleteBtn = nullptr;
+    int m_remaining = 5;
 };
 
 } // namespace
@@ -240,7 +526,7 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
     setWindowFlags(Qt::Window);
     setWindowIcon(QIcon(QStringLiteral(":/app/mira.png")));
     resize(kDialogW, kDialogH);
-    setMinimumSize(680, 520);
+    setMinimumSize(1000, 700);
     buildUi();
     applyDialogStyle();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -256,109 +542,18 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
 
 void MainMenuDialog::buildUi()
 {
-    auto* root = new QHBoxLayout(this);
-    root->setContentsMargins(0, 0, 0, 0);
-    root->setSpacing(0);
+    auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(40, 16, 40, 26);
+    root->setSpacing(10);
 
-    // ---- Coluna esquerda: projetos ----
-    auto* leftFrame = new QFrame(this);
-    leftFrame->setObjectName(QStringLiteral("menuLeftCol"));
-    auto* leftCol = new QVBoxLayout(leftFrame);
-    leftCol->setContentsMargins(24, 24, 24, 24);
-    leftCol->setSpacing(14);
-
-    auto* headerRow = new QHBoxLayout;
-    headerRow->setSpacing(8);
-    auto* heading = new QLabel(tr("Projetos"), leftFrame);
-    heading->setObjectName(QStringLiteral("menuHeading"));
-    headerRow->addWidget(heading);
-    headerRow->addStretch();
-
-    m_newBtn = new QPushButton(tr("Novo"), leftFrame);
-    m_newBtn->setObjectName(QStringLiteral("menuActionBtn"));
-    m_newBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_newBtn, &QPushButton::clicked, this, [this]() {
-        emit newProjectRequested();
-    });
-    headerRow->addWidget(m_newBtn);
-
-    m_loadBtn = new QPushButton(tr("Carregar"), leftFrame);
-    m_loadBtn->setObjectName(QStringLiteral("menuActionBtn"));
-    m_loadBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_loadBtn, &QPushButton::clicked, this, [this]() {
-        emit loadProjectRequested();
-    });
-    headerRow->addWidget(m_loadBtn);
-
-    leftCol->addLayout(headerRow);
-
-    auto* sub = new QLabel(tr("Recentes"), leftFrame);
-    sub->setObjectName(QStringLiteral("menuSubheading"));
-    leftCol->addWidget(sub);
-
-    m_recentsScroll = new QScrollArea(leftFrame);
-    m_recentsScroll->setObjectName(QStringLiteral("menuRecentsScroll"));
-    m_recentsScroll->setWidgetResizable(true);
-    m_recentsScroll->setFrameShape(QFrame::NoFrame);
-    m_recentsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_recentsHolder = new QWidget(m_recentsScroll);
-    m_recentsHolder->setObjectName(QStringLiteral("menuRecentsHolder"));
-    m_recentsLayout = new QVBoxLayout(m_recentsHolder);
-    m_recentsLayout->setContentsMargins(0, 0, 0, 0);
-    m_recentsLayout->setSpacing(8);
-
-    m_emptyLabel = new QLabel(
-        tr("Você ainda não tem projetos.\n"
-           "Clique em \"Novo\" pra começar um, ou em \"Carregar\" pra abrir uma pasta existente."),
-        m_recentsHolder);
-    m_emptyLabel->setObjectName(QStringLiteral("menuEmpty"));
-    m_emptyLabel->setAlignment(Qt::AlignCenter);
-    m_emptyLabel->setWordWrap(true);
-    m_recentsLayout->addWidget(m_emptyLabel);
-    m_recentsLayout->addStretch();
-
-    m_recentsScroll->setWidget(m_recentsHolder);
-    leftCol->addWidget(m_recentsScroll, /*stretch=*/1);
-
-    root->addWidget(leftFrame, /*stretch=*/1);
-
-    // ---- Coluna direita: logo + quote ----
-    auto* rightFrame = new QFrame(this);
-    rightFrame->setObjectName(QStringLiteral("menuRightCol"));
-    auto* rightCol = new QVBoxLayout(rightFrame);
-    rightCol->setContentsMargins(28, 28, 28, 28);
-    rightCol->setSpacing(0);
-
-    m_quoteLabel = new QLabel(rightFrame);
-    m_quoteLabel->setObjectName(QStringLiteral("menuQuote"));
-    m_quoteLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-    m_quoteLabel->setWordWrap(true);
-    rightCol->addWidget(m_quoteLabel, 0, Qt::AlignTop);
-
-    rightCol->addSpacing(12);
-
-    m_logoLabel = new QLabel(rightFrame);
-    m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
-    m_logoLabel->setAlignment(Qt::AlignCenter);
-    QPixmap logoPm(QStringLiteral(":/app/mira.png"));
-    if (!logoPm.isNull()) {
-        m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
-    } else {
-        m_logoLabel->setText(QStringLiteral("Mira Writing"));
-    }
-    rightCol->addWidget(m_logoLabel, 0, Qt::AlignCenter);
-
-    rightCol->addStretch();
-
-    // Seletor de idioma — rodapé direito.
+    // --- Topo: seletor de idioma à direita (discreto) ---
     auto* langRow = new QHBoxLayout();
     langRow->setSpacing(6);
     langRow->setContentsMargins(0, 0, 0, 0);
-    auto* langLbl = new QLabel(tr("Idioma:"), rightFrame);
+    langRow->addStretch();
+    auto* langLbl = new QLabel(tr("Idioma:"), this);
     langLbl->setObjectName(QStringLiteral("menuLangLabel"));
-    m_langCombo = new QComboBox(rightFrame);
+    m_langCombo = new QComboBox(this);
     m_langCombo->setObjectName(QStringLiteral("menuLangCombo"));
     m_langCombo->setCursor(Qt::PointingHandCursor);
     m_langCombo->addItem(tr("Português (BR)"), QStringLiteral("pt_BR"));
@@ -378,12 +573,81 @@ void MainMenuDialog::buildUi()
                                 QCoreApplication::arguments());
         QCoreApplication::quit();
     });
-    langRow->addStretch();
     langRow->addWidget(langLbl);
     langRow->addWidget(m_langCombo);
-    rightCol->addLayout(langRow);
+    root->addLayout(langRow);
 
-    root->addWidget(rightFrame, /*stretch=*/1);
+    // --- Logo + quote centralizados no topo ---
+    m_logoLabel = new QLabel(this);
+    m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
+    // Logo em alta resolução (1024px) pra não borrar no tamanho grande.
+    QPixmap logoPm(QStringLiteral(":/app/logo.png"));
+    if (!logoPm.isNull()) {
+        m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
+                                             Qt::KeepAspectRatio,
+                                             Qt::SmoothTransformation));
+    } else {
+        m_logoLabel->setText(QStringLiteral("Mira Writing"));
+    }
+    root->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
+
+    m_quoteLabel = new QLabel(this);
+    m_quoteLabel->setObjectName(QStringLiteral("menuQuote"));
+    m_quoteLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    m_quoteLabel->setWordWrap(true);
+    // Largura fixa torna o word-wrap determinístico (a altura cresce em vez
+    // de cortar o texto). Centralizado em relação ao logo.
+    m_quoteLabel->setFixedWidth(880);
+    m_quoteLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
+    root->addWidget(m_quoteLabel, 0, Qt::AlignHCenter);
+
+    root->addSpacing(16);
+
+    // --- Botões Novo/Carregar no canto esquerdo, acima do grid ---
+    auto* btnRow = new QHBoxLayout();
+    btnRow->setSpacing(8);
+    btnRow->setContentsMargins(0, 0, 0, 0);
+    m_newBtn = new QPushButton(tr("Novo"), this);
+    m_newBtn->setObjectName(QStringLiteral("menuActionBtn"));
+    m_newBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_newBtn, &QPushButton::clicked, this, [this]() { emit newProjectRequested(); });
+    btnRow->addWidget(m_newBtn);
+    m_loadBtn = new QPushButton(tr("Carregar"), this);
+    m_loadBtn->setObjectName(QStringLiteral("menuActionBtn"));
+    m_loadBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_loadBtn, &QPushButton::clicked, this, [this]() { emit loadProjectRequested(); });
+    btnRow->addWidget(m_loadBtn);
+    btnRow->addStretch();
+    root->addLayout(btnRow);
+
+    // --- Grid HORIZONTAL de recentes (scroll lateral) ---
+    m_recentsScroll = new QScrollArea(this);
+    m_recentsScroll->setObjectName(QStringLiteral("menuRecentsScroll"));
+    m_recentsScroll->setWidgetResizable(true);
+    m_recentsScroll->setFrameShape(QFrame::NoFrame);
+    m_recentsScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_recentsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    // Garante altura pra exibir o card inteiro (capa + nome + toggle).
+    m_recentsScroll->setMinimumHeight(kCardCoverH + kVitPadT + kVitPadB + 80);
+
+    m_recentsHolder = new QWidget(m_recentsScroll);
+    m_recentsHolder->setObjectName(QStringLiteral("menuRecentsHolder"));
+    m_recentsRow = new QHBoxLayout(m_recentsHolder);
+    m_recentsRow->setContentsMargins(0, 0, 0, 8);
+    m_recentsRow->setSpacing(20);
+    m_recentsRow->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+    m_emptyLabel = new QLabel(
+        tr("Você ainda não tem projetos.\n"
+           "Clique em \"Novo\" pra começar um, ou em \"Carregar\" pra abrir uma pasta existente."),
+        m_recentsHolder);
+    m_emptyLabel->setObjectName(QStringLiteral("menuEmpty"));
+    m_emptyLabel->setAlignment(Qt::AlignCenter);
+    m_emptyLabel->setWordWrap(true);
+    m_emptyLabel->hide();
+
+    m_recentsScroll->setWidget(m_recentsHolder);
+    root->addWidget(m_recentsScroll, /*stretch=*/1);
 }
 
 void MainMenuDialog::setRecentProjects(const QStringList& paths)
@@ -398,16 +662,28 @@ void MainMenuDialog::setAutoOpenPath(const QString& path)
     refreshRecents();
 }
 
+void MainMenuDialog::setHoveredCard(QWidget* hovered)
+{
+    // m_cards guarda apenas BookCard* (criados em refreshRecents); o
+    // static_cast é seguro e evita Q_OBJECT/qobject_cast no tipo local.
+    for (QWidget* c : m_cards) {
+        if (!c) continue;
+        static_cast<BookCard*>(c)->setDimmed(hovered != nullptr && c != hovered);
+    }
+}
+
 void MainMenuDialog::refreshRecents()
 {
-    if (!m_recentsLayout) return;
+    if (!m_recentsRow) return;
 
-    // Limpa o layout sem destruir o m_emptyLabel — só remove do layout.
-    while (m_recentsLayout->count() > 0) {
-        QLayoutItem* it = m_recentsLayout->takeAt(0);
-        if (!it) break;
+    // Limpa os cards anteriores (e o estado de hover). O m_emptyLabel é
+    // preservado — só sai do layout, sem ser destruído.
+    m_cards.clear();
+    while (QLayoutItem* it = m_recentsRow->takeAt(0)) {
         if (QWidget* w = it->widget()) {
             if (w == m_emptyLabel) {
+                w->hide();
+                w->setParent(m_recentsHolder);
                 delete it;
                 continue;
             }
@@ -424,23 +700,95 @@ void MainMenuDialog::refreshRecents()
         const QString capturedPath = path;
         const bool isAutoOpen = !m_autoOpenPath.isEmpty()
             && QDir::cleanPath(path) == m_autoOpenPath;
-        auto* card = new RecentCard(path, info, isAutoOpen,
-            [this, capturedPath]() { emit openRecentRequested(capturedPath); },
-            [this, capturedPath](bool enabled) {
-                emit autoOpenChanged(capturedPath, enabled);
-            },
-            m_recentsHolder);
-        m_recentsLayout->addWidget(card);
+        CardCallbacks cbs;
+        cbs.open = [this, capturedPath]() { emit openRecentRequested(capturedPath); };
+        cbs.autoOpen = [this, capturedPath](bool enabled) {
+            emit autoOpenChanged(capturedPath, enabled);
+        };
+        cbs.hover = [this](QWidget* c, bool entered) {
+            setHoveredCard(entered ? c : nullptr);
+        };
+        cbs.edit = [this, capturedPath]() { editProject(capturedPath); };
+        cbs.removeRecent = [this, capturedPath]() { emit removeRecentRequested(capturedPath); };
+        cbs.del = [this, capturedPath]() { confirmDeleteProject(capturedPath); };
+        auto* card = new BookCard(path, info, isAutoOpen, std::move(cbs), m_recentsHolder);
+        m_recentsRow->addWidget(card, 0, Qt::AlignTop);
+        m_cards.append(card);
         ++added;
     }
 
     if (added == 0) {
         m_emptyLabel->show();
-        m_recentsLayout->addWidget(m_emptyLabel);
+        m_recentsRow->addWidget(m_emptyLabel, 1, Qt::AlignCenter);
     } else {
-        m_emptyLabel->hide();
+        // Empurra os cards pra a esquerda (sobra fica à direita).
+        m_recentsRow->addStretch(1);
     }
-    m_recentsLayout->addStretch();
+}
+
+void MainMenuDialog::editProject(const QString& path)
+{
+    bool ok = false;
+    QJsonObject idx = ProjectStorage::readIndex(path, &ok);
+    if (!ok) {
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Não foi possível ler o projeto para edição."));
+        return;
+    }
+
+    QString name = idx.value(QStringLiteral("projectName")).toString();
+    if (name.isEmpty()) name = idx.value(QStringLiteral("name")).toString();
+    QJsonObject data = idx.value(QStringLiteral("data")).toObject();
+    QJsonObject pd = data.value(QStringLiteral("projectDetails")).toObject();
+    QString cover = pd.value(QStringLiteral("coverFull")).toString();
+    if (cover.isEmpty()) cover = pd.value(QStringLiteral("cover")).toString();
+
+    ProjectEditDialog dlg(this);
+    dlg.setValues(name.isEmpty() ? QFileInfo(path).fileName() : name,
+                  pd.value(QStringLiteral("author")).toString(),
+                  pd.value(QStringLiteral("genres")).toString(),
+                  pd.value(QStringLiteral("synopsis")).toString(),
+                  cover);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    const QString newName = dlg.name().isEmpty() ? name : dlg.name();
+    // Grava nas duas chaves de nome (compat Mira 1 + leitura do card).
+    idx.insert(QStringLiteral("projectName"), newName);
+    idx.insert(QStringLiteral("name"), newName);
+
+    auto setOrRemove = [](QJsonObject& o, const QString& key, const QString& value) {
+        if (value.isEmpty()) o.remove(key);
+        else o.insert(key, value);
+    };
+    setOrRemove(pd, QStringLiteral("author"), dlg.author());
+    setOrRemove(pd, QStringLiteral("genres"), dlg.genres());
+    setOrRemove(pd, QStringLiteral("synopsis"), dlg.synopsis());
+    const QString newCover = dlg.coverDataUrl();
+    setOrRemove(pd, QStringLiteral("cover"), newCover);
+    setOrRemove(pd, QStringLiteral("coverFull"), newCover);
+
+    if (pd.isEmpty()) data.remove(QStringLiteral("projectDetails"));
+    else data.insert(QStringLiteral("projectDetails"), pd);
+    idx.insert(QStringLiteral("data"), data);
+
+    QString err;
+    if (!ProjectStorage::writeIndex(path, idx, &err)) {
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Não foi possível salvar as alterações:\n%1").arg(err));
+        return;
+    }
+    refreshRecents();
+}
+
+void MainMenuDialog::confirmDeleteProject(const QString& path)
+{
+    const RecentInfo info = readRecentInfo(path);
+    const QString nm = info.name.isEmpty() ? QFileInfo(path).fileName() : info.name;
+    DeleteConfirmDialog dlg(nm, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+    // A exclusão de fato (apagar pasta + atualizar recentes) fica com o
+    // MainWindow, que conhece o estado do projeto aberto e a lista.
+    emit deleteProjectRequested(path);
 }
 
 void MainMenuDialog::rotateQuote()
@@ -474,14 +822,6 @@ void MainMenuDialog::applyDialogStyle()
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-        #menuSubheading {
-            color: %4;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
         #menuEmpty {
             color: %4;
             font-size: 12px;
@@ -505,57 +845,54 @@ void MainMenuDialog::applyDialogStyle()
             border-color: %9;
         }
 
-        QFrame#recentCard {
-            background: %5;
-            border: 1px solid %6;
-            border-radius: 8px;
+        QFrame#bookCard { background: transparent; border: none; }
+        #bookCardVeil {
+            background-color: rgba(0, 0, 0, 0.62);
+            border-radius: 4px;
         }
-        QFrame#recentCard:hover {
-            background: %7;
-            border-color: %9;
-        }
-        #recentName {
+        #bookCardName {
             color: %3;
             font-size: 15px;
             font-weight: 600;
         }
-        #recentAuthor {
-            color: %2;
-            font-size: 12px;
-            font-style: italic;
-        }
-        #recentGenres {
+        #bookCardAutoOpen {
             color: %4;
-            font-size: 11px;
+            font-size: 10px;
+            spacing: 5px;
         }
-        #recentAutoOpen {
-            color: %4;
-            font-size: 11px;
-            spacing: 6px;
-        }
-        #recentAutoOpen::indicator {
-            width: 14px;
-            height: 14px;
+        #bookCardAutoOpen::indicator {
+            width: 13px;
+            height: 13px;
             border: 1px solid %6;
             border-radius: 3px;
             background: %1;
         }
-        #recentAutoOpen::indicator:hover {
-            border-color: %9;
-        }
-        #recentAutoOpen::indicator:checked {
+        #bookCardAutoOpen::indicator:hover { border-color: %9; }
+        #bookCardAutoOpen::indicator:checked {
             background: %9;
             border-color: %9;
             image: url(:/icons/check.svg);
         }
 
-        #menuLogo { padding: 8px; }
+        QFrame#menuReservedPanel {
+            background: transparent;
+            border: 1px dashed %6;
+            border-radius: 8px;
+        }
+        #menuReservedLabel {
+            color: %4;
+            font-size: 12px;
+            font-style: italic;
+            letter-spacing: 0.5px;
+        }
+
+        #menuLogo { padding: 4px; }
         #menuQuote {
             color: %2;
-            font-size: 16px;
+            font-size: 18px;
             font-style: italic;
             line-height: 150%;
-            padding: 4px 4px;
+            padding: 2px 2px;
         }
         #menuLangLabel {
             color: %4;
