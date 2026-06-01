@@ -1283,6 +1283,8 @@ void MainWindow::setupEditor()
     refMenuPanel->raise();
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     connect(refMenuPanel, &RefMenuPanel::selectedKeyChanged, this, &MainWindow::updateDocCachePinnedKeys);
+    connect(refMenuPanel, &RefMenuPanel::openMemoryInEditorRequested,
+            this, &MainWindow::openMemoryInEditor);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
         if (refMenuPanel) refMenuPanel->togglePanel();
     });
@@ -4370,6 +4372,45 @@ void MainWindow::addSelectionToMemory()
     const QRect r = editor->cursorRect(end);
     const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft()) + QPoint(0, 6);
     memoryAddPopup->presentAt(gp, text, sourceLabel, characters);
+}
+
+void MainWindow::openMemoryInEditor(const MemoriesStore::Memory& mem)
+{
+    if (!editorHost || !editor) return;
+
+    EditorHost::ViewMode vm;
+    if (mem.sourceType == QStringLiteral("scene") && !mem.chapterId.isEmpty()) {
+        vm.type = EditorHost::SceneDoc;
+        vm.manuscriptId = mem.manuscriptId;
+        vm.chapterId = mem.chapterId;
+        vm.sceneIndex = mem.sceneIndex;
+    } else if (mem.sourceType == QStringLiteral("chapter") && !mem.chapterId.isEmpty()) {
+        vm.type = EditorHost::ChapterDoc;
+        vm.manuscriptId = mem.manuscriptId;
+        vm.chapterId = mem.chapterId;
+    } else if (mem.sourceType == QStringLiteral("drawer") && !mem.itemId.isEmpty()) {
+        vm.type = EditorHost::DrawerDoc;
+        vm.itemId = mem.itemId;
+    } else {
+        return;
+    }
+    editorHost->setViewMode(vm);
+
+    // "Ctrl+F" automático: depois do doc carregar, leva o cursor ao início e
+    // seleciona o 1º casamento do trecho (1ª linha, até ~60 chars).
+    QString query = mem.text;
+    query.replace(QChar(0x2029), QChar('\n'));
+    const QStringList lines = query.split(QChar('\n'), Qt::SkipEmptyParts);
+    query = lines.isEmpty() ? query.trimmed() : lines.first().trimmed();
+    if (query.size() > 60) query = query.left(60);
+
+    QTimer::singleShot(140, this, [this, query]() {
+        if (!editor || query.isEmpty()) return;
+        editor->moveCursor(QTextCursor::Start);
+        if (editor->find(query))
+            editor->ensureCursorVisible();
+        editor->setFocus();
+    });
 }
 
 void MainWindow::createDocFromSelection()

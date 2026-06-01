@@ -164,6 +164,8 @@ private:
     void createTimelineEventFromSelection();
     // Abre o popup de "Adicionar à memória…" a partir da seleção atual.
     void addSelectionToMemory();
+    // Abre a fonte da memória no editor e seleciona o trecho ("Ctrl+F" auto).
+    void openMemoryInEditor(const MemoriesStore::Memory& mem);
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.

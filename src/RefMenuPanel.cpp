@@ -1313,13 +1313,17 @@ QWidget* RefMenuPanel::buildMemoryRow(const QString& memId, const QString& title
 {
     auto* card = new QFrame(parent);
     card->setObjectName(QStringLiteral("refMemoryRow"));
+    card->setCursor(Qt::PointingHandCursor);
+    card->setProperty("memId", memId);   // usado no eventFilter pro clique
+    card->installEventFilter(this);
     card->setStyleSheet(QStringLiteral(R"(
         QFrame#refMemoryRow {
             background: %1;
             border: 1px solid %2;
             border-radius: 8px;
         }
-    )").arg(Theme::appBackground(), Theme::panelBorder()));
+        QFrame#refMemoryRow:hover { border-color: %3; }
+    )").arg(Theme::appBackground(), Theme::panelBorder(), Theme::accentDefault()));
     auto* lay = new QVBoxLayout(card);
     lay->setContentsMargins(10, 8, 10, 8);
     lay->setSpacing(4);
@@ -1330,6 +1334,7 @@ QWidget* RefMenuPanel::buildMemoryRow(const QString& memId, const QString& title
     titleLbl->setStyleSheet(QStringLiteral("color:%1; font-size:11px; font-weight:700;")
                                 .arg(Theme::accentDefault()));
     titleLbl->setWordWrap(true);
+    titleLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     topRow->addWidget(titleLbl, 1);
 
     auto* delBtn = new QToolButton(card);
@@ -1352,6 +1357,7 @@ QWidget* RefMenuPanel::buildMemoryRow(const QString& memId, const QString& title
     auto* textLbl = new QLabel(QStringLiteral("“%1”").arg(text), card);
     textLbl->setStyleSheet(QStringLiteral("color:%1; font-size:12px;").arg(Theme::textPrimary()));
     textLbl->setWordWrap(true);
+    textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     lay->addWidget(textLbl);
 
     return card;
@@ -1475,6 +1481,85 @@ void RefMenuPanel::buildMemoriesView()
             header = tr("[%1]  %2").arg(charName(m.elementId), header);
         }
         m_navInnerLay->addWidget(buildMemoryRow(m.id, header, m.text, m_navInner));
+    }
+}
+
+namespace {
+// Trecho de busca a partir do texto da memória: primeira linha não-vazia,
+// limitada a ~60 chars (QTextEdit::find casa só dentro de uma linha).
+QString memSearchQuery(const QString& text)
+{
+    QString t = text;
+    t.replace(QChar(0x2029), QChar('\n'));
+    const QStringList lines = t.split(QChar('\n'), Qt::SkipEmptyParts);
+    QString q = lines.isEmpty() ? t.trimmed() : lines.first().trimmed();
+    if (q.size() > 60) q = q.left(60);
+    return q;
+}
+} // namespace
+
+void RefMenuPanel::showMemoryActions(const QString& memId, const QPoint& globalPos)
+{
+    if (!m_memories) return;
+    MemoriesStore::Memory target;
+    bool found = false;
+    for (const MemoriesStore::Memory& m : m_memories->memories()) {
+        if (m.id == memId) { target = m; found = true; break; }
+    }
+    if (!found) return;
+
+    QMenu menu(this);
+    menu.setStyleSheet(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
+        QMenu::item { padding: 6px 18px; border-radius: 4px; }
+        QMenu::item:selected { background: %4; color: %5; }
+    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+            Theme::accentInfoSoft(), Theme::textBright()));
+    QAction* aEditor = menu.addAction(tr("Abrir no editor"));
+    QAction* aRef    = menu.addAction(tr("Abrir no menu de referência"));
+    QAction* chosen = menu.exec(globalPos);
+    if (chosen == aEditor) {
+        emit openMemoryInEditorRequested(target);
+    } else if (chosen == aRef) {
+        openMemoryInRef(target);
+    }
+}
+
+void RefMenuPanel::openMemoryInRef(const MemoriesStore::Memory& mem)
+{
+    const QString query = memSearchQuery(mem.text);
+
+    if (mem.sourceType == QStringLiteral("scene") && !mem.chapterId.isEmpty()) {
+        enterManuscriptMode(mem.manuscriptId);
+        setSelected(QStringLiteral("sc:%1:%2:%3")
+                        .arg(mem.manuscriptId, mem.chapterId).arg(mem.sceneIndex));
+    } else if (mem.sourceType == QStringLiteral("chapter") && !mem.chapterId.isEmpty()) {
+        enterManuscriptMode(mem.manuscriptId);
+        setSelected(QStringLiteral("ch:%1:%2").arg(mem.manuscriptId, mem.chapterId));
+    } else if (mem.sourceType == QStringLiteral("drawer") && !mem.itemId.isEmpty()) {
+        QString drawerKey;
+        if (m_model) m_model->findDrawerItem(mem.itemId, &drawerKey);
+        if (!drawerKey.isEmpty()) {
+            enterDrawerMode(drawerKey);
+            setSelected(QStringLiteral("it:%1").arg(mem.itemId));
+        }
+    } else {
+        return;
+    }
+
+    if (!isVisible()) openPanel();
+    else { show(); raise(); }
+    highlightInPreview(query);
+}
+
+void RefMenuPanel::highlightInPreview(const QString& query)
+{
+    if (!m_preview || query.isEmpty()) return;
+    // "Ctrl+F" automático: leva o cursor ao início e seleciona o 1º casamento,
+    // o que rola até ele e o deixa marcado pela seleção.
+    m_preview->moveCursor(QTextCursor::Start);
+    if (m_preview->find(query)) {
+        m_preview->ensureCursorVisible();
     }
 }
 
@@ -2078,6 +2163,20 @@ void RefMenuPanel::showEvent(QShowEvent* event)
 // Event filter: handles de resize (8 widgets) + drag handle ⠿.
 bool RefMenuPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    // Clique numa linha de memória (cards têm a property "memId") → menu.
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (auto* w = qobject_cast<QWidget*>(watched)) {
+            const QString memId = w->property("memId").toString();
+            if (!memId.isEmpty()) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                if (me->button() == Qt::LeftButton && w->rect().contains(me->pos())) {
+                    showMemoryActions(memId, me->globalPosition().toPoint());
+                    return true;
+                }
+            }
+        }
+    }
+
     // Mapa watched -> ResizeEdge.
     auto edgeOf = [this](QObject* o) -> ResizeEdge {
         if (o == m_hL)  return ResizeEdge::Left;

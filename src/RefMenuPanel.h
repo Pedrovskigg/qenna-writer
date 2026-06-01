@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MemoriesStore.h"
+
 #include <QPoint>
 #include <QSize>
 #include <QString>
@@ -23,7 +25,6 @@ class ProjectModel;
 class EditorHost;
 class DocCache;
 class ElementsStore;
-class MemoriesStore;
 
 // Painel flutuante de Referência. Reescrito 0.5.13 inspirado no RefPanels do Mira 1:
 // header com drag handle, tabs (Manuscritos / Timeline / view mode / Drawer picker ▾),
@@ -61,6 +62,9 @@ public:
 signals:
     void geometryChanged();
     void selectedKeyChanged(QString cacheKey);
+    // Pedido pra abrir a fonte de uma memória no editor (com o trecho marcado).
+    // O MainWindow ajusta o viewMode e faz o "Ctrl+F" no editor.
+    void openMemoryInEditorRequested(MemoriesStore::Memory mem);
 
 public slots:
     void refresh();
@@ -99,6 +103,10 @@ private:
     void buildMemoriesView();           // todas as memórias + filtro (aba do topo)
     QWidget* buildMemoryRow(const QString& memId, const QString& title,
                             const QString& text, QWidget* parent);
+    // Clique numa memória → menu (abrir no editor / no refmenu).
+    void showMemoryActions(const QString& memId, const QPoint& globalPos);
+    void openMemoryInRef(const MemoriesStore::Memory& mem);   // abre no preview + marca
+    void highlightInPreview(const QString& query);            // "Ctrl+F" no preview
     void rebuildPreview();
     void applyNavVisibility();
     void enterManuscriptMode(const QString& manuscriptId = QString());
