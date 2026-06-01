@@ -1,5 +1,6 @@
 #include "MainMenuDialog.h"
 
+#include "IconUtils.h"
 #include "ProjectStorage.h"
 #include "Quotes.h"
 #include "Theme.h"
@@ -13,16 +14,19 @@
 #include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>
+#include <QEasingCurve>
 #include <QEnterEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QFont>
 #include <QFormLayout>
+#include <QGraphicsOpacityEffect>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QImage>
+#include <QImageReader>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -36,14 +40,114 @@
 #include <QPixmap>
 #include <QPlainTextEdit>
 #include <QProcess>
+#include <QPropertyAnimation>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QScrollArea>
 #include <QSettings>
 #include <QShowEvent>
+#include <QStandardPaths>
+#include <QStyle>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QWidgetItem>
 
 #include <functional>
+
+// Layout que dispõe os filhos em linha e quebra pra próxima quando estoura a
+// largura — a "parede de capas". Implementação canônica do exemplo de Flow
+// Layout do Qt (sem Q_OBJECT: não tem signals/slots). Vive em escopo global
+// porque o header o referencia como membro de MainMenuDialog.
+class FlowLayout : public QLayout {
+public:
+    explicit FlowLayout(QWidget* parent, int margin = 0, int hSpacing = -1, int vSpacing = -1)
+        : QLayout(parent), m_hSpace(hSpacing), m_vSpace(vSpacing)
+    {
+        setContentsMargins(margin, margin, margin, margin);
+    }
+    ~FlowLayout() override {
+        QLayoutItem* item;
+        while ((item = takeAt(0))) delete item;
+    }
+
+    void addItem(QLayoutItem* item) override { m_items.append(item); }
+    int count() const override { return m_items.size(); }
+    QLayoutItem* itemAt(int index) const override { return m_items.value(index); }
+    QLayoutItem* takeAt(int index) override {
+        return (index >= 0 && index < m_items.size()) ? m_items.takeAt(index) : nullptr;
+    }
+    Qt::Orientations expandingDirections() const override { return {}; }
+    bool hasHeightForWidth() const override { return true; }
+    int heightForWidth(int width) const override { return doLayout(QRect(0, 0, width, 0), true); }
+    void setGeometry(const QRect& rect) override {
+        QLayout::setGeometry(rect);
+        doLayout(rect, false);
+    }
+    QSize sizeHint() const override { return minimumSize(); }
+    QSize minimumSize() const override {
+        QSize size;
+        for (QLayoutItem* item : m_items) size = size.expandedTo(item->minimumSize());
+        const QMargins m = contentsMargins();
+        return size + QSize(m.left() + m.right(), m.top() + m.bottom());
+    }
+
+private:
+    int doLayout(const QRect& rect, bool testOnly) const {
+        int left, top, right, bottom;
+        getContentsMargins(&left, &top, &right, &bottom);
+        const QRect eff = rect.adjusted(left, top, -right, -bottom);
+        int x = eff.x();
+        int y = eff.y();
+        int lineHeight = 0;
+        const int spaceX = m_hSpace >= 0 ? m_hSpace : 16;
+        const int spaceY = m_vSpace >= 0 ? m_vSpace : 16;
+        for (QLayoutItem* item : m_items) {
+            const QSize hint = item->sizeHint();
+            int nextX = x + hint.width() + spaceX;
+            if (nextX - spaceX > eff.right() + 1 && lineHeight > 0) {
+                x = eff.x();
+                y = y + lineHeight + spaceY;
+                nextX = x + hint.width() + spaceX;
+                lineHeight = 0;
+            }
+            if (!testOnly) item->setGeometry(QRect(QPoint(x, y), hint));
+            x = nextX;
+            lineHeight = qMax(lineHeight, hint.height());
+        }
+        return y + lineHeight - rect.y() + bottom;
+    }
+    QList<QLayoutItem*> m_items;
+    int m_hSpace;
+    int m_vSpace;
+};
+
+// QScrollArea que casa com layouts dependentes de largura (FlowLayout, ou um
+// QVBoxLayout de linhas). Em vez de widgetResizable (que ignora
+// heightForWidth e corta o conteúdo), redimensionamos o widget manualmente:
+// largura = viewport, altura = heightForWidth na largura do viewport.
+class FlowScrollArea : public QScrollArea {
+public:
+    explicit FlowScrollArea(QWidget* parent = nullptr) : QScrollArea(parent) {
+        setWidgetResizable(false);
+        setFrameShape(QFrame::NoFrame);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    }
+    void reflow() {
+        QWidget* w = widget();
+        if (!w) return;
+        const int vw = viewport()->width();
+        QLayout* l = w->layout();
+        const int contentH = (l && l->hasHeightForWidth()) ? l->heightForWidth(vw)
+                                                            : w->sizeHint().height();
+        w->resize(vw, qMax(contentH, viewport()->height()));
+    }
+protected:
+    void resizeEvent(QResizeEvent* e) override {
+        QScrollArea::resizeEvent(e);
+        reflow();
+    }
+};
 
 namespace {
 
@@ -51,7 +155,10 @@ constexpr int kCardCoverW = 240;
 constexpr int kCardCoverH = 360;
 constexpr int kDialogW = 1320;
 constexpr int kDialogH = 1000;
-constexpr int kLogoSize = 360;
+constexpr int kSidebarW = 410;   // largura da barra lateral
+constexpr int kLogoSize = 330;   // caixa do logo — cabe na largura interna (410 - margens) com folga
+constexpr int kEditCoverW = 260; // capa grande do diálogo Editar projeto
+constexpr int kEditCoverH = 390;
 
 // Padding ao redor da capa pra acomodar sombra projetada + bloco de páginas.
 constexpr int kVitPadL = 2;
@@ -109,6 +216,27 @@ QPixmap decodeCoverDataUrl(const QString& dataUrl)
     QPixmap pm;
     pm.loadFromData(raw);
     return pm;
+}
+
+// Carrega imagem do disco, reduz pra caber em kMaxCoverSide mantendo proporção
+// e devolve data URL JPEG. Mesmo tratamento do ProjectInfoPanel (capa retrato,
+// sem crop forçado).
+constexpr int kMaxCoverSide = 1200;
+QString loadCoverAsDataUrl(const QString& path)
+{
+    QImageReader reader(path);
+    reader.setAutoTransform(true);
+    QImage img = reader.read();
+    if (img.isNull()) return QString();
+    if (img.width() > kMaxCoverSide || img.height() > kMaxCoverSide) {
+        img = img.scaled(kMaxCoverSide, kMaxCoverSide,
+                         Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    img.save(&buf, "JPEG", 88);
+    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
 }
 
 // Capa gerada quando o projeto não tem uma própria. Gradiente sóbrio + nome
@@ -217,6 +345,20 @@ QPixmap renderVitrineCover(const QPixmap& coverIn, int w, int h)
     return pm;
 }
 
+// Versão escurecida da capa-vitrine usada no hover. SourceAtop pinta o preto
+// apenas onde o pixmap já tem alpha — ou seja, sobre a capa, o bloco de
+// páginas e a lombada, respeitando o formato exato do livro (o miolo escurece
+// junto, sem vazar um retângulo pra fora da silhueta).
+QPixmap renderVitrineCoverDimmed(const QPixmap& vit, qreal alpha)
+{
+    QPixmap pm = vit;
+    QPainter p(&pm);
+    p.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+    p.fillRect(pm.rect(), QColor(0, 0, 0, qBound(0, int(alpha * 255), 255)));
+    p.end();
+    return pm;
+}
+
 // Conjunto de callbacks do card — agrupados pra não inflar a assinatura.
 struct CardCallbacks {
     std::function<void()> open;            // clique esquerdo → abrir projeto
@@ -228,9 +370,13 @@ struct CardCallbacks {
 };
 
 // Card de livro do grid de recentes. Sem Q_OBJECT — dispara callbacks. O
-// conteúdo é capa-vitrine + título + toggle. O escurecimento de hover NÃO usa
-// QGraphicsOpacityEffect (que corta o repaint dentro do QScrollArea): em vez
-// disso, um "véu" translúcido (filho da capa) é mostrado/escondido.
+// conteúdo é capa-vitrine + título + toggle. Dois efeitos no hover:
+//   - Escurecer os DEMAIS cards: troca do pixmap por uma versão escurecida
+//     (SourceAtop, inclui miolo/lombada). Não usa QGraphicsOpacityEffect, que
+//     cortaria o repaint dentro do QScrollArea.
+//   - Aumentar ESTE card: a capa vive num "palco" de tamanho fixo (já com a
+//     folga do zoom reservada) e cresce ~10% via animação de geometria. O
+//     crescimento fica contido no palco, então o FlowLayout não reflui.
 class BookCard : public QFrame {
 public:
     BookCard(const QString& path, const RecentInfo& info, bool autoOpen,
@@ -249,22 +395,32 @@ public:
         if (cover.isNull()) {
             cover = renderDefaultCover(info.name, info.author, kCardCoverW, kCardCoverH);
         }
-        const QPixmap vit = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
+        m_vitNormal = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
+        m_vitDimmed = renderVitrineCoverDimmed(m_vitNormal, 0.62);
 
-        auto* coverLbl = new QLabel(this);
-        coverLbl->setFixedSize(vit.size());
-        coverLbl->setPixmap(vit);
-        coverLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        col->addWidget(coverLbl, 0, Qt::AlignHCenter);
+        const QSize baseSz = m_vitNormal.size();
+        const QSize stageSz(int(baseSz.width()  * kHoverScale),
+                            int(baseSz.height() * kHoverScale));
+        m_normalRect = QRect(QPoint((stageSz.width()  - baseSz.width())  / 2,
+                                    (stageSz.height() - baseSz.height()) / 2), baseSz);
+        m_hoverRect  = QRect(QPoint(0, 0), stageSz);
 
-        // Véu de escurecimento — cobre só a área da capa (sem o padding da
-        // sombra). Começa escondido; setDimmed() controla a visibilidade.
-        m_veil = new QWidget(coverLbl);
-        m_veil->setObjectName(QStringLiteral("bookCardVeil"));
-        m_veil->setAttribute(Qt::WA_StyledBackground, true);
-        m_veil->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        m_veil->setGeometry(kVitPadL, kVitPadT, kCardCoverW, kCardCoverH);
-        m_veil->hide();
+        // Palco fixo: reserva o espaço do zoom pra o footprint do card não
+        // mudar ao crescer (FlowLayout fica quieto).
+        m_stage = new QWidget(this);
+        m_stage->setFixedSize(stageSz);
+        m_stage->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+        m_coverLbl = new QLabel(m_stage);
+        m_coverLbl->setScaledContents(true);
+        m_coverLbl->setPixmap(m_vitNormal);
+        m_coverLbl->setGeometry(m_normalRect);
+        m_coverLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        col->addWidget(m_stage, 0, Qt::AlignHCenter);
+
+        m_coverAnim = new QPropertyAnimation(m_coverLbl, "geometry", this);
+        m_coverAnim->setDuration(170);
+        m_coverAnim->setEasingCurve(QEasingCurve::OutCubic);
 
         auto* nameLbl = new QLabel(info.name.isEmpty()
                                        ? QFileInfo(path).fileName()
@@ -273,7 +429,7 @@ public:
         nameLbl->setObjectName(QStringLiteral("bookCardName"));
         nameLbl->setAlignment(Qt::AlignHCenter);
         nameLbl->setWordWrap(true);
-        nameLbl->setFixedWidth(vit.width());
+        nameLbl->setFixedWidth(stageSz.width());
         nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
         col->addWidget(nameLbl, 0, Qt::AlignHCenter);
 
@@ -285,11 +441,12 @@ public:
             [cb = m_cbs.autoOpen](bool checked) { if (cb) cb(checked); });
         col->addWidget(autoOpenChk, 0, Qt::AlignHCenter);
 
-        setFixedWidth(vit.width());
+        setFixedWidth(stageSz.width());
     }
 
     void setDimmed(bool dim) {
-        if (m_veil) m_veil->setVisible(dim);
+        if (!m_coverLbl) return;
+        m_coverLbl->setPixmap(dim ? m_vitDimmed : m_vitNormal);
     }
 
 protected:
@@ -301,10 +458,12 @@ protected:
         QFrame::mouseReleaseEvent(event);
     }
     void enterEvent(QEnterEvent* event) override {
+        animateCover(m_hoverRect);
         if (m_cbs.hover) m_cbs.hover(this, true);
         QFrame::enterEvent(event);
     }
     void leaveEvent(QEvent* event) override {
+        animateCover(m_normalRect);
         if (m_cbs.hover) m_cbs.hover(this, false);
         QFrame::leaveEvent(event);
     }
@@ -322,13 +481,136 @@ protected:
     }
 
 private:
+    void animateCover(const QRect& target) {
+        if (!m_coverAnim) return;
+        m_coverAnim->stop();
+        m_coverAnim->setStartValue(m_coverLbl->geometry());
+        m_coverAnim->setEndValue(target);
+        m_coverAnim->start();
+    }
+
+    static constexpr double kHoverScale = 1.10;
+
     CardCallbacks m_cbs;
-    QWidget* m_veil = nullptr;
+    QWidget* m_stage = nullptr;
+    QLabel* m_coverLbl = nullptr;
+    QPropertyAnimation* m_coverAnim = nullptr;
+    QPixmap m_vitNormal;
+    QPixmap m_vitDimmed;
+    QRect m_normalRect;
+    QRect m_hoverRect;
 };
 
-// Diálogo de edição dos metadados do projeto: nome, autor, gêneros, sinopse e
-// capa. Não toca no ProjectModel — quem grava é o MainMenuDialog, direto no
-// índice. Sem Q_OBJECT: usa apenas accept()/reject() do QDialog + lambdas.
+// Miniatura simples (cantos arredondados, sem o 3D da vitrine) pra usar na
+// visualização em Lista, onde a capa aparece pequena ao lado do texto.
+QPixmap renderThumb(const QPixmap& coverIn, int w, int h)
+{
+    QPixmap pm(w, h);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    QPainterPath clip;
+    clip.addRoundedRect(0, 0, w, h, 3, 3);
+    p.setClipPath(clip);
+    const QPixmap scaled = coverIn.scaled(w, h, Qt::KeepAspectRatioByExpanding,
+                                          Qt::SmoothTransformation);
+    p.drawPixmap(QPointF(-(scaled.width() - w) / 2.0, -(scaled.height() - h) / 2.0),
+                 scaled);
+    p.setClipping(false);
+    p.setPen(QPen(QColor(255, 255, 255, 28), 1));
+    p.drawPath(clip);
+    return pm;
+}
+
+// Linha da visualização em Lista: capa miniatura + nome + metadados (autor /
+// gêneros) + toggle "abrir automaticamente". Compartilha os callbacks e o
+// menu de contexto do BookCard.
+class BookRow : public QFrame {
+public:
+    BookRow(const QString& path, const RecentInfo& info, bool autoOpen,
+            CardCallbacks cbs, QWidget* parent = nullptr)
+        : QFrame(parent), m_cbs(std::move(cbs))
+    {
+        setObjectName(QStringLiteral("bookRow"));
+        setCursor(Qt::PointingHandCursor);
+        setAttribute(Qt::WA_StyledBackground, true);
+
+        auto* row = new QHBoxLayout(this);
+        row->setContentsMargins(12, 9, 16, 9);
+        row->setSpacing(14);
+
+        QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+        if (cover.isNull())
+            cover = renderDefaultCover(info.name, info.author, 120, 180);
+        const QPixmap thumb = renderThumb(cover, 62, 92);
+        auto* thumbLbl = new QLabel(this);
+        thumbLbl->setFixedSize(thumb.size());
+        thumbLbl->setPixmap(thumb);
+        thumbLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        row->addWidget(thumbLbl, 0, Qt::AlignVCenter);
+
+        auto* textCol = new QVBoxLayout();
+        textCol->setSpacing(3);
+        textCol->setContentsMargins(0, 0, 0, 0);
+        auto* nameLbl = new QLabel(info.name.isEmpty() ? QFileInfo(path).fileName()
+                                                       : info.name, this);
+        nameLbl->setObjectName(QStringLiteral("bookRowName"));
+        nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        QStringList meta;
+        if (!info.author.isEmpty()) meta << info.author;
+        if (!info.genres.isEmpty()) meta << info.genres;
+        auto* metaLbl = new QLabel(meta.join(QStringLiteral("   ·   ")), this);
+        metaLbl->setObjectName(QStringLiteral("bookRowMeta"));
+        metaLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        metaLbl->setVisible(!meta.isEmpty());
+        textCol->addStretch();
+        textCol->addWidget(nameLbl);
+        textCol->addWidget(metaLbl);
+        textCol->addStretch();
+        row->addLayout(textCol, 1);
+
+        auto* chk = new QCheckBox(tr("Abrir automaticamente"), this);
+        chk->setObjectName(QStringLiteral("bookCardAutoOpen"));
+        chk->setCursor(Qt::PointingHandCursor);
+        chk->setChecked(autoOpen);
+        QObject::connect(chk, &QCheckBox::toggled, this,
+            [cb = m_cbs.autoOpen](bool checked) { if (cb) cb(checked); });
+        row->addWidget(chk, 0, Qt::AlignVCenter);
+
+        setFixedHeight(92 + 18);
+    }
+
+protected:
+    void mouseReleaseEvent(QMouseEvent* event) override {
+        if (event->button() == Qt::LeftButton && rect().contains(event->pos())
+            && m_cbs.open) {
+            m_cbs.open();
+        }
+        QFrame::mouseReleaseEvent(event);
+    }
+    void contextMenuEvent(QContextMenuEvent* event) override {
+        QMenu menu(this);
+        menu.setObjectName(QStringLiteral("bookCardMenu"));
+        QAction* aEdit   = menu.addAction(tr("Editar projeto"));
+        QAction* aRemove = menu.addAction(tr("Remover dos recentes"));
+        menu.addSeparator();
+        QAction* aDelete = menu.addAction(tr("Excluir projeto"));
+        QAction* chosen = menu.exec(event->globalPos());
+        if (chosen == aEdit && m_cbs.edit)                m_cbs.edit();
+        else if (chosen == aRemove && m_cbs.removeRecent) m_cbs.removeRecent();
+        else if (chosen == aDelete && m_cbs.del)          m_cbs.del();
+    }
+
+private:
+    CardCallbacks m_cbs;
+};
+
+// Diálogo de edição dos metadados do projeto (nome, autor, gêneros, sinopse,
+// capa). Não toca no ProjectModel — quem grava é o MainMenuDialog, direto no
+// índice. Visual espelhado no ProjectInfoPanel ("Informações da obra"): capa
+// grande à esquerda, formulário com labels empilhados à direita, QSS de tema.
+// Sem Q_OBJECT: connect por PMF (funciona com receiver QObject sem moc).
 class ProjectEditDialog : public QDialog {
 public:
     explicit ProjectEditDialog(QWidget* parent = nullptr)
@@ -337,83 +619,107 @@ public:
         setObjectName(QStringLiteral("projectEditDialog"));
         setWindowTitle(tr("Editar projeto"));
         setModal(true);
-        resize(520, 560);
+        resize(820, 560);
 
-        auto* root = new QVBoxLayout(this);
+        auto* root = new QHBoxLayout(this);
         root->setContentsMargins(22, 22, 22, 18);
-        root->setSpacing(14);
+        root->setSpacing(24);
 
-        auto* topRow = new QHBoxLayout();
-        topRow->setSpacing(16);
+        // ---- Coluna esquerda: capa grande + ações ----
+        auto* leftCol = new QVBoxLayout();
+        leftCol->setSpacing(10);
 
-        // Coluna da capa (preview + botões).
-        auto* coverCol = new QVBoxLayout();
-        coverCol->setSpacing(8);
         m_coverPreview = new QLabel(this);
-        m_coverPreview->setObjectName(QStringLiteral("projectEditCover"));
-        m_coverPreview->setFixedSize(150, 225);
+        m_coverPreview->setObjectName(QStringLiteral("projectInfoCover"));
+        m_coverPreview->setFixedSize(kEditCoverW, kEditCoverH);
         m_coverPreview->setAlignment(Qt::AlignCenter);
+        m_coverPreview->setText(tr("Sem capa"));
         m_coverPreview->setScaledContents(false);
-        coverCol->addWidget(m_coverPreview, 0, Qt::AlignHCenter);
+        leftCol->addWidget(m_coverPreview);
 
-        auto* changeCover = new QPushButton(tr("Trocar capa"), this);
-        changeCover->setCursor(Qt::PointingHandCursor);
-        QObject::connect(changeCover, &QPushButton::clicked, this, [this]() {
+        auto* pickBtn = new QPushButton(tr("Escolher capa…"), this);
+        pickBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+        pickBtn->setCursor(Qt::PointingHandCursor);
+        QObject::connect(pickBtn, &QPushButton::clicked, this, [this]() {
+            const QString startDir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
             const QString file = QFileDialog::getOpenFileName(
-                this, tr("Escolher capa"), QString(),
+                this, tr("Escolher capa"), startDir,
                 tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
             if (file.isEmpty()) return;
-            QImage img(file);
-            if (img.isNull()) return;
-            if (img.width() > 900)
-                img = img.scaledToWidth(900, Qt::SmoothTransformation);
-            QByteArray ba;
-            QBuffer buf(&ba);
-            buf.open(QIODevice::WriteOnly);
-            img.save(&buf, "PNG");
-            m_coverDataUrl = QStringLiteral("data:image/png;base64,")
-                             + QString::fromLatin1(ba.toBase64());
+            const QString dataUrl = loadCoverAsDataUrl(file);
+            if (dataUrl.isEmpty()) return;
+            m_coverDataUrl = dataUrl;
             updateCoverPreview();
         });
-        coverCol->addWidget(changeCover);
+        leftCol->addWidget(pickBtn);
 
-        auto* clearCover = new QPushButton(tr("Remover capa"), this);
-        clearCover->setCursor(Qt::PointingHandCursor);
-        QObject::connect(clearCover, &QPushButton::clicked, this, [this]() {
+        auto* clearBtn = new QPushButton(tr("Remover capa"), this);
+        clearBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+        clearBtn->setCursor(Qt::PointingHandCursor);
+        QObject::connect(clearBtn, &QPushButton::clicked, this, [this]() {
+            if (m_coverDataUrl.isEmpty()) return;
             m_coverDataUrl.clear();
             updateCoverPreview();
         });
-        coverCol->addWidget(clearCover);
-        coverCol->addStretch();
-        topRow->addLayout(coverCol);
+        leftCol->addWidget(clearBtn);
+        leftCol->addStretch();
+        root->addLayout(leftCol);
 
-        // Coluna dos campos de texto.
-        auto* form = new QFormLayout();
-        form->setLabelAlignment(Qt::AlignLeft);
-        form->setSpacing(8);
+        // ---- Coluna direita: header + formulário + footer ----
+        auto* rightCol = new QVBoxLayout();
+        rightCol->setSpacing(10);
+
+        auto* heading = new QLabel(tr("Detalhes da obra"), this);
+        heading->setObjectName(QStringLiteral("projectInfoHeading"));
+        rightCol->addWidget(heading);
+
+        auto addLabel = [this, rightCol](const QString& text) {
+            auto* lab = new QLabel(text, this);
+            lab->setObjectName(QStringLiteral("projectInfoLabel"));
+            rightCol->addWidget(lab);
+        };
+
+        addLabel(tr("Nome do projeto"));
         m_nameEdit = new QLineEdit(this);
+        m_nameEdit->setPlaceholderText(tr("Ex: Minha história"));
+        rightCol->addWidget(m_nameEdit);
+
+        addLabel(tr("Autor"));
         m_authorEdit = new QLineEdit(this);
+        m_authorEdit->setPlaceholderText(tr("Ex: Maria Silva"));
+        rightCol->addWidget(m_authorEdit);
+
+        addLabel(tr("Gêneros"));
         m_genresEdit = new QLineEdit(this);
-        form->addRow(tr("Nome"), m_nameEdit);
-        form->addRow(tr("Autor"), m_authorEdit);
-        form->addRow(tr("Gêneros"), m_genresEdit);
-        topRow->addLayout(form, /*stretch=*/1);
+        m_genresEdit->setPlaceholderText(tr("Ex: Fantasia, Romance"));
+        rightCol->addWidget(m_genresEdit);
 
-        root->addLayout(topRow);
-
-        auto* synLabel = new QLabel(tr("Sinopse"), this);
-        root->addWidget(synLabel);
+        addLabel(tr("Sinopse"));
         m_synopsisEdit = new QPlainTextEdit(this);
-        m_synopsisEdit->setMinimumHeight(120);
-        root->addWidget(m_synopsisEdit, /*stretch=*/1);
+        m_synopsisEdit->setPlaceholderText(tr("Escreva uma breve sinopse…"));
+        rightCol->addWidget(m_synopsisEdit, /*stretch=*/1);
 
-        auto* buttons = new QDialogButtonBox(
-            QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
-        buttons->button(QDialogButtonBox::Save)->setText(tr("Salvar"));
-        buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
-        QObject::connect(buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-        QObject::connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        root->addWidget(buttons);
+        auto* actions = new QHBoxLayout();
+        actions->setSpacing(8);
+        actions->addStretch();
+        auto* cancelBtn = new QPushButton(tr("Cancelar"), this);
+        cancelBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+        cancelBtn->setCursor(Qt::PointingHandCursor);
+        QObject::connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
+        auto* saveBtn = new QPushButton(tr("Salvar"), this);
+        saveBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+        saveBtn->setCursor(Qt::PointingHandCursor);
+        saveBtn->setDefault(true);
+        QObject::connect(saveBtn, &QPushButton::clicked, this, &QDialog::accept);
+        actions->addWidget(cancelBtn);
+        actions->addWidget(saveBtn);
+        rightCol->addLayout(actions);
+
+        root->addLayout(rightCol, /*stretch=*/1);
+
+        applyDialogStyle();
+        connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+                this, &ProjectEditDialog::applyDialogStyle);
     }
 
     void setValues(const QString& name, const QString& author,
@@ -438,12 +744,73 @@ private:
     void updateCoverPreview() {
         QPixmap pm = decodeCoverDataUrl(m_coverDataUrl);
         if (pm.isNull()) {
+            m_coverPreview->clear();
             m_coverPreview->setText(tr("Sem capa"));
             return;
         }
-        m_coverPreview->setPixmap(pm.scaled(m_coverPreview->size(),
+        m_coverPreview->setPixmap(pm.scaled(kEditCoverW, kEditCoverH,
                                             Qt::KeepAspectRatio,
                                             Qt::SmoothTransformation));
+    }
+
+    void applyDialogStyle() {
+        setStyleSheet(QStringLiteral(R"(
+            #projectEditDialog { background: %1; }
+            #projectEditDialog QLabel { color: %2; font-size: 12px; }
+            #projectInfoHeading {
+                color: %3;
+                font-size: 16px;
+                font-weight: 600;
+                padding-bottom: 4px;
+            }
+            #projectInfoLabel { color: %4; font-size: 11px; }
+            #projectInfoCover {
+                background: %5;
+                color: %4;
+                border: 1px solid %6;
+                border-radius: 6px;
+                font-size: 11px;
+            }
+            #projectEditDialog QLineEdit,
+            #projectEditDialog QPlainTextEdit {
+                background: %5;
+                color: %3;
+                border: 1px solid %6;
+                border-radius: 6px;
+                padding: 6px 8px;
+                selection-background-color: %7;
+            }
+            #projectEditDialog QLineEdit:focus,
+            #projectEditDialog QPlainTextEdit:focus {
+                border-color: %9;
+            }
+            QPushButton#projectInfoBtn {
+                background: %5;
+                color: %2;
+                border: 1px solid %6;
+                padding: 6px 14px;
+                border-radius: 6px;
+                font-size: 12px;
+                min-height: 26px;
+            }
+            QPushButton#projectInfoBtn:hover {
+                background: %7;
+                color: %3;
+            }
+            QPushButton#projectInfoBtn:default {
+                border-color: %9;
+            }
+        )").arg(
+            Theme::appBackground(),     // 1
+            Theme::textPrimary(),       // 2
+            Theme::textBright(),        // 3
+            Theme::textMuted(),         // 4
+            Theme::panelBackground(),   // 5
+            Theme::panelBorder(),       // 6
+            Theme::hoverOverlay(),      // 7
+            Theme::subtleBorder(),      // 8 (não usado, mantém indexação)
+            Theme::accentDefault()      // 9
+        ));
     }
 
     QLineEdit* m_nameEdit = nullptr;
@@ -542,15 +909,90 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
 
 void MainMenuDialog::buildUi()
 {
-    auto* root = new QVBoxLayout(this);
-    root->setContentsMargins(40, 16, 40, 26);
-    root->setSpacing(10);
+    // Layout editorial em duas colunas: barra lateral (logo + quote + ações) e
+    // área principal (cabeçalho + grid). Sem margens externas — cada coluna
+    // tem o seu padding interno e a divisória nasce do fundo da sidebar.
+    auto* root = new QHBoxLayout(this);
+    root->setContentsMargins(0, 0, 0, 0);
+    root->setSpacing(0);
 
-    // --- Topo: seletor de idioma à direita (discreto) ---
+    auto* sidebar = new QFrame(this);
+    sidebar->setObjectName(QStringLiteral("menuSidebar"));
+    sidebar->setFixedWidth(kSidebarW);
+    auto* sideCol = new QVBoxLayout(sidebar);
+    sideCol->setContentsMargins(28, 26, 28, 22);
+    sideCol->setSpacing(14);
+    buildSidebar(sideCol);
+    root->addWidget(sidebar);
+
+    auto* mainArea = new QWidget(this);
+    mainArea->setObjectName(QStringLiteral("menuMainArea"));
+    auto* mainCol = new QVBoxLayout(mainArea);
+    mainCol->setContentsMargins(34, 26, 30, 22);
+    mainCol->setSpacing(16);
+    buildMainArea(mainCol);
+    root->addWidget(mainArea, 1);
+}
+
+void MainMenuDialog::buildSidebar(QVBoxLayout* col)
+{
+    // --- Logo no topo (bom tamanho), centralizado ---
+    m_logoLabel = new QLabel(this);
+    m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
+    QPixmap logoPm(QStringLiteral(":/app/logo.png"));
+    if (!logoPm.isNull()) {
+        m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
+                                             Qt::KeepAspectRatio,
+                                             Qt::SmoothTransformation));
+    } else {
+        m_logoLabel->setText(QStringLiteral("Mira Writing"));
+    }
+    col->addSpacing(6);
+    col->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
+
+    // --- Quote literário rotativo ---
+    // Ancorado abaixo do logo, acima de um stretch. Pode crescer pra mostrar o
+    // texto inteiro (sem corte): a folga vem do stretch, então nem o logo nem
+    // os botões se mexem ao rotacionar.
+    m_quoteLabel = new QLabel(this);
+    m_quoteLabel->setObjectName(QStringLiteral("menuQuote"));
+    m_quoteLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+    m_quoteLabel->setWordWrap(true);
+    m_quoteLabel->setFixedWidth(kLogoSize);
+    m_quoteLabel->setMinimumHeight(80);
+    m_quoteLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    // Efeito de opacidade pro crossfade entre quotes (sidebar não é scroll
+    // area, então o efeito não sofre o problema de repaint cortado).
+    m_quoteOpacity = new QGraphicsOpacityEffect(m_quoteLabel);
+    m_quoteOpacity->setOpacity(1.0);
+    m_quoteLabel->setGraphicsEffect(m_quoteOpacity);
+    col->addWidget(m_quoteLabel, 0, Qt::AlignHCenter);
+
+    col->addStretch(1);
+
+    // --- Botões de ação com ícone, largura cheia ---
+    m_newBtn = new QPushButton(tr("Novo projeto"), this);
+    m_newBtn->setObjectName(QStringLiteral("menuPrimaryBtn"));
+    m_newBtn->setCursor(Qt::PointingHandCursor);
+    m_newBtn->setIconSize(QSize(18, 18));
+    connect(m_newBtn, &QPushButton::clicked, this, [this]() { emit newProjectRequested(); });
+    col->addWidget(m_newBtn);
+
+    m_loadBtn = new QPushButton(tr("Carregar pasta"), this);
+    m_loadBtn->setObjectName(QStringLiteral("menuSecondaryBtn"));
+    m_loadBtn->setCursor(Qt::PointingHandCursor);
+    m_loadBtn->setIconSize(QSize(18, 18));
+    connect(m_loadBtn, &QPushButton::clicked, this, [this]() { emit loadProjectRequested(); });
+    col->addWidget(m_loadBtn);
+
+    refreshActionIcons();
+
+    col->addSpacing(8);
+
+    // --- Seletor de idioma discreto no rodapé ---
     auto* langRow = new QHBoxLayout();
     langRow->setSpacing(6);
     langRow->setContentsMargins(0, 0, 0, 0);
-    langRow->addStretch();
     auto* langLbl = new QLabel(tr("Idioma:"), this);
     langLbl->setObjectName(QStringLiteral("menuLangLabel"));
     m_langCombo = new QComboBox(this);
@@ -574,80 +1016,83 @@ void MainMenuDialog::buildUi()
         QCoreApplication::quit();
     });
     langRow->addWidget(langLbl);
-    langRow->addWidget(m_langCombo);
-    root->addLayout(langRow);
+    langRow->addWidget(m_langCombo, 1);
+    col->addLayout(langRow);
+}
 
-    // --- Logo + quote centralizados no topo ---
-    m_logoLabel = new QLabel(this);
-    m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
-    // Logo em alta resolução (1024px) pra não borrar no tamanho grande.
-    QPixmap logoPm(QStringLiteral(":/app/logo.png"));
-    if (!logoPm.isNull()) {
-        m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
-    } else {
-        m_logoLabel->setText(QStringLiteral("Mira Writing"));
-    }
-    root->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
+void MainMenuDialog::buildMainArea(QVBoxLayout* col)
+{
+    // --- Cabeçalho: título + contagem à esquerda, alternador de visão à dir. ---
+    auto* header = new QHBoxLayout();
+    header->setSpacing(10);
+    auto* titleCol = new QVBoxLayout();
+    titleCol->setSpacing(2);
+    m_headingLabel = new QLabel(tr("Biblioteca"), this);
+    m_headingLabel->setObjectName(QStringLiteral("menuHeading"));
+    m_countLabel = new QLabel(this);
+    m_countLabel->setObjectName(QStringLiteral("menuCount"));
+    titleCol->addWidget(m_headingLabel);
+    titleCol->addWidget(m_countLabel);
+    header->addLayout(titleCol);
+    header->addStretch(1);
 
-    m_quoteLabel = new QLabel(this);
-    m_quoteLabel->setObjectName(QStringLiteral("menuQuote"));
-    m_quoteLabel->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-    m_quoteLabel->setWordWrap(true);
-    // Largura fixa torna o word-wrap determinístico (a altura cresce em vez
-    // de cortar o texto). Centralizado em relação ao logo.
-    m_quoteLabel->setFixedWidth(880);
-    m_quoteLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Minimum);
-    root->addWidget(m_quoteLabel, 0, Qt::AlignHCenter);
+    m_estanteBtn = new QPushButton(tr("Estante"), this);
+    m_estanteBtn->setObjectName(QStringLiteral("menuViewToggle"));
+    m_estanteBtn->setCheckable(true);
+    m_estanteBtn->setCursor(Qt::PointingHandCursor);
+    m_listaBtn = new QPushButton(tr("Lista"), this);
+    m_listaBtn->setObjectName(QStringLiteral("menuViewToggle"));
+    m_listaBtn->setCheckable(true);
+    m_listaBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_estanteBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Estante); });
+    connect(m_listaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Lista); });
+    auto* toggleWrap = new QHBoxLayout();
+    toggleWrap->setSpacing(6);
+    toggleWrap->addWidget(m_estanteBtn);
+    toggleWrap->addWidget(m_listaBtn);
+    header->addLayout(toggleWrap);
+    col->addLayout(header);
 
-    root->addSpacing(16);
-
-    // --- Botões Novo/Carregar no canto esquerdo, acima do grid ---
-    auto* btnRow = new QHBoxLayout();
-    btnRow->setSpacing(8);
-    btnRow->setContentsMargins(0, 0, 0, 0);
-    m_newBtn = new QPushButton(tr("Novo"), this);
-    m_newBtn->setObjectName(QStringLiteral("menuActionBtn"));
-    m_newBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_newBtn, &QPushButton::clicked, this, [this]() { emit newProjectRequested(); });
-    btnRow->addWidget(m_newBtn);
-    m_loadBtn = new QPushButton(tr("Carregar"), this);
-    m_loadBtn->setObjectName(QStringLiteral("menuActionBtn"));
-    m_loadBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_loadBtn, &QPushButton::clicked, this, [this]() { emit loadProjectRequested(); });
-    btnRow->addWidget(m_loadBtn);
-    btnRow->addStretch();
-    root->addLayout(btnRow);
-
-    // --- Grid HORIZONTAL de recentes (scroll lateral) ---
-    m_recentsScroll = new QScrollArea(this);
+    // --- Scroll + holder com os dois containers (estante / lista) ---
+    m_recentsScroll = new FlowScrollArea(this);
     m_recentsScroll->setObjectName(QStringLiteral("menuRecentsScroll"));
-    m_recentsScroll->setWidgetResizable(true);
-    m_recentsScroll->setFrameShape(QFrame::NoFrame);
-    m_recentsScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_recentsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    // Garante altura pra exibir o card inteiro (capa + nome + toggle).
-    m_recentsScroll->setMinimumHeight(kCardCoverH + kVitPadT + kVitPadB + 80);
 
-    m_recentsHolder = new QWidget(m_recentsScroll);
-    m_recentsHolder->setObjectName(QStringLiteral("menuRecentsHolder"));
-    m_recentsRow = new QHBoxLayout(m_recentsHolder);
-    m_recentsRow->setContentsMargins(0, 0, 0, 8);
-    m_recentsRow->setSpacing(20);
-    m_recentsRow->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    m_holder = new QWidget(m_recentsScroll);
+    m_holder->setObjectName(QStringLiteral("menuRecentsHolder"));
+    auto* holderCol = new QVBoxLayout(m_holder);
+    holderCol->setContentsMargins(0, 2, 6, 8);
+    holderCol->setSpacing(0);
+
+    m_gridContainer = new QWidget(m_holder);
+    m_gridFlow = new FlowLayout(m_gridContainer, 0, 18, 18);
+    holderCol->addWidget(m_gridContainer);
+
+    m_listContainer = new QWidget(m_holder);
+    m_listCol = new QVBoxLayout(m_listContainer);
+    m_listCol->setContentsMargins(0, 0, 0, 0);
+    m_listCol->setSpacing(8);
+    holderCol->addWidget(m_listContainer);
 
     m_emptyLabel = new QLabel(
         tr("Você ainda não tem projetos.\n"
-           "Clique em \"Novo\" pra começar um, ou em \"Carregar\" pra abrir uma pasta existente."),
-        m_recentsHolder);
+           "Clique em \"Novo projeto\" pra começar, ou em \"Carregar pasta\" pra abrir uma existente."),
+        m_holder);
     m_emptyLabel->setObjectName(QStringLiteral("menuEmpty"));
     m_emptyLabel->setAlignment(Qt::AlignCenter);
     m_emptyLabel->setWordWrap(true);
     m_emptyLabel->hide();
+    holderCol->addWidget(m_emptyLabel);
 
-    m_recentsScroll->setWidget(m_recentsHolder);
-    root->addWidget(m_recentsScroll, /*stretch=*/1);
+    holderCol->addStretch(1);
+
+    m_recentsScroll->setWidget(m_holder);
+    col->addWidget(m_recentsScroll, 1);
+
+    // Estado inicial do alternador.
+    m_estanteBtn->setChecked(m_viewMode == ViewMode::Estante);
+    m_listaBtn->setChecked(m_viewMode == ViewMode::Lista);
+    m_gridContainer->setVisible(m_viewMode == ViewMode::Estante);
+    m_listContainer->setVisible(m_viewMode == ViewMode::Lista);
 }
 
 void MainMenuDialog::setRecentProjects(const QStringList& paths)
@@ -664,7 +1109,7 @@ void MainMenuDialog::setAutoOpenPath(const QString& path)
 
 void MainMenuDialog::setHoveredCard(QWidget* hovered)
 {
-    // m_cards guarda apenas BookCard* (criados em refreshRecents); o
+    // m_cards guarda apenas BookCard* da Estante (na Lista fica vazio); o
     // static_cast é seguro e evita Q_OBJECT/qobject_cast no tipo local.
     for (QWidget* c : m_cards) {
         if (!c) continue;
@@ -672,34 +1117,65 @@ void MainMenuDialog::setHoveredCard(QWidget* hovered)
     }
 }
 
+void MainMenuDialog::setViewMode(ViewMode mode)
+{
+    m_viewMode = mode;
+    if (m_estanteBtn) m_estanteBtn->setChecked(mode == ViewMode::Estante);
+    if (m_listaBtn)   m_listaBtn->setChecked(mode == ViewMode::Lista);
+    populateActiveView();
+}
+
 void MainMenuDialog::refreshRecents()
 {
-    if (!m_recentsRow) return;
+    populateActiveView();
+}
 
-    // Limpa os cards anteriores (e o estado de hover). O m_emptyLabel é
-    // preservado — só sai do layout, sem ser destruído.
+void MainMenuDialog::populateActiveView()
+{
+    if (!m_gridFlow || !m_listCol) return;
+
+    // Esvazia os dois containers e o estado de hover, destruindo os widgets
+    // antigos. (Ambos são limpos; só o ativo é repovoado.)
     m_cards.clear();
-    while (QLayoutItem* it = m_recentsRow->takeAt(0)) {
-        if (QWidget* w = it->widget()) {
-            if (w == m_emptyLabel) {
-                w->hide();
-                w->setParent(m_recentsHolder);
-                delete it;
-                continue;
-            }
-            w->deleteLater();
+    auto clearLayout = [](QLayout* l) {
+        while (QLayoutItem* it = l->takeAt(0)) {
+            if (QWidget* w = it->widget()) w->deleteLater();
+            delete it;
         }
-        delete it;
-    }
+    };
+    clearLayout(m_gridFlow);
+    clearLayout(m_listCol);
 
-    int added = 0;
+    // Coleta os projetos válidos (lê o índice uma única vez por projeto).
+    QStringList validPaths;
+    QList<RecentInfo> validInfos;
     for (const QString& path : m_recentPaths) {
         if (path.isEmpty() || !QDir(path).exists()) continue;
         const RecentInfo info = readRecentInfo(path);
         if (!info.valid) continue;
-        const QString capturedPath = path;
+        validPaths.append(path);
+        validInfos.append(info);
+    }
+
+    const int n = validPaths.size();
+    if (m_countLabel) {
+        m_countLabel->setText(n == 0 ? tr("Nenhum projeto ainda")
+                              : n == 1 ? tr("1 projeto")
+                                       : tr("%1 projetos").arg(n));
+    }
+
+    const bool empty = (n == 0);
+    if (m_emptyLabel)     m_emptyLabel->setVisible(empty);
+    if (m_gridContainer)  m_gridContainer->setVisible(!empty && m_viewMode == ViewMode::Estante);
+    if (m_listContainer)  m_listContainer->setVisible(!empty && m_viewMode == ViewMode::Lista);
+
+    QWidget* parentForCards = (m_viewMode == ViewMode::Estante) ? m_gridContainer
+                                                                : m_listContainer;
+    for (int i = 0; i < n; ++i) {
+        const QString capturedPath = validPaths.at(i);
+        const RecentInfo& info = validInfos.at(i);
         const bool isAutoOpen = !m_autoOpenPath.isEmpty()
-            && QDir::cleanPath(path) == m_autoOpenPath;
+            && QDir::cleanPath(capturedPath) == m_autoOpenPath;
         CardCallbacks cbs;
         cbs.open = [this, capturedPath]() { emit openRecentRequested(capturedPath); };
         cbs.autoOpen = [this, capturedPath](bool enabled) {
@@ -711,18 +1187,33 @@ void MainMenuDialog::refreshRecents()
         cbs.edit = [this, capturedPath]() { editProject(capturedPath); };
         cbs.removeRecent = [this, capturedPath]() { emit removeRecentRequested(capturedPath); };
         cbs.del = [this, capturedPath]() { confirmDeleteProject(capturedPath); };
-        auto* card = new BookCard(path, info, isAutoOpen, std::move(cbs), m_recentsHolder);
-        m_recentsRow->addWidget(card, 0, Qt::AlignTop);
-        m_cards.append(card);
-        ++added;
+
+        if (m_viewMode == ViewMode::Estante) {
+            auto* card = new BookCard(capturedPath, info, isAutoOpen, std::move(cbs), parentForCards);
+            m_gridFlow->addWidget(card);
+            m_cards.append(card);
+        } else {
+            auto* roww = new BookRow(capturedPath, info, isAutoOpen, std::move(cbs), parentForCards);
+            m_listCol->addWidget(roww);
+        }
     }
 
-    if (added == 0) {
-        m_emptyLabel->show();
-        m_recentsRow->addWidget(m_emptyLabel, 1, Qt::AlignCenter);
-    } else {
-        // Empurra os cards pra a esquerda (sobra fica à direita).
-        m_recentsRow->addStretch(1);
+    if (m_recentsScroll) m_recentsScroll->reflow();
+}
+
+void MainMenuDialog::refreshActionIcons()
+{
+    if (m_newBtn) {
+        // Ícone claro fixo sobre o preenchimento de acento (independe do tema).
+        const QColor onAccent(245, 247, 246);
+        m_newBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/newproject.svg"), onAccent, onAccent, onAccent,
+            QSize(18, 18)));
+    }
+    if (m_loadBtn) {
+        const QColor c(Theme::textPrimary());
+        m_loadBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/loadproject.svg"), c, c, c, QSize(18, 18)));
     }
 }
 
@@ -794,8 +1285,36 @@ void MainMenuDialog::confirmDeleteProject(const QString& path)
 void MainMenuDialog::rotateQuote()
 {
     if (!m_quoteLabel) return;
+    // Primeira exibição (sem texto ainda): entra direto com fade-in.
+    if (m_quoteLabel->text().isEmpty() || !m_quoteOpacity) {
+        showNextQuote();
+        return;
+    }
+    // Caso normal: fade-out do quote atual; troca o texto e faz fade-in ao
+    // terminar (em showNextQuote).
+    auto* fadeOut = new QPropertyAnimation(m_quoteOpacity, "opacity", this);
+    fadeOut->setDuration(360);
+    fadeOut->setStartValue(m_quoteOpacity->opacity());
+    fadeOut->setEndValue(0.0);
+    fadeOut->setEasingCurve(QEasingCurve::InOutQuad);
+    connect(fadeOut, &QPropertyAnimation::finished, this, [this]() { showNextQuote(); });
+    fadeOut->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainMenuDialog::showNextQuote()
+{
+    if (!m_quoteLabel) return;
     const QString quote = Quotes::next();
     m_quoteLabel->setText(QStringLiteral("“%1”").arg(quote));
+    if (m_quoteOpacity) {
+        m_quoteOpacity->setOpacity(0.0);
+        auto* fadeIn = new QPropertyAnimation(m_quoteOpacity, "opacity", this);
+        fadeIn->setDuration(420);
+        fadeIn->setStartValue(0.0);
+        fadeIn->setEndValue(1.0);
+        fadeIn->setEasingCurve(QEasingCurve::InOutQuad);
+        fadeIn->start(QAbstractAnimation::DeleteWhenStopped);
+    }
     if (m_quoteTimer) {
         const int ms = quote.size() > 120 ? 9000 : 6000;
         m_quoteTimer->start(ms);
@@ -813,46 +1332,111 @@ void MainMenuDialog::applyDialogStyle()
 {
     const QString css = QStringLiteral(R"(
         #mainMenuDialog { background: %1; }
-        #menuLeftCol { background: %1; border-right: 1px solid %6; }
-        #menuRightCol { background: %5; }
+        #menuSidebar { background: %5; border-right: 1px solid %6; }
+        #menuMainArea { background: %1; }
 
-        #menuHeading {
-            color: %3;
-            font-size: 20px;
+        #menuLogo { padding: 2px; }
+        #menuQuote {
+            color: %2;
+            font-size: 15px;
+            font-style: italic;
+        }
+
+        QPushButton#menuPrimaryBtn {
+            background: %9;
+            color: #f5f7f6;
+            border: 1px solid %9;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            min-height: 22px;
         }
-        #menuEmpty {
-            color: %4;
-            font-size: 12px;
-            padding: 40px 20px;
-        }
-        #menuRecentsScroll { background: transparent; border: none; }
-        #menuRecentsHolder { background: transparent; }
+        QPushButton#menuPrimaryBtn:hover { border: 1px solid rgba(255, 255, 255, 0.55); }
+        QPushButton#menuPrimaryBtn:pressed { background: %7; }
 
-        QPushButton#menuActionBtn {
+        QPushButton#menuSecondaryBtn {
+            background: transparent;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13px;
+            min-height: 22px;
+        }
+        QPushButton#menuSecondaryBtn:hover { background: %7; color: %3; border-color: %9; }
+
+        #menuLangLabel { color: %4; font-size: 11px; }
+        QComboBox#menuLangCombo {
+            background: %1;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: 5px;
+            padding: 3px 8px;
+            font-size: 11px;
+        }
+        QComboBox#menuLangCombo:hover { border-color: %9; }
+        QComboBox#menuLangCombo::drop-down { border: none; width: 18px; }
+        QComboBox#menuLangCombo QAbstractItemView {
             background: %5;
             color: %2;
             border: 1px solid %6;
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 12px;
-            min-height: 28px;
+            selection-background-color: %7;
+            selection-color: %3;
         }
-        QPushButton#menuActionBtn:hover {
+
+        #menuHeading {
+            color: %3;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        #menuCount { color: %4; font-size: 12px; }
+
+        QPushButton#menuViewToggle {
+            background: %5;
+            color: %4;
+            border: 1px solid %6;
+            border-radius: 7px;
+            padding: 5px 16px;
+            font-size: 12px;
+            min-height: 22px;
+        }
+        QPushButton#menuViewToggle:hover { color: %3; border-color: %9; }
+        QPushButton#menuViewToggle:checked {
             background: %7;
             color: %3;
             border-color: %9;
+            font-weight: 600;
         }
 
-        QFrame#bookCard { background: transparent; border: none; }
-        #bookCardVeil {
-            background-color: rgba(0, 0, 0, 0.62);
-            border-radius: 4px;
+        #menuEmpty {
+            color: %4;
+            font-size: 13px;
+            padding: 60px 30px;
         }
+        #menuRecentsScroll { background: transparent; border: none; }
+        #menuRecentsHolder { background: transparent; }
+        #menuRecentsScroll QScrollBar:vertical {
+            background: transparent;
+            width: 10px;
+            margin: 0;
+        }
+        #menuRecentsScroll QScrollBar::handle:vertical {
+            background: %6;
+            border-radius: 5px;
+            min-height: 32px;
+        }
+        #menuRecentsScroll QScrollBar::handle:vertical:hover { background: %9; }
+        #menuRecentsScroll QScrollBar::add-line:vertical,
+        #menuRecentsScroll QScrollBar::sub-line:vertical { height: 0; }
+        #menuRecentsScroll QScrollBar::add-page:vertical,
+        #menuRecentsScroll QScrollBar::sub-page:vertical { background: transparent; }
+
+        QFrame#bookCard { background: transparent; border: none; }
         #bookCardName {
             color: %3;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
         }
         #bookCardAutoOpen {
@@ -874,48 +1458,14 @@ void MainMenuDialog::applyDialogStyle()
             image: url(:/icons/check.svg);
         }
 
-        QFrame#menuReservedPanel {
-            background: transparent;
-            border: 1px dashed %6;
-            border-radius: 8px;
-        }
-        #menuReservedLabel {
-            color: %4;
-            font-size: 12px;
-            font-style: italic;
-            letter-spacing: 0.5px;
-        }
-
-        #menuLogo { padding: 4px; }
-        #menuQuote {
-            color: %2;
-            font-size: 18px;
-            font-style: italic;
-            line-height: 150%;
-            padding: 2px 2px;
-        }
-        #menuLangLabel {
-            color: %4;
-            font-size: 11px;
-        }
-        QComboBox#menuLangCombo {
-            background: %1;
-            color: %2;
-            border: 1px solid %6;
-            border-radius: 5px;
-            padding: 3px 8px;
-            font-size: 11px;
-            min-width: 120px;
-        }
-        QComboBox#menuLangCombo:hover { border-color: %9; }
-        QComboBox#menuLangCombo::drop-down { border: none; width: 18px; }
-        QComboBox#menuLangCombo QAbstractItemView {
+        QFrame#bookRow {
             background: %5;
-            color: %2;
             border: 1px solid %6;
-            selection-background-color: %7;
-            selection-color: %3;
+            border-radius: 10px;
         }
+        QFrame#bookRow:hover { background: %7; border-color: %9; }
+        #bookRowName { color: %3; font-size: 15px; font-weight: 600; }
+        #bookRowMeta { color: %4; font-size: 12px; }
     )").arg(
         Theme::appBackground(),    // 1
         Theme::textPrimary(),      // 2
@@ -928,4 +1478,5 @@ void MainMenuDialog::applyDialogStyle()
         Theme::accentDefault()     // 9
     );
     setStyleSheet(css);
+    refreshActionIcons();
 }
