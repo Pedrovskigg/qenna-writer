@@ -6,11 +6,17 @@
 #include "ZipWriter.h"
 
 #include <QBuffer>
+#include <QApplication>
 #include <QBrush>
 #include <QColor>
 #include <QFile>
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <QFont>
+#include <QMarginsF>
+#include <QPageLayout>
+#include <QPageSize>
+#include <QPdfWriter>
 #include <QRegularExpression>
 #include <QTextBlock>
 #include <QTextCharFormat>
@@ -61,8 +67,21 @@ void stripMarkers(QTextDocument& doc) {
 }
 }
 
-Exporter::Exporter(ProjectModel* model, const QString& projectRoot)
-    : m_model(model), m_root(projectRoot) {}
+Exporter::Exporter(ProjectModel* model, const QString& projectRoot, const DocStyle& style)
+    : m_model(model), m_root(projectRoot), m_style(style) {}
+
+void Exporter::applyParagraphStyle(QTextDocument& doc) const {
+    if (!m_style.fontFamily.isEmpty())
+        doc.setDefaultFont(QFont(m_style.fontFamily, m_style.fontSize));
+    QTextCursor c(&doc);
+    c.select(QTextCursor::Document);
+    QTextBlockFormat bf;
+    bf.setLineHeight(m_style.lineHeightPercent, QTextBlockFormat::ProportionalHeight);
+    bf.setTextIndent(m_style.firstLineIndent ? 30 : 0);
+    bf.setTopMargin(m_style.spacingBefore);
+    bf.setBottomMargin(m_style.spacingAfter);
+    c.mergeBlockFormat(bf);
+}
 
 QString Exporter::safeName(const QString& s) {
     QString out = s;
@@ -108,21 +127,42 @@ QString Exporter::itemHtml(const DrawerItem& it) const {
     return it.html; // pode estar vazio
 }
 
-QByteArray Exporter::htmlToOdt(const QString& html, bool includeMarkers) const {
-    QTextDocument doc;
-    doc.setHtml(html.isEmpty() ? QStringLiteral("<p></p>") : html);
-    forceBlackText(doc);
-    if (!includeMarkers) stripMarkers(doc);
+QString Exporter::formatExt(Format fmt) {
+    return fmt == Format::Pdf ? QStringLiteral("pdf") : QStringLiteral("odt");
+}
+
+QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt) const {
     QByteArray bytes;
     QBuffer buf(&bytes);
     buf.open(QIODevice::WriteOnly);
-    QTextDocumentWriter writer(&buf, "ODF");
-    writer.write(&doc);
+    if (fmt == Format::Pdf) {
+        QPdfWriter writer(&buf);
+        // 300 dpi (qualidade de impressão) em vez do default 1200 — corta o custo
+        // de rasterização em ~16x, sem perda perceptível: texto é vetorial.
+        writer.setResolution(300);
+        writer.setPageSize(QPageSize(QPageSize::A4));
+        writer.setPageMargins(QMarginsF(20, 18, 20, 18), QPageLayout::Millimeter);
+        writer.setTitle(m_model ? m_model->projectName() : QString());
+        // doc.print pagina automaticamente para o QPagedPaintDevice.
+        doc.print(&writer);
+    } else {
+        QTextDocumentWriter writer(&buf, "ODF");
+        writer.write(&doc);
+    }
     buf.close();
     return bytes;
 }
 
-QByteArray Exporter::chaptersToSingleOdt(const QList<const Chapter*>& chapters, bool includeMarkers) const {
+QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format fmt) const {
+    QTextDocument doc;
+    doc.setHtml(html.isEmpty() ? QStringLiteral("<p></p>") : html);
+    applyParagraphStyle(doc);
+    forceBlackText(doc);
+    if (!includeMarkers) stripMarkers(doc);
+    return writeDoc(doc, fmt);
+}
+
+QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt) const {
     QTextDocument doc;
     QTextCursor cur(&doc);
     bool first = true;
@@ -147,15 +187,10 @@ QByteArray Exporter::chaptersToSingleOdt(const QList<const Chapter*>& chapters, 
         cur.insertHtml(chapterHtmlPrimary(*ch));
     }
 
+    applyParagraphStyle(doc);
     forceBlackText(doc);
     if (!includeMarkers) stripMarkers(doc);
-    QByteArray bytes;
-    QBuffer buf(&bytes);
-    buf.open(QIODevice::WriteOnly);
-    QTextDocumentWriter writer(&buf, "ODF");
-    writer.write(&doc);
-    buf.close();
-    return bytes;
+    return writeDoc(doc, fmt);
 }
 
 QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
@@ -175,18 +210,19 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
                   [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
 
         const QString msTitle = safeName(ms.title.isEmpty() ? QStringLiteral("Manuscrito") : ms.title);
+        const QString ext = formatExt(sel.format);
 
         if (sel.manuscriptMode == ManuscriptMode::SingleDocument) {
-            files.append({ QStringLiteral("Manuscritos/%1.odt").arg(msTitle),
-                           chaptersToSingleOdt(selected, sel.includeMarkers) });
+            files.append({ QStringLiteral("Manuscritos/%1.%2").arg(msTitle, ext),
+                           exportChapters(selected, sel.includeMarkers, sel.format) });
         } else {
             for (int i = 0; i < selected.size(); ++i) {
                 const Chapter* ch = selected.at(i);
                 const QString chTitle = safeName(ch->title.isEmpty()
                     ? QStringLiteral("Capítulo %1").arg(i + 1) : ch->title);
-                const QString path = QStringLiteral("Manuscritos/%1/%2 - %3.odt")
-                    .arg(msTitle, QString::number(i + 1).rightJustified(2, QLatin1Char('0')), chTitle);
-                files.append({ path, htmlToOdt(chapterHtmlPrimary(*ch), sel.includeMarkers) });
+                const QString path = QStringLiteral("Manuscritos/%1/%2 - %3.%4")
+                    .arg(msTitle, QString::number(i + 1).rightJustified(2, QLatin1Char('0')), chTitle, ext);
+                files.append({ path, exportItem(chapterHtmlPrimary(*ch), sel.includeMarkers, sel.format) });
             }
         }
     }
@@ -201,8 +237,8 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
                     if ((it.folderId.isEmpty() ? QString() : it.folderId) != folderId) continue;
                     if (!sel.itemIds.contains(it.id)) continue;
                     const QString itTitle = safeName(it.title);
-                    files.append({ QStringLiteral("%1%2.odt").arg(prefix, itTitle),
-                                   htmlToOdt(itemHtml(it), sel.includeMarkers) });
+                    files.append({ QStringLiteral("%1%2.%3").arg(prefix, itTitle, formatExt(sel.format)),
+                                   exportItem(itemHtml(it), sel.includeMarkers, sel.format) });
                 }
                 for (const Folder& f : d.folders) {
                     if ((f.parentId.isEmpty() ? QString() : f.parentId) != folderId) continue;
@@ -219,7 +255,24 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
                    QString* error, bool* nothingExported) {
     if (nothingExported) *nothingExported = false;
 
-    const QList<OutFile> files = buildFiles(sel);
+    // A geração (sobretudo PDF) bloqueia a thread de UI. Mostra um aviso modal
+    // pra janela não parecer travada e tranquilizar o usuário durante a espera.
+    QList<OutFile> files;
+    {
+        QProgressDialog progress(
+            QStringLiteral("Exportando… Esse processo pode levar alguns instantes.\n"
+                           "Não encerre o programa caso ele pare de responder."),
+            QString(), 0, 0, dialogParent);
+        progress.setWindowTitle(QStringLiteral("Exportando"));
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setCancelButton(nullptr);
+        progress.setMinimumDuration(0);
+        progress.setAutoClose(false);
+        progress.show();
+        QApplication::processEvents();
+        files = buildFiles(sel);
+    }
+
     if (files.isEmpty()) {
         if (nothingExported) *nothingExported = true;
         return false;
@@ -228,11 +281,17 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
     const QString projName = safeName(m_model ? m_model->projectName() : QString());
 
     if (files.size() == 1) {
-        // Único arquivo → salva o .odt direto.
-        const QString suggested = projName + QStringLiteral(".odt");
+        // Único arquivo → salva direto no formato escolhido.
+        const QString ext = formatExt(sel.format);
+        const bool pdf = (sel.format == Format::Pdf);
+        const QString suggested = projName + QStringLiteral(".") + ext;
+        const QString filter = pdf
+            ? QStringLiteral("Documento PDF (*.pdf)")
+            : QStringLiteral("Documento ODF (*.odt)");
         const QString dest = QFileDialog::getSaveFileName(
-            dialogParent, QStringLiteral("Exportar como ODT"),
-            suggested, QStringLiteral("Documento ODF (*.odt)"));
+            dialogParent,
+            pdf ? QStringLiteral("Exportar como PDF") : QStringLiteral("Exportar como ODT"),
+            suggested, filter);
         if (dest.isEmpty()) return false; // cancelado
         QFile f(dest);
         if (!f.open(QIODevice::WriteOnly)) {

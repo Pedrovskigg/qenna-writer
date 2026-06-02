@@ -110,7 +110,7 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
         b->setProperty("fmt", f);
-        const bool available = (f == QStringLiteral("odt"));
+        const bool available = (f == QStringLiteral("odt") || f == QStringLiteral("pdf"));
         b->setEnabled(available);
         b->setChecked(f == m_format);
         connect(b, &QPushButton::clicked, this, [this, f]() {
@@ -320,7 +320,8 @@ void ExportPanel::recomputeCount() {
 
 void ExportPanel::onExportClicked() {
     Exporter::Selection sel;
-    sel.format = Exporter::Format::Odt;
+    sel.format = (m_format == QStringLiteral("pdf"))
+        ? Exporter::Format::Pdf : Exporter::Format::Odt;
     sel.manuscriptMode = (m_singleRadio && m_singleRadio->isChecked())
         ? Exporter::ManuscriptMode::SingleDocument
         : Exporter::ManuscriptMode::SeparateChapters;

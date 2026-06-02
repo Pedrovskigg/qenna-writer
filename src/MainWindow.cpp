@@ -3736,7 +3736,14 @@ void MainWindow::onExportRequested()
     panel->setAttribute(Qt::WA_DeleteOnClose);
     connect(panel, &ExportPanel::exportRequested, this,
             [this](const Exporter::Selection& sel) {
-        Exporter exporter(projectModel, projectRoot);
+        Exporter::DocStyle style;
+        style.fontFamily = currentFontFamily;
+        style.fontSize = currentFontSize;
+        style.lineHeightPercent = currentLineHeight;
+        style.firstLineIndent = firstLineIndentEnabled;
+        style.spacingBefore = paragraphSpacingBefore;
+        style.spacingAfter = paragraphSpacingAfter;
+        Exporter exporter(projectModel, projectRoot, style);
         QString err;
         bool nothing = false;
         const bool ok = exporter.run(sel, this, &err, &nothing);

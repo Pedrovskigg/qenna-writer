@@ -5,6 +5,7 @@
 
 class ProjectModel;
 class QWidget;
+class QTextDocument;
 struct Chapter;
 struct DrawerItem;
 
@@ -13,8 +14,20 @@ struct DrawerItem;
 // chamar, garantindo que o disco reflita as edições atuais.
 class Exporter {
 public:
-    enum class Format { Odt };
+    enum class Format { Odt, Pdf };
     enum class ManuscriptMode { SingleDocument, SeparateChapters };
+
+    // Estilo de parágrafo do projeto — não fica no HTML salvo, o editor aplica em
+    // runtime. Precisamos replicá-lo no documento exportado pra manter recuo,
+    // espaçamento e entrelinha.
+    struct DocStyle {
+        QString fontFamily;
+        int fontSize = 12;
+        int lineHeightPercent = 100;
+        bool firstLineIndent = true;
+        int spacingBefore = 0;
+        int spacingAfter = 0;
+    };
 
     struct Selection {
         QSet<QString> chapterIds;
@@ -24,7 +37,7 @@ public:
         bool includeMarkers = true;   // marca-textos saem no documento?
     };
 
-    Exporter(ProjectModel* model, const QString& projectRoot);
+    Exporter(ProjectModel* model, const QString& projectRoot, const DocStyle& style);
 
     // Abre um diálogo de destino e grava. true em sucesso; *error em falha.
     // *nothingExported vira true se a seleção não produziu nenhum arquivo.
@@ -41,13 +54,19 @@ private:
     QString chapterHtmlPrimary(const Chapter& ch) const;
     QString itemHtml(const DrawerItem& it) const;
 
-    QByteArray htmlToOdt(const QString& html, bool includeMarkers) const;
-    QByteArray chaptersToSingleOdt(const QList<const Chapter*>& chapters, bool includeMarkers) const;
+    // Monta o QTextDocument e serializa no formato pedido (ODT ou PDF).
+    QByteArray exportItem(const QString& html, bool includeMarkers, Format fmt) const;
+    QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt) const;
+    QByteArray writeDoc(QTextDocument& doc, Format fmt) const;
 
     QList<OutFile> buildFiles(const Selection& sel) const;
 
     static QString safeName(const QString& s);
+    static QString formatExt(Format fmt);
+
+    void applyParagraphStyle(QTextDocument& doc) const;
 
     ProjectModel* m_model;
     QString m_root;
+    DocStyle m_style;
 };
