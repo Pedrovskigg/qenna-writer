@@ -1,11 +1,38 @@
 #include "ThemePreviewWidget.h"
 
+#include <QHash>
 #include <QImageReader>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPaintEvent>
 
 namespace {
+
+// Cache de fontes de imagem já decodificadas (em baixa resolução), compartilhado
+// por todos os previews. Trocar de categoria no painel e voltar não redecodifica
+// nenhum JPEG — fica instantâneo depois da primeira vez.
+QPixmap loadPreviewSource(const QString& path)
+{
+    static QHash<QString, QPixmap> cache;
+    const auto it = cache.constFind(path);
+    if (it != cache.constEnd()) return it.value();
+
+    QPixmap pm;
+    QImageReader reader(path);
+    reader.setAutoTransform(true);
+    // O preview é pequeno (card ~220x140). Decodifica já reduzido: o libjpeg
+    // baixa direto na leitura (DCT scaling), muito mais rápido e leve que ler a
+    // imagem cheia (1920px+) e só depois reescalar. cap=480 cobre até o preview
+    // grande do editor sem perda visível.
+    const QSize orig = reader.size();
+    const int cap = 480;
+    if (orig.isValid() && !orig.isEmpty() && qMax(orig.width(), orig.height()) > cap)
+        reader.setScaledSize(orig.scaled(cap, cap, Qt::KeepAspectRatio));
+    const QImage img = reader.read();
+    if (!img.isNull()) pm = QPixmap::fromImage(img);
+    cache.insert(path, pm);
+    return pm;
+}
 
 QColor parseAnyColor(const QString& s)
 {
@@ -50,12 +77,8 @@ void ThemePreviewWidget::setTheme(const Theme::MiraTheme& theme)
         m_bgSource = QPixmap();
         m_bgScaled = QPixmap();
         m_bgScaledFor = QSize();
-        if (!m_bgPath.isEmpty()) {
-            QImageReader reader(m_bgPath);
-            reader.setAutoTransform(true);
-            const QImage img = reader.read();
-            if (!img.isNull()) m_bgSource = QPixmap::fromImage(img);
-        }
+        if (!m_bgPath.isEmpty())
+            m_bgSource = loadPreviewSource(m_bgPath);
     }
     if (theme.backgroundMode != m_bgMode) {
         m_bgMode = theme.backgroundMode;
