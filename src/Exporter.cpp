@@ -166,11 +166,14 @@ QString Exporter::formatExt(Format fmt) {
     switch (fmt) {
         case Format::Pdf:  return QStringLiteral("pdf");
         case Format::Epub: return QStringLiteral("epub");
+        case Format::Docx: return QStringLiteral("docx");
         default:           return QStringLiteral("odt");
     }
 }
 
 QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt) const {
+    if (fmt == Format::Docx) return docxFromDocument(doc);
+
     QByteArray bytes;
     QBuffer buf(&bytes);
     buf.open(QIODevice::WriteOnly);
@@ -190,6 +193,226 @@ QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt) const {
     }
     buf.close();
     return bytes;
+}
+
+QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
+    // EMU (English Metric Units): unidade de tamanho do DrawingML. 1 px (96dpi) =
+    // 9525 EMU. Twips (1/20 pt): unidade de medida do WordprocessingML; 1 px = 15.
+    constexpr qint64 kEmuPerPx  = 9525;
+    constexpr int    kTwipsPerPx = 15;
+    // Largura útil da página A4 com margens de ~20mm (= 9638 twips → EMU).
+    constexpr qint64 kMaxImgCx  = 9638LL * 635;
+
+    struct Img { QString path; QByteArray bytes; QString rId; };
+    QList<Img> images;
+    int drawingId = 0;
+
+    auto colorHex = [](const QColor& c) {
+        return QString::asprintf("%02X%02X%02X", c.red(), c.green(), c.blue());
+    };
+
+    // <w:rPr> a partir do formato do fragmento. Foreground é ignorado: forceBlackText
+    // já uniformizou pra preto (default do Word). Marca-texto vira sombreamento (w:shd).
+    // A ordem dos filhos de <w:rPr> é fixada pelo schema OOXML (CT_RPr):
+    // rFonts → b → i → strike → sz/szCs → u → shd. Fora de ordem, Word tolera
+    // mas LibreOffice/Google Docs recusam o arquivo.
+    auto runPropsXml = [&](const QTextCharFormat& f) -> QString {
+        QString p;
+        const QFont fnt = f.font();
+        if (f.hasProperty(QTextFormat::FontFamilies)) {
+            const QStringList fams = f.fontFamilies().toStringList();
+            if (!fams.isEmpty())
+                p += QStringLiteral("<w:rFonts w:ascii=\"%1\" w:hAnsi=\"%1\" w:cs=\"%1\"/>")
+                         .arg(escXml(fams.first()));
+        }
+        if (fnt.bold())      p += QStringLiteral("<w:b/>");
+        if (fnt.italic())    p += QStringLiteral("<w:i/>");
+        if (fnt.strikeOut()) p += QStringLiteral("<w:strike/>");
+        if (f.hasProperty(QTextFormat::FontPointSize) && f.fontPointSize() > 0) {
+            const int halfPt = qRound(f.fontPointSize() * 2);
+            p += QStringLiteral("<w:sz w:val=\"%1\"/><w:szCs w:val=\"%1\"/>").arg(halfPt);
+        }
+        if (fnt.underline()) p += QStringLiteral("<w:u w:val=\"single\"/>");
+        if (f.background().style() != Qt::NoBrush) {
+            p += QStringLiteral("<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"%1\"/>")
+                     .arg(colorHex(f.background().color()));
+        }
+        return p.isEmpty() ? QString() : QStringLiteral("<w:rPr>") + p + QStringLiteral("</w:rPr>");
+    };
+
+    auto drawingRunXml = [&](const QString& rId, int id, qint64 cx, qint64 cy) {
+        return QStringLiteral(
+            "<w:r><w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\">"
+            "<wp:extent cx=\"%1\" cy=\"%2\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/>"
+            "<wp:docPr id=\"%3\" name=\"Imagem %3\"/>"
+            "<wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect=\"1\"/></wp:cNvGraphicFramePr>"
+            "<a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+            "<pic:pic><pic:nvPicPr><pic:cNvPr id=\"%3\" name=\"Imagem %3\"/><pic:cNvPicPr/></pic:nvPicPr>"
+            "<pic:blipFill><a:blip r:embed=\"%4\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>"
+            "<pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"%1\" cy=\"%2\"/></a:xfrm>"
+            "<a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>"
+            "</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>")
+            .arg(QString::number(cx), QString::number(cy), QString::number(id), rId);
+    };
+
+    // ── Corpo: um <w:p> por bloco, um <w:r> por fragmento ──
+    QString body;
+    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+        const QTextBlockFormat bf = blk.blockFormat();
+
+        // Ordem fixa do schema OOXML (CT_PPr): pageBreakBefore → spacing → ind → jc.
+        QString pPr;
+        if (bf.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore)
+            pPr += QStringLiteral("<w:pageBreakBefore/>");
+
+        QString spacing;
+        if (bf.topMargin() > 0)
+            spacing += QStringLiteral(" w:before=\"%1\"").arg(qRound(bf.topMargin() * kTwipsPerPx));
+        if (bf.bottomMargin() > 0)
+            spacing += QStringLiteral(" w:after=\"%1\"").arg(qRound(bf.bottomMargin() * kTwipsPerPx));
+        if (bf.lineHeightType() == QTextBlockFormat::ProportionalHeight && bf.lineHeight() > 0)
+            spacing += QStringLiteral(" w:line=\"%1\" w:lineRule=\"auto\"")
+                           .arg(qRound(bf.lineHeight() * 240.0 / 100.0));
+        if (!spacing.isEmpty())
+            pPr += QStringLiteral("<w:spacing%1/>").arg(spacing);
+        if (bf.textIndent() > 0)
+            pPr += QStringLiteral("<w:ind w:firstLine=\"%1\"/>").arg(qRound(bf.textIndent() * kTwipsPerPx));
+
+        const Qt::Alignment al = bf.alignment();
+        if (al & Qt::AlignRight)        pPr += QStringLiteral("<w:jc w:val=\"right\"/>");
+        else if (al & Qt::AlignHCenter) pPr += QStringLiteral("<w:jc w:val=\"center\"/>");
+        else if (al & Qt::AlignJustify) pPr += QStringLiteral("<w:jc w:val=\"both\"/>");
+
+        if (!pPr.isEmpty())
+            pPr = QStringLiteral("<w:pPr>") + pPr + QStringLiteral("</w:pPr>");
+
+        QString runs;
+        for (auto it = blk.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid()) continue;
+            const QTextCharFormat cf = frag.charFormat();
+
+            if (cf.isImageFormat()) {
+                const QTextImageFormat imf = cf.toImageFormat();
+                QString mime;
+                QByteArray bytes;
+                if (!parseDataUrl(imf.name(), mime, bytes)) continue;
+
+                // Word só lê com folga PNG/JPEG/GIF; o resto (webp/svg) re-encoda em PNG.
+                QString ext = mimeToExt(mime);
+                if (ext != QLatin1String("png") && ext != QLatin1String("jpg")
+                    && ext != QLatin1String("gif")) {
+                    const QImage im = QImage::fromData(bytes);
+                    if (!im.isNull()) {
+                        QByteArray out;
+                        QBuffer ob(&out);
+                        ob.open(QIODevice::WriteOnly);
+                        if (im.save(&ob, "PNG")) { bytes = out; ext = QStringLiteral("png"); }
+                    } else {
+                        continue;
+                    }
+                }
+
+                int wpx = qRound(imf.width());
+                int hpx = qRound(imf.height());
+                if (wpx <= 0 || hpx <= 0) {
+                    const QImage im = QImage::fromData(bytes);
+                    wpx = im.width();
+                    hpx = im.height();
+                }
+                if (wpx <= 0) wpx = 300;
+                if (hpx <= 0) hpx = 200;
+                qint64 cx = qint64(wpx) * kEmuPerPx;
+                qint64 cy = qint64(hpx) * kEmuPerPx;
+                if (cx > kMaxImgCx) { cy = cy * kMaxImgCx / cx; cx = kMaxImgCx; }
+
+                const QString rId = QStringLiteral("rId%1").arg(images.size() + 2);
+                images.append({ QStringLiteral("media/image%1.%2").arg(images.size() + 1).arg(ext),
+                                bytes, rId });
+                runs += drawingRunXml(rId, ++drawingId, cx, cy);
+            } else {
+                const QString rp = runPropsXml(cf);
+                // Quebras de linha leves (Shift+Enter) chegam como U+2028; viram <w:br/>.
+                const QStringList lines = frag.text().split(QChar(0x2028));
+                for (int li = 0; li < lines.size(); ++li) {
+                    runs += QStringLiteral("<w:r>") + rp;
+                    if (li > 0) runs += QStringLiteral("<w:br/>");
+                    runs += QStringLiteral("<w:t xml:space=\"preserve\">")
+                            + escXml(lines.at(li)) + QStringLiteral("</w:t></w:r>");
+                }
+            }
+        }
+        body += QStringLiteral("<w:p>") + pPr + runs + QStringLiteral("</w:p>");
+    }
+
+    // ── styles.xml: fonte/tamanho padrão do projeto como docDefaults ──
+    const QString defFamily = m_style.fontFamily.isEmpty()
+        ? QStringLiteral("Calibri") : m_style.fontFamily;
+    const QString styles =
+        QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        "<w:styles xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
+        "<w:docDefaults><w:rPrDefault><w:rPr>"
+        "<w:rFonts w:ascii=\"") + escXml(defFamily) + QStringLiteral("\" w:hAnsi=\"")
+        + escXml(defFamily) + QStringLiteral("\" w:cs=\"") + escXml(defFamily) + QStringLiteral("\"/>"
+        "<w:sz w:val=\"") + QString::number(m_style.fontSize * 2) + QStringLiteral("\"/>"
+        "<w:szCs w:val=\"") + QString::number(m_style.fontSize * 2) + QStringLiteral("\"/>"
+        "</w:rPr></w:rPrDefault></w:docDefaults></w:styles>\n");
+
+    // ── document.xml ──
+    const QString document =
+        QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        "<w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
+        "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" "
+        "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" "
+        "xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" "
+        "xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
+        "<w:body>") + body + QStringLiteral(
+        "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
+        "<w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1134\" "
+        "w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>"
+        "</w:body></w:document>\n");
+
+    // ── document.xml.rels: estilos (rId1) + imagens ──
+    QString rels =
+        QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+        "<Relationship Id=\"rId1\" "
+        "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" "
+        "Target=\"styles.xml\"/>");
+    for (const Img& im : images)
+        rels += QStringLiteral("<Relationship Id=\"%1\" "
+            "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" "
+            "Target=\"%2\"/>").arg(im.rId, im.path);
+    rels += QStringLiteral("</Relationships>\n");
+
+    // ── Empacota ──
+    ZipWriter zip;
+    zip.addFile(QStringLiteral("[Content_Types].xml"), QByteArrayLiteral(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
+        "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
+        "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+        "<Default Extension=\"png\" ContentType=\"image/png\"/>"
+        "<Default Extension=\"jpg\" ContentType=\"image/jpeg\"/>"
+        "<Default Extension=\"jpeg\" ContentType=\"image/jpeg\"/>"
+        "<Default Extension=\"gif\" ContentType=\"image/gif\"/>"
+        "<Override PartName=\"/word/document.xml\" "
+        "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>"
+        "<Override PartName=\"/word/styles.xml\" "
+        "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>"
+        "</Types>\n"));
+    zip.addFile(QStringLiteral("_rels/.rels"), QByteArrayLiteral(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+        "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
+        "<Relationship Id=\"rId1\" "
+        "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" "
+        "Target=\"word/document.xml\"/></Relationships>\n"));
+    zip.addFile(QStringLiteral("word/document.xml"), document.toUtf8());
+    zip.addFile(QStringLiteral("word/styles.xml"), styles.toUtf8());
+    zip.addFile(QStringLiteral("word/_rels/document.xml.rels"), rels.toUtf8());
+    for (const Img& im : images)
+        zip.addFile(QStringLiteral("word/") + im.path, im.bytes, /*compress=*/false);
+    return zip.finish();
 }
 
 QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format fmt) const {
@@ -621,6 +844,9 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
             case Format::Epub:
                 filter = QStringLiteral("Livro EPUB (*.epub)");
                 dlgTitle = QStringLiteral("Exportar como EPUB"); break;
+            case Format::Docx:
+                filter = QStringLiteral("Documento Word (*.docx)");
+                dlgTitle = QStringLiteral("Exportar como DOCX"); break;
             default:
                 filter = QStringLiteral("Documento ODF (*.odt)");
                 dlgTitle = QStringLiteral("Exportar como ODT"); break;

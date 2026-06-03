@@ -14,7 +14,7 @@ struct DrawerItem;
 // chamar, garantindo que o disco reflita as edições atuais.
 class Exporter {
 public:
-    enum class Format { Odt, Pdf, Epub };
+    enum class Format { Odt, Pdf, Epub, Docx };
     enum class ManuscriptMode { SingleDocument, SeparateChapters };
 
     // Estilo de parágrafo do projeto — não fica no HTML salvo, o editor aplica em
@@ -58,6 +58,12 @@ private:
     QByteArray exportItem(const QString& html, bool includeMarkers, Format fmt) const;
     QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt) const;
     QByteArray writeDoc(QTextDocument& doc, Format fmt) const;
+
+    // DOCX (OOXML): zip com XMLs do WordprocessingML. O Qt não tem writer nativo,
+    // então serializamos o QTextDocument à mão — bloco a bloco, fragmento a
+    // fragmento — preservando negrito/itálico/sublinhado/tachado, marca-textos,
+    // alinhamento, recuo, espaçamento e imagens embutidas.
+    QByteArray docxFromDocument(QTextDocument& doc) const;
 
     QList<OutFile> buildFiles(const Selection& sel) const;
 
