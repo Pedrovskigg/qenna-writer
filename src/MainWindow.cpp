@@ -1700,6 +1700,7 @@ void MainWindow::setupEditor()
             elem.image = dlg.imageDataUrl();
             elem.narrator = dlg.narrator();
             elem.trackMode = dlg.trackMode();
+            elem.aliases = dlg.aliases();
             const QString elementId = elementsStore->addElement(elem);
             // Cria drawer item vinculado
             DrawerItem it;
@@ -1756,21 +1757,24 @@ void MainWindow::setupEditor()
         QString role = item->role;
         bool narratorVal = false;
         QString trackModeVal;
+        QStringList aliasesVal;
         if (!item->elementId.isEmpty() && elementsStore) {
             if (const Element* e = elementsStore->findElement(item->elementId)) {
                 imageDataUrl = e->image;
                 if (role.isEmpty()) role = e->role;
                 narratorVal = e->narrator;
                 trackModeVal = e->trackMode;
+                aliasesVal = e->aliases;
             }
         }
-        dlg.setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal);
+        dlg.setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal, aliasesVal);
         if (dlg.exec() != QDialog::Accepted) return;
         const QString newTitle = dlg.title();
         const QString newRole = dlg.role();
         const QString newImage = dlg.imageDataUrl();
         const bool newNarrator = dlg.narrator();
         const QString newTrack = dlg.trackMode();
+        const QStringList newAliases = dlg.aliases();
 
         projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
 
@@ -1783,6 +1787,7 @@ void MainWindow::setupEditor()
                 copy.image = newImage;
                 copy.narrator = newNarrator;
                 copy.trackMode = newTrack;
+                copy.aliases = newAliases;
                 elementsStore->updateElement(copy.id, copy);
             }
         } else if (!elemType.isEmpty() && !newImage.isEmpty() && elementsStore) {
@@ -1798,6 +1803,7 @@ void MainWindow::setupEditor()
             elem.image = newImage;
             elem.narrator = newNarrator;
             elem.trackMode = newTrack;
+            elem.aliases = newAliases;
             const QString newElementId = elementsStore->addElement(elem);
             projectModel->setDrawerItemElement(itemId, elemType, item->elementIcon, newElementId);
         }
@@ -4714,6 +4720,7 @@ void MainWindow::createDocFromSelection()
                   : QStringLiteral("cube");
         elem.role = role;
         elem.image = imageDataUrl;
+        elem.aliases = edlg.aliases();
         const QString elementId = elementsStore->addElement(elem);
 
         DrawerItem it;

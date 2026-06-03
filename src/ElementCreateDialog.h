@@ -2,6 +2,7 @@
 
 #include <QDialog>
 #include <QString>
+#include <QStringList>
 
 class QCheckBox;
 class QLineEdit;
@@ -19,13 +20,15 @@ public:
 
     // Pré-preencher pra modo de edição.
     void setInitial(const QString& title, const QString& role, const QString& imageDataUrl,
-                    bool narrator = false, const QString& trackMode = QString());
+                    bool narrator = false, const QString& trackMode = QString(),
+                    const QStringList& aliases = QStringList());
 
     QString title() const;
     QString role() const;
     QString imageDataUrl() const { return m_imageDataUrl; }
     bool narrator() const;
     QString trackMode() const;  // "" auto | "on" | "off" (trilha na linha do tempo)
+    QStringList aliases() const; // apelidos do personagem (para o detector de presença)
 
 private slots:
     void pickImage();
@@ -38,6 +41,7 @@ private:
     QString m_imageDataUrl;
 
     QLineEdit* m_titleEdit;
+    QLineEdit* m_aliasesEdit = nullptr;
     QComboBox* m_roleCombo;
     QComboBox* m_trackCombo = nullptr;
     QCheckBox* m_narratorCheck;

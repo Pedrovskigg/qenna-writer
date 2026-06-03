@@ -128,6 +128,14 @@ void ElementCreateDialog::buildUi()
 
     // Role + Narrador (só personagem)
     if (m_elementType == QStringLiteral("character")) {
+        // Apelidos: variações de nome que o detector de presença também procura
+        // (ex.: "Mari", "a herdeira"). Separados por vírgula.
+        auto* aliasesLabel = new QLabel(tr("Apelidos:"), this);
+        outer->addWidget(aliasesLabel);
+        m_aliasesEdit = new QLineEdit(this);
+        m_aliasesEdit->setPlaceholderText(tr("separados por vírgula (ex.: Mari, a herdeira)"));
+        outer->addWidget(m_aliasesEdit);
+
         auto* roleLabel = new QLabel(tr("Papel:"), this);
         outer->addWidget(roleLabel);
         m_roleCombo = new QComboBox(this);
@@ -213,9 +221,10 @@ void ElementCreateDialog::buildUi()
         ));
 }
 
-void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator, const QString& trackMode)
+void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl, bool narrator, const QString& trackMode, const QStringList& aliases)
 {
     if (m_titleEdit) m_titleEdit->setText(title);
+    if (m_aliasesEdit) m_aliasesEdit->setText(aliases.join(QStringLiteral(", ")));
     if (m_roleCombo) {
         const int idx = m_roleCombo->findData(role);
         if (idx >= 0) m_roleCombo->setCurrentIndex(idx);
@@ -285,4 +294,16 @@ bool ElementCreateDialog::narrator() const
 QString ElementCreateDialog::trackMode() const
 {
     return m_trackCombo ? m_trackCombo->currentData().toString() : QString();
+}
+
+QStringList ElementCreateDialog::aliases() const
+{
+    if (!m_aliasesEdit) return QStringList();
+    QStringList out;
+    const QStringList parts = m_aliasesEdit->text().split(QLatin1Char(','), Qt::SkipEmptyParts);
+    for (const QString& p : parts) {
+        const QString t = p.trimmed();
+        if (!t.isEmpty()) out.append(t);
+    }
+    return out;
 }

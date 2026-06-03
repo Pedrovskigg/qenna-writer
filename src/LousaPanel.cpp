@@ -317,6 +317,7 @@ void LousaPanel::buildUi()
             elem.role     = edlg.role();
             elem.image    = edlg.imageDataUrl();
             elem.narrator = edlg.narrator();
+            elem.aliases  = edlg.aliases();
             const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
 
             // Cria DrawerItem vinculado ao elemento
@@ -942,6 +943,7 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
                                                          : QStringLiteral("cube");
         elem.role  = edlg.role();
         elem.image = edlg.imageDataUrl();
+        elem.aliases = edlg.aliases();
         const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
         DrawerItem it;
         it.id            = ProjectModel::uid();
