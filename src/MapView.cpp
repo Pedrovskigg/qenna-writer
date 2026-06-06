@@ -15,6 +15,7 @@
 #include <QPaintEvent>
 #include <QResizeEvent>
 #include <QEasingCurve>
+#include <QImage>
 #include <QSettings>
 #include <QShowEvent>
 #include <QVariantAnimation>
@@ -199,8 +200,18 @@ QPointF MapView::screenToLonLat(const QPointF& s) const
                    (m_offset.y() - s.y()) / m_scale);
 }
 
-int MapView::countryAt(const QPointF& ll) const
+// Normaliza a longitude pra [-180,180): ao girar o globo, m_globeLon0 (e o lon
+// devolvido por invGlobe) sai dessa faixa, e o teste de país/estado falha sem isso.
+static QPointF normLon(const QPointF& ll)
 {
+    double lon = std::fmod(ll.x() + 180.0, 360.0);
+    if (lon < 0.0) lon += 360.0;
+    return QPointF(lon - 180.0, ll.y());
+}
+
+int MapView::countryAt(const QPointF& llIn) const
+{
+    const QPointF ll = normLon(llIn);
     const QVector<GeoData::Country>& cs = GeoData::instance().countries();
     for (int i = 0; i < cs.size(); ++i) {
         if (!cs.at(i).bounds.contains(ll)) continue;
@@ -210,8 +221,9 @@ int MapView::countryAt(const QPointF& ll) const
     return -1;
 }
 
-int MapView::stateAt(const QPointF& ll) const
+int MapView::stateAt(const QPointF& llIn) const
 {
+    const QPointF ll = normLon(llIn);
     const QVector<GeoData::State>& ss = GeoData::instance().states();
     for (int i = 0; i < ss.size(); ++i) {
         if (!ss.at(i).bounds.contains(ll)) continue;
@@ -469,6 +481,124 @@ double MapView::globeDetailRatio() const
 {
     const double pxPerDeg = globeRadius() * kPi / 180.0;
     return (m_fitScale > 0.0) ? pxPerDeg / m_fitScale : m_globeZoom;
+}
+
+const QImage& MapView::relief() const
+{
+    if (!m_reliefTried) {
+        m_reliefTried = true;
+        QImage img(QStringLiteral(":/geo/relief.png"));
+        if (!img.isNull())
+            m_relief = img.convertToFormat(QImage::Format_Grayscale8);
+    }
+    return m_relief;
+}
+
+const QImage& MapView::oceanTex() const
+{
+    if (!m_oceanTried) {
+        m_oceanTried = true;
+        QImage img(QStringLiteral(":/geo/ocean.png"));
+        if (!img.isNull())
+            m_oceanTex = img.convertToFormat(QImage::Format_ARGB32);
+    }
+    return m_oceanTex;
+}
+
+// Projeta a textura de relevo equiretangular no disco do globo (projeção
+// ortográfica inversa por pixel). Resultado em cinza: 128 = plano, claro =
+// encosta ao sol, escuro = sombra. Cacheado: só refaz quando a câmera muda.
+void MapView::buildGlobeShade()
+{
+    const QImage& rel = relief();
+    const QImage& ocn = oceanTex();
+    if (rel.isNull() && ocn.isNull()) return;
+    if (m_shadeLon0 == m_globeLon0 && m_shadeLat0 == m_globeLat0
+        && m_shadeZoom == m_globeZoom && m_shadeSize == size())
+        return; // cache válido
+    m_shadeLon0 = m_globeLon0; m_shadeLat0 = m_globeLat0;
+    m_shadeZoom = m_globeZoom; m_shadeSize = size();
+
+    // Conforme aproxima, o relevo desbota (ajuda a leitura), mas mantém um piso
+    // mínimo: nunca fica 100% plano. Cheio até r=3, no piso a partir de r=8.
+    const double fade = std::clamp((8.0 - globeDetailRatio()) / 5.0, 0.0, 1.0);
+    const double strength = 0.12 + 0.88 * fade;
+
+    // Resolução adaptativa: a projeção por pixel é o gargalo. No zoom out o disco
+    // é pequeno → renderiza em cheia (nítido e barato). Conforme aproxima e o
+    // disco cresce, reduz a escala pra travar o custo (e aí o relevo já está no
+    // piso, então o leve borrão do upscale passa despercebido).
+    const double SS = std::clamp(520.0 / globeRadius(), 0.15, 1.0);
+    const int W = std::max(1, int(width()  * SS));
+    const int H = std::max(1, int(height() * SS));
+    QImage shade(W, H, QImage::Format_RGB32);
+    shade.fill(qRgb(128, 128, 128));           // neutro: não altera no Overlay
+    QImage ocean(W, H, QImage::Format_ARGB32);
+    ocean.fill(Qt::transparent);               // fora do oceano: nada
+
+    const double R = globeRadius() * SS;
+    const double cx = W / 2.0, cy = H / 2.0;
+    const double D = kPi / 180.0, la0 = m_globeLat0 * D;
+    const double sLa0 = std::sin(la0), cLa0 = std::cos(la0);
+    const int tw = !rel.isNull() ? rel.width()  : ocn.width();
+    const int th = !rel.isNull() ? rel.height() : ocn.height();
+
+    const int x0 = std::max(0, int(cx - R)), x1 = std::min(W - 1, int(cx + R));
+    const int y0 = std::max(0, int(cy - R)), y1 = std::min(H - 1, int(cy + R));
+    for (int py = y0; py <= y1; ++py) {
+        QRgb* sline = reinterpret_cast<QRgb*>(shade.scanLine(py));
+        QRgb* oline = reinterpret_cast<QRgb*>(ocean.scanLine(py));
+        const double yp = cy - py; // y pra cima
+        for (int px = x0; px <= x1; ++px) {
+            const double xp = px - cx;
+            const double rho = std::hypot(xp, yp);
+            if (rho > R) continue; // fora do disco
+            // sin(asin(rho/R)) = rho/R e cos = sqrt(1-(rho/R)^2): elimina 3 trig.
+            const double sinc = rho / R;
+            const double cosc = std::sqrt(std::max(0.0, 1.0 - sinc * sinc));
+            const double lat = std::asin(std::clamp(
+                cosc * sLa0 + (rho > 1e-9 ? yp * sinc * cLa0 / rho : 0.0),
+                -1.0, 1.0)) / D;
+            const double lon = m_globeLon0
+                + std::atan2(xp * sinc, rho * cLa0 * cosc - yp * sLa0 * sinc) / D;
+            double u = (lon + 180.0) / 360.0;
+            u -= std::floor(u); // wrap longitude
+            const double v = std::clamp((90.0 - lat) / 180.0, 0.0, 1.0);
+            // Amostragem bilinear compartilhada (relevo e oceano têm mesma grade).
+            const double fx = u * tw - 0.5, fy = v * th - 0.5;
+            const int ix = int(std::floor(fx)), iy = int(std::floor(fy));
+            const double tx = fx - ix, ty = fy - iy;
+            const int ix0 = ((ix % tw) + tw) % tw, ix1 = (ix0 + 1) % tw;
+            const int iy0 = std::clamp(iy, 0, th - 1), iy1 = std::clamp(iy + 1, 0, th - 1);
+            if (!rel.isNull()) {
+                const uchar* r0 = rel.constScanLine(iy0);
+                const uchar* r1 = rel.constScanLine(iy1);
+                const double top = r0[ix0] * (1.0 - tx) + r0[ix1] * tx;
+                const double bot = r1[ix0] * (1.0 - tx) + r1[ix1] * tx;
+                const int g = int(top * (1.0 - ty) + bot * ty + 0.5);
+                const int gm = std::clamp(int(128.0 + (g - 128.0) * strength + 0.5), 0, 255);
+                sline[px] = qRgb(gm, gm, gm);
+            }
+            if (!ocn.isNull()) {
+                const QRgb* q0 = reinterpret_cast<const QRgb*>(ocn.constScanLine(iy0));
+                const QRgb* q1 = reinterpret_cast<const QRgb*>(ocn.constScanLine(iy1));
+                const QRgb a = q0[ix0], b = q0[ix1], c = q1[ix0], d = q1[ix1];
+                auto bil = [&](int c00, int c10, int c01, int c11) {
+                    const double t = c00 * (1.0 - tx) + c10 * tx;
+                    const double bb = c01 * (1.0 - tx) + c11 * tx;
+                    return int(t * (1.0 - ty) + bb * ty + 0.5);
+                };
+                const int A = bil(qAlpha(a), qAlpha(b), qAlpha(c), qAlpha(d));
+                oline[px] = qRgba(bil(qRed(a), qRed(b), qRed(c), qRed(d)),
+                                  bil(qGreen(a), qGreen(b), qGreen(c), qGreen(d)),
+                                  bil(qBlue(a), qBlue(b), qBlue(c), qBlue(d)), A);
+                // "Grava" o mar como neutro no relevo: dispensa recortar à terra.
+                if (!rel.isNull() && A > 127) sline[px] = qRgb(128, 128, 128);
+            }
+        }
+    }
+    m_globeShade = shade;
+    m_globeOcean = ocean;
 }
 
 QPointF MapView::projectGlobe(double lon, double lat, bool* visible) const
@@ -836,6 +966,7 @@ void MapView::paintEvent(QPaintEvent*)
 
 void MapView::paintGlobe(QPainter& p)
 {
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true); // upscale suave do relevo
     const bool tex = m_textured;
     const QColor appBg(Theme::appBackground());
     const QColor textP(Theme::textPrimary());
@@ -955,6 +1086,15 @@ void MapView::paintGlobe(QPainter& p)
     clip.addEllipse(cen, R, R);
     p.setClipPath(clip);
 
+    // Oceano com profundidade: cor por distância à costa (raso turquesa -> fundo
+    // azul-marinho), projetada sobre o disco. A terra é transparente na textura,
+    // então só pinta o mar; a terra vetorial vem por cima logo abaixo.
+    if (tex) {
+        buildGlobeShade(); // gera relevo (m_globeShade) e oceano (m_globeOcean)
+        if (!m_globeOcean.isNull())
+            p.drawImage(rect(), m_globeOcean); // escala da meia-res pra tela cheia
+    }
+
     // Terra: gradiente climático contínuo (textura) ou cor única do tema. Um único
     // brush pra todos os países evita o "mosaico" de cores que surgia ao colorir
     // cada anel sozinho (arquipélagos e países pequenos viravam quadradinhos
@@ -1040,6 +1180,17 @@ void MapView::paintGlobe(QPainter& p)
         p.restore();
     }
 
+    // Relevo (hillshade do GEBCO), modo Overlay (cinza 128 = neutro): realça
+    // encostas ao sol e sombreia vales. O mar já está gravado como neutro na
+    // textura, então desenha no disco inteiro sem precisar recortar à terra.
+    if (tex && !m_globeShade.isNull()) {
+        p.save();
+        p.setCompositionMode(QPainter::CompositionMode_Overlay);
+        p.drawImage(rect(), m_globeShade);
+        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        p.restore();
+    }
+
     // Divisões internas (estados): contorno tracejado, igual ao mapa plano.
     if (r >= 3.0) {
         p.setBrush(Qt::NoBrush);
@@ -1051,11 +1202,12 @@ void MapView::paintGlobe(QPainter& p)
                 if (frontRing(ring)) p.drawPolygon(ringToPoly(ring));
     }
 
-    // Destaque do hover (estado em zoom, senão país sob o cursor).
+    // Destaque do hover (estado em zoom, senão país sob o cursor). Discreto no
+    // globo: leve clareamento + um fio fino, pra não brigar com a textura.
     {
         auto drawHi = [&](const QVector<QPolygonF>& rings) {
-            p.setBrush(QColor(255, 255, 255, 48));
-            p.setPen(QPen(pinColor, 2.0));
+            p.setBrush(QColor(255, 255, 255, 26));
+            p.setPen(QPen(QColor(255, 255, 255, 120), 1.2));
             for (const QPolygonF& ring : rings)
                 p.drawPolygon(ringToPoly(ring));
         };
@@ -1397,6 +1549,8 @@ void MapView::mouseMoveEvent(QMouseEvent* event)
         if (m_globe) {
             const double k = 0.25 / m_globeZoom;
             m_globeLon0 -= (event->pos().x() - m_lastMouse.x()) * k;
+            while (m_globeLon0 > 180.0)  m_globeLon0 -= 360.0; // mantém em faixa
+            while (m_globeLon0 < -180.0) m_globeLon0 += 360.0;
             m_globeLat0 = std::clamp(m_globeLat0 + (event->pos().y() - m_lastMouse.y()) * k, -89.0, 89.0);
             m_lastMouse = event->pos();
             update();

@@ -4,5 +4,7 @@
         <file alias="states.geojson">../src/assets/geo/states.geojson</file>
         <file alias="cities.tsv">../src/assets/geo/cities.tsv</file>
         <file alias="countries_info.tsv">../src/assets/geo/countries_info.tsv</file>
+        <file alias="relief.png">../src/assets/geo/relief.png</file>
+        <file alias="ocean.png">../src/assets/geo/ocean.png</file>
     </qresource>
 </RCC>

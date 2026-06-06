@@ -1,8 +1,10 @@
 #pragma once
 
+#include <QImage>
 #include <QPoint>
 #include <QPointF>
 #include <QRectF>
+#include <QSize>
 #include <QWidget>
 
 #include <functional>
@@ -76,6 +78,9 @@ private:
     QPointF projectGlobe(double lon, double lat, bool* visible) const;
     QPointF invGlobe(const QPointF& screen, bool* ok) const;
     void paintGlobe(QPainter& p);
+    const QImage& relief() const;  // textura de relevo equiretangular (lazy)
+    const QImage& oceanTex() const; // textura de profundidade do oceano (lazy)
+    void buildGlobeShade();        // projeta relevo + oceano no disco (cache)
 
     double m_scale = 1.0;   // pixels por grau
     double m_fitScale = 1.0; // escala que enquadra o mundo (zoom out mínimo)
@@ -102,6 +107,16 @@ private:
     double m_globeLon0 = -50.0; // centro de visão (graus)
     double m_globeLat0 = 12.0;
     double m_globeZoom = 1.0;   // multiplicador do raio
+
+    // Relevo (hillshade) + oceano (profundidade) e cache das projeções no globo.
+    mutable QImage m_relief;
+    mutable bool m_reliefTried = false;
+    mutable QImage m_oceanTex;
+    mutable bool m_oceanTried = false;
+    QImage m_globeShade;
+    QImage m_globeOcean;
+    double m_shadeLon0 = 1e9, m_shadeLat0 = 1e9, m_shadeZoom = -1.0;
+    QSize m_shadeSize;
 
     // Animação de "voo" do globo até um lugar (busca/navegação).
     QVariantAnimation* m_flyAnim = nullptr;
