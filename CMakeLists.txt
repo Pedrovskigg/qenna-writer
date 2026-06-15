@@ -225,6 +225,6 @@ target_compile_definitions(mira-writing PRIVATE
 )
 
 set_target_properties(mira-writing PROPERTIES
-    # WIN32_EXECUTABLE ON  # comentado para ver logs no terminal
+    WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
 )
