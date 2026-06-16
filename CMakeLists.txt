@@ -22,6 +22,8 @@ include(cmake/Hunspell.cmake)
 
 qt_add_executable(mira-writing
     src/main.cpp
+    src/CrashLogger.cpp
+    src/CrashLogger.h
     src/MainWindow.cpp
     src/MainWindow.h
     src/ExportPanel.cpp

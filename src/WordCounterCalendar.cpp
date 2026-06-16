@@ -1,5 +1,6 @@
 #include "WordCounterCalendar.h"
 
+#include "CrashLogger.h"
 #include "Theme.h"
 #include "WordCounter.h"
 
@@ -304,6 +305,7 @@ void WordCounterCalendar::refresh()
                     auto* stolen = menu.addAction(tr("Marcar folga roubada ☾"));
                     QFont f = stolen->font(); f.setItalic(true); stolen->setFont(f);
                     connect(stolen, &QAction::triggered, this, [this, key]() {
+                        CrashLogger::log(("folga roubada: " + key).toUtf8().constData());
                         m_counter->setOffDay(key, WordCounter::OffDayType::Stolen);
                     });
                 }

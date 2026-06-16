@@ -13,6 +13,7 @@
 #include <QStringList>
 #include <QTranslator>
 
+#include "CrashLogger.h"
 #include "MainWindow.h"
 #include "Theme.h"
 
@@ -63,6 +64,8 @@ int main(int argc, char *argv[])
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
     QApplication::setOrganizationName("Mira Writing");
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
+
+    CrashLogger::install();
 
     QSplashScreen splash(QPixmap(":/app/splash.png"));
     splash.setAttribute(Qt::WA_TranslucentBackground);

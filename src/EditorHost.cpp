@@ -1,5 +1,6 @@
 #include "EditorHost.h"
 
+#include "CrashLogger.h"
 #include "DocCache.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
@@ -234,6 +235,13 @@ bool EditorHost::deleteVariationForCurrentScene(const QString& variationId) {
 
 void EditorHost::setViewMode(const ViewMode& vm) {
     if (m_viewMode == vm) return;
+
+    {
+        char buf[160];
+        snprintf(buf, sizeof(buf), "setViewMode type=%d key=%s",
+                 static_cast<int>(vm.type), keyFor(vm).toUtf8().constData());
+        CrashLogger::log(buf);
+    }
 
     // Antes de trocar, garante que o conteúdo atual do editor está no cache.
     syncEditorToCache();
