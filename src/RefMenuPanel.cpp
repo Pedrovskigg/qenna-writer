@@ -125,15 +125,6 @@ void RefMenuPanel::setProjectRoot(const QString& root)
     m_projectRoot = root;
 }
 
-void RefMenuPanel::setMemoriesStore(MemoriesStore* store)
-{
-    if (m_memories == store) return;
-    m_memories = store;
-    if (m_memories) {
-        connect(m_memories, &MemoriesStore::changed, this, &RefMenuPanel::refresh);
-    }
-}
-
 // =========================================================================
 // UI
 // =========================================================================
@@ -286,24 +277,6 @@ void RefMenuPanel::buildUi()
     m_msTabBtn->setCursor(Qt::PointingHandCursor);
     connect(m_msTabBtn, &QToolButton::clicked, this, &RefMenuPanel::onManuscriptPickerClicked);
     tabsLay->addWidget(m_msTabBtn);
-
-    // Aba de Memórias do projeto (ocupa o lugar da antiga aba "Timeline").
-    m_timelineTabBtn = new QToolButton(m_tabsRow);
-    m_timelineTabBtn->setObjectName(QStringLiteral("refTabBtn"));
-    {
-        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/heart.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
-            QSize(14, 14));
-        if (!ic.isNull()) m_timelineTabBtn->setIcon(ic);
-    }
-    m_timelineTabBtn->setText(tr("Memórias"));
-    m_timelineTabBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_timelineTabBtn->setToolTip(tr("Memórias do projeto"));
-    m_timelineTabBtn->setCheckable(true);
-    m_timelineTabBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_timelineTabBtn, &QToolButton::clicked, this,
-            [this]() { enterPlaceholderMode(SourceKind::MemoriesPlaceholder); });
-    tabsLay->addWidget(m_timelineTabBtn);
 
     m_viewModeBtn = new QToolButton(m_tabsRow);
     m_viewModeBtn->setObjectName(QStringLiteral("refTabBtnSmall"));
@@ -609,11 +582,6 @@ void RefMenuPanel::rebuildTabs()
         if (msTitle.isEmpty()) msTitle = tr("Manuscritos");
         m_msTabBtn->setText(QString::fromUtf8("%1 ▾").arg(msTitle));
     }
-    if (m_timelineTabBtn) {
-        QSignalBlocker block(m_timelineTabBtn);
-        m_timelineTabBtn->setChecked(m_sourceKind == SourceKind::MemoriesPlaceholder);
-    }
-
     // Tab da gaveta atual (ou placeholder ativo).
     QString label;
     QIcon ic;
@@ -641,8 +609,6 @@ void RefMenuPanel::rebuildTabs()
         label = tr("Timelines");
     } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
         label = tr("Elementos");
-    } else if (m_sourceKind == SourceKind::MemoriesPlaceholder) {
-        label = tr("Memórias");
     } else {
         label = tr("Gaveta");
     }
@@ -691,8 +657,6 @@ void RefMenuPanel::rebuildNavBody()
         buildPlaceholderView(tr("Timelines"), tr("Em breve. Vai listar as linhas do tempo."));
     } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
         buildPlaceholderView(tr("Elementos usados"), tr("Em breve. Gráficos de participação dos elementos."));
-    } else if (m_sourceKind == SourceKind::MemoriesPlaceholder) {
-        buildMemoriesView();
     }
 
     m_navInnerLay->addStretch();
@@ -1398,182 +1362,6 @@ void RefMenuPanel::buildPlaceholderView(const QString& title, const QString& sub
     m_navInnerLay->addWidget(card);
 }
 
-QWidget* RefMenuPanel::buildMemoryRow(const QString& memId, const QString& title,
-                                      const QString& text, QWidget* parent)
-{
-    auto* card = new QFrame(parent);
-    card->setObjectName(QStringLiteral("refMemoryRow"));
-    card->setCursor(Qt::PointingHandCursor);
-    card->setProperty("memId", memId);   // usado no eventFilter pro clique
-    card->installEventFilter(this);
-    card->setStyleSheet(QStringLiteral(R"(
-        QFrame#refMemoryRow {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: 8px;
-        }
-        QFrame#refMemoryRow:hover { border-color: %3; }
-    )").arg(Theme::appBackground(), Theme::panelBorder(), Theme::accentDefault()));
-    auto* lay = new QVBoxLayout(card);
-    lay->setContentsMargins(10, 8, 10, 8);
-    lay->setSpacing(4);
-
-    auto* topRow = new QHBoxLayout();
-    topRow->setSpacing(6);
-    auto* titleLbl = new QLabel(title, card);
-    titleLbl->setStyleSheet(QStringLiteral("color:%1; font-size:11px; font-weight:700;")
-                                .arg(Theme::accentDefault()));
-    titleLbl->setWordWrap(true);
-    titleLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    topRow->addWidget(titleLbl, 1);
-
-    auto* delBtn = new QToolButton(card);
-    delBtn->setCursor(Qt::PointingHandCursor);
-    delBtn->setToolTip(tr("Excluir memória"));
-    delBtn->setAutoRaise(true);
-    {
-        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/trash.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::accentDanger()), QColor(Theme::accentDanger()),
-            QSize(13, 13));
-        if (!ic.isNull()) delBtn->setIcon(ic);
-        else delBtn->setText(QStringLiteral("×"));
-    }
-    connect(delBtn, &QToolButton::clicked, this, [this, memId]() {
-        if (m_memories) m_memories->remove(memId);
-    });
-    topRow->addWidget(delBtn, 0, Qt::AlignTop);
-    lay->addLayout(topRow);
-
-    auto* textLbl = new QLabel(QStringLiteral("“%1”").arg(text), card);
-    textLbl->setStyleSheet(QStringLiteral("color:%1; font-size:12px;").arg(Theme::textPrimary()));
-    textLbl->setWordWrap(true);
-    textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    lay->addWidget(textLbl);
-
-    return card;
-}
-
-void RefMenuPanel::buildMemoriesView()
-{
-    if (!m_navInner || !m_navInnerLay) return;
-
-    const QVector<MemoriesStore::Memory> all =
-        m_memories ? m_memories->memories() : QVector<MemoriesStore::Memory>();
-
-    // Nome de um personagem a partir do elementId (via ElementsStore).
-    auto charName = [this](const QString& elId) -> QString {
-        if (m_elements) {
-            if (const Element* el = m_elements->findElement(elId))
-                if (!el->name.isEmpty()) return el->name;
-        }
-        return tr("Personagem");
-    };
-
-    // Rótulo do filtro atual.
-    QString filterLabel = tr("Todas");
-    if (m_memFilter == QStringLiteral("project")) filterLabel = tr("Do projeto");
-    else if (m_memFilter != QStringLiteral("all")) filterLabel = charName(m_memFilter);
-
-    // ---- Botão de filtro (abre um menu) ----
-    auto* filterBtn = new QToolButton(m_navInner);
-    filterBtn->setObjectName(QStringLiteral("refMemFilterBtn"));
-    filterBtn->setCursor(Qt::PointingHandCursor);
-    filterBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    filterBtn->setText(tr("Filtro: %1  ▾").arg(filterLabel));
-    filterBtn->setStyleSheet(QStringLiteral(
-        "QToolButton#refMemFilterBtn {"
-        "  background: %1; color: %2; border: 1px solid %3;"
-        "  border-radius: 6px; padding: 5px 10px; font-size: 11px; text-align: left;"
-        "}"
-        "QToolButton#refMemFilterBtn:hover { color: %4; border-color: %5; }"
-    ).arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
-          Theme::textBright(), Theme::accentDefault()));
-    {
-        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/search.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
-            QSize(13, 13));
-        if (!ic.isNull()) filterBtn->setIcon(ic);
-    }
-    filterBtn->setPopupMode(QToolButton::InstantPopup);
-
-    auto* menu = new QMenu(filterBtn);
-    menu->setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 5px 18px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
-            Theme::accentInfoSoft(), Theme::textBright()));
-    auto addFilter = [this, menu](const QString& label, const QString& value) {
-        QAction* a = menu->addAction(label);
-        a->setCheckable(true);
-        a->setChecked(m_memFilter == value);
-        connect(a, &QAction::triggered, this, [this, value]() {
-            m_memFilter = value;
-            rebuildNavBody();
-        });
-    };
-    addFilter(tr("Todas as memórias"), QStringLiteral("all"));
-    addFilter(tr("Memórias do projeto"), QStringLiteral("project"));
-    // Personagens que têm ao menos uma memória.
-    QStringList seen;
-    for (const MemoriesStore::Memory& m : all) {
-        if (m.targetType == QStringLiteral("character") && !m.elementId.isEmpty()
-            && !seen.contains(m.elementId)) {
-            seen.append(m.elementId);
-        }
-    }
-    if (!seen.isEmpty()) {
-        menu->addSeparator();
-        for (const QString& elId : seen)
-            addFilter(tr("Memórias de %1").arg(charName(elId)), elId);
-    }
-    filterBtn->setMenu(menu);
-    m_navInnerLay->addWidget(filterBtn);
-
-    // ---- Lista filtrada ----
-    QVector<MemoriesStore::Memory> list;
-    for (const MemoriesStore::Memory& m : all) {
-        if (m_memFilter == QStringLiteral("all")) list.append(m);
-        else if (m_memFilter == QStringLiteral("project")) {
-            if (m.targetType != QStringLiteral("character")) list.append(m);
-        } else if (m.targetType == QStringLiteral("character") && m.elementId == m_memFilter) {
-            list.append(m);
-        }
-    }
-    std::sort(list.begin(), list.end(),
-              [](const MemoriesStore::Memory& a, const MemoriesStore::Memory& b) {
-                  return a.createdAt > b.createdAt;
-              });
-
-    if (list.isEmpty()) {
-        auto* empty = new QLabel(
-            m_memFilter == QStringLiteral("all")
-                ? tr("Nenhuma memória ainda. Selecione um trecho no editor e escolha "
-                     "\"Adicionar à memória…\" na barra de seleção.")
-                : tr("Nenhuma memória neste filtro."),
-            m_navInner);
-        empty->setStyleSheet(QStringLiteral("color:%1; font-size:12px; padding:8px 6px;")
-                                 .arg(Theme::textMuted()));
-        empty->setWordWrap(true);
-        m_navInnerLay->addWidget(empty);
-        return;
-    }
-
-    for (const MemoriesStore::Memory& m : list) {
-        // Cabeçalho: nome (se houver) senão "Memória do <fonte>". No modo
-        // "Todas", anexa o personagem quando a memória é de um.
-        QString header = m.name.isEmpty()
-            ? (m.sourceLabel.isEmpty() ? tr("Memória") : tr("Memória do %1").arg(m.sourceLabel))
-            : (m.sourceLabel.isEmpty() ? m.name : tr("%1  ·  %2").arg(m.name, m.sourceLabel));
-        if (m_memFilter == QStringLiteral("all")
-            && m.targetType == QStringLiteral("character") && !m.elementId.isEmpty()) {
-            header = tr("[%1]  %2").arg(charName(m.elementId), header);
-        }
-        m_navInnerLay->addWidget(buildMemoryRow(m.id, header, m.text, m_navInner));
-    }
-}
-
 namespace {
 // Trecho de busca a partir do texto da memória: primeira linha não-vazia,
 // limitada a ~60 chars (QTextEdit::find casa só dentro de uma linha).
@@ -1587,33 +1375,6 @@ QString memSearchQuery(const QString& text)
     return q;
 }
 } // namespace
-
-void RefMenuPanel::showMemoryActions(const QString& memId, const QPoint& globalPos)
-{
-    if (!m_memories) return;
-    MemoriesStore::Memory target;
-    bool found = false;
-    for (const MemoriesStore::Memory& m : m_memories->memories()) {
-        if (m.id == memId) { target = m; found = true; break; }
-    }
-    if (!found) return;
-
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 6px 18px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
-            Theme::accentInfoSoft(), Theme::textBright()));
-    QAction* aEditor = menu.addAction(tr("Abrir no editor"));
-    QAction* aRef    = menu.addAction(tr("Abrir no menu de referência"));
-    QAction* chosen = menu.exec(globalPos);
-    if (chosen == aEditor) {
-        emit openMemoryInEditorRequested(target);
-    } else if (chosen == aRef) {
-        openMemoryInRef(target);
-    }
-}
 
 void RefMenuPanel::openMemoryInRef(const MemoriesStore::Memory& mem)
 {
@@ -1998,7 +1759,6 @@ void RefMenuPanel::onDrawerPickerClicked()
     };
     addPlaceholder(QStringLiteral("star"),  tr("Grupos"),             SourceKind::MarkersPlaceholder);
     addPlaceholder(QStringLiteral("cube"),  tr("Elementos usados"),  SourceKind::ElementsPlaceholder);
-    addPlaceholder(QStringLiteral("heart"), tr("Memórias"),          SourceKind::MemoriesPlaceholder);
     menu.addSeparator();
 
     for (const auto& d : m_model->drawers()) {
@@ -2458,20 +2218,6 @@ void RefMenuPanel::showEvent(QShowEvent* event)
 // Event filter: handles de resize (8 widgets) + drag handle ⠿.
 bool RefMenuPanel::eventFilter(QObject* watched, QEvent* event)
 {
-    // Clique numa linha de memória (cards têm a property "memId") → menu.
-    if (event->type() == QEvent::MouseButtonRelease) {
-        if (auto* w = qobject_cast<QWidget*>(watched)) {
-            const QString memId = w->property("memId").toString();
-            if (!memId.isEmpty()) {
-                auto* me = static_cast<QMouseEvent*>(event);
-                if (me->button() == Qt::LeftButton && w->rect().contains(me->pos())) {
-                    showMemoryActions(memId, me->globalPosition().toPoint());
-                    return true;
-                }
-            }
-        }
-    }
-
     // Mapa watched -> ResizeEdge.
     auto edgeOf = [this](QObject* o) -> ResizeEdge {
         if (o == m_hL)  return ResizeEdge::Left;

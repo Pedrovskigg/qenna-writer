@@ -1,5 +1,7 @@
 #pragma once
 
+#include "MemoriesStore.h"
+
 #include <QPoint>
 #include <QString>
 #include <QWidget>
@@ -18,6 +20,7 @@ class NoteEditPopup;
 class NameGenerator;
 class MapPanel;
 class MapPinsStore;
+class ElementsStore;
 struct Chapter;
 
 // Pensário — painel "auxiliar criativo" do Mira 2 (Pensarium no i18n).
@@ -41,10 +44,16 @@ public:
     // Altura da TopToolbar flutuante — o painel ancora logo abaixo dela.
     void setTopInset(int px) { m_topInset = px; }
     void setMapPinsStore(MapPinsStore* s) { m_mapPins = s; }
+    void setMemoriesStore(MemoriesStore* s);
+    void setElementsStore(ElementsStore* s) { m_elements = s; }
 
 signals:
     // Pedido pra abrir um documento no editor e saltar até o trecho comentado.
     void openMarkerRequested(QString docKey, int start, int end, QString text);
+    // Pedido pra abrir a fonte de uma memória no editor (com o trecho marcado).
+    void openMemoryInEditorRequested(MemoriesStore::Memory mem);
+    // Pedido pra abrir a fonte de uma memória no RefMenu (com o trecho marcado).
+    void openMemoryInRefRequested(MemoriesStore::Memory mem);
 
 public slots:
     void refresh();
@@ -57,7 +66,7 @@ private slots:
     void applyTheme();
 
 private:
-    enum class Tab { Comments = 0, Notes = 1, Names = 2 };
+    enum class Tab { Comments = 0, Notes = 1, Names = 2, Memories = 3 };
     enum class SortMode { Chapters, Creation };
     enum class NameCategory { Character, Place, Weapon };
     enum class Gender { Female, Male };
@@ -77,6 +86,13 @@ private:
     void openNoteEditById(const QString& id);
     void openMapPanel();
     QWidget* buildNamesPage();
+    // Memórias do projeto: lista filtrável (todas / projeto / por personagem).
+    QWidget* buildMemoriesPage();
+    void rebuildMemories();
+    QWidget* buildMemoryCard(const QString& memId, const QString& title,
+                             const QString& text, QWidget* parent);
+    // Clique numa memória → menu (abrir no editor / no refmenu).
+    void showMemoryActions(const QString& memId, const QPoint& globalPos);
     void setNameCategory(NameCategory c);
     void updateGenderVisibility();
     void generateNames();
@@ -93,6 +109,8 @@ private:
     MarkerStore* m_markers = nullptr;
     ProjectModel* m_model = nullptr;
     NotesStore* m_notesStore = nullptr;
+    MemoriesStore* m_memories = nullptr;
+    ElementsStore* m_elements = nullptr;
     Tab m_tab = Tab::Comments;
     SortMode m_sortMode = SortMode::Chapters;
     int m_topInset = 0;
@@ -105,6 +123,7 @@ private:
 
     QToolButton* m_tabComments = nullptr;
     QToolButton* m_tabNotes = nullptr;
+    QToolButton* m_tabMemories = nullptr;
     QToolButton* m_namesBtn = nullptr; // acesso discreto ao gerador, no header
     QToolButton* m_mapBtn = nullptr;   // acesso ao painel do mapa, no header
     MapPanel* m_mapPanel = nullptr;
@@ -139,6 +158,12 @@ private:
     QScrollArea* m_namesScroll = nullptr;
     QWidget* m_namesInner = nullptr;
     QVBoxLayout* m_namesLay = nullptr;
+
+    QScrollArea* m_memoriesScroll = nullptr;
+    QWidget* m_memoriesInner = nullptr;
+    QVBoxLayout* m_memoriesLay = nullptr;
+    // Filtro da aba de Memórias: "all" | "project" | <elementId de personagem>.
+    QString m_memFilter = QStringLiteral("all");
 
     bool m_dragging = false;
     QPoint m_dragOffset;

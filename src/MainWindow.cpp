@@ -1355,8 +1355,6 @@ void MainWindow::setupEditor()
     refMenuPanel->raise();
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     connect(refMenuPanel, &RefMenuPanel::selectedKeyChanged, this, &MainWindow::updateDocCachePinnedKeys);
-    connect(refMenuPanel, &RefMenuPanel::openMemoryInEditorRequested,
-            this, &MainWindow::openMemoryInEditor);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
         if (refMenuPanel) refMenuPanel->togglePanel();
     });
@@ -1364,10 +1362,17 @@ void MainWindow::setupEditor()
     // Pensário — painel auxiliar criativo. Fatia 1: agregador de comentários.
     pensarioPanel = new PensarioPanel(markerStore, projectModel, notesStore, container);
     pensarioPanel->setMapPinsStore(mapPinsStore);
+    pensarioPanel->setElementsStore(elementsStore);
     pensarioPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
     pensarioPanel->raise();
     connect(pensarioPanel, &PensarioPanel::openMarkerRequested,
             this, &MainWindow::openMarkerInEditor);
+    connect(pensarioPanel, &PensarioPanel::openMemoryInEditorRequested,
+            this, &MainWindow::openMemoryInEditor);
+    connect(pensarioPanel, &PensarioPanel::openMemoryInRefRequested, this,
+            [this](const MemoriesStore::Memory& mem) {
+        if (refMenuPanel) refMenuPanel->openMemoryInRef(mem);
+    });
     connect(toolbar, &TopToolbar::pensarioToggleRequested, this, [this]() {
         if (pensarioPanel) pensarioPanel->togglePanel();
     });
@@ -3108,7 +3113,7 @@ void MainWindow::applyProjectRoot(const QString& root)
     }
     if (memoriesStore) {
         memoriesStore->setProjectRoot(root);
-        if (refMenuPanel) refMenuPanel->setMemoriesStore(memoriesStore);
+        if (pensarioPanel) pensarioPanel->setMemoriesStore(memoriesStore);
         memoriesStore->load();
     }
     if (lousaPanel) {

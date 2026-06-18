@@ -40,7 +40,6 @@ public:
                  ElementsStore* elements, QWidget* parent = nullptr);
 
     void setProjectRoot(const QString& root);
-    void setMemoriesStore(MemoriesStore* store);
 
     void togglePanel();
     void openPanel();
@@ -63,12 +62,13 @@ public:
     // Formato DocCache: "ch:<ms>:<ch>", "it:<id>", ou "" se nada selecionado.
     QString selectedCacheKey() const;
 
+    // Abre a fonte de uma memória no preview do RefMenu (capítulo/cena/gaveta),
+    // marcando o trecho. Chamado pelo Pensário via MainWindow.
+    void openMemoryInRef(const MemoriesStore::Memory& mem);
+
 signals:
     void geometryChanged();
     void selectedKeyChanged(QString cacheKey);
-    // Pedido pra abrir a fonte de uma memória no editor (com o trecho marcado).
-    // O MainWindow ajusta o viewMode e faz o "Ctrl+F" no editor.
-    void openMemoryInEditorRequested(MemoriesStore::Memory mem);
 
 public slots:
     void refresh();
@@ -93,7 +93,7 @@ private slots:
     void applyTheme();
 
 private:
-    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder, MemoriesPlaceholder };
+    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder };
     enum class ResizeEdge { None, Left, Right, Top, Bottom, TL, TR, BL, BR };
 
     void layoutResizeHandles();
@@ -107,12 +107,6 @@ private:
     void buildGroupsView();
     void buildSearchAllView();
     void buildPlaceholderView(const QString& title, const QString& subtitle);
-    void buildMemoriesView();           // todas as memórias + filtro (aba do topo)
-    QWidget* buildMemoryRow(const QString& memId, const QString& title,
-                            const QString& text, QWidget* parent);
-    // Clique numa memória → menu (abrir no editor / no refmenu).
-    void showMemoryActions(const QString& memId, const QPoint& globalPos);
-    void openMemoryInRef(const MemoriesStore::Memory& mem);   // abre no preview + marca
     void highlightInPreview(const QString& query);            // "Ctrl+F" no preview
     void rebuildPreview();
     void rescalePreviewImages(); // reaplica os pixmaps às novas dimensões do host (resize do painel)
@@ -148,7 +142,6 @@ private:
     EditorHost* m_host;
     DocCache* m_cache;
     ElementsStore* m_elements;
-    MemoriesStore* m_memories = nullptr;
     QString m_projectRoot;
 
     // Estado lógico
@@ -193,7 +186,6 @@ private:
     // tabs row
     QWidget* m_tabsRow = nullptr;
     QToolButton* m_msTabBtn = nullptr;
-    QToolButton* m_timelineTabBtn = nullptr;
     QToolButton* m_viewModeBtn = nullptr;
     QToolButton* m_drawerPickerBtn = nullptr;
 
@@ -213,9 +205,6 @@ private:
     QList<QLabel*> m_previewImageLabels;
     QTextBrowser* m_preview = nullptr;
     QLabel* m_previewPlaceholder = nullptr;
-
-    // Filtro da aba de Memórias: "all" | "project" | <elementId de personagem>.
-    QString m_memFilter = QStringLiteral("all");
 
     // drag/resize
     bool m_dragging = false;

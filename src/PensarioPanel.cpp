@@ -1,6 +1,7 @@
 #include "PensarioPanel.h"
 
 #include "DocCache.h"
+#include "ElementsStore.h"
 #include "IconUtils.h"
 #include "MarkerStore.h"
 #include "NameGenerator.h"
@@ -61,6 +62,16 @@ PensarioPanel::PensarioPanel(MarkerStore* markers, ProjectModel* model,
 PensarioPanel::~PensarioPanel()
 {
     delete m_nameGen;
+}
+
+void PensarioPanel::setMemoriesStore(MemoriesStore* s)
+{
+    if (m_memories == s) return;
+    m_memories = s;
+    if (m_memories)
+        connect(m_memories, &MemoriesStore::changed, this, [this]() {
+            if (m_tab == Tab::Memories) rebuildMemories();
+        });
 }
 
 void PensarioPanel::buildUi()
@@ -165,9 +176,11 @@ void PensarioPanel::buildUi()
     };
     m_tabComments = makeTab(tr("Comentários"));
     m_tabNotes    = makeTab(tr("Notas"));
+    m_tabMemories = makeTab(tr("Memórias"));
 
     connect(m_tabComments, &QToolButton::clicked, this, [this]() { selectTab(Tab::Comments); });
     connect(m_tabNotes,    &QToolButton::clicked, this, [this]() { selectTab(Tab::Notes); });
+    connect(m_tabMemories, &QToolButton::clicked, this, [this]() { selectTab(Tab::Memories); });
 
     root->addWidget(tabsRow);
 
@@ -193,6 +206,9 @@ void PensarioPanel::buildUi()
 
     // Página 2: Gerador de nomes (funcional)
     m_stack->addWidget(buildNamesPage());
+
+    // Página 3: Memórias do projeto (funcional)
+    m_stack->addWidget(buildMemoriesPage());
 
     root->addWidget(m_stack, 1);
 
@@ -630,16 +646,228 @@ void PensarioPanel::copyName(const QString& name)
     }
 }
 
+QWidget* PensarioPanel::buildMemoriesPage()
+{
+    auto* page = new QWidget(m_stack);
+    auto* lay = new QVBoxLayout(page);
+    lay->setContentsMargins(12, 10, 12, 12);
+    lay->setSpacing(8);
+
+    m_memoriesScroll = new QScrollArea(page);
+    m_memoriesScroll->setWidgetResizable(true);
+    m_memoriesScroll->setFrameShape(QFrame::NoFrame);
+    m_memoriesScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_memoriesInner = new QWidget(m_memoriesScroll);
+    m_memoriesLay = new QVBoxLayout(m_memoriesInner);
+    m_memoriesLay->setContentsMargins(0, 0, 0, 0);
+    m_memoriesLay->setSpacing(8);
+    m_memoriesLay->addStretch();
+    m_memoriesScroll->setWidget(m_memoriesInner);
+    m_memoriesScroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    lay->addWidget(m_memoriesScroll, 1);
+
+    return page;
+}
+
+void PensarioPanel::rebuildMemories()
+{
+    if (!m_memoriesLay) return;
+
+    while (m_memoriesLay->count() > 0) {
+        QLayoutItem* item = m_memoriesLay->takeAt(0);
+        if (QWidget* w = item->widget()) w->deleteLater();
+        delete item;
+    }
+
+    const QVector<MemoriesStore::Memory> all =
+        m_memories ? m_memories->memories() : QVector<MemoriesStore::Memory>();
+
+    // Nome de um personagem a partir do elementId (via ElementsStore).
+    auto charName = [this](const QString& elId) -> QString {
+        if (m_elements) {
+            if (const Element* el = m_elements->findElement(elId))
+                if (!el->name.isEmpty()) return el->name;
+        }
+        return tr("Personagem");
+    };
+
+    // Rótulo do filtro atual.
+    QString filterLabel = tr("Todas");
+    if (m_memFilter == QStringLiteral("project")) filterLabel = tr("Do projeto");
+    else if (m_memFilter != QStringLiteral("all")) filterLabel = charName(m_memFilter);
+
+    // ---- Botão de filtro (abre um menu) ----
+    auto* filterBtn = new QToolButton(m_memoriesInner);
+    filterBtn->setObjectName(QStringLiteral("pnMemFilterBtn"));
+    filterBtn->setCursor(Qt::PointingHandCursor);
+    filterBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    filterBtn->setText(tr("Filtro: %1  ▾").arg(filterLabel));
+    filterBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    filterBtn->setPopupMode(QToolButton::InstantPopup);
+
+    auto* menu = new QMenu(filterBtn);
+    menu->setStyleSheet(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
+        QMenu::item { padding: 5px 18px; border-radius: 4px; }
+        QMenu::item:selected { background: %4; color: %5; }
+        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
+    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+            Theme::accentInfoSoft(), Theme::textBright()));
+    auto addFilter = [this, menu](const QString& label, const QString& value) {
+        QAction* a = menu->addAction(label);
+        a->setCheckable(true);
+        a->setChecked(m_memFilter == value);
+        connect(a, &QAction::triggered, this, [this, value]() {
+            m_memFilter = value;
+            rebuildMemories();
+        });
+    };
+    addFilter(tr("Todas as memórias"), QStringLiteral("all"));
+    addFilter(tr("Memórias do projeto"), QStringLiteral("project"));
+    // Personagens que têm ao menos uma memória.
+    QStringList seen;
+    for (const MemoriesStore::Memory& m : all) {
+        if (m.targetType == QStringLiteral("character") && !m.elementId.isEmpty()
+            && !seen.contains(m.elementId)) {
+            seen.append(m.elementId);
+        }
+    }
+    if (!seen.isEmpty()) {
+        menu->addSeparator();
+        for (const QString& elId : seen)
+            addFilter(tr("Memórias de %1").arg(charName(elId)), elId);
+    }
+    filterBtn->setMenu(menu);
+    m_memoriesLay->addWidget(filterBtn);
+
+    // ---- Lista filtrada ----
+    QVector<MemoriesStore::Memory> list;
+    for (const MemoriesStore::Memory& m : all) {
+        if (m_memFilter == QStringLiteral("all")) list.append(m);
+        else if (m_memFilter == QStringLiteral("project")) {
+            if (m.targetType != QStringLiteral("character")) list.append(m);
+        } else if (m.targetType == QStringLiteral("character") && m.elementId == m_memFilter) {
+            list.append(m);
+        }
+    }
+    std::sort(list.begin(), list.end(),
+              [](const MemoriesStore::Memory& a, const MemoriesStore::Memory& b) {
+                  return a.createdAt > b.createdAt;
+              });
+
+    if (list.isEmpty()) {
+        auto* empty = new QLabel(
+            m_memFilter == QStringLiteral("all")
+                ? tr("Nenhuma memória ainda. Selecione um trecho no editor e escolha "
+                     "“Adicionar à memória…” na barra de seleção.")
+                : tr("Nenhuma memória neste filtro."),
+            m_memoriesInner);
+        empty->setObjectName(QStringLiteral("pnEmpty"));
+        empty->setAlignment(Qt::AlignCenter);
+        empty->setWordWrap(true);
+        m_memoriesLay->addWidget(empty);
+        m_memoriesLay->addStretch();
+        return;
+    }
+
+    for (const MemoriesStore::Memory& m : list) {
+        // Cabeçalho: nome (se houver) senão "Memória do <fonte>". No modo
+        // "Todas", anexa o personagem quando a memória é de um.
+        QString header = m.name.isEmpty()
+            ? (m.sourceLabel.isEmpty() ? tr("Memória") : tr("Memória do %1").arg(m.sourceLabel))
+            : (m.sourceLabel.isEmpty() ? m.name : tr("%1  ·  %2").arg(m.name, m.sourceLabel));
+        if (m_memFilter == QStringLiteral("all")
+            && m.targetType == QStringLiteral("character") && !m.elementId.isEmpty()) {
+            header = tr("[%1]  %2").arg(charName(m.elementId), header);
+        }
+        m_memoriesLay->addWidget(buildMemoryCard(m.id, header, m.text, m_memoriesInner));
+    }
+
+    m_memoriesLay->addStretch();
+}
+
+QWidget* PensarioPanel::buildMemoryCard(const QString& memId, const QString& title,
+                                        const QString& text, QWidget* parent)
+{
+    auto* card = new QFrame(parent);
+    card->setObjectName(QStringLiteral("pnMemCard"));
+    card->setCursor(Qt::PointingHandCursor);
+    card->setProperty("memId", memId);   // usado no eventFilter pro clique
+    card->installEventFilter(this);
+
+    auto* lay = new QVBoxLayout(card);
+    lay->setContentsMargins(12, 9, 10, 10);
+    lay->setSpacing(4);
+
+    auto* topRow = new QHBoxLayout();
+    topRow->setContentsMargins(0, 0, 0, 0);
+    topRow->setSpacing(4);
+    auto* titleLbl = new QLabel(title, card);
+    titleLbl->setObjectName(QStringLiteral("pnMemCardTitle"));
+    titleLbl->setWordWrap(true);
+    titleLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    topRow->addWidget(titleLbl, 1);
+
+    auto* delBtn = new QToolButton(card);
+    delBtn->setObjectName(QStringLiteral("pnMemDelete"));
+    delBtn->setText(QStringLiteral("×"));
+    delBtn->setCursor(Qt::PointingHandCursor);
+    delBtn->setToolTip(tr("Excluir memória"));
+    delBtn->setFixedSize(20, 20);
+    connect(delBtn, &QToolButton::clicked, this, [this, memId]() {
+        if (m_memories) m_memories->remove(memId);
+    });
+    topRow->addWidget(delBtn, 0, Qt::AlignTop);
+    lay->addLayout(topRow);
+
+    auto* textLbl = new QLabel(QStringLiteral("“%1”").arg(text.trimmed()), card);
+    textLbl->setObjectName(QStringLiteral("pnMemCardQuote"));
+    textLbl->setWordWrap(true);
+    textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    lay->addWidget(textLbl);
+
+    return card;
+}
+
+void PensarioPanel::showMemoryActions(const QString& memId, const QPoint& globalPos)
+{
+    if (!m_memories) return;
+    MemoriesStore::Memory target;
+    bool found = false;
+    for (const MemoriesStore::Memory& m : m_memories->memories()) {
+        if (m.id == memId) { target = m; found = true; break; }
+    }
+    if (!found) return;
+
+    QMenu menu(this);
+    menu.setStyleSheet(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
+        QMenu::item { padding: 6px 18px; border-radius: 4px; }
+        QMenu::item:selected { background: %4; color: %5; }
+    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+            Theme::accentInfoSoft(), Theme::textBright()));
+    QAction* aEditor = menu.addAction(tr("Abrir no editor"));
+    QAction* aRef    = menu.addAction(tr("Abrir no menu de referência"));
+    QAction* chosen = menu.exec(globalPos);
+    if (chosen == aEditor) {
+        emit openMemoryInEditorRequested(target);
+    } else if (chosen == aRef) {
+        emit openMemoryInRefRequested(target);
+    }
+}
+
 void PensarioPanel::selectTab(Tab tab)
 {
     m_tab = tab;
     m_tabComments->setChecked(tab == Tab::Comments);
     m_tabNotes->setChecked(tab == Tab::Notes);
+    if (m_tabMemories) m_tabMemories->setChecked(tab == Tab::Memories);
     if (m_namesBtn) m_namesBtn->setChecked(tab == Tab::Names);
     m_stack->setCurrentIndex(static_cast<int>(tab));
     if (m_sortBtn) m_sortBtn->setVisible(tab == Tab::Comments);
     if (tab == Tab::Comments) rebuildComments();
     else if (tab == Tab::Notes) rebuildNotes();
+    else if (tab == Tab::Memories) rebuildMemories();
 }
 
 void PensarioPanel::rebuildComments()
@@ -851,6 +1079,7 @@ void PensarioPanel::refresh()
 {
     if (m_tab == Tab::Comments) rebuildComments();
     else if (m_tab == Tab::Notes) rebuildNotes();
+    else if (m_tab == Tab::Memories) rebuildMemories();
 }
 
 void PensarioPanel::togglePanel()
@@ -897,6 +1126,20 @@ void PensarioPanel::showEvent(QShowEvent* event)
 
 bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    // Card de memória: clicar abre o menu de ações (editor / refmenu).
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (auto* w = qobject_cast<QWidget*>(watched)) {
+            const QString memId = w->property("memId").toString();
+            if (!memId.isEmpty()) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                if (me->button() == Qt::LeftButton && w->rect().contains(me->position().toPoint())) {
+                    showMemoryActions(memId, me->globalPosition().toPoint());
+                    return true;
+                }
+            }
+        }
+    }
+
     // Card (comentário ou nota): clicar age (navega / edita); arrastar a borda
     // inferior (alça invisível, últimos ~12px) redimensiona o conteúdo recortado.
     if (auto* card = qobject_cast<QWidget*>(watched);
@@ -1151,6 +1394,33 @@ void PensarioPanel::applyTheme()
         }
         #pnAffix:focus { border-color: %8; }
         #pnNameStatus { color: %8; font-size: 12px; }
+        #pnMemFilterBtn {
+            color: %3;
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            text-align: left;
+        }
+        #pnMemFilterBtn:hover { color: %5; border-color: %8; }
+        #pnMemFilterBtn::menu-indicator { image: none; width: 0; }
+        #pnMemCard {
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 8px;
+        }
+        #pnMemCard:hover { border-color: %8; }
+        #pnMemCardTitle { color: %8; font-size: 11px; font-weight: 700; }
+        #pnMemCardQuote { color: %3; font-size: 12px; }
+        #pnMemDelete {
+            color: %4;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        #pnMemDelete:hover { color: %5; background: %7; }
         #pnEmpty, #pnPlaceholderSub {
             color: %4;
             font-size: 13px;
