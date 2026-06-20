@@ -51,7 +51,7 @@ private:
     void pickPhoto();
     void refreshPhoto();
     QWidget* buildFieldWidget(const SheetField& f);
-    QWidget* buildColumn(const QString& side);
+    QWidget* buildHeader(bool vertical);  // foto + nome + apelido
 
     ProjectModel* m_model;
     ElementsStore* m_elements;

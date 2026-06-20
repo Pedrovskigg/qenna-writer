@@ -237,20 +237,6 @@ void CharacterSheetPanel::refreshPhoto()
     m_photo->setText(tr("＋ foto"));
 }
 
-QWidget* CharacterSheetPanel::buildColumn(const QString& side)
-{
-    auto* col = new QWidget;
-    auto* lay = new QVBoxLayout(col);
-    lay->setContentsMargins(0, 0, 0, 0);
-    lay->setSpacing(11);
-    for (const auto& f : m_sheet.fields) {
-        if (!side.isEmpty() && f.column != side) continue;
-        lay->addWidget(buildFieldWidget(f));
-    }
-    lay->addStretch();
-    return col;
-}
-
 QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
 {
     const QString id = f.id;
@@ -297,9 +283,10 @@ QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
         te->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         auto* doc = te->document();
         doc->setDocumentMargin(0);
+        // Nasce alto (há espaço de sobra na página) e cresce conforme o texto.
         connect(doc->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
                 te, [te](const QSizeF& s) {
-            te->setFixedHeight(qMax(24, int(s.height()) + 6));
+            te->setFixedHeight(qMax(96, int(s.height()) + 8));
         });
         connect(te, &QTextEdit::textChanged, this, [this, id, te]() {
             setFieldValue(id, te->toHtml());
@@ -320,13 +307,63 @@ QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
     return box;
 }
 
+QWidget* CharacterSheetPanel::buildHeader(bool vertical)
+{
+    const Element* e = (!m_elementId.isEmpty() && m_elements)
+        ? m_elements->findElement(m_elementId) : nullptr;
+
+    m_photo = new QLabel;
+    m_photo->setObjectName(QStringLiteral("sheetPhoto"));
+    m_photo->setFixedSize(kPhotoW, kPhotoH);
+    m_photo->setAlignment(Qt::AlignCenter);
+    m_photo->setCursor(Qt::PointingHandCursor);
+    m_photo->installEventFilter(this);
+    refreshPhoto();
+
+    auto* nameLbl = new QLabel(e ? e->name : tr("Personagem"));
+    nameLbl->setObjectName(QStringLiteral("sheetName"));
+    nameLbl->setWordWrap(true);
+    QLabel* aliasLbl = nullptr;
+    if (e && !e->aliases.isEmpty()) {
+        aliasLbl = new QLabel(e->aliases.join(QStringLiteral(", ")));
+        aliasLbl->setObjectName(QStringLiteral("sheetAlias"));
+        aliasLbl->setWordWrap(true);
+    }
+
+    auto* box = new QWidget;
+    if (vertical) {
+        // 2 colunas: foto em cima, nome/apelido abaixo (topo da coluna esquerda).
+        auto* v = new QVBoxLayout(box);
+        v->setContentsMargins(0, 0, 0, 0);
+        v->setSpacing(6);
+        v->addWidget(m_photo, 0, Qt::AlignLeft);
+        v->addSpacing(2);
+        v->addWidget(nameLbl);
+        if (aliasLbl) v->addWidget(aliasLbl);
+    } else {
+        // 1 coluna: foto à esquerda, nome/apelido ao lado.
+        auto* h = new QHBoxLayout(box);
+        h->setContentsMargins(0, 0, 0, 0);
+        h->setSpacing(18);
+        h->addWidget(m_photo, 0, Qt::AlignTop);
+        auto* nameCol = new QVBoxLayout;
+        nameCol->setSpacing(2);
+        nameCol->addSpacing(6);
+        nameCol->addWidget(nameLbl);
+        if (aliasLbl) nameCol->addWidget(aliasLbl);
+        nameCol->addStretch();
+        h->addLayout(nameCol, 1);
+    }
+    return box;
+}
+
 void CharacterSheetPanel::rebuild()
 {
     // Outer transparente que centraliza a "folha" (página) horizontalmente.
     auto* outer = new QWidget;
     outer->setObjectName(QStringLiteral("sheetOuter"));
     auto* outerLay = new QHBoxLayout(outer);
-    outerLay->setContentsMargins(0, 16, 0, 24);
+    outerLay->setContentsMargins(0, 20, 0, 20);
 
     // A folha: mesma largura da página do editor, cor de página, sombra.
     auto* page = new QWidget;
@@ -339,11 +376,11 @@ void CharacterSheetPanel::rebuild()
         shadow->setColor(QColor(0, 0, 0, 140));
         page->setGraphicsEffect(shadow);
     }
-    const int hm = qMax(28, EditorLayout::horizontalMargin());
-    const int vm = qMax(28, EditorLayout::verticalMargin());
+    const int hm = qMax(44, EditorLayout::horizontalMargin());
+    const int vm = qMax(40, EditorLayout::verticalMargin());
     auto* root = new QVBoxLayout(page);
     root->setContentsMargins(hm, vm, hm, vm);
-    root->setSpacing(14);
+    root->setSpacing(24);
 
     // Barra superior discreta: alternar 1/2 colunas.
     auto* topBar = new QHBoxLayout;
@@ -356,45 +393,40 @@ void CharacterSheetPanel::rebuild()
     topBar->addWidget(colBtn);
     root->addLayout(topBar);
 
-    // Cabeçalho: foto grande + nome + apelido (do Element vinculado).
-    const Element* e = (!m_elementId.isEmpty() && m_elements)
-        ? m_elements->findElement(m_elementId) : nullptr;
-    auto* header = new QHBoxLayout;
-    header->setSpacing(16);
-    m_photo = new QLabel;
-    m_photo->setObjectName(QStringLiteral("sheetPhoto"));
-    m_photo->setFixedSize(kPhotoW, kPhotoH);
-    m_photo->setAlignment(Qt::AlignCenter);
-    m_photo->setCursor(Qt::PointingHandCursor);
-    m_photo->installEventFilter(this);
-    refreshPhoto();
-    header->addWidget(m_photo, 0, Qt::AlignTop);
-
-    auto* nameCol = new QVBoxLayout;
-    nameCol->setSpacing(2);
-    auto* nameLbl = new QLabel(e ? e->name : tr("Personagem"));
-    nameLbl->setObjectName(QStringLiteral("sheetName"));
-    nameLbl->setWordWrap(true);
-    nameCol->addWidget(nameLbl);
-    if (e && !e->aliases.isEmpty()) {
-        auto* aliasLbl = new QLabel(e->aliases.join(QStringLiteral(", ")));
-        aliasLbl->setObjectName(QStringLiteral("sheetAlias"));
-        aliasLbl->setWordWrap(true);
-        nameCol->addWidget(aliasLbl);
-    }
-    nameCol->addStretch();
-    header->addLayout(nameCol, 1);
-    root->addLayout(header);
-
-    // Corpo: 1 ou 2 colunas (próximas).
     if (m_sheet.columns == 2) {
+        // Esquerda: foto + nome + dados. Direita: blocos de texto, subindo ao lado da foto.
         auto* cols = new QHBoxLayout;
-        cols->setSpacing(26);
-        cols->addWidget(buildColumn(QStringLiteral("left")), 1);
-        cols->addWidget(buildColumn(QStringLiteral("right")), 1);
+        cols->setSpacing(38);
+
+        auto* leftW = new QWidget;
+        auto* leftV = new QVBoxLayout(leftW);
+        leftV->setContentsMargins(0, 0, 0, 0);
+        leftV->setSpacing(20);
+        leftV->addWidget(buildHeader(/*vertical=*/true));
+        for (const auto& f : m_sheet.fields)
+            if (f.column == QStringLiteral("left")) leftV->addWidget(buildFieldWidget(f));
+        leftV->addStretch();
+
+        auto* rightW = new QWidget;
+        auto* rightV = new QVBoxLayout(rightW);
+        rightV->setContentsMargins(0, 0, 0, 0);
+        rightV->setSpacing(20);
+        for (const auto& f : m_sheet.fields)
+            if (f.column == QStringLiteral("right")) rightV->addWidget(buildFieldWidget(f));
+        rightV->addStretch();
+
+        cols->addWidget(leftW, 4);
+        cols->addWidget(rightW, 6);
         root->addLayout(cols);
     } else {
-        root->addWidget(buildColumn(QString()));
+        root->addWidget(buildHeader(/*vertical=*/false));
+        auto* colW = new QWidget;
+        auto* colV = new QVBoxLayout(colW);
+        colV->setContentsMargins(0, 0, 0, 0);
+        colV->setSpacing(20);
+        for (const auto& f : m_sheet.fields)
+            colV->addWidget(buildFieldWidget(f));
+        root->addWidget(colW);
     }
 
     // Rodapé: adicionar campos (discreto).
@@ -410,11 +442,12 @@ void CharacterSheetPanel::rebuild()
     addBar->addWidget(addData);
     addBar->addWidget(addText);
     addBar->addStretch();
-    root->addSpacing(6);
+    root->addSpacing(8);
     root->addLayout(addBar);
+    root->addStretch();   // empurra conteúdo pro topo; a folha estica até o rodapé da página
 
     outerLay->addStretch();
-    outerLay->addWidget(page, 0, Qt::AlignTop);
+    outerLay->addWidget(page);  // sem AlignTop: a folha preenche a altura da viewport
     outerLay->addStretch();
 
     m_content = outer;
