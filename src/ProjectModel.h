@@ -50,6 +50,24 @@ struct Folder {
     QString markerId;
 };
 
+// Campo de uma ficha de personagem estruturada (formulário). Ver CharacterSheet.
+struct SheetField {
+    QString id;
+    QString label;                            // rótulo exibido em negrito
+    QString kind = QStringLiteral("text");    // "data" (linha curta) | "text" (área rica/html)
+    QString value;                            // texto puro p/ "data"; html p/ "text"
+    QString column = QStringLiteral("left");  // "left" | "right" (distribuição entre colunas)
+    int order = 0;                            // ordem dentro da coluna
+};
+
+// Ficha estruturada de personagem: alternativa ao documento livre (html).
+// Foto/nome/apelido NÃO ficam aqui — vêm do Element vinculado (elementId).
+struct CharacterSheet {
+    int columns = 2;            // layout: 1 ou 2 colunas
+    QList<SheetField> fields;
+    bool isEmpty() const { return fields.isEmpty(); }
+};
+
 struct DrawerItem {
     QString id;
     QString title;
@@ -68,6 +86,10 @@ struct DrawerItem {
     QString charStatus;
     QString charStatusDetail;
     QString charLocation;
+    // Ficha estruturada (formulário). Quando isSheet=true, o documento é a ficha
+    // (sheet) em vez do html livre.
+    bool isSheet = false;
+    CharacterSheet sheet;
 };
 
 struct Drawer {
@@ -166,6 +188,7 @@ public:
                            const QString& coverDataUrl);
 
     bool updateDrawerItemHtml(const QString& itemId, const QString& html);
+    bool updateDrawerItemSheet(const QString& itemId, const CharacterSheet& sheet);
     bool updateDrawerItemMeta(const QString& itemId, const QString& title, const QString& role);
     bool setDrawerItemElement(const QString& itemId, const QString& elementType,
                               const QString& elementIcon, const QString& elementId);
@@ -217,6 +240,9 @@ public:
 
     static QString uid();
     static QString chapterDefaultFile(const QString& manuscriptId, const QString& chapterId);
+
+    // Ficha padrão de personagem: campos básicos (esquerda) + blocos narrativos (direita).
+    static CharacterSheet defaultCharacterSheet();
 
 signals:
     void projectNameChanged();

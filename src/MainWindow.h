@@ -68,6 +68,7 @@ class RemindersPanel;
 class GroupsPanel;
 class LousaPanel;
 class TimelinePanel;
+class CharacterSheetPanel;
 class UpdateChecker;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -146,6 +147,11 @@ private:
     void applySpellLanguageFromModel();
     void positionWordCountPanel();
     void positionSidePanels();
+    // Ficha de Personagem: painel embutido que substitui o editor para itens isSheet.
+    CharacterSheetPanel* ensureCharacterSheetPanel();
+    void showCharacterSheet(const QString& itemId);
+    void hideCharacterSheet();
+    void positionCharacterSheet();
     bool confirmDiscardOrSave();
     bool loadProjectFrom(const QString& root, QString* errorOut = nullptr);
     void rememberLastProject(const QString& root);
@@ -261,6 +267,7 @@ private:
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;
     TimelinePanel *timelinePanel = nullptr;
+    CharacterSheetPanel *characterSheetPanel = nullptr;
     QFrame  *m_reminderToast      = nullptr;
     QLabel  *m_reminderToastTitle = nullptr;
     QLabel  *m_reminderToastBody  = nullptr;

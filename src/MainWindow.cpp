@@ -108,6 +108,7 @@
 #include "MemoryAddPopup.h"
 #include "LousaPanel.h"
 #include "TimelinePanel.h"
+#include "CharacterSheetPanel.h"
 #include "RemindersPanel.h"
 #include "RemindersStore.h"
 #include "GroupsPanel.h"
@@ -515,6 +516,10 @@ void MainWindow::setupEditor()
         if (projectRoot.isEmpty()) return;
         if (editorHost->viewMode().type == EditorHost::Disabled) return;
         rememberLastDocFor(projectRoot);
+    });
+    // Sair para qualquer documento de texto esconde a ficha de personagem.
+    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+        hideCharacterSheet();
     });
 
     // Spell checker + highlighter. Idioma e custom dict são aplicados a partir
@@ -1813,6 +1818,25 @@ void MainWindow::setupEditor()
             ElementCreateDialog dlg(elemType, this);
             if (dlg.exec() != QDialog::Accepted) return;
             if (dlg.title().isEmpty()) return;
+            // Para personagens, oferece criar como Ficha estruturada ou Documento livre.
+            bool asSheet = false;
+            if (elemType == QStringLiteral("character")) {
+                QMessageBox box(this);
+                box.setIcon(QMessageBox::Question);
+                box.setWindowTitle(tr("Novo personagem"));
+                box.setText(tr("Como você quer montar a página de “%1”?").arg(dlg.title()));
+                box.setInformativeText(tr("A Ficha já vem com campos prontos (idade, história, "
+                                          "conexões…) que você pode personalizar. O Documento "
+                                          "livre é uma página em branco."));
+                QPushButton* sheetBtn = box.addButton(tr("Ficha"), QMessageBox::AcceptRole);
+                QPushButton* freeBtn  = box.addButton(tr("Documento livre"), QMessageBox::AcceptRole);
+                box.addButton(QMessageBox::Cancel);
+                box.setDefaultButton(sheetBtn);
+                box.exec();
+                auto* clicked = box.clickedButton();
+                if (clicked != sheetBtn && clicked != freeBtn) return; // cancelou
+                asSheet = (clicked == sheetBtn);
+            }
             // Cria registro em ElementsStore primeiro
             Element elem;
             elem.name = dlg.title();
@@ -1831,11 +1855,16 @@ void MainWindow::setupEditor()
             it.id = ProjectModel::uid();
             it.title = dlg.title();
             it.folderId = folderId;
-            it.hasInlineHtml = true;
-            it.html = QStringLiteral("<p></p>");
             it.elementType = elemType;
             it.elementId = elementId;
             it.role = dlg.role();
+            if (asSheet) {
+                it.isSheet = true;
+                it.sheet = ProjectModel::defaultCharacterSheet();
+            } else {
+                it.hasInlineHtml = true;
+                it.html = QStringLiteral("<p></p>");
+            }
             projectModel->addDrawerItem(drawerKey, it);
             return;
         }
@@ -1852,6 +1881,12 @@ void MainWindow::setupEditor()
         projectModel->addDrawerItem(drawerKey, it);
     });
     connect(drawerListPanel, &DrawerListPanel::itemActivated, this, [this](const QString& /*drawerKey*/, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (item && item->isSheet) {
+            showCharacterSheet(itemId);
+            return;
+        }
+        hideCharacterSheet();
         EditorHost::ViewMode vm;
         vm.type = EditorHost::DrawerDoc;
         vm.itemId = itemId;
@@ -3995,6 +4030,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     resizeEditorColumnToViewport();
     positionWordCountPanel();
     positionSidePanels();
+    if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
     positionExternalScrollBar();
     positionFindBar();
     positionGlobalSearchPanel();
@@ -4732,6 +4768,50 @@ void MainWindow::createDocFromBond(const QString& drawerKey, const QString& bond
     it.hasInlineHtml = true;
     it.html = html;
     projectModel->addDrawerItem(destKey, it);
+}
+
+CharacterSheetPanel* MainWindow::ensureCharacterSheetPanel()
+{
+    if (!characterSheetPanel) {
+        characterSheetPanel = new CharacterSheetPanel(projectModel, elementsStore, editorContainer);
+        characterSheetPanel->hide();
+        connect(characterSheetPanel, &CharacterSheetPanel::edited, this, [this]() {
+            if (projectSaver) projectSaver->saveProject();
+        });
+    }
+    return characterSheetPanel;
+}
+
+void MainWindow::showCharacterSheet(const QString& itemId)
+{
+    auto* panel = ensureCharacterSheetPanel();
+    panel->openItem(itemId);
+    positionCharacterSheet();
+    panel->show();
+    panel->raise();
+    // Mantém a navegação acessível por cima da ficha.
+    if (leftBar) leftBar->raise();
+    if (drawerListPanel && drawerListPanel->isVisible()) drawerListPanel->raise();
+    if (manuscriptPanel && manuscriptPanel->isVisible()) manuscriptPanel->raise();
+    if (toolbarHolder) toolbarHolder->raise();
+    if (externalScrollBar) externalScrollBar->hide();
+}
+
+void MainWindow::hideCharacterSheet()
+{
+    if (characterSheetPanel && characterSheetPanel->isVisible())
+        characterSheetPanel->hide();
+}
+
+void MainWindow::positionCharacterSheet()
+{
+    if (!characterSheetPanel || !editorContainer) return;
+    const int tbH = (toolbarHolder && toolbarHolder->isVisible()) ? toolbarHolder->height() : 0;
+    int lx = 0;
+    if (leftBar && leftBar->isVisible()) lx = leftBar->x() + leftBar->width();
+    const int w = qMax(0, editorContainer->width() - lx);
+    const int h = qMax(0, editorContainer->height() - tbH);
+    characterSheetPanel->setGeometry(lx, tbH, w, h);
 }
 
 TimelinePanel* MainWindow::ensureTimelinePanel()

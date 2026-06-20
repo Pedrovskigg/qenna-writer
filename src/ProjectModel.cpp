@@ -144,6 +144,47 @@ Folder folderFromJson(const QJsonObject& o) {
     return f;
 }
 
+QJsonObject sheetFieldToJson(const SheetField& f) {
+    QJsonObject o;
+    o.insert(QStringLiteral("id"), f.id);
+    o.insert(QStringLiteral("label"), f.label);
+    o.insert(QStringLiteral("kind"), f.kind);
+    o.insert(QStringLiteral("value"), f.value);
+    o.insert(QStringLiteral("column"), f.column);
+    o.insert(QStringLiteral("order"), f.order);
+    return o;
+}
+
+SheetField sheetFieldFromJson(const QJsonObject& o) {
+    SheetField f;
+    f.id = jsonStringOrEmpty(o.value(QStringLiteral("id")));
+    f.label = jsonStringOrEmpty(o.value(QStringLiteral("label")));
+    f.kind = o.contains(QStringLiteral("kind"))
+        ? jsonStringOrEmpty(o.value(QStringLiteral("kind"))) : QStringLiteral("text");
+    f.value = jsonStringOrEmpty(o.value(QStringLiteral("value")));
+    f.column = o.contains(QStringLiteral("column"))
+        ? jsonStringOrEmpty(o.value(QStringLiteral("column"))) : QStringLiteral("left");
+    f.order = o.value(QStringLiteral("order")).toInt(0);
+    return f;
+}
+
+QJsonObject characterSheetToJson(const CharacterSheet& s) {
+    QJsonObject o;
+    o.insert(QStringLiteral("columns"), s.columns);
+    QJsonArray arr;
+    for (const auto& f : s.fields) arr.append(sheetFieldToJson(f));
+    o.insert(QStringLiteral("fields"), arr);
+    return o;
+}
+
+CharacterSheet characterSheetFromJson(const QJsonObject& o) {
+    CharacterSheet s;
+    s.columns = o.value(QStringLiteral("columns")).toInt(2);
+    const QJsonArray arr = o.value(QStringLiteral("fields")).toArray();
+    for (const auto& fv : arr) s.fields.append(sheetFieldFromJson(fv.toObject()));
+    return s;
+}
+
 QJsonObject drawerItemToJson(const DrawerItem& it) {
     QJsonObject o;
     o.insert(QStringLiteral("id"), it.id);
@@ -164,6 +205,10 @@ QJsonObject drawerItemToJson(const DrawerItem& it) {
     if (!it.charStatus.isEmpty())       o.insert(QStringLiteral("charStatus"), it.charStatus);
     if (!it.charStatusDetail.isEmpty()) o.insert(QStringLiteral("charStatusDetail"), it.charStatusDetail);
     if (!it.charLocation.isEmpty())     o.insert(QStringLiteral("charLocation"), it.charLocation);
+    if (it.isSheet) {
+        o.insert(QStringLiteral("isSheet"), true);
+        o.insert(QStringLiteral("sheet"), characterSheetToJson(it.sheet));
+    }
     return o;
 }
 
@@ -187,6 +232,10 @@ DrawerItem drawerItemFromJson(const QJsonObject& o) {
     it.charStatus       = jsonStringOrEmpty(o.value(QStringLiteral("charStatus")));
     it.charStatusDetail = jsonStringOrEmpty(o.value(QStringLiteral("charStatusDetail")));
     it.charLocation     = jsonStringOrEmpty(o.value(QStringLiteral("charLocation")));
+    if (o.value(QStringLiteral("isSheet")).toBool(false)) {
+        it.isSheet = true;
+        it.sheet = characterSheetFromJson(o.value(QStringLiteral("sheet")).toObject());
+    }
     return it;
 }
 
@@ -699,6 +748,18 @@ bool ProjectModel::updateDrawerItemHtml(const QString& itemId, const QString& ht
             if (it.html == html && it.hasInlineHtml) return true;
             it.html = html;
             it.hasInlineHtml = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::updateDrawerItemSheet(const QString& itemId, const CharacterSheet& sheet) {
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.id != itemId) continue;
+            it.isSheet = true;
+            it.sheet = sheet;
             return true;
         }
     }
@@ -1348,4 +1409,30 @@ QString ProjectModel::chapterDefaultFile(const QString& manuscriptId, const QStr
             .arg(manuscriptId, chapterId);
     }
     return QStringLiteral("content/chapters/ch_%1.html").arg(chapterId);
+}
+
+CharacterSheet ProjectModel::defaultCharacterSheet() {
+    CharacterSheet s;
+    s.columns = 2;
+    auto add = [&s](const QString& label, const QString& kind, const QString& column) {
+        SheetField f;
+        f.id = ProjectModel::uid();
+        f.label = label;
+        f.kind = kind;
+        f.column = column;
+        f.order = s.fields.size();
+        s.fields.append(f);
+    };
+    // Dados básicos (coluna esquerda) — nome/apelido/foto vêm do Element vinculado.
+    add(tr("Idade"),        QStringLiteral("data"), QStringLiteral("left"));
+    add(tr("Origem"),       QStringLiteral("data"), QStringLiteral("left"));
+    add(tr("Gênero"),       QStringLiteral("data"), QStringLiteral("left"));
+    add(tr("Estado civil"), QStringLiteral("data"), QStringLiteral("left"));
+    add(tr("Ocupação"),     QStringLiteral("data"), QStringLiteral("left"));
+    // Blocos narrativos (coluna direita).
+    add(tr("História"),         QStringLiteral("text"), QStringLiteral("right"));
+    add(tr("Conexões"),         QStringLiteral("text"), QStringLiteral("right"));
+    add(tr("Função narrativa"), QStringLiteral("text"), QStringLiteral("right"));
+    add(tr("Desenvolvimento"),  QStringLiteral("text"), QStringLiteral("right"));
+    return s;
 }
