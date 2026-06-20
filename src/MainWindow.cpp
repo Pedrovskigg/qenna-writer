@@ -3774,10 +3774,16 @@ void MainWindow::restoreLastDocFor(const QString& root)
     vm.itemId       = s.value(QStringLiteral("itemId")).toString();
     s.endGroup();
     if (vm.type == EditorHost::Disabled) return;
-    // Ficha: restaura no painel da ficha, não no editor de texto.
+    // Ficha: restaura no painel da ficha, não no editor de texto. Adia até a
+    // janela estar visível — abrir o overlay antes do show() faria o Qt criá-lo
+    // como uma janela top-level separada (e ele ficaria assim pra sempre).
     if (vm.type == EditorHost::DrawerDoc && projectModel) {
         const DrawerItem* item = projectModel->findDrawerItem(vm.itemId);
-        if (item && item->isSheet) { showCharacterSheet(vm.itemId); return; }
+        if (item && item->isSheet) {
+            const QString sheetItemId = vm.itemId;
+            QTimer::singleShot(0, this, [this, sheetItemId]() { showCharacterSheet(sheetItemId); });
+            return;
+        }
     }
     // EditorHost valida IDs e cai pra Disabled se não conseguir resolver — ok.
     editorHost->setViewMode(vm);
