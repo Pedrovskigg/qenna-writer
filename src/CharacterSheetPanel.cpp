@@ -128,6 +128,13 @@ void CharacterSheetPanel::openItem(const QString& itemId)
     rebuild();
 }
 
+void CharacterSheetPanel::setContentFont(const QFont& f)
+{
+    if (m_contentFont == f) return;
+    m_contentFont = f;
+    if (!m_itemId.isEmpty()) rebuild();
+}
+
 void CharacterSheetPanel::scheduleSave()
 {
     if (m_saveTimer) m_saveTimer->start();
@@ -283,6 +290,7 @@ QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
         auto* te = new QTextEdit;
         te->setObjectName(QStringLiteral("sheetText"));
         te->setLineWrapMode(QTextEdit::WidgetWidth);
+        te->document()->setDefaultFont(m_contentFont);  // pegada de escrita (Alegreya)
         te->setHtml(f.value);
         te->setPlaceholderText(tr("Escreva aqui…"));
         te->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -301,6 +309,7 @@ QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
     } else {
         auto* le = new QLineEdit(f.value);
         le->setObjectName(QStringLiteral("sheetData"));
+        le->setFont(m_contentFont);  // pegada de escrita (Alegreya)
         le->setPlaceholderText(QStringLiteral("—"));
         connect(le, &QLineEdit::editingFinished, this, [this, id, le]() {
             setFieldValue(id, le->text());

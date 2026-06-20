@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFont>
 #include <QWidget>
 #include <QString>
 
@@ -26,6 +27,10 @@ public:
     // Carrega a ficha do item e (re)constrói a UI. Item precisa ser isSheet.
     void openItem(const QString& itemId);
     QString currentItemId() const { return m_itemId; }
+
+    // Fonte usada no CONTEÚDO dos campos (a fonte de escrita do editor, ex. Alegreya).
+    // Os rótulos ficam na fonte da UI — o contraste dá a pegada "documento".
+    void setContentFont(const QFont& f);
 
 signals:
     void edited();        // disparado (com debounce) quando algo muda — pede save
@@ -58,4 +63,5 @@ private:
     QWidget* m_content = nullptr;
     QLabel* m_photo = nullptr;
     QTimer* m_saveTimer = nullptr;
+    QFont m_contentFont;        // fonte do conteúdo (escrita); rótulos usam a da UI
 };

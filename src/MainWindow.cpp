@@ -4785,6 +4785,8 @@ CharacterSheetPanel* MainWindow::ensureCharacterSheetPanel()
 void MainWindow::showCharacterSheet(const QString& itemId)
 {
     auto* panel = ensureCharacterSheetPanel();
+    // Conteúdo dos campos na fonte de escrita atual do editor (pegada "documento").
+    panel->setContentFont(QFont(currentFontFamily, currentFontSize));
     panel->openItem(itemId);
     positionCharacterSheet();
     panel->show();
