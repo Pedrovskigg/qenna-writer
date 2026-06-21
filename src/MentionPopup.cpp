@@ -112,26 +112,35 @@ void MentionPopup::rebuildList(const QString& query)
         item->setData(Qt::UserRole + 1, d.itemId);
         item->setData(Qt::UserRole + 2, d.title);
         m_list->addItem(item);
-        if (++added >= 8) break;   // no máximo 8 sugestões
+        if (++added >= 50) break;   // teto de segurança; o scroll cuida do resto
     }
     if (m_list->count() > 0) m_list->setCurrentRow(0);
 }
 
 void MentionPopup::showBelowCursor(QTextEdit* ed)
 {
+    constexpr int kRowH = 30;
+    constexpr int kMaxVisible = 6;   // mostra até 6; o resto rola
     const QRect r = ed->cursorRect(ed->textCursor());
-    const QPoint globalPt = ed->viewport()->mapToGlobal(r.bottomLeft());
-    QPoint ownerPt = m_owner ? m_owner->mapFromGlobal(globalPt) : globalPt;
+    const QPoint belowPt = m_owner
+        ? m_owner->mapFromGlobal(ed->viewport()->mapToGlobal(r.bottomLeft())) : r.bottomLeft();
+    const QPoint abovePt = m_owner
+        ? m_owner->mapFromGlobal(ed->viewport()->mapToGlobal(r.topLeft())) : r.topLeft();
 
-    const int rows = qMin(8, m_list->count());
-    const int h = rows * 30 + 10;
+    const int rows = qMin(kMaxVisible, m_list->count());
+    const int h = rows * kRowH + 10;
     const int w = 280;
-    // Mantém dentro da janela.
-    if (m_owner) {
-        ownerPt.setX(qMin(ownerPt.x(), m_owner->width() - w - 8));
-        ownerPt.setX(qMax(8, ownerPt.x()));
-    }
-    m_list->setGeometry(ownerPt.x(), ownerPt.y() + 2, w, h);
+
+    int x = belowPt.x();
+    if (m_owner) { x = qMin(x, m_owner->width() - w - 8); x = qMax(8, x); }
+
+    // Abre abaixo do cursor; se não couber até o rodapé, abre acima.
+    int y = belowPt.y() + 2;
+    if (m_owner && y + h > m_owner->height() - 4)
+        y = abovePt.y() - h - 2;
+    if (y < 4) y = 4;
+
+    m_list->setGeometry(x, y, w, h);
     m_list->show();
     m_list->raise();
 }
