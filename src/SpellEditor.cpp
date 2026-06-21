@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QContextMenuEvent>
 #include <QFont>
+#include <QKeyEvent>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QTextCursor>
@@ -140,4 +141,18 @@ void SpellEditor::mouseMoveEvent(QMouseEvent* event)
         viewport()->setCursor(isRefHref(href) ? Qt::PointingHandCursor : Qt::IBeamCursor);
     }
     QTextEdit::mouseMoveEvent(event);
+}
+
+void SpellEditor::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
+        emit refHighlightRequested(true);   // "modo ver os links"
+    QTextEdit::keyPressEvent(event);
+}
+
+void SpellEditor::keyReleaseEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
+        emit refHighlightRequested(false);
+    QTextEdit::keyReleaseEvent(event);
 }

@@ -976,6 +976,32 @@ void MainWindow::setupEditor()
         if (refMenuPanel && !drawerKey.isEmpty() && !itemId.isEmpty())
             refMenuPanel->openForDrawer(drawerKey, itemId);
     });
+    // "Modo ver os links": enquanto Ctrl está segurado, realça as menções/refs.
+    connect(editor, &SpellEditor::refHighlightRequested, this, [this](bool on) {
+        if (!on || !editor) { setEditorSelectionsLayer(QStringLiteral("mentionLinks"), {}); return; }
+        QList<QTextEdit::ExtraSelection> sels;
+        const QColor linkColor(Theme::accentDefault());
+        QTextDocument* doc = editor->document();
+        for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+            for (QTextBlock::iterator it = b.begin(); !it.atEnd(); ++it) {
+                const QTextFragment frag = it.fragment();
+                if (!frag.isValid()) continue;
+                const QTextCharFormat fmt = frag.charFormat();
+                if (fmt.isAnchor() && fmt.anchorHref().startsWith(QStringLiteral("ref:"))) {
+                    QTextCursor c(doc);
+                    c.setPosition(frag.position());
+                    c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
+                    QTextEdit::ExtraSelection es;
+                    es.cursor = c;
+                    if (linkColor.isValid()) es.format.setForeground(linkColor);
+                    es.format.setFontUnderline(true);
+                    es.format.setUnderlineStyle(QTextCharFormat::DotLine);
+                    sels.append(es);
+                }
+            }
+        }
+        setEditorSelectionsLayer(QStringLiteral("mentionLinks"), sels);
+    });
     connect(glossaryAddPopup, &GlossaryAddPopup::confirmed, this,
             [this](const QString& term, const QString& def) {
         if (glossaryStore) glossaryStore->add(term, def);

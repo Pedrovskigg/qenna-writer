@@ -181,13 +181,11 @@ void MentionPopup::confirm()
     cur.setPosition(endPos, QTextCursor::KeepAnchor);
     cur.removeSelectedText();
 
-    // Insere o nome como link de referência.
+    // Insere o nome como link de referência — SEM cor/sublinhado: em repouso a
+    // menção é igual ao texto. O realce só aparece ao segurar Ctrl (no editor).
     QTextCharFormat linkFmt = cur.charFormat();
     linkFmt.setAnchor(true);
     linkFmt.setAnchorHref(QStringLiteral("ref:%1:%2").arg(drawerKey, itemId));
-    QColor linkColor(Theme::accentDefault());
-    if (linkColor.isValid()) linkFmt.setForeground(linkColor);
-    linkFmt.setFontUnderline(false);
     cur.insertText(title, linkFmt);
 
     // Reseta o formato pra o texto seguinte NÃO virar link.

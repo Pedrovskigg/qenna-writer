@@ -29,10 +29,15 @@ signals:
     // href no formato "ref:<drawerKey>:<itemId>".
     void refActivated(QString href);
 
+    // Ctrl pressionado/solto — pede pra realçar/ocultar os links de referência.
+    void refHighlightRequested(bool on);
+
 protected:
     void contextMenuEvent(QContextMenuEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
+    void keyReleaseEvent(QKeyEvent* event) override;
 
 private:
     SpellChecker* m_checker = nullptr;
