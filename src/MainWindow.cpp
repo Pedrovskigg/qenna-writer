@@ -1428,6 +1428,11 @@ void MainWindow::setupEditor()
     // Atalhos das 3 buscas.
     auto* findShortcut = new QShortcut(QKeySequence::Find, this);
     connect(findShortcut, &QShortcut::activated, this, [this]() {
+        // Com a ficha aberta, Ctrl+F busca dentro dos campos dela.
+        if (characterSheetPanel && characterSheetPanel->isVisible()) {
+            characterSheetPanel->openFind();
+            return;
+        }
         if (!findBar) return;
         positionFindBar();
         findBar->openBar();

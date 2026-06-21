@@ -9,6 +9,8 @@
 class ElementsStore;
 class QScrollArea;
 class QLabel;
+class QLineEdit;
+class QTextEdit;
 class QVBoxLayout;
 class QTimer;
 class QEvent;
@@ -32,6 +34,9 @@ public:
     // Os rótulos ficam na fonte da UI — o contraste dá a pegada "documento".
     void setContentFont(const QFont& f);
 
+    // Busca local (Ctrl+F) dentro da ficha aberta: varre os campos, destaca e navega.
+    void openFind();
+
 signals:
     void edited();        // disparado (com debounce) quando algo muda — pede save
     void closeRequested();
@@ -41,6 +46,13 @@ protected:
 
 private:
     void rebuild();                       // reconstrói toda a UI a partir de m_sheet
+    void buildFindBar();                  // cria a barra de busca local (Ctrl+F)
+    void onFindChanged(const QString& q); // recalcula matches nos campos
+    void applyFindHighlights();           // pinta os matches nos blocos de texto
+    void gotoMatch(int idx);              // rola e seleciona o match
+    void findNext();
+    void findPrev();
+    void closeFind();
     void scheduleSave();                  // (re)inicia o debounce de save
     void commitNow();                     // grava m_sheet no model + emite edited()
     void setFieldValue(const QString& id, const QString& value);
@@ -64,4 +76,14 @@ private:
     QLabel* m_photo = nullptr;
     QTimer* m_saveTimer = nullptr;
     QFont m_contentFont;        // fonte do conteúdo (escrita); rótulos usam a da UI
+
+    // Busca local (Ctrl+F)
+    QWidget* m_findBar = nullptr;
+    QLineEdit* m_findInput = nullptr;
+    QLabel* m_findCount = nullptr;
+    QList<QWidget*> m_searchFields;    // campos buscáveis na ordem visual (QTextEdit/QLineEdit)
+    QList<QTextEdit*> m_textEdits;     // subconjunto que recebe highlight de matches
+    struct FindMatch { QWidget* w; int pos; int len; };
+    QList<FindMatch> m_matches;
+    int m_activeMatch = -1;
 };

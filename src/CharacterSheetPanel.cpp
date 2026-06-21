@@ -14,6 +14,7 @@
 #include <QHBoxLayout>
 #include <QImage>
 #include <QImageReader>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMouseEvent>
@@ -87,6 +88,9 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
 
     auto* outer = new QVBoxLayout(this);
     outer->setContentsMargins(0, 0, 0, 0);
+    outer->setSpacing(0);
+    buildFindBar();
+    outer->addWidget(m_findBar);
     m_scroll = new QScrollArea(this);
     m_scroll->setWidgetResizable(true);
     m_scroll->setFrameShape(QFrame::NoFrame);
@@ -115,9 +119,141 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
         "QPushButton#sheetGhostBtn { border: 1px dashed %5; border-radius: 5px; "
         "  color: %3; padding: 4px 12px; background: transparent; }"
         "QPushButton#sheetGhostBtn:hover { color: %2; border-color: %2; }"
+        "#sheetFindBar { background: %4; border-bottom: 1px solid %5; }"
+        "QLineEdit#sheetFindInput { background: %1; border: 1px solid %5; border-radius: 4px; "
+        "  color: %2; padding: 4px 8px; }"
+        "QLabel#sheetFindCount { color: %3; font-size: 12px; }"
     ).arg(Theme::editorBackground(), Theme::editorTextColor(), Theme::textMuted(),
           Theme::inputBackground(), Theme::subtleBorder(), Theme::hoverOverlay(),
           Theme::appBackground()));
+}
+
+void CharacterSheetPanel::buildFindBar()
+{
+    m_findBar = new QWidget(this);
+    m_findBar->setObjectName(QStringLiteral("sheetFindBar"));
+    auto* h = new QHBoxLayout(m_findBar);
+    h->setContentsMargins(12, 6, 12, 6);
+    h->setSpacing(6);
+
+    m_findInput = new QLineEdit;
+    m_findInput->setObjectName(QStringLiteral("sheetFindInput"));
+    m_findInput->setPlaceholderText(tr("Buscar na ficha…"));
+    m_findInput->setClearButtonEnabled(true);
+    m_findInput->installEventFilter(this);   // Esc fecha
+    connect(m_findInput, &QLineEdit::textChanged, this, &CharacterSheetPanel::onFindChanged);
+    connect(m_findInput, &QLineEdit::returnPressed, this, &CharacterSheetPanel::findNext);
+    h->addWidget(m_findInput, 1);
+
+    m_findCount = new QLabel(QStringLiteral("0/0"));
+    m_findCount->setObjectName(QStringLiteral("sheetFindCount"));
+    h->addWidget(m_findCount);
+
+    auto mkBtn = [this](const QString& glyph, void (CharacterSheetPanel::*slot)()) {
+        auto* b = new QToolButton;
+        b->setText(glyph);
+        b->setObjectName(QStringLiteral("sheetFieldBtn"));
+        b->setCursor(Qt::PointingHandCursor);
+        connect(b, &QToolButton::clicked, this, slot);
+        return b;
+    };
+    h->addWidget(mkBtn(QStringLiteral("↑"), &CharacterSheetPanel::findPrev));
+    h->addWidget(mkBtn(QStringLiteral("↓"), &CharacterSheetPanel::findNext));
+    h->addWidget(mkBtn(QStringLiteral("✕"), &CharacterSheetPanel::closeFind));
+
+    m_findBar->setVisible(false);
+}
+
+void CharacterSheetPanel::openFind()
+{
+    if (!m_findBar) return;
+    m_findBar->setVisible(true);
+    m_findInput->setFocus();
+    m_findInput->selectAll();
+    onFindChanged(m_findInput->text());
+}
+
+void CharacterSheetPanel::onFindChanged(const QString& q)
+{
+    m_matches.clear();
+    m_activeMatch = -1;
+    if (!q.isEmpty()) {
+        for (QWidget* w : m_searchFields) {
+            QString text;
+            if (auto* te = qobject_cast<QTextEdit*>(w)) text = te->toPlainText();
+            else if (auto* le = qobject_cast<QLineEdit*>(w)) text = le->text();
+            int from = 0;
+            while (true) {
+                const int idx = text.indexOf(q, from, Qt::CaseInsensitive);
+                if (idx < 0) break;
+                m_matches.append({ w, idx, int(q.size()) });
+                from = idx + q.size();
+            }
+        }
+    }
+    applyFindHighlights();
+    if (!m_matches.isEmpty()) gotoMatch(0);
+    else if (m_findCount) m_findCount->setText(QStringLiteral("0/0"));
+}
+
+void CharacterSheetPanel::applyFindHighlights()
+{
+    QColor hl(Theme::accentWarning());
+    if (!hl.isValid()) hl = QColor(255, 213, 79);
+    hl.setAlpha(110);
+    for (QTextEdit* te : m_textEdits) {
+        QList<QTextEdit::ExtraSelection> sels;
+        for (const FindMatch& m : m_matches) {
+            if (m.w != te) continue;
+            QTextCursor c(te->document());
+            c.setPosition(m.pos);
+            c.setPosition(m.pos + m.len, QTextCursor::KeepAnchor);
+            QTextEdit::ExtraSelection es;
+            es.cursor = c;
+            es.format.setBackground(hl);
+            sels.append(es);
+        }
+        te->setExtraSelections(sels);
+    }
+}
+
+void CharacterSheetPanel::gotoMatch(int idx)
+{
+    if (idx < 0 || idx >= m_matches.size()) return;
+    m_activeMatch = idx;
+    const FindMatch& m = m_matches[idx];
+    if (auto* te = qobject_cast<QTextEdit*>(m.w)) {
+        QTextCursor c(te->document());
+        c.setPosition(m.pos);
+        c.setPosition(m.pos + m.len, QTextCursor::KeepAnchor);
+        te->setTextCursor(c);
+    } else if (auto* le = qobject_cast<QLineEdit*>(m.w)) {
+        le->setSelection(m.pos, m.len);
+    }
+    if (m_scroll && m.w) m_scroll->ensureWidgetVisible(m.w);
+    if (m_findCount)
+        m_findCount->setText(QStringLiteral("%1/%2").arg(idx + 1).arg(m_matches.size()));
+}
+
+void CharacterSheetPanel::findNext()
+{
+    if (m_matches.isEmpty()) return;
+    gotoMatch((m_activeMatch + 1) % m_matches.size());
+}
+
+void CharacterSheetPanel::findPrev()
+{
+    if (m_matches.isEmpty()) return;
+    gotoMatch((m_activeMatch - 1 + m_matches.size()) % m_matches.size());
+}
+
+void CharacterSheetPanel::closeFind()
+{
+    if (m_findBar) m_findBar->setVisible(false);
+    m_matches.clear();
+    m_activeMatch = -1;
+    for (QTextEdit* te : m_textEdits) te->setExtraSelections({});
+    setFocus();
 }
 
 void CharacterSheetPanel::openItem(const QString& itemId)
@@ -305,12 +441,15 @@ QWidget* CharacterSheetPanel::buildFieldWidget(const SheetField& f)
             setFieldValue(id, te->toHtml());
             scheduleSave();
         });
+        m_textEdits.append(te);       // recebe highlight de busca
+        m_searchFields.append(te);    // buscável (Ctrl+F)
         v->addWidget(te);
     } else {
         auto* le = new QLineEdit(f.value);
         le->setObjectName(QStringLiteral("sheetData"));
         le->setFont(m_contentFont);  // pegada de escrita (Alegreya)
         le->setPlaceholderText(QStringLiteral("—"));
+        m_searchFields.append(le);    // buscável (Ctrl+F)
         connect(le, &QLineEdit::editingFinished, this, [this, id, le]() {
             setFieldValue(id, le->text());
             scheduleSave();
@@ -372,6 +511,13 @@ QWidget* CharacterSheetPanel::buildHeader(bool vertical)
 
 void CharacterSheetPanel::rebuild()
 {
+    // Os campos antigos serão destruídos ao trocar o widget do scroll — zera as
+    // listas de busca (serão repovoadas em buildFieldWidget).
+    m_searchFields.clear();
+    m_textEdits.clear();
+    m_matches.clear();
+    m_activeMatch = -1;
+
     // Outer transparente que centraliza a "folha" (página) horizontalmente.
     auto* outer = new QWidget;
     outer->setObjectName(QStringLiteral("sheetOuter"));
@@ -461,10 +607,19 @@ void CharacterSheetPanel::rebuild()
 
     m_content = outer;
     m_scroll->setWidget(m_content);  // substitui e destrói o conteúdo anterior
+
+    // Se a busca estava aberta, recalcula sobre os novos campos.
+    if (m_findBar && m_findBar->isVisible())
+        onFindChanged(m_findInput->text());
 }
 
 bool CharacterSheetPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    // Esc fecha a busca local.
+    if (watched == m_findInput && event->type() == QEvent::KeyPress) {
+        auto* ke = static_cast<QKeyEvent*>(event);
+        if (ke->key() == Qt::Key_Escape) { closeFind(); return true; }
+    }
     if (watched == m_photo && event->type() == QEvent::MouseButtonRelease) {
         auto* me = static_cast<QMouseEvent*>(event);
         if (me->button() == Qt::LeftButton) { pickPhoto(); return true; }
