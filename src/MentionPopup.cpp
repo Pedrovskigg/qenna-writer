@@ -181,23 +181,27 @@ void MentionPopup::confirm()
     cur.setPosition(endPos, QTextCursor::KeepAnchor);
     cur.removeSelectedText();
 
-    // Insere o nome como link de referência — SEM cor/sublinhado: em repouso a
-    // menção é igual ao texto. O realce só aparece ao segurar Ctrl (no editor).
-    QTextCharFormat linkFmt = cur.charFormat();
+    // Formato base SEM anchor (preserva fonte/cor atuais). clearProperty remove a
+    // propriedade de vez — só setAnchor(false) deixava o anchor "grudar" no texto
+    // digitado em seguida (e vazava pros parágrafos seguintes).
+    QTextCharFormat base = cur.charFormat();
+    base.setAnchor(false);
+    base.clearProperty(QTextFormat::IsAnchor);
+    base.clearProperty(QTextFormat::AnchorHref);
+    base.clearProperty(QTextFormat::AnchorName);
+
+    // Link = base + anchor, SEM cor/sublinhado: em repouso a menção é igual ao
+    // texto; o realce só aparece ao segurar Ctrl (no editor).
+    QTextCharFormat linkFmt = base;
     linkFmt.setAnchor(true);
     linkFmt.setAnchorHref(QStringLiteral("ref:%1:%2").arg(drawerKey, itemId));
-    cur.insertText(title, linkFmt);
 
-    // Reseta o formato pra o texto seguinte NÃO virar link.
-    QTextCharFormat normal = cur.charFormat();
-    normal.setAnchor(false);
-    normal.setAnchorHref(QString());
-    normal.setFontUnderline(false);
-    normal.clearForeground();
-    cur.insertText(QStringLiteral(" "), normal);
+    cur.insertText(title, linkFmt);
+    cur.insertText(QStringLiteral(" "), base);
     cur.endEditBlock();
 
     ed->setTextCursor(cur);
+    ed->setCurrentCharFormat(base);   // novo texto digitado não herda o link
     hidePopup();
 }
 
