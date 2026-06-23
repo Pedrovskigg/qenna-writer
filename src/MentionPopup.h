@@ -39,6 +39,9 @@ private:
     };
 
     void updateForEditor(QTextEdit* ed);   // detecta @ e a query
+    // Remove o anchor de menção que o texto recém-digitado herda do trecho à
+    // esquerda (raiz do "vazamento" do link pro resto da linha/parágrafo).
+    void onContentsChange(QTextEdit* ed, int pos, int removed, int added);
     void rebuildList(const QString& query);
     void showBelowCursor(QTextEdit* ed);
     void hidePopup();
@@ -52,4 +55,6 @@ private:
     QTextEdit* m_activeEditor = nullptr;
     int m_atPos = -1;                 // posição absoluta do '@' no documento
     bool m_includeManuscripts = false;
+    bool m_insertingMention = false;  // guard: a inserção da própria menção é legítima
+    bool m_cleaningAnchor = false;    // guard: evita reentrância ao limpar
 };

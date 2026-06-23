@@ -9,6 +9,7 @@
 #include <QListWidget>
 #include <QPointer>
 #include <QTextBlock>
+#include <QTextDocument>
 #include <QTextEdit>
 #include <QTextCursor>
 #include <QTextCharFormat>
@@ -49,6 +50,41 @@ void MentionPopup::attach(QTextEdit* editor)
     });
     connect(editor, &QTextEdit::cursorPositionChanged, this, [this, editor]() {
         if (m_list->isVisible() && editor->hasFocus()) updateForEditor(editor);
+    });
+    // Vigia digitação que herda o anchor de menção e o remove.
+    connect(editor->document(), &QTextDocument::contentsChange, this,
+            [this, editor](int pos, int removed, int added) {
+        onContentsChange(editor, pos, removed, added);
+    });
+}
+
+void MentionPopup::onContentsChange(QTextEdit* ed, int pos, int /*removed*/, int added)
+{
+    if (m_insertingMention || m_cleaningAnchor || added <= 0) return;
+    QTextDocument* doc = ed->document();
+
+    // O texto recém-inserido herdou um anchor "ref:"? (checa o 1º caractere.)
+    QTextCursor probe(doc);
+    probe.setPosition(pos);
+    probe.setPosition(qMin(pos + 1, doc->characterCount()), QTextCursor::KeepAnchor);
+    const QTextCharFormat fmt = probe.charFormat();
+    if (!fmt.isAnchor() || !fmt.anchorHref().startsWith(QStringLiteral("ref:"))) return;
+
+    // Remove o anchor do trecho digitado (adiado, pra não reentrar no sinal).
+    QPointer<QTextEdit> edp(ed);
+    const int from = pos;
+    const int to = pos + added;
+    QTimer::singleShot(0, this, [this, edp, from, to]() {
+        if (!edp) return;
+        m_cleaningAnchor = true;
+        QTextCursor c(edp->document());
+        c.setPosition(from);
+        c.setPosition(qMin(to, edp->document()->characterCount()), QTextCursor::KeepAnchor);
+        QTextCharFormat clr;
+        clr.setAnchor(false);
+        clr.setProperty(QTextFormat::AnchorHref, QString());
+        c.mergeCharFormat(clr);
+        m_cleaningAnchor = false;
     });
 }
 
@@ -177,6 +213,7 @@ void MentionPopup::confirm()
     QTextEdit* ed = m_activeEditor;
     const int endPos = ed->textCursor().position();
 
+    m_insertingMention = true;   // a inserção da menção é legítima (não limpar)
     QTextCursor cur = ed->textCursor();
     cur.beginEditBlock();
     cur.setPosition(m_atPos);
@@ -214,6 +251,7 @@ void MentionPopup::confirm()
     after.setPosition(linkEnd + 1);
     ed->setTextCursor(after);
     ed->setCurrentCharFormat(base);
+    m_insertingMention = false;
     hidePopup();
 }
 
