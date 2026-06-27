@@ -22,7 +22,7 @@ public:
     // espaçamento e entrelinha.
     struct DocStyle {
         QString fontFamily;
-        int fontSize = 12;
+        double fontSize = 12;
         int lineHeightPercent = 100;
         bool firstLineIndent = true;
         int spacingBefore = 0;

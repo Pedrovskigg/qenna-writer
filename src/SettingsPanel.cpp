@@ -29,7 +29,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     setObjectName(QStringLiteral("settingsPanel"));
     setWindowTitle(tr("Configurações"));
     setModal(false);
-    resize(420, 360);
+    resize(660, 460);
 
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -66,8 +66,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     m_spellHint->setObjectName(QStringLiteral("settingsHint"));
     m_spellHint->setWordWrap(true);
     spellLayout->addWidget(m_spellHint);
-
-    root->addWidget(spellGroup);
 
     // ---- Seção: Página de escrita ----
     auto* pageGroup = new QGroupBox(tr("Página de escrita"), this);
@@ -140,8 +138,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     m_pageHint->setWordWrap(true);
     pageLayout->addWidget(m_pageHint);
 
-    root->addWidget(pageGroup);
-
     syncPageLayoutFromManager();
 
     // ---- Seção: Detecção de personagens ----
@@ -163,14 +159,33 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     detectHint->setWordWrap(true);
     detectLayout->addWidget(detectHint);
 
-    root->addWidget(detectGroup);
-
     connect(m_detectionCheck, &QCheckBox::toggled, this, [this](bool checked) {
         m_detectionAllCheck->setEnabled(checked);
         emit detectionEnabledChanged(checked);
     });
     connect(m_detectionAllCheck, &QCheckBox::toggled, this, [this](bool checked) {
         emit detectionMarkAllChanged(checked);
+    });
+
+    // ---- Seção: Menções (@) ----
+    auto* mentionGroup = new QGroupBox(tr("Menções (@)"), this);
+    auto* mentionLayout = new QVBoxLayout(mentionGroup);
+    mentionLayout->setContentsMargins(14, 8, 14, 14);
+    mentionLayout->setSpacing(8);
+
+    m_mentionManuscriptsCheck = new QCheckBox(tr("Permitir marcar documentos do manuscrito"), mentionGroup);
+    mentionLayout->addWidget(m_mentionManuscriptsCheck);
+
+    auto* mentionHint = new QLabel(
+        tr("Por padrão, @ só sugere documentos das gavetas (personagens, locais etc.). "
+           "Ative para incluir também capítulos e cenas do manuscrito."),
+        mentionGroup);
+    mentionHint->setObjectName(QStringLiteral("settingsHint"));
+    mentionHint->setWordWrap(true);
+    mentionLayout->addWidget(mentionHint);
+
+    connect(m_mentionManuscriptsCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        emit mentionManuscriptsEnabledChanged(checked);
     });
 
     // ---- Seção: Navegação ----
@@ -189,8 +204,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     navHint->setObjectName(QStringLiteral("settingsHint"));
     navHint->setWordWrap(true);
     navLayout->addWidget(navHint);
-
-    root->addWidget(navGroup);
 
     connect(m_autoNavCheck, &QCheckBox::toggled, this, [this](bool checked) {
         emit autoNavEnabledChanged(checked);
@@ -222,13 +235,31 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     memHint->setWordWrap(true);
     memLayout->addWidget(memHint);
 
-    root->addWidget(memGroup);
-
     connect(m_maxDocsSpinBox, qOverload<int>(&QSpinBox::valueChanged), this, [this](int v) {
         emit maxDocsChanged(v);
     });
 
-    root->addStretch();
+    // Montagem em duas colunas
+    auto* cols = new QHBoxLayout;
+    cols->setSpacing(16);
+
+    auto* leftCol = new QVBoxLayout;
+    leftCol->setSpacing(10);
+    leftCol->addWidget(spellGroup);
+    leftCol->addWidget(pageGroup);
+    leftCol->addStretch();
+
+    auto* rightCol = new QVBoxLayout;
+    rightCol->setSpacing(10);
+    rightCol->addWidget(detectGroup);
+    rightCol->addWidget(mentionGroup);
+    rightCol->addWidget(navGroup);
+    rightCol->addWidget(memGroup);
+    rightCol->addStretch();
+
+    cols->addLayout(leftCol, 1);
+    cols->addLayout(rightCol, 1);
+    root->addLayout(cols);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::accept);
@@ -539,4 +570,14 @@ int SettingsPanel::maxDocs() const
 void SettingsPanel::setMaxDocs(int n)
 {
     if (m_maxDocsSpinBox) m_maxDocsSpinBox->setValue(qBound(1, n, 20));
+}
+
+bool SettingsPanel::mentionManuscriptsEnabled() const
+{
+    return m_mentionManuscriptsCheck ? m_mentionManuscriptsCheck->isChecked() : false;
+}
+
+void SettingsPanel::setMentionManuscriptsEnabled(bool enabled)
+{
+    if (m_mentionManuscriptsCheck) m_mentionManuscriptsCheck->setChecked(enabled);
 }

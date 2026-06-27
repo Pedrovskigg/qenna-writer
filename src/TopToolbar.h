@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QWidget>
 class QToolButton;
+class QLineEdit;
 class FontPickerPopup;
 class QWidget;
 
@@ -16,10 +17,13 @@ class TopToolbar : public QWidget
     Q_OBJECT
 
 public:
+    enum class AlignScope { ThisDoc, AllDocs, Manuscript, Drawers };
+    Q_ENUM(AlignScope)
+
     explicit TopToolbar(QWidget *parent = nullptr);
 
     void setFontFamilies(const QStringList &families, const QString &current);
-    void setFontSize(int pt);
+    void setFontSize(qreal pt);
     void setLineHeightPercent(int percent);
     void setFirstLineIndentEnabled(bool enabled);
     void setParagraphSpacingBefore(int px);
@@ -39,13 +43,14 @@ public:
     QRect reminderButtonGlobalRect() const;
 
     void setReminderBadge(bool active);
+    void setCurrentAlignment(Qt::Alignment alignment);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
 
 signals:
     void fontFamilyChanged(const QString &family);
-    void fontSizeChanged(int pt);
+    void fontSizeChanged(qreal pt);
     void lineHeightChanged(int percent);
     void firstLineIndentToggled(bool enabled);
     void paragraphSpacingBeforeChanged(int px);
@@ -63,6 +68,7 @@ signals:
     void italicToggled(bool enabled);
     void underlineToggled(bool enabled);
     void strikethroughToggled(bool enabled);
+    void alignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope);
     // Placeholders — ainda sem implementação
     void glossaryRequested();
     void readModeToggled(bool enabled);
@@ -91,6 +97,7 @@ private:
     QToolButton *sizeButton;
     QToolButton *lineHeightButton;
     QToolButton *indentButton;
+    QToolButton *alignButton;
     QToolButton *imageButton;
     QToolButton *reminderButton;
     QToolButton *immersiveSoundButton;
@@ -108,12 +115,12 @@ private:
 
     FontPickerPopup *fontPicker;
 
-    QLabel *sizeStepperValueLabel;
+    QLineEdit *sizeStepperEdit = nullptr;
     QList<QAction*> sizePresetActions;
 
     QStringList fontFamilies;
     QString currentFontFamily;
-    int currentFontSize;
+    qreal currentFontSize;
     int currentLineHeightPercent;
     int currentParaSpaceBefore = 0;
     int currentParaSpaceAfter = 0;
@@ -123,10 +130,14 @@ private:
 
     void buildSizeMenu();
     void buildSpacingMenu();
+    void buildAlignMenu();
+    void updateAlignButtonIcon();
     void positionDocTitle();
     void updateSizeMenuState();
     void updateSpacingMenuChecks();
-    void applySize(int pt);
+    void applySize(qreal pt);
+    void commitSizeEditor();
+    static QString sizeText(qreal pt);
     void applyParaSpaceBefore(int px);
     void applyParaSpaceAfter(int px);
     void applyFontButtonStyle();
@@ -137,6 +148,13 @@ private:
     QList<QPair<QToolButton*, QString>> iconBindings;
     bool focusCheckedCache = false;
     bool readModeOn = false;
+
+    Qt::Alignment m_currentAlignment = Qt::AlignLeft;
+    AlignScope    m_alignScope       = AlignScope::ThisDoc;
+    QToolButton*  m_alignBtnLeft     = nullptr;
+    QToolButton*  m_alignBtnCenter   = nullptr;
+    QToolButton*  m_alignBtnRight    = nullptr;
+    QToolButton*  m_alignBtnJustify  = nullptr;
 
     QLabel *reminderBadge = nullptr;
     void positionReminderBadge();

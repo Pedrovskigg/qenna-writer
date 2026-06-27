@@ -38,6 +38,7 @@ public:
     QString genres() const;
     QString synopsis() const;
     QString coverDataUrl() const { return m_coverDataUrl; }
+    QString projectType() const;   // "book" ou "screenplay"
 
 private:
     void applyDialogStyle();
@@ -52,6 +53,8 @@ private:
     QPushButton* m_continueBtn = nullptr;
     QLabel* m_coverPreview = nullptr;
     QString m_coverDataUrl;
+    QRadioButton* m_bookRadio       = nullptr;
+    QRadioButton* m_screenplayRadio = nullptr;
 };
 
 

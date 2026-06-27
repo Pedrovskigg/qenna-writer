@@ -187,6 +187,18 @@ public:
                            const QString& genres, const QString& synopsis,
                            const QString& coverDataUrl);
 
+    // Tipo do projeto: "book" (padrão) ou "screenplay".
+    QString projectType() const { return m_projectType; }
+    bool isScreenplay() const { return m_projectType == QStringLiteral("screenplay"); }
+    void setProjectType(const QString& type);
+
+    // Alinhamento padrão por escopo (int = Qt::AlignmentFlag value).
+    // 0 = não definido (usa Left como fallback no editor).
+    int defaultManuscriptAlignment() const;
+    void setDefaultManuscriptAlignment(int alignment);
+    int defaultDrawerAlignment() const;
+    void setDefaultDrawerAlignment(int alignment);
+
     bool updateDrawerItemHtml(const QString& itemId, const QString& html);
     bool updateDrawerItemSheet(const QString& itemId, const CharacterSheet& sheet);
     bool updateDrawerItemMeta(const QString& itemId, const QString& title, const QString& role);
@@ -265,6 +277,7 @@ signals:
 
 private:
     QString m_projectName;
+    QString m_projectType = QStringLiteral("book");
     QList<Manuscript> m_manuscripts;
     QList<Chapter> m_chapters;
     QList<Drawer> m_drawers;

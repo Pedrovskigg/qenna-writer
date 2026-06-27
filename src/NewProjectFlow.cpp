@@ -245,6 +245,23 @@ NewProjectDetailsDialog::NewProjectDetailsDialog(QWidget* parent)
     m_synopsisEdit->setPlaceholderText(tr("Escreva uma breve sinopse…"));
     rightCol->addWidget(m_synopsisEdit, /*stretch=*/1);
 
+    // ---- Tipo de projeto ----
+    addLabel(tr("Tipo de projeto"));
+    auto* typeRow = new QHBoxLayout;
+    typeRow->setSpacing(16);
+    m_bookRadio = new QRadioButton(tr("Livro"), this);
+    m_bookRadio->setObjectName(QStringLiteral("npTemplateOption"));
+    m_bookRadio->setChecked(true);
+    m_screenplayRadio = new QRadioButton(tr("Roteiro"), this);
+    m_screenplayRadio->setObjectName(QStringLiteral("npTemplateOption"));
+    auto* typeGroup = new QButtonGroup(this);
+    typeGroup->addButton(m_bookRadio);
+    typeGroup->addButton(m_screenplayRadio);
+    typeRow->addWidget(m_bookRadio);
+    typeRow->addWidget(m_screenplayRadio);
+    typeRow->addStretch();
+    rightCol->addLayout(typeRow);
+
     auto* note = new QLabel(tr("Você pode editar isso mais tarde."), this);
     note->setObjectName(QStringLiteral("npNote"));
     rightCol->addWidget(note);
@@ -312,6 +329,10 @@ QString NewProjectDetailsDialog::projectName() const { return m_nameEdit->text()
 QString NewProjectDetailsDialog::author() const      { return m_authorEdit->text().trimmed(); }
 QString NewProjectDetailsDialog::genres() const      { return m_genresEdit->text().trimmed(); }
 QString NewProjectDetailsDialog::synopsis() const    { return m_synopsisEdit->toPlainText().trimmed(); }
+QString NewProjectDetailsDialog::projectType() const {
+    return (m_screenplayRadio && m_screenplayRadio->isChecked())
+        ? QStringLiteral("screenplay") : QStringLiteral("book");
+}
 
 void NewProjectDetailsDialog::applyDialogStyle() {
     setStyleSheet(QStringLiteral(R"(

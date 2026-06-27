@@ -6,6 +6,10 @@
     </qresource>
     <qresource prefix="/icons">
         <file alias="add-image.svg">../src/assets/icons/add-image.svg</file>
+        <file alias="align-left.svg">../src/assets/icons/align-left.svg</file>
+        <file alias="align-center.svg">../src/assets/icons/align-center.svg</file>
+        <file alias="align-right.svg">../src/assets/icons/align-right.svg</file>
+        <file alias="align-justify.svg">../src/assets/icons/align-justify.svg</file>
         <file alias="bold.svg">../src/assets/icons/bold.svg</file>
         <file alias="change-font.svg">../src/assets/icons/change-font.svg</file>
         <file alias="focusmode-off.svg">../src/assets/icons/focusmode-off.svg</file>

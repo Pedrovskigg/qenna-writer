@@ -35,6 +35,9 @@ public:
     int maxDocs() const;
     void setMaxDocs(int n);
 
+    bool mentionManuscriptsEnabled() const;
+    void setMentionManuscriptsEnabled(bool enabled);
+
     // Teto do slider de comprimento de página (px). Acima disso a folha seria
     // cortada fora da janela; no máximo ela bate exatamente na tela.
     void setPageHeightMaximum(int px);
@@ -46,6 +49,7 @@ signals:
     void detectionMarkAllChanged(bool markAll);
     void autoNavEnabledChanged(bool enabled);
     void maxDocsChanged(int n);
+    void mentionManuscriptsEnabledChanged(bool enabled);
 
 private:
     void onCheckToggled(bool checked);
@@ -58,8 +62,9 @@ private:
     QComboBox* m_langCombo;
     QCheckBox* m_detectionCheck    = nullptr;
     QCheckBox* m_detectionAllCheck = nullptr;
-    QCheckBox* m_autoNavCheck      = nullptr;
-    QSpinBox*  m_maxDocsSpinBox   = nullptr;
+    QCheckBox* m_autoNavCheck               = nullptr;
+    QSpinBox*  m_maxDocsSpinBox             = nullptr;
+    QCheckBox* m_mentionManuscriptsCheck    = nullptr;
     QSlider* m_pageWidthSlider = nullptr;
     QSlider* m_pageHeightSlider = nullptr;
     QSlider* m_hMarginSlider = nullptr;

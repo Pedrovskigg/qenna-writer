@@ -306,6 +306,23 @@ void ProjectModel::setProjectName(const QString& name) {
     emit projectNameChanged();
 }
 
+void ProjectModel::setProjectType(const QString& type) {
+    m_projectType = type.isEmpty() ? QStringLiteral("book") : type;
+}
+
+int ProjectModel::defaultManuscriptAlignment() const {
+    return m_settings.value(QStringLiteral("defaultManuscriptAlignment")).toInt(0);
+}
+void ProjectModel::setDefaultManuscriptAlignment(int alignment) {
+    m_settings.insert(QStringLiteral("defaultManuscriptAlignment"), alignment);
+}
+int ProjectModel::defaultDrawerAlignment() const {
+    return m_settings.value(QStringLiteral("defaultDrawerAlignment")).toInt(0);
+}
+void ProjectModel::setDefaultDrawerAlignment(int alignment) {
+    m_settings.insert(QStringLiteral("defaultDrawerAlignment"), alignment);
+}
+
 void ProjectModel::setManuscripts(const QList<Manuscript>& list) {
     m_manuscripts = list;
     emit manuscriptsChanged();
@@ -1256,6 +1273,8 @@ QJsonObject ProjectModel::toJson() const {
     QJsonObject root;
     root.insert(QStringLiteral("version"), 1);
     root.insert(QStringLiteral("projectName"), m_projectName.isEmpty() ? QStringLiteral("Projeto") : m_projectName);
+    if (!m_projectType.isEmpty() && m_projectType != QStringLiteral("book"))
+        root.insert(QStringLiteral("projectType"), m_projectType);
 
     QJsonArray chapters;
     int idx = 0;
@@ -1297,6 +1316,8 @@ QJsonObject ProjectModel::toJson() const {
 
 void ProjectModel::loadFromJson(const QJsonObject& root) {
     m_projectName = jsonString(root.value(QStringLiteral("projectName")));
+    m_projectType = root.contains(QStringLiteral("projectType"))
+        ? jsonString(root.value(QStringLiteral("projectType"))) : QStringLiteral("book");
 
     m_chapters.clear();
     const QJsonArray chapters = root.value(QStringLiteral("chapters")).toArray();

@@ -5,6 +5,7 @@
 #include "EditorHost.h"
 #include "MemoriesStore.h"
 #include "PresenceTypes.h"
+#include "TopToolbar.h"
 
 #include <QColor>
 #include <QHash>
@@ -24,7 +25,7 @@ class QScrollArea;
 class QScrollBar;
 class QTextEdit;
 class QTimer;
-class TopToolbar;
+// TopToolbar já incluído acima (necessário para TopToolbar::AlignScope)
 class ImageOverlay;
 class LeftBar;
 class DrawerListPanel;
@@ -115,8 +116,10 @@ private:
     void positionGlobalSearchPanel();
 
     void setFontFamily(const QString &family);
-    void setFontSize(int pt);
+    void setFontSize(qreal pt);
     void setLineHeight(int percent);
+    void applyProjectTypeDefaults();
+    void onAlignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope);
     void setFirstLineIndent(bool enabled);
     void setParagraphSpacingBefore(int px);
     void setParagraphSpacingAfter(int px);
@@ -340,7 +343,7 @@ private:
     };
     std::unique_ptr<DetectionScanState> m_scanState;
     QString currentFontFamily;
-    int currentFontSize;
+    qreal currentFontSize;
     int currentLineHeight;
     bool firstLineIndentEnabled;
     int paragraphSpacingBefore;

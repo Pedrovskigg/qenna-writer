@@ -4,15 +4,21 @@
 #include <QString>
 
 class ProjectModel;
+struct Chapter;
+class QListWidgetItem;
 class QTextEdit;
 class QListWidget;
 class QWidget;
 class QEvent;
+class QRegularExpressionMatch;
 
 // Autocomplete de menções (@). Observa um ou mais QTextEdit: quando o usuário
 // digita "@", abre uma lista de documentos do projeto; conforme digita, filtra.
 // Espaço/Enter/Tab confirmam o item mais compatível, inserindo uma menção como
 // link (anchor "ref:<drawerKey>:<itemId>") — o "@" some, fica só o nome.
+//
+// Suporta drill-down: Root → Capítulos → Cenas (navegação por portal/back).
+// Suporta atalho: "@ch1-sc2" insere diretamente o Capítulo 1, Cena 2.
 //
 // O clique (Ctrl+clique) que abre a menção é tratado no editor (SpellEditor) /
 // nos QTextEdit da ficha, não aqui.
@@ -24,7 +30,7 @@ public:
     // Passa a observar este editor (instala eventFilter + conexões).
     void attach(QTextEdit* editor);
 
-    // Config: incluir capítulos/manuscritos na lista (padrão: só gavetas).
+    // Config: incluir capítulos/cenas na lista e aceitar atalho @ch1-sc2 (padrão: só gavetas).
     void setIncludeManuscripts(bool on) { m_includeManuscripts = on; }
 
 signals:
@@ -36,18 +42,29 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    enum class Level { Root, Chapters, Scenes };
+
     struct DocEntry {
         QString drawerKey;
         QString itemId;
         QString title;
-        QString subtitle;   // nome da gaveta (contexto)
+        QString subtitle;
     };
 
-    void updateForEditor(QTextEdit* ed);   // detecta @ e a query
-    // Remove o anchor de menção que o texto recém-digitado herda do trecho à
-    // esquerda (raiz do "vazamento" do link pro resto da linha/parágrafo).
+    void updateForEditor(QTextEdit* ed);
     void onContentsChange(QTextEdit* ed, int pos, int removed, int added);
     void rebuildList(const QString& query);
+    void rebuildRoot(const QString& q);
+    void rebuildChapters();
+    void rebuildScenes();
+    void buildShorthand(const QRegularExpressionMatch& m);
+    void addPortalItem(const QString& text, const QString& key);
+    void addBackItem(const QString& text);
+    void selectFirstSelectable();
+    bool hasSelectableItems() const;
+    const Chapter* findDrillChapter() const;
+    void drillBack();
+    QListWidgetItem* makeDocItem(const DocEntry& d) const;
     void showBelowCursor(QTextEdit* ed);
     void hidePopup();
     void moveSel(int delta);
@@ -55,11 +72,16 @@ private:
     QList<DocEntry> allDocs() const;
 
     ProjectModel* m_model;
-    QWidget* m_owner;
-    QListWidget* m_list = nullptr;
-    QTextEdit* m_activeEditor = nullptr;
-    int m_atPos = -1;                 // posição absoluta do '@' no documento
-    bool m_includeManuscripts = false;
-    bool m_insertingMention = false;  // guard: a inserção da própria menção é legítima
-    bool m_cleaningAnchor = false;    // guard: evita reentrância ao limpar
+    QWidget*      m_owner;
+    QListWidget*  m_list          = nullptr;
+    QTextEdit*    m_activeEditor  = nullptr;
+    int           m_atPos         = -1;
+    QString       m_currentQuery;
+    Level         m_level         = Level::Root;
+    QString       m_drillManuscriptId;
+    QString       m_drillChapterId;
+    QString       m_drillChapterTitle;
+    bool          m_includeManuscripts = false;
+    bool          m_insertingMention   = false;
+    bool          m_cleaningAnchor     = false;
 };

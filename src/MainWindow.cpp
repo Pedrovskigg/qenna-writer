@@ -137,6 +137,15 @@ namespace {
 // diferido por 400ms para não bloquear a UI ao abrir o doc.
 constexpr int kLargeDocCharThreshold = 30'000;
 
+// QFont com tamanho fracionário (meio-ponto). O construtor QFont(family, int)
+// truncaria 14.5 → 14; setPointSizeF preserva a fração.
+QFont sizedFont(const QString& family, qreal pt)
+{
+    QFont f(family);
+    f.setPointSizeF(pt);
+    return f;
+}
+
 // Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional).
 // Usado tanto na criação quanto na edição. Retorna false se cancelado.
 bool promptChapterDialog(QWidget* parent, bool editMode,
@@ -608,6 +617,36 @@ void MainWindow::setupEditor()
     selectionPopup->addAction(QStringLiteral("elements/heart.svg"), tr("Adicionar à memória..."),
         [this]() { addSelectionToMemory(); });
 
+    selectionPopup->addSeparator();
+    selectionPopup->addAction(QStringLiteral("align-left.svg"), tr("Alinhar à esquerda"),
+        [this]() {
+            if (!editor) return;
+            QTextBlockFormat fmt; fmt.setAlignment(Qt::AlignLeft);
+            editor->textCursor().mergeBlockFormat(fmt);
+            syncInlineFormatButtons();
+        });
+    selectionPopup->addAction(QStringLiteral("align-center.svg"), tr("Centralizar"),
+        [this]() {
+            if (!editor) return;
+            QTextBlockFormat fmt; fmt.setAlignment(Qt::AlignHCenter);
+            editor->textCursor().mergeBlockFormat(fmt);
+            syncInlineFormatButtons();
+        });
+    selectionPopup->addAction(QStringLiteral("align-right.svg"), tr("Alinhar à direita"),
+        [this]() {
+            if (!editor) return;
+            QTextBlockFormat fmt; fmt.setAlignment(Qt::AlignRight);
+            editor->textCursor().mergeBlockFormat(fmt);
+            syncInlineFormatButtons();
+        });
+    selectionPopup->addAction(QStringLiteral("align-justify.svg"), tr("Justificar"),
+        [this]() {
+            if (!editor) return;
+            QTextBlockFormat fmt; fmt.setAlignment(Qt::AlignJustify);
+            editor->textCursor().mergeBlockFormat(fmt);
+            syncInlineFormatButtons();
+        });
+
     variationBar = new VariationBar(projectModel, editorHost, this);
     connect(editorHost, &EditorHost::viewModeChanged, variationBar, &VariationBar::refresh);
 
@@ -964,6 +1003,8 @@ void MainWindow::setupEditor()
     });
     // Autocomplete de menções (@) no editor principal.
     mentionPopup = new MentionPopup(projectModel, this, this);
+    mentionPopup->setIncludeManuscripts(
+        QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
     mentionPopup->attach(editor);
     // O texto digitado após uma menção herda o formato NoBrush dela (sem foreground
     // explícito), e a seleção de foco não cobre texto sem foreground. Ao tocar o doc,
@@ -983,7 +1024,24 @@ void MainWindow::setupEditor()
         if (firstColon < 0 || secondColon < 0) return;
         const QString drawerKey = href.mid(firstColon + 1, secondColon - firstColon - 1);
         const QString itemId = href.mid(secondColon + 1);
-        if (refMenuPanel && !drawerKey.isEmpty() && !itemId.isEmpty())
+        if (drawerKey.isEmpty() || itemId.isEmpty()) return;
+        if (drawerKey == QStringLiteral("__ms_ch__")) {
+            // itemId = "<manuscriptId>:<chapterId>"
+            const int sep = itemId.indexOf(QLatin1Char(':'));
+            if (sep < 0 || !refMenuPanel) return;
+            refMenuPanel->openForChapter(itemId.left(sep), itemId.mid(sep + 1));
+            return;
+        }
+        if (drawerKey == QStringLiteral("__ms_sc__")) {
+            // itemId = "<manuscriptId>:<chapterId>:<sceneIndex>"
+            const int s1 = itemId.indexOf(QLatin1Char(':'));
+            const int s2 = itemId.indexOf(QLatin1Char(':'), s1 + 1);
+            if (s1 < 0 || s2 < 0 || !refMenuPanel) return;
+            refMenuPanel->openForScene(itemId.left(s1), itemId.mid(s1 + 1, s2 - s1 - 1),
+                                       itemId.mid(s2 + 1).toInt());
+            return;
+        }
+        if (refMenuPanel)
             refMenuPanel->openForDrawer(drawerKey, itemId);
     });
     // "Modo ver os links": enquanto Ctrl está segurado, realça as menções/refs.
@@ -1100,6 +1158,30 @@ void MainWindow::setupEditor()
     connect(editor, &QTextEdit::cursorPositionChanged, wordCounter, &WordCounter::registerCursorActivity);
     connect(editor, &QTextEdit::textChanged, wordCounter, &WordCounter::registerCursorActivity);
     connect(editor, &QTextEdit::selectionChanged, wordCounter, &WordCounter::registerCursorActivity);
+    connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::syncInlineFormatButtons);
+
+    // Novo bloco criado (Enter): força alinhamento explícito no block format.
+    // singleShot(0) garante que o cursor já está no novo bloco quando roda.
+    connect(editor->document(), &QTextDocument::blockCountChanged, this, [this]() {
+        QTimer::singleShot(0, this, [this]() {
+            if (!projectModel || !editorHost || !editor) return;
+            const auto vt = editorHost->viewMode().type;
+            const bool isMs = (vt == EditorHost::ChapterDoc || vt == EditorHost::SceneDoc);
+            const int defAlign = isMs
+                ? projectModel->defaultManuscriptAlignment()
+                : projectModel->defaultDrawerAlignment();
+            if (defAlign == 0) return;
+            QTextCursor cur = editor->textCursor();
+            if (static_cast<int>(cur.blockFormat().alignment()) == defAlign) return;
+            QTextBlockFormat fmt;
+            fmt.setAlignment(static_cast<Qt::Alignment>(defAlign));
+            const bool was = editor->document()->isModified();
+            cur.mergeBlockFormat(fmt);
+            editor->document()->setModified(was);
+            editor->setTextCursor(cur);
+        });
+    });
+
 
     // Título reflete estado modificado/salvando.
     auto updateTitle = [this]() {
@@ -2261,6 +2343,10 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::fontFamilyChanged, this, &MainWindow::setFontFamily);
     connect(toolbar, &TopToolbar::fontSizeChanged, this, &MainWindow::setFontSize);
     connect(toolbar, &TopToolbar::lineHeightChanged, this, &MainWindow::setLineHeight);
+    connect(toolbar, &TopToolbar::alignmentRequested, this,
+            [this](Qt::Alignment alignment, TopToolbar::AlignScope scope) {
+        onAlignmentRequested(alignment, scope);
+    });
     connect(toolbar, &TopToolbar::firstLineIndentToggled, this, &MainWindow::setFirstLineIndent);
     connect(toolbar, &TopToolbar::paragraphSpacingBeforeChanged, this, &MainWindow::setParagraphSpacingBefore);
     connect(toolbar, &TopToolbar::paragraphSpacingAfterChanged, this, &MainWindow::setParagraphSpacingAfter);
@@ -2358,9 +2444,29 @@ void MainWindow::applyEditorStyle()
     // mergeCharFormat dispara highlightBlock em todos os blocos afetados.
     if (spellHighlighter) spellHighlighter->suspend();
 
-    QFont font(currentFontFamily, currentFontSize);
+    const bool isManuscriptDoc = editorHost &&
+        (editorHost->viewMode().type == EditorHost::ChapterDoc ||
+         editorHost->viewMode().type == EditorHost::SceneDoc);
+    const bool msScreenplay = isManuscriptDoc && projectModel && projectModel->isScreenplay();
+    const QString fontToUse = msScreenplay ? QStringLiteral("Courier New") : currentFontFamily;
+    const qreal   sizeToUse = msScreenplay ? 12.0 : currentFontSize;
+    QFont font = sizedFont(fontToUse, sizeToUse);
     editor->setFont(font);
     editor->document()->setDefaultFont(font);
+
+    // Alinhamento padrão do documento: novos parágrafos herdam esse valor naturalmente.
+    // Isso faz o Enter criar blocos já com o alinhamento correto, sem lambdas extras.
+    {
+        const int defAlign = projectModel
+            ? (isManuscriptDoc ? projectModel->defaultManuscriptAlignment()
+                               : projectModel->defaultDrawerAlignment())
+            : 0;
+        QTextOption opt = editor->document()->defaultTextOption();
+        opt.setAlignment(defAlign != 0
+            ? static_cast<Qt::Alignment>(defAlign)
+            : Qt::AlignLeft);
+        editor->document()->setDefaultTextOption(opt);
+    }
 
     // Cor de texto do tema é a base; baseTextColor segue o tema atual.
     baseTextColor = QColor(Theme::editorTextColor());
@@ -2400,6 +2506,14 @@ void MainWindow::applyEditorStyle()
     blockFormat.setTextIndent(firstLineIndentEnabled ? 30 : 0);
     blockFormat.setTopMargin(paragraphSpacingBefore);
     blockFormat.setBottomMargin(paragraphSpacingAfter);
+    // Aplica alinhamento default do projeto (0 = não definido = não sobrescreve).
+    if (projectModel) {
+        const int defAlign = isManuscriptDoc
+            ? projectModel->defaultManuscriptAlignment()
+            : projectModel->defaultDrawerAlignment();
+        if (defAlign != 0)
+            blockFormat.setAlignment(static_cast<Qt::Alignment>(defAlign));
+    }
     cursor.mergeBlockFormat(blockFormat);
 
     // Aplica a cor de texto do tema em todo o documento (charFormat foreground
@@ -2476,10 +2590,66 @@ void MainWindow::applyEditorFont()
     QTextCursor c(doc);
     c.select(QTextCursor::Document);
     QTextCharFormat fmt;
-    fmt.setFontFamilies({currentFontFamily});
-    fmt.setFontPointSize(currentFontSize);
+    const bool isMs = editorHost &&
+        (editorHost->viewMode().type == EditorHost::ChapterDoc ||
+         editorHost->viewMode().type == EditorHost::SceneDoc);
+    const bool scrpl = isMs && projectModel && projectModel->isScreenplay();
+    fmt.setFontFamilies({scrpl ? QStringLiteral("Courier New") : currentFontFamily});
+    fmt.setFontPointSize(scrpl ? 12.0 : currentFontSize);
     c.mergeCharFormat(fmt);
     doc->setModified(wasModified);
+}
+
+void MainWindow::applyProjectTypeDefaults()
+{
+    if (!projectModel) return;
+    if (projectModel->isScreenplay()) {
+        // Só define se ainda não foi configurado (preserva ajustes manuais do user).
+        if (projectModel->defaultManuscriptAlignment() == 0)
+            projectModel->setDefaultManuscriptAlignment(static_cast<int>(Qt::AlignHCenter));
+    }
+    applyEditorStyle();
+}
+
+void MainWindow::onAlignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope)
+{
+    if (!editor || !projectModel) return;
+
+    // Aplica ao documento inteiro (seleção existente é preservada depois).
+    auto applyToCurrentDoc = [this, alignment]() {
+        const QTextCursor saved = editor->textCursor();
+        QTextCursor cur(editor->document());
+        cur.select(QTextCursor::Document);
+        QTextBlockFormat fmt;
+        fmt.setAlignment(alignment);
+        cur.mergeBlockFormat(fmt);
+        editor->setTextCursor(saved);   // restaura posição/seleção original
+    };
+
+    switch (scope) {
+    case TopToolbar::AlignScope::ThisDoc:
+        applyToCurrentDoc();
+        break;
+
+    case TopToolbar::AlignScope::AllDocs:
+        projectModel->setDefaultManuscriptAlignment(static_cast<int>(alignment));
+        projectModel->setDefaultDrawerAlignment(static_cast<int>(alignment));
+        applyToCurrentDoc();
+        break;
+
+    case TopToolbar::AlignScope::Manuscript:
+        projectModel->setDefaultManuscriptAlignment(static_cast<int>(alignment));
+        applyToCurrentDoc();
+        break;
+
+    case TopToolbar::AlignScope::Drawers:
+        projectModel->setDefaultDrawerAlignment(static_cast<int>(alignment));
+        // Não altera o doc atual (pode ser manuscrito).
+        break;
+    }
+
+    if (toolbar) toolbar->setCurrentAlignment(alignment);
+    if (projectSaver) projectSaver->saveProject();
 }
 
 void MainWindow::setFontFamily(const QString &family)
@@ -2487,16 +2657,16 @@ void MainWindow::setFontFamily(const QString &family)
     currentFontFamily = family;
     applyEditorStyle();
     if (characterSheetPanel && characterSheetPanel->isVisible())
-        characterSheetPanel->setContentFont(QFont(currentFontFamily, currentFontSize));
+        characterSheetPanel->setContentFont(sizedFont(currentFontFamily, currentFontSize));
     if (refMenuPanel) refMenuPanel->setEditorFontFamily(currentFontFamily);
 }
 
-void MainWindow::setFontSize(int pt)
+void MainWindow::setFontSize(qreal pt)
 {
     currentFontSize = pt;
     applyEditorStyle();
     if (characterSheetPanel && characterSheetPanel->isVisible())
-        characterSheetPanel->setContentFont(QFont(currentFontFamily, currentFontSize));
+        characterSheetPanel->setContentFont(sizedFont(currentFontFamily, currentFontSize));
 }
 
 void MainWindow::setLineHeight(int percent)
@@ -2584,6 +2754,10 @@ void MainWindow::syncInlineFormatButtons()
         toolbar->setItalicChecked(i);
         toolbar->setUnderlineChecked(u);
         toolbar->setStrikethroughChecked(s);
+        Qt::Alignment curAlign = editor->textCursor().blockFormat().alignment();
+        if (!curAlign) curAlign = editor->document()->defaultTextOption().alignment();
+        if (!curAlign) curAlign = Qt::AlignLeft;
+        toolbar->setCurrentAlignment(curAlign);
     }
     if (selBoldBtn)      selBoldBtn->setChecked(b);
     if (selItalicBtn)    selItalicBtn->setChecked(i);
@@ -3314,6 +3488,7 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
             return false;
         }
         projectModel->loadFromJson(obj);
+        applyProjectTypeDefaults();
     }
 
     if (elementsStore) elementsStore->load();
@@ -3882,6 +4057,7 @@ void MainWindow::onNewProjectRequested()
     if (elementsStore) elementsStore->clear();
     projectModel->setProjectName(detailsDlg.projectName());
     projectModel->seedFromTemplate(templateId);
+    projectModel->setProjectType(detailsDlg.projectType());
     projectModel->setProjectDetails(
         detailsDlg.projectName(),
         detailsDlg.author(),
@@ -3889,6 +4065,7 @@ void MainWindow::onNewProjectRequested()
         detailsDlg.synopsis(),
         detailsDlg.coverDataUrl());
     applyProjectRoot(fullPath);
+    applyProjectTypeDefaults();
 
     if (projectSaver && !projectSaver->saveProject()) {
         QMessageBox::warning(this, tr("Erro"),
@@ -4183,6 +4360,10 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("docCache/maxDocs"), n);
             if (docCache) docCache->setMaxDocs(n);
         });
+        connect(settingsPanel, &SettingsPanel::mentionManuscriptsEnabledChanged, this, [this](bool enabled) {
+            QSettings().setValue(QStringLiteral("mention/includeManuscripts"), enabled);
+            if (mentionPopup) mentionPopup->setIncludeManuscripts(enabled);
+        });
         // Lê preferências globais (não por projeto)
         m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
     }
@@ -4195,6 +4376,8 @@ void MainWindow::onSettingsRequested()
     settingsPanel->setDetectionMarkAll(detectionMarkAll);
     settingsPanel->setAutoNavEnabled(m_autoNavEnabled);
     settingsPanel->setMaxDocs(QSettings().value(QStringLiteral("docCache/maxDocs"), 6).toInt());
+    settingsPanel->setMentionManuscriptsEnabled(
+        QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
     // Teto do comprimento de página = altura útil da folha visível. Acima disso a
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
@@ -4871,7 +5054,7 @@ void MainWindow::showCharacterSheet(const QString& itemId)
     }
     auto* panel = ensureCharacterSheetPanel();
     // Conteúdo dos campos na fonte de escrita atual do editor (pegada "documento").
-    panel->setContentFont(QFont(currentFontFamily, currentFontSize));
+    panel->setContentFont(sizedFont(currentFontFamily, currentFontSize));
     panel->openItem(itemId);
     // O contador passa a refletir a ficha em foco.
     if (wordCounter) wordCounter->setActiveSheetItem(itemId);

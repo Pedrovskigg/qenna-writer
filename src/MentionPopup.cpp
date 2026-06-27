@@ -8,6 +8,7 @@
 #include <QKeyEvent>
 #include <QListWidget>
 #include <QPointer>
+#include <QRegularExpression>
 #include <QTextBlock>
 #include <QTextDocument>
 #include <QTextEdit>
@@ -16,12 +17,17 @@
 #include <QTimer>
 #include <QWidget>
 
+// Chaves especiais de navegação (não são drawer keys reais).
+static constexpr auto kPortalChapters = "__portal_ch__";
+static constexpr auto kNavBack        = "__nav_back__";
+static constexpr auto kMsChapter      = "__ms_ch__";
+static constexpr auto kMsScene        = "__ms_sc__";
+
 MentionPopup::MentionPopup(ProjectModel* model, QWidget* ownerWindow, QObject* parent)
     : QObject(parent)
     , m_model(model)
     , m_owner(ownerWindow)
 {
-    // Lista flutuante como filha da janela (não rouba o foco do editor).
     m_list = new QListWidget(m_owner);
     m_list->setObjectName(QStringLiteral("mentionPopup"));
     m_list->setFocusPolicy(Qt::NoFocus);
@@ -51,7 +57,6 @@ void MentionPopup::attach(QTextEdit* editor)
     connect(editor, &QTextEdit::cursorPositionChanged, this, [this, editor]() {
         if (m_list->isVisible() && editor->hasFocus()) updateForEditor(editor);
     });
-    // Vigia digitação que herda o anchor de menção e o remove.
     connect(editor->document(), &QTextDocument::contentsChange, this,
             [this, editor](int pos, int removed, int added) {
         onContentsChange(editor, pos, removed, added);
@@ -61,24 +66,16 @@ void MentionPopup::attach(QTextEdit* editor)
 void MentionPopup::onContentsChange(QTextEdit* ed, int pos, int removed, int added)
 {
     if (m_insertingMention || m_cleaningAnchor || added <= 0) return;
-    // Só age em INSERÇÃO pura de texto. Mudança de formato (ex.: o mergeCharFormat
-    // do applyTextColor no Focus Mode) chega com removed==added e NÃO deve limpar o
-    // anchor da menção — senão a tag perde o link quando há texto após ela na linha.
     if (removed != 0) return;
-    // Um vazamento real é SEMPRE um caractere digitado que herdou o anchor. Um chunk
-    // (menção inserida de uma vez, paste, load do doc) nunca é vazamento — e limpar
-    // [pos..pos+added] aí destruiria o anchor da própria menção. Só age em 1 char.
     if (added != 1) return;
     QTextDocument* doc = ed->document();
 
-    // O texto recém-inserido herdou um anchor "ref:"? (checa o 1º caractere.)
     QTextCursor probe(doc);
     probe.setPosition(pos);
     probe.setPosition(qMin(pos + 1, doc->characterCount()), QTextCursor::KeepAnchor);
     const QTextCharFormat fmt = probe.charFormat();
     if (!fmt.isAnchor() || !fmt.anchorHref().startsWith(QStringLiteral("ref:"))) return;
 
-    // Remove o anchor do trecho digitado (adiado, pra não reentrar no sinal).
     QPointer<QTextEdit> edp(ed);
     const int from = pos;
     const int to = pos + added;
@@ -93,8 +90,202 @@ void MentionPopup::onContentsChange(QTextEdit* ed, int pos, int removed, int add
         clr.setProperty(QTextFormat::AnchorHref, QString());
         c.mergeCharFormat(clr);
         m_cleaningAnchor = false;
-        emit documentTouched();   // a limpeza mexeu no doc → quem depende reage (Focus Mode)
+        emit documentTouched();
     });
+}
+
+// ---- Detecção do @ e despacho ----
+
+void MentionPopup::updateForEditor(QTextEdit* ed)
+{
+    QTextCursor cur = ed->textCursor();
+    if (cur.hasSelection()) { hidePopup(); return; }
+    const int pos = cur.position();
+
+    QTextCursor lineCur(ed->document());
+    lineCur.setPosition(cur.block().position());
+    lineCur.setPosition(pos, QTextCursor::KeepAnchor);
+    const QString before = lineCur.selectedText();
+
+    const int at = before.lastIndexOf(QLatin1Char('@'));
+    if (at < 0) { hidePopup(); return; }
+    if (at > 0 && !before.at(at - 1).isSpace()) { hidePopup(); return; }
+    const QString query = before.mid(at + 1);
+    if (query.contains(QLatin1Char(' '))) { hidePopup(); return; }
+
+    m_activeEditor = ed;
+    m_atPos = cur.block().position() + at;
+    m_currentQuery = query;
+    rebuildList(query);
+    if (!hasSelectableItems()) { hidePopup(); return; }
+    showBelowCursor(ed);
+}
+
+// ---- Construção da lista ----
+
+void MentionPopup::rebuildList(const QString& query)
+{
+    m_list->clear();
+    const QString q = query.trimmed().toLower();
+
+    // Atalho de teclado: @ch1 ou @ch1-sc2 — resolve independente do nível.
+    if (m_includeManuscripts && m_model) {
+        static const QRegularExpression rxShort(
+            QStringLiteral("^ch(\\d+)(?:-sc(\\d+))?$"));
+        const auto m = rxShort.match(q);
+        if (m.hasMatch()) {
+            buildShorthand(m);
+            selectFirstSelectable();
+            return;
+        }
+    }
+
+    switch (m_level) {
+    case Level::Root:    rebuildRoot(q);    break;
+    case Level::Chapters: rebuildChapters(); break;
+    case Level::Scenes:   rebuildScenes();   break;
+    }
+    selectFirstSelectable();
+}
+
+void MentionPopup::rebuildRoot(const QString& q)
+{
+    QList<DocEntry> docs = allDocs();
+    std::stable_sort(docs.begin(), docs.end(), [&q](const DocEntry& a, const DocEntry& b) {
+        const bool as = a.title.toLower().startsWith(q);
+        const bool bs = b.title.toLower().startsWith(q);
+        if (as != bs) return as;
+        return a.title.toLower() < b.title.toLower();
+    });
+    int added = 0;
+    for (const DocEntry& d : docs) {
+        if (!q.isEmpty() && !d.title.toLower().contains(q)) continue;
+        m_list->addItem(makeDocItem(d));
+        if (++added >= 50) break;
+    }
+    // Portal de capítulos: sempre visível no fim (não filtrado pela query).
+    if (m_includeManuscripts && m_model && !m_model->chapters().isEmpty())
+        addPortalItem(tr("Capítulos"), QLatin1String(kPortalChapters));
+}
+
+void MentionPopup::rebuildChapters()
+{
+    addBackItem(tr("← Voltar"));
+    if (!m_model) return;
+    for (const Chapter& ch : m_model->chapters()) {
+        const QString t = ch.title.trimmed();
+        if (t.isEmpty()) continue;
+        auto* item = new QListWidgetItem(t);
+        item->setData(Qt::UserRole,     QLatin1String(kMsChapter));
+        item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(ch.manuscriptId, ch.id));
+        item->setData(Qt::UserRole + 2, t);
+        m_list->addItem(item);
+    }
+}
+
+void MentionPopup::rebuildScenes()
+{
+    addBackItem(m_drillChapterTitle.isEmpty()
+        ? tr("← Capítulo") : QStringLiteral("← %1").arg(m_drillChapterTitle));
+    const Chapter* ch = findDrillChapter();
+    if (!ch) return;
+    for (int i = 0; i < ch->scenes.size(); ++i) {
+        const Scene& sc = ch->scenes.at(i);
+        const QString t = sc.title.trimmed().isEmpty()
+            ? tr("Cena %1").arg(i + 1) : sc.title.trimmed();
+        auto* item = new QListWidgetItem(t);
+        item->setData(Qt::UserRole,     QLatin1String(kMsScene));
+        item->setData(Qt::UserRole + 1,
+            QStringLiteral("%1:%2:%3").arg(m_drillManuscriptId, m_drillChapterId).arg(i));
+        item->setData(Qt::UserRole + 2, t);
+        m_list->addItem(item);
+    }
+}
+
+void MentionPopup::buildShorthand(const QRegularExpressionMatch& m)
+{
+    const int chIdx = m.captured(1).toInt() - 1;
+    const auto& chapters = m_model->chapters();
+    if (chIdx < 0 || chIdx >= chapters.size()) return;
+    const Chapter& ch = chapters.at(chIdx);
+
+    if (m.captured(2).isEmpty()) {
+        // @ch1 → capítulo
+        const QString t = ch.title.trimmed().isEmpty()
+            ? tr("Capítulo %1").arg(chIdx + 1) : ch.title.trimmed();
+        auto* item = new QListWidgetItem(t);
+        item->setData(Qt::UserRole,     QLatin1String(kMsChapter));
+        item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(ch.manuscriptId, ch.id));
+        item->setData(Qt::UserRole + 2, t);
+        m_list->addItem(item);
+    } else {
+        // @ch1-sc2 → cena
+        const int scIdx = m.captured(2).toInt() - 1;
+        if (scIdx < 0 || scIdx >= ch.scenes.size()) return;
+        const Scene& sc = ch.scenes.at(scIdx);
+        const QString t = sc.title.trimmed().isEmpty()
+            ? tr("Cena %1").arg(scIdx + 1) : sc.title.trimmed();
+        auto* item = new QListWidgetItem(
+            QStringLiteral("%1   ·  %2").arg(t, ch.title.trimmed().isEmpty()
+                ? tr("Capítulo %1").arg(chIdx + 1) : ch.title.trimmed()));
+        item->setData(Qt::UserRole,     QLatin1String(kMsScene));
+        item->setData(Qt::UserRole + 1,
+            QStringLiteral("%1:%2:%3").arg(ch.manuscriptId, ch.id).arg(scIdx));
+        item->setData(Qt::UserRole + 2, t);
+        m_list->addItem(item);
+    }
+}
+
+// ---- Helpers de item ----
+
+QListWidgetItem* MentionPopup::makeDocItem(const DocEntry& d) const
+{
+    auto* item = new QListWidgetItem(
+        d.subtitle.isEmpty() ? d.title
+                             : QStringLiteral("%1   ·  %2").arg(d.title, d.subtitle));
+    item->setData(Qt::UserRole,     d.drawerKey);
+    item->setData(Qt::UserRole + 1, d.itemId);
+    item->setData(Qt::UserRole + 2, d.title);
+    return item;
+}
+
+void MentionPopup::addPortalItem(const QString& text, const QString& key)
+{
+    auto* item = new QListWidgetItem(text + QStringLiteral("  ▶"));
+    item->setData(Qt::UserRole, key);
+    item->setForeground(QColor(Theme::accentDefault()));
+    m_list->addItem(item);
+}
+
+void MentionPopup::addBackItem(const QString& text)
+{
+    auto* item = new QListWidgetItem(text);
+    item->setData(Qt::UserRole, QLatin1String(kNavBack));
+    item->setForeground(QColor(Theme::textMuted()));
+    m_list->addItem(item);
+}
+
+void MentionPopup::selectFirstSelectable()
+{
+    for (int i = 0; i < m_list->count(); ++i) {
+        if (m_list->item(i)->flags() & Qt::ItemIsSelectable) {
+            m_list->setCurrentRow(i);
+            return;
+        }
+    }
+}
+
+bool MentionPopup::hasSelectableItems() const
+{
+    for (int i = 0; i < m_list->count(); ++i)
+        if (m_list->item(i)->flags() & Qt::ItemIsSelectable) return true;
+    return false;
+}
+
+const Chapter* MentionPopup::findDrillChapter() const
+{
+    if (!m_model || m_drillChapterId.isEmpty()) return nullptr;
+    return m_model->findChapter(m_drillChapterId);
 }
 
 QList<MentionPopup::DocEntry> MentionPopup::allDocs() const
@@ -110,64 +301,12 @@ QList<MentionPopup::DocEntry> MentionPopup::allDocs() const
     return out;
 }
 
-void MentionPopup::updateForEditor(QTextEdit* ed)
-{
-    QTextCursor cur = ed->textCursor();
-    if (cur.hasSelection()) { hidePopup(); return; }
-    const int pos = cur.position();
-
-    // Texto do início do bloco até o cursor.
-    QTextCursor lineCur(ed->document());
-    lineCur.setPosition(cur.block().position());
-    lineCur.setPosition(pos, QTextCursor::KeepAnchor);
-    const QString before = lineCur.selectedText();
-
-    const int at = before.lastIndexOf(QLatin1Char('@'));
-    if (at < 0) { hidePopup(); return; }
-    // O '@' deve iniciar palavra (precedido de espaço/início).
-    if (at > 0 && !before.at(at - 1).isSpace()) { hidePopup(); return; }
-    const QString query = before.mid(at + 1);
-    if (query.contains(QLatin1Char(' '))) { hidePopup(); return; }
-
-    m_activeEditor = ed;
-    m_atPos = cur.block().position() + at;
-    rebuildList(query);
-    if (m_list->count() == 0) { hidePopup(); return; }
-    showBelowCursor(ed);
-}
-
-void MentionPopup::rebuildList(const QString& query)
-{
-    m_list->clear();
-    const QString q = query.trimmed().toLower();
-    QList<DocEntry> docs = allDocs();
-
-    // Ordena: quem começa com a query primeiro, depois alfabético.
-    std::stable_sort(docs.begin(), docs.end(), [&q](const DocEntry& a, const DocEntry& b) {
-        const bool as = a.title.toLower().startsWith(q);
-        const bool bs = b.title.toLower().startsWith(q);
-        if (as != bs) return as;
-        return a.title.toLower() < b.title.toLower();
-    });
-
-    int added = 0;
-    for (const DocEntry& d : docs) {
-        if (!q.isEmpty() && !d.title.toLower().contains(q)) continue;
-        auto* item = new QListWidgetItem(
-            d.subtitle.isEmpty() ? d.title : QStringLiteral("%1   ·  %2").arg(d.title, d.subtitle));
-        item->setData(Qt::UserRole, d.drawerKey);
-        item->setData(Qt::UserRole + 1, d.itemId);
-        item->setData(Qt::UserRole + 2, d.title);
-        m_list->addItem(item);
-        if (++added >= 50) break;   // teto de segurança; o scroll cuida do resto
-    }
-    if (m_list->count() > 0) m_list->setCurrentRow(0);
-}
+// ---- Posicionamento ----
 
 void MentionPopup::showBelowCursor(QTextEdit* ed)
 {
     constexpr int kRowH = 30;
-    constexpr int kMaxVisible = 6;   // mostra até 6; o resto rola
+    constexpr int kMaxVisible = 6;
     const QRect r = ed->cursorRect(ed->textCursor());
     const QPoint belowPt = m_owner
         ? m_owner->mapFromGlobal(ed->viewport()->mapToGlobal(r.bottomLeft())) : r.bottomLeft();
@@ -181,7 +320,6 @@ void MentionPopup::showBelowCursor(QTextEdit* ed)
     int x = belowPt.x();
     if (m_owner) { x = qMin(x, m_owner->width() - w - 8); x = qMax(8, x); }
 
-    // Abre abaixo do cursor; se não couber até o rodapé, abre acima.
     int y = belowPt.y() + 2;
     if (m_owner && y + h > m_owner->height() - 4)
         y = abovePt.y() - h - 2;
@@ -197,15 +335,41 @@ void MentionPopup::hidePopup()
     if (m_list) m_list->hide();
     m_atPos = -1;
     m_activeEditor = nullptr;
+    m_currentQuery.clear();
+    m_level = Level::Root;
+    m_drillManuscriptId.clear();
+    m_drillChapterId.clear();
+    m_drillChapterTitle.clear();
 }
+
+void MentionPopup::drillBack()
+{
+    if (m_level == Level::Scenes) {
+        m_level = Level::Chapters;
+        m_drillChapterId.clear();
+        m_drillManuscriptId.clear();
+        m_drillChapterTitle.clear();
+    } else {
+        m_level = Level::Root;
+    }
+    rebuildList(m_currentQuery);
+    if (m_activeEditor) showBelowCursor(m_activeEditor);
+}
+
+// ---- Navegação e confirmação ----
 
 void MentionPopup::moveSel(int delta)
 {
     const int n = m_list->count();
     if (n == 0) return;
-    int row = m_list->currentRow() + delta;
-    row = (row % n + n) % n;
-    m_list->setCurrentRow(row);
+    int row = m_list->currentRow();
+    for (int tries = 0; tries < n; ++tries) {
+        row = ((row + delta) % n + n) % n;
+        if (m_list->item(row)->flags() & Qt::ItemIsSelectable) {
+            m_list->setCurrentRow(row);
+            return;
+        }
+    }
 }
 
 void MentionPopup::confirm()
@@ -215,31 +379,51 @@ void MentionPopup::confirm()
     if (!item && m_list->count() > 0) item = m_list->item(0);
     if (!item) { hidePopup(); return; }
 
-    const QString drawerKey = item->data(Qt::UserRole).toString();
-    const QString itemId    = item->data(Qt::UserRole + 1).toString();
-    const QString title     = item->data(Qt::UserRole + 2).toString();
+    const QString key   = item->data(Qt::UserRole).toString();
+    const QString id    = item->data(Qt::UserRole + 1).toString();
+    const QString title = item->data(Qt::UserRole + 2).toString();
 
+    // Portal: drill in para capítulos.
+    if (key == QLatin1String(kPortalChapters)) {
+        m_level = Level::Chapters;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
+    // Voltar um nível.
+    if (key == QLatin1String(kNavBack)) {
+        drillBack();
+        return;
+    }
+    // Capítulo na lista de drill: drill into scenes.
+    if (key == QLatin1String(kMsChapter) && m_level == Level::Chapters) {
+        const int sep = id.indexOf(QLatin1Char(':'));
+        m_drillManuscriptId = id.left(sep);
+        m_drillChapterId    = id.mid(sep + 1);
+        m_drillChapterTitle = title;
+        m_level = Level::Scenes;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
+
+    // Inserção real (gaveta, cena via drill, ou capítulo via shorthand @ch1).
     QTextEdit* ed = m_activeEditor;
     const int endPos = ed->textCursor().position();
 
-    m_insertingMention = true;   // a inserção da menção é legítima (não limpar)
+    m_insertingMention = true;
     QTextCursor cur = ed->textCursor();
     cur.beginEditBlock();
     cur.setPosition(m_atPos);
     cur.setPosition(endPos, QTextCursor::KeepAnchor);
     cur.removeSelectedText();
 
-    // Formato base SEM anchor (preserva fonte/cor atuais).
     QTextCharFormat base = cur.charFormat();
     base.setAnchor(false);
     base.clearProperty(QTextFormat::IsAnchor);
     base.clearProperty(QTextFormat::AnchorHref);
     base.clearProperty(QTextFormat::AnchorName);
 
-    // Insere o nome + espaço SEM anchor (formato base), depois aplica o anchor
-    // EXATAMENTE na seleção do nome. Inserir o anchor como formato de digitação
-    // fazia o QTextEdit propagá-lo pro texto seguinte — agora ele fica preso só
-    // ao nome do doc, nada mais herda.
     const int linkStart = cur.position();
     cur.insertText(title, base);
     const int linkEnd = cur.position();
@@ -250,12 +434,11 @@ void MentionPopup::confirm()
     linkCur.setPosition(linkEnd, QTextCursor::KeepAnchor);
     QTextCharFormat anchorFmt;
     anchorFmt.setAnchor(true);
-    anchorFmt.setAnchorHref(QStringLiteral("ref:%1:%2").arg(drawerKey, itemId));
+    anchorFmt.setAnchorHref(QStringLiteral("ref:%1:%2").arg(key, id));
     linkCur.mergeCharFormat(anchorFmt);
 
     cur.endEditBlock();
 
-    // Cursor de digitação após o espaço, com formato base (sem anchor).
     QTextCursor after(ed->document());
     after.setPosition(linkEnd + 1);
     ed->setTextCursor(after);
@@ -275,7 +458,10 @@ bool MentionPopup::eventFilter(QObject* watched, QEvent* event)
         case Qt::Key_Enter:
         case Qt::Key_Tab:
         case Qt::Key_Space:  confirm();   return true;
-        case Qt::Key_Escape: hidePopup(); return true;
+        case Qt::Key_Escape:
+            if (m_level != Level::Root) { drillBack(); return true; }
+            hidePopup();
+            return true;
         default: break;
         }
     }

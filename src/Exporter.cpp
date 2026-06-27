@@ -106,8 +106,11 @@ Exporter::Exporter(ProjectModel* model, const QString& projectRoot, const DocSty
     : m_model(model), m_root(projectRoot), m_style(style) {}
 
 void Exporter::applyParagraphStyle(QTextDocument& doc) const {
-    if (!m_style.fontFamily.isEmpty())
-        doc.setDefaultFont(QFont(m_style.fontFamily, m_style.fontSize));
+    if (!m_style.fontFamily.isEmpty()) {
+        QFont f(m_style.fontFamily);
+        f.setPointSizeF(m_style.fontSize);
+        doc.setDefaultFont(f);
+    }
     QTextCursor c(&doc);
     c.select(QTextCursor::Document);
     QTextBlockFormat bf;
@@ -356,8 +359,8 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
         "<w:docDefaults><w:rPrDefault><w:rPr>"
         "<w:rFonts w:ascii=\"") + escXml(defFamily) + QStringLiteral("\" w:hAnsi=\"")
         + escXml(defFamily) + QStringLiteral("\" w:cs=\"") + escXml(defFamily) + QStringLiteral("\"/>"
-        "<w:sz w:val=\"") + QString::number(m_style.fontSize * 2) + QStringLiteral("\"/>"
-        "<w:szCs w:val=\"") + QString::number(m_style.fontSize * 2) + QStringLiteral("\"/>"
+        "<w:sz w:val=\"") + QString::number(qRound(m_style.fontSize * 2)) + QStringLiteral("\"/>"
+        "<w:szCs w:val=\"") + QString::number(qRound(m_style.fontSize * 2)) + QStringLiteral("\"/>"
         "</w:rPr></w:rPrDefault></w:docDefaults></w:styles>\n");
 
     // ── document.xml ──

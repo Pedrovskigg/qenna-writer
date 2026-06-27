@@ -1,13 +1,19 @@
 #include "TopToolbar.h"
 
 #include <QAction>
+#include <QButtonGroup>
+#include <QDoubleValidator>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
+#include <QLocale>
 #include <QMenu>
 #include <QPair>
+#include <QRadioButton>
 #include <QSignalBlocker>
 #include <QToolButton>
+#include <QVBoxLayout>
 #include <QWidgetAction>
 
 #include "FontPickerPopup.h"
@@ -65,11 +71,19 @@ QFrame *makeVSeparator(QWidget *parent)
     return line;
 }
 
-int fontButtonPointSize(int editorPt)
+int fontButtonPointSize(qreal editorPt)
 {
-    return qBound(10, editorPt * 2 / 3, 18);
+    return qBound(10, qRound(editorPt * 2.0 / 3.0), 18);
 }
 
+}
+
+// "14" para inteiros, "14.5" para meios-pontos. Sem ".0" pendurado.
+QString TopToolbar::sizeText(qreal pt)
+{
+    if (qFuzzyCompare(pt, qRound(pt)))
+        return QString::number(qRound(pt));
+    return QString::number(pt, 'f', 1);
 }
 
 TopToolbar::TopToolbar(QWidget *parent)
@@ -91,6 +105,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     , sizeButton(makeFlatButton(this))
     , lineHeightButton(makeFlatButton(this))
     , indentButton(makeFlatButton(this))
+    , alignButton(makeIconButton(this))
     , imageButton(makeIconButton(this))
     , reminderButton(makeIconButton(this))
     , immersiveSoundButton(makeIconButton(this))
@@ -101,7 +116,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     , pensarioButton(makeIconButton(this))
     , docTitleLabel(new QLabel(this))
     , fontPicker(nullptr)
-    , sizeStepperValueLabel(nullptr)
+    , sizeStepperEdit(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
     , currentFontSize(16)
     , currentLineHeightPercent(170)
@@ -234,16 +249,18 @@ TopToolbar::TopToolbar(QWidget *parent)
     sizeButton->setPopupMode(QToolButton::InstantPopup);
     sizeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     bindIcon(sizeButton, QStringLiteral("font-size.svg"));
-    sizeButton->setIconSize(iconSize);
-    sizeButton->setText(QString::number(currentFontSize));
+    sizeButton->setIconSize(QSize(kIconSize, kIconSize));
+    sizeButton->setText(sizeText(currentFontSize));
+    sizeButton->setFixedSize(26, kIconButtonSize);
     sizeButton->setToolTip(tr("Tamanho da fonte"));
 
     lineHeightButton->setObjectName(QStringLiteral("ttbLineHeight"));
     lineHeightButton->setPopupMode(QToolButton::InstantPopup);
     lineHeightButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     bindIcon(lineHeightButton, QStringLiteral("text-spacing.svg"));
-    lineHeightButton->setIconSize(iconSize);
+    lineHeightButton->setIconSize(QSize(kIconSize, kIconSize));
     lineHeightButton->setText(QString::number(currentLineHeightPercent / 100.0, 'f', 1));
+    lineHeightButton->setFixedSize(26, kIconButtonSize);
     lineHeightButton->setToolTip(tr("Espaçamento"));
 
     indentButton->setObjectName(QStringLiteral("ttbIndent"));
@@ -252,6 +269,11 @@ TopToolbar::TopToolbar(QWidget *parent)
     indentButton->setChecked(true);
     indentButton->setToolTip(tr("Identação de parágrafo"));
     connect(indentButton, &QToolButton::toggled, this, &TopToolbar::firstLineIndentToggled);
+
+    alignButton->setObjectName(QStringLiteral("ttbAlign"));
+    alignButton->setPopupMode(QToolButton::InstantPopup);
+    alignButton->setToolTip(tr("Alinhamento"));
+    updateAlignButtonIcon();
 
     // ---------------- Grupo B (continuação): Imagem ----------------
     imageButton->setObjectName(QStringLiteral("ttbInline"));
@@ -327,6 +349,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(sizeButton);
     layout->addWidget(lineHeightButton);
     layout->addWidget(indentButton);
+    layout->addWidget(alignButton);
     layout->addWidget(boldButton);
     layout->addWidget(italicButton);
     layout->addWidget(underlineButton);
@@ -358,6 +381,7 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     buildSizeMenu();
     buildSpacingMenu();
+    buildAlignMenu();
     applyRootStyle();
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -389,6 +413,11 @@ void TopToolbar::applyRootStyle()
             color: %5;
         }
         QToolButton::menu-indicator { image: none; width: 0; }
+        QToolButton#ttbSize, QToolButton#ttbLineHeight {
+            padding: 0px 1px;
+            spacing: 1px;
+            font-size: 11px;
+        }
         QFrame#ttbVSep {
             color: %4;
             background: %4;
@@ -436,6 +465,149 @@ void TopToolbar::reloadIcons()
     for (const auto& pair : iconBindings) {
         if (pair.first) pair.first->setIcon(loadIcon(pair.second));
     }
+    updateAlignButtonIcon();
+}
+
+// ---- Alinhamento ----
+
+static QString alignIconName(Qt::Alignment a)
+{
+    if (a & Qt::AlignHCenter) return QStringLiteral("align-center.svg");
+    if (a & Qt::AlignRight)   return QStringLiteral("align-right.svg");
+    if (a & Qt::AlignJustify) return QStringLiteral("align-justify.svg");
+    return QStringLiteral("align-left.svg");
+}
+
+void TopToolbar::updateAlignButtonIcon()
+{
+    if (alignButton) alignButton->setIcon(loadIcon(alignIconName(m_currentAlignment)));
+}
+
+void TopToolbar::setCurrentAlignment(Qt::Alignment alignment)
+{
+    m_currentAlignment = alignment;
+    updateAlignButtonIcon();
+    // Atualiza os botões dentro do popup.
+    QToolButton* target = nullptr;
+    if (alignment & Qt::AlignHCenter) target = m_alignBtnCenter;
+    else if (alignment & Qt::AlignRight)   target = m_alignBtnRight;
+    else if (alignment & Qt::AlignJustify) target = m_alignBtnJustify;
+    else                                   target = m_alignBtnLeft;
+    if (target) target->setChecked(true);
+}
+
+void TopToolbar::buildAlignMenu()
+{
+    // Popup customizado com botões de alinhamento + seletor de escopo.
+    auto *menu = new QMenu(alignButton);
+    menu->setObjectName(QStringLiteral("ttbAlignMenu"));
+
+    auto *container = new QWidget;
+    auto *vlay = new QVBoxLayout(container);
+    vlay->setContentsMargins(10, 8, 10, 10);
+    vlay->setSpacing(6);
+
+    // ---- Botões L/C/R/J ----
+    auto *alignRow = new QHBoxLayout;
+    alignRow->setSpacing(4);
+
+    struct AlignOpt { Qt::Alignment align; QString icon; QString tip; };
+    const QList<AlignOpt> opts = {
+        { Qt::AlignLeft,    QStringLiteral("align-left.svg"),    tr("Esquerda")    },
+        { Qt::AlignHCenter, QStringLiteral("align-center.svg"),  tr("Centro")      },
+        { Qt::AlignRight,   QStringLiteral("align-right.svg"),   tr("Direita")     },
+        { Qt::AlignJustify, QStringLiteral("align-justify.svg"), tr("Justificado") },
+    };
+
+    auto *alignGroup = new QButtonGroup(container);
+    alignGroup->setExclusive(true);
+
+    for (const AlignOpt& opt : opts) {
+        auto *btn = new QToolButton(container);
+        btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
+        btn->setAutoRaise(true);
+        btn->setCheckable(true);
+        btn->setFixedSize(28, 28);
+        btn->setIconSize(QSize(16, 16));
+        btn->setIcon(loadIcon(opt.icon));
+        btn->setToolTip(opt.tip);
+        btn->setCursor(Qt::PointingHandCursor);
+        if (opt.align == m_currentAlignment) btn->setChecked(true);
+        alignGroup->addButton(btn);
+        alignRow->addWidget(btn);
+        // Guarda referência para atualizar estado quando o doc muda.
+        if (opt.align == Qt::AlignLeft)    m_alignBtnLeft    = btn;
+        else if (opt.align == Qt::AlignHCenter) m_alignBtnCenter  = btn;
+        else if (opt.align == Qt::AlignRight)   m_alignBtnRight   = btn;
+        else if (opt.align == Qt::AlignJustify) m_alignBtnJustify = btn;
+
+        const Qt::Alignment a = opt.align;
+        connect(btn, &QToolButton::clicked, this, [this, menu, a]() {
+            m_currentAlignment = a;
+            updateAlignButtonIcon();
+            emit alignmentRequested(a, m_alignScope);
+            menu->close();
+        });
+    }
+    alignRow->addStretch();
+    vlay->addLayout(alignRow);
+
+    // ---- Separador ----
+    auto *sep = new QFrame(container);
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Plain);
+    vlay->addWidget(sep);
+
+    // ---- Aplicar em ----
+    auto *scopeLabel = new QLabel(tr("Aplicar em:"), container);
+    scopeLabel->setObjectName(QStringLiteral("ttbAlignScopeLabel"));
+    vlay->addWidget(scopeLabel);
+
+    struct ScopeOpt { AlignScope scope; QString label; };
+    const QList<ScopeOpt> scopes = {
+        { AlignScope::ThisDoc,   tr("Esse documento")       },
+        { AlignScope::AllDocs,   tr("Todos os documentos")  },
+        { AlignScope::Manuscript,tr("Somente manuscrito")   },
+        { AlignScope::Drawers,   tr("Somente gavetas")      },
+    };
+
+    auto *scopeGroup = new QButtonGroup(container);
+    scopeGroup->setExclusive(true);
+    for (const ScopeOpt& so : scopes) {
+        auto *rb = new QRadioButton(so.label, container);
+        rb->setObjectName(QStringLiteral("ttbAlignScope"));
+        rb->setChecked(so.scope == m_alignScope);
+        scopeGroup->addButton(rb);
+        vlay->addWidget(rb);
+
+        const AlignScope sc = so.scope;
+        connect(rb, &QRadioButton::toggled, this, [this, sc](bool on) {
+            if (on) m_alignScope = sc;
+        });
+    }
+
+    auto *wa = new QWidgetAction(menu);
+    wa->setDefaultWidget(container);
+    menu->addAction(wa);
+
+    menu->setStyleSheet(QStringLiteral(R"(
+        QMenu#ttbAlignMenu { background: %1; border: 1px solid %2; border-radius: 8px; padding: 2px; }
+        QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; color: %3; }
+        QToolButton:hover { background: %4; border-color: %5; }
+        QToolButton:checked { background: %5; border-color: %5; }
+        QLabel#ttbAlignScopeLabel { color: %6; font-size: 11px; font-weight: bold; margin-top: 2px; }
+        QRadioButton#ttbAlignScope { color: %3; font-size: 12px; spacing: 8px; }
+        QRadioButton#ttbAlignScope::indicator {
+            width: 12px; height: 12px;
+            border: 1px solid %2; border-radius: 6px; background: %7;
+        }
+        QRadioButton#ttbAlignScope::indicator:checked { background: %5; border-color: %5; }
+        QFrame { color: %2; }
+    )").arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
+            Theme::hoverOverlay(), Theme::accentDefault(),
+            Theme::textMuted(), Theme::inputBackground()));
+
+    alignButton->setMenu(menu);
 }
 
 void TopToolbar::applyTheme()
@@ -520,7 +692,7 @@ void TopToolbar::setFontFamilies(const QStringList &families, const QString &cur
     applyFontButtonStyle();
 }
 
-void TopToolbar::setFontSize(int pt)
+void TopToolbar::setFontSize(qreal pt)
 {
     currentFontSize = pt;
     updateSizeMenuState();
@@ -631,11 +803,20 @@ void TopToolbar::buildSizeMenu()
     minus->setCursor(Qt::PointingHandCursor);
     minus->setAutoRaise(true);
 
-    sizeStepperValueLabel = new QLabel(stepperWidget);
-    sizeStepperValueLabel->setObjectName(QStringLiteral("ttbSizeValue"));
-    sizeStepperValueLabel->setText(QString::number(currentFontSize));
-    sizeStepperValueLabel->setAlignment(Qt::AlignCenter);
-    sizeStepperValueLabel->setFixedWidth(40);
+    sizeStepperEdit = new QLineEdit(stepperWidget);
+    sizeStepperEdit->setObjectName(QStringLiteral("ttbSizeValue"));
+    sizeStepperEdit->setText(sizeText(currentFontSize));
+    sizeStepperEdit->setAlignment(Qt::AlignCenter);
+    sizeStepperEdit->setFixedWidth(48);
+    sizeStepperEdit->setFrame(false);
+    sizeStepperEdit->setToolTip(tr("Digite o tamanho (10–48, aceita 0,5)"));
+    // Aceita 10–48, com no máximo uma casa decimal (meios-pontos).
+    auto *sizeValidator = new QDoubleValidator(10.0, 48.0, 1, sizeStepperEdit);
+    sizeValidator->setNotation(QDoubleValidator::StandardNotation);
+    sizeValidator->setLocale(QLocale::c());
+    sizeStepperEdit->setValidator(sizeValidator);
+    connect(sizeStepperEdit, &QLineEdit::returnPressed, this, &TopToolbar::commitSizeEditor);
+    connect(sizeStepperEdit, &QLineEdit::editingFinished, this, &TopToolbar::commitSizeEditor);
 
     auto *plus = new QToolButton(stepperWidget);
     plus->setObjectName(QStringLiteral("ttbSizeStep"));
@@ -645,11 +826,11 @@ void TopToolbar::buildSizeMenu()
     plus->setAutoRaise(true);
 
     stepperLayout->addWidget(minus);
-    stepperLayout->addWidget(sizeStepperValueLabel);
+    stepperLayout->addWidget(sizeStepperEdit);
     stepperLayout->addWidget(plus);
 
-    connect(minus, &QToolButton::clicked, this, [this]() { applySize(currentFontSize - 2); });
-    connect(plus, &QToolButton::clicked, this, [this]() { applySize(currentFontSize + 2); });
+    connect(minus, &QToolButton::clicked, this, [this]() { applySize(currentFontSize - 0.5); });
+    connect(plus, &QToolButton::clicked, this, [this]() { applySize(currentFontSize + 0.5); });
 
     auto *stepperAction = new QWidgetAction(menu);
     stepperAction->setDefaultWidget(stepperWidget);
@@ -662,7 +843,7 @@ void TopToolbar::buildSizeMenu()
     for (int s : presets) {
         QAction *a = menu->addAction(QString::number(s) + tr(" pt"));
         a->setCheckable(true);
-        a->setChecked(s == currentFontSize);
+        a->setChecked(qFuzzyCompare(currentFontSize, qreal(s)));
         a->setData(s);
         connect(a, &QAction::triggered, this, [this, s]() { applySize(s); });
         sizePresetActions.append(a);
@@ -671,15 +852,27 @@ void TopToolbar::buildSizeMenu()
     sizeButton->setMenu(menu);
 }
 
+void TopToolbar::commitSizeEditor()
+{
+    if (!sizeStepperEdit) return;
+    const QString raw = sizeStepperEdit->text().trimmed().replace(QLatin1Char(','), QLatin1Char('.'));
+    bool ok = false;
+    const qreal value = raw.toDouble(&ok);
+    if (ok) applySize(value);
+    // Normaliza o texto exibido (ex.: "14,5" → "14.5"; vazio → valor atual).
+    sizeStepperEdit->setText(sizeText(currentFontSize));
+}
+
 void TopToolbar::updateSizeMenuState()
 {
-    sizeButton->setText(QString::number(currentFontSize));
+    sizeButton->setText(sizeText(currentFontSize));
     applyFontButtonStyle();
-    if (sizeStepperValueLabel) {
-        sizeStepperValueLabel->setText(QString::number(currentFontSize));
+    if (sizeStepperEdit) {
+        QSignalBlocker block(sizeStepperEdit);
+        sizeStepperEdit->setText(sizeText(currentFontSize));
     }
     for (QAction *a : std::as_const(sizePresetActions)) {
-        a->setChecked(a->data().toInt() == currentFontSize);
+        a->setChecked(qFuzzyCompare(currentFontSize, qreal(a->data().toInt())));
     }
 }
 
@@ -822,12 +1015,13 @@ void TopToolbar::updateSpacingMenuChecks()
     }
 }
 
-void TopToolbar::applySize(int pt)
+void TopToolbar::applySize(qreal pt)
 {
-    const int minSize = 10;
-    const int maxSize = 48;
-    int next = qBound(minSize, pt, maxSize);
-    if (next == currentFontSize) return;
+    const qreal minSize = 10.0;
+    const qreal maxSize = 48.0;
+    // Encaixa em múltiplos de 0.5 — granularidade de meio-ponto.
+    qreal next = qBound(minSize, qRound(pt * 2.0) / 2.0, maxSize);
+    if (qFuzzyCompare(next, currentFontSize)) return;
     currentFontSize = next;
     updateSizeMenuState();
     emit fontSizeChanged(next);
