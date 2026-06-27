@@ -67,6 +67,8 @@ signals:
     void pendingConnection(const QString& fromId, const QString& toId);
     void undoSnapshotRequested();   // um gesto mutável começou — capturar estado p/ undo
     void cardStashRequested(const CanvasCard& card); // guardar card no stash
+    void cardHoverPreview(const CanvasCard& data, const QPoint& screenPos);
+    void cardHoverDismissed();
     void cardCreateDocRequested(const CanvasCard& card); // criar doc a partir do card
     void cardCreateTimelineEventRequested(const CanvasCard& card); // criar evento na Timeline
     void zoneExportRequested(const QString& id);     // exportar zona (context menu)

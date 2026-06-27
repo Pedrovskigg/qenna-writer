@@ -111,6 +111,8 @@ CardItem* LousaScene::addCard(const CanvasCard& data)
     connect(item, &CardItem::gestureStarted, this, &LousaScene::undoSnapshotRequested);
     connect(item, &CardItem::dragStarted, this, &LousaScene::onCardDragStarted);
     connect(item, &CardItem::draggedBy,   this, &LousaScene::onCardDraggedBy);
+    connect(item, &CardItem::hoverPreviewRequested, this, &LousaScene::cardHoverPreview);
+    connect(item, &CardItem::hoverPreviewDismissed, this, &LousaScene::cardHoverDismissed);
     return item;
 }
 

@@ -132,4 +132,13 @@ private:
     bool         m_mapOpen  = false;
 
     QString m_cutCardId;   // card recortado (Ctrl+X), aguardando colar
+
+    // Preview flutuante de card (hover)
+    QWidget* m_cardPreview      = nullptr;
+    QLabel*  m_previewTitle     = nullptr;
+    QWidget* m_previewDivider   = nullptr;
+    class QTextEdit* m_previewBody = nullptr;
+    void buildCardPreview();
+    void showCardPreview(const CanvasCard& data, const QPoint& screenPos);
+    void hideCardPreview();
 };

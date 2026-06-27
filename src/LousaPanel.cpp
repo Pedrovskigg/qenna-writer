@@ -35,6 +35,7 @@
 #include <QJsonObject>
 #include <QLabel>
 #include <QPushButton>
+#include <QTextEdit>
 #include <QResizeEvent>
 #include <QSaveFile>
 #include <QScrollArea>
@@ -509,6 +510,14 @@ void LousaPanel::buildUi()
     connect(m_scene, &LousaScene::zoneExportRequested, this, [this](const QString& id) {
         for (const CanvasZone& z : m_scene->allZoneData())
             if (z.id == id) { exportZones({z}); break; }
+    });
+    buildCardPreview();
+    connect(m_scene, &LousaScene::cardHoverPreview, this,
+            [this](const CanvasCard& data, const QPoint& screenPos) {
+        showCardPreview(data, screenPos);
+    });
+    connect(m_scene, &LousaScene::cardHoverDismissed, this, [this]() {
+        hideCardPreview();
     });
     connect(m_scene, &LousaScene::pendingConnection, this,
             [this](const QString& fromId, const QString& toId) {
@@ -1589,6 +1598,111 @@ void LousaPanel::load()
     refreshEmptyState();
 }
 
+// ── Preview flutuante de card ────────────────────────────────────────────────
+
+void LousaPanel::buildCardPreview()
+{
+    m_cardPreview = new QWidget(this);
+    m_cardPreview->setObjectName(QStringLiteral("cardPreview"));
+    m_cardPreview->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_cardPreview->hide();
+
+    auto* lay = new QVBoxLayout(m_cardPreview);
+    lay->setContentsMargins(10, 8, 10, 10);
+    lay->setSpacing(5);
+
+    m_previewTitle = new QLabel(m_cardPreview);
+    m_previewTitle->setObjectName(QStringLiteral("cardPreviewTitle"));
+    m_previewTitle->setWordWrap(true);
+    m_previewTitle->hide();
+    lay->addWidget(m_previewTitle);
+
+    m_previewDivider = new QWidget(m_cardPreview);
+    m_previewDivider->setObjectName(QStringLiteral("cardPreviewDivider"));
+    m_previewDivider->setFixedHeight(1);
+    m_previewDivider->hide();
+    lay->addWidget(m_previewDivider);
+
+    m_previewBody = new QTextEdit(m_cardPreview);
+    m_previewBody->setObjectName(QStringLiteral("cardPreviewBody"));
+    m_previewBody->setReadOnly(true);
+    m_previewBody->setFrameShape(QFrame::NoFrame);
+    m_previewBody->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_previewBody->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_previewBody->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    lay->addWidget(m_previewBody);
+
+    applyTheme();   // estiliza o preview junto com o resto
+}
+
+void LousaPanel::showCardPreview(const CanvasCard& data, const QPoint& screenPos)
+{
+    if (!m_cardPreview) return;
+
+    const QString type = data.type;
+
+    // Monta título
+    const QString title = data.title.trimmed();
+    if (!title.isEmpty()) {
+        m_previewTitle->setText(title);
+        m_previewTitle->show();
+        m_previewDivider->setVisible(!data.content.isEmpty() || !data.description.isEmpty());
+    } else {
+        m_previewTitle->hide();
+        m_previewDivider->hide();
+    }
+
+    // Monta corpo
+    QString body;
+    if (type == QStringLiteral("note") || type == QStringLiteral("comment") ||
+        type == QStringLiteral("text")) {
+        body = data.content;
+    } else if (type == QStringLiteral("image")) {
+        body = data.description;
+    }
+
+    if (body.trimmed().isEmpty() && title.isEmpty()) {
+        hideCardPreview();
+        return;
+    }
+
+    m_previewBody->setVisible(!body.trimmed().isEmpty());
+    if (!body.isEmpty()) {
+        if (body.contains(QLatin1Char('<')))
+            m_previewBody->setHtml(body);
+        else
+            m_previewBody->setPlainText(body);
+    }
+
+    // Dimensiona o widget
+    // Dimensiona pelo conteúdo real, não por um máximo fixo.
+    constexpr int kMaxW = 240;
+    m_cardPreview->setFixedWidth(kMaxW);
+    m_previewBody->document()->setTextWidth(kMaxW - 20);  // conta padding
+    const int docH = qMin(static_cast<int>(m_previewBody->document()->size().height()) + 4, 120);
+    m_previewBody->setFixedHeight(docH);
+    m_cardPreview->setMaximumHeight(200);
+    m_cardPreview->adjustSize();
+
+    // Posiciona: converte screen → painel, depois ajusta pra não sair da borda
+    QPoint pos = mapFromGlobal(screenPos) + QPoint(14, 14);
+    const int pw = m_cardPreview->width();
+    const int ph = m_cardPreview->height();
+    if (pos.x() + pw > width()  - 8) pos.setX(width()  - pw - 8);
+    if (pos.y() + ph > height() - 8) pos.setY(height() - ph - 8);
+    if (pos.x() < 8) pos.setX(8);
+    if (pos.y() < 8) pos.setY(8);
+
+    m_cardPreview->move(pos);
+    m_cardPreview->raise();
+    m_cardPreview->show();
+}
+
+void LousaPanel::hideCardPreview()
+{
+    if (m_cardPreview) m_cardPreview->hide();
+}
+
 void LousaPanel::save() const
 {
     if (m_projectRoot.isEmpty() || !m_scene || !m_view) return;
@@ -1806,6 +1920,41 @@ void LousaPanel::applyTheme()
          Theme::subtleBorder(),       // 5
          Theme::textMuted(),          // 6
          Theme::accentDanger()));     // 7
+
+    if (m_cardPreview) {
+        m_cardPreview->setStyleSheet(QStringLiteral(
+            "QWidget#cardPreview {"
+            "  background: %1;"
+            "  border: 1px solid %2;"
+            "  border-radius: 10px;"
+            "}"
+            "QLabel#cardPreviewTitle {"
+            "  color: %3;"
+            "  font-size: 11px;"
+            "  font-weight: 700;"
+            "  background: transparent;"
+            "}"
+            "QWidget#cardPreviewDivider {"
+            "  background: %2;"
+            "}"
+            "QTextEdit#cardPreviewBody {"
+            "  color: %4;"
+            "  font-size: 11px;"
+            "  background: transparent;"
+            "  border: none;"
+            "  padding: 0;"
+            "  selection-background-color: transparent;"
+            "}"
+        ).arg(Theme::panelBackground(), Theme::panelBorder(),
+              Theme::textBright(),      Theme::textPrimary()));
+
+        // Sombra discreta pra dar profundidade ao popup
+        auto* shadow = new QGraphicsDropShadowEffect(m_cardPreview);
+        shadow->setBlurRadius(18);
+        shadow->setOffset(0, 4);
+        shadow->setColor(QColor(0, 0, 0, 100));
+        m_cardPreview->setGraphicsEffect(shadow);
+    }
 
     if (m_helpPanel) {
         m_helpPanel->setStyleSheet(QStringLiteral(

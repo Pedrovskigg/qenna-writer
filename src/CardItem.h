@@ -67,6 +67,8 @@ signals:
     void positionChanged(const QString& id);      // CardItem se moveu na cena
     void pinDragStarted(const QString& fromId, const QPointF& pinScenePos);
     void cardPressed();                            // qualquer clique no card (para seleção)
+    void hoverPreviewRequested(const CanvasCard& data, const QPoint& screenPos);
+    void hoverPreviewDismissed();
     void gestureStarted();                         // início de um gesto mutável (drag/resize/rot)
     void dragStarted(const QString& id);           // começou a arrastar este card
     void draggedBy(const QString& id, const QPointF& deltaScene); // delta acumulado do arrasto
@@ -76,12 +78,14 @@ protected:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* e)        override;
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* e)     override;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e) override;
+    void hoverEnterEvent(QGraphicsSceneHoverEvent* e)       override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent* e)        override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* e)       override;
     void contextMenuEvent(QGraphicsSceneContextMenuEvent* e) override;
     QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 
 private:
+    QString cardTooltipText() const;
     bool   isOnPin(const QPointF& p) const;
     bool   isOnDeleteBtn(const QPointF& p) const;
     bool   isOnColorDot(const QPointF& p) const;

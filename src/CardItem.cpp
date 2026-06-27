@@ -1781,6 +1781,49 @@ void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
 
 // ── Hover ────────────────────────────────────────────────────────────────────
 
+static QString stripHtml(const QString& html)
+{
+    if (!html.contains(QLatin1Char('<'))) return html;
+    QTextDocument doc;
+    doc.setHtml(html);
+    return doc.toPlainText();
+}
+
+QString CardItem::cardTooltipText() const
+{
+    // Símbolos são auto-explicativos visualmente.
+    if (m_data.type == QStringLiteral("symbol")) return {};
+
+    QStringList parts;
+    const QString title = m_data.title.trimmed();
+    if (!title.isEmpty()) parts << title;
+
+    if (m_data.type == QStringLiteral("note")    ||
+        m_data.type == QStringLiteral("comment") ||
+        m_data.type == QStringLiteral("text"))
+    {
+        QString body = stripHtml(m_data.content).trimmed();
+        // Remove linhas extras e trunca pra caber bem no tooltip.
+        body.replace(QStringLiteral(" "), QStringLiteral("\n")); // separador de parágrafo Qt
+        body = body.simplified();   // condensa espaços/newlines
+        if (body.length() > 220)
+            body = body.left(217) + QStringLiteral("…");
+        if (!body.isEmpty() && body != title) parts << body;
+    } else if (m_data.type == QStringLiteral("image") && !m_data.description.isEmpty()) {
+        const QString desc = m_data.description.trimmed();
+        if (!desc.isEmpty() && desc != title) parts << desc;
+    }
+
+    return parts.join(QStringLiteral("\n"));
+}
+
+void CardItem::hoverEnterEvent(QGraphicsSceneHoverEvent* e)
+{
+    if (!cardTooltipText().isEmpty())
+        emit hoverPreviewRequested(m_data, e->screenPos());
+    QGraphicsObject::hoverEnterEvent(e);
+}
+
 void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
 {
     if (isTextSymbol()) {
@@ -1823,13 +1866,15 @@ void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
     else                           setCursor(Qt::ArrowCursor);
 }
 
-void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent*)
+void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* e)
 {
+    emit hoverPreviewDismissed();
     const bool needUpdate = m_hoverDelete || m_hoverColor || m_hoverDoc || m_hoverEvent || m_hoverResize || m_hovered;
     m_hoverDelete = m_hoverColor = m_hoverDoc = m_hoverEvent = m_hoverResize = false;
     m_hovered = false;
     if (needUpdate) update();
     setCursor(Qt::ArrowCursor);
+    QGraphicsObject::hoverLeaveEvent(e);
 }
 
 // ── Context menu ─────────────────────────────────────────────────────────────
