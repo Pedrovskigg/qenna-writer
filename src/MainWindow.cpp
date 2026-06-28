@@ -363,6 +363,9 @@ MainWindow::MainWindow(QWidget *parent)
     // Aplica limite de docs na RAM salvo nas configurações (default 6).
     docCache->setMaxDocs(QSettings().value(QStringLiteral("docCache/maxDocs"), 6).toInt());
 
+    // Lê preferências globais no startup — não depender de o painel de settings ser aberto.
+    m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
+
     setupEditor();
     setupToolbar();
     applyBackgroundFromTheme();
