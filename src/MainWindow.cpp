@@ -364,7 +364,8 @@ MainWindow::MainWindow(QWidget *parent)
     docCache->setMaxDocs(QSettings().value(QStringLiteral("docCache/maxDocs"), 6).toInt());
 
     // Lê preferências globais no startup — não depender de o painel de settings ser aberto.
-    m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
+    m_autoNavEnabled  = QSettings().value(QStringLiteral("editor/autoNavEnabled"),  true).toBool();
+    detectionEnabled  = QSettings().value(QStringLiteral("editor/detectionEnabled"), true).toBool();
 
     setupEditor();
     setupToolbar();
@@ -4406,6 +4407,7 @@ void MainWindow::onSettingsRequested()
         });
         connect(settingsPanel, &SettingsPanel::detectionEnabledChanged, this, [this](bool enabled) {
             detectionEnabled = enabled;
+            QSettings().setValue(QStringLiteral("editor/detectionEnabled"), enabled);
             if (!enabled && detectionTimer) detectionTimer->stop();
         });
         connect(settingsPanel, &SettingsPanel::detectionMarkAllChanged, this, [this](bool markAll) {
