@@ -6,9 +6,12 @@
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
 
+#include <QClipboard>
 #include <QEvent>
 #include <QFile>
+#include <QGuiApplication>
 #include <QKeyEvent>
+#include <QMimeData>
 #include <QRegularExpression>
 #include <QTextBlock>
 #include <QTextCharFormat>
@@ -52,8 +55,34 @@ bool EditorHost::eventFilter(QObject* watched, QEvent* event) {
         if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {
             if (tryConvertHrShortcut()) return true;
         }
+        const bool isPaste = (key->key() == Qt::Key_V && (key->modifiers() & Qt::ControlModifier))
+                          || (key->key() == Qt::Key_Insert && (key->modifiers() & Qt::ShiftModifier));
+        if (isPaste && tryPasteClean()) return true;
     }
     return QObject::eventFilter(watched, event);
+}
+
+bool EditorHost::tryPasteClean() {
+    if (!m_editor) return false;
+    // Sanitização de <hr> só necessária nos modos de capítulo/cena: nesses modos,
+    // <hr> é delimitador de cena e um <hr> colado do Word criaria cenas fantasmas.
+    if (m_viewMode.type != ChapterDoc && m_viewMode.type != SceneDoc) return false;
+
+    const QMimeData* mimeData = QGuiApplication::clipboard()->mimeData();
+    if (!mimeData || !mimeData->hasHtml()) return false;
+
+    const QString html = mimeData->html();
+    // Regex amplo: captura <hr>, <hr/>, <hr />, <HR style="...">, etc.
+    static const QRegularExpression hrRe(QStringLiteral("<hr\\b[^>]*/?>"),
+                                          QRegularExpression::CaseInsensitiveOption);
+    if (!hrRe.match(html).hasMatch()) return false; // sem <hr> — deixa o Qt colar normalmente
+
+    QString cleaned = html;
+    cleaned.remove(hrRe);
+    QTextCursor cursor = m_editor->textCursor();
+    cursor.insertHtml(cleaned);
+    m_editor->setTextCursor(cursor);
+    return true;
 }
 
 bool EditorHost::tryConvertHrShortcut() {

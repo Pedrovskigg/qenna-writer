@@ -71,6 +71,7 @@ private:
     void normalizeRefAnchors();
     QString hydrateFromModel(const ViewMode& vm) const;
     bool tryConvertHrShortcut();
+    bool tryPasteClean();
 
     QTextEdit* m_editor;
     DocCache* m_cache;
