@@ -176,6 +176,8 @@ void ConstrutorWindow::applyTheme()
     const QString danger    = Theme::accentDanger();
     const QString disabled  = Theme::disabledText();
     const QString editorBg  = Theme::editorBackground();
+    const QString success   = Theme::accentSuccess();
+    const QString warning   = Theme::accentWarning();
     const QColor  editorTxt = QColor(Theme::editorTextColor());
 
     setStyleSheet(QStringLiteral(R"(
@@ -262,6 +264,22 @@ void ConstrutorWindow::applyTheme()
             color: %6; font-size: 10px; font-style: italic; padding: 2px 0 0 0;
         }
 
+        QLabel#ctrFavorsTitle {
+            color: %16; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+        }
+        QLabel#ctrDemandsTitle {
+            color: %17; font-size: 9px; font-weight: 700; letter-spacing: 1px;
+        }
+        QLabel#ctrFavorsList, QLabel#ctrDemandsList {
+            color: %6; font-size: 11px; padding: 2px 0;
+        }
+        QPushButton#ctrTradeoffExpand {
+            background: transparent; color: %6; border: 1px solid %3;
+            border-radius: 9px; font-size: 10px; font-weight: 700;
+        }
+        QPushButton#ctrTradeoffExpand:hover { background: %8; color: %7; border-color: %4; }
+        QPushButton#ctrTradeoffExpand:checked { background: %9; color: %7; border-color: %10; }
+
         QPushButton#ctrAddRule, QPushButton#ctrAddSection {
             background: %9; color: %7; border: 1px solid %10;
             border-radius: 6px; padding: 4px 10px; font-size: 11px;
@@ -344,7 +362,8 @@ void ConstrutorWindow::applyTheme()
     )").arg(appBg, panelBg, border, subtle, txtPrim)   // %1-5
        .arg(txtMuted, txtBright, hover, accentSf)      // %6-9
        .arg(accentBd, accentDef, dangerSf, danger)     // %10-13
-       .arg(disabled, editorBg));                      // %14-15
+       .arg(disabled, editorBg)                        // %14-15
+       .arg(success, warning));                        // %16-17
 
     // Cor de texto via QPalette (não via CSS `color`) — espelha o editor
     // principal: CSS sobrepõe palette e quebraria o dim do Focus Mode.
@@ -404,8 +423,11 @@ void ConstrutorWindow::applyTheme()
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFontComboBox>
+#include <QFormLayout>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QImage>
@@ -604,7 +626,7 @@ void ConstrutorWindow::buildUi()
 
     // ── Painel esquerdo colapsável ────────────────────────────────────────────
     m_leftPanel = new QWidget(this);
-    m_leftPanel->setFixedWidth(250);
+    m_leftPanel->setFixedWidth(258);
     m_leftPanel->setObjectName(QStringLiteral("ctrLeft"));
     auto* leftLay = new QVBoxLayout(m_leftPanel);
     leftLay->setContentsMargins(0, 0, 0, 0);
@@ -704,6 +726,45 @@ void ConstrutorWindow::buildUi()
     m_waypointTip->setAlignment(Qt::AlignCenter);
     m_waypointTip->setWordWrap(true);
     sdLay->addWidget(m_waypointTip);
+
+    // Favorece / Exige — balança de trade-offs do waypoint atual
+    auto* tradeoffHeader = new QHBoxLayout();
+    tradeoffHeader->setSpacing(4);
+    auto* favorsTitle = new QLabel(tr("FAVORECE"), m_sysDetail);
+    favorsTitle->setObjectName(QStringLiteral("ctrFavorsTitle"));
+    tradeoffHeader->addWidget(favorsTitle);
+    tradeoffHeader->addStretch();
+    m_tradeoffExpandBtn = new QPushButton(QStringLiteral("?"), m_sysDetail);
+    m_tradeoffExpandBtn->setObjectName(QStringLiteral("ctrTradeoffExpand"));
+    m_tradeoffExpandBtn->setCursor(Qt::PointingHandCursor);
+    m_tradeoffExpandBtn->setCheckable(true);
+    m_tradeoffExpandBtn->setFixedSize(18, 18);
+    m_tradeoffExpandBtn->setToolTip(tr("Mostrar todos os pontos"));
+    tradeoffHeader->addWidget(m_tradeoffExpandBtn);
+    tradeoffHeader->addStretch();
+    auto* demandsTitle = new QLabel(tr("EXIGE"), m_sysDetail);
+    demandsTitle->setObjectName(QStringLiteral("ctrDemandsTitle"));
+    tradeoffHeader->addWidget(demandsTitle);
+    sdLay->addLayout(tradeoffHeader);
+
+    auto* tradeoffRow = new QHBoxLayout();
+    tradeoffRow->setSpacing(10);
+    m_favorsList = new QLabel(m_sysDetail);
+    m_favorsList->setObjectName(QStringLiteral("ctrFavorsList"));
+    m_favorsList->setWordWrap(true);
+    m_favorsList->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    tradeoffRow->addWidget(m_favorsList, 1);
+    m_demandsList = new QLabel(m_sysDetail);
+    m_demandsList->setObjectName(QStringLiteral("ctrDemandsList"));
+    m_demandsList->setWordWrap(true);
+    m_demandsList->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    tradeoffRow->addWidget(m_demandsList, 1);
+    sdLay->addLayout(tradeoffRow);
+
+    connect(m_tradeoffExpandBtn, &QPushButton::toggled, this, [this](bool checked) {
+        m_tradeoffExpanded = checked;
+        updateSliderDisplay(m_slider->value());
+    });
 
     sdLay->addWidget(makeHSep(m_sysDetail));
 
@@ -1314,8 +1375,20 @@ void ConstrutorWindow::updateSliderDisplay(int index)
     if (!cat || cat->waypoints.isEmpty()) return;
 
     const int i = qBound(0, index, cat->waypoints.size() - 1);
-    m_waypointName->setText(cat->waypoints[i].label);
-    m_waypointTip->setText(cat->waypoints[i].tooltip);
+    const ConstrutorStore::CategoryWaypoint& wp = cat->waypoints[i];
+    m_waypointName->setText(wp.label);
+    m_waypointTip->setText(wp.tooltip);
+
+    const int shown = m_tradeoffExpanded ? 10 : 3;
+    auto bulletText = [shown](const QStringList& items) {
+        QString html;
+        for (int j = 0; j < items.size() && j < shown; ++j)
+            html += QStringLiteral("<p style='margin:0 0 8px 0;'>• %1</p>").arg(items[j].toHtmlEscaped());
+        return html;
+    };
+    if (m_favorsList)  m_favorsList->setText(bulletText(wp.favors));
+    if (m_demandsList) m_demandsList->setText(bulletText(wp.demands));
+    if (m_tradeoffExpandBtn) m_tradeoffExpandBtn->setText(m_tradeoffExpanded ? QStringLiteral("−") : QStringLiteral("?"));
 }
 
 void ConstrutorWindow::onSliderChanged(int index)
@@ -1389,29 +1462,42 @@ void ConstrutorWindow::onNewSystem()
 {
     if (!m_store) return;
 
-    // Diálogo em duas etapas: primeiro categoria, depois nome
+    // Diálogo único: nome + categoria na mesma caixa
     const QList<ConstrutorStore::Category>& cats = ConstrutorStore::categories();
-    QStringList catNames;
+
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Novo sistema"));
+
+    auto* form = new QFormLayout();
+    auto* nameEdit = new QLineEdit(&dlg);
+    nameEdit->setPlaceholderText(tr("Nome do sistema"));
+    form->addRow(tr("Nome:"), nameEdit);
+
+    auto* catCombo = new QComboBox(&dlg);
     for (const auto& c : cats)
-        catNames << c.displayName;
+        catCombo->addItem(c.displayName, c.id);
+    form->addRow(tr("Categoria:"), catCombo);
 
-    bool ok = false;
-    const QString catName = QInputDialog::getItem(
-        this, tr("Novo sistema"), tr("Categoria do sistema:"),
-        catNames, 0, false, &ok);
-    if (!ok || catName.isEmpty()) return;
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    QPushButton* okBtn = buttons->button(QDialogButtonBox::Ok);
+    okBtn->setEnabled(false);
+    connect(nameEdit, &QLineEdit::textChanged, &dlg, [okBtn](const QString& t) {
+        okBtn->setEnabled(!t.trimmed().isEmpty());
+    });
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
 
-    QString categoryId;
-    for (const auto& c : cats) {
-        if (c.displayName == catName) { categoryId = c.id; break; }
-    }
+    auto* layout = new QVBoxLayout(&dlg);
+    layout->addLayout(form);
+    layout->addWidget(buttons);
 
-    const QString name = QInputDialog::getText(
-        this, tr("Novo sistema"), tr("Nome do sistema:"),
-        QLineEdit::Normal, QString(), &ok);
-    if (!ok || name.trimmed().isEmpty()) return;
+    if (dlg.exec() != QDialog::Accepted) return;
 
-    const QString id = m_store->addSystem(name.trimmed(), categoryId, 0);
+    const QString name = nameEdit->text().trimmed();
+    const QString categoryId = catCombo->currentData().toString();
+    if (name.isEmpty()) return;
+
+    const QString id = m_store->addSystem(name, categoryId, 0);
 
     // Seleciona o novo sistema na lista
     for (int i = 0; i < m_systemsList->count(); ++i) {

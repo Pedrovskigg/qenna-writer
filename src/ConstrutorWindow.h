@@ -120,6 +120,10 @@ private:
     QLabel*      m_waypointFirst   = nullptr;
     QLabel*      m_waypointLast    = nullptr;
     QLabel*      m_waypointTip     = nullptr;
+    QLabel*      m_favorsList      = nullptr;
+    QLabel*      m_demandsList     = nullptr;
+    QPushButton* m_tradeoffExpandBtn = nullptr;
+    bool         m_tradeoffExpanded  = false;
     QPushButton* m_addRuleBtn      = nullptr;
     QPushButton* m_addSectionBtn   = nullptr;
     QPushButton* m_deleteNodeBtn   = nullptr;

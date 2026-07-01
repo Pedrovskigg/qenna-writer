@@ -3,6 +3,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 // Dados de worldbuilding estruturado — a store do Construtor.
 // Persiste em `construtor.json` no root do projeto (sidecar, como NotesStore).
@@ -33,6 +34,8 @@ public:
     struct CategoryWaypoint {
         QString label;
         QString tooltip;
+        QStringList favors;   // "Favorece" — até 10, ordenados por relevância
+        QStringList demands;  // "Exige" — até 10, ordenados por relevância
     };
 
     struct Category {
