@@ -194,6 +194,28 @@ void ConstrutorWindow::applyTheme()
         }
         QFrame#ctrVSep { background: %3; border: none; max-width: 1px; }
 
+        /* ── Busca global ────────────────────────────────── */
+        QLineEdit#ctrSearchEdit {
+            background: %2;
+            color: %5;
+            border: 1px solid %3;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        QLineEdit#ctrSearchEdit:focus { border-color: %10; }
+
+        QListWidget#ctrSearchResults {
+            background: transparent;
+            color: %5;
+            border: none;
+            font-size: 12px;
+            outline: none;
+        }
+        QListWidget#ctrSearchResults::item { padding: 6px 8px; border-radius: 6px; }
+        QListWidget#ctrSearchResults::item:hover { background: %8; color: %7; }
+        QListWidget#ctrSearchResults::item:selected { background: %9; color: %7; }
+
         /* ── Lista de sistemas ──────────────────────────── */
         QListWidget#ctrSystemsList {
             background: transparent;
@@ -329,6 +351,7 @@ void ConstrutorWindow::applyTheme()
         }
         QFontComboBox#ctrFontCombo:focus, QComboBox#ctrSizeCombo:focus { border-color: %10; }
         QComboBox#ctrSizeCombo::drop-down { width: 14px; border: none; }
+        QLabel#ctrLastEdited { color: %6; font-size: 10px; padding: 0 4px; }
         QMenu#ctrSpacingMenu {
             background: %2; color: %5;
             border: 1px solid %3; border-radius: 8px;
@@ -423,6 +446,7 @@ void ConstrutorWindow::applyTheme()
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDateTime>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -449,6 +473,24 @@ namespace {
 constexpr int kNodeIdRole   = Qt::UserRole;
 constexpr int kNodeTypeRole = Qt::UserRole + 1;
 constexpr int kSaveDelay    = 600; // ms debounce do editor de conteúdo
+
+// Busca recursiva por nome — alimenta a lista de resultados da busca global
+// (breadcrumb "Sistema ▸ Nó ▸ Subnó" pra desambiguar nomes repetidos entre
+// sistemas diferentes).
+void collectNodeMatches(const QString& systemId, const QString& breadcrumb,
+                         const QList<ConstrutorStore::Node>& nodes,
+                         const QString& needle, QListWidget* results)
+{
+    for (const auto& n : nodes) {
+        const QString path = breadcrumb + QStringLiteral(" ▸ ") + n.name;
+        if (n.name.contains(needle, Qt::CaseInsensitive)) {
+            auto* item = new QListWidgetItem(path, results);
+            item->setData(Qt::UserRole, systemId);
+            item->setData(Qt::UserRole + 1, n.id);
+        }
+        collectNodeMatches(systemId, path, n.children, needle, results);
+    }
+}
 }
 
 ConstrutorWindow::ConstrutorWindow(ConstrutorStore* store, QWidget* parent)
@@ -582,6 +624,7 @@ void ConstrutorWindow::setStore(ConstrutorStore* store)
     if (m_store)
         disconnect(m_store, &ConstrutorStore::changed, this, &ConstrutorWindow::onStoreChanged);
     m_store = store;
+    if (m_searchEdit) m_searchEdit->clear();
     if (m_store) {
         connect(m_store, &ConstrutorStore::changed, this, &ConstrutorWindow::onStoreChanged);
         rebuildSystemsList();
@@ -643,6 +686,23 @@ void ConstrutorWindow::buildUi()
     lhLay->addWidget(leftTitle);
     lhLay->addStretch();
     leftLay->addWidget(leftHeader);
+
+    // Busca global entre sistemas e nós (por nome)
+    auto* searchWrap = new QWidget(m_leftPanel);
+    auto* searchLay  = new QHBoxLayout(searchWrap);
+    searchLay->setContentsMargins(12, 0, 12, 8);
+    m_searchEdit = new QLineEdit(searchWrap);
+    m_searchEdit->setObjectName(QStringLiteral("ctrSearchEdit"));
+    m_searchEdit->setPlaceholderText(tr("Buscar sistema ou nó…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    searchLay->addWidget(m_searchEdit);
+    leftLay->addWidget(searchWrap);
+
+    m_searchResultsList = new QListWidget(m_leftPanel);
+    m_searchResultsList->setObjectName(QStringLiteral("ctrSearchResults"));
+    m_searchResultsList->setFrameShape(QFrame::NoFrame);
+    m_searchResultsList->setVisible(false);
+    leftLay->addWidget(m_searchResultsList, 1);
 
     // Lista de sistemas
     m_systemsList = new QListWidget(m_leftPanel);
@@ -940,6 +1000,11 @@ void ConstrutorWindow::buildUi()
     tbLay->addWidget(m_insertImageBtn);
     tbLay->addStretch();
 
+    // Timestamp de última edição do sistema/nó atualmente aberto
+    m_lastEditedLabel = new QLabel(toolbar);
+    m_lastEditedLabel->setObjectName(QStringLiteral("ctrLastEdited"));
+    tbLay->addWidget(m_lastEditedLabel);
+
     rightLay->addWidget(toolbar);
 
     // Editor rich text — vive dentro de uma "página" (largura/margens vindas
@@ -986,6 +1051,25 @@ void ConstrutorWindow::buildUi()
     connect(m_togglePanelBtn, &QPushButton::toggled,
             this, &ConstrutorWindow::onTogglePanel);
     connect(m_focusBtn, &QPushButton::toggled, this, &ConstrutorWindow::setFocusMode);
+
+    connect(m_searchEdit, &QLineEdit::textChanged,
+            this, &ConstrutorWindow::onSearchTextChanged);
+    connect(m_searchResultsList, &QListWidget::itemClicked, this, [this](QListWidgetItem* item) {
+        if (!item) return;
+        const QString systemId = item->data(Qt::UserRole).toString();
+        const QString nodeId   = item->data(Qt::UserRole + 1).toString();
+        m_searchEdit->blockSignals(true);
+        m_searchEdit->clear();
+        m_searchEdit->blockSignals(false);
+        m_searchResultsList->setVisible(false);
+        m_searchResultsList->clear();
+        m_systemsList->setVisible(true);
+        selectSystemAndNode(systemId, nodeId);
+        if (!m_currentSystemId.isEmpty()) {
+            m_sysDetail->setVisible(true);
+            m_tree->setVisible(true);
+        }
+    });
 
     connect(m_systemsList, &QListWidget::currentRowChanged,
             this, &ConstrutorWindow::onSystemSelected);
@@ -1199,6 +1283,7 @@ void ConstrutorWindow::loadSystem(const QString& id)
     m_contentEdit->setPlaceholderText(
         tr("Escreva um resumo, parecer ou introdução deste sistema…"));
     loadContentIntoEditor(sys->content);
+    updateLastEditedLabel(sys->updatedAt);
     m_deleteNodeBtn->setEnabled(false);
 }
 
@@ -1269,6 +1354,19 @@ void ConstrutorWindow::showNoSystemOpenState()
     m_contentEdit->setPlaceholderText(
         tr("Nenhum sistema aberto. Selecione um sistema à esquerda ou crie um novo para começar."));
     m_contentEdit->blockSignals(false);
+    updateLastEditedLabel(0);
+}
+
+void ConstrutorWindow::updateLastEditedLabel(qint64 updatedAt)
+{
+    if (!m_lastEditedLabel) return;
+    if (updatedAt <= 0) {
+        m_lastEditedLabel->clear();
+        return;
+    }
+    const QDateTime dt = QDateTime::fromMSecsSinceEpoch(updatedAt);
+    m_lastEditedLabel->setText(
+        tr("Editado em %1").arg(dt.toString(QStringLiteral("dd/MM/yyyy HH:mm"))));
 }
 
 void ConstrutorWindow::loadContentIntoEditor(const QString& content)
@@ -1325,11 +1423,13 @@ void ConstrutorWindow::onTreeSelectionChanged()
             hideOverlay();
             m_contentEdit->setEnabled(false);
             m_contentEdit->clear();
+            updateLastEditedLabel(0);
             return;
         }
         m_contentEdit->setPlaceholderText(
             tr("Escreva um resumo, parecer ou introdução deste sistema…"));
         loadContentIntoEditor(sys->content);
+        updateLastEditedLabel(sys->updatedAt);
         return;
     }
 
@@ -1356,6 +1456,7 @@ void ConstrutorWindow::onTreeSelectionChanged()
 
     m_contentEdit->setPlaceholderText(tr("Escreva aqui…"));
     loadContentIntoEditor(node->content);
+    updateLastEditedLabel(node->updatedAt);
 }
 
 void ConstrutorWindow::onTreeItemChanged(QTreeWidgetItem* item, int column)
@@ -1471,6 +1572,7 @@ void ConstrutorWindow::saveCurrentNodeContent()
         // Sem nó selecionado: o texto pertence ao resumo do sistema.
         if (sys->content == newContent) return;
         m_store->updateSystemContent(m_currentSystemId, newContent);
+        updateLastEditedLabel(QDateTime::currentMSecsSinceEpoch());
         return;
     }
 
@@ -1490,6 +1592,7 @@ void ConstrutorWindow::saveCurrentNodeContent()
 
     if (node->content == newContent) return;
     m_store->updateNode(m_currentSystemId, m_currentNodeId, node->name, newContent);
+    updateLastEditedLabel(QDateTime::currentMSecsSinceEpoch());
 }
 
 // ── Criação de sistema ────────────────────────────────────────────────────────
@@ -1666,6 +1769,65 @@ QString ConstrutorWindow::selectedNodeId() const
 {
     const QTreeWidgetItem* item = m_tree ? m_tree->currentItem() : nullptr;
     return item ? item->data(0, kNodeIdRole).toString() : QString();
+}
+
+// ── Busca global entre sistemas e nós ─────────────────────────────────────────
+
+void ConstrutorWindow::onSearchTextChanged(const QString& text)
+{
+    const QString needle = text.trimmed();
+    if (needle.isEmpty()) {
+        m_searchResultsList->setVisible(false);
+        m_searchResultsList->clear();
+        m_systemsList->setVisible(true);
+        m_sysDetail->setVisible(!m_currentSystemId.isEmpty());
+        m_tree->setVisible(!m_currentSystemId.isEmpty());
+        return;
+    }
+    if (!m_store) return;
+
+    m_systemsList->setVisible(false);
+    m_sysDetail->setVisible(false);
+    m_tree->setVisible(false);
+    m_searchResultsList->clear();
+    m_searchResultsList->setVisible(true);
+
+    for (const auto& sys : m_store->systems()) {
+        if (sys.name.contains(needle, Qt::CaseInsensitive)) {
+            auto* item = new QListWidgetItem(sys.name, m_searchResultsList);
+            item->setData(Qt::UserRole, sys.id);
+            item->setData(Qt::UserRole + 1, QString());
+        }
+        collectNodeMatches(sys.id, sys.name, sys.nodes, needle, m_searchResultsList);
+    }
+}
+
+void ConstrutorWindow::openNode(const QString& systemId, const QString& nodeId)
+{
+    if (m_searchEdit) m_searchEdit->clear(); // restaura painel normal (onSearchTextChanged)
+    selectSystemAndNode(systemId, nodeId);
+    if (!m_currentSystemId.isEmpty()) {
+        m_sysDetail->setVisible(true);
+        m_tree->setVisible(true);
+    }
+}
+
+void ConstrutorWindow::selectSystemAndNode(const QString& systemId, const QString& nodeId)
+{
+    for (int i = 0; i < m_systemsList->count(); ++i) {
+        if (m_systemsList->item(i)->data(Qt::UserRole).toString() == systemId) {
+            m_systemsList->setCurrentRow(i);
+            break;
+        }
+    }
+    if (nodeId.isEmpty()) return;
+    const auto items = m_tree->findItems(QString(), Qt::MatchContains | Qt::MatchRecursive);
+    for (auto* item : items) {
+        if (item->data(0, kNodeIdRole).toString() == nodeId) {
+            m_tree->setCurrentItem(item);
+            break;
+        }
+    }
 }
 
 // ── Toggle do painel esquerdo ─────────────────────────────────────────────────

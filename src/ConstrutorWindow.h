@@ -38,6 +38,11 @@ public:
 
     void setStore(ConstrutorStore* store);
 
+    // Navega direto pra um sistema/nó — usado pelo Ctrl+clique numa menção @
+    // que aponta pro Construtor (ver refActivated em MainWindow.cpp). Se
+    // nodeId vier vazio, abre só o resumo do sistema.
+    void openNode(const QString& systemId, const QString& nodeId);
+
 protected:
     void closeEvent(QCloseEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -59,6 +64,7 @@ private slots:
     void onAddChild(ConstrutorStore::NodeType type);
     void onDeleteNode();
     void onTreeContextMenu(const QPoint& pos);
+    void onSearchTextChanged(const QString& text);
     void onTogglePanel();
     void onCurrentCharFormatChanged(const QTextCharFormat& fmt);
     void onInsertImage();
@@ -84,6 +90,14 @@ private:
     void updateToolbarState(const QTextCharFormat& fmt);
     QString selectedSystemId() const;
     QString selectedNodeId() const;
+
+    // Timestamp de última edição — exibido no toolbar do editor de conteúdo,
+    // reflete sys->updatedAt (resumo do sistema) ou node->updatedAt (nó).
+    void updateLastEditedLabel(qint64 updatedAt);
+
+    // Busca global entre sistemas e nós (por nome) — navega direto pro
+    // resultado ao clicar, sem precisar abrir sistema por sistema.
+    void selectSystemAndNode(const QString& systemId, const QString& nodeId);
 
     // Formatação global do editor de conteúdo (aplica ao documento inteiro,
     // não apenas à seleção — espelha o comportamento de fonte/tamanho/
@@ -114,6 +128,8 @@ private:
     // ── Painel esquerdo colapsável ─────────────────────────────────────────────
     QWidget*            m_leftPanel    = nullptr;
     QFrame*             m_vsep         = nullptr;  // separador vertical
+    QLineEdit*          m_searchEdit   = nullptr;
+    QListWidget*        m_searchResultsList = nullptr;
     QListWidget*        m_systemsList  = nullptr;
     QPushButton*        m_newSystemBtn = nullptr;
     SystemItemDelegate* m_sysDelegate  = nullptr;
@@ -155,6 +171,7 @@ private:
     QIcon          m_focusOffIcon;
     QIcon          m_focusOnIcon;
     QPushButton*   m_insertImageBtn = nullptr;
+    QLabel*        m_lastEditedLabel = nullptr;
     QScrollArea*   m_pageScroll     = nullptr;  // centraliza a "página" do editor
     QWidget*       m_pageColumn     = nullptr;  // largura/margens de EditorLayout::Manager
     QTextEdit*     m_contentEdit    = nullptr;

@@ -4,6 +4,7 @@
 #include <QString>
 
 class ProjectModel;
+class ConstrutorStore;
 struct Chapter;
 class QListWidgetItem;
 class QTextEdit;
@@ -17,7 +18,8 @@ class QRegularExpressionMatch;
 // Espaço/Enter/Tab confirmam o item mais compatível, inserindo uma menção como
 // link (anchor "ref:<drawerKey>:<itemId>") — o "@" some, fica só o nome.
 //
-// Suporta drill-down: Root → Capítulos → Cenas (navegação por portal/back).
+// Suporta drill-down: Root → Capítulos → Cenas, e Root → Sistemas (Construtor)
+// → Nós de um sistema (navegação por portal/back).
 // Suporta atalho: "@ch1-sc2" insere diretamente o Capítulo 1, Cena 2.
 //
 // O clique (Ctrl+clique) que abre a menção é tratado no editor (SpellEditor) /
@@ -33,6 +35,10 @@ public:
     // Config: incluir capítulos/cenas na lista e aceitar atalho @ch1-sc2 (padrão: só gavetas).
     void setIncludeManuscripts(bool on) { m_includeManuscripts = on; }
 
+    // Store do Construtor — habilita o portal "Construtor" no root da menção,
+    // listando sistemas/nós (regras/seções) pra referenciar via @.
+    void setConstrutorStore(ConstrutorStore* store) { m_construtorStore = store; }
+
 signals:
     // Emitido após o vigia limpar um anchor herdado (mexe no documento de forma
     // assíncrona). Quem depende do estado do doc (ex.: Focus Mode) deve reagir.
@@ -42,7 +48,7 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
-    enum class Level { Root, Chapters, Scenes };
+    enum class Level { Root, Chapters, Scenes, ConstrutorSystems, ConstrutorSystemNodes };
 
     struct DocEntry {
         QString drawerKey;
@@ -57,6 +63,8 @@ private:
     void rebuildRoot(const QString& q);
     void rebuildChapters();
     void rebuildScenes();
+    void rebuildConstrutorSystems();
+    void rebuildConstrutorSystemNodes();
     void buildShorthand(const QRegularExpressionMatch& m);
     void addPortalItem(const QString& text, const QString& key);
     void addBackItem(const QString& text);
@@ -72,6 +80,7 @@ private:
     QList<DocEntry> allDocs() const;
 
     ProjectModel* m_model;
+    ConstrutorStore* m_construtorStore = nullptr;
     QWidget*      m_owner;
     QListWidget*  m_list          = nullptr;
     QTextEdit*    m_activeEditor  = nullptr;
@@ -81,6 +90,8 @@ private:
     QString       m_drillManuscriptId;
     QString       m_drillChapterId;
     QString       m_drillChapterTitle;
+    QString       m_drillConstrutorSystemId;
+    QString       m_drillConstrutorSystemName;
     bool          m_includeManuscripts = false;
     bool          m_insertingMention   = false;
     bool          m_cleaningAnchor     = false;

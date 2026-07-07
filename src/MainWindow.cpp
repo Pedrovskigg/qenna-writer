@@ -1097,6 +1097,20 @@ void MainWindow::setupEditor()
                                        itemId.mid(s2 + 1).toInt());
             return;
         }
+        if (drawerKey == QStringLiteral("__construtor_node__")) {
+            // itemId = "<systemId>:<nodeId>" — abre/foca a janela do Construtor
+            // direto no sistema/nó referenciado (janela própria, não RefMenu).
+            const int sep = itemId.indexOf(QLatin1Char(':'));
+            if (sep < 0) return;
+            const QString systemId = itemId.left(sep);
+            const QString nodeId   = itemId.mid(sep + 1);
+            if (!construtorWindow) construtorWindow = new ConstrutorWindow(construtorStore, this);
+            construtorWindow->show();
+            construtorWindow->raise();
+            construtorWindow->activateWindow();
+            construtorWindow->openNode(systemId, nodeId);
+            return;
+        }
         if (refMenuPanel)
             refMenuPanel->openForDrawer(drawerKey, itemId);
     });
@@ -1149,6 +1163,7 @@ void MainWindow::setupEditor()
     // toolbar de seleção). O texto selecionado é salvo no projeto ou na
     // memória de um personagem, com o rótulo da fonte (capítulo/cena).
     construtorStore = new ConstrutorStore(this);
+    if (mentionPopup) mentionPopup->setConstrutorStore(construtorStore);
     memoriesStore = new MemoriesStore(this);
     memoryAddPopup = new MemoryAddPopup(this);
     connect(memoryAddPopup, &MemoryAddPopup::confirmed, this,
@@ -1565,6 +1580,7 @@ void MainWindow::setupEditor()
 
     // Painel flutuante de Referência — drag/resize livres, geometria persistida em QSettings.
     refMenuPanel = new RefMenuPanel(projectModel, editorHost, docCache, elementsStore, container);
+    refMenuPanel->setConstrutorStore(construtorStore);
     refMenuPanel->setProjectRoot(projectRoot);
     refMenuPanel->setEditorFontFamily(currentFontFamily);
     refMenuPanel->raise();

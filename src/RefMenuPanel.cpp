@@ -1,5 +1,6 @@
 #include "RefMenuPanel.h"
 
+#include "ConstrutorStore.h"
 #include "DocCache.h"
 #include "EditorHost.h"
 #include "ElementsStore.h"
@@ -16,6 +17,7 @@
 #include <QBuffer>
 #include <QByteArray>
 #include <QEvent>
+#include <functional>
 #include <QFile>
 #include <QFontMetrics>
 #include <QFrame>
@@ -609,6 +611,8 @@ void RefMenuPanel::rebuildTabs()
         label = tr("Timelines");
     } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
         label = tr("Elementos");
+    } else if (m_sourceKind == SourceKind::Construtor) {
+        label = tr("Construtor");
     } else {
         label = tr("Gaveta");
     }
@@ -657,9 +661,123 @@ void RefMenuPanel::rebuildNavBody()
         buildPlaceholderView(tr("Timelines"), tr("Em breve. Vai listar as linhas do tempo."));
     } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
         buildPlaceholderView(tr("Elementos usados"), tr("Em breve. Gráficos de participação dos elementos."));
+    } else if (m_sourceKind == SourceKind::Construtor) {
+        buildConstrutorView();
     }
 
     m_navInnerLay->addStretch();
+}
+
+void RefMenuPanel::buildConstrutorView()
+{
+    if (!m_navInner || !m_navInnerLay) return;
+    if (!m_construtorStore || m_construtorStore->systems().isEmpty()) {
+        buildPlaceholderView(tr("Construtor"),
+            tr("Nenhum sistema criado ainda. Use o botão ⚙ Construtor no Pensário pra criar o primeiro."));
+        return;
+    }
+
+    // Sistema aberto (drill-down de 1 nível: sistemas → nós daquele sistema
+    // só). Evita misturar regras/seções de sistemas diferentes na mesma
+    // lista quando o projeto tem muitos sistemas — pedido do usuário.
+    const ConstrutorStore::System* openSys = m_currentConstrutorSystemId.isEmpty()
+        ? nullptr : m_construtorStore->system(m_currentConstrutorSystemId);
+    if (!openSys) m_currentConstrutorSystemId.clear();
+
+    if (openSys) {
+        auto* row = new QWidget(m_navInner);
+        auto* rowLay = new QHBoxLayout(row);
+        rowLay->setContentsMargins(0, 0, 0, 4);
+        rowLay->setSpacing(6);
+        auto* back = new QToolButton(row);
+        back->setObjectName(QStringLiteral("refTinyBtn"));
+        back->setText(QStringLiteral("←"));
+        back->setCursor(Qt::PointingHandCursor);
+        connect(back, &QToolButton::clicked, this, [this]() {
+            m_currentConstrutorSystemId.clear();
+            rebuildNavBody();
+        });
+        rowLay->addWidget(back);
+        auto* lab = new QLabel(openSys->name, row);
+        lab->setStyleSheet(QStringLiteral("color:%1; font-size:12px; font-weight:600;").arg(Theme::textPrimary()));
+        rowLay->addWidget(lab);
+        rowLay->addStretch();
+        m_navInnerLay->addWidget(row);
+    }
+
+    auto* list = new QListWidget(m_navInner);
+    list->setSelectionMode(QAbstractItemView::SingleSelection);
+    list->setFrameShape(QFrame::NoFrame);
+    list->setStyleSheet(QStringLiteral(R"(
+        QListWidget {
+            background: %1; color: %2;
+            border: 1px solid %3; border-radius: 6px;
+            outline: none; padding: 4px;
+        }
+        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item:hover { background: %4; color: %5; }
+        QListWidget::item:selected { background: %6; color: %5; }
+    )").arg(Theme::appBackground(),
+           Theme::textPrimary(),
+           Theme::panelBorder(),
+           Theme::hoverOverlay(),
+           Theme::textBright(),
+           Theme::accentInfoSoft()));
+
+    if (!openSys) {
+        // Raiz: uma linha por sistema (nome + categoria/waypoint como rótulo).
+        for (const auto& sys : m_construtorStore->systems()) {
+            if (!matchesSearch(sys.name)) continue;
+            QString text = sys.name;
+            if (const auto* cat = ConstrutorStore::categoryById(sys.categoryId)) {
+                text.append(QStringLiteral("   ·  ") + cat->displayName);
+            }
+            auto* li = new QListWidgetItem(text);
+            li->setData(Qt::UserRole, sys.id);
+            list->addItem(li);
+        }
+        connect(list, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            const QString systemId = it->data(Qt::UserRole).toString();
+            m_currentConstrutorSystemId = systemId;
+            setSelected(QStringLiteral("ctr:%1").arg(systemId)); // resumo do sistema
+            rebuildNavBody(); // entra na lista de nós desse sistema
+        });
+    } else {
+        // Dentro de um sistema: só os nós dele, achatados (sem repetir o
+        // nome do sistema no breadcrumb — já está no header acima).
+        std::function<void(const QString&, const QList<ConstrutorStore::Node>&)> walk;
+        walk = [&](const QString& breadcrumb, const QList<ConstrutorStore::Node>& nodes) {
+            for (const auto& n : nodes) {
+                const QString path = breadcrumb.isEmpty() ? n.name : breadcrumb + QStringLiteral(" ▸ ") + n.name;
+                if (matchesSearch(path)) {
+                    const QString key = QStringLiteral("ctr:%1:%2").arg(openSys->id, n.id);
+                    auto* li = new QListWidgetItem(path);
+                    li->setData(Qt::UserRole, key);
+                    list->addItem(li);
+                    if (key == m_selectedKey) li->setSelected(true);
+                }
+                walk(path, n.children);
+            }
+        };
+        walk(QString(), openSys->nodes);
+        connect(list, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            setSelected(it->data(Qt::UserRole).toString());
+        });
+    }
+
+    if (list->count() == 0) {
+        delete list;
+        auto* empty = new QLabel(
+            openSys ? tr("Este sistema ainda não tem regras/seções.") : tr("Nada encontrado."), m_navInner);
+        empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
+        empty->setAlignment(Qt::AlignCenter);
+        m_navInnerLay->addWidget(empty);
+        return;
+    }
+
+    m_navInnerLay->addWidget(list);
 }
 
 void RefMenuPanel::buildGroupsView()
@@ -1472,6 +1590,28 @@ void RefMenuPanel::rebuildPreview()
             title = it->title;
             role = roleOrLabelForItem(*it);
         }
+    } else if (m_selectedKey.startsWith(QStringLiteral("ctr:"))) {
+        const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
+        const ConstrutorStore::System* sys =
+            (m_construtorStore && parts.size() >= 2) ? m_construtorStore->system(parts.at(1)) : nullptr;
+        if (sys && parts.size() >= 3) {
+            std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find;
+            find = [&](const QList<ConstrutorStore::Node>& nodes) -> const ConstrutorStore::Node* {
+                for (const auto& n : nodes) {
+                    if (n.id == parts.at(2)) return &n;
+                    if (const auto* c = find(n.children)) return c;
+                }
+                return nullptr;
+            };
+            if (const ConstrutorStore::Node* node = find(sys->nodes)) {
+                title = node->name;
+                role = tr("%1 · %2").arg(
+                    node->type == ConstrutorStore::NodeType::Rule ? tr("Regra") : tr("Seção"), sys->name);
+            }
+        } else if (sys) {
+            title = sys->name;
+            role = tr("Sistema · Construtor");
+        }
     }
 
     m_previewTitle->setText(title.isEmpty() ? tr("(sem título)") : title);
@@ -1683,6 +1823,23 @@ QString RefMenuPanel::resolveDocHtml(const QString& key) const
             return ProjectStorage::readText(ProjectStorage::joinPath(m_projectRoot, item->file), &ok);
         }
     }
+    if (key.startsWith(QStringLiteral("ctr:"))) {
+        const QStringList parts = key.split(QLatin1Char(':'));
+        if (!m_construtorStore || parts.size() < 2) return QString();
+        const ConstrutorStore::System* sys = m_construtorStore->system(parts.at(1));
+        if (!sys) return QString();
+        if (parts.size() < 3) return sys->content;
+        std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find;
+        find = [&](const QList<ConstrutorStore::Node>& nodes) -> const ConstrutorStore::Node* {
+            for (const auto& n : nodes) {
+                if (n.id == parts.at(2)) return &n;
+                if (const auto* c = find(n.children)) return c;
+            }
+            return nullptr;
+        };
+        const ConstrutorStore::Node* node = find(sys->nodes);
+        return node ? node->content : QString();
+    }
     return QString();
 }
 
@@ -1778,6 +1935,8 @@ void RefMenuPanel::onDrawerPickerClicked()
     };
     addPlaceholder(QStringLiteral("star"),  tr("Grupos"),             SourceKind::MarkersPlaceholder);
     addPlaceholder(QStringLiteral("cube"),  tr("Elementos usados"),  SourceKind::ElementsPlaceholder);
+    if (m_construtorStore)
+        addPlaceholder(QStringLiteral("cube"), tr("Construtor"), SourceKind::Construtor);
     menu.addSeparator();
 
     for (const auto& d : m_model->drawers()) {
@@ -1868,6 +2027,7 @@ void RefMenuPanel::enterDrawerMode(const QString& drawerKey)
 void RefMenuPanel::enterPlaceholderMode(SourceKind kind)
 {
     m_sourceKind = kind;
+    m_currentConstrutorSystemId.clear();
     changeSelectedKey(QString());
     refresh();
 }

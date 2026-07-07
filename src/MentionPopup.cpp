@@ -1,9 +1,11 @@
 #include "MentionPopup.h"
 
+#include "ConstrutorStore.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 
 #include <algorithm>
+#include <functional>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QListWidget>
@@ -18,10 +20,13 @@
 #include <QWidget>
 
 // Chaves especiais de navegação (não são drawer keys reais).
-static constexpr auto kPortalChapters = "__portal_ch__";
-static constexpr auto kNavBack        = "__nav_back__";
-static constexpr auto kMsChapter      = "__ms_ch__";
-static constexpr auto kMsScene        = "__ms_sc__";
+static constexpr auto kPortalChapters   = "__portal_ch__";
+static constexpr auto kPortalConstrutor = "__portal_ctr__";
+static constexpr auto kNavBack          = "__nav_back__";
+static constexpr auto kMsChapter        = "__ms_ch__";
+static constexpr auto kMsScene          = "__ms_sc__";
+static constexpr auto kCtrSystem        = "__ctr_system__";
+static constexpr auto kCtrNode          = "__construtor_node__";
 
 MentionPopup::MentionPopup(ProjectModel* model, QWidget* ownerWindow, QObject* parent)
     : QObject(parent)
@@ -141,9 +146,11 @@ void MentionPopup::rebuildList(const QString& query)
     }
 
     switch (m_level) {
-    case Level::Root:    rebuildRoot(q);    break;
-    case Level::Chapters: rebuildChapters(); break;
-    case Level::Scenes:   rebuildScenes();   break;
+    case Level::Root:                  rebuildRoot(q);                  break;
+    case Level::Chapters:               rebuildChapters();               break;
+    case Level::Scenes:                 rebuildScenes();                 break;
+    case Level::ConstrutorSystems:      rebuildConstrutorSystems();      break;
+    case Level::ConstrutorSystemNodes:  rebuildConstrutorSystemNodes();  break;
     }
     selectFirstSelectable();
 }
@@ -166,6 +173,9 @@ void MentionPopup::rebuildRoot(const QString& q)
     // Portal de capítulos: sempre visível no fim (não filtrado pela query).
     if (m_includeManuscripts && m_model && !m_model->chapters().isEmpty())
         addPortalItem(tr("Capítulos"), QLatin1String(kPortalChapters));
+    // Portal do Construtor: idem, sempre visível se houver algum sistema.
+    if (m_construtorStore && !m_construtorStore->systems().isEmpty())
+        addPortalItem(tr("Construtor"), QLatin1String(kPortalConstrutor));
 }
 
 void MentionPopup::rebuildChapters()
@@ -200,6 +210,46 @@ void MentionPopup::rebuildScenes()
         item->setData(Qt::UserRole + 2, t);
         m_list->addItem(item);
     }
+}
+
+void MentionPopup::rebuildConstrutorSystems()
+{
+    addBackItem(tr("← Voltar"));
+    if (!m_construtorStore) return;
+    for (const auto& sys : m_construtorStore->systems()) {
+        auto* item = new QListWidgetItem(sys.name + QStringLiteral("  ▸"));
+        item->setData(Qt::UserRole,     QLatin1String(kCtrSystem));
+        item->setData(Qt::UserRole + 1, sys.id);
+        item->setData(Qt::UserRole + 2, sys.name);
+        m_list->addItem(item);
+    }
+}
+
+void MentionPopup::rebuildConstrutorSystemNodes()
+{
+    addBackItem(m_drillConstrutorSystemName.isEmpty()
+        ? tr("← Construtor") : QStringLiteral("← %1").arg(m_drillConstrutorSystemName));
+    if (!m_construtorStore) return;
+    const ConstrutorStore::System* sys = m_construtorStore->system(m_drillConstrutorSystemId);
+    if (!sys) return;
+
+    // Nós só desse sistema, achatados por breadcrumb (sem repetir o nome do
+    // sistema — já está no item "← Voltar" acima). Nós têm profundidade
+    // arbitrária, então não dá pra espelhar o drill-down fixo de
+    // Capítulos→Cenas dentro do próprio sistema.
+    std::function<void(const QString&, const QList<ConstrutorStore::Node>&)> walk;
+    walk = [&](const QString& breadcrumb, const QList<ConstrutorStore::Node>& nodes) {
+        for (const auto& n : nodes) {
+            const QString path = breadcrumb.isEmpty() ? n.name : breadcrumb + QStringLiteral(" ▸ ") + n.name;
+            auto* item = new QListWidgetItem(path);
+            item->setData(Qt::UserRole,     QLatin1String(kCtrNode));
+            item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(sys->id, n.id));
+            item->setData(Qt::UserRole + 2, n.name);
+            m_list->addItem(item);
+            walk(path, n.children);
+        }
+    };
+    walk(QString(), sys->nodes);
 }
 
 void MentionPopup::buildShorthand(const QRegularExpressionMatch& m)
@@ -340,6 +390,8 @@ void MentionPopup::hidePopup()
     m_drillManuscriptId.clear();
     m_drillChapterId.clear();
     m_drillChapterTitle.clear();
+    m_drillConstrutorSystemId.clear();
+    m_drillConstrutorSystemName.clear();
 }
 
 void MentionPopup::drillBack()
@@ -349,6 +401,10 @@ void MentionPopup::drillBack()
         m_drillChapterId.clear();
         m_drillManuscriptId.clear();
         m_drillChapterTitle.clear();
+    } else if (m_level == Level::ConstrutorSystemNodes) {
+        m_level = Level::ConstrutorSystems;
+        m_drillConstrutorSystemId.clear();
+        m_drillConstrutorSystemName.clear();
     } else {
         m_level = Level::Root;
     }
@@ -390,6 +446,13 @@ void MentionPopup::confirm()
         showBelowCursor(m_activeEditor);
         return;
     }
+    // Portal: drill in para a lista de sistemas do Construtor.
+    if (key == QLatin1String(kPortalConstrutor)) {
+        m_level = Level::ConstrutorSystems;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
     // Voltar um nível.
     if (key == QLatin1String(kNavBack)) {
         drillBack();
@@ -402,6 +465,15 @@ void MentionPopup::confirm()
         m_drillChapterId    = id.mid(sep + 1);
         m_drillChapterTitle = title;
         m_level = Level::Scenes;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
+    // Sistema na lista de sistemas do Construtor: drill in pros nós dele.
+    if (key == QLatin1String(kCtrSystem) && m_level == Level::ConstrutorSystems) {
+        m_drillConstrutorSystemId   = id;
+        m_drillConstrutorSystemName = title;
+        m_level = Level::ConstrutorSystemNodes;
         rebuildList(m_currentQuery);
         showBelowCursor(m_activeEditor);
         return;

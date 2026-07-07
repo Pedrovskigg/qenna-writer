@@ -230,6 +230,7 @@ static QJsonObject nodeToJson(const ConstrutorStore::Node& node)
                                          : QStringLiteral("section"));
     if (!node.content.isEmpty())
         o.insert(QStringLiteral("content"), node.content);
+    o.insert(QStringLiteral("updatedAt"), node.updatedAt);
     if (!node.children.isEmpty()) {
         QJsonArray children;
         for (const auto& c : node.children)
@@ -248,6 +249,7 @@ static ConstrutorStore::Node nodeFromJson(const QJsonObject& o)
                        ? ConstrutorStore::NodeType::Rule
                        : ConstrutorStore::NodeType::Section;
     node.content = o.value(QStringLiteral("content")).toString();
+    node.updatedAt = o.value(QStringLiteral("updatedAt")).toVariant().toLongLong();
     for (const auto& v : o.value(QStringLiteral("children")).toArray())
         node.children.append(nodeFromJson(v.toObject()));
     return node;
@@ -296,6 +298,7 @@ bool ConstrutorStore::load()
         sys.categoryId  = o.value(QStringLiteral("categoryId")).toString();
         sys.sliderIndex = o.value(QStringLiteral("sliderIndex")).toInt(0);
         sys.createdAt   = o.value(QStringLiteral("createdAt")).toVariant().toLongLong();
+        sys.updatedAt   = o.value(QStringLiteral("updatedAt")).toVariant().toLongLong();
         sys.content     = o.value(QStringLiteral("content")).toString();
         for (const auto& nv : o.value(QStringLiteral("nodes")).toArray())
             sys.nodes.append(nodeFromJson(nv.toObject()));
@@ -318,6 +321,7 @@ bool ConstrutorStore::save() const
         o.insert(QStringLiteral("categoryId"),   sys.categoryId);
         o.insert(QStringLiteral("sliderIndex"),  sys.sliderIndex);
         o.insert(QStringLiteral("createdAt"),    sys.createdAt);
+        o.insert(QStringLiteral("updatedAt"),    sys.updatedAt);
         if (!sys.content.isEmpty())
             o.insert(QStringLiteral("content"), sys.content);
         QJsonArray nodes;
@@ -375,6 +379,7 @@ QString ConstrutorStore::addSystem(const QString& name, const QString& categoryI
     sys.categoryId  = categoryId;
     sys.sliderIndex = sliderIndex;
     sys.createdAt   = QDateTime::currentMSecsSinceEpoch();
+    sys.updatedAt   = sys.createdAt;
     m_systems.append(std::move(sys));
     save();
     emit changed();
@@ -387,6 +392,7 @@ bool ConstrutorStore::updateSystem(const QString& id, const QString& name, int s
     if (!sys) return false;
     sys->name        = name;
     sys->sliderIndex = sliderIndex;
+    sys->updatedAt   = QDateTime::currentMSecsSinceEpoch();
     save();
     emit changed();
     return true;
@@ -396,7 +402,8 @@ bool ConstrutorStore::updateSystemContent(const QString& id, const QString& cont
 {
     System* sys = findSystem(id);
     if (!sys || sys->content == content) return false;
-    sys->content = content;
+    sys->content   = content;
+    sys->updatedAt = QDateTime::currentMSecsSinceEpoch();
     save();
     emit changed();
     return true;
@@ -445,9 +452,10 @@ QString ConstrutorStore::addNode(const QString& systemId, const QString& parentN
     if (!sys) return {};
 
     Node newNode;
-    newNode.id   = QUuid::createUuid().toString(QUuid::WithoutBraces);
-    newNode.name = name;
-    newNode.type = type;
+    newNode.id        = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    newNode.name      = name;
+    newNode.type      = type;
+    newNode.updatedAt = QDateTime::currentMSecsSinceEpoch();
 
     if (parentNodeId.isEmpty()) {
         sys->nodes.append(newNode);
@@ -469,8 +477,9 @@ bool ConstrutorStore::updateNode(const QString& systemId, const QString& nodeId,
     if (!sys) return false;
     Node* node = findNode(sys->nodes, nodeId);
     if (!node) return false;
-    node->name    = name;
-    node->content = content;
+    node->name      = name;
+    node->content   = content;
+    node->updatedAt = QDateTime::currentMSecsSinceEpoch();
     save();
     emit changed();
     return true;

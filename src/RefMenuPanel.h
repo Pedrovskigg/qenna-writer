@@ -27,6 +27,7 @@ class ProjectModel;
 class EditorHost;
 class DocCache;
 class ElementsStore;
+class ConstrutorStore;
 
 // Painel flutuante de Referência. Reescrito 0.5.13 inspirado no RefPanels do Mira 1:
 // header com drag handle, tabs (Manuscritos / Timeline / view mode / Drawer picker ▾),
@@ -40,6 +41,9 @@ public:
                  ElementsStore* elements, QWidget* parent = nullptr);
 
     void setProjectRoot(const QString& root);
+    // Store do Construtor — habilita "Construtor" como fonte navegável no
+    // picker de gaveta (leitura apenas; edição continua na ConstrutorWindow).
+    void setConstrutorStore(ConstrutorStore* store) { m_construtorStore = store; }
     // Família da fonte de escrita do editor — usada na preview (ex.: fichas, que
     // não trazem font-family embutida no html).
     void setEditorFontFamily(const QString& family);
@@ -96,7 +100,7 @@ private slots:
     void applyTheme();
 
 private:
-    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder };
+    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder, Construtor };
     enum class ResizeEdge { None, Left, Right, Top, Bottom, TL, TR, BL, BR };
 
     void layoutResizeHandles();
@@ -108,6 +112,7 @@ private:
     void buildManuscriptsView();
     void buildDrawerView();
     void buildGroupsView();
+    void buildConstrutorView();
     void buildSearchAllView();
     void buildPlaceholderView(const QString& title, const QString& subtitle);
     void highlightInPreview(const QString& query);            // "Ctrl+F" no preview
@@ -145,6 +150,8 @@ private:
     EditorHost* m_host;
     DocCache* m_cache;
     ElementsStore* m_elements;
+    ConstrutorStore* m_construtorStore = nullptr;
+    QString m_currentConstrutorSystemId; // drill-down: sistema aberto na view do Construtor (vazio = lista de sistemas)
     QString m_projectRoot;
 
     // Estado lógico

@@ -19,6 +19,7 @@ public:
         QString name;
         NodeType type = NodeType::Section;
         QString content;
+        qint64 updatedAt = 0;
         QList<Node> children;
     };
 
@@ -28,6 +29,7 @@ public:
         QString categoryId;
         int sliderIndex = 0;
         qint64 createdAt = 0;
+        qint64 updatedAt = 0;
         QString content; // resumo/parecer geral do sistema, sem nó selecionado
         QList<Node> nodes;
     };
