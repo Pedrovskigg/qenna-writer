@@ -1,5 +1,6 @@
 #include "SpellEditor.h"
 
+#include "ScreenplayFormat.h"
 #include "SpellChecker.h"
 
 #include <QAbstractTextDocumentLayout>
@@ -230,10 +231,53 @@ void SpellEditor::mouseMoveEvent(QMouseEvent* event)
     QTextEdit::mouseMoveEvent(event);
 }
 
+namespace {
+// Maiusculiza o texto do bloco ao sair dele (Cena/Personagem/Transição são
+// sempre em caixa alta na convenção de roteiro) — só no momento de avançar
+// pro próximo elemento via Enter, não a cada tecla.
+void uppercaseBlockIfNeeded(const QTextCursor& cursor, ScreenplayElement element)
+{
+    if (element != ScreenplayElement::Scene && element != ScreenplayElement::Character
+        && element != ScreenplayElement::Transition) {
+        return;
+    }
+    const QTextBlock block = cursor.block();
+    const QString text = block.text();
+    const QString upper = text.toUpper();
+    if (text.isEmpty() || text == upper) return;
+    QTextCursor c(block);
+    c.movePosition(QTextCursor::StartOfBlock);
+    c.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+    c.insertText(upper);
+}
+}
+
 void SpellEditor::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
         emit refHighlightRequested(true);   // "modo ver os links"
+
+    if (m_screenplayMode && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
+        if (event->key() == Qt::Key_Tab) {
+            QTextCursor cur = textCursor();
+            const ScreenplayElement current = ScreenplayFormat::detect(cur.blockFormat(), cur.block().text());
+            ScreenplayFormat::applyBlockFormat(cur, ScreenplayFormat::cycleElement(current));
+            setTextCursor(cur);
+            return;
+        }
+        if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+            && !(event->modifiers() & Qt::ShiftModifier)) {
+            QTextCursor before = textCursor();
+            const ScreenplayElement current = ScreenplayFormat::detect(before.blockFormat(), before.block().text());
+            uppercaseBlockIfNeeded(before, current);
+            QTextEdit::keyPressEvent(event); // insere a quebra de bloco
+            QTextCursor after = textCursor();
+            ScreenplayFormat::applyBlockFormat(after, ScreenplayFormat::nextElement(current));
+            setTextCursor(after);
+            return;
+        }
+    }
+
     QTextEdit::keyPressEvent(event);
 }
 

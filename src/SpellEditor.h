@@ -20,6 +20,13 @@ public:
         setViewportMargins(left, top, right, bottom);
     }
 
+    // Modo roteiro: Tab cicla o elemento do bloco atual (Cena/Ação/Personagem/
+    // Diálogo/Parênteses/Transição) e Enter avança pro elemento lógico
+    // seguinte. Setado pela MainWindow via applyEditorStyle() — só true
+    // quando o doc é manuscrito (capítulo/cena) de um projeto tipo roteiro.
+    void setScreenplayMode(bool on) { m_screenplayMode = on; }
+    bool isScreenplayMode() const { return m_screenplayMode; }
+
 signals:
     // Disparado quando o usuário escolhe "Adicionar ao Glossário..." no menu de
     // contexto. word = texto selecionado (ou WordUnderCursor), pos = global.
@@ -42,4 +49,5 @@ protected:
 
 private:
     SpellChecker* m_checker = nullptr;
+    bool m_screenplayMode = false;
 };

@@ -102,6 +102,7 @@
 #include "NotesStore.h"
 #include "MapPinsStore.h"
 #include "SceneUtils.h"
+#include "ScreenplayFormat.h"
 #include "AmbienceManager.h"
 #include "AmbiencePanel.h"
 #include "GlossaryAddPopup.h"
@@ -2567,6 +2568,7 @@ void MainWindow::applyEditorStyle()
         (editorHost->viewMode().type == EditorHost::ChapterDoc ||
          editorHost->viewMode().type == EditorHost::SceneDoc);
     const bool msScreenplay = isManuscriptDoc && projectModel && projectModel->isScreenplay();
+    if (editor) editor->setScreenplayMode(msScreenplay);
     const QString fontToUse = msScreenplay ? QStringLiteral("Courier New") : currentFontFamily;
     const qreal   sizeToUse = msScreenplay ? 12.0 : currentFontSize;
     QFont font = sizedFont(fontToUse, sizeToUse);
@@ -2622,7 +2624,9 @@ void MainWindow::applyEditorStyle()
     cursor.select(QTextCursor::Document);
     QTextBlockFormat blockFormat;
     blockFormat.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
-    blockFormat.setTextIndent(firstLineIndentEnabled ? 30 : 0);
+    // Roteiro nunca usa recuo de primeira linha (convenção de prosa) — ignora
+    // a preferência global nesse caso, mesmo que o usuário tenha ligado.
+    blockFormat.setTextIndent((firstLineIndentEnabled && !msScreenplay) ? 30 : 0);
     blockFormat.setTopMargin(paragraphSpacingBefore);
     blockFormat.setBottomMargin(paragraphSpacingAfter);
     // Aplica alinhamento default do projeto (0 = não definido = não sobrescreve).
@@ -2643,6 +2647,13 @@ void MainWindow::applyEditorStyle()
     // Força fonte/tamanho em todos os fragmentos — charFormats inline do HTML
     // (carregados do Mira 1) sobrepõem setDefaultFont e ignoram a escolha do usuário.
     applyEditorFont();
+
+    // Documento vazio de roteiro: já entra formatado como Cena, pronto pro
+    // usuário digitar "INT. ..." sem precisar dar Tab antes.
+    if (msScreenplay && editor->document()->isEmpty()) {
+        QTextCursor c(editor->document());
+        ScreenplayFormat::applyBlockFormat(c, ScreenplayElement::Scene);
+    }
 
     if (spellHighlighter) spellHighlighter->resume();
 }
@@ -2722,11 +2733,10 @@ void MainWindow::applyEditorFont()
 void MainWindow::applyProjectTypeDefaults()
 {
     if (!projectModel) return;
-    if (projectModel->isScreenplay()) {
-        // Só define se ainda não foi configurado (preserva ajustes manuais do user).
-        if (projectModel->defaultManuscriptAlignment() == 0)
-            projectModel->setDefaultManuscriptAlignment(static_cast<int>(Qt::AlignHCenter));
-    }
+    // Antes centralizava todo o manuscrito em roteiro (aproximação crua, sem
+    // elementos de verdade). Agora Cena/Ação já nascem flush-left via
+    // ScreenplayFormat — o alinhamento padrão de bloco (0 = Qt::AlignLeft)
+    // já está certo, não precisa mais forçar nada aqui.
     applyEditorStyle();
 }
 

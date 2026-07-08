@@ -108,6 +108,8 @@ qt_add_executable(mira-writing
     src/SpellHighlighter.h
     src/SpellEditor.cpp
     src/SpellEditor.h
+    src/ScreenplayFormat.cpp
+    src/ScreenplayFormat.h
     src/SettingsPanel.cpp
     src/SettingsPanel.h
     src/AboutDialog.cpp
