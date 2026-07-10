@@ -75,6 +75,34 @@ static LONG WINAPI sehHandler(EXCEPTION_POINTERS* ep)
                     ep->ExceptionRecord->ExceptionAddress);
     return EXCEPTION_CONTINUE_SEARCH;
 }
+
+// O runtime do MinGW instala seu proprio filtro de excecao (mais interno que o
+// SetUnhandledExceptionFilter abaixo) que traduz access violation/etc. para um
+// signal() (SIGSEGV) antes de chegar no handler acima — por isso o SEH nunca
+// pegava o endereco real. Um Vectored Exception Handler roda ANTES dessa
+// traducao, entao capturamos codigo+endereco aqui e deixamos a excecao seguir
+// seu curso normal (CONTINUE_SEARCH) pro posixSignalHandler ainda rodar depois.
+static LONG WINAPI vehHandler(EXCEPTION_POINTERS* ep)
+{
+    const DWORD code = ep->ExceptionRecord->ExceptionCode;
+    switch (code) {
+    case EXCEPTION_ACCESS_VIOLATION:
+    case EXCEPTION_STACK_OVERFLOW:
+    case EXCEPTION_ILLEGAL_INSTRUCTION:
+    case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
+    case EXCEPTION_INT_DIVIDE_BY_ZERO:
+    case EXCEPTION_PRIV_INSTRUCTION:
+    case EXCEPTION_IN_PAGE_ERROR: {
+        char reason[64];
+        snprintf(reason, sizeof(reason), "VEH 0x%08lX", code);
+        dumpCrashReport(reason, code, ep->ExceptionRecord->ExceptionAddress);
+        break;
+    }
+    default:
+        break; // demais codigos (ex.: excecoes C++ internas) nao sao fatais — ignora
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
 #endif
 
 static void posixSignalHandler(int sig)
@@ -140,7 +168,8 @@ void CrashLogger::install()
     signal(SIGILL,  posixSignalHandler);
 
 #ifdef _WIN32
-    SetUnhandledExceptionFilter(sehHandler);
+    AddVectoredExceptionHandler(1, vehHandler); // 1 = primeiro da cadeia
+    SetUnhandledExceptionFilter(sehHandler);    // rede de seguranca, caso o VEH nao capture
 #endif
 
     qInstallMessageHandler(qtMessageHandler);
