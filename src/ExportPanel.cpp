@@ -19,7 +19,7 @@
 ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     : QDialog(parent), m_model(model) {
     setObjectName(QStringLiteral("exportPanel"));
-    setWindowTitle(QStringLiteral("Exportar projeto"));
+    setWindowTitle(tr("Exportar projeto"));
     setModal(true);
     resize(480, 620);
 
@@ -31,7 +31,7 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     auto* header = new QWidget(this);
     auto* hl = new QHBoxLayout(header);
     hl->setContentsMargins(18, 14, 12, 14);
-    auto* title = new QLabel(QStringLiteral("Exportar projeto"), header);
+    auto* title = new QLabel(tr("Exportar projeto"), header);
     title->setObjectName(QStringLiteral("exportTitle"));
     auto* closeBtn = new QPushButton(QStringLiteral("✕"), header);
     closeBtn->setObjectName(QStringLiteral("exportClose"));
@@ -49,8 +49,8 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     auto* sl = new QHBoxLayout(selBar);
     sl->setContentsMargins(18, 7, 18, 7);
     sl->setSpacing(8);
-    auto* selectAll = new QPushButton(QStringLiteral("Selecionar tudo"), selBar);
-    auto* deselectAll = new QPushButton(QStringLiteral("Desmarcar tudo"), selBar);
+    auto* selectAll = new QPushButton(tr("Selecionar tudo"), selBar);
+    auto* deselectAll = new QPushButton(tr("Desmarcar tudo"), selBar);
     selectAll->setObjectName(QStringLiteral("exportLink"));
     deselectAll->setObjectName(QStringLiteral("exportLink"));
     selectAll->setCursor(Qt::PointingHandCursor);
@@ -89,8 +89,8 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     fl->setSpacing(10);
 
     auto* note = new QLabel(
-        QStringLiteral("Ao exportar capítulos, caso haja cenas com variações criadas, o app "
-                       "exportará com a variação que estiver definida como primária."),
+        tr("Ao exportar capítulos, caso haja cenas com variações criadas, o app "
+           "exportará com a variação que estiver definida como primária."),
         footer);
     note->setObjectName(QStringLiteral("exportNote"));
     note->setWordWrap(true);
@@ -99,7 +99,7 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     // Linha: formato
     auto* fmtRow = new QHBoxLayout;
     fmtRow->setSpacing(6);
-    auto* fmtLabel = new QLabel(QStringLiteral("Formato:"), footer);
+    auto* fmtLabel = new QLabel(tr("Formato:"), footer);
     fmtLabel->setObjectName(QStringLiteral("exportFieldLabel"));
     fmtRow->addWidget(fmtLabel);
     const QStringList formats = { QStringLiteral("odt"), QStringLiteral("pdf"),
@@ -126,10 +126,10 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     // Linha: modo do manuscrito
     auto* modeRow = new QHBoxLayout;
     modeRow->setSpacing(8);
-    auto* modeLabel = new QLabel(QStringLiteral("Manuscrito:"), footer);
+    auto* modeLabel = new QLabel(tr("Manuscrito:"), footer);
     modeLabel->setObjectName(QStringLiteral("exportFieldLabel"));
-    m_singleRadio = new QRadioButton(QStringLiteral("Documento único"), footer);
-    m_separateRadio = new QRadioButton(QStringLiteral("Capítulos separados"), footer);
+    m_singleRadio = new QRadioButton(tr("Documento único"), footer);
+    m_separateRadio = new QRadioButton(tr("Capítulos separados"), footer);
     m_singleRadio->setChecked(true);
     auto* modeGroup = new QButtonGroup(this);
     modeGroup->addButton(m_singleRadio);
@@ -143,10 +143,10 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     // Linha: marcadores (marca-texto) no documento exportado
     auto* markersRow = new QHBoxLayout;
     markersRow->setSpacing(8);
-    auto* markersLabel = new QLabel(QStringLiteral("Marcadores:"), footer);
+    auto* markersLabel = new QLabel(tr("Marcadores:"), footer);
     markersLabel->setObjectName(QStringLiteral("exportFieldLabel"));
-    m_markersIncludeRadio = new QRadioButton(QStringLiteral("Incluir"), footer);
-    m_markersRemoveRadio = new QRadioButton(QStringLiteral("Remover"), footer);
+    m_markersIncludeRadio = new QRadioButton(tr("Incluir"), footer);
+    m_markersRemoveRadio = new QRadioButton(tr("Remover"), footer);
     m_markersIncludeRadio->setChecked(true);
     auto* markersGroup = new QButtonGroup(this);
     markersGroup->addButton(m_markersIncludeRadio);
@@ -160,10 +160,10 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     // Linha: botões
     auto* btnRow = new QHBoxLayout;
     btnRow->addStretch();
-    auto* cancel = new QPushButton(QStringLiteral("Cancelar"), footer);
+    auto* cancel = new QPushButton(tr("Cancelar"), footer);
     cancel->setObjectName(QStringLiteral("exportCancel"));
     cancel->setCursor(Qt::PointingHandCursor);
-    m_exportBtn = new QPushButton(QStringLiteral("Exportar"), footer);
+    m_exportBtn = new QPushButton(tr("Exportar"), footer);
     m_exportBtn->setObjectName(QStringLiteral("exportConfirm"));
     m_exportBtn->setCursor(Qt::PointingHandCursor);
     connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
@@ -199,7 +199,7 @@ void ExportPanel::buildTree() {
 
     // ── Manuscritos ──
     auto* msHeader = new QTreeWidgetItem(m_tree);
-    msHeader->setText(0, QStringLiteral("MANUSCRITOS"));
+    msHeader->setText(0, tr("MANUSCRITOS"));
     styleHeader(msHeader);
 
     for (const Manuscript& ms : m_model->manuscripts()) {
@@ -213,7 +213,7 @@ void ExportPanel::buildTree() {
                   [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
 
         auto* msItem = new QTreeWidgetItem(msHeader);
-        msItem->setText(0, ms.title.isEmpty() ? QStringLiteral("Manuscrito") : ms.title);
+        msItem->setText(0, ms.title.isEmpty() ? tr("Manuscrito") : ms.title);
         msItem->setData(0, KindRole, KindGroup);
         msItem->setFlags(groupFlags);
         msItem->setCheckState(0, Qt::Unchecked);
@@ -223,7 +223,7 @@ void ExportPanel::buildTree() {
             auto* c = new QTreeWidgetItem(msItem);
             const QString num = QString::number(ci + 1).rightJustified(2, QLatin1Char('0'));
             c->setText(0, QStringLiteral("%1  %2").arg(num,
-                ch->title.isEmpty() ? QStringLiteral("Capítulo %1").arg(ci + 1) : ch->title));
+                ch->title.isEmpty() ? tr("Capítulo %1").arg(ci + 1) : ch->title));
             c->setData(0, IdRole, ch->id);
             c->setData(0, KindRole, KindChapter);
             c->setFlags(leafFlags);
@@ -237,7 +237,7 @@ void ExportPanel::buildTree() {
 
     // ── Gavetas ──
     auto* gvHeader = new QTreeWidgetItem(m_tree);
-    gvHeader->setText(0, QStringLiteral("GAVETAS"));
+    gvHeader->setText(0, tr("GAVETAS"));
     styleHeader(gvHeader);
 
     // Adiciona itens/pastas de uma pasta; retorna nº de folhas adicionadas abaixo.
@@ -247,7 +247,7 @@ void ExportPanel::buildTree() {
             for (const DrawerItem& it : d.items) {
                 if ((it.folderId.isEmpty() ? QString() : it.folderId) != folderId) continue;
                 auto* leaf = new QTreeWidgetItem(node);
-                leaf->setText(0, it.title.isEmpty() ? QStringLiteral("Documento") : it.title);
+                leaf->setText(0, it.title.isEmpty() ? tr("Documento") : it.title);
                 leaf->setData(0, IdRole, it.id);
                 leaf->setData(0, KindRole, KindItem);
                 leaf->setFlags(leafFlags);
@@ -312,8 +312,8 @@ void ExportPanel::recomputeCount() {
     if (m_exportBtn) {
         m_exportBtn->setEnabled(selected > 0);
         m_exportBtn->setText(selected > 0
-            ? QStringLiteral("Exportar (%1)").arg(selected)
-            : QStringLiteral("Exportar"));
+            ? tr("Exportar (%1)").arg(selected)
+            : tr("Exportar"));
     }
 }
 

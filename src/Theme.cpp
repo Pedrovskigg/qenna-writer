@@ -50,9 +50,9 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         // Mantemos o id "full-black" pra não invalidar QSettings antigos,
-        // mas o nome de exibição é "Grafite" — clássico do Mira 1.
+        // mas o nome de exibição é "Graphite" — clássico do Mira 1.
         t.id = QStringLiteral("full-black");
-        t.name = QStringLiteral("Grafite");
+        t.name = QStringLiteral("Graphite");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0a0a0a");  // R10 G10 B10
         t.panelBackground  = QStringLiteral("#0d0d0d");  // R13 G13 B13
@@ -231,7 +231,7 @@ void Manager::loadBundled()
         // texto marrom escuro. Sensação de máquina de escrever.
         MiraTheme t;
         t.id = QStringLiteral("sepia");
-        t.name = QStringLiteral("Sépia");
+        t.name = QStringLiteral("Sepia");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8dcc0");
         t.panelBackground  = QStringLiteral("#f4ecd8");
@@ -275,7 +275,7 @@ void Manager::loadBundled()
         // luz de fim de tarde sobre a página, dourado e convidativo.
         MiraTheme t;
         t.id = QStringLiteral("amber");
-        t.name = QStringLiteral("Âmbar");
+        t.name = QStringLiteral("Amber");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#ecdcae");
         t.panelBackground  = QStringLiteral("#f6ead0");
@@ -319,7 +319,7 @@ void Manager::loadBundled()
         // da família clara; descanso pros olhos em sessões longas.
         MiraTheme t;
         t.id = QStringLiteral("parchment");
-        t.name = QStringLiteral("Pergaminho");
+        t.name = QStringLiteral("Parchment");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f0e8d6");
         t.panelBackground  = QStringLiteral("#f8f2e6");
@@ -363,7 +363,7 @@ void Manager::loadBundled()
         // doce-de-leite; mais saturado e "fechado" que o Sépia.
         MiraTheme t;
         t.id = QStringLiteral("caramel");
-        t.name = QStringLiteral("Caramelo");
+        t.name = QStringLiteral("Caramel");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e3cda3");
         t.panelBackground  = QStringLiteral("#eedcbc");
@@ -451,7 +451,7 @@ void Manager::loadBundled()
         // accents saturados ao extremo. Sem sutilezas.
         MiraTheme t;
         t.id = QStringLiteral("high-contrast");
-        t.name = QStringLiteral("Alto Contraste");
+        t.name = QStringLiteral("High Contrast");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#000000");
         t.panelBackground  = QStringLiteral("#0a0a0a");
@@ -761,7 +761,7 @@ void Manager::loadBundled()
         // mais "premium". Texto azul-marinho profundo, accent em azul-marinho.
         MiraTheme t;
         t.id = QStringLiteral("marble");
-        t.name = QStringLiteral("Mármore");
+        t.name = QStringLiteral("Marble");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8eaef");
         t.panelBackground  = QStringLiteral("#f5f6fa");
@@ -805,7 +805,7 @@ void Manager::loadBundled()
         // suave, romance noir. Accent em vermelho-vinho.
         MiraTheme t;
         t.id = QStringLiteral("velvet-red");
-        t.name = QStringLiteral("Vermelho Velado");
+        t.name = QStringLiteral("Veiled Red");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a0d0e");
         t.panelBackground  = QStringLiteral("#2a1518");
@@ -849,7 +849,7 @@ void Manager::loadBundled()
         // com dourado-terroso de accent. Vibe matinal, calmaria de mata.
         MiraTheme t;
         t.id = QStringLiteral("veredas");
-        t.name = QStringLiteral("Veredas");
+        t.name = QStringLiteral("Pathways");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a1f1a");
         t.panelBackground  = QStringLiteral("#232a23");
@@ -943,7 +943,7 @@ void Manager::loadBundled()
         // com accent magenta estelar. Vibe space opera, contemplação noturna.
         MiraTheme t;
         t.id = QStringLiteral("constelar");
-        t.name = QStringLiteral("Constelar");
+        t.name = QStringLiteral("Constellation");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#07050d");
         t.panelBackground  = QStringLiteral("#100b1c");
@@ -990,7 +990,7 @@ void Manager::loadBundled()
         // água. Inverte o esquema: editor claro, painéis dark teal.
         MiraTheme t;
         t.id = QStringLiteral("mare");
-        t.name = QStringLiteral("Maré");
+        t.name = QStringLiteral("Tide");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0a2027");
         t.panelBackground  = QStringLiteral("#0d2a32");
@@ -1037,7 +1037,7 @@ void Manager::loadBundled()
         // aparecendo atrás. Vibe leve, contemplativa, escrita ao ar livre.
         MiraTheme t;
         t.id = QStringLiteral("brisa");
-        t.name = QStringLiteral("Brisa");
+        t.name = QStringLiteral("Breeze");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#d8e4ed");
         t.panelBackground  = QStringLiteral("#ebf2f7");
@@ -1128,7 +1128,7 @@ void Manager::loadBundled()
         // em caramelo, vibe noir clássica sem o vinho do Vermelho Velado.
         MiraTheme t;
         t.id = QStringLiteral("cafe");
-        t.name = QStringLiteral("Café");
+        t.name = QStringLiteral("Coffee");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a1310");
         t.panelBackground  = QStringLiteral("#25201c");
@@ -1216,7 +1216,7 @@ void Manager::loadBundled()
         // Sépia. Texto marrom-vinho escuro sobre fundo creme rosado.
         MiraTheme t;
         t.id = QStringLiteral("camafeu");
-        t.name = QStringLiteral("Camafeu");
+        t.name = QStringLiteral("Cameo");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f4e8e0");
         t.panelBackground  = QStringLiteral("#faf0e8");
@@ -1307,7 +1307,7 @@ void Manager::loadBundled()
         // Accent magenta neon, painéis violeta escuro.
         MiraTheme t;
         t.id = QStringLiteral("hibisco");
-        t.name = QStringLiteral("Hibisco");
+        t.name = QStringLiteral("Hibiscus");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#100818");
         t.panelBackground  = QStringLiteral("#1a1024");
@@ -1354,7 +1354,7 @@ void Manager::loadBundled()
         // ar saturado de mata fria. Vibe noir florestal.
         MiraTheme t;
         t.id = QStringLiteral("cerracao");
-        t.name = QStringLiteral("Cerração");
+        t.name = QStringLiteral("Haze");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0e1310");
         t.panelBackground  = QStringLiteral("#161c18");
@@ -1401,7 +1401,7 @@ void Manager::loadBundled()
         // accent azul-reflexo. Imersão noturna, contemplação aquática.
         MiraTheme t;
         t.id = QStringLiteral("petroleo");
-        t.name = QStringLiteral("Petróleo");
+        t.name = QStringLiteral("Petrol");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#05070e");
         t.panelBackground  = QStringLiteral("#0a0e1a");
@@ -1448,7 +1448,7 @@ void Manager::loadBundled()
         // sobre marrom-quase-preto; calor sem o brilho da página clara.
         MiraTheme t;
         t.id = QStringLiteral("amber-night");
-        t.name = QStringLiteral("Âmbar Noturno");
+        t.name = QStringLiteral("Night Amber");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1c1408");
         t.panelBackground  = QStringLiteral("#271c0e");
@@ -1492,7 +1492,7 @@ void Manager::loadBundled()
         // que o Âmbar; calor de palha seca.
         MiraTheme t;
         t.id = QStringLiteral("wheat");
-        t.name = QStringLiteral("Trigo");
+        t.name = QStringLiteral("Wheat");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e9e1c4");
         t.panelBackground  = QStringLiteral("#f3eed8");
@@ -1536,7 +1536,7 @@ void Manager::loadBundled()
         // calmo e espaçoso.
         MiraTheme t;
         t.id = QStringLiteral("ocean");
-        t.name = QStringLiteral("Oceano");
+        t.name = QStringLiteral("Ocean");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0c1a2a");
         t.panelBackground  = QStringLiteral("#102438");
@@ -1580,7 +1580,7 @@ void Manager::loadBundled()
         // orgânico e tranquilo.
         MiraTheme t;
         t.id = QStringLiteral("forest");
-        t.name = QStringLiteral("Floresta");
+        t.name = QStringLiteral("Forest");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0e1a12");
         t.panelBackground  = QStringLiteral("#14241a");
@@ -1624,7 +1624,7 @@ void Manager::loadBundled()
         // misterioso, noturno.
         MiraTheme t;
         t.id = QStringLiteral("amethyst");
-        t.name = QStringLiteral("Ametista");
+        t.name = QStringLiteral("Amethyst");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#160f24");
         t.panelBackground  = QStringLiteral("#1f1633");
@@ -1668,7 +1668,7 @@ void Manager::loadBundled()
         // calmo, alternativa colorida pros temas claros.
         MiraTheme t;
         t.id = QStringLiteral("lavender");
-        t.name = QStringLiteral("Lavanda");
+        t.name = QStringLiteral("Lavender");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#ece8f4");
         t.panelBackground  = QStringLiteral("#f5f2fb");
@@ -1712,7 +1712,7 @@ void Manager::loadBundled()
         // colorida clara, ar de jardim ao amanhecer.
         MiraTheme t;
         t.id = QStringLiteral("emerald");
-        t.name = QStringLiteral("Esmeralda");
+        t.name = QStringLiteral("Emerald");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e0eee4");
         t.panelBackground  = QStringLiteral("#eef7f0");
@@ -1757,7 +1757,7 @@ void Manager::loadBundled()
         // Névoa — cinza frio e nebuloso. Neutro, calmo, manhã enevoada.
         MiraTheme t;
         t.id = QStringLiteral("nevoa");
-        t.name = QStringLiteral("Névoa");
+        t.name = QStringLiteral("Mist");
         t.bundled = true;
         t.appBackground = QStringLiteral("#e7eaee");
         t.panelBackground = QStringLiteral("#f1f3f6");
@@ -1797,7 +1797,7 @@ void Manager::loadBundled()
         // Gelo — azul-branco glacial. Frio cristalino, ar de inverno limpo.
         MiraTheme t;
         t.id = QStringLiteral("ice");
-        t.name = QStringLiteral("Gelo");
+        t.name = QStringLiteral("Ice");
         t.bundled = true;
         t.appBackground = QStringLiteral("#e4edf2");
         t.panelBackground = QStringLiteral("#f0f6fa");
@@ -1837,7 +1837,7 @@ void Manager::loadBundled()
         // Sálvia — verde-acinzentado pálido. Herbal, sereno, luz de jardim.
         MiraTheme t;
         t.id = QStringLiteral("sage");
-        t.name = QStringLiteral("Sálvia");
+        t.name = QStringLiteral("Sage");
         t.bundled = true;
         t.appBackground = QStringLiteral("#e6ece2");
         t.panelBackground = QStringLiteral("#f1f5ec");
@@ -1877,7 +1877,7 @@ void Manager::loadBundled()
         // Quartzo — rosa-acinzentado pálido. Delicado, quartzo rosa lapidado.
         MiraTheme t;
         t.id = QStringLiteral("quartz");
-        t.name = QStringLiteral("Quartzo");
+        t.name = QStringLiteral("Quartz");
         t.bundled = true;
         t.appBackground = QStringLiteral("#f0e9ec");
         t.panelBackground = QStringLiteral("#f8f3f5");
@@ -1917,7 +1917,7 @@ void Manager::loadBundled()
         // Pérola — neutro perolado refinado. Cinza-claro com brilho suave.
         MiraTheme t;
         t.id = QStringLiteral("pearl");
-        t.name = QStringLiteral("Pérola");
+        t.name = QStringLiteral("Pearl");
         t.bundled = true;
         t.appBackground = QStringLiteral("#ecebe7");
         t.panelBackground = QStringLiteral("#f6f5f1");
@@ -1959,7 +1959,7 @@ void Manager::loadBundled()
         // Canela — marrom-especiaria escuro. Quente e picante, casca de canela.
         MiraTheme t;
         t.id = QStringLiteral("cinnamon");
-        t.name = QStringLiteral("Canela");
+        t.name = QStringLiteral("Cinnamon");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1e1410");
         t.panelBackground = QStringLiteral("#2a1c15");
@@ -1999,7 +1999,7 @@ void Manager::loadBundled()
         // Mostarda — creme dijon claro. Amarelo terroso, acolhedor.
         MiraTheme t;
         t.id = QStringLiteral("mustard");
-        t.name = QStringLiteral("Mostarda");
+        t.name = QStringLiteral("Mustard");
         t.bundled = true;
         t.appBackground = QStringLiteral("#ece2bc");
         t.panelBackground = QStringLiteral("#f5efd2");
@@ -2039,7 +2039,7 @@ void Manager::loadBundled()
         // Terracota — barro cozido claro. Laranja-tijolo terroso, mediterrâneo.
         MiraTheme t;
         t.id = QStringLiteral("terracotta");
-        t.name = QStringLiteral("Terracota");
+        t.name = QStringLiteral("Terracotta");
         t.bundled = true;
         t.appBackground = QStringLiteral("#ecd9cc");
         t.panelBackground = QStringLiteral("#f5e8dd");
@@ -2079,7 +2079,7 @@ void Manager::loadBundled()
         // Damasco — pêssego suave claro. Quente e macio, luz de amanhecer.
         MiraTheme t;
         t.id = QStringLiteral("apricot");
-        t.name = QStringLiteral("Damasco");
+        t.name = QStringLiteral("Apricot");
         t.bundled = true;
         t.appBackground = QStringLiteral("#f2e2d2");
         t.panelBackground = QStringLiteral("#f9eee2");
@@ -2119,7 +2119,7 @@ void Manager::loadBundled()
         // Conhaque — âmbar-licor escuro e encorpado. Profundo, aveludado.
         MiraTheme t;
         t.id = QStringLiteral("cognac");
-        t.name = QStringLiteral("Conhaque");
+        t.name = QStringLiteral("Cognac");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1c1208");
         t.panelBackground = QStringLiteral("#28190d");
@@ -2161,7 +2161,7 @@ void Manager::loadBundled()
         // Carvão — carvão neutro puro. Cinza-grafite sem viés de cor.
         MiraTheme t;
         t.id = QStringLiteral("charcoal");
-        t.name = QStringLiteral("Carvão");
+        t.name = QStringLiteral("Charcoal");
         t.bundled = true;
         t.appBackground = QStringLiteral("#151515");
         t.panelBackground = QStringLiteral("#1e1e1e");
@@ -2201,7 +2201,7 @@ void Manager::loadBundled()
         // Ardósia — cinza-azulado de ardósia. Frio, sóbrio, pedra polida.
         MiraTheme t;
         t.id = QStringLiteral("slate");
-        t.name = QStringLiteral("Ardósia");
+        t.name = QStringLiteral("Slate");
         t.bundled = true;
         t.appBackground = QStringLiteral("#12161c");
         t.panelBackground = QStringLiteral("#1a2029");
@@ -2241,7 +2241,7 @@ void Manager::loadBundled()
         // Ônix — preto-quase-total com brilho frio. Profundo e elegante.
         MiraTheme t;
         t.id = QStringLiteral("onyx");
-        t.name = QStringLiteral("Ônix");
+        t.name = QStringLiteral("Onyx");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0c0d10");
         t.panelBackground = QStringLiteral("#14161b");
@@ -2281,7 +2281,7 @@ void Manager::loadBundled()
         // Chumbo — cinza-metal médio. Industrial, gunmetal sóbrio.
         MiraTheme t;
         t.id = QStringLiteral("lead");
-        t.name = QStringLiteral("Chumbo");
+        t.name = QStringLiteral("Lead");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1c1e22");
         t.panelBackground = QStringLiteral("#25282e");
@@ -2321,7 +2321,7 @@ void Manager::loadBundled()
         // Meia-Noite — azul-noturno quase neutro. Profundidade silenciosa.
         MiraTheme t;
         t.id = QStringLiteral("midnight");
-        t.name = QStringLiteral("Meia-Noite");
+        t.name = QStringLiteral("Midnight");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0a0c14");
         t.panelBackground = QStringLiteral("#11141f");
@@ -2363,7 +2363,7 @@ void Manager::loadBundled()
         // Fúcsia — magenta-rosa vibrante no escuro. Ousado, elétrico.
         MiraTheme t;
         t.id = QStringLiteral("fuchsia");
-        t.name = QStringLiteral("Fúcsia");
+        t.name = QStringLiteral("Fuchsia");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1a0f18");
         t.panelBackground = QStringLiteral("#261426");
@@ -2403,7 +2403,7 @@ void Manager::loadBundled()
         // Vulcão — lava laranja-vermelha no escuro. Calor intenso, ímpeto.
         MiraTheme t;
         t.id = QStringLiteral("volcano");
-        t.name = QStringLiteral("Vulcão");
+        t.name = QStringLiteral("Volcano");
         t.bundled = true;
         t.appBackground = QStringLiteral("#170c08");
         t.panelBackground = QStringLiteral("#24130c");
@@ -2443,7 +2443,7 @@ void Manager::loadBundled()
         // Turquesa — teal vivo no escuro. Tropical noturno, vibrante e fresco.
         MiraTheme t;
         t.id = QStringLiteral("turquoise");
-        t.name = QStringLiteral("Turquesa");
+        t.name = QStringLiteral("Turquoise");
         t.bundled = true;
         t.appBackground = QStringLiteral("#07181a");
         t.panelBackground = QStringLiteral("#0d2528");
@@ -2523,7 +2523,7 @@ void Manager::loadBundled()
         // Borgonha — vinho tinto encorpado. Rico, dramático, veludo escuro.
         MiraTheme t;
         t.id = QStringLiteral("burgundy");
-        t.name = QStringLiteral("Borgonha");
+        t.name = QStringLiteral("Burgundy");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1a0c10");
         t.panelBackground = QStringLiteral("#260f16");
@@ -2566,7 +2566,7 @@ void Manager::loadBundled()
         // uma folha real pousada na mesa. Cores contidas, tipográficas.
         MiraTheme t;
         t.id = QStringLiteral("ink");
-        t.name = QStringLiteral("Tinta");
+        t.name = QStringLiteral("Ink");
         t.bundled = true;
         t.appBackground = QStringLiteral("#f4f3ef");
         t.panelBackground = QStringLiteral("#fbfaf7");
@@ -2606,7 +2606,7 @@ void Manager::loadBundled()
         // Nanquim — branco sobre preto absoluto. Mono escuro, nanquim invertido.
         MiraTheme t;
         t.id = QStringLiteral("sumi");
-        t.name = QStringLiteral("Nanquim");
+        t.name = QStringLiteral("India Ink");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0a0a0a");
         t.panelBackground = QStringLiteral("#141414");
@@ -2647,7 +2647,7 @@ void Manager::loadBundled()
         // A sombra vira brilho (offset 0, raio grande, cor viva).
         MiraTheme t;
         t.id = QStringLiteral("firefly");
-        t.name = QStringLiteral("Vaga-lume");
+        t.name = QStringLiteral("Firefly");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0c0f0a");
         t.panelBackground = QStringLiteral("#141a10");
@@ -2767,7 +2767,7 @@ void Manager::loadBundled()
         // Cobre — metal quente escuro. Sombra cobreada densa, brilho de forja.
         MiraTheme t;
         t.id = QStringLiteral("copper");
-        t.name = QStringLiteral("Cobre");
+        t.name = QStringLiteral("Copper");
         t.bundled = true;
         t.appBackground = QStringLiteral("#161009");
         t.panelBackground = QStringLiteral("#221710");
@@ -2807,7 +2807,7 @@ void Manager::loadBundled()
         // Menta — verde-água claro e refrescante. Limpo, hortelã ao amanhecer.
         MiraTheme t;
         t.id = QStringLiteral("mint");
-        t.name = QStringLiteral("Menta");
+        t.name = QStringLiteral("Mint");
         t.bundled = true;
         t.appBackground = QStringLiteral("#e0f0e8");
         t.panelBackground = QStringLiteral("#eef8f2");
@@ -2891,7 +2891,7 @@ void Manager::loadBundled()
         // de luar. Frio, silencioso, lua cheia sobre o papel.
         MiraTheme t;
         t.id = QStringLiteral("deep-night");
-        t.name = QStringLiteral("Noite Escura");
+        t.name = QStringLiteral("Dead of Night");
         t.bundled = true;
         t.appBackground = QStringLiteral("#08090d");
         t.panelBackground = QStringLiteral("#101218");
@@ -2932,7 +2932,7 @@ void Manager::loadBundled()
         // holofote no escuro do teatro. Chrome escuro + folha clara.
         MiraTheme t;
         t.id = QStringLiteral("stage");
-        t.name = QStringLiteral("Palco");
+        t.name = QStringLiteral("Stage");
         t.bundled = true;
         t.appBackground = QStringLiteral("#000000");
         t.panelBackground = QStringLiteral("#0c0c0c");
@@ -2973,7 +2973,7 @@ void Manager::loadBundled()
         // com texto claro. A folha vira um retângulo de breu sobre a mesa clara.
         MiraTheme t;
         t.id = QStringLiteral("inverso");
-        t.name = QStringLiteral("Avesso");
+        t.name = QStringLiteral("Inverse");
         t.bundled = true;
         t.appBackground = QStringLiteral("#eceae4");
         t.panelBackground = QStringLiteral("#f6f4ee");
@@ -3014,7 +3014,7 @@ void Manager::loadBundled()
         // a página com halo ciano que "desencaixa" do accent vermelho.
         MiraTheme t;
         t.id = QStringLiteral("anaglyph");
-        t.name = QStringLiteral("Anáglifo");
+        t.name = QStringLiteral("Anaglyph");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0a0a0c");
         t.panelBackground = QStringLiteral("#141318");
@@ -3055,7 +3055,7 @@ void Manager::loadBundled()
         // de complementares, a página pulsa num brilho azul.
         MiraTheme t;
         t.id = QStringLiteral("voltage");
-        t.name = QStringLiteral("Voltagem");
+        t.name = QStringLiteral("Voltage");
         t.bundled = true;
         t.appBackground = QStringLiteral("#08102a");
         t.panelBackground = QStringLiteral("#0e1838");
@@ -3178,7 +3178,7 @@ void Manager::loadBundled()
         // breu, brilho de tela de aeroporto antigo.
         MiraTheme t;
         t.id = QStringLiteral("phosphor-amber");
-        t.name = QStringLiteral("Terminal Âmbar");
+        t.name = QStringLiteral("Amber Terminal");
         t.bundled = true;
         t.appBackground = QStringLiteral("#060402");
         t.panelBackground = QStringLiteral("#14100a");
@@ -3222,7 +3222,7 @@ void Manager::loadBundled()
         // de viatura: vermelho e azul que não deixam você dormir.
         MiraTheme t;
         t.id = QStringLiteral("siren");
-        t.name = QStringLiteral("Sirene");
+        t.name = QStringLiteral("Siren");
         t.bundled = true;
         t.appBackground = QStringLiteral("#16278f");
         t.panelBackground = QStringLiteral("#101d6e");
@@ -3263,7 +3263,7 @@ void Manager::loadBundled()
         // dourado de brasa viva. Forja, perigo, calor que arde.
         MiraTheme t;
         t.id = QStringLiteral("ember-red");
-        t.name = QStringLiteral("Brasa");
+        t.name = QStringLiteral("Ember");
         t.bundled = true;
         t.appBackground = QStringLiteral("#6e1418");
         t.panelBackground = QStringLiteral("#500e12");
@@ -3304,7 +3304,7 @@ void Manager::loadBundled()
         // texto verde-limão. Reator, laboratório, perigo biológico.
         MiraTheme t;
         t.id = QStringLiteral("radioactive");
-        t.name = QStringLiteral("Radioativo");
+        t.name = QStringLiteral("Radioactive");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1e4a12");
         t.panelBackground = QStringLiteral("#143408");
@@ -3345,7 +3345,7 @@ void Manager::loadBundled()
         // dourado. Manto de rei, ópera, opulência noturna.
         MiraTheme t;
         t.id = QStringLiteral("royalty");
-        t.name = QStringLiteral("Realeza");
+        t.name = QStringLiteral("Royalty");
         t.bundled = true;
         t.appBackground = QStringLiteral("#3a1470");
         t.panelBackground = QStringLiteral("#2a0e54");
@@ -3388,7 +3388,7 @@ void Manager::loadBundled()
         // pousado por cima. A madeira aparece nas margens, ao redor da folha.
         MiraTheme t;
         t.id = QStringLiteral("desk-oak");
-        t.name = QStringLiteral("Escrivaninha");
+        t.name = QStringLiteral("Writing Desk");
         t.bundled = true;
         t.appBackground = QStringLiteral("#241810");
         t.panelBackground = QStringLiteral("#2e1f13");
@@ -3431,7 +3431,7 @@ void Manager::loadBundled()
         // Mogno — mesa nobre de nogueira avermelhada, papel pergaminho quente.
         MiraTheme t;
         t.id = QStringLiteral("desk-mahogany");
-        t.name = QStringLiteral("Mogno");
+        t.name = QStringLiteral("Mahogany");
         t.bundled = true;
         t.appBackground = QStringLiteral("#1e1410");
         t.panelBackground = QStringLiteral("#281a14");
@@ -3475,7 +3475,7 @@ void Manager::loadBundled()
         // luz de manhã, a mais luminosa das mesas.
         MiraTheme t;
         t.id = QStringLiteral("desk-bamboo");
-        t.name = QStringLiteral("Bambu");
+        t.name = QStringLiteral("Bamboo");
         t.bundled = true;
         t.appBackground = QStringLiteral("#3a2c14");
         t.panelBackground = QStringLiteral("#463418");
@@ -3519,7 +3519,7 @@ void Manager::loadBundled()
         // translúcida: a veia da madeira queimada vaza pelo papel. Luz baixa.
         MiraTheme t;
         t.id = QStringLiteral("desk-ebony");
-        t.name = QStringLiteral("Vigília");
+        t.name = QStringLiteral("Vigil");
         t.bundled = true;
         t.appBackground = QStringLiteral("#141009");
         t.panelBackground = QStringLiteral("#1c160e");
@@ -3758,7 +3758,7 @@ void Manager::loadBundled()
         // dos claros. Accent aço-azulado. Escrita de precisão.
         MiraTheme t;
         t.id   = QStringLiteral("neve");
-        t.name = QStringLiteral("Neve");
+        t.name = QStringLiteral("Snow");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#edf0f5");
         t.panelBackground  = QStringLiteral("#f8f9fc");
@@ -3799,7 +3799,7 @@ void Manager::loadBundled()
         // Accent terra queimada. Leitura longa sem fadiga.
         MiraTheme t;
         t.id   = QStringLiteral("linho");
-        t.name = QStringLiteral("Linho");
+        t.name = QStringLiteral("Linen");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#ede8e0");
         t.panelBackground  = QStringLiteral("#f5f0e8");
@@ -3840,7 +3840,7 @@ void Manager::loadBundled()
         // absoluto, texto quase-preto sobre quase-branco.
         MiraTheme t;
         t.id   = QStringLiteral("giz");
-        t.name = QStringLiteral("Giz");
+        t.name = QStringLiteral("Chalk");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8e8e8");
         t.panelBackground  = QStringLiteral("#f4f4f4");
@@ -3881,7 +3881,7 @@ void Manager::loadBundled()
         // Accent rosa-antigo. Feminino sem ser estridnete.
         MiraTheme t;
         t.id   = QStringLiteral("quartzo");
-        t.name = QStringLiteral("Quartzo");
+        t.name = QStringLiteral("Quartz");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f0e8ec");
         t.panelBackground  = QStringLiteral("#faf2f5");
@@ -3922,7 +3922,7 @@ void Manager::loadBundled()
         // Accent verde-musgo discreto. O mais vegetal dos claros.
         MiraTheme t;
         t.id   = QStringLiteral("bambu");
-        t.name = QStringLiteral("Bambu");
+        t.name = QStringLiteral("Bamboo");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8ede0");
         t.panelBackground  = QStringLiteral("#f4f8ec");
@@ -3965,7 +3965,7 @@ void Manager::loadBundled()
         // saturado que o Caramelo. Accent laranja-escuro rico.
         MiraTheme t;
         t.id   = QStringLiteral("mel");
-        t.name = QStringLiteral("Mel");
+        t.name = QStringLiteral("Honey");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f0d890");
         t.panelBackground  = QStringLiteral("#f8e8a8");
@@ -4006,7 +4006,7 @@ void Manager::loadBundled()
         // Vibe arqueológica, papiro, mapa antigo.
         MiraTheme t;
         t.id   = QStringLiteral("areia");
-        t.name = QStringLiteral("Areia");
+        t.name = QStringLiteral("Sand");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8d8b8");
         t.panelBackground  = QStringLiteral("#f4e8c8");
@@ -4047,7 +4047,7 @@ void Manager::loadBundled()
         // Luz de celeiro, papel antigo não encardido.
         MiraTheme t;
         t.id   = QStringLiteral("palha");
-        t.name = QStringLiteral("Palha");
+        t.name = QStringLiteral("Straw");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f4edd4");
         t.panelBackground  = QStringLiteral("#fdf8e8");
@@ -4088,7 +4088,7 @@ void Manager::loadBundled()
         // ouro-claro, accent açafrão brilhante. Épico, oriental, ancestral.
         MiraTheme t;
         t.id   = QStringLiteral("acafrao");
-        t.name = QStringLiteral("Açafrão");
+        t.name = QStringLiteral("Saffron");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#2a1e08");
         t.panelBackground  = QStringLiteral("#342808");
@@ -4129,7 +4129,7 @@ void Manager::loadBundled()
         // amarelados. Quase-branco com alma quente. Escrita matinal, leveza.
         MiraTheme t;
         t.id   = QStringLiteral("manteiga");
-        t.name = QStringLiteral("Manteiga");
+        t.name = QStringLiteral("Butter");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f8f4d8");
         t.panelBackground  = QStringLiteral("#fdfae8");
@@ -4172,7 +4172,7 @@ void Manager::loadBundled()
         // funcional dos escuros. Accent aço fosco.
         MiraTheme t;
         t.id   = QStringLiteral("carvao");
-        t.name = QStringLiteral("Carvão");
+        t.name = QStringLiteral("Charcoal");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1e2024");
         t.panelBackground  = QStringLiteral("#282c30");
@@ -4213,7 +4213,7 @@ void Manager::loadBundled()
         // accent esmeralda elétrico. Força, densidade, mistério mineral.
         MiraTheme t;
         t.id   = QStringLiteral("obsidiana");
-        t.name = QStringLiteral("Obsidiana");
+        t.name = QStringLiteral("Obsidian");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0a0c0a");
         t.panelBackground  = QStringLiteral("#101410");
@@ -4254,7 +4254,7 @@ void Manager::loadBundled()
         // tempestade. Antes da chuva. Concentração pesada, escrita intensa.
         MiraTheme t;
         t.id   = QStringLiteral("nimbo");
-        t.name = QStringLiteral("Nimbo");
+        t.name = QStringLiteral("Nimbus");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#141820");
         t.panelBackground  = QStringLiteral("#1c2230");
@@ -4295,7 +4295,7 @@ void Manager::loadBundled()
         // Accent ciano-abissal. Silêncio submarino, pressão criativa.
         MiraTheme t;
         t.id   = QStringLiteral("profundo");
-        t.name = QStringLiteral("Profundo");
+        t.name = QStringLiteral("Deep");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#060c14");
         t.panelBackground  = QStringLiteral("#0c1420");
@@ -4338,7 +4338,7 @@ void Manager::loadBundled()
         // elétrico. Fantasia, magia, romance gótico moderno.
         MiraTheme t;
         t.id   = QStringLiteral("lavanda");
-        t.name = QStringLiteral("Lavanda");
+        t.name = QStringLiteral("Lavender");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1e1428");
         t.panelBackground  = QStringLiteral("#281c38");
@@ -4379,7 +4379,7 @@ void Manager::loadBundled()
         // elétrico saturado. Sci-fi, hacker, energia pura.
         MiraTheme t;
         t.id   = QStringLiteral("citrino");
-        t.name = QStringLiteral("Citrino");
+        t.name = QStringLiteral("Citrine");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#101808");
         t.panelBackground  = QStringLiteral("#182008");
@@ -4420,7 +4420,7 @@ void Manager::loadBundled()
         // Accent rust vibrante. Pós-apocalíptico, calor industrial, urgência.
         MiraTheme t;
         t.id   = QStringLiteral("ferrugem");
-        t.name = QStringLiteral("Ferrugem");
+        t.name = QStringLiteral("Rust");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a0e08");
         t.panelBackground  = QStringLiteral("#241408");
@@ -4461,7 +4461,7 @@ void Manager::loadBundled()
         // Natureza zen, botânico, escrita introspectiva.
         MiraTheme t;
         t.id   = QStringLiteral("salvia");
-        t.name = QStringLiteral("Sálvia");
+        t.name = QStringLiteral("Sage");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#101c14");
         t.panelBackground  = QStringLiteral("#162018");
@@ -4502,7 +4502,7 @@ void Manager::loadBundled()
         // O mais frio e tecnológico dos coloridos. Matrix, terminal, sinapse.
         MiraTheme t;
         t.id   = QStringLiteral("eter");
-        t.name = QStringLiteral("Éter");
+        t.name = QStringLiteral("Ether");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#080e14");
         t.panelBackground  = QStringLiteral("#0e1620");
@@ -4547,7 +4547,7 @@ void Manager::loadBundled()
         // Monotonal como uma imagem do século XIX.
         MiraTheme t;
         t.id   = QStringLiteral("daguerreotipo");
-        t.name = QStringLiteral("Daguerreótipo");
+        t.name = QStringLiteral("Daguerreotype");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a1510");
         t.panelBackground  = QStringLiteral("#1e1a13");
@@ -4589,7 +4589,7 @@ void Manager::loadBundled()
         // Nenhuma outra cor existe neste universo.
         MiraTheme t;
         t.id   = QStringLiteral("crt-verde");
-        t.name = QStringLiteral("CRT Verde");
+        t.name = QStringLiteral("Green CRT");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#020602");
         t.panelBackground  = QStringLiteral("#040904");
@@ -4671,7 +4671,7 @@ void Manager::loadBundled()
         // A área de escrita é a parte mais clara; a moldura é a mais escura.
         MiraTheme t;
         t.id   = QStringLiteral("nocturno");
-        t.name = QStringLiteral("Nocturno");
+        t.name = QStringLiteral("Nocturne");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1a2030");
         t.panelBackground  = QStringLiteral("#141c28");
@@ -4836,7 +4836,7 @@ void Manager::loadBundled()
         // Fundo azul giz muito suave, texto grafite-escuro, accent tinta-azul real.
         MiraTheme t;
         t.id   = QStringLiteral("manuscrito");
-        t.name = QStringLiteral("Manuscrito");
+        t.name = QStringLiteral("Manuscript");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#dce8f0");
         t.panelBackground  = QStringLiteral("#d4e2ec");
@@ -4877,7 +4877,7 @@ void Manager::loadBundled()
         // Nenhuma cor intermediária. Ousado, inesperado, impossível de ignorar.
         MiraTheme t;
         t.id   = QStringLiteral("limao");
-        t.name = QStringLiteral("Limão");
+        t.name = QStringLiteral("Lemon");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#050500");
         t.panelBackground  = QStringLiteral("#080800");
@@ -4918,7 +4918,7 @@ void Manager::loadBundled()
         // accent amarelo saturado agressivo. Sem arredondamentos visuais na alma.
         MiraTheme t;
         t.id   = QStringLiteral("brutalismo");
-        t.name = QStringLiteral("Brutalismo");
+        t.name = QStringLiteral("Brutalism");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#f0ece0");
         t.panelBackground  = QStringLiteral("#e8e4d8");
@@ -4961,7 +4961,7 @@ void Manager::loadBundled()
         // texto sépia escuro, accent amarelo-terra. Máquina de escrever diurna.
         MiraTheme t;
         t.id   = QStringLiteral("gruvbox-light");
-        t.name = QStringLiteral("Gruvbox Claro");
+        t.name = QStringLiteral("Gruvbox Light");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#ebdbb2");  // bg1
         t.panelBackground  = QStringLiteral("#fbf1c7");  // bg0
@@ -5002,7 +5002,7 @@ void Manager::loadBundled()
         // que o Gruvbox padrão, contraste máximo dentro da família.
         MiraTheme t;
         t.id   = QStringLiteral("gruvbox-hard");
-        t.name = QStringLiteral("Gruvbox Duro");
+        t.name = QStringLiteral("Gruvbox Hard");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1d2021");  // bg0_h
         t.panelBackground  = QStringLiteral("#282828");  // bg0
@@ -5043,7 +5043,7 @@ void Manager::loadBundled()
         // accent azul-elétrico frio. Concentração máxima, sem drama.
         MiraTheme t;
         t.id   = QStringLiteral("meia-noite");
-        t.name = QStringLiteral("Meia-Noite");
+        t.name = QStringLiteral("Midnight");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#080c14");
         t.panelBackground  = QStringLiteral("#0e1220");
@@ -5084,7 +5084,7 @@ void Manager::loadBundled()
         // Accent violeta-elétrico, painéis azul-púrpura escuro.
         MiraTheme t;
         t.id   = QStringLiteral("meia-noite-indigo");
-        t.name = QStringLiteral("Meia-Noite Índigo");
+        t.name = QStringLiteral("Midnight Indigo");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#090810");
         t.panelBackground  = QStringLiteral("#100e1a");
@@ -5125,7 +5125,7 @@ void Manager::loadBundled()
         // urgência, thriller. Preto-vinho com faísca vermelha.
         MiraTheme t;
         t.id   = QStringLiteral("meia-noite-carmesim");
-        t.name = QStringLiteral("Meia-Noite Carmesim");
+        t.name = QStringLiteral("Midnight Crimson");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0e0810");
         t.panelBackground  = QStringLiteral("#160c16");
@@ -5166,7 +5166,7 @@ void Manager::loadBundled()
         // quase branco. O mais contido da família noturna. Escrita silenciosa.
         MiraTheme t;
         t.id   = QStringLiteral("madrugada");
-        t.name = QStringLiteral("Madrugada");
+        t.name = QStringLiteral("Dawn");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#0c0e16");
         t.panelBackground  = QStringLiteral("#121520");

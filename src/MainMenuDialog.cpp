@@ -435,7 +435,7 @@ public:
         nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
         col->addWidget(nameLbl, 0, Qt::AlignHCenter);
 
-        auto* autoOpenChk = new QCheckBox(tr("Abrir automaticamente"), this);
+        auto* autoOpenChk = new QCheckBox(QCoreApplication::translate("BookCard", "Abrir automaticamente"), this);
         autoOpenChk->setObjectName(QStringLiteral("bookCardAutoOpen"));
         autoOpenChk->setCursor(Qt::PointingHandCursor);
         autoOpenChk->setChecked(autoOpen);
@@ -472,12 +472,12 @@ protected:
     void contextMenuEvent(QContextMenuEvent* event) override {
         QMenu menu(this);
         menu.setObjectName(QStringLiteral("bookCardMenu"));
-        QAction* aEdit   = menu.addAction(tr("Editar projeto"));
-        QAction* aCover  = menu.addAction(tr("Criar capa"));
+        QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookCard", "Editar projeto"));
+        QAction* aCover  = menu.addAction(QCoreApplication::translate("BookCard", "Criar capa"));
         menu.addSeparator();
-        QAction* aRemove = menu.addAction(tr("Remover dos recentes"));
+        QAction* aRemove = menu.addAction(QCoreApplication::translate("BookCard", "Remover dos recentes"));
         menu.addSeparator();
-        QAction* aDelete = menu.addAction(tr("Excluir projeto"));
+        QAction* aDelete = menu.addAction(QCoreApplication::translate("BookCard", "Excluir projeto"));
         QAction* chosen = menu.exec(event->globalPos());
         if      (chosen == aEdit   && m_cbs.edit)        m_cbs.edit();
         else if (chosen == aCover  && m_cbs.coverCreate)  m_cbs.coverCreate();
@@ -575,7 +575,7 @@ public:
         textCol->addStretch();
         row->addLayout(textCol, 1);
 
-        auto* chk = new QCheckBox(tr("Abrir automaticamente"), this);
+        auto* chk = new QCheckBox(QCoreApplication::translate("BookRow", "Abrir automaticamente"), this);
         chk->setObjectName(QStringLiteral("bookCardAutoOpen"));
         chk->setCursor(Qt::PointingHandCursor);
         chk->setChecked(autoOpen);
@@ -597,12 +597,12 @@ protected:
     void contextMenuEvent(QContextMenuEvent* event) override {
         QMenu menu(this);
         menu.setObjectName(QStringLiteral("bookCardMenu"));
-        QAction* aEdit   = menu.addAction(tr("Editar projeto"));
-        QAction* aCover  = menu.addAction(tr("Criar capa"));
+        QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookRow", "Editar projeto"));
+        QAction* aCover  = menu.addAction(QCoreApplication::translate("BookRow", "Criar capa"));
         menu.addSeparator();
-        QAction* aRemove = menu.addAction(tr("Remover dos recentes"));
+        QAction* aRemove = menu.addAction(QCoreApplication::translate("BookRow", "Remover dos recentes"));
         menu.addSeparator();
-        QAction* aDelete = menu.addAction(tr("Excluir projeto"));
+        QAction* aDelete = menu.addAction(QCoreApplication::translate("BookRow", "Excluir projeto"));
         QAction* chosen = menu.exec(event->globalPos());
         if      (chosen == aEdit   && m_cbs.edit)         m_cbs.edit();
         else if (chosen == aCover  && m_cbs.coverCreate)   m_cbs.coverCreate();

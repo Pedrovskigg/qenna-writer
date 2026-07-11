@@ -27,13 +27,13 @@
 namespace {
 struct Continent { const char* name; double lon; double lat; };
 const Continent kContinents[] = {
-    { "América do Norte", -100.0, 48.0 },
-    { "América do Sul",    -60.0, -12.0 },
-    { "Europa",             14.0,  52.0 },
-    { "África",             20.0,   2.0 },
-    { "Ásia",               90.0,  47.0 },
-    { "Oceania",           140.0, -25.0 },
-    { "Antártida",           0.0, -82.0 },
+    { QT_TRANSLATE_NOOP("QObject", "América do Norte"), -100.0, 48.0 },
+    { QT_TRANSLATE_NOOP("QObject", "América do Sul"),    -60.0, -12.0 },
+    { QT_TRANSLATE_NOOP("QObject", "Europa"),             14.0,  52.0 },
+    { QT_TRANSLATE_NOOP("QObject", "África"),             20.0,   2.0 },
+    { QT_TRANSLATE_NOOP("QObject", "Ásia"),               90.0,  47.0 },
+    { QT_TRANSLATE_NOOP("QObject", "Oceania"),           140.0, -25.0 },
+    { QT_TRANSLATE_NOOP("QObject", "Antártida"),           0.0, -82.0 },
 };
 
 QString fmtNum(qint64 n)
@@ -119,43 +119,43 @@ int utcOffsetSec(double lon, double lat)
 
 QString continentName(const QString& code)
 {
-    if (code == QLatin1String("SA")) return QStringLiteral("América do Sul");
-    if (code == QLatin1String("NA")) return QStringLiteral("América do Norte");
-    if (code == QLatin1String("EU")) return QStringLiteral("Europa");
-    if (code == QLatin1String("AS")) return QStringLiteral("Ásia");
-    if (code == QLatin1String("AF")) return QStringLiteral("África");
-    if (code == QLatin1String("OC")) return QStringLiteral("Oceania");
-    if (code == QLatin1String("AN")) return QStringLiteral("Antártida");
+    if (code == QLatin1String("SA")) return QObject::tr("América do Sul");
+    if (code == QLatin1String("NA")) return QObject::tr("América do Norte");
+    if (code == QLatin1String("EU")) return QObject::tr("Europa");
+    if (code == QLatin1String("AS")) return QObject::tr("Ásia");
+    if (code == QLatin1String("AF")) return QObject::tr("África");
+    if (code == QLatin1String("OC")) return QObject::tr("Oceania");
+    if (code == QLatin1String("AN")) return QObject::tr("Antártida");
     return code;
 }
 
 QString languageNames(const QString& codes)
 {
     static const QHash<QString, QString> names = {
-        {"af","Africâner"},{"sq","Albanês"},{"am","Amárico"},{"ar","Árabe"},
-        {"hy","Armênio"},{"az","Azerbaijano"},{"eu","Basco"},{"be","Bielorrusso"},
-        {"bn","Bengali"},{"bs","Bósnio"},{"bg","Búlgaro"},{"my","Birmanês"},
-        {"ca","Catalão"},{"zh","Chinês"},{"hr","Croata"},{"cs","Tcheco"},
-        {"da","Dinamarquês"},{"nl","Holandês"},{"en","Inglês"},{"et","Estoniano"},
-        {"fi","Finlandês"},{"fr","Francês"},{"gl","Galego"},{"ka","Georgiano"},
-        {"de","Alemão"},{"el","Grego"},{"gu","Guzerate"},{"ha","Hauçá"},
-        {"he","Hebraico"},{"hi","Híndi"},{"hu","Húngaro"},{"is","Islandês"},
-        {"ig","Igbo"},{"id","Indonésio"},{"ga","Irlandês"},{"it","Italiano"},
-        {"ja","Japonês"},{"kk","Cazaque"},{"km","Khmer"},{"ko","Coreano"},
-        {"ku","Curdo"},{"ky","Quirguiz"},{"lo","Laosiano"},{"lv","Letão"},
-        {"lt","Lituano"},{"lb","Luxemburguês"},{"mk","Macedônio"},{"mg","Malgaxe"},
-        {"ms","Malaio"},{"ml","Malaiala"},{"mt","Maltês"},{"mn","Mongol"},
-        {"ne","Nepali"},{"no","Norueguês"},{"nb","Norueguês"},{"nn","Norueguês"},
-        {"fa","Persa"},{"pl","Polonês"},{"pt","Português"},{"pa","Panjabi"},
-        {"ro","Romeno"},{"ru","Russo"},{"sr","Sérvio"},{"si","Cingalês"},
-        {"sk","Eslovaco"},{"sl","Esloveno"},{"so","Somali"},{"es","Espanhol"},
-        {"sw","Suaíli"},{"sv","Sueco"},{"tg","Tadjique"},{"ta","Tâmil"},
-        {"te","Télugo"},{"th","Tailandês"},{"bo","Tibetano"},{"ti","Tigrínia"},
-        {"tr","Turco"},{"tk","Turcomeno"},{"uk","Ucraniano"},{"ur","Urdu"},
-        {"uz","Uzbeque"},{"vi","Vietnamita"},{"cy","Galês"},{"yo","Iorubá"},
-        {"zu","Zulu"},{"rw","Quiniaruanda"},{"sn","Shona"},{"xh","Xhosa"},
-        {"st","Soto"},{"tn","Tswana"},{"wo","Uólofe"},{"ak","Akan"},
-        {"lg","Luganda"},{"ny","Chichewa"},{"dz","Dzonga"},{"ps","Pashto"},
+        {"af",QObject::tr("Africâner")},{"sq",QObject::tr("Albanês")},{"am",QObject::tr("Amárico")},{"ar",QObject::tr("Árabe")},
+        {"hy",QObject::tr("Armênio")},{"az",QObject::tr("Azerbaijano")},{"eu",QObject::tr("Basco")},{"be",QObject::tr("Bielorrusso")},
+        {"bn",QObject::tr("Bengali")},{"bs",QObject::tr("Bósnio")},{"bg",QObject::tr("Búlgaro")},{"my",QObject::tr("Birmanês")},
+        {"ca",QObject::tr("Catalão")},{"zh",QObject::tr("Chinês")},{"hr",QObject::tr("Croata")},{"cs",QObject::tr("Tcheco")},
+        {"da",QObject::tr("Dinamarquês")},{"nl",QObject::tr("Holandês")},{"en",QObject::tr("Inglês")},{"et",QObject::tr("Estoniano")},
+        {"fi",QObject::tr("Finlandês")},{"fr",QObject::tr("Francês")},{"gl",QObject::tr("Galego")},{"ka",QObject::tr("Georgiano")},
+        {"de",QObject::tr("Alemão")},{"el",QObject::tr("Grego")},{"gu",QObject::tr("Guzerate")},{"ha",QObject::tr("Hauçá")},
+        {"he",QObject::tr("Hebraico")},{"hi",QObject::tr("Híndi")},{"hu",QObject::tr("Húngaro")},{"is",QObject::tr("Islandês")},
+        {"ig",QObject::tr("Igbo")},{"id",QObject::tr("Indonésio")},{"ga",QObject::tr("Irlandês")},{"it",QObject::tr("Italiano")},
+        {"ja",QObject::tr("Japonês")},{"kk",QObject::tr("Cazaque")},{"km",QObject::tr("Khmer")},{"ko",QObject::tr("Coreano")},
+        {"ku",QObject::tr("Curdo")},{"ky",QObject::tr("Quirguiz")},{"lo",QObject::tr("Laosiano")},{"lv",QObject::tr("Letão")},
+        {"lt",QObject::tr("Lituano")},{"lb",QObject::tr("Luxemburguês")},{"mk",QObject::tr("Macedônio")},{"mg",QObject::tr("Malgaxe")},
+        {"ms",QObject::tr("Malaio")},{"ml",QObject::tr("Malaiala")},{"mt",QObject::tr("Maltês")},{"mn",QObject::tr("Mongol")},
+        {"ne",QObject::tr("Nepali")},{"no",QObject::tr("Norueguês")},{"nb",QObject::tr("Norueguês")},{"nn",QObject::tr("Norueguês")},
+        {"fa",QObject::tr("Persa")},{"pl",QObject::tr("Polonês")},{"pt",QObject::tr("Português")},{"pa",QObject::tr("Panjabi")},
+        {"ro",QObject::tr("Romeno")},{"ru",QObject::tr("Russo")},{"sr",QObject::tr("Sérvio")},{"si",QObject::tr("Cingalês")},
+        {"sk",QObject::tr("Eslovaco")},{"sl",QObject::tr("Esloveno")},{"so",QObject::tr("Somali")},{"es",QObject::tr("Espanhol")},
+        {"sw",QObject::tr("Suaíli")},{"sv",QObject::tr("Sueco")},{"tg",QObject::tr("Tadjique")},{"ta",QObject::tr("Tâmil")},
+        {"te",QObject::tr("Télugo")},{"th",QObject::tr("Tailandês")},{"bo",QObject::tr("Tibetano")},{"ti",QObject::tr("Tigrínia")},
+        {"tr",QObject::tr("Turco")},{"tk",QObject::tr("Turcomeno")},{"uk",QObject::tr("Ucraniano")},{"ur",QObject::tr("Urdu")},
+        {"uz",QObject::tr("Uzbeque")},{"vi",QObject::tr("Vietnamita")},{"cy",QObject::tr("Galês")},{"yo",QObject::tr("Iorubá")},
+        {"zu",QObject::tr("Zulu")},{"rw",QObject::tr("Quiniaruanda")},{"sn",QObject::tr("Shona")},{"xh",QObject::tr("Xhosa")},
+        {"st",QObject::tr("Soto")},{"tn",QObject::tr("Tswana")},{"wo",QObject::tr("Uólofe")},{"ak",QObject::tr("Akan")},
+        {"lg",QObject::tr("Luganda")},{"ny",QObject::tr("Chichewa")},{"dz",QObject::tr("Dzonga")},{"ps",QObject::tr("Pashto")},
     };
     QStringList out;
     const QStringList parts = codes.split(QLatin1Char(','), Qt::SkipEmptyParts);
@@ -846,7 +846,7 @@ void MapView::paintEvent(QPaintEvent*)
         for (const Continent& c : kContinents) {
             const QPointF s = project(c.lon, c.lat);
             if (!view.contains(s.toPoint())) continue;
-            const QString name = QString::fromUtf8(c.name);
+            const QString name = QObject::tr(c.name);
             haloText(s - QPointF(fm.horizontalAdvance(name) / 2.0, 0), name, bigLabel);
         }
     } else if (lvlCountries) {
@@ -1419,7 +1419,7 @@ void MapView::paintGlobe(QPainter& p)
             bool vis;
             const QPointF s = projectGlobe(c.lon, c.lat, &vis);
             if (!vis) continue;
-            const QString name = QString::fromUtf8(c.name);
+            const QString name = QObject::tr(c.name);
             haloText(s - QPointF(fm.horizontalAdvance(name) / 2.0, 0), name, bigLabel);
         }
     } else if (lvlCountries) {

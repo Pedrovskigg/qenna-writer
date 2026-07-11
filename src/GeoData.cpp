@@ -4,6 +4,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QSettings>
 
 const GeoData& GeoData::instance()
 {
@@ -52,6 +53,9 @@ void GeoData::load()
         return b;
     };
 
+    QSettings qs;
+    const bool englishUi = qs.value(QStringLiteral("app/language")).toString() == QStringLiteral("en");
+
     // ---------------- Países (fronteiras) ----------------
     QFile cf(QStringLiteral(":/geo/countries.geojson"));
     if (cf.open(QIODevice::ReadOnly)) {
@@ -62,7 +66,7 @@ void GeoData::load()
             Country c;
             c.nameEn = props.value(QStringLiteral("NAME")).toString();
             const QString pt = props.value(QStringLiteral("NAME_PT")).toString();
-            c.name = pt.isEmpty() ? c.nameEn : pt;
+            c.name = englishUi ? c.nameEn : (pt.isEmpty() ? c.nameEn : pt);
             c.iso = props.value(QStringLiteral("ISO_A2")).toString();
             c.labelLon = props.value(QStringLiteral("LABEL_X")).toDouble();
             c.labelLat = props.value(QStringLiteral("LABEL_Y")).toDouble();
@@ -80,8 +84,9 @@ void GeoData::load()
             const QJsonObject f = fv.toObject();
             const QJsonObject props = f.value(QStringLiteral("properties")).toObject();
             State st;
+            const QString stateEn = props.value(QStringLiteral("name")).toString();
             const QString pt = props.value(QStringLiteral("name_pt")).toString();
-            st.name = pt.isEmpty() ? props.value(QStringLiteral("name")).toString() : pt;
+            st.name = englishUi ? stateEn : (pt.isEmpty() ? stateEn : pt);
             st.country = props.value(QStringLiteral("admin")).toString();
             st.rings = extractRings(f.value(QStringLiteral("geometry")).toObject());
             st.bounds = boundsOf(st.rings);

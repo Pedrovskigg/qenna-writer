@@ -1,5 +1,6 @@
 #include "Quotes.h"
 
+#include <QCoreApplication>
 #include <QRandomGenerator>
 #include <QSettings>
 #include <QString>
@@ -18,6 +19,9 @@ void shuffleInPlace(QStringList& list)
     }
 }
 
+// Guarda o texto original (não traduzido) — o ciclo embaralhado é persistido em
+// QSettings entre sessões, então traduzir aqui prenderia o cache no idioma de
+// quando foi gerado. A tradução acontece na leitura, em next().
 QStringList toList(const char* const* arr, int count)
 {
     QStringList out;
@@ -66,10 +70,10 @@ QString pickRandom()
     if (total <= 0) return {};
     const int pick = int(rng->bounded(quint32(total)));
     if (pick < kQuotesRegular_count) {
-        return QString::fromUtf8(kQuotesRegular[pick]);
+        return QCoreApplication::translate("Quotes", kQuotesRegular[pick]);
     }
     const int featIdx = (pick - kQuotesRegular_count) % kQuotesFeature_count;
-    return QString::fromUtf8(kQuotesFeature[featIdx]);
+    return QCoreApplication::translate("Quotes", kQuotesFeature[featIdx]);
 }
 
 QString next()
@@ -88,7 +92,7 @@ QString next()
     const QString quote = cycle.at(ptr);
     ++ptr;
     settings.setValue(QLatin1String(kPointerKey), ptr);
-    return quote;
+    return QCoreApplication::translate("Quotes", quote.toUtf8().constData());
 }
 
 int regularCount() { return kQuotesRegular_count; }
