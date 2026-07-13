@@ -510,8 +510,9 @@ void ManuscriptPanel::showChapterContextMenu(const QString& manuscriptId, const 
     });
 
     auto* elemsAct = menu.addAction(tr("Elementos presentes…"));
-    elemsAct->setEnabled(false);
-    elemsAct->setToolTip(tr("Em breve"));
+    connect(elemsAct, &QAction::triggered, this, [this, manuscriptId, chapterId]() {
+        emit elementsPresentRequested(manuscriptId, chapterId);
+    });
 
     auto* refAct = menu.addAction(tr("Abrir no Menu de Referência"));
     connect(refAct, &QAction::triggered, this, [this, manuscriptId, chapterId]() {
@@ -538,8 +539,9 @@ void ManuscriptPanel::showSceneContextMenu(const QString& manuscriptId, const QS
     });
 
     auto* elemsAct = menu.addAction(tr("Elementos presentes…"));
-    elemsAct->setEnabled(false);
-    elemsAct->setToolTip(tr("Em breve"));
+    connect(elemsAct, &QAction::triggered, this, [this, manuscriptId, chapterId, sceneIndex]() {
+        emit sceneElementsPresentRequested(manuscriptId, chapterId, sceneIndex);
+    });
 
     auto* varAct = menu.addAction(tr("Criar variação"));
     connect(varAct, &QAction::triggered, this, [this, chapterId, sceneIndex]() {

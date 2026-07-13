@@ -15346,4 +15346,34 @@ Botão direito para personalizar o contador</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
+<context>
+    <name>UpdateNoticeDialog</name>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="29"/>
+        <source>O Mira Writing está de nome novo!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="53"/>
+        <source>Olá! Estamos trocando de identidade — nome novo e repositório novo a caminho. Por causa disso, esta versão atual vai ficar paradinha por um tempo, sem novas atualizações.
+
+Mas já está resolvido: a versão com o nome novo já pode ser baixada aqui:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="62"/>
+        <source>Baixar a nova versão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="71"/>
+        <source>Seus projetos e arquivos salvos continuam 100% intactos — isso aqui é só uma troca de nome, não um sumiço. Obrigado pela paciência!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="77"/>
+        <source>Entendi</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>

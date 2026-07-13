@@ -610,8 +610,6 @@ void RefMenuPanel::rebuildTabs()
         label = tr("Grupos");
     } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
         label = tr("Timelines");
-    } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
-        label = tr("Elementos");
     } else if (m_sourceKind == SourceKind::Construtor) {
         label = tr("Construtor");
     } else {
@@ -660,8 +658,6 @@ void RefMenuPanel::rebuildNavBody()
         buildGroupsView();
     } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
         buildPlaceholderView(tr("Timelines"), tr("Em breve. Vai listar as linhas do tempo."));
-    } else if (m_sourceKind == SourceKind::ElementsPlaceholder) {
-        buildPlaceholderView(tr("Elementos usados"), tr("Em breve. Gráficos de participação dos elementos."));
     } else if (m_sourceKind == SourceKind::Construtor) {
         buildConstrutorView();
     }
@@ -1935,7 +1931,6 @@ void RefMenuPanel::onDrawerPickerClicked()
         connect(a, &QAction::triggered, this, [this, kind]() { enterPlaceholderMode(kind); });
     };
     addPlaceholder(QStringLiteral("star"),  tr("Grupos"),             SourceKind::MarkersPlaceholder);
-    addPlaceholder(QStringLiteral("cube"),  tr("Elementos usados"),  SourceKind::ElementsPlaceholder);
     if (m_construtorStore)
         addPlaceholder(QStringLiteral("cube"), tr("Construtor"), SourceKind::Construtor);
     menu.addSeparator();

@@ -100,7 +100,7 @@ private slots:
     void applyTheme();
 
 private:
-    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, ElementsPlaceholder, Construtor };
+    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, Construtor };
     enum class ResizeEdge { None, Left, Right, Top, Bottom, TL, TR, BL, BR };
 
     void layoutResizeHandles();

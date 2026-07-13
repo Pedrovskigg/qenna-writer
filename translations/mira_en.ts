@@ -15510,4 +15510,36 @@ Right-click to customize the counter</translation>
         <translation>Remove area</translation>
     </message>
 </context>
+<context>
+    <name>UpdateNoticeDialog</name>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="29"/>
+        <source>O Mira Writing está de nome novo!</source>
+        <translation>Mira Writing has a new name!</translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="53"/>
+        <source>Olá! Estamos trocando de identidade — nome novo e repositório novo a caminho. Por causa disso, esta versão atual vai ficar paradinha por um tempo, sem novas atualizações.
+
+Mas já está resolvido: a versão com o nome novo já pode ser baixada aqui:</source>
+        <translation>Hi there! We're switching identities — a new name and a new repository are on the way. Because of that, this current version will sit still for a while, without new updates.
+
+But it's already sorted out: the version with the new name is ready to download here:</translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="62"/>
+        <source>Baixar a nova versão</source>
+        <translation>Download the new version</translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="71"/>
+        <source>Seus projetos e arquivos salvos continuam 100% intactos — isso aqui é só uma troca de nome, não um sumiço. Obrigado pela paciência!</source>
+        <translation>Your projects and saved files stay 100% intact — this is just a name change, not a disappearance. Thanks for your patience!</translation>
+    </message>
+    <message>
+        <location filename="../src/UpdateNoticeDialog.cpp" line="77"/>
+        <source>Entendi</source>
+        <translation>Got it</translation>
+    </message>
+</context>
 </TS>

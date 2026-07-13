@@ -88,6 +88,7 @@
 #include "EditorHost.h"
 #include "EditorLayout.h"
 #include "ElementCreateDialog.h"
+#include "ElementsPresentDialog.h"
 #include "ElementsStore.h"
 #include "FindBar.h"
 #include "GlobalSearchPanel.h"
@@ -2026,6 +2027,24 @@ void MainWindow::setupEditor()
         if (!promptChapterDialog(this, true, &newTitle, &newMarker)) return;
         projectModel->updateChapterTitle(chapterId, newTitle);
         projectModel->updateChapterTimeMarker(chapterId, newMarker);
+    });
+
+    connect(manuscriptPanel, &ManuscriptPanel::elementsPresentRequested, this,
+            [this](const QString& manuscriptId, const QString& chapterId) {
+        if (!elementsStore) return;
+        const QString docKey = ElementsStore::elementDocKeyForChapter(manuscriptId, chapterId);
+        auto* dlg = new ElementsPresentDialog(elementsStore, docKey, this);
+        dlg->exec();
+    });
+    connect(manuscriptPanel, &ManuscriptPanel::sceneElementsPresentRequested, this,
+            [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex) {
+        if (!elementsStore) return;
+        const Chapter* c = projectModel->findChapter(chapterId);
+        if (!c || sceneIndex < 0 || sceneIndex >= c->scenes.size()) return;
+        const QString docKey = ElementsStore::elementDocKeyForScene(
+            manuscriptId, chapterId, c->scenes[sceneIndex].id);
+        auto* dlg = new ElementsPresentDialog(elementsStore, docKey, this);
+        dlg->exec();
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteChapterRequested, this, [this](const QString& chapterId) {

@@ -30,6 +30,7 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSet>
 #include <QSizePolicy>
 #include <QSettings>
 #include <QStyle>
@@ -95,13 +96,14 @@ struct CardSizeParams {
     int cardW;
     int cardH;
     int cardHConsistency;
+    int cardHConsistencySimple; // consistência sem status/local (Objeto/Cenário) — só a barra de presença
     int cardPhoto;
     int cols;
 };
 static const CardSizeParams kCardSizes[3] = {
-    {  90,  90, 145,  48, 3 },  // 0 = Small
-    { 134, 118, 192,  70, 2 },  // 1 = Medium (default)
-    { 134, 155, 245,  92, 2 },  // 2 = Large (foto maior, card mais alto, 2 colunas)
+    {  90,  90, 145, 108,  48, 3 },  // 0 = Small
+    { 134, 118, 192, 142,  70, 2 },  // 1 = Medium (default)
+    { 134, 155, 245, 180,  92, 2 },  // 2 = Large (foto maior, card mais alto, 2 colunas)
 };
 
 constexpr int kPanelWidth = 300;
@@ -390,7 +392,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     }
     connect(m_consistencyBtn, &QToolButton::toggled, this, [this](bool on) {
         m_consistencyMode = on;
-        if (on) refreshPresenceCache();
+        if (on) { refreshPresenceCache(); refreshElementPresenceCache(); }
         rebuildContents();
         emit consistencyModeChanged(on);
     });
@@ -582,7 +584,7 @@ void DrawerListPanel::setElementsStore(ElementsStore* store) {
     if (store) {
         connect(store, &ElementsStore::changed, this, [this]() {
             if (!isPanelOpen()) return;
-            if (m_consistencyMode) refreshPresenceCache();
+            if (m_consistencyMode) { refreshPresenceCache(); refreshElementPresenceCache(); }
             rebuildContents();
         });
     }
@@ -648,6 +650,7 @@ void DrawerListPanel::openInConsistencyMode(const QString& drawerKey) {
             m_consistencyBtn->blockSignals(false);
         }
         refreshPresenceCache();
+        refreshElementPresenceCache();
         rebuildContents();
         emit consistencyModeChanged(true);
     }
@@ -669,6 +672,54 @@ void DrawerListPanel::refreshPresenceCache() {
     if (names.isEmpty()) return;
 
     m_presenceProvider(names, &m_presenceResults, &m_totalScenes, &m_totalChapters);
+}
+
+// Presença de Objeto/Cenário: reconstruída a partir da marcação manual de
+// "elementos presentes" (ElementsStore::docElements), não da detecção
+// automática por menção de nome (essa é exclusiva de personagem). Reaproveita
+// os mesmos totais de m_totalScenes/m_totalChapters (contagem do projeto,
+// independente de qual elemento está sendo consultado).
+void DrawerListPanel::refreshElementPresenceCache() {
+    m_elementPresenceResults.clear();
+    if (!m_model || !m_elementsStore) return;
+
+    for (const Chapter& ch : m_model->chapters()) {
+        const QString chKey = ElementsStore::elementDocKeyForChapter(ch.manuscriptId, ch.id);
+        const QString chTitle = ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title;
+        const bool multiScene = ch.scenes.size() > 1;
+
+        const QStringList chapterElementIds = m_elementsStore->docElementIds(chKey);
+
+        QHash<QString, QList<PresenceSceneEntry>> sceneEntriesByElement;
+        for (int si = 0; si < ch.scenes.size(); ++si) {
+            const QString scKey = ElementsStore::elementDocKeyForScene(
+                ch.manuscriptId, ch.id, ch.scenes[si].id);
+            for (const QString& elId : m_elementsStore->docElementIds(scKey)) {
+                PresenceSceneEntry se;
+                se.index = si;
+                se.title = ch.scenes[si].title;
+                sceneEntriesByElement[elId].append(se);
+            }
+        }
+
+        QSet<QString> allElementIds(chapterElementIds.cbegin(), chapterElementIds.cend());
+        for (auto it = sceneEntriesByElement.cbegin(); it != sceneEntriesByElement.cend(); ++it)
+            allElementIds.insert(it.key());
+
+        for (const QString& elId : allElementIds) {
+            PresenceChapterEntry chEntry;
+            chEntry.id    = ch.id;
+            chEntry.title = chTitle;
+            chEntry.scenes = sceneEntriesByElement.value(elId);
+
+            CharPresenceResult& res = m_elementPresenceResults[elId];
+            res.chapters.append(chEntry);
+            res.chapterCount++;
+            res.sceneCount += !chEntry.scenes.isEmpty()
+                ? chEntry.scenes.size()
+                : (multiScene ? qMax(1, ch.scenes.size()) : 1);
+        }
+    }
 }
 
 void DrawerListPanel::setCurrentDocKey(const QString& key)
@@ -1258,9 +1309,9 @@ void DrawerListPanel::updateViewButton() {
 
 void DrawerListPanel::updateConsistencyBtn() {
     if (!m_consistencyBtn) return;
-    const bool isChar = currentDrawerIsCharacter();
-    m_consistencyBtn->setVisible(isChar);
-    if (!isChar && m_consistencyMode) {
+    const bool isElementDrawer = currentDrawerIsElement();
+    m_consistencyBtn->setVisible(isElementDrawer);
+    if (!isElementDrawer && m_consistencyMode) {
         m_consistencyMode = false;
         m_consistencyBtn->blockSignals(true);
         m_consistencyBtn->setChecked(false);
@@ -1371,8 +1422,9 @@ void DrawerListPanel::rebuildContents() {
         // entre os cards, deixando respiro pra linhas de vínculo entre eles.
         const CardSizeParams& csz = kCardSizes[m_cardSizeIdx];
         const int maxCols = csz.cols;
-        const int rowH = (m_consistencyMode && currentDrawerIsCharacter())
-                         ? csz.cardHConsistency : csz.cardH;
+        const bool rowShowConsistency = m_consistencyMode && currentDrawerIsElement();
+        const int rowH = !rowShowConsistency ? csz.cardH
+                        : (currentDrawerIsCharacter() ? csz.cardHConsistency : csz.cardHConsistencySimple);
         QHBoxLayout* currentRow = nullptr;
         int colInRow = 0;
         for (const auto& it : items) {
@@ -1466,7 +1518,10 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
             charLocation     = it->charLocation;
         }
     }
-    const bool showConsistency = m_consistencyMode && currentDrawerIsCharacter();
+    const bool showConsistency = m_consistencyMode && currentDrawerIsElement();
+    // Objeto/Cenário: só a barra de presença (sem status/local, que só fazem
+    // sentido para personagem).
+    const bool showFullConsistency = showConsistency && currentDrawerIsCharacter();
 
     // Presença no documento atual (via ElementsStore::docElements)
     const bool presentInDoc = showConsistency
@@ -1489,7 +1544,9 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     card->setAttribute(Qt::WA_StyledBackground, true);
     card->setCursor(Qt::PointingHandCursor);
     card->setContextMenuPolicy(Qt::CustomContextMenu);
-    card->setFixedSize(csz.cardW, showConsistency ? csz.cardHConsistency : csz.cardH);
+    const int cardHeight = !showConsistency ? csz.cardH
+                          : (showFullConsistency ? csz.cardHConsistency : csz.cardHConsistencySimple);
+    card->setFixedSize(csz.cardW, cardHeight);
     {
         const QString normalBorder  = !groupColor.isEmpty() ? groupColor
                                     : (presentInDoc ? Theme::accentDefault() : Theme::subtleBorder());
@@ -1604,8 +1661,12 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
         lay->addWidget(sep);
 
-        // Barra de presença (clicável, exibe lista de cenas/capítulos)
-        const CharPresenceResult& presRes = m_presenceResults.value(title.toLower());
+        // Barra de presença (clicável, exibe lista de cenas/capítulos). Personagem
+        // usa detecção automática por menção de nome (m_presenceResults); Objeto/
+        // Cenário usa a marcação manual de "elementos presentes" (m_elementPresenceResults).
+        const CharPresenceResult presRes = showFullConsistency
+            ? m_presenceResults.value(title.toLower())
+            : m_elementPresenceResults.value(elementId);
         const int presCount = (m_presenceMode == 0) ? presRes.sceneCount : presRes.chapterCount;
         const int presTotal = (m_presenceMode == 0) ? m_totalScenes    : m_totalChapters;
         const int pct = (presTotal > 0) ? qMin(100, (presCount * 100) / presTotal) : 0;
@@ -1619,7 +1680,10 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         presenceBar->setCursor(Qt::PointingHandCursor);
         presenceBar->setToolTip(tr("Aparece em %1 de %2 %3 (%4%) — clique para detalhes")
             .arg(presCount).arg(presTotal).arg(modeStr).arg(pct));
-        presenceBar->setProperty("presenceBarName", title);
+        if (showFullConsistency)
+            presenceBar->setProperty("presenceBarName", title);
+        else
+            presenceBar->setProperty("presenceBarElementId", elementId);
         presenceBar->installEventFilter(this);
         presenceBar->setStyleSheet(QStringLiteral(R"(
             QProgressBar {
@@ -1634,6 +1698,9 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         )").arg(Theme::hoverOverlay(), Theme::accentDefault()));
         lay->addWidget(presenceBar);
 
+        if (!showFullConsistency) {
+            lay->addStretch();
+        } else {
         // Botão Status
         auto* statusBtn = new QPushButton(card);
         statusBtn->setObjectName(QStringLiteral("pickerOption"));
@@ -1711,6 +1778,7 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
                 QPoint(0, locBtn->height() + 2)));
         });
         lay->addWidget(locBtn);
+        } // showFullConsistency
     } else {
         lay->addStretch();
     }
@@ -2002,14 +2070,23 @@ bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
     }
 
     // ---- Click na barra de presença abre popup de detalhes ----
-    if (w && w->property("presenceBarName").isValid()) {
+    if (w && (w->property("presenceBarName").isValid() || w->property("presenceBarElementId").isValid())) {
         if (event->type() == QEvent::MouseButtonRelease) {
             auto* me = static_cast<QMouseEvent*>(event);
             if (me->button() == Qt::LeftButton) {
-                const QString charName = w->property("presenceBarName").toString();
-                const CharPresenceResult& res = m_presenceResults.value(charName.toLower());
-                showPresenceDetail(charName, res,
-                                   w->mapToGlobal(QPoint(0, w->height() + 4)));
+                if (w->property("presenceBarName").isValid()) {
+                    const QString charName = w->property("presenceBarName").toString();
+                    const CharPresenceResult& res = m_presenceResults.value(charName.toLower());
+                    showPresenceDetail(charName, res,
+                                       w->mapToGlobal(QPoint(0, w->height() + 4)));
+                } else {
+                    const QString elementId = w->property("presenceBarElementId").toString();
+                    const Element* el = m_elementsStore ? m_elementsStore->findElement(elementId) : nullptr;
+                    const QString elName = el ? el->name : elementId;
+                    const CharPresenceResult& res = m_elementPresenceResults.value(elementId);
+                    showPresenceDetail(elName, res,
+                                       w->mapToGlobal(QPoint(0, w->height() + 4)));
+                }
                 return true;
             }
         }

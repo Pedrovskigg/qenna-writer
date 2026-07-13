@@ -94,6 +94,7 @@ private:
     void updateSizeButton();
     void updateConsistencyBtn();
     void refreshPresenceCache();
+    void refreshElementPresenceCache();
     void showStatusPicker(const QString& itemId, const QPoint& globalPos);
     void showLocationPicker(const QString& itemId, const QPoint& globalPos);
     void showPresenceDetail(const QString& charName, const CharPresenceResult& res, QPoint globalPos);
@@ -165,6 +166,7 @@ private:
     bool m_consistencyMode = false;
     QToolButton* m_consistencyBtn = nullptr;
     QHash<QString, CharPresenceResult> m_presenceResults;
+    QHash<QString, CharPresenceResult> m_elementPresenceResults; // elementId -> presença (via docElements)
     int m_totalScenes    = 0;
     int m_totalChapters  = 0;
     int m_presenceMode   = 0;  // 0 = cenas, 1 = capítulos

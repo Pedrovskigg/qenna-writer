@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DocCache.h"
+
 #include <QHash>
 #include <QJsonObject>
 #include <QList>
@@ -62,6 +64,16 @@ public:
     void addDocElement(const QString& docKey, const QString& elementId);
     void addManyDocElements(const QString& docKey, const QStringList& elementIds);
     void removeDocElement(const QString& docKey, const QString& elementId);
+
+    // Chaves de docKey usadas pela marcação manual de "elementos presentes".
+    // Capítulo reaproveita DocCache::chapterKey (mesma chave da detecção
+    // automática — união natural entre auto-detecção e marcação manual no
+    // nível do capítulo). Cena é granularidade nova, exclusiva desta feature,
+    // já que cenas vivem dentro do HTML do capítulo e não têm chave própria
+    // no DocCache/EditorHost.
+    static QString elementDocKeyForChapter(const QString& manuscriptId, const QString& chapterId);
+    static QString elementDocKeyForScene(const QString& manuscriptId, const QString& chapterId,
+                                          const QString& sceneId);
 
 signals:
     void changed();

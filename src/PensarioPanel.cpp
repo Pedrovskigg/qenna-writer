@@ -49,6 +49,7 @@ PensarioPanel::PensarioPanel(MarkerStore* markers, ProjectModel* model,
     , m_notesStore(notes)
 {
     setObjectName(QStringLiteral("pensarioPanel"));
+    setAttribute(Qt::WA_StyledBackground, true);
     m_nameGen = new NameGenerator();
     buildUi();
     applyTheme();
@@ -905,6 +906,12 @@ QWidget* PensarioPanel::buildMemoryCard(const QString& memId, const QString& tit
     textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     lay->addWidget(textLbl);
 
+    if (text.trimmed().size() > 80) {
+        textLbl->setMaximumHeight(64);
+        card->setProperty("pnResizable", true);
+        card->setProperty("pnResizeTarget", QStringLiteral("pnMemCardQuote"));
+    }
+
     if (!tags.isEmpty()) {
         auto* tagsLbl = new QLabel(tags.join(QStringLiteral("  ·  ")), card);
         tagsLbl->setObjectName(QStringLiteral("pnMemCardTags"));
@@ -1338,6 +1345,7 @@ QWidget* PensarioPanel::buildCommentCard(const QString& docKey, const QString& c
         if (trimmed.size() > 80) {
             quote->setMaximumHeight(54);
             card->setProperty("pnResizable", true);
+            card->setProperty("pnResizeTarget", QStringLiteral("pnCardQuote"));
         }
     }
 
@@ -1461,20 +1469,6 @@ void PensarioPanel::showEvent(QShowEvent* event)
 
 bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 {
-    // Card de memória: clicar abre o menu de ações (editor / refmenu).
-    if (event->type() == QEvent::MouseButtonRelease) {
-        if (auto* w = qobject_cast<QWidget*>(watched)) {
-            const QString memId = w->property("memId").toString();
-            if (!memId.isEmpty()) {
-                auto* me = static_cast<QMouseEvent*>(event);
-                if (me->button() == Qt::LeftButton && w->rect().contains(me->position().toPoint())) {
-                    showMemoryActions(memId, me->globalPosition().toPoint());
-                    return true;
-                }
-            }
-        }
-    }
-
     // Card de diálogo: clicar abre a cena de origem no editor (sem menu —
     // só há uma ação possível nesta v1).
     if (event->type() == QEvent::MouseButtonRelease) {
@@ -1494,11 +1488,13 @@ bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
         }
     }
 
-    // Card (comentário ou nota): clicar age (navega / edita); arrastar a borda
-    // inferior (alça invisível, últimos ~12px) redimensiona o conteúdo recortado.
+    // Card (comentário, nota ou memória): clicar age (navega / edita / abre menu);
+    // arrastar a borda inferior (alça invisível, últimos ~12px) redimensiona o
+    // conteúdo recortado.
     if (auto* card = qobject_cast<QWidget*>(watched);
         card && (card->property("pnDocKey").isValid()
-                 || card->property("pnNoteId").isValid())) {
+                 || card->property("pnNoteId").isValid()
+                 || card->property("memId").isValid())) {
         const QEvent::Type t = event->type();
         if (t == QEvent::MouseButtonPress) {
             auto* me = static_cast<QMouseEvent*>(event);
@@ -1536,8 +1532,11 @@ bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
                                              card->property("pnStart").toInt(),
                                              card->property("pnEnd").toInt(),
                                              card->property("pnText").toString());
-                else
+                else if (card->property("pnNoteId").isValid())
                     openNoteEditById(card->property("pnNoteId").toString());
+                else
+                    showMemoryActions(card->property("memId").toString(),
+                                      me->globalPosition().toPoint());
                 return true;
             }
         }

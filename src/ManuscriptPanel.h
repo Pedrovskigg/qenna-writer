@@ -36,6 +36,8 @@ signals:
     void createVariationRequested(QString chapterId, int sceneIndex);
     void openChapterInRefMenuRequested(QString manuscriptId, QString chapterId);
     void openSceneInRefMenuRequested(QString manuscriptId, QString chapterId, int sceneIndex);
+    void elementsPresentRequested(QString manuscriptId, QString chapterId);
+    void sceneElementsPresentRequested(QString manuscriptId, QString chapterId, int sceneIndex);
     // Drag&drop reorder
     void reorderChapterRequested(QString chapterId, int targetIndex);
     void reorderSceneRequested(QString chapterId, int srcIndex, int targetIndex);

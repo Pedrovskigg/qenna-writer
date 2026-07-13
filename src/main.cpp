@@ -16,6 +16,7 @@
 #include "CrashLogger.h"
 #include "MainWindow.h"
 #include "Theme.h"
+#include "UpdateNoticeDialog.h"
 
 namespace {
 
@@ -95,6 +96,15 @@ int main(int argc, char *argv[])
             }
         }
         if (loaded) QApplication::installTranslator(&translator);
+    }
+
+    // Aviso temporário (troca de nome/repo) — bloqueia o startup até o
+    // usuário confirmar que leu. Remover depois que a migração pra Qiyva
+    // estiver concluída e essa mensagem deixar de fazer sentido.
+    {
+        splash.close();
+        UpdateNoticeDialog notice;
+        notice.exec();
     }
 
     const QStringList customFontFamilies = registerCustomFonts();

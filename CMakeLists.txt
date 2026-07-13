@@ -85,6 +85,8 @@ qt_add_executable(mira-writing
     src/GlobalSearchPanel.h
     src/ElementCreateDialog.cpp
     src/ElementCreateDialog.h
+    src/ElementsPresentDialog.cpp
+    src/ElementsPresentDialog.h
     src/ElementsStore.cpp
     src/ElementsStore.h
     src/CharacterDetector.cpp
@@ -218,6 +220,8 @@ qt_add_executable(mira-writing
     src/NewProjectFlow.h
     src/UpdateChecker.cpp
     src/UpdateChecker.h
+    src/UpdateNoticeDialog.cpp
+    src/UpdateNoticeDialog.h
     resources/icons.qrc
     resources/geo.qrc
     resources/flags.qrc

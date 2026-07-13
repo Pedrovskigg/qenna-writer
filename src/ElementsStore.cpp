@@ -264,3 +264,12 @@ void ElementsStore::removeDocElement(const QString& docKey, const QString& eleme
     m_dirty = true;
     emit changed();
 }
+
+QString ElementsStore::elementDocKeyForChapter(const QString& manuscriptId, const QString& chapterId) {
+    return DocCache::chapterKey(manuscriptId, chapterId);
+}
+
+QString ElementsStore::elementDocKeyForScene(const QString& manuscriptId, const QString& chapterId,
+                                              const QString& sceneId) {
+    return DocCache::chapterKey(manuscriptId, chapterId) + QStringLiteral("::scene:") + sceneId;
+}
