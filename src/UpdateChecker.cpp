@@ -13,8 +13,8 @@
 #include <QUrl>
 
 namespace {
-const char* kLatestReleaseUrl     = "https://api.github.com/repos/Pedrovskigg/Qiyva-Writer-releases/releases/latest";
-const char* kCoverLatestReleaseUrl = "https://api.github.com/repos/Pedrovskigg/qiyva-cover-creator/releases/latest";
+const char* kLatestReleaseUrl     = "https://api.github.com/repos/Pedrovskigg/Qenna-Writer-releases/releases/latest";
+const char* kCoverLatestReleaseUrl = "https://api.github.com/repos/Pedrovskigg/qenna-cover-creator/releases/latest";
 }
 
 UpdateChecker::UpdateChecker(QObject* parent)

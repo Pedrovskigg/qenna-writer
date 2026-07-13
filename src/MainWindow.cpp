@@ -347,7 +347,7 @@ MainWindow::MainWindow(QWidget *parent)
     , focusModeEnabled(false)
     , baseTextColor(QColor(Theme::editorTextColor()))
 {
-    baseWindowTitle = tr("Qiyva Writer");
+    baseWindowTitle = tr("Qenna Writer");
     setWindowTitle(baseWindowTitle);
 
     // Toolbar flutuante: filho direto de this, posicionado sobre o centralWidget.
@@ -3701,7 +3701,7 @@ void MainWindow::applyProjectRoot(const QString& root)
     }
     // Atualiza o título com o nome da pasta do projeto.
     const QString name = QDir(root).dirName();
-    baseWindowTitle = name.isEmpty() ? tr("Qiyva Writer") : tr("Qiyva Writer — %1").arg(name);
+    baseWindowTitle = name.isEmpty() ? tr("Qenna Writer") : tr("Qenna Writer — %1").arg(name);
     setWindowTitle(baseWindowTitle);
 }
 
@@ -4150,7 +4150,7 @@ void MainWindow::startUpdateDownload()
     if (!m_updateNam) m_updateNam = new QNetworkAccessManager(this);
 
     const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    const QString fileName = QStringLiteral("qiyva-writer-setup-%1.exe").arg(m_updateVersion);
+    const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
     const QString destPath = QDir(tempDir).filePath(fileName);
 
     auto* file = new QFile(destPath, this);
@@ -4330,7 +4330,7 @@ void MainWindow::openMainMenu()
                         if (--(*pending) > 0) return;
                         if (!*hadUpdate)
                             showUpdateToast(tr("Tudo atualizado"), QString(),
-                                tr("O Qiyva Writer e o Cover Creator estão na versão mais recente."));
+                                tr("O Qenna Writer e o Cover Creator estão na versão mais recente."));
                         delete pending;
                         delete hadUpdate;
                     };

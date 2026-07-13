@@ -1,21 +1,22 @@
-# Qiyva Writer
+# Qenna Writer
 
-Qiyva Writer (formerly Mira Writing) is a complete C++/Qt rebuild of the
-original Mira Writing (JSX) — same project, new name and identity.
+Qenna Writer (formerly Mira Writing, briefly Qiyva Writer) is a complete
+C++/Qt rebuild of the original Mira Writing (JSX) — same project, new name
+and identity.
 
 This repository holds the **source code** of the application. For
 downloads of the releases, go to:
-https://github.com/Pedrovskigg/mira-writing-2-releases
+https://github.com/Pedrovskigg/Qenna-Writer-releases
 
 ---
 
-Qiyva Writer is a text editor and multi-document manager built entirely for
+Qenna Writer is a text editor and multi-document manager built entirely for
 the craft of creative writing — drawers for characters, settings and
 objects, multi-manuscript projects, a visual Board for plotting, a Timeline,
 a world-building tool (the Builder), writing goals and stats, and more, all
 wrapped in a fully themeable editor with Focus Mode.
 
-Qiyva Writer is free — no subscriptions, no paywalled features. Made by one
+Qenna Writer is free — no subscriptions, no paywalled features. Made by one
 writer, for other writers.
 
 ## Tech stack
@@ -43,7 +44,7 @@ writer, for other writers.
 4. Run it:
    ```powershell
    $env:PATH = "C:\Qt\6.8.3\mingw_64\bin;" + $env:PATH
-   & .\build\qiyva-writer.exe
+   & .\build\qenna-writer.exe
    ```
 
 The "Immersive Sound" ambient tracks (`src/assets/ambience-sounds/`) aren't
@@ -52,7 +53,7 @@ without that one feature's audio files.
 
 ## Translations
 
-Qiyva Writer is currently available in PT-BR and EN-US, via Qt Linguist
+Qenna Writer is currently available in PT-BR and EN-US, via Qt Linguist
 (`translations/*.ts`). Language switches at runtime through the Main Menu.
 
 ## License
@@ -63,8 +64,8 @@ FFmpeg, bundled fonts, etc.) keep their own licenses — see
 
 ## Related projects
 
-- [Mira Cover Creator](https://github.com/Pedrovskigg/mira-cover-creator) —
-  cover design tool bundled with Qiyva Writer
+- [Cover Creator](https://github.com/Pedrovskigg/qenna-cover-creator) —
+  cover design tool bundled with Qenna Writer
 - [Mira's Maestro](https://github.com/Pedrovskigg/Maestro) — free musical
   theory plugin
 

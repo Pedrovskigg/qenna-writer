@@ -891,7 +891,7 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
     : QDialog(parent)
 {
     setObjectName(QStringLiteral("mainMenuDialog"));
-    setWindowTitle(tr("Qiyva Writer"));
+    setWindowTitle(tr("Qenna Writer"));
     setModal(false);
     // Promove a janela a top-level real: entra na taskbar, ganha botões de
     // minimizar/maximizar/fechar nativos, e — crucial — pode ser restaurada
@@ -953,7 +953,7 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
                                              Qt::KeepAspectRatio,
                                              Qt::SmoothTransformation));
     } else {
-        m_logoLabel->setText(QStringLiteral("Qiyva Writer"));
+        m_logoLabel->setText(QStringLiteral("Qenna Writer"));
     }
     col->addSpacing(6);
     col->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
@@ -1040,7 +1040,7 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     infoBtn->setObjectName(QStringLiteral("menuInfoBtn"));
     infoBtn->setCursor(Qt::PointingHandCursor);
     infoBtn->setFixedSize(24, 24);
-    infoBtn->setToolTip(tr("Sobre o Qiyva Writer"));
+    infoBtn->setToolTip(tr("Sobre o Qenna Writer"));
     connect(infoBtn, &QPushButton::clicked, this, [this]() {
         AboutDialog dlg(this);
         dlg.exec();
@@ -1349,7 +1349,7 @@ void MainMenuDialog::launchMiraCover(const QString& projectPath)
 
     QMessageBox::information(this, tr("Cover Creator"),
         tr("O Cover Creator não foi encontrado.\n\n"
-           "Reinstale o Qiyva Writer para obter o Cover Creator."));
+           "Reinstale o Qenna Writer para obter o Cover Creator."));
 }
 
 void MainMenuDialog::startCoverProcess(const QString& program,

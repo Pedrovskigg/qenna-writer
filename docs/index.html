@@ -1,0 +1,576 @@
+<title>Qenna Writer — Free Open Source Scrivener Alternative</title>
+<style>
+  :root {
+    --bg: #1c1815;
+    --bg-raised: #241f1a;
+    --bg-card: #221d19;
+    --ink: #ede6d6;
+    --ink-dim: #a89e8c;
+    --ink-faint: #776c5c;
+    --accent: #d4a053;
+    --accent-ink: #1c1409;
+    --line: rgba(237,230,214,.12);
+    --line-strong: rgba(237,230,214,.22);
+    --shadow: 0 1px 2px rgba(0,0,0,.5), 0 20px 50px -20px rgba(0,0,0,.7);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #ece8dd;
+    --bg-raised: #f5f2e8;
+    --bg-card: #f7f4ea;
+    --ink: #221d17;
+    --ink-dim: #625a4a;
+    --ink-faint: #8c8270;
+    --accent: #96682a;
+    --accent-ink: #fbf3e2;
+    --line: rgba(34,29,23,.14);
+    --line-strong: rgba(34,29,23,.26);
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 20px 40px -20px rgba(0,0,0,.18);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #ece8dd;
+      --bg-raised: #f5f2e8;
+      --bg-card: #f7f4ea;
+      --ink: #221d17;
+      --ink-dim: #625a4a;
+      --ink-faint: #8c8270;
+      --accent: #96682a;
+      --accent-ink: #fbf3e2;
+      --line: rgba(34,29,23,.14);
+      --line-strong: rgba(34,29,23,.26);
+      --shadow: 0 1px 2px rgba(0,0,0,.06), 0 20px 40px -20px rgba(0,0,0,.18);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Seravek, 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .serif {
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+  }
+
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- Nav ---------- */
+
+  nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.top .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: .01em;
+  }
+  .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .nav-links { display: flex; gap: 28px; align-items: center; font-size: 14px; }
+  .nav-links a { color: var(--ink-dim); text-decoration: none; }
+  .nav-links a:hover { color: var(--ink); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+    font-size: 14px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    border: none;
+    cursor: pointer;
+    transition: transform .15s ease, filter .15s ease;
+  }
+  .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    box-shadow: none;
+  }
+  .btn.ghost:hover { background: var(--bg-raised); }
+  .btn.small { padding: 7px 14px; font-size: 13px; }
+
+  /* ---------- Hero ---------- */
+
+  header.hero {
+    padding: 88px 0 70px;
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 56px;
+    align-items: center;
+  }
+  @media (max-width: 880px) {
+    header.hero { grid-template-columns: 1fr; padding: 56px 0 40px; }
+    .hero-art { order: -1; max-width: 280px; margin: 0 auto; }
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 20px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+
+  h1.headline {
+    font-size: clamp(34px, 4.6vw, 54px);
+    line-height: 1.08;
+    margin: 0 0 22px;
+    font-weight: 500;
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+  h1.headline .accent { color: var(--accent); }
+
+  .lede {
+    font-size: 18px;
+    color: var(--ink-dim);
+    max-width: 52ch;
+    margin: 0 0 32px;
+  }
+
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .fine-print { font-size: 13px; color: var(--ink-faint); }
+
+  .hero-art {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+  .hero-art img {
+    width: 100%;
+    max-width: 420px;
+    filter: drop-shadow(0 30px 60px rgba(0,0,0,.5));
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 40px;
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .stat .num {
+    font-family: Georgia, serif;
+    font-size: 26px;
+    color: var(--ink);
+    display: block;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat .label {
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  /* ---------- Marquee comparison ---------- */
+
+  section.compare {
+    padding: 8px 0 64px;
+  }
+  .compare-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  .chip {
+    font-size: 13px;
+    color: var(--ink-dim);
+    border: 1px solid var(--line);
+    padding: 7px 14px;
+    border-radius: 20px;
+  }
+  .chip b { color: var(--ink); }
+
+  /* ---------- Sections ---------- */
+
+  section.feature {
+    padding: 70px 0;
+    border-top: 1px solid var(--line);
+  }
+  .feature-head {
+    max-width: 60ch;
+    margin: 0 auto 44px;
+    text-align: center;
+  }
+  .feature-head .kicker {
+    font-size: 12.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+  .feature-head h2 {
+    font-size: clamp(26px, 3vw, 36px);
+    font-weight: 500;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .feature-head p {
+    color: var(--ink-dim);
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .shot {
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .feature-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+    padding: 46px 0;
+  }
+  .feature-row.reverse .feature-copy { order: 2; }
+  .feature-row.reverse .feature-shot { order: 1; }
+  @media (max-width: 880px) {
+    .feature-row, .feature-row.reverse { grid-template-columns: 1fr; }
+    .feature-row.reverse .feature-copy, .feature-row.reverse .feature-shot { order: unset; }
+  }
+  .feature-copy h3 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+  .feature-copy p {
+    color: var(--ink-dim);
+    font-size: 15.5px;
+    margin: 0 0 10px;
+  }
+  .feature-copy ul {
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .feature-copy li {
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    padding: 6px 0 6px 22px;
+    position: relative;
+  }
+  .feature-copy li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  /* ---------- Grid features ---------- */
+
+  .grid-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .grid-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 20px;
+  }
+  .grid-card .icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .grid-card h4 { font-size: 15.5px; font-weight: 600; margin: 0 0 6px; }
+  .grid-card p { font-size: 13.5px; color: var(--ink-dim); margin: 0; }
+
+  /* ---------- Philosophy ---------- */
+
+  section.philosophy {
+    padding: 80px 0;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  .philosophy blockquote {
+    margin: 0 auto;
+    max-width: 46ch;
+    font-family: Georgia, 'Iowan Old Style', serif;
+    font-size: clamp(22px, 3vw, 30px);
+    line-height: 1.4;
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  .philosophy cite {
+    display: block;
+    margin-top: 22px;
+    font-style: normal;
+    font-size: 14px;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- Final CTA ---------- */
+
+  section.final-cta {
+    padding: 80px 0 100px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+  }
+  .final-cta h2 {
+    font-size: clamp(28px, 3.6vw, 42px);
+    font-weight: 500;
+    margin: 0 0 16px;
+    text-wrap: balance;
+  }
+  .final-cta p {
+    color: var(--ink-dim);
+    font-size: 16px;
+    max-width: 46ch;
+    margin: 0 auto 32px;
+  }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 36px 0 48px;
+  }
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+  .footer-links { display: flex; gap: 22px; }
+  .footer-links a { color: var(--ink-faint); text-decoration: none; }
+  .footer-links a:hover { color: var(--ink-dim); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn { transition: none; }
+  }
+</style>
+
+<nav class="top">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> Qenna Writer</div>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#philosophy">Why free</a>
+      <a href="https://github.com/Pedrovskigg/qenna-writer">Source</a>
+      <a class="btn small" href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Download</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Free &amp; open source · Windows · GPL-3.0</p>
+      <h1 class="headline serif">The free, open source <span class="accent">Scrivener alternative</span> for novelists and screenwriters</h1>
+      <p class="lede">Qenna Writer is a distraction-free text editor and multi-document manager built entirely for the craft of creative writing — characters, timelines, worldbuilding, and a corkboard for plotting, all in one desktop app.</p>
+      <div class="cta-row">
+        <a class="btn" href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">⬇ Download for Windows</a>
+        <a class="btn ghost" href="https://github.com/Pedrovskigg/qenna-writer">View source on GitHub</a>
+      </div>
+      <p class="fine-print">No account. No subscription. No paywalled features — ever.</p>
+      <div class="stat-row">
+        <div class="stat"><span class="num serif">$0</span><span class="label">forever, no tiers</span></div>
+        <div class="stat"><span class="num serif">144</span><span class="label">built-in themes</span></div>
+        <div class="stat"><span class="num serif">2</span><span class="label">languages, PT-BR / EN-US</span></div>
+        <div class="stat"><span class="num serif">C++/Qt6</span><span class="label">native, lightweight</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <img src="https://github.com/user-attachments/assets/9ab0d04e-7506-4527-8270-a8c8285fef30" alt="Qenna Writer logo — a Q shaped like a world of stories, half medieval fantasy, half sci-fi" />
+    </div>
+  </header>
+
+  <section class="compare">
+    <div class="compare-strip">
+      <span class="chip">Looking for a <b>free Scrivener alternative</b>?</span>
+      <span class="chip">No <b>monthly subscription</b>, ever</span>
+      <span class="chip">Works fully <b>offline</b></span>
+      <span class="chip">Open source, <b>GPL-3.0</b></span>
+      <span class="chip">Built <b>by a writer</b>, for writers</span>
+    </div>
+  </section>
+</div>
+
+<section class="feature" id="features">
+  <div class="wrap">
+    <div class="feature-head">
+      <p class="kicker">The editor</p>
+      <h2 class="serif">Writing software that gets out of your way</h2>
+      <p>Focus Mode, inline comments, cross-document tagging with <code>@</code>, and a style reviewer that flags repetition and weak verbs — without an AI rewriting your voice for you.</p>
+    </div>
+    <div class="shot">
+      <img src="https://github.com/user-attachments/assets/4b1b424c-3f9c-4511-b03e-4f9ab5d07cbb" alt="Qenna Writer - distraction-free novel writing editor, dark theme" loading="lazy" />
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-copy">
+        <h3>Every story, organized your way</h3>
+        <p>Drawers for characters, settings, objects, and lore. Multiple manuscripts in a single project — write a whole trilogy without losing track of book one.</p>
+        <ul>
+          <li>Unlimited documents, folders, and cross-references</li>
+          <li>Reference Menu — jump to any chapter or scene instantly</li>
+          <li>Search across the current document, project, or reference panel</li>
+        </ul>
+      </div>
+      <div class="feature-shot shot">
+        <img src="https://github.com/user-attachments/assets/c9bf6987-b17c-4e10-8a00-26745b824d2d" alt="Qenna Writer novel writing software - drawers and editor side by side" loading="lazy" />
+      </div>
+    </div>
+
+    <div class="feature-row reverse">
+      <div class="feature-copy">
+        <h3>Never lose the thread</h3>
+        <p>Automatic character presence detection across chapters and scenes, participation graphs, and a full dialogue log per character — know exactly who said what, and where.</p>
+        <ul>
+          <li>Character relationship &amp; bonds graph</li>
+          <li>Consistency tracking for objects and settings too</li>
+          <li>The Pensarium — save any passage as a searchable memory</li>
+        </ul>
+      </div>
+      <div class="feature-shot shot">
+        <img src="https://github.com/user-attachments/assets/83ff21c1-a464-42ef-9902-a94d6f38252a" alt="Qenna Writer - character relationship and bonds graph for novel writing" loading="lazy" />
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-copy">
+        <h3>Plan before you write a single line</h3>
+        <p>The Board is a corkboard for plotting — acts, arcs, storylines. The Builder helps you design magic systems, religions, and political structures. The Timeline logs every event automatically.</p>
+        <ul>
+          <li>Export any card, note, or planning area straight into a drawer</li>
+          <li>Tangled or radial timeline views</li>
+          <li>Glossary for invented words and worldbuilding terms</li>
+        </ul>
+      </div>
+      <div class="feature-shot shot">
+        <img src="https://github.com/user-attachments/assets/b075fe75-d4c1-409a-9179-3f6db8b69ef9" alt="Qenna Writer - The Board, a corkboard plotting tool for novelists" loading="lazy" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feature">
+  <div class="wrap">
+    <div class="feature-head">
+      <p class="kicker">Everything else</p>
+      <h2 class="serif">Built for the discipline, not just the spark</h2>
+      <p>The tools that keep you writing after the inspiration fades.</p>
+    </div>
+    <div class="grid-features">
+      <div class="grid-card">
+        <div class="icon">↓</div>
+        <h4>Export anywhere</h4>
+        <p>DOCX, ODT, PDF, and EPUB — whole project, one manuscript, or a single chapter.</p>
+      </div>
+      <div class="grid-card">
+        <div class="icon">◷</div>
+        <h4>Writing goals &amp; stats</h4>
+        <p>Word or time-based goals, streaks, Pomodoro sprints, and a full history of your habits.</p>
+      </div>
+      <div class="grid-card">
+        <div class="icon">♫</div>
+        <h4>Immersive sound</h4>
+        <p>Ambient soundscapes and focus music to help you disappear into the page.</p>
+      </div>
+      <div class="grid-card">
+        <div class="icon">◐</div>
+        <h4>144 themes</h4>
+        <p>Or build your own — background, editor color, panel color, all yours to customize.</p>
+      </div>
+      <div class="grid-card">
+        <div class="icon">▤</div>
+        <h4>Cover Creator</h4>
+        <p>Design a book cover inside the app with a gallery of royalty-free images.</p>
+      </div>
+      <div class="grid-card">
+        <div class="icon">✓</div>
+        <h4>Reminders</h4>
+        <p>Flag anything left pending so that fresh chapter gets revised before it goes cold.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="philosophy" id="philosophy">
+  <div class="wrap">
+    <blockquote class="serif">"You shouldn't have to pay to write good stories, or pay for the tools that help you write them. The only payment Qenna Writer asks for is: write good stories."</blockquote>
+    <cite>— P.H. Lobato, creator of Qenna Writer</cite>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="wrap">
+    <h2 class="serif">Your temple of creativity is one download away</h2>
+    <p>Free forever. No account, no subscription, no catch. Windows installer, built openly from public source code.</p>
+    <div class="cta-row" style="justify-content:center">
+      <a class="btn" href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">⬇ Download Qenna Writer</a>
+      <a class="btn ghost" href="https://github.com/Pedrovskigg/qenna-writer">Read the source</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <span>Qenna Writer — formerly Mira Writing, briefly Qiyva Writer. GPL-3.0 licensed.</span>
+    <div class="footer-links">
+      <a href="https://github.com/Pedrovskigg/qenna-writer">Source code</a>
+      <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases">Releases</a>
+      <a href="https://github.com/Pedrovskigg/qenna-cover-creator">Cover Creator</a>
+    </div>
+  </div>
+</footer>

@@ -50,7 +50,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     infoBtn->setObjectName(QStringLiteral("settingsInfoBtn"));
     infoBtn->setCursor(Qt::PointingHandCursor);
     infoBtn->setFixedSize(24, 24);
-    infoBtn->setToolTip(tr("Sobre o Qiyva Writer"));
+    infoBtn->setToolTip(tr("Sobre o Qenna Writer"));
     connect(infoBtn, &QPushButton::clicked, this, [this]() {
         AboutDialog dlg(this);
         dlg.exec();

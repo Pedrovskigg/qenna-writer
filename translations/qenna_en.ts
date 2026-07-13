@@ -1,54 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="pt_BR" sourcelanguage="pt_BR">
+<TS version="2.1" language="en" sourcelanguage="pt_BR">
 <context>
     <name>AboutDialog</name>
     <message>
         <location filename="../src/AboutDialog.cpp" line="22"/>
-        <source>Sobre o Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Sobre o Qenna Writer</source>
+        <translation>About Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="34"/>
-        <source>Qiyva Writer é um software de escrita criativa, desenvolvido por um amante da escrita para outros escritores.
+        <source>Qenna Writer é um software de escrita criativa, desenvolvido por um amante da escrita para outros escritores.
 
 Cada função, recurso, opção e funcionalidade foi pensada para tornar o projeto de escrita melhor.
 
 Ele é um programa gratuito e a ideia é que sempre seja. O pagamento pelo uso é escrever boas histórias.
 
 Aproveite.</source>
-        <translation type="unfinished"></translation>
+        <translation>Qenna Writer is creative writing software, built by someone who loves writing, for other writers.
+
+Every function, feature, option, and capability was designed to make your writing project better.
+
+It&apos;s a free program, and the idea is that it always will be. The price of admission is writing good stories.
+
+Enjoy.</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="60"/>
         <source>Clique para copiar</source>
-        <translation type="unfinished"></translation>
+        <translation>Click to copy</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="63"/>
         <source>Copiado!</source>
-        <translation type="unfinished"></translation>
+        <translation>Copied!</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="70"/>
         <source>  |  para bugs, sugestões e contato geral.</source>
-        <translation type="unfinished"></translation>
+        <translation>  |  for bugs, suggestions, and general contact.</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="90"/>
         <location filename="../src/AboutDialog.cpp" line="113"/>
         <source>Abrir no navegador</source>
-        <translation type="unfinished"></translation>
+        <translation>Open in browser</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="105"/>
         <source>Código-fonte:  </source>
-        <translation type="unfinished"></translation>
+        <translation>Source code:  </translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="133"/>
         <source>Current version: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Current version: %1</translation>
     </message>
 </context>
 <context>
@@ -56,23 +62,23 @@ Aproveite.</source>
     <message>
         <location filename="../src/AmbiencePanel.cpp" line="74"/>
         <source>Som ambiente</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambient sound</translation>
     </message>
     <message>
         <location filename="../src/AmbiencePanel.cpp" line="105"/>
         <location filename="../src/AmbiencePanel.cpp" line="248"/>
         <source>Reproduzir</source>
-        <translation type="unfinished"></translation>
+        <translation>Play</translation>
     </message>
     <message>
         <location filename="../src/AmbiencePanel.cpp" line="194"/>
         <source>Pasta de sons não encontrada: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Sound folder not found: %1</translation>
     </message>
     <message>
         <location filename="../src/AmbiencePanel.cpp" line="248"/>
         <source>Pausar</source>
-        <translation type="unfinished"></translation>
+        <translation>Pause</translation>
     </message>
 </context>
 <context>
@@ -80,393 +86,393 @@ Aproveite.</source>
     <message>
         <location filename="../src/BondPopup.cpp" line="154"/>
         <source>Criar Vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Create Bond</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="154"/>
         <source>Vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Bond</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="165"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="192"/>
         <source>TIPO DE VÍNCULO</source>
-        <translation type="unfinished"></translation>
+        <translation>BOND TYPE</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="199"/>
         <location filename="../src/BondPopup.cpp" line="340"/>
         <source>Selecione ou escreva…</source>
-        <translation type="unfinished"></translation>
+        <translation>Select or type…</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="204"/>
         <source>DESCRIÇÃO / BACKSTORY</source>
-        <translation type="unfinished"></translation>
+        <translation>DESCRIPTION / BACKSTORY</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="209"/>
         <source>Descreva o vínculo, a história por trás dele…</source>
-        <translation type="unfinished"></translation>
+        <translation>Describe the bond, the story behind it…</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="229"/>
         <source>COR DA LINHA</source>
-        <translation type="unfinished"></translation>
+        <translation>LINE COLOR</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="241"/>
         <source>Escolher cor personalizada</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose custom color</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="273"/>
         <source>Excluir vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete bond</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="294"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="300"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="300"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="372"/>
         <source>Gênero</source>
-        <translation type="unfinished"></translation>
+        <translation>Gender</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="427"/>
         <source>Digite um tipo personalizado…</source>
-        <translation type="unfinished"></translation>
+        <translation>Enter a custom type…</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="433"/>
         <source>Limpar tipo</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear type</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="459"/>
         <source>Tipo de vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Bond type</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="460"/>
         <source>Descreva o vínculo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Describe the bond:</translation>
     </message>
     <message>
         <location filename="../src/BondPopup.cpp" line="492"/>
         <source>Cor do vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Bond color</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="24"/>
         <source>Família</source>
-        <translation type="unfinished"></translation>
+        <translation>Family</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="26"/>
         <source>Pai</source>
-        <translation type="unfinished"></translation>
+        <translation>Father</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="26"/>
         <source>Mãe</source>
-        <translation type="unfinished"></translation>
+        <translation>Mother</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="27"/>
         <source>Filho</source>
-        <translation type="unfinished"></translation>
+        <translation>Son</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="27"/>
         <source>Filha</source>
-        <translation type="unfinished"></translation>
+        <translation>Daughter</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="28"/>
         <source>Irmão</source>
-        <translation type="unfinished"></translation>
+        <translation>Brother</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="28"/>
         <source>Irmã</source>
-        <translation type="unfinished"></translation>
+        <translation>Sister</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="29"/>
         <source>Avô</source>
-        <translation type="unfinished"></translation>
+        <translation>Grandfather</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="29"/>
         <source>Avó</source>
-        <translation type="unfinished"></translation>
+        <translation>Grandmother</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="30"/>
         <source>Tio</source>
-        <translation type="unfinished"></translation>
+        <translation>Uncle</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="30"/>
         <source>Tia</source>
-        <translation type="unfinished"></translation>
+        <translation>Aunt</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="31"/>
         <source>Primo</source>
-        <translation type="unfinished"></translation>
+        <translation>Cousin</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="31"/>
         <source>Prima</source>
-        <translation type="unfinished"></translation>
+        <translation>Cousin</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="32"/>
         <source>Cônjuge</source>
-        <translation type="unfinished"></translation>
+        <translation>Spouse</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="33"/>
         <source>Divorciados</source>
-        <translation type="unfinished"></translation>
+        <translation>Divorced</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="33"/>
         <source>Divorciadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Divorced</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="34"/>
         <source>Padrinho</source>
-        <translation type="unfinished"></translation>
+        <translation>Godfather</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="34"/>
         <source>Madrinha</source>
-        <translation type="unfinished"></translation>
+        <translation>Godmother</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="35"/>
         <source>Parentes distantes</source>
-        <translation type="unfinished"></translation>
+        <translation>Distant relatives</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="41"/>
         <source>Romântico</source>
-        <translation type="unfinished"></translation>
+        <translation>Romantic</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="43"/>
         <source>Namorados</source>
-        <translation type="unfinished"></translation>
+        <translation>Boyfriends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="43"/>
         <source>Namoradas</source>
-        <translation type="unfinished"></translation>
+        <translation>Girlfriends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="44"/>
         <source>Ex-namorados</source>
-        <translation type="unfinished"></translation>
+        <translation>Ex-boyfriends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="44"/>
         <source>Ex-namoradas</source>
-        <translation type="unfinished"></translation>
+        <translation>Ex-girlfriends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="45"/>
         <source>Interesse amoroso</source>
-        <translation type="unfinished"></translation>
+        <translation>Love interest</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="46"/>
         <source>Casados</source>
-        <translation type="unfinished"></translation>
+        <translation>Married</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="46"/>
         <source>Casadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Married</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="47"/>
         <source>Separados</source>
-        <translation type="unfinished"></translation>
+        <translation>Separated</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="47"/>
         <source>Separadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Separated</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="48"/>
         <source>Ficantes</source>
-        <translation type="unfinished"></translation>
+        <translation>Hookup</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="54"/>
         <source>Social</source>
-        <translation type="unfinished"></translation>
+        <translation>Social</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="56"/>
         <source>Amigos íntimos</source>
-        <translation type="unfinished"></translation>
+        <translation>Close friends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="56"/>
         <source>Amigas íntimas</source>
-        <translation type="unfinished"></translation>
+        <translation>Close friends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="57"/>
         <source>Velhos amigos</source>
-        <translation type="unfinished"></translation>
+        <translation>Old friends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="57"/>
         <source>Velhas amigas</source>
-        <translation type="unfinished"></translation>
+        <translation>Old friends</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="58"/>
         <source>Conhecidos</source>
-        <translation type="unfinished"></translation>
+        <translation>Acquaintances</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="58"/>
         <source>Conhecidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Acquaintances</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="59"/>
         <source>Colegas</source>
-        <translation type="unfinished"></translation>
+        <translation>Colleagues</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="60"/>
         <source>Parceiros</source>
-        <translation type="unfinished"></translation>
+        <translation>Partners</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="60"/>
         <source>Parceiras</source>
-        <translation type="unfinished"></translation>
+        <translation>Partners</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="66"/>
         <source>Conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Conflict</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="68"/>
         <source>Inimigos</source>
-        <translation type="unfinished"></translation>
+        <translation>Enemies</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="68"/>
         <source>Inimigas</source>
-        <translation type="unfinished"></translation>
+        <translation>Enemies</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="69"/>
         <source>Rivais</source>
-        <translation type="unfinished"></translation>
+        <translation>Rivals</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="70"/>
         <source>Desconfiança mútua</source>
-        <translation type="unfinished"></translation>
+        <translation>Mutual distrust</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="71"/>
         <source>Credor/Devedor</source>
-        <translation type="unfinished"></translation>
+        <translation>Creditor/Debtor</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="71"/>
         <source>Credora/Devedora</source>
-        <translation type="unfinished"></translation>
+        <translation>Creditor/Debtor</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="72"/>
         <source>Traição</source>
-        <translation type="unfinished"></translation>
+        <translation>Betrayal</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="78"/>
         <source>Poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Power</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="80"/>
         <source>Mentor / Aprendiz</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentor / Apprentice</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="80"/>
         <source>Mentora / Aprendiz</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentor / Apprentice</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="81"/>
         <source>Líder / Subordinado</source>
-        <translation type="unfinished"></translation>
+        <translation>Leader / Subordinate</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="81"/>
         <source>Líder / Subordinada</source>
-        <translation type="unfinished"></translation>
+        <translation>Leader / Subordinate</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="82"/>
         <source>Aliados</source>
-        <translation type="unfinished"></translation>
+        <translation>Allies</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="82"/>
         <source>Aliadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allies</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="83"/>
         <source>Protetor / Protegido</source>
-        <translation type="unfinished"></translation>
+        <translation>Protector / Protected</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="83"/>
         <source>Protetora / Protegida</source>
-        <translation type="unfinished"></translation>
+        <translation>Protector / Protected</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="84"/>
         <source>Mestre / Discípulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Master / Disciple</translation>
     </message>
     <message>
         <location filename="../src/BondTypes.cpp" line="84"/>
         <source>Mestra / Discípula</source>
-        <translation type="unfinished"></translation>
+        <translation>Master / Disciple</translation>
     </message>
 </context>
 <context>
@@ -474,32 +480,32 @@ Aproveite.</source>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="117"/>
         <source>Editar vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit bond</translation>
     </message>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="122"/>
         <source>Criar documento deste vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Create document from this bond</translation>
     </message>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="127"/>
         <source>Excluir vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete bond</translation>
     </message>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="132"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="140"/>
         <source>vinculado</source>
-        <translation type="unfinished"></translation>
+        <translation>bonded</translation>
     </message>
     <message>
         <location filename="../src/BondViewPanel.cpp" line="152"/>
         <source>%1 é %2 de %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 is %2 of %3</translation>
     </message>
 </context>
 <context>
@@ -507,27 +513,27 @@ Aproveite.</source>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="438"/>
         <source>Abrir automaticamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Open automatically</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="475"/>
         <source>Editar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="476"/>
         <source>Criar capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Create cover</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="478"/>
         <source>Remover dos recentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove from recent</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="480"/>
         <source>Excluir projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete project</translation>
     </message>
 </context>
 <context>
@@ -535,27 +541,27 @@ Aproveite.</source>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="578"/>
         <source>Abrir automaticamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Open automatically</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="600"/>
         <source>Editar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="601"/>
         <source>Criar capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Create cover</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="603"/>
         <source>Remover dos recentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove from recent</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="605"/>
         <source>Excluir projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete project</translation>
     </message>
 </context>
 <context>
@@ -563,125 +569,125 @@ Aproveite.</source>
     <message>
         <location filename="../src/CardItem.cpp" line="470"/>
         <source>Escolher símbolo</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose symbol</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="480"/>
         <location filename="../src/CardItem.cpp" line="570"/>
         <source>Cor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Color:</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="491"/>
         <source>Cor do símbolo</source>
-        <translation type="unfinished"></translation>
+        <translation>Symbol color</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="494"/>
         <source>escolha a cor e clique num símbolo</source>
-        <translation type="unfinished"></translation>
+        <translation>choose a color and click a symbol</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="541"/>
         <source>Texto livre</source>
-        <translation type="unfinished"></translation>
+        <translation>Free text</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="549"/>
         <location filename="../src/CardItem.cpp" line="1407"/>
         <source>Escreva aqui...</source>
-        <translation type="unfinished"></translation>
+        <translation>Write here...</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="555"/>
         <source>Fonte:</source>
-        <translation type="unfinished"></translation>
+        <translation>Font:</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="609"/>
         <source>Cor personalizada</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom color</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="612"/>
         <source>Cor do texto</source>
-        <translation type="unfinished"></translation>
+        <translation>Text color</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="813"/>
         <source>Escolher imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose image</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="814"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1030"/>
         <source>Clique direito → Escolher imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Right-click → Choose image</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1107"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1135"/>
         <source>documento vazio</source>
-        <translation type="unfinished"></translation>
+        <translation>empty document</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1330"/>
         <source>Sem título</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1503"/>
         <source>Personalizada...</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom...</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1508"/>
         <source>Cor do card</source>
-        <translation type="unfinished"></translation>
+        <translation>Card color</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1567"/>
         <location filename="../src/CardItem.cpp" line="1942"/>
         <source>Cor</source>
-        <translation type="unfinished"></translation>
+        <translation>Color</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1926"/>
         <source>Escolher imagem...</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose image...</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1927"/>
         <source>Criar documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Create document</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1931"/>
         <source>Remover card</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove card</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1940"/>
         <source>Trocar símbolo...</source>
-        <translation type="unfinished"></translation>
+        <translation>Change symbol...</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1941"/>
         <source>Cor...</source>
-        <translation type="unfinished"></translation>
+        <translation>Color...</translation>
     </message>
     <message>
         <location filename="../src/CardItem.cpp" line="1946"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
 </context>
 <context>
@@ -689,72 +695,72 @@ Aproveite.</source>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="141"/>
         <source>Buscar na ficha…</source>
-        <translation type="unfinished"></translation>
+        <translation>Search the sheet…</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="300"/>
         <source>Novo bloco</source>
-        <translation type="unfinished"></translation>
+        <translation>New block</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="300"/>
         <source>Novo dado</source>
-        <translation type="unfinished"></translation>
+        <translation>New field</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="342"/>
         <source>Selecionar foto</source>
-        <translation type="unfinished"></translation>
+        <translation>Select photo</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="343"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="375"/>
         <source>＋ foto</source>
-        <translation type="unfinished"></translation>
+        <translation>＋ photo</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="403"/>
         <source>Mover de coluna</source>
-        <translation type="unfinished"></translation>
+        <translation>Move to other column</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="407"/>
         <source>Remover campo</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove field</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="430"/>
         <source>Escreva aqui…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write here…</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="475"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="548"/>
         <source>＋ Dado</source>
-        <translation type="unfinished"></translation>
+        <translation>＋ Field</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="549"/>
         <source>＋ Texto</source>
-        <translation type="unfinished"></translation>
+        <translation>＋ Text</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="560"/>
         <source>1 coluna</source>
-        <translation type="unfinished"></translation>
+        <translation>1 column</translation>
     </message>
     <message>
         <location filename="../src/CharacterSheetPanel.cpp" line="560"/>
         <source>2 colunas</source>
-        <translation type="unfinished"></translation>
+        <translation>2 columns</translation>
     </message>
 </context>
 <context>
@@ -762,272 +768,276 @@ Aproveite.</source>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="499"/>
         <source>Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>Builder</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="687"/>
         <source>SISTEMAS</source>
-        <translation type="unfinished"></translation>
+        <translation>SYSTEMS</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="699"/>
         <source>Buscar sistema ou nó…</source>
-        <translation type="unfinished"></translation>
+        <translation>Search system or node…</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="724"/>
         <source>+ Novo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>+ New system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="751"/>
         <location filename="../src/ConstrutorWindow.cpp" line="1615"/>
         <source>Nome do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>System name</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="756"/>
         <location filename="../src/ConstrutorWindow.cpp" line="1660"/>
         <source>Excluir sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="797"/>
         <source>FAVORECE</source>
-        <translation type="unfinished"></translation>
+        <translation>FAVORS</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="806"/>
         <source>Mostrar todos os pontos</source>
-        <translation type="unfinished"></translation>
+        <translation>Show all points</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="809"/>
         <source>EXIGE</source>
-        <translation type="unfinished"></translation>
+        <translation>REQUIRES</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="838"/>
         <source>+ Regra</source>
-        <translation type="unfinished"></translation>
+        <translation>+ Rule</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="841"/>
         <source>Adicionar regra (mecânica/lei)</source>
-        <translation type="unfinished"></translation>
+        <translation>Add rule (mechanic/law)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="843"/>
         <source>+ Seção</source>
-        <translation type="unfinished"></translation>
+        <translation>+ Section</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="846"/>
         <source>Adicionar seção (informação/lore)</source>
-        <translation type="unfinished"></translation>
+        <translation>Add section (information/lore)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="853"/>
         <source>Excluir nó selecionado</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete selected node</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="912"/>
         <source>Mostrar/ocultar sistemas</source>
-        <translation type="unfinished"></translation>
+        <translation>Show/hide systems</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="918"/>
         <source>Negrito (Ctrl+B)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bold (Ctrl+B)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="924"/>
         <source>Itálico (Ctrl+I)</source>
-        <translation type="unfinished"></translation>
+        <translation>Italic (Ctrl+I)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="930"/>
         <source>Sublinhado (Ctrl+U)</source>
-        <translation type="unfinished"></translation>
+        <translation>Underline (Ctrl+U)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="936"/>
         <source>Tachado</source>
-        <translation type="unfinished"></translation>
+        <translation>Strikethrough</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="941"/>
         <source>Indentar primeira linha do parágrafo</source>
-        <translation type="unfinished"></translation>
+        <translation>Indent first line of paragraph</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="964"/>
         <source>Espaçamento de linhas e parágrafos</source>
-        <translation type="unfinished"></translation>
+        <translation>Line and paragraph spacing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="975"/>
         <source>Alinhar à esquerda</source>
-        <translation type="unfinished"></translation>
+        <translation>Align left</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="978"/>
         <source>Centralizar</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="981"/>
         <source>Alinhar à direita</source>
-        <translation type="unfinished"></translation>
+        <translation>Align right</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="996"/>
         <source>Modo foco</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus mode</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1001"/>
         <location filename="../src/ConstrutorWindow.cpp" line="2036"/>
         <source>Inserir imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Insert image</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1287"/>
         <location filename="../src/ConstrutorWindow.cpp" line="1433"/>
         <location filename="../src/ConstrutorWindow.cpp" line="1716"/>
         <source>Escreva um resumo, parecer ou introdução deste sistema…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write a summary, overview, or introduction for this system…</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1358"/>
         <source>Nenhum sistema aberto. Selecione um sistema à esquerda ou crie um novo para começar.</source>
-        <translation type="unfinished"></translation>
+        <translation>No system open. Select a system on the left or create a new one to get started.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1372"/>
         <source>Editado em %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Edited on %1</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1460"/>
         <source>Escreva aqui…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write here…</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1611"/>
         <source>Novo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>New system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1616"/>
         <location filename="../src/ConstrutorWindow.cpp" line="1686"/>
         <source>Nome:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1621"/>
         <source>Categoria:</source>
-        <translation type="unfinished"></translation>
+        <translation>Category:</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1661"/>
         <source>Excluir o sistema &quot;%1&quot; e todos os seus nós?
 
 Essa ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete the system &quot;%1&quot; and all its nodes?
+
+This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1685"/>
         <source>Nova regra</source>
-        <translation type="unfinished"></translation>
+        <translation>New rule</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1685"/>
         <source>Nova seção</source>
-        <translation type="unfinished"></translation>
+        <translation>New section</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1702"/>
         <source>Excluir nó</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete node</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1703"/>
         <source>Excluir este nó e todos os seus filhos?
 
 Essa ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete this node and all its children?
+
+This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1737"/>
         <source>Adicionar Regra filha</source>
-        <translation type="unfinished"></translation>
+        <translation>Add child Rule</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1739"/>
         <source>Adicionar Seção filha</source>
-        <translation type="unfinished"></translation>
+        <translation>Add child Section</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1742"/>
         <source>Excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1959"/>
         <source>ENTRE LINHAS</source>
-        <translation type="unfinished"></translation>
+        <translation>LINE SPACING</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1963"/>
         <source>Simples (1.0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Single (1.0)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1964"/>
         <source>Justo (1.15)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tight (1.15)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1965"/>
         <source>Compacto (1.3)</source>
-        <translation type="unfinished"></translation>
+        <translation>Compact (1.3)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1966"/>
         <source>Confortável (1.5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Comfortable (1.5)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1967"/>
         <source>Padrão (1.7)</source>
-        <translation type="unfinished"></translation>
+        <translation>Default (1.7)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1968"/>
         <source>Amplo (1.9)</source>
-        <translation type="unfinished"></translation>
+        <translation>Wide (1.9)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="1969"/>
         <source>Espaçoso (2.2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spacious (2.2)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="2018"/>
         <source>ANTES DO PARÁGRAFO</source>
-        <translation type="unfinished"></translation>
+        <translation>BEFORE PARAGRAPH</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="2023"/>
         <source>DEPOIS DO PARÁGRAFO</source>
-        <translation type="unfinished"></translation>
+        <translation>AFTER PARAGRAPH</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorWindow.cpp" line="2037"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp *.gif)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp *.gif)</translation>
     </message>
 </context>
 <context>
@@ -1035,31 +1045,33 @@ Essa ação não pode ser desfeita.</source>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="840"/>
         <source>Excluir projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="848"/>
         <source>Tem certeza que deseja excluir &quot;%1&quot;?
 
 A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you sure you want to delete &quot;%1&quot;?
+
+The project folder will be erased from disk. This action CANNOT be undone.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="856"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="857"/>
         <location filename="../src/MainMenuDialog.cpp" line="875"/>
         <source>Excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="868"/>
         <location filename="../src/MainMenuDialog.cpp" line="877"/>
         <source>Excluir (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete (%1)</translation>
     </message>
 </context>
 <context>
@@ -1067,172 +1079,172 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="33"/>
         <source>Pessoa</source>
-        <translation type="unfinished"></translation>
+        <translation>Person</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="34"/>
         <source>Mapa</source>
-        <translation type="unfinished"></translation>
+        <translation>Map</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="35"/>
         <source>Cubo</source>
-        <translation type="unfinished"></translation>
+        <translation>Cube</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="36"/>
         <source>Planeta</source>
-        <translation type="unfinished"></translation>
+        <translation>Planet</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="37"/>
         <source>Lua</source>
-        <translation type="unfinished"></translation>
+        <translation>Moon</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="38"/>
         <source>Sol</source>
-        <translation type="unfinished"></translation>
+        <translation>Sun</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="39"/>
         <source>Espada</source>
-        <translation type="unfinished"></translation>
+        <translation>Sword</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="40"/>
         <source>Arma</source>
-        <translation type="unfinished"></translation>
+        <translation>Gun</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="41"/>
         <source>Carro</source>
-        <translation type="unfinished"></translation>
+        <translation>Car</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="42"/>
         <source>Pin</source>
-        <translation type="unfinished"></translation>
+        <translation>Pin</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="43"/>
         <source>Estrela</source>
-        <translation type="unfinished"></translation>
+        <translation>Star</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="44"/>
         <source>Coroa</source>
-        <translation type="unfinished"></translation>
+        <translation>Crown</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="45"/>
         <source>Coração</source>
-        <translation type="unfinished"></translation>
+        <translation>Heart</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="46"/>
         <source>Árvore</source>
-        <translation type="unfinished"></translation>
+        <translation>Tree</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="47"/>
         <source>Castelo</source>
-        <translation type="unfinished"></translation>
+        <translation>Castle</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="48"/>
         <source>Frasco</source>
-        <translation type="unfinished"></translation>
+        <translation>Flask</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="49"/>
         <source>Caveira</source>
-        <translation type="unfinished"></translation>
+        <translation>Skull</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="50"/>
         <source>Livro</source>
-        <translation type="unfinished"></translation>
+        <translation>Book</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="51"/>
         <source>Arquivo</source>
-        <translation type="unfinished"></translation>
+        <translation>File</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="52"/>
         <source>Gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="53"/>
         <source>Manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="54"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="141"/>
         <source>Nova gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>New drawer</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="156"/>
         <source>Escolher cor</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose color</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="167"/>
         <source>Ícone / Cor</source>
-        <translation type="unfinished"></translation>
+        <translation>Icon / Color</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="170"/>
         <source>Digite o nome da gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Enter the drawer name</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="172"/>
         <source>Nome</source>
-        <translation type="unfinished"></translation>
+        <translation>Name</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="177"/>
         <source>Elemento</source>
-        <translation type="unfinished"></translation>
+        <translation>Element</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="181"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="182"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="220"/>
         <source>Automático</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatic</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="241"/>
         <source>Cor da gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer color</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="279"/>
         <source>Editar gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit drawer</translation>
     </message>
     <message>
         <location filename="../src/DrawerCreateDialog.cpp" line="280"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
 </context>
 <context>
@@ -1241,397 +1253,405 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
         <location filename="../src/DrawerListPanel.cpp" line="335"/>
         <location filename="../src/DrawerListPanel.cpp" line="1078"/>
         <source>Gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="360"/>
         <source>Fixar painel</source>
-        <translation type="unfinished"></translation>
+        <translation>Pin panel</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="369"/>
         <source>Modo consistência narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrative consistency mode</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="399"/>
         <source>Alternar exibição</source>
-        <translation type="unfinished"></translation>
+        <translation>Toggle view</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="408"/>
         <source>Tamanho dos cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Card size</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="420"/>
         <source>Ordem de exibição</source>
-        <translation type="unfinished"></translation>
+        <translation>Display order</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="448"/>
         <source>Criação ↑</source>
-        <translation type="unfinished"></translation>
+        <translation>Created ↑</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="449"/>
         <source>Criação ↓</source>
-        <translation type="unfinished"></translation>
+        <translation>Created ↓</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="450"/>
         <source>A → Z</source>
-        <translation type="unfinished"></translation>
+        <translation>A → Z</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="452"/>
         <source>Por papel</source>
-        <translation type="unfinished"></translation>
+        <translation>By role</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="458"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="487"/>
         <source>+ Pasta</source>
-        <translation type="unfinished"></translation>
+        <translation>+ Folder</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="703"/>
         <source>Status personalizado...</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom status...</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="716"/>
         <source>Limpar status</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear status</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="729"/>
         <source>Morto</source>
-        <translation type="unfinished"></translation>
+        <translation>Dead</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="729"/>
         <source>Desaparecido</source>
-        <translation type="unfinished"></translation>
+        <translation>Missing</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="729"/>
         <source>Ferido</source>
-        <translation type="unfinished"></translation>
+        <translation>Injured</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="730"/>
         <source>Curado</source>
-        <translation type="unfinished"></translation>
+        <translation>Healed</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="730"/>
         <source>Apaixonado</source>
-        <translation type="unfinished"></translation>
+        <translation>In love</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="730"/>
         <source>Raivoso</source>
-        <translation type="unfinished"></translation>
+        <translation>Angry</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="731"/>
         <source>Feliz</source>
-        <translation type="unfinished"></translation>
+        <translation>Happy</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="731"/>
         <source>Triste</source>
-        <translation type="unfinished"></translation>
+        <translation>Sad</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="731"/>
         <source>Confuso</source>
-        <translation type="unfinished"></translation>
+        <translation>Confused</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="732"/>
         <source>Traído</source>
-        <translation type="unfinished"></translation>
+        <translation>Betrayed</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="732"/>
         <source>Com medo</source>
-        <translation type="unfinished"></translation>
+        <translation>Afraid</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="732"/>
         <source>Em fuga</source>
-        <translation type="unfinished"></translation>
+        <translation>On the run</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="733"/>
         <source>Preso</source>
-        <translation type="unfinished"></translation>
+        <translation>Imprisoned</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="733"/>
         <source>Transformado</source>
-        <translation type="unfinished"></translation>
+        <translation>Transformed</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="733"/>
         <source>Aliviado</source>
-        <translation type="unfinished"></translation>
+        <translation>Relieved</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="734"/>
         <source>Perdido</source>
-        <translation type="unfinished"></translation>
+        <translation>Lost</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="807"/>
         <source>Local personalizado...</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom location...</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="820"/>
         <source>Limpar local</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear location</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="832"/>
         <source>Nenhum cenário criado.</source>
-        <translation type="unfinished"></translation>
+        <translation>No setting created yet.</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="942"/>
         <source>Contar somente cenas</source>
-        <translation type="unfinished"></translation>
+        <translation>Count scenes only</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="943"/>
         <source>Contar somente capítulos inteiros</source>
-        <translation type="unfinished"></translation>
+        <translation>Count whole chapters only</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="983"/>
         <source>Sem ocorrências registradas.</source>
-        <translation type="unfinished"></translation>
+        <translation>No occurrences recorded.</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="996"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1099"/>
         <location filename="../src/DrawerListPanel.cpp" line="1101"/>
         <location filename="../src/DrawerListPanel.cpp" line="1105"/>
         <source>Criar novo documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Create new document</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1102"/>
         <source>Criar novo personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Create new character</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1103"/>
         <source>Criar novo cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>Create new setting</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1104"/>
         <source>Criar novo objeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Create new object</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1170"/>
         <source>Pasta</source>
-        <translation type="unfinished"></translation>
+        <translation>Folder</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1240"/>
         <source>Cards: Pequeno</source>
-        <translation type="unfinished"></translation>
+        <translation>Cards: Small</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1241"/>
         <source>Cards: Médio</source>
-        <translation type="unfinished"></translation>
+        <translation>Cards: Medium</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1242"/>
         <source>Cards: Grande</source>
-        <translation type="unfinished"></translation>
+        <translation>Cards: Large</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1253"/>
         <source>Exibição: Blocos — clique para Lista</source>
-        <translation type="unfinished"></translation>
+        <translation>View: Grid — click for List</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1254"/>
         <source>Exibição: Lista — clique para Blocos</source>
-        <translation type="unfinished"></translation>
+        <translation>View: List — click for Grid</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1306"/>
         <source>Voltar</source>
-        <translation type="unfinished"></translation>
+        <translation>Back</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1425"/>
         <source>Clique e arraste no nome dos personagens pra criar vínculos entre eles.</source>
-        <translation type="unfinished"></translation>
+        <translation>Click and drag character names to create bonds between them.</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1527"/>
         <source>sem foto</source>
-        <translation type="unfinished"></translation>
+        <translation>no photo</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1537"/>
         <location filename="../src/DrawerListPanel.cpp" line="2300"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1570"/>
         <source>Arrastar para criar vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag to create a bond</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1612"/>
         <source>cena(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>scene(s)</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1612"/>
         <source>capítulo(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>chapter(s)</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1620"/>
         <source>Aparece em %1 de %2 %3 (%4%) — clique para detalhes</source>
-        <translation type="unfinished"></translation>
+        <translation>Appears in %1 of %2 %3 (%4%) — click for details</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1643"/>
         <source>Status: —</source>
-        <translation type="unfinished"></translation>
+        <translation>Status: —</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1644"/>
         <source>Status: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Status: %1</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1676"/>
         <source>⚠ Aparece em %1 cena(s) após %2</source>
-        <translation type="unfinished"></translation>
+        <translation>⚠ Appears in %1 scene(s) after %2</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1690"/>
         <source>Local: —</source>
-        <translation type="unfinished"></translation>
+        <translation>Location: —</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="1691"/>
         <source>Local: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Location: %1</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2034"/>
         <source>Vazio. Use o botão acima pra criar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Empty. Use the button above to create one.</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2082"/>
         <source>Novo grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>New group</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2127"/>
         <source>Nome do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Group name</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2161"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2163"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2210"/>
         <source>Editar metadados…</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit metadata…</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2216"/>
         <source>Remover elemento</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove element</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2221"/>
         <source>Adicionar elemento…</source>
-        <translation type="unfinished"></translation>
+        <translation>Add element…</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2228"/>
         <source>Adicionar ao grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to group</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2254"/>
         <source>Novo grupo...</source>
-        <translation type="unfinished"></translation>
+        <translation>New group...</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2259"/>
         <source>Remover do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove from group</translation>
+    </message>
+    <message>
+        <source>Adicionar marcador</source>
+        <translation type="vanished">Add marker</translation>
+    </message>
+    <message>
+        <source>Em breve</source>
+        <translation type="vanished">Coming soon</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2266"/>
         <source>Abrir no Menu de Referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Open in Reference Menu</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2273"/>
         <source>Mover para</source>
-        <translation type="unfinished"></translation>
+        <translation>Move to</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2276"/>
         <source>Esta gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>This drawer</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2278"/>
         <location filename="../src/DrawerListPanel.cpp" line="2308"/>
         <location filename="../src/DrawerListPanel.cpp" line="2352"/>
         <source>Raiz da gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer root</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2296"/>
         <source>Outras gavetas</source>
-        <translation type="unfinished"></translation>
+        <translation>Other drawers</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2324"/>
         <source>Excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/DrawerListPanel.cpp" line="2351"/>
         <source>Mover pasta para</source>
-        <translation type="unfinished"></translation>
+        <translation>Move folder to</translation>
     </message>
 </context>
 <context>
@@ -1639,7 +1659,7 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/EditorHost.cpp" line="191"/>
         <source>Original</source>
-        <translation type="unfinished"></translation>
+        <translation>Original</translation>
     </message>
 </context>
 <context>
@@ -1648,155 +1668,155 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
         <location filename="../src/ElementCreateDialog.cpp" line="103"/>
         <location filename="../src/ElementCreateDialog.cpp" line="258"/>
         <source>sem foto</source>
-        <translation type="unfinished"></translation>
+        <translation>no photo</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="107"/>
         <source>Escolher foto…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose photo…</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="111"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="133"/>
         <source>Apelidos:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicknames:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="136"/>
         <source>separados por vírgula (ex.: Mari, a herdeira)</source>
-        <translation type="unfinished"></translation>
+        <translation>comma-separated (e.g.: Mari, the heiress)</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="139"/>
         <source>Papel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Role:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="143"/>
         <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
-        <translation type="unfinished"></translation>
+        <translation>Protagonist</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="144"/>
         <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
-        <translation type="unfinished"></translation>
+        <translation>Deuteragonist</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="145"/>
         <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
-        <translation type="unfinished"></translation>
+        <translation>Supporting character</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="146"/>
         <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
-        <translation type="unfinished"></translation>
+        <translation>Antagonist</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="147"/>
         <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
-        <translation type="unfinished"></translation>
+        <translation>Foil</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="148"/>
         <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
-        <translation type="unfinished"></translation>
+        <translation>Trickster</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="149"/>
         <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentor</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="150"/>
         <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
-        <translation type="unfinished"></translation>
+        <translation>Extra</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="154"/>
         <source>Narrador (voz em 1ª pessoa)</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrator (1st-person voice)</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="158"/>
         <source>Trilha na linha do tempo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Track on timeline:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="161"/>
         <source>Automático (pelo papel)</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatic (by role)</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="162"/>
         <source>Sempre acompanhar</source>
-        <translation type="unfinished"></translation>
+        <translation>Always track</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="163"/>
         <source>Nunca acompanhar</source>
-        <translation type="unfinished"></translation>
+        <translation>Never track</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="167"/>
         <source>Tipo de página:</source>
-        <translation type="unfinished"></translation>
+        <translation>Page type:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="170"/>
         <source>Ficha (campos prontos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Character sheet (ready-made fields)</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="171"/>
         <source>Documento livre (página em branco)</source>
-        <translation type="unfinished"></translation>
+        <translation>Free document (blank page)</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="180"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="183"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="249"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="250"/>
         <source>Editar elemento</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit element</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="262"/>
         <source>erro</source>
-        <translation type="unfinished"></translation>
+        <translation>error</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="269"/>
         <source>Selecionar foto</source>
-        <translation type="unfinished"></translation>
+        <translation>Select photo</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="271"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
 </context>
 <context>
@@ -1805,98 +1825,98 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
         <location filename="../src/ExportPanel.cpp" line="22"/>
         <location filename="../src/ExportPanel.cpp" line="34"/>
         <source>Exportar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Export project</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="52"/>
         <source>Selecionar tudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Select all</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="53"/>
         <source>Desmarcar tudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Deselect all</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="92"/>
         <source>Ao exportar capítulos, caso haja cenas com variações criadas, o app exportará com a variação que estiver definida como primária.</source>
-        <translation type="unfinished"></translation>
+        <translation>When exporting chapters, if any scenes have variations, the app will export the one set as primary.</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="102"/>
         <source>Formato:</source>
-        <translation type="unfinished"></translation>
+        <translation>Format:</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="129"/>
         <source>Manuscrito:</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript:</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="131"/>
         <source>Documento único</source>
-        <translation type="unfinished"></translation>
+        <translation>Single document</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="132"/>
         <source>Capítulos separados</source>
-        <translation type="unfinished"></translation>
+        <translation>Separate chapters</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="146"/>
         <source>Marcadores:</source>
-        <translation type="unfinished"></translation>
+        <translation>Markers:</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="148"/>
         <source>Incluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Include</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="149"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="163"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="166"/>
         <location filename="../src/ExportPanel.cpp" line="316"/>
         <source>Exportar</source>
-        <translation type="unfinished"></translation>
+        <translation>Export</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="202"/>
         <source>MANUSCRITOS</source>
-        <translation type="unfinished"></translation>
+        <translation>MANUSCRIPTS</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="216"/>
         <source>Manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="226"/>
         <source>Capítulo %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter %1</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="240"/>
         <source>GAVETAS</source>
-        <translation type="unfinished"></translation>
+        <translation>DRAWERS</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="250"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/ExportPanel.cpp" line="315"/>
         <source>Exportar (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Export (%1)</translation>
     </message>
 </context>
 <context>
@@ -1904,22 +1924,22 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/FindBar.cpp" line="32"/>
         <source>Buscar no texto...</source>
-        <translation type="unfinished"></translation>
+        <translation>Search in text...</translation>
     </message>
     <message>
         <location filename="../src/FindBar.cpp" line="61"/>
         <source>Anterior (Shift+Enter)</source>
-        <translation type="unfinished"></translation>
+        <translation>Previous (Shift+Enter)</translation>
     </message>
     <message>
         <location filename="../src/FindBar.cpp" line="62"/>
         <source>Próximo (Enter)</source>
-        <translation type="unfinished"></translation>
+        <translation>Next (Enter)</translation>
     </message>
     <message>
         <location filename="../src/FindBar.cpp" line="63"/>
         <source>Fechar (Esc)</source>
-        <translation type="unfinished"></translation>
+        <translation>Close (Esc)</translation>
     </message>
 </context>
 <context>
@@ -1927,82 +1947,82 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="37"/>
         <source>Todos</source>
-        <translation type="unfinished"></translation>
+        <translation>All</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="38"/>
         <source>Capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapters</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="39"/>
         <source>Cenas</source>
-        <translation type="unfinished"></translation>
+        <translation>Scenes</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="40"/>
         <source>Gavetas</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawers</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="66"/>
         <source>Buscar no projeto...</source>
-        <translation type="unfinished"></translation>
+        <translation>Search the project...</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="73"/>
         <source>Fechar (Esc)</source>
-        <translation type="unfinished"></translation>
+        <translation>Close (Esc)</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="104"/>
         <location filename="../src/GlobalSearchPanel.cpp" line="416"/>
         <source>Digite para buscar capítulos, cenas e itens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Type to search chapters, scenes, and items.</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="298"/>
         <location filename="../src/GlobalSearchPanel.cpp" line="404"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="301"/>
         <source>Gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="313"/>
         <location filename="../src/GlobalSearchPanel.cpp" line="402"/>
         <source>Manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="322"/>
         <location filename="../src/GlobalSearchPanel.cpp" line="401"/>
         <location filename="../src/GlobalSearchPanel.cpp" line="403"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="342"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="403"/>
         <source>%1 • Cena</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 • Scene</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="431"/>
         <source>Nada encontrado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nothing found.</translation>
     </message>
     <message>
         <location filename="../src/GlobalSearchPanel.cpp" line="460"/>
         <source>É citado em...</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentioned in...</translation>
     </message>
 </context>
 <context>
@@ -2010,27 +2030,27 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/GlossaryAddPopup.cpp" line="49"/>
         <source>Adicionar ao Glossário</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to Glossary</translation>
     </message>
     <message>
         <location filename="../src/GlossaryAddPopup.cpp" line="53"/>
         <source>Termo</source>
-        <translation type="unfinished"></translation>
+        <translation>Term</translation>
     </message>
     <message>
         <location filename="../src/GlossaryAddPopup.cpp" line="60"/>
         <source>Definição (opcional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Definition (optional)</translation>
     </message>
     <message>
         <location filename="../src/GlossaryAddPopup.cpp" line="71"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/GlossaryAddPopup.cpp" line="80"/>
         <source>Adicionar</source>
-        <translation type="unfinished"></translation>
+        <translation>Add</translation>
     </message>
 </context>
 <context>
@@ -2038,42 +2058,42 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="69"/>
         <source>Glossário</source>
-        <translation type="unfinished"></translation>
+        <translation>Glossary</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="73"/>
         <source>+ Novo termo</source>
-        <translation type="unfinished"></translation>
+        <translation>+ New term</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="82"/>
         <source>Buscar termo...</source>
-        <translation type="unfinished"></translation>
+        <translation>Search term...</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="100"/>
         <source>Termo</source>
-        <translation type="unfinished"></translation>
+        <translation>Term</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="108"/>
         <source>Definição</source>
-        <translation type="unfinished"></translation>
+        <translation>Definition</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="114"/>
         <source>Definição opcional...</source>
-        <translation type="unfinished"></translation>
+        <translation>Optional definition...</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="121"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location filename="../src/GlossaryPanel.cpp" line="267"/>
         <source>Novo termo</source>
-        <translation type="unfinished"></translation>
+        <translation>New term</translation>
     </message>
 </context>
 <context>
@@ -2081,83 +2101,83 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/GroupsPanel.cpp" line="77"/>
         <source>Grupos</source>
-        <translation type="unfinished"></translation>
+        <translation>Groups</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="86"/>
         <location filename="../src/GroupsPanel.cpp" line="429"/>
         <source>Novo grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>New group</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="105"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="235"/>
         <source>Nenhum grupo criado</source>
-        <translation type="unfinished"></translation>
+        <translation>No groups created</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="302"/>
         <source>Selecione um grupo acima</source>
-        <translation type="unfinished"></translation>
+        <translation>Select a group above</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="312"/>
         <source>Crie um grupo com o botão +</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a group with the + button</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="355"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="362"/>
         <source>(gaveta)</source>
-        <translation type="unfinished"></translation>
+        <translation>(drawer)</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="385"/>
         <source>Nenhum documento neste grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>No documents in this group</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="408"/>
         <source>Editar grupo…</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit group…</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="414"/>
         <source>Excluir grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete group</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="429"/>
         <source>Editar grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit group</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="459"/>
         <source>Nome do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Group name</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="495"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="497"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/GroupsPanel.cpp" line="497"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
 </context>
 <context>
@@ -2165,52 +2185,52 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="20"/>
         <source>Inserir imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Insert image</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="35"/>
         <source>Alinhamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Alignment</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="40"/>
         <source>Esquerda</source>
-        <translation type="unfinished"></translation>
+        <translation>Left</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="41"/>
         <source>Centro</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="42"/>
         <source>Direita</source>
-        <translation type="unfinished"></translation>
+        <translation>Right</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="54"/>
         <source>Largura</source>
-        <translation type="unfinished"></translation>
+        <translation>Width</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="65"/>
         <source> px</source>
-        <translation type="unfinished"></translation>
+        <translation> px</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="76"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="77"/>
         <source>Inserir</source>
-        <translation type="unfinished"></translation>
+        <translation>Insert</translation>
     </message>
     <message>
         <location filename="../src/ImageInsertDialog.cpp" line="102"/>
         <source>(prévia indisponível)</source>
-        <translation type="unfinished"></translation>
+        <translation>(preview unavailable)</translation>
     </message>
 </context>
 <context>
@@ -2218,27 +2238,27 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/ImageOverlay.cpp" line="35"/>
         <source>Alinhar à esquerda</source>
-        <translation type="unfinished"></translation>
+        <translation>Align left</translation>
     </message>
     <message>
         <location filename="../src/ImageOverlay.cpp" line="36"/>
         <source>Centralizar</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/ImageOverlay.cpp" line="37"/>
         <source>Alinhar à direita</source>
-        <translation type="unfinished"></translation>
+        <translation>Align right</translation>
     </message>
     <message>
         <location filename="../src/ImageOverlay.cpp" line="38"/>
         <source>Diminuir</source>
-        <translation type="unfinished"></translation>
+        <translation>Shrink</translation>
     </message>
     <message>
         <location filename="../src/ImageOverlay.cpp" line="40"/>
         <source>Aumentar</source>
-        <translation type="unfinished"></translation>
+        <translation>Enlarge</translation>
     </message>
 </context>
 <context>
@@ -2246,32 +2266,36 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/LeftBar.cpp" line="163"/>
         <source>Informações do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project info</translation>
     </message>
     <message>
         <location filename="../src/LeftBar.cpp" line="176"/>
         <source>Lousa de planejamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Planning Board</translation>
     </message>
     <message>
         <location filename="../src/LeftBar.cpp" line="181"/>
         <source>Linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline</translation>
     </message>
     <message>
         <location filename="../src/LeftBar.cpp" line="194"/>
         <source>Manuscritos</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscripts</translation>
     </message>
     <message>
         <location filename="../src/LeftBar.cpp" line="199"/>
         <source>Grupos</source>
-        <translation type="unfinished"></translation>
+        <translation>Groups</translation>
+    </message>
+    <message>
+        <source>Consistência narrativa</source>
+        <translation type="vanished">Narrative consistency</translation>
     </message>
     <message>
         <location filename="../src/LeftBar.cpp" line="413"/>
         <source>Nova gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>New drawer</translation>
     </message>
 </context>
 <context>
@@ -2279,316 +2303,316 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     <message>
         <location filename="../src/LousaPanel.cpp" line="79"/>
         <source>Lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="104"/>
         <location filename="../src/LousaPanel.cpp" line="1210"/>
         <source>Post-it</source>
-        <translation type="unfinished"></translation>
+        <translation>Post-it</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="106"/>
         <source>Comentário</source>
-        <translation type="unfinished"></translation>
+        <translation>Comment</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="108"/>
         <location filename="../src/LousaPanel.cpp" line="874"/>
         <location filename="../src/LousaPanel.cpp" line="1212"/>
         <source>Imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Image</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="110"/>
         <location filename="../src/LousaPanel.cpp" line="886"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="112"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="114"/>
         <source>Texto livre</source>
-        <translation type="unfinished"></translation>
+        <translation>Free text</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="116"/>
         <source>Símbolo</source>
-        <translation type="unfinished"></translation>
+        <translation>Symbol</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="172"/>
         <source>Escolher imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose image</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="173"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="202"/>
         <source>Vincular documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Link document</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="206"/>
         <source>Buscar...</source>
-        <translation type="unfinished"></translation>
+        <translation>Search...</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="217"/>
         <source>(sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="260"/>
         <source>Personagem na lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Character on the board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="266"/>
         <source>Buscar personagem...</source>
-        <translation type="unfinished"></translation>
+        <translation>Search character...</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="275"/>
         <location filename="../src/LousaPanel.cpp" line="904"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="287"/>
         <source>+ Novo personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>+ New character</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="304"/>
         <source>Sem gaveta de personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>No character drawer</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="305"/>
         <source>Crie primeiro uma gaveta de personagens no projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>First create a character drawer in the project.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="390"/>
         <source>Definir área</source>
-        <translation type="unfinished"></translation>
+        <translation>Define area</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="402"/>
         <source>Exportar área (Ctrl+D)</source>
-        <translation type="unfinished"></translation>
+        <translation>Export area (Ctrl+D)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="408"/>
         <source>Exportar todas as áreas (Ctrl+Shift+D)</source>
-        <translation type="unfinished"></translation>
+        <translation>Export all areas (Ctrl+Shift+D)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="416"/>
         <location filename="../src/LousaPanel.cpp" line="764"/>
         <location filename="../src/LousaPanel.cpp" line="820"/>
         <source>Exportar áreas</source>
-        <translation type="unfinished"></translation>
+        <translation>Export areas</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="417"/>
         <source>Não há áreas na lousa. Crie uma área primeiro.</source>
-        <translation type="unfinished"></translation>
+        <translation>There are no areas on the board. Create an area first.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="428"/>
         <location filename="../src/LousaPanel.cpp" line="1873"/>
         <source>Cor do canvas</source>
-        <translation type="unfinished"></translation>
+        <translation>Canvas color</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="452"/>
         <source>Ajuda</source>
-        <translation type="unfinished"></translation>
+        <translation>Help</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="462"/>
         <source>Fechar lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Close board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="482"/>
         <location filename="../src/LousaPanel.cpp" line="805"/>
         <source>Área</source>
-        <translation type="unfinished"></translation>
+        <translation>Area</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="534"/>
         <source>Nova conexão</source>
-        <translation type="unfinished"></translation>
+        <translation>New connection</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="540"/>
         <source>Cor da conexão</source>
-        <translation type="unfinished"></translation>
+        <translation>Connection color</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="571"/>
         <location filename="../src/LousaPanel.cpp" line="924"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="590"/>
         <source>Clique em + para adicionar um card à lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Click + to add a card to the board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="613"/>
         <source>Áreas (F)</source>
-        <translation type="unfinished"></translation>
+        <translation>Areas (F)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="614"/>
         <location filename="../src/LousaPanel.cpp" line="623"/>
         <source>Áreas</source>
-        <translation type="unfinished"></translation>
+        <translation>Areas</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="676"/>
         <source>(área sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed area)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="678"/>
         <source>Nenhuma área criada</source>
-        <translation type="unfinished"></translation>
+        <translation>No areas created</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="757"/>
         <location filename="../src/LousaPanel.cpp" line="829"/>
         <source>Exportar área</source>
-        <translation type="unfinished"></translation>
+        <translation>Export area</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="758"/>
         <source>Não há post-its ou comentários dentro da(s) área(s).</source>
-        <translation type="unfinished"></translation>
+        <translation>There are no post-its or comments inside the area(s).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="771"/>
         <source>A área será exportada para uma gaveta nova, com o nome da área.</source>
-        <translation type="unfinished"></translation>
+        <translation>The area will be exported to a new drawer, named after the area.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="772"/>
         <source>Cada área vira uma gaveta nova, com o nome da área (%1 áreas → %1 gavetas).</source>
-        <translation type="unfinished"></translation>
+        <translation>Each area becomes a new drawer, named after the area (%1 areas → %1 drawers).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="779"/>
         <source>Os post-its sem título serão nomeados com as primeiras palavras do conteúdo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled post-its will be named after the first words of their content.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="787"/>
         <source>Exportar</source>
-        <translation type="unfinished"></translation>
+        <translation>Export</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="821"/>
         <source>%1 gaveta(s) criada(s) com %2 documento(s).</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 drawer(s) created with %2 document(s).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="830"/>
         <source>Selecione uma área primeiro — clique na barra de topo dela.</source>
-        <translation type="unfinished"></translation>
+        <translation>Select an area first — click its top bar.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="860"/>
         <location filename="../src/LousaPanel.cpp" line="890"/>
         <source>Criar documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Create document</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="861"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a drawer before using this feature.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="896"/>
         <source>Nome do documento:</source>
-        <translation type="unfinished"></translation>
+        <translation>Document name:</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="901"/>
         <source>Gaveta de destino:</source>
-        <translation type="unfinished"></translation>
+        <translation>Target drawer:</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="914"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the character form next (photo and role).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="915"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the setting form next (photo).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="916"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the object form next (photo).</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="984"/>
         <location filename="../src/LousaPanel.cpp" line="995"/>
         <source>Cards guardados</source>
-        <translation type="unfinished"></translation>
+        <translation>Stored cards</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1008"/>
         <source>Restaurar</source>
-        <translation type="unfinished"></translation>
+        <translation>Restore</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1013"/>
         <source>Apagar</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1064"/>
         <source>Gaveta (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer (%1)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1127"/>
         <source>Apagar cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete cards</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1128"/>
         <source>Apagar este card definitivamente?</source>
-        <translation type="unfinished"></translation>
+        <translation>Permanently delete this card?</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1129"/>
         <source>Apagar %1 cards definitivamente?</source>
-        <translation type="unfinished"></translation>
+        <translation>Permanently delete %1 cards?</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1156"/>
         <source>Ajuda — Lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Help — Board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1188"/>
         <source>Introdução</source>
-        <translation type="unfinished"></translation>
+        <translation>Introduction</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1192"/>
@@ -2599,519 +2623,553 @@ Aqui você tem um espaço livre para criar, planejar e organizar seu projeto —
 Solte post-its, comentários, imagens, documentos e personagens pela tela. Conecte eles com linhas, delimite áreas de planejamento, rotacione, empilhe, organize como quiser.
 
 Se tiver dúvida em alguma coisa, as seções abaixo têm tudo explicado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Welcome to the Board.
+
+Here you have a free space to create, plan, and organize your project — before you start writing, midway through the process, or whenever the mood strikes.
+
+Drop post-its, comments, images, documents, and characters onto the canvas. Connect them with lines, mark out planning areas, rotate, stack, and organize however you like.
+
+If you have any doubts, the sections below explain everything.</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1204"/>
         <source>Se mover na lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Moving around the board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1205"/>
         <source>Arrastar o fundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag the background</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1205"/>
         <source>Move a lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Moves the board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1206"/>
         <source>Scroll do mouse</source>
-        <translation type="unfinished"></translation>
+        <translation>Mouse scroll</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1206"/>
         <source>Aproxima e afasta</source>
-        <translation type="unfinished"></translation>
+        <translation>Zooms in and out</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1207"/>
         <source>Indicador de zoom</source>
-        <translation type="unfinished"></translation>
+        <translation>Zoom indicator</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1207"/>
         <source>Mostra o zoom atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Shows the current zoom level</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1209"/>
         <source>Colocar coisas na lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Placing things on the board</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1211"/>
         <source>Comentário com rabinho de balão</source>
-        <translation type="unfinished"></translation>
+        <translation>Comment with a speech-bubble tail</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1213"/>
         <source>Traz um doc da gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Brings in a doc from the drawer</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1214"/>
         <source>Coloca um personagem do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Places a character from the project</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1215"/>
         <source>Texto solto, sem card</source>
-        <translation type="unfinished"></translation>
+        <translation>Loose text, no card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1216"/>
         <source>Botão ★ na toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>★ button on the toolbar</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1216"/>
         <source>Símbolo ou emoji</source>
-        <translation type="unfinished"></translation>
+        <translation>Symbol or emoji</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1218"/>
         <source>Selecionar e mover cards</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecting and moving cards</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1219"/>
         <source>Shift+click</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift+click</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1219"/>
         <source>Marca ou desmarca um card</source>
-        <translation type="unfinished"></translation>
+        <translation>Selects or deselects a card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1220"/>
         <source>Shift+S (segurar)</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift+S (hold)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1220"/>
         <source>Passa o mouse e seleciona tudo que tocar</source>
-        <translation type="unfinished"></translation>
+        <translation>Move the mouse over cards to select everything it touches</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1221"/>
         <source>Arrastar selecionado</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag selection</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1221"/>
         <source>Move todos os marcados juntos</source>
-        <translation type="unfinished"></translation>
+        <translation>Moves everything selected together</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1222"/>
         <source>Ctrl+X (1 card marcado)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+X (1 card selected)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1222"/>
         <source>Recorta — o card fica transparente até ser colado</source>
-        <translation type="unfinished"></translation>
+        <translation>Cuts — the card stays transparent until pasted</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1223"/>
         <source>Cola onde o mouse estiver</source>
-        <translation type="unfinished"></translation>
+        <translation>Pastes wherever the mouse is</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1224"/>
         <source>Escape</source>
-        <translation type="unfinished"></translation>
+        <translation>Escape</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1224"/>
         <source>Cancela o recorte</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancels the cut</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1226"/>
         <source>Apagar e guardar</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete and store</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1227"/>
         <source>× no card</source>
-        <translation type="unfinished"></translation>
+        <translation>× on the card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1227"/>
         <source>Guarda na gaveta da lousa — pode ser restaurado depois</source>
-        <translation type="unfinished"></translation>
+        <translation>Stores it in the board&apos;s drawer — can be restored later</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1228"/>
         <source>Shift+× no card</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift+× on the card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1228"/>
         <source>Deleta o card definitivamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Permanently deletes the card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1229"/>
         <source>Delete (com cards marcados)</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete (with cards selected)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1229"/>
         <source>Manda todos para a gaveta da lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Sends everything to the board&apos;s drawer</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1230"/>
         <source>Shift+Delete</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift+Delete</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1230"/>
         <source>Apaga de vez — pede confirmação</source>
-        <translation type="unfinished"></translation>
+        <translation>Deletes for good — asks for confirmation</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1231"/>
         <source>Botão gaveta (canto inf. esq.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer button (bottom-left corner)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1231"/>
         <source>Abre a gaveta de cards guardados</source>
-        <translation type="unfinished"></translation>
+        <translation>Opens the stored cards drawer</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1233"/>
         <source>Desfazer e refazer</source>
-        <translation type="unfinished"></translation>
+        <translation>Undo and redo</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1234"/>
         <source>Volta atrás — até 50 vezes</source>
-        <translation type="unfinished"></translation>
+        <translation>Goes back — up to 50 times</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1235"/>
         <source>Vai pra frente de novo</source>
-        <translation type="unfinished"></translation>
+        <translation>Goes forward again</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1237"/>
         <source>Ligar cards com linhas</source>
-        <translation type="unfinished"></translation>
+        <translation>Connecting cards with lines</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1238"/>
         <source>Ponto colorido no topo</source>
-        <translation type="unfinished"></translation>
+        <translation>Colored dot on top</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1238"/>
         <source>Arrasta até outro card pra conectar</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag it to another card to connect</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1239"/>
         <source>Post-it perto de uma linha (1s)</source>
-        <translation type="unfinished"></translation>
+        <translation>Post-it near a line (1s)</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1239"/>
         <source>Vira uma parada no meio da linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Becomes a stop along the line</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1240"/>
         <source>Passar o mouse na linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Hover over the line</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1240"/>
         <source>Aparece o × pra deletar a linha</source>
-        <translation type="unfinished"></translation>
+        <translation>The × appears to delete the line</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1242"/>
         <source>Textos e símbolos</source>
-        <translation type="unfinished"></translation>
+        <translation>Texts and symbols</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1243"/>
         <source>Duplo-click</source>
-        <translation type="unfinished"></translation>
+        <translation>Double-click</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1243"/>
         <source>Entra pra editar</source>
-        <translation type="unfinished"></translation>
+        <translation>Enters edit mode</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1244"/>
         <source>Shift+arrastar</source>
-        <translation type="unfinished"></translation>
+        <translation>Shift+drag</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1244"/>
         <source>Gira o elemento</source>
-        <translation type="unfinished"></translation>
+        <translation>Rotates the element</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1245"/>
         <source>Puxar o canto inferior dir.</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag the bottom-right corner</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1245"/>
         <source>Muda o tamanho da letra</source>
-        <translation type="unfinished"></translation>
+        <translation>Changes the font size</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1247"/>
         <source>Áreas de planejamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Planning areas</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1248"/>
         <source>Botão Definir área na toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;Define area&quot; button on the toolbar</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1248"/>
         <source>Ativa o modo de desenhar área</source>
-        <translation type="unfinished"></translation>
+        <translation>Activates area-drawing mode</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1249"/>
         <source>Arrastar no fundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag on the background</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1249"/>
         <source>Cria o retângulo da área</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates the area rectangle</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1250"/>
         <source>Grade de pontos na área</source>
-        <translation type="unfinished"></translation>
+        <translation>Grid of dots on the area</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1250"/>
         <source>Segura aqui pra mover a área</source>
-        <translation type="unfinished"></translation>
+        <translation>Hold here to move the area</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1251"/>
         <source>Ctrl+Shift+mover</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+Shift+move</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1251"/>
         <source>Move a área com tudo que tem dentro</source>
-        <translation type="unfinished"></translation>
+        <translation>Moves the area along with everything inside it</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1252"/>
         <source>Passar o mouse na borda</source>
-        <translation type="unfinished"></translation>
+        <translation>Hover over the edge</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1252"/>
         <source>Aparece os pontos pra redimensionar</source>
-        <translation type="unfinished"></translation>
+        <translation>Handles appear to resize it</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1253"/>
         <source>Exporta a área marcada pra uma gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Exports the selected area to a drawer</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1254"/>
         <source>Exporta todas as áreas de uma vez</source>
-        <translation type="unfinished"></translation>
+        <translation>Exports all areas at once</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1255"/>
         <source>Tecla F</source>
-        <translation type="unfinished"></translation>
+        <translation>F key</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1255"/>
         <source>Lista de áreas — clica pra ir direto</source>
-        <translation type="unfinished"></translation>
+        <translation>List of areas — click to jump straight there</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1257"/>
         <source>Outros</source>
-        <translation type="unfinished"></translation>
+        <translation>Other</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1258"/>
         <source>Círculo colorido na toolbar</source>
-        <translation type="unfinished"></translation>
+        <translation>Colored circle on the toolbar</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1258"/>
         <source>Muda a cor do fundo da lousa</source>
-        <translation type="unfinished"></translation>
+        <translation>Changes the board&apos;s background color</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1259"/>
         <source>Ícone de doc no card</source>
-        <translation type="unfinished"></translation>
+        <translation>Doc icon on the card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1259"/>
         <source>Cria um doc a partir desse card</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates a doc from that card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1260"/>
         <source>Duplo-click na foto/iniciais</source>
-        <translation type="unfinished"></translation>
+        <translation>Double-click the photo/initials</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1260"/>
         <source>Abre o doc do personagem dentro do card</source>
-        <translation type="unfinished"></translation>
+        <translation>Opens the character&apos;s doc inside the card</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1261"/>
         <source>Não precisa salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>No need to save</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="1261"/>
         <source>Tudo é salvo sozinho enquanto você trabalha</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything saves itself as you work</translation>
     </message>
 </context>
 <context>
     <name>MainMenuDialog</name>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="894"/>
-        <source>Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Qenna Writer</source>
+        <translation>Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="982"/>
         <source>Novo projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>New project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="989"/>
         <source>Carregar pasta</source>
-        <translation type="unfinished"></translation>
+        <translation>Load folder</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1004"/>
         <source>Idioma:</source>
-        <translation type="unfinished"></translation>
+        <translation>Language:</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1009"/>
         <source>Português (BR)</source>
-        <translation type="unfinished"></translation>
+        <translation>Português (BR)</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1010"/>
         <source>English</source>
-        <translation type="unfinished"></translation>
+        <translation>English</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1033"/>
         <source>Verificar atualizações</source>
-        <translation type="unfinished"></translation>
+        <translation>Check for updates</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1043"/>
-        <source>Sobre o Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Sobre o Qenna Writer</source>
+        <translation>About Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1060"/>
         <source>Biblioteca</source>
-        <translation type="unfinished"></translation>
+        <translation>Library</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1069"/>
         <source>Estante</source>
-        <translation type="unfinished"></translation>
+        <translation>Shelf</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1073"/>
         <source>Lista</source>
-        <translation type="unfinished"></translation>
+        <translation>List</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1107"/>
         <source>Você ainda não tem projetos.
 Clique em &quot;Novo projeto&quot; pra começar, ou em &quot;Carregar pasta&quot; pra abrir uma existente.</source>
-        <translation type="unfinished"></translation>
+        <translation>You don&apos;t have any projects yet.
+Click &quot;New project&quot; to start one, or &quot;Load folder&quot; to open an existing one.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1192"/>
         <source>Nenhum projeto ainda</source>
-        <translation type="unfinished"></translation>
+        <translation>No projects yet</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1193"/>
         <source>1 projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>1 project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1194"/>
         <source>%1 projetos</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 projects</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1256"/>
         <location filename="../src/MainMenuDialog.cpp" line="1298"/>
         <source>Erro</source>
-        <translation type="unfinished"></translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1257"/>
         <source>Não foi possível ler o projeto para edição.</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t read the project for editing.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1299"/>
         <source>Não foi possível salvar as alterações:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t save the changes:
+%1</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1320"/>
         <location filename="../src/MainMenuDialog.cpp" line="1340"/>
         <location filename="../src/MainMenuDialog.cpp" line="1350"/>
         <source>Cover Creator</source>
-        <translation type="unfinished"></translation>
+        <translation>Cover Creator</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1321"/>
         <source>O Cover Creator ainda não está instalado.
 
 Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
-        <translation type="unfinished"></translation>
+        <translation>Cover Creator isn&apos;t installed yet.
+
+Do you want to install it now? (quick, no internet required)</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1341"/>
         <source>Execute &apos;npm run build&apos; no diretório mira-cover para habilitar o criador de capas no modo desenvolvimento.</source>
-        <translation type="unfinished"></translation>
+        <translation>Run &apos;npm run build&apos; in the mira-cover directory to enable the cover creator in development mode.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1351"/>
         <source>O Cover Creator não foi encontrado.
 
-Reinstale o Qiyva Writer para obter o Cover Creator.</source>
-        <translation type="unfinished"></translation>
+Reinstale o Qenna Writer para obter o Cover Creator.</source>
+        <translation>Cover Creator wasn&apos;t found.
+
+Reinstall Qenna Writer to get Cover Creator.</translation>
+    </message>
+    <message>
+        <source>Projetos</source>
+        <translation type="vanished">Projects</translation>
+    </message>
+    <message>
+        <source>Novo</source>
+        <translation type="vanished">New</translation>
+    </message>
+    <message>
+        <source>Carregar</source>
+        <translation type="vanished">Load</translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation type="vanished">Recent</translation>
+    </message>
+    <message>
+        <source>Você ainda não tem projetos.
+Clique em &quot;Novo&quot; pra começar um, ou em &quot;Carregar&quot; pra abrir uma pasta existente.</source>
+        <translation type="vanished">You don&apos;t have any projects yet.
+Click &quot;New&quot; to start one, or &quot;Load&quot; to open an existing folder.</translation>
     </message>
 </context>
 <context>
@@ -3119,58 +3177,58 @@ Reinstale o Qiyva Writer para obter o Cover Creator.</source>
     <message>
         <location filename="../src/MainWindow.cpp" line="349"/>
         <location filename="../src/MainWindow.cpp" line="3685"/>
-        <source>Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Qenna Writer</source>
+        <translation>Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="506"/>
         <source>Capítulo %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="599"/>
         <source>Negrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Bold</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="606"/>
         <source>Itálico</source>
-        <translation type="unfinished"></translation>
+        <translation>Italic</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="613"/>
         <source>Sublinhado</source>
-        <translation type="unfinished"></translation>
+        <translation>Underline</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="620"/>
         <source>Tachado</source>
-        <translation type="unfinished"></translation>
+        <translation>Strikethrough</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="629"/>
         <source>Marcador</source>
-        <translation type="unfinished"></translation>
+        <translation>Marker</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="631"/>
         <source>Marcador com comentário</source>
-        <translation type="unfinished"></translation>
+        <translation>Marker with comment</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="633"/>
         <source>Adicionar ao Glossário</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to Glossary</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="648"/>
         <source>Criar documento disso...</source>
-        <translation type="unfinished"></translation>
+        <translation>Create document from this...</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="696"/>
         <source>(capítulo sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled chapter)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="703"/>
@@ -3179,44 +3237,57 @@ Reinstale o Qiyva Writer para obter o Cover Creator.</source>
         <location filename="../src/MainWindow.cpp" line="2053"/>
         <location filename="../src/MainWindow.cpp" line="5638"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="710"/>
         <source>(item sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled item)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="802"/>
         <source>Nova cena criada</source>
-        <translation type="unfinished"></translation>
+        <translation>New scene created</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1364"/>
         <source>Erro ao salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Error saving</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1365"/>
         <source>Não foi possível salvar o projeto:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t save the project:
+%1</translation>
+    </message>
+    <message>
+        <source>Novo capítulo</source>
+        <translation type="vanished">New chapter</translation>
+    </message>
+    <message>
+        <source>Título do capítulo:</source>
+        <translation type="vanished">Chapter title:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1963"/>
         <source>Novo manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>New manuscript</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1964"/>
         <source>Título do manuscrito:</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript title:</translation>
+    </message>
+    <message>
+        <source>Renomear capítulo</source>
+        <translation type="vanished">Rename chapter</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1996"/>
         <location filename="../src/MainWindow.cpp" line="2056"/>
         <source>Novo título:</source>
-        <translation type="unfinished"></translation>
+        <translation>New title:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1993"/>
@@ -3224,180 +3295,180 @@ Reinstale o Qiyva Writer para obter o Cover Creator.</source>
         <location filename="../src/MainWindow.cpp" line="2034"/>
         <location filename="../src/MainWindow.cpp" line="2366"/>
         <source>(sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="650"/>
         <source>Criar evento da linha do tempo...</source>
-        <translation type="unfinished"></translation>
+        <translation>Create timeline event...</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="652"/>
         <source>Adicionar à memória...</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to memory...</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="656"/>
         <source>Alinhar à esquerda</source>
-        <translation type="unfinished"></translation>
+        <translation>Align left</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="663"/>
         <source>Centralizar</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="670"/>
         <source>Alinhar à direita</source>
-        <translation type="unfinished"></translation>
+        <translation>Align right</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="677"/>
         <source>Justificar</source>
-        <translation type="unfinished"></translation>
+        <translation>Justify</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1008"/>
         <location filename="../src/MainWindow.cpp" line="5636"/>
         <location filename="../src/MainWindow.cpp" line="5645"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1026"/>
         <location filename="../src/MainWindow.cpp" line="1040"/>
         <location filename="../src/MainWindow.cpp" line="5639"/>
         <source>%1 — %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 — %2</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1273"/>
         <source>memória do personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>character memory</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1273"/>
         <source>memória do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>project memory</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1275"/>
         <source>Memória salva</source>
-        <translation type="unfinished"></translation>
+        <translation>Memory saved</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1276"/>
         <source>Trecho guardado na %1.</source>
-        <translation type="unfinished"></translation>
+        <translation>Passage saved to %1.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1314"/>
         <location filename="../src/MainWindow.cpp" line="3673"/>
         <source>Lembrete</source>
-        <translation type="unfinished"></translation>
+        <translation>Reminder</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1995"/>
         <source>Renomear manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename manuscript</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2007"/>
         <source>Excluir manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete manuscript</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2008"/>
         <source>Excluir &quot;%1&quot;? Todos os capítulos serão removidos. Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete &quot;%1&quot;? All chapters will be removed. This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2035"/>
         <source>Excluir capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete chapter</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2036"/>
         <source>Excluir &quot;%1&quot;? O texto do capítulo será removido. Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete &quot;%1&quot;? The chapter&apos;s text will be removed. This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2055"/>
         <source>Renomear cena</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename scene</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2089"/>
         <location filename="../src/MainWindow.cpp" line="2093"/>
         <source>Excluir cena</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete scene</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2090"/>
         <source>Não dá pra excluir a única cena de um capítulo. Apague o texto manualmente se quiser limpar.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can&apos;t delete a chapter&apos;s only scene. Clear the text manually if you want to empty it.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2094"/>
         <source>Excluir esta cena? O texto da cena será removido.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete this scene? The scene&apos;s text will be removed.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2223"/>
         <source>Novo item</source>
-        <translation type="unfinished"></translation>
+        <translation>New item</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2224"/>
         <source>Nome do item:</source>
-        <translation type="unfinished"></translation>
+        <translation>Item name:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2245"/>
         <source>Nova pasta</source>
-        <translation type="unfinished"></translation>
+        <translation>New folder</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2246"/>
         <source>Nome da pasta:</source>
-        <translation type="unfinished"></translation>
+        <translation>Folder name:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2335"/>
         <source>Adicionar elemento</source>
-        <translation type="unfinished"></translation>
+        <translation>Add element</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2336"/>
         <source>Tipo do elemento:</source>
-        <translation type="unfinished"></translation>
+        <translation>Element type:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2367"/>
         <source>Excluir item</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete item</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2368"/>
         <source>Excluir &quot;%1&quot; da gaveta? Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete &quot;%1&quot; from the drawer? This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2430"/>
         <source>Editar gaveta…</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit drawer…</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2450"/>
         <location filename="../src/MainWindow.cpp" line="2455"/>
         <location filename="../src/MainWindow.cpp" line="2460"/>
         <source>Excluir gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete drawer</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2456"/>
         <source>Esta gaveta não está vazia. Esvazie os itens e pastas antes de excluí-la.</source>
-        <translation type="unfinished"></translation>
+        <translation>This drawer isn&apos;t empty. Empty its items and folders before deleting it.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2459"/>
@@ -3405,27 +3476,27 @@ Reinstale o Qiyva Writer para obter o Cover Creator.</source>
         <location filename="../src/MainWindow.cpp" line="5660"/>
         <location filename="../src/MainWindow.cpp" line="5868"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2461"/>
         <source>Excluir a gaveta &quot;%1&quot;?</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete the drawer &quot;%1&quot;?</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3199"/>
         <source>Selecionar imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Select image</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3201"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3266"/>
         <source>Salvar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Save project</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3267"/>
@@ -3433,273 +3504,280 @@ Reinstale o Qiyva Writer para obter o Cover Creator.</source>
 %1
 
 Fechar mesmo assim?</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to save the project:
+%1
+
+Close anyway?</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3674"/>
         <source>Lembretes (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Reminders (%1)</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3678"/>
         <source>+ %1 mais</source>
-        <translation type="unfinished"></translation>
+        <translation>+ %1 more</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3685"/>
-        <source>Qiyva Writer — %1</source>
-        <translation type="unfinished"></translation>
+        <source>Qenna Writer — %1</source>
+        <translation>Qenna Writer — %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3694"/>
         <source>Alterações não salvas</source>
-        <translation type="unfinished"></translation>
+        <translation>Unsaved changes</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3695"/>
         <source>Há alterações no projeto atual. Salvar antes de continuar?</source>
-        <translation type="unfinished"></translation>
+        <translation>There are changes in the current project. Save before continuing?</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3708"/>
         <source>Caminho do projeto vazio.</source>
-        <translation type="unfinished"></translation>
+        <translation>Empty project path.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3712"/>
         <source>Pasta do projeto não existe: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Project folder doesn&apos;t exist: %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4038"/>
         <source>Nova versão disponível: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>New version available: %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4049"/>
         <location filename="../src/MainWindow.cpp" line="4079"/>
         <source>Baixar e instalar</source>
-        <translation type="unfinished"></translation>
+        <translation>Download and install</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4097"/>
         <source>Tentar novamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Try again</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4124"/>
         <source>Baixando…</source>
-        <translation type="unfinished"></translation>
+        <translation>Downloading…</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4140"/>
         <source>Não foi possível salvar o instalador no disco.</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t save the installer to disk.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4184"/>
         <source>arquivo incompleto (conexão interrompida).</source>
-        <translation type="unfinished"></translation>
+        <translation>incomplete file (connection interrupted).</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4185"/>
         <source>Falha ao baixar atualização: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to download update: %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4282"/>
         <source>Não é possível excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Cannot delete</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4283"/>
         <source>Este é o projeto aberto no momento. Feche-o antes de excluí-lo.</source>
-        <translation type="unfinished"></translation>
+        <translation>This is the project currently open. Close it before deleting it.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4288"/>
         <source>Erro ao excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Error deleting</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4289"/>
         <source>Não foi possível apagar a pasta do projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t delete the project folder.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4313"/>
         <source>Tudo atualizado</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything up to date</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4314"/>
-        <source>O Qiyva Writer e o Cover Creator estão na versão mais recente.</source>
-        <translation type="unfinished"></translation>
+        <source>O Qenna Writer e o Cover Creator estão na versão mais recente.</source>
+        <translation>Qenna Writer and Cover Creator are both up to date.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4340"/>
         <source>Cover Creator %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Cover Creator %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4342"/>
         <source>Nova versão do Cover Creator disponível.</source>
-        <translation type="unfinished"></translation>
+        <translation>New version of Cover Creator available.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4445"/>
         <source>Pasta já existe</source>
-        <translation type="unfinished"></translation>
+        <translation>Folder already exists</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4446"/>
         <source>A pasta &apos;%1&apos; já existe e não está vazia. Usar mesmo assim?
 Conteúdo existente pode ser sobrescrito.</source>
-        <translation type="unfinished"></translation>
+        <translation>The folder &apos;%1&apos; already exists and isn&apos;t empty. Use it anyway?
+Existing content may be overwritten.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4454"/>
         <location filename="../src/MainWindow.cpp" line="4477"/>
         <source>Erro</source>
-        <translation type="unfinished"></translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4455"/>
         <source>Falha ao criar o projeto:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to create the project:
+%1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4478"/>
         <source>Projeto criado, mas falha ao salvar índice inicial:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Project created, but failed to save the initial index:
+%1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4234"/>
         <source>Abrir projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Open project</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4211"/>
         <source>Abertura automática ativada</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatic opening enabled</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4212"/>
         <source>O app agora sempre abrirá esse projeto de forma automática. Caso queira desabilitar isso depois, basta desmarcar essa opção.</source>
-        <translation type="unfinished"></translation>
+        <translation>The app will now always open this project automatically. If you want to disable this later, just uncheck this option.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4240"/>
         <location filename="../src/MainWindow.cpp" line="4257"/>
         <source>Erro ao abrir</source>
-        <translation type="unfinished"></translation>
+        <translation>Error opening</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4241"/>
         <location filename="../src/MainWindow.cpp" line="4258"/>
         <source>Não foi possível abrir o projeto:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Couldn&apos;t open the project:
+%1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4560"/>
         <source>Voltando para</source>
-        <translation type="unfinished"></translation>
+        <translation>Going back to</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4560"/>
         <source>Avançando para</source>
-        <translation type="unfinished"></translation>
+        <translation>Moving forward to</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4822"/>
         <source>Exportado com sucesso</source>
-        <translation type="unfinished"></translation>
+        <translation>Exported successfully</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4839"/>
         <source>Exportar</source>
-        <translation type="unfinished"></translation>
+        <translation>Export</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5302"/>
         <location filename="../src/MainWindow.cpp" line="5345"/>
         <source>Excluir vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete bond</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5303"/>
         <location filename="../src/MainWindow.cpp" line="5346"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete this bond? This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5368"/>
         <source>Documento do vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Bond document</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5376"/>
         <location filename="../src/MainWindow.cpp" line="5858"/>
         <source>Nome do documento:</source>
-        <translation type="unfinished"></translation>
+        <translation>Document name:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5382"/>
         <location filename="../src/MainWindow.cpp" line="5864"/>
         <source>Gaveta de destino:</source>
-        <translation type="unfinished"></translation>
+        <translation>Target drawer:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3993"/>
         <location filename="../src/MainWindow.cpp" line="5400"/>
         <location filename="../src/MainWindow.cpp" line="5896"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5401"/>
         <location filename="../src/MainWindow.cpp" line="5897"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5419"/>
         <source>%1 — %2 de %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 — %2 of %3</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5650"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5824"/>
         <location filename="../src/MainWindow.cpp" line="5850"/>
         <source>Criar documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Create document</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5825"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a drawer before using this feature.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5883"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the character form next (photo and role).</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5884"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the setting form next (photo).</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5885"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
-        <translation type="unfinished"></translation>
+        <translation>This will open the object form next (photo).</translation>
     </message>
 </context>
 <context>
@@ -3707,102 +3785,102 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="167"/>
         <source>Novo manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>New manuscript</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="171"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="190"/>
         <source>Criar novo capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Create new chapter</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="307"/>
         <location filename="../src/ManuscriptPanel.cpp" line="409"/>
         <source>(sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="311"/>
         <source>Nenhum manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>No manuscript</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="360"/>
         <source>Crie um manuscrito pra começar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a manuscript to get started.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="361"/>
         <source>Nenhum capítulo ainda.</source>
-        <translation type="unfinished"></translation>
+        <translation>No chapters yet.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="436"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="484"/>
         <source>Renomear manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename manuscript</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="491"/>
         <source>Excluir manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete manuscript</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="503"/>
         <source>Exportar para DOCX…</source>
-        <translation type="unfinished"></translation>
+        <translation>Export to DOCX…</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="505"/>
         <location filename="../src/ManuscriptPanel.cpp" line="514"/>
         <location filename="../src/ManuscriptPanel.cpp" line="542"/>
         <source>Em breve</source>
-        <translation type="unfinished"></translation>
+        <translation>Coming soon</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="507"/>
         <source>Renomear capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename chapter</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="512"/>
         <location filename="../src/ManuscriptPanel.cpp" line="540"/>
         <source>Elementos presentes…</source>
-        <translation type="unfinished"></translation>
+        <translation>Elements present…</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="516"/>
         <location filename="../src/ManuscriptPanel.cpp" line="549"/>
         <source>Abrir no Menu de Referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Open in Reference Menu</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="523"/>
         <source>Excluir capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete chapter</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="535"/>
         <source>Renomear cena</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename scene</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="544"/>
         <source>Criar variação</source>
-        <translation type="unfinished"></translation>
+        <translation>Create variation</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="556"/>
         <source>Excluir cena</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete scene</translation>
     </message>
 </context>
 <context>
@@ -3810,133 +3888,133 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MapPanel.cpp" line="71"/>
         <source>Mapa-múndi</source>
-        <translation type="unfinished"></translation>
+        <translation>World Map</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="81"/>
         <source>Maximizar / restaurar</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximize / restore</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="90"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="105"/>
         <source>Ir para local  ▾</source>
-        <translation type="unfinished"></translation>
+        <translation>Go to location  ▾</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="113"/>
         <source>Régua</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruler</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="116"/>
         <source>Medir distância e fuso entre dois pontos</source>
-        <translation type="unfinished"></translation>
+        <translation>Measure distance and time zone between two points</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="125"/>
         <source>Fixar pin</source>
-        <translation type="unfinished"></translation>
+        <translation>Pin a marker</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="128"/>
         <source>Clique no mapa pra fixar um lugar de referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Click the map to pin a reference location</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="137"/>
         <source>Buscar lugar…</source>
-        <translation type="unfinished"></translation>
+        <translation>Search for a place…</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="183"/>
         <source>Textura</source>
-        <translation type="unfinished"></translation>
+        <translation>Texture</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="186"/>
         <source>Alternar mapa simples / texturizado</source>
-        <translation type="unfinished"></translation>
+        <translation>Toggle plain / textured map</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="198"/>
         <source>Globo</source>
-        <translation type="unfinished"></translation>
+        <translation>Globe</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="201"/>
         <source>Alternar mapa plano / globo 3D</source>
-        <translation type="unfinished"></translation>
+        <translation>Toggle flat map / 3D globe</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="401"/>
         <location filename="../src/MapPanel.cpp" line="479"/>
         <source>Novo pin</source>
-        <translation type="unfinished"></translation>
+        <translation>New pin</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="407"/>
         <source>Nome do lugar</source>
-        <translation type="unfinished"></translation>
+        <translation>Place name</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="413"/>
         <source>Nota (opcional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Note (optional)</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="424"/>
         <source>Excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="431"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="437"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="450"/>
         <source>Sem vínculo</source>
-        <translation type="unfinished"></translation>
+        <translation>No link</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="454"/>
         <source>(sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="496"/>
         <source>Editar pin</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit pin</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="727"/>
         <source>País</source>
-        <translation type="unfinished"></translation>
+        <translation>Country</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="735"/>
         <source>Estado · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>State · %1</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="750"/>
         <source>Cidade</source>
-        <translation type="unfinished"></translation>
+        <translation>City</translation>
     </message>
     <message>
         <location filename="../src/MapPanel.cpp" line="750"/>
         <source>Cidade · %1</source>
-        <translation type="unfinished"></translation>
+        <translation>City · %1</translation>
     </message>
 </context>
 <context>
@@ -3944,109 +4022,109 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MapView.cpp" line="287"/>
         <source>Cidade</source>
-        <translation type="unfinished"></translation>
+        <translation>City</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="288"/>
         <source>Capital nacional</source>
-        <translation type="unfinished"></translation>
+        <translation>National capital</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="289"/>
         <source>Capital estadual</source>
-        <translation type="unfinished"></translation>
+        <translation>State capital</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="291"/>
         <source>Estado: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>State: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="292"/>
         <location filename="../src/MapView.cpp" line="318"/>
         <source>País: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Country: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="293"/>
         <location filename="../src/MapView.cpp" line="336"/>
         <source>População: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Population: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="294"/>
         <source>Altitude: %1 m</source>
-        <translation type="unfinished"></translation>
+        <translation>Altitude: %1 m</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="296"/>
         <source>Fuso: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Time zone: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="300"/>
         <source>Hora local: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Local time: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="318"/>
         <source>Estado</source>
-        <translation type="unfinished"></translation>
+        <translation>State</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="335"/>
         <source>Capital: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Capital: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="337"/>
         <source>Idiomas: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Languages: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="338"/>
         <source>Moeda: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Currency: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="339"/>
         <source>Continente: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Continent: %1</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="340"/>
         <source>Área: %1 km²</source>
-        <translation type="unfinished"></translation>
+        <translation>Area: %1 km²</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="342"/>
         <source>País</source>
-        <translation type="unfinished"></translation>
+        <translation>Country</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="1661"/>
         <source>Distância: %1 km</source>
-        <translation type="unfinished"></translation>
+        <translation>Distance: %1 km</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="1663"/>
         <source>Mesmo fuso horário</source>
-        <translation type="unfinished"></translation>
+        <translation>Same time zone</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="1665"/>
         <source>Diferença de fuso: %1%2 h</source>
-        <translation type="unfinished"></translation>
+        <translation>Time zone difference: %1%2 h</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="1668"/>
         <source>Medição</source>
-        <translation type="unfinished"></translation>
+        <translation>Measurement</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="1668"/>
         <source>Régua</source>
-        <translation type="unfinished"></translation>
+        <translation>Ruler</translation>
     </message>
 </context>
 <context>
@@ -4054,12 +4132,12 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MarkerHoverPopup.cpp" line="82"/>
         <source>Editar</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit</translation>
     </message>
     <message>
         <location filename="../src/MarkerHoverPopup.cpp" line="96"/>
         <source>Excluir marcador</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete marker</translation>
     </message>
 </context>
 <context>
@@ -4067,27 +4145,27 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="148"/>
         <source>Cor personalizada</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom color</translation>
     </message>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="161"/>
         <source>Aplicar</source>
-        <translation type="unfinished"></translation>
+        <translation>Apply</translation>
     </message>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="169"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="183"/>
         <source>Escreva seu comentário...</source>
-        <translation type="unfinished"></translation>
+        <translation>Write your comment...</translation>
     </message>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="275"/>
         <source>Cor do marcador</source>
-        <translation type="unfinished"></translation>
+        <translation>Marker color</translation>
     </message>
 </context>
 <context>
@@ -4095,63 +4173,63 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="49"/>
         <source>Adicionar à memória</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to memory</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="63"/>
         <source>Nome (opcional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Name (optional)</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="68"/>
         <source>Ex: Klara rouba o carro</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Klara steals the car</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="71"/>
         <source>Destino</source>
-        <translation type="unfinished"></translation>
+        <translation>Destination</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="76"/>
         <source>Projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="77"/>
         <location filename="../src/MemoryAddPopup.cpp" line="84"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="92"/>
         <source>Tags (opcional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tags (optional)</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="97"/>
         <source>Ex: conflito, flashback</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: conflict, flashback</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="106"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="115"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="251"/>
         <source>De: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>From: %1</translation>
     </message>
     <message>
         <location filename="../src/MemoryAddPopup.cpp" line="265"/>
         <source>(nenhum personagem cadastrado)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no characters registered)</translation>
     </message>
 </context>
 <context>
@@ -4159,40 +4237,40 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MentionPopup.cpp" line="175"/>
         <source>Capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapters</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="178"/>
         <source>Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>Builder</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="183"/>
         <location filename="../src/MentionPopup.cpp" line="217"/>
         <source>← Voltar</source>
-        <translation type="unfinished"></translation>
+        <translation>← Back</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="199"/>
         <source>← Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>← Chapter</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="205"/>
         <location filename="../src/MentionPopup.cpp" line="277"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="231"/>
         <source>← Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>← Builder</translation>
     </message>
     <message>
         <location filename="../src/MentionPopup.cpp" line="265"/>
         <location filename="../src/MentionPopup.cpp" line="280"/>
         <source>Capítulo %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter %1</translation>
     </message>
 </context>
 <context>
@@ -4201,103 +4279,103 @@ Conteúdo existente pode ser sobrescrito.</source>
         <location filename="../src/NewProjectFlow.cpp" line="180"/>
         <location filename="../src/NewProjectFlow.cpp" line="218"/>
         <source>Detalhes da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Work details</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="196"/>
         <location filename="../src/NewProjectFlow.cpp" line="321"/>
         <source>Sem capa</source>
-        <translation type="unfinished"></translation>
+        <translation>No cover</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="199"/>
         <source>Escolher capa…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover…</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="205"/>
         <source>Remover capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove cover</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="228"/>
         <source>Nome do projeto *</source>
-        <translation type="unfinished"></translation>
+        <translation>Project name *</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="230"/>
         <source>Projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="233"/>
         <source>Nome do autor *</source>
-        <translation type="unfinished"></translation>
+        <translation>Author name *</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="235"/>
         <source>Ex: Maria Silva</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Maria Silva</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="238"/>
         <source>Gêneros</source>
-        <translation type="unfinished"></translation>
+        <translation>Genres</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="240"/>
         <source>Ex: Fantasia, Romance</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Fantasy, Romance</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="243"/>
         <source>Sinopse</source>
-        <translation type="unfinished"></translation>
+        <translation>Synopsis</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="245"/>
         <source>Escreva uma breve sinopse…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write a brief synopsis…</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="249"/>
         <source>Tipo de projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project type</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="252"/>
         <source>Livro</source>
-        <translation type="unfinished"></translation>
+        <translation>Book</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="255"/>
         <source>Roteiro</source>
-        <translation type="unfinished"></translation>
+        <translation>Screenplay</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="265"/>
         <source>Você pode editar isso mais tarde.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can edit this later.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="271"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="274"/>
         <source>Continuar</source>
-        <translation type="unfinished"></translation>
+        <translation>Continue</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="301"/>
         <source>Escolher capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="302"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -4306,37 +4384,37 @@ Conteúdo existente pode ser sobrescrito.</source>
         <location filename="../src/NewProjectFlow.cpp" line="379"/>
         <location filename="../src/NewProjectFlow.cpp" line="387"/>
         <source>Onde salvar o projeto?</source>
-        <translation type="unfinished"></translation>
+        <translation>Where should the project be saved?</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="392"/>
         <source>Escolha o local onde será criada a pasta do seu projeto, os arquivos referente a ele serão salvos dentro dela. Use o botão abaixo para navegar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose where your project&apos;s folder will be created — its files will be saved inside it. Use the button below to browse.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="415"/>
         <source>Trocar…</source>
-        <translation type="unfinished"></translation>
+        <translation>Change…</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="420"/>
         <source>Escolher pasta-pai</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose parent folder</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="434"/>
         <source>Você não precisa criar a pasta — o Mira faz isso automaticamente.</source>
-        <translation type="unfinished"></translation>
+        <translation>You don&apos;t need to create the folder — Mira does it automatically.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="442"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="445"/>
         <source>Criar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Create project</translation>
     </message>
 </context>
 <context>
@@ -4344,58 +4422,58 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="75"/>
         <source>Escolher template</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose template</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="83"/>
         <source>Escolha um template</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose a template</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="89"/>
         <source>Projeto em branco</source>
-        <translation type="unfinished"></translation>
+        <translation>Blank project</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="89"/>
         <source>Projeto limpo, sem conteúdo inicial.</source>
-        <translation type="unfinished"></translation>
+        <translation>A clean project with no starting content.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="90"/>
         <source>Projeto básico</source>
-        <translation type="unfinished"></translation>
+        <translation>Basic project</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="90"/>
         <source>Gavetas de planejamento, personagens, cenários, objetos e notas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawers for planning, characters, settings, objects, and notes.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="91"/>
         <source>Projeto avançado</source>
-        <translation type="unfinished"></translation>
+        <translation>Advanced project</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="91"/>
         <source>Estrutura completa: lore, base de dados, pesquisa, planejamento detalhado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Full structure: lore, database, research, detailed planning.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="106"/>
         <location filename="../src/NewProjectFlow.cpp" line="112"/>
         <source>Você pode mudar isso depois.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can change this later.</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="121"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="124"/>
         <source>Continuar</source>
-        <translation type="unfinished"></translation>
+        <translation>Continue</translation>
     </message>
 </context>
 <context>
@@ -4404,32 +4482,32 @@ Conteúdo existente pode ser sobrescrito.</source>
         <location filename="../src/NoteEditPopup.cpp" line="54"/>
         <location filename="../src/NoteEditPopup.cpp" line="126"/>
         <source>Nova nota</source>
-        <translation type="unfinished"></translation>
+        <translation>New note</translation>
     </message>
     <message>
         <location filename="../src/NoteEditPopup.cpp" line="60"/>
         <source>Título (opcional)</source>
-        <translation type="unfinished"></translation>
+        <translation>Title (optional)</translation>
     </message>
     <message>
         <location filename="../src/NoteEditPopup.cpp" line="65"/>
         <source>Escreva sua anotação…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write your note…</translation>
     </message>
     <message>
         <location filename="../src/NoteEditPopup.cpp" line="82"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/NoteEditPopup.cpp" line="92"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/NoteEditPopup.cpp" line="139"/>
         <source>Editar nota</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit note</translation>
     </message>
 </context>
 <context>
@@ -4437,293 +4515,296 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="102"/>
         <source>Pensário</source>
-        <translation type="unfinished"></translation>
+        <translation>Pensarium</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="115"/>
         <source>Por capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>By chapter</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="116"/>
         <source>Por criação</source>
-        <translation type="unfinished"></translation>
+        <translation>By creation</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="126"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="126"/>
         <source>Criação</source>
-        <translation type="unfinished"></translation>
+        <translation>Creation</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="144"/>
         <source>Gerador de nomes</source>
-        <translation type="unfinished"></translation>
+        <translation>Name Generator</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="153"/>
         <source>Mapa-múndi</source>
-        <translation type="unfinished"></translation>
+        <translation>World Map</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="163"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="187"/>
         <source>Comentários</source>
-        <translation type="unfinished"></translation>
+        <translation>Comments</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="188"/>
         <source>Notas</source>
-        <translation type="unfinished"></translation>
+        <translation>Notes</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="189"/>
         <source>Memórias</source>
-        <translation type="unfinished"></translation>
+        <translation>Memories</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="190"/>
         <source>Diálogos</source>
-        <translation type="unfinished"></translation>
+        <translation>Dialogue</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="264"/>
         <source>+ Nova nota</source>
-        <translation type="unfinished"></translation>
+        <translation>+ New note</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="311"/>
         <source>Nenhuma nota ainda.
 Clique em “+ Nova nota” para criar a primeira.</source>
-        <translation type="unfinished"></translation>
+        <translation>No notes yet.
+Click &quot;+ New note&quot; to create your first one.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="366"/>
         <source>Excluir nota</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete note</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="467"/>
         <source>Personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="468"/>
         <source>Lugares</source>
-        <translation type="unfinished"></translation>
+        <translation>Places</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="469"/>
         <source>Armas</source>
-        <translation type="unfinished"></translation>
+        <translation>Weapons</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="488"/>
         <source>Gerar</source>
-        <translation type="unfinished"></translation>
+        <translation>Generate</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="501"/>
         <source>Feminino</source>
-        <translation type="unfinished"></translation>
+        <translation>Feminine</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="508"/>
         <source>Masculino</source>
-        <translation type="unfinished"></translation>
+        <translation>Masculine</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="532"/>
         <source>Começa com…</source>
-        <translation type="unfinished"></translation>
+        <translation>Starts with…</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="536"/>
         <source>Termina com…</source>
-        <translation type="unfinished"></translation>
+        <translation>Ends with…</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="557"/>
         <source>Escolha uma categoria e clique em Gerar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose a category and click Generate.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="635"/>
         <source>Clique para copiar</source>
-        <translation type="unfinished"></translation>
+        <translation>Click to copy</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="641"/>
         <source>Nenhum nome com esse começo/fim neste estilo.
 Tente outro estilo ou um afixo mais comum.</source>
-        <translation type="unfinished"></translation>
+        <translation>No names with that start/end in this style.
+Try another style or a more common affix.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="643"/>
         <source>Nada gerado. Tente de novo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nothing generated. Try again.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="657"/>
         <source>« %1 » copiado</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;%1&quot; copied</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="706"/>
         <location filename="../src/PensarioPanel.cpp" line="989"/>
         <location filename="../src/PensarioPanel.cpp" line="1106"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="710"/>
         <source>Todas</source>
-        <translation type="unfinished"></translation>
+        <translation>All</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="711"/>
         <source>Do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>From the project</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="719"/>
         <source>Filtro: %1  ▾</source>
-        <translation type="unfinished"></translation>
+        <translation>Filter: %1  ▾</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="740"/>
         <source>Todas as memórias</source>
-        <translation type="unfinished"></translation>
+        <translation>All memories</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="741"/>
         <source>Memórias do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project memories</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="753"/>
         <source>Memórias de %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Memories of %1</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="787"/>
         <source>Nenhuma memória ainda. Selecione um trecho no editor e escolha “Adicionar à memória…” na barra de seleção.</source>
-        <translation type="unfinished"></translation>
+        <translation>No memories yet. Select a passage in the editor and choose &quot;Add to memory…&quot; from the selection bar.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="789"/>
         <source>Nenhuma memória neste filtro.</source>
-        <translation type="unfinished"></translation>
+        <translation>No memories in this filter.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="803"/>
         <source>Memória</source>
-        <translation type="unfinished"></translation>
+        <translation>Memory</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="803"/>
         <source>Memória do %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1&apos;s memory</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="804"/>
         <location filename="../src/PensarioPanel.cpp" line="1082"/>
         <source>%1  ·  %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1  ·  %2</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="807"/>
         <source>[%1]  %2</source>
-        <translation type="unfinished"></translation>
+        <translation>[%1]  %2</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="894"/>
         <source>Excluir memória</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete memory</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="938"/>
         <source>Abrir no editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Open in editor</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="939"/>
         <source>Abrir no menu de referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Open in reference menu</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="993"/>
         <source>Todos</source>
-        <translation type="unfinished"></translation>
+        <translation>All</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1000"/>
         <source>Fala: %1  ▾</source>
-        <translation type="unfinished"></translation>
+        <translation>Speaker: %1  ▾</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1021"/>
         <source>Todos os diálogos</source>
-        <translation type="unfinished"></translation>
+        <translation>All dialogue</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1030"/>
         <source>Falas de %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Lines by %1</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1068"/>
         <source>Nenhum diálogo detectado ainda. Escreva falas com travessão (“— Não vou, disse Maria.”) e espere alguns segundos.</source>
-        <translation type="unfinished"></translation>
+        <translation>No dialogue detected yet. Write lines with an em dash (&quot;— I won&apos;t, said Maria.&quot;) and wait a few seconds.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1070"/>
         <source>Nenhum diálogo neste filtro.</source>
-        <translation type="unfinished"></translation>
+        <translation>No dialogue in this filter.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1117"/>
         <source>também fala: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>also speaks: %1</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1174"/>
         <source>Excluir diálogo</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete dialogue</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1272"/>
         <source>Nenhum comentário ainda.
 Selecione um trecho e use o marcador com comentário para que ele apareça aqui.</source>
-        <translation type="unfinished"></translation>
+        <translation>No comments yet.
+Select a passage and use the marker with comment so it shows up here.</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1368"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1393"/>
         <source>Capítulo sem título</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled chapter</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1399"/>
         <source>Item sem título</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled item</translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1408"/>
         <source>Manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript</translation>
     </message>
 </context>
 <context>
@@ -4731,27 +4812,27 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/PresencePopup.cpp" line="43"/>
         <source>Personagem detectado</source>
-        <translation type="unfinished"></translation>
+        <translation>Character detected</translation>
     </message>
     <message>
         <location filename="../src/PresencePopup.cpp" line="58"/>
         <source>Marcar</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark</translation>
     </message>
     <message>
         <location filename="../src/PresencePopup.cpp" line="59"/>
         <source>Sempre</source>
-        <translation type="unfinished"></translation>
+        <translation>Always</translation>
     </message>
     <message>
         <location filename="../src/PresencePopup.cpp" line="60"/>
         <source>Ignorar</source>
-        <translation type="unfinished"></translation>
+        <translation>Ignore</translation>
     </message>
     <message>
         <location filename="../src/PresencePopup.cpp" line="61"/>
         <source>Nunca</source>
-        <translation type="unfinished"></translation>
+        <translation>Never</translation>
     </message>
 </context>
 <context>
@@ -4759,88 +4840,88 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="628"/>
         <source>Editar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit project</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="644"/>
         <location filename="../src/MainMenuDialog.cpp" line="756"/>
         <source>Sem capa</source>
-        <translation type="unfinished"></translation>
+        <translation>No cover</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="648"/>
         <source>Escolher capa…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover…</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="654"/>
         <source>Escolher capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="655"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="664"/>
         <source>Remover capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove cover</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="680"/>
         <source>Detalhes da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Work details</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="690"/>
         <source>Nome do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project name</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="692"/>
         <source>Ex: Minha história</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: My story</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="695"/>
         <source>Autor</source>
-        <translation type="unfinished"></translation>
+        <translation>Author</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="697"/>
         <source>Ex: Maria Silva</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Maria Silva</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="700"/>
         <source>Gêneros</source>
-        <translation type="unfinished"></translation>
+        <translation>Genres</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="702"/>
         <source>Ex: Fantasia, Romance</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Fantasy, Romance</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="705"/>
         <source>Sinopse</source>
-        <translation type="unfinished"></translation>
+        <translation>Synopsis</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="707"/>
         <source>Escreva uma breve sinopse…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write a brief synopsis…</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="713"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="717"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
 </context>
 <context>
@@ -4848,27 +4929,27 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ProjectInfoHover.cpp" line="115"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoHover.cpp" line="121"/>
         <source>Autor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Author:</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoHover.cpp" line="128"/>
         <source>Gêneros:</source>
-        <translation type="unfinished"></translation>
+        <translation>Genres:</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoHover.cpp" line="132"/>
         <source>Sem sinopse.</source>
-        <translation type="unfinished"></translation>
+        <translation>No synopsis.</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoHover.cpp" line="140"/>
         <source>Sem capa</source>
-        <translation type="unfinished"></translation>
+        <translation>No cover</translation>
     </message>
 </context>
 <context>
@@ -4876,88 +4957,88 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="63"/>
         <source>Informações da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Work information</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="83"/>
         <location filename="../src/ProjectInfoPanel.cpp" line="176"/>
         <source>Sem capa</source>
-        <translation type="unfinished"></translation>
+        <translation>No cover</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="87"/>
         <source>Escolher capa…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover…</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="93"/>
         <source>Remover capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove cover</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="106"/>
         <source>Detalhes da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Work details</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="116"/>
         <source>Nome do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Project name</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="118"/>
         <source>Ex: Minha história</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: My story</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="121"/>
         <source>Autor</source>
-        <translation type="unfinished"></translation>
+        <translation>Author</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="123"/>
         <source>Ex: Maria Silva</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Maria Silva</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="126"/>
         <source>Gêneros</source>
-        <translation type="unfinished"></translation>
+        <translation>Genres</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="128"/>
         <source>Ex: Fantasia, Romance</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Fantasy, Romance</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="131"/>
         <source>Sinopse</source>
-        <translation type="unfinished"></translation>
+        <translation>Synopsis</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="133"/>
         <source>Escreva uma breve sinopse…</source>
-        <translation type="unfinished"></translation>
+        <translation>Write a brief synopsis…</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="139"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="142"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="186"/>
         <source>Escolher capa</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose cover</translation>
     </message>
     <message>
         <location filename="../src/ProjectInfoPanel.cpp" line="188"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -4965,47 +5046,47 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ProjectModel.cpp" line="1537"/>
         <source>Idade</source>
-        <translation type="unfinished"></translation>
+        <translation>Age</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1538"/>
         <source>Origem</source>
-        <translation type="unfinished"></translation>
+        <translation>Origin</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1539"/>
         <source>Gênero</source>
-        <translation type="unfinished"></translation>
+        <translation>Gender</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1540"/>
         <source>Estado civil</source>
-        <translation type="unfinished"></translation>
+        <translation>Marital status</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1541"/>
         <source>Ocupação</source>
-        <translation type="unfinished"></translation>
+        <translation>Occupation</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1543"/>
         <source>História</source>
-        <translation type="unfinished"></translation>
+        <translation>Backstory</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1544"/>
         <source>Conexões</source>
-        <translation type="unfinished"></translation>
+        <translation>Connections</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1545"/>
         <source>Função narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrative role</translation>
     </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="1546"/>
         <source>Desenvolvimento</source>
-        <translation type="unfinished"></translation>
+        <translation>Development</translation>
     </message>
 </context>
 <context>
@@ -5013,6625 +5094,6625 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="22"/>
         <source>Novo personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>New character</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="23"/>
         <source>Novo cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>New setting</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="24"/>
         <source>Novo objeto</source>
-        <translation type="unfinished"></translation>
+        <translation>New object</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="25"/>
         <source>Novo documento</source>
-        <translation type="unfinished"></translation>
+        <translation>New document</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="29"/>
         <source>Nome do personagem:</source>
-        <translation type="unfinished"></translation>
+        <translation>Character name:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="30"/>
         <source>Nome do cenário:</source>
-        <translation type="unfinished"></translation>
+        <translation>Setting name:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="31"/>
         <source>Nome do objeto:</source>
-        <translation type="unfinished"></translation>
+        <translation>Object name:</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="32"/>
         <source>Nome:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../src/ElementsStore.cpp" line="72"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/ElementsStore.cpp" line="73"/>
         <source>Cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>Setting</translation>
     </message>
     <message>
         <location filename="../src/ElementsStore.cpp" line="74"/>
         <source>Objeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Object</translation>
     </message>
     <message>
         <location filename="../src/NewProjectFlow.cpp" line="29"/>
         <source>Novo Projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>New Project</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="20"/>
         <source>Magia</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="21"/>
         <source>Soft</source>
-        <translation type="unfinished"></translation>
+        <translation>Soft</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="21"/>
         <source>A magia é atmosférica e misteriosa. Sem regras explícitas — funciona por sentimento e narrativa.</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic is atmospheric and mysterious. No explicit rules — it works through feeling and narrative.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Mistério</source>
-        <translation type="unfinished"></translation>
+        <translation>Mystery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Mais liberdade criativa</source>
-        <translation type="unfinished"></translation>
+        <translation>More creative freedom</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Excelente para mundos enigmáticos</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for enigmatic worlds</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Foco no impacto emocional em vez da mecânica</source>
-        <translation type="unfinished"></translation>
+        <translation>Focuses on emotional impact rather than mechanics</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Permite reviravoltas surpreendentes sem preparação técnica</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows for surprising twists without technical setup</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Reforça a sensação de maravilhoso e sagrado</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces a sense of wonder and the sacred</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Ótimo para temas de fé, destino e o desconhecido</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for themes of faith, fate, and the unknown</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Menos pesquisa e planejamento de regras antes de escrever</source>
-        <translation type="unfinished"></translation>
+        <translation>Less research and rule-planning needed before writing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Personagens podem reagir com espanto genuíno, não cálculo</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can react with genuine awe, not calculation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="22"/>
         <source>Aproxima a magia da experiência do leitor com o sobrenatural real</source>
-        <translation type="unfinished"></translation>
+        <translation>Brings magic closer to the reader&apos;s real experience of the supernatural</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Cuidado para não parecer arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for it feeling arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>O leitor pode ter dificuldade em prever consequências</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may struggle to predict consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Pode gerar inconsistências se não for tratado com cuidado</source>
-        <translation type="unfinished"></translation>
+        <translation>Can create inconsistencies if not handled carefully</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Risco de deus ex machina em momentos de clímax</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of deus ex machina at climactic moments</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Dificulta criar tensão através de limitações claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it harder to build tension through clear limitations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Exige disciplina de tom para manter a magia crível mesmo sem regras</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires tonal discipline to keep the magic believable even without rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Resoluções de conflito por magia podem parecer batota</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic-based conflict resolutions can feel like cheating</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Menos satisfatório para leitores que gostam de antecipar soluções</source>
-        <translation type="unfinished"></translation>
+        <translation>Less satisfying for readers who like anticipating solutions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Difícil sustentar duelos ou disputas mágicas com apostas claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to sustain magical duels or contests with clear stakes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="23"/>
         <source>Precisa de outras fontes de tensão (política, relacionamentos) para compensar a imprevisibilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs other sources of tension (politics, relationships) to offset the unpredictability</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="24"/>
         <source>Branda</source>
-        <translation type="unfinished"></translation>
+        <translation>Mild</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="24"/>
         <source>Existem algumas regras gerais, mas exceções são aceitas quando servem à história.</source>
-        <translation type="unfinished"></translation>
+        <translation>There are some general rules, but exceptions are accepted when they serve the story.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Preserva parte do mistério com algum senso de lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>Preserves some mystery while keeping a sense of logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Flexibilidade para a trama sem parecer totalmente aleatória</source>
-        <translation type="unfinished"></translation>
+        <translation>Flexibility for the plot without feeling completely random</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Permite exceções que geram surpresa sem quebrar a confiança do leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exceptions that create surprise without breaking reader trust</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Boa para magia ligada a emoção, vontade ou intuição do personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for magic tied to a character&apos;s emotion, will, or intuition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Espaço para lendas e variações regionais da magia</source>
-        <translation type="unfinished"></translation>
+        <translation>Room for legends and regional variations of magic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Facilita introduzir poderes novos sem longas explicações</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to introduce new powers without long explanations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Ainda favorece atmosfera de encantamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Still favors an atmosphere of enchantment</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Permite que mentores expliquem só o essencial</source>
-        <translation type="unfinished"></translation>
+        <translation>Lets mentors explain only the essentials</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Dá liberdade para ajustar a magia conforme a história evolui</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives freedom to adjust magic as the story evolves</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="25"/>
         <source>Serve bem a histórias com tom entre o épico e o intimista</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for stories with a tone between epic and intimate</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>As exceções precisam ser raras e bem justificadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Exceptions need to be rare and well justified</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Risco de o leitor sentir que as regras mudam para salvar o herói</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of readers feeling the rules change to save the hero</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Exige coerência interna mesmo sem sistema formalizado</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires internal consistency even without a formal system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Cuidado para não acumular contradições entre capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for contradictions piling up between chapters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Precisa sinalizar com antecedência quando algo foge do padrão</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to signal in advance when something breaks the pattern</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Difícil equilibrar surpresa com credibilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to balance surprise with credibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Menos eficaz para climaxes que dependem de regras claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Less effective for climaxes that depend on clear rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Autor precisa lembrar decisões mágicas anteriores para não se contradizer</source>
-        <translation type="unfinished"></translation>
+        <translation>The author needs to remember past magical decisions to avoid contradictions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Personagens não podem usar a magia como atalho fácil demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can&apos;t use magic as too easy a shortcut</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="26"/>
         <source>Exige um fio condutor mínimo (temas, custos, símbolos) para não virar caos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs at least a minimal throughline (themes, costs, symbols) to avoid becoming chaos</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="27"/>
         <source>Equilibrada</source>
-        <translation type="unfinished"></translation>
+        <translation>Balanced</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="27"/>
         <source>A magia tem regras claras, mas há margem para o inesperado e o inexplicável.</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic has clear rules, but there&apos;s room for the unexpected and the inexplicable.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Combina surpresa com previsibilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Combines surprise with predictability</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Boa para histórias que misturam mistério e resolução lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for stories that blend mystery with logical resolution</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Permite momentos de assombro sem abandonar a lógica interna</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows moments of awe without abandoning internal logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Serve tanto a tramas de descoberta quanto a duelos estratégicos</source>
-        <translation type="unfinished"></translation>
+        <translation>Works for both discovery plots and strategic duels</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Dá espaço para o inexplicável sem parecer descuido</source>
-        <translation type="unfinished"></translation>
+        <translation>Leaves room for the inexplicable without feeling careless</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Funciona bem quando magia e mundo ainda estão sendo explorados pelos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well when magic and the world are still being explored by the characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Flexível para diferentes subtramas com necessidades distintas</source>
-        <translation type="unfinished"></translation>
+        <translation>Flexible for different subplots with distinct needs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Permite ambiguidade proposital em pontos específicos da lore</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows deliberate ambiguity in specific points of the lore</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Bom meio-termo para atrair leitores de fantasia soft e hard</source>
-        <translation type="unfinished"></translation>
+        <translation>A good middle ground to attract both soft and hard fantasy readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="28"/>
         <source>Dá margem para revelar regras aos poucos, como parte do enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Leaves room to reveal rules gradually, as part of the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Exige decidir com clareza o que é regra fixa e o que é mistério proposital</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly deciding what&apos;s a fixed rule and what&apos;s deliberate mystery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>O leitor pode confundir inconsistência com mistério intencional</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may mistake inconsistency for intentional mystery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Precisa de disciplina para não deslizar para o caos ao longo da série</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs discipline to avoid sliding into chaos over the course of the series</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Cuidado ao introduzir exceções para não minar a lógica já estabelecida</source>
-        <translation type="unfinished"></translation>
+        <translation>Be careful introducing exceptions so they don&apos;t undermine the established logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Exige um mapa mental (mesmo informal) de limites e custos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires a mental map (even an informal one) of limits and costs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Risco de zonas cinzentas mal definidas gerarem plot holes</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of poorly defined gray areas creating plot holes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Personagens espertos podem expor lacunas se as regras forem vagas demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Clever characters can expose gaps if the rules are too vague</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Precisa sinalizar ao leitor quais mistérios serão resolvidos e quais não</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to signal to readers which mysteries will be resolved and which won&apos;t</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Difícil manter esse equilíbrio em obras longas ou coletivas</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to maintain this balance in long or collaborative works</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="29"/>
         <source>Exige revisão constante para garantir que o &apos;inexplicável&apos; não vire desculpa</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires constant revision to make sure the &quot;inexplicable&quot; doesn&apos;t become an excuse</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="30"/>
         <source>Estruturada</source>
-        <translation type="unfinished"></translation>
+        <translation>Structured</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="30"/>
         <source>As regras são bem definidas e consistentes. Exceções são raras e precisam de justificativa.</source>
-        <translation type="unfinished"></translation>
+        <translation>The rules are well defined and consistent. Exceptions are rare and need justification.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Cria previsibilidade que gera tensão genuína</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates predictability that generates genuine tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Ótima para conflitos e duelos com apostas claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for conflicts and duels with clear stakes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Permite ao leitor antecipar soluções e se sentir recompensado</source>
-        <translation type="unfinished"></translation>
+        <translation>Lets readers anticipate solutions and feel rewarded</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Favorece protagonistas que resolvem problemas com inteligência</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors protagonists who solve problems with intelligence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Boa base para academias de magia, treinos e progressão de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for magic academies, training, and power progression</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Facilita construir hierarquias e especializações mágicas</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easier to build magical hierarchies and specializations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Sustenta arcos longos de aprendizado e maestria</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains long arcs of learning and mastery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Ajuda a evitar acusações de deus ex machina</source>
-        <translation type="unfinished"></translation>
+        <translation>Helps avoid accusations of deus ex machina</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Serve bem a narrativas com múltiplos usuários de magia competindo ou cooperando</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for narratives with multiple magic users competing or cooperating</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="31"/>
         <source>Cria oportunidades de humor e ironia quando regras são usadas de forma criativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates opportunities for humor and irony when rules are used creatively</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Exceções são raras e precisam de justificativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Exceptions are rare and need justification</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Exige planejamento prévio consistente das regras e seus limites</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistent upfront planning of rules and their limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Menos espaço para o mistério puro e o sobrenatural inexplicável</source>
-        <translation type="unfinished"></translation>
+        <translation>Less room for pure mystery and the inexplicably supernatural</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Erros de continuidade ficam mais visíveis ao leitor atento</source>
-        <translation type="unfinished"></translation>
+        <translation>Continuity errors become more visible to attentive readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Precisa documentar custos, limites e exceções para não se contradizer</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to document costs, limits, and exceptions to avoid contradictions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Corre o risco de a magia parecer mecânica ou fria demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making the magic feel too mechanical or cold</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Exige mais texto explicativo, o que pode pesar o ritmo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires more explanatory text, which can weigh down the pacing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Personagens onisciente sobre a magia podem reduzir a surpresa</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters who are all-knowing about magic can reduce surprise</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Difícil introduzir poderes novos sem alterar o sistema já estabelecido</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to introduce new powers without altering the already-established system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="32"/>
         <source>Fãs tendem a testar e cobrar coerência linha a linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Fans tend to test and demand line-by-line consistency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="33"/>
         <source>Hard</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="33"/>
         <source>A magia funciona como uma ciência. Regras rígidas, custos claros e consequências previsíveis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic works like a science. Rigid rules, clear costs, and predictable consequences.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Magia funciona como ferramenta de resolução de conflitos verificável</source>
-        <translation type="unfinished"></translation>
+        <translation>Magic works as a verifiable tool for resolving conflicts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Excelente para clímax construídos com lógica e antecipação</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for climaxes built on logic and anticipation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Recompensa leitores atentos que deduzem soluções antes do personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Rewards attentive readers who deduce solutions before the character does</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Ideal para tramas de mistério, investigação ou competição mágica</source>
-        <translation type="unfinished"></translation>
+        <translation>Ideal for mystery, investigation, or magical-competition plots</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Reforça personagens que vencem pela inteligência, não sorte</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces characters who win through intelligence, not luck</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Cria consistência que sustenta séries longas e worldbuilding denso</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates consistency that sustains long series and dense worldbuilding</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Permite subverter expectativas dentro das próprias regras, de forma justa</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows subverting expectations fairly, within the rules themselves</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Favorece economias, guerras e tecnologias baseadas na magia</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors economies, wars, and technologies based on magic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Dá ao leitor sensação de domínio e controle sobre o mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives readers a sense of mastery and control over the world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="34"/>
         <source>Ótima para gêneros como fantasia científica ou litRPG</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for genres like science fantasy or LitRPG</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Regras rígidas, custos claros e consequências previsíveis exigem planejamento extenso</source>
-        <translation type="unfinished"></translation>
+        <translation>Rigid rules, clear costs, and predictable consequences require extensive planning</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Qualquer inconsistência é facilmente notada e cobrada pelo leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Any inconsistency is easily noticed and called out by readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Menos espaço para mistério, espanto ou o verdadeiramente inexplicável</source>
-        <translation type="unfinished"></translation>
+        <translation>Less room for mystery, awe, or the truly inexplicable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Exige diagramas, tabelas ou notas para manter tudo coerente</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires diagrams, tables, or notes to keep everything consistent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Cenas de resolução podem parecer cálculo técnico em vez de emoção</source>
-        <translation type="unfinished"></translation>
+        <translation>Resolution scenes can feel like technical calculation instead of emotion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Difícil introduzir poder novo sem reescrever ou remendar o sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to introduce a new power without rewriting or patching the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Sacrifica a sensação de sobrenatural em troca de lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacrifices the feeling of the supernatural in exchange for logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Personagens limitados demais pelas regras podem parecer sem saída de forma artificial</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters overly limited by the rules can feel artificially stuck</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Exige tempo de exposição para ensinar o sistema ao leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires exposition time to teach the system to readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="35"/>
         <source>Risco de a magia competir com a trama por atenção, tornando-se o verdadeiro protagonista</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the magic competing with the plot for attention, becoming the real protagonist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="38"/>
         <source>Política</source>
-        <translation type="unfinished"></translation>
+        <translation>Politics</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="39"/>
         <source>Anarquia</source>
-        <translation type="unfinished"></translation>
+        <translation>Anarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="39"/>
         <source>Ausência de governo central. Poder distribuído ou inexistente; organização emerge do coletivo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Absence of central government. Power is distributed or nonexistent; organization emerges from the collective.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Liberdade máxima para os personagens agirem sem amarras institucionais</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum freedom for characters to act without institutional constraints</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Excelente para explorar comunidades autônomas e experimentos sociais</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for exploring autonomous communities and social experiments</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Facilita histórias sobre reconstrução após o colapso de um Estado</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to tell stories about rebuilding after a state&apos;s collapse</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Permite múltiplos centros de poder local competindo ou cooperando</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows multiple local power centers competing or cooperating</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Bom terreno para heróis que resolvem problemas por conta própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for heroes who solve problems on their own</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Realça temas de solidariedade, cooperativismo e autogestão</source>
-        <translation type="unfinished"></translation>
+        <translation>Highlights themes of solidarity, cooperation, and self-management</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Cria espaço narrativo para líderes informais carismáticos surgirem</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates narrative space for charismatic informal leaders to emerge</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Favorece conflitos entre visões concorrentes de organização coletiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors conflicts between competing visions of collective organization</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Permite contrastar comunidades anárquicas bem-sucedidas com o caos externo</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows contrasting successful anarchist communities with outside chaos</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="40"/>
         <source>Bom pano de fundo para críticas ao autoritarismo de outras facções</source>
-        <translation type="unfinished"></translation>
+        <translation>Good backdrop for critiquing the authoritarianism of other factions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Explicar como bens públicos básicos (água, segurança) são providos sem Estado</source>
-        <translation type="unfinished"></translation>
+        <translation>Explaining how basic public goods (water, security) are provided without a state</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Risco de o cenário parecer caótico ou implausível sem regras claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the setting feeling chaotic or implausible without clear rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Exige mostrar mecanismos reais de resolução de conflitos entre indivíduos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing real mechanisms for resolving conflicts between individuals</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Pode confundir leitores acostumados a associar ausência de governo a violência</source>
-        <translation type="unfinished"></translation>
+        <translation>Can confuse readers used to associating the absence of government with violence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Precisa distinguir anarquia organizada de mera desordem ou terra sem lei</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to distinguish organized anarchy from mere disorder or lawlessness</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Difícil sustentar em larga escala sem soar ingênuo ou instável</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to sustain at large scale without sounding naive or unstable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Exige cuidado para não transformar a trama em apologia panfletária</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to turn the plot into a preachy manifesto</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Vilões externos (Estados vizinhos) podem parecer necessários demais para gerar conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>External villains (neighboring states) can feel too necessary just to generate conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Requer worldbuilding econômico consistente sobre trocas e propriedade</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistent economic worldbuilding around trade and property</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="41"/>
         <source>Pode limitar cenas de poder político tradicional (cortes, ministérios, tronos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Can limit traditional political-power scenes (courts, ministries, thrones)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="42"/>
         <source>Democracia</source>
-        <translation type="unfinished"></translation>
+        <translation>Democracy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="42"/>
         <source>O poder emana do povo. Eleições, pluralismo e direitos civis são os pilares.</source>
-        <translation type="unfinished"></translation>
+        <translation>Power flows from the people. Elections, pluralism, and civil rights are the pillars.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Leitores reconhecem facilmente as regras do jogo político</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers easily recognize the rules of the political game</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Rico terreno para intrigas eleitorais, campanhas e escândalos</source>
-        <translation type="unfinished"></translation>
+        <translation>Rich ground for electoral intrigue, campaigns, and scandals</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Permite personagens comuns influenciarem o destino coletivo pelo voto</source>
-        <translation type="unfinished"></translation>
+        <translation>Lets ordinary characters influence the collective fate through voting</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Bom para explorar manipulação da opinião pública e mídia</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring manipulation of public opinion and the media</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Facilita arcos de ascensão e queda de líderes populares</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build rise-and-fall arcs for popular leaders</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Cria tensão natural entre maiorias e minorias dentro da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates natural tension between majorities and minorities within the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Permite múltiplos partidos como fontes de conflito secundário</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows multiple parties as sources of secondary conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Boa base para temas de corrupção institucional e accountability</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for themes of institutional corruption and accountability</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Favorece personagens ativistas, jornalistas e reformistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors activist, journalist, and reformist characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="43"/>
         <source>Facilita crises de legitimidade quando resultados são contestados</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build legitimacy crises when results are contested</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Exige coerência sobre quem vota e quem é excluído do processo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency about who votes and who&apos;s excluded from the process</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Processos deliberativos podem desacelerar o ritmo da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Deliberative processes can slow down the plot&apos;s pacing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Corre risco de soar anacrônico em cenários pré-modernos sem justificativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks sounding anachronistic in pre-modern settings without justification</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Precisa de instituições (parlamento, tribunais) minimamente detalhadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs at least minimally detailed institutions (parliament, courts)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Exige explicar como decisões urgentes são tomadas sem lentidão excessiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining how urgent decisions are made without excessive delay</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Pode diluir o protagonismo se o poder depender de consenso amplo</source>
-        <translation type="unfinished"></translation>
+        <translation>Can dilute the protagonist&apos;s agency if power depends on broad consensus</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Cuidado para não retratar a democracia como ingenuamente perfeita</source>
-        <translation type="unfinished"></translation>
+        <translation>Be careful not to portray democracy as naively perfect</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Exige verossimilhança sobre fraude, propaganda e polarização</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires plausibility around fraud, propaganda, and polarization</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Grupos de interesse e lobbies precisam ser coerentes com o poder que têm</source>
-        <translation type="unfinished"></translation>
+        <translation>Interest groups and lobbies need to be consistent with the power they hold</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="44"/>
         <source>Pode exigir subtramas eleitorais que competem por espaço com o enredo principal</source>
-        <translation type="unfinished"></translation>
+        <translation>May require electoral subplots that compete for space with the main plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="45"/>
         <source>República</source>
-        <translation type="unfinished"></translation>
+        <translation>Republic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="45"/>
         <source>Governo representativo com instituições formais e separação de poderes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Representative government with formal institutions and separation of powers.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Equilíbrio entre estabilidade institucional e conflito político</source>
-        <translation type="unfinished"></translation>
+        <translation>Balance between institutional stability and political conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Separação de poderes cria múltiplos palcos para a trama (senado, tribunais, executivo)</source>
-        <translation type="unfinished"></translation>
+        <translation>Separation of powers creates multiple stages for the plot (senate, courts, executive)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Bom para tramas de conspiração dentro de instituições formais</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for conspiracy plots within formal institutions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Permite personagens ambiciosos disputando cargos por vias legítimas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ambitious characters to compete for office through legitimate means</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Facilita contrastar retórica pública com jogo de bastidores</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to contrast public rhetoric with behind-the-scenes maneuvering</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Terreno fértil para dilemas entre lei e ambição pessoal</source>
-        <translation type="unfinished"></translation>
+        <translation>Fertile ground for dilemmas between law and personal ambition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Cria hierarquias de poder claras sem depender de um único governante</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates clear power hierarchies without depending on a single ruler</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Bom para explorar checks and balances como fonte de suspense</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring checks and balances as a source of suspense</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Favorece personagens-magistrados, senadores e burocratas como protagonistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors magistrate, senator, and bureaucrat characters as protagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="46"/>
         <source>Permite crises constitucionais como grandes pontos de virada</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows constitutional crises as major turning points</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Exige mapear claramente quem detém cada poder e seus limites</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly mapping who holds each power and its limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Pode parecer burocrático demais se as instituições não tiverem rosto humano</source>
-        <translation type="unfinished"></translation>
+        <translation>Can feel too bureaucratic if the institutions lack a human face</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Precisa de nomes e funções consistentes para cargos e instituições</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs consistent names and roles for offices and institutions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Risco de o leitor se perder entre múltiplos órgãos e siglas</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of readers getting lost among multiple bodies and acronyms</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Exige justificar por que a lei é respeitada mesmo por poderosos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why the law is respected even by the powerful</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Corrupção institucional precisa ser plausível dentro das regras estabelecidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Institutional corruption needs to be plausible within the established rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Exige cuidado ao equilibrar tempo de tela entre diferentes poderes</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care in balancing screen time between different branches of power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Reformas e emendas constitucionais pedem tempo narrativo para se desenrolar</source>
-        <translation type="unfinished"></translation>
+        <translation>Constitutional reforms and amendments need narrative time to unfold</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Pode exigir pesquisa sobre sistemas reais para soar consistente</source>
-        <translation type="unfinished"></translation>
+        <translation>May require research into real systems to sound consistent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="47"/>
         <source>Personagens fora das instituições podem parecer marginais à trama central</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters outside the institutions can feel marginal to the central plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="48"/>
         <source>Oligarquia</source>
-        <translation type="unfinished"></translation>
+        <translation>Oligarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="48"/>
         <source>Poder concentrado em um grupo seleto: elite econômica, nobre ou militar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Power concentrated in a select group: economic, noble, or military elite.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Conflitos claros entre um punhado de famílias, casas ou corporações rivais</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear conflicts between a handful of rival families, houses, or corporations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Excelente para intrigas de bastidores e alianças secretas</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for behind-the-scenes intrigue and secret alliances</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Permite personagens poderosos com motivações pessoais muito nítidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows powerful characters with very sharp personal motivations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Facilita tramas sobre desigualdade e exploração da maioria</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build plots about inequality and exploitation of the majority</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Bom terreno para heróis que desafiam uma elite fechada</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for heroes who challenge a closed-off elite</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Cria dinastias e legados que atravessam gerações na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates dynasties and legacies that span generations in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Favorece cenários de guerra fria interna entre blocos de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors internal cold-war scenarios between power blocs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Permite mostrar como riqueza e política se entrelaçam</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing how wealth and politics intertwine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Bom para revelar hipocrisia entre discurso público e interesse privado</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for revealing hypocrisy between public discourse and private interest</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="49"/>
         <source>Facilita reviravoltas quando um oligarca trai os próprios pares</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build twists when an oligarch betrays their own peers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Exige definir claramente quem compõe o grupo dominante e por quê</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly defining who makes up the dominant group and why</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Precisa mostrar como o grupo se mantém coeso apesar de interesses distintos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show how the group stays cohesive despite differing interests</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Risco de o povo comum virar cenário passivo em vez de força narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of ordinary people becoming passive scenery instead of a narrative force</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Exige cuidado para não tornar todos os oligarcas intercambiáveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care to avoid making all the oligarchs interchangeable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Pode exigir subtramas econômicas (comércio, terras, monopólios) bem definidas</source>
-        <translation type="unfinished"></translation>
+        <translation>May require well-defined economic subplots (trade, land, monopolies)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Precisa explicar como novos membros entram ou são excluídos do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to explain how new members join or are excluded from the group</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Corre risco de simplificar demais a resistência popular contra a elite</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks oversimplifying popular resistance against the elite</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Exige verossimilhança sobre como a elite reprime ou coopta opositores</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires plausibility about how the elite represses or co-opts opponents</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Pode pedir múltiplos pontos de vista para não soar unilateral</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for multiple points of view so it doesn&apos;t feel one-sided</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="50"/>
         <source>Requer cuidado para que a ganância não pareça motivação rasa demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so that greed doesn&apos;t feel like too shallow a motivation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="51"/>
         <source>Monarquia</source>
-        <translation type="unfinished"></translation>
+        <translation>Monarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="51"/>
         <source>Poder centralizado em um governante hereditário, com ou sem representação popular.</source>
-        <translation type="unfinished"></translation>
+        <translation>Power centralized in a hereditary ruler, with or without popular representation.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Decisões rápidas e claras vindas de uma única autoridade</source>
-        <translation type="unfinished"></translation>
+        <translation>Fast, clear decisions coming from a single authority</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Centralização de poder facilita tramas de corte, sucessão e traição</source>
-        <translation type="unfinished"></translation>
+        <translation>Centralized power makes it easy to build plots of court, succession, and betrayal</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Excelente para conflitos de linhagem, herança e legitimidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for conflicts of lineage, inheritance, and legitimacy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Cria um símbolo humano (o monarca) para lealdade ou rebelião</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates a human symbol (the monarch) for loyalty or rebellion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Favorece cerimônias, protocolo e hierarquia como recursos de ambientação</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors ceremonies, protocol, and hierarchy as worldbuilding tools</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Bom para explorar o fardo pessoal do poder absoluto</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring the personal burden of absolute power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Facilita alianças e casamentos políticos como mecanismos de trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to use alliances and political marriages as plot devices</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Permite arcos claros de ascensão, reinado e queda de um governante</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows clear arcs of a ruler&apos;s rise, reign, and fall</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Bom terreno para conselheiros, regentes e intrigas palacianas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for advisors, regents, and palace intrigue</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="52"/>
         <source>Cria tensão natural entre vontade do povo e vontade da coroa</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates natural tension between the will of the people and the will of the crown</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Enredo pode depender demais da sorte ou caráter de um único personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>The plot can end up depending too much on the luck or character of a single person</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Pouco espaço institucional para disputas fora da corte, salvo se criado</source>
-        <translation type="unfinished"></translation>
+        <translation>Little institutional room for disputes outside the court, unless created</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Depende de uma linha de sucessão clara e de suas regras de herança</source>
-        <translation type="unfinished"></translation>
+        <translation>Depends on a clear line of succession and its inheritance rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Exige justificar por que a nobreza aceita ou tolera o monarca atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why the nobility accepts or tolerates the current monarch</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Risco de o reino parecer monolítico sem regiões e facções internas</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the kingdom feeling monolithic without internal regions and factions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Precisa mostrar como decisões do topo afetam a vida do povo comum</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show how decisions from the top affect the lives of common people</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Exige cuidado para que a lealdade dos súditos não pareça automática</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so that subjects&apos; loyalty doesn&apos;t feel automatic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Pode exigir explicar a economia que sustenta corte, exército e nobreza</source>
-        <translation type="unfinished"></translation>
+        <translation>May require explaining the economy that sustains the court, army, and nobility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Sucessões e regências pedem timeline consistente de idades e parentescos</source>
-        <translation type="unfinished"></translation>
+        <translation>Successions and regencies call for a consistent timeline of ages and kinships</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="53"/>
         <source>Corre risco de romantizar o absolutismo se não houver contraponto crítico</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks romanticizing absolutism if there&apos;s no critical counterpoint</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="54"/>
         <source>Totalitarismo</source>
-        <translation type="unfinished"></translation>
+        <translation>Totalitarianism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="54"/>
         <source>Controle absoluto do Estado sobre todos os aspectos da vida pública e privada.</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolute state control over every aspect of public and private life.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Antagonista sistêmico pronto, ideal para tramas de resistência e opressão</source>
-        <translation type="unfinished"></translation>
+        <translation>A ready-made systemic antagonist, ideal for plots of resistance and oppression</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Permite explorar vigilância, propaganda e controle da informação</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring surveillance, propaganda, and information control</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Cria altíssima tensão para qualquer ato de desobediência</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates extremely high tension around any act of disobedience</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Bom terreno para heróis que arriscam tudo por pequenas liberdades</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for heroes who risk everything for small freedoms</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Favorece contrastes fortes entre discurso oficial e realidade vivida</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors sharp contrasts between official discourse and lived reality</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Facilita tramas sobre doutrinação, memória e reescrita da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build plots about indoctrination, memory, and the rewriting of history</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Cria estrutura clara de poder para o leitor entender rapidamente quem manda</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates a clear power structure so readers quickly understand who&apos;s in charge</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Bom para explorar cumplicidade, delação e sobrevivência moral</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring complicity, betrayal, and moral survival</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Permite câmaras de eco e culto de personalidade como recursos dramáticos</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows echo chambers and personality cults as dramatic devices</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="55"/>
         <source>Favorece arcos de despertar de consciência política em personagens comuns</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors arcs of political awakening in ordinary characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Exige cuidado para não banalizar sofrimento real associado a regimes históricos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to trivialize the real suffering associated with historical regimes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Corre risco de o Estado parecer onisciente e onipotente demais para gerar suspense</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making the State feel too all-knowing and all-powerful to generate suspense</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Precisa mostrar rachaduras internas para que a resistência pareça plausível</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show internal cracks for the resistance to feel plausible</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Exige explicar como o regime mantém lealdade de seus próprios agentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining how the regime keeps the loyalty of its own agents</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Pode exigir pesquisa histórica para evitar clichês rasos de vilania</source>
-        <translation type="unfinished"></translation>
+        <translation>May require historical research to avoid shallow villain clichés</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Risco de personagens secundários virarem meros símbolos, sem humanidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of secondary characters becoming mere symbols, without humanity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Exige equilíbrio entre desesperança da opressão e esperança narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires balancing the hopelessness of oppression with narrative hope</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Precisa justificar como o regime chegou ao poder e o que o sustenta</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify how the regime came to power and what sustains it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Pode pedir cuidado extra ao lidar com violência e trauma na narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for extra care when handling violence and trauma in the narrative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="56"/>
         <source>Corre risco de simplificar demais motivações dos que colaboram com o regime</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks oversimplifying the motivations of those who collaborate with the regime</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="59"/>
         <source>Religião</source>
-        <translation type="unfinished"></translation>
+        <translation>Religion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="60"/>
         <source>Animista</source>
-        <translation type="unfinished"></translation>
+        <translation>Animist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="60"/>
         <source>Espiritualidade difusa. Forças da natureza e ancestrais sem estrutura formal.</source>
-        <translation type="unfinished"></translation>
+        <translation>Diffuse spirituality. Forces of nature and ancestors without a formal structure.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Atmosfera de mistério e reverência pela natureza</source>
-        <translation type="unfinished"></translation>
+        <translation>An atmosphere of mystery and reverence for nature</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Liberdade para criar espíritos, tabus e rituais locais sem doutrina fixa</source>
-        <translation type="unfinished"></translation>
+        <translation>Freedom to create spirits, taboos, and local rituals without fixed doctrine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Fácil justificar magia, presságios e sincronicidades no enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to justify magic, omens, and synchronicities in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Cada vilarejo pode ter crenças únicas, enriquecendo o mapa cultural</source>
-        <translation type="unfinished"></translation>
+        <translation>Each village can have unique beliefs, enriching the cultural map</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Conflitos sutis entre tradição oral e mudança (ex: colonização, modernidade)</source>
-        <translation type="unfinished"></translation>
+        <translation>Subtle conflicts between oral tradition and change (e.g., colonization, modernity)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Personagens xamãs/curandeiros ganham autoridade narrativa orgânica</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaman/healer characters gain organic narrative authority</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Bom pano de fundo para temas ecológicos e ancestralidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Good backdrop for ecological themes and ancestry</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Permite ambiguidade sobre o sobrenatural ser real ou simbólico</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ambiguity about whether the supernatural is real or symbolic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Facilita fusão de crenças quando povos diferentes se encontram</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to blend beliefs when different peoples meet</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="61"/>
         <source>Rituais de passagem e luto tornam-se ganchos emocionais fortes</source>
-        <translation type="unfinished"></translation>
+        <translation>Rites of passage and mourning become strong emotional hooks</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Sem textos sagrados, você precisa mostrar a crença por costume e comportamento, não por dogma citado</source>
-        <translation type="unfinished"></translation>
+        <translation>With no sacred texts, you need to show belief through custom and behavior, not quoted dogma</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Risco de parecer genérico (&apos;espiritualidade indígena difusa&apos;) se não detalhar espíritos e tabus específicos</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling generic (&quot;vague indigenous spirituality&quot;) if you don&apos;t detail specific spirits and taboos</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Difícil gerar conflito religioso institucional (não há instituição)</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to generate institutional religious conflict (there&apos;s no institution)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Autoridade espiritual é informal, então cisões dependem de carisma pessoal, não de doutrina</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiritual authority is informal, so schisms depend on personal charisma, not doctrine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Consistência exige lembrar quais lugares/objetos são sagrados e por quê</source>
-        <translation type="unfinished"></translation>
+        <translation>Consistency requires remembering which places/objects are sacred and why</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Não há clero para antagonizar; vilões religiosos exigem outro tipo de ameaça (profanação, desequilíbrio)</source>
-        <translation type="unfinished"></translation>
+        <translation>There&apos;s no clergy to antagonize; religious villains require a different kind of threat (desecration, imbalance)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Fácil escorregar em estereótipos de &apos;povo primitivo&apos; se não houver profundidade cultural</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to slip into &quot;primitive people&quot; stereotypes without cultural depth</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Sucessão de conhecimento (quem vira o próximo xamã) precisa de lógica própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Succession of knowledge (who becomes the next shaman) needs its own logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Leitor pode não perceber a crença como &apos;religião&apos; se for pouco explicitada</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may not perceive the belief as a &quot;religion&quot; if it&apos;s too understated</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="62"/>
         <source>Escalar o sistema para reinos grandes exige explicar por que não virou algo mais institucional</source>
-        <translation type="unfinished"></translation>
+        <translation>Scaling the system up to large kingdoms requires explaining why it never became more institutional</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="63"/>
         <source>Popular</source>
-        <translation type="unfinished"></translation>
+        <translation>Folk</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="63"/>
         <source>Fé prática e cultural, mistura de crenças. Sem ortodoxia rígida.</source>
-        <translation type="unfinished"></translation>
+        <translation>Practical, cultural faith, a mix of beliefs. No rigid orthodoxy.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Realismo: reflete como a maioria das pessoas realmente vive a fé, em camadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Realism: reflects how most people actually live their faith, in layers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Sincretismo permite misturar deuses, santos e superstições sem contradição grave</source>
-        <translation type="unfinished"></translation>
+        <translation>Syncretism allows mixing gods, saints, and superstitions without serious contradiction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Personagens podem ser devotos e céticos ao mesmo tempo, com nuance</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can be devout and skeptical at the same time, with nuance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Fácil inserir festas, feriados e costumes que dão textura ao mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to add festivals, holidays, and customs that give the world texture</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Tensão natural entre fé &apos;oficial&apos; e fé &apos;de rua&apos; sem precisar de vilão</source>
-        <translation type="unfinished"></translation>
+        <translation>Natural tension between &quot;official&quot; faith and &quot;street&quot; faith without needing a villain</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Bom para humor e calor humano (bênçãos caseiras, amuletos, ditados populares)</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for humor and human warmth (homespun blessings, amulets, folk sayings)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Múltiplas seitas e variações podem coexistir sem parecer inconsistência</source>
-        <translation type="unfinished"></translation>
+        <translation>Multiple sects and variations can coexist without feeling like inconsistency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Facilita que cada região/família tenha seu &apos;jeito&apos; de praticar</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy for each region/family to have its own &quot;way&quot; of practicing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Aproxima o leitor por familiaridade com religiosidade popular do mundo real</source>
-        <translation type="unfinished"></translation>
+        <translation>Draws readers in through familiarity with real-world folk religiosity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="64"/>
         <source>Permite crítica social leve (hipocrisia, comércio da fé) sem virar tese</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows light social critique (hypocrisy, the commerce of faith) without turning into a thesis</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Falta de ortodoxia torna difícil criar heresia como conflito central</source>
-        <translation type="unfinished"></translation>
+        <translation>The lack of orthodoxy makes it hard to use heresy as a central conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Precisa estabelecer limites: o que é aceitável variar e o que soa errado até para os fiéis populares</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to establish limits: what&apos;s acceptable to vary and what feels wrong even to ordinary believers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Risco de a fé virar só &apos;decoração de cena&apos; sem peso dramático real</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of faith becoming mere &quot;set decoration&quot; without real dramatic weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Autoridade religiosa (padres, pajés, benzedeiras) tem poder informal, difícil de medir em disputas de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Religious authority (priests, shamans, folk healers) has informal power, hard to gauge in power struggles</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Múltiplas crenças simultâneas podem confundir o leitor sobre o que o mundo &apos;realmente&apos; acredita</source>
-        <translation type="unfinished"></translation>
+        <translation>Multiple simultaneous beliefs can confuse readers about what the world &quot;really&quot; believes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Personagens religiosos podem parecer inconsistentes se a mistura de crenças não for coerente internamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Religious characters can feel inconsistent if the mix of beliefs isn&apos;t internally coherent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Menos previsível prever reação de uma comunidade a um evento sobrenatural</source>
-        <translation type="unfinished"></translation>
+        <translation>Harder to predict a community&apos;s reaction to a supernatural event</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Difícil ancorar profecias ou magia em regras fixas vindas da fé</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to anchor prophecies or magic in fixed rules coming from the faith</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Exige pesquisa ou criação cuidadosa de sincretismos para não soar arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires research or careful invention of syncretisms so it doesn&apos;t feel arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="65"/>
         <source>Menor grandiosidade épica comparado a religiões dogmáticas centralizadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Less epic grandeur compared to centralized dogmatic religions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="66"/>
         <source>Tradicional</source>
-        <translation type="unfinished"></translation>
+        <translation>Traditional</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="66"/>
         <source>Práticas e textos estabelecidos. Alguma hierarquia, abertura à interpretação local.</source>
-        <translation type="unfinished"></translation>
+        <translation>Established practices and texts. Some hierarchy, openness to local interpretation.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Equilíbrio entre estrutura reconhecível e espaço para variação regional</source>
-        <translation type="unfinished"></translation>
+        <translation>Balance between recognizable structure and room for regional variation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Textos e práticas estabelecidos dão munição para citações, rituais e cenas de culto</source>
-        <translation type="unfinished"></translation>
+        <translation>Established texts and practices provide material for quotes, rituals, and worship scenes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Hierarquia moderada permite conflitos internos sem quebrar a fé toda</source>
-        <translation type="unfinished"></translation>
+        <translation>Moderate hierarchy allows internal conflicts without breaking the whole faith</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Fácil criar personagens que interpretam a doutrina de formas diferentes, gerando debate</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to create characters who interpret doctrine differently, sparking debate</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Templos, sacerdócio e calendário religioso enriquecem worldbuilding sem exigir dogmatismo</source>
-        <translation type="unfinished"></translation>
+        <translation>Temples, priesthood, and a religious calendar enrich worldbuilding without requiring dogmatism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Boa base para arcos de fé pessoal (dúvida, reforma, redescoberta)</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for personal-faith arcs (doubt, reform, rediscovery)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Permite que reinos vizinhos compartilhem a religião mas a pratiquem diferente</source>
-        <translation type="unfinished"></translation>
+        <translation>Lets neighboring kingdoms share the religion but practice it differently</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Serve de ponte crível entre um sistema caótico (popular) e um rígido (conservador)</source>
-        <translation type="unfinished"></translation>
+        <translation>Serves as a credible bridge between a chaotic system (folk) and a rigid one (conservative)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Autoridade religiosa pode mediar conflitos políticos sem dominar a trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Religious authority can mediate political conflicts without dominating the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="67"/>
         <source>Dá espaço para reformistas e tradicionalistas coexistirem sem cisma imediato</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives room for reformists and traditionalists to coexist without an immediate schism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Precisa definir a textura da doutrina para não ficar genérica (&apos;uma religião com templos&apos;)</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to define the texture of the doctrine so it doesn&apos;t feel generic (&quot;a religion with temples&quot;)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Abertura à interpretação local exige mostrar pelo menos duas leituras distintas do mesmo texto</source>
-        <translation type="unfinished"></translation>
+        <translation>Openness to local interpretation requires showing at least two distinct readings of the same text</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Hierarquia moderada pede clareza sobre até onde vai a autoridade central</source>
-        <translation type="unfinished"></translation>
+        <translation>Moderate hierarchy calls for clarity about how far central authority extends</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Risco de ficar &apos;no meio do caminho&apos; sem tensão forte se não houver um gatilho de conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling &quot;stuck in the middle&quot; without strong tension if there&apos;s no conflict trigger</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Exige worldbuilding de rituais e textos sagrados específicos, não apenas menção genérica</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires worldbuilding of specific rituals and sacred texts, not just generic mentions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Precisa estabelecer o que conta como desvio aceitável versus heresia real</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to establish what counts as acceptable deviation versus real heresy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Sacerdotes/clero precisam de motivações e política interna, não só cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>Priests/clergy need motivations and internal politics, not just scenery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Fica fácil demais resolver conflitos religiosos sem custo real se a fé for complacente demais</source>
-        <translation type="unfinished"></translation>
+        <translation>It becomes too easy to resolve religious conflicts without real cost if the faith is too accommodating</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Leitor pode achar a religião pouco relevante se ela não interferir em decisões dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may find the religion irrelevant if it never affects characters&apos; decisions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="68"/>
         <source>Equilíbrio entre tradição e abertura exige manutenção constante ao longo da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Balancing tradition and openness requires constant upkeep throughout the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="69"/>
         <source>Conservadora</source>
-        <translation type="unfinished"></translation>
+        <translation>Conservative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="69"/>
         <source>Apego forte à doutrina e tradição. Mudanças são lentas e contestadas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Strong attachment to doctrine and tradition. Change is slow and contested.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Gera atrito natural entre gerações e entre reforma e tradição</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates natural friction between generations and between reform and tradition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Boa fonte de antagonismo institucional sem precisar de vilão caricato</source>
-        <translation type="unfinished"></translation>
+        <translation>A good source of institutional antagonism without needing a caricature villain</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Personagens presos entre fé herdada e desejo de mudança ganham profundidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters caught between inherited faith and the desire for change gain depth</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Mudanças lentas dão tempo narrativo para escaladas de tensão crível</source>
-        <translation type="unfinished"></translation>
+        <translation>Slow change gives narrative time for believable tension escalation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Facilita subtramas de heresia, dissidência e perseguição religiosa moderada</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build subplots of heresy, dissent, and moderate religious persecution</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Instituição forte pode servir de obstáculo político-social recorrente</source>
-        <translation type="unfinished"></translation>
+        <translation>A strong institution can serve as a recurring political-social obstacle</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Rituais rígidos criam cenas visuais fortes (julgamentos, cerimônias, punições sociais)</source>
-        <translation type="unfinished"></translation>
+        <translation>Rigid rituals create strong visual scenes (trials, ceremonies, social punishments)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Contraste eficaz com personagens de fora que desafiam costumes</source>
-        <translation type="unfinished"></translation>
+        <translation>Effective contrast with outsider characters who challenge customs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Dá peso real a escolhas de personagens que rompem com a tradição</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives real weight to the choices of characters who break with tradition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="70"/>
         <source>Boa base para explorar temas de identidade, pertencimento e exclusão</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for exploring themes of identity, belonging, and exclusion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Autoridade religiosa precisa de rosto e hierarquia claros para sustentar o conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Religious authority needs a clear face and hierarchy to sustain the conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Mudança lenta exige paciência narrativa; reviravoltas religiosas rápidas soam inconsistentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Slow change demands narrative patience; fast religious reversals feel inconsistent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Contestação interna precisa de motivos concretos, não apenas &apos;personagem é rebelde&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Internal dissent needs concrete motives, not just &quot;the character is rebellious&quot;</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Risco de vilanizar a fé inteira em vez de mostrar nuance entre fiéis moderados e extremistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of villainizing the entire faith instead of showing nuance between moderate and extremist believers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Exige mostrar consequências sociais reais para quem desafia a doutrina</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing real social consequences for those who challenge doctrine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Precisa distinguir conservadorismo de crueldade gratuita para não soar unidimensional</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to distinguish conservatism from gratuitous cruelty so it doesn&apos;t feel one-dimensional</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Sistema de punição a desvios deve ser coerente e usado com peso dramático real</source>
-        <translation type="unfinished"></translation>
+        <translation>The system of punishing deviation must be consistent and used with real dramatic weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Facilmente cai em clichê de &apos;religião opressora&apos; se não houver fiéis genuinamente convictos e simpáticos</source>
-        <translation type="unfinished"></translation>
+        <translation>Easily falls into the &quot;oppressive religion&quot; cliché without genuinely devout, sympathetic believers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Exige estabelecer quem interpreta a doutrina e como isso muda com o tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires establishing who interprets doctrine and how that changes over time</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="71"/>
         <source>Precisa equilibrar crítica social com respeito à fé dos personagens que a vivem sinceramente</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance social critique with respect for the faith of characters who live it sincerely</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="72"/>
         <location filename="../src/ConstrutorStore.cpp" line="198"/>
         <source>Dogmática</source>
-        <translation type="unfinished"></translation>
+        <translation>Dogmatic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="72"/>
         <source>Doutrina imutável e absoluta. Heresia é punida. Autoridade religiosa centralizada.</source>
-        <translation type="unfinished"></translation>
+        <translation>Immutable, absolute doctrine. Heresy is punished. Centralized religious authority.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Máxima clareza moral e institucional: certo e errado são definidos pela doutrina</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum moral and institutional clarity: right and wrong are defined by doctrine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Excelente motor de conflito épico (guerra santa, inquisição, cisma)</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent engine for epic conflict (holy war, inquisition, schism)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Autoridade centralizada dá um antagonista institucional pronto e coerente</source>
-        <translation type="unfinished"></translation>
+        <translation>Centralized authority gives you a ready-made, coherent institutional antagonist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Perseguição a heresia cria apostas altas e urgência para os personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Persecution of heresy creates high stakes and urgency for the characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Doutrina imutável facilita profecias, leis divinas e regras mágicas ligadas à fé</source>
-        <translation type="unfinished"></translation>
+        <translation>Immutable doctrine makes it easy to build prophecies, divine laws, and magic rules tied to the faith</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Bom para explorar fanatismo, dúvida e coragem de romper com o sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring fanaticism, doubt, and the courage to break with the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Hierarquia rígida permite intrigas de poder dentro do próprio clero</source>
-        <translation type="unfinished"></translation>
+        <translation>A rigid hierarchy allows power intrigue within the clergy itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Símbolos, hinos e liturgia fixos dão identidade visual e sonora forte ao mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Fixed symbols, hymns, and liturgy give the world a strong visual and sonic identity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Fácil justificar mobilização em massa (cruzadas, recrutamento, sacrifício)</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to justify mass mobilization (crusades, recruitment, sacrifice)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="73"/>
         <source>Contraste poderoso quando um personagem interno começa a duvidar da doutrina</source>
-        <translation type="unfinished"></translation>
+        <translation>Powerful contrast when an insider character starts to doubt the doctrine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Doutrina &apos;imutável&apos; exige justificar por que nunca mudou apesar de séculos de história</source>
-        <translation type="unfinished"></translation>
+        <translation>&quot;Immutable&quot; doctrine requires justifying why it never changed despite centuries of history</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Risco de criar um vilão religioso raso se não houver fiéis sinceros e comovidos por dentro do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of creating a shallow religious villain without sincere, moved believers from within the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Precisa definir claramente quem tem autoridade para declarar heresia e com que critério</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to clearly define who has the authority to declare heresy and by what criteria</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Punições precisam ser mostradas com peso real, não apenas mencionadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Punishments need to be shown with real weight, not just mentioned</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Excesso de rigidez pode tornar o mundo previsível se toda desobediência tiver o mesmo desfecho</source>
-        <translation type="unfinished"></translation>
+        <translation>Excessive rigidity can make the world predictable if every act of disobedience has the same outcome</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Exige construir uma teologia coerente o bastante para resistir a perguntas do leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires building a theology coherent enough to withstand readers&apos; questions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Fácil recair em alegoria simplista de &apos;religião = opressão&apos; sem nuance</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into a simplistic &quot;religion = oppression&quot; allegory without nuance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Cismas e heresias precisam de lógica interna, não só servir à trama do herói</source>
-        <translation type="unfinished"></translation>
+        <translation>Schisms and heresies need internal logic, not just service to the hero&apos;s plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Autoridade centralizada demanda mostrar como ela se mantém (exército, riqueza, medo, fé genuína)</source>
-        <translation type="unfinished"></translation>
+        <translation>Centralized authority demands showing how it sustains itself (army, wealth, fear, genuine faith)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="74"/>
         <source>Personagens devem lidar com o custo real de desafiar um sistema que controla vidas e mortes</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters must deal with the real cost of defying a system that controls life and death</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="77"/>
         <source>Social</source>
-        <translation type="unfinished"></translation>
+        <translation>Society</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="78"/>
         <source>Igualitário</source>
-        <translation type="unfinished"></translation>
+        <translation>Egalitarian</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="78"/>
         <source>Todos têm direitos e oportunidades equivalentes. Hierarquias são mínimas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Everyone has equivalent rights and opportunities. Hierarchies are minimal.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Foco narrativo pode ficar em mérito, escolhas e caráter em vez de status herdado</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrative focus can rest on merit, choices, and character instead of inherited status</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Facilita protagonistas de qualquer origem ascenderem sem exigir explicação especial</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy for protagonists of any background to rise without needing special explanation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Bom pano de fundo para utopias, experimentos sociais ou pós-revolução</source>
-        <translation type="unfinished"></translation>
+        <translation>Good backdrop for utopias, social experiments, or post-revolution settings</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Conflitos internos (ambição, inveja, corrupção sutil) substituem opressão estrutural óbvia</source>
-        <translation type="unfinished"></translation>
+        <translation>Internal conflicts (ambition, envy, subtle corruption) replace obvious structural oppression</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Permite explorar como a igualdade formal ainda esconde desigualdades informais</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring how formal equality can still hide informal inequalities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Dá espaço para personagens questionarem se a igualdade é real ou só discurso</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives room for characters to question whether equality is real or just talk</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Facilita relações entre personagens de &apos;classes&apos; diferentes sem tabu automático</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build relationships between characters of different &quot;classes&quot; without automatic taboo</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Bom terreno para mostrar como se chegou à igualdade (revolução, reforma, colapso do antigo regime)</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for showing how equality was achieved (revolution, reform, collapse of the old regime)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Permite comparação crítica com sociedades vizinhas mais hierárquicas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows a critical comparison with more hierarchical neighboring societies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="79"/>
         <source>Reduz a necessidade de explicar sistemas de título e precedência a cada cena social</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduces the need to explain title and precedence systems in every social scene</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Precisa mostrar mecanismos concretos que sustentam a igualdade (leis, cultura, economia), não só afirmar que existe</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show concrete mechanisms that sustain equality (laws, culture, economy), not just state that it exists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Risco de soar utópico e sem tensão se nenhuma desigualdade informal for explorada</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of sounding utopian and tensionless if no informal inequality is explored</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Conflito de poder precisa de outra fonte (ideologia, recursos, talento) já que hierarquia não é o motor óbvio</source>
-        <translation type="unfinished"></translation>
+        <translation>Power conflict needs another source (ideology, resources, talent), since hierarchy isn&apos;t the obvious engine</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Exige cuidado para não tornar a sociedade chata por falta de estratificação dramática</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to make the society dull from a lack of dramatic stratification</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Leitor pode estranhar se personagens carismáticos não acumulam vantagem alguma</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may find it odd if charismatic characters gain no advantage at all</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Precisa explicar como decisões coletivas são tomadas sem virar um vácuo de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to explain how collective decisions are made without becoming a power vacuum</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Igualdade formal demais pode mascarar preguiça de worldbuilding se não houver nuance</source>
-        <translation type="unfinished"></translation>
+        <translation>Too much formal equality can mask lazy worldbuilding if there&apos;s no nuance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Exige mostrar tensões econômicas ou de recursos que a igualdade social não resolve sozinha</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing economic or resource tensions that social equality doesn&apos;t resolve on its own</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Personagens ambiciosos precisam de outro caminho para poder além de status herdado</source>
-        <translation type="unfinished"></translation>
+        <translation>Ambitious characters need another path to power besides inherited status</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="80"/>
         <source>Sistemas igualitários grandes historicamente exigem justificar como escalam sem burocracia opressora</source>
-        <translation type="unfinished"></translation>
+        <translation>Large-scale egalitarian systems historically require justifying how they scale without oppressive bureaucracy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="81"/>
         <source>Meritocrático</source>
-        <translation type="unfinished"></translation>
+        <translation>Meritocratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="81"/>
         <source>Status conquistado por desempenho e talento, não por nascimento.</source>
-        <translation type="unfinished"></translation>
+        <translation>Status earned through performance and talent, not birth.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Motor natural para arcos de ascensão e provação do protagonista</source>
-        <translation type="unfinished"></translation>
+        <translation>A natural engine for the protagonist&apos;s rise-and-trial arcs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Justifica competições, provas, torneios e testes como estrutura de enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies competitions, trials, tournaments, and tests as plot structure</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Permite personagens de origem humilde competirem de forma crível por poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Lets characters of humble origin compete credibly for power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Cria tensão entre talento genuíno e acesso desigual a oportunidades</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates tension between genuine talent and unequal access to opportunity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Bom para explorar o custo pessoal do sucesso (sacrifício, obsessão, isolamento)</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring the personal cost of success (sacrifice, obsession, isolation)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Vilões podem ser produtos legítimos do sistema, não apenas usurpadores</source>
-        <translation type="unfinished"></translation>
+        <translation>Villains can be legitimate products of the system, not just usurpers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Fácil gerar rivalidades entre personagens que competem pelo mesmo topo</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to generate rivalries between characters competing for the same top spot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Permite crítica social sutil sobre quem define o que conta como &apos;mérito&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows subtle social critique about who defines what counts as &quot;merit&quot;</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Dá lógica interna a academias, guildas e ordens baseadas em desempenho</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives internal logic to academies, guilds, and orders based on performance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="82"/>
         <source>Facilita reviravoltas quando um personagem &apos;talentoso&apos; cai por escolhas próprias</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build twists when a &quot;talented&quot; character falls due to their own choices</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Precisa definir quem avalia o mérito e com que critérios, ou o sistema soa arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to define who evaluates merit and by what criteria, or the system feels arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Risco de ocultar privilégio disfarçado de talento (quem teve acesso a treino, recursos, mentores)</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of hiding privilege disguised as talent (who had access to training, resources, mentors)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Exige mostrar consequências para quem fracassa nas provas de mérito</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing consequences for those who fail the merit trials</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Fácil virar clichê de torneio se não houver apostas emocionais reais</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to become a tournament cliché without real emotional stakes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Precisa de nuance: mérito puro raramente existe sem vantagens de partida — ignorar isso soa ingênuo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs nuance: pure merit rarely exists without starting advantages — ignoring that feels naive</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Sistemas de avaliação precisam ser consistentes ao longo da história para não parecer arbitrários por conveniência de trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Evaluation systems need to stay consistent throughout the story so they don&apos;t feel arbitrary for plot convenience</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Personagens perdedores/eliminados merecem arcos próprios, não apenas desaparecer da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters who lose/are eliminated deserve their own arcs, not just disappearing from the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Corrupção do sistema (nepotismo disfarçado de mérito) precisa ser plantada com cuidado se for revelada depois</source>
-        <translation type="unfinished"></translation>
+        <translation>System corruption (nepotism disguised as merit) needs careful planting if it&apos;s revealed later</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Exige equilíbrio entre celebrar conquista individual e mostrar custos coletivos da competição</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires balancing the celebration of individual achievement with showing the collective costs of competition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="83"/>
         <source>Meritocracias em grande escala pedem instituições (exames, guildas) com história e peso próprios</source>
-        <translation type="unfinished"></translation>
+        <translation>Large-scale meritocracies call for institutions (exams, guilds) with their own history and weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="84"/>
         <source>Aristocrático</source>
-        <translation type="unfinished"></translation>
+        <translation>Aristocratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="84"/>
         <source>Prestígio determinado por família, linhagem ou títulos. Mobilidade social limitada.</source>
-        <translation type="unfinished"></translation>
+        <translation>Prestige determined by family, lineage, or titles. Limited social mobility.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Rica fonte de intriga política: linhagem, casamento, honra e reputação como moeda de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>A rich source of political intrigue: lineage, marriage, honor, and reputation as currencies of power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Justifica títulos, protocolos e etiqueta que dão textura e verossimilhança de época</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies titles, protocol, and etiquette that give period texture and plausibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Cria tensão automática entre nascimento e mérito individual</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates automatic tension between birth and individual merit</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Bom terreno para romances proibidos, heranças disputadas e segredos de família</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for forbidden romances, contested inheritances, and family secrets</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Vilões e aliados podem vir prontos com motivação (preservar ou romper a linhagem)</source>
-        <translation type="unfinished"></translation>
+        <translation>Villains and allies can come pre-loaded with motivation (preserving or breaking the bloodline)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Facilita cortes, salões e cerimônias como palco narrativo recorrente</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to use courts, salons, and ceremonies as a recurring narrative stage</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Mobilidade limitada dá peso dramático real a qualquer ascensão social conquistada</source>
-        <translation type="unfinished"></translation>
+        <translation>Limited mobility gives real dramatic weight to any social ascent achieved</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Fácil ancorar conflitos regionais em rivalidades entre casas nobres</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to anchor regional conflicts in rivalries between noble houses</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Sobrenomes e brasões funcionam como atalho narrativo para identidade e alianças</source>
-        <translation type="unfinished"></translation>
+        <translation>Surnames and coats of arms work as a narrative shortcut for identity and alliances</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="85"/>
         <source>Permite explorar decadência e ascensão de famílias ao longo de gerações</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring the decline and rise of families across generations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Exige mapear ao menos as principais casas/famílias e suas relações para manter consistência</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires mapping at least the main houses/families and their relationships to stay consistent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Mobilidade social limitada precisa de justificativa em cena, não apenas ser mencionada</source>
-        <translation type="unfinished"></translation>
+        <translation>Limited social mobility needs to be justified on the page, not just mentioned</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Personagens de baixo nascimento enfrentam barreiras estruturais que a trama não pode ignorar sem explicação</source>
-        <translation type="unfinished"></translation>
+        <translation>Low-born characters face structural barriers that the plot can&apos;t ignore without explanation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Protocolo e etiqueta exigem pesquisa ou criação cuidadosa para soar autêntico e não decorativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Protocol and etiquette require research or careful invention to sound authentic rather than decorative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Risco de a nobreza virar cenário estático sem consequências reais para quem a desafia</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the nobility becoming static scenery with no real consequences for those who defy it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Precisa decidir com clareza como títulos são herdados, revogados ou conferidos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to clearly decide how titles are inherited, revoked, or granted</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Fácil recair em romantização da aristocracia sem mostrar o custo para quem está fora dela</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into romanticizing the aristocracy without showing the cost for those outside it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Conflitos de honra e reputação exigem regras sociais claras sobre o que é aceitável ou vergonhoso</source>
-        <translation type="unfinished"></translation>
+        <translation>Honor and reputation conflicts require clear social rules about what&apos;s acceptable or shameful</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Ascensão social conquistada precisa de caminho plausível (casamento, favor real, feito extraordinário)</source>
-        <translation type="unfinished"></translation>
+        <translation>Achieved social ascent needs a plausible path (marriage, royal favor, an extraordinary feat)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="86"/>
         <source>Exige equilíbrio entre glamour da corte e crítica às desigualdades que ela sustenta</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires balancing the glamour of the court with critique of the inequalities it sustains</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="87"/>
         <source>Castas</source>
-        <translation type="unfinished"></translation>
+        <translation>Castes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="87"/>
         <source>Divisão social rígida e hereditária. Mobilidade entre grupos é praticamente impossível.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rigid, hereditary social division. Mobility between groups is practically impossible.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Máxima clareza estrutural: cada personagem nasce com um papel e limite social definido</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum structural clarity: every character is born with a defined social role and limit</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Excelente motor para temas de opressão, resistência e revolução</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent engine for themes of oppression, resistance, and revolution</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Justifica desigualdades extremas sem precisar de vilão individual — o sistema é o antagonista</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies extreme inequality without needing an individual villain — the system is the antagonist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Cria apostas altíssimas para qualquer transgressão de casta (amor proibido, ascensão ilegal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates extremely high stakes for any caste transgression (forbidden love, illegal ascent)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Permite mundos com divisão de trabalho, magia ou função social muito clara e visual</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows worlds with a very clear, visual division of labor, magic, or social function</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Bom para explorar solidariedade e cultura própria dentro de castas oprimidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring solidarity and distinct culture within oppressed castes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Facilita tramas de infiltração, disfarce e passagem entre mundos sociais</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build plots of infiltration, disguise, and crossing between social worlds</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Rituais de nascimento, casamento e morte podem reforçar a casta visualmente</source>
-        <translation type="unfinished"></translation>
+        <translation>Birth, marriage, and death rituals can visually reinforce caste</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Dá peso dramático elevado a qualquer aliança entre castas diferentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives high dramatic weight to any alliance across different castes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="88"/>
         <source>Permite crítica social contundente sobre hereditariedade e destino imposto</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows a forceful social critique of inherited status and imposed fate</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Exige justificar a origem e manutenção do sistema (religião, lei, magia, medo) para não soar arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying the system&apos;s origin and how it&apos;s maintained (religion, law, magic, fear) so it doesn&apos;t feel arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Risco de simplismo se todas as castas menos a protagonista forem rasas ou só vítimas/vilões</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of oversimplification if every caste but the protagonist&apos;s is shallow or just victims/villains</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Precisa mostrar mecanismos concretos de controle (leis, violência, crença) que impedem mobilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show concrete mechanisms of control (laws, violence, belief) that prevent mobility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Personagens de casta alta precisam de motivação real para manter ou desafiar o sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>High-caste characters need real motivation to maintain or challenge the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Fácil recair em alegoria didática demais se a crítica social abafar a história pessoal dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into overly didactic allegory if social critique smothers the characters&apos; personal stories</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Exige cuidado redobrado ao inspirar-se em sistemas de castas reais para não reproduzir estereótipos ofensivos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires extra care when drawing on real caste systems, to avoid reproducing offensive stereotypes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Transgressões de casta precisam de consequências palpáveis e consistentes ao longo da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Caste transgressions need tangible, consistent consequences throughout the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Sistema precisa de nuances internas (castas não são blocos monolíticos) para evitar achatamento</source>
-        <translation type="unfinished"></translation>
+        <translation>The system needs internal nuance (castes aren&apos;t monolithic blocks) to avoid flattening</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Requer mostrar como a economia e o trabalho cotidiano dependem da separação de castas</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing how the economy and everyday labor depend on caste separation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="89"/>
         <source>Qualquer final que resolva a opressão precisa parecer conquistado, não apenas decretado pelo enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Any ending that resolves the oppression needs to feel earned, not just decreed by the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="92"/>
         <source>Econômico</source>
-        <translation type="unfinished"></translation>
+        <translation>Economy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="93"/>
         <source>Livre Mercado</source>
-        <translation type="unfinished"></translation>
+        <translation>Free Market</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="93"/>
         <source>Economia autorregulada. Preços, produção e distribuição pela oferta e demanda.</source>
-        <translation type="unfinished"></translation>
+        <translation>Self-regulated economy. Prices, production, and distribution driven by supply and demand.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Liberdade para personagens empreenderem e ascenderem rapidamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Freedom for characters to start ventures and rise quickly</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Contraste rico entre extrema riqueza e extrema pobreza</source>
-        <translation type="unfinished"></translation>
+        <translation>Rich contrast between extreme wealth and extreme poverty</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Justifica ascensão meteórica de um protagonista humilde</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies a humble protagonist&apos;s meteoric rise</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Corrupção e cartéis surgem organicamente como vilões</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption and cartels emerge organically as villains</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Cenários urbanos vibrantes, feiras e comércio pulsante</source>
-        <translation type="unfinished"></translation>
+        <translation>Vibrant urban settings, markets, and bustling trade</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Boa base para sátira do capitalismo desenfreado</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for satirizing unchecked capitalism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Personagens definidos pela ambição e pelo risco</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters defined by ambition and risk</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Desigualdade se justifica sozinha, sem precisar de decreto estatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Inequality justifies itself, with no need for state decree</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Espaço fértil para golpes, especulação e ruína súbita</source>
-        <translation type="unfinished"></translation>
+        <translation>Fertile ground for scams, speculation, and sudden ruin</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="94"/>
         <source>Dinamismo econômico realista sem exigir exposição sobre o Estado</source>
-        <translation type="unfinished"></translation>
+        <translation>Realistic economic dynamism without requiring exposition about the State</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Exige explicar por que o Estado não intervém nos abusos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining why the State doesn&apos;t intervene against abuses</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Risco de romantizar exploração sem crítica</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of romanticizing exploitation without critique</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Leitor vai esperar consequências sociais (greves, revoltas) visíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect visible social consequences (strikes, uprisings)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Precisa mostrar os perdedores do sistema, não só os vencedores</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the system&apos;s losers, not just its winners</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Fácil cair em anacronismo se a época não sustenta mercado livre</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into anachronism if the era doesn&apos;t support a free market</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Requer coerência entre preços, escassez e geografia do mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between prices, scarcity, and the world&apos;s geography</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Pode exigir justificar a ausência de proteção trabalhista</source>
-        <translation type="unfinished"></translation>
+        <translation>May require justifying the lack of labor protections</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Corrupção e crime organizado precisam de lógica própria, não só pano de fundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption and organized crime need their own logic, not just backdrop</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Sem conflito de classe visível, o sistema vira cenário decorativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Without visible class conflict, the system becomes decorative scenery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="95"/>
         <source>Precisa evitar que a riqueza pareça surgir sem esforço narrativo correspondente</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to avoid wealth appearing without matching narrative effort</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="96"/>
         <source>Liberal</source>
-        <translation type="unfinished"></translation>
+        <translation>Liberal</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="96"/>
         <source>Mercado livre com alguma regulação estatal para garantir concorrência e direitos básicos.</source>
-        <translation type="unfinished"></translation>
+        <translation>A free market with some state regulation to ensure competition and basic rights.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Equilíbrio crível entre liberdade individual e proteção social</source>
-        <translation type="unfinished"></translation>
+        <translation>A credible balance between individual freedom and social protection</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Permite personagens de classes variadas coexistirem sem colapso social</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows characters from varied classes to coexist without social collapse</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Bom pano de fundo para conflitos entre reguladores e grandes empresas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good backdrop for conflicts between regulators and big corporations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Sindicatos, imprensa livre e ONGs ganham papel narrativo natural</source>
-        <translation type="unfinished"></translation>
+        <translation>Unions, a free press, and NGOs gain a natural narrative role</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Fácil ambientar em cenários urbanos modernos e reconhecíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to set in recognizable modern urban settings</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Permite crítica social sutil sem precisar de distopia</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows subtle social critique without needing dystopia</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Personagens podem prosperar por mérito sem soar implausível</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can prosper by merit without sounding implausible</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Espaço para escândalos corporativos investigados por heróis</source>
-        <translation type="unfinished"></translation>
+        <translation>Room for corporate scandals investigated by heroes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Sustenta arcos de ascensão social mais plausíveis que o livre mercado puro</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains more plausible social-ascent arcs than a pure free market</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="97"/>
         <source>Facilita comparação com o mundo real, orientando o leitor rapidamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to compare with the real world, orienting readers quickly</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Exige mostrar onde termina a liberdade e começa a regulação</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing where freedom ends and regulation begins</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Risco de parecer neutro demais se não houver tensão visível</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling too neutral without visible tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Leitor vai esperar instituições (justiça, imprensa) coerentes e funcionais</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect coherent, functional institutions (justice system, press)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Precisa justificar por que a regulação não elimina todos os abusos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify why regulation doesn&apos;t eliminate all abuses</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Fácil deslizar para clichê de &apos;sistema atual com outro nome&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to slide into the &quot;current system with a different name&quot; cliché</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Exige coerência entre leis trabalhistas e o cotidiano dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between labor laws and the characters&apos; everyday lives</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Burocracia regulatória, se aparecer, precisa ter lógica própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Regulatory bureaucracy, if it appears, needs its own internal logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Corrupção em agências reguladoras precisa ser construída, não presumida</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption in regulatory agencies needs to be built up, not assumed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Um equilíbrio perfeito demais tira a tensão dramática do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Too perfect a balance drains the system of dramatic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="98"/>
         <source>Precisa decidir que setores são &apos;estratégicos&apos; o bastante para regulação</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide which sectors are &quot;strategic&quot; enough for regulation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="99"/>
         <source>Misto</source>
-        <translation type="unfinished"></translation>
+        <translation>Mixed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="99"/>
         <source>Equilíbrio entre iniciativa privada e participação do Estado em setores estratégicos.</source>
-        <translation type="unfinished"></translation>
+        <translation>A balance between private enterprise and State involvement in strategic sectors.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Permite conflito direto entre estatais e empresas privadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows direct conflict between state-owned and private companies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Rico terreno para tramas de licitações, contratos públicos e lobby</source>
-        <translation type="unfinished"></translation>
+        <translation>Rich ground for plots involving bids, public contracts, and lobbying</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Facilita personagens que transitam entre setor público e privado</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy for characters to move between the public and private sectors</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Bom para explorar a burocracia estatal como obstáculo ou aliada</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring state bureaucracy as an obstacle or an ally</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Setores estratégicos (energia, saúde) dão ganchos de trama concretos</source>
-        <translation type="unfinished"></translation>
+        <translation>Strategic sectors (energy, health) provide concrete plot hooks</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Permite mostrar o Estado como provedor de rede de segurança social</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing the State as a provider of a social safety net</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Espaço para crítica à ineficiência estatal sem virar distopia</source>
-        <translation type="unfinished"></translation>
+        <translation>Room for critiquing state inefficiency without turning into dystopia</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Sustenta enredos de privatização, nacionalização e seus escândalos</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains plots of privatization, nationalization, and their scandals</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Riqueza privada e serviço público coexistindo gera atrito social natural</source>
-        <translation type="unfinished"></translation>
+        <translation>Private wealth and public service coexisting creates natural social friction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="100"/>
         <source>Boa base para thrillers político-econômicos de propina e cartéis estatais</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for political-economic thrillers about bribery and state-linked cartels</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Exige distinguir claramente o que é estatal e o que é privado</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly distinguishing what&apos;s state-owned and what&apos;s private</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Risco de soar burocrático demais se explicado em excesso</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of sounding too bureaucratic if over-explained</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Leitor vai esperar tensão entre eficiência privada e função social do Estado</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect tension between private efficiency and the State&apos;s social role</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Precisa justificar o critério de quais setores o Estado escolheu controlar</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify the criteria for which sectors the State chose to control</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Fácil cair em contradição se estatais competem sem explicar subsídios</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into contradiction if state companies compete without explaining subsidies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Exige mostrar as consequências de trocas de governo sobre a economia</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing how changes in government affect the economy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Corrupção em contratos públicos precisa de mecanismo crível</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption in public contracts needs a credible mechanism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Sem uma crise que teste o equilíbrio, ele vira decoração institucional</source>
-        <translation type="unfinished"></translation>
+        <translation>Without a crisis to test the balance, it becomes institutional decoration</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Precisa lidar com a percepção pública de favoritismo estatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to deal with public perception of state favoritism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="101"/>
         <source>Exige coerência de longo prazo entre política econômica e enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires long-term consistency between economic policy and plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="102"/>
         <source>Dirigido</source>
-        <translation type="unfinished"></translation>
+        <translation>Directed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="102"/>
         <source>O Estado orienta fortemente a economia, definindo prioridades e controlando setores-chave.</source>
-        <translation type="unfinished"></translation>
+        <translation>The State strongly steers the economy, setting priorities and controlling key sectors.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Estado como personagem coletivo com agenda e prioridades claras</source>
-        <translation type="unfinished"></translation>
+        <translation>The State as a collective character with a clear agenda and priorities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Ótimo para tramas de planejamento industrial, metas e prazos</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for plots about industrial planning, targets, and deadlines</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Permite conflitos entre burocratas visionários e empresários resistentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows conflicts between visionary bureaucrats and resistant business owners</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Justifica grandes projetos de infraestrutura movidos por decreto</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies grand infrastructure projects driven by decree</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Sustenta arcos de mobilização nacional (guerra, reconstrução, corrida espacial)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains arcs of national mobilization (war, reconstruction, a space race)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Corrupção e favoritismo na escolha de &apos;setores-chave&apos; viram fonte de tensão</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption and favoritism in choosing &quot;key sectors&quot; become a source of tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Facilita antagonistas tecnocratas de boas intenções e métodos duros</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build well-intentioned, hard-methods technocrat antagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Bom terreno para o culto à eficiência e ao sacrifício coletivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for the cult of efficiency and collective sacrifice</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Permite contrastar o discurso oficial de progresso com o custo humano real</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows contrasting the official discourse of progress with the real human cost</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="103"/>
         <source>Dá ao Estado poder visível de moldar cidades, empregos e destinos</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives the State visible power to shape cities, jobs, and destinies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Exige um centro de poder claro que define as prioridades econômicas</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires a clear center of power that sets economic priorities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Risco de personagens comuns perderem agência diante do plano estatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of ordinary characters losing agency in the face of the state plan</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Leitor vai querer ver o custo de quem fica fora das prioridades escolhidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will want to see the cost paid by those left outside the chosen priorities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Precisa mostrar os mecanismos de controle (cotas, metas, fiscalização)</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the mechanisms of control (quotas, targets, oversight)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Fácil soar didático se o &apos;plano&apos; for só pano de fundo sem consequência</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to sound didactic if the &quot;plan&quot; is just backdrop with no consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Exige coerência entre o discurso de progresso e a realidade cotidiana</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the discourse of progress and everyday reality</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Dissidência ou mercado paralelo precisa de lógica própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Dissent or a parallel market needs its own internal logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Um direcionamento infalível tira a credibilidade dramática do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Infallible central planning drains the system of dramatic credibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Precisa justificar por que setores fora do foco estatal ainda funcionam</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify why sectors outside the state&apos;s focus still function</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="104"/>
         <source>Exige clareza sobre quem decide as prioridades e com que legitimidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clarity about who decides priorities and with what legitimacy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="105"/>
         <source>Planificado</source>
-        <translation type="unfinished"></translation>
+        <translation>Planned</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="105"/>
         <source>Economia totalmente controlada pelo Estado. Produção, distribuição e preços centralizados.</source>
-        <translation type="unfinished"></translation>
+        <translation>Economy fully controlled by the State. Production, distribution, and prices are centralized.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Cenário fértil para distopia, escassez e mercado negro</source>
-        <translation type="unfinished"></translation>
+        <translation>Fertile ground for dystopia, scarcity, and black markets</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Justifica racionamento, filas e burocracia como parte do cotidiano</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies rationing, lines, and bureaucracy as part of daily life</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Ótimo para tramas de dissidência, contrabando e economia paralela</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for plots of dissent, smuggling, and parallel economies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Estado onipresente cria antagonista estrutural sem precisar de vilão único</source>
-        <translation type="unfinished"></translation>
+        <translation>An omnipresent State creates a structural antagonist without needing a single villain</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Permite explorar o contraste entre propaganda oficial e vida real</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring the contrast between official propaganda and real life</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Sustenta arcos de sobrevivência e improviso diante da escassez</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains arcs of survival and improvisation in the face of scarcity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Bom terreno para personagens que sobem na hierarquia do partido ou burocracia</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for characters who climb the party or bureaucratic hierarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Facilita crítica social contundente sobre poder centralizado</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build a forceful social critique of centralized power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>Rende conflitos claros entre lealdade ao sistema e sobrevivência pessoal</source>
-        <translation type="unfinished"></translation>
+        <translation>Produces clear conflicts between loyalty to the system and personal survival</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="106"/>
         <source>O planejamento central dá à trama um &apos;relógio&apos; visível (metas, planos quinquenais)</source>
-        <translation type="unfinished"></translation>
+        <translation>Central planning gives the plot a visible &quot;clock&quot; (targets, five-year plans)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Exige construir a burocracia que sustenta o controle central</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires building the bureaucracy that sustains central control</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Risco de virar clichê de distopia genérica sem particularidade própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of becoming a generic dystopia cliché with no distinct identity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Leitor vai esperar ver as rachaduras do sistema (mercado negro, corrupção interna)</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect to see the cracks in the system (black market, internal corruption)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Precisa explicar como preços e produção são de fato decididos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to explain how prices and production are actually decided</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Fácil perder verossimilhança se a escassez não afetar ninguém importante</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to lose plausibility if scarcity doesn&apos;t affect anyone important</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Exige mostrar o aparato de vigilância e punição por trás do controle</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing the surveillance and punishment apparatus behind the control</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Personagens leais ao sistema precisam de motivação além do medo</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters loyal to the system need motivation beyond fear</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Se tudo funcionar bem demais, o sistema perde tensão dramática</source>
-        <translation type="unfinished"></translation>
+        <translation>If everything works too well, the system loses dramatic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Precisa decidir se o colapso do sistema é destino inevitável da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide whether the system&apos;s collapse is the plot&apos;s inevitable destination</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="107"/>
         <source>Exige coerência entre a ideologia oficial e as decisões econômicas mostradas</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the official ideology and the economic decisions shown</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="110"/>
         <source>Militar</source>
-        <translation type="unfinished"></translation>
+        <translation>Military</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="111"/>
         <source>Pacifista</source>
-        <translation type="unfinished"></translation>
+        <translation>Pacifist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="111"/>
         <source>Rejeição ativa da guerra. Conflitos resolvidos por diplomacia. Forças armadas mínimas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Active rejection of war. Conflicts resolved through diplomacy. Minimal armed forces.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Realça a diplomacia, negociação e inteligência como armas principais</source>
-        <translation type="unfinished"></translation>
+        <translation>Highlights diplomacy, negotiation, and intelligence as the main weapons</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Bom contraste moral frente a facções vizinhas mais agressivas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good moral contrast against more aggressive neighboring factions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Permite heróis que vencem por astúcia em vez de força bruta</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows heroes who win through cunning rather than brute force</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Favorece tramas sobre construção de alianças e tratados</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors plots about building alliances and treaties</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Cria tensão quando a paz é testada por ameaças externas</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates tension when peace is tested by external threats</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Bom terreno para explorar o custo humano da guerra pela ausência dela</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring the human cost of war through its absence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Facilita personagens diplomatas, mediadores e negociadores como protagonistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to feature diplomat, mediator, and negotiator characters as protagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Permite mostrar sociedade civil forte e investimento em cultura, não em armas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing a strong civil society and investment in culture rather than weapons</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Cria dilemas éticos ricos quando a não-violência é posta à prova</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates rich ethical dilemmas when nonviolence is put to the test</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="112"/>
         <source>Bom para subverter expectativas em gêneros normalmente bélicos</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for subverting expectations in normally war-driven genres</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Exige explicar como o grupo se defende de ameaças reais sem exército forte</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining how the group defends against real threats without a strong army</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Risco de parecer ingênuo se nunca houver custo real pela fragilidade militar</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling naive if there&apos;s never a real cost to military weakness</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Pode exigir aliados poderosos ou geografia favorável como explicação plausível</source>
-        <translation type="unfinished"></translation>
+        <translation>May require powerful allies or favorable geography as a plausible explanation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Precisa equilibrar idealismo com consequências práticas de decisões pacifistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance idealism with the practical consequences of pacifist decisions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Exige cuidado para que a paz não pareça apenas ausência de conflito na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so that peace doesn&apos;t feel like a mere absence of conflict in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Corre risco de reduzir tensão dramática se nunca houver ameaça crível</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks reducing dramatic tension if there&apos;s never a credible threat</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Pode exigir subtramas sobre dissidentes internos que defendem militarização</source>
-        <translation type="unfinished"></translation>
+        <translation>May require subplots about internal dissenters who advocate militarization</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Exige justificar como conflitos internos são resolvidos sem força armada</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying how internal conflicts are resolved without armed force</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Precisa mostrar preço histórico ou cultural que levou à escolha pacifista</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the historical or cultural price that led to the pacifist choice</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="113"/>
         <source>Corre risco de personagens pacifistas parecerem passivos demais na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making pacifist characters feel too passive in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="114"/>
         <source>Defensivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Defensive</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="114"/>
         <source>Exército existe para proteger o território. Sem ambição expansionista.</source>
-        <translation type="unfinished"></translation>
+        <translation>The army exists to protect the territory. No expansionist ambition.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Equilíbrio entre segurança plausível e ausência de agressividade gratuita</source>
-        <translation type="unfinished"></translation>
+        <translation>Balance between plausible security and the absence of gratuitous aggression</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Bom para heróis que lutam apenas quando o lar é ameaçado</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for heroes who fight only when home is threatened</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Facilita narrativas de cerco, invasão e resistência territorial</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build narratives of siege, invasion, and territorial resistance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Cria clareza moral: o grupo reage, não inicia o conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates moral clarity: the group reacts, it doesn&apos;t start the conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Favorece fortificações, muralhas e estratégias defensivas como cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors fortifications, walls, and defensive strategies as setting</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Bom terreno para explorar sacrifício coletivo pela proteção do território</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring collective sacrifice to protect the territory</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Permite mostrar exército como instituição respeitada, não temida</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing the army as a respected institution, not a feared one</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Facilita alianças defensivas mútuas entre nações vizinhas</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build mutual defensive alliances between neighboring nations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Cria tensão gradual conforme ameaças externas se aproximam das fronteiras</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates gradual tension as external threats approach the borders</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="115"/>
         <source>Bom para arcos de personagens que se tornam soldados por necessidade, não ambição</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for arcs of characters who become soldiers out of necessity, not ambition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Exige justificar por que o grupo nunca expande apesar de ter força militar</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why the group never expands despite having military strength</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Precisa de uma ameaça externa plausível para justificar a existência do exército</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs a plausible external threat to justify the army&apos;s existence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Risco de parecer passivo demais se nunca entrar em ação</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling too passive if it never goes into action</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Exige cuidado para não tornar toda guerra externa automaticamente injusta</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to automatically make every external war unjust</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Pode exigir explicar limites claros entre defesa e retaliação ofensiva</source>
-        <translation type="unfinished"></translation>
+        <translation>May require explaining clear limits between defense and offensive retaliation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Precisa de fronteiras e geografia bem definidas para justificar postura defensiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs well-defined borders and geography to justify a defensive posture</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Corre risco de personagens militares parecerem genéricos sem ambição própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making military characters feel generic, without ambitions of their own</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Exige mostrar como recursos são mobilizados rapidamente em caso de ataque</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing how resources are mobilized quickly in case of attack</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Pode pedir subtramas sobre tentação interna de virar ofensiva</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for subplots about the internal temptation to go on the offensive</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="116"/>
         <source>Precisa equilibrar cenas de tensão constante sem cansar o leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance constant tension scenes without wearing out the reader</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="117"/>
         <source>Intervencionista</source>
-        <translation type="unfinished"></translation>
+        <translation>Interventionist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="117"/>
         <source>Disposto a usar força militar fora de seu território por causas políticas ou humanitárias.</source>
-        <translation type="unfinished"></translation>
+        <translation>Willing to use military force outside its territory for political or humanitarian causes.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Justifica presença militar em múltiplos cenários e territórios da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies military presence in multiple settings and territories of the story</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Bom para explorar dilemas morais entre ajudar e invadir</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring moral dilemmas between helping and invading</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Cria oportunidades de aliança com facções distantes que pedem socorro</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates opportunities for alliances with distant factions asking for help</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Favorece personagens idealistas que defendem intervir por justiça</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors idealistic characters who advocate intervening for the sake of justice</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Permite mostrar contradições entre motivos humanitários e interesses ocultos</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing contradictions between humanitarian motives and hidden interests</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Bom terreno para conflitos entre diferentes potências com a mesma bandeira de ajuda</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for conflicts between different powers flying the same banner of aid</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Facilita tramas sobre ocupação, reconstrução e suas consequências</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build plots about occupation, reconstruction, and their consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Cria espaço para debates internos sobre até onde vale a pena intervir</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates room for internal debates about how far it&apos;s worth intervening</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Permite heróis e vilões nascerem do mesmo ato de intervenção, sob óticas opostas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows heroes and villains to emerge from the same act of intervention, seen from opposing angles</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="118"/>
         <source>Bom para explorar imprensa, opinião pública e legitimação de intervenções</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring the press, public opinion, and the legitimization of interventions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Exige justificar o critério usado para escolher onde e quando intervir</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying the criteria used to choose where and when to intervene</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Risco de o grupo parecer hipócrita se os motivos declarados forem só fachada</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the group seeming hypocritical if its stated motives are just a facade</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Precisa mostrar consequências de longo prazo das intervenções na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the long-term consequences of interventions in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Exige cuidado ao tratar territórios intervencionados como cenário, não só pano de fundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care in treating intervened territories as more than just backdrop</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Pode pedir vozes locais para não reduzir o intervencionismo a olhar externo</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for local voices so interventionism isn&apos;t reduced to an outside perspective</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Precisa equilibrar sucesso e fracasso das intervenções ao longo da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance success and failure of interventions throughout the story</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Exige explicar custo interno (recursos, vidas, opinião pública) de intervir constantemente</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining the internal cost (resources, lives, public opinion) of constantly intervening</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Corre risco de simplificar conflitos alheios como pano de fundo para o herói</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks oversimplifying other people&apos;s conflicts as mere backdrop for the hero</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Pode exigir subtramas diplomáticas para justificar cada nova intervenção</source>
-        <translation type="unfinished"></translation>
+        <translation>May require diplomatic subplots to justify each new intervention</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="119"/>
         <source>Precisa cuidado para que a linha entre ajuda e dominação fique clara na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so the line between help and domination stays clear in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="120"/>
         <source>Expansionista</source>
-        <translation type="unfinished"></translation>
+        <translation>Expansionist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="120"/>
         <source>A conquista territorial e o domínio militar são objetivos centrais.</source>
-        <translation type="unfinished"></translation>
+        <translation>Territorial conquest and military dominance are central goals.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Motor natural de conflito: fronteiras sempre em disputa</source>
-        <translation type="unfinished"></translation>
+        <translation>A natural engine for conflict: borders always in dispute</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Bom para tramas épicas de conquista, campanha e território</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for epic plots of conquest, campaigns, and territory</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Favorece antagonistas ambiciosos com metas territoriais claras</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors ambitious antagonists with clear territorial goals</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Cria pressão constante sobre povos e nações vizinhas</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates constant pressure on neighboring peoples and nations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Facilita arcos de generais, estrategistas e conquistadores como protagonistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to feature general, strategist, and conqueror arcs as protagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Permite mostrar ascensão e queda de impérios ao longo da narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing the rise and fall of empires throughout the narrative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Bom terreno para explorar o custo humano da glória militar</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring the human cost of military glory</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Cria dilemas entre lealdade ao império e resistência local</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates dilemmas between loyalty to the empire and local resistance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Favorece riqueza narrativa em múltiplas culturas conquistadas ou anexadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors narrative richness across multiple conquered or annexed cultures</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="121"/>
         <source>Permite tensão entre ambição do topo e exaustão das tropas na base</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows tension between ambition at the top and exhaustion among the troops at the bottom</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Exige justificar economicamente como conquistas contínuas são sustentadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires economically justifying how continuous conquests are sustained</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Risco de o expansionismo parecer gratuito sem motivação política ou ideológica clara</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the expansionism feeling gratuitous without a clear political or ideological motivation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Precisa mostrar resistência interna e externa proporcional à ambição do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show internal and external resistance proportional to the group&apos;s ambition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Exige cuidado para não romantizar conquista sem mostrar seu custo humano</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to romanticize conquest without showing its human cost</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Pode exigir logística plausível de suprimento, exército e administração territorial</source>
-        <translation type="unfinished"></translation>
+        <translation>May require plausible logistics for supply, army, and territorial administration</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Precisa de limites geográficos ou políticos que expliquem onde a expansão para</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs geographic or political limits that explain where the expansion stops</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Exige vozes dos povos conquistados para evitar visão unilateral do conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires voices from the conquered peoples to avoid a one-sided view of the conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Corre risco de o vilão expansionista soar raso sem motivações além do poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making the expansionist villain feel shallow, with no motivation beyond power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Pode pedir subtramas sobre rebeliões e revoltas em territórios anexados</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for subplots about rebellions and revolts in annexed territories</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="122"/>
         <source>Precisa equilibrar vitórias militares com desgaste político e social ao longo do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance military victories with political and social wear over time</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="125"/>
         <source>Tecnologia</source>
-        <translation type="unfinished"></translation>
+        <translation>Technology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="126"/>
         <source>Primitivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Primitive</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="126"/>
         <source>Ferramentas simples, sem escrita ou metalurgia avançada. Sociedade de subsistência.</source>
-        <translation type="unfinished"></translation>
+        <translation>Simple tools, no writing or advanced metallurgy. A subsistence society.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Sobrevivência e escassez como motor natural de conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Survival and scarcity as a natural engine for conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Aproxima personagens da natureza, com temas de respeito ou medo do desconhecido</source>
-        <translation type="unfinished"></translation>
+        <translation>Brings characters closer to nature, with themes of respect or fear of the unknown</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Bom para explorar comunidade, tradição oral e transmissão de conhecimento</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring community, oral tradition, and the transmission of knowledge</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Justifica isolamento geográfico e mundos pouco conectados</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies geographic isolation and loosely connected worlds</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Permite explorar mito e superstição como resposta ao incompreendido</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring myth and superstition as a response to the incomprehensible</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Cada ferramenta ou descoberta pode virar um evento narrativo significativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Every tool or discovery can become a significant narrative event</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Corpo e habilidade física ganham peso dramático maior que a tecnologia</source>
-        <translation type="unfinished"></translation>
+        <translation>Body and physical skill carry more dramatic weight than technology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Bom terreno para histórias de origem de civilizações ou povos</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for origin stories of civilizations or peoples</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Ambientes hostis (clima, fauna) tornam-se antagonistas naturais</source>
-        <translation type="unfinished"></translation>
+        <translation>Hostile environments (climate, wildlife) become natural antagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="127"/>
         <source>Facilita contraste forte se outro povo do mundo for mais avançado</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to create strong contrast if another people in the world are more advanced</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Exige coerência sobre o que a comunidade sabe e o que não sabe fazer</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency about what the community knows and doesn&apos;t know how to do</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Risco de simplificar a cultura como &apos;primitiva&apos; em sentido pejorativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of oversimplifying the culture as &quot;primitive&quot; in a derogatory sense</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Leitor vai esperar explicações de como resolvem problemas básicos (comida, saúde, defesa)</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect explanations of how they solve basic problems (food, health, defense)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Precisa evitar anacronismo de conhecimento que o povo não teria como ter</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to avoid anachronistic knowledge the people wouldn&apos;t plausibly have</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Fácil cair em estereótipo se a sociedade não tiver complexidade social própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into stereotype if the society lacks its own social complexity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Exige pensar nos limites reais de comunicação e deslocamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires thinking through the real limits of communication and travel</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Doenças, fome e desastres naturais precisam ter peso condizente</source>
-        <translation type="unfinished"></translation>
+        <translation>Disease, famine, and natural disasters need to carry appropriate weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Se magia ou sorte substituir toda limitação tecnológica, o cenário perde lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>If magic or luck replaces every technological limitation, the setting loses its logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Precisa decidir como o conhecimento se preserva sem escrita, se for o caso</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide how knowledge is preserved without writing, if that&apos;s the case</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="128"/>
         <source>Exige cuidado para não infantilizar a cultura em contraste com o &apos;moderno&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to infantilize the culture in contrast to the &quot;modern&quot;</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="129"/>
         <source>Medieval</source>
-        <translation type="unfinished"></translation>
+        <translation>Medieval</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="129"/>
         <source>Metalurgia, agricultura organizada, primeiras cidades. Tecnologia limitada pela tradição.</source>
-        <translation type="unfinished"></translation>
+        <translation>Metallurgy, organized agriculture, the first cities. Technology limited by tradition.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Estrutura social hierárquica pronta para conflitos de classe e poder</source>
-        <translation type="unfinished"></translation>
+        <translation>A ready-made hierarchical social structure for class and power conflicts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Boa base para tramas de honra, lealdade e código de cavalaria</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for plots of honor, loyalty, and chivalric code</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Cidades, feudos e castelos oferecem cenários ricos e variados</source>
-        <translation type="unfinished"></translation>
+        <translation>Cities, fiefs, and castles offer rich, varied settings</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Religião organizada pode ser força política central na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Organized religion can be a central political force in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Guerra, cerco e duelo têm peso ritual e dramático natural</source>
-        <translation type="unfinished"></translation>
+        <translation>War, siege, and duels carry natural ritual and dramatic weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Comércio entre cidades cria rotas, rivalidades e intriga</source>
-        <translation type="unfinished"></translation>
+        <translation>Trade between cities creates routes, rivalries, and intrigue</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Ofícios e guildas dão identidade e conflito a personagens comuns</source>
-        <translation type="unfinished"></translation>
+        <translation>Trades and guilds give identity and conflict to ordinary characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Fácil justificar lendas e superstições coexistindo com a razão prática</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to justify legends and superstitions coexisting with practical reason</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Sustenta arcos de ascensão social improvável, do camponês ao nobre</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains unlikely social-ascent arcs, from peasant to noble</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="130"/>
         <source>Tecnologia limitada torna cada avanço (pólvora, imprensa) um evento de peso</source>
-        <translation type="unfinished"></translation>
+        <translation>Limited technology makes every advance (gunpowder, the printing press) a weighty event</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Exige coerência entre a tecnologia disponível e o que os personagens conseguem fazer</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between available technology and what characters can actually do</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Risco de cair em clichê genérico de &apos;fantasia medieval europeia&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of falling into the generic &quot;European medieval fantasy&quot; cliché</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Leitor vai esperar consequências realistas de guerra, fome e doença</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect realistic consequences of war, famine, and disease</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Precisa justificar os limites de comunicação e viagem entre regiões</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify the limits of communication and travel between regions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Fácil ignorar o peso da tradição sobre decisões hoje consideradas simples</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to overlook the weight of tradition on decisions considered simple today</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Exige pensar em como o conhecimento técnico se transmite (guildas, mosteiros)</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires thinking about how technical knowledge is passed on (guilds, monasteries)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>O papel da religião no cotidiano precisa ser mais que cenário</source>
-        <translation type="unfinished"></translation>
+        <translation>Religion&apos;s role in daily life needs to be more than scenery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Sem atrito, a hierarquia social vira decoração</source>
-        <translation type="unfinished"></translation>
+        <translation>Without friction, the social hierarchy becomes decoration</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Precisa decidir o grau de mobilidade social realista para a época</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide the realistic degree of social mobility for the era</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="131"/>
         <source>Exige coerência entre a economia agrária e a escala dos eventos da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the agrarian economy and the scale of the plot&apos;s events</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="132"/>
         <source>Industrial</source>
-        <translation type="unfinished"></translation>
+        <translation>Industrial</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="132"/>
         <source>Máquinas a vapor, produção em massa, urbanização acelerada.</source>
-        <translation type="unfinished"></translation>
+        <translation>Steam engines, mass production, rapid urbanization.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Urbanização acelerada cria contraste rico entre riqueza fabril e miséria operária</source>
-        <translation type="unfinished"></translation>
+        <translation>Rapid urbanization creates rich contrast between factory wealth and working-class misery</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Ótimo pano de fundo para lutas de classe e movimentos trabalhistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Great backdrop for class struggles and labor movements</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Máquinas e fábricas dão à trama um ritmo de progresso tangível</source>
-        <translation type="unfinished"></translation>
+        <translation>Machines and factories give the plot a tangible sense of progress</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Ferrovias e navios a vapor abrem o mundo a viagens e conexões novas</source>
-        <translation type="unfinished"></translation>
+        <translation>Railways and steamships open the world to new travel and connections</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Poluição e degradação ambiental oferecem conflito moral concreto</source>
-        <translation type="unfinished"></translation>
+        <translation>Pollution and environmental degradation offer concrete moral conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Novas invenções podem ser motores de trama plausíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>New inventions can be plausible plot drivers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Sustenta arcos de empreendedores ambiciosos e magnatas implacáveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains arcs of ambitious entrepreneurs and ruthless tycoons</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Bom terreno para espionagem industrial e corrida tecnológica entre nações</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for industrial espionage and a technology race between nations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Cidades em expansão criam bairros, guetos e desigualdade visível</source>
-        <translation type="unfinished"></translation>
+        <translation>Expanding cities create neighborhoods, ghettos, and visible inequality</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="133"/>
         <source>Permite justificar mudança social rápida dentro da vida de um personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows justifying rapid social change within a single character&apos;s lifetime</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Exige mostrar o custo humano da industrialização, não só o progresso</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing the human cost of industrialization, not just the progress</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Risco de romantizar a modernização sem examinar quem paga o preço</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of romanticizing modernization without examining who pays the price</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Leitor vai esperar condições de trabalho, sindicatos e greves coerentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect consistent working conditions, unions, and strikes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Precisa justificar o ritmo de inovação tecnológica dentro do mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify the pace of technological innovation within the world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Fácil cair em anacronismo se avanços surgirem fora de ordem lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into anachronism if advances appear out of logical order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Exige pensar em infraestrutura (energia, transporte) sustentando a trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires thinking about the infrastructure (energy, transport) underpinning the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Poluição e saúde pública precisam de consequências narrativas reais</source>
-        <translation type="unfinished"></translation>
+        <translation>Pollution and public health need real narrative consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Se todos se beneficiam igualmente do progresso, perde-se a tensão social</source>
-        <translation type="unfinished"></translation>
+        <translation>If everyone benefits equally from progress, the social tension is lost</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Precisa decidir como o Estado reage, ou não, aos excessos da industrialização</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide how the State responds, or doesn&apos;t, to the excesses of industrialization</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="134"/>
         <source>Exige coerência entre a escala das fábricas e o tamanho do mundo narrado</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the scale of the factories and the size of the narrated world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="135"/>
         <source>Moderno</source>
-        <translation type="unfinished"></translation>
+        <translation>Modern</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="135"/>
         <source>Computação, energia elétrica, comunicação global e medicina avançada.</source>
-        <translation type="unfinished"></translation>
+        <translation>Computing, electric power, global communication, and advanced medicine.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Comunicação instantânea permite tramas globais e coordenação complexa</source>
-        <translation type="unfinished"></translation>
+        <translation>Instant communication allows global plots and complex coordination</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Medicina avançada abre espaço para dilemas éticos (transplantes, genética inicial)</source>
-        <translation type="unfinished"></translation>
+        <translation>Advanced medicine opens room for ethical dilemmas (transplants, early genetics)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Mundo reconhecível facilita a imersão imediata do leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>A recognizable world makes it easy for readers to immerse immediately</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Redes de informação criam terreno fértil para investigação e conspiração</source>
-        <translation type="unfinished"></translation>
+        <translation>Information networks create fertile ground for investigation and conspiracy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Mobilidade urbana e viagens rápidas ampliam o alcance geográfico da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Urban mobility and fast travel expand the plot&apos;s geographic reach</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Boa base para thrillers, espionagem e crimes tecnológicos</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for thrillers, espionage, and tech-driven crime</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Diversidade de profissões especializadas enriquece o elenco de personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>A diversity of specialized professions enriches the cast of characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Vigilância e privacidade tornam-se temas narrativos naturais</source>
-        <translation type="unfinished"></translation>
+        <translation>Surveillance and privacy become natural narrative themes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Acesso fácil à informação torna a ignorância do personagem uma escolha, não uma limitação</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy access to information makes a character&apos;s ignorance a choice, not a limitation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="136"/>
         <source>Permite ambientar crises (pandemias, colapsos financeiros) com verossimilhança atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows setting crises (pandemics, financial collapses) with current-day plausibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Exige justificar por que a informação instantânea não resolve o conflito rápido demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why instant information doesn&apos;t resolve the conflict too quickly</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Risco de a tecnologia &apos;resolver&apos; problemas que deveriam ser dramáticos</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of technology &quot;solving&quot; problems that should be dramatic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Leitor vai notar inconsistências com a tecnologia real se faltar pesquisa</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will notice inconsistencies with real technology if research is lacking</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Precisa decidir os limites de vigilância, dados e privacidade no seu mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide the limits of surveillance, data, and privacy in your world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Fácil datar a história rapidamente se depender de tecnologia específica</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to date the story quickly if it depends on specific technology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Exige coerência entre o acesso à informação e o que os personagens realmente sabem</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between access to information and what characters actually know</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Celular e internet exigem explicação de por que não encurtam todo o conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Phones and the internet require an explanation for why they don&apos;t shortcut the whole conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Sem limitação de acesso à tecnologia entre personagens, perde-se tensão social</source>
-        <translation type="unfinished"></translation>
+        <translation>Without limits on characters&apos; access to technology, social tension is lost</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Precisa pensar em como a burocracia moderna interfere nas ações dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to consider how modern bureaucracy interferes with characters&apos; actions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="137"/>
         <source>Exige cuidado para não sufocar o mistério com solução tecnológica fácil demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to smother the mystery with too easy a technological solution</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="138"/>
         <source>Pós-humano</source>
-        <translation type="unfinished"></translation>
+        <translation>Post-human</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="138"/>
         <source>IA, engenharia genética, colonização espacial. Tecnologia transcende os limites biológicos.</source>
-        <translation type="unfinished"></translation>
+        <translation>AI, genetic engineering, space colonization. Technology transcends biological limits.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Permite questionar identidade, corpo e consciência de forma literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows questioning identity, body, and consciousness in a literal way</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>IA e engenharia genética dão margem a antagonistas ou aliados não humanos</source>
-        <translation type="unfinished"></translation>
+        <translation>AI and genetic engineering give room for non-human antagonists or allies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Colonização espacial abre escala épica de mundo e civilizações</source>
-        <translation type="unfinished"></translation>
+        <translation>Space colonization opens up an epic scale of world and civilizations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Ótimo terreno para explorar imortalidade, upload de mente e suas consequências éticas</source>
-        <translation type="unfinished"></translation>
+        <translation>Great ground for exploring immortality, mind uploading, and their ethical consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Sustenta tramas sobre desigualdade entre aprimorados e não aprimorados</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains plots about inequality between the enhanced and the unenhanced</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Tecnologia quase mágica permite reviravoltas de escala cósmica</source>
-        <translation type="unfinished"></translation>
+        <translation>Near-magical technology allows twists on a cosmic scale</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Bom para questionar o que define &apos;humano&apos; através da narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for questioning what defines &quot;human&quot; through the narrative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Espaço fértil para utopias ambíguas com custos ocultos</source>
-        <translation type="unfinished"></translation>
+        <translation>Fertile ground for ambiguous utopias with hidden costs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Facilita antagonistas sistêmicos (IA, corporações pós-humanas) sem vilão único</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build systemic antagonists (AI, post-human corporations) without a single villain</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="139"/>
         <source>Permite explorar consequências de longo prazo (gerações, séculos) de decisões atuais</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring the long-term consequences (generations, centuries) of present-day decisions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Exige regras claras sobre os limites da tecnologia para evitar deus ex machina</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clear rules about the limits of technology to avoid deus ex machina</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Risco de a onipotência tecnológica eliminar toda a tensão dramática</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of technological omnipotence eliminating all dramatic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Leitor vai esperar consequências sociais e éticas da transcendência biológica</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect social and ethical consequences of biological transcendence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Precisa justificar por que problemas &apos;simples&apos; não são resolvidos instantaneamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify why &quot;simple&quot; problems aren&apos;t solved instantly</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Fácil perder a identificação do leitor se os personagens deixarem de ser reconhecíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to lose reader identification if characters stop feeling recognizable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Exige coerência entre o nível tecnológico e a escala política do mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the technological level and the world&apos;s political scale</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>IA avançada precisa de limites e motivações, não ser um recurso narrativo vago</source>
-        <translation type="unfinished"></translation>
+        <translation>Advanced AI needs limits and motivations, not to be a vague narrative device</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Se tudo for possível, é preciso ancorar a trama em uma limitação central clara</source>
-        <translation type="unfinished"></translation>
+        <translation>If everything is possible, the plot needs to be anchored in one clear central limitation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Precisa decidir quem tem acesso à tecnologia pós-humana e quem fica de fora</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide who has access to post-human technology and who&apos;s left out</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="140"/>
         <source>Exige cuidado para que temas filosóficos não substituam conflito e personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so philosophical themes don&apos;t replace conflict and character</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="143"/>
         <source>Cosmologia</source>
-        <translation type="unfinished"></translation>
+        <translation>Cosmology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="144"/>
         <source>Caótico</source>
-        <translation type="unfinished"></translation>
+        <translation>Chaotic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="144"/>
         <source>O universo não tem ordem ou propósito. Forças imprevisíveis dominam a existência.</source>
-        <translation type="unfinished"></translation>
+        <translation>The universe has no order or purpose. Unpredictable forces dominate existence.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Imprevisibilidade genuína</source>
-        <translation type="unfinished"></translation>
+        <translation>Genuine unpredictability</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Ótimo para tons de horror cósmico e desespero existencial</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for tones of cosmic horror and existential despair</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Libera o autor de explicar por que coisas ruins acontecem</source>
-        <translation type="unfinished"></translation>
+        <translation>Frees the author from having to explain why bad things happen</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Favorece heróis que criam sentido próprio num universo indiferente</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors heroes who create their own meaning in an indifferent universe</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Bom para temas de sobrevivência e resiliência humana</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for themes of survival and human resilience</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Permite eventos catastróficos sem necessidade de causa maior</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows catastrophic events with no need for a greater cause</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Reforça a sensação de pequenez do indivíduo frente ao cosmos</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces a sense of the individual&apos;s smallness before the cosmos</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Serve bem a narrativas niilistas ou existencialistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for nihilistic or existentialist narratives</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Dá liberdade total para reviravoltas de mundo sem justificativa cósmica</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives total freedom for world-changing twists with no cosmic justification</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="145"/>
         <source>Cria atmosfera de tensão constante, já que nada é garantido</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates an atmosphere of constant tension, since nothing is guaranteed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Cuidado para não parecer falta de planejamento do próprio autor</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for it feeling like the author&apos;s own lack of planning</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>O leitor pode sentir que nada no enredo tem peso real</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may feel that nothing in the plot carries real weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Risco de o final da história parecer arbitrário ou insatisfatório</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the story&apos;s ending feeling arbitrary or unsatisfying</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Difícil construir profecias, destinos ou arcos de redenção coerentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to build coherent prophecies, destinies, or redemption arcs</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Exige compensar a falta de ordem com forte caracterização</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires compensating for the lack of order with strong characterization</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Personagens precisam de motivações internas fortes, já que o universo não oferece propósito</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters need strong internal motivations, since the universe offers no purpose</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Pode cansar leitores que buscam algum tipo de justiça poética</source>
-        <translation type="unfinished"></translation>
+        <translation>Can wear out readers looking for some kind of poetic justice</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Exige clareza de tom para diferenciar caos temático de erro de escrita</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clarity of tone to distinguish thematic chaos from a writing error</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Difícil sustentar sequências ou continuidade de mundo entre livros</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to sustain sequels or world continuity across books</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="146"/>
         <source>Fácil escorregar para deus ex machina disfarçado de &apos;aleatoriedade&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to slip into deus ex machina disguised as &quot;randomness&quot;</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="147"/>
         <source>Emergente</source>
-        <translation type="unfinished"></translation>
+        <translation>Emergent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="147"/>
         <source>Padrões surgem do caos, mas sem um plano divino ou determinismo rígido.</source>
-        <translation type="unfinished"></translation>
+        <translation>Patterns emerge from chaos, but without a divine plan or rigid determinism.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Padrões que surgem organicamente da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Patterns that emerge organically from the story</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Bom equilíbrio entre surpresa e coerência temática</source>
-        <translation type="unfinished"></translation>
+        <translation>Good balance between surprise and thematic coherence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Permite ordem local sem exigir plano cósmico central</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows local order without requiring a central cosmic plan</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Favorece culturas e sistemas de crença diversos e conflitantes</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors diverse, conflicting cultures and belief systems</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Dá margem a temas de causalidade sem determinismo rígido</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives room for themes of causality without rigid determinism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Serve bem a tramas sobre construção de civilizações e sociedades</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for plots about building civilizations and societies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Personagens podem interpretar padrões de formas diferentes, gerando conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can interpret patterns differently, generating conflict</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Permite ambiguidade sobre se há ou não um propósito maior</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ambiguity about whether there&apos;s a greater purpose or not</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Bom para narrativas que exploram ciência e mito lado a lado</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for narratives that explore science and myth side by side</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="148"/>
         <source>Cria espaço para coincidências significativas sem exigir explicação divina</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates room for meaningful coincidences without requiring a divine explanation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Exige coerência interna nos padrões que você escolhe mostrar</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires internal consistency in the patterns you choose to show</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>O leitor pode questionar se as coincidências são intencionais ou falha de plot</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may question whether the coincidences are intentional or a plot flaw</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Precisa decidir com clareza os limites entre acaso e padrão emergente</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to clearly decide the limits between chance and emergent pattern</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Risco de o mundo parecer indeciso entre caos e ordem</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the world feeling undecided between chaos and order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Exige sutileza para não revelar demais a &apos;mecânica&apos; por trás da ordem</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires subtlety to avoid revealing too much of the &quot;mechanics&quot; behind the order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Personagens que buscam sentido podem ficar sem resposta satisfatória se mal calibrado</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters searching for meaning may be left without a satisfying answer if poorly calibrated</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Difícil equilibrar múltiplas culturas com cosmovisões diferentes sem confundir o leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to balance multiple cultures with different worldviews without confusing readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Precisa sustentar esse equilíbrio ao longo de toda a obra ou série</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to sustain this balance throughout the whole work or series</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Exige pistas consistentes se os padrões forem relevantes ao clímax</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistent clues if the patterns are relevant to the climax</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="149"/>
         <source>Risco de leitores mais exigentes cobrarem uma explicação definitiva que você não pretende dar</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of more demanding readers expecting a definitive explanation you don&apos;t intend to give</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="150"/>
         <source>Ordenado</source>
-        <translation type="unfinished"></translation>
+        <translation>Ordered</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="150"/>
         <source>O universo segue leis naturais ou divinas consistentes e compreensíveis.</source>
-        <translation type="unfinished"></translation>
+        <translation>The universe follows consistent, comprehensible natural or divine laws.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Leis naturais ou divinas consistentes e compreensíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Consistent, comprehensible natural or divine laws</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Facilita profecias, ciclos e destinos que realmente se cumprem</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build prophecies, cycles, and destinies that actually come true</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Bom para heróis que descobrem e usam as regras do universo a seu favor</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for heroes who discover and use the universe&apos;s rules to their advantage</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Sustenta cosmogonias e mitologias de criação elaboradas</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains elaborate cosmogonies and creation mythologies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Favorece temas de equilíbrio, justiça cósmica e consequência moral</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors themes of balance, cosmic justice, and moral consequence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Cria satisfação quando o enredo confirma a ordem estabelecida</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates satisfaction when the plot confirms the established order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Serve bem a fantasia épica clássica e alta fantasia</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for classic epic fantasy and high fantasy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Permite construir religiões coerentes com o funcionamento real do mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows building religions consistent with how the world actually works</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Dá previsibilidade que ajuda o leitor a se orientar em mundos complexos</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives predictability that helps readers orient themselves in complex worlds</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="151"/>
         <source>Bom terreno para explorar o que acontece quando alguém rompe essa ordem</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring what happens when someone breaks that order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Exige planejamento das leis cósmicas antes de usá-las na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires planning the cosmic laws before using them in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Menos espaço para o caos genuíno e o imprevisível</source>
-        <translation type="unfinished"></translation>
+        <translation>Less room for genuine chaos and the unpredictable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Cuidado para a ordem não tornar o enredo previsível demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for the order making the plot too predictable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Precisa justificar rupturas da ordem com peso narrativo real</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify breaks in the order with real narrative weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Exige coerência entre cosmologia, magia e religião do mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between the world&apos;s cosmology, magic, and religion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Risco de personagens parecerem meros executores do destino, sem agência</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of characters feeling like mere executors of fate, without agency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Difícil surpreender o leitor sem quebrar a própria lógica estabelecida</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to surprise readers without breaking your own established logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Exige que consequências de violar a ordem sejam mostradas com consistência</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires that the consequences of violating the order be shown consistently</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Fãs atentos vão cobrar explicações quando exceções aparecerem</source>
-        <translation type="unfinished"></translation>
+        <translation>Attentive fans will demand explanations when exceptions appear</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="152"/>
         <source>Sustentar isso em séries longas exige documentação cuidadosa da cosmologia</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustaining this across long series requires careful documentation of the cosmology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="153"/>
         <source>Determinístico</source>
-        <translation type="unfinished"></translation>
+        <translation>Deterministic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="153"/>
         <source>Tudo é predeterminado. O livre-arbítrio é ilusório; o cosmos segue um roteiro fixo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything is predetermined. Free will is illusory; the cosmos follows a fixed script.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Tudo é predeterminado, o que cria tensão trágica poderosa</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything is predetermined, which creates powerful tragic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Excelente para explorar livre-arbítrio como ilusão e seus dilemas morais</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for exploring free will as illusion and its moral dilemmas</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Favorece estruturas de profecia inescapável e ironia dramática</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors structures of inescapable prophecy and dramatic irony</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Cria satisfação estética quando peças do destino se encaixam</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates aesthetic satisfaction when the pieces of fate click into place</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Bom para tramas circulares, loops temporais e repetição significativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for circular plots, time loops, and meaningful repetition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Serve bem a tons trágicos, épicos ou religiosos rigorosos</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for rigorous tragic, epic, or religious tones</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Permite ao leitor releituras que revelam pistas do destino já fixado</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows readers to do rereads that reveal clues to the already-fixed fate</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Reforça temas de aceitação, resistência inútil e sentido diante do inevitável</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces themes of acceptance, futile resistance, and meaning in the face of the inevitable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Dá o cosmos como antagonista silencioso e onipresente</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives you the cosmos as a silent, omnipresent antagonist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="154"/>
         <source>Cria oportunidade de personagens questionarem se resistir vale a pena</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates an opportunity for characters to question whether resisting is worth it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>O livre-arbítrio é ilusório, o que pode esvaziar decisões dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Free will is illusory, which can drain characters&apos; decisions of meaning</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Risco de a trama parecer sem tensão real, já que o fim já está escrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the plot feeling like it lacks real tension, since the ending is already written</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Exige justificar por que o leitor deve se importar com escolhas que não mudam nada</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why readers should care about choices that change nothing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Difícil surpreender sem parecer contradição da própria premissa</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to surprise readers without seeming to contradict the premise itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Precisa de forte trabalho emocional para compensar a falta de suspense de resultado</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs strong emotional work to compensate for the lack of outcome-based suspense</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Personagens podem parecer passivos ou reféns do enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can feel passive or held hostage by the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Exige coerência rígida entre profecias e eventos, sem furos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires rigid consistency between prophecies and events, with no holes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Risco de leitores rejeitarem o desfecho por sentirem que &apos;nada importou&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of readers rejecting the ending because they feel &quot;nothing mattered&quot;</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Difícil conciliar com arcos de crescimento pessoal genuíno</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to reconcile with arcs of genuine personal growth</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="155"/>
         <source>Exige clareza sobre o que resta de agência humana dentro do roteiro fixo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clarity about what human agency remains within the fixed script</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="158"/>
         <source>Organização/Facção</source>
-        <translation type="unfinished"></translation>
+        <translation>Organization/Faction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="159"/>
         <source>Horizontal</source>
-        <translation type="unfinished"></translation>
+        <translation>Horizontal</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="159"/>
         <source>Sem hierarquia formal. Decisões por consenso ou rotatividade.</source>
-        <translation type="unfinished"></translation>
+        <translation>No formal hierarchy. Decisions made by consensus or rotation.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Favorece elenco coral, sem um único protagonista dominando decisões</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors an ensemble cast, without a single protagonist dominating decisions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Bom para explorar temas de comunidade, pertencimento e cooperação</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring themes of community, belonging, and cooperation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Cria conflitos internos ricos sobre como o consenso deve ser alcançado</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates rich internal conflicts over how consensus should be reached</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Permite personagens comuns terem peso real nas decisões do grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ordinary characters to have real weight in the group&apos;s decisions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Facilita tramas sobre resistência e movimentos de base</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build plots about resistance and grassroots movements</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Bom terreno para mostrar solidariedade diante de ameaças externas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for showing solidarity in the face of external threats</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Favorece diversidade de vozes e pontos de vista dentro da facção</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors diversity of voices and viewpoints within the faction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Cria espaço para debates internos como cenas de tensão dramática</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates room for internal debates as scenes of dramatic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Permite lideranças temporárias emergirem organicamente em crises</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows temporary leaders to emerge organically during crises</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="160"/>
         <source>Bom para contrastar com facções rivais mais rígidas e hierárquicas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for contrasting with more rigid, hierarchical rival factions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Exige explicar como decisões urgentes são tomadas sem comando único</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining how urgent decisions are made without a single command</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Risco de o grupo parecer lento ou indeciso em momentos de ação</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the group feeling slow or indecisive in moments of action</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Precisa de mecanismos claros de consenso ou rotatividade de liderança</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs clear mechanisms for consensus or rotating leadership</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Exige cuidado para que múltiplas vozes não confundam o leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so multiple voices don&apos;t confuse readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Pode exigir cenas extras só para mostrar o processo deliberativo</source>
-        <translation type="unfinished"></translation>
+        <translation>May require extra scenes just to show the deliberative process</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Precisa mostrar como discordâncias internas são resolvidas sem fragmentar o grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show how internal disagreements are resolved without fragmenting the group</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Exige justificar coesão do grupo apesar da ausência de hierarquia formal</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying the group&apos;s cohesion despite the lack of formal hierarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Corre risco de personagens carismáticos dominarem a cena mesmo sem cargo oficial</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks charismatic characters dominating the scene even without an official position</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Pode pedir worldbuilding sobre tradições e normas informais que sustentam a estrutura</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for worldbuilding about the informal traditions and norms that sustain the structure</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="161"/>
         <source>Precisa equilibrar tempo de tela entre vários membros sem diluir o protagonismo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance screen time among several members without diluting the protagonist&apos;s role</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="162"/>
         <source>Democrática</source>
-        <translation type="unfinished"></translation>
+        <translation>Democratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="162"/>
         <source>Liderança eleita pelos membros. Prestação de contas e representação.</source>
-        <translation type="unfinished"></translation>
+        <translation>Leadership elected by the members. Accountability and representation.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Legitimidade clara da liderança perante os próprios membros</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear legitimacy of leadership in the eyes of the members themselves</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Bom para tramas de disputa interna por eleição ou reeleição</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for plots about internal disputes over election or reelection</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Facilita accountability: líderes podem ser cobrados e substituídos</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes accountability easy: leaders can be held responsible and replaced</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Cria tensão narrativa em torno de campanhas e alianças internas</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates narrative tension around campaigns and internal alliances</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Permite personagens ambiciosos disputarem liderança por vias legítimas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ambitious characters to compete for leadership through legitimate means</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Favorece subtramas sobre facções internas dentro da própria organização</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors subplots about internal factions within the organization itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Bom terreno para explorar promessas, traições e cumprimento de mandato</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring promises, betrayals, and fulfilling one&apos;s term</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Cria oportunidades de reviravolta quando a base vota contra a liderança</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates opportunities for twists when the base votes against leadership</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Permite mostrar organização crescendo em complexidade institucional</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing the organization growing in institutional complexity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="163"/>
         <source>Facilita contraste entre líder popular e líder tecnicamente mais capaz</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to contrast a popular leader with a more technically capable one</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Exige definir regras claras de eleição, mandato e destituição</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires defining clear rules for election, terms, and removal</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Precisa mostrar consequências de decisões impopulares tomadas pela maioria</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the consequences of unpopular decisions made by the majority</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Risco de parecer burocrático demais para uma facção pequena ou clandestina</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling too bureaucratic for a small or clandestine faction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Exige cuidado para não tornar a votação apenas um recurso de trama pontual</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to make voting just a one-off plot device</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Pode exigir subtramas sobre manipulação de voto ou fraude interna</source>
-        <translation type="unfinished"></translation>
+        <translation>May require subplots about vote manipulation or internal fraud</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Precisa equilibrar tempo entre processo eleitoral e ação da trama principal</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance time between the electoral process and the main plot&apos;s action</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Exige justificar por que os membros aceitam resultados que não os favorecem</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why members accept results that don&apos;t favor them</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Corre risco de liderança eleita parecer fraca em momentos de crise urgente</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making elected leadership feel weak in moments of urgent crisis</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Pode pedir explicar como divergências entre líder e base são geridas</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for explaining how disagreements between leader and base are managed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="164"/>
         <source>Precisa mostrar identidade coletiva forte o bastante para sustentar o processo democrático</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show a collective identity strong enough to sustain the democratic process</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="165"/>
         <source>Hierárquica</source>
-        <translation type="unfinished"></translation>
+        <translation>Hierarchical</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="165"/>
         <source>Cadeia de comando clara. Autoridade flui de cima para baixo.</source>
-        <translation type="unfinished"></translation>
+        <translation>A clear chain of command. Authority flows from top to bottom.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Cadeia de comando clara facilita cenas de ação coordenada</source>
-        <translation type="unfinished"></translation>
+        <translation>A clear chain of command makes coordinated action scenes easy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Bom para explorar ambição, promoção e disputa por posições</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring ambition, promotion, and competition for positions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Cria conflitos ricos entre lealdade pessoal e ordens superiores</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates rich conflicts between personal loyalty and orders from above</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Favorece protagonistas que sobem de patente ao longo da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors protagonists who rise in rank throughout the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Permite mostrar contraste entre líderes distantes e tropa na linha de frente</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows showing the contrast between distant leaders and troops on the front line</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Bom terreno para tramas de traição, insubordinação e motins</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for plots of betrayal, insubordination, and mutiny</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Facilita worldbuilding com títulos, ranks e códigos de conduta</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build worldbuilding with titles, ranks, and codes of conduct</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Cria tensão dramática quando ordens entram em conflito com a moral do personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates dramatic tension when orders conflict with a character&apos;s morals</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Permite estrutura organizacional reconhecível (militar, corporativa, religiosa)</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows a recognizable organizational structure (military, corporate, religious)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="166"/>
         <source>Bom para explorar como informação é filtrada ao subir ou descer na hierarquia</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring how information gets filtered as it moves up or down the hierarchy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Exige definir claramente níveis de comando e suas responsabilidades</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly defining levels of command and their responsibilities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Risco de personagens de baixo escalão parecerem descartáveis ou sem voz</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of low-ranking characters feeling disposable or voiceless</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Precisa mostrar como a organização lida com líderes incompetentes ou corruptos</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show how the organization deals with incompetent or corrupt leaders</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Exige cuidado para que ordens superiores não pareçam arbitrárias sem contexto</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so orders from above don&apos;t feel arbitrary without context</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Pode exigir subtramas sobre ascensão e queda dentro da própria hierarquia</source>
-        <translation type="unfinished"></translation>
+        <translation>May require subplots about rise and fall within the hierarchy itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Precisa justificar lealdade dos subordinados apesar de eventuais abusos de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to justify subordinates&apos; loyalty despite occasional abuses of power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Exige consistência nos títulos e protocolos ao longo de toda a narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency in titles and protocols throughout the narrative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Corre risco de engessar a trama se toda ação depender de aprovação superior</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks stiffening the plot if every action depends on approval from above</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Pode pedir explicar como comunicação flui entre topo e base em momentos de crise</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for explaining how communication flows between top and bottom in moments of crisis</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="167"/>
         <source>Precisa equilibrar rigidez estrutural com espaço para iniciativa individual</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance structural rigidity with room for individual initiative</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="168"/>
         <source>Autocrática</source>
-        <translation type="unfinished"></translation>
+        <translation>Autocratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="168"/>
         <source>Poder absoluto nas mãos de um líder ou núcleo muito restrito.</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolute power in the hands of a leader or a very small inner circle.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Decisões instantâneas de um único líder aceleram o ritmo da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Instant decisions from a single leader speed up the plot&apos;s pace</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Cria um alvo humano claro para lealdade, medo ou rebelião interna</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates a clear human target for loyalty, fear, or internal rebellion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Bom para explorar culto de personalidade e carisma como armas de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring the cult of personality and charisma as weapons of power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Favorece conflitos entre o líder e conselheiros que discordam em segredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors conflicts between the leader and advisors who secretly disagree</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Permite arcos de ascensão meteórica ou queda brutal de um único personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows arcs of meteoric rise or brutal fall for a single character</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Bom terreno para tramas de golpe, sucessão forçada ou assassinato político</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for plots of coups, forced succession, or political assassination</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Cria tensão constante sobre até onde a lealdade dos subordinados realmente vai</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates constant tension about how far subordinates&apos; loyalty really goes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Facilita explorar o isolamento psicológico de quem detém poder absoluto</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to explore the psychological isolation of holding absolute power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Permite decisões unilaterais surpreenderem tanto aliados quanto leitores</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows unilateral decisions to surprise allies and readers alike</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="169"/>
         <source>Bom para contrastar eficiência autocrática com o custo humano de sua rigidez</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for contrasting autocratic efficiency with the human cost of its rigidity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Exige justificar como o líder conquistou e mantém controle absoluto</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying how the leader gained and maintains absolute control</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Risco de a organização parecer frágil demais caso o líder seja removido</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the organization feeling too fragile if the leader is removed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Precisa mostrar mecanismos de controle que impedem revoltas internas</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show the control mechanisms that prevent internal revolts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Exige cuidado para que o líder não pareça vilão raso sem profundidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so the leader doesn&apos;t feel like a shallow villain without depth</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Pode exigir subtramas sobre sucessão e disputa pelo vácuo de poder</source>
-        <translation type="unfinished"></translation>
+        <translation>May require subplots about succession and the fight over the power vacuum</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Precisa equilibrar medo e lealdade genuína entre os subordinados</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance fear and genuine loyalty among subordinates</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Exige mostrar consequências de erros do líder, já que não há checagem interna</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing the consequences of the leader&apos;s mistakes, since there&apos;s no internal check</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Corre risco de outros personagens parecerem meros executores sem agência própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Risks making other characters feel like mere executors without their own agency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Pode pedir explicar como dissidência é identificada e neutralizada</source>
-        <translation type="unfinished"></translation>
+        <translation>May call for explaining how dissent is identified and neutralized</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="170"/>
         <source>Precisa cuidado para que o desfecho da autocracia não pareça resolvido fácil demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so the autocracy&apos;s resolution doesn&apos;t feel too easily resolved</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="173"/>
         <source>Linhagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Lineage</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="174"/>
         <source>Meritocrática</source>
-        <translation type="unfinished"></translation>
+        <translation>Meritocratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="174"/>
         <source>Herdeiro escolhido por competência e realizações, não por parentesco.</source>
-        <translation type="unfinished"></translation>
+        <translation>Heir chosen by competence and achievements, not by kinship.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Sucessão vira arco narrativo: provas, disputas e provação de competência</source>
-        <translation type="unfinished"></translation>
+        <translation>Succession becomes a narrative arc: trials, contests, and tests of competence</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Qualquer personagem pode ser candidato plausível ao poder, ampliando o elenco possível</source>
-        <translation type="unfinished"></translation>
+        <translation>Any character can be a plausible candidate for power, expanding the possible cast</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Cria tensão constante entre candidatos rivais buscando legitimidade por feitos</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates constant tension between rival candidates seeking legitimacy through deeds</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Justifica testes, missões ou conselhos avaliadores como estrutura de enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies trials, quests, or evaluating councils as plot structure</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Permite reviravoltas quando um favorito perde para um azarão mais competente</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows twists when a favorite loses to a more competent underdog</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Reduz a necessidade de árvores genealógicas complexas para justificar o poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduces the need for complex family trees to justify power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Bom para temas de merecimento, sacrifício e prova de caráter do herdeiro</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for themes of worthiness, sacrifice, and the heir&apos;s test of character</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Facilita que o protagonista dispute a sucessão vindo de fora do círculo tradicional</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy for the protagonist to contest the succession from outside the traditional circle</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Vilões podem ser candidatos legítimos com métodos questionáveis, não usurpadores óbvios</source>
-        <translation type="unfinished"></translation>
+        <translation>Villains can be legitimate candidates with questionable methods, not obvious usurpers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="175"/>
         <source>Dá liberdade para matar herdeiros &apos;óbvios&apos; sem quebrar a lógica de sucessão</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives freedom to kill off &quot;obvious&quot; heirs without breaking the logic of succession</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Precisa definir com clareza quem avalia o mérito e por quais critérios, sob risco de parecer arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to clearly define who evaluates merit and by what criteria, or it risks feeling arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Exige mostrar como o sistema evita ser manipulado por quem já tem poder ou recursos</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing how the system avoids being manipulated by those who already have power or resources</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Corrupção do critério de mérito (subornar avaliadores, sabotar rivais) precisa ser plantada com cuidado</source>
-        <translation type="unfinished"></translation>
+        <translation>Corruption of the merit criteria (bribing evaluators, sabotaging rivals) needs to be planted carefully</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Falta de linha de sangue fixa exige outra fonte de legitimidade aos olhos do povo (feitos públicos, testemunhas)</source>
-        <translation type="unfinished"></translation>
+        <translation>The lack of a fixed bloodline requires another source of legitimacy in the eyes of the people (public deeds, witnesses)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Disputas sucessórias meritocráticas tendem a se repetir a cada geração, exigindo variação para não ficar formulaico</source>
-        <translation type="unfinished"></translation>
+        <translation>Meritocratic succession disputes tend to repeat every generation, requiring variation so they don&apos;t become formulaic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Personagens sem talento óbvio mas com direito moral ao poder criam tensão que precisa ser resolvida com cuidado</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters without obvious talent but with a moral claim to power create tension that needs careful resolution</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Exige clareza sobre o que acontece com candidatos que perdem (exílio, submissão, revolta)</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clarity about what happens to candidates who lose (exile, submission, revolt)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Sistema pede instituição ou tradição que sustente as provas ao longo de gerações</source>
-        <translation type="unfinished"></translation>
+        <translation>The system calls for an institution or tradition that sustains the trials across generations</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Risco de mérito virar só disfarce narrativo para &apos;quem o enredo já escolheu&apos; sem tensão real</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of merit becoming just a narrative disguise for &quot;whoever the plot already chose,&quot; without real tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="176"/>
         <source>Precisa equilibrar admiração pelo vencedor com simpatia pelos que ficaram pelo caminho</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance admiration for the winner with sympathy for those left behind</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="177"/>
         <source>Eletiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Elective</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="177"/>
         <source>Sucessores escolhidos por um conselho ou grupo de pares dentro da linhagem.</source>
-        <translation type="unfinished"></translation>
+        <translation>Successors chosen by a council or group of peers within the lineage.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Rica fonte de política interna: alianças, votos, barganhas e traições entre pares</source>
-        <translation type="unfinished"></translation>
+        <translation>A rich source of internal politics: alliances, votes, bargains, and betrayals among peers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Justifica conselhos, câmaras ou colégios eleitorais como palco narrativo recorrente</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies councils, chambers, or electoral colleges as a recurring narrative stage</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Permite candidatos com agendas e ideologias diferentes disputando a mesma cadeira</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows candidates with different agendas and ideologies competing for the same seat</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Cria tensão entre legitimidade formal (eleito) e ambição pessoal (quem &apos;merecia&apos; vencer)</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates tension between formal legitimacy (elected) and personal ambition (who &quot;deserved&quot; to win)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Bom para explorar corrupção, compra de votos e pressão de facções</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring corruption, vote-buying, and faction pressure</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Facilita reviravoltas de última hora (traições, mudanças de lado, escândalos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build last-minute twists (betrayals, switching sides, scandals)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Dá peso dramático a cada conselheiro/eleitor como personagem com interesse próprio</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives dramatic weight to each councilor/elector as a character with their own interests</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Permite crises de sucessão prolongadas (empates, impasses, disputas judiciais)</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows prolonged succession crises (ties, deadlocks, legal disputes)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Abre espaço para outsiders conquistarem apoio através de discurso, favor ou necessidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Opens room for outsiders to gain support through rhetoric, favor, or necessity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="178"/>
         <source>Facilita comentário social sobre legitimidade do poder e vontade coletiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build social commentary on the legitimacy of power and the collective will</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Exige mapear quem compõe o corpo eleitor e por que eles têm esse poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires mapping who makes up the electoral body and why they hold that power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Precisa estabelecer regras claras de elegibilidade para o leitor não achar o processo arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to establish clear eligibility rules so readers don&apos;t find the process arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Risco de a eleição virar só um evento único sem repercussão política duradoura</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the election becoming just a one-off event with no lasting political impact</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Alianças e barganhas exigem elenco de conselheiros com motivações próprias, não apenas figurantes</source>
-        <translation type="unfinished"></translation>
+        <translation>Alliances and bargains require a cast of councilors with their own motivations, not just extras</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Corrupção do processo (fraude, coação) precisa de consequências narrativas se for revelada</source>
-        <translation type="unfinished"></translation>
+        <translation>Process corruption (fraud, coercion) needs narrative consequences if it&apos;s revealed</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Legitimidade eleita pode ser contestada por facções tradicionalistas, exigindo esse conflito ser resolvido</source>
-        <translation type="unfinished"></translation>
+        <translation>Elected legitimacy can be contested by traditionalist factions, requiring that conflict to be resolved</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Sistema pede explicação de como evita golpes ou eleições permanentemente manipuladas por uma facção</source>
-        <translation type="unfinished"></translation>
+        <translation>The system calls for an explanation of how it avoids coups or elections permanently manipulated by one faction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Ritmo narrativo da eleição (campanha, votação, resultado) precisa ser dosado para não arrastar a trama</source>
-        <translation type="unfinished"></translation>
+        <translation>The election&apos;s narrative pace (campaign, vote, result) needs to be dosed so it doesn&apos;t drag down the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Precisa decidir o que acontece entre eleições — vácuos de poder ou estabilidade — e mostrar isso</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide what happens between elections — power vacuums or stability — and show it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="179"/>
         <source>Perdedores da eleição precisam de arco próprio (aceitação, revolta, exílio político)</source>
-        <translation type="unfinished"></translation>
+        <translation>Election losers need their own arc (acceptance, revolt, political exile)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="180"/>
         <source>Aristocrática</source>
-        <translation type="unfinished"></translation>
+        <translation>Aristocratic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="180"/>
         <source>Primogenitura ou títulos determinam a herança, mas o mérito ainda tem peso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Primogeniture or titles determine inheritance, but merit still carries weight.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Equilíbrio dramático entre linhagem de sangue e mérito pessoal do herdeiro</source>
-        <translation type="unfinished"></translation>
+        <translation>Dramatic balance between bloodline and the heir&apos;s personal merit</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Primogenitura dá previsibilidade que pode ser dramaticamente quebrada por mortes, bastardia ou desonra</source>
-        <translation type="unfinished"></translation>
+        <translation>Primogeniture gives predictability that can be dramatically broken by deaths, illegitimacy, or dishonor</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Justifica conflitos clássicos de herança: irmãos rivais, primos ambiciosos, tios usurpadores</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies classic inheritance conflicts: rival siblings, ambitious cousins, usurping uncles</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Boa base para tramas de educação e formação do herdeiro (provar-se digno do título)</source>
-        <translation type="unfinished"></translation>
+        <translation>A good foundation for plots about the heir&apos;s education and formation (proving themselves worthy of the title)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Permite exceções à regra (nomeação por feito excepcional) sem quebrar o sistema todo</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exceptions to the rule (appointment for an exceptional deed) without breaking the whole system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Cria tensão quando o herdeiro por sangue não é o mais competente para o cargo</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates tension when the heir by blood isn&apos;t the most competent for the role</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Facilita subtramas de legitimidade contestada (filhos ilegítimos, adoções, promessas antigas)</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build subplots of contested legitimacy (illegitimate children, adoptions, old promises)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Título e linhagem dão atalho narrativo de identidade e expectativa social ao herdeiro</source>
-        <translation type="unfinished"></translation>
+        <translation>Title and lineage give the heir a narrative shortcut to identity and social expectation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Permite avós, conselhos de regência e tutores como figuras de autoridade intermediária</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows grandparents, regency councils, and tutors as intermediate authority figures</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="181"/>
         <source>Bom terreno para explorar o peso da expectativa familiar sobre um protagonista jovem</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for exploring the weight of family expectation on a young protagonist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Exige uma árvore genealógica clara o bastante para o leitor acompanhar quem tem direito ao quê</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires a family tree clear enough for readers to follow who has a claim to what</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Precisa decidir com precisão as regras de precedência (primogenitura, gênero, legitimidade) e aplicá-las com consistência</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to precisely decide the rules of precedence (primogeniture, gender, legitimacy) and apply them consistently</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Risco de confundir o leitor se houver excesso de candidatos com reivindicações simultâneas</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of confusing readers if there are too many candidates with simultaneous claims</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Quebras da ordem de sucessão (mérito, nomeação) precisam de justificativa forte para não parecer deus ex machina</source>
-        <translation type="unfinished"></translation>
+        <translation>Breaks in the order of succession (merit, appointment) need strong justification so they don&apos;t feel like deus ex machina</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Personagens fora da linha de sucessão direta precisam de motivação clara se desejarem o poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters outside the direct line of succession need clear motivation if they want power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Exige mostrar consequências reais para reivindicações ilegítimas ou contestadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing real consequences for illegitimate or contested claims</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Tempo de regência (herdeiro menor de idade) demanda estabelecer quem manda nesse meio-tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>A regency period (underage heir) demands establishing who&apos;s in charge in the meantime</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Fácil recair em previsibilidade se a linha de sucessão for óbvia demais sem reviravoltas plantadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to fall into predictability if the line of succession is too obvious without planted twists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Requer equilíbrio entre respeitar a tradição de sangue e permitir que mérito tenha peso real</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires balancing respect for the bloodline tradition with letting merit carry real weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="182"/>
         <source>Casamentos e alianças dinásticas exigem consistência ao longo de gerações para não contradizer a genealogia estabelecida</source>
-        <translation type="unfinished"></translation>
+        <translation>Dynastic marriages and alliances require consistency across generations so they don&apos;t contradict the established genealogy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="183"/>
         <source>Hereditária Pura</source>
-        <translation type="unfinished"></translation>
+        <translation>Pure Hereditary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="183"/>
         <source>Sangue é lei. A linhagem determina tudo; desvios são ilegítimos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Blood is law. Lineage determines everything; deviations are illegitimate.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Clareza absoluta de legitimidade: o sangue decide, sem ambiguidade de critério</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolute clarity of legitimacy: blood decides, with no ambiguity of criteria</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Excelente motor para tragédia (herdeiro incompetente, cruel ou relutante que não pode ser substituído)</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent engine for tragedy (an incompetent, cruel, or reluctant heir who can&apos;t be replaced)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Justifica dinastias de longa duração como pano de fundo histórico estável</source>
-        <translation type="unfinished"></translation>
+        <translation>Justifies long-lasting dynasties as a stable historical backdrop</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Cria apostas altíssimas para bastardia, adoção ou troca de bebês como reviravoltas</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates extremely high stakes for illegitimacy, adoption, or baby-swapping as twists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Facilita profecias e destinos ligados ao sangue (linhagens abençoadas ou amaldiçoadas)</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build prophecies and destinies tied to blood (blessed or cursed bloodlines)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Bom para explorar o peso do dever versus desejo pessoal do herdeiro nascido para o trono</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring duty versus personal desire in an heir born for the throne</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Vilões podem ser legítimos por sangue mas ilegítimos por caráter, gerando dilema moral real</source>
-        <translation type="unfinished"></translation>
+        <translation>Villains can be legitimate by blood but illegitimate by character, creating a real moral dilemma</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Permite tramas de usurpação como transgressão clara e grave, com peso simbólico forte</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows usurpation plots as a clear, serious transgression with strong symbolic weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Dá solidez histórica ao mundo (registros, títulos, brasões passam sem disputa formal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives the world historical solidity (records, titles, coats of arms pass on without formal dispute)</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="184"/>
         <source>Facilita crises quando a linhagem se extingue, criando vácuo de poder dramático</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build crises when the bloodline dies out, creating a dramatic power vacuum</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Exige justificar por que ninguém contesta um sistema que pode entregar poder a alguém incompetente ou cruel</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why no one contests a system that can hand power to someone incompetent or cruel</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Precisa mostrar mecanismos de controle sobre o herdeiro fraco (regentes, conselheiros, tutores) sem enfraquecer a regra do sangue</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show control mechanisms over a weak heir (regents, advisors, tutors) without weakening the rule of blood</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Risco de o enredo ficar refém de uma única linha de sucessão, limitando quem pode legitimamente competir pelo poder</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the plot becoming hostage to a single line of succession, limiting who can legitimately compete for power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Exige árvore genealógica precisa e consistente, sob risco de contradições graves na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires a precise, consistent family tree, or risks serious contradictions in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Bastardia, adoção ou traição na linhagem precisam de regras claras sobre legitimidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Illegitimacy, adoption, or betrayal within the bloodline need clear rules about legitimacy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Sistema pede explicação para o que acontece se a linhagem se extinguir sem herdeiro</source>
-        <translation type="unfinished"></translation>
+        <translation>The system calls for an explanation of what happens if the bloodline dies out without an heir</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Usurpação torna-se o único caminho de mudança de poder, exigindo justificar sua raridade ou dificuldade</source>
-        <translation type="unfinished"></translation>
+        <translation>Usurpation becomes the only path to a change of power, requiring you to justify its rarity or difficulty</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Personagens fora do sangue real ficam estruturalmente impedidos do poder máximo, limitando certos arcos sem gambiarra narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters outside the royal blood are structurally barred from ultimate power, limiting certain arcs without narrative hand-waving</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Exige mostrar o custo humano de nascer &apos;destinado&apos; a um papel que não escolheu</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires showing the human cost of being born &quot;destined&quot; for a role you didn&apos;t choose</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="185"/>
         <source>Risco de previsibilidade se a ordem de sucessão for óbvia demais sem mortes, segredos ou reviravoltas que a alterem</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of predictability if the order of succession is too obvious without deaths, secrets, or twists to alter it</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="188"/>
         <source>Mitologia</source>
-        <translation type="unfinished"></translation>
+        <translation>Mythology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="189"/>
         <source>Filosófica</source>
-        <translation type="unfinished"></translation>
+        <translation>Philosophical</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="189"/>
         <source>Mitos como metáforas para verdades humanas. Sem crença literal em deuses ou eventos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Myths as metaphors for human truths. No literal belief in gods or events.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Mitos como metáforas para verdades humanas profundas</source>
-        <translation type="unfinished"></translation>
+        <translation>Myths as metaphors for deep human truths</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Boa para explorar temas universais sem dogma religioso</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring universal themes without religious dogma</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Permite múltiplas interpretações válidas dos mesmos mitos</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows multiple valid interpretations of the same myths</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Favorece protagonistas céticos ou racionalistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors skeptical or rationalist protagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Serve bem a narrativas de cunho filosófico ou introspectivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for philosophical or introspective narratives</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Cria espaço para crítica social através da releitura de mitos</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates room for social critique through reinterpreting myths</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Dá liberdade para misturar tradições mitológicas diferentes como metáfora</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives freedom to mix different mythological traditions as metaphor</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Bom para mundos onde a fé é pessoal e não institucionalizada</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for worlds where faith is personal and not institutionalized</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Permite ambiguidade sobre se deuses realmente existem</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows ambiguity about whether gods really exist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="190"/>
         <source>Reforça temas de busca de sentido em vez de busca de verdade literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces themes of the search for meaning rather than the search for literal truth</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Sem crença literal em deuses ou eventos, o que exige outra fonte de maravilhamento</source>
-        <translation type="unfinished"></translation>
+        <translation>With no literal belief in gods or events, this requires another source of wonder</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Cuidado para não tornar a mitologia decorativa ou irrelevante à trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for the mythology becoming decorative or irrelevant to the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Exige profundidade temática para justificar a ausência de mitos literais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires thematic depth to justify the absence of literal myths</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Risco de leitores de fantasia sentirem falta de estakes sobrenaturais concretos</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of fantasy readers missing concrete supernatural stakes</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Precisa de clareza sobre o que os mitos simbolizam dentro da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs clarity about what the myths symbolize within the story</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Difícil criar milagres ou intervenções divinas críveis nesse registro</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to create believable miracles or divine interventions in this register</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Exige personagens capazes de sustentar debates filosóficos sem soar didático</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires characters capable of sustaining philosophical debates without sounding preachy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Menos espaço para clímax baseado em poder divino literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Less room for a climax based on literal divine power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Risco de o worldbuilding parecer abstrato demais para o leitor médio</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the worldbuilding feeling too abstract for the average reader</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="191"/>
         <source>Exige equilíbrio entre metáfora e enredo concreto para não perder o ritmo narrativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires balancing metaphor and concrete plot so as not to lose narrative pace</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="192"/>
         <source>Simbólica</source>
-        <translation type="unfinished"></translation>
+        <translation>Symbolic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="192"/>
         <source>Histórias sagradas interpretadas como símbolos culturais, não como fatos históricos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacred stories interpreted as cultural symbols, not as historical facts.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Histórias sagradas ricas em significado cultural sem exigir fé literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacred stories rich in cultural meaning without requiring literal faith</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Boa para explorar como diferentes povos interpretam os mesmos eventos</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring how different peoples interpret the same events</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Permite rituais e tradições com peso emocional genuíno</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows rituals and traditions with genuine emotional weight</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Favorece personagens que usam mitos como guia moral, não lei</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors characters who use myths as a moral guide, not law</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Serve bem a mundos com múltiplas culturas e cosmovisões coexistindo</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for worlds with multiple cultures and worldviews coexisting</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Cria espaço para arte, poesia e canções dentro da narrativa com função simbólica</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates room for art, poetry, and songs within the narrative with symbolic function</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Dá liberdade para o leitor decidir o que é &apos;verdade&apos; dentro da ficção</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives readers freedom to decide what&apos;s &quot;true&quot; within the fiction</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Bom equilíbrio entre mistério espiritual e realismo</source>
-        <translation type="unfinished"></translation>
+        <translation>Good balance between spiritual mystery and realism</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Permite ironia entre o que o mito diz e o que realmente aconteceu</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows irony between what the myth says and what actually happened</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="193"/>
         <source>Reforça a ideia de identidade cultural construída por narrativas compartilhadas</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces the idea of cultural identity built from shared narratives</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Histórias sagradas interpretadas como símbolos culturais exigem clareza sobre limites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacred stories interpreted as cultural symbols require clarity about limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Precisa manter consistência sobre o que é lenda e o que é história factual no mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to stay consistent about what&apos;s legend and what&apos;s factual history in the world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Cuidado para não confundir o leitor sobre quais eventos místicos realmente ocorreram</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for confusing readers about which mystical events actually occurred</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Exige pesquisa ou criação cuidadosa de tradições culturais coerentes</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires research or careful invention of coherent cultural traditions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Risco de personagens parecerem incoerentes se tratarem símbolos ora como reais, ora não</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of characters feeling inconsistent if they treat symbols as real sometimes and not others</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Difícil equilibrar respeito cultural com liberdade criativa ao inventar mitos</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to balance cultural respect with creative freedom when inventing myths</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Exige sutileza para revelar gradualmente a distância entre mito e fato</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires subtlety to gradually reveal the distance between myth and fact</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Menos direto para cenas de ação com poder divino explícito</source>
-        <translation type="unfinished"></translation>
+        <translation>Less direct for action scenes with explicit divine power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Precisa sustentar múltiplas camadas de leitura sem sobrecarregar o texto</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to sustain multiple layers of reading without overloading the text</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="194"/>
         <source>Exige atenção para que diferentes culturas do mundo tenham vozes distintas e não uma mitologia genérica</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires attention so that different cultures in the world have distinct voices instead of one generic mythology</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="195"/>
         <source>Literal</source>
-        <translation type="unfinished"></translation>
+        <translation>Literal</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="195"/>
         <source>Os mitos são história real. Deuses, heróis e eventos são tratados como fatos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Myths are real history. Gods, heroes, and events are treated as facts.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Deuses, heróis e eventos tratados como fatos concretos da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Gods, heroes, and events treated as concrete historical facts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Excelente para intervenções divinas diretas na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for direct divine interventions in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Favorece heróis de linhagem divina e destinos épicos</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors heroes of divine lineage and epic destinies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Cria estakes claros quando deuses podem punir ou recompensar personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates clear stakes when gods can punish or reward characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Bom para conflitos entre panteões ou entre mortais e divindades</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for conflicts between pantheons or between mortals and divinities</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Serve bem a alta fantasia e épicos de tom mítico</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for high fantasy and epics with a mythic tone</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Permite artefatos e locais sagrados com poder real e verificável</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows sacred artifacts and locations with real, verifiable power</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Dá ao leitor certeza sobre as regras do sobrenatural no mundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives readers certainty about the rules of the supernatural in the world</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Reforça temas de hybris, favor divino e provação</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces themes of hubris, divine favor, and trial</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="196"/>
         <source>Cria oportunidades de profecias que realmente se cumprem</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates opportunities for prophecies that actually come true</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Tratar mitos como fatos exige coerência rígida entre lore e eventos da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Treating myths as facts requires rigid consistency between lore and plot events</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Risco de deuses ativos resolverem conflitos por conta própria, esvaziando a agência dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of active gods resolving conflicts on their own, hollowing out characters&apos; agency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Exige explicar por que deuses nem sempre intervêm quando poderiam</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining why gods don&apos;t always intervene when they could</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Precisa equilibrar poder divino com tensão dramática real</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to balance divine power with real dramatic tension</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Difícil manter mistério quando o sobrenatural é confirmado e visível</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to maintain mystery when the supernatural is confirmed and visible</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Exige worldbuilding consistente sobre hierarquia e limites dos deuses</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistent worldbuilding about the gods&apos; hierarchy and limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Personagens desafiando deuses precisam de justificativa forte para não parecer tolice</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters defying gods need strong justification so it doesn&apos;t feel foolish</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Risco de a presença constante do divino tornar milagres banais</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the constant presence of the divine making miracles feel mundane</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Exige cuidado para que cada panteão tenha lógica interna própria</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so each pantheon has its own internal logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="197"/>
         <source>Fãs vão cobrar coerência sobre poderes e limites divinos ao longo da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Fans will demand consistency about divine powers and limits throughout the work</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="198"/>
         <source>Textos sagrados são a verdade absoluta. Questioná-los é heresia.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacred texts are the absolute truth. Questioning them is heresy.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Textos sagrados como verdade absoluta criam conflitos morais poderosos</source>
-        <translation type="unfinished"></translation>
+        <translation>Sacred texts as absolute truth create powerful moral conflicts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Excelente para explorar fanatismo, fé cega e opressão religiosa</source>
-        <translation type="unfinished"></translation>
+        <translation>Excellent for exploring fanaticism, blind faith, and religious oppression</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Favorece tramas sobre heresia, dissidência e reforma religiosa</source>
-        <translation type="unfinished"></translation>
+        <translation>Favors plots about heresy, dissent, and religious reform</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Cria antagonistas ideológicos complexos e ameaçadores</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates complex, threatening ideological antagonists</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Bom para explorar o custo humano de sistemas de crença rígidos</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for exploring the human cost of rigid belief systems</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Serve bem a narrativas políticas entrelaçadas com religião de estado</source>
-        <translation type="unfinished"></translation>
+        <translation>Works well for political narratives intertwined with state religion</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Permite personagens presos entre fé herdada e dúvida pessoal</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows characters caught between inherited faith and personal doubt</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Dá peso dramático a rituais, julgamentos e punições religiosas</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives dramatic weight to religious rituals, trials, and punishments</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Reforça temas de poder institucional e controle social pela fé</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinforces themes of institutional power and social control through faith</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="199"/>
         <source>Cria terreno fértil para revoluções e cismas dentro da própria religião</source>
-        <translation type="unfinished"></translation>
+        <translation>Creates fertile ground for revolutions and schisms within the religion itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Questionar os textos sagrados é heresia, o que limita a liberdade de personagens dentro da ordem estabelecida</source>
-        <translation type="unfinished"></translation>
+        <translation>Questioning the sacred texts is heresy, which limits characters&apos; freedom within the established order</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Exige cuidado para não simplificar fé em vilania unidimensional</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care not to simplify faith into one-dimensional villainy</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Risco de o dogma parecer caricatura se não houver nuance nos fiéis</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the dogma feeling like a caricature without nuance among believers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Precisa mostrar por que pessoas genuinamente acreditam, não só por que a instituição oprime</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show why people genuinely believe, not just why the institution oppresses</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Exige coerência entre doutrina oficial e prática mostrada na trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between official doctrine and the practice shown in the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Difícil equilibrar crítica à instituição com respeito à espiritualidade dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Hard to balance critique of the institution with respect for the characters&apos; spirituality</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Personagens hereges precisam de consequências plausíveis e proporcionais</source>
-        <translation type="unfinished"></translation>
+        <translation>Heretic characters need plausible, proportional consequences</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Exige clareza sobre quem controla a interpretação dos textos e por quê</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clarity about who controls the interpretation of the texts and why</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Risco de o tema pesar demais o tom da obra se não for essa a intenção</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the theme weighing down the work&apos;s tone if that&apos;s not the intent</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="200"/>
         <source>Sustentar esse sistema em série longa exige mapear facções, cismas e hierarquias internas com cuidado</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustaining this system across a long series requires carefully mapping factions, schisms, and internal hierarchies</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="203"/>
         <source>Outro</source>
-        <translation type="unfinished"></translation>
+        <translation>Other</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="204"/>
         <source>Aberto</source>
-        <translation type="unfinished"></translation>
+        <translation>Open</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="204"/>
         <source>Estrutura flexível, sem regras rígidas. Adaptável ao contexto.</source>
-        <translation type="unfinished"></translation>
+        <translation>Flexible structure, no rigid rules. Adaptable to context.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Máxima liberdade criativa para adaptar o sistema conforme a trama exige</source>
-        <translation type="unfinished"></translation>
+        <translation>Maximum creative freedom to adapt the system as the plot requires</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Facilita improviso e reviravoltas sem contradizer regras estabelecidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to improvise and build twists without contradicting established rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Bom para sistemas que ainda estão sendo descobertos pelos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for systems still being discovered by the characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Permite que diferentes grupos usem o sistema de formas distintas</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows different groups to use the system in distinct ways</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Reduz o risco de contradição por excesso de regras fixas</source>
-        <translation type="unfinished"></translation>
+        <translation>Reduces the risk of contradiction from an excess of fixed rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Sustenta o mistério sobre como o sistema realmente funciona</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains the mystery of how the system really works</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Fácil introduzir exceções sem quebrar a lógica interna</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to introduce exceptions without breaking the internal logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Bom terreno para personagens que reinterpretam ou subvertem o sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for characters who reinterpret or subvert the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Permite crescimento orgânico do sistema ao longo de uma série longa</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows organic growth of the system throughout a long series</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="205"/>
         <source>Dá ao autor margem para corrigir o rumo sem reescrever regras anteriores</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives the author room to course-correct without rewriting earlier rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Exige disciplina para não parecer que &apos;vale tudo&apos; sem lógica alguma</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires discipline so it doesn&apos;t feel like &quot;anything goes&quot; with no logic at all</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Risco de o leitor sentir que as regras mudam só para servir à trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of readers feeling that the rules change just to serve the plot</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Leitor pode ter dificuldade em prever as consequências das ações dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may struggle to predict the consequences of characters&apos; actions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Precisa manter um núcleo de coerência mesmo com flexibilidade nas bordas</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to keep a core of consistency even with flexibility at the edges</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Fácil perder tensão se nada tiver custo ou limite reconhecível</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to lose tension if nothing has a recognizable cost or limit</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Exige cuidado extra ao apresentar o sistema pela primeira vez ao leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires extra care when introducing the system to readers for the first time</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>A ausência de regras claras pode enfraquecer resoluções de conflito</source>
-        <translation type="unfinished"></translation>
+        <translation>The absence of clear rules can weaken conflict resolutions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Se usado por vilões, precisa ficar claro por que eles não abusam sem limites</source>
-        <translation type="unfinished"></translation>
+        <translation>If used by villains, it needs to be clear why they don&apos;t abuse it without limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Precisa registrar internamente o que é e não é possível, mesmo sem explicitar ao leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to keep internal track of what is and isn&apos;t possible, even without spelling it out for readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="206"/>
         <source>Exige revisão cuidadosa para não contradizer o próprio sistema em capítulos posteriores</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires careful review so as not to contradict the system itself in later chapters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="207"/>
         <source>Semiflexível</source>
-        <translation type="unfinished"></translation>
+        <translation>Semi-flexible</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="207"/>
         <source>Algumas diretrizes existem, mas há espaço para variação e interpretação.</source>
-        <translation type="unfinished"></translation>
+        <translation>Some guidelines exist, but there&apos;s room for variation and interpretation.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Equilíbrio entre previsibilidade e espaço para surpresas</source>
-        <translation type="unfinished"></translation>
+        <translation>Balance between predictability and room for surprises</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Permite exceções pontuais sem comprometer a credibilidade do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows occasional exceptions without compromising the system&apos;s credibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Bom para mostrar personagens testando os limites das diretrizes</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for showing characters testing the limits of the guidelines</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Sustenta conflitos entre tradicionalistas e reformistas dentro do próprio sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains conflicts between traditionalists and reformists within the system itself</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Facilita nuance: personagens podem discordar sobre como interpretar as regras</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes nuance easy: characters can disagree about how to interpret the rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Dá margem para zonas cinzentas moralmente interessantes</source>
-        <translation type="unfinished"></translation>
+        <translation>Gives room for morally interesting gray areas</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Permite que o sistema evolua ao longo da trama sem parecer arbitrário</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows the system to evolve throughout the plot without feeling arbitrary</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Bom terreno para personagens especialistas em achar brechas do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for characters who specialize in finding loopholes in the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Sustenta subculturas ou correntes distintas dentro do mesmo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains distinct subcultures or schools of thought within the same system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="208"/>
         <source>Facilita revelações graduais sobre até onde as regras realmente vão</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to gradually reveal how far the rules really go</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Exige definir claramente o que é diretriz e o que é exceção</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires clearly defining what&apos;s a guideline and what&apos;s an exception</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Risco de parecer inconsistente se as regras mudarem sem explicação</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of feeling inconsistent if the rules change without explanation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Leitor pode questionar por que certas exceções são aceitas e outras não</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers may question why certain exceptions are accepted and others aren&apos;t</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Precisa mostrar quem decide os limites da interpretação do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show who decides the limits of the system&apos;s interpretation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Fácil confundir o leitor se a flexibilidade não tiver padrão reconhecível</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to confuse readers if the flexibility has no recognizable pattern</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Exige coerência entre a interpretação de diferentes personagens do mesmo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires consistency between different characters&apos; interpretations of the same system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Zonas cinzentas exigem consequências, não só ambiguidade decorativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Gray areas require consequences, not just decorative ambiguity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Se toda regra tiver exceção conveniente, o sistema perde credibilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>If every rule has a convenient exception, the system loses credibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Precisa estabelecer um limite absoluto que nunca é quebrado, como âncora</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to establish one absolute limit that&apos;s never broken, as an anchor</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="209"/>
         <source>Exige cuidado para que &apos;interpretação livre&apos; não vire desculpa para inconsistência</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so &quot;free interpretation&quot; doesn&apos;t become an excuse for inconsistency</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="210"/>
         <source>Estruturado</source>
-        <translation type="unfinished"></translation>
+        <translation>Structured</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="210"/>
         <source>Regras claras e estabelecidas que guiam o funcionamento do sistema.</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear, established rules that guide how the system works.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Regras claras dão ao leitor ferramentas para prever e torcer pelas soluções</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear rules give readers the tools to predict and root for solutions</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Bom para tramas de resolução de problemas dentro de limites conhecidos</source>
-        <translation type="unfinished"></translation>
+        <translation>Good for problem-solving plots within known limits</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Sustenta rivalidades e competições com critérios objetivos e justos</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains rivalries and competitions with objective, fair criteria</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Facilita world-building consistente ao longo de obras longas ou séries</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build consistent worldbuilding across long works or series</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Permite plantar pistas que pagam de forma satisfatória depois</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows planting clues that pay off satisfyingly later</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Bom terreno para personagens que dominam o sistema como especialistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for characters who master the system as experts</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Estrutura clara facilita ensinar o sistema ao leitor sem exposição excessiva</source>
-        <translation type="unfinished"></translation>
+        <translation>A clear structure makes it easy to teach the system to readers without excessive exposition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Sustenta conflitos sobre quem controla ou administra as regras estabelecidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains conflicts over who controls or administers the established rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Permite comparar personagens pela forma como usam o mesmo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows comparing characters by how they use the same system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="211"/>
         <source>Facilita consequências lógicas e satisfatórias para as escolhas dos personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build logical, satisfying consequences for characters&apos; choices</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Exige manter consistência rígida das regras do início ao fim da obra</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires maintaining strict consistency of the rules from beginning to end</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Risco de a trama parecer mecânica ou previsível demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the plot feeling too mechanical or predictable</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Leitor vai notar e cobrar qualquer contradição às regras estabelecidas</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will notice and call out any contradiction to the established rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Precisa planejar com antecedência as implicações do sistema em cada arco</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to plan the system&apos;s implications for each arc in advance</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Fácil limitar a criatividade das soluções se as regras forem citadas com rigidez excessiva</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to limit the creativity of solutions if the rules are cited too rigidly</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Exige explicar o sistema ao leitor sem cair em excesso de exposição</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires explaining the system to readers without falling into excessive exposition</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Personagens não podem burlar as regras sem justificativa dentro da própria lógica</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters can&apos;t bend the rules without justification within the system&apos;s own logic</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Se o sistema for complexo demais, exige cuidado para não sobrecarregar o leitor</source>
-        <translation type="unfinished"></translation>
+        <translation>If the system is too complex, it requires care not to overload readers</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Precisa decidir quem tem autoridade para mudar ou administrar as regras</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide who has the authority to change or administer the rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="212"/>
         <source>Exige revisão cuidadosa para eliminar furos de lógica antes da publicação</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires careful review to eliminate logic holes before publishing</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="213"/>
         <source>Rígido</source>
-        <translation type="unfinished"></translation>
+        <translation>Rigid</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="213"/>
         <source>Sistema inflexível com regras absolutas. Desvios não são tolerados.</source>
-        <translation type="unfinished"></translation>
+        <translation>An inflexible system with absolute rules. Deviations are not tolerated.</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Regras absolutas criam tensão dramática forte quando personagens as desafiam</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolute rules create strong dramatic tension when characters defy them</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Ótimo para tramas sobre rebelião contra um sistema opressor de regras</source>
-        <translation type="unfinished"></translation>
+        <translation>Great for plots about rebellion against an oppressive system of rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Consequências previsíveis tornam as escolhas dos personagens mais significativas</source>
-        <translation type="unfinished"></translation>
+        <translation>Predictable consequences make characters&apos; choices more meaningful</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Sustenta antagonistas que são o próprio sistema, sem precisar de vilão pessoal</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains antagonists that are the system itself, without needing a personal villain</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Bom terreno para sacrifício, punição e dilemas morais de alto risco</source>
-        <translation type="unfinished"></translation>
+        <translation>Good ground for sacrifice, punishment, and high-stakes moral dilemmas</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Facilita a construção de instituições ou ordens com identidade forte e reconhecível</source>
-        <translation type="unfinished"></translation>
+        <translation>Makes it easy to build institutions or orders with a strong, recognizable identity</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Permite explorar o custo de romper tradições ou leis inquebrantáveis</source>
-        <translation type="unfinished"></translation>
+        <translation>Allows exploring the cost of breaking unbreakable traditions or laws</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>A rigidez cria contraste dramático com personagens que buscam exceção ou liberdade</source>
-        <translation type="unfinished"></translation>
+        <translation>The rigidity creates dramatic contrast with characters seeking exception or freedom</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Sustenta arcos de desobediência civil ou heresia dentro do sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Sustains arcs of civil disobedience or heresy within the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="214"/>
         <source>Regras absolutas facilitam apostas claras: quebrar ou obedecer, sem meio-termo</source>
-        <translation type="unfinished"></translation>
+        <translation>Absolute rules make the stakes clear: break them or obey, with no middle ground</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Exige justificar por que ninguém encontrou brechas antes dos personagens da trama</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires justifying why no one found loopholes before the story&apos;s characters</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Risco de o sistema parecer arbitrário se a rigidez não tiver razão de ser</source>
-        <translation type="unfinished"></translation>
+        <translation>Risk of the system feeling arbitrary if the rigidity has no reason to exist</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Leitor vai esperar punições reais e consistentes para quem desafia as regras</source>
-        <translation type="unfinished"></translation>
+        <translation>Readers will expect real, consistent punishments for those who defy the rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Precisa mostrar quem impõe e fiscaliza o cumprimento das regras absolutas</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to show who imposes and enforces compliance with the absolute rules</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Fácil sufocar a agência dos personagens se tudo for determinado pelo sistema</source>
-        <translation type="unfinished"></translation>
+        <translation>Easy to smother characters&apos; agency if everything is determined by the system</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Exige coerência total: uma única exceção não explicada quebra a credibilidade</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires total consistency: a single unexplained exception breaks the credibility</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Desvios não tolerados exigem definir claramente o que conta como desvio</source>
-        <translation type="unfinished"></translation>
+        <translation>Zero-tolerance for deviation requires clearly defining what counts as deviation</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Se a rigidez for só pano de fundo, sem consequência na trama, perde força</source>
-        <translation type="unfinished"></translation>
+        <translation>If the rigidity is just backdrop, with no consequence in the plot, it loses force</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Precisa decidir se o sistema rígido pode ou não evoluir ao longo da história</source>
-        <translation type="unfinished"></translation>
+        <translation>Needs to decide whether the rigid system can evolve over the course of the story</translation>
     </message>
     <message>
         <location filename="../src/ConstrutorStore.cpp" line="215"/>
         <source>Exige cuidado para que a inflexibilidade não torne a leitura previsível demais</source>
-        <translation type="unfinished"></translation>
+        <translation>Requires care so the inflexibility doesn&apos;t make the reading too predictable</translation>
     </message>
     <message>
         <location filename="../src/LousaPanel.cpp" line="693"/>
         <source>Sem título</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="164"/>
         <source>Editar capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit chapter</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="165"/>
         <source>Novo capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>New chapter</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="175"/>
         <source>Título do capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter title</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="177"/>
         <source>ex.: Dia 5, Verão de 1999, há 10 anos…</source>
-        <translation type="unfinished"></translation>
+        <translation>e.g.: Day 5, Summer of 1999, 10 years ago…</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="178"/>
         <source>Título:</source>
-        <translation type="unfinished"></translation>
+        <translation>Title:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="179"/>
         <source>Quando se passa:</source>
-        <translation type="unfinished"></translation>
+        <translation>When it takes place:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="182"/>
         <source>O marcador temporal é opcional e alimenta o eixo História da linha do tempo.</source>
-        <translation type="unfinished"></translation>
+        <translation>The time marker is optional and feeds the Story axis of the timeline.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="189"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="190"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="191"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="31"/>
         <location filename="../src/MapView.cpp" line="122"/>
         <source>América do Sul</source>
-        <translation type="unfinished"></translation>
+        <translation>South America</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="30"/>
         <location filename="../src/MapView.cpp" line="123"/>
         <source>América do Norte</source>
-        <translation type="unfinished"></translation>
+        <translation>North America</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="32"/>
         <location filename="../src/MapView.cpp" line="124"/>
         <source>Europa</source>
-        <translation type="unfinished"></translation>
+        <translation>Europe</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="34"/>
         <location filename="../src/MapView.cpp" line="125"/>
         <source>Ásia</source>
-        <translation type="unfinished"></translation>
+        <translation>Asia</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="33"/>
         <location filename="../src/MapView.cpp" line="126"/>
         <source>África</source>
-        <translation type="unfinished"></translation>
+        <translation>Africa</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="35"/>
         <location filename="../src/MapView.cpp" line="127"/>
         <source>Oceania</source>
-        <translation type="unfinished"></translation>
+        <translation>Oceania</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="36"/>
         <location filename="../src/MapView.cpp" line="128"/>
         <source>Antártida</source>
-        <translation type="unfinished"></translation>
+        <translation>Antarctica</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="135"/>
         <source>Africâner</source>
-        <translation type="unfinished"></translation>
+        <translation>Afrikaans</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="135"/>
         <source>Albanês</source>
-        <translation type="unfinished"></translation>
+        <translation>Albanian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="135"/>
         <source>Amárico</source>
-        <translation type="unfinished"></translation>
+        <translation>Amharic</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="135"/>
         <source>Árabe</source>
-        <translation type="unfinished"></translation>
+        <translation>Arabic</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="136"/>
         <source>Armênio</source>
-        <translation type="unfinished"></translation>
+        <translation>Armenian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="136"/>
         <source>Azerbaijano</source>
-        <translation type="unfinished"></translation>
+        <translation>Azerbaijani</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="136"/>
         <source>Basco</source>
-        <translation type="unfinished"></translation>
+        <translation>Basque</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="136"/>
         <source>Bielorrusso</source>
-        <translation type="unfinished"></translation>
+        <translation>Belarusian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="137"/>
         <source>Bengali</source>
-        <translation type="unfinished"></translation>
+        <translation>Bengali</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="137"/>
         <source>Bósnio</source>
-        <translation type="unfinished"></translation>
+        <translation>Bosnian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="137"/>
         <source>Búlgaro</source>
-        <translation type="unfinished"></translation>
+        <translation>Bulgarian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="137"/>
         <source>Birmanês</source>
-        <translation type="unfinished"></translation>
+        <translation>Burmese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="138"/>
         <source>Catalão</source>
-        <translation type="unfinished"></translation>
+        <translation>Catalan</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="138"/>
         <source>Chinês</source>
-        <translation type="unfinished"></translation>
+        <translation>Chinese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="138"/>
         <source>Croata</source>
-        <translation type="unfinished"></translation>
+        <translation>Croatian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="138"/>
         <source>Tcheco</source>
-        <translation type="unfinished"></translation>
+        <translation>Czech</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="139"/>
         <source>Dinamarquês</source>
-        <translation type="unfinished"></translation>
+        <translation>Danish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="139"/>
         <source>Holandês</source>
-        <translation type="unfinished"></translation>
+        <translation>Dutch</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="139"/>
         <source>Inglês</source>
-        <translation type="unfinished"></translation>
+        <translation>English</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="139"/>
         <source>Estoniano</source>
-        <translation type="unfinished"></translation>
+        <translation>Estonian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="140"/>
         <source>Finlandês</source>
-        <translation type="unfinished"></translation>
+        <translation>Finnish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="140"/>
         <source>Francês</source>
-        <translation type="unfinished"></translation>
+        <translation>French</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="140"/>
         <source>Galego</source>
-        <translation type="unfinished"></translation>
+        <translation>Galician</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="140"/>
         <source>Georgiano</source>
-        <translation type="unfinished"></translation>
+        <translation>Georgian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="141"/>
         <source>Alemão</source>
-        <translation type="unfinished"></translation>
+        <translation>German</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="141"/>
         <source>Grego</source>
-        <translation type="unfinished"></translation>
+        <translation>Greek</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="141"/>
         <source>Guzerate</source>
-        <translation type="unfinished"></translation>
+        <translation>Gujarati</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="141"/>
         <source>Hauçá</source>
-        <translation type="unfinished"></translation>
+        <translation>Hausa</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="142"/>
         <source>Hebraico</source>
-        <translation type="unfinished"></translation>
+        <translation>Hebrew</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="142"/>
         <source>Híndi</source>
-        <translation type="unfinished"></translation>
+        <translation>Hindi</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="142"/>
         <source>Húngaro</source>
-        <translation type="unfinished"></translation>
+        <translation>Hungarian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="142"/>
         <source>Islandês</source>
-        <translation type="unfinished"></translation>
+        <translation>Icelandic</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="143"/>
         <source>Igbo</source>
-        <translation type="unfinished"></translation>
+        <translation>Igbo</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="143"/>
         <source>Indonésio</source>
-        <translation type="unfinished"></translation>
+        <translation>Indonesian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="143"/>
         <source>Irlandês</source>
-        <translation type="unfinished"></translation>
+        <translation>Irish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="143"/>
         <source>Italiano</source>
-        <translation type="unfinished"></translation>
+        <translation>Italian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="144"/>
         <source>Japonês</source>
-        <translation type="unfinished"></translation>
+        <translation>Japanese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="144"/>
         <source>Cazaque</source>
-        <translation type="unfinished"></translation>
+        <translation>Kazakh</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="144"/>
         <source>Khmer</source>
-        <translation type="unfinished"></translation>
+        <translation>Khmer</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="144"/>
         <source>Coreano</source>
-        <translation type="unfinished"></translation>
+        <translation>Korean</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="145"/>
         <source>Curdo</source>
-        <translation type="unfinished"></translation>
+        <translation>Kurdish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="145"/>
         <source>Quirguiz</source>
-        <translation type="unfinished"></translation>
+        <translation>Kyrgyz</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="145"/>
         <source>Laosiano</source>
-        <translation type="unfinished"></translation>
+        <translation>Lao</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="145"/>
         <source>Letão</source>
-        <translation type="unfinished"></translation>
+        <translation>Latvian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="146"/>
         <source>Lituano</source>
-        <translation type="unfinished"></translation>
+        <translation>Lithuanian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="146"/>
         <source>Luxemburguês</source>
-        <translation type="unfinished"></translation>
+        <translation>Luxembourgish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="146"/>
         <source>Macedônio</source>
-        <translation type="unfinished"></translation>
+        <translation>Macedonian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="146"/>
         <source>Malgaxe</source>
-        <translation type="unfinished"></translation>
+        <translation>Malagasy</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="147"/>
         <source>Malaio</source>
-        <translation type="unfinished"></translation>
+        <translation>Malay</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="147"/>
         <source>Malaiala</source>
-        <translation type="unfinished"></translation>
+        <translation>Malayalam</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="147"/>
         <source>Maltês</source>
-        <translation type="unfinished"></translation>
+        <translation>Maltese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="147"/>
         <source>Mongol</source>
-        <translation type="unfinished"></translation>
+        <translation>Mongolian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="148"/>
         <source>Nepali</source>
-        <translation type="unfinished"></translation>
+        <translation>Nepali</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="148"/>
         <source>Norueguês</source>
-        <translation type="unfinished"></translation>
+        <translation>Norwegian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="149"/>
         <source>Persa</source>
-        <translation type="unfinished"></translation>
+        <translation>Persian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="149"/>
         <source>Polonês</source>
-        <translation type="unfinished"></translation>
+        <translation>Polish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="149"/>
         <source>Português</source>
-        <translation type="unfinished"></translation>
+        <translation>Portuguese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="149"/>
         <source>Panjabi</source>
-        <translation type="unfinished"></translation>
+        <translation>Punjabi</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="150"/>
         <source>Romeno</source>
-        <translation type="unfinished"></translation>
+        <translation>Romanian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="150"/>
         <source>Russo</source>
-        <translation type="unfinished"></translation>
+        <translation>Russian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="150"/>
         <source>Sérvio</source>
-        <translation type="unfinished"></translation>
+        <translation>Serbian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="150"/>
         <source>Cingalês</source>
-        <translation type="unfinished"></translation>
+        <translation>Sinhala</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="151"/>
         <source>Eslovaco</source>
-        <translation type="unfinished"></translation>
+        <translation>Slovak</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="151"/>
         <source>Esloveno</source>
-        <translation type="unfinished"></translation>
+        <translation>Slovenian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="151"/>
         <source>Somali</source>
-        <translation type="unfinished"></translation>
+        <translation>Somali</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="151"/>
         <source>Espanhol</source>
-        <translation type="unfinished"></translation>
+        <translation>Spanish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="152"/>
         <source>Suaíli</source>
-        <translation type="unfinished"></translation>
+        <translation>Swahili</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="152"/>
         <source>Sueco</source>
-        <translation type="unfinished"></translation>
+        <translation>Swedish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="152"/>
         <source>Tadjique</source>
-        <translation type="unfinished"></translation>
+        <translation>Tajik</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="152"/>
         <source>Tâmil</source>
-        <translation type="unfinished"></translation>
+        <translation>Tamil</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="153"/>
         <source>Télugo</source>
-        <translation type="unfinished"></translation>
+        <translation>Telugu</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="153"/>
         <source>Tailandês</source>
-        <translation type="unfinished"></translation>
+        <translation>Thai</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="153"/>
         <source>Tibetano</source>
-        <translation type="unfinished"></translation>
+        <translation>Tibetan</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="153"/>
         <source>Tigrínia</source>
-        <translation type="unfinished"></translation>
+        <translation>Tigrinya</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="154"/>
         <source>Turco</source>
-        <translation type="unfinished"></translation>
+        <translation>Turkish</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="154"/>
         <source>Turcomeno</source>
-        <translation type="unfinished"></translation>
+        <translation>Turkmen</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="154"/>
         <source>Ucraniano</source>
-        <translation type="unfinished"></translation>
+        <translation>Ukrainian</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="154"/>
         <source>Urdu</source>
-        <translation type="unfinished"></translation>
+        <translation>Urdu</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="155"/>
         <source>Uzbeque</source>
-        <translation type="unfinished"></translation>
+        <translation>Uzbek</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="155"/>
         <source>Vietnamita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vietnamese</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="155"/>
         <source>Galês</source>
-        <translation type="unfinished"></translation>
+        <translation>Welsh</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="155"/>
         <source>Iorubá</source>
-        <translation type="unfinished"></translation>
+        <translation>Yoruba</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="156"/>
         <source>Zulu</source>
-        <translation type="unfinished"></translation>
+        <translation>Zulu</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="156"/>
         <source>Quiniaruanda</source>
-        <translation type="unfinished"></translation>
+        <translation>Kinyarwanda</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="156"/>
         <source>Shona</source>
-        <translation type="unfinished"></translation>
+        <translation>Shona</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="156"/>
         <source>Xhosa</source>
-        <translation type="unfinished"></translation>
+        <translation>Xhosa</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="157"/>
         <source>Soto</source>
-        <translation type="unfinished"></translation>
+        <translation>Sotho</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="157"/>
         <source>Tswana</source>
-        <translation type="unfinished"></translation>
+        <translation>Tswana</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="157"/>
         <source>Uólofe</source>
-        <translation type="unfinished"></translation>
+        <translation>Wolof</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="157"/>
         <source>Akan</source>
-        <translation type="unfinished"></translation>
+        <translation>Akan</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="158"/>
         <source>Luganda</source>
-        <translation type="unfinished"></translation>
+        <translation>Ganda</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="158"/>
         <source>Chichewa</source>
-        <translation type="unfinished"></translation>
+        <translation>Chichewa</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="158"/>
         <source>Dzonga</source>
-        <translation type="unfinished"></translation>
+        <translation>Dzongkha</translation>
     </message>
     <message>
         <location filename="../src/MapView.cpp" line="158"/>
         <source>Pashto</source>
-        <translation type="unfinished"></translation>
+        <translation>Pashto</translation>
     </message>
 </context>
 <context>
@@ -11639,1417 +11720,1424 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/_quotes_data.inc" line="2"/>
         <source>Ao escrever cenas fortes que podem afetar leitores que vivenciaram coisas similares, trate tudo com respeito.</source>
-        <translation type="unfinished"></translation>
+        <translation>When writing intense scenes that might affect readers who&apos;ve lived through something similar, handle it all with respect.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="3"/>
         <source>Não descreva o corpo de um personagem bonito como se fosse um pedaço de carne. Você é melhor do que isso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t describe an attractive character&apos;s body like it&apos;s a piece of meat. You&apos;re better than that.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="4"/>
         <source>Preste atenção no cenário, ele também é um personagem.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pay attention to the setting — it&apos;s a character too.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="5"/>
         <source>Se o cenário é importante, dê a ele um nome. Se não é importante, não o descreva tanto.</source>
-        <translation type="unfinished"></translation>
+        <translation>If the setting matters, give it a name. If it doesn&apos;t, don&apos;t over-describe it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="6"/>
         <source>Roupas também ditam personalidade, mas cuidado com estereótipos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Clothes convey personality too, but watch out for stereotypes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="7"/>
         <source>Não use personagens como objetos. Se a única função que sobrou para ele é sumir, ele não deveria ter existido.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t use characters as objects. If the only thing left for them to do is disappear, they shouldn&apos;t have existed in the first place.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="8"/>
         <source>Não se esqueça de que seus personagens são pessoas, não ferramentas. Trate-os com humanidade, mesmo os vilões.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t forget your characters are people, not tools. Treat them with humanity — even the villains.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="9"/>
         <source>Tenha empatia com os leitores. Eles estão dando tempo e atenção para a sua obra. Respeite isso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Have empathy for your readers. They&apos;re giving your work their time and attention. Respect that.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="10"/>
         <source>A dor do bloqueio criativo é real, mas a dor de não criar é pior. Escreva, mesmo que seja difícil.</source>
-        <translation type="unfinished"></translation>
+        <translation>The pain of writer&apos;s block is real, but the pain of not creating is worse. Write, even when it&apos;s hard.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="11"/>
         <source>Stephen King foi sustentado por sua esposa enquanto escrevia os primeiros livros.</source>
-        <translation type="unfinished"></translation>
+        <translation>Stephen King was supported by his wife while he wrote his first books.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="12"/>
         <source>J.K. Rowling era mãe solteira vivendo de assistência social quando escreveu o primeiro Harry Potter.</source>
-        <translation type="unfinished"></translation>
+        <translation>J.K. Rowling was a single mother living on welfare when she wrote the first Harry Potter book.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="13"/>
         <source>George R.R. Martin era roteirista de TV ganhando pouco antes de escrever Game of Thrones.</source>
-        <translation type="unfinished"></translation>
+        <translation>George R.R. Martin was a low-paid TV screenwriter before writing Game of Thrones.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="14"/>
         <source>J.R.R. Tolkien era professor universitário quando escreveu O Senhor dos Anéis.</source>
-        <translation type="unfinished"></translation>
+        <translation>J.R.R. Tolkien was a university professor when he wrote The Lord of the Rings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="15"/>
         <source>Nunca subestime o poder de uma boa história. Ela pode mudar o mundo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Never underestimate the power of a good story. It can change the world.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="16"/>
         <source>Isaac Asimov escreveu 500 livros e 90 mil cartas. Ele tinha uma disciplina de escrita impressionante.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov wrote 500 books and 90,000 letters. His writing discipline was staggering.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="17"/>
         <source>Agatha Christie é a autora mais vendida de todos os tempos, com mais de 2 bilhões de cópias vendidas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Agatha Christie is the best-selling novelist of all time, with over 2 billion copies sold.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="18"/>
         <source>William Shakespeare é o autor mais traduzido do mundo, com obras traduzidas para mais de 80 idiomas.</source>
-        <translation type="unfinished"></translation>
+        <translation>William Shakespeare is the most translated author in the world, with works translated into more than 80 languages.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="19"/>
         <source>A escritora brasileira Lygia Fagundes Telles publicou seu primeiro livro aos 19 anos e continuou escrevendo até os 98 anos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Brazilian writer Lygia Fagundes Telles published her first book at 19 and kept writing until she was 98.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="20"/>
         <source>Duna de Frank Herbert é o romance de ficção científica mais vendido de todos os tempos, com mais de 20 milhões de cópias vendidas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Frank Herbert&apos;s Dune is the best-selling science fiction novel of all time, with over 20 million copies sold.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="21"/>
         <source>O Homem-Aranha foi desacreditado por muitos editores antes de ser publicado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spider-Man was dismissed by many editors before it was published.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="22"/>
         <source>O primeiro livro de Agatha Christie, &apos;O Misterioso Caso de Styles&apos;, foi rejeitado por 5 editoras antes de ser aceito.</source>
-        <translation type="unfinished"></translation>
+        <translation>Agatha Christie&apos;s first book, &amp;apos;The Mysterious Affair at Styles&amp;apos;, was rejected by 5 publishers before being accepted.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="23"/>
         <source>O romance &apos;O Grande Gatsby&apos; de F. Scott Fitzgerald foi rejeitado por 8 editoras antes de ser publicado.</source>
-        <translation type="unfinished"></translation>
+        <translation>F. Scott Fitzgerald&apos;s novel &amp;apos;The Great Gatsby&amp;apos; was rejected by 8 publishers before it was published.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="24"/>
         <source>O livro &apos;Moby Dick&apos; de Herman Melville foi rejeitado por várias editoras antes de se tornar um clássico da literatura.</source>
-        <translation type="unfinished"></translation>
+        <translation>Herman Melville&apos;s &amp;apos;Moby Dick&amp;apos; was rejected by several publishers before becoming a literary classic.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="25"/>
         <source>Percy Jackson foi rejeitado por várias editoras antes de se tornar uma série de sucesso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Percy Jackson was rejected by several publishers before becoming a hit series.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="26"/>
         <source>Brandon Sanderson é conhecido por sua disciplina de escrita e por completar séries complexas de fantasia.</source>
-        <translation type="unfinished"></translation>
+        <translation>Brandon Sanderson is known for his writing discipline and for completing complex fantasy series.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="27"/>
         <source>Mistborn é uma série de fantasia escrita por Brandon Sanderson, conhecida por seu sistema de magia único e complexo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mistborn is a fantasy series by Brandon Sanderson, known for its unique and intricate magic system.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="28"/>
         <source>Torre Negra é uma série de fantasia escrita por Stephen King, conhecida por sua narrativa épica e personagens memoráveis.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Dark Tower is a fantasy series by Stephen King, known for its epic scope and memorable characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="29"/>
         <source>O primeiro livro de Isaac Asimov, &apos;Fundação&apos;, foi publicado em 1951 e deu início à famosa série de ficção científica.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov&apos;s first Foundation book was published in 1951, kicking off the famous science fiction series.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="30"/>
         <source>&apos;O Morro dos Ventos Uivantes&apos; de Emily Brontë é um clássico da literatura inglesa, publicado em 1847.</source>
-        <translation type="unfinished"></translation>
+        <translation>Emily Brontë&amp;apos;s &amp;apos;Wuthering Heights&amp;apos; is a classic of English literature, published in 1847.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="31"/>
         <source>&apos;Frankenstein&apos; de Mary Shelley é considerado o primeiro romance de ficção científica, publicado em 1818.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mary Shelley&amp;apos;s &amp;apos;Frankenstein&amp;apos; is considered the first science fiction novel, published in 1818.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="32"/>
         <source>&apos;Crepúsculo&apos; de Stephenie Meyer é um fenômeno literário com milhões de fãs, mas foi rejeitado por várias editoras.</source>
-        <translation type="unfinished"></translation>
+        <translation>Stephenie Meyer&amp;apos;s &amp;apos;Twilight&amp;apos; is a literary phenomenon with millions of fans, but it was rejected by several publishers.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="33"/>
         <source>Cuidado com cenas de sexo, se não é um fator necessário para a sua obra, não há porquê descrevê-las. Uma frase que diga o que houve já basta.</source>
-        <translation type="unfinished"></translation>
+        <translation>Be careful with sex scenes — if they&apos;re not essential to your story, there&apos;s no need to describe them in detail. One line saying what happened is often enough.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="34"/>
         <source>Cuidado com tempos verbais.</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch your verb tenses.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="35"/>
         <source>Não tem problema ser descritivo com cenas de ação, desde que haja clareza.</source>
-        <translation type="unfinished"></translation>
+        <translation>It&apos;s fine to be descriptive in action scenes, as long as it stays clear.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="36"/>
         <source>Cuidado para sua cena não funcionar em turnos. Deixe os personagens se contarem e se moverem, como nós fazemos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for scenes that play out in rigid turns. Let characters talk and move the way real people do.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="37"/>
-        <source>Se você pegar o preview do código fonte do app onde esses quotes estão escritos e deitar, parece uma cidade cyberpunk. — P.H. Lobato, Criador do Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Se você pegar o preview do código fonte do app onde esses quotes estão escritos e deitar, parece uma cidade cyberpunk. — P.H. Lobato, Criador do Qenna Writer</source>
+        <translation>If you tilt the source code preview where these quotes live on its side, it looks like a cyberpunk city skyline. — P.H. Lobato, Creator of Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="38"/>
-        <source>&apos;Eu perdi tudo&apos; — Tony Silva, após ter perdido todo seu projeto em um bug nas versões antigas do Qiyva Writer. Obs.: Já foi corrigido há várias versões, não se preocupe.</source>
-        <translation type="unfinished"></translation>
+        <source>&apos;Eu perdi tudo&apos; — Tony Silva, após ter perdido todo seu projeto em um bug nas versões antigas do Qenna Writer. Obs.: Já foi corrigido há várias versões, não se preocupe.</source>
+        <translation>&amp;apos;I lost everything&amp;apos; — Tony Silva, after losing his entire project to a bug in old versions of Qenna Writer. Note: it&amp;apos;s been fixed for many versions now, don&amp;apos;t worry.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="39"/>
-        <source>Você sabia? O Qiyva Writer foi criado porque eu me irritava em ter que usar vários programas diferentes para escrever.</source>
-        <translation type="unfinished"></translation>
+        <source>Você sabia? O Qenna Writer foi criado porque eu me irritava em ter que usar vários programas diferentes para escrever.</source>
+        <translation>Did you know? Qenna Writer exists because I got tired of juggling a bunch of different programs just to write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="40"/>
-        <source>Experimente o &apos;FocusWriter&apos; de Gott Code. Foi o meu editor mais usado até o Qiyva Writer nascer.</source>
-        <translation type="unfinished"></translation>
+        <source>Experimente o &apos;FocusWriter&apos; de Gott Code. Foi o meu editor mais usado até o Qenna Writer nascer.</source>
+        <translation>Try &amp;apos;FocusWriter&amp;apos; by Gott Code. It was my most-used editor before Qenna Writer was born.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="41"/>
         <source>Escreva o que quiser, mas lembre-se: a melhor maneira de aprender a escrever é lendo. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Write whatever you want, but remember: the best way to learn to write is to read. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="42"/>
         <source>Nunca se esqueça quem você é, porque é isso que torna a sua escrita única.</source>
-        <translation type="unfinished"></translation>
+        <translation>Never forget who you are — that&apos;s what makes your writing yours.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="43"/>
         <source>Existem 404 quotes que aparecem aqui no app, qual o seu favorito?</source>
-        <translation type="unfinished"></translation>
+        <translation>There are 404 quotes that show up here in the app — which one&apos;s your favorite?</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="44"/>
         <source>Isaac Asimov escreveu a série &apos;Fundação&apos; inspirando-se na história do Império Romano.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov wrote the &amp;apos;Foundation&amp;apos; series drawing inspiration from the history of the Roman Empire.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="45"/>
         <source>J.K. Rowling escreveu o primeiro rascunho de &apos;Harry Potter&apos; à mão, em um caderno enquanto estava em um café.</source>
-        <translation type="unfinished"></translation>
+        <translation>J.K. Rowling wrote the first draft of &amp;apos;Harry Potter&amp;apos; by hand, in a notebook, while sitting in a café.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="46"/>
         <source>George R.R. Martin é conhecido por sua atenção aos detalhes e por criar personagens complexos e moralmente ambíguos.</source>
-        <translation type="unfinished"></translation>
+        <translation>George R.R. Martin is known for his attention to detail and for creating complex, morally ambiguous characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="47"/>
         <source>Agatha Christie desapareceu por 11 dias em 1926, o que gerou muita especulação na época. Ela foi encontrada em um hotel, alegando amnésia.</source>
-        <translation type="unfinished"></translation>
+        <translation>Agatha Christie vanished for 11 days in 1926, sparking huge speculation at the time. She was found at a hotel, claiming amnesia.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="48"/>
         <source>William Shakespeare escreveu 37 peças, 154 sonetos e diversos poemas ao longo de sua carreira, e sua obra é estudada e celebrada até hoje.</source>
-        <translation type="unfinished"></translation>
+        <translation>William Shakespeare wrote 37 plays, 154 sonnets, and numerous poems over his career, and his work is still studied and celebrated today.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="49"/>
         <source>Lygia Fagundes Telles é uma das maiores escritoras brasileiras, conhecida por suas histórias que exploram a complexidade das relações humanas e a psicologia de seus personagens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lygia Fagundes Telles is one of Brazil&apos;s greatest writers, known for stories that explore the complexity of human relationships and the psychology of her characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="50"/>
         <source>Frank Herbert escreveu &apos;Duna&apos; inspirando-se em suas experiências com ecologia e política, e o livro se tornou um dos maiores clássicos da ficção científica.</source>
-        <translation type="unfinished"></translation>
+        <translation>Frank Herbert wrote &amp;apos;Dune&amp;apos; drawing on his experiences with ecology and politics, and the book became one of the greatest classics of science fiction.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="51"/>
         <source>Stephen King é conhecido por sua habilidade de criar atmosferas assustadoras e personagens memoráveis, e muitos de seus livros foram adaptados para o cinema e a televisão.</source>
-        <translation type="unfinished"></translation>
+        <translation>Stephen King is known for his skill at building terrifying atmospheres and memorable characters, and many of his books have been adapted for film and television.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="52"/>
         <source>Brandon Sanderson é conhecido por sua habilidade de criar sistemas de magia complexos e bem estruturados, e por sua ética de trabalho disciplinada que o levou a escrever dezenas de livros em poucos anos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Brandon Sanderson is known for his skill at building complex, well-structured magic systems, and for a work ethic disciplined enough to produce dozens of books in just a few years.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="53"/>
         <source>Cuidado com o uso de advérbios. Eles podem ser úteis, mas em excesso podem enfraquecer a escrita. Tente mostrar a ação em vez de apenas descrevê-la. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch your use of adverbs. They can be useful, but in excess they weaken your writing. Try showing the action instead of just describing it. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="54"/>
         <source>Consistência é importante, mas não deixe que isso te impeça de experimentar. Às vezes, quebrar as regras pode levar a resultados incríveis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Consistency matters, but don&apos;t let it stop you from experimenting. Sometimes breaking the rules leads to incredible results.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="55"/>
         <source>Escreva todo o dia, mesmo que seja apenas um pouco. A prática constante é a chave para melhorar suas habilidades de escrita. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Write every day, even if it&apos;s just a little. Consistent practice is the key to improving your writing. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="56"/>
         <source>Ler é tão importante quanto escrever. Quanto mais você ler, mais você aprenderá sobre diferentes estilos, técnicas e gêneros.</source>
-        <translation type="unfinished"></translation>
+        <translation>Reading is just as important as writing. The more you read, the more you&apos;ll learn about different styles, techniques, and genres.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="57"/>
         <source>Acredite na sua obra e ela acreditará em você. — J.K. Rowling</source>
-        <translation type="unfinished"></translation>
+        <translation>Believe in your work, and it will believe in you. — J.K. Rowling</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="58"/>
         <source>Ficção é a mentira que nos permite dizer a verdade. — Neil Gaiman</source>
-        <translation type="unfinished"></translation>
+        <translation>Fiction is the lie that tells the truth. — Neil Gaiman</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="59"/>
         <source>O meio do processo de escrita é onde a maioria dos escritores desiste. Continue, mesmo quando parecer difícil. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>The middle of the writing process is where most writers give up. Keep going, even when it feels hard. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="60"/>
         <source>Revise seus capítulos, mas não se torne um perfeccionista. Às vezes, é melhor seguir em frente e terminar o livro do que ficar preso tentando fazer cada frase perfeita. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Revise your chapters, but don&apos;t become a perfectionist. Sometimes it&apos;s better to move forward and finish the book than to get stuck trying to make every sentence perfect. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="61"/>
         <source>Não tenha medo de cortar cenas ou personagens que não estão funcionando. Às vezes, menos é mais. — George R.R. Martin</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t be afraid to cut scenes or characters that aren&apos;t working. Sometimes less is more. — George R.R. Martin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="62"/>
         <source>Se divirta escrevendo. Se você não estiver se divertindo, provavelmente seus leitores também não estarão se divertindo lendo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Have fun writing. If you&apos;re not enjoying it, chances are your readers won&apos;t enjoy reading it either.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="63"/>
         <source>Ao escrever diálogos, tente dar a cada personagem uma voz única. Isso pode ser feito através de escolhas de palavras, ritmo e estilo de fala.</source>
-        <translation type="unfinished"></translation>
+        <translation>When writing dialogue, try to give each character a distinct voice. You can do this through word choice, rhythm, and speech patterns.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="64"/>
         <source>Conheça seus personagens tão bem quanto conhece seus amigos. Isso ajudará a torná-los mais realistas e convincentes. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Know your characters as well as you know your friends. It&apos;ll help make them more real and convincing. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="65"/>
         <source>Ser escritor às vezes é ser esquisito. Fale sozinho, leia em voz alta, faça caretas, converse com seus personagens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Being a writer sometimes means being a little weird. Talk to yourself, read out loud, make faces, chat with your characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="66"/>
         <source>Ao escrever ficção histórica, pesquise o período com cuidado para garantir precisão e autenticidade. — George R.R. Martin</source>
-        <translation type="unfinished"></translation>
+        <translation>When writing historical fiction, research the period carefully to keep it accurate and authentic. — George R.R. Martin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="67"/>
         <source>Pesquisar é importante, mas não deixe que isso te paralise. Às vezes, é melhor escrever uma cena e depois pesquisar os detalhes para ajustá-la do que esperar até ter todas as informações antes de começar a escrever. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Research matters, but don&apos;t let it paralyze you. Sometimes it&apos;s better to write the scene first and research the details afterward than to wait until you have all the answers before you start. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="68"/>
         <source>Uma mulher não precisa de um homem para escrever uma história de amor. — J.K. Rowling</source>
-        <translation type="unfinished"></translation>
+        <translation>A woman doesn&apos;t need a man to write a love story. — J.K. Rowling</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="69"/>
         <source>Lembre-se que uma personagem mulher não precisa ser menos feminina para ser forte.</source>
-        <translation type="unfinished"></translation>
+        <translation>Remember, a female character doesn&apos;t need to be less feminine to be strong.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="70"/>
         <source>Não trate seus personagens como se fossem idiotas. Se você não faria algo, provavelmente eles também não fariam.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t treat your characters like idiots. If you wouldn&apos;t do something, chances are they wouldn&apos;t either.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="71"/>
         <source>A improvisação às vezes te leva a lugares incríveis. Não tenha medo de deixar seus personagens te surpreenderem.</source>
-        <translation type="unfinished"></translation>
+        <translation>Improvisation sometimes takes you to amazing places. Don&apos;t be afraid to let your characters surprise you.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="72"/>
         <source>Ame o processo de escrita, não apenas o resultado final. A jornada de criar uma história é tão importante quanto a história em si. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Love the process of writing, not just the finished result. The journey of creating a story matters as much as the story itself. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="73"/>
         <source>Não tem problema escrever por diversão. Não há nenhum contrato que te obrigue a se publicar.</source>
-        <translation type="unfinished"></translation>
+        <translation>It&apos;s fine to write just for fun. No contract says you have to publish.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="74"/>
         <source>Se você consegue concordar com o seu vilão, provavelmente ele é um personagem bem interessante. — George R.R. Martin</source>
-        <translation type="unfinished"></translation>
+        <translation>If you find yourself agreeing with your villain, they&apos;re probably a pretty interesting character. — George R.R. Martin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="75"/>
         <source>Ficção não é uma terra sem lei. Cuidado com o que você escreve, porque palavras têm poder.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fiction isn&apos;t a lawless land. Be careful what you write — words carry power.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="76"/>
         <source>Se você é um escritor iniciante, não se preocupe em ser perfeito. O importante é começar a escrever e aprender com o processo. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>If you&apos;re a beginning writer, don&apos;t worry about being perfect. What matters is starting to write and learning from the process. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="77"/>
         <source>Não se compare a outros escritores. Cada um tem seu próprio estilo e ritmo de escrita. Concentre-se em encontrar o seu próprio caminho.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t compare yourself to other writers. Everyone has their own style and pace. Focus on finding your own path.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="78"/>
         <source>Escrever é uma forma de terapia. Pode ser uma maneira de processar emoções, explorar pensamentos e encontrar significado em experiências. — J.K. Rowling</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing is a form of therapy. It can be a way to process emotions, explore your thoughts, and find meaning in your experiences. — J.K. Rowling</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="79"/>
         <source>A escrita é uma forma de arte, e como qualquer forma de arte, é subjetiva. Não se preocupe em agradar a todos, escreva para você e para aqueles que apreciam o que você tem a dizer. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing is a form of art, and like any art form, it&apos;s subjective. Don&apos;t worry about pleasing everyone — write for yourself and for the people who appreciate what you have to say. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="80"/>
         <source>Não tenha medo de falhar. O fracasso é uma parte natural do processo de escrita e pode levar a grandes descobertas e melhorias. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t be afraid to fail. Failure is a natural part of the writing process and can lead to great discoveries and improvements. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="81"/>
         <source>A escrita é uma jornada, não um destino. Aproveite cada passo do caminho e celebre suas conquistas, grandes ou pequenas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing is a journey, not a destination. Enjoy every step along the way and celebrate your wins, big or small.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="82"/>
         <source>Lembre-se de que a escrita é uma habilidade que pode ser aprimorada com prática e dedicação. Continue escrevendo, aprendendo e crescendo como escritor. — J.K. Rowling</source>
-        <translation type="unfinished"></translation>
+        <translation>Remember, writing is a skill that improves with practice and dedication. Keep writing, learning, and growing as a writer. — J.K. Rowling</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="83"/>
         <source>Não se esqueça de que a escrita é uma forma de expressão pessoal. Não tenha medo de ser vulnerável e autêntico em sua escrita, pois é isso que pode ressoar com os leitores. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t forget that writing is a form of personal expression. Don&apos;t be afraid to be vulnerable and authentic in your writing — that&apos;s what resonates with readers. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="84"/>
         <source>A escrita é uma forma de magia. Com as palavras, você pode criar mundos, personagens e emoções que podem tocar as pessoas de maneiras profundas. Use esse poder com responsabilidade e paixão.</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing is a form of magic. With words, you can create worlds, characters, and emotions that touch people deeply. Use that power with responsibility and passion.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="85"/>
         <source>A escrita é uma forma de resistência. Em um mundo cheio de ruído e distrações, a escrita pode ser uma maneira de afirmar sua voz e compartilhar suas ideias com o mundo. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing is a form of resistance. In a world full of noise and distraction, writing can be a way to claim your voice and share your ideas with the world. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="86"/>
         <source>Exportação é uma forma de preservar sua obra.</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporting is a way to preserve your work.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="87"/>
         <source>Severus Snape é um dos personagens mais complexos e fascinantes da literatura, conhecido por sua lealdade ambígua e história trágica.</source>
-        <translation type="unfinished"></translation>
+        <translation>Severus Snape is one of the most complex and fascinating characters in literature, known for his ambiguous loyalty and tragic backstory.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="88"/>
         <source>O personagem Dumbledore foi inspirado em parte no avô de J.K. Rowling, que era um homem sábio e gentil.</source>
-        <translation type="unfinished"></translation>
+        <translation>The character Dumbledore was partly inspired by J.K. Rowling&apos;s grandfather, a wise and gentle man.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="89"/>
         <source>Katniss Everdeen foi inspirada em parte na irmã de Suzanne Collins, que era uma adolescente rebelde e independente.</source>
-        <translation type="unfinished"></translation>
+        <translation>Katniss Everdeen was partly inspired by Suzanne Collins&apos;s sister, a rebellious and independent teenager.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="90"/>
         <source>Frodo Baggins foi inspirado em parte no próprio J.R.R. Tolkien, que se via como um hobbit em um mundo moderno e complicado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Frodo Baggins was partly inspired by J.R.R. Tolkien himself, who saw himself as a hobbit in a complicated modern world.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="91"/>
         <source>Seja criativo com nomes. Um bom nome de personagem pode ter tanto impacto quanto uma boa descrição.</source>
-        <translation type="unfinished"></translation>
+        <translation>Get creative with names. A good character name can carry as much impact as a good description.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="92"/>
         <source>Carrie de Stephen King foi inspirada em parte em uma garota que ele conheceu na escola, que era maltratada pelos colegas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Stephen King&apos;s Carrie was partly inspired by a girl he knew in school who was bullied by her classmates.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="93"/>
         <source>Toda linguagem de arte é válida para uma boa história. Há jogos e filmes tão bons quanto livros.</source>
-        <translation type="unfinished"></translation>
+        <translation>Every art form is valid for telling a good story. There are games and movies just as good as books.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="94"/>
         <source>Arthur Morgan de Red Dead Redemption 2, apesar de não ser um personagem literário, é um guia prático de desenvolvimento.</source>
-        <translation type="unfinished"></translation>
+        <translation>Arthur Morgan from Red Dead Redemption 2, despite not being a literary character, is a practical masterclass in character development.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="95"/>
         <source>Toda escolha tem uma consequência. Se o seu personagem quebra as regras, ele deve ser afetado por isso. — George R.R. Martin</source>
-        <translation type="unfinished"></translation>
+        <translation>Every choice has a consequence. If your character breaks the rules, they should be affected by it. — George R.R. Martin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="96"/>
         <source>Religiões e mitologias são fontes riquíssimas de inspiração para a criação de mundos e personagens. Estude-as e use-as como base para criar algo novo e fascinante. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Religions and mythologies are incredibly rich sources of inspiration for building worlds and characters. Study them and use them as a foundation to create something new and fascinating. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="97"/>
         <source>Absorva críticas construtivas e ignore as destrutivas. Nem todo mundo sabe o que fala, saiba filtrar a diferença.</source>
-        <translation type="unfinished"></translation>
+        <translation>Absorb constructive criticism and ignore the destructive kind. Not everyone knows what they&apos;re talking about — learn to tell the difference.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="98"/>
         <source>Pense. Pense muito. Pense em tudo. Depois escreva. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Think. Think hard. Think about everything. Then write. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="99"/>
         <source>Às vezes, você só descobre que uma ideia é uma merda depois de colocá-la na página.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sometimes you only find out an idea sucks after putting it on the page.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="100"/>
         <source>Se você consegue ver, falar e ouvir seu personagem com clareza, provavelmente ele é um personagem bem feito.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you can clearly see, hear, and voice your character in your head, they&apos;re probably a well-built character.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="101"/>
         <source>Escreva o backstory dos personagens e o lore dos seus mundos. Mesmo que você não use nem 10% do que tiver ali, você terá mais profundidade e conhecimento do que está escrevendo. E é divertido.</source>
-        <translation type="unfinished"></translation>
+        <translation>Write your characters&apos; backstories and your worlds&apos; lore. Even if you never use 10% of it, you&apos;ll write with more depth and knowledge. And it&apos;s fun.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="102"/>
         <source>Não se preocupe em ser original. Tudo já foi feito, o importante é como você faz.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t worry about being original. Everything&apos;s been done before — what matters is how you do it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="103"/>
         <source>Não assedie seus personagens. Você não apresentaria uma pessoa para alguém falando sobre o corpo dela. No papel, não é diferente.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t objectify your characters. You wouldn&apos;t introduce a person to someone by talking about their body. On the page, it&apos;s no different.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="104"/>
         <source>Você é um arquiteto ou jardineiro?</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you an architect or a gardener?</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="105"/>
         <source>Arquitetos planejam tudo antes de começar a escrever, enquanto jardineiros plantam uma semente e deixam a história crescer organicamente. Qual é o seu estilo? — George R.R. Martin</source>
-        <translation type="unfinished"></translation>
+        <translation>Architects plan everything before they start writing, while gardeners plant a seed and let the story grow organically. Which one are you? — George R.R. Martin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="106"/>
         <source>Leia um livro sem o poder de editá-lo. Isso lhe mostrará o que melhorar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Read a book without the power to edit it. It&apos;ll show you what to improve.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="107"/>
         <source>Não se preocupe em ser perfeito. O importante é começar a escrever e aprender com o processo. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t worry about being perfect. What matters is starting to write and learning from the process. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="108"/>
         <source>Às vezes dará errado, mas você se divertiu escrevendo e valeu a pena.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sometimes it won&apos;t work out, but you had fun writing it, and that was worth it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="109"/>
         <source>Ao escrever em primeira pessoa, atue. Fale em voz alta e sinta o personagem.</source>
-        <translation type="unfinished"></translation>
+        <translation>When writing in first person, act it out. Speak it aloud and feel the character.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="110"/>
         <source>Ilustre seu projeto, mesmo que sejam bonecos palitos. Isso estimulará ainda mais sua criatividade.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sketch your project, even if it&apos;s just stick figures. It&apos;ll spark your creativity even more.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="111"/>
         <source>Nem todos terão coisas boas para dizer, não deixe isso te desanimar. Até Jesus Cristo teve haters.</source>
-        <translation type="unfinished"></translation>
+        <translation>Not everyone will have nice things to say — don&apos;t let it get you down. Even Jesus Christ had haters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="112"/>
-        <source>Existem três coisas ótimas de vez em quando: café, chocolate e... backup. Sério, faça backup. — P.H. Lobato, Criador do Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Existem três coisas ótimas de vez em quando: café, chocolate e... backup. Sério, faça backup. — P.H. Lobato, Criador do Qenna Writer</source>
+        <translation>There are three great things to have every now and then: coffee, chocolate, and... backups. Seriously, back up your work. — P.H. Lobato, Creator of Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="113"/>
         <source>Você não sabe a importância do backup até precisar de um e não ter.</source>
-        <translation type="unfinished"></translation>
+        <translation>You don&apos;t know how important backups are until you need one and don&apos;t have it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="114"/>
         <source>Batman foi inspirado em parte por um morcego que pousou na janela de Bob Kane, o criador do personagem, quando ele estava pensando em ideias para um novo super-herói.</source>
-        <translation type="unfinished"></translation>
+        <translation>Batman was partly inspired by a bat that flew in through the window of Bob Kane, the character&apos;s creator, while he was brainstorming ideas for a new superhero.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="115"/>
         <source>A Mulher-Maravilha foi inspirada em parte por uma combinação de figuras mitológicas, incluindo a deusa grega Atena e a deusa egípcia Ísis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wonder Woman was partly inspired by a combination of mythological figures, including the Greek goddess Athena and the Egyptian goddess Isis.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="116"/>
         <source>Saiba o que sua obra precisa. Se você quer escrever uma trama política, entenda ao menos o básico de política. Se quer escrever uma história de fantasia, entenda ao menos o básico de criação de mundos. — Brandon Sanderson</source>
-        <translation type="unfinished"></translation>
+        <translation>Know what your story needs. If you want to write a political plot, understand at least the basics of politics. If you want to write a fantasy story, understand at least the basics of worldbuilding. — Brandon Sanderson</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="117"/>
         <source>Não há problema tirar alguns dias de folga, mas não deixe que isso se torne um hábito. A consistência é importante para manter o ritmo de escrita e o progresso do seu projeto. — Stephen King</source>
-        <translation type="unfinished"></translation>
+        <translation>There&apos;s nothing wrong with taking a few days off, but don&apos;t let it become a habit. Consistency matters for keeping your writing rhythm and your project&apos;s momentum. — Stephen King</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="118"/>
-        <source>Projetos perdidos na versão beta: 2. (por isso eu digo, faça backup) — P.H. Lobato, Criador do Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Projetos perdidos na versão beta: 2. (por isso eu digo, faça backup) — P.H. Lobato, Criador do Qenna Writer</source>
+        <translation>Projects lost during the beta version: 2. (that&apos;s why I keep saying, back up your work) — P.H. Lobato, Creator of Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="119"/>
         <source>A linha entre a inspiração e o plágio é mais tênue do que parece. Tenha cuidado.</source>
-        <translation type="unfinished"></translation>
+        <translation>The line between inspiration and plagiarism is thinner than it looks. Be careful.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="120"/>
         <source>Cuidado ao ser hiper-criativo. Não adianta você ter 60 projetos super promissores se não tiver disciplina para escrevê-los.</source>
-        <translation type="unfinished"></translation>
+        <translation>Watch out for being hyper-creative. It doesn&apos;t help to have 60 super-promising projects if you don&apos;t have the discipline to write them.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="121"/>
         <source>Um bom escritor nasce de um bom leitor, lembre-se disso. Uma boa disciplina de leitura é tão importante quanto a disciplina de escrita.</source>
-        <translation type="unfinished"></translation>
+        <translation>A good writer is born from a good reader — remember that. Good reading discipline matters as much as writing discipline.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="122"/>
         <source>Espadas perdem o fio, munição pode acabar, carros podem quebrar. Utilize problemas reais para gerar tensão em sua história.</source>
-        <translation type="unfinished"></translation>
+        <translation>Swords lose their edge, ammo runs out, cars break down. Use real-world problems to build tension in your story.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="123"/>
         <source>Escreva a primeira palavra tendo alguma ideia de qual será a última.</source>
-        <translation type="unfinished"></translation>
+        <translation>Write the first word with at least some idea of what the last one will be.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="124"/>
         <source>Espadas são pesadas, armaduras são incômodas, armas ficam sem munição. Utilize limitações reais para tornar os desafios verossímeis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Swords are heavy, armor is cumbersome, guns run dry. Use real limitations to make your challenges believable.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="125"/>
         <source>Se o seu mundo é mais interessante do que a história que se passa nele, você errou em algo.</source>
-        <translation type="unfinished"></translation>
+        <translation>If your world is more interesting than the story happening in it, something went wrong.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="126"/>
         <source>The Expanse é uma série de ficção científica escrita por James S.A. Corey, conhecida por sua abordagem realista da exploração espacial e por seus personagens complexos e bem desenvolvidos.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Expanse is a science fiction series by James S.A. Corey, known for its realistic take on space exploration and its complex, well-developed characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="127"/>
         <source>O livro &apos;O Sol é para Todos&apos; de Harper Lee é um clássico da literatura americana, publicado em 1960, que aborda temas como racismo e justiça social através dos olhos de uma criança.</source>
-        <translation type="unfinished"></translation>
+        <translation>Harper Lee&apos;s &amp;apos;To Kill a Mockingbird&amp;apos; is a classic of American literature, published in 1960, that tackles themes like racism and social justice through a child&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="128"/>
         <source>O romance &apos;1984&apos; de George Orwell é um clássico da literatura distópica, publicado em 1949, que explora temas como totalitarismo, vigilância e controle social.</source>
-        <translation type="unfinished"></translation>
+        <translation>George Orwell&apos;s novel &amp;apos;1984&amp;apos; is a classic of dystopian literature, published in 1949, exploring themes like totalitarianism, surveillance, and social control.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="129"/>
         <source>A série &apos;As Crônicas de Gelo e Fogo&apos; de George R.R. Martin é conhecida por sua narrativa complexa, personagens moralmente ambíguos e reviravoltas inesperadas.</source>
-        <translation type="unfinished"></translation>
+        <translation>George R.R. Martin&apos;s &amp;apos;A Song of Ice and Fire&amp;apos; series is known for its complex narrative, morally ambiguous characters, and unexpected twists.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="130"/>
         <source>O livro &apos;O Apanhador no Campo de Centeio&apos; de J.D. Salinger é um clássico da literatura americana, publicado em 1951, que aborda temas como alienação e adolescência através dos olhos de um jovem narrador.</source>
-        <translation type="unfinished"></translation>
+        <translation>J.D. Salinger&apos;s &amp;apos;The Catcher in the Rye&amp;apos; is a classic of American literature, published in 1951, tackling themes like alienation and adolescence through a young narrator&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="131"/>
         <source>O romance &apos;Orgulho e Preconceito&apos; de Jane Austen é um clássico da literatura inglesa, publicado em 1813, que explora temas como classe social, casamento e moralidade através dos olhos de uma jovem protagonista.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jane Austen&apos;s novel &amp;apos;Pride and Prejudice&amp;apos; is a classic of English literature, published in 1813, exploring themes like social class, marriage, and morality through a young protagonist&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="132"/>
         <source>A série Trono de Vidro de Sarah J. Maas é conhecida por sua protagonista forte, enredos cheios de reviravoltas e um mundo de fantasia rico e detalhado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sarah J. Maas&apos;s Throne of Glass series is known for its strong protagonist, twist-filled plots, and a rich, detailed fantasy world.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="133"/>
         <source>Não fuja dos clichês, existe um motivo para eles serem tão usados. Descubra e explore.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t run from clichés — there&apos;s a reason they&apos;re used so much. Figure out why, and use it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="134"/>
         <source>&apos;O que é um homem? Uma pilha miserável de segredos.&apos; — Drácula, Castlevania</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;What is a man? A miserable little pile of secrets.&amp;apos; — Dracula, Castlevania</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="135"/>
         <source>&apos;Que desgraça é para o homem envelhecer sem nunca ver a beleza e a força do que o seu corpo é capaz&apos; — Sócrates</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;What a disgrace it is for a man to grow old without ever seeing the beauty and strength of which his body is capable.&amp;apos; — Socrates</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="136"/>
         <source>&apos;Escrever é a maneira mais profunda de ler a vida.&apos; — Anaïs Nin</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Writing is the deepest way of reading life.&amp;apos; — Anaïs Nin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="137"/>
         <source>&apos;Escrever é a pintura da voz.&apos; — Voltaire</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Writing is the painting of the voice.&amp;apos; — Voltaire</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="138"/>
         <source>&apos;A escrita é a arte de descobrir o que você acredita.&apos; — Gustave Flaubert</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Writing is the art of discovering what you believe.&amp;apos; — Gustave Flaubert</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="139"/>
         <source>&apos;Escrever é a única coisa que, quando faço, não sinto que deveria estar fazendo outra coisa.&apos; — Gloria Steinem</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Writing is the only thing that, when I do it, I don&apos;t feel I should be doing something else.&amp;apos; — Gloria Steinem</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="140"/>
         <source>Sun Tzu foi um general, estrategista militar e filósofo chinês, autor de &apos;A Arte da Guerra&apos;, um tratado sobre estratégia e tática militar que é amplamente estudado até hoje por líderes empresariais, políticos e militares em todo o mundo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sun Tzu was a Chinese general, military strategist, and philosopher, author of &amp;apos;The Art of War&amp;apos;, a treatise on strategy and military tactics still widely studied today by business, political, and military leaders around the world.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="141"/>
-        <source>Leia muito, escreva muito, e não se esqueça de fazer backup. — P.H. Lobato, Criador do Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Leia muito, escreva muito, e não se esqueça de fazer backup. — P.H. Lobato, Criador do Qenna Writer</source>
+        <translation>Read a lot, write a lot, and don&apos;t forget to back up your work. — P.H. Lobato, Creator of Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="142"/>
         <source>Don Quixote de Miguel de Cervantes é um clássico da literatura espanhola, publicado em duas partes em 1605 e 1615, que segue as aventuras de um nobre que se torna um cavaleiro andante e é conhecido por sua sátira à literatura de cavalaria.</source>
-        <translation type="unfinished"></translation>
+        <translation>Miguel de Cervantes&apos;s Don Quixote is a classic of Spanish literature, published in two parts in 1605 and 1615, following the adventures of a nobleman who becomes a knight-errant, known for its satire of chivalric literature.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="143"/>
         <source>&apos;Não escreva para ser entendido, escreva para não ser mal interpretado.&apos; — Carlos Ruiz Zafón</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Don&apos;t write to be understood, write so you won&apos;t be misunderstood.&amp;apos; — Carlos Ruiz Zafón</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="144"/>
         <source>&apos;O seu primeiro livro será uma merda quando você terminá-lo. Mas se orgulhe, a maioria nunca chegou nem na metade.&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;Your first book will be crap when you finish it. But be proud — most people never even got halfway.&amp;apos;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="145"/>
         <source>Não tenha medo do tamanho do seu livro, essa parte é problema da editora.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t worry about your book&apos;s length — that&apos;s the publisher&apos;s problem.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="146"/>
         <source>Ritmo é tão importante quanto a história. Um bom livro é como uma maratona, se você perder o passo, perde a corrida.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pacing matters as much as the story. A good book is like a marathon — lose your rhythm, and you lose the race.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="147"/>
         <source>Escreva gêneros que não gosta, isso te ajudará a entender o seu próprio estilo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Write genres you don&apos;t like — it&apos;ll help you understand your own style.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="148"/>
         <source>Navessa Allen é uma escritora de ficção científica e fantasia conhecida por suas histórias que exploram temas como identidade, tecnologia e sociedade, e por sua habilidade de criar personagens complexos e mundos imaginativos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Navessa Allen is a science fiction and fantasy writer known for stories that explore themes like identity, technology, and society, and for her skill at crafting complex characters and imaginative worlds.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="149"/>
         <source>&apos;Perdido em Marte&apos; de Andy Weir é um romance de ficção científica publicado em 2011, que segue a história de um astronauta que fica preso em Marte e luta para sobreviver enquanto tenta encontrar uma maneira de ser resgatado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Andy Weir&apos;s &amp;apos;The Martian&amp;apos; is a science fiction novel published in 2011, following an astronaut stranded on Mars who fights to survive while trying to find a way to get rescued.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="150"/>
         <source>Lee Child é um autor de suspense e ação conhecido por sua série de livros protagonizada pelo personagem Jack Reacher, um ex-policial militar que viaja pelos Estados Unidos resolvendo mistérios e enfrentando perigos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lee Child is a thriller and action author known for his book series starring Jack Reacher, a former military policeman who travels across the United States solving mysteries and facing danger.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="151"/>
         <source>Eric Van Lustbader é um autor de suspense e ação conhecido por suas séries de livros protagonizadas por Jason Bourne, um ex-agente da CIA que luta para recuperar sua memória e enfrentar ameaças globais.</source>
-        <translation type="unfinished"></translation>
+        <translation>Eric Van Lustbader is a thriller and action author known for his book series starring Jason Bourne, a former CIA agent fighting to recover his memory and face global threats.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="152"/>
         <source>Colleen Hoover é uma autora de romance contemporâneo conhecida por suas histórias emocionantes e personagens complexos, e por sua habilidade de abordar temas difíceis com sensibilidade e profundidade.</source>
-        <translation type="unfinished"></translation>
+        <translation>Colleen Hoover is a contemporary romance author known for her emotional stories and complex characters, and for her skill at handling difficult subjects with sensitivity and depth.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="153"/>
         <source>Os melhores autores de fantasia exploram mitologia, folclore e a natureza da narrativa para criar personagens memoráveis e mundos imaginativos.</source>
-        <translation type="unfinished"></translation>
+        <translation>The best fantasy authors draw on mythology, folklore, and the nature of storytelling itself to create memorable characters and imaginative worlds.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="154"/>
         <source>Douglas Preston é um autor de suspense e ficção científica conhecido por suas séries de livros protagonizadas por personagens como Aloysius Pendergast, um agente do FBI com habilidades extraordinárias, e Gideon Crew, um ladrão e engenheiro brilhante que se envolve em tramas complexas e perigosas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Douglas Preston is a thriller and science fiction author known for his book series starring characters like Aloysius Pendergast, an FBI agent with extraordinary abilities, and Gideon Crew, a brilliant thief and engineer caught up in complex, dangerous plots.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="155"/>
         <source>&apos;A Empregada&apos; de Freida McFadden é um romance de suspense psicológico publicado em 2019, que segue a história de uma jovem que se torna a empregada de uma família rica e descobre segredos sombrios sobre eles.</source>
-        <translation type="unfinished"></translation>
+        <translation>Freida McFadden&apos;s &amp;apos;The Housemaid&amp;apos; is a psychological thriller published in 2019, following a young woman who becomes a housemaid for a wealthy family and uncovers their dark secrets.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="156"/>
         <source>Dan Brown é um autor de suspense e ficção histórica conhecido por suas séries de livros protagonizadas por personagens como Robert Langdon, um professor de simbologia que se envolve em tramas complexas e perigosas envolvendo arte, história e religião.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dan Brown is a thriller and historical fiction author known for his book series starring Robert Langdon, a symbology professor caught up in complex, dangerous plots involving art, history, and religion.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="157"/>
         <source>Gillian Flynn é uma autora de suspense psicológico conhecida por suas histórias que exploram temas como relações tóxicas, segredos e reviravoltas inesperadas, e por sua habilidade de criar personagens complexos e memoráveis.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gillian Flynn is a psychological thriller author known for stories that explore themes like toxic relationships, secrets, and unexpected twists, and for her skill at creating complex, memorable characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="158"/>
         <source>John Grisham é um autor de suspense jurídico conhecido por suas séries de livros protagonizadas por advogados e juízes que se envolvem em tramas complexas e perigosas envolvendo justiça, corrupção e moralidade.</source>
-        <translation type="unfinished"></translation>
+        <translation>John Grisham is a legal thriller author known for his book series starring lawyers and judges caught up in complex, dangerous plots involving justice, corruption, and morality.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="159"/>
         <source>A série de mangás Naruto de Masashi Kishimoto é conhecida por sua história envolvente, personagens complexos e desenvolvimento de mundo detalhado, e se tornou um dos mangás mais populares e influentes de todos os tempos. Dattebayo!</source>
-        <translation type="unfinished"></translation>
+        <translation>Masashi Kishimoto&apos;s Naruto manga series is known for its gripping story, complex characters, and detailed worldbuilding, and became one of the most popular and influential manga of all time. Dattebayo!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="160"/>
         <source>A série de mangás One Piece de Eiichiro Oda é conhecida por sua história épica, personagens memoráveis e desenvolvimento de mundo detalhado, e se tornou um dos mangás mais populares e influentes de todos os tempos. Yare yare daze!</source>
-        <translation type="unfinished"></translation>
+        <translation>Eiichiro Oda&apos;s One Piece manga series is known for its epic story, memorable characters, and detailed worldbuilding, and became one of the most popular and influential manga of all time. Yare yare daze!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="161"/>
         <source>A série de mangás Attack on Titan de Hajime Isayama é conhecida por sua história intensa, universo rico e personagens complexos... mas também pelo se final discutível.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hajime Isayama&apos;s Attack on Titan manga series is known for its intense story, rich universe, and complex characters... but also for its debatable ending.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="162"/>
         <source>Não importa o quão bom o seu livro seja, o que fica na memória dos leitores é o final. Certifique-se de ter um bom. Um final bom não é um final que agrada a todos, mas um final que conclui a história de forma redonda e satisfatória.</source>
-        <translation type="unfinished"></translation>
+        <translation>No matter how good your book is, what sticks in readers&apos; memory is the ending. Make sure it&apos;s a good one. A good ending isn&apos;t one that pleases everyone — it&apos;s one that wraps up the story in a satisfying, complete way.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="163"/>
         <source>A série de mangás Hajime no Ippo de George Morikawa é um mártir das obras de esporte. Com personagens marcantes e um exímio desenvolvimento.</source>
-        <translation type="unfinished"></translation>
+        <translation>George Morikawa&apos;s Hajime no Ippo manga series is a martyr among sports stories, with striking characters and masterful development.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="164"/>
         <source>A Graphic Novel &apos;Maus&apos; de Art Spiegelman é um clássico da literatura gráfica, publicado em 1991, que conta a história do Holocausto através da perspectiva de um sobrevivente e seu filho, usando animais para representar diferentes grupos étnicos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Art Spiegelman&apos;s graphic novel &amp;apos;Maus&amp;apos; is a classic of graphic literature, published in 1991, telling the story of the Holocaust from the perspective of a survivor and his son, using animals to represent different ethnic groups.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="165"/>
         <source>O primeiro mangá da história foi &apos;Toba Ehon&apos; de 1100, criado por um monge budista japonês chamado Toba Sōjō, e é considerado o precursor dos mangás modernos.</source>
-        <translation type="unfinished"></translation>
+        <translation>The first manga in history was &amp;apos;Toba Ehon&amp;apos; from 1100, created by a Japanese Buddhist monk named Toba Sōjō, considered the precursor to modern manga.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="166"/>
         <source>Não fuja de exageros caso eles caibam no tom de sua obra. Akira Toriyama sabia que os poderes e batalhas da saga Dragon Ball eram exagerados. E é isso que torna a obra tão marcante.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t shy away from exaggeration if it fits your story&apos;s tone. Akira Toriyama knew the powers and battles in the Dragon Ball saga were over the top — and that&apos;s exactly what makes it so memorable.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="167"/>
         <source>Isaac Asimov era bioquímico, o que fazia com que os seus trabalhos de ficção científica tivessem lógicas internas coerentes e bem construídas. Ele sabia ciência. Saiba sobre o que vai escrever.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov was a biochemist, which gave his science fiction coherent, well-built internal logic. He knew his science. Know what you&apos;re writing about.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="168"/>
         <source>Isaac Asimov criou o termo &apos;robótica&apos; em um conto de ficção científica chamado &apos;Liar!&apos;. Ele não sabia que o termo ainda não existia. Hoje, é usado de verdade em inúmeros campos científicos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov coined the term &amp;quot;robotics&amp;quot; in a science fiction short story called &amp;apos;Liar!&amp;apos;. He didn&apos;t even realize the term didn&apos;t already exist. Today, it&apos;s used for real across countless scientific fields.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="169"/>
         <source>Frank Herbert desenvolveu uma obsessão por ecologia dos desertos, o que o levou a criar &apos;Duna&apos;. Antes, ele trabalhava como jornalista, o que torna a escrita dele sempre clara e fluída.</source>
-        <translation type="unfinished"></translation>
+        <translation>Frank Herbert developed an obsession with desert ecology, which led him to create &amp;apos;Dune&amp;apos;. Before that, he worked as a journalist, which is why his writing always reads so clear and fluid.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="170"/>
         <source>Arthur C. Clarke era um físico e matemático, além de ser um dos autores de ficção científica mais vangloriados do gênero. Seu artigo científico real sobre órbita geoestacionária hoje é a base da TV, GPS e Internet.</source>
-        <translation type="unfinished"></translation>
+        <translation>Arthur C. Clarke was a physicist and mathematician, as well as one of the most celebrated science fiction authors of the genre. His real scientific paper on geostationary orbits is today the foundation of TV, GPS, and the Internet.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="171"/>
         <source>Ursula K. Le Guin era uma antropóloga, o que a ajudava a criar culturas e sociedades complexas e realistas em seus livros de ficção científica e fantasia, como &apos;A Mão Esquerda da Escuridão&apos; e &apos;O Feiticeiro de Terramar&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ursula K. Le Guin was an anthropologist, which helped her build complex, realistic cultures and societies in her science fiction and fantasy books, like &amp;apos;The Left Hand of Darkness&amp;apos; and &amp;apos;A Wizard of Earthsea&amp;apos;.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="172"/>
         <source>A vida às vezes imita a arte. Quando William Gibson escreveu &apos;Neuromancer&apos; — uma das obras precursoras do subgênero cyberpunk, ele já falava sobre hackers, internet, IA&apos;s e até realidade virtual, muitos conceitos que sequer haviam sido imaginados na época.</source>
-        <translation type="unfinished"></translation>
+        <translation>Life sometimes imitates art. When William Gibson wrote &amp;apos;Neuromancer&amp;apos; — one of the founding works of the cyberpunk subgenre — he was already writing about hackers, the internet, AIs, and even virtual reality, many concepts that hadn&apos;t even been imagined yet at the time.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="173"/>
         <source>Robert A. Heinlein, autor de &apos;Tropas Estelares&apos;, era um engenheiro naval e militar, o que fez com que suas obras tivessem uma base sólida em ciência e militarismo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Robert A. Heinlein, author of &amp;apos;Starship Troopers&amp;apos;, was a naval and military engineer, which gave his work a solid grounding in science and military life.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="174"/>
         <source>H.P Lovecraft nunca fez sucesso algum em vida. Se publicava em revistas pulp e passava dificuldades financeiras severas. Seus contos só se tornaram famosos quando outros autores que o correspondiam decidiram organizar e trazer visibilidade para seus contos após sua morte.</source>
-        <translation type="unfinished"></translation>
+        <translation>H.P. Lovecraft never found any success in his lifetime. He published in pulp magazines and struggled with severe financial hardship. His stories only became famous after fellow writers he corresponded with organized and brought visibility to his work following his death.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="175"/>
         <source>J.R.R. Tolkien criou idiomas completos antes mesmo de desenvolver a história de &apos;O Senhor dos Anéis&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>J.R.R. Tolkien created entire languages before he even developed the story of &amp;apos;The Lord of the Rings&amp;apos;.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="176"/>
         <source>Franz Kafka, autor de &apos;A Metamorfose&apos; e &apos;O Processo&apos;, pediu para  seu amigo Max Brod queimasse suas obras após sua morte. Ele não as achava boas o suficiente.</source>
-        <translation type="unfinished"></translation>
+        <translation>Franz Kafka, author of &amp;apos;The Metamorphosis&amp;apos; and &amp;apos;The Trial&amp;apos;, asked his friend Max Brod to burn his work after his death. He didn&apos;t think it was good enough.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="177"/>
         <source>Mary Shelley escreveu &apos;Frankenstein&apos; aos 18 anos durante um desafio entre amigos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mary Shelley wrote &amp;apos;Frankenstein&amp;apos; at age 18, during a challenge among friends.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="178"/>
         <source>Mostre menos do que explica, mas explique o suficiente para não confundir.</source>
-        <translation type="unfinished"></translation>
+        <translation>Show less than you explain, but explain enough not to confuse.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="179"/>
         <source>Se você passou mais tempo organizando o app do que escrevendo, você está procrastinando. Os recursos que o app tem — até os Temas, servem para serem usados na sua escrita, não para fugir dela.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you&apos;ve spent more time organizing the app than actually writing, you&apos;re procrastinating. Every feature it has — even the Themes — exists to serve your writing, not to help you avoid it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="180"/>
         <source>Não confunda planejamento excessivo com trabalho. Isso também é uma forma de procrastinar. Planeje o suficiente e escreva.</source>
-        <translation type="unfinished"></translation>
+        <translation>Don&apos;t confuse excessive planning with actual work. That&apos;s just another form of procrastination. Plan enough, then write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="181"/>
         <source>Um rascunho ruim ainda é melhor que uma ideia perfeita na sua cabeça.</source>
-        <translation type="unfinished"></translation>
+        <translation>A bad draft still beats a perfect idea stuck in your head.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="182"/>
         <source>Philip K. Dick questionava se a realidade era real — hoje isso influencia até estudos sobre simulação.</source>
-        <translation type="unfinished"></translation>
+        <translation>Philip K. Dick questioned whether reality itself was real — today that idea even influences simulation theory research.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="183"/>
         <source>Viagem Ao Centro da Terra de Jules Verne foi publicado em 1864. Na época, os conceitos sobre o núcleo da terra ainda eram um terrítório pouco explorado pela ciência.</source>
-        <translation type="unfinished"></translation>
+        <translation>Jules Verne&apos;s Journey to the Center of the Earth was published in 1864. At the time, ideas about the Earth&apos;s core were still largely unexplored territory for science.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="184"/>
         <source>Isaac Asimov escreveu mais de 500 livros ao longo da vida, entre ficção e ciência.</source>
-        <translation type="unfinished"></translation>
+        <translation>Isaac Asimov wrote more than 500 books over his lifetime, between fiction and science.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="185"/>
         <source>George Orwell escreveu 1984 já muito doente, pouco antes de morrer.</source>
-        <translation type="unfinished"></translation>
+        <translation>George Orwell wrote 1984 while already gravely ill, shortly before his death.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="186"/>
         <source>Aldous Huxley, autor de &apos;Admirável Mundo Novo&apos;, morreu no mesmo dia que John F. Kennedy foi assassinado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aldous Huxley, author of &amp;apos;Brave New World&amp;apos;, died on the same day John F. Kennedy was assassinated.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="187"/>
         <source>Ray Bradbury escreveu Fahrenheit 451 em máquinas de escrever alugadas por hora.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ray Bradbury wrote Fahrenheit 451 on rented typewriters, paying by the hour.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="188"/>
         <source>H. G. Wells imaginou invasões alienígenas antes disso virar comum na ficção.</source>
-        <translation type="unfinished"></translation>
+        <translation>H.G. Wells imagined alien invasions before that became a common trope in fiction.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="189"/>
         <source>Se tudo está funcionando, você ainda não começou a história.</source>
-        <translation type="unfinished"></translation>
+        <translation>If everything&apos;s going fine, you haven&apos;t started the story yet.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="190"/>
         <source>&apos;Você não precisa de motivação para escrever, precisa de disciplina.&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;apos;You don&apos;t need motivation to write. You need discipline.&amp;apos;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="191"/>
         <source>Se o leitor entendeu tudo rápido demais, talvez esteja simples demais. Se o leitor não entendeu nada, você exagerou.</source>
-        <translation type="unfinished"></translation>
+        <translation>If the reader understood everything too quickly, maybe it&apos;s too simple. If the reader understood nothing at all, you overdid it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="192"/>
         <source>Mostre o suficiente para despertar curiosidade, não para matar ela.</source>
-        <translation type="unfinished"></translation>
+        <translation>Show enough to spark curiosity, not to kill it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="193"/>
         <source>Se o leitor consegue reconhecer um personagem mesmo que o nome dele não seja dito, significa que o autor fez um bom trabalho.</source>
-        <translation type="unfinished"></translation>
+        <translation>If a reader can recognize a character even without their name being said, the author did a good job.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="194"/>
-        <source>O Qiyva Writer quase teve uma assistente de IA. Quase. A ideia não foi para frente porque API&apos;s são caras e modelos de IA locais são burros.</source>
-        <translation type="unfinished"></translation>
+        <source>O Qenna Writer quase teve uma assistente de IA. Quase. A ideia não foi para frente porque API&apos;s são caras e modelos de IA locais são burros.</source>
+        <translation>Qenna Writer almost had an AI assistant. Almost. The idea never went anywhere because APIs are expensive and local AI models are dumb.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="199"/>
         <source>Clique e arraste o nome dos seus personagens para criar vínculos entre eles e escrever sobre </source>
-        <translation type="unfinished"></translation>
+        <translation>Click and drag your characters&apos; names to create bonds between them and write about</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="200"/>
         <source>Você não é obrigado a ter uma gaveta chamada &apos;personagens&apos; para salvar seus personagens e ter acesso as ferramentas deles. Ela pode ter qualquer nome e ícone, desde que durante a criação, você adicione o elemento &apos;Personagem&apos; a ela. O que realmente importa para as gavetas é o Elemento, não o nome ou ícone.</source>
-        <translation type="unfinished"></translation>
+        <translation>You don&apos;t have to have a drawer named &amp;quot;characters&amp;quot; to save your characters and access their tools. It can have any name and icon, as long as you add the &amp;quot;Character&amp;quot; element to it during creation. What really matters for drawers is the Element, not the name or icon.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="201"/>
-        <source>No Qiyva Writer, os recursos de criação estão em suas mãos. Cada ferramenta nele é opcional. Caso não queira usar nenhuma, apenas escreva.</source>
-        <translation type="unfinished"></translation>
+        <source>No Qenna Writer, os recursos de criação estão em suas mãos. Cada ferramenta nele é opcional. Caso não queira usar nenhuma, apenas escreva.</source>
+        <translation>In Qenna Writer, the creative tools are in your hands. Every feature in it is optional. If you don&apos;t want to use any of them, just write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="202"/>
-        <source>O nome da guerreira que ficava no logo do Mira Writing (nome antigo do Qiyva Writer) era... Mira. Sente saudade dela? Ainda dá pra trazer esse logo de volta na opção de Temas do Main Menu ali em cima.</source>
-        <translation type="unfinished"></translation>
+        <source>O nome da guerreira que ficava no logo do Mira Writing (nome antigo do Qenna Writer) era... Mira. Sente saudade dela? Ainda dá pra trazer esse logo de volta na opção de Temas do Main Menu ali em cima.</source>
+        <translation>The name of the warrior who used to be in the Mira Writing logo (Qenna Writer&apos;s old name) was... Mira. Miss her? You can still bring that logo back in the Themes option up in the Main Menu.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="203"/>
         <source>O seu projeto é salvo automaticamente a cada 15 minutos. Você pode alterar o tempo entre os salvamentos automáticos ou desativá-lo nas configurações.</source>
-        <translation type="unfinished"></translation>
+        <translation>Your project autosaves every 15 minutes. You can change the interval between autosaves or turn it off in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="204"/>
         <source>Ao criar um novo projeto, cada template possuí gavetas e documentos de planejamento prontos para você começar. O template básico geralmente tem o necessário, mas caso você seja um arquiteto ambicioso, pode usar o template avançado.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating a new project, each template comes with drawers and planning documents ready to get you started. The basic template usually has what you need, but if you&apos;re an ambitious architect, you can use the advanced template.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="205"/>
         <source>Ao criar personagens, você pode definir o papel deles no seu projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating characters, you can define their role in your project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="206"/>
         <source>O papel de um personagem é uma forma de categorizá-lo e pode ser usado para organizar seus personagens por função na história.</source>
-        <translation type="unfinished"></translation>
+        <translation>A character&apos;s role is a way to categorize them, and it can be used to organize your characters by their function in the story.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="207"/>
         <source>Adicione imagens aos seus personagens para deixar a exibição deles mais bonita no Menu de Referência e nas gavetas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Add images to your characters to make their display look nicer in the Reference Menu and drawers.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="208"/>
         <source>Utilize o Painel de Consistência para manter o controle de seus personagens e sempre saber como e onde estão.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Consistency Panel to keep track of your characters and always know how and where they are.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="209"/>
         <source>O editor detectará a presença dos personagens nos capítulos e cenas automaticamente caso ele seja citado mais de três vezes.</source>
-        <translation type="unfinished"></translation>
+        <translation>The editor will automatically detect a character&apos;s presence in chapters and scenes once they&apos;re mentioned more than three times.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="210"/>
         <source>Os status dos personagens são notificados à você caso eles estejam presentes nas cenas, garantindo a consistência. Você não esquecerá que um deles está ferido ou apaixonado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Character statuses are shown to you whenever they&apos;re present in a scene, keeping things consistent. You won&apos;t forget that one of them is injured or in love.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="211"/>
         <source>Caso não goste dos avisos de status dos personagens ou da detecção de presença deles nas cenas, essas opções podem ser desabilitadas nas configurações.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you don&apos;t like the character status alerts or the presence detection in scenes, both can be turned off in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="212"/>
         <source>Caso queira registrar algum comentário sobre algum trecho do seu projeto, selecione-o e clique em &apos;adicionar comentário&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you want to leave a comment on a passage in your project, select it and click &amp;quot;add comment.&amp;quot;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="213"/>
         <source>Use a função de criar capas para deixar seus projetos mais bonitos no menu!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the cover creator to make your projects look nicer in the menu!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="214"/>
         <source>Para contato, relato de bugs ou só mandar um alô, me envie um e-mail em mirawritingeditor@gmail.com.</source>
-        <translation type="unfinished"></translation>
+        <translation>For contact, bug reports, or just to say hi, email me at mirawritingeditor@gmail.com.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="215"/>
         <source>A função de criar manuscrito pode ser usada para escrever sagas inteiras no mesmo projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>The manuscript feature can be used to write entire sagas within the same project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="216"/>
         <source>Use a função de temas para personalizar o seu app como quiser.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Themes feature to customize your app however you like.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="217"/>
         <source>Use a função de Timeline para organizar os eventos do seu projeto de forma cronológica, visual e intuitiva!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Timeline feature to organize your project&apos;s events chronologically, visually, and intuitively!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="218"/>
         <source>Use a função de Elementos para definir os personagens, cenários e outros elementos do seu projeto de forma detalhada e acessível!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Elements feature to define your project&apos;s characters, settings, and other elements in a detailed, accessible way!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="219"/>
         <source>Use a função de sinopse para criar uma visão geral do seu projeto e manter o foco no que é importante!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the synopsis feature to create an overview of your project and stay focused on what matters!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="220"/>
         <source>Use a função de manuscritos para organizar seus capítulos e cenas de forma prática e eficiente, mantendo tudo ao alcance das mãos!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the manuscripts feature to organize your chapters and scenes practically and efficiently, keeping everything within reach!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="221"/>
         <source>Use a função de gavetas para guardar documentos, imagens e outros arquivos relacionados ao seu projeto, mantendo tudo organizado e fácil de acessar!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the drawers feature to store documents, images, and other files related to your project, keeping everything organized and easy to access!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="222"/>
         <source>Exportação também é uma forma de backup. Exporte seu projeto para docx de tempos em tempos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporting is also a form of backup. Export your project to docx every once in a while.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="223"/>
         <source>Use a função de comentários para registrar suas ideias, dúvidas e observações sobre trechos específicos do seu projeto, facilitando o processo de revisão e edição!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the comments feature to jot down your ideas, questions, and notes about specific passages in your project, making the revision and editing process easier!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="224"/>
-        <source>O Qiyva Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
-        <translation type="unfinished"></translation>
+        <source>O Qenna Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
+        <translation>Qenna Writer automatically backs up your project every time the app closes. You can find them inside your project folder, in &amp;quot;backups&amp;quot; — you can change this folder in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="225"/>
         <source>Ao exportar capas criadas no app, verifique as licenças e permissões das imagens e fontes usadas. Eu não vou brigar na justiça por você.</source>
-        <translation type="unfinished"></translation>
+        <translation>When exporting covers made in the app, check the licenses and permissions of the images and fonts you used. I&apos;m not going to court for you.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="226"/>
         <source>A função de Som Imersivo permite reproduzir sons e músicas de ambiente enquanto você escreve, criando uma atmosfera mais envolvente para a sua escrita!</source>
-        <translation type="unfinished"></translation>
+        <translation>The Immersive Sound feature lets you play ambient sounds and music while you write, creating a more immersive atmosphere for your writing!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="227"/>
         <source>Faça backup. Sempre. Já é dificíl confiar em humanos, quem dirá em programas.</source>
-        <translation type="unfinished"></translation>
+        <translation>Back up your work. Always. It&apos;s already hard to trust humans, let alone software.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="228"/>
         <source>Caso ocorra algum problema com o seu projeto, você pode recuperar um backup através da pasta &apos;backups&apos; ou .mira-guard na raiz do seu projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>If something goes wrong with your project, you can recover a backup from the &amp;quot;backups&amp;quot; folder or .mira-guard at the root of your project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="229"/>
         <source>Para restaurar um backup .bak, basta renomear o arquivo para o nome original e mudar a extensão para .mira.json e abrir normalmente no app.</source>
-        <translation type="unfinished"></translation>
+        <translation>To restore a .bak backup, just rename the file to its original name, change the extension to .mira.json, and open it normally in the app.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="230"/>
-        <source>Não haverá outro quote sobre backup, mas por favor, faça backup. — P.H. Lobato, Criador do Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Não haverá outro quote sobre backup, mas por favor, faça backup. — P.H. Lobato, Criador do Qenna Writer</source>
+        <translation>There won&apos;t be another quote about backups, but please, back up your work. — P.H. Lobato, Creator of Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="231"/>
         <source>Você pode alterar a exibição dos recentes entre Prateleira e Vitrine.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can switch how recent projects are displayed between Shelf and Showcase.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="232"/>
         <source>Com o recentes no modo prateleira, a espessura dos livros varia conforme o tamanho do projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>With recent projects in shelf mode, the thickness of each book varies based on the project&apos;s size.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="233"/>
         <source>Você pode reordenar as cenas do capítulo arrastando-as.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can reorder a chapter&apos;s scenes by dragging them.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="234"/>
         <source>Utilize a função Memórias para salvar trechos e diálogos importantes da sua história.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Memories feature to save important passages and dialogue from your story.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="235"/>
         <source>Ao salvar memórias, você pode fazê-lo tanto em memórias do projeto ou em memórias de um personagem específico.</source>
-        <translation type="unfinished"></translation>
+        <translation>When saving memories, you can save them either as project memories or as memories for a specific character.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="236"/>
         <source>Crie documentos e fichas dos seus personagens e adicione o elemento de Personagem a elas. Há funções do app que dependem disso!</source>
-        <translation type="unfinished"></translation>
+        <translation>Create documents and sheets for your characters and add the Character element to them. Some of the app&apos;s features depend on it!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="237"/>
         <source>Ao criar uma gaveta, atenção com os nomes. Dependendo dele, a gaveta e os documento dela pode receber elementos de forma automática, facilitando seu trabalho.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating a drawer, pay attention to the name. Depending on it, the drawer and its documents may automatically receive elements, making your work easier.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="238"/>
         <source>Você pode exportar o seu projeto COMPLETO para .docx através da barra superior.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can export your ENTIRE project to .docx from the top bar.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="239"/>
         <source>É possível adicionar suas próprias músicas na ferramenta de som imersivo.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can add your own music to the Immersive Sound tool.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="240"/>
         <source>Se você criou uma capa na ferramenta de criar capas e pretende usá-la de forma comercial, verifique as licenças de fonte e arte. Eu não vou ao tribunal por você.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you made a cover with the Cover Creator and plan to use it commercially, check the font and artwork licenses. I&apos;m not going to court for you.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="241"/>
         <source>Você pode importar e exportar temas criados no app.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can import and export themes created in the app.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="242"/>
-        <source>O Qiyva Writer é gratuito e a ideia é que seja sempre assim.</source>
-        <translation type="unfinished"></translation>
+        <source>O Qenna Writer é gratuito e a ideia é que seja sempre assim.</source>
+        <translation>Qenna Writer is free, and the idea is that it always will be.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="243"/>
         <source>Você pode consultar o horário limite da sua meta diária dentro do Contador de Palavras.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can check your daily goal&apos;s deadline inside the Word Counter.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="244"/>
         <source>Divida o seu capítulos em cenas utilizando &apos;---&apos; em qualquer momento.</source>
-        <translation type="unfinished"></translation>
+        <translation>Split your chapters into scenes using &amp;quot;---&amp;quot; anywhere you like.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="245"/>
         <source>Use a função de Contador de Palavras para acompanhar seu progresso diário e manter-se motivado a alcançar suas metas de escrita!</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Word Counter feature to track your daily progress and stay motivated to hit your writing goals!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="246"/>
         <source>Caso você não goste dos sons do app, você pode desativá-los nas configurações.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you don&apos;t like the app&apos;s sounds, you can turn them off in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="247"/>
         <source>Ao criar temas, use sua criatividade. Você pode criar temas inspirados no gênero do seu projeto, para aumentar a imersão.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating themes, get creative. You can build themes inspired by your project&apos;s genre to boost immersion.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="248"/>
         <source>Temas podem ser importados e exportados.</source>
-        <translation type="unfinished"></translation>
+        <translation>Themes can be imported and exported.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="249"/>
         <source>Os Temas padrão do editor foram feitos no próprio criador de Temas dele. Caso não goste de algum, pode excluí-lo.</source>
-        <translation type="unfinished"></translation>
+        <translation>The editor&apos;s default themes were made using its own Theme creator. If you don&apos;t like one, you can delete it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="250"/>
         <source>Você pode excluir memórias salvas no Menu de Referência.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can delete saved memories from the Reference Menu.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="251"/>
         <source>Descanse! Você pode marcar folgas no painel de Meta Diária. É possível configurar os dias mínimos de meta batida para ganhar uma folga. Nada de trapacear.</source>
-        <translation type="unfinished"></translation>
+        <translation>Rest! You can mark days off in the Daily Goal panel. You can set the minimum number of goal-hit days required to earn one. No cheating.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="252"/>
         <source>Existe um código secreto para desbloquear os dias mínimos de meta batida para ganhar uma folga. Eu sei qual é, mas não vou te contar. Vá escrever.</source>
-        <translation type="unfinished"></translation>
+        <translation>There&apos;s a secret code to unlock the minimum goal-hit days required for a day off. I know what it is, but I&apos;m not telling you. Go write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="253"/>
         <source>Caso você tire uma folga sem ter folgas disponíveis, o calendário marcará aquele dia como vermelho, pois é uma folga trapaceada.</source>
-        <translation type="unfinished"></translation>
+        <translation>If you take a day off without having any available, the calendar will mark that day red, since it&apos;s a cheated day off.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="254"/>
         <source>Folgas trapaceadas não são um grande problema, mas se você fizer disso um hábito, o calendário ficará cada vez mais vermelho, o que pode ser desmotivador. Use as folgas com sabedoria!</source>
-        <translation type="unfinished"></translation>
+        <translation>Cheated days off aren&apos;t a big deal, but if it becomes a habit, your calendar will get redder and redder, which can be discouraging. Use your days off wisely!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="255"/>
         <source>Utilize a função lousa para organizar suas ideias, criar mapas mentais e planejar sua história de forma visual, intuitiva e divertida.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Board feature to organize your ideas, build mind maps, and plan your story in a visual, intuitive, and fun way.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="256"/>
         <source>A função de Lousa é uma ferramenta versátil que pode ser usada para criar diagramas, fluxogramas, mapas de personagens e muito mais. Use-a para dar vida às suas ideias e tornar o processo de planejamento mais envolvente!</source>
-        <translation type="unfinished"></translation>
+        <translation>The Board feature is a versatile tool you can use to build diagrams, flowcharts, character maps, and much more. Use it to bring your ideas to life and make planning more engaging!</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="257"/>
         <source>Ao usar a lousa, experimente diferentes formas de organizar suas ideias. Você pode criar áreas para diferentes aspectos da sua história e conectá-las.</source>
-        <translation type="unfinished"></translation>
+        <translation>When using the Board, try different ways of organizing your ideas. You can create areas for different aspects of your story and connect them.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="258"/>
         <source>É possível anexar imagens e documentos já existentes do projeto na lousa, incluindo personagens.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can attach existing images and documents from your project to the Board, including characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="259"/>
         <source>Na lousa, arraste um post-it em uma linha para criar um post-it de comentário sobre aquela conexão.</source>
-        <translation type="unfinished"></translation>
+        <translation>On the Board, drag a post-it onto a connection line to create a comment post-it about that connection.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="260"/>
         <source>Tudo criado na lousa pode ser exportado. É possível iniciar o seu projeto nela antes de começar, o que te garante uma base sólida para escrever e evitar a temida folha em branco.</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything created on the Board can be exported. You can start your project there before writing, giving you a solid foundation and helping you avoid the dreaded blank page.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="261"/>
         <source>Crie áreas na lousa para separar os seus planejamentos... ou abrace o caos e navegue, você decide.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create areas on the Board to separate your planning... or embrace the chaos and just wing it, your call.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="262"/>
         <source>É possível trocar a cor da lousa, dos post-its, linhas e comentários.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can change the color of the Board, post-its, lines, and comments.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="263"/>
         <source>Acredite, a lousa é o melhor amigo do seu planejamento. Use-a sem piedade.</source>
-        <translation type="unfinished"></translation>
+        <translation>Trust me, the Board is your planning&apos;s best friend. Use it without mercy.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="264"/>
         <source>Ao adicionar personagens a lousa, você pode clicar duas vezes no card deles para virá-lo e ler as informações.</source>
-        <translation type="unfinished"></translation>
+        <translation>When adding characters to the Board, you can double-click their card to flip it and read the details.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="265"/>
         <source>A lousa é infinita. Ela possuí limites de zoom, mas não de tamanho. E isso é tão útil quanto assustador.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Board is infinite. It has zoom limits, but no size limit. That&apos;s as useful as it is terrifying.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="266"/>
         <source>Como é a sua lousa? Ela é organizada e bonita ou um completo caos que só você entende?</source>
-        <translation type="unfinished"></translation>
+        <translation>What does your Board look like? Neat and pretty, or complete chaos only you understand?</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="267"/>
         <source>A lousa cria personagens, mas também pode criar cenários e objetos. Basta extrair o post-it deles para uma drawer que possua esses elementos.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Board can create characters, but also settings and objects. Just export their post-it to a drawer that has those elements.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="268"/>
         <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultar o glossário a qualquer momento através da barra superior.</source>
-        <translation type="unfinished"></translation>
+        <translation>The glossary is for saving words and terms you&apos;ve invented for your project. Just select the word and click &amp;quot;Add to Glossary.&amp;quot; You can check the glossary anytime from the top bar.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="269"/>
         <source>O glossário é exportado junto com o seu projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>The glossary is exported along with your project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="270"/>
         <source>Não há um limite de palavras para o glossário.</source>
-        <translation type="unfinished"></translation>
+        <translation>There&apos;s no word limit for the glossary.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="271"/>
         <source>Ao criar novos projetos, escolha se deseja iniciar no editor ou na lousa. A lousa é ótima caso já tenha várias ideias e queira organizá-las antes de começar. Se preferir da forma tradicional, basta optar pelo editor.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating new projects, choose whether to start in the editor or on the Board. The Board is great if you already have lots of ideas and want to organize them before you start. If you&apos;d rather go the traditional route, just pick the editor.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="272"/>
         <source>Arraste personagens para dentro de uma pasta para colocá-los lá. Se ainda não tiver uma pasta, arrastar o personagem para a opção de criar pasta também criará uma.</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag characters into a folder to put them there. If you don&apos;t have one yet, dragging a character onto the &amp;quot;create folder&amp;quot; option will make one for you.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="273"/>
         <source>Não há limite de gavetas com elementos. Você pode ter várias gavetas com os mesmos elementos caso queira.</source>
-        <translation type="unfinished"></translation>
+        <translation>There&apos;s no limit on drawers with elements. You can have multiple drawers with the same elements if you want.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="274"/>
         <source>Ousado, mas caso queira, você pode acumular folgas batendo a meta e depois tirá-las todas de uma vez — saindo de férias.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bold move, but if you want, you can stockpile days off by hitting your goal, then take them all at once — basically going on vacation.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="275"/>
         <source>A lousa está sempre há um clique de distância. Você sempre pode voltar nela para consultar ou continuar planejando, mesmo com a obra em andamento.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Board is always just one click away. You can always go back to check it or keep planning, even while your project is already underway.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="276"/>
         <source>Use a função Linha do Tempo para organizar a cronologia do seu projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Timeline feature to organize your project&apos;s chronology.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="277"/>
         <source>Você pode criar várias linhas do tempo diferentes e conectá-las.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can create several different timelines and connect them.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="278"/>
         <source>As Ramificações exibem todas as linhas e eventos da Linha do Tempo. Clique nos eventos para focar em uma linha específica.</source>
-        <translation type="unfinished"></translation>
+        <translation>The Branches view shows every timeline and event at once. Click an event to focus on a specific line.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="279"/>
         <source>Ao criar novas linhas do tempo, verifique as cores para evitar confusões.</source>
-        <translation type="unfinished"></translation>
+        <translation>When creating new timelines, check their colors to avoid mix-ups.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="280"/>
         <source>Os seus personagens recebem linhas do tempo próprias com base em suas aparições na história.</source>
-        <translation type="unfinished"></translation>
+        <translation>Your characters get their own timelines based on their appearances in the story.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="281"/>
         <source>Há três tipos diferentes de exibição da linha do tempo: Trilha, Espiral e Ramificações. A Trilha é a menos confusa, mas as Ramificações e Espirais se tornam fáceis de ler com o tempo.</source>
-        <translation type="unfinished"></translation>
+        <translation>There are three different timeline views: Track, Spiral, and Branches. Track is the least confusing, but Branches and Spiral become easy to read once you get used to them.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="282"/>
         <source>Clique nos dias do calendário para saber o quanto escreveu e em quais documentos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Click a day on the calendar to see how much you wrote and in which documents.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="283"/>
         <source>Você pode alterar o que é exibido no contador de palavras ao clicar com o botão direito nele.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can change what&apos;s shown in the word counter by right-clicking it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="284"/>
         <source>Temas são necessários. Por isso o app tem 101 deles. E caso queira modificar algo em algum, eles podem ser usados como templates para temas personalizados. Basta escolher a opção &apos;Duplicar&apos; para editá-lo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Themes matter. That&apos;s why the app has 101 of them. And if you want to tweak one, they can be used as templates for custom themes. Just choose &amp;quot;Duplicate&amp;quot; to edit it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="285"/>
         <source>Use a função de Memórias para salvar informações importantes sobre sua história e personagens.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Memories feature to save important information about your story and characters.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="286"/>
         <source>Você pode criar eventos da linha do tempo a partir do editor ou da lousa.</source>
-        <translation type="unfinished"></translation>
+        <translation>You can create timeline events from the editor or from the Board.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="287"/>
         <source>Use a função de lembretes para se lembrar do que precisa fazer em seu projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the reminders feature to remember what you need to do in your project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="288"/>
         <source>Use a função Grupos para reunir documentos de diferentes gavetas e elementos num só lugar, organizando o que se conecta na sua história.</source>
-        <translation type="unfinished"></translation>
+        <translation>Use the Groups feature to gather documents from different drawers and elements in one place, organizing what connects within your story.</translation>
+    </message>
+</context>
+<context>
+    <name>RecentCard</name>
+    <message>
+        <source>Abrir automaticamente</source>
+        <translation type="vanished">Open automatically</translation>
     </message>
 </context>
 <context>
@@ -13057,63 +13145,75 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="163"/>
         <source>Arrastar (duplo clique pra resetar)</source>
-        <translation type="unfinished"></translation>
+        <translation>Drag (double-click to reset)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="92"/>
         <location filename="../src/RefMenuPanel.cpp" line="168"/>
         <source>Referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Reference</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="177"/>
         <source>Ocultar/Mostrar explorador</source>
-        <translation type="unfinished"></translation>
+        <translation>Hide/Show explorer</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="190"/>
         <source>Pesquisar no RefMenu (Ctrl+Alt+F)</source>
-        <translation type="unfinished"></translation>
+        <translation>Search RefMenu (Ctrl+Alt+F)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="199"/>
         <source>Tamanho do texto do preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Preview text size</translation>
+    </message>
+    <message>
+        <source>Editar (em breve)</source>
+        <translation type="vanished">Edit (coming soon)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="227"/>
         <source>Fixar</source>
-        <translation type="unfinished"></translation>
+        <translation>Pin</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="236"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="253"/>
         <source>Filtrar e destacar...</source>
-        <translation type="unfinished"></translation>
+        <translation>Filter and highlight...</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="277"/>
         <source>Manuscritos ▾</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscripts ▾</translation>
+    </message>
+    <message>
+        <source>Timeline</source>
+        <translation type="vanished">Timeline</translation>
+    </message>
+    <message>
+        <source>Linha do tempo (em breve)</source>
+        <translation type="vanished">Timeline (coming soon)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="287"/>
         <source>Alternar modo visual/lista</source>
-        <translation type="unfinished"></translation>
+        <translation>Toggle visual/list mode</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="294"/>
         <source>Gaveta ▾</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer ▾</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="362"/>
         <source>Selecione um documento acima pra visualizar aqui.</source>
-        <translation type="unfinished"></translation>
+        <translation>Select a document above to preview it here.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="607"/>
@@ -13122,126 +13222,142 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <location filename="../src/RefMenuPanel.cpp" line="1420"/>
         <location filename="../src/RefMenuPanel.cpp" line="1944"/>
         <source>Gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer</translation>
+    </message>
+    <message>
+        <source>Marcadores</source>
+        <translation type="vanished">Markers</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="612"/>
         <location filename="../src/RefMenuPanel.cpp" line="662"/>
         <source>Timelines</source>
-        <translation type="unfinished"></translation>
+        <translation>Timelines</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="614"/>
         <source>Elementos</source>
-        <translation type="unfinished"></translation>
+        <translation>Elements</translation>
+    </message>
+    <message>
+        <source>Memórias</source>
+        <translation type="vanished">Memories</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="633"/>
         <source>Modo lista</source>
-        <translation type="unfinished"></translation>
+        <translation>List mode</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="633"/>
         <source>Modo visual</source>
-        <translation type="unfinished"></translation>
+        <translation>Visual mode</translation>
+    </message>
+    <message>
+        <source>Em breve. Vai listar os marcadores do projeto.</source>
+        <translation type="vanished">Coming soon. Will list the project&apos;s markers.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="662"/>
         <source>Em breve. Vai listar as linhas do tempo.</source>
-        <translation type="unfinished"></translation>
+        <translation>Coming soon. Will list the timelines.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="664"/>
         <location filename="../src/RefMenuPanel.cpp" line="1938"/>
         <source>Elementos usados</source>
-        <translation type="unfinished"></translation>
+        <translation>Elements used</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="664"/>
         <source>Em breve. Gráficos de participação dos elementos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Coming soon. Element participation charts.</translation>
+    </message>
+    <message>
+        <source>Em breve. Suas memórias do projeto.</source>
+        <translation type="vanished">Coming soon. Your project&apos;s memories.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1315"/>
         <source>MANUSCRITOS</source>
-        <translation type="unfinished"></translation>
+        <translation>MANUSCRIPTS</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1321"/>
         <location filename="../src/RefMenuPanel.cpp" line="1988"/>
         <source>Manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="922"/>
         <location filename="../src/RefMenuPanel.cpp" line="1373"/>
         <source>CAPÍTULOS</source>
-        <translation type="unfinished"></translation>
+        <translation>CHAPTERS</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="214"/>
         <location filename="../src/RefMenuPanel.cpp" line="2095"/>
         <location filename="../src/RefMenuPanel.cpp" line="2101"/>
         <source>Editar documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit document</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="585"/>
         <source>Manuscritos</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscripts</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="610"/>
         <location filename="../src/RefMenuPanel.cpp" line="1937"/>
         <source>Grupos</source>
-        <translation type="unfinished"></translation>
+        <translation>Groups</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="616"/>
         <location filename="../src/RefMenuPanel.cpp" line="676"/>
         <location filename="../src/RefMenuPanel.cpp" line="1940"/>
         <source>Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>Builder</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="677"/>
         <source>Nenhum sistema criado ainda. Use o botão ⚙ Construtor no Pensário pra criar o primeiro.</source>
-        <translation type="unfinished"></translation>
+        <translation>No systems created yet. Use the ⚙ Builder button in the Pensarium to create your first one.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="774"/>
         <source>Este sistema ainda não tem regras/seções.</source>
-        <translation type="unfinished"></translation>
+        <translation>This system doesn&apos;t have rules/sections yet.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="793"/>
         <source>GRUPOS</source>
-        <translation type="unfinished"></translation>
+        <translation>GROUPS</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="803"/>
         <source>Nenhum grupo criado. Clique com o botão direito num documento de gaveta e escolha &quot;Adicionar ao grupo&quot;.</source>
-        <translation type="unfinished"></translation>
+        <translation>No groups created. Right-click a drawer document and choose &quot;Add to group&quot;.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="861"/>
         <source>DOCUMENTOS NO GRUPO</source>
-        <translation type="unfinished"></translation>
+        <translation>DOCUMENTS IN GROUP</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="888"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="890"/>
         <source>gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>drawer</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="901"/>
         <source>Nenhum documento neste grupo</source>
-        <translation type="unfinished"></translation>
+        <translation>No documents in this group</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="964"/>
@@ -13253,7 +13369,7 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <location filename="../src/RefMenuPanel.cpp" line="1431"/>
         <location filename="../src/RefMenuPanel.cpp" line="1618"/>
         <source>(sem título)</source>
-        <translation type="unfinished"></translation>
+        <translation>(untitled)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="972"/>
@@ -13261,85 +13377,85 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <location filename="../src/RefMenuPanel.cpp" line="1359"/>
         <location filename="../src/RefMenuPanel.cpp" line="1584"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1005"/>
         <source>(nenhum capítulo)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no chapters)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1005"/>
         <source>(nenhum resultado)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no results)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1022"/>
         <source>Selecione uma gaveta acima.</source>
-        <translation type="unfinished"></translation>
+        <translation>Select a drawer above.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1043"/>
         <location filename="../src/RefMenuPanel.cpp" line="1075"/>
         <source>Pasta</source>
-        <translation type="unfinished"></translation>
+        <translation>Folder</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1120"/>
         <source>Sem itens nesta gaveta.</source>
-        <translation type="unfinished"></translation>
+        <translation>No items in this drawer.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="774"/>
         <location filename="../src/RefMenuPanel.cpp" line="1120"/>
         <location filename="../src/RefMenuPanel.cpp" line="1452"/>
         <source>Nada encontrado.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nothing found.</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1609"/>
         <source>%1 · %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 · %2</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1610"/>
         <source>Regra</source>
-        <translation type="unfinished"></translation>
+        <translation>Rule</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1610"/>
         <source>Seção</source>
-        <translation type="unfinished"></translation>
+        <translation>Section</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1614"/>
         <source>Sistema · Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>System · Builder</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="1667"/>
         <source>(documento vazio)</source>
-        <translation type="unfinished"></translation>
+        <translation>(empty document)</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="2097"/>
         <source>Edição de cena individual em breve</source>
-        <translation type="unfinished"></translation>
+        <translation>Individual scene editing coming soon</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="2099"/>
         <source>Este documento está aberto no editor principal</source>
-        <translation type="unfinished"></translation>
+        <translation>This document is open in the main editor</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="2226"/>
         <source>Mostrar explorador</source>
-        <translation type="unfinished"></translation>
+        <translation>Show explorer</translation>
     </message>
     <message>
         <location filename="../src/RefMenuPanel.cpp" line="2226"/>
         <source>Ocultar explorador</source>
-        <translation type="unfinished"></translation>
+        <translation>Hide explorer</translation>
     </message>
 </context>
 <context>
@@ -13347,37 +13463,37 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/RemindersPanel.cpp" line="72"/>
         <source>Lembretes</source>
-        <translation type="unfinished"></translation>
+        <translation>Reminders</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="81"/>
         <source>Novo lembrete...</source>
-        <translation type="unfinished"></translation>
+        <translation>New reminder...</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="95"/>
         <source>Notificar às</source>
-        <translation type="unfinished"></translation>
+        <translation>Notify at</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="132"/>
         <source>Nenhum lembrete ativo</source>
-        <translation type="unfinished"></translation>
+        <translation>No active reminders</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="150"/>
         <source>Limpar tudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Clear all</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="172"/>
         <source>Clique duplo para remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Double-click to remove</translation>
     </message>
     <message>
         <location filename="../src/RemindersPanel.cpp" line="237"/>
         <source>Concluídos (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Completed (%1)</translation>
     </message>
 </context>
 <context>
@@ -13385,32 +13501,32 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="37"/>
         <source>Cena</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene</translation>
     </message>
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="38"/>
         <source>Ação</source>
-        <translation type="unfinished"></translation>
+        <translation>Action</translation>
     </message>
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="39"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="40"/>
         <source>Diálogo</source>
-        <translation type="unfinished"></translation>
+        <translation>Dialogue</translation>
     </message>
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="41"/>
         <source>Parênteses</source>
-        <translation type="unfinished"></translation>
+        <translation>Parenthetical</translation>
     </message>
     <message>
         <location filename="../src/ScreenplayFormat.cpp" line="42"/>
         <source>Transição</source>
-        <translation type="unfinished"></translation>
+        <translation>Transition</translation>
     </message>
 </context>
 <context>
@@ -13418,133 +13534,141 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/SettingsPanel.cpp" line="27"/>
         <source>Ativar corretor ortográfico</source>
-        <translation type="unfinished"></translation>
+        <translation>Enable spell checker</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="31"/>
         <location filename="../src/SettingsPanel.cpp" line="46"/>
         <source>Configurações</source>
-        <translation type="unfinished"></translation>
+        <translation>Settings</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="53"/>
-        <source>Sobre o Qiyva Writer</source>
-        <translation type="unfinished"></translation>
+        <source>Sobre o Qenna Writer</source>
+        <translation>About Qenna Writer</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="62"/>
         <source>Corretor ortográfico</source>
-        <translation type="unfinished"></translation>
+        <translation>Spell checker</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="71"/>
         <source>Idioma do dicionário:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dictionary language:</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="77"/>
         <source>Palavras desconhecidas ganham um sublinhado vermelho. Clique com o botão direito numa delas para ver sugestões ou adicionar ao dicionário do projeto.</source>
-        <translation type="unfinished"></translation>
+        <translation>Unknown words get a red underline. Right-click one to see suggestions or add it to the project dictionary.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="86"/>
         <source>Página de escrita</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing page</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="127"/>
         <source>Largura da página</source>
-        <translation type="unfinished"></translation>
+        <translation>Page width</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="131"/>
         <source>Comprimento da página</source>
-        <translation type="unfinished"></translation>
+        <translation>Page length</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="135"/>
         <source>Margem lateral</source>
-        <translation type="unfinished"></translation>
+        <translation>Side margin</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="139"/>
         <source>Margem topo/base</source>
-        <translation type="unfinished"></translation>
+        <translation>Top/bottom margin</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="146"/>
         <source>Define o tamanho da &quot;folha&quot; e o respiro interno entre a borda e o texto. No comprimento máximo (&quot;Tela cheia&quot;) a folha preenche a janela inteira e acompanha o seu tamanho; arrastando para a esquerda, a folha ganha uma altura fixa e o fundo aparece em volta. Vale para todos os projetos.</source>
-        <translation type="unfinished"></translation>
+        <translation>Sets the size of the &quot;page&quot; and the inner spacing between its edge and the text. At maximum length (&quot;Fullscreen&quot;) the page fills the whole window and follows its size; dragging to the left gives the page a fixed height, with the background showing around it. Applies to all projects.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="186"/>
         <source>Menções (@)</source>
-        <translation type="unfinished"></translation>
+        <translation>Mentions (@)</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="191"/>
         <source>Permitir marcar documentos do manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Allow tagging manuscript documents</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="195"/>
         <source>Por padrão, @ só sugere documentos das gavetas (personagens, locais etc.). Ative para incluir também capítulos e cenas do manuscrito.</source>
-        <translation type="unfinished"></translation>
+        <translation>By default, @ only suggests documents from drawers (characters, locations, etc.). Enable this to also include manuscript chapters and scenes.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="207"/>
         <source>Navegação</source>
-        <translation type="unfinished"></translation>
+        <translation>Navigation</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="212"/>
         <source>Navegar automaticamente entre capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatically navigate between chapters</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="216"/>
         <source>Ao chegar no início ou fim de um capítulo, manter o scroll pressionado na borda por 2 segundos avança ou retrocede automaticamente para o próximo.</source>
-        <translation type="unfinished"></translation>
+        <translation>When you reach the start or end of a chapter, holding the scroll at the edge for 2 seconds automatically moves to the next or previous one.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="228"/>
         <source>Memória</source>
-        <translation type="unfinished"></translation>
+        <translation>Memory</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="235"/>
         <source>Documentos simultâneos na RAM:</source>
-        <translation type="unfinished"></translation>
+        <translation>Documents kept in RAM at once:</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="246"/>
         <source>O app mantém os documentos abertos recentemente na memória para troca rápida. Ao atingir o limite, o mais antigo (sem edições pendentes) é descarregado automaticamente.</source>
-        <translation type="unfinished"></translation>
+        <translation>The app keeps recently opened documents in memory for quick switching. When the limit is reached, the oldest one (with no pending edits) is automatically unloaded.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="345"/>
         <source>Tela cheia</source>
-        <translation type="unfinished"></translation>
+        <translation>Fullscreen</translation>
+    </message>
+    <message>
+        <source>Define o tamanho da &quot;folha&quot; e o respiro interno entre a borda e o texto. O comprimento em &quot;Automático&quot; preenche a tela; com um valor fixo, a folha ganha altura definida e o fundo aparece em volta. Vale para todos os projetos.</source>
+        <translation type="vanished">Sets the size of the &quot;page&quot; and the inner spacing between its edge and the text. Length set to &quot;Automatic&quot; fills the screen; with a fixed value, the page gets a set height and the background shows around it. Applies to all projects.</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="159"/>
         <source>Detecção de personagens</source>
-        <translation type="unfinished"></translation>
+        <translation>Character detection</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="164"/>
         <source>Detectar personagens automaticamente</source>
-        <translation type="unfinished"></translation>
+        <translation>Detect characters automatically</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="167"/>
         <source>Marcar todos sem confirmar</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark all without confirming</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="171"/>
         <source>Quando ativado, o app detecta nomes de personagens no texto e sugere marcar a presença deles na cena.</source>
-        <translation type="unfinished"></translation>
+        <translation>When enabled, the app detects character names in the text and suggests marking their presence in the scene.</translation>
+    </message>
+    <message>
+        <source>Automático</source>
+        <translation type="vanished">Automatic</translation>
     </message>
 </context>
 <context>
@@ -13552,22 +13676,22 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/SpellEditor.cpp" line="144"/>
         <source>(sem sugestões)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no suggestions)</translation>
     </message>
     <message>
         <location filename="../src/SpellEditor.cpp" line="165"/>
         <source>Adicionar &quot;%1&quot; ao dicionário</source>
-        <translation type="unfinished"></translation>
+        <translation>Add &quot;%1&quot; to dictionary</translation>
     </message>
     <message>
         <location filename="../src/SpellEditor.cpp" line="193"/>
         <source>Adicionar ao Glossário...</source>
-        <translation type="unfinished"></translation>
+        <translation>Add to Glossary...</translation>
     </message>
     <message>
         <location filename="../src/SpellEditor.cpp" line="194"/>
         <source>Adicionar &quot;%1&quot; ao Glossário...</source>
-        <translation type="unfinished"></translation>
+        <translation>Add &quot;%1&quot; to Glossary...</translation>
     </message>
 </context>
 <context>
@@ -13575,7 +13699,7 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ThemesPanel.cpp" line="55"/>
         <source>em uso</source>
-        <translation type="unfinished"></translation>
+        <translation>in use</translation>
     </message>
 </context>
 <context>
@@ -13583,182 +13707,182 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="83"/>
         <source>Escolher…</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose…</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="84"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="91"/>
         <source>Editar Tema</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit Theme</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="111"/>
         <source>Nome:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="136"/>
         <source>Texto e cores principais</source>
-        <translation type="unfinished"></translation>
+        <translation>Text and main colors</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="141"/>
         <source>Cor do texto</source>
-        <translation type="unfinished"></translation>
+        <translation>Text color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="142"/>
         <source>Fundo da página</source>
-        <translation type="unfinished"></translation>
+        <translation>Page background</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="143"/>
         <source>Texto da UI</source>
-        <translation type="unfinished"></translation>
+        <translation>UI text</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="144"/>
         <source>Texto secundário</source>
-        <translation type="unfinished"></translation>
+        <translation>Secondary text</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="145"/>
         <source>Cor de destaque</source>
-        <translation type="unfinished"></translation>
+        <translation>Accent color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="153"/>
         <source>Plano de fundo da janela</source>
-        <translation type="unfinished"></translation>
+        <translation>Window background</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="157"/>
         <source>Cor do app</source>
-        <translation type="unfinished"></translation>
+        <translation>App color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="158"/>
         <source>Cor dos painéis</source>
-        <translation type="unfinished"></translation>
+        <translation>Panel color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="159"/>
         <source>Borda dos painéis</source>
-        <translation type="unfinished"></translation>
+        <translation>Panel border</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="164"/>
         <source>Imagem:</source>
-        <translation type="unfinished"></translation>
+        <translation>Image:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="184"/>
         <source>Modo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="187"/>
         <source>Centralizar</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="188"/>
         <source>Repetir</source>
-        <translation type="unfinished"></translation>
+        <translation>Repeat</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="189"/>
         <source>Esticar</source>
-        <translation type="unfinished"></translation>
+        <translation>Stretch</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="190"/>
         <source>Ajustar</source>
-        <translation type="unfinished"></translation>
+        <translation>Fit</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="191"/>
         <source>Preencher</source>
-        <translation type="unfinished"></translation>
+        <translation>Fill</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="203"/>
         <source>Página de texto</source>
-        <translation type="unfinished"></translation>
+        <translation>Text page</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="211"/>
         <source>Opacidade:</source>
-        <translation type="unfinished"></translation>
+        <translation>Opacity:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="224"/>
         <source>Sombra projetada</source>
-        <translation type="unfinished"></translation>
+        <translation>Drop shadow</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="241"/>
         <source>Cor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Color:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="243"/>
         <source>Raio:</source>
-        <translation type="unfinished"></translation>
+        <translation>Radius:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="245"/>
         <source>Desloc. Y:</source>
-        <translation type="unfinished"></translation>
+        <translation>Y offset:</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="262"/>
         <source>Pré-visualização</source>
-        <translation type="unfinished"></translation>
+        <translation>Preview</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="275"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="276"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="279"/>
         <source>Tema sem nome</source>
-        <translation type="unfinished"></translation>
+        <translation>Untitled theme</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="390"/>
         <source>Escolher cor</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="409"/>
         <source>Cor da sombra</source>
-        <translation type="unfinished"></translation>
+        <translation>Shadow color</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="419"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.webp *.tiff)</source>
-        <translation type="unfinished"></translation>
+        <translation>Images (*.png *.jpg *.jpeg *.bmp *.webp *.tiff)</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="421"/>
         <source>Escolher imagem de fundo</source>
-        <translation type="unfinished"></translation>
+        <translation>Choose background image</translation>
     </message>
     <message>
         <location filename="../src/ThemeEditorDialog.cpp" line="443"/>
         <source>Sem imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>No image</translation>
     </message>
 </context>
 <context>
@@ -13767,119 +13891,120 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <location filename="../src/ThemesPanel.cpp" line="249"/>
         <location filename="../src/ThemesPanel.cpp" line="368"/>
         <source>Padrão</source>
-        <translation type="unfinished"></translation>
+        <translation>Default</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="250"/>
         <location filename="../src/ThemesPanel.cpp" line="368"/>
         <source>Personalizado</source>
-        <translation type="unfinished"></translation>
+        <translation>Custom</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="258"/>
         <source>Novo</source>
-        <translation type="unfinished"></translation>
+        <translation>New</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="260"/>
         <source>Duplicar</source>
-        <translation type="unfinished"></translation>
+        <translation>Duplicate</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="262"/>
         <source>Editar</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="264"/>
         <source>Excluir</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="284"/>
         <source>Aplicar</source>
-        <translation type="unfinished"></translation>
+        <translation>Apply</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="365"/>
         <source>Em uso</source>
-        <translation type="unfinished"></translation>
+        <translation>In use</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="372"/>
         <source>Com imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>With image</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="378"/>
         <source>Nenhum tema selecionado</source>
-        <translation type="unfinished"></translation>
+        <translation>No theme selected</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="395"/>
         <source>Todos</source>
-        <translation type="unfinished"></translation>
+        <translation>All</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="396"/>
         <source>Claros</source>
-        <translation type="unfinished"></translation>
+        <translation>Light</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="397"/>
         <source>Amarelados</source>
-        <translation type="unfinished"></translation>
+        <translation>Yellowish</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="398"/>
         <source>Escuros</source>
-        <translation type="unfinished"></translation>
+        <translation>Dark</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="399"/>
         <source>Coloridos</source>
-        <translation type="unfinished"></translation>
+        <translation>Colorful</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="400"/>
         <source>Estampados</source>
-        <translation type="unfinished"></translation>
+        <translation>Patterned</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="458"/>
         <source>Nenhum tema personalizado ainda.
 Use &quot;Duplicar&quot; em um tema padrão pra começar.</source>
-        <translation type="unfinished"></translation>
+        <translation>No custom themes yet.
+Use &quot;Duplicate&quot; on a default theme to get started.</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="495"/>
         <source>Novo tema</source>
-        <translation type="unfinished"></translation>
+        <translation>New theme</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="517"/>
         <source>%1 (cópia)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (copy)</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="548"/>
         <source>Excluir tema</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete theme</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="549"/>
         <source>Excluir este tema personalizado? Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete this custom theme? This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="195"/>
         <source>Temas</source>
-        <translation type="unfinished"></translation>
+        <translation>Themes</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="282"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
 </context>
 <context>
@@ -13889,32 +14014,32 @@ Use &quot;Duplicar&quot; em um tema padrão pra começar.</source>
         <location filename="../src/TimelineEventItem.cpp" line="153"/>
         <location filename="../src/TimelineEventItem.cpp" line="335"/>
         <source>Evento</source>
-        <translation type="unfinished"></translation>
+        <translation>Event</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventItem.cpp" line="363"/>
         <source>Linha do tempo:</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventItem.cpp" line="389"/>
         <source>(sem descrição)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no description)</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventItem.cpp" line="471"/>
         <source>Editar evento</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit event</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventItem.cpp" line="473"/>
         <source>Exportar como documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Export as document</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventItem.cpp" line="475"/>
         <source>Remover</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove</translation>
     </message>
 </context>
 <context>
@@ -13922,127 +14047,127 @@ Use &quot;Duplicar&quot; em um tema padrão pra começar.</source>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="43"/>
         <source>Evento da linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline event</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="62"/>
         <source>Nome do evento</source>
-        <translation type="unfinished"></translation>
+        <translation>Event name</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="63"/>
         <source>Título:</source>
-        <translation type="unfinished"></translation>
+        <translation>Title:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="66"/>
         <source>Ex: Dia 5, 15/07, Ano III...</source>
-        <translation type="unfinished"></translation>
+        <translation>E.g.: Day 5, 07/15, Year III...</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="67"/>
         <source>Marcador:</source>
-        <translation type="unfinished"></translation>
+        <translation>Marker:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="72"/>
         <source>Descrição:</source>
-        <translation type="unfinished"></translation>
+        <translation>Description:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="77"/>
         <source>Detalhes do evento (visível no modo expandido)</source>
-        <translation type="unfinished"></translation>
+        <translation>Event details (visible in expanded mode)</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="84"/>
         <source>Vincular a:</source>
-        <translation type="unfinished"></translation>
+        <translation>Link to:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="89"/>
         <source>(sem vínculo)</source>
-        <translation type="unfinished"></translation>
+        <translation>(no link)</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="93"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="94"/>
         <source>Capítulo — %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter — %1</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="99"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="100"/>
         <source>    Cena — %1 / %2</source>
-        <translation type="unfinished"></translation>
+        <translation>    Scene — %1 / %2</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="106"/>
         <source>Gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="108"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="109"/>
         <source>Doc — %1 / %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Doc — %1 / %2</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="133"/>
         <source>Timeline:</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="146"/>
         <source>Cor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Color:</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="156"/>
         <source>Herdar</source>
-        <translation type="unfinished"></translation>
+        <translation>Inherit</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="157"/>
         <source>Usar cor da timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Use timeline color</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="177"/>
         <source>Confirmar</source>
-        <translation type="unfinished"></translation>
+        <translation>Confirm</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="178"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="187"/>
         <source>Cor do evento</source>
-        <translation type="unfinished"></translation>
+        <translation>Event color</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="194"/>
         <source>  Herdar da timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>  Inherit from timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelineEventPopup.cpp" line="233"/>
         <source>(vínculo atual)</source>
-        <translation type="unfinished"></translation>
+        <translation>(current link)</translation>
     </message>
 </context>
 <context>
@@ -14050,239 +14175,241 @@ Use &quot;Duplicar&quot; em um tema padrão pra começar.</source>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="87"/>
         <source>Linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="111"/>
         <source>Linha do Tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="117"/>
         <source>+ Timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>+ Timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="117"/>
         <location filename="../src/TimelinePanel.cpp" line="307"/>
         <source>Nova linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>New timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="122"/>
         <source>Alternar entre Trilho, Ramificações e Espiral</source>
-        <translation type="unfinished"></translation>
+        <translation>Toggle between Track, Branches, and Spiral</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="123"/>
         <source>Narrativa: presença dos personagens por cena  ·  História: eventos do enredo</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrative: character presence per scene  ·  Story: plot events</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="131"/>
         <source>Focar em uma linha (esmaece o resto)</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus on one line (dims the rest)</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="136"/>
         <source>Alcance do foco em saltos pelas conexões</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus range in hops across connections</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="140"/>
         <location filename="../src/TimelinePanel.cpp" line="298"/>
         <source>Só a linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Just the line</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="141"/>
         <location filename="../src/TimelinePanel.cpp" line="299"/>
         <source>1 salto</source>
-        <translation type="unfinished"></translation>
+        <translation>1 hop</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="142"/>
         <location filename="../src/TimelinePanel.cpp" line="300"/>
         <source>%1 saltos</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 hops</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="153"/>
         <source>Fechar</source>
-        <translation type="unfinished"></translation>
+        <translation>Close</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="172"/>
         <location filename="../src/TimelinePanel.cpp" line="417"/>
         <source>Novo evento</source>
-        <translation type="unfinished"></translation>
+        <translation>New event</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="230"/>
         <source>Trilho</source>
-        <translation type="unfinished"></translation>
+        <translation>Track</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="231"/>
         <source>Ramificações</source>
-        <translation type="unfinished"></translation>
+        <translation>Branches</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="232"/>
         <source>Espiral</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiral</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="236"/>
         <source>Narrativa</source>
-        <translation type="unfinished"></translation>
+        <translation>Narrative</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="236"/>
         <source>História</source>
-        <translation type="unfinished"></translation>
+        <translation>Backstory</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="246"/>
         <source>Mostrar tudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Show all</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="254"/>
         <location filename="../src/TimelinePanel.cpp" line="292"/>
         <source>Linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Line</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="289"/>
         <source>Foco</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="294"/>
         <source>Foco: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus: %1</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="307"/>
         <source>Editar linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="316"/>
         <source>Nome da timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline name</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="318"/>
         <source>Nome:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="322"/>
         <source>Principal</source>
-        <translation type="unfinished"></translation>
+        <translation>Main</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="323"/>
         <source>Secundária</source>
-        <translation type="unfinished"></translation>
+        <translation>Secondary</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="324"/>
         <source>Backstory / Flashback</source>
-        <translation type="unfinished"></translation>
+        <translation>Backstory / Flashback</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="327"/>
         <source>Importância:</source>
-        <translation type="unfinished"></translation>
+        <translation>Importance:</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="344"/>
         <source>Cor da timeline</source>
-        <translation type="unfinished"></translation>
+        <translation>Timeline color</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="347"/>
         <source>Cor:</source>
-        <translation type="unfinished"></translation>
+        <translation>Color:</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="353"/>
         <location filename="../src/TimelinePanel.cpp" line="1001"/>
         <source>Criar</source>
-        <translation type="unfinished"></translation>
+        <translation>Create</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="353"/>
         <source>Salvar</source>
-        <translation type="unfinished"></translation>
+        <translation>Save</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="354"/>
         <location filename="../src/TimelinePanel.cpp" line="1000"/>
         <source>Cancelar</source>
-        <translation type="unfinished"></translation>
+        <translation>Cancel</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="601"/>
         <source>Capítulo %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter %1</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="631"/>
         <source>Trilha na linha do tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Track on timeline</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="632"/>
         <source>%1 é um personagem secundário e aparece na obra.
 
 Quer acompanhá-lo com uma trilha na linha do tempo?</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 is a secondary character and appears in the work.
+
+Would you like to track them with a timeline track?</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="634"/>
         <source>Este personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>This character</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="674"/>
         <location filename="../src/TimelinePanel.cpp" line="682"/>
         <source>Personagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Character</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="721"/>
         <source>Cena %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Scene %1</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="968"/>
         <location filename="../src/TimelinePanel.cpp" line="975"/>
         <source>Exportar como documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Export as document</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="969"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
-        <translation type="unfinished"></translation>
+        <translation>Create a drawer before using this feature.</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="982"/>
         <source>Nome do documento:</source>
-        <translation type="unfinished"></translation>
+        <translation>Document name:</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="988"/>
         <source>Gaveta de destino:</source>
-        <translation type="unfinished"></translation>
+        <translation>Target drawer:</translation>
     </message>
     <message>
         <location filename="../src/TimelinePanel.cpp" line="992"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
 </context>
 <context>
@@ -14292,12 +14419,12 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
         <location filename="../src/TimelineScene.cpp" line="617"/>
         <location filename="../src/TimelineScene.cpp" line="1155"/>
         <source>Linha</source>
-        <translation type="unfinished"></translation>
+        <translation>Line</translation>
     </message>
     <message>
         <location filename="../src/TimelineScene.cpp" line="1189"/>
         <source>Editar linha...</source>
-        <translation type="unfinished"></translation>
+        <translation>Edit line...</translation>
     </message>
 </context>
 <context>
@@ -14305,237 +14432,237 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
     <message>
         <location filename="../src/TopToolbar.cpp" line="153"/>
         <source>Novo projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>New project</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="158"/>
         <source>Abrir projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Open project</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="163"/>
         <source>Salvar projeto (Ctrl+S)</source>
-        <translation type="unfinished"></translation>
+        <translation>Save project (Ctrl+S)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="175"/>
         <source>Negrito (Ctrl+B)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bold (Ctrl+B)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="181"/>
         <source>Itálico (Ctrl+I)</source>
-        <translation type="unfinished"></translation>
+        <translation>Italic (Ctrl+I)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="187"/>
         <source>Sublinhado (Ctrl+U)</source>
-        <translation type="unfinished"></translation>
+        <translation>Underline (Ctrl+U)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="193"/>
         <source>Tachado (Ctrl+Shift+S)</source>
-        <translation type="unfinished"></translation>
+        <translation>Strikethrough (Ctrl+Shift+S)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="199"/>
         <source>Glossário</source>
-        <translation type="unfinished"></translation>
+        <translation>Glossary</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="148"/>
         <source>Voltar ao menu principal</source>
-        <translation type="unfinished"></translation>
+        <translation>Back to main menu</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="168"/>
         <source>Exportar projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>Export project</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="206"/>
         <source>Editor focado</source>
-        <translation type="unfinished"></translation>
+        <translation>Focused editor</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="216"/>
         <source>Modo foco</source>
-        <translation type="unfinished"></translation>
+        <translation>Focus mode</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="225"/>
         <source>Buscar</source>
-        <translation type="unfinished"></translation>
+        <translation>Search</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="256"/>
         <source>Tamanho da fonte</source>
-        <translation type="unfinished"></translation>
+        <translation>Font size</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="265"/>
         <source>Espaçamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Spacing</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="271"/>
         <source>Identação de parágrafo</source>
-        <translation type="unfinished"></translation>
+        <translation>Paragraph indent</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="276"/>
         <source>Alinhamento</source>
-        <translation type="unfinished"></translation>
+        <translation>Alignment</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="282"/>
         <source>Adicionar imagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Add image</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="288"/>
         <source>Lembretes</source>
-        <translation type="unfinished"></translation>
+        <translation>Reminders</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="293"/>
         <source>Som imersivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Immersive Sound</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="299"/>
         <source>Temas</source>
-        <translation type="unfinished"></translation>
+        <translation>Themes</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="304"/>
         <source>Configurações</source>
-        <translation type="unfinished"></translation>
+        <translation>Settings</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="310"/>
         <source>Tela cheia</source>
-        <translation type="unfinished"></translation>
+        <translation>Fullscreen</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="315"/>
         <source>Painel de Referência</source>
-        <translation type="unfinished"></translation>
+        <translation>Reference Panel</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="320"/>
         <source>Pensário</source>
-        <translation type="unfinished"></translation>
+        <translation>Pensarium</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="325"/>
         <source>Construtor</source>
-        <translation type="unfinished"></translation>
+        <translation>Builder</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="525"/>
         <source>Esquerda</source>
-        <translation type="unfinished"></translation>
+        <translation>Left</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="526"/>
         <source>Centro</source>
-        <translation type="unfinished"></translation>
+        <translation>Center</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="527"/>
         <source>Direita</source>
-        <translation type="unfinished"></translation>
+        <translation>Right</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="528"/>
         <source>Justificado</source>
-        <translation type="unfinished"></translation>
+        <translation>Justified</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="571"/>
         <source>Aplicar em:</source>
-        <translation type="unfinished"></translation>
+        <translation>Apply to:</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="577"/>
         <source>Esse documento</source>
-        <translation type="unfinished"></translation>
+        <translation>This document</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="578"/>
         <source>Todos os documentos</source>
-        <translation type="unfinished"></translation>
+        <translation>All documents</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="579"/>
         <source>Somente manuscrito</source>
-        <translation type="unfinished"></translation>
+        <translation>Manuscript only</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="580"/>
         <source>Somente gavetas</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawers only</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="821"/>
         <source>Digite o tamanho (10–48, aceita 0,5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Enter the size (10–48, accepts 0.5)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="853"/>
         <source> pt</source>
-        <translation type="unfinished"></translation>
+        <translation> pt</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="901"/>
         <source>Entre linhas</source>
-        <translation type="unfinished"></translation>
+        <translation>Line spacing</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="905"/>
         <source>Simples (1.0)</source>
-        <translation type="unfinished"></translation>
+        <translation>Single (1.0)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="906"/>
         <source>Justo (1.15)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tight (1.15)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="907"/>
         <source>Compacto (1.3)</source>
-        <translation type="unfinished"></translation>
+        <translation>Compact (1.3)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="908"/>
         <source>Confortável (1.5)</source>
-        <translation type="unfinished"></translation>
+        <translation>Comfortable (1.5)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="909"/>
         <source>Padrão (1.7)</source>
-        <translation type="unfinished"></translation>
+        <translation>Default (1.7)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="910"/>
         <source>Amplo (1.9)</source>
-        <translation type="unfinished"></translation>
+        <translation>Wide (1.9)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="911"/>
         <source>Espaçoso (2.2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spacious (2.2)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="932"/>
         <source>Antes do parágrafo</source>
-        <translation type="unfinished"></translation>
+        <translation>Before paragraph</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="974"/>
         <source>Depois do parágrafo</source>
-        <translation type="unfinished"></translation>
+        <translation>After paragraph</translation>
     </message>
 </context>
 <context>
@@ -14543,47 +14670,47 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
     <message>
         <location filename="../src/VariationBar.cpp" line="79"/>
         <source>Variações</source>
-        <translation type="unfinished"></translation>
+        <translation>Variations</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="92"/>
         <source>Criar variação a partir do conteúdo atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Create variation from current content</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="98"/>
         <source>Nova variação</source>
-        <translation type="unfinished"></translation>
+        <translation>New variation</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="99"/>
         <source>Nome da variação:</source>
-        <translation type="unfinished"></translation>
+        <translation>Variation name:</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="107"/>
         <source>Marcar variação atual como primária</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark current variation as primary</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="121"/>
         <source>Apagar variação atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete current variation</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="130"/>
         <source>Apagar variação</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete variation</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="131"/>
         <source>Apagar a variação atual? Esta ação não pode ser desfeita.</source>
-        <translation type="unfinished"></translation>
+        <translation>Delete the current variation? This action cannot be undone.</translation>
     </message>
     <message>
         <location filename="../src/VariationBar.cpp" line="197"/>
         <source>(sem nome)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unnamed)</translation>
     </message>
 </context>
 <context>
@@ -14591,17 +14718,17 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="91"/>
         <source>Mostrar/ocultar contagem</source>
-        <translation type="unfinished"></translation>
+        <translation>Show/hide count</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="114"/>
         <source>Contador</source>
-        <translation type="unfinished"></translation>
+        <translation>Counter</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="121"/>
         <source>Estatísticas</source>
-        <translation type="unfinished"></translation>
+        <translation>Statistics</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="167"/>
@@ -14611,370 +14738,391 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
         <location filename="../src/WordCountPanel.cpp" line="910"/>
         <location filename="../src/WordCountPanel.cpp" line="1183"/>
         <source>Palavras</source>
-        <translation type="unfinished"></translation>
+        <translation>Words</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="168"/>
         <location filename="../src/WordCountPanel.cpp" line="903"/>
         <location filename="../src/WordCountPanel.cpp" line="1186"/>
         <source>Caracteres</source>
-        <translation type="unfinished"></translation>
+        <translation>Characters</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="209"/>
         <location filename="../src/WordCountPanel.cpp" line="215"/>
         <source>Exibir calendário</source>
-        <translation type="unfinished"></translation>
+        <translation>Show calendar</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="438"/>
         <source>Contar palavras</source>
-        <translation type="unfinished"></translation>
+        <translation>Count words</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="453"/>
         <source>Apenas nos capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapters only</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="454"/>
         <source>No documento em edição</source>
-        <translation type="unfinished"></translation>
+        <translation>In the document being edited</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="455"/>
         <location filename="../src/WordCountPanel.cpp" line="627"/>
         <source>Documentos das gavetas</source>
-        <translation type="unfinished"></translation>
+        <translation>Drawer documents</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="456"/>
         <source>Todos os documentos do projeto</source>
-        <translation type="unfinished"></translation>
+        <translation>All project documents</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="476"/>
         <source>Meta diária</source>
-        <translation type="unfinished"></translation>
+        <translation>Daily goal</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="484"/>
         <source>Configurar folgas</source>
-        <translation type="unfinished"></translation>
+        <translation>Configure days off</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="501"/>
         <source>Reiniciar o dia da meta</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset the goal day</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="517"/>
         <source>Folgas</source>
-        <translation type="unfinished"></translation>
+        <translation>Days off</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="527"/>
         <source>A cada</source>
-        <translation type="unfinished"></translation>
+        <translation>Every</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="531"/>
         <source>0 (ilimitado)</source>
-        <translation type="unfinished"></translation>
+        <translation>0 (unlimited)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="533"/>
         <source>%1 dias</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 days</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="535"/>
         <source>Nunca</source>
-        <translation type="unfinished"></translation>
+        <translation>Never</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="544"/>
         <source>Bloqueado: faltam %1 dia(s) batendo a meta antes de poder mudar.</source>
-        <translation type="unfinished"></translation>
+        <translation>Locked: %1 more day(s) of hitting your goal before you can change this.</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="549"/>
         <source>Trocar cadência</source>
-        <translation type="unfinished"></translation>
+        <translation>Change cadence</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="550"/>
         <source>Tem certeza? Você só poderá trocar de novo depois de bater %1 dias de meta.</source>
-        <translation type="unfinished"></translation>
+        <translation>Are you sure? You&apos;ll only be able to change this again after hitting your goal for %1 days.</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="618"/>
         <source>Conta</source>
-        <translation type="unfinished"></translation>
+        <translation>Count</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="620"/>
         <source>Tipo</source>
-        <translation type="unfinished"></translation>
+        <translation>Type</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="626"/>
         <source>Somente capítulos</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapters only</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="628"/>
         <source>Tudo</source>
-        <translation type="unfinished"></translation>
+        <translation>Everything</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="636"/>
         <source>Tempo</source>
-        <translation type="unfinished"></translation>
+        <translation>Time</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="828"/>
         <source>🤫 lazyass mode</source>
-        <translation type="unfinished"></translation>
+        <translation>🤫 lazyass mode</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="866"/>
         <source>Minutos</source>
-        <translation type="unfinished"></translation>
+        <translation>Minutes</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="879"/>
         <source>ilimitado</source>
-        <translation type="unfinished"></translation>
+        <translation>unlimited</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="880"/>
         <source>Folgas disponíveis: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Days off available: %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="885"/>
         <source>🔒 Cadência travada — bata mais %1 dia(s) de meta pra destravar.</source>
-        <translation type="unfinished"></translation>
+        <translation>🔒 Cadence locked — hit your goal for %1 more day(s) to unlock it.</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="887"/>
         <source>✓ Cadência desbloqueada.</source>
-        <translation type="unfinished"></translation>
+        <translation>✓ Cadence unlocked.</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1022"/>
         <source>Clique para abrir a meta diária
 Botão direito para personalizar o contador</source>
-        <translation type="unfinished"></translation>
+        <translation>Click to open the daily goal
+Right-click to customize the counter</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1035"/>
         <source>Sprint de escrita</source>
-        <translation type="unfinished"></translation>
+        <translation>Writing sprint</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1045"/>
         <source>Duração:</source>
-        <translation type="unfinished"></translation>
+        <translation>Duration:</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1050"/>
         <source> min</source>
-        <translation type="unfinished"></translation>
+        <translation> min</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1054"/>
         <source>Meta:</source>
-        <translation type="unfinished"></translation>
+        <translation>Goal:</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1059"/>
         <source> palavras</source>
-        <translation type="unfinished"></translation>
+        <translation> words</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1084"/>
         <location filename="../src/WordCountPanel.cpp" line="1135"/>
         <source>Iniciar sprint</source>
-        <translation type="unfinished"></translation>
+        <translation>Start sprint</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1109"/>
         <source>Encerrar sprint</source>
-        <translation type="unfinished"></translation>
+        <translation>End sprint</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1138"/>
         <source>✓ Meta batida!</source>
-        <translation type="unfinished"></translation>
+        <translation>✓ Goal reached!</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1138"/>
         <source>Sprint encerrado</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprint ended</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1141"/>
         <source>%1 palavras escritas</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 words written</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1162"/>
         <source>%1 / %2 palavras</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 / %2 words</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1184"/>
         <source>Palavras hoje (capítulos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words today (chapters)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1185"/>
         <source>Palavras hoje (projeto)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words today (project)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1188"/>
         <source>Páginas hoje (capítulos)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages today (chapters)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1189"/>
         <source>Páginas hoje (projeto)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages today (project)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1190"/>
         <source>Tempo na sessão</source>
-        <translation type="unfinished"></translation>
+        <translation>Session time</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1212"/>
         <source>Slot 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Slot 1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1214"/>
         <source>Slot 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Slot 2</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1217"/>
         <source>Barra de progresso da meta</source>
-        <translation type="unfinished"></translation>
+        <translation>Goal progress bar</translation>
+    </message>
+    <message>
+        <source>Palavras (Somente capítulos)</source>
+        <translation type="vanished">Words (Chapters only)</translation>
+    </message>
+    <message>
+        <source>Palavras (Doc atual)</source>
+        <translation type="vanished">Words (Current doc)</translation>
+    </message>
+    <message>
+        <source>Palavras (Gavetas)</source>
+        <translation type="vanished">Words (Drawers)</translation>
+    </message>
+    <message>
+        <source>Palavras (Tudo)</source>
+        <translation type="vanished">Words (Everything)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="988"/>
         <source>Hoje: %1 / %2 minutos (%3%)</source>
-        <translation type="unfinished"></translation>
+        <translation>Today: %1 / %2 minutes (%3%)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="995"/>
         <source>Hoje: %1 / %2 palavras (%3%)</source>
-        <translation type="unfinished"></translation>
+        <translation>Today: %1 / %2 words (%3%)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="975"/>
         <location filename="../src/WordCountPanel.cpp" line="1002"/>
         <source>Reinicia em %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Resets in %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="895"/>
         <source>Palavras (cap.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words (chap.)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="896"/>
         <source>Palavras (atual)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words (current)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="897"/>
         <source>Palavras (gavetas)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words (drawers)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="898"/>
         <source>Palavras (tudo)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words (everything)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="901"/>
         <source>Palavras hoje</source>
-        <translation type="unfinished"></translation>
+        <translation>Words today</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="901"/>
         <source>Palavras hoje (cap.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Words today (chap.)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="905"/>
         <location filename="../src/WordCountPanel.cpp" line="1187"/>
         <source>Páginas</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="907"/>
         <source>Páginas hoje</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages today</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="907"/>
         <source>Páginas hoje (cap.)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages today (chap.)</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="909"/>
         <source>Tempo hoje</source>
-        <translation type="unfinished"></translation>
+        <translation>Time today</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="972"/>
         <source>Meta atingida!</source>
-        <translation type="unfinished"></translation>
+        <translation>Goal reached!</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1014"/>
         <source>Streak: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Streak: %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1015"/>
         <source>Recorde: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Record: %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1016"/>
         <source>Hoje: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Today: %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1016"/>
         <source>sim</source>
-        <translation type="unfinished"></translation>
+        <translation>yes</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1016"/>
         <source>não</source>
-        <translation type="unfinished"></translation>
+        <translation>no</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1017"/>
         <source>Páginas: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Pages: %1</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1018"/>
         <source>Média: %1 palavras/dia</source>
-        <translation type="unfinished"></translation>
+        <translation>Average: %1 words/day</translation>
     </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="1019"/>
         <source>Tempo: %1 min/dia</source>
-        <translation type="unfinished"></translation>
+        <translation>Time: %1 min/day</translation>
+    </message>
+    <message>
+        <source>Clique no card pra abrir ou fechar a meta diária</source>
+        <translation type="vanished">Click the card to open or close the daily goal</translation>
     </message>
 </context>
 <context>
@@ -14982,22 +15130,22 @@ Botão direito para personalizar o contador</source>
     <message>
         <location filename="../src/WordCounter.cpp" line="865"/>
         <source>Capítulo</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter</translation>
     </message>
     <message>
         <location filename="../src/WordCounter.cpp" line="866"/>
         <source>Capítulo removido</source>
-        <translation type="unfinished"></translation>
+        <translation>Chapter removed</translation>
     </message>
     <message>
         <location filename="../src/WordCounter.cpp" line="871"/>
         <source>Documento</source>
-        <translation type="unfinished"></translation>
+        <translation>Document</translation>
     </message>
     <message>
         <location filename="../src/WordCounter.cpp" line="872"/>
         <source>Documento removido</source>
-        <translation type="unfinished"></translation>
+        <translation>Document removed</translation>
     </message>
 </context>
 <context>
@@ -15005,165 +15153,181 @@ Botão direito para personalizar o contador</source>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="85"/>
         <source>Hoje</source>
-        <translation type="unfinished"></translation>
+        <translation>Today</translation>
+    </message>
+    <message>
+        <source>D</source>
+        <translation type="vanished">S</translation>
+    </message>
+    <message>
+        <source>S</source>
+        <translation type="vanished">M</translation>
+    </message>
+    <message>
+        <source>T</source>
+        <translation type="vanished">T</translation>
+    </message>
+    <message>
+        <source>Q</source>
+        <translation type="vanished">W</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="111"/>
         <source>D</source>
         <comment>calendar weekday abbrev: Sunday</comment>
-        <translation type="unfinished"></translation>
+        <translation>S</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="112"/>
         <source>S</source>
         <comment>calendar weekday abbrev: Monday</comment>
-        <translation type="unfinished"></translation>
+        <translation>M</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="113"/>
         <source>T</source>
         <comment>calendar weekday abbrev: Tuesday</comment>
-        <translation type="unfinished"></translation>
+        <translation>T</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="114"/>
         <source>Q</source>
         <comment>calendar weekday abbrev: Wednesday</comment>
-        <translation type="unfinished"></translation>
+        <translation>W</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="115"/>
         <source>Q</source>
         <comment>calendar weekday abbrev: Thursday</comment>
-        <translation type="unfinished"></translation>
+        <translation>T</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="116"/>
         <source>S</source>
         <comment>calendar weekday abbrev: Friday</comment>
-        <translation type="unfinished"></translation>
+        <translation>F</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="117"/>
         <source>S</source>
         <comment>calendar weekday abbrev: Saturday</comment>
-        <translation type="unfinished"></translation>
+        <translation>S</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="243"/>
         <source>%1 de %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="344"/>
         <source>Marcar como folga ☾</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark as day off ☾</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="349"/>
         <source>Sem folgas disponíveis</source>
-        <translation type="unfinished"></translation>
+        <translation>No days off available</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="351"/>
         <source>Marcar folga roubada ☾</source>
-        <translation type="unfinished"></translation>
+        <translation>Mark stolen day off ☾</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="359"/>
         <source>Desmarcar folga</source>
-        <translation type="unfinished"></translation>
+        <translation>Unmark day off</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="378"/>
         <source>Você folgou esse dia</source>
-        <translation type="unfinished"></translation>
+        <translation>You took this day off</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="379"/>
         <source>A folga deste dia foi trapaceada</source>
-        <translation type="unfinished"></translation>
+        <translation>This day&apos;s rest was a cheat day</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="383"/>
         <source>Nenhuma escrita neste dia</source>
-        <translation type="unfinished"></translation>
+        <translation>No writing on this day</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="397"/>
         <source>%1% da meta diária</source>
-        <translation type="unfinished"></translation>
+        <translation>%1% of the daily goal</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="449"/>
         <source>%1 de %2 de %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2, %3</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="462"/>
         <source>%1 h %2 min</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 h %2 min</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="463"/>
         <source>%1 min</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 min</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="464"/>
         <source>menos de 1 min</source>
-        <translation type="unfinished"></translation>
+        <translation>less than 1 min</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="465"/>
         <source>—</source>
-        <translation type="unfinished"></translation>
+        <translation>—</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="503"/>
         <location filename="../src/WordCounterCalendar.cpp" line="505"/>
         <source>Status</source>
-        <translation type="unfinished"></translation>
+        <translation>Status</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="503"/>
         <source>Folga ☾</source>
-        <translation type="unfinished"></translation>
+        <translation>Day off ☾</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="505"/>
         <source>Folga roubada ☾</source>
-        <translation type="unfinished"></translation>
+        <translation>Stolen day off ☾</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="507"/>
         <source>Palavras escritas</source>
-        <translation type="unfinished"></translation>
+        <translation>Words written</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="508"/>
         <source>Tempo de sessão</source>
-        <translation type="unfinished"></translation>
+        <translation>Session time</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="509"/>
         <source>Meta do dia</source>
-        <translation type="unfinished"></translation>
+        <translation>Day&apos;s goal</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="510"/>
         <source>%1%</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="511"/>
         <source>%1%  %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1%  %2</translation>
     </message>
     <message>
         <location filename="../src/WordCounterCalendar.cpp" line="520"/>
         <source>Documentos editados:</source>
-        <translation type="unfinished"></translation>
+        <translation>Documents edited:</translation>
     </message>
 </context>
 <context>
@@ -15171,133 +15335,133 @@ Botão direito para personalizar o contador</source>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="79"/>
         <source>Segunda</source>
-        <translation type="unfinished"></translation>
+        <translation>Monday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="79"/>
         <source>Terça</source>
-        <translation type="unfinished"></translation>
+        <translation>Tuesday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="79"/>
         <source>Quarta</source>
-        <translation type="unfinished"></translation>
+        <translation>Wednesday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="80"/>
         <source>Quinta</source>
-        <translation type="unfinished"></translation>
+        <translation>Thursday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="80"/>
         <source>Sexta</source>
-        <translation type="unfinished"></translation>
+        <translation>Friday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="80"/>
         <source>Sábado</source>
-        <translation type="unfinished"></translation>
+        <translation>Saturday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="81"/>
         <source>Domingo</source>
-        <translation type="unfinished"></translation>
+        <translation>Sunday</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="151"/>
         <source>Estatísticas</source>
-        <translation type="unfinished"></translation>
+        <translation>Statistics</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="219"/>
         <source>Conquistas</source>
-        <translation type="unfinished"></translation>
+        <translation>Achievements</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="221"/>
         <source>Dias com meta batida</source>
-        <translation type="unfinished"></translation>
+        <translation>Days with goal hit</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="224"/>
         <source>Streak atual</source>
-        <translation type="unfinished"></translation>
+        <translation>Current streak</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="225"/>
         <location filename="../src/WritingStatsDialog.cpp" line="229"/>
         <source>%1 dia(s)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 day(s)</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="228"/>
         <source>Maior streak</source>
-        <translation type="unfinished"></translation>
+        <translation>Longest streak</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="232"/>
         <source>Produção</source>
-        <translation type="unfinished"></translation>
+        <translation>Output</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="234"/>
         <source>Total de palavras escritas</source>
-        <translation type="unfinished"></translation>
+        <translation>Total words written</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="237"/>
         <source>Tempo total de escrita</source>
-        <translation type="unfinished"></translation>
+        <translation>Total writing time</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="245"/>
         <source>Recorde diário</source>
-        <translation type="unfinished"></translation>
+        <translation>Daily record</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="246"/>
         <source>%1 pal. (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 wd. (%2)</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="250"/>
         <source>Dias ativos</source>
-        <translation type="unfinished"></translation>
+        <translation>Active days</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="253"/>
         <source>Média por dia ativo</source>
-        <translation type="unfinished"></translation>
+        <translation>Average per active day</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="254"/>
         <source>%1 palavras</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 words</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="257"/>
         <source>Hábitos</source>
-        <translation type="unfinished"></translation>
+        <translation>Habits</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="260"/>
         <source>Dia mais produtivo</source>
-        <translation type="unfinished"></translation>
+        <translation>Most productive day</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="261"/>
         <source>%1 (~%2 pal.)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (~%2 wd.)</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="267"/>
         <source>Doc. mais trabalhado</source>
-        <translation type="unfinished"></translation>
+        <translation>Most-worked doc</translation>
     </message>
     <message>
         <location filename="../src/WritingStatsDialog.cpp" line="268"/>
         <source>%1 (%2d)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2d)</translation>
     </message>
 </context>
 <context>
@@ -15305,45 +15469,45 @@ Botão direito para personalizar o contador</source>
     <message>
         <location filename="../src/ZoneItem.cpp" line="142"/>
         <source>Área</source>
-        <translation type="unfinished"></translation>
+        <translation>Area</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="213"/>
         <location filename="../src/ZoneItem.cpp" line="325"/>
         <source>Cor da área</source>
-        <translation type="unfinished"></translation>
+        <translation>Area color</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="289"/>
         <location filename="../src/ZoneItem.cpp" line="320"/>
         <source>Nome da área</source>
-        <translation type="unfinished"></translation>
+        <translation>Area name</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="289"/>
         <location filename="../src/ZoneItem.cpp" line="320"/>
         <source>Nome:</source>
-        <translation type="unfinished"></translation>
+        <translation>Name:</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="318"/>
         <source>Renomear área</source>
-        <translation type="unfinished"></translation>
+        <translation>Rename area</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="324"/>
         <source>Cor...</source>
-        <translation type="unfinished"></translation>
+        <translation>Color...</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="329"/>
         <source>Exportar área para gaveta</source>
-        <translation type="unfinished"></translation>
+        <translation>Export area to drawer</translation>
     </message>
     <message>
         <location filename="../src/ZoneItem.cpp" line="331"/>
         <source>Remover área</source>
-        <translation type="unfinished"></translation>
+        <translation>Remove area</translation>
     </message>
 </context>
 </TS>

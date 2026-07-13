@@ -73,6 +73,24 @@ void migrateSettingsFromMira()
     newSettings.setValue(QStringLiteral("migratedFromMira"), true);
 }
 
+// Migração única do rebranding Qiyva Writer → Qenna Writer: mesmo esquema da
+// migração acima, mas partindo da chave "Qiyva Writer" (que só existiu por
+// pouco tempo em produção). Roda depois da migração de Mira, então cobre os
+// dois saltos possíveis (Mira→Qenna direto, ou Mira→Qiyva→Qenna).
+void migrateSettingsFromQiyva()
+{
+    QSettings newSettings(QStringLiteral("Qenna Writer"), QStringLiteral("Qenna Writer"));
+    if (newSettings.value(QStringLiteral("migratedFromQiyva"), false).toBool())
+        return;
+
+    QSettings oldSettings(QStringLiteral("Qiyva Writer"), QStringLiteral("Qiyva Writer"));
+    const QStringList keys = oldSettings.allKeys();
+    for (const QString &key : keys) {
+        newSettings.setValue(key, oldSettings.value(key));
+    }
+    newSettings.setValue(QStringLiteral("migratedFromQiyva"), true);
+}
+
 }
 
 int main(int argc, char *argv[])
@@ -80,10 +98,11 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     migrateSettingsFromMira();
+    migrateSettingsFromQiyva();
 
-    QApplication::setApplicationName("Qiyva Writer");
+    QApplication::setApplicationName("Qenna Writer");
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
-    QApplication::setOrganizationName("Qiyva Writer");
+    QApplication::setOrganizationName("Qenna Writer");
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
 
     CrashLogger::install();
@@ -105,11 +124,11 @@ int main(int argc, char *argv[])
         const QString prefLang = qs.value(QStringLiteral("app/language")).toString();
         bool loaded = false;
         if (!prefLang.isEmpty()) {
-            loaded = translator.load(QStringLiteral(":/i18n/qiyva_") + prefLang);
+            loaded = translator.load(QStringLiteral(":/i18n/qenna_") + prefLang);
         }
         if (!loaded) {
             for (const QString &locale : QLocale::system().uiLanguages()) {
-                if (translator.load(QStringLiteral(":/i18n/qiyva_") + QLocale(locale).name())) {
+                if (translator.load(QStringLiteral(":/i18n/qenna_") + QLocale(locale).name())) {
                     loaded = true;
                     break;
                 }

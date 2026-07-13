@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-# Versão única do app — também lida pelo installer (qiyva-writer.iss) via ISPP,
+# Versão única do app — também lida pelo installer (qenna-writer.iss) via ISPP,
 # pra não precisar bumpar em dois lugares.
 # file(STRINGS) só é lido no configure — sem esse CONFIGURE_DEPENDS, um bump no
 # VERSION não força reconfigure e "cmake --build" sozinho continua embutindo a
@@ -10,7 +10,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" APP_VERSION_STRING)
 string(STRIP "${APP_VERSION_STRING}" APP_VERSION_STRING)
 
-project(qiyva-writer VERSION ${APP_VERSION_STRING} LANGUAGES CXX)
+project(qenna-writer VERSION ${APP_VERSION_STRING} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,7 +25,7 @@ qt_standard_project_setup()
 # Hunspell (corretor ortográfico) — compilado a partir de third_party/hunspell.
 include(cmake/Hunspell.cmake)
 
-qt_add_executable(qiyva-writer
+qt_add_executable(qenna-writer
     src/main.cpp
     src/CrashLogger.cpp
     src/CrashLogger.h
@@ -226,14 +226,14 @@ qt_add_executable(qiyva-writer
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
 
-qt_add_translations(qiyva-writer
+qt_add_translations(qenna-writer
     TS_FILES
-        translations/qiyva_pt_BR.ts
-        translations/qiyva_en.ts
-    SOURCE_TARGETS qiyva-writer
+        translations/qenna_pt_BR.ts
+        translations/qenna_en.ts
+    SOURCE_TARGETS qenna-writer
 )
 
-target_link_libraries(qiyva-writer PRIVATE
+target_link_libraries(qenna-writer PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
@@ -244,15 +244,15 @@ target_link_libraries(qiyva-writer PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(qiyva-writer PRIVATE dwmapi)
+    target_link_libraries(qenna-writer PRIVATE dwmapi)
 endif()
 
-target_compile_definitions(qiyva-writer PRIVATE
+target_compile_definitions(qenna-writer PRIVATE
     DEV_ASSETS_DIR="${CMAKE_SOURCE_DIR}/src/assets"
     APP_VERSION="${APP_VERSION_STRING}"
 )
 
-set_target_properties(qiyva-writer PROPERTIES
+set_target_properties(qenna-writer PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
 )
