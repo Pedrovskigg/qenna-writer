@@ -7,7 +7,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 
 // Checagem silenciosa de atualizações via GitHub Releases
-// (Pedrovskigg/mira-writing-2-releases). Roda em background no startup; se a release
+// (Pedrovskigg/Qiyva-Writer-releases). Roda em background no startup; se a release
 // mais recente for mais nova que QApplication::applicationVersion(), emite
 // updateAvailable() com a URL do instalador (.exe) anexado à release.
 // Falha de rede/sem release/sem asset: silenciosamente não emite nada.

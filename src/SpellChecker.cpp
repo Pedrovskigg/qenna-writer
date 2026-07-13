@@ -195,7 +195,7 @@ void SpellChecker::savePersonalDictionary()
     }
     QTextStream ts(&f);
     ts.setEncoding(QStringConverter::Utf8);
-    ts << "# Mira Writing — dicionário pessoal do projeto\n";
+    ts << "# Qiyva Writer — dicionário pessoal do projeto\n";
     QStringList sorted = m_personal.values();
     sorted.sort(Qt::CaseInsensitive);
     for (const QString& w : sorted) {

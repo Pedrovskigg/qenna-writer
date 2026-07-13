@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-Mira Writing (this repository) is licensed under the GNU General Public
+Qiyva Writer (this repository) is licensed under the GNU General Public
 License v3.0 — see [LICENSE](LICENSE). It also uses the third-party
 components listed below, each under its own license. Full license texts are
 in the [`licenses/`](licenses/) folder except where noted.
@@ -12,7 +12,7 @@ Modules used: Core, Gui, Widgets, Svg, Multimedia, Network.
 - **License:** GNU Lesser General Public License v3.0 (LGPL-3.0) — official
   open-source Qt build.
 - **Usage:** Unmodified, dynamically linked. The Qt `.dll` files ship
-  alongside `mira-writing.exe` in the installed folder and can be replaced
+  alongside `qiyva-writer.exe` in the installed folder and can be replaced
   by the user with a compatible Qt build, as required by the LGPL.
 - **Source:** https://www.qt.io/download-open-source /
   https://code.qt.io/cgit/qt/qt5.git
@@ -35,10 +35,10 @@ media backend, distributed unmodified as shared libraries by the Qt project.
 
 Spell-checking engine, compiled from source in `third_party/hunspell/` (not
 committed to this repo — see [cmake/Hunspell.cmake](cmake/Hunspell.cmake) for
-how to fetch it) and statically linked into `mira-writing.exe`.
+how to fetch it) and statically linked into `qiyva-writer.exe`.
 
 - **License:** Triple-licensed by upstream under GPL-2.0, LGPL-2.1, or
-  MPL-1.1 (your choice). Mira Writing relies on the **LGPL-2.1** option.
+  MPL-1.1 (your choice). Qiyva Writer relies on the **LGPL-2.1** option.
 - **Usage:** Unmodified.
 - **Source:** https://github.com/hunspell/hunspell
 - **Full texts:** [`licenses/hunspell/`](licenses/hunspell/) (all three
@@ -60,7 +60,7 @@ required by any executable built with the MinGW-w64 GCC toolchain.
 
 ## Bundled fonts
 
-Mira Writing bundles ~120 open-source font families under
+Qiyva Writer bundles ~120 open-source font families under
 `src/assets/fonts/`, each in its own SIL Open Font License 1.1 (OFL) folder
 with the original `OFL.txt`/license file and copyright notices intact, as
 required by the OFL. See each font's own folder for its specific copyright

@@ -1,7 +1,7 @@
 # Qiyva Writer
 
-Qiyva Writer is the remake of the Mira Writing (JSX), now
-completely rebuilt in C++/Qt.
+Qiyva Writer (formerly Mira Writing) is a complete C++/Qt rebuild of the
+original Mira Writing (JSX) — same project, new name and identity.
 
 This repository holds the **source code** of the application. For
 downloads of the releases, go to:
@@ -43,7 +43,7 @@ writer, for other writers.
 4. Run it:
    ```powershell
    $env:PATH = "C:\Qt\6.8.3\mingw_64\bin;" + $env:PATH
-   & .\build\mira-writing.exe
+   & .\build\qiyva-writer.exe
    ```
 
 The "Immersive Sound" ambient tracks (`src/assets/ambience-sounds/`) aren't
@@ -52,7 +52,7 @@ without that one feature's audio files.
 
 ## Translations
 
-Mira Writing is currently available in PT-BR and EN-US, via Qt Linguist
+Qiyva Writer is currently available in PT-BR and EN-US, via Qt Linguist
 (`translations/*.ts`). Language switches at runtime through the Main Menu.
 
 ## License
@@ -64,7 +64,7 @@ FFmpeg, bundled fonts, etc.) keep their own licenses — see
 ## Related projects
 
 - [Mira Cover Creator](https://github.com/Pedrovskigg/mira-cover-creator) —
-  cover design tool bundled with Mira Writing
+  cover design tool bundled with Qiyva Writer
 - [Mira's Maestro](https://github.com/Pedrovskigg/Maestro) — free musical
   theory plugin
 

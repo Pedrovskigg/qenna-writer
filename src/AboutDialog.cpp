@@ -19,7 +19,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     : QDialog(parent)
 {
     setObjectName(QStringLiteral("aboutDialog"));
-    setWindowTitle(tr("Sobre o Mira Writing"));
+    setWindowTitle(tr("Sobre o Qiyva Writer"));
     setModal(true);
     setFixedWidth(500);
 
@@ -31,7 +31,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     mainText->setObjectName(QStringLiteral("aboutMainText"));
     mainText->setWordWrap(true);
     mainText->setText(
-        tr("Mira Writing é um software de escrita criativa, desenvolvido por um amante "
+        tr("Qiyva Writer é um software de escrita criativa, desenvolvido por um amante "
            "da escrita para outros escritores.\n\n"
            "Cada função, recurso, opção e funcionalidade foi pensada para tornar o "
            "projeto de escrita melhor.\n\n"
@@ -107,13 +107,13 @@ AboutDialog::AboutDialog(QWidget* parent)
     sourceRow->addWidget(sourcePrefix);
 
     auto* sourceBtn = new QPushButton(
-        QStringLiteral("https://github.com/Pedrovskigg/mira-writing-2"), this);
+        QStringLiteral("https://github.com/Pedrovskigg/qiyva-writer"), this);
     sourceBtn->setObjectName(QStringLiteral("aboutInlineBtn"));
     sourceBtn->setCursor(Qt::PointingHandCursor);
     sourceBtn->setToolTip(tr("Abrir no navegador"));
     connect(sourceBtn, &QPushButton::clicked, this, []() {
         QDesktopServices::openUrl(
-            QUrl(QStringLiteral("https://github.com/Pedrovskigg/mira-writing-2")));
+            QUrl(QStringLiteral("https://github.com/Pedrovskigg/qiyva-writer")));
     });
     sourceRow->addWidget(sourceBtn);
     sourceRow->addStretch();
@@ -122,7 +122,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     root->addSpacing(20);
 
     auto* authorLabel = new QLabel(
-        QStringLiteral("Mira Writing is a solo project, created by:\nP.H. Lobato\n\n−2026"),
+        QStringLiteral("Qiyva Writer is a solo project, created by:\nP.H. Lobato\n\n−2026"),
         this);
     authorLabel->setObjectName(QStringLiteral("aboutAuthor"));
     root->addWidget(authorLabel);

@@ -5,19 +5,19 @@
     <name>AboutDialog</name>
     <message>
         <location filename="../src/AboutDialog.cpp" line="22"/>
-        <source>Sobre o Mira Writing</source>
-        <translation>About Mira Writing</translation>
+        <source>Sobre o Qiyva Writer</source>
+        <translation>About Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/AboutDialog.cpp" line="34"/>
-        <source>Mira Writing é um software de escrita criativa, desenvolvido por um amante da escrita para outros escritores.
+        <source>Qiyva Writer é um software de escrita criativa, desenvolvido por um amante da escrita para outros escritores.
 
 Cada função, recurso, opção e funcionalidade foi pensada para tornar o projeto de escrita melhor.
 
 Ele é um programa gratuito e a ideia é que sempre seja. O pagamento pelo uso é escrever boas histórias.
 
 Aproveite.</source>
-        <translation>Mira Writing is creative writing software, built by someone who loves writing, for other writers.
+        <translation>Qiyva Writer is creative writing software, built by someone who loves writing, for other writers.
 
 Every function, feature, option, and capability was designed to make your writing project better.
 
@@ -3026,8 +3026,8 @@ If you have any doubts, the sections below explain everything.</translation>
     <name>MainMenuDialog</name>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="894"/>
-        <source>Mira Writing</source>
-        <translation>Mira Writing</translation>
+        <source>Qiyva Writer</source>
+        <translation>Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="982"/>
@@ -3061,8 +3061,8 @@ If you have any doubts, the sections below explain everything.</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1043"/>
-        <source>Sobre o Mira Writing</source>
-        <translation>About Mira Writing</translation>
+        <source>Sobre o Qiyva Writer</source>
+        <translation>About Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/MainMenuDialog.cpp" line="1060"/>
@@ -3144,10 +3144,10 @@ Do you want to install it now? (quick, no internet required)</translation>
         <location filename="../src/MainMenuDialog.cpp" line="1351"/>
         <source>O Cover Creator não foi encontrado.
 
-Reinstale o Mira Writing para obter o Cover Creator.</source>
+Reinstale o Qiyva Writer para obter o Cover Creator.</source>
         <translation>Cover Creator wasn&apos;t found.
 
-Reinstall Mira Writing to get Cover Creator.</translation>
+Reinstall Qiyva Writer to get Cover Creator.</translation>
     </message>
     <message>
         <source>Projetos</source>
@@ -3177,8 +3177,8 @@ Click &quot;New&quot; to start one, or &quot;Load&quot; to open an existing fold
     <message>
         <location filename="../src/MainWindow.cpp" line="349"/>
         <location filename="../src/MainWindow.cpp" line="3685"/>
-        <source>Mira Writing</source>
-        <translation>Mira Writing</translation>
+        <source>Qiyva Writer</source>
+        <translation>Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="506"/>
@@ -3521,8 +3521,8 @@ Close anyway?</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3685"/>
-        <source>Mira Writing — %1</source>
-        <translation>Mira Writing — %1</translation>
+        <source>Qiyva Writer — %1</source>
+        <translation>Qiyva Writer — %1</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3694"/>
@@ -3607,8 +3607,8 @@ Close anyway?</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4314"/>
-        <source>O Mira Writing e o Cover Creator estão na versão mais recente.</source>
-        <translation>Mira Writing and Cover Creator are both up to date.</translation>
+        <source>O Qiyva Writer e o Cover Creator estão na versão mais recente.</source>
+        <translation>Qiyva Writer and Cover Creator are both up to date.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4340"/>
@@ -11894,23 +11894,23 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="37"/>
-        <source>Se você pegar o preview do código fonte do app onde esses quotes estão escritos e deitar, parece uma cidade cyberpunk. — P.H. Lobato, Criador do Mira Writing</source>
-        <translation>If you tilt the source code preview where these quotes live on its side, it looks like a cyberpunk city skyline. — P.H. Lobato, Creator of Mira Writing</translation>
+        <source>Se você pegar o preview do código fonte do app onde esses quotes estão escritos e deitar, parece uma cidade cyberpunk. — P.H. Lobato, Criador do Qiyva Writer</source>
+        <translation>If you tilt the source code preview where these quotes live on its side, it looks like a cyberpunk city skyline. — P.H. Lobato, Creator of Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="38"/>
-        <source>&apos;Eu perdi tudo&apos; — Tony Silva, após ter perdido todo seu projeto em um bug nas versões antigas do Mira Writing. Obs.: Já foi corrigido há várias versões, não se preocupe.</source>
-        <translation>&amp;apos;I lost everything&amp;apos; — Tony Silva, after losing his entire project to a bug in old versions of Mira Writing. Note: it&amp;apos;s been fixed for many versions now, don&amp;apos;t worry.</translation>
+        <source>&apos;Eu perdi tudo&apos; — Tony Silva, após ter perdido todo seu projeto em um bug nas versões antigas do Qiyva Writer. Obs.: Já foi corrigido há várias versões, não se preocupe.</source>
+        <translation>&amp;apos;I lost everything&amp;apos; — Tony Silva, after losing his entire project to a bug in old versions of Qiyva Writer. Note: it&amp;apos;s been fixed for many versions now, don&amp;apos;t worry.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="39"/>
-        <source>Você sabia? O Mira Writing foi criado porque eu me irritava em ter que usar vários programas diferentes para escrever.</source>
-        <translation>Did you know? Mira Writing exists because I got tired of juggling a bunch of different programs just to write.</translation>
+        <source>Você sabia? O Qiyva Writer foi criado porque eu me irritava em ter que usar vários programas diferentes para escrever.</source>
+        <translation>Did you know? Qiyva Writer exists because I got tired of juggling a bunch of different programs just to write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="40"/>
-        <source>Experimente o &apos;FocusWriter&apos; de Gott Code. Foi o meu editor mais usado até o Mira Writing nascer.</source>
-        <translation>Try &amp;apos;FocusWriter&amp;apos; by Gott Code. It was my most-used editor before Mira Writing was born.</translation>
+        <source>Experimente o &apos;FocusWriter&apos; de Gott Code. Foi o meu editor mais usado até o Qiyva Writer nascer.</source>
+        <translation>Try &amp;apos;FocusWriter&amp;apos; by Gott Code. It was my most-used editor before Qiyva Writer was born.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="41"/>
@@ -12269,8 +12269,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="112"/>
-        <source>Existem três coisas ótimas de vez em quando: café, chocolate e... backup. Sério, faça backup. — P.H. Lobato, Criador do Mira Writing</source>
-        <translation>There are three great things to have every now and then: coffee, chocolate, and... backups. Seriously, back up your work. — P.H. Lobato, Creator of Mira Writing</translation>
+        <source>Existem três coisas ótimas de vez em quando: café, chocolate e... backup. Sério, faça backup. — P.H. Lobato, Criador do Qiyva Writer</source>
+        <translation>There are three great things to have every now and then: coffee, chocolate, and... backups. Seriously, back up your work. — P.H. Lobato, Creator of Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="113"/>
@@ -12299,8 +12299,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="118"/>
-        <source>Projetos perdidos na versão beta: 2. (por isso eu digo, faça backup) — P.H. Lobato, Criador do Mira Writing</source>
-        <translation>Projects lost during the beta version: 2. (that&apos;s why I keep saying, back up your work) — P.H. Lobato, Creator of Mira Writing</translation>
+        <source>Projetos perdidos na versão beta: 2. (por isso eu digo, faça backup) — P.H. Lobato, Criador do Qiyva Writer</source>
+        <translation>Projects lost during the beta version: 2. (that&apos;s why I keep saying, back up your work) — P.H. Lobato, Creator of Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="119"/>
@@ -12414,8 +12414,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="141"/>
-        <source>Leia muito, escreva muito, e não se esqueça de fazer backup. — P.H. Lobato, Criador do Mira Writing</source>
-        <translation>Read a lot, write a lot, and don&apos;t forget to back up your work. — P.H. Lobato, Creator of Mira Writing</translation>
+        <source>Leia muito, escreva muito, e não se esqueça de fazer backup. — P.H. Lobato, Criador do Qiyva Writer</source>
+        <translation>Read a lot, write a lot, and don&apos;t forget to back up your work. — P.H. Lobato, Creator of Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="142"/>
@@ -12679,8 +12679,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="194"/>
-        <source>O Mira Writing quase teve uma assistente de IA. Quase. A ideia não foi para frente porque API&apos;s são caras e modelos de IA locais são burros.</source>
-        <translation>Mira Writing almost had an AI assistant. Almost. The idea never went anywhere because APIs are expensive and local AI models are dumb.</translation>
+        <source>O Qiyva Writer quase teve uma assistente de IA. Quase. A ideia não foi para frente porque API&apos;s são caras e modelos de IA locais são burros.</source>
+        <translation>Qiyva Writer almost had an AI assistant. Almost. The idea never went anywhere because APIs are expensive and local AI models are dumb.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="199"/>
@@ -12694,13 +12694,13 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="201"/>
-        <source>No Mira Writing, os recursos de criação estão em suas mãos. Cada ferramenta nele é opcional. Caso não queira usar nenhuma, apenas escreva.</source>
-        <translation>In Mira Writing, the creative tools are in your hands. Every feature in it is optional. If you don&apos;t want to use any of them, just write.</translation>
+        <source>No Qiyva Writer, os recursos de criação estão em suas mãos. Cada ferramenta nele é opcional. Caso não queira usar nenhuma, apenas escreva.</source>
+        <translation>In Qiyva Writer, the creative tools are in your hands. Every feature in it is optional. If you don&apos;t want to use any of them, just write.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="202"/>
-        <source>O nome da guerreira que ficava no antigo logo do Mira Writing é... Mira. E caso sinta saudade dela, pode alterar a logo exibida na opção de Temas do Main Menu ali em cima.</source>
-        <translation>The name of the warrior who used to be in Mira Writing&apos;s old logo is... Mira. And if you miss her, you can change the displayed logo in the Themes option up in the Main Menu.</translation>
+        <source>O nome da guerreira que ficava no logo do Mira Writing (nome antigo do Qiyva Writer) era... Mira. Sente saudade dela? Ainda dá pra trazer esse logo de volta na opção de Temas do Main Menu ali em cima.</source>
+        <translation>The name of the warrior who used to be in the Mira Writing logo (Qiyva Writer&apos;s old name) was... Mira. Miss her? You can still bring that logo back in the Themes option up in the Main Menu.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="203"/>
@@ -12809,8 +12809,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="224"/>
-        <source>O Mira Writing efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
-        <translation>Mira Writing automatically backs up your project every time the app closes. You can find them inside your project folder, in &amp;quot;backups&amp;quot; — you can change this folder in settings.</translation>
+        <source>O Qiyva Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
+        <translation>Qiyva Writer automatically backs up your project every time the app closes. You can find them inside your project folder, in &amp;quot;backups&amp;quot; — you can change this folder in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="225"/>
@@ -12839,8 +12839,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="230"/>
-        <source>Não haverá outro quote sobre backup, mas por favor, faça backup. — P.H. Lobato, Criador do Mira Writing</source>
-        <translation>There won&apos;t be another quote about backups, but please, back up your work. — P.H. Lobato, Creator of Mira Writing</translation>
+        <source>Não haverá outro quote sobre backup, mas por favor, faça backup. — P.H. Lobato, Criador do Qiyva Writer</source>
+        <translation>There won&apos;t be another quote about backups, but please, back up your work. — P.H. Lobato, Creator of Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="231"/>
@@ -12899,8 +12899,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="242"/>
-        <source>O Mira Writing é gratuito e a ideia é que seja sempre assim.</source>
-        <translation>Mira Writing is free, and the idea is that it always will be.</translation>
+        <source>O Qiyva Writer é gratuito e a ideia é que seja sempre assim.</source>
+        <translation>Qiyva Writer is free, and the idea is that it always will be.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="243"/>
@@ -13544,8 +13544,8 @@ Select a passage and use the marker with comment so it shows up here.</translati
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="53"/>
-        <source>Sobre o Mira Writing</source>
-        <translation>About Mira Writing</translation>
+        <source>Sobre o Qiyva Writer</source>
+        <translation>About Qiyva Writer</translation>
     </message>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="62"/>
@@ -15508,38 +15508,6 @@ Right-click to customize the counter</translation>
         <location filename="../src/ZoneItem.cpp" line="331"/>
         <source>Remover área</source>
         <translation>Remove area</translation>
-    </message>
-</context>
-<context>
-    <name>UpdateNoticeDialog</name>
-    <message>
-        <location filename="../src/UpdateNoticeDialog.cpp" line="29"/>
-        <source>O Mira Writing está de nome novo!</source>
-        <translation>Mira Writing has a new name!</translation>
-    </message>
-    <message>
-        <location filename="../src/UpdateNoticeDialog.cpp" line="53"/>
-        <source>Olá! Estamos trocando de identidade — nome novo e repositório novo a caminho. Por causa disso, esta versão atual vai ficar paradinha por um tempo, sem novas atualizações.
-
-Mas já está resolvido: a versão com o nome novo já pode ser baixada aqui:</source>
-        <translation>Hi there! We're switching identities — a new name and a new repository are on the way. Because of that, this current version will sit still for a while, without new updates.
-
-But it's already sorted out: the version with the new name is ready to download here:</translation>
-    </message>
-    <message>
-        <location filename="../src/UpdateNoticeDialog.cpp" line="62"/>
-        <source>Baixar a nova versão</source>
-        <translation>Download the new version</translation>
-    </message>
-    <message>
-        <location filename="../src/UpdateNoticeDialog.cpp" line="71"/>
-        <source>Seus projetos e arquivos salvos continuam 100% intactos — isso aqui é só uma troca de nome, não um sumiço. Obrigado pela paciência!</source>
-        <translation>Your projects and saved files stay 100% intact — this is just a name change, not a disappearance. Thanks for your patience!</translation>
-    </message>
-    <message>
-        <location filename="../src/UpdateNoticeDialog.cpp" line="77"/>
-        <source>Entendi</source>
-        <translation>Got it</translation>
     </message>
 </context>
 </TS>

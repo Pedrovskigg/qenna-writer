@@ -16,7 +16,6 @@
 #include "CrashLogger.h"
 #include "MainWindow.h"
 #include "Theme.h"
-#include "UpdateNoticeDialog.h"
 
 namespace {
 
@@ -55,15 +54,36 @@ QStringList registerCustomFonts()
     return result;
 }
 
+// Migração única do rebranding Mira Writing → Qiyva Writer: copia todas as
+// chaves do registro antigo (HKCU\Software\Mira Writing\Mira Writing) pra
+// chave nova, preservando tema, idioma, progresso do contador de palavras,
+// projetos recentes, etc. Idempotente — roda uma vez só, marcada por flag
+// na chave nova. Não mexe em logs de crash (dado de baixo valor).
+void migrateSettingsFromMira()
+{
+    QSettings newSettings(QStringLiteral("Qiyva Writer"), QStringLiteral("Qiyva Writer"));
+    if (newSettings.value(QStringLiteral("migratedFromMira"), false).toBool())
+        return;
+
+    QSettings oldSettings(QStringLiteral("Mira Writing"), QStringLiteral("Mira Writing"));
+    const QStringList keys = oldSettings.allKeys();
+    for (const QString &key : keys) {
+        newSettings.setValue(key, oldSettings.value(key));
+    }
+    newSettings.setValue(QStringLiteral("migratedFromMira"), true);
+}
+
 }
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QApplication::setApplicationName("Mira Writing");
+    migrateSettingsFromMira();
+
+    QApplication::setApplicationName("Qiyva Writer");
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
-    QApplication::setOrganizationName("Mira Writing");
+    QApplication::setOrganizationName("Qiyva Writer");
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
 
     CrashLogger::install();
@@ -85,26 +105,17 @@ int main(int argc, char *argv[])
         const QString prefLang = qs.value(QStringLiteral("app/language")).toString();
         bool loaded = false;
         if (!prefLang.isEmpty()) {
-            loaded = translator.load(QStringLiteral(":/i18n/mira_") + prefLang);
+            loaded = translator.load(QStringLiteral(":/i18n/qiyva_") + prefLang);
         }
         if (!loaded) {
             for (const QString &locale : QLocale::system().uiLanguages()) {
-                if (translator.load(QStringLiteral(":/i18n/mira_") + QLocale(locale).name())) {
+                if (translator.load(QStringLiteral(":/i18n/qiyva_") + QLocale(locale).name())) {
                     loaded = true;
                     break;
                 }
             }
         }
         if (loaded) QApplication::installTranslator(&translator);
-    }
-
-    // Aviso temporário (troca de nome/repo) — bloqueia o startup até o
-    // usuário confirmar que leu. Remover depois que a migração pra Qiyva
-    // estiver concluída e essa mensagem deixar de fazer sentido.
-    {
-        splash.close();
-        UpdateNoticeDialog notice;
-        notice.exec();
     }
 
     const QStringList customFontFamilies = registerCustomFonts();
