@@ -5377,6 +5377,181 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
 
+    // ---- Leva "aniversário do rebatismo" (2026-07-14) — 20 temas novos, 5 por
+    // categoria sólida (light/warm/dark/colorful; estampados ficam de fora,
+    // dependem de fotos novas). Brincadeira pedida pelo usuário: página e
+    // painel nem sempre combinam — alguns temas invertem a expectativa da
+    // categoria (UI escura + página clara, ou vice-versa) de propósito.
+    // Helper local só pra essa leva, evita repetir os ~30 campos por tema;
+    // deriva overlays do tom-base `tint` ("r,g,b") e usa 2 presets fixos de
+    // cores semânticas (sucesso/perigo/aviso/info) conforme `darkUi`, no
+    // mesmo espírito do helper `estampado` acima (sem imagem de fundo aqui).
+    auto solid = [&](const QString& id, const QString& name, bool darkUi, const QString& tint,
+                      const QString& appBg, const QString& panelBg, const QString& panelBorder,
+                      const QString& textPrim, const QString& textMut, const QString& textBr,
+                      const QString& accent, const QString& editorBg, const QString& editorText) {
+        MiraTheme t;
+        t.id = id;
+        t.name = name;
+        t.bundled = true;
+        t.appBackground    = appBg;
+        t.panelBackground  = panelBg;
+        t.panelBorder      = panelBorder;
+        t.textPrimary      = textPrim;
+        t.textMuted        = textMut;
+        t.textBright       = textBr;
+        t.hoverOverlay     = QStringLiteral("rgba(%1,0.06)").arg(tint);
+        t.pressedOverlay   = QStringLiteral("rgba(%1,0.04)").arg(tint);
+        t.subtleBorder     = QStringLiteral("rgba(%1,0.10)").arg(tint);
+        t.accentDefault    = accent;
+        t.hoverStrong      = QStringLiteral("rgba(%1,0.12)").arg(tint);
+        t.borderStrong     = QStringLiteral("rgba(%1,0.22)").arg(tint);
+        t.focusBorder      = QStringLiteral("rgba(%1,0.32)").arg(tint);
+        t.inputBackground  = darkUi ? QStringLiteral("rgba(0,0,0,0.30)")
+                                    : QStringLiteral("rgba(0,0,0,0.05)");
+        t.disabledText     = QStringLiteral("rgba(%1,0.30)").arg(tint);
+        t.selectionRing    = textBr;
+        if (darkUi) {
+            t.accentSuccess           = QStringLiteral("#7BC592");
+            t.accentSuccessSoft       = QStringLiteral("rgba(120,200,140,0.18)");
+            t.accentSuccessBorderSoft = QStringLiteral("rgba(123,197,146,0.50)");
+            t.accentDanger            = QStringLiteral("#e05555");
+            t.accentDangerSoft        = QStringLiteral("rgba(224,85,85,0.14)");
+            t.accentDangerBorderSoft  = QStringLiteral("rgba(224,85,85,0.45)");
+            t.accentWarning           = QStringLiteral("#d6a060");
+            t.accentInfo              = QStringLiteral("#4a9eff");
+            t.accentInfoSoft          = QStringLiteral("rgba(74,158,255,0.25)");
+            t.accentInfoBorderSoft    = QStringLiteral("rgba(74,158,255,0.55)");
+        } else {
+            t.accentSuccess           = QStringLiteral("#2f8a4f");
+            t.accentSuccessSoft       = QStringLiteral("rgba(47,138,79,0.14)");
+            t.accentSuccessBorderSoft = QStringLiteral("rgba(47,138,79,0.45)");
+            t.accentDanger            = QStringLiteral("#b73030");
+            t.accentDangerSoft        = QStringLiteral("rgba(183,48,48,0.10)");
+            t.accentDangerBorderSoft  = QStringLiteral("rgba(183,48,48,0.45)");
+            t.accentWarning           = QStringLiteral("#a5651f");
+            t.accentInfo              = QStringLiteral("#1f6fd6");
+            t.accentInfoSoft          = QStringLiteral("rgba(31,111,214,0.16)");
+            t.accentInfoBorderSoft    = QStringLiteral("rgba(31,111,214,0.50)");
+        }
+        t.editorBackground = editorBg;
+        t.editorTextColor  = editorText;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor   = darkUi ? QStringLiteral("rgba(0,0,0,160)") : QStringLiteral("rgba(0,0,0,90)");
+        t.pageShadowRadius  = darkUi ? 24 : 26;
+        t.pageShadowOffset  = darkUi ? 5 : 6;
+        m_themes.append(t);
+    };
+
+    // -- Claros (light) --
+    solid(QStringLiteral("wisteria"), QStringLiteral("Wisteria"), false, QStringLiteral("40,30,55"),
+          QStringLiteral("#efe9f5"), QStringLiteral("#f8f5fc"), QStringLiteral("#d6c9e8"),
+          QStringLiteral("#2e2438"), QStringLiteral("#7a6d8a"), QStringLiteral("#1a1420"),
+          QStringLiteral("#7d5ba6"), QStringLiteral("#ffffff"), QStringLiteral("#241c2c"));
+
+    solid(QStringLiteral("clementine"), QStringLiteral("Clementine"), false, QStringLiteral("20,24,28"),
+          QStringLiteral("#eceef0"), QStringLiteral("#f6f7f9"), QStringLiteral("#d2d6db"),
+          QStringLiteral("#262a2e"), QStringLiteral("#74797f"), QStringLiteral("#14171a"),
+          QStringLiteral("#d9722c"), QStringLiteral("#ffffff"), QStringLiteral("#201c18"));
+
+    // UI clara mas página escura de propósito — o "flip" da categoria.
+    solid(QStringLiteral("fog-harbor"), QStringLiteral("Fog Harbor"), false, QStringLiteral("18,30,38"),
+          QStringLiteral("#e3e9ee"), QStringLiteral("#eef2f6"), QStringLiteral("#c4d0da"),
+          QStringLiteral("#263038"), QStringLiteral("#71838f"), QStringLiteral("#121a20"),
+          QStringLiteral("#1a6f95"), QStringLiteral("#0f1b26"), QStringLiteral("#dbe6ee"));
+
+    solid(QStringLiteral("coral-reef"), QStringLiteral("Coral Reef"), false, QStringLiteral("20,40,34"),
+          QStringLiteral("#e9f2ef"), QStringLiteral("#f4faf8"), QStringLiteral("#c9e0d8"),
+          QStringLiteral("#1e352d"), QStringLiteral("#6a8a80"), QStringLiteral("#0f1f19"),
+          QStringLiteral("#e2506a"), QStringLiteral("#ffffff"), QStringLiteral("#22201e"));
+
+    solid(QStringLiteral("claret"), QStringLiteral("Claret"), false, QStringLiteral("50,20,26"),
+          QStringLiteral("#f2e8ea"), QStringLiteral("#faf3f4"), QStringLiteral("#ddc0c4"),
+          QStringLiteral("#3a1e22"), QStringLiteral("#8a6468"), QStringLiteral("#241014"),
+          QStringLiteral("#7a2035"), QStringLiteral("#fffdfb"), QStringLiteral("#2a1418"));
+
+    // -- Amarelados (warm) --
+    solid(QStringLiteral("marigold"), QStringLiteral("Marigold"), false, QStringLiteral("50,38,14"),
+          QStringLiteral("#f5e6c8"), QStringLiteral("#faf0da"), QStringLiteral("#dfc282"),
+          QStringLiteral("#3a2c0c"), QStringLiteral("#8a7440"), QStringLiteral("#241a06"),
+          QStringLiteral("#d68910"), QStringLiteral("#fdf7e6"), QStringLiteral("#2e2208"));
+
+    // UI marrom bem escura, mas página clara — o "flip" desse lado da categoria.
+    solid(QStringLiteral("chestnut"), QStringLiteral("Chestnut"), true, QStringLiteral("230,205,190"),
+          QStringLiteral("#241512"), QStringLiteral("#2c1a16"), QStringLiteral("#4a2e22"),
+          QStringLiteral("#e6cdb8"), QStringLiteral("#8a6a56"), QStringLiteral("#f6e6d4"),
+          QStringLiteral("#8a5030"), QStringLiteral("#f6ecd8"), QStringLiteral("#3a2418"));
+
+    solid(QStringLiteral("champagne"), QStringLiteral("Champagne"), false, QStringLiteral("55,42,28"),
+          QStringLiteral("#f3ead9"), QStringLiteral("#faf3e6"), QStringLiteral("#ddc7a4"),
+          QStringLiteral("#3e301e"), QStringLiteral("#8a7a5e"), QStringLiteral("#241a0c"),
+          QStringLiteral("#c98a76"), QStringLiteral("#fffaf0"), QStringLiteral("#2c2214"));
+
+    solid(QStringLiteral("nutmeg"), QStringLiteral("Nutmeg"), true, QStringLiteral("216,191,160"),
+          QStringLiteral("#1e130c"), QStringLiteral("#24170e"), QStringLiteral("#3e2a18"),
+          QStringLiteral("#d8bfa0"), QStringLiteral("#8a6f52"), QStringLiteral("#f0ddc4"),
+          QStringLiteral("#9a3a1e"), QStringLiteral("#241811"), QStringLiteral("#d8bfa0"));
+
+    solid(QStringLiteral("biscotti"), QStringLiteral("Biscotti"), false, QStringLiteral("48,38,26"),
+          QStringLiteral("#efe6d6"), QStringLiteral("#f7f0e2"), QStringLiteral("#d8c6a4"),
+          QStringLiteral("#3a2e1c"), QStringLiteral("#8a7a5c"), QStringLiteral("#221a0e"),
+          QStringLiteral("#a8785a"), QStringLiteral("#f7ecda"), QStringLiteral("#2e2414"));
+
+    // -- Escuros (dark) --
+    solid(QStringLiteral("umbra"), QStringLiteral("Umbra"), true, QStringLiteral("220,200,224"),
+          QStringLiteral("#0c0810"), QStringLiteral("#120c1a"), QStringLiteral("#2c1e38"),
+          QStringLiteral("#d8c8e0"), QStringLiteral("#7a6a88"), QStringLiteral("#f0e6f6"),
+          QStringLiteral("#b8228a"), QStringLiteral("#140c1c"), QStringLiteral("#d8c8e0"));
+
+    solid(QStringLiteral("basalt"), QStringLiteral("Basalt"), true, QStringLiteral("205,198,224"),
+          QStringLiteral("#0e0e12"), QStringLiteral("#16161c"), QStringLiteral("#2e2e3a"),
+          QStringLiteral("#c8c6d8"), QStringLiteral("#726f88"), QStringLiteral("#eeecf8"),
+          QStringLiteral("#7a3fc8"), QStringLiteral("#18181e"), QStringLiteral("#c8c6d8"));
+
+    // UI quase preta, mas página marfim clara — o "flip" do lado escuro.
+    solid(QStringLiteral("aphelion"), QStringLiteral("Aphelion"), true, QStringLiteral("200,202,228"),
+          QStringLiteral("#0a0a10"), QStringLiteral("#101018"), QStringLiteral("#262636"),
+          QStringLiteral("#c6c8e0"), QStringLiteral("#6e7090"), QStringLiteral("#eceefa"),
+          QStringLiteral("#5a5fe8"), QStringLiteral("#f6f3ec"), QStringLiteral("#201c14"));
+
+    solid(QStringLiteral("ferrous"), QStringLiteral("Ferrous"), true, QStringLiteral("220,195,178"),
+          QStringLiteral("#120a08"), QStringLiteral("#1a0f0c"), QStringLiteral("#3a2018"),
+          QStringLiteral("#d8bfae"), QStringLiteral("#8a6a5a"), QStringLiteral("#f0ddd0"),
+          QStringLiteral("#9a4020"), QStringLiteral("#180e0a"), QStringLiteral("#d8bfae"));
+
+    solid(QStringLiteral("glacier-night"), QStringLiteral("Glacier Night"), true, QStringLiteral("184,212,224"),
+          QStringLiteral("#060c14"), QStringLiteral("#0a1420"), QStringLiteral("#1c3040"),
+          QStringLiteral("#b8d4e0"), QStringLiteral("#5e7e90"), QStringLiteral("#e6f4fa"),
+          QStringLiteral("#7fd8ec"), QStringLiteral("#081018"), QStringLiteral("#b8d4e0"));
+
+    // -- Coloridos (colorful) --
+    // UI pastel clara, mas página escura — o "flip" mais inesperado da leva.
+    solid(QStringLiteral("bubblegum"), QStringLiteral("Bubblegum"), false, QStringLiteral("60,20,45"),
+          QStringLiteral("#f7e0ef"), QStringLiteral("#fdeef7"), QStringLiteral("#eab8d8"),
+          QStringLiteral("#4a1c38"), QStringLiteral("#9a6486"), QStringLiteral("#2c0e20"),
+          QStringLiteral("#ec5aa8"), QStringLiteral("#1c0f18"), QStringLiteral("#f0d8e8"));
+
+    solid(QStringLiteral("tropicana"), QStringLiteral("Tropicana"), true, QStringLiteral("185,235,225"),
+          QStringLiteral("#081a18"), QStringLiteral("#0e2420"), QStringLiteral("#1c4038"),
+          QStringLiteral("#b8ece0"), QStringLiteral("#5e9a88"), QStringLiteral("#eafff8"),
+          QStringLiteral("#ff5c6e"), QStringLiteral("#0a201c"), QStringLiteral("#b8ece0"));
+
+    // UI roxo-escura, mas página branca pura — o "flip" pop-art da leva.
+    solid(QStringLiteral("nebula-pop"), QStringLiteral("Nebula Pop"), true, QStringLiteral("218,200,240"),
+          QStringLiteral("#140a1e"), QStringLiteral("#1c1028"), QStringLiteral("#382458"),
+          QStringLiteral("#d8c6f0"), QStringLiteral("#7e6a9a"), QStringLiteral("#f0e6fc"),
+          QStringLiteral("#a838d8"), QStringLiteral("#ffffff"), QStringLiteral("#181018"));
+
+    solid(QStringLiteral("peacock"), QStringLiteral("Peacock"), true, QStringLiteral("175,225,215"),
+          QStringLiteral("#061a1c"), QStringLiteral("#0c2628"), QStringLiteral("#1c4448"),
+          QStringLiteral("#a8e0dc"), QStringLiteral("#5a8c88"), QStringLiteral("#e0fbf8"),
+          QStringLiteral("#0e9a82"), QStringLiteral("#082022"), QStringLiteral("#a8e0dc"));
+
+    solid(QStringLiteral("cherry-cola"), QStringLiteral("Cherry Cola"), true, QStringLiteral("225,185,175"),
+          QStringLiteral("#180a08"), QStringLiteral("#22100c"), QStringLiteral("#3e1c14"),
+          QStringLiteral("#e0b8ac"), QStringLiteral("#906258"), QStringLiteral("#f6e0d8"),
+          QStringLiteral("#c8242e"), QStringLiteral("#1c0e0a"), QStringLiteral("#e0b8ac"));
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -5528,6 +5703,27 @@ void Manager::loadBundled()
         { QStringLiteral("manuscrito"),           QStringLiteral("light")     },
         { QStringLiteral("limao"),                QStringLiteral("colorful")  },
         { QStringLiteral("brutalismo"),           QStringLiteral("light")     },
+        // Leva "aniversário do rebatismo" (2026-07-14)
+        { QStringLiteral("wisteria"),              QStringLiteral("light")     },
+        { QStringLiteral("clementine"),            QStringLiteral("light")     },
+        { QStringLiteral("fog-harbor"),            QStringLiteral("light")     },
+        { QStringLiteral("coral-reef"),            QStringLiteral("light")     },
+        { QStringLiteral("claret"),                QStringLiteral("light")     },
+        { QStringLiteral("marigold"),              QStringLiteral("warm")      },
+        { QStringLiteral("chestnut"),              QStringLiteral("warm")      },
+        { QStringLiteral("champagne"),             QStringLiteral("warm")      },
+        { QStringLiteral("nutmeg"),                QStringLiteral("warm")      },
+        { QStringLiteral("biscotti"),              QStringLiteral("warm")      },
+        { QStringLiteral("umbra"),                 QStringLiteral("dark")      },
+        { QStringLiteral("basalt"),                QStringLiteral("dark")      },
+        { QStringLiteral("aphelion"),              QStringLiteral("dark")      },
+        { QStringLiteral("ferrous"),               QStringLiteral("dark")      },
+        { QStringLiteral("glacier-night"),         QStringLiteral("dark")      },
+        { QStringLiteral("bubblegum"),             QStringLiteral("colorful")  },
+        { QStringLiteral("tropicana"),             QStringLiteral("colorful")  },
+        { QStringLiteral("nebula-pop"),            QStringLiteral("colorful")  },
+        { QStringLiteral("peacock"),               QStringLiteral("colorful")  },
+        { QStringLiteral("cherry-cola"),           QStringLiteral("colorful")  },
     };
     for (MiraTheme& t : m_themes)
         t.category = kCategory.value(t.id, QStringLiteral("colorful"));
