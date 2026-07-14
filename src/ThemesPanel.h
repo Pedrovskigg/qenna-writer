@@ -10,6 +10,7 @@
 class QCheckBox;
 class QFrame;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QScrollArea;
 class QTabWidget;
@@ -39,11 +40,14 @@ private slots:
     void onNightRoleToggled(bool checked);
     void onAutoSwitchTimeChanged();
     void onAutoSwitchConfigChanged();
+    void onSearchTextChanged(const QString& text);
+    void onFavoritesChanged();
 
 private:
     enum Tab { TabBundled = 0, TabCustom = 1 };
 
     void buildUi();
+    QWidget* buildSearchRow();
     QWidget* buildCategoryFilterRow(QWidget* parent);
     QWidget* buildAutoSwitchRow();
     void rebuildGrids();
@@ -70,6 +74,9 @@ private:
     QPushButton* m_closeButton;
 
     QLabel* m_selectionInfo;
+
+    QLineEdit* m_searchEdit;
+    QString m_searchText; // lowercase, pra filtro por nome nas duas abas
 
     // Troca automática por horário (dia/noite) — ver Theme::AutoSwitchConfig.
     QCheckBox* m_autoSwitchCheck;

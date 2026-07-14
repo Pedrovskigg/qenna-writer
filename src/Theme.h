@@ -2,6 +2,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QTime>
 
@@ -137,10 +138,17 @@ public:
     const AutoSwitchConfig& autoSwitchConfig() const { return m_autoSwitch; }
     void setAutoSwitchConfig(const AutoSwitchConfig& cfg);
 
+    // Favoritos — marcação livre, independe de categoria/aba (bundled ou
+    // custom). Persistido em QSettings, sobrevive à exclusão de um custom
+    // (o id só fica "orfão" sem nenhum efeito, não precisa de limpeza).
+    bool isFavorite(const QString& id) const;
+    void setFavorite(const QString& id, bool favorite);
+
 signals:
     void themeChanged();
     void customThemesChanged();
     void autoSwitchConfigChanged();
+    void favoritesChanged();
 
 private:
     Manager();
@@ -153,6 +161,8 @@ private:
     void saveAutoSwitchSettings() const;
     void tickAutoSwitch();
     QString expectedAutoThemeId() const;
+    void loadFavorites();
+    void saveFavorites() const;
 
     QList<MiraTheme> m_themes;        // bundled + custom (custom no fim)
     int m_currentIndex = 0;
@@ -161,6 +171,8 @@ private:
     AutoSwitchConfig m_autoSwitch;
     QTimer* m_autoSwitchTimer = nullptr;
     bool m_applyingAutoSwitch = false; // true durante tickAutoSwitch(), evita autodesligar
+
+    QSet<QString> m_favorites;
 };
 
 // API legada — chamadas existentes (`Theme::appBackground()` etc.) seguem

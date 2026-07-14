@@ -12,6 +12,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPushButton>
@@ -30,8 +31,8 @@ constexpr int kCardSpacing = 14;
 class ThemeCard : public QFrame {
 public:
     ThemeCard(const Theme::MiraTheme& theme, bool inUse, bool dayRole, bool nightRole,
-              QWidget* parent = nullptr)
-        : QFrame(parent), m_id(theme.id), m_inUse(inUse), m_selected(false)
+              bool favorite, QWidget* parent = nullptr)
+        : QFrame(parent), m_id(theme.id), m_inUse(inUse), m_selected(false), m_favorite(favorite)
     {
         setObjectName(QStringLiteral("themeCard"));
         setFrameShape(QFrame::NoFrame);
@@ -47,6 +48,19 @@ public:
         m_preview->setMinimumHeight(110);
         m_preview->setAttribute(Qt::WA_TransparentForMouseEvents, true);
         lay->addWidget(m_preview, 1);
+
+        // Coração de favorito — fora do layout, posicionado à mão no canto
+        // superior direito do card (sobre o preview) pra não competir com o
+        // nameRow, que já tem nome + badges de papel/uso.
+        m_favoriteBtn = new QLabel(this);
+        m_favoriteBtn->setObjectName(QStringLiteral("themeCardFavorite"));
+        m_favoriteBtn->setCursor(Qt::PointingHandCursor);
+        m_favoriteBtn->setAlignment(Qt::AlignCenter);
+        m_favoriteBtn->setFixedSize(24, 24);
+        m_favoriteBtn->move(kCardW - 8 - 24, 8);
+        m_favoriteBtn->setToolTip(QCoreApplication::translate("ThemeCard", "Favoritar"));
+        m_favoriteBtn->setAttribute(Qt::WA_Hover, true);
+        m_favoriteBtn->raise();
 
         auto* nameRow = new QHBoxLayout;
         nameRow->setContentsMargins(0, 0, 0, 0);
@@ -93,6 +107,10 @@ public:
 protected:
     void mousePressEvent(QMouseEvent* event) override {
         if (event->button() == Qt::LeftButton) {
+            if (m_favoriteBtn->geometry().contains(event->pos())) {
+                emit_favoriteToggled();
+                return;
+            }
             emit_clicked();
         }
         QFrame::mousePressEvent(event);
@@ -110,6 +128,7 @@ private:
     // Vou usar property + custom event no parent.
     void emit_clicked();
     void emit_doubleClicked();
+    void emit_favoriteToggled();
 
     void refreshStyle()
     {
@@ -124,6 +143,8 @@ private:
             "#themeCardBadge { color: %6; font-size: 10px; background: %7; "
             "  padding: 2px 6px; border-radius: 8px; font-weight: 600; }"
             "#themeCardRoleBadge { color: %4; font-size: 13px; background: transparent; }"
+            "#themeCardFavorite { color: %8; font-size: 15px; background: rgba(0,0,0,0.35); border-radius: 12px; }"
+            "#themeCardFavorite:hover { color: %9; }"
         ).arg(
             Theme::panelBackground(),
             QString::number(bw),
@@ -131,20 +152,26 @@ private:
             Theme::accentDefault(),
             Theme::textPrimary(),
             Theme::accentSuccess(),
-            Theme::accentSuccessSoft()
+            Theme::accentSuccessSoft(),
+            m_favorite ? QStringLiteral("#ff5a7a") : QStringLiteral("rgba(255,255,255,0.65)"),
+            QStringLiteral("#ff5a7a")
         ));
+        m_favoriteBtn->setText(m_favorite ? QStringLiteral("♥") : QStringLiteral("♡"));
     }
 
     QString m_id;
     bool m_inUse;
     bool m_selected;
+    bool m_favorite;
     ThemePreviewWidget* m_preview;
     QLabel* m_nameLabel;
+    QLabel* m_favoriteBtn;
 };
 
 // Eventos custom pra propagar clicks do card ao painel pai (evita Q_OBJECT no card).
 constexpr QEvent::Type kCardClickEvent = static_cast<QEvent::Type>(QEvent::User + 1101);
 constexpr QEvent::Type kCardDoubleClickEvent = static_cast<QEvent::Type>(QEvent::User + 1102);
+constexpr QEvent::Type kCardFavoriteEvent = static_cast<QEvent::Type>(QEvent::User + 1103);
 
 class CardEvent : public QEvent {
 public:
@@ -160,17 +187,23 @@ void ThemeCard::emit_doubleClicked()
 {
     QApplication::postEvent(parent(), new CardEvent(kCardDoubleClickEvent, m_id));
 }
+void ThemeCard::emit_favoriteToggled()
+{
+    QApplication::postEvent(parent(), new CardEvent(kCardFavoriteEvent, m_id));
+}
 
 // Container do grid que captura os custom events dos cards e despacha ao painel.
 class CardGrid : public QWidget {
 public:
     using ClickHandler = std::function<void(const QString&)>;
     using DoubleClickHandler = std::function<void(const QString&)>;
+    using FavoriteHandler = std::function<void(const QString&)>;
 
     CardGrid(QWidget* parent = nullptr) : QWidget(parent) {}
-    void setHandlers(ClickHandler c, DoubleClickHandler d) {
+    void setHandlers(ClickHandler c, DoubleClickHandler d, FavoriteHandler f) {
         m_click = std::move(c);
         m_double = std::move(d);
+        m_favorite = std::move(f);
     }
 
 protected:
@@ -185,12 +218,18 @@ protected:
             if (m_double) m_double(ce->themeId);
             return true;
         }
+        if (e->type() == kCardFavoriteEvent) {
+            auto* ce = static_cast<CardEvent*>(e);
+            if (m_favorite) m_favorite(ce->themeId);
+            return true;
+        }
         return QWidget::event(e);
     }
 
 private:
     ClickHandler m_click;
     DoubleClickHandler m_double;
+    FavoriteHandler m_favorite;
 };
 
 } // namespace
@@ -209,6 +248,7 @@ ThemesPanel::ThemesPanel(QWidget* parent)
     , m_deleteButton(nullptr)
     , m_closeButton(nullptr)
     , m_selectionInfo(nullptr)
+    , m_searchEdit(nullptr)
     , m_autoSwitchCheck(nullptr)
     , m_autoSwitchBody(nullptr)
     , m_dayRoleCheck(nullptr)
@@ -232,6 +272,8 @@ ThemesPanel::ThemesPanel(QWidget* parent)
             this, &ThemesPanel::onCustomThemesChanged);
     connect(Theme::Manager::instance(), &Theme::Manager::autoSwitchConfigChanged,
             this, &ThemesPanel::onAutoSwitchConfigChanged);
+    connect(Theme::Manager::instance(), &Theme::Manager::favoritesChanged,
+            this, &ThemesPanel::onFavoritesChanged);
 
     // Seleciona o tema em uso por padrão.
     const QString currentId = Theme::Manager::instance()->current().id;
@@ -252,6 +294,8 @@ void ThemesPanel::buildUi()
     main->setContentsMargins(16, 16, 16, 16);
     main->setSpacing(12);
 
+    main->addWidget(buildSearchRow());
+
     // ---- Tabs com botões de ação como cornerWidget (top-right) ----
     m_tabs = new QTabWidget(this);
     m_tabs->setObjectName(QStringLiteral("themesPanelTabs"));
@@ -263,7 +307,11 @@ void ThemesPanel::buildUi()
         auto* gridContainer = new CardGrid(scroll);
         gridContainer->setHandlers(
             [this](const QString& id) { selectId(id); },
-            [this](const QString& id) { selectId(id); onApplyClicked(); }
+            [this](const QString& id) { selectId(id); onApplyClicked(); },
+            [](const QString& id) {
+                auto* mgr = Theme::Manager::instance();
+                mgr->setFavorite(id, !mgr->isFavorite(id));
+            }
         );
         grid = gridContainer;
         scroll->setWidget(grid);
@@ -482,6 +530,25 @@ void ThemesPanel::updateButtonsState()
     }
 }
 
+QWidget* ThemesPanel::buildSearchRow()
+{
+    auto* row = new QWidget(this);
+    row->setObjectName(QStringLiteral("themesSearchRow"));
+    auto* lay = new QHBoxLayout(row);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+
+    m_searchEdit = new QLineEdit(row);
+    m_searchEdit->setObjectName(QStringLiteral("themesSearchEdit"));
+    m_searchEdit->setPlaceholderText(tr("Buscar tema por nome…"));
+    m_searchEdit->setClearButtonEnabled(true);
+    lay->addWidget(m_searchEdit);
+
+    connect(m_searchEdit, &QLineEdit::textChanged, this, &ThemesPanel::onSearchTextChanged);
+
+    return row;
+}
+
 QWidget* ThemesPanel::buildCategoryFilterRow(QWidget* parent)
 {
     auto* row = new QWidget(parent);
@@ -495,12 +562,13 @@ QWidget* ThemesPanel::buildCategoryFilterRow(QWidget* parent)
 
     struct Chip { QString label; QString value; };
     const QList<Chip> chips = {
-        { tr("Todos"),      QStringLiteral("all") },
-        { tr("Claros"),     QStringLiteral("light") },
-        { tr("Amarelados"), QStringLiteral("warm") },
-        { tr("Escuros"),    QStringLiteral("dark") },
-        { tr("Coloridos"),  QStringLiteral("colorful") },
-        { tr("Estampados"), QStringLiteral("estampados") },
+        { tr("Todos"),          QStringLiteral("all") },
+        { tr("♥ Favoritos"),    QStringLiteral("favorites") },
+        { tr("Claros"),         QStringLiteral("light") },
+        { tr("Amarelados"),     QStringLiteral("warm") },
+        { tr("Escuros"),        QStringLiteral("dark") },
+        { tr("Coloridos"),      QStringLiteral("colorful") },
+        { tr("Estampados"),     QStringLiteral("estampados") },
     };
     for (const Chip& c : chips) {
         auto* btn = new QPushButton(c.label, row);
@@ -527,18 +595,35 @@ void ThemesPanel::rebuildGrids()
     m_cards.clear();
     // Aba Padrão respeita o filtro de categoria.
     QList<Theme::MiraTheme> bundled = mgr->bundledThemes();
-    if (m_categoryFilter != QStringLiteral("all")) {
+    if (m_categoryFilter == QStringLiteral("favorites")) {
+        QList<Theme::MiraTheme> filtered;
+        for (const auto& t : bundled)
+            if (mgr->isFavorite(t.id)) filtered.append(t);
+        bundled = filtered;
+    } else if (m_categoryFilter != QStringLiteral("all")) {
         QList<Theme::MiraTheme> filtered;
         for (const auto& t : bundled)
             if (t.category == m_categoryFilter) filtered.append(t);
         bundled = filtered;
     }
+    QList<Theme::MiraTheme> custom = mgr->customThemes();
+    // Busca por nome — aplica nas duas abas, além do filtro de categoria.
+    if (!m_searchText.isEmpty()) {
+        QList<Theme::MiraTheme> filtered;
+        for (const auto& t : bundled)
+            if (t.name.toLower().contains(m_searchText)) filtered.append(t);
+        bundled = filtered;
+        filtered.clear();
+        for (const auto& t : custom)
+            if (t.name.toLower().contains(m_searchText)) filtered.append(t);
+        custom = filtered;
+    }
     rebuildOneGrid(m_bundledGrid, bundled, false);
-    rebuildOneGrid(m_customGrid, mgr->customThemes(), true);
+    rebuildOneGrid(m_customGrid, custom, true);
     updateButtonsState();
 }
 
-void ThemesPanel::rebuildOneGrid(QWidget* gridContainer, const QList<Theme::MiraTheme>& themes, bool /*custom*/)
+void ThemesPanel::rebuildOneGrid(QWidget* gridContainer, const QList<Theme::MiraTheme>& themes, bool custom)
 {
     if (!gridContainer) return;
     // Limpa filhos.
@@ -557,9 +642,17 @@ void ThemesPanel::rebuildOneGrid(QWidget* gridContainer, const QList<Theme::Mira
     gl->setAlignment(Qt::AlignTop | Qt::AlignLeft);
 
     if (themes.isEmpty()) {
-        auto* empty = new QLabel(
-            tr("Nenhum tema personalizado ainda.\nUse \"Duplicar\" em um tema padrão pra começar."),
-            gridContainer);
+        QString message;
+        if (!m_searchText.isEmpty()) {
+            message = tr("Nenhum tema encontrado.");
+        } else if (!custom && m_categoryFilter == QStringLiteral("favorites")) {
+            message = tr("Nenhum favorito ainda.\nClique no coração de um tema pra marcá-lo.");
+        } else if (custom) {
+            message = tr("Nenhum tema personalizado ainda.\nUse \"Duplicar\" em um tema padrão pra começar.");
+        } else {
+            message = tr("Nenhum tema nessa categoria.");
+        }
+        auto* empty = new QLabel(message, gridContainer);
         empty->setAlignment(Qt::AlignCenter);
         empty->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;").arg(Theme::textMuted()));
         gl->addWidget(empty, 0, 0);
@@ -575,7 +668,8 @@ void ThemesPanel::rebuildOneGrid(QWidget* gridContainer, const QList<Theme::Mira
         const auto& t = themes.at(i);
         const bool dayRole = !autoSwitch.dayThemeId.isEmpty() && t.id == autoSwitch.dayThemeId;
         const bool nightRole = !autoSwitch.nightThemeId.isEmpty() && t.id == autoSwitch.nightThemeId;
-        auto* card = new ThemeCard(t, t.id == currentId, dayRole, nightRole, gridContainer);
+        auto* card = new ThemeCard(t, t.id == currentId, dayRole, nightRole,
+                                    mgr->isFavorite(t.id), gridContainer);
         card->setSelected(t.id == m_selectedId);
         gl->addWidget(card, i / cols, i % cols);
         m_cards.append(QPointer<QFrame>(card));
@@ -668,6 +762,17 @@ void ThemesPanel::onThemeChanged()
 }
 
 void ThemesPanel::onCustomThemesChanged()
+{
+    rebuildGrids();
+}
+
+void ThemesPanel::onSearchTextChanged(const QString& text)
+{
+    m_searchText = text.trimmed().toLower();
+    rebuildGrids();
+}
+
+void ThemesPanel::onFavoritesChanged()
 {
     rebuildGrids();
 }
@@ -902,6 +1007,15 @@ void ThemesPanel::applyDialogStyle()
             padding: 2px 6px;
             font-size: 12px;
         }
+        QLineEdit#themesSearchEdit {
+            background: %5;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+        }
+        QLineEdit#themesSearchEdit:focus { border-color: %9; }
     )").arg(
         Theme::appBackground(),     // 1
         Theme::textPrimary(),       // 2

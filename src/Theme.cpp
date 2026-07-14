@@ -45,6 +45,7 @@ Manager::Manager()
     loadCustomThemes();
     loadFromSettings();
     loadAutoSwitchSettings();
+    loadFavorites();
 
     m_autoSwitchTimer = new QTimer(this);
     m_autoSwitchTimer->setInterval(60000);
@@ -5824,6 +5825,34 @@ void Manager::setAutoSwitchConfig(const AutoSwitchConfig& cfg)
     } else {
         m_autoSwitchTimer->stop();
     }
+}
+
+void Manager::loadFavorites()
+{
+    QSettings s;
+    const QStringList ids = s.value(QStringLiteral("theme/favorites")).toStringList();
+    m_favorites = QSet<QString>(ids.begin(), ids.end());
+}
+
+void Manager::saveFavorites() const
+{
+    QSettings s;
+    s.setValue(QStringLiteral("theme/favorites"), QStringList(m_favorites.begin(), m_favorites.end()));
+}
+
+bool Manager::isFavorite(const QString& id) const
+{
+    return m_favorites.contains(id);
+}
+
+void Manager::setFavorite(const QString& id, bool favorite)
+{
+    const bool was = m_favorites.contains(id);
+    if (was == favorite) return;
+    if (favorite) m_favorites.insert(id);
+    else m_favorites.remove(id);
+    saveFavorites();
+    emit favoritesChanged();
 }
 
 namespace {
