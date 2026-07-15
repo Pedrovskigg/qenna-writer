@@ -625,7 +625,7 @@ public:
         : QDialog(parent)
     {
         setObjectName(QStringLiteral("projectEditDialog"));
-        setWindowTitle(tr("Editar projeto"));
+        setWindowTitle(QCoreApplication::translate("ProjectEditDialog", "Editar projeto"));
         setModal(true);
         resize(820, 560);
 
@@ -641,18 +641,18 @@ public:
         m_coverPreview->setObjectName(QStringLiteral("projectInfoCover"));
         m_coverPreview->setFixedSize(kEditCoverW, kEditCoverH);
         m_coverPreview->setAlignment(Qt::AlignCenter);
-        m_coverPreview->setText(tr("Sem capa"));
+        m_coverPreview->setText(QCoreApplication::translate("ProjectEditDialog", "Sem capa"));
         m_coverPreview->setScaledContents(false);
         leftCol->addWidget(m_coverPreview);
 
-        auto* pickBtn = new QPushButton(tr("Escolher capa…"), this);
+        auto* pickBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Escolher capa…"), this);
         pickBtn->setObjectName(QStringLiteral("projectInfoBtn"));
         pickBtn->setCursor(Qt::PointingHandCursor);
         QObject::connect(pickBtn, &QPushButton::clicked, this, [this]() {
             const QString startDir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
             const QString file = QFileDialog::getOpenFileName(
-                this, tr("Escolher capa"), startDir,
-                tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
+                this, QCoreApplication::translate("ProjectEditDialog", "Escolher capa"), startDir,
+                QCoreApplication::translate("ProjectEditDialog", "Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
             if (file.isEmpty()) return;
             const QString dataUrl = loadCoverAsDataUrl(file);
             if (dataUrl.isEmpty()) return;
@@ -661,7 +661,7 @@ public:
         });
         leftCol->addWidget(pickBtn);
 
-        auto* clearBtn = new QPushButton(tr("Remover capa"), this);
+        auto* clearBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Remover capa"), this);
         clearBtn->setObjectName(QStringLiteral("projectInfoBtn"));
         clearBtn->setCursor(Qt::PointingHandCursor);
         QObject::connect(clearBtn, &QPushButton::clicked, this, [this]() {
@@ -677,7 +677,7 @@ public:
         auto* rightCol = new QVBoxLayout();
         rightCol->setSpacing(10);
 
-        auto* heading = new QLabel(tr("Detalhes da obra"), this);
+        auto* heading = new QLabel(QCoreApplication::translate("ProjectEditDialog", "Detalhes da obra"), this);
         heading->setObjectName(QStringLiteral("projectInfoHeading"));
         rightCol->addWidget(heading);
 
@@ -687,34 +687,34 @@ public:
             rightCol->addWidget(lab);
         };
 
-        addLabel(tr("Nome do projeto"));
+        addLabel(QCoreApplication::translate("ProjectEditDialog", "Nome do projeto"));
         m_nameEdit = new QLineEdit(this);
-        m_nameEdit->setPlaceholderText(tr("Ex: Minha história"));
+        m_nameEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Minha história"));
         rightCol->addWidget(m_nameEdit);
 
-        addLabel(tr("Autor"));
+        addLabel(QCoreApplication::translate("ProjectEditDialog", "Autor"));
         m_authorEdit = new QLineEdit(this);
-        m_authorEdit->setPlaceholderText(tr("Ex: Maria Silva"));
+        m_authorEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Maria Silva"));
         rightCol->addWidget(m_authorEdit);
 
-        addLabel(tr("Gêneros"));
+        addLabel(QCoreApplication::translate("ProjectEditDialog", "Gêneros"));
         m_genresEdit = new QLineEdit(this);
-        m_genresEdit->setPlaceholderText(tr("Ex: Fantasia, Romance"));
+        m_genresEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Fantasia, Romance"));
         rightCol->addWidget(m_genresEdit);
 
-        addLabel(tr("Sinopse"));
+        addLabel(QCoreApplication::translate("ProjectEditDialog", "Sinopse"));
         m_synopsisEdit = new QPlainTextEdit(this);
-        m_synopsisEdit->setPlaceholderText(tr("Escreva uma breve sinopse…"));
+        m_synopsisEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Escreva uma breve sinopse…"));
         rightCol->addWidget(m_synopsisEdit, /*stretch=*/1);
 
         auto* actions = new QHBoxLayout();
         actions->setSpacing(8);
         actions->addStretch();
-        auto* cancelBtn = new QPushButton(tr("Cancelar"), this);
+        auto* cancelBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Cancelar"), this);
         cancelBtn->setObjectName(QStringLiteral("projectInfoBtn"));
         cancelBtn->setCursor(Qt::PointingHandCursor);
         QObject::connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
-        auto* saveBtn = new QPushButton(tr("Salvar"), this);
+        auto* saveBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Salvar"), this);
         saveBtn->setObjectName(QStringLiteral("projectInfoBtn"));
         saveBtn->setCursor(Qt::PointingHandCursor);
         saveBtn->setDefault(true);
@@ -753,7 +753,7 @@ private:
         QPixmap pm = decodeCoverDataUrl(m_coverDataUrl);
         if (pm.isNull()) {
             m_coverPreview->clear();
-            m_coverPreview->setText(tr("Sem capa"));
+            m_coverPreview->setText(QCoreApplication::translate("ProjectEditDialog", "Sem capa"));
             return;
         }
         m_coverPreview->setPixmap(pm.scaled(kEditCoverW, kEditCoverH,
