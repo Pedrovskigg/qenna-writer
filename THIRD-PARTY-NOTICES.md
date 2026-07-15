@@ -44,6 +44,28 @@ how to fetch it) and statically linked into `qenna-writer.exe`.
 - **Full texts:** [`licenses/hunspell/`](licenses/hunspell/) (all three
   upstream options included, as shipped by the Hunspell project itself).
 
+## Spell-checking dictionaries (pt_BR, en_US, es_ES)
+
+Hunspell dictionaries bundled under `src/assets/spell/<locale>/` (shipped
+alongside `qenna-writer.exe` as `spell/<locale>/`), used by the Hunspell
+engine above. Each locale carries its own upstream `license` file inside
+its folder.
+
+- **pt_BR** — LibreOffice "VERO" Brazilian Portuguese dictionary, by
+  Raimundo Moura. Dual-licensed LGPL-3.0+ or MPL-1.1+. Qenna Writer relies
+  on the **LGPL-3.0** option. Full text: [`licenses/LGPL-3.0.txt`](licenses/LGPL-3.0.txt).
+  Source: https://pt-br.libreoffice.org/projetos/projeto-vero-verificador-ortografico/
+- **en_US** — SCOWL-derived English dictionary, by Kevin Atkinson.
+  Permissive custom license (free use, copy, modification, and
+  distribution with copyright notice retained) — see
+  [`src/assets/spell/en_US/license`](src/assets/spell/en_US/license) for
+  the exact terms. Source: http://wordlist.sourceforge.net
+- **es_ES** — LibreOffice Spanish (Spain) dictionary, originally by
+  Santiago Bosio. Triple-licensed GPL-3.0+, LGPL-3.0+, or MPL-1.1+. Qenna
+  Writer relies on the **LGPL-3.0** option. Full text:
+  [`licenses/LGPL-3.0.txt`](licenses/LGPL-3.0.txt). Source:
+  https://github.com/LibreOffice/dictionaries (`es/` folder).
+
 ## MinGW-w64 runtime
 
 Bundled as `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll` —
