@@ -1008,10 +1008,12 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     m_langCombo->setCursor(Qt::PointingHandCursor);
     m_langCombo->addItem(tr("Português (BR)"), QStringLiteral("pt_BR"));
     m_langCombo->addItem(tr("English"),        QStringLiteral("en"));
+    m_langCombo->addItem(tr("Español"),        QStringLiteral("es"));
     {
         QSettings qs;
         const QString cur = qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString();
-        m_langCombo->setCurrentIndex(cur == QStringLiteral("en") ? 1 : 0);
+        const int idx = m_langCombo->findData(cur);
+        m_langCombo->setCurrentIndex(idx >= 0 ? idx : 0);
     }
     connect(m_langCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
         const QString lang = m_langCombo->itemData(idx).toString();

@@ -54,7 +54,7 @@ void GeoData::load()
     };
 
     QSettings qs;
-    const bool englishUi = qs.value(QStringLiteral("app/language")).toString() == QStringLiteral("en");
+    const QString uiLang = qs.value(QStringLiteral("app/language")).toString();
 
     // ---------------- Países (fronteiras) ----------------
     QFile cf(QStringLiteral(":/geo/countries.geojson"));
@@ -65,8 +65,15 @@ void GeoData::load()
             const QJsonObject props = f.value(QStringLiteral("properties")).toObject();
             Country c;
             c.nameEn = props.value(QStringLiteral("NAME")).toString();
-            const QString pt = props.value(QStringLiteral("NAME_PT")).toString();
-            c.name = englishUi ? c.nameEn : (pt.isEmpty() ? c.nameEn : pt);
+            if (uiLang == QStringLiteral("en")) {
+                c.name = c.nameEn;
+            } else if (uiLang == QStringLiteral("es")) {
+                const QString es = props.value(QStringLiteral("NAME_ES")).toString();
+                c.name = es.isEmpty() ? c.nameEn : es;
+            } else {
+                const QString pt = props.value(QStringLiteral("NAME_PT")).toString();
+                c.name = pt.isEmpty() ? c.nameEn : pt;
+            }
             c.iso = props.value(QStringLiteral("ISO_A2")).toString();
             c.labelLon = props.value(QStringLiteral("LABEL_X")).toDouble();
             c.labelLat = props.value(QStringLiteral("LABEL_Y")).toDouble();
@@ -85,8 +92,15 @@ void GeoData::load()
             const QJsonObject props = f.value(QStringLiteral("properties")).toObject();
             State st;
             const QString stateEn = props.value(QStringLiteral("name")).toString();
-            const QString pt = props.value(QStringLiteral("name_pt")).toString();
-            st.name = englishUi ? stateEn : (pt.isEmpty() ? stateEn : pt);
+            if (uiLang == QStringLiteral("en")) {
+                st.name = stateEn;
+            } else if (uiLang == QStringLiteral("es")) {
+                const QString es = props.value(QStringLiteral("name_es")).toString();
+                st.name = es.isEmpty() ? stateEn : es;
+            } else {
+                const QString pt = props.value(QStringLiteral("name_pt")).toString();
+                st.name = pt.isEmpty() ? stateEn : pt;
+            }
             st.country = props.value(QStringLiteral("admin")).toString();
             st.rings = extractRings(f.value(QStringLiteral("geometry")).toObject());
             st.bounds = boundsOf(st.rings);

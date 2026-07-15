@@ -230,6 +230,7 @@ qt_add_translations(qenna-writer
     TS_FILES
         translations/qenna_pt_BR.ts
         translations/qenna_en.ts
+        translations/qenna_es.ts
     SOURCE_TARGETS qenna-writer
 )
 
