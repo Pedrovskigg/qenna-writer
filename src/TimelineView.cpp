@@ -1,0 +1,145 @@
+#include "TimelineView.h"
+#include "TimelineEventItem.h"
+
+#include <QMouseEvent>
+#include <QScrollBar>
+#include <QWheelEvent>
+
+TimelineView::TimelineView(QGraphicsScene* scene, QWidget* parent)
+    : QGraphicsView(scene, parent)
+{
+    setRenderHint(QPainter::Antialiasing);
+    setRenderHint(QPainter::SmoothPixmapTransform);
+    setDragMode(QGraphicsView::NoDrag);
+    setTransformationAnchor(QGraphicsView::NoAnchor);
+    setResizeAnchor(QGraphicsView::NoAnchor);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    setFrameShape(QFrame::NoFrame);
+    // O fundo desenha as faixas + rótulos grudados à esquerda (dependentes do
+    // scroll). Com CacheBackground/SmartViewportUpdate o pan arrasta os pixels
+    // antigos e deixa rastro dos rótulos. FullViewportUpdate repinta tudo.
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    setInteractive(true);
+    setMouseTracking(true);
+}
+
+QPointF TimelineView::scrollPos() const
+{
+    return {qreal(horizontalScrollBar()->value()),
+            qreal(verticalScrollBar()->value())};
+}
+
+void TimelineView::applyZoomAndPan(qreal zoom, qreal panX, qreal panY)
+{
+    m_zoom = qBound(0.1, zoom, 4.0);
+    QTransform t;
+    t.scale(m_zoom, m_zoom);
+    setTransform(t);
+    horizontalScrollBar()->setValue(qRound(panX));
+    verticalScrollBar()->setValue(qRound(panY));
+}
+
+void TimelineView::fitAll()
+{
+    const QRectF items = scene() ? scene()->itemsBoundingRect() : QRectF();
+    if (items.isNull() || items.isEmpty()) {
+        // canvas vazio: centraliza na origem
+        applyZoomAndPan(1.0, 0, 0);
+        centerOn(0, 0);
+        return;
+    }
+    constexpr qreal pad = 80.0;
+    const QRectF target = items.adjusted(-pad, -pad, pad, pad);
+    const qreal sx = viewport()->width()  / target.width();
+    const qreal sy = viewport()->height() / target.height();
+    m_zoom = qBound(0.1, qMin(sx, sy), 4.0);
+    QTransform t;
+    t.scale(m_zoom, m_zoom);
+    setTransform(t);
+    centerOn(items.center());
+    emit zoomChanged(m_zoom);
+}
+
+void TimelineView::scrollToRailStart()
+{
+    // alinha a cena x≈-16 à esquerda do viewport (rótulos + 1º evento à vista)
+    const qreal curLeft = mapToScene(0, 0).x();
+    const int deltaPx = qRound((curLeft - (-16.0)) * m_zoom);
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - deltaPx);
+}
+
+void TimelineView::wheelEvent(QWheelEvent* event)
+{
+    // Mesma regra da Lousa: se o cursor estiver sobre um evento expandido com
+    // conteudo rolavel, o wheel rola o texto; senao, da zoom no canvas.
+    for (QGraphicsItem* it = itemAt(event->position().toPoint()); it; it = it->parentItem()) {
+        if (auto* ev = dynamic_cast<TimelineEventItem*>(it)) {
+            if (ev->wheelScroll(event->angleDelta().y())) { event->accept(); return; }
+            break;
+        }
+    }
+
+    const qreal step    = event->angleDelta().y() > 0 ? 1.12 : (1.0 / 1.12);
+    const qreal newZoom = qBound(0.1, m_zoom * step, 4.0);
+    if (qFuzzyCompare(newZoom, m_zoom)) { event->accept(); return; }
+
+    const QPointF scenePos = mapToScene(event->position().toPoint());
+    m_zoom = newZoom;
+    QTransform t;
+    t.scale(m_zoom, m_zoom);
+    setTransform(t);
+
+    const QPointF newViewPos = mapFromScene(scenePos);
+    const QPointF delta      = event->position() - newViewPos;
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - qRound(delta.x()));
+    verticalScrollBar()->setValue(verticalScrollBar()->value()   - qRound(delta.y()));
+
+    emit zoomChanged(m_zoom);
+    event->accept();
+}
+
+void TimelineView::mousePressEvent(QMouseEvent* event)
+{
+    const bool isMiddle = (event->button() == Qt::MiddleButton);
+    const bool isBgLeft = (event->button() == Qt::LeftButton) && !itemAt(event->pos());
+    if (isMiddle || isBgLeft) {
+        m_panning  = true;
+        m_panMoved = false;
+        m_panLast  = event->pos();
+        m_pressPos = event->pos();
+        setCursor(Qt::ClosedHandCursor);
+        event->accept();
+        return;
+    }
+    QGraphicsView::mousePressEvent(event);
+}
+
+void TimelineView::mouseMoveEvent(QMouseEvent* event)
+{
+    if (m_panning) {
+        if ((event->pos() - m_pressPos).manhattanLength() > 4)
+            m_panMoved = true;
+        const QPoint delta = event->pos() - m_panLast;
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+        verticalScrollBar()->setValue(verticalScrollBar()->value()   - delta.y());
+        m_panLast = event->pos();
+        event->accept();
+        return;
+    }
+    QGraphicsView::mouseMoveEvent(event);
+}
+
+void TimelineView::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (m_panning && (event->button() == Qt::LeftButton || event->button() == Qt::MiddleButton)) {
+        m_panning = false;
+        setCursor(Qt::ArrowCursor);
+        // press+release no fundo sem arrastar (botão esquerdo) = clique de foco
+        if (!m_panMoved && event->button() == Qt::LeftButton)
+            emit bgClicked(mapToScene(event->pos()), event->modifiers());
+        event->accept();
+        return;
+    }
+    QGraphicsView::mouseReleaseEvent(event);
+}

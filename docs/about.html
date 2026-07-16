@@ -1,0 +1,289 @@
+<title>About — Qenna Writer</title>
+<style>
+  :root {
+    --paper: #f1eee3;
+    --paper-white: #faf8f0;
+    --ink: #26231d;
+    --ink-soft: #5f5a4d;
+    --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16);
+    --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f;
+    --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1b1915; --paper-white: #221f19; --ink: #ece6d6;
+      --ink-soft: #a89f8c; --ink-faint: #726b5c;
+      --rule: rgba(236,230,214,.14); --rule-strong: rgba(236,230,214,.24);
+      --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1915; --paper-white: #221f19; --ink: #ece6d6;
+    --ink-soft: #a89f8c; --ink-faint: #726b5c;
+    --rule: rgba(236,230,214,.14); --rule-strong: rgba(236,230,214,.24);
+    --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+  }
+  :root[data-theme="light"] {
+    --paper: #f1eee3; --paper-white: #faf8f0; --ink: #26231d;
+    --ink-soft: #5f5a4d; --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16); --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f; --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Seravek, 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif; }
+  .mono  { font-family: 'SF Mono', 'Cascadia Mono', Consolas, 'Courier New', monospace; }
+  a { color: var(--blue); text-decoration-color: var(--blue-soft); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--blue); }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+
+  header.bar {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 920px; margin: 0 auto; padding: 28px 24px 0; font-size: 13px;
+  }
+  .wordmark {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 12.5px; letter-spacing: .12em; color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .bar-links { display: flex; gap: 22px; }
+  .bar-links a { color: var(--ink-soft); text-decoration: none; }
+  .bar-links a:hover { color: var(--ink); text-decoration: underline; }
+
+  .leaf {
+    background: var(--paper-white);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    margin: 40px auto;
+    padding: 56px 64px;
+  }
+  @media (max-width: 640px) { .leaf { padding: 40px 26px; } }
+
+  .leaf-head {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px; margin-bottom: 36px;
+    display: flex; justify-content: space-between;
+  }
+
+  h1.title {
+    font-size: clamp(30px, 4.6vw, 40px);
+    font-weight: 500;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  p.dek {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .essay p {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .essay p:last-child { margin-bottom: 0; }
+  .essay strong { color: var(--ink); font-weight: 600; }
+  .essay h2 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .essay ul.plain {
+    margin: 0 0 18px;
+    padding: 0;
+    list-style: none;
+  }
+  .essay ul.plain li {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    padding: 4px 0 4px 20px;
+    position: relative;
+  }
+  .essay ul.plain li::before { content: '—'; position: absolute; left: 0; color: var(--ink-faint); }
+  .essay ul.names {
+    margin: 0 0 18px;
+    padding: 0 0 0 20px;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 18px;
+  }
+  .essay ul.names li { margin-bottom: 4px; }
+
+  .repo-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 16px 20px;
+    margin: 4px 0 18px;
+  }
+  .repo-box a { font-size: 15px; }
+  pre.code {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    padding: 12px 16px;
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 13px;
+    overflow-x: auto;
+    margin: 10px 0 0;
+    color: var(--ink);
+  }
+
+  .signoff { text-align: center; }
+  .signoff blockquote {
+    margin: 0 auto;
+    max-width: 42ch;
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: clamp(18px, 2.4vw, 22px);
+    line-height: 1.55;
+    font-style: italic;
+    text-wrap: balance;
+  }
+  .signoff cite {
+    display: block;
+    margin-top: 18px;
+    font-style: normal;
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 12px;
+    letter-spacing: .04em;
+    color: var(--ink-faint);
+  }
+
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 20px 24px 64px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    font-size: 12.5px; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-faint); }
+  .footer-links { display: flex; gap: 18px; }
+</style>
+
+<header class="bar">
+  <a class="wordmark" href="index.html">QENNA WRITER</a>
+  <nav class="bar-links">
+    <a href="index.html">Home</a>
+    <a href="philosophy.html">Source</a>
+    <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Releases</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/LICENSE">License</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="leaf">
+    <div class="leaf-head"><span>History</span><span>Qenna Writer</span></div>
+    <h1 class="title serif">What's Qenna Writer's history? Who made this?</h1>
+    <p class="dek">Hi — I'm P.H. Lobato (Pedro Henrique Lobato, for anyone wondering), and this is Qenna Writer: the project you've already seen up to this point.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">Why free, the short version</h2>
+    <p>Since I decided to give this project away, I've gotten the same question over and over: why free?</p>
+    <p>It's a fair one. Look at most creative-writing software out there and the majority of it is paid — subscriptions, premium features, or one-time purchases that run high enough to sting.</p>
+    <p>I started building this — back then it was called Mira Writing — as a personal alternative. I hated splitting my work across different programs and documents just to write. It was exhausting, and on a big project with a lot of moving parts, it got worse.</p>
+    <p>I'd already tried what existed in the space, and even the good ones always had a catch. The free tools tended to feel dated and unappealing. The paid ones were expensive and crippled in their free tiers — I've personally seen dark mode gated behind a paywall.</p>
+    <p>I found that unacceptable.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The first version, and the wall it hit</h2>
+    <p>So, on my own, I started a project: a writing tool that would give an author everything — or as close to everything as possible — a book needs, without asking for a dime.</p>
+    <p>Writing a good story should require creativity from you. Nothing else.</p>
+    <p>The first version was built in JSX, on Electron, React, TipTap, ProseMirror. I was a writer with almost no programming background, and I gambled anyway — AI agents, a lot of research, and several afternoons lost trying to make Focus Mode behave. That version came into the world and held up for a while, until it ran into a wall: TipTap.</p>
+    <p>It wasn't a real text engine — not one built to handle the volume of text a tool with this ambition actually needs — so performance was a problem from day one. When that problem hit its ceiling, I had to start over.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The day the SSD died</h2>
+    <p>Somewhere in the middle of building that first version, a second disaster happened — one that had nothing to do with TipTap.</p>
+    <p>I wasn't a programmer when I started this (I still don't really consider myself one), so I didn't know how to use GitHub, set up a repository, or make a commit. The entire project lived in exactly one place: my SSD, backed up to the cloud only rarely.</p>
+    <p>One day, that SSD decided its time had come. And the way a plane goes down when the pilot does, Mira Writing went down with it.</p>
+    <p>Months of near-daily work, gone. The app was in a solid, working state by then — solid for what it was, at least — and then it just wasn't there anymore. I looked into paying for data recovery, but it wasn't financially realistic. For about ten minutes, I seriously considered giving up.</p>
+    <p>Then I considered reverse-engineering my own app from the compiled build, to somehow claw the source back out of it. If I wasn't skilled enough to use GitHub, though, I definitely wasn't skilled enough for that — everything I read on the subject looked like hieroglyphs, and every hour of research just made me angrier.</p>
+    <p>Then, one afternoon, it clicked: the SSD itself was the problem. As long as there was any chance — however remote, however impossible — of recovering the code off it, the project wasn't going anywhere. So, in what I'd call a great display of emotional control, I took a hammer to the dead drive and decided, right there, not just to keep going, but to make the whole thing better.</p>
+    <p>I rebuilt it out of scraps — code I'd once sent to AI agents to review for bugs, forgotten backups, loose fragments here and there. I'd guess I recovered about half the app that way. The rest — the majority of it — had to be built from zero. Not just rebuilt: improved. I fixed old bugs, reworked UI I'd never gotten around to fixing, and added things that didn't exist before (the Board started here).</p>
+    <p>And before I knew it, Mira Writing had survived. I also knew how to use GitHub by then. I became a machine about it.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The rebuild</h2>
+    <p>That was the first step toward Qenna. Mira Writing went into a full rebuild in C++ and Qt6 — this time focused not on matching what the first version already did well, but on fixing what it lacked: real text performance.</p>
+    <p>It worked.</p>
+    <p>With every version the app took more shape, more freedom, got better. I had ideas for new features and built them, until this stopped being a remake of the old JSX app and became a complete rebuild — and a far better one.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The names</h2>
+    <p>That's the point where Mira Writing got renamed. Turns out "Mira" was a lost cause — there are millions of projects across every field with that name. So the app became Qiyva.</p>
+    <p>Which I swore was completely original. The name came from a character in one of my own sci-fi projects: Qiyva Jarhmud.</p>
+    <p>It wasn't. Turns out there's an app called Quilva that sounds close enough to be a problem.</p>
+    <p>Back to the drawing board. After a lot of research and back-and-forth, three names made the shortlist:</p>
+    <ul class="names serif">
+      <li>Qelle</li>
+      <li>Qelis</li>
+      <li>Qenna</li>
+    </ul>
+    <p>Personally, I thought Qelis was the best of the three. But in a democratic vote, Qenna won — and since the voice of the people is the voice of God, that settled it.</p>
+    <p>And here we are.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">What it is now, and why it's open</h2>
+    <p>Qenna Writer today is a creative writing app built to give an author every tool a book could need — not just matching what other tools lock behind a subscription, but going well past that.</p>
+    <p>And, as covered on the Source page: why free? Honestly, I never planned to release Qenna at all. It was always a personal project. At some point I don't fully remember, I sent it to a few friends to test — especially our most loyal beta reader, A.C.S. Freitas, who pushed me to actually ship it. I'm an easily-persuaded guy, so I did.</p>
+    <p>And why open source? A few reasons, but three stand out:</p>
+    <ul class="plain">
+      <li><strong>Continuity</strong> — if I ever step away from this project, I want the community able to keep it alive. Anyone with the know-how, or an unusually enthusiastic AI coding agent, can carry it forward.</li>
+      <li><strong>Trust</strong> — open-source code has no secrets. Every line is visible and inspectable. Nothing hidden.</li>
+      <li><strong>Democratization</strong> — creative writing should be encouraged, not gatekept. Everyone deserves the right to write good stories, and to use tools that help them do it, without putting a credit card on the table first.</li>
+    </ul>
+    <p>There's a fuller version of this argument on the <a href="philosophy.html">Why it's free</a> page.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The first version, if you're curious</h2>
+    <p>I'm leaving the source for the very first version of Mira Writing up, in case anyone wants to look.</p>
+    <p><strong>A reminder:</strong> that version is fully discontinued, and I don't recommend using it — if something breaks, it won't get fixed. But if you're curious, feel free.</p>
+    <p>It's also entirely in Portuguese (Brazil). I never translated it, because at the time I didn't know I needed to plan for i18n from the start. On top of that, the code was a complete, disorganized mess — don't ask me how I understood any of it back then.</p>
+    <div class="repo-box">
+      <a href="https://github.com/Pedrovskigg/mira-writing-editor">github.com/Pedrovskigg/mira-writing-editor</a>
+      <pre class="code">npm install
+npm run dev</pre>
+    </div>
+    <p>It's an Electron + React app built with Vite, so you'll need Node.js installed first. <span class="mono" style="font-size:13px;">npm install</span> pulls the dependencies, then <span class="mono" style="font-size:13px;">npm run dev</span> starts the Vite dev server and the Electron shell together.</p>
+  </div>
+
+  <div class="leaf signoff">
+    <blockquote class="serif">That's it. Thank you for reading this far and getting to know Qenna's history. I hope you enjoy this app as much as I've enjoyed building it — now go write good stories.</blockquote>
+    <cite>With love, — P.H. Lobato, Guardian of the Lands of Qenna</cite>
+  </div>
+</div>
+
+<footer>
+  <span>© Qenna Writer — GPL-3.0. Made by one person, in the open.</span>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer">Source</a>
+    <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases">Releases</a>
+  </div>
+</footer>

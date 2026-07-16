@@ -1,0 +1,187 @@
+<title>Free, on purpose — Qenna Writer</title>
+<style>
+  :root {
+    --paper: #f1eee3;
+    --paper-white: #faf8f0;
+    --ink: #26231d;
+    --ink-soft: #5f5a4d;
+    --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16);
+    --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f;
+    --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1b1915; --paper-white: #221f19; --ink: #ece6d6;
+      --ink-soft: #a89f8c; --ink-faint: #726b5c;
+      --rule: rgba(236,230,214,.14); --rule-strong: rgba(236,230,214,.24);
+      --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1b1915; --paper-white: #221f19; --ink: #ece6d6;
+    --ink-soft: #a89f8c; --ink-faint: #726b5c;
+    --rule: rgba(236,230,214,.14); --rule-strong: rgba(236,230,214,.24);
+    --blue: #86adda; --blue-soft: rgba(134,173,218,.14);
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+  }
+  :root[data-theme="light"] {
+    --paper: #f1eee3; --paper-white: #faf8f0; --ink: #26231d;
+    --ink-soft: #5f5a4d; --ink-faint: #9d9686;
+    --rule: rgba(38,35,29,.16); --rule-strong: rgba(38,35,29,.28);
+    --blue: #22415f; --blue-soft: rgba(34,65,95,.10);
+    --shadow: 0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Seravek, 'Segoe UI', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif; }
+  .mono  { font-family: 'SF Mono', 'Cascadia Mono', Consolas, 'Courier New', monospace; }
+  a { color: var(--blue); text-decoration-color: var(--blue-soft); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--blue); }
+  a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+
+  header.bar {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: 920px; margin: 0 auto; padding: 28px 24px 0; font-size: 13px;
+  }
+  .wordmark {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 12.5px; letter-spacing: .12em; color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .bar-links { display: flex; gap: 22px; }
+  .bar-links a { color: var(--ink-soft); text-decoration: none; }
+  .bar-links a:hover { color: var(--ink); text-decoration: underline; }
+
+  .leaf {
+    background: var(--paper-white);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    margin: 40px auto;
+    padding: 56px 64px;
+  }
+  @media (max-width: 640px) { .leaf { padding: 40px 26px; } }
+
+  .leaf-head {
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 14px; margin-bottom: 36px;
+    display: flex; justify-content: space-between;
+  }
+
+  h1.title {
+    font-size: clamp(32px, 5vw, 44px);
+    font-weight: 500;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  p.dek {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+
+  .essay p {
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+  }
+  .essay p:last-child { margin-bottom: 0; }
+  .essay strong { color: var(--ink); font-weight: 600; }
+  .essay h2 {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 21px;
+    font-weight: 500;
+    margin: 36px 0 14px;
+    color: var(--ink);
+  }
+  .essay h2:first-child { margin-top: 0; }
+
+  .close-leaf { text-align: center; }
+  .close-leaf .lnk {
+    font-size: 19px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule-strong);
+    padding-bottom: 3px;
+  }
+  .close-leaf .lnk:hover { border-color: var(--blue); color: var(--blue); }
+  .close-leaf .fine {
+    display: block;
+    margin-top: 14px;
+    font-family: 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+
+  footer {
+    max-width: 920px; margin: 0 auto; padding: 20px 24px 64px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+    font-size: 12.5px; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-faint); }
+  .footer-links { display: flex; gap: 18px; }
+</style>
+
+<header class="bar">
+  <a class="wordmark" href="index.html">QENNA WRITER</a>
+  <nav class="bar-links">
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Releases</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/LICENSE">License</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="leaf">
+    <div class="leaf-head"><span>Why it's free</span><span>Qenna Writer</span></div>
+    <h1 class="title serif">Free, on purpose</h1>
+    <p class="dek">A short explanation, since it comes up.</p>
+  </div>
+
+  <div class="leaf essay">
+    <h2 class="serif">The problem with the market</h2>
+    <p>The market for software that helps you write got expensive somewhere along the way. A word processor with a subscription. An outlining tool with three pricing tiers. A cloud-sync fee for a feature that used to just be called "saving a file." None of that is illegal, and some of it is even reasonable — people who build software need to eat.</p>
+    <p>But none of it is <strong>necessary</strong>, either. Creative writing already has enough real barriers — time, doubt, the blank page itself — without a monthly bill stacked on top of them.</p>
+
+    <h2 class="serif">Why open, not just free</h2>
+    <p>Free-as-in-price solves the money problem. It doesn't solve the trust problem or the permanence problem, and those two matter more.</p>
+    <p><strong>Trust</strong> — a manuscript is personal, sometimes for years before anyone else reads a word of it. Qenna Writer never asks for an account, never phones home, never uploads anything anywhere. That's not a claim you have to take on faith: the code that proves it is sitting in the open, not behind an NDA.</p>
+    <p><strong>Permanence</strong> — closed software can vanish. A company gets acquired, a product gets sunset, a beloved feature gets ripped out and resold as a subscription tier a year later. None of that can happen here by construction. The GPL-3.0 license means this exact version, warts and all, can always be rebuilt by anyone, forever — even if I stop maintaining it tomorrow. That's not a courtesy. It's the whole point of choosing that license over a friendlier-sounding one that would've let someone fork it into a closed, paid product down the line.</p>
+
+    <h2 class="serif">The honest economics</h2>
+    <p>This isn't charity, and I'd rather not dress it up as some. I built Qenna Writer because I wanted to write my own books in it, and giving it away costs me nothing I wasn't already spending — it's evenings and weekends either way, one person, no venture funding, no roadmap dictated by a pricing tier.</p>
+    <p>What I ask in return isn't money. It's the same line that's been on the About screen since the beginning: write good stories. That's the whole deal.</p>
+  </div>
+
+  <div class="leaf close-leaf">
+    <a class="lnk" href="https://github.com/Pedrovskigg/qenna-writer">Read the source →</a>
+    <span class="fine">GPL-3.0 · Pedrovskigg/qenna-writer · build instructions in the README</span>
+  </div>
+</div>
+
+<footer>
+  <span>© Qenna Writer — GPL-3.0. Made by one person, in the open.</span>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="https://github.com/Pedrovskigg/qenna-writer">Source</a>
+    <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases">Releases</a>
+  </div>
+</footer>
