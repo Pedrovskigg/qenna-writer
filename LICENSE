@@ -7,11 +7,23 @@
   is GPLv3 as a base, modified by a Commons Clause condition, and not
   plain GPL-3.0. See the full conditions below for the binding text.)
 
-  This distribution is licensed under the GNU General Public License
-v3.0 ("the License", reproduced in full below), supplemented by the
-two additional conditions below. Both conditions are made part of this
-License under the mechanism of Section 7 of the License itself, and
-apply to this Software and to any modified or unmodified copy of it.
+  This is the Qenna Writer License — a single, standalone license that
+incorporates substantial portions of the GNU GPLv3 but constitutes a
+distinct license governing this Software, and it is not represented as
+"open source" under the definitions maintained by the OSI or the FSF.
+
+  To draft it, this license incorporates by reference the full text
+and legal mechanisms of the GNU General Public License, version 3
+("GPLv3"), reproduced verbatim below, and adds two further conditions
+of its own: a Commons Clause restricting commercial sale of the
+Software, and an author-attribution requirement, the latter relying on
+the attribution mechanism described in GPLv3 Section 7(b).
+
+  Read together, the conditions above and the GPLv3 text below form
+one single document: the Qenna Writer License. Nothing here should be
+read as a claim that the Software is distributed under plain GPLv3, or
+that it qualifies as free software or open source software under the
+FSF's or OSI's definitions.
 
 ------------------------------------------------------------------
 Commons Clause License Condition v1.0
