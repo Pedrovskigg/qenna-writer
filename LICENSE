@@ -1,3 +1,55 @@
+                      QENNA WRITER LICENSE
+
+  This distribution is licensed under the GNU General Public License
+v3.0 ("the License", reproduced in full below), supplemented by the
+two additional conditions below. Both conditions are made part of this
+License under the mechanism of Section 7 of the License itself, and
+apply to this Software and to any modified or unmodified copy of it.
+
+------------------------------------------------------------------
+Commons Clause License Condition v1.0
+------------------------------------------------------------------
+
+  The Software is provided to you by the Licensor under the License,
+subject to the following condition.
+
+  Without limiting other conditions in the License, the grant of
+rights under the License will not include, and the License does not
+grant to you, the right to Sell the Software.
+
+  For purposes of the foregoing, "Sell" means practicing any or all of
+the rights granted to you under the License to provide to third
+parties, for a fee or other consideration (including without
+limitation fees for hosting, distribution, or consulting/support
+services related to the Software), a product or service whose value
+derives, entirely or substantially, from the functionality of the
+Software. Any license notice or attribution required by the License
+must also include this Commons Clause License Condition notice.
+
+  Software:  Qenna Writer
+  Licensor:  P.H. Lobato
+  License:   GNU General Public License v3.0, as supplemented by the
+             attribution term below
+
+------------------------------------------------------------------
+Additional Term under License Section 7(b) — Author Attribution
+------------------------------------------------------------------
+
+  Pursuant to Section 7(b) of the License, any conveyed copy of this
+Software — modified or unmodified — must preserve, in the Appropriate
+Legal Notices (as defined in Section 0 of the License, e.g. an "About"
+screen or equivalent credits) of the resulting work, and in any
+accompanying README or repository description, the following
+attribution:
+
+    "Originally created by P.H. Lobato as Qenna Writer
+    (https://github.com/Pedrovskigg/qenna-writer)."
+
+  This condition may not be removed, obscured, or diminished in any
+modified or redistributed version of the Software.
+
+------------------------------------------------------------------
+
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
@@ -635,9 +687,10 @@ the "copyright" line and a pointer to where the full notice is found.
     Copyright (C) 2026  P.H. Lobato
 
     This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License, version 3, as
+    published by the Free Software Foundation, supplemented by the
+    Commons Clause and Author Attribution conditions stated at the top
+    of this file (LICENSE).
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -646,8 +699,10 @@ the "copyright" line and a pointer to where the full notice is found.
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    The additional Commons Clause and Attribution conditions are part
+    of this license and are reproduced at the top of this file.
 
-Also add information on how to contact you by electronic and paper mail.
+Contact: qennawriter@gmail.com
 
   If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:

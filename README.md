@@ -59,8 +59,16 @@ Main Menu.
 
 ## License
 
-GPL-3.0 — see [LICENSE](LICENSE). Third-party components (Qt, Hunspell,
-FFmpeg, bundled fonts, etc.) keep their own licenses — see
+Qenna Writer is open for reading, modification, and redistribution.
+However, any and all redistribution of the code must remain free of
+charge and open. See the full license here: [LICENSE](LICENSE).
+
+(GPL-3.0, supplemented by a Commons Clause condition and a mandatory
+author-attribution term — releases published before 2026-07-15 remain
+under plain GPL-3.0, as published at the time.)
+
+Third-party components (Qt, Hunspell, FFmpeg, bundled fonts, etc.)
+keep their own licenses — see
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 ## Related projects
