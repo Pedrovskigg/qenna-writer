@@ -1,5 +1,12 @@
                       QENNA WRITER LICENSE
 
+  SPDX-License-Identifier: GPL-3.0-only WITH Commons-Clause
+  (informal notation — Commons Clause is not an officially registered
+  SPDX exception, but this identifier is widely used in practice by
+  other projects for the same purpose: signaling at a glance that this
+  is GPLv3 as a base, modified by a Commons Clause condition, and not
+  plain GPL-3.0. See the full conditions below for the binding text.)
+
   This distribution is licensed under the GNU General Public License
 v3.0 ("the License", reproduced in full below), supplemented by the
 two additional conditions below. Both conditions are made part of this
