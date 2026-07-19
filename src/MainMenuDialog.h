@@ -48,6 +48,10 @@ signals:
     void coverUpdated(const QString& projectPath);
     // Emitido quando o user clica em "Verificar atualizações".
     void checkUpdatesRequested();
+    // Emitido quando "Criar capa" é clicado mas o Cover Creator não está
+    // instalado nem disponível localmente — MainWindow reage baixando a
+    // release mais recente do GitHub.
+    void coverCreatorInstallRequested();
 
 protected:
     void showEvent(QShowEvent* event) override;

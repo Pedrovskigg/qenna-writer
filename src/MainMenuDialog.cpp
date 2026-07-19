@@ -1350,9 +1350,9 @@ void MainMenuDialog::launchMiraCover(const QString& projectPath)
         return;
     }
 
-    QMessageBox::information(this, tr("Cover Creator"),
-        tr("O Cover Creator não foi encontrado.\n\n"
-           "Reinstale o Qenna Writer para obter o Cover Creator."));
+    // ── 4) Nada local — pede pro MainWindow baixar a release mais recente
+    // do GitHub (Cover Creator não vem mais bundlado no instalador).
+    emit coverCreatorInstallRequested();
 }
 
 void MainMenuDialog::startCoverProcess(const QString& program,

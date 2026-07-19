@@ -1608,6 +1608,19 @@ void MainWindow::setupEditor()
         }
     });
 
+    // Oferta do Cover Creator só na primeira vez que o Qenna Writer abre de
+    // verdade (não é mais bundlado no instalador desde 2026-07-19 — baixa
+    // sob demanda do GitHub). Silenciosa: se não tiver internet ou release
+    // ainda, não incomoda — o usuário sempre pode tentar de novo clicando em
+    // "Criar capa" mais tarde.
+    {
+        QSettings qs;
+        if (!qs.value(QStringLiteral("coverCreator/firstLaunchOffered"), false).toBool()) {
+            qs.setValue(QStringLiteral("coverCreator/firstLaunchOffered"), true);
+            QTimer::singleShot(2000, this, [this]() { requestCoverCreatorInstall(/*silent=*/true); });
+        }
+    }
+
     // Ctrl+S → paulada.
     auto* saveShortcut = new QShortcut(QKeySequence::Save, this);
     connect(saveShortcut, &QShortcut::activated, this, [this]() {
@@ -4311,10 +4324,12 @@ static QString formatUpdateNotes(const QString& markdown, int maxChars = 300)
     return text.left(pos).trimmed() + QStringLiteral("\n…");
 }
 
-void MainWindow::showUpdateToast(const QString& version, const QString& downloadUrl, const QString& releaseNotes)
+void MainWindow::showUpdateToast(const QString& version, const QString& downloadUrl,
+                                 const QString& releaseNotes, bool isCover)
 {
     m_updateVersion = version;
     m_updateDownloadUrl = downloadUrl;
+    m_updateIsCover = isCover;
 
     if (!m_updateToast) {
         m_updateToast = new QFrame(this);
@@ -4422,7 +4437,17 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
          Theme::accentInfo(),
          Theme::accentDanger()));
 
-    m_updateToastLabel->setText(tr("Nova versão disponível: %1").arg(version));
+    if (isCover) {
+        // Texto varia: primeira instalação (Cover Creator nunca baixado)
+        // vs. atualização de uma cópia já instalada.
+        const QString coverExe = QCoreApplication::applicationDirPath()
+            + QStringLiteral("/Cover Creator/Mira Cover.exe");
+        m_updateToastLabel->setText(QFile::exists(coverExe)
+            ? tr("Nova versão do Cover Creator disponível: %1").arg(version)
+            : tr("Instalar o Cover Creator (%1)?").arg(version));
+    } else {
+        m_updateToastLabel->setText(tr("Nova versão disponível: %1").arg(version));
+    }
 
     const QString notes = formatUpdateNotes(releaseNotes);
     if (!notes.isEmpty()) {
@@ -4517,9 +4542,19 @@ void MainWindow::startUpdateDownload()
 
     if (!m_updateNam) m_updateNam = new QNetworkAccessManager(this);
 
-    const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
-    const QString destPath = QDir(tempDir).filePath(fileName);
+    QString destPath;
+    if (m_updateIsCover) {
+        // Vai direto pro lugar final — Cover Creator é Electron portable
+        // (single exe), não precisa de instalador nem processo separado.
+        const QString coverDir = QCoreApplication::applicationDirPath()
+            + QStringLiteral("/Cover Creator");
+        QDir().mkpath(coverDir);
+        destPath = coverDir + QStringLiteral("/Mira Cover.exe");
+    } else {
+        const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+        const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
+        destPath = QDir(tempDir).filePath(fileName);
+    }
 
     auto* file = new QFile(destPath, this);
     if (!file->open(QIODevice::WriteOnly)) {
@@ -4573,9 +4608,53 @@ void MainWindow::startUpdateDownload()
             return;
         }
 
+        if (m_updateIsCover) {
+            // Já está no lugar final (Electron portable) — só grava a versão
+            // (normalmente o próprio Mira Cover grava isso ao abrir, mas como
+            // baixamos sem nunca rodá-lo, precisamos fazer isso por ele, senão
+            // a próxima checagem acha "0.0.0" de novo e reoferece pra sempre).
+            QFile versionFile(QFileInfo(destPath).absolutePath()
+                              + QStringLiteral("/cover-version.txt"));
+            if (versionFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+                versionFile.write(m_updateVersion.toUtf8());
+                versionFile.close();
+            }
+            if (m_updateToast) m_updateToast->hide();
+            showReminderToast(tr("Cover Creator instalado"),
+                tr("Já pode usar o botão \"Criar capa\" no Menu Principal."));
+            return;
+        }
+
         QProcess::startDetached(destPath, {});
         qApp->quit();
     });
+}
+
+void MainWindow::requestCoverCreatorInstall(bool silent)
+{
+    if (!m_updateChecker) return;
+
+    const QString coverDir = QCoreApplication::applicationDirPath()
+        + QStringLiteral("/Cover Creator");
+    if (QFile::exists(coverDir + QStringLiteral("/Mira Cover.exe"))) return; // já instalado
+
+    // coverUpdateAvailable já tem uma conexão permanente que mostra o toast
+    // (ver setup do m_updateChecker) — só precisamos saber, via flag
+    // temporária, se ela disparou ou não pra decidir se avisamos o usuário
+    // no caso silencioso=false sem resultado (offline, sem release, etc.).
+    auto found = std::make_shared<bool>(false);
+    connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
+            this, [found](const QString&, const QString&, const QString&) { *found = true; },
+            Qt::SingleShotConnection);
+    connect(m_updateChecker, &UpdateChecker::coverCheckFinished,
+            this, [this, found, silent]() {
+                if (*found || silent) return;
+                QMessageBox::information(this, tr("Cover Creator"),
+                    tr("Não foi possível baixar o Cover Creator agora. Verifique sua conexão "
+                       "com a internet e tente de novo pelo botão \"Criar capa\"."));
+            }, Qt::SingleShotConnection);
+
+    m_updateChecker->checkCover(coverDir);
 }
 
 void MainWindow::openMainMenu()
@@ -4686,6 +4765,8 @@ void MainWindow::openMainMenu()
                     }
                     if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
                 });
+            connect(mainMenuDialog, &MainMenuDialog::coverCreatorInstallRequested,
+                this, [this]() { requestCoverCreatorInstall(/*silent=*/false); });
             connect(mainMenuDialog, &MainMenuDialog::checkUpdatesRequested,
                 this, [this]() {
                     if (!m_updateChecker) return;
@@ -4723,10 +4804,7 @@ void MainWindow::openMainMenu()
                 });
         connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
                 this, [this](const QString& version, const QString& downloadUrl, const QString&) {
-                    showUpdateToast(
-                        tr("Cover Creator %1").arg(version),
-                        downloadUrl,
-                        tr("Nova versão do Cover Creator disponível."));
+                    showUpdateToast(version, downloadUrl, QString(), /*isCover=*/true);
                 });
     connect(mainMenuDialog, &MainMenuDialog::coverUpdated,
                 this, [this](const QString& updatedPath) {

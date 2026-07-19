@@ -187,12 +187,22 @@ private:
 
     // Atualizações (GitHub Releases): checagem silenciosa no startup; se
     // houver versão nova, mostra um toast com botão pra baixar+instalar.
-    void showUpdateToast(const QString& version, const QString& downloadUrl, const QString& releaseNotes);
+    void showUpdateToast(const QString& version, const QString& downloadUrl,
+                         const QString& releaseNotes, bool isCover = false);
     void positionUpdateToast();
     void startUpdateDownload();
     void cancelUpdateDownload();
     void showUpdateDownloadError(const QString& message);
     void resetUpdateToastIdle();
+
+    // Cover Creator via download (sem bundle no instalador do Qenna desde
+    // 2026-07-19): checa a release mais recente no GitHub e, se aceito,
+    // baixa o portable direto pra "<appDir>/Cover Creator/Mira Cover.exe" —
+    // não precisa "instalar" de verdade, é Electron portable (single exe).
+    // silent=true não mostra nada se não houver internet/release (usado no
+    // gatilho automático de primeiro launch); silent=false avisa o usuário
+    // (usado quando ele pede explicitamente, ex. clicou em "Criar capa").
+    void requestCoverCreatorInstall(bool silent);
 
     void closeBondPopup();
     void closeBondViewPanel();
@@ -315,6 +325,7 @@ private:
     QNetworkAccessManager *m_updateNam = nullptr;
     QNetworkReply *m_updateReply = nullptr;
     bool m_updateCancelledByUser = false;
+    bool m_updateIsCover = false; // true = o toast/download atual é do Cover Creator, não auto-update do Qenna
     QString m_updateDownloadUrl;
     QString m_updateVersion;
     MainMenuDialog *mainMenuDialog = nullptr;
