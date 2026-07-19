@@ -2,19 +2,95 @@
 
 #include "Theme.h"
 
+#include <QAbstractTextDocumentLayout>
 #include <QCoreApplication>
 #include <QDialog>
 #include <QGuiApplication>
 #include <QHBoxLayout>
+#include <QHash>
+#include <QImageReader>
 #include <QLabel>
 #include <QListWidget>
+#include <QPainter>
 #include <QPixmap>
 #include <QScreen>
 #include <QTextBrowser>
+#include <QTextDocument>
+#include <QTextImageFormat>
+#include <QTextObjectInterface>
 #include <QUrl>
 #include <QVBoxLayout>
 
 namespace {
+
+// Substitui o QTextImageHandler padrão do Qt para ativar SmoothPixmapTransform
+// antes de desenhar cada imagem — sem isso, o QTextBrowser escala os prints
+// (vários deliberadamente exibidos acima da resolução nativa) com interpolação
+// de baixa qualidade, ficando serrilhado. Mesmo fix já usado em SpellEditor.cpp.
+class SmoothImageHandler : public QObject, public QTextObjectInterface {
+    Q_OBJECT
+    Q_INTERFACES(QTextObjectInterface)
+
+    QHash<QUrl, QSize> m_sizeCache;
+
+public:
+    explicit SmoothImageHandler(QObject* parent = nullptr) : QObject(parent) {}
+
+    QSizeF intrinsicSize(QTextDocument* /*doc*/, int /*pos*/, const QTextFormat& format) override {
+        const QTextImageFormat fmt = format.toImageFormat();
+        const bool hasW = fmt.hasProperty(QTextFormat::ImageWidth);
+        const bool hasH = fmt.hasProperty(QTextFormat::ImageHeight);
+
+        if (hasW && hasH)
+            return QSizeF(fmt.width(), fmt.height());
+
+        const QUrl url(fmt.name());
+        if (!m_sizeCache.contains(url)) {
+            QSize sz;
+            const QString path = url.toLocalFile();
+            if (!path.isEmpty()) {
+                QImageReader reader(path);
+                sz = reader.size();
+            } else {
+                QImageReader reader(fmt.name());
+                sz = reader.size();
+            }
+            m_sizeCache[url] = sz.isEmpty() ? QSize(100, 100) : sz;
+        }
+
+        const QSize nat = m_sizeCache.value(url, QSize(100, 100));
+        if (hasW && nat.height() > 0)
+            return QSizeF(fmt.width(), fmt.width() * nat.height() / nat.width());
+        if (hasH && nat.width() > 0)
+            return QSizeF(fmt.height() * nat.width() / nat.height(), fmt.height());
+        return QSizeF(nat);
+    }
+
+    void drawObject(QPainter* painter, const QRectF& rect, QTextDocument* doc,
+                    int /*pos*/, const QTextFormat& format) override {
+        const QUrl url(format.toImageFormat().name());
+        const QVariant data = doc->resource(QTextDocument::ImageResource, url);
+
+        QImage image;
+        if (data.userType() == QMetaType::QPixmap)
+            image = qvariant_cast<QPixmap>(data).toImage();
+        else if (data.userType() == QMetaType::QImage)
+            image = qvariant_cast<QImage>(data);
+        else if (data.userType() == QMetaType::QByteArray)
+            image.loadFromData(data.toByteArray());
+        if (image.isNull())
+            image = QImage(format.toImageFormat().name());
+
+        if (image.isNull()) return;
+
+        painter->save();
+        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+        painter->drawImage(rect, image, image.rect());
+        painter->restore();
+    }
+};
+#include "HelpPanel.moc"
+
 constexpr int kPanelWidth = 980;
 constexpr int kPanelHeight = 640;
 constexpr int kMinWidth = 760;
@@ -58,11 +134,46 @@ constexpr int kTimelineModeSpiralThumbWidth  = 520; // nativo 667
 constexpr int kTimelineLineFocusThumbWidth   = 640; // nativo 893
 constexpr int kCoverContextMenuThumbWidth = 320; // nativo 262
 constexpr int kCoverAppEditingThumbWidth  = 640; // nativo 936
+constexpr int kCreateDocSelectMenuThumbWidth = 560; // nativo 563
+constexpr int kCreateDocDialogThumbWidth  = 480; // nativo 559
+constexpr int kThemePanelThumbWidth = 620; // nativo 811
+constexpr int kThemeFavoriteThumbWidth = 620; // nativo 793
+constexpr int kThemeDuplicateThumbWidth = 620; // nativo 801
+constexpr int kThemeEditorThumbWidth = 640; // nativo 968
+constexpr int kThemeTimeChangeThumbWidth = 620; // nativo 799
 constexpr int kMarkerSelectMenuThumbWidth   = 500; // nativo 455
 constexpr int kMarkerColorPickerThumbWidth  = 300; // nativo 284
 constexpr int kMarkerCommentPickerThumbWidth = 340; // nativo 328
 constexpr int kMarkerCommentHoverThumbWidth = 380; // nativo 340
 constexpr int kMarkerPlainThumbWidth        = 400; // nativo 387
+constexpr int kMemoryCreationMenuThumbWidth = 480; // nativo 446
+constexpr int kMemoryCreationDialogThumbWidth = 380; // nativo 338
+constexpr int kMemoryPensarioTabThumbWidth  = 420; // nativo 395
+constexpr int kConsistencyToggleThumbWidth  = 420; // nativo 317
+constexpr int kConsistencyLocationThumbWidth = 280; // nativo 191
+constexpr int kConsistencyPresenceThumbWidth = 500; // nativo 461
+constexpr int kConsistencyStatusThumbWidth  = 520; // nativo 496
+constexpr int kBuilderSystemCreatorThumbWidth = 680; // nativo 908
+constexpr int kBuilderSoftHardThumbWidth    = 320; // nativo 251, recorte alto (251x813)
+constexpr int kBuilderSectionsRulesThumbWidth = 420; // nativo 260
+constexpr int kBuilderTextEditorThumbWidth  = 720; // nativo 1357
+constexpr int kBuilderMentionThumbWidth     = 480; // nativo 327
+constexpr int kPensarioPanelThumbWidth      = 420; // nativo 376
+constexpr int kPensarioCreateNote1ThumbWidth = 420; // nativo 377
+constexpr int kPensarioCreateNote2ThumbWidth = 400; // nativo 352
+constexpr int kPensarioDialogueThumbWidth   = 420; // nativo 385
+constexpr int kPensarioNameGeneratorThumbWidth = 420; // nativo 397
+constexpr int kBondOptionThumbWidth   = 260; // nativo 166
+constexpr int kBondCreatorThumbWidth  = 420; // nativo 363
+constexpr int kBondDisplayThumbWidth  = 380; // nativo 365, recorte alto (365x715)
+constexpr int kMapPanelThumbWidth     = 700; // nativo 798
+constexpr int kMapNoTextureThumbWidth = 680; // nativo 710
+constexpr int kMapPinThumbWidth       = 480; // nativo 511
+constexpr int kGlossaryPanelThumbWidth = 520; // nativo 542
+constexpr int kGlossaryAddThumbWidth  = 480; // nativo 444
+constexpr int kAmbiencePanelThumbWidth = 380; // nativo 321
+constexpr int kReminderPanelThumbWidth = 420; // nativo 389
+constexpr int kReminderNotificationThumbWidth = 380; // nativo 295
 }
 
 HelpPanel::HelpPanel(QWidget* parent)
@@ -113,7 +224,11 @@ void HelpPanel::buildTopics()
         { QStringLiteral("construtor"), tr("Construtor") },
         { QStringLiteral("pensario"), tr("Pensário") },
         { QStringLiteral("consistencia"), tr("Consistência") },
-        { QStringLiteral("recursos-adicionais"), tr("Recursos adicionais") },
+        { QStringLiteral("vinculos"), tr("Vínculos") },
+        { QStringLiteral("mapa-mundi"), tr("Mapa-múndi") },
+        { QStringLiteral("glossario"), tr("Glossário") },
+        { QStringLiteral("som-imersivo"), tr("Som Imersivo") },
+        { QStringLiteral("lembretes"), tr("Lembretes") },
     };
 }
 
@@ -160,6 +275,8 @@ void HelpPanel::buildUi()
     m_content->setFrameShape(QFrame::NoFrame);
     m_content->setLineWrapMode(QTextEdit::WidgetWidth);
     m_content->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_content->document()->documentLayout()->registerHandler(
+        QTextFormat::ImageObject, new SmoothImageHandler(m_content));
     connect(m_content, &QTextBrowser::anchorClicked, this, &HelpPanel::onAnchorClicked);
     right->addWidget(m_content, 1);
 
@@ -229,6 +346,16 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("memorias")) return memoriesContent();
     if (id == QStringLiteral("funcao-timeline")) return timelineContent();
     if (id == QStringLiteral("criar-capas")) return coverCreatorContent();
+    if (id == QStringLiteral("criar-documentos")) return createDocumentsContent();
+    if (id == QStringLiteral("funcao-temas")) return themesContent();
+    if (id == QStringLiteral("construtor")) return builderContent();
+    if (id == QStringLiteral("pensario")) return pensarioContent();
+    if (id == QStringLiteral("consistencia")) return consistencyContent();
+    if (id == QStringLiteral("vinculos")) return bondsContent();
+    if (id == QStringLiteral("mapa-mundi")) return worldMapContent();
+    if (id == QStringLiteral("glossario")) return glossaryContent();
+    if (id == QStringLiteral("som-imersivo")) return ambienceContent();
+    if (id == QStringLiteral("lembretes")) return remindersContent();
     // Placeholder até reescrevermos o conteúdo das demais seções.
     return QStringLiteral("<p>%1</p>")
         .arg(tr("Conteúdo desta seção será adicionado em breve."));
@@ -1085,8 +1212,7 @@ QString HelpPanel::markersContent() const
     return html;
 }
 
-// Conteúdo escrito pelo assistente (sem rascunho prévio do usuário — feature
-// sem tela própria pra fotografar, então não há screenshots aqui).
+// Conteúdo escrito pelo usuário em help-panel/memories/, montado aqui em HTML.
 QString HelpPanel::memoriesContent() const
 {
     QString html;
@@ -1096,10 +1222,19 @@ QString HelpPanel::memoriesContent() const
         "surgiu no meio de uma cena e você não quer perder. Diferente do Marcador (que fica "
         "grudado no texto original), a Memória vira um cartão avulso, guardado à parte."));
 
-    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Pra criar uma, selecione o trecho no editor e escolha \"Adicionar à memória...\" no "
-        "menu flutuante de seleção. Um popup abre com:"));
+        "menu flutuante de seleção."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/memories/creation-menu.png' style='text-decoration:none;'>"
+        "<img src=':/help/memories/creation-menu.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMemoryCreationMenuThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Um popup abre com:"));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
         .arg(tr("Destino."),
              tr("Guardar como memória do Projeto (geral) ou de um Personagem específico — "
@@ -1113,15 +1248,31 @@ QString HelpPanel::memoriesContent() const
         .arg(tr("Tags."),
              tr("Marque uma ou mais etiquetas livres pra organizar suas memórias — o popup "
                 "sugere as tags que você já usou antes no projeto, pra manter consistência."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/memories/creation-dialog.png' style='text-decoration:none;'>"
+        "<img src=':/help/memories/creation-dialog.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMemoryCreationDialogThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "A memória guarda também, automaticamente, de onde ela veio (o capítulo, a cena ou o "
         "documento de gaveta), então você sempre sabe o contexto original."));
 
-    html += QStringLiteral("<p>%1</p>").arg(tr(
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Pra consultar, abra o Pensário e vá na aba \"Memórias\": lá você filtra entre "
         "memórias do Projeto ou de cada Personagem, e também por tag. Clicar num cartão leva "
         "você até o trecho de origem no editor; o \"×\" no canto do cartão exclui a memória."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/memories/pensario-tab.png' style='text-decoration:none;'>"
+        "<img src=':/help/memories/pensario-tab.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMemoryPensarioTabThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     return html;
 }
@@ -1399,6 +1550,675 @@ QString HelpPanel::coverCreatorContent() const
         "O Cover Creator não é muito difícil de se usar, caso já tenha costume com editores "
         "básicos de imagem, você vai se sentir em casa. Se não tiver, explore. Não vai se "
         "arrepender."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/create-documents-from-text/,
+// montado aqui em HTML.
+QString HelpPanel::createDocumentsContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Às vezes você escreve algo no meio de um capítulo — uma descrição, uma fala "
+        "marcante, um trecho de worldbuilding solto — e percebe depois que aquilo merece "
+        "virar um documento próprio numa gaveta, em vez de ficar perdido no meio do texto. "
+        "Pra isso, você não precisa copiar, colar e reescrever nada na mão: o app faz isso "
+        "por você."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Selecione o trecho que quer transformar (pode ser uma frase, um parágrafo, ou "
+        "vários parágrafos — com ou sem marcador/comentário aplicado neles, tanto faz) e "
+        "escolha \"Criar documento disso...\" no menu flutuante de seleção."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/create-documents/select-menu.png' style='text-decoration:none;'>"
+        "<img src=':/help/create-documents/select-menu.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kCreateDocSelectMenuThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "É necessário ter pelo menos uma gaveta criada no projeto — se não tiver nenhuma, o "
+        "app avisa e cancela a ação."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Uma janela abre com:"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Nome do documento."),
+             tr("Já vem sugerido a partir das primeiras palavras do trecho selecionado (até "
+                "8 palavras ou ~48 caracteres), mas você pode mudar livremente."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("Gaveta de destino."),
+             tr("Escolha em qual gaveta o novo documento vai entrar."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/create-documents/creation-dialog.png' style='text-decoration:none;'>"
+        "<img src=':/help/create-documents/creation-dialog.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kCreateDocDialogThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Se a gaveta escolhida for uma gaveta de elemento (Personagens, Cenários ou "
+        "Objetos), ao confirmar o app abre em seguida o cadastro do elemento (foto, "
+        "apelido/papel, conforme o tipo) antes de finalizar — o documento nasce já com a "
+        "ficha certa."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "O texto selecionado vira o conteúdo do documento novo, com os parágrafos "
+        "preservados (linhas separadas por quebra dupla viram parágrafos separados). O "
+        "trecho original continua no capítulo de onde veio — criar o documento não remove "
+        "nem corta nada do texto-fonte, só copia."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Em resumo, essa é uma função inestimável para:"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Criar personagens, cenários ou outros elementos diretamente do seu texto, sem sair "
+        "do seu fluxo."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Gerar documentos de trechos ou passagens importantes da história."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/themes/, montado aqui em HTML.
+QString HelpPanel::themesContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O Qenna Writer vem com mais de 140 temas prontos, além de deixar você criar os seus "
+        "próprios do zero. Há várias opções de customização para o app e você pode deixá-lo "
+        "com a aparência que quiser."));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra acessar, vá em Configurações e abra a seção de Temas."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/themes/theme-panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/themes/theme-panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kThemePanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("Busca e filtro."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Um campo de busca filtra os temas pelo nome em tempo real. Um menu de categorias ao "
+        "lado deixa você navegar por grupos."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Os grupos principais são:"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
+        .arg(tr("Claros — focados em tons brancos ou próximos de branco."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
+        .arg(tr("Escuros — focados em tons escurecidos, próximos de cinza e preto."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
+        .arg(tr("Amarelados — tons amarelados, amarronzados e quentes."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>")
+        .arg(tr("Coloridos — temas de cores destacadas e fortes."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>")
+        .arg(tr("Estampados — temas com imagens de fundo."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr(
+        "Também há a opção \"♥ Favoritos\". Nela, você pode deixar salvos os temas que "
+        "gosta mais."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Para adicionar um tema aos favoritos, basta clicar no coração que fica no canto de "
+        "seu card."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/themes/favorite.png' style='text-decoration:none;'>"
+        "<img src=':/help/themes/favorite.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kThemeFavoriteThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("Selecionar e aplicar."),
+             tr("Clique num card pra selecioná-lo, depois clique em \"Aplicar\" pra usar esse "
+                "tema no app."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>").arg(tr("Criar um tema seu."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Selecione qualquer tema pronto como base e clique em \"Duplicar\":"));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/themes/duplicate.png' style='text-decoration:none;'>"
+        "<img src=':/help/themes/duplicate.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kThemeDuplicateThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Uma vez feito isso, será aberta uma janela para que você edite o tema selecionado e "
+        "crie o seu próprio partindo dele."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/themes/theme-editor.png' style='text-decoration:none;'>"
+        "<img src=':/help/themes/theme-editor.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kThemeEditorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "No Editor de Tema, você pode ajustar:"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr("Nome do tema."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Cores principais: cor do texto do editor, fundo da página, texto da UI, texto "
+        "secundário, cor de destaque."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Fundo da janela: cor do app, cor dos painéis, borda dos painéis — e, se quiser, uma "
+        "imagem de fundo (com modo de exibição: Centralizar, Repetir, Esticar, Ajustar ou "
+        "Preencher)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Página de texto: opacidade, e sombra projetada (ativar/desativar, cor, raio e "
+        "deslocamento)."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Uma pré-visualização ao lado mostra o resultado em tempo real enquanto você mexe. "
+        "No final, \"Salvar\" grava seu tema personalizado na lista (ele aparece separado, "
+        "com opção de editar de novo depois) ou \"Cancelar\" descarta."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>").arg(tr("Troca automática por horário."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Tem uma opção \"Troca automática por horário\" que alterna sozinho entre um tema "
+        "diurno e um noturno, nos horários que você configurar. Pra usar, selecione um tema "
+        "e marque se ele é o tema do \"Dia\" ou da \"Noite\", depois defina os horários de "
+        "troca. Se você aplicar um tema manualmente enquanto essa troca automática estiver "
+        "ligada, ela se desliga sozinha — assim o app não fica sobrescrevendo uma escolha "
+        "consciente sua."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/themes/time-change.png' style='text-decoration:none;'>"
+        "<img src=':/help/themes/time-change.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kThemeTimeChangeThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/builder/, montado aqui em HTML.
+QString HelpPanel::builderContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "As gavetas documentam o seu mundo — personagens, cenários, lore solta. O Construtor é "
+        "diferente: é onde você define as REGRAS que governam esse mundo. Um sistema de magia, "
+        "uma estrutura política, uma religião — não é \"informação sobre\", é a arquitetura "
+        "interna que decide o que pode e o que não pode acontecer na sua história."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra acessar, abra o Pensário e clique no ícone de engrenagem (⚙) no cabeçalho. O "
+        "Construtor abre numa janela própria, separada do resto do app."));
+
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/system-creator.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/system-creator.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderSystemCreatorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Criando um sistema."),
+             tr("Clique em \"+ Novo sistema\". O app pede a categoria (Magia, Política, "
+                "Religião, Social, Econômico, Militar, Tecnologia, Cosmologia, Organização/"
+                "Facção, Linhagem, Mitologia ou Outro) e depois o nome. Cada sistema pertence "
+                "a uma categoria só."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr("O slider de arquétipo."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Cada categoria tem sua própria régua de possibilidades. Por exemplo, em Magia vai de "
+        "\"Soft\" até \"Hard\", passando por \"Branda\", \"Equilibrada\" e \"Estruturada\"; em "
+        "Política vai de \"Anarquia\" até \"Totalitarismo\". Ao posicionar o slider num ponto, "
+        "duas listas aparecem: o que aquele arquétipo FAVORECE (em verde) e o que ele EXIGE "
+        "(em laranja) — pensadas pra te ajudar a decidir com mais consciência das consequências "
+        "narrativas da escolha, não só o nome bonito. Por padrão mostra os 3 principais de cada "
+        "lista; o botão \"?\" expande pra até 10."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/soft-hard.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/soft-hard.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderSoftHardThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("Nós: Regras e Seções."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Dentro de um sistema, você organiza o conteúdo em nós de dois tipos:"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Regra (📐) — uma mecânica ou lei do sistema. Ex: \"Regra de Três\"."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Seção (📄) — informação sobre o sistema, mais parecida com texto corrido. Ex: \"A "
+        "Bíblia do Sancrismo\"."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Qualquer nó pode ter nós filhos, de qualquer tipo, em qualquer profundidade — pense "
+        "nas Seções como gavetas que podem conter outras gavetas dentro."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/sections-rules.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/sections-rules.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderSectionsRulesThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Use os botões \"+ Regra\" e \"+ Seção\" pra criar nós filhos do que estiver "
+        "selecionado (ou raiz do sistema, se nada estiver selecionado). Duplo clique ou F2 "
+        "renomeia. Clique direito abre o menu de adicionar filho ou excluir."));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+        .arg(tr("Escrevendo o conteúdo."),
+             tr("Clique num nó pra abrir o editor de texto dele, embaixo da árvore — é rich "
+                "text, com a mesma barra de ferramentas do editor principal (fonte, tamanho, "
+                "alinhamento e indentação valem pro nó inteiro; negrito/itálico/sublinhado/"
+                "tachado valem só pro trecho selecionado). Clicando no sistema sem selecionar "
+                "nenhum nó, você escreve um resumo ou parecer geral daquele sistema — um lugar "
+                "pra introdução antes de entrar nos detalhes."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/text-editor.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/text-editor.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderTextEditorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Busca."),
+             tr("Um campo de busca no topo encontra sistemas e nós ao mesmo tempo, com um "
+                "caminho tipo \"Sistema ▸ Nó\" — clicar num resultado pula direto pra lá."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>").arg(tr("Referenciando de qualquer lugar."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Digitando @ no meio do seu texto (em qualquer capítulo, cena ou documento de gaveta), "
+        "você pode navegar até \"Construtor\" e escolher um sistema, depois um nó dele, pra "
+        "mencionar — Ctrl+clique na menção abre o Construtor direto naquele nó. Você também "
+        "consegue consultar (só leitura) pelo Menu de Referência, escolhendo \"Construtor\" no "
+        "seletor de gaveta."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/mention.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/mention.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderMentionThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/pensarium/, montado aqui em HTML.
+QString HelpPanel::pensarioContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O Pensário é um painel flutuante que reúne várias ferramentas de apoio à escrita num "
+        "lugar só — pense nele como uma central de anotações e descobertas sobre o seu projeto. "
+        "Pra abrir, use o atalho F4 (o mesmo fecha)."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/pensario/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/pensario/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kPensarioPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p>%1</p>").arg(tr("Ele é dividido em abas:"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Comentários e Memórias."),
+             tr("Essas duas já têm seção própria aqui no Help Panel — Comentários reúne os "
+                "marcadores comentados do projeto inteiro, Memórias guarda os trechos que você "
+                "salvou de lado. Dá uma olhada nas seções \"Marcadores e Comentários\" e "
+                "\"Memórias\" se ainda não viu."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr("Notas."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Notas são lembretes soltos, sem vínculo com nenhum trecho do texto — diferente de "
+        "Memórias e Comentários, que sempre vêm de algum lugar do seu manuscrito. Clique em "
+        "\"+ Nova nota\" pra criar uma, com cor e título opcionais."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/pensario/create-note-1.png' style='text-decoration:none;'>"
+        "<img src=':/help/pensario/create-note-1.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kPensarioCreateNote1ThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/pensario/create-note-2.png' style='text-decoration:none;'>"
+        "<img src=':/help/pensario/create-note-2.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kPensarioCreateNote2ThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("Diálogos."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Toda fala que você escreve com travessão (—) ou com aspas (\"\") é detectada "
+        "automaticamente depois de alguns segundos parado de digitar, e atribuída ao "
+        "personagem certo. Essa aba lista tudo que já foi detectado, com um filtro \"Fala: "
+        "Todos ▾\" pra ver só as falas de um personagem específico, e chips que deixam filtrar "
+        "por quem mais está presente na mesma cena."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "O app salva uma quantidade massiva de diálogos do seu projeto, mas alguns podem "
+        "passar — especialmente diálogos isolados sem informações diretas sobre quem disse, "
+        "\"como esse.\" Porém, a parte majoritária é salva."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/pensario/dialogue.png' style='text-decoration:none;'>"
+        "<img src=':/help/pensario/dialogue.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kPensarioDialogueThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>").arg(tr("Nomes (o ✦ no canto)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Um gerador de nomes pra quando a inspiração não vem: escolha a categoria (Personagens, "
+        "Lugares ou Armas), um estilo (varia por categoria — inclui desde nomes reais, com "
+        "opção de gênero, até estilos inventados), e clique em \"Gerar\". Pra estilos gerados "
+        "(não os de nomes reais), dá pra filtrar o resultado por \"Começa com...\" e \"Termina "
+        "com...\". Clicar num nome da lista copia ele pra área de transferência."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/pensario/name-generator.png' style='text-decoration:none;'>"
+        "<img src=':/help/pensario/name-generator.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kPensarioNameGeneratorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/consistency/, montado aqui em HTML.
+QString HelpPanel::consistencyContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O Modo de Consistência é uma forma de acompanhar, de relance, o quanto cada "
+        "personagem, cenário ou objeto está realmente presente na sua história — e pegar erros "
+        "de continuidade antes que um leitor pegue primeiro."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra ativar, abra uma gaveta de elemento (Personagens, Cenários ou Objetos) e clique no "
+        "botão de \"Modo consistência narrativa\" na barra de ferramentas da gaveta."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/consistencia/toggle-options.png' style='text-decoration:none;'>"
+        "<img src=':/help/consistencia/toggle-options.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kConsistencyToggleThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("Barra de presença."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Todo item ganha uma barrinha mostrando em quantos capítulos (ou cenas) ele aparece, em "
+        "porcentagem do total do manuscrito. Passe o mouse pra ver o número exato, ou clique na "
+        "barra pra abrir um detalhe com a lista de onde ele aparece."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/consistencia/presence.png' style='text-decoration:none;'>"
+        "<img src=':/help/consistencia/presence.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kConsistencyPresenceThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>")
+        .arg(tr("Status e Último local (só em gavetas de Personagens)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Personagens ganham dois controles extras: Status (Morto, Desaparecido, Ferido, Curado, "
+        "Apaixonado, Raivoso, ou um texto personalizado seu) e Último local (também com opções "
+        "prontas ou texto livre). Use pra acompanhar o estado atual de cada um conforme a "
+        "história avança."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/consistencia/status.png' style='text-decoration:none;'>"
+        "<img src=':/help/consistencia/status.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kConsistencyStatusThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/consistencia/location.png' style='text-decoration:none;'>"
+        "<img src=':/help/consistencia/location.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kConsistencyLocationThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("O aviso de inconsistência."),
+             tr("Aqui está o motivo de tudo isso existir: se você marcar um personagem como "
+                "\"Morto\" ou \"Desaparecido\", e a barra de presença mostrar que ele ainda "
+                "aparece em cenas escritas depois desse ponto, um aviso vermelho aparece no card "
+                "dele — \"⚠ Aparece em X cena(s) após morto\". É o app te avisando que talvez "
+                "tenha esquecido de um personagem morto aparecendo vivo mais adiante (ou que "
+                "precisa ajustar o status)."));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Cenários e Objetos não têm Status/Último local (não fazem sentido pra eles), só a "
+        "barra de presença — ainda assim é útil pra ver, por exemplo, se aquele objeto "
+        "importante que você criou faz tempo sumiu do meio da história sem querer."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/additional-resources/bonds/, montado aqui em HTML.
+QString HelpPanel::bondsContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Dentro de uma gaveta de Personagens, passe o mouse sobre um card: um botãozinho "
+        "aparece no canto superior direito dele."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/vinculos/bond-option.png' style='text-decoration:none;'>"
+        "<img src=':/help/vinculos/bond-option.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBondOptionThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Arraste esse botão até outro personagem e solte. Se ainda não existir um vínculo "
+        "entre os dois, abre a criação:"));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/vinculos/bond-creator.png' style='text-decoration:none;'>"
+        "<img src=':/help/vinculos/bond-creator.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBondCreatorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Escolha um tipo (a lista já vem com várias opções prontas, organizadas por categoria "
+        "— Família, Romântico, Social, Conflito e Poder — com alternância entre versão "
+        "masculina/feminina, mas você também pode digitar um tipo personalizado), escreva uma "
+        "descrição/histórico se quiser, e escolha a cor da linha. Note que essa opção só fica "
+        "disponível quando a gaveta está exibindo os cards numa grade de até 2 colunas (grades "
+        "mais densas não desenham vínculos)."));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Feito isso, uma linha conectando os dois cards aparece na gaveta. Passe o mouse "
+        "sobre a linha pra ver o tipo do vínculo, ou clique nela pra abrir a visão de leitura:"));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/vinculos/bond-display.png' style='text-decoration:none;'>"
+        "<img src=':/help/vinculos/bond-display.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBondDisplayThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Nessa visão, você pode editar o vínculo (lápis), criar um documento a partir dele — "
+        "já sugerindo o nome \"Fulano ↔ Beltrana\" e pedindo a gaveta de destino —, excluir ou "
+        "fechar. Excluir um personagem remove automaticamente todos os vínculos que ele tinha."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/additional-resources/map/, montado aqui em HTML.
+QString HelpPanel::worldMapContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra acessar, abra o Pensário (F4) e clique no ícone de mapa no cabeçalho dele. Ele "
+        "abre num painel próprio, flutuante e redimensionável."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/mapa-mundi/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/mapa-mundi/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMapPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Você pode navegar por \"Ir para local\", escolhendo País, Estado e Cidade em "
+        "sequência, ou buscar direto pelo nome (a busca sugere países, estados e cidades "
+        "conforme você digita). Clicar em qualquer lugar do mapa mostra um card com "
+        "informações dele (capital e população, no caso de países; população, no caso de "
+        "cidades). Também há uma régua pra medir distância entre dois pontos, e botões pra "
+        "alternar entre mapa simples ou texturizado, e entre projeção plana ou globo 3D."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/mapa-mundi/no-texture.png' style='text-decoration:none;'>"
+        "<img src=':/help/mapa-mundi/no-texture.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMapNoTextureThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra fixar um marcador de referência (pin) num local, use o botão de fixar pin na "
+        "barra de navegação e clique no mapa. O popup do pin pede um nome, uma nota opcional, "
+        "e permite vincular esse pin a qualquer elemento das suas gavetas (um personagem, por "
+        "exemplo) — ou deixar sem vínculo. Clicar num pin já existente reabre esse popup pra "
+        "editar."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/mapa-mundi/pin.png' style='text-decoration:none;'>"
+        "<img src=':/help/mapa-mundi/pin.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kMapPinThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/additional-resources/glossary/, montado aqui em HTML.
+QString HelpPanel::glossaryContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O botão de Glossário fica na barra superior do editor, perto do Editor Focado e do "
+        "Modo Foco."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/glossario/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kGlossaryPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Clique em \"+ Novo termo\" pra criar uma entrada (ela já vem pronta pra você editar o "
+        "nome). Cada termo tem só dois campos: o termo em si e uma definição opcional. Também "
+        "dá pra adicionar um termo direto selecionando um trecho de texto no editor e usando a "
+        "opção correspondente do menu de seleção."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/glossario/add.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/add.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kGlossaryAddThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Um detalhe que não é óbvio: termos do Glossário não aparecem destacados no texto, "
+        "mas o corretor ortográfico para de sublinhá-los como erro — então vale a pena "
+        "cadastrar nomes ou termos inventados só por essa vantagem, mesmo que você nunca abra "
+        "o painel de novo."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/additional-resources/immersive-sound/, montado aqui em HTML.
+QString HelpPanel::ambienceContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Fica na barra superior, ao lado do botão de Lembretes."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/som-imersivo/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/som-imersivo/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kAmbiencePanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O app varre uma pasta de sons do seu computador e lista os arquivos de áudio "
+        "encontrados nela. Só uma faixa toca por vez (escolher uma nova troca a que estava "
+        "tocando), em loop contínuo, com um controle de volume único pra todas. Sua faixa e "
+        "volume escolhidos ficam salvos e voltam a mesma coisa da próxima vez que você abrir o "
+        "app."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/additional-resources/reminders/, montado aqui em HTML.
+QString HelpPanel::remindersContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Fica na barra superior, ao lado do Som Imersivo. Um aviso vermelho aparece no botão "
+        "quando você tem lembretes ativos."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/lembretes/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/lembretes/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kReminderPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Digite o texto do lembrete e aperte Enter (ou o \"+\") pra criá-lo. Se marcar "
+        "\"Notificar às\", escolha um horário do dia — ao chegar nesse horário, um aviso "
+        "aparece dentro do próprio app (não é uma notificação do Windows). Lembretes não têm "
+        "data específica (só horário), nem prioridade, nem vínculo com capítulos ou documentos "
+        "— são só lembretes de texto livre mesmo."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/lembretes/notification.png' style='text-decoration:none;'>"
+        "<img src=':/help/lembretes/notification.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kReminderNotificationThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de "
+        "\"Concluídos\" que pode ser expandida ou escondida, com opção de limpar tudo de uma "
+        "vez."));
 
     return html;
 }

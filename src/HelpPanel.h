@@ -54,6 +54,16 @@ private:
     QString memoriesContent() const;
     QString timelineContent() const;
     QString coverCreatorContent() const;
+    QString createDocumentsContent() const;
+    QString themesContent() const;
+    QString builderContent() const;
+    QString pensarioContent() const;
+    QString consistencyContent() const;
+    QString bondsContent() const;
+    QString worldMapContent() const;
+    QString glossaryContent() const;
+    QString ambienceContent() const;
+    QString remindersContent() const;
 
     QVector<Topic> m_topics;
     QLabel* m_sidebarTitle = nullptr;
