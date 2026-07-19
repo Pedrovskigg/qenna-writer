@@ -7,7 +7,9 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPair>
 #include <QSaveFile>
+#include <QSet>
 #include <QTextBlock>
 #include <QTextBlockFormat>
 #include <QTextCharFormat>
@@ -305,6 +307,52 @@ void MarkerStore::removeMarker(const QString& docKey, QTextDocument* doc, const 
                list.end());
     if (list.isEmpty()) m_entries.remove(docKey);
     emit markersChanged(docKey);
+}
+
+void MarkerStore::clearRange(const QString& docKey, QTextCursor& cursor)
+{
+    if (!cursor.hasSelection()) return;
+    QTextDocument* doc = cursor.document();
+    if (!doc) return;
+    const int selStart = cursor.selectionStart();
+    const int selEnd = cursor.selectionEnd();
+
+    // Primeira passada: separa fragmentos com GUID (marcador comentado — vai
+    // pro removeMarker, que também limpa a Entry) dos fragmentos que só têm
+    // cor solta (marcador sem comentário — não tem id, precisa limpar aqui).
+    QSet<QString> idsToRemove;
+    QVector<QPair<int, int>> plainRanges;
+    for (QTextBlock block = doc->findBlock(selStart);
+         block.isValid() && block.position() < selEnd; block = block.next()) {
+        for (auto it = block.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid()) continue;
+            const int fStart = frag.position();
+            const int fEnd = fStart + frag.length();
+            if (fEnd <= selStart || fStart >= selEnd) continue;
+            const QTextCharFormat fmt = frag.charFormat();
+            const QString id = fmt.property(MarkerIdProperty).toString();
+            if (!id.isEmpty()) { idsToRemove.insert(id); continue; }
+            if (fmt.background().style() != Qt::NoBrush)
+                plainRanges.append({ qMax(fStart, selStart), qMin(fEnd, selEnd) });
+        }
+    }
+
+    for (const QString& id : std::as_const(idsToRemove))
+        removeMarker(docKey, doc, id);
+
+    // Cada range limpo isoladamente (não a seleção inteira de uma vez) pra
+    // preservar negrito/itálico/etc. de cada fragmento — um setCharFormat
+    // sobre a seleção toda usaria só o format do primeiro caractere.
+    for (const auto& range : plainRanges) {
+        QTextCursor c(doc);
+        c.setPosition(range.first);
+        c.setPosition(range.second, QTextCursor::KeepAnchor);
+        QTextCharFormat clear = c.charFormat();
+        clear.clearBackground();
+        clear.clearForeground();
+        c.setCharFormat(clear);
+    }
 }
 
 void MarkerStore::updateMarker(const QString& docKey, QTextDocument* doc, const QString& id,

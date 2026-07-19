@@ -66,6 +66,12 @@ public:
     // fragments e tira a cor (volta pra textPrimary do tema).
     void removeMarker(const QString& docKey, QTextDocument* doc, const QString& id);
 
+    // Limpa qualquer marcador dentro do range do cursor — comentado (delega
+    // pra removeMarker, tira a Entry também) ou só cor solta (sem Entry,
+    // limpa o QTextCharFormat direto). Cobre o caso de marcador sem
+    // comentário, que não tem GUID e por isso não pode ser removido por id.
+    void clearRange(const QString& docKey, QTextCursor& cursor);
+
     // Atualiza cor/comentário de um marker existente (mantém range no doc).
     void updateMarker(const QString& docKey, QTextDocument* doc, const QString& id,
                       const QColor& color, const QString& comment);

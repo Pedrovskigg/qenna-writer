@@ -111,3 +111,7 @@ src/assets/ambience-sounds/
 # Notas internas de dev (não são doc pro usuário final) e artefatos do instalador
 BRIEFING_image_textwrap.md
 installer/
+
+# Rascunhos de conteúdo do Help Panel (txt + screenshots brutos) — os
+# assets finais processados vivem em src/assets/help/, versionados.
+help-panel/

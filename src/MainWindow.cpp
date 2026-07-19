@@ -71,7 +71,9 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QInputDialog>
+#include <QCheckBox>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QLocale>
 #include <QRegularExpression>
 #include <QSettings>
@@ -113,6 +115,7 @@
 #include "ConstrutorStore.h"
 #include "ConstrutorWindow.h"
 #include "GlossaryPanel.h"
+#include "HelpPanel.h"
 #include "GlossaryStore.h"
 #include "MemoriesStore.h"
 #include "MemoryAddPopup.h"
@@ -156,10 +159,11 @@ QFont sizedFont(const QString& family, qreal pt)
     return f;
 }
 
-// Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional).
-// Usado tanto na criação quanto na edição. Retorna false se cancelado.
+// Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional)
+// + resumo (opcional). Usado tanto na criação quanto na edição. Retorna false
+// se cancelado.
 bool promptChapterDialog(QWidget* parent, bool editMode,
-                         QString* title, QString* marker)
+                         QString* title, QString* marker, QString* summary)
 {
     QDialog dlg(parent);
     dlg.setWindowTitle(editMode ? QObject::tr("Editar capítulo")
@@ -180,8 +184,153 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
     form->addRow(QObject::tr("Quando se passa:"), markerEdit);
     root->addLayout(form);
 
-    auto* hint = new QLabel(QObject::tr("O marcador temporal é opcional e alimenta o "
-                                        "eixo História da linha do tempo."), &dlg);
+    auto* markerHint = new QLabel(QObject::tr(
+        "O marcador temporal é opcional e alimenta automaticamente o eixo "
+        "História da linha do tempo. Mantenha o mesmo formato usado nos "
+        "outros capítulos (ex.: sempre dd/mm) para a ordenação ficar coerente."), &dlg);
+    markerHint->setWordWrap(true);
+    markerHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+    root->addWidget(markerHint);
+
+    auto* summaryLabel = new QLabel(QObject::tr("Resumo (opcional):"), &dlg);
+    root->addWidget(summaryLabel);
+    auto* summaryEdit = new QPlainTextEdit(*summary, &dlg);
+    summaryEdit->setPlaceholderText(QObject::tr("Um resumo curto do capítulo…"));
+    summaryEdit->setFixedHeight(70);
+    root->addWidget(summaryEdit);
+
+    auto* summaryHint = new QLabel(QObject::tr(
+        "O resumo vira a descrição do evento correspondente na linha do tempo."), &dlg);
+    summaryHint->setWordWrap(true);
+    summaryHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+    root->addWidget(summaryHint);
+
+    auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
+                                                         : QObject::tr("Criar"));
+    btns->button(QDialogButtonBox::Cancel)->setText(QObject::tr("Cancelar"));
+    QObject::connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    QObject::connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    root->addWidget(btns);
+
+    titleEdit->setFocus();
+    if (dlg.exec() != QDialog::Accepted) return false;
+    const QString t = titleEdit->text().trimmed();
+    if (t.isEmpty()) return false;
+    *title   = t;
+    *marker  = markerEdit->text().trimmed();
+    *summary = summaryEdit->toPlainText().trimmed();
+    return true;
+}
+
+// Diálogo de cena: título + marcador + resumo (mesmo padrão de
+// promptChapterDialog). Se optOutChecked != nullptr, mostra o checkbox
+// "não mostrar novamente" (usado só no popup automático de criação via
+// "----" — a edição manual pelo menu de contexto não precisa dele).
+// Retorna false se cancelado.
+bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
+                       QString* marker, QString* summary, bool* optOutChecked = nullptr)
+{
+    QDialog dlg(parent);
+    dlg.setWindowTitle(editMode ? QObject::tr("Editar cena") : QObject::tr("Nova cena"));
+    dlg.setMinimumWidth(340);
+    if (parent) dlg.setStyleSheet(parent->styleSheet());
+
+    auto* root = new QVBoxLayout(&dlg);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(10);
+
+    auto* form = new QFormLayout;
+    auto* titleEdit = new QLineEdit(*title, &dlg);
+    titleEdit->setPlaceholderText(QObject::tr("Título da cena"));
+    auto* markerEdit = new QLineEdit(*marker, &dlg);
+    markerEdit->setPlaceholderText(QObject::tr("ex.: Dia 5, Verão de 1999, há 10 anos…"));
+    form->addRow(QObject::tr("Título:"), titleEdit);
+    form->addRow(QObject::tr("Quando se passa:"), markerEdit);
+    root->addLayout(form);
+
+    auto* markerHint = new QLabel(QObject::tr(
+        "Opcional. Se vazio, a cena herda o marcador do capítulo na linha do "
+        "tempo. Preencha só quando essa cena específica se passar em outro "
+        "momento."), &dlg);
+    markerHint->setWordWrap(true);
+    markerHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+    root->addWidget(markerHint);
+
+    auto* summaryLabel = new QLabel(QObject::tr("Resumo (opcional):"), &dlg);
+    root->addWidget(summaryLabel);
+    auto* summaryEdit = new QPlainTextEdit(*summary, &dlg);
+    summaryEdit->setPlaceholderText(QObject::tr("Um resumo curto da cena…"));
+    summaryEdit->setFixedHeight(70);
+    root->addWidget(summaryEdit);
+
+    auto* summaryHint = new QLabel(QObject::tr(
+        "O resumo vira a descrição do evento correspondente na linha do tempo."), &dlg);
+    summaryHint->setWordWrap(true);
+    summaryHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+    root->addWidget(summaryHint);
+
+    QCheckBox* optOutCheck = nullptr;
+    if (optOutChecked) {
+        optOutCheck = new QCheckBox(QObject::tr("Não mostrar novamente"), &dlg);
+        root->addWidget(optOutCheck);
+        auto* optOutHint = new QLabel(QObject::tr(
+            "Com essa opção marcada, a definição dos eventos da linha do tempo "
+            "precisará ser feita manualmente através do clique direito nas "
+            "cenas. Você pode reativar esse popup de criação de cenas nas "
+            "configurações depois."), &dlg);
+        optOutHint->setWordWrap(true);
+        optOutHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+        root->addWidget(optOutHint);
+    }
+
+    auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
+                                                         : QObject::tr("Criar"));
+    btns->button(QDialogButtonBox::Cancel)->setText(QObject::tr("Cancelar"));
+    QObject::connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    QObject::connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    root->addWidget(btns);
+
+    titleEdit->setFocus();
+    if (dlg.exec() != QDialog::Accepted) return false;
+    const QString t = titleEdit->text().trimmed();
+    if (t.isEmpty()) return false;
+    *title   = t;
+    *marker  = markerEdit->text().trimmed();
+    *summary = summaryEdit->toPlainText().trimmed();
+    if (optOutChecked) *optOutChecked = optOutCheck->isChecked();
+    return true;
+}
+
+// Diálogo de manuscrito: título + "quando a história se passa" (marcador
+// temporal opcional, data-base da linha do tempo). Usado tanto na criação
+// quanto na edição (rename). Retorna false se cancelado.
+bool promptManuscriptDialog(QWidget* parent, bool editMode,
+                            QString* title, QString* storyStart)
+{
+    QDialog dlg(parent);
+    dlg.setWindowTitle(editMode ? QObject::tr("Editar manuscrito")
+                                : QObject::tr("Novo manuscrito"));
+    dlg.setMinimumWidth(340);
+    if (parent) dlg.setStyleSheet(parent->styleSheet());
+
+    auto* root = new QVBoxLayout(&dlg);
+    root->setContentsMargins(16, 16, 16, 16);
+    root->setSpacing(10);
+
+    auto* form = new QFormLayout;
+    auto* titleEdit = new QLineEdit(*title, &dlg);
+    titleEdit->setPlaceholderText(QObject::tr("Título do manuscrito"));
+    auto* startEdit = new QLineEdit(*storyStart, &dlg);
+    startEdit->setPlaceholderText(QObject::tr("ex.: Dia 1, 15/05, Verão de 1999…"));
+    form->addRow(QObject::tr("Título:"), titleEdit);
+    form->addRow(QObject::tr("Quando a história se passa:"), startEdit);
+    root->addLayout(form);
+
+    auto* hint = new QLabel(QObject::tr(
+        "Opcional. É a data-base da linha do tempo: capítulos com marcador "
+        "anterior a essa data caem automaticamente na trilha de Flashback."), &dlg);
     hint->setWordWrap(true);
     hint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
     root->addWidget(hint);
@@ -198,9 +347,26 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
     if (dlg.exec() != QDialog::Accepted) return false;
     const QString t = titleEdit->text().trimmed();
     if (t.isEmpty()) return false;
-    *title  = t;
-    *marker = markerEdit->text().trimmed();
+    *title      = t;
+    *storyStart = startEdit->text().trimmed();
     return true;
+}
+
+// Pede o título de um manuscrito novo + "quando a história se passa", cria e
+// o torna ativo. Retorna o id do manuscrito criado, ou string vazia se o
+// usuário cancelar.
+QString promptCreateManuscript(QWidget* parent, ProjectModel* projectModel)
+{
+    QString title, storyStart;
+    if (!promptManuscriptDialog(parent, false, &title, &storyStart)) return QString();
+
+    Manuscript m;
+    m.id = ProjectModel::uid();
+    m.title = title;
+    m.storyStartMarker = storyStart;
+    projectModel->addManuscript(m);
+    projectModel->setActiveManuscriptId(m.id);
+    return m.id;
 }
 
 // Parseia uma cor no formato "rgba(r,g,b,a)" (o resto fica como hex). A versão
@@ -340,7 +506,7 @@ MainWindow::MainWindow(QWidget *parent)
     , sceneDetectTimer(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
     , currentFontSize(16)
-    , currentLineHeight(170)
+    , currentLineHeight(115)
     , firstLineIndentEnabled(true)
     , paragraphSpacingBefore(0)
     , paragraphSpacingAfter(0)
@@ -794,12 +960,14 @@ void MainWindow::setupEditor()
     // hrInserted: atalho ---- disparado — sincroniza cenas imediatamente (sem o delay
     // de 1,5s do sceneDetectTimer) e exibe toast visual para que o usuário saiba que
     // a nova cena foi criada.
-    connect(editorHost, &EditorHost::hrInserted, this, [this](const QString& /*chId*/) {
+    connect(editorHost, &EditorHost::hrInserted, this, [this](const QString& chId) {
         sceneDetectTimer->stop();
+        const Chapter* chBefore = projectModel->findChapter(chId);
+        const int sizeBefore = chBefore ? chBefore->scenes.size() : 0;
         detectScenesForPending();
 
         // Toast "Nova cena" flutuante sobre o editor
-        if (!editorContainer) return;
+        if (editorContainer) {
         auto* toast = new QLabel(tr("Nova cena criada"), editorContainer);
         toast->setObjectName(QStringLiteral("sceneToast"));
         toast->setAlignment(Qt::AlignCenter);
@@ -824,6 +992,26 @@ void MainWindow::setupEditor()
         QTimer::singleShot(1500, toast, [toast]() {
             if (toast) toast->deleteLater();
         });
+        }
+
+        // Popup opcional de marcador/resumo da cena recém-criada (opt-out
+        // persistido em ProjectModel, religável em Configurações).
+        if (projectModel->showScenePopupOnHr()) {
+            const Chapter* chAfter = projectModel->findChapter(chId);
+            const int sizeAfter = chAfter ? chAfter->scenes.size() : 0;
+            if (chAfter && sizeAfter > sizeBefore && sizeAfter > 0) {
+                const int newIndex = sizeAfter - 1;
+                QString title = tr("Cena %1").arg(newIndex + 1);
+                QString marker, summary;
+                bool optOut = false;
+                if (promptSceneDialog(this, false, &title, &marker, &summary, &optOut)) {
+                    projectModel->updateSceneTitle(chId, newIndex, title);
+                    projectModel->updateSceneTimeMarker(chId, newIndex, marker);
+                    projectModel->updateSceneSummary(chId, newIndex, summary);
+                    if (optOut) projectModel->setShowScenePopupOnHr(false);
+                }
+            }
+        }
     });
 
     projectSaver = new ProjectSaver(projectModel, docCache, editorHost, this);
@@ -883,6 +1071,9 @@ void MainWindow::setupEditor()
             if (elem.type != QStringLiteral("character")) continue;
             if (s.alreadyPresent.contains(elem.id)) continue;
             if (s.rejectedKeys.contains(s.docKey + QLatin1Char(':') + elem.id)) continue;
+            // "Nunca" tem prioridade absoluta — nem markAll nem o próprio
+            // narrador reintroduzem um personagem que o usuário baniu.
+            if (s.neverIds.contains(elem.id)) continue;
 
             bool detected = false;
             if (elem.narrator) {
@@ -905,7 +1096,7 @@ void MainWindow::setupEditor()
             CharacterDetection det{ elem.id, s.docKey };
             if (elem.narrator || s.markAll || s.autoIds.contains(elem.id))
                 s.result.autoMark.append(det);
-            else if (!s.neverIds.contains(elem.id))
+            else
                 s.result.confirm.append(det);
         }
 
@@ -913,6 +1104,7 @@ void MainWindow::setupEditor()
         if (s.idx >= s.elements.size()) {
             detectionBatchTimer->stop();
             const ScanResult res = std::move(s.result);
+            const QString scanDocKey = s.docKey; // capturado antes do reset (s vira dangling)
             m_scanState.reset();
 
             qDebug() << "[detect] scan completo — autoMark:" << res.autoMark.size() << "confirm:" << res.confirm.size();
@@ -934,6 +1126,14 @@ void MainWindow::setupEditor()
                 presencePopup->move(
                     win.x() + win.width()  - presencePopup->width()  - 20,
                     win.y() + win.height() - presencePopup->height() - 48);
+            }
+
+            // Deriva presença por CENA a partir de quem está confirmado no
+            // capítulo inteiro (chave "ch:<ms>:<chapterId>") — só se for de fato
+            // um capítulo (não gaveta/item).
+            if (scanDocKey.startsWith(QStringLiteral("ch:"))) {
+                const QStringList parts = scanDocKey.split(QLatin1Char(':'));
+                if (parts.size() >= 3) syncScenePresenceForChapter(parts.at(2));
             }
         }
     });
@@ -968,22 +1168,17 @@ void MainWindow::setupEditor()
     connect(presencePopup, &PresencePopup::markAllActivated, this, [this]() {
         detectionMarkAll = true;
         if (settingsPanel) settingsPanel->setDetectionMarkAll(true);
-        if (!projectRoot.isEmpty()) {
-            QSettings qs;
-            qs.beginGroup(QStringLiteral("detectionState"));
-            qs.beginGroup(QString::fromLatin1(
-                QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
-            qs.setValue(QStringLiteral("markAll"), true);
-            qs.endGroup(); qs.endGroup();
-        }
+        saveDetectionState();
     });
     connect(presencePopup, &PresencePopup::ignoredNow,
             this, [this](const QString& elementId, const QString& docKey) {
         detectionRejectedKeys.insert(docKey + QLatin1Char(':') + elementId);
+        saveDetectionState();
     });
     connect(presencePopup, &PresencePopup::neverRequested,
             this, [this](const QString& elementId, const QString& /*docKey*/) {
         detectionNeverIds.insert(elementId);
+        saveDetectionState();
     });
 
     // Diálogos: motor de atribuição roda no mesmo debounce da presença, mas
@@ -1077,6 +1272,8 @@ void MainWindow::setupEditor()
             this, &MainWindow::applyMarkerFromPicker);
     connect(markerPickPopup, &MarkerPickPopup::cancelled,
             this, [this]() { markerEditId.clear(); });
+    connect(markerPickPopup, &MarkerPickPopup::removeRequested,
+            this, &MainWindow::removeMarkerFromPicker);
     connect(markerHoverPopup, &MarkerHoverPopup::deleteRequested,
             this, [this](const QString& id) {
         if (!markerStore || !editor || !editorHost) return;
@@ -1150,6 +1347,14 @@ void MainWindow::setupEditor()
             [this](const QString& word, const QPoint& gp) {
         if (!glossaryAddPopup) return;
         glossaryAddPopup->presentAt(gp, word);
+    });
+
+    // Painel de Ajuda: janela própria (não modal, sem auto-fechar) — fica
+    // aberta lado a lado com o app. Clicar em "?" de novo só traz pra frente.
+    helpPanel = new HelpPanel(this);
+    connect(toolbar, &TopToolbar::helpRequested, this, [this]() {
+        if (!helpPanel || !toolbar) return;
+        helpPanel->openNear(toolbar->helpButtonGlobalRect());
     });
     // Autocomplete de menções (@) no editor principal.
     mentionPopup = new MentionPopup(projectModel, this, this);
@@ -1282,6 +1487,11 @@ void MainWindow::setupEditor()
     connect(memoriesStore, &MemoriesStore::changed, this, [this]() {
         if (memoriesStore) memoriesStore->save();
         if (refMenuPanel) refMenuPanel->refresh();
+        if (pensarioPanel && pensarioPanel->isPanelOpen()) {
+            pensarioPanel->refresh();
+        } else if (toolbar) {
+            toolbar->pulsePensarioBadge();
+        }
     });
 
     // Lembretes: store (sidecar JSON) + painel flutuante + polling de notificações.
@@ -1408,15 +1618,21 @@ void MainWindow::setupEditor()
     auto* newChapterShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+N")), this);
     connect(newChapterShortcut, &QShortcut::activated, this, [this]() {
         if (!projectModel) return;
-        const QString msId = projectModel->activeManuscriptId();
-        if (msId.isEmpty()) return;
-        QString title, marker;
-        if (!promptChapterDialog(this, false, &title, &marker)) return;
+        QString msId = projectModel->activeManuscriptId();
+        if (msId.isEmpty()) {
+            QMessageBox::information(this, tr("Nenhum manuscrito"),
+                tr("Você precisa criar um manuscrito antes de adicionar capítulos. Vamos criar um agora."));
+            msId = promptCreateManuscript(this, projectModel);
+            if (msId.isEmpty()) return;
+        }
+        QString title, marker, summary;
+        if (!promptChapterDialog(this, false, &title, &marker, &summary)) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
         c.timeMarker = marker;
+        c.summary = summary;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -1713,7 +1929,11 @@ void MainWindow::setupEditor()
     });
     if (markerStore) {
         connect(markerStore, &MarkerStore::markersChanged, this, [this](const QString&) {
-            if (pensarioPanel && pensarioPanel->isPanelOpen()) pensarioPanel->refresh();
+            if (pensarioPanel && pensarioPanel->isPanelOpen()) {
+                pensarioPanel->refresh();
+            } else if (toolbar) {
+                toolbar->pulsePensarioBadge();
+            }
         });
     }
 
@@ -1762,6 +1982,13 @@ void MainWindow::setupEditor()
     });
     auto* globalSearchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+F")), this);
     connect(globalSearchShortcut, &QShortcut::activated, this, [this]() {
+        if (!globalSearchPanel) return;
+        positionGlobalSearchPanel();
+        globalSearchPanel->openPanel();
+    });
+    // Botão de busca da TopToolbar — emitia searchRequested mas nada escutava;
+    // só o atalho Ctrl+Shift+F acima funcionava. Mesma ação dos dois agora.
+    connect(toolbar, &TopToolbar::searchRequested, this, [this]() {
         if (!globalSearchPanel) return;
         positionGlobalSearchPanel();
         globalSearchPanel->openPanel();
@@ -1881,6 +2108,7 @@ void MainWindow::setupEditor()
                 leftBar->setActiveFixedAction(LeftBar::Whiteboard);
             }
         } else if (action == LeftBar::Timeline) {
+            CrashLogger::log("timelinePanelToggle");
             ensureTimelinePanel();
             if (timelinePanel->isVisible()) {
                 timelinePanel->hide();
@@ -1960,43 +2188,39 @@ void MainWindow::setupEditor()
         editorHost->setViewMode(vm);
     });
     connect(manuscriptPanel, &ManuscriptPanel::newManuscriptRequested, this, [this]() {
-        bool ok = false;
-        const QString title = QInputDialog::getText(this, tr("Novo manuscrito"),
-            tr("Título do manuscrito:"), QLineEdit::Normal, QString(), &ok).trimmed();
-        if (!ok || title.isEmpty()) return;
-        Manuscript m;
-        m.id = ProjectModel::uid();
-        m.title = title;
-        projectModel->addManuscript(m);
-        projectModel->setActiveManuscriptId(m.id);
+        promptCreateManuscript(this, projectModel);
     });
     connect(manuscriptPanel, &ManuscriptPanel::newChapterRequested, this, [this](const QString& manuscriptId) {
-        if (manuscriptId.isEmpty()) return;
-        QString title, marker;
-        if (!promptChapterDialog(this, false, &title, &marker)) return;
+        QString msId = manuscriptId;
+        if (msId.isEmpty()) {
+            QMessageBox::information(this, tr("Nenhum manuscrito"),
+                tr("Você precisa criar um manuscrito antes de adicionar capítulos. Vamos criar um agora."));
+            msId = promptCreateManuscript(this, projectModel);
+            if (msId.isEmpty()) return;
+        }
+        QString title, marker, summary;
+        if (!promptChapterDialog(this, false, &title, &marker, &summary)) return;
         Chapter c;
         c.id = ProjectModel::uid();
-        c.manuscriptId = manuscriptId;
+        c.manuscriptId = msId;
         c.title = title;
         c.timeMarker = marker;
+        c.summary = summary;
         if (!projectRoot.isEmpty()) {
-            ProjectStorage::ensureManuscriptDirs(projectRoot, manuscriptId);
+            ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
         projectModel->addChapter(c);
     });
 
     // ---- Context menu / drag handlers do ManuscriptPanel ----
     connect(manuscriptPanel, &ManuscriptPanel::renameManuscriptRequested, this, [this](const QString& manuscriptId) {
-        const auto& list = projectModel->manuscripts();
-        const Manuscript* ms = nullptr;
-        for (const auto& m : list) { if (m.id == manuscriptId) { ms = &m; break; } }
+        const Manuscript* ms = projectModel->findManuscript(manuscriptId);
         if (!ms) return;
-        const QString current = ms->title.isEmpty() ? tr("(sem título)") : ms->title;
-        bool ok = false;
-        const QString newTitle = QInputDialog::getText(this, tr("Renomear manuscrito"),
-            tr("Novo título:"), QLineEdit::Normal, current, &ok).trimmed();
-        if (!ok || newTitle.isEmpty()) return;
+        QString newTitle = ms->title.isEmpty() ? tr("(sem título)") : ms->title;
+        QString newStoryStart = ms->storyStartMarker;
+        if (!promptManuscriptDialog(this, true, &newTitle, &newStoryStart)) return;
         projectModel->updateManuscriptTitle(manuscriptId, newTitle);
+        projectModel->updateManuscriptStoryStart(manuscriptId, newStoryStart);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteManuscriptRequested, this, [this](const QString& manuscriptId) {
@@ -2024,9 +2248,11 @@ void MainWindow::setupEditor()
         if (!c) return;
         QString newTitle = c->title;
         QString newMarker = c->timeMarker;
-        if (!promptChapterDialog(this, true, &newTitle, &newMarker)) return;
+        QString newSummary = c->summary;
+        if (!promptChapterDialog(this, true, &newTitle, &newMarker, &newSummary)) return;
         projectModel->updateChapterTitle(chapterId, newTitle);
         projectModel->updateChapterTimeMarker(chapterId, newMarker);
+        projectModel->updateChapterSummary(chapterId, newSummary);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::elementsPresentRequested, this,
@@ -2034,6 +2260,11 @@ void MainWindow::setupEditor()
         if (!elementsStore) return;
         const QString docKey = ElementsStore::elementDocKeyForChapter(manuscriptId, chapterId);
         auto* dlg = new ElementsPresentDialog(elementsStore, docKey, this);
+        connect(dlg, &ElementsPresentDialog::elementRemoved, this,
+                [this](const QString& elementId, const QString& key) {
+            detectionRejectedKeys.insert(key + QLatin1Char(':') + elementId);
+            saveDetectionState();
+        });
         dlg->exec();
     });
     connect(manuscriptPanel, &ManuscriptPanel::sceneElementsPresentRequested, this,
@@ -2044,6 +2275,11 @@ void MainWindow::setupEditor()
         const QString docKey = ElementsStore::elementDocKeyForScene(
             manuscriptId, chapterId, c->scenes[sceneIndex].id);
         auto* dlg = new ElementsPresentDialog(elementsStore, docKey, this);
+        connect(dlg, &ElementsPresentDialog::elementRemoved, this,
+                [this](const QString& elementId, const QString& key) {
+            detectionRejectedKeys.insert(key + QLatin1Char(':') + elementId);
+            saveDetectionState();
+        });
         dlg->exec();
     });
 
@@ -2069,12 +2305,13 @@ void MainWindow::setupEditor()
     connect(manuscriptPanel, &ManuscriptPanel::renameSceneRequested, this, [this](const QString& chapterId, int sceneIndex) {
         const Scene* s = projectModel->findScene(chapterId, sceneIndex);
         if (!s) return;
-        const QString current = s->title.isEmpty() ? tr("Cena %1").arg(sceneIndex + 1) : s->title;
-        bool ok = false;
-        const QString newTitle = QInputDialog::getText(this, tr("Renomear cena"),
-            tr("Novo título:"), QLineEdit::Normal, current, &ok).trimmed();
-        if (!ok || newTitle.isEmpty()) return;
+        QString newTitle = s->title.isEmpty() ? tr("Cena %1").arg(sceneIndex + 1) : s->title;
+        QString newMarker = s->timeMarker;
+        QString newSummary = s->summary;
+        if (!promptSceneDialog(this, true, &newTitle, &newMarker, &newSummary)) return;
         projectModel->updateSceneTitle(chapterId, sceneIndex, newTitle);
+        projectModel->updateSceneTimeMarker(chapterId, sceneIndex, newMarker);
+        projectModel->updateSceneSummary(chapterId, sceneIndex, newSummary);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::createVariationRequested, this, [this](const QString& chapterId, int sceneIndex) {
@@ -3415,6 +3652,132 @@ void MainWindow::detectScenesForPending()
     projectModel->updateChapterScenes(chId, scenes);
 }
 
+// O detector de personagem (timer acima) só sabe marcar presença no CAPÍTULO
+// inteiro (uma docKey só pro texto todo). Isso deriva, a partir de quem já
+// está confirmado/auto-marcado no capítulo, em quais cenas especificamente
+// o nome aparece — sem popup de confirmação próprio (a confirmação já
+// aconteceu no capítulo; aqui é só localizar onde dentro dele).
+void MainWindow::rescanAllChapterScenesPresence()
+{
+    if (!projectModel || !elementsStore) return;
+
+    QStringList chapterIds;
+    for (const Chapter& c : projectModel->chapters()) chapterIds << c.id;
+    if (chapterIds.isEmpty()) return;
+
+    if (settingsPanel) settingsPanel->setRescanScenesButtonEnabled(false);
+
+    auto ids = std::make_shared<QStringList>(chapterIds);
+    auto idx = std::make_shared<int>(0);
+    auto* timer = new QTimer(this);
+    timer->setInterval(0);
+    connect(timer, &QTimer::timeout, this, [this, ids, idx, timer]() {
+        if (*idx >= ids->size()) {
+            timer->stop();
+            timer->deleteLater();
+            if (settingsPanel) {
+                settingsPanel->setRescanScenesButtonText(
+                    tr("Detectar presença por cena em todos os capítulos"));
+                settingsPanel->setRescanScenesButtonEnabled(true);
+            }
+            return;
+        }
+        syncScenePresenceForChapter(ids->at(*idx));
+        ++(*idx);
+        if (settingsPanel) {
+            settingsPanel->setRescanScenesButtonText(
+                tr("Escaneando… (%1/%2)").arg(*idx).arg(ids->size()));
+        }
+    });
+    timer->start();
+}
+
+void MainWindow::saveDetectionState()
+{
+    if (projectRoot.isEmpty()) return;
+    QSettings qs;
+    qs.beginGroup(QStringLiteral("detectionState"));
+    qs.beginGroup(QString::fromLatin1(
+        QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
+    qs.setValue(QStringLiteral("markAll"), detectionMarkAll);
+    qs.setValue(QStringLiteral("neverIds"),
+                QStringList(detectionNeverIds.cbegin(), detectionNeverIds.cend()));
+    qs.setValue(QStringLiteral("rejectedKeys"),
+                QStringList(detectionRejectedKeys.cbegin(), detectionRejectedKeys.cend()));
+    qs.endGroup();
+    qs.endGroup();
+}
+
+void MainWindow::syncScenePresenceForChapter(const QString& chapterId)
+{
+    if (!projectModel || !elementsStore) return;
+    const Chapter* ch = projectModel->findChapter(chapterId);
+    if (!ch || ch->scenes.size() <= 1) return; // capítulo de cena única: nada a derivar
+
+    const QString chapterKey = DocCache::chapterKey(ch->manuscriptId, chapterId);
+    QString html;
+    if (docCache && docCache->has(chapterKey)) {
+        html = docCache->get(chapterKey);
+    } else {
+        bool ok = false;
+        html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+    }
+    if (html.isEmpty()) return;
+
+    const QStringList sceneHtmls = SceneUtils::splitHtmlIntoScenes(html);
+    if (sceneHtmls.size() <= 1) return;
+
+    const QStringList presentIds = elementsStore->docElementIds(chapterKey);
+    if (presentIds.isEmpty()) return;
+
+    const QRegularExpression tagRe(QStringLiteral("<[^>]+>"));
+    auto stripHtml = [&](const QString& h) -> QString {
+        QString t = h;
+        t.remove(tagRe);
+        t.replace(QStringLiteral("&nbsp;"), QStringLiteral(" "));
+        t.replace(QStringLiteral("&amp;"),  QStringLiteral("&"));
+        t.replace(QStringLiteral("&lt;"),   QStringLiteral("<"));
+        t.replace(QStringLiteral("&gt;"),   QStringLiteral(">"));
+        return t.toLower();
+    };
+    QStringList sceneLower;
+    sceneLower.reserve(sceneHtmls.size());
+    for (const QString& seg : sceneHtmls) sceneLower.append(stripHtml(seg));
+
+    const QList<Element>& allElements = elementsStore->elements();
+    QHash<QString, QStringList> byScene; // sceneDocKey -> elementIds
+    for (const QString& elemId : presentIds) {
+        const Element* elem = nullptr;
+        for (const auto& e : allElements) if (e.id == elemId) { elem = &e; break; }
+        if (!elem || elem->type != QStringLiteral("character") || elem->narrator) continue;
+
+        const QStringList tokens = CharacterDetector::buildTokensPublic(*elem);
+        if (tokens.isEmpty()) continue;
+
+        for (int si = 0; si < sceneLower.size() && si < ch->scenes.size(); ++si) {
+            bool found = false;
+            for (const QString& tok : tokens) {
+                if (tok.size() < 3) continue;
+                const QString pattern = QStringLiteral("\\b")
+                    + QRegularExpression::escape(tok) + QStringLiteral("\\b");
+                QRegularExpression re(pattern, QRegularExpression::CaseInsensitiveOption);
+                if (re.match(sceneLower[si]).hasMatch()) { found = true; break; }
+            }
+            if (found) {
+                const QString sceneKey = ElementsStore::elementDocKeyForScene(
+                    ch->manuscriptId, chapterId, ch->scenes[si].id);
+                // Respeita remoção manual via "Elementos presentes": se o
+                // usuário já tirou esse personagem dessa cena, não deriva de
+                // volta só porque o nome ainda bate no texto (citação, etc.).
+                if (!detectionRejectedKeys.contains(sceneKey + QLatin1Char(':') + elemId))
+                    byScene[sceneKey].append(elemId);
+            }
+        }
+    }
+    for (auto it = byScene.cbegin(); it != byScene.cend(); ++it)
+        elementsStore->addManyDocElements(it.key(), it.value());
+}
+
 bool MainWindow::findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const
 {
     auto *layout = editor->document()->documentLayout();
@@ -3761,7 +4124,8 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     if (elementsStore) elementsStore->load();
 
-    // Restaura estado de detecção (markAll) salvo por projeto
+    // Restaura estado de detecção (markAll/nunca/ignorados) salvo por projeto —
+    // decisão do usuário nunca deve precisar ser repetida (ver saveDetectionState).
     {
         QSettings qs;
         qs.beginGroup(QStringLiteral("detectionState"));
@@ -3769,6 +4133,10 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
             QCryptographicHash::hash(root.toUtf8(), QCryptographicHash::Md5).toHex());
         qs.beginGroup(phash);
         detectionMarkAll = qs.value(QStringLiteral("markAll"), false).toBool();
+        const QStringList neverList = qs.value(QStringLiteral("neverIds")).toStringList();
+        detectionNeverIds = QSet<QString>(neverList.cbegin(), neverList.cend());
+        const QStringList rejectedList = qs.value(QStringLiteral("rejectedKeys")).toStringList();
+        detectionRejectedKeys = QSet<QString>(rejectedList.cbegin(), rejectedList.cend());
         qs.endGroup();
         qs.endGroup();
         if (settingsPanel) settingsPanel->setDetectionMarkAll(detectionMarkAll);
@@ -4768,14 +5136,7 @@ void MainWindow::onSettingsRequested()
         });
         connect(settingsPanel, &SettingsPanel::detectionMarkAllChanged, this, [this](bool markAll) {
             detectionMarkAll = markAll;
-            if (!projectRoot.isEmpty()) {
-                QSettings qs;
-                qs.beginGroup(QStringLiteral("detectionState"));
-                qs.beginGroup(QString::fromLatin1(
-                    QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
-                qs.setValue(QStringLiteral("markAll"), markAll);
-                qs.endGroup(); qs.endGroup();
-            }
+            saveDetectionState();
         });
         connect(settingsPanel, &SettingsPanel::autoNavEnabledChanged, this, [this](bool enabled) {
             m_autoNavEnabled = enabled;
@@ -4790,6 +5151,11 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("mention/includeManuscripts"), enabled);
             if (mentionPopup) mentionPopup->setIncludeManuscripts(enabled);
         });
+        connect(settingsPanel, &SettingsPanel::showScenePopupOnHrChanged, this, [this](bool enabled) {
+            if (projectModel) projectModel->setShowScenePopupOnHr(enabled);
+        });
+        connect(settingsPanel, &SettingsPanel::rescanAllScenesRequested,
+                this, &MainWindow::rescanAllChapterScenesPresence);
         // Lê preferências globais (não por projeto)
         m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
     }
@@ -4804,6 +5170,7 @@ void MainWindow::onSettingsRequested()
     settingsPanel->setMaxDocs(QSettings().value(QStringLiteral("docCache/maxDocs"), 6).toInt());
     settingsPanel->setMentionManuscriptsEnabled(
         QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
+    settingsPanel->setShowScenePopupOnHr(projectModel ? projectModel->showScenePopupOnHr() : true);
     // Teto do comprimento de página = altura útil da folha visível. Acima disso a
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
@@ -5175,6 +5542,41 @@ void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comme
     } else {
         markerHoverId.clear();
     }
+}
+
+void MainWindow::removeMarkerFromPicker()
+{
+    if (!markerStore || !editor || !editorHost) return;
+    const QString key = editorHost->activeKey();
+    if (key.isEmpty()) return;
+
+    if (!markerEditId.isEmpty()) {
+        // Editando um marcador comentado existente (veio do hover popup) —
+        // remoção direta por id, igual ao "Excluir marcador" do hover.
+        markerStore->removeMarker(key, editor->document(), markerEditId);
+        markerEditId.clear();
+    } else {
+        // Mesmo range capturado em openMarkerPickerForSelection usado pra
+        // aplicar cor — reaproveita pra remover.
+        int s = markerPendingStart;
+        int e = markerPendingEnd;
+        markerPendingStart = -1;
+        markerPendingEnd = -1;
+        if (s < 0 || e <= s) return;
+        const int docLen = editor->document()->characterCount();
+        s = qBound(0, s, docLen);
+        e = qBound(0, e, docLen);
+        if (e <= s) return;
+        QTextCursor cur = editor->textCursor();
+        cur.setPosition(s);
+        cur.setPosition(e, QTextCursor::KeepAnchor);
+        markerStore->clearRange(key, cur);
+        editor->setTextCursor(cur);
+        editor->viewport()->update();
+    }
+
+    if (markerHoverPopup) markerHoverPopup->hide();
+    markerHoverId.clear();
 }
 
 bool MainWindow::markerAtViewportPos(const QPoint& viewportPos, QString& outId,

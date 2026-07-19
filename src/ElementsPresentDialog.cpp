@@ -124,7 +124,10 @@ void ElementsPresentDialog::accept()
             const bool checked = pair.second->isChecked();
             const bool wasPresent = m_store->hasDocElement(m_docKey, elementId);
             if (checked && !wasPresent) m_store->addDocElement(m_docKey, elementId);
-            else if (!checked && wasPresent) m_store->removeDocElement(m_docKey, elementId);
+            else if (!checked && wasPresent) {
+                m_store->removeDocElement(m_docKey, elementId);
+                emit elementRemoved(elementId, m_docKey);
+            }
         }
     }
     QDialog::accept();

@@ -166,6 +166,8 @@ qt_add_executable(qenna-writer
     src/GlossaryStore.h
     src/GlossaryPanel.cpp
     src/GlossaryPanel.h
+    src/HelpPanel.cpp
+    src/HelpPanel.h
     src/GlossaryAddPopup.cpp
     src/GlossaryAddPopup.h
     src/ConstrutorStore.cpp

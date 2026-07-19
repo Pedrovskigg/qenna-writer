@@ -1,5 +1,6 @@
 #include "MarkerPickPopup.h"
 
+#include "IconUtils.h"
 #include "Theme.h"
 
 #include <QApplication>
@@ -153,6 +154,17 @@ void MarkerPickPopup::buildUi()
     m_actionsRow = new QHBoxLayout();
     m_actionsRow->setContentsMargins(0, 0, 0, 0);
     m_actionsRow->setSpacing(4);
+
+    m_removeBtn = new QToolButton(this);
+    m_removeBtn->setToolTip(tr("Remover marcador"));
+    m_removeBtn->setCursor(Qt::PointingHandCursor);
+    m_removeBtn->setFocusPolicy(Qt::NoFocus);
+    connect(m_removeBtn, &QToolButton::clicked, this, [this]() {
+        hide();
+        emit removeRequested();
+    });
+    m_actionsRow->addWidget(m_removeBtn);
+
     m_actionsRow->addStretch(1);
 
     m_confirmBtn = new QToolButton(this);
@@ -231,6 +243,15 @@ void MarkerPickPopup::applyTheme()
     if (m_customBtn) m_customBtn->setStyleSheet(customBtnStyle(Theme::panelBackground()));
     if (m_confirmBtn) m_confirmBtn->setStyleSheet(actionBtnStyle());
     if (m_cancelBtn) m_cancelBtn->setStyleSheet(actionBtnStyle());
+    if (m_removeBtn) {
+        m_removeBtn->setStyleSheet(actionBtnStyle());
+        const QSize iconSz(14, 14);
+        m_removeBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/trash.svg"),
+            QColor(Theme::textPrimary()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            iconSz));
+        m_removeBtn->setIconSize(iconSz);
+    }
     applySwatchSelection();
 }
 

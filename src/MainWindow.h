@@ -60,6 +60,7 @@ class AmbienceManager;
 class AmbiencePanel;
 class GlossaryStore;
 class GlossaryPanel;
+class HelpPanel;
 class GlossaryAddPopup;
 class MemoriesStore;
 class MemoryAddPopup;
@@ -177,6 +178,7 @@ private:
     void openMarkerPickerForSelection(bool withComment);
     void openMarkerPickerForEdit(const QString& markerId);
     void applyMarkerFromPicker(const QColor& color, const QString& comment);
+    void removeMarkerFromPicker();
     bool markerAtViewportPos(const QPoint& viewportPos, QString& outId,
                              QRect& outBoundsGlobal) const;
 
@@ -226,6 +228,18 @@ private:
     void changeSelectedImageWidth(int delta);
     void changeSelectedImageAlignment(int alignment);
     void detectScenesForPending();
+    // Deriva a presença por CENA (docKey "...::scene:<id>") a partir de quem já
+    // está confirmado/auto-marcado no capítulo inteiro + match de token na cena.
+    // Sem popup de confirmação própria — a confirmação já aconteceu no capítulo.
+    void syncScenePresenceForChapter(const QString& chapterId);
+    // Botão em Configurações: roda syncScenePresenceForChapter em todos os
+    // capítulos do projeto, um por tick de timer (não trava a UI, ver pedido
+    // do usuário após crash anterior do detector rodando tudo de uma vez).
+    void rescanAllChapterScenesPresence();
+    // Persiste markAll/neverIds/rejectedKeys em QSettings, por projeto (mesma
+    // chave/grupo já usados pro markAll) — chamar sempre que qualquer um dos
+    // três mudar, pra decisão do usuário nunca precisar ser repetida.
+    void saveDetectionState();
 
     SpellEditor *editor;
     TopToolbar *toolbar;
@@ -267,6 +281,7 @@ private:
     AmbiencePanel *ambiencePanel = nullptr;
     GlossaryStore *glossaryStore = nullptr;
     GlossaryPanel *glossaryPanel = nullptr;
+    HelpPanel *helpPanel = nullptr;
     GlossaryAddPopup *glossaryAddPopup = nullptr;
     MemoriesStore *memoriesStore = nullptr;
     MemoryAddPopup *memoryAddPopup = nullptr;

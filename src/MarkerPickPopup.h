@@ -36,6 +36,7 @@ public:
 signals:
     void confirmed(QColor color, QString comment);
     void cancelled();
+    void removeRequested();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -66,6 +67,7 @@ private:
     QToolButton* m_customBtn = nullptr;
     QToolButton* m_confirmBtn = nullptr;
     QToolButton* m_cancelBtn = nullptr;
+    QToolButton* m_removeBtn = nullptr;
     QList<QToolButton*> m_swatches;
 
     bool m_dragging = false;
