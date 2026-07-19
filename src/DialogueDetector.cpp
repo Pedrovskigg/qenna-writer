@@ -1,6 +1,8 @@
 #include "DialogueDetector.h"
 
 #include "DialogueVerbs.h"
+#include "DialogueVerbsEN.h"
+#include "DialogueVerbsES.h"
 
 #include <QHash>
 #include <QSet>
@@ -47,7 +49,11 @@ QVector<DialogueScannerToken> DialogueDetector::buildScannerTokens(const QList<E
         firstNameCount[first] = firstNameCount.value(first, 0) + 1;
     }
 
-    const QString verbsSrc = DialogueVerbs::speechVerbsSource();
+    // PT-BR + EN + ES combinados — projeto pode estar escrito em qualquer um
+    // dos três (ou misturado), sem precisar escolher idioma.
+    static const QString verbsSrc = DialogueVerbs::speechVerbsSource()
+        + QStringLiteral("|") + DialogueVerbsEN::speechVerbsSource()
+        + QStringLiteral("|") + DialogueVerbsES::speechVerbsSource();
     const auto opts = QRegularExpression::CaseInsensitiveOption
                      | QRegularExpression::UseUnicodePropertiesOption;
 
@@ -91,9 +97,12 @@ QString DialogueDetector::attributeLine(const QString& text,
             attributionText = parts.join(QLatin1Char(' '));
         }
     } else {
+        // Busca a partir do índice 1 (não 0) — com aspas retas ("), a própria
+        // abertura já bate nesta regex; buscando do início, o primeiro match
+        // seria sempre a abertura, nunca o fechamento real mais adiante.
         static const QRegularExpression closingQuoteRe(QStringLiteral("[\"”]"));
-        const QRegularExpressionMatch m = closingQuoteRe.match(text);
-        if (m.hasMatch() && m.capturedStart() > 1)
+        const QRegularExpressionMatch m = closingQuoteRe.match(text, 1);
+        if (m.hasMatch())
             attributionText = text.mid(m.capturedStart() + 1).trimmed();
     }
 
@@ -101,7 +110,9 @@ QString DialogueDetector::attributeLine(const QString& text,
     // quando não há atribuição) tem marcador de 1ª pessoa, é o narrador.
     if (narrator) {
         const QString checkTarget = attributionText.isEmpty() ? text : attributionText;
-        if (DialogueVerbs::firstPersonMarkersRegex().match(checkTarget).hasMatch())
+        if (DialogueVerbs::firstPersonMarkersRegex().match(checkTarget).hasMatch()
+            || DialogueVerbsEN::firstPersonMarkersRegex().match(checkTarget).hasMatch()
+            || DialogueVerbsES::firstPersonMarkersRegex().match(checkTarget).hasMatch())
             return narrator->id;
     }
 
