@@ -52,24 +52,28 @@ private:
     QString m_imageDataUrl;
     QVector<SheetTemplate> m_sheetTemplates;
 
-    // Botões-picker (QToolButton + QMenu) no lugar de QComboBox: no Windows, o
-    // popup do QComboBox usa uma janela top-level própria que fica translúcida
-    // nesse diálogo (bug de composição do Qt) — QMenu não tem esse problema
-    // (mesmo padrão já usado no seletor de gaveta do Menu de Referência).
-    void showTrackMenu();
-    void showPageTypeMenu();
-    void showTemplateMenu();
+    // Pickers inline (botão + painel de opções que expande dentro do próprio
+    // diálogo) no lugar de QComboBox/QMenu: qualquer popup que abre como
+    // janela top-level própria nesse diálogo específico sai com fundo
+    // translúcido no Windows (bug de composição do Qt/DWM) — um painel que só
+    // expande dentro do layout existente não cria janela nenhuma, então não
+    // tem como sofrer desse bug. Mesmo conceito do "?" de prós/contras do
+    // Construtor (ConstrutorWindow), adaptado pra escolher uma opção em vez
+    // de só revelar mais texto.
     void updatePageTypeUi();  // mostra/esconde o picker de modelo conforme o tipo de página
 
     QLineEdit* m_titleEdit;
     QLineEdit* m_aliasesEdit = nullptr;
     QComboBox* m_roleCombo;
     QToolButton* m_trackBtn = nullptr;
+    QWidget* m_trackOptions = nullptr;
     QString m_trackValue;             // "" auto | "on" | "off"
     QToolButton* m_pageTypeBtn = nullptr;
+    QWidget* m_pageTypeOptions = nullptr;
     QString m_pageTypeValue = QStringLiteral("free");  // "free" | "sheet"
     QLabel* m_templateLabel = nullptr;
     QToolButton* m_templateBtn = nullptr;
+    QWidget* m_templateOptions = nullptr;
     QString m_templateValue;          // id do modelo escolhido, vazio = nenhum
     QCheckBox* m_narratorCheck;
     QLabel* m_imagePreview;

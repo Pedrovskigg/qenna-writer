@@ -13,11 +13,12 @@
 #include <QImageReader>
 #include <QLabel>
 #include <QLineEdit>
-#include <QMenu>
 #include <QPixmap>
 #include <QPushButton>
 #include <QToolButton>
 #include <QVBoxLayout>
+
+#include <functional>
 
 namespace {
 
@@ -82,8 +83,8 @@ void fixComboPopupTransparency(QComboBox* combo, const QString& bg, const QStrin
 
 // Botão com o mesmo visual de um QLineEdit/QComboBox do diálogo (via
 // objectName "ecdBtn" reaproveitado com um estilo próprio, ver ecdPickerBtn
-// no setStyleSheet), texto alinhado à esquerda + seta — abre um QMenu ao
-// clicar (ver showTrackMenu/showPageTypeMenu/showTemplateMenu).
+// no setStyleSheet), texto alinhado à esquerda + seta — clicar expande/
+// recolhe o painel de opções logo abaixo (ver buildInlinePicker).
 QToolButton* makePickerButton(QWidget* parent, const QString& text) {
     auto* b = new QToolButton(parent);
     b->setObjectName(QStringLiteral("ecdPickerBtn"));
@@ -92,6 +93,50 @@ QToolButton* makePickerButton(QWidget* parent, const QString& text) {
     b->setCursor(Qt::PointingHandCursor);
     b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     return b;
+}
+
+struct PickerOption { QString value; QString label; };
+
+// Painel de opções que expande dentro do próprio layout do diálogo (sem popup,
+// sem janela top-level própria) — clicar em `btn` mostra/esconde; clicar numa
+// opção fixa o valor em `*valueOut`, atualiza o texto de `btn`, recolhe o
+// painel de novo e roda `onPicked` (se houver). Evita de vez o bug de fundo
+// translúcido que QComboBox/QMenu tinham nesse diálogo especificamente
+// (Windows aplicando material de fundo nativo em janelas de popup).
+QWidget* buildInlinePicker(QWidget* parent, QToolButton* btn,
+                          const QVector<PickerOption>& options,
+                          QString* valueOut,
+                          std::function<void()> onPicked = nullptr) {
+    auto* panel = new QWidget(parent);
+    panel->setObjectName(QStringLiteral("ecdOptionsPanel"));
+    panel->setVisible(false);
+    auto* lay = new QVBoxLayout(panel);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(0);
+
+    for (const PickerOption& opt : options) {
+        auto* row = new QToolButton(panel);
+        row->setObjectName(QStringLiteral("ecdOptionRow"));
+        row->setText(opt.label);
+        row->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        row->setCursor(Qt::PointingHandCursor);
+        row->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        lay->addWidget(row);
+        const QString value = opt.value;
+        const QString label = opt.label;
+        QObject::connect(row, &QToolButton::clicked, panel, [btn, panel, valueOut, value, label, onPicked]() {
+            *valueOut = value;
+            btn->setText(label + QStringLiteral("  ▾"));
+            panel->setVisible(false);
+            if (onPicked) onPicked();
+        });
+    }
+
+    QObject::connect(btn, &QToolButton::clicked, panel, [panel]() {
+        panel->setVisible(!panel->isVisible());
+    });
+
+    return panel;
 }
 
 QPixmap pixmapFromDataUrl(const QString& dataUrl) {
@@ -202,8 +247,13 @@ void ElementCreateDialog::buildUi()
         auto* trackLabel = new QLabel(tr("Trilha na linha do tempo:"), this);
         outer->addWidget(trackLabel);
         m_trackBtn = makePickerButton(this, tr("Automático (pelo papel)"));
-        connect(m_trackBtn, &QToolButton::clicked, this, &ElementCreateDialog::showTrackMenu);
         outer->addWidget(m_trackBtn);
+        m_trackOptions = buildInlinePicker(this, m_trackBtn, {
+            { QString(),             tr("Automático (pelo papel)") },
+            { QStringLiteral("on"),  tr("Sempre acompanhar") },
+            { QStringLiteral("off"), tr("Nunca acompanhar") },
+        }, &m_trackValue);
+        outer->addWidget(m_trackOptions);
 
         // Tipo de página do personagem: Ficha (campos prontos) ou Documento livre.
         // Documento livre é o padrão — Ficha fica como segunda opção, pra quem
@@ -212,15 +262,24 @@ void ElementCreateDialog::buildUi()
         auto* pageTypeLabel = new QLabel(tr("Tipo de página:"), this);
         outer->addWidget(pageTypeLabel);
         m_pageTypeBtn = makePickerButton(this, tr("Documento livre (página em branco)"));
-        connect(m_pageTypeBtn, &QToolButton::clicked, this, &ElementCreateDialog::showPageTypeMenu);
         outer->addWidget(m_pageTypeBtn);
+        m_pageTypeOptions = buildInlinePicker(this, m_pageTypeBtn, {
+            { QStringLiteral("free"),  tr("Documento livre (página em branco)") },
+            { QStringLiteral("sheet"), tr("Ficha (campos prontos)") },
+        }, &m_pageTypeValue, [this]() { updatePageTypeUi(); });
+        outer->addWidget(m_pageTypeOptions);
 
         // Modelo de ficha (opcional): só faz sentido quando o tipo é "Ficha".
         m_templateLabel = new QLabel(tr("Modelo de ficha:"), this);
         outer->addWidget(m_templateLabel);
         m_templateBtn = makePickerButton(this, tr("Vazio (padrão)"));
-        connect(m_templateBtn, &QToolButton::clicked, this, &ElementCreateDialog::showTemplateMenu);
         outer->addWidget(m_templateBtn);
+        QVector<PickerOption> templateOpts;
+        templateOpts.append({ QString(), tr("Vazio (padrão)") });
+        for (const SheetTemplate& t : m_sheetTemplates)
+            templateOpts.append({ t.id, t.name });
+        m_templateOptions = buildInlinePicker(this, m_templateBtn, templateOpts, &m_templateValue);
+        outer->addWidget(m_templateOptions);
 
         updatePageTypeUi();
     }
@@ -267,6 +326,17 @@ void ElementCreateDialog::buildUi()
             text-align: left;
         }
         QToolButton#ecdPickerBtn:hover { border-color: %10; }
+        QWidget#ecdOptionsPanel {
+            background: %3; color: %4;
+            border: 1px solid %5; border-radius: 4px;
+            margin-top: -6px;
+        }
+        QToolButton#ecdOptionRow {
+            background: transparent; color: %4;
+            border: none; text-align: left;
+            padding: 6px 8px;
+        }
+        QToolButton#ecdOptionRow:hover { background: %6; }
         QLabel#ecdImagePreview {
             background: %3; color: %7;
             border: 1px dashed %5; border-radius: 4px;
@@ -372,103 +442,10 @@ void ElementCreateDialog::updatePageTypeUi()
 {
     const bool isSheet = createAsSheet();
     const bool hasTemplates = !m_sheetTemplates.isEmpty();
-    if (m_templateLabel) m_templateLabel->setVisible(isSheet && hasTemplates);
-    if (m_templateBtn) m_templateBtn->setVisible(isSheet && hasTemplates);
-}
-
-void ElementCreateDialog::showTrackMenu()
-{
-    if (!m_trackBtn) return;
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            padding: 4px;
-        }
-        QMenu::item { padding: 6px 24px 6px 12px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::panelBorder(),
-           Theme::accentInfoSoft(), Theme::textBright()));
-
-    struct Opt { QString value; QString label; };
-    const QVector<Opt> opts = {
-        { QString(),             tr("Automático (pelo papel)") },
-        { QStringLiteral("on"),  tr("Sempre acompanhar") },
-        { QStringLiteral("off"), tr("Nunca acompanhar") },
-    };
-    for (const Opt& o : opts) {
-        QAction* a = menu.addAction(o.label);
-        connect(a, &QAction::triggered, this, [this, o]() {
-            m_trackValue = o.value;
-            m_trackBtn->setText(o.label + QStringLiteral("  ▾"));
-        });
-    }
-    menu.exec(m_trackBtn->mapToGlobal(QPoint(0, m_trackBtn->height())));
-}
-
-void ElementCreateDialog::showPageTypeMenu()
-{
-    if (!m_pageTypeBtn) return;
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            padding: 4px;
-        }
-        QMenu::item { padding: 6px 24px 6px 12px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::panelBorder(),
-           Theme::accentInfoSoft(), Theme::textBright()));
-
-    struct Opt { QString value; QString label; };
-    const QVector<Opt> opts = {
-        { QStringLiteral("free"),  tr("Documento livre (página em branco)") },
-        { QStringLiteral("sheet"), tr("Ficha (campos prontos)") },
-    };
-    for (const Opt& o : opts) {
-        QAction* a = menu.addAction(o.label);
-        connect(a, &QAction::triggered, this, [this, o]() {
-            m_pageTypeValue = o.value;
-            m_pageTypeBtn->setText(o.label + QStringLiteral("  ▾"));
-            updatePageTypeUi();
-        });
-    }
-    menu.exec(m_pageTypeBtn->mapToGlobal(QPoint(0, m_pageTypeBtn->height())));
-}
-
-void ElementCreateDialog::showTemplateMenu()
-{
-    if (!m_templateBtn) return;
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            padding: 4px;
-        }
-        QMenu::item { padding: 6px 24px 6px 12px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::panelBorder(),
-           Theme::accentInfoSoft(), Theme::textBright()));
-
-    const QString emptyLabel = tr("Vazio (padrão)");
-    QAction* none = menu.addAction(emptyLabel);
-    connect(none, &QAction::triggered, this, [this, emptyLabel]() {
-        m_templateValue.clear();
-        m_templateBtn->setText(emptyLabel + QStringLiteral("  ▾"));
-    });
-    for (const SheetTemplate& t : m_sheetTemplates) {
-        QAction* a = menu.addAction(t.name);
-        const QString id = t.id;
-        const QString name = t.name;
-        connect(a, &QAction::triggered, this, [this, id, name]() {
-            m_templateValue = id;
-            m_templateBtn->setText(name + QStringLiteral("  ▾"));
-        });
-    }
-    menu.exec(m_templateBtn->mapToGlobal(QPoint(0, m_templateBtn->height())));
+    const bool showTemplate = isSheet && hasTemplates;
+    if (m_templateLabel) m_templateLabel->setVisible(showTemplate);
+    if (m_templateBtn) m_templateBtn->setVisible(showTemplate);
+    if (m_templateOptions && !showTemplate) m_templateOptions->setVisible(false);
 }
 
 QString ElementCreateDialog::title() const

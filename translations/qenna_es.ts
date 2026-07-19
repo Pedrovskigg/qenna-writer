@@ -1690,172 +1690,172 @@ La carpeta del proyecto se borrará del disco. Esta acción NO se puede deshacer
 <context>
     <name>ElementCreateDialog</name>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="146"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="334"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="191"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="404"/>
         <source>sem foto</source>
         <translation>sin foto</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="150"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="195"/>
         <source>Escolher foto…</source>
         <translation>Elegir foto…</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="154"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="199"/>
         <source>Remover</source>
         <translation>Quitar</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="176"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="221"/>
         <source>Apelidos:</source>
         <translation>Apodos:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="179"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="224"/>
         <source>separados por vírgula (ex.: Mari, a herdeira)</source>
         <translation>separados por comas (ej.: Mari, la heredera)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="182"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="227"/>
         <source>Papel:</source>
         <translation>Rol:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="186"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="231"/>
         <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
         <translation>Protagonista</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="187"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="232"/>
         <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
         <translation>Deuteragonista</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="188"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="233"/>
         <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
         <translation>Personaje secundario</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="189"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="234"/>
         <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
         <translation>Antagonista</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="190"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="235"/>
         <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
         <translation>Contraste</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="191"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="236"/>
         <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
         <translation>Trickster</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="192"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="237"/>
         <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="193"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="238"/>
         <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
         <translation>Figurante</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="198"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="243"/>
         <source>Narrador (voz em 1ª pessoa)</source>
         <translation>Narrador (voz en 1ª persona)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="202"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="247"/>
         <source>Trilha na linha do tempo:</source>
         <translation>Pista en la línea de tiempo:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="204"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="311"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="396"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="249"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="252"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="381"/>
         <source>Automático (pelo papel)</source>
         <translation>Automático (según el rol)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="312"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="397"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="253"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="382"/>
         <source>Sempre acompanhar</source>
         <translation>Seguir siempre</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="313"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="398"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="254"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="383"/>
         <source>Nunca acompanhar</source>
         <translation>Nunca seguir</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="212"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="262"/>
         <source>Tipo de página:</source>
         <translation>Tipo de página:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="428"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="268"/>
         <source>Ficha (campos prontos)</source>
         <translation>Ficha (campos listos)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="214"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="427"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="264"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="267"/>
         <source>Documento livre (página em branco)</source>
         <translation>Documento libre (página en blanco)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="219"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="273"/>
         <source>Modelo de ficha:</source>
         <translation>Modelo de ficha:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="221"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="456"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="275"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="278"/>
         <source>Vazio (padrão)</source>
         <translation>Vacío (predeterminado)</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="232"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="291"/>
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="235"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="294"/>
         <source>Criar</source>
         <translation>Crear</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="325"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="395"/>
         <source>Salvar</source>
         <translation>Guardar</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="326"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="396"/>
         <source>Editar elemento</source>
         <translation>Editar elemento</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="338"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="408"/>
         <source>erro</source>
         <translation>error</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="345"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="415"/>
         <source>Selecionar foto</source>
         <translation>Seleccionar foto</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="347"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="417"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
         <translation>Imágenes (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
@@ -7290,42 +7290,42 @@ Selecciona un fragmento y usa el marcador con comentario para que aparezca aquí
         <translation type="vanished">Título del manuscrito:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="25"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="26"/>
         <source>Novo personagem</source>
         <translation>Nuevo personaje</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="26"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="27"/>
         <source>Novo cenário</source>
         <translation>Nuevo escenario</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="27"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="28"/>
         <source>Novo objeto</source>
         <translation>Nuevo objeto</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="28"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="29"/>
         <source>Novo documento</source>
         <translation>Nuevo documento</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="32"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="33"/>
         <source>Nome do personagem:</source>
         <translation>Nombre del personaje:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="33"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="34"/>
         <source>Nome do cenário:</source>
         <translation>Nombre del escenario:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="34"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="35"/>
         <source>Nome do objeto:</source>
         <translation>Nombre del objeto:</translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="35"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="36"/>
         <source>Nome:</source>
         <translation>Nombre:</translation>
     </message>
