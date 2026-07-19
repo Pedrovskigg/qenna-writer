@@ -3,13 +3,17 @@
 #include <QAction>
 #include <QButtonGroup>
 #include <QDoubleValidator>
+#include <QEasingCurve>
+#include <QFont>
 #include <QFrame>
+#include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
 #include <QMenu>
 #include <QPair>
+#include <QPropertyAnimation>
 #include <QRadioButton>
 #include <QSignalBlocker>
 #include <QToolButton>
@@ -114,13 +118,14 @@ TopToolbar::TopToolbar(QWidget *parent)
     , fullscreenButton(makeIconButton(this))
     , refMenuButton(makeIconButton(this))
     , pensarioButton(makeIconButton(this))
+    , helpButton(new QToolButton(this))
     , construtorButton(makeIconButton(this))
     , docTitleLabel(new QLabel(this))
     , fontPicker(nullptr)
     , sizeStepperEdit(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
     , currentFontSize(16)
-    , currentLineHeightPercent(170)
+    , currentLineHeightPercent(115)
 {
     setObjectName(QStringLiteral("topToolbar"));
     setAttribute(Qt::WA_StyledBackground, true);
@@ -131,6 +136,12 @@ TopToolbar::TopToolbar(QWidget *parent)
     reminderBadge->setFixedSize(9, 9);
     reminderBadge->setAttribute(Qt::WA_TransparentForMouseEvents);
     reminderBadge->setVisible(false);
+
+    pensarioBadge = new QLabel(this);
+    pensarioBadge->setObjectName(QStringLiteral("pensarioBadge"));
+    pensarioBadge->setFixedSize(9, 9);
+    pensarioBadge->setAttribute(Qt::WA_TransparentForMouseEvents);
+    pensarioBadge->setVisible(false);
 
     focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
@@ -167,6 +178,21 @@ TopToolbar::TopToolbar(QWidget *parent)
     bindIcon(exportButton, QStringLiteral("download.svg"));
     exportButton->setToolTip(tr("Exportar projeto"));
     connect(exportButton, &QToolButton::clicked, this, &TopToolbar::exportRequested);
+
+    helpButton->setObjectName(QStringLiteral("ttbProject"));
+    helpButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    helpButton->setAutoRaise(true);
+    helpButton->setCursor(Qt::PointingHandCursor);
+    helpButton->setFixedSize(kIconButtonSize, kIconButtonSize);
+    {
+        QFont helpFont = helpButton->font();
+        helpFont.setPointSize(13);
+        helpFont.setBold(true);
+        helpButton->setFont(helpFont);
+    }
+    helpButton->setText(QStringLiteral("?"));
+    helpButton->setToolTip(tr("Ajuda"));
+    connect(helpButton, &QToolButton::clicked, this, &TopToolbar::helpRequested);
 
     // ---------------- Grupo B: Formatação inline ----------------
     boldButton->setObjectName(QStringLiteral("ttbInline"));
@@ -348,6 +374,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(openProjectButton);
     layout->addWidget(saveProjectButton);
     layout->addWidget(exportButton);
+    layout->addWidget(helpButton);
     layout->addWidget(makeVSeparator(this));
 
     // --- Esquerda: Editor (tipografia + inline) ---
@@ -445,6 +472,13 @@ void TopToolbar::applyRootStyle()
             "QLabel#reminderBadge {"
             "  background: %1; border-radius: 4px;"
             "}").arg(Theme::accentDanger()));
+    }
+
+    if (pensarioBadge) {
+        pensarioBadge->setStyleSheet(QStringLiteral(
+            "QLabel#pensarioBadge {"
+            "  background: %1; border-radius: 4px;"
+            "}").arg(Theme::accentSuccess()));
     }
 
     if (docTitleLabel) {
@@ -639,6 +673,7 @@ void TopToolbar::resizeEvent(QResizeEvent *event)
     QWidget::resizeEvent(event);
     positionDocTitle();
     positionReminderBadge();
+    positionPensarioBadge();
 }
 
 void TopToolbar::setTitleAnchorX(int x)
@@ -668,6 +703,13 @@ QRect TopToolbar::reminderButtonGlobalRect() const
     return QRect(topLeft, reminderButton->size());
 }
 
+QRect TopToolbar::helpButtonGlobalRect() const
+{
+    if (!helpButton) return QRect();
+    const QPoint topLeft = helpButton->mapToGlobal(QPoint(0, 0));
+    return QRect(topLeft, helpButton->size());
+}
+
 void TopToolbar::setReminderBadge(bool active)
 {
     if (reminderBadge) {
@@ -682,6 +724,43 @@ void TopToolbar::positionReminderBadge()
     const QRect br = reminderButton->geometry();
     reminderBadge->move(br.right() - 10, br.top() + 2);
     reminderBadge->raise();
+}
+
+void TopToolbar::positionPensarioBadge()
+{
+    if (!pensarioBadge || !pensarioButton || !pensarioBadge->isVisible()) return;
+    const QRect br = pensarioButton->geometry();
+    pensarioBadge->move(br.right() - 10, br.top() + 2);
+    pensarioBadge->raise();
+}
+
+// Pisca o badge do Pensário por alguns segundos e some sozinho — feedback de
+// "salvou, e é aqui que fica", não um indicador persistente de não-lido.
+void TopToolbar::pulsePensarioBadge()
+{
+    if (!pensarioBadge || !pensarioButton) return;
+
+    pensarioBadge->setVisible(true);
+    positionPensarioBadge();
+
+    auto* effect = qobject_cast<QGraphicsOpacityEffect*>(pensarioBadge->graphicsEffect());
+    if (!effect) {
+        effect = new QGraphicsOpacityEffect(pensarioBadge);
+        pensarioBadge->setGraphicsEffect(effect);
+    }
+    effect->setOpacity(1.0);
+
+    auto* anim = new QPropertyAnimation(effect, "opacity", this);
+    anim->setDuration(600);
+    anim->setStartValue(1.0);
+    anim->setKeyValueAt(0.5, 0.25);
+    anim->setEndValue(1.0);
+    anim->setLoopCount(4);
+    anim->setEasingCurve(QEasingCurve::InOutQuad);
+    connect(anim, &QPropertyAnimation::finished, this, [this]() {
+        if (pensarioBadge) pensarioBadge->setVisible(false);
+    });
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void TopToolbar::positionDocTitle()

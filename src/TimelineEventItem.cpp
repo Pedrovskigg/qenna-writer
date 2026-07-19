@@ -1,5 +1,6 @@
 #include "TimelineEventItem.h"
 
+#include "CrashLogger.h"
 #include <QAction>
 #include <QFont>
 #include <QFontMetrics>
@@ -21,6 +22,7 @@ constexpr qreal kMarkLead  = 9.0;   // comprimento do "risco" antes do marcador
 constexpr qreal kMarkH     = 16.0;  // altura da pílula do marcador
 constexpr qreal kHdrGap    = 14.0;  // respiro entre as duas colunas do cabeçalho
 constexpr qreal kRightColW = 110.0; // largura da coluna "Linha do tempo"
+constexpr qreal kPresenceH = 14.0;  // altura da linha "Presentes: ..."
 
 QColor cardBg()     { return QColor(28, 28, 32, 246); }
 QColor cardBody()   { return QColor(232, 232, 234); }
@@ -72,6 +74,15 @@ void TimelineEventItem::setTimelineName(const QString& n)
     if (m_timelineName == n) return;
     prepareGeometryChange();      // cabeçalho do card muda de altura
     m_timelineName = n;
+    update();
+    emit geometryChanged(m_data.id);
+}
+
+void TimelineEventItem::setPresentCharacters(const QStringList& names)
+{
+    if (m_presentCharacters == names) return;
+    prepareGeometryChange();      // cabeçalho do card muda de altura
+    m_presentCharacters = names;
     update();
     emit geometryChanged(m_data.id);
 }
@@ -154,7 +165,9 @@ qreal TimelineEventItem::headerH() const
                           .height();
     const qreal leftH  = titleH + (m_data.timeMarker.isEmpty() ? 0.0 : 16.0);
     const qreal rightH = hasCol ? (13.0 + 18.0) : 0.0; // rótulo pequeno + nome
-    return kCardPad + qMax(leftH, rightH) + 8.0; // respiro até o separador
+    qreal h = kCardPad + qMax(leftH, rightH) + 8.0; // respiro até o separador
+    if (!m_presentCharacters.isEmpty()) h += kPresenceH;
+    return h;
 }
 
 QRectF TimelineEventItem::cardRect() const
@@ -371,6 +384,17 @@ void TimelineEventItem::paint(QPainter* p,
                                                     qRound(kRightColW)));
         }
 
+        // ── Personagens presentes (linha cheia, acima do separador) ─────────────
+        if (!m_presentCharacters.isEmpty()) {
+            QFont fp; fp.setPointSizeF(7.5);
+            p->setFont(fp);
+            p->setPen(cardMuted());
+            const QString txt = tr("Presentes: %1").arg(m_presentCharacters.join(QStringLiteral(", ")));
+            const QRectF pr(card.left() + kCardPad, sepY - kPresenceH - 2.0, innerW, kPresenceH);
+            p->drawText(pr, Qt::AlignLeft | Qt::AlignVCenter,
+                        p->fontMetrics().elidedText(txt, Qt::ElideRight, qRound(innerW)));
+        }
+
         // separador
         p->setPen(QColor(255, 255, 255, 30));
         p->drawLine(QPointF(card.left() + kCardPad, sepY),
@@ -433,6 +457,8 @@ void TimelineEventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
             emit shiftClicked(m_data.id);
         } else {
             // clique normal: foca a linha do evento E alterna o popover dele
+            CrashLogger::log(QStringLiteral("tlEventOpenToggle id=%1 open=%2")
+                                  .arg(m_data.id).arg(!m_open));
             setOpen(!m_open);
             emit openToggled(m_data.id, m_open);
             emit focusLineRequested(m_data.timelineId, false);

@@ -36,6 +36,11 @@ public:
     QString timelineWeight(const QString& timelineId) const;
     QString timelineName(const QString& timelineId) const;
     bool    isCharacterTimeline(const QString& timelineId) const;
+    // Regra de eixo: personagem só no eixo Narrativa; enredo autoral (kind
+    // Main/Backstory — trilhas "História"/"Flashback" da sincronização de
+    // capítulo/cena) aparece nos DOIS eixos sempre; o resto (Lore/Parallel/
+    // Custom) segue a regra antiga (só no eixo História).
+    bool    timelineVisibleInAxis(const QString& timelineId, bool narrativeAxis) const;
 
     // ── Eventos ──────────────────────────────────────────────────────────────
     TimelineEventItem* addEvent(const TimelineEvent& data);
@@ -63,6 +68,11 @@ public:
     void    focusLine(const QString& timelineId, bool expand);
     // Faixa/rótulo sob um ponto da cena (Modo Trilho). Vazio = nenhum.
     QString timelineIdAtRailPos(const QPointF& scenePos) const;
+
+    // Filtro por personagem: esmaece eventos onde ele NÃO está presente
+    // (combina com o foco por linha acima — os dois podem estar ativos juntos).
+    // active=false = filtro desligado (ignora matchingEventIds).
+    void setCharacterFilter(bool active, const QSet<QString>& matchingEventIds);
 
     // ── Layout do Modo Trilho ──────────────────────────────────────────────────
     void  relayout();                       // reposiciona tudo conforme o modo
@@ -113,6 +123,10 @@ private:
     QString       m_focusTimelineId;   // vazio = sem foco (tudo 100%)
     int           m_focusDepth = 1;    // alcance em saltos (1..3)
     QSet<QString> m_focusSet;          // cache dos ids dentro do alcance
+
+    // Filtro por personagem (independente do foco por linha acima)
+    bool          m_charFilterActive = false;
+    QSet<QString> m_charFilterEventIds;
 
     QList<TimelineDef>   m_timelines;
     QList<TimelineEventItem*> m_events;

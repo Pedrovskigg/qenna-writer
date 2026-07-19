@@ -1,4 +1,5 @@
 #include "TimelineScene.h"
+#include "TimelineChrono.h"
 #include "TimelineConnItem.h"
 #include "TimelineEventItem.h"
 
@@ -52,148 +53,9 @@ int weightRank(const QString& w) {
 // pequeno deslocamento aleatório p/ desempatar nós exatamente sobrepostos
 qreal rand0() { return (QRandomGenerator::global()->bounded(100) - 50) / 50.0; }
 
-// Lê um marcador de relógio em minutos do dia: "02:00", "23h04", "14h30", "9h".
-// Retorna -1 se o marcador não for um horário reconhecível (ex.: "Dia 5", "Inverno").
-qreal markerClockMinutes(const QString& marker)
-{
-    if (marker.isEmpty()) return -1.0;
-    static const QRegularExpression reHM(QStringLiteral("(\\d{1,2})\\s*[:h]\\s*(\\d{2})"));
-    static const QRegularExpression reH(QStringLiteral("\\b(\\d{1,2})\\s*h(?![\\dh])"));
-    QRegularExpressionMatch m = reHM.match(marker);
-    if (m.hasMatch()) {
-        const int hh = m.captured(1).toInt();
-        const int mm = m.captured(2).toInt();
-        if (hh <= 47 && mm <= 59) return hh * 60.0 + mm;
-    }
-    m = reH.match(marker);
-    if (m.hasMatch()) {
-        const int hh = m.captured(1).toInt();
-        if (hh <= 47) return hh * 60.0;
-    }
-    return -1.0;
-}
-
-// Converte um numeral romano (i..mmm) em inteiro; 0 se inválido.
-int romanToInt(const QString& s)
-{
-    static const QHash<QChar, int> val{
-        {'i',1},{'v',5},{'x',10},{'l',50},{'c',100},{'d',500},{'m',1000}};
-    int total = 0, prev = 0;
-    for (int i = s.size() - 1; i >= 0; --i) {
-        const int v = val.value(s.at(i).toLower(), -1);
-        if (v < 0) return 0;
-        total += (v < prev) ? -v : v;
-        prev = v;
-    }
-    return total;
-}
-
-// Parser cronológico: transforma um marcador livre num escalar comparável (em
-// minutos, com 1 dia = 1440). Entende relógio, períodos do dia, "Dia N",
-// "Ano N"/romano, datas (DD/MM[/AAAA], AAAA-MM-DD), estações e "há N anos/dias".
-// okOut = true se reconheceu ALGO. Marcadores não reconhecidos → ordem manual.
-qreal markerChrono(const QString& raw, bool* okOut)
-{
-    constexpr qreal DAY = 1440.0;
-    const QString s = raw.toLower().trimmed();
-    bool ok = false;
-    qreal days = 0.0, minutes = 0.0;
-
-    if (s.isEmpty()) { if (okOut) *okOut = false; return 0.0; }
-
-    // ── hora explícita (02:00, 23h04, 9h) ─────────────────────────────────────
-    const qreal clk = markerClockMinutes(s);
-    if (clk >= 0.0) { minutes = clk; ok = true; }
-    else {
-        // ── período do dia (sem hora explícita) ───────────────────────────────
-        struct P { const char* w; qreal m; };
-        static const P periods[] = {
-            {"meia-noite",0},{"meia noite",0},{"madrugada",180},{"alvorada",330},
-            {"amanhecer",360},{"nascer do sol",360},{"manhã",540},{"manha",540},
-            {"meio-dia",720},{"meio dia",720},{"tarde",900},{"entardecer",1050},
-            {"pôr do sol",1080},{"por do sol",1080},{"anoitecer",1110},
-            {"crepúsculo",1110},{"crepusculo",1110},{"noite",1260}};
-        for (const auto& p : periods)
-            if (s.contains(QString::fromUtf8(p.w))) { minutes = p.m; ok = true; break; }
-    }
-
-    // ── "há N anos/meses/semanas/dias/horas/minutos" → passado (negativo) ─────
-    {
-        static const QRegularExpression re(QStringLiteral(
-            "h[áa]\\s+(\\d+)\\s*(anos?|m[êe]s(?:es)?|semanas?|dias?|horas?|minutos?)"));
-        const auto m = re.match(s);
-        if (m.hasMatch()) {
-            const qreal n = m.captured(1).toDouble();
-            const QString u = m.captured(2);
-            if      (u.startsWith(QStringLiteral("ano"))) days   -= n * 365.0;
-            else if (u.startsWith(QStringLiteral("mê")) ||
-                     u.startsWith(QStringLiteral("mes"))) days   -= n * 30.0;
-            else if (u.startsWith(QStringLiteral("sem"))) days   -= n * 7.0;
-            else if (u.startsWith(QStringLiteral("dia"))) days   -= n;
-            else if (u.startsWith(QStringLiteral("hora"))) minutes -= n * 60.0;
-            else if (u.startsWith(QStringLiteral("min")))  minutes -= n;
-            ok = true;
-        }
-    }
-
-    // ── datas absolutas ────────────────────────────────────────────────────────
-    bool dated = false;
-    {
-        static const QRegularExpression reYMD(QStringLiteral("(\\d{4})-(\\d{1,2})-(\\d{1,2})"));
-        const auto m = reYMD.match(s);
-        if (m.hasMatch()) {
-            const int y = m.captured(1).toInt(), mo = m.captured(2).toInt(), d = m.captured(3).toInt();
-            days += y * 372.0 + (mo - 1) * 31.0 + (d - 1); ok = dated = true;
-        }
-    }
-    if (!dated) {
-        static const QRegularExpression reDMY(QStringLiteral("\\b(\\d{1,2})[/.](\\d{1,2})(?:[/.](\\d{2,4}))?\\b"));
-        const auto m = reDMY.match(s);
-        if (m.hasMatch()) {
-            const int d = m.captured(1).toInt(), mo = m.captured(2).toInt();
-            int y = m.captured(3).isEmpty() ? 0 : m.captured(3).toInt();
-            if (y > 0 && y < 100) y += 2000; // "23" → 2023
-            days += y * 372.0 + (mo - 1) * 31.0 + (d - 1); ok = dated = true;
-        }
-    }
-
-    // ── "Dia N" / "Dia seguinte" ──────────────────────────────────────────────
-    if (!dated) {
-        static const QRegularExpression reDia(QStringLiteral("\\bdia\\s+(\\d+)"));
-        const auto m = reDia.match(s);
-        if (m.hasMatch()) { days += m.captured(1).toDouble() - 1.0; ok = true; }
-        else if (s.contains(QStringLiteral("seguinte"))) { days += 1.0; ok = true; }
-    }
-
-    // ── "Ano N" / "Ano III" ───────────────────────────────────────────────────
-    {
-        static const QRegularExpression reAnoN(QStringLiteral("\\bano\\s+(\\d+)"));
-        const auto mN = reAnoN.match(s);
-        if (mN.hasMatch()) { days += mN.captured(1).toDouble() * 372.0; ok = true; }
-        else {
-            static const QRegularExpression reAnoR(QStringLiteral("\\bano\\s+([ivxlcdm]+)\\b"));
-            const auto mR = reAnoR.match(s);
-            if (mR.hasMatch()) {
-                const int r = romanToInt(mR.captured(1));
-                if (r > 0) { days += r * 372.0; ok = true; }
-            }
-        }
-    }
-
-    // ── estações (aprox. por dia do ano) ──────────────────────────────────────
-    if      (s.contains(QStringLiteral("primavera"))) { days += 80.0;  ok = true; }
-    else if (s.contains(QStringLiteral("verão")) ||
-             s.contains(QStringLiteral("verao")))     { days += 172.0; ok = true; }
-    else if (s.contains(QStringLiteral("outono")))    { days += 266.0; ok = true; }
-    else if (s.contains(QStringLiteral("inverno")))   { days += 355.0; ok = true; }
-
-    // ── nudges relativos fracos ───────────────────────────────────────────────
-    if (s.contains(QStringLiteral("antes")))  { days -= 0.5; ok = true; }
-    if (s.contains(QStringLiteral("depois"))) { days += 0.5; ok = true; }
-
-    if (okOut) *okOut = ok;
-    return days * DAY + minutes;
-}
+// Parser cronológico movido pra TimelineChrono.h (reaproveitado por
+// TimelinePanel.cpp pra comparar marcador de capítulo × data-base da história).
+qreal markerChrono(const QString& raw, bool* okOut) { return TimelineChrono::parse(raw, okOut); }
 } // namespace
 
 TimelineScene::TimelineScene(QObject* parent) : QGraphicsScene(parent)
@@ -290,6 +152,20 @@ bool TimelineScene::isCharacterTimeline(const QString& timelineId) const
     for (const auto& t : m_timelines)
         if (t.id == timelineId)
             return t.kind == QLatin1String(TimelineKind::Character);
+    return false;
+}
+
+bool TimelineScene::timelineVisibleInAxis(const QString& timelineId, bool narrativeAxis) const
+{
+    for (const auto& t : m_timelines) {
+        if (t.id != timelineId) continue;
+        // Personagem e trilha principal (história "adiante") ficam no eixo
+        // Narrativa; Flashback (história "antes" da data-base) fica exclusivo
+        // no outro eixo. Cada trilha aparece em só um dos dois, nunca nos dois.
+        const bool narrativeKind = t.kind == QLatin1String(TimelineKind::Character)
+                                 || t.kind == QLatin1String(TimelineKind::Main);
+        return narrativeKind == narrativeAxis;
+    }
     return false;
 }
 
@@ -539,11 +415,12 @@ TimelineConn TimelineScene::autoConnect(const QString& newEventId, const QString
 
 void TimelineScene::applyConnVisibility()
 {
-    // Regra de eixo: Narrativa mostra a presença dos personagens (eventos auto);
-    // História mostra os eventos de enredo (autorais). Cada eixo, uma leitura.
-    const bool showChars = (m_axisMode == AxisMode::Narrative);
+    // Regra de eixo: Narrativa mostra a presença dos personagens; História mostra
+    // os eventos de enredo (autorais); enredo de capítulo/cena (kind Main/
+    // Backstory) aparece nos dois eixos sempre — ver timelineVisibleInAxis().
+    const bool narrativeAxis = (m_axisMode == AxisMode::Narrative);
     for (auto* it : m_events)
-        it->setVisible(it->eventData().autoEvent == showChars);
+        it->setVisible(timelineVisibleInAxis(it->eventData().timelineId, narrativeAxis));
 
     // No Modo Trilho, conexões "sequence" entre eventos do MESMO trilho são
     // redundantes com a própria faixa → escondidas. As demais (cruzamentos) ficam.
@@ -559,8 +436,8 @@ void TimelineScene::applyConnVisibility()
         bool hide = (rail && sameRail)
                  || (!rail && d.type == QLatin1String("sequence"));
         // Regra de eixo: esconde conexões que tocam um evento oculto no eixo atual.
-        if (from && from->eventData().autoEvent != showChars) hide = true;
-        if (to   && to->eventData().autoEvent   != showChars) hide = true;
+        if (from && !timelineVisibleInAxis(from->eventData().timelineId, narrativeAxis)) hide = true;
+        if (to   && !timelineVisibleInAxis(to->eventData().timelineId,   narrativeAxis)) hide = true;
         conn->setVisible(!hide);
         conn->invalidate();
     }
@@ -666,25 +543,42 @@ QSet<QString> TimelineScene::eventsWithinFocus() const
 
 void TimelineScene::applyFocusDimming()
 {
-    if (m_focusTimelineId.isEmpty()) {
-        m_focusSet.clear();
+    const bool hasTrackFocus = !m_focusTimelineId.isEmpty();
+    m_focusSet = hasTrackFocus ? eventsWithinFocus() : QSet<QString>();
+
+    if (!hasTrackFocus && !m_charFilterActive) {
         for (auto* it : m_events)      { it->setOpacity(1.0); it->setShowMarker(false); }
         for (auto* c  : m_connections) c->setOpacity(1.0);
         return;
     }
-    m_focusSet = eventsWithinFocus();
     for (auto* it : m_events) {
         const auto& d = it->eventData();
-        it->setOpacity(m_focusSet.contains(d.id) ? 1.0 : kDimOpacity);
+        bool lit = true;
+        if (hasTrackFocus)       lit = lit && m_focusSet.contains(d.id);
+        if (m_charFilterActive)  lit = lit && m_charFilterEventIds.contains(d.id);
+        it->setOpacity(lit ? 1.0 : kDimOpacity);
         // marcador ao lado da bolinha só nos eventos da linha focada
-        it->setShowMarker(d.timelineId == m_focusTimelineId);
+        it->setShowMarker(hasTrackFocus && d.timelineId == m_focusTimelineId);
     }
     for (auto* c : m_connections) {
         const auto& d = c->connData();
-        const bool lit = m_focusSet.contains(d.fromEventId)
-                      && m_focusSet.contains(d.toEventId);
+        bool lit = true;
+        if (hasTrackFocus) {
+            lit = lit && m_focusSet.contains(d.fromEventId) && m_focusSet.contains(d.toEventId);
+        }
+        if (m_charFilterActive) {
+            lit = lit && m_charFilterEventIds.contains(d.fromEventId)
+                       && m_charFilterEventIds.contains(d.toEventId);
+        }
         c->setOpacity(lit ? 1.0 : kDimOpacity);
     }
+}
+
+void TimelineScene::setCharacterFilter(bool active, const QSet<QString>& matchingEventIds)
+{
+    m_charFilterActive   = active;
+    m_charFilterEventIds = matchingEventIds;
+    applyFocusDimming();
 }
 
 // ── Layout ─────────────────────────────────────────────────────────────────────
@@ -1049,7 +943,7 @@ void TimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
         for (auto it = byLine.begin(); it != byLine.end(); ++it) {
             QList<TimelineEventItem*>& items = it.value();
             if (items.size() < 2) continue;
-            if (isCharacterTimeline(it.key()) != showChars) continue; // regra de eixo
+            if (!timelineVisibleInAxis(it.key(), showChars)) continue; // regra de eixo
             std::sort(items.begin(), items.end(),
                       [narrative, &storyKey](TimelineEventItem* a, TimelineEventItem* b){
                 const auto& da = a->eventData();
@@ -1097,7 +991,7 @@ void TimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
             auto* a = m_eventById.value(e.first, nullptr);
             auto* b = m_eventById.value(e.second, nullptr);
             if (!a || !b) continue;
-            if (isCharacterTimeline(a->eventData().timelineId) != showChars) continue;
+            if (!timelineVisibleInAxis(a->eventData().timelineId, showChars)) continue;
             QColor c = timelineColor(a->eventData().timelineId);
             int alpha = 110;
             if (focusing) {
@@ -1135,7 +1029,7 @@ void TimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
     for (int i = 0; i < sorted.size(); ++i) {
         const qreal y = railY(i);
         if (y < rect.top() - 20 || y > rect.bottom() + 20) continue;
-        if (isCharacterTimeline(sorted[i].id) != showChars) continue; // regra de eixo
+        if (!timelineVisibleInAxis(sorted[i].id, showChars)) continue; // regra de eixo
         const QColor c = sorted[i].color;
         // Faixa focada fica plena; as demais esmaecem (mas seguem visíveis).
         const qreal mult = (!focusing || sorted[i].id == m_focusTimelineId) ? 1.0 : 0.32;

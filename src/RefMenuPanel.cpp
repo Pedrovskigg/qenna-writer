@@ -316,7 +316,11 @@ void RefMenuPanel::buildUi()
     m_navInnerLay->setSpacing(6);
     m_navInnerLay->addStretch();
     m_navScroll->setWidget(m_navInner);
-    m_frameLay->addWidget(m_navScroll, /*stretch=*/3);
+    // stretch=0: a navegação ocupa só a altura do conteúdo dela (lista curta =
+    // painel curto, sem sobra de fundo vazio); listas longas continuam com
+    // scroll próprio, limitadas pelo teto abaixo. O preview absorve o resto.
+    m_navScroll->setMaximumHeight(280);
+    m_frameLay->addWidget(m_navScroll, /*stretch=*/0);
 
     // ---- Preview ----
     m_previewWrap = new QWidget(m_frame);
@@ -367,7 +371,7 @@ void RefMenuPanel::buildUi()
 
     m_preview->setVisible(false);
 
-    m_frameLay->addWidget(m_previewWrap, /*stretch=*/4);
+    m_frameLay->addWidget(m_previewWrap, /*stretch=*/1);
 
     // FindBar do preview (Alt+F). Não entra no layout — flutua sobre o
     // m_previewWrap, posicionada em positionPreviewFindBar().

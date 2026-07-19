@@ -243,6 +243,11 @@ bool EditorHost::deleteVariationForCurrentScene(const QString& variationId) {
     const QString msId = m_viewMode.manuscriptId;
     const bool wasActive = (scene->activeVariationId == variationId);
 
+    // Mesmo sync que create/switchVariationForCurrentScene sempre fazem antes de
+    // ler o cache — sem isso, o chapterHtml abaixo pode estar desatualizado em
+    // relação ao que o usuário acabou de digitar.
+    syncEditorToCache();
+
     if (!m_model->removeVariation(chapterId, sceneIdx, variationId)) return false;
 
     // Apaga arquivo da var removida.
@@ -255,13 +260,23 @@ bool EditorHost::deleteVariationForCurrentScene(const QString& variationId) {
     if (wasActive) {
         const Scene* updated = m_model->findScene(chapterId, sceneIdx);
         if (updated) {
-            QString newSegment = readVariationFile(m_projectRoot, msId, sceneId, updated->activeVariationId);
-            if (newSegment.isEmpty()) newSegment = QStringLiteral("<p></p>");
-            const QString key = activeKey();
-            const QString chapterHtml = m_cache->get(key);
-            const QString newChapterHtml = SceneUtils::replaceSceneHtml(chapterHtml, sceneIdx, newSegment);
-            m_cache->set(key, newChapterHtml, /*markDirty=*/true);
-            loadIntoEditor(newSegment);
+            const QString path = ProjectStorage::variationPath(
+                m_projectRoot, msId, sceneId, updated->activeVariationId);
+            bool readOk = false;
+            const QString fileText = ProjectStorage::readText(path, &readOk);
+            if (!readOk) {
+                // Falha de leitura de verdade (não é "variação vazia de propósito")
+                // — não sobrescreve a cena com conteúdo em branco, só avisa.
+                CrashLogger::log(QStringLiteral(
+                    "deleteVariation: falha ao ler %1, cena mantida como estava").arg(path));
+            } else {
+                const QString newSegment = fileText.isEmpty() ? QStringLiteral("<p></p>") : fileText;
+                const QString key = activeKey();
+                const QString chapterHtml = m_cache->get(key);
+                const QString newChapterHtml = SceneUtils::replaceSceneHtml(chapterHtml, sceneIdx, newSegment);
+                m_cache->set(key, newChapterHtml, /*markDirty=*/true);
+                loadIntoEditor(newSegment);
+            }
         }
     }
     return true;

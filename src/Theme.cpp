@@ -1,5 +1,7 @@
 #include "Theme.h"
 
+#include "CrashLogger.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -5830,14 +5832,23 @@ void Manager::setAutoSwitchConfig(const AutoSwitchConfig& cfg)
 void Manager::loadFavorites()
 {
     QSettings s;
+    const bool hadKey = s.contains(QStringLiteral("theme/favorites"));
     const QStringList ids = s.value(QStringLiteral("theme/favorites")).toStringList();
     m_favorites = QSet<QString>(ids.begin(), ids.end());
+    CrashLogger::log(QStringLiteral("Theme::loadFavorites hadKey=%1 count=%2 ids=%3")
+                          .arg(hadKey ? QStringLiteral("yes") : QStringLiteral("no"))
+                          .arg(ids.size())
+                          .arg(ids.join(QStringLiteral(","))));
 }
 
 void Manager::saveFavorites() const
 {
     QSettings s;
-    s.setValue(QStringLiteral("theme/favorites"), QStringList(m_favorites.begin(), m_favorites.end()));
+    const QStringList ids(m_favorites.begin(), m_favorites.end());
+    s.setValue(QStringLiteral("theme/favorites"), ids);
+    CrashLogger::log(QStringLiteral("Theme::saveFavorites count=%1 ids=%2")
+                          .arg(ids.size())
+                          .arg(ids.join(QStringLiteral(","))));
 }
 
 bool Manager::isFavorite(const QString& id) const

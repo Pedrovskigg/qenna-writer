@@ -70,9 +70,19 @@ private:
     void refreshFocusButtons();              // texto/estado dos botões de foco
     void setFocusTimeline(const QString& id); // id vazio = mostrar tudo
     void setFocusDepth(int depth);
+    // Trilhas de personagem (legado) — toggle na topbar
+    void toggleLegacyCharacterTracks(bool checked);
+    // Filtro por personagem — repopula o menu e aplica o filtro selecionado
+    void rebuildCharFilterMenu();
+    void setCharFilter(const QString& characterId); // vazio = sem filtro
     // Gera/atualiza as trilhas automáticas de personagem a partir do detector
     // de presença + roles. askSecondary = perguntar sobre papéis secundários.
+    // Também gera conexões automáticas de copresença (mesma cena) entre
+    // personagens elegíveis.
     void syncCharacterTimelines(bool askSecondary);
+    // Gera/atualiza as trilhas automáticas "História"/"Flashback" a partir do
+    // timeMarker dos capítulos + storyStartMarker do manuscrito.
+    void syncStoryTimeline();
 
     TimelineScene*  m_scene        = nullptr;
     TimelineView*   m_view         = nullptr;
@@ -83,6 +93,10 @@ private:
     class QToolButton* m_btnDepth  = nullptr;
     class QToolButton* m_btnAdd    = nullptr;   // "+" flutuante sobre o canvas
     class QMenu*       m_focusMenu = nullptr;
+    class QToolButton* m_btnLegacyChars  = nullptr; // checkable — trilhas de personagem (legado)
+    class QToolButton* m_btnCharFilter   = nullptr; // popup — filtro por personagem presente
+    class QMenu*       m_charFilterMenu  = nullptr;
+    QString            m_charFilterId;              // Element::id filtrado; vazio = sem filtro
 
     QString         m_projectRoot;
     ProjectModel*   m_projectModel  = nullptr;

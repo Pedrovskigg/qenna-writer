@@ -837,7 +837,7 @@ public:
         : QDialog(parent)
     {
         setObjectName(QStringLiteral("deleteConfirmDialog"));
-        setWindowTitle(tr("Excluir projeto"));
+        setWindowTitle(QCoreApplication::translate("DeleteConfirmDialog", "Excluir projeto"));
         setModal(true);
 
         auto* root = new QVBoxLayout(this);
@@ -845,16 +845,17 @@ public:
         root->setSpacing(16);
 
         auto* msg = new QLabel(
-            tr("Tem certeza que deseja excluir \"%1\"?\n\n"
-               "A pasta do projeto será apagada do disco. "
-               "Esta ação NÃO pode ser desfeita.").arg(projectName),
+            QCoreApplication::translate("DeleteConfirmDialog",
+                "Tem certeza que deseja excluir \"%1\"?\n\n"
+                "A pasta do projeto será apagada do disco. "
+                "Esta ação NÃO pode ser desfeita.").arg(projectName),
             this);
         msg->setWordWrap(true);
         root->addWidget(msg);
 
         auto* buttons = new QDialogButtonBox(this);
-        auto* cancelBtn = buttons->addButton(tr("Cancelar"), QDialogButtonBox::RejectRole);
-        m_deleteBtn = buttons->addButton(tr("Excluir"), QDialogButtonBox::AcceptRole);
+        auto* cancelBtn = buttons->addButton(QCoreApplication::translate("DeleteConfirmDialog", "Cancelar"), QDialogButtonBox::RejectRole);
+        m_deleteBtn = buttons->addButton(QCoreApplication::translate("DeleteConfirmDialog", "Excluir"), QDialogButtonBox::AcceptRole);
         m_deleteBtn->setObjectName(QStringLiteral("deleteConfirmBtn"));
         m_deleteBtn->setEnabled(false);
         cancelBtn->setCursor(Qt::PointingHandCursor);
@@ -865,16 +866,16 @@ public:
 
         // Countdown 5 → 0.
         m_remaining = 5;
-        m_deleteBtn->setText(tr("Excluir (%1)").arg(m_remaining));
+        m_deleteBtn->setText(QCoreApplication::translate("DeleteConfirmDialog", "Excluir (%1)").arg(m_remaining));
         auto* timer = new QTimer(this);
         timer->setInterval(1000);
         QObject::connect(timer, &QTimer::timeout, this, [this, timer]() {
             if (--m_remaining <= 0) {
                 timer->stop();
                 m_deleteBtn->setEnabled(true);
-                m_deleteBtn->setText(tr("Excluir"));
+                m_deleteBtn->setText(QCoreApplication::translate("DeleteConfirmDialog", "Excluir"));
             } else {
-                m_deleteBtn->setText(tr("Excluir (%1)").arg(m_remaining));
+                m_deleteBtn->setText(QCoreApplication::translate("DeleteConfirmDialog", "Excluir (%1)").arg(m_remaining));
             }
         });
         timer->start();

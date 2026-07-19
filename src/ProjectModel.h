@@ -19,6 +19,7 @@ struct Scene {
     QList<Variation> variations;
     QString activeVariationId;
     QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
+    QString summary;      // resumo opcional — alimenta a descrição na Timeline
 };
 
 struct Chapter {
@@ -29,12 +30,14 @@ struct Chapter {
     int order = 0;
     QList<Scene> scenes;
     QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
+    QString summary;      // resumo opcional — alimenta a descrição na Timeline
 };
 
 struct Manuscript {
     QString id;
     QString title;
     QString html;
+    QString storyStartMarker; // "quando a história se passa" — data-base da Timeline
 };
 
 struct Group {
@@ -150,6 +153,17 @@ public:
     QString spellLanguage() const;
     void setSpellLanguage(const QString& code);
 
+    // Mostrar popup de marcador/resumo ao criar cena nova via "----". Pode ser
+    // desligado com "não mostrar novamente" no próprio popup e religado aqui.
+    bool showScenePopupOnHr() const;
+    void setShowScenePopupOnHr(bool enabled);
+
+    // Trilhas automáticas de personagem (legado) — substituídas pela presença
+    // exibida direto no evento de capítulo/cena + filtro por personagem.
+    // Desligado por padrão; pode ser religado na topbar da Timeline.
+    bool legacyCharacterTracksEnabled() const;
+    void setLegacyCharacterTracksEnabled(bool enabled);
+
     void setProjectName(const QString& name);
     void setManuscripts(const QList<Manuscript>& list);
     void setChapters(const QList<Chapter>& list);
@@ -236,14 +250,19 @@ public:
 
     void addManuscript(const Manuscript& manuscript);
     bool updateManuscriptTitle(const QString& id, const QString& title);
+    bool updateManuscriptStoryStart(const QString& id, const QString& marker);
     bool removeManuscript(const QString& id);
+    const Manuscript* findManuscript(const QString& id) const;
     void addChapter(const Chapter& chapter);
     bool updateChapterScenes(const QString& chapterId, const QList<Scene>& scenes);
     bool updateChapterTitle(const QString& chapterId, const QString& title);
     bool updateChapterTimeMarker(const QString& chapterId, const QString& marker);
+    bool updateChapterSummary(const QString& chapterId, const QString& summary);
     bool removeChapter(const QString& chapterId);
     bool reorderChapter(const QString& chapterId, int targetIndex);
     bool updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title);
+    bool updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker);
+    bool updateSceneSummary(const QString& chapterId, int sceneIndex, const QString& summary);
     const Chapter* findChapter(const QString& chapterId) const;
     const Scene* findScene(const QString& chapterId, int sceneIndex) const;
 

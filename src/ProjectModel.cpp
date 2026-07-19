@@ -50,6 +50,7 @@ QJsonObject sceneToJson(const Scene& s) {
         o.insert(QStringLiteral("activeVariationId"), s.activeVariationId);
     }
     if (!s.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), s.timeMarker);
+    if (!s.summary.isEmpty()) o.insert(QStringLiteral("summary"), s.summary);
     return o;
 }
 
@@ -62,6 +63,7 @@ Scene sceneFromJson(const QJsonObject& o) {
     for (const auto& vv : vars) s.variations.append(variationFromJson(vv.toObject()));
     s.activeVariationId = jsonString(o.value(QStringLiteral("activeVariationId")));
     s.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
+    s.summary = jsonString(o.value(QStringLiteral("summary")));
     return s;
 }
 
@@ -78,6 +80,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
         o.insert(QStringLiteral("scenes"), arr);
     }
     if (!c.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), c.timeMarker);
+    if (!c.summary.isEmpty()) o.insert(QStringLiteral("summary"), c.summary);
     return o;
 }
 
@@ -91,6 +94,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     const QJsonArray scenes = o.value(QStringLiteral("scenes")).toArray();
     for (const auto& sv : scenes) c.scenes.append(sceneFromJson(sv.toObject()));
     c.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
+    c.summary = jsonString(o.value(QStringLiteral("summary")));
     return c;
 }
 
@@ -99,6 +103,8 @@ QJsonObject manuscriptToJson(const Manuscript& m) {
     o.insert(QStringLiteral("id"), m.id);
     o.insert(QStringLiteral("title"), m.title);
     o.insert(QStringLiteral("html"), m.html);
+    if (!m.storyStartMarker.isEmpty())
+        o.insert(QStringLiteral("storyStartMarker"), m.storyStartMarker);
     return o;
 }
 
@@ -107,6 +113,7 @@ Manuscript manuscriptFromJson(const QJsonObject& o) {
     m.id = jsonString(o.value(QStringLiteral("id")));
     m.title = jsonString(o.value(QStringLiteral("title")));
     m.html = jsonString(o.value(QStringLiteral("html")));
+    m.storyStartMarker = jsonString(o.value(QStringLiteral("storyStartMarker")));
     return m;
 }
 
@@ -367,6 +374,30 @@ void ProjectModel::setFirstLineIndentEnabled(bool enabled) {
     emit settingsChanged();
 }
 
+bool ProjectModel::showScenePopupOnHr() const {
+    const auto v = m_settings.value(QStringLiteral("showScenePopupOnHr"));
+    if (v.isUndefined() || v.isNull()) return true;
+    return v.toBool(true);
+}
+
+void ProjectModel::setShowScenePopupOnHr(bool enabled) {
+    if (showScenePopupOnHr() == enabled) return;
+    m_settings.insert(QStringLiteral("showScenePopupOnHr"), enabled);
+    emit settingsChanged();
+}
+
+bool ProjectModel::legacyCharacterTracksEnabled() const {
+    const auto v = m_settings.value(QStringLiteral("legacyCharacterTracksEnabled"));
+    if (v.isUndefined() || v.isNull()) return false;
+    return v.toBool(false);
+}
+
+void ProjectModel::setLegacyCharacterTracksEnabled(bool enabled) {
+    if (legacyCharacterTracksEnabled() == enabled) return;
+    m_settings.insert(QStringLiteral("legacyCharacterTracksEnabled"), enabled);
+    emit settingsChanged();
+}
+
 int ProjectModel::paragraphSpacingBefore() const {
     const auto v = m_settings.value(QStringLiteral("paragraphSpacingBefore"));
     if (v.isUndefined() || v.isNull()) return 0;
@@ -395,8 +426,8 @@ void ProjectModel::setParagraphSpacingAfter(int px) {
 
 int ProjectModel::lineHeightPercent() const {
     const auto v = m_settings.value(QStringLiteral("lineHeightPercent"));
-    if (v.isUndefined() || v.isNull()) return 170;
-    return qBound(80, v.toInt(170), 400);
+    if (v.isUndefined() || v.isNull()) return 115;
+    return qBound(80, v.toInt(115), 400);
 }
 
 void ProjectModel::setLineHeightPercent(int percent) {
@@ -540,37 +571,37 @@ void ProjectModel::seedFromTemplate(const QString& templateId) {
 
     QList<Drawer> seeds;
     if (templateId == QLatin1String("basic")) {
-        seeds << mkDrawer(QStringLiteral("Planejamento"), QStringLiteral("#2b79ff"),
+        seeds << mkDrawer(tr("Planejamento"), QStringLiteral("#2b79ff"),
                           QString(), QString(),
-                          { mkItem(QStringLiteral("Sinopse")),
-                            mkItem(QStringLiteral("Fios narrativos")),
-                            mkItem(QStringLiteral("Ambientação")) });
-        seeds << mkDrawer(QStringLiteral("Personagens"), QStringLiteral("#ff4d4d"),
+                          { mkItem(tr("Sinopse")),
+                            mkItem(tr("Fios narrativos")),
+                            mkItem(tr("Ambientação")) });
+        seeds << mkDrawer(tr("Personagens"), QStringLiteral("#ff4d4d"),
                           QStringLiteral("character"), QStringLiteral("user"));
-        seeds << mkDrawer(QStringLiteral("Cenários"), QStringLiteral("#39d98a"),
+        seeds << mkDrawer(tr("Cenários"), QStringLiteral("#39d98a"),
                           QStringLiteral("setting"), QStringLiteral("map"));
-        seeds << mkDrawer(QStringLiteral("Objetos"), QStringLiteral("#ff9f43"),
+        seeds << mkDrawer(tr("Objetos"), QStringLiteral("#ff9f43"),
                           QStringLiteral("object"), QStringLiteral("cube"));
-        seeds << mkDrawer(QStringLiteral("Notas"), QStringLiteral("#ffd84d"));
+        seeds << mkDrawer(tr("Notas"), QStringLiteral("#ffd84d"));
     } else if (templateId == QLatin1String("advanced")) {
-        seeds << mkDrawer(QStringLiteral("Planejamento"), QStringLiteral("#2b79ff"),
+        seeds << mkDrawer(tr("Planejamento"), QStringLiteral("#2b79ff"),
                           QString(), QString(),
-                          { mkItem(QStringLiteral("Sinopse")),
-                            mkItem(QStringLiteral("Ambientação")),
-                            mkItem(QStringLiteral("Fios narrativos")),
-                            mkItem(QStringLiteral("Trama")),
-                            mkItem(QStringLiteral("Fábula")),
-                            mkItem(QStringLiteral("Roteiro")) });
-        seeds << mkDrawer(QStringLiteral("Lore"), QStringLiteral("#9b59b6"));
-        seeds << mkDrawer(QStringLiteral("Base de dados"), QStringLiteral("#1abc9c"));
-        seeds << mkDrawer(QStringLiteral("Pesquisa"), QStringLiteral("#e67e22"));
-        seeds << mkDrawer(QStringLiteral("Personagens"), QStringLiteral("#ff4d4d"),
+                          { mkItem(tr("Sinopse")),
+                            mkItem(tr("Ambientação")),
+                            mkItem(tr("Fios narrativos")),
+                            mkItem(tr("Trama")),
+                            mkItem(tr("Fábula")),
+                            mkItem(tr("Roteiro")) });
+        seeds << mkDrawer(tr("Lore"), QStringLiteral("#9b59b6"));
+        seeds << mkDrawer(tr("Base de dados"), QStringLiteral("#1abc9c"));
+        seeds << mkDrawer(tr("Pesquisa"), QStringLiteral("#e67e22"));
+        seeds << mkDrawer(tr("Personagens"), QStringLiteral("#ff4d4d"),
                           QStringLiteral("character"), QStringLiteral("user"));
-        seeds << mkDrawer(QStringLiteral("Cenários"), QStringLiteral("#39d98a"),
+        seeds << mkDrawer(tr("Cenários"), QStringLiteral("#39d98a"),
                           QStringLiteral("setting"), QStringLiteral("map"));
-        seeds << mkDrawer(QStringLiteral("Objetos"), QStringLiteral("#ff9f43"),
+        seeds << mkDrawer(tr("Objetos"), QStringLiteral("#ff9f43"),
                           QStringLiteral("object"), QStringLiteral("cube"));
-        seeds << mkDrawer(QStringLiteral("Notas"), QStringLiteral("#ffd84d"));
+        seeds << mkDrawer(tr("Notas"), QStringLiteral("#ffd84d"));
     }
     // "blank" ou desconhecido → nenhum drawer.
 
@@ -1048,6 +1079,24 @@ bool ProjectModel::updateManuscriptTitle(const QString& id, const QString& title
     return false;
 }
 
+bool ProjectModel::updateManuscriptStoryStart(const QString& id, const QString& marker) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        if (m.storyStartMarker == marker) return true;
+        m.storyStartMarker = marker;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
+const Manuscript* ProjectModel::findManuscript(const QString& id) const {
+    for (const auto& m : m_manuscripts) {
+        if (m.id == id) return &m;
+    }
+    return nullptr;
+}
+
 bool ProjectModel::removeManuscript(const QString& id) {
     int idx = -1;
     for (int i = 0; i < m_manuscripts.size(); ++i) {
@@ -1124,6 +1173,17 @@ bool ProjectModel::updateChapterTimeMarker(const QString& chapterId, const QStri
         if (c.id != chapterId) continue;
         if (c.timeMarker == marker) return true;
         c.timeMarker = marker;
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterSummary(const QString& chapterId, const QString& summary) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.summary == summary) return true;
+        c.summary = summary;
         emit chaptersChanged();
         return true;
     }
@@ -1211,6 +1271,30 @@ bool ProjectModel::updateSceneTitle(const QString& chapterId, int sceneIndex, co
         if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
         if (c.scenes[sceneIndex].title == title) return true;
         c.scenes[sceneIndex].title = title;
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].timeMarker == marker) return true;
+        c.scenes[sceneIndex].timeMarker = marker;
+        emit chaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateSceneSummary(const QString& chapterId, int sceneIndex, const QString& summary) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].summary == summary) return true;
+        c.scenes[sceneIndex].summary = summary;
         emit chaptersChanged();
         return true;
     }
@@ -1319,7 +1403,7 @@ QList<Scene> ProjectModel::buildScenesFromHtml(const QString& html, const QList<
         } else {
             Scene s;
             s.id = ProjectModel::uid();
-            s.title = QStringLiteral("Cena %1").arg(i + 1);
+            s.title = tr("Cena %1").arg(i + 1);
             s.order = i;
             scenes.append(s);
         }

@@ -8,6 +8,7 @@
 class QCheckBox;
 class QComboBox;
 class QLabel;
+class QPushButton;
 class QSlider;
 class QSpinBox;
 
@@ -38,11 +39,20 @@ public:
     bool mentionManuscriptsEnabled() const;
     void setMentionManuscriptsEnabled(bool enabled);
 
+    bool showScenePopupOnHr() const;
+    void setShowScenePopupOnHr(bool enabled);
+
     // Teto do slider de comprimento de página (px). Acima disso a folha seria
     // cortada fora da janela; no máximo ela bate exatamente na tela.
     void setPageHeightMaximum(int px);
 
+    // Feedback de progresso do rescan em lote (texto do botão + habilitado).
+    void setRescanScenesButtonText(const QString& text);
+    void setRescanScenesButtonEnabled(bool enabled);
+
 signals:
+    // Botão "Detectar presença por cena em todos os capítulos".
+    void rescanAllScenesRequested();
     void spellEnabledChanged(bool enabled);
     void spellLanguageChanged(const QString& code);
     void detectionEnabledChanged(bool enabled);
@@ -50,6 +60,7 @@ signals:
     void autoNavEnabledChanged(bool enabled);
     void maxDocsChanged(int n);
     void mentionManuscriptsEnabledChanged(bool enabled);
+    void showScenePopupOnHrChanged(bool enabled);
 
 private:
     void onCheckToggled(bool checked);
@@ -62,9 +73,11 @@ private:
     QComboBox* m_langCombo;
     QCheckBox* m_detectionCheck    = nullptr;
     QCheckBox* m_detectionAllCheck = nullptr;
+    QPushButton* m_rescanScenesBtn = nullptr;
     QCheckBox* m_autoNavCheck               = nullptr;
     QSpinBox*  m_maxDocsSpinBox             = nullptr;
     QCheckBox* m_mentionManuscriptsCheck    = nullptr;
+    QCheckBox* m_scenePopupCheck            = nullptr;
     QSlider* m_pageWidthSlider = nullptr;
     QSlider* m_pageHeightSlider = nullptr;
     QSlider* m_hMarginSlider = nullptr;

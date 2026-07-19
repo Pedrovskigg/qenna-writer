@@ -186,7 +186,7 @@ private:
     QLabel*         m_paraBeforeLabel  = nullptr;
     QLabel*         m_paraAfterLabel   = nullptr;
     QList<QAction*> m_lineHeightActions;
-    int             m_lineHeightPercent = 170;
+    int             m_lineHeightPercent = 115;
     int             m_paraSpaceBefore   = 0;
     int             m_paraSpaceAfter    = 8;
 

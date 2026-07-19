@@ -41,8 +41,10 @@ public:
     QRect immersiveSoundButtonGlobalRect() const;
     QRect glossaryButtonGlobalRect() const;
     QRect reminderButtonGlobalRect() const;
+    QRect helpButtonGlobalRect() const;
 
     void setReminderBadge(bool active);
+    void pulsePensarioBadge();
     void setCurrentAlignment(Qt::Alignment alignment);
 
 protected:
@@ -64,6 +66,7 @@ signals:
     void exportRequested();
     void refMenuToggleRequested();
     void pensarioToggleRequested();
+    void helpRequested();
     void construtorToggleRequested();
     void boldToggled(bool enabled);
     void italicToggled(bool enabled);
@@ -107,6 +110,7 @@ private:
     QToolButton *fullscreenButton;
     QToolButton *refMenuButton;
     QToolButton *pensarioButton;
+    QToolButton *helpButton;
     QToolButton *construtorButton;
     QLabel *docTitleLabel;
 
@@ -160,6 +164,9 @@ private:
 
     QLabel *reminderBadge = nullptr;
     void positionReminderBadge();
+
+    QLabel *pensarioBadge = nullptr;
+    void positionPensarioBadge();
 };
 
 #endif

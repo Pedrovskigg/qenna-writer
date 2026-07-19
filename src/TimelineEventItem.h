@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QGraphicsObject>
 #include <QPointF>
+#include <QStringList>
 
 // Evento da linha do tempo renderizado como PONTO interativo:
 //  - hover  → rótulo flutuante (título + marcação temporal)
@@ -21,6 +22,9 @@ public:
     void setTimelineColor(const QColor& c);
     void setTimelineWeight(const QString& w); // importância da linha → escala da bolinha
     void setTimelineName(const QString& n);   // nome da linha → exibido no popover
+    // Personagens presentes no capítulo/cena vinculado (linha "Presentes: ..."
+    // no popover, acima do separador). Vazio = linha não aparece.
+    void setPresentCharacters(const QStringList& names);
 
     void setOpen(bool open);
     bool isOpen() const { return m_open; }
@@ -84,6 +88,7 @@ private:
     QColor        m_timelineColor{QStringLiteral("#6c8ebf")};
     QString       m_weight{QStringLiteral("secondary")};
     QString       m_timelineName;
+    QStringList   m_presentCharacters;
 
     bool    m_hover        = false;
     bool    m_open         = false;

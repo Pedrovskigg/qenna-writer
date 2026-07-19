@@ -1,10 +1,12 @@
 #include "TimelinePanel.h"
 
+#include "CrashLogger.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "Theme.h"
+#include "TimelineChrono.h"
 
 #include <QAction>
 #include <QComboBox>
@@ -148,6 +150,24 @@ void TimelinePanel::buildUi()
     tl->addWidget(m_btnFocus);
     tl->addWidget(m_btnDepth);
 
+    tl->addWidget(makeSep(m_toolbar));
+
+    // ── Filtro por personagem (quem está presente na cena/capítulo) ────────────
+    m_btnCharFilter = makeBtn(tr("Personagem: Todos"), tr("Filtrar eventos por personagem presente"), m_toolbar);
+    m_btnCharFilter->setPopupMode(QToolButton::InstantPopup);
+    m_charFilterMenu = new QMenu(m_btnCharFilter);
+    m_btnCharFilter->setMenu(m_charFilterMenu);
+    connect(m_charFilterMenu, &QMenu::aboutToShow, this, &TimelinePanel::rebuildCharFilterMenu);
+    tl->addWidget(m_btnCharFilter);
+
+    // ── Trilhas de personagem (legado) — desligado por padrão ───────────────────
+    m_btnLegacyChars = makeBtn(tr("Personagens (legado)"), tr(
+        "Trilhas dedicadas por personagem (substituídas pela presença mostrada "
+        "no evento + filtro acima). Religa a geração automática dessas trilhas."),
+        m_toolbar);
+    m_btnLegacyChars->setCheckable(true);
+    tl->addWidget(m_btnLegacyChars);
+
     tl->addStretch();
 
     auto* btnClose = makeBtn(QStringLiteral("×"), tr("Fechar"), m_toolbar);
@@ -156,6 +176,7 @@ void TimelinePanel::buildUi()
     connect(btnNewTimeline, &QToolButton::clicked, this, &TimelinePanel::createTimeline);
     connect(m_btnView, &QToolButton::clicked, this, &TimelinePanel::toggleViewMode);
     connect(m_btnAxis, &QToolButton::clicked, this, &TimelinePanel::toggleAxisMode);
+    connect(m_btnLegacyChars, &QToolButton::toggled, this, &TimelinePanel::toggleLegacyCharacterTracks);
     connect(btnClose, &QToolButton::clicked, this, &TimelinePanel::closeRequested);
 
     root->addWidget(m_toolbar);
@@ -300,6 +321,92 @@ void TimelinePanel::refreshFocusButtons()
                                : tr("%1 saltos").arg(d));
 }
 
+// ── Trilhas de personagem (legado) ───────────────────────────────────────────
+
+void TimelinePanel::toggleLegacyCharacterTracks(bool checked)
+{
+    CrashLogger::log(QStringLiteral("tlToggleLegacyChars checked=%1").arg(checked));
+    if (!m_projectModel) return;
+    m_projectModel->setLegacyCharacterTracksEnabled(checked);
+    syncCharacterTimelines(checked); // liga: pergunta secundários; desliga: poda tudo
+}
+
+// ── Filtro por personagem ────────────────────────────────────────────────────
+
+void TimelinePanel::rebuildCharFilterMenu()
+{
+    CrashLogger::log("tlRebuildCharFilterMenu");
+    if (!m_charFilterMenu || !m_elementsStore) return;
+    m_charFilterMenu->clear();
+
+    QAction* all = m_charFilterMenu->addAction(tr("Todos"));
+    connect(all, &QAction::triggered, this, [this]() { setCharFilter(QString()); });
+    m_charFilterMenu->addSeparator();
+
+    QList<Element> chars;
+    for (const Element& e : m_elementsStore->elements())
+        if (e.type == QStringLiteral("character")) chars.append(e);
+    std::sort(chars.begin(), chars.end(), [](const Element& a, const Element& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const Element& e : chars) {
+        const QString name = e.name.isEmpty() ? tr("(sem nome)") : e.name;
+        QAction* a = m_charFilterMenu->addAction(name);
+        a->setCheckable(true);
+        a->setChecked(e.id == m_charFilterId);
+        const QString id = e.id;
+        connect(a, &QAction::triggered, this, [this, id]() { setCharFilter(id); });
+    }
+}
+
+void TimelinePanel::setCharFilter(const QString& characterId)
+{
+    CrashLogger::log(QStringLiteral("tlSetCharFilter id=%1").arg(characterId));
+    m_charFilterId = characterId;
+
+    QString charName;
+    if (!characterId.isEmpty() && m_elementsStore) {
+        for (const Element& e : m_elementsStore->elements())
+            if (e.id == characterId) { charName = e.name; break; }
+    }
+    if (m_btnCharFilter) {
+        m_btnCharFilter->setText(charName.isEmpty() ? tr("Personagem: Todos")
+                                                     : tr("Personagem: %1").arg(charName));
+    }
+
+    if (!m_scene) return;
+    if (charName.isEmpty() || !m_presenceProvider) {
+        m_scene->setCharacterFilter(false, {});
+        return;
+    }
+
+    QHash<QString, CharPresenceResult> presence;
+    int totalScenes = 0, totalChapters = 0;
+    m_presenceProvider({ charName }, &presence, &totalScenes, &totalChapters);
+    const CharPresenceResult& r = presence.value(charName.toLower());
+
+    // "chapterId:sceneIndex" — mesma chave usada no id dos eventos auto de
+    // capítulo/cena ("story:<chapterId>:<sceneIndex>"), sentinela 0 p/ capítulo
+    // de cena única (ver mesma convenção em syncCharacterTimelines).
+    QSet<QString> keys;
+    for (const PresenceChapterEntry& ce : r.chapters) {
+        if (ce.scenes.isEmpty()) {
+            keys.insert(QStringLiteral("%1:0").arg(ce.id));
+        } else {
+            for (const PresenceSceneEntry& se : ce.scenes)
+                keys.insert(QStringLiteral("%1:%2").arg(ce.id).arg(se.index));
+        }
+    }
+
+    QSet<QString> matchingIds;
+    static const QString kPrefix = QStringLiteral("story:");
+    for (const auto& e : m_scene->allEventData()) {
+        if (!e.id.startsWith(kPrefix)) continue;
+        if (keys.contains(e.id.mid(kPrefix.size()))) matchingIds.insert(e.id);
+    }
+    m_scene->setCharacterFilter(true, matchingIds);
+}
+
 bool TimelinePanel::editTimelineDef(TimelineDef& def, bool isNew)
 {
     // Popup: nome + cor + importância
@@ -406,6 +513,7 @@ void TimelinePanel::editTimeline(const QString& id)
 
 void TimelinePanel::createEventAt(const QPointF& scenePos)
 {
+    CrashLogger::log("tlCreateEventAt");
     TimelineEventPopup dlg(m_timelines, m_projectModel, this);
     dlg.setDocTextResolver(m_docTextResolver);
     if (dlg.exec() != QDialog::Accepted) return;
@@ -478,6 +586,7 @@ void TimelinePanel::promptNewEvent(const QString& description, const QString& ma
 
 void TimelinePanel::openEditPopup(const QString& id)
 {
+    CrashLogger::log(QStringLiteral("tlOpenEditPopup id=%1").arg(id));
     auto* item = m_scene->findEvent(id);
     if (!item) return;
 
@@ -543,7 +652,20 @@ void TimelinePanel::setProjectRoot(const QString& root)
 
 void TimelinePanel::setProjectModel(ProjectModel* model)
 {
+    if (m_projectModel == model) return;
     m_projectModel = model;
+    if (m_projectModel) {
+        // Estrutura de capítulos/manuscritos mudou (criar/editar/apagar
+        // capítulo, marcador, resumo, data-base...) → resync silencioso das
+        // trilhas automáticas, sem esperar reabertura do projeto.
+        auto resync = [this]() {
+            if (!isVisible()) return;
+            syncCharacterTimelines(false);
+            syncStoryTimeline();
+        };
+        connect(m_projectModel, &ProjectModel::chaptersChanged, this, resync);
+        connect(m_projectModel, &ProjectModel::manuscriptsChanged, this, resync);
+    }
 }
 
 void TimelinePanel::setDocTextResolver(std::function<QString(const QString&)> resolver)
@@ -578,6 +700,14 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
     if (!m_elementsStore || !m_projectModel || !m_scene) return;
     if (!m_presenceProvider) return; // sem análise de presença → nada a fazer
 
+    // Trilhas de personagem são legado, desligadas por padrão (substituídas
+    // pela presença mostrada direto no evento de capítulo/cena + filtro).
+    // Quando desligado, `eligible` fica vazio e a etapa 4 abaixo poda sozinha
+    // qualquer trilha/evento remanescente de quando esteve ligado.
+    const bool legacyEnabled = m_projectModel->legacyCharacterTracksEnabled();
+    CrashLogger::log(QStringLiteral("tlSyncCharacters legacy=%1 ask=%2")
+                          .arg(legacyEnabled).arg(askSecondary));
+
     // ── 1. Capítulos em ordem de leitura → mapas por chapterId ────────────────
     struct ChapInfo { int rank; QString title; QString marker; QString docKey; };
     QHash<QString, ChapInfo> chapById;
@@ -607,40 +737,42 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
 
     // ── 2. Presença por CENA (uma varredura p/ todos os personagens) ──────────
     QHash<QString, Element> charById;
-    QStringList names;
-    for (const Element& e : m_elementsStore->elements()) {
-        if (e.type != QStringLiteral("character")) continue;
-        charById.insert(e.id, e);
-        names << e.name;
-    }
     QHash<QString, CharPresenceResult> presence;
-    int totalScenes = 0, totalChapters = 0;
-    m_presenceProvider(names, &presence, &totalScenes, &totalChapters);
-
-    // ── 3. Decide quem é elegível (perguntando secundários, se for o caso) ─────
     QSet<QString> eligible;
-    for (auto it = charById.begin(); it != charById.end(); ++it) {
-        Element e = it.value();
-        const CharPresenceResult& r = presence.value(e.name.toLower());
-
-        int d = RoleTiers::autoTrackDecision(e.role, e.trackMode);
-        if (d == -1) {
-            if (r.sceneCount == 0) continue;  // não aparece → não pergunta
-            if (!askSecondary) continue;       // modo silencioso não pergunta
-
-            const auto ans = QMessageBox::question(this, tr("Trilha na linha do tempo"),
-                tr("%1 é um personagem secundário e aparece na obra.\n\n"
-                   "Quer acompanhá-lo com uma trilha na linha do tempo?")
-                    .arg(e.name.isEmpty() ? tr("Este personagem") : e.name),
-                QMessageBox::Yes | QMessageBox::No);
-            e.trackMode = (ans == QMessageBox::Yes) ? QStringLiteral("on")
-                                                    : QStringLiteral("off");
-            { QSignalBlocker block(m_elementsStore);
-              m_elementsStore->updateElement(e.id, e); }
-            it.value() = e;
-            d = (ans == QMessageBox::Yes) ? 1 : 0;
+    if (legacyEnabled) {
+        QStringList names;
+        for (const Element& e : m_elementsStore->elements()) {
+            if (e.type != QStringLiteral("character")) continue;
+            charById.insert(e.id, e);
+            names << e.name;
         }
-        if (d == 1) eligible.insert(e.id);
+        int totalScenes = 0, totalChapters = 0;
+        m_presenceProvider(names, &presence, &totalScenes, &totalChapters);
+
+        // ── 3. Decide quem é elegível (perguntando secundários, se for o caso) ──
+        for (auto it = charById.begin(); it != charById.end(); ++it) {
+            Element e = it.value();
+            const CharPresenceResult& r = presence.value(e.name.toLower());
+
+            int d = RoleTiers::autoTrackDecision(e.role, e.trackMode);
+            if (d == -1) {
+                if (r.sceneCount == 0) continue;  // não aparece → não pergunta
+                if (!askSecondary) continue;       // modo silencioso não pergunta
+
+                const auto ans = QMessageBox::question(this, tr("Trilha na linha do tempo"),
+                    tr("%1 é um personagem secundário e aparece na obra.\n\n"
+                       "Quer acompanhá-lo com uma trilha na linha do tempo?")
+                        .arg(e.name.isEmpty() ? tr("Este personagem") : e.name),
+                    QMessageBox::Yes | QMessageBox::No);
+                e.trackMode = (ans == QMessageBox::Yes) ? QStringLiteral("on")
+                                                        : QStringLiteral("off");
+                { QSignalBlocker block(m_elementsStore);
+                  m_elementsStore->updateElement(e.id, e); }
+                it.value() = e;
+                d = (ans == QMessageBox::Yes) ? 1 : 0;
+            }
+            if (d == 1) eligible.insert(e.id);
+        }
     }
 
     // ── 4. Reconcilia trilhas/eventos sobre o estado AO VIVO da cena ───────────
@@ -754,6 +886,51 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
         }
     }
 
+    // ── Copresença automática: personagens elegíveis que dividem cena ──────────
+    // Chave "chId:scene" casa exatamente com o sufixo do evId auto-gerado
+    // (auto:<cid>:<chId>:<scene>), inclusive o sentinela scene=0 de capítulos
+    // de cena única.
+    {
+        QHash<QString, QSet<QString>> keysByChar; // characterId -> {"chId:scene"}
+        for (const QString& cid : std::as_const(eligible)) {
+            const Element& el = charById[cid];
+            const CharPresenceResult& r = presence.value(el.name.toLower());
+            QSet<QString> keys;
+            for (const PresenceChapterEntry& ce : r.chapters) {
+                if (!chapById.contains(ce.id)) continue;
+                if (ce.scenes.isEmpty()) {
+                    keys.insert(QStringLiteral("%1:%2").arg(ce.id).arg(0));
+                } else {
+                    for (const PresenceSceneEntry& se : ce.scenes)
+                        keys.insert(QStringLiteral("%1:%2").arg(ce.id).arg(se.index));
+                }
+            }
+            keysByChar.insert(cid, keys);
+        }
+
+        // reconciliação completa: descarta e recria todas as conexões auto de copresença
+        conns.erase(std::remove_if(conns.begin(), conns.end(), [](const TimelineConn& c) {
+            return c.type == QString::fromLatin1(TimelineConnType::Copresence);
+        }), conns.end());
+
+        const QList<QString> ids = keysByChar.keys();
+        for (int i = 0; i < ids.size(); ++i) {
+            for (int j = i + 1; j < ids.size(); ++j) {
+                const QString a = ids[i] < ids[j] ? ids[i] : ids[j];
+                const QString b = ids[i] < ids[j] ? ids[j] : ids[i];
+                const QSet<QString> shared = keysByChar.value(a) & keysByChar.value(b);
+                for (const QString& key : shared) {
+                    TimelineConn c;
+                    c.id          = QStringLiteral("cop:%1:%2:%3").arg(a, b, key);
+                    c.fromEventId = QStringLiteral("auto:%1:%2").arg(a, key);
+                    c.toEventId   = QStringLiteral("auto:%1:%2").arg(b, key);
+                    c.type        = QString::fromLatin1(TimelineConnType::Copresence);
+                    conns.append(c);
+                }
+            }
+        }
+    }
+
     // descarta conexões cujos eventos sumiram
     QSet<QString> liveIds;
     for (const auto& e : events) liveIds.insert(e.id);
@@ -772,6 +949,214 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
     rebuildFocusMenu();
     refreshFocusButtons();
     save();
+}
+
+void TimelinePanel::syncStoryTimeline()
+{
+    CrashLogger::log("tlSyncStory");
+    if (!m_projectModel || !m_scene) return;
+
+    // ── Capítulos/cenas COM marcador, em ordem de leitura global ────────────────
+    // Cena com marcador próprio usa o dela; sem marcador, herda o do capítulo
+    // (mesmo fallback já usado nas trilhas de personagem, TimelinePanel.cpp).
+    struct StoryHit {
+        int rank; QString evId; QString title; QString marker;
+        QString summary; QString docKey; QString linkedSceneId; QString manuscriptId;
+    };
+    QList<StoryHit> hits;
+    {
+        const QList<Manuscript>& mss = m_projectModel->manuscripts();
+        const QList<Chapter>&    chs = m_projectModel->chapters();
+        QHash<QString, int> msIndex;
+        for (int i = 0; i < mss.size(); ++i) msIndex.insert(mss[i].id, i);
+
+        QList<Chapter> ordered = chs;
+        std::sort(ordered.begin(), ordered.end(), [&](const Chapter& a, const Chapter& b) {
+            const int ma = msIndex.value(a.manuscriptId, 9999);
+            const int mb = msIndex.value(b.manuscriptId, 9999);
+            if (ma != mb) return ma < mb;
+            return a.order < b.order;
+        });
+        int gi = 0, tick = 0;
+        for (const Chapter& c : ordered) {
+            const QString ms = c.manuscriptId.isEmpty() ? QStringLiteral("root") : c.manuscriptId;
+            const QString docKey = QStringLiteral("ch:%1:%2").arg(ms, c.id);
+            const QString chapTitle = c.title.isEmpty() ? tr("Capítulo %1").arg(gi + 1) : c.title;
+
+            if (c.scenes.isEmpty()) {
+                if (!c.timeMarker.trimmed().isEmpty()) {
+                    hits.append({ tick, QStringLiteral("story:%1:0").arg(c.id), chapTitle,
+                        c.timeMarker, c.summary, docKey, QString(), c.manuscriptId });
+                    ++tick;
+                }
+            } else {
+                for (int si = 0; si < c.scenes.size(); ++si) {
+                    const Scene& s = c.scenes[si];
+                    const QString marker = s.timeMarker.isEmpty() ? c.timeMarker : s.timeMarker;
+                    if (marker.trimmed().isEmpty()) continue;
+                    const QString summary = s.summary.isEmpty() ? c.summary : s.summary;
+                    const QString sceneLabel = s.title.isEmpty() ? tr("Cena %1").arg(si + 1) : s.title;
+                    hits.append({ tick, QStringLiteral("story:%1:%2").arg(c.id).arg(si),
+                        chapTitle + QStringLiteral(" · ") + sceneLabel, marker, summary, docKey,
+                        QStringLiteral("%1:%2").arg(c.id).arg(si), c.manuscriptId });
+                    ++tick;
+                }
+            }
+            ++gi;
+        }
+    }
+    CrashLogger::log(QStringLiteral("tlSyncStory hits=%1").arg(hits.size()));
+
+    // data-base cronológica de cada manuscrito (pra decidir Flashback)
+    struct Base { qreal chrono = 0.0; bool ok = false; };
+    QHash<QString, Base> baseByMs;
+    for (const Manuscript& m : m_projectModel->manuscripts()) {
+        Base b;
+        b.chrono = TimelineChrono::parse(m.storyStartMarker, &b.ok);
+        baseByMs.insert(m.id, b);
+    }
+
+    // Personagens presentes por evento (exibido no card do evento, "Presentes: ...").
+    QHash<QString, QStringList> presentByEvId; // evId -> nomes
+    if (!hits.isEmpty() && m_elementsStore && m_presenceProvider) {
+        QStringList names;
+        for (const Element& e : m_elementsStore->elements())
+            if (e.type == QStringLiteral("character")) names << e.name;
+        if (!names.isEmpty()) {
+            CrashLogger::log(QStringLiteral("tlSyncStory presenceScan chars=%1").arg(names.size()));
+            QHash<QString, CharPresenceResult> presence;
+            int totalScenes = 0, totalChapters = 0;
+            m_presenceProvider(names, &presence, &totalScenes, &totalChapters);
+            CrashLogger::log("tlSyncStory presenceScanDone");
+            for (const QString& name : std::as_const(names)) {
+                const CharPresenceResult& r = presence.value(name.toLower());
+                for (const PresenceChapterEntry& ce : r.chapters) {
+                    if (ce.scenes.isEmpty()) {
+                        presentByEvId[QStringLiteral("story:%1:0").arg(ce.id)] << name;
+                    } else {
+                        for (const PresenceSceneEntry& se : ce.scenes)
+                            presentByEvId[QStringLiteral("story:%1:%2").arg(ce.id).arg(se.index)] << name;
+                    }
+                }
+            }
+        }
+    }
+
+    QList<TimelineEvent> events = m_scene->allEventData();
+    QList<TimelineConn>  conns  = m_scene->allConnectionData();
+    QList<TimelineDef>   defs   = m_timelines;
+
+    static const QString kMainId  = QStringLiteral("story:main");
+    static const QString kFlashId = QStringLiteral("story:flashback");
+
+    auto ensureDef = [&](const QString& id, const QString& kind,
+                          const QString& name, const QString& weight) {
+        // Corrige nome/kind se ficaram dessincronizados (ex.: dado salvo de uma
+        // versão anterior). Preserva color/weight/railOrder — esses sim o
+        // usuário pode ter customizado na UI.
+        for (auto& d : defs) {
+            if (d.id != id) continue;
+            d.name = name;
+            d.kind = kind;
+            return;
+        }
+        TimelineDef t;
+        t.id            = id;
+        t.name          = name;
+        t.kind          = kind;
+        t.weight        = weight;
+        t.autoGenerated = true;
+        t.railOrder     = defs.size();
+        defs.append(t);
+    };
+
+    QSet<QString> desiredEvIds;
+    if (!hits.isEmpty()) {
+        ensureDef(kMainId, QString::fromLatin1(TimelineKind::Main), tr("Narrativa"),
+                  QStringLiteral("secondary"));
+        ensureDef(kFlashId, QString::fromLatin1(TimelineKind::Backstory), tr("Flashback"),
+                  QString::fromLatin1(TimelineWeight::Backstory));
+    }
+
+    for (const StoryHit& h : hits) {
+        bool okChap = false;
+        const qreal chapChrono = TimelineChrono::parse(h.marker, &okChap);
+        const Base base = baseByMs.value(h.manuscriptId);
+        const bool isFlashback = base.ok && okChap && chapChrono < base.chrono;
+        const QString tid = isFlashback ? kFlashId : kMainId;
+        desiredEvIds.insert(h.evId);
+
+        TimelineEvent* found = nullptr;
+        for (auto& e : events) if (e.id == h.evId) { found = &e; break; }
+        if (found) {
+            found->title         = h.title;
+            found->description   = h.summary;
+            found->narrativeTick = h.rank;
+            found->timeMarker    = h.marker;
+            found->timelineId    = tid;
+            found->linkedDocId   = h.docKey;
+            found->linkedSceneId = h.linkedSceneId;
+            // storyOrder preservado (arraste manual do usuário no eixo História)
+        } else {
+            TimelineEvent e;
+            e.id            = h.evId;
+            e.timelineId    = tid;
+            e.title         = h.title;
+            e.description   = h.summary;
+            e.narrativeTick = h.rank;
+            e.storyOrder    = h.rank; // semente; usuário rearranja no eixo História
+            e.timeMarker    = h.marker;
+            // autoEvent fica false (default) — não é usado pra decidir eixo (ver
+            // TimelineScene::timelineVisibleInAxis, que decide pelo kind da
+            // trilha: main cai no eixo Narrativa, backstory no eixo História).
+            // A reconciliação abaixo usa o prefixo "story:" do id, não esse flag.
+            e.linkedDocId   = h.docKey;
+            e.linkedSceneId = h.linkedSceneId;
+            events.append(e);
+        }
+    }
+
+    // remove eventos auto obsoletos das duas trilhas (capítulo apagado / marcador
+    // esvaziado). Identidade "é meu" = prefixo "story:" do id (não dá pra usar
+    // autoEvent aqui, ver comentário acima) — evento manual do usuário nessas
+    // trilhas sempre tem um QUuid aleatório, nunca colide com esse prefixo.
+    events.erase(std::remove_if(events.begin(), events.end(), [&](const TimelineEvent& e) {
+        return e.id.startsWith(QStringLiteral("story:"))
+            && (e.timelineId == kMainId || e.timelineId == kFlashId)
+            && !desiredEvIds.contains(e.id);
+    }), events.end());
+
+    // remove as trilhas auto se ficaram sem nenhum evento
+    for (int i = defs.size() - 1; i >= 0; --i) {
+        const TimelineDef& t = defs[i];
+        if (!t.autoGenerated || (t.id != kMainId && t.id != kFlashId)) continue;
+        const bool hasEvents = std::any_of(events.begin(), events.end(),
+            [&](const TimelineEvent& e){ return e.timelineId == t.id; });
+        if (!hasEvents) defs.removeAt(i);
+    }
+
+    // descarta conexões cujos eventos sumiram
+    QSet<QString> liveIds;
+    for (const auto& e : events) liveIds.insert(e.id);
+    conns.erase(std::remove_if(conns.begin(), conns.end(), [&](const TimelineConn& c){
+        return !liveIds.contains(c.fromEventId) || !liveIds.contains(c.toEventId);
+    }), conns.end());
+
+    CrashLogger::log(QStringLiteral("tlSyncStory pushToScene events=%1").arg(events.size()));
+    m_timelines = defs;
+    m_scene->setTimelines(m_timelines);
+    m_scene->clearEvents();
+    for (const auto& e : events) {
+        auto* item = m_scene->addEvent(e);
+        if (item) item->setPresentCharacters(presentByEvId.value(e.id));
+    }
+    m_scene->clearConnections();
+    for (const auto& c : conns) m_scene->addConnection(c);
+    m_scene->relayout();
+    rebuildFocusMenu();
+    refreshFocusButtons();
+    save();
+    CrashLogger::log("tlSyncStory done");
 }
 
 void TimelinePanel::resizeEvent(QResizeEvent* event)
@@ -865,6 +1250,7 @@ void TimelinePanel::save() const
 
 void TimelinePanel::load()
 {
+    CrashLogger::log("tlLoad");
     if (m_projectRoot.isEmpty()) return;
 
     QFile f(m_projectRoot + QStringLiteral("/timeline.json"));
@@ -955,8 +1341,18 @@ void TimelinePanel::load()
     rebuildFocusMenu();
     refreshFocusButtons();
 
+    // Reflete o toggle de legado salvo neste projeto, e limpa filtro de
+    // personagem de um projeto anterior (o botão é reaproveitado entre projetos).
+    if (m_btnLegacyChars && m_projectModel) {
+        QSignalBlocker block(m_btnLegacyChars);
+        m_btnLegacyChars->setChecked(m_projectModel->legacyCharacterTracksEnabled());
+    }
+    setCharFilter(QString());
+
     // Gera as trilhas automáticas de personagem (e pergunta sobre secundários).
     syncCharacterTimelines(true);
+    // Gera as trilhas automáticas "História"/"Flashback" a partir do timeMarker.
+    syncStoryTimeline();
 }
 
 void TimelinePanel::onExportEventAsDoc(const TimelineEvent& event)

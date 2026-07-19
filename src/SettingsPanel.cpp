@@ -174,12 +174,27 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     detectHint->setWordWrap(true);
     detectLayout->addWidget(detectHint);
 
+    m_rescanScenesBtn = new QPushButton(tr("Detectar presença por cena em todos os capítulos"), detectGroup);
+    detectLayout->addWidget(m_rescanScenesBtn);
+
+    auto* rescanHint = new QLabel(
+        tr("Preenche a presença por CENA (não só por capítulo) usando quem já está "
+           "confirmado — útil pra capítulos antigos que você ainda não reabriu "
+           "nesta versão. Roda um capítulo por vez, não trava o app."),
+        detectGroup);
+    rescanHint->setObjectName(QStringLiteral("settingsHint"));
+    rescanHint->setWordWrap(true);
+    detectLayout->addWidget(rescanHint);
+
     connect(m_detectionCheck, &QCheckBox::toggled, this, [this](bool checked) {
         m_detectionAllCheck->setEnabled(checked);
         emit detectionEnabledChanged(checked);
     });
     connect(m_detectionAllCheck, &QCheckBox::toggled, this, [this](bool checked) {
         emit detectionMarkAllChanged(checked);
+    });
+    connect(m_rescanScenesBtn, &QPushButton::clicked, this, [this]() {
+        emit rescanAllScenesRequested();
     });
 
     // ---- Seção: Menções (@) ----
@@ -222,6 +237,28 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     connect(m_autoNavCheck, &QCheckBox::toggled, this, [this](bool checked) {
         emit autoNavEnabledChanged(checked);
+    });
+
+    // ---- Seção: Linha do tempo ----
+    auto* timelineGroup = new QGroupBox(tr("Linha do tempo"), this);
+    auto* timelineLayout = new QVBoxLayout(timelineGroup);
+    timelineLayout->setContentsMargins(14, 8, 14, 14);
+    timelineLayout->setSpacing(8);
+
+    m_scenePopupCheck = new QCheckBox(tr("Mostrar popup ao criar cena via \"----\""), timelineGroup);
+    timelineLayout->addWidget(m_scenePopupCheck);
+
+    auto* timelineHint = new QLabel(
+        tr("Ao dividir o capítulo numa cena nova, pergunta o marcador temporal e "
+           "o resumo que alimentam a linha do tempo. Se desligado, defina isso "
+           "manualmente pelo clique direito na cena."),
+        timelineGroup);
+    timelineHint->setObjectName(QStringLiteral("settingsHint"));
+    timelineHint->setWordWrap(true);
+    timelineLayout->addWidget(timelineHint);
+
+    connect(m_scenePopupCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        emit showScenePopupOnHrChanged(checked);
     });
 
     // ---- Seção: Memória ----
@@ -269,6 +306,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     rightCol->addWidget(detectGroup);
     rightCol->addWidget(mentionGroup);
     rightCol->addWidget(navGroup);
+    rightCol->addWidget(timelineGroup);
     rightCol->addWidget(memGroup);
     rightCol->addStretch();
 
@@ -354,6 +392,16 @@ void SettingsPanel::setPageHeightMaximum(int px)
     m_blockLayoutSignals = false;
     // Reexibe o valor atual já dentro do novo teto (setMaximum pode tê-lo grampeado).
     syncPageLayoutFromManager();
+}
+
+void SettingsPanel::setRescanScenesButtonText(const QString& text)
+{
+    if (m_rescanScenesBtn) m_rescanScenesBtn->setText(text);
+}
+
+void SettingsPanel::setRescanScenesButtonEnabled(bool enabled)
+{
+    if (m_rescanScenesBtn) m_rescanScenesBtn->setEnabled(enabled);
 }
 
 void SettingsPanel::setAvailableSpellLanguages(const QList<QPair<QString, QString>>& langs)
@@ -587,6 +635,16 @@ bool SettingsPanel::autoNavEnabled() const
 void SettingsPanel::setAutoNavEnabled(bool enabled)
 {
     if (m_autoNavCheck) m_autoNavCheck->setChecked(enabled);
+}
+
+bool SettingsPanel::showScenePopupOnHr() const
+{
+    return m_scenePopupCheck ? m_scenePopupCheck->isChecked() : true;
+}
+
+void SettingsPanel::setShowScenePopupOnHr(bool enabled)
+{
+    if (m_scenePopupCheck) m_scenePopupCheck->setChecked(enabled);
 }
 
 int SettingsPanel::maxDocs() const

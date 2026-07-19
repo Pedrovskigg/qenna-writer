@@ -194,6 +194,7 @@ qt_add_executable(qenna-writer
     src/MentionPopup.cpp
     src/MentionPopup.h
     src/TimelineTypes.h
+    src/TimelineChrono.h
     src/TimelineScene.cpp
     src/TimelineScene.h
     src/TimelineView.cpp
