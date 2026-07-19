@@ -2,6 +2,8 @@
 
 #include "EditorLayout.h"
 #include "ElementsStore.h"
+#include "IconUtils.h"
+#include "SheetTemplatesStore.h"
 #include "Theme.h"
 
 #include <QAbstractTextDocumentLayout>
@@ -14,6 +16,7 @@
 #include <QHBoxLayout>
 #include <QImage>
 #include <QImageReader>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -336,6 +339,16 @@ void CharacterSheetPanel::toggleColumns()
     rebuild();
 }
 
+void CharacterSheetPanel::saveAsTemplate()
+{
+    if (!m_templates) return;
+    bool ok = false;
+    const QString name = QInputDialog::getText(this, tr("Salvar como modelo"),
+        tr("Nome do modelo:"), QLineEdit::Normal, QString(), &ok);
+    if (!ok || name.trimmed().isEmpty()) return;
+    m_templates->add(name, m_sheet);
+}
+
 void CharacterSheetPanel::pickPhoto()
 {
     if (m_elementId.isEmpty() || !m_elements) return;
@@ -561,6 +574,21 @@ void CharacterSheetPanel::rebuild()
     colBtn->setCursor(Qt::PointingHandCursor);
     connect(colBtn, &QToolButton::clicked, this, &CharacterSheetPanel::toggleColumns);
     topBar->addWidget(colBtn);
+    if (m_templates) {
+        auto* saveTemplateBtn = new QToolButton;
+        saveTemplateBtn->setObjectName(QStringLiteral("sheetGhostTool"));
+        saveTemplateBtn->setText(tr("Salvar como modelo"));
+        saveTemplateBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        const QSize iconSz(14, 14);
+        saveTemplateBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/save-project.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::editorTextColor()), QColor(Theme::editorTextColor()),
+            iconSz));
+        saveTemplateBtn->setIconSize(iconSz);
+        saveTemplateBtn->setCursor(Qt::PointingHandCursor);
+        connect(saveTemplateBtn, &QToolButton::clicked, this, &CharacterSheetPanel::saveAsTemplate);
+        topBar->addWidget(saveTemplateBtn);
+    }
     root->addLayout(topBar);
 
     if (m_sheet.columns == 2) {

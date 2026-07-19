@@ -74,6 +74,7 @@ class GroupsPanel;
 class LousaPanel;
 class TimelinePanel;
 class CharacterSheetPanel;
+class SheetTemplatesStore;
 class MentionPopup;
 class UpdateChecker;
 class QNetworkAccessManager;
@@ -303,6 +304,7 @@ private:
     std::optional<MemoriesStore::Memory> m_pendingMemory;
     RemindersStore *remindersStore = nullptr;
     RemindersPanel *remindersPanel = nullptr;
+    SheetTemplatesStore *sheetTemplatesStore = nullptr;
     QTimer *m_reminderPollTimer = nullptr;
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;

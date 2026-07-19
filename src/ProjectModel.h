@@ -288,6 +288,10 @@ public:
     static QString characterSheetToHtml(const CharacterSheet& sheet, const QString& name,
                                         const QString& aliases, const QString& imageDataUrl);
 
+    // (De)serialização de CharacterSheet — usada tb. por SheetTemplatesStore.
+    static QJsonObject characterSheetToJson(const CharacterSheet& sheet);
+    static CharacterSheet characterSheetFromJson(const QJsonObject& obj);
+
 signals:
     void projectNameChanged();
     void manuscriptsChanged();

@@ -195,6 +195,8 @@ qt_add_executable(qenna-writer
     src/LousaTypes.h
     src/CharacterSheetPanel.cpp
     src/CharacterSheetPanel.h
+    src/SheetTemplatesStore.cpp
+    src/SheetTemplatesStore.h
     src/MentionPopup.cpp
     src/MentionPopup.h
     src/TimelineTypes.h

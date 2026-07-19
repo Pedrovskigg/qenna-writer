@@ -125,6 +125,7 @@
 #include "MentionPopup.h"
 #include "RemindersPanel.h"
 #include "RemindersStore.h"
+#include "SheetTemplatesStore.h"
 #include "GroupsPanel.h"
 #include "MarkerHoverPopup.h"
 #include "MarkerPickPopup.h"
@@ -1494,6 +1495,13 @@ void MainWindow::setupEditor()
         }
     });
 
+    // Modelos de ficha: store (sidecar JSON), salvos a partir de uma ficha
+    // existente e reaproveitados ao criar novos personagens.
+    sheetTemplatesStore = new SheetTemplatesStore(this);
+    connect(sheetTemplatesStore, &SheetTemplatesStore::changed, this, [this]() {
+        if (sheetTemplatesStore) sheetTemplatesStore->save();
+    });
+
     // Lembretes: store (sidecar JSON) + painel flutuante + polling de notificações.
     remindersStore = new RemindersStore(this);
     remindersPanel = new RemindersPanel(remindersStore, this);
@@ -2452,11 +2460,14 @@ void MainWindow::setupEditor()
             || elemType == QStringLiteral("setting")
             || elemType == QStringLiteral("object");
         if (visual) {
-            ElementCreateDialog dlg(elemType, this);
+            const QVector<SheetTemplate> templates = sheetTemplatesStore
+                ? sheetTemplatesStore->all() : QVector<SheetTemplate>();
+            ElementCreateDialog dlg(elemType, this, templates);
             if (dlg.exec() != QDialog::Accepted) return;
             if (dlg.title().isEmpty()) return;
             // A escolha Ficha vs Documento livre vem do próprio diálogo (só personagem).
             const bool asSheet = (elemType == QStringLiteral("character")) && dlg.createAsSheet();
+            const QString templateId = dlg.selectedTemplateId();
             // Cria registro em ElementsStore primeiro
             Element elem;
             elem.name = dlg.title();
@@ -2480,7 +2491,14 @@ void MainWindow::setupEditor()
             it.role = dlg.role();
             if (asSheet) {
                 it.isSheet = true;
-                it.sheet = ProjectModel::defaultCharacterSheet();
+                const SheetTemplate* tmpl = (!templateId.isEmpty() && sheetTemplatesStore)
+                    ? sheetTemplatesStore->findById(templateId) : nullptr;
+                if (tmpl) {
+                    it.sheet = tmpl->sheet;
+                    for (auto& f : it.sheet.fields) f.id = ProjectModel::uid();
+                } else {
+                    it.sheet = ProjectModel::defaultCharacterSheet();
+                }
             } else {
                 it.hasInlineHtml = true;
                 it.html = QStringLiteral("<p></p>");
@@ -4051,6 +4069,11 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (timelinePanel) {
         timelinePanel->setProjectModel(projectModel);
         timelinePanel->setProjectRoot(root);
+    }
+
+    if (sheetTemplatesStore) {
+        sheetTemplatesStore->setProjectRoot(root);
+        sheetTemplatesStore->load();
     }
 
     if (remindersStore) {
@@ -5939,6 +5962,7 @@ CharacterSheetPanel* MainWindow::ensureCharacterSheetPanel()
 {
     if (!characterSheetPanel) {
         characterSheetPanel = new CharacterSheetPanel(projectModel, elementsStore, editorContainer);
+        characterSheetPanel->setTemplatesStore(sheetTemplatesStore);
         characterSheetPanel->hide();
         connect(characterSheetPanel, &CharacterSheetPanel::edited, this, [this]() {
             if (projectSaver) projectSaver->saveProject();

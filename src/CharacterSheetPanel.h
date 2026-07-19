@@ -7,6 +7,7 @@
 #include "ProjectModel.h"   // CharacterSheet / SheetField (por valor)
 
 class ElementsStore;
+class SheetTemplatesStore;
 class QScrollArea;
 class QLabel;
 class QLineEdit;
@@ -37,6 +38,9 @@ public:
     // Busca local (Ctrl+F) dentro da ficha aberta: varre os campos, destaca e navega.
     void openFind();
 
+    // Store de modelos de ficha (opcional) — habilita o botão "Salvar como modelo".
+    void setTemplatesStore(SheetTemplatesStore* store) { m_templates = store; }
+
 signals:
     void edited();        // disparado (com debounce) quando algo muda — pede save
     void closeRequested();
@@ -60,6 +64,7 @@ private:
     void removeField(const QString& id);
     void moveFieldColumn(const QString& id);
     void toggleColumns();
+    void saveAsTemplate();
     void pickPhoto();
     void refreshPhoto();
     QWidget* buildFieldWidget(const SheetField& f);
@@ -67,6 +72,7 @@ private:
 
     ProjectModel* m_model;
     ElementsStore* m_elements;
+    SheetTemplatesStore* m_templates = nullptr;
     QString m_itemId;
     QString m_elementId;
     CharacterSheet m_sheet;     // cópia de trabalho

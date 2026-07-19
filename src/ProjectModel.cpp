@@ -1605,6 +1605,14 @@ QString ProjectModel::characterSheetToHtml(const CharacterSheet& sheet, const QS
     return h;
 }
 
+QJsonObject ProjectModel::characterSheetToJson(const CharacterSheet& sheet) {
+    return ::characterSheetToJson(sheet);
+}
+
+CharacterSheet ProjectModel::characterSheetFromJson(const QJsonObject& obj) {
+    return ::characterSheetFromJson(obj);
+}
+
 CharacterSheet ProjectModel::defaultCharacterSheet() {
     CharacterSheet s;
     s.columns = 2;
