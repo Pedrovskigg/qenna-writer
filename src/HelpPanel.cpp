@@ -1365,10 +1365,40 @@ QString HelpPanel::timelineContent() const
         "Você não precisa arrastar nada nem escolher trilha manualmente — só escrever a data "
         "certa no capítulo/cena."));
 
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>")
+        .arg(tr("Ramificações automáticas: quando a história se divide sozinha."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Dentro da trilha \"Narrativa\", o app também percebe sozinho quando a sua história "
+        "deixou de ser uma linha só. Três coisas disparam uma ramificação nova:"));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "— Regressão cronológica: um capítulo/cena com marcador anterior ao do capítulo/cena "
+        "que veio antes na leitura, sem virar Flashback (porque ainda está depois da data-base "
+        "do manuscrito)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "— Elenco totalmente diferente: mesmo período de tempo, mas nenhum personagem em comum "
+        "com o que estava presente até então — sinal de que você pulou pra outro grupo de "
+        "personagens."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "— POV marcado manualmente: ao editar um capítulo ou cena, um checkbox \"Não é do "
+        "narrador / é de outro POV\" aparece se a sua obra já tem um narrador definido nas "
+        "gavetas de personagem — marque-o pra forçar a ramificação mesmo sem os outros dois "
+        "sinais."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Uma anomalia isolada não é o bastante — o app espera confirmar o padrão (duas anomalias "
+        "parecidas seguidas) antes de criar a ramificação de verdade, pra não reagir a um único "
+        "capítulo fora de ordem. Quando as duas ramificações se reencontram (elenco em comum de "
+        "novo), o app desenha uma conexão entre elas — nunca funde as linhas. Casos "
+        "genuinamente ambíguos (empate entre continuar na linha atual ou retomar outra) abrem um "
+        "popup discreto perguntando qual ramificação é a certa; sua escolha fica salva e não "
+        "pergunta de novo pro mesmo evento."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Cada ramificação nova ganha uma cor sorteada automaticamente, só pra ficar fácil "
+        "distinguir uma da outra de relance."));
+
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "E agora, vamos explorar o painel da Timeline de fato."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>")
         .arg(tr("Alternando entre os eixos."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "Um botão na barra superior do painel alterna entre o eixo \"Narrativa\" e o eixo "
@@ -1376,7 +1406,7 @@ QString HelpPanel::timelineContent() const
         "aparece num dos dois, nunca nos dois ao mesmo tempo, então essa alternância é como você "
         "navega entre \"o que acontece na história\" e \"o que aconteceu antes\"."));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>5- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>")
         .arg(tr("Quem está na cena."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Se você já usa a detecção de personagens, os eventos da Timeline mostram "
@@ -1392,7 +1422,7 @@ QString HelpPanel::timelineContent() const
         "</p>"
     ).arg(QString::number(kTimelineCharactersThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>7- %1</b></p>")
         .arg(tr("Criando e editando eventos e linhas do tempo manualmente."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Nem tudo precisa vir do capítulo. Clicando no \"+\" flutuante no canto do painel (ou "
@@ -1404,6 +1434,11 @@ QString HelpPanel::timelineContent() const
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Linhas do tempo próprias não são alimentadas de forma automática como as linhas de "
         "narrativa e backstory, mas são boas para criação de lore e worldbuilding."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Pra apagar uma linha que você criou, clique com o botão direito na faixa dela (Modo "
+        "Trilho) e escolha \"Excluir linha...\". Linhas automáticas (Narrativa, Flashback, "
+        "trilhas de personagem e as ramificações do item 4) não aparecem pra exclusão por ali — "
+        "elas voltam sozinhas no próximo sync, então excluir não resolveria nada."));
     html += QStringLiteral(
         "<p align='center'>"
         "<a href='zoom:/help/timeline/event-creator.png' style='text-decoration:none;'>"
@@ -1419,7 +1454,7 @@ QString HelpPanel::timelineContent() const
     ).arg(QString::number(kTimelineEventCreatorThumbWidth), Theme::textMuted(),
           tr("Clique para expandir"), QString::number(kTimelineCreatorThumbWidth));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>7- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>8- %1</b></p>")
         .arg(tr("Formas de visualizar."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Um botão alterna entre três modos: Trilho (linhas horizontais organizadas por faixa), "
@@ -1447,7 +1482,7 @@ QString HelpPanel::timelineContent() const
     ).arg(QString::number(kTimelineModeTrackThumbWidth), Theme::textMuted(), tr("Clique para expandir"),
           QString::number(kTimelineModeBranchesThumbWidth), QString::number(kTimelineModeSpiralThumbWidth));
 
-    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>8- %1</b></p>")
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>9- %1</b></p>")
         .arg(tr("Foco."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Clicando em um evento (ou usando o menu de Foco), o resto do painel esmaece, "
@@ -1464,6 +1499,19 @@ QString HelpPanel::timelineContent() const
         "</a>"
         "</p>"
     ).arg(QString::number(kTimelineLineFocusThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>10- %1</b></p>")
+        .arg(tr("Gerador de Timeline: colocando projetos antigos em dia."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Se o seu projeto é de antes da Timeline orgânica existir, provavelmente boa parte dos "
+        "seus capítulos e cenas não tem marcador nem resumo preenchido — e sem isso, nenhum "
+        "evento é gerado. Em vez de abrir capítulo por capítulo só pra preencher esses dois "
+        "campos, vá em Configurações → \"Abrir Gerador de Timeline…\"."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Ele lista todos os capítulos e cenas de um manuscrito de uma vez, com um campo de "
+        "marcador e um de resumo por linha, e salva tudo em lote ao clicar em \"Salvar tudo\". "
+        "Mesmos campos, mesmo efeito na Timeline — só mais rápido pra preencher um manuscrito "
+        "inteiro."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "Por último: se você preferir o jeito antigo de acompanhar personagem por personagem "
