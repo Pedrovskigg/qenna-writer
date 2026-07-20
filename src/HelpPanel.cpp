@@ -174,6 +174,9 @@ constexpr int kGlossaryAddThumbWidth  = 480; // nativo 444
 constexpr int kAmbiencePanelThumbWidth = 380; // nativo 321
 constexpr int kReminderPanelThumbWidth = 420; // nativo 389
 constexpr int kReminderNotificationThumbWidth = 380; // nativo 295
+constexpr int kSceneVarManuscriptThumbWidth = 400; // nativo 282
+constexpr int kSceneVarButtonThumbWidth = 620; // nativo 570, recorte largo e baixo
+constexpr int kSceneVarOptionsThumbWidth = 380; // nativo 308
 }
 
 HelpPanel::HelpPanel(QWidget* parent)
@@ -229,6 +232,7 @@ void HelpPanel::buildTopics()
         { QStringLiteral("glossario"), tr("Glossário") },
         { QStringLiteral("som-imersivo"), tr("Som Imersivo") },
         { QStringLiteral("lembretes"), tr("Lembretes") },
+        { QStringLiteral("variacao-cenas"), tr("Variação de cenas") },
     };
 }
 
@@ -356,6 +360,7 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("glossario")) return glossaryContent();
     if (id == QStringLiteral("som-imersivo")) return ambienceContent();
     if (id == QStringLiteral("lembretes")) return remindersContent();
+    if (id == QStringLiteral("variacao-cenas")) return sceneVariationContent();
     // Placeholder até reescrevermos o conteúdo das demais seções.
     return QStringLiteral("<p>%1</p>")
         .arg(tr("Conteúdo desta seção será adicionado em breve."));
@@ -2219,6 +2224,61 @@ QString HelpPanel::remindersContent() const
         "Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de "
         "\"Concluídos\" que pode ser expandida ou escondida, com opção de limpar tudo de uma "
         "vez."));
+
+    return html;
+}
+
+QString HelpPanel::sceneVariationContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Caso você tenha escrito uma cena, gostou dela, mas por algum motivo quer reescrevê-la, "
+        "dá pra fazer isso sem perder a cena que já escreveu — e é mais simples do que parece."));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "No painel de Manuscrito, acesse a sua cena diretamente — essa opção não é acessível em "
+        "capítulos completos, só em cenas isoladas. Então você precisa abrir a cena sozinha no "
+        "editor, não o capítulo inteiro."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/variacao-cenas/scene-on-manuscript.png' style='text-decoration:none;'>"
+        "<img src=':/help/variacao-cenas/scene-on-manuscript.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kSceneVarManuscriptThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Quando a cena abrir sozinha, aparece um botão discreto ao lado do nome dela, na barra "
+        "superior. Clique nele — sim, ele é bem pequeno e discreto mesmo, é de propósito."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/variacao-cenas/button.png' style='text-decoration:none;'>"
+        "<img src=':/help/variacao-cenas/button.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kSceneVarButtonThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Ao clicar, aparecem três opções: nova, primária e apagar."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/variacao-cenas/options.png' style='text-decoration:none;'>"
+        "<img src=':/help/variacao-cenas/options.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kSceneVarOptionsThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "<b>+ nova</b> cria outra variação da cena: um popup pede um nome pra ela e, ao "
+        "confirmar, a variação já abre em branco no editor, pronta pra escrever."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "<b>★ primária</b> define qual variação é a principal — é ela que aparece quando o "
+        "capítulo inteiro é aberto de uma vez e também a que sai na exportação."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "<b>✕ apagar</b> exclui a variação que está aberta no momento."));
 
     return html;
 }

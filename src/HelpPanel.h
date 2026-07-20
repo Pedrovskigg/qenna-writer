@@ -64,6 +64,7 @@ private:
     QString glossaryContent() const;
     QString ambienceContent() const;
     QString remindersContent() const;
+    QString sceneVariationContent() const;
 
     QVector<Topic> m_topics;
     QLabel* m_sidebarTitle = nullptr;
