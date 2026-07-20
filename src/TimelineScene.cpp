@@ -3,6 +3,7 @@
 #include "TimelineConnItem.h"
 #include "TimelineEventItem.h"
 
+#include <QAction>
 #include <QFont>
 #include <QFontMetrics>
 #include <QGraphicsSceneContextMenuEvent>
@@ -1081,7 +1082,11 @@ void TimelineScene::contextMenuEvent(QGraphicsSceneContextMenuEvent* event)
 
     QMenu menu;
     auto* actEdit = menu.addAction(tr("Editar linha..."));
-    if (menu.exec(event->screenPos()) == actEdit)
+    auto* actDelete = menu.addAction(tr("Excluir linha..."));
+    QAction* chosen = menu.exec(event->screenPos());
+    if (chosen == actEdit)
         emit editTimelineRequested(id);
+    else if (chosen == actDelete)
+        emit deleteTimelineRequested(id);
     event->accept();
 }

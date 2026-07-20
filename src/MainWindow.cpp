@@ -666,18 +666,25 @@ void MainWindow::setupEditor()
             return t.toLower();
         };
 
-        // Verifica se token aparece como palavra inteira no texto
-        auto tokenInText = [](const QString& tok, const QString& text) -> bool {
+        // Conta quantas vezes o token aparece como palavra inteira no texto
+        // (não só "aparece ou não" — ver kMinMentions abaixo).
+        auto countTokenInText = [](const QString& tok, const QString& text) -> int {
+            int count = 0;
             int pos = 0;
             while ((pos = text.indexOf(tok, pos)) != -1) {
                 const bool prevOk = (pos == 0 || !text[pos - 1].isLetterOrNumber());
                 const bool nextOk = (pos + tok.size() >= text.size()
                                      || !text[pos + tok.size()].isLetterOrNumber());
-                if (prevOk && nextOk) return true;
+                if (prevOk && nextOk) ++count;
                 ++pos;
             }
-            return false;
+            return count;
         };
+        // Uma menção isolada (citação de passagem, "fulano me contou que...")
+        // não basta pra confirmar presença — só conta se o nome aparecer pelo
+        // menos essa quantidade de vezes no trecho (cena, ou capítulo inteiro
+        // quando não há cenas). Heurística v1, não calibrada.
+        constexpr int kMinMentions = 2;
 
         for (const Chapter& ch : chapters) {
             const QString chKey = DocCache::chapterKey(ch.manuscriptId, ch.id);
@@ -703,9 +710,10 @@ void MainWindow::setupEditor()
                 if (toks.isEmpty()) continue;
 
                 auto charPresent = [&](const QString& plainText) -> bool {
+                    int total = 0;
                     for (const QString& tok : toks)
-                        if (tokenInText(tok, plainText)) return true;
-                    return false;
+                        total += countTokenInText(tok, plainText);
+                    return total >= kMinMentions;
                 };
 
                 PresenceChapterEntry chEntry;
@@ -882,16 +890,33 @@ void MainWindow::setupEditor()
         if (!toolbar || !editorHost || !projectModel) return;
         const auto vm = editorHost->viewMode();
         QString title;
+        QString subtitle;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
+            // Capítulo inteiro concatenado num editor só (cenas separadas por
+            // <hr>) — o subtítulo acompanha o scroll: mostra a cena que está
+            // no topo da viewport, atualizando conforme o usuário rola.
             if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
                 title = ch->title.isEmpty() ? tr("(capítulo sem título)") : ch->title;
+                if (!ch->scenes.isEmpty() && editor) {
+                    const QTextCursor top = editor->cursorForPosition(QPoint(2, 2));
+                    const int si = qBound(0,
+                        SceneUtils::sceneIndexForBlock(editor->document(), top.blockNumber()),
+                        ch->scenes.size() - 1);
+                    const Scene& sc = ch->scenes.at(si);
+                    subtitle = sc.title.isEmpty() ? tr("Cena %1").arg(si + 1) : sc.title;
+                }
             }
             break;
         }
         case EditorHost::SceneDoc: {
+            // Capítulo em cima (maior), "Cena x" embaixo (menor) — contexto de
+            // onde a cena está sem precisar abrir o Manuscrito.
+            if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
+                title = ch->title.isEmpty() ? tr("(capítulo sem título)") : ch->title;
+            }
             if (const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex)) {
-                title = sc->title.isEmpty()
+                subtitle = sc->title.isEmpty()
                     ? tr("Cena %1").arg(vm.sceneIndex + 1)
                     : sc->title;
             }
@@ -909,12 +934,19 @@ void MainWindow::setupEditor()
             title.clear();
             break;
         }
-        toolbar->setDocumentTitle(title);
+        toolbar->setDocumentTitle(title, subtitle);
+        toolbar->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
+    // ChapterDoc: recalcula a cena do subtítulo conforme o usuário rola.
+    connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
+
+    connect(toolbar, &TopToolbar::sceneVarRequested, this, [this]() {
+        if (toolbar && variationBar) variationBar->toggleNear(toolbar->sceneVarButtonGlobalRect());
+    });
 
     // Toda vez que um doc é carregado no editor, reaplica o style do projeto
     // (font, line-height, indent) — caso contrário, o HTML serializado do doc
@@ -1788,13 +1820,13 @@ void MainWindow::setupEditor()
     drawerListPanel->hide();
     manuscriptPanel->hide();
 
-    // Coluna do editor: VariationBar (auto-hide) acima + [editor | scrollbar externo]
+    // Coluna do editor: [editor | scrollbar externo]. VariationBar é popup
+    // flutuante (aberto pelo botão na TopToolbar), não entra nesse layout.
     auto* editorColumnWidget = new QWidget(this);
     editorColumn = editorColumnWidget;
     auto* editorColumnLayout = new QVBoxLayout(editorColumnWidget);
     editorColumnLayout->setContentsMargins(0, 0, 0, 0);
     editorColumnLayout->setSpacing(8);
-    editorColumnLayout->addWidget(variationBar);
 
     // Linha do editor + scrollbar externa (fora da "folha").
     auto* editorRow = new QWidget(editorColumnWidget);
@@ -5479,14 +5511,10 @@ void MainWindow::resizeEditorColumnToViewport()
     const int colW = editorColumn->width();
     const int ph = EditorLayout::pageHeight();
     // Comprimento "Automático" (0): a coluna preenche a viewport (folha rola o
-    // conteúdo internamente). Comprimento fixo: a coluna usa a altura da folha
-    // (+ barra de variação); o QScrollArea a centraliza verticalmente, e a
-    // imagem de fundo aparece em volta.
-    // Espaço da coluna ocupado fora da "folha" (barra de variação, quando visível).
-    int extra = 0;
-    if (variationBar && variationBar->isVisible())
-        extra = variationBar->height() + 8 /* spacing do QVBoxLayout */;
-
+    // conteúdo internamente). Comprimento fixo: a coluna usa a altura da folha;
+    // o QScrollArea a centraliza verticalmente, e a imagem de fundo aparece em
+    // volta. VariationBar agora é popup flutuante (não mais widget de layout),
+    // não entra mais nessa conta.
     int colH;
     if (ph > 0) {
         // Folha de altura fixa — mas NUNCA mais alta que a área visível. Um editor
@@ -5498,11 +5526,11 @@ void MainWindow::resizeEditorColumnToViewport()
         const int avail = availableSheetHeight();
         const int effPh = (avail > 0) ? qMin(ph, avail) : ph;
         if (editor) editor->setFixedHeight(effPh);
-        // Altura da coluna = folha + extras. Calculada direto (NÃO via sizeHint):
+        // Altura da coluna = folha. Calculada direto (NÃO via sizeHint):
         // acabamos de mudar a altura fixa do editor e o sizeHint do layout ainda
         // não recalculou — leria um valor velho e a coluna ficaria do tamanho
         // errado (folha encolhida e centralizada, com folgas em cima e embaixo).
-        colH = effPh + extra;
+        colH = effPh;
     } else {
         colH = vpH;
     }
@@ -5512,10 +5540,7 @@ void MainWindow::resizeEditorColumnToViewport()
 int MainWindow::availableSheetHeight() const
 {
     if (!editorScroll) return 0;
-    int extra = 0;
-    if (variationBar && variationBar->isVisible())
-        extra = variationBar->height() + 8 /* spacing do QVBoxLayout */;
-    return qMax(0, editorScroll->viewport()->height() - extra);
+    return qMax(0, editorScroll->viewport()->height());
 }
 
 void MainWindow::applyPageShadow()

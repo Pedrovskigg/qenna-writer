@@ -86,7 +86,8 @@ signals:
     void canvasDoubleClicked(const QPointF& scenePos);
     void exportEventAsDoc(TimelineEvent data);
     void focusChanged(); // foco mudou (clique/limpeza) → toolbar revalida
-    void editTimelineRequested(const QString& timelineId); // clique-direito na faixa
+    void editTimelineRequested(const QString& timelineId);   // clique-direito na faixa
+    void deleteTimelineRequested(const QString& timelineId); // clique-direito na faixa
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;

@@ -121,6 +121,8 @@ TopToolbar::TopToolbar(QWidget *parent)
     , helpButton(new QToolButton(this))
     , construtorButton(makeIconButton(this))
     , docTitleLabel(new QLabel(this))
+    , docSubtitleLabel(new QLabel(this))
+    , sceneVarButton(makeIconButton(this))
     , fontPicker(nullptr)
     , sizeStepperEdit(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
@@ -360,6 +362,24 @@ TopToolbar::TopToolbar(QWidget *parent)
     // TopToolbar, para não deslocar quando um lado fica mais largo que o outro.
     docTitleLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
 
+    // Subtítulo opcional embaixo do título (ex.: "Cena x" sob o capítulo) —
+    // mesmo tratamento de posicionamento manual, some quando vazio.
+    docSubtitleLabel->setObjectName(QStringLiteral("ttbDocSubtitle"));
+    docSubtitleLabel->setAlignment(Qt::AlignCenter);
+    docSubtitleLabel->setTextInteractionFlags(Qt::NoTextInteraction);
+    docSubtitleLabel->setText(QString());
+    docSubtitleLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
+    docSubtitleLabel->setVisible(false);
+
+    // Botão de variações — só aparece junto do subtítulo em modo SceneDoc.
+    sceneVarButton->setObjectName(QStringLiteral("ttbSceneVar"));
+    sceneVarButton->setFixedSize(20, 20);
+    sceneVarButton->setIconSize(QSize(14, 14));
+    bindIcon(sceneVarButton, QStringLiteral("scene-var.svg"));
+    sceneVarButton->setToolTip(tr("Variações desta cena"));
+    sceneVarButton->setVisible(false);
+    connect(sceneVarButton, &QToolButton::clicked, this, &TopToolbar::sceneVarRequested);
+
     // ---------------- Layout ----------------
     // Esquerda: Projeto (new/open/save) + Editor (font/size/lineHeight/indent/B/I)
     // Centro: título do documento
@@ -490,6 +510,29 @@ void TopToolbar::applyRootStyle()
             "  font-size: 18px;"
             "  font-weight: 700;"
             "}").arg(Theme::textBright()));
+    }
+
+    if (docSubtitleLabel) {
+        docSubtitleLabel->setStyleSheet(QStringLiteral(
+            "QLabel#ttbDocSubtitle {"
+            "  color: %1;"
+            "  background: transparent;"
+            "  font-family: 'Lora','Crimson Text',serif;"
+            "  font-size: 12px;"
+            "  font-weight: 500;"
+            "}").arg(Theme::textMuted()));
+    }
+
+    if (sceneVarButton) {
+        sceneVarButton->setStyleSheet(QStringLiteral(
+            "QToolButton#ttbSceneVar {"
+            "  background: transparent;"
+            "  border: none;"
+            "  border-radius: 4px;"
+            "}"
+            "QToolButton#ttbSceneVar:hover {"
+            "  background: %1;"
+            "}").arg(Theme::hoverOverlay()));
     }
 }
 
@@ -659,13 +702,36 @@ void TopToolbar::applyTheme()
     reloadIcons();
 }
 
-void TopToolbar::setDocumentTitle(const QString &title)
+void TopToolbar::setDocumentTitle(const QString &title, const QString &subtitle)
 {
     if (!docTitleLabel) return;
     docTitleLabel->setText(title);
     docTitleLabel->adjustSize();
-    positionDocTitle();
     docTitleLabel->raise();
+
+    if (docSubtitleLabel) {
+        docSubtitleLabel->setText(subtitle);
+        docSubtitleLabel->setVisible(!subtitle.isEmpty());
+        docSubtitleLabel->adjustSize();
+        docSubtitleLabel->raise();
+    }
+
+    positionDocTitle();
+}
+
+void TopToolbar::setSceneVarButtonVisible(bool visible)
+{
+    if (!sceneVarButton) return;
+    sceneVarButton->setVisible(visible);
+    sceneVarButton->raise();
+    positionDocTitle();
+}
+
+QRect TopToolbar::sceneVarButtonGlobalRect() const
+{
+    if (!sceneVarButton) return QRect();
+    const QPoint topLeft = sceneVarButton->mapToGlobal(QPoint(0, 0));
+    return QRect(topLeft, sceneVarButton->size());
 }
 
 void TopToolbar::resizeEvent(QResizeEvent *event)
@@ -767,9 +833,35 @@ void TopToolbar::positionDocTitle()
 {
     if (!docTitleLabel) return;
     const int centerX = (titleAnchorX >= 0) ? titleAnchorX : (width() / 2);
-    const int x = centerX - docTitleLabel->width() / 2;
-    const int y = (height() - docTitleLabel->height()) / 2;
-    docTitleLabel->move(x, y);
+    const bool hasSubtitle = docSubtitleLabel && docSubtitleLabel->isVisible();
+
+    if (!hasSubtitle) {
+        const int x = centerX - docTitleLabel->width() / 2;
+        const int y = (height() - docTitleLabel->height()) / 2;
+        docTitleLabel->move(x, y);
+        return;
+    }
+
+    // Título maior em cima, subtítulo menor embaixo — bloco de duas linhas
+    // centralizado verticalmente na toolbar (ex.: capítulo + "Cena x").
+    const int blockH = docTitleLabel->height() + docSubtitleLabel->height();
+    const int topY = (height() - blockH) / 2;
+    docTitleLabel->move(centerX - docTitleLabel->width() / 2, topY);
+
+    // Botão de variações (quando visível) fica colado à direita do
+    // subtítulo — a linha "subtítulo + botão" centraliza como um bloco só,
+    // sem deslocar a linha do título de cima.
+    const bool showVarBtn = sceneVarButton && sceneVarButton->isVisible();
+    constexpr int kVarBtnGap = 4;
+    const int subW = docSubtitleLabel->width();
+    const int comboW = subW + (showVarBtn ? kVarBtnGap + sceneVarButton->width() : 0);
+    const int subX = centerX - comboW / 2;
+    const int subY = topY + docTitleLabel->height();
+    docSubtitleLabel->move(subX, subY);
+    if (showVarBtn) {
+        const int subCenterY = subY + docSubtitleLabel->height() / 2;
+        sceneVarButton->move(subX + subW + kVarBtnGap, subCenterY - sceneVarButton->height() / 2);
+    }
 }
 
 void TopToolbar::setFontFamilies(const QStringList &families, const QString &current)

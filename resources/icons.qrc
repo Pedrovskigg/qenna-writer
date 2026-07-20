@@ -77,6 +77,9 @@
         <file alias="som-imersivo/panel.png">../src/assets/help/som-imersivo/panel.png</file>
         <file alias="lembretes/panel.png">../src/assets/help/lembretes/panel.png</file>
         <file alias="lembretes/notification.png">../src/assets/help/lembretes/notification.png</file>
+        <file alias="variacao-cenas/scene-on-manuscript.png">../src/assets/help/variacao-cenas/scene-on-manuscript.png</file>
+        <file alias="variacao-cenas/button.png">../src/assets/help/variacao-cenas/button.png</file>
+        <file alias="variacao-cenas/options.png">../src/assets/help/variacao-cenas/options.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file alias="add-image.svg">../src/assets/icons/add-image.svg</file>
@@ -125,6 +128,7 @@
         <file alias="drag-handle.svg">../src/assets/icons/drag-handle.svg</file>
         <file alias="marker.svg">../src/assets/icons/marker.svg</file>
         <file alias="marker-comment.svg">../src/assets/icons/marker-comment.svg</file>
+        <file alias="scene-var.svg">../src/assets/icons/scene-var.svg</file>
         <file alias="leftbar/manuscriptpanel.svg">../src/assets/icons/leftbar/manuscriptpanel.svg</file>
         <file alias="leftbar/projectinfo.svg">../src/assets/icons/leftbar/projectinfo.svg</file>
         <file alias="leftbar/whiteboard.svg">../src/assets/icons/leftbar/whiteboard.svg</file>

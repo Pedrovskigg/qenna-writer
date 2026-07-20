@@ -1,4 +1,5 @@
 #include "MarkerStore.h"
+#include "SceneUtils.h"
 
 #include <QDateTime>
 #include <QDir>
@@ -29,21 +30,6 @@ QColor parseColor(const QString& s)
 {
     QColor c(s);
     return c.isValid() ? c : QColor(QStringLiteral("#FFD54F"));
-}
-
-// Índice (0-based) da cena que contém targetBlock, contando separadores <hr>
-// — que no QTextDocument viram blocos com a propriedade de régua horizontal.
-// Espelha SceneUtils (delimitador de cena = <hr>).
-int sceneIndexForBlock(QTextDocument* doc, int targetBlock)
-{
-    if (!doc) return -1;
-    int scene = 0;
-    for (QTextBlock b = doc->firstBlock(); b.isValid(); b = b.next()) {
-        if (b.blockNumber() >= targetBlock) break;
-        if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth))
-            ++scene;
-    }
-    return scene;
 }
 
 }
@@ -271,7 +257,7 @@ QString MarkerStore::applyMarkerToSelection(const QString& docKey,
         e.text = snippet;
         e.sceneIndex = (sceneIndexHint >= 0)
             ? sceneIndexHint
-            : sceneIndexForBlock(cursor.document(), e.blockIndex);
+            : SceneUtils::sceneIndexForBlock(cursor.document(), e.blockIndex);
         e.createdAt = QDateTime::currentMSecsSinceEpoch();
         m_entries[docKey].append(e);
         emit markersChanged(docKey);
