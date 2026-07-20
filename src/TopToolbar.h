@@ -34,7 +34,14 @@ public:
     void setStrikethroughChecked(bool checked);
     void setFocusModeChecked(bool checked);
     void setFullscreenChecked(bool checked);
-    void setDocumentTitle(const QString &title);
+    // `subtitle` opcional: quando presente, mostra `title` maior em cima e
+    // `subtitle` menor embaixo (ex.: capítulo em cima, "Cena x" embaixo).
+    void setDocumentTitle(const QString &title, const QString &subtitle = QString());
+    // Botão discreto ao lado do subtítulo — só faz sentido quando o
+    // subtítulo é uma cena de verdade (viewMode SceneDoc), abre o popup de
+    // variações. Escondido por padrão.
+    void setSceneVarButtonVisible(bool visible);
+    QRect sceneVarButtonGlobalRect() const;
     // x em coords locais da TopToolbar; passe -1 para retomar o centro geométrico.
     void setTitleAnchorX(int x);
 
@@ -68,6 +75,7 @@ signals:
     void pensarioToggleRequested();
     void helpRequested();
     void construtorToggleRequested();
+    void sceneVarRequested();
     void boldToggled(bool enabled);
     void italicToggled(bool enabled);
     void underlineToggled(bool enabled);
@@ -113,6 +121,8 @@ private:
     QToolButton *helpButton;
     QToolButton *construtorButton;
     QLabel *docTitleLabel;
+    QLabel *docSubtitleLabel; // "Cena x" embaixo do título, quando aplicável
+    QToolButton *sceneVarButton; // abre popup de variações da cena atual
 
     QIcon focusOffIcon;
     QIcon focusOnIcon;

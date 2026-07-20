@@ -57,6 +57,7 @@ private slots:
     void applyTheme();
     void createTimeline();
     void editTimeline(const QString& id);
+    void deleteTimeline(const QString& id);
     void createEventAt(const QPointF& scenePos);
     void commitEvent(TimelineEvent e, const QPointF& scenePos); // cria o evento já resolvido
     void openEditPopup(const QString& eventId);

@@ -3,14 +3,23 @@
 #include "ProjectModel.h"
 #include "Theme.h"
 
+#include <QApplication>
+#include <QFrame>
+#include <QGraphicsDropShadowEffect>
+#include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QInputDialog>
-#include <QLabel>
-#include <QMessageBox>
-#include <QToolButton>
+#include <QKeyEvent>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <QMouseEvent>
+#include <QScreen>
+#include <QToolButton>
+#include <QVBoxLayout>
 
 namespace {
+constexpr int kGapBelowAnchor = 8;
+
 QString chipQss(bool active, bool primary) {
     const QString base = active ? Theme::panelBackground() : QStringLiteral("transparent");
     const QString borderColor = active ? Theme::textBright() : Theme::panelBorder();
@@ -21,10 +30,11 @@ QString chipQss(bool active, bool primary) {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
-            padding: 3px 10px;
+            border-radius: 5px;
+            padding: 3px 8px;
             font-family: 'Lora','Crimson Text',serif;
-            font-size: 12px;
+            font-size: 11px;
+            text-align: left;
         }
         QToolButton:hover {
             background: %4;
@@ -40,9 +50,9 @@ QString iconBtnQss() {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 6px;
-            padding: 3px 8px;
-            font-size: 13px;
+            border-radius: 5px;
+            padding: 3px 6px;
+            font-size: 11px;
         }
         QToolButton:hover {
             background: %2;
@@ -59,36 +69,44 @@ QString iconBtnQss() {
 }
 
 VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* parent)
-    : QWidget(parent)
+    : QFrame(parent)
     , m_model(model)
     , m_host(host)
-    , m_buttonsLayout(nullptr)
-    , m_label(nullptr)
+    , m_chipsColumn(nullptr)
+    , m_actionsRow(nullptr)
     , m_newBtn(nullptr)
     , m_primaryBtn(nullptr)
     , m_deleteBtn(nullptr)
 {
     setObjectName(QStringLiteral("variationBar"));
-    setAttribute(Qt::WA_StyledBackground, true);
+    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint
+                   | Qt::WindowStaysOnTopHint | Qt::NoDropShadowWindowHint);
+    setAttribute(Qt::WA_ShowWithoutActivating, true);
+    setFocusPolicy(Qt::NoFocus);
     applyRootStyle();
 
-    auto* root = new QHBoxLayout(this);
-    root->setContentsMargins(10, 6, 10, 6);
-    root->setSpacing(8);
+    auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(10, 8, 10, 8);
+    root->setSpacing(6);
 
-    m_label = new QLabel(tr("Variações"), this);
-    m_label->setStyleSheet(QStringLiteral(
-        "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 12px; font-weight: 600;")
-        .arg(Theme::textMuted()));
-    root->addWidget(m_label);
+    m_chipsColumn = new QVBoxLayout();
+    m_chipsColumn->setContentsMargins(0, 0, 0, 0);
+    m_chipsColumn->setSpacing(3);
+    root->addLayout(m_chipsColumn);
 
-    m_buttonsLayout = new QHBoxLayout();
-    m_buttonsLayout->setContentsMargins(0, 0, 0, 0);
-    m_buttonsLayout->setSpacing(4);
-    root->addLayout(m_buttonsLayout, /*stretch=*/1);
+    auto* sep = new QFrame(this);
+    sep->setObjectName(QStringLiteral("varBarSep"));
+    sep->setFrameShape(QFrame::HLine);
+    sep->setFrameShadow(QFrame::Plain);
+    root->addWidget(sep);
+
+    m_actionsRow = new QHBoxLayout();
+    m_actionsRow->setContentsMargins(0, 0, 0, 0);
+    m_actionsRow->setSpacing(4);
+    root->addLayout(m_actionsRow);
 
     m_newBtn = new QToolButton(this);
-    m_newBtn->setText(QStringLiteral("+ nova"));
+    m_newBtn->setText(tr("+ nova"));
     m_newBtn->setToolTip(tr("Criar variação a partir do conteúdo atual"));
     m_newBtn->setCursor(Qt::PointingHandCursor);
     m_newBtn->setStyleSheet(iconBtnQss());
@@ -100,10 +118,10 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
         if (!ok) return;
         m_host->createVariationForCurrentScene(label);
     });
-    root->addWidget(m_newBtn);
+    m_actionsRow->addWidget(m_newBtn);
 
     m_primaryBtn = new QToolButton(this);
-    m_primaryBtn->setText(QStringLiteral("★ primária"));
+    m_primaryBtn->setText(tr("★ primária"));
     m_primaryBtn->setToolTip(tr("Marcar variação atual como primária"));
     m_primaryBtn->setCursor(Qt::PointingHandCursor);
     m_primaryBtn->setStyleSheet(iconBtnQss());
@@ -114,10 +132,10 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
         if (!scene || scene->activeVariationId.isEmpty()) return;
         m_model->setPrimaryVariation(vm.chapterId, vm.sceneIndex, scene->activeVariationId);
     });
-    root->addWidget(m_primaryBtn);
+    m_actionsRow->addWidget(m_primaryBtn);
 
     m_deleteBtn = new QToolButton(this);
-    m_deleteBtn->setText(QStringLiteral("✕ apagar"));
+    m_deleteBtn->setText(tr("✕ apagar"));
     m_deleteBtn->setToolTip(tr("Apagar variação atual"));
     m_deleteBtn->setCursor(Qt::PointingHandCursor);
     m_deleteBtn->setStyleSheet(iconBtnQss());
@@ -133,14 +151,22 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
         if (reply != QMessageBox::Yes) return;
         m_host->deleteVariationForCurrentScene(scene->activeVariationId);
     });
-    root->addWidget(m_deleteBtn);
+    m_actionsRow->addWidget(m_deleteBtn);
 
     if (m_model) {
         connect(m_model, &ProjectModel::chaptersChanged, this, &VariationBar::refresh);
     }
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &VariationBar::applyTheme);
+
+    auto* shadow = new QGraphicsDropShadowEffect(this);
+    shadow->setBlurRadius(18);
+    shadow->setColor(QColor(0, 0, 0, 180));
+    shadow->setOffset(0, 2);
+    setGraphicsEffect(shadow);
+
     hide();
+    qApp->installEventFilter(this);
 }
 
 void VariationBar::applyRootStyle() {
@@ -150,20 +176,43 @@ void VariationBar::applyRootStyle() {
             border: 1px solid %2;
             border-radius: 8px;
         }
+        QFrame#varBarSep { color: %2; }
     )").arg(Theme::panelBackground(), Theme::panelBorder()));
 }
 
 void VariationBar::applyTheme() {
     applyRootStyle();
-    if (m_label) {
-        m_label->setStyleSheet(QStringLiteral(
-            "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 12px; font-weight: 600;")
-            .arg(Theme::textMuted()));
-    }
     if (m_newBtn) m_newBtn->setStyleSheet(iconBtnQss());
     if (m_primaryBtn) m_primaryBtn->setStyleSheet(iconBtnQss());
     if (m_deleteBtn) m_deleteBtn->setStyleSheet(iconBtnQss());
     if (isVisible()) rebuildButtons();
+}
+
+void VariationBar::toggleNear(const QRect& anchorGlobal)
+{
+    if (isVisible()) { hide(); return; }
+    if (!m_host || !m_model) return;
+    const auto vm = m_host->viewMode();
+    if (vm.type != EditorHost::SceneDoc) return;
+    const Scene* scene = m_model->findScene(vm.chapterId, vm.sceneIndex);
+    if (!scene) return;
+
+    rebuildButtons();
+    adjustSize();
+    const QSize ps = size();
+    QPoint pos(anchorGlobal.left() + anchorGlobal.width() / 2 - ps.width() / 2,
+               anchorGlobal.bottom() + kGapBelowAnchor);
+    const QScreen* screen = QGuiApplication::screenAt(pos);
+    if (screen) {
+        const QRect avail = screen->availableGeometry();
+        if (pos.y() + ps.height() > avail.bottom())
+            pos.setY(anchorGlobal.top() - ps.height() - kGapBelowAnchor);
+        if (pos.x() < avail.left()) pos.setX(avail.left() + 4);
+        if (pos.x() + ps.width() > avail.right()) pos.setX(avail.right() - ps.width() - 4);
+    }
+    move(pos);
+    show();
+    raise();
 }
 
 void VariationBar::refresh() {
@@ -172,15 +221,13 @@ void VariationBar::refresh() {
     if (vm.type != EditorHost::SceneDoc) { hide(); return; }
     const Scene* scene = m_model->findScene(vm.chapterId, vm.sceneIndex);
     if (!scene) { hide(); return; }
-
-    show();
-    rebuildButtons();
+    if (isVisible()) rebuildButtons();
 }
 
 void VariationBar::rebuildButtons() {
-    // Limpa botões antigos.
-    while (m_buttonsLayout->count() > 0) {
-        QLayoutItem* item = m_buttonsLayout->takeAt(0);
+    // Limpa chips antigos.
+    while (m_chipsColumn->count() > 0) {
+        QLayoutItem* item = m_chipsColumn->takeAt(0);
         if (auto* w = item->widget()) w->deleteLater();
         delete item;
     }
@@ -202,12 +249,30 @@ void VariationBar::rebuildButtons() {
         connect(btn, &QToolButton::clicked, this, [this, vid]() {
             if (m_host) m_host->switchVariationForCurrentScene(vid);
         });
-        m_buttonsLayout->addWidget(btn);
+        m_chipsColumn->addWidget(btn);
     }
-    m_buttonsLayout->addStretch();
+    adjustSize();
 }
 
 void VariationBar::setEmptyState(bool empty) {
     m_primaryBtn->setEnabled(!empty);
     m_deleteBtn->setEnabled(!empty);
+}
+
+bool VariationBar::eventFilter(QObject* watched, QEvent* event)
+{
+    if (!isVisible()) return QFrame::eventFilter(watched, event);
+
+    if (event->type() == QEvent::KeyPress) {
+        auto* ke = static_cast<QKeyEvent*>(event);
+        if (ke->key() == Qt::Key_Escape) {
+            hide();
+            return true;
+        }
+    } else if (event->type() == QEvent::MouseButtonPress) {
+        auto* me = static_cast<QMouseEvent*>(event);
+        const QPoint gp = me->globalPosition().toPoint();
+        if (!frameGeometry().contains(gp)) hide();
+    }
+    return QFrame::eventFilter(watched, event);
 }

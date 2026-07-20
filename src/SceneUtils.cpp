@@ -1,6 +1,9 @@
 #include "SceneUtils.h"
 
 #include <QRegularExpression>
+#include <QTextBlock>
+#include <QTextBlockFormat>
+#include <QTextDocument>
 
 namespace SceneUtils {
 
@@ -56,6 +59,17 @@ int countSceneDelimiters(const QString& html) {
     auto it = delimiterRegex().globalMatch(html);
     while (it.hasNext()) { it.next(); ++count; }
     return count;
+}
+
+int sceneIndexForBlock(QTextDocument* doc, int targetBlock) {
+    if (!doc) return -1;
+    int scene = 0;
+    for (QTextBlock b = doc->firstBlock(); b.isValid(); b = b.next()) {
+        if (b.blockNumber() >= targetBlock) break;
+        if (b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth))
+            ++scene;
+    }
+    return scene;
 }
 
 } // namespace SceneUtils
