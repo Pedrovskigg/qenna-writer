@@ -261,6 +261,22 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit showScenePopupOnHrChanged(checked);
     });
 
+    auto* timelineGenBtn = new QPushButton(tr("Abrir Gerador de Timeline…"), timelineGroup);
+    timelineLayout->addWidget(timelineGenBtn);
+
+    auto* timelineGenHint = new QLabel(
+        tr("Preenche marcador temporal e resumo de vários capítulos/cenas de uma vez — "
+           "útil pra colocar um manuscrito antigo (de antes da Timeline orgânica) em dia "
+           "de uma tacada só, em vez de editar capítulo por capítulo."),
+        timelineGroup);
+    timelineGenHint->setObjectName(QStringLiteral("settingsHint"));
+    timelineGenHint->setWordWrap(true);
+    timelineLayout->addWidget(timelineGenHint);
+
+    connect(timelineGenBtn, &QPushButton::clicked, this, [this]() {
+        emit timelineGeneratorRequested();
+    });
+
     // ---- Seção: Memória ----
     auto* memGroup = new QGroupBox(tr("Memória"), this);
     auto* memLayout = new QVBoxLayout(memGroup);

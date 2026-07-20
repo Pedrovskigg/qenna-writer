@@ -181,6 +181,14 @@ const ElementType* ElementsStore::findType(const QString& id) const {
     return nullptr;
 }
 
+bool ElementsStore::hasNarrator() const {
+    for (const auto& id : m_elementOrder) {
+        const auto it = m_elements.constFind(id);
+        if (it != m_elements.constEnd() && it.value().narrator) return true;
+    }
+    return false;
+}
+
 QString ElementsStore::addElement(Element e) {
     if (e.id.isEmpty()) e.id = ProjectModel::uid();
     m_elements.insert(e.id, e);

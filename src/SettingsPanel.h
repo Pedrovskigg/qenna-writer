@@ -61,6 +61,8 @@ signals:
     void maxDocsChanged(int n);
     void mentionManuscriptsEnabledChanged(bool enabled);
     void showScenePopupOnHrChanged(bool enabled);
+    // Botão "Abrir Gerador de Timeline…".
+    void timelineGeneratorRequested();
 
 private:
     void onCheckToggled(bool checked);

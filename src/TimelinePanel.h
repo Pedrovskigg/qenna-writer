@@ -14,6 +14,7 @@ class TimelineScene;
 class TimelineView;
 class ProjectModel;
 class ElementsStore;
+class TimelineBranchPopup;
 
 class TimelinePanel : public QWidget {
     Q_OBJECT
@@ -37,6 +38,12 @@ public:
     // title vazio = sugere a partir das primeiras palavras da descrição.
     void promptNewEvent(const QString& description, const QString& marker,
                         const QString& title = QString());
+
+    // Força a resincronização das trilhas automáticas a partir do model,
+    // mesmo com o painel escondido (os signals internos só resincronizam
+    // se isVisible()). Usado depois de edições em lote feitas fora daqui
+    // (ex.: Gerador de Timeline em Configurações).
+    void refreshFromModel();
 
 signals:
     void closeRequested();
@@ -84,6 +91,38 @@ private:
     // timeMarker dos capítulos + storyStartMarker do manuscrito.
     void syncStoryTimeline();
 
+    // Capítulo/cena "batido" na Narrativa (não-Flashback), com o suficiente
+    // pra detectar ramificações automáticas. Montado por syncStoryTimeline(),
+    // consumido por syncAutoBranches() — struct de classe (não local a uma
+    // função) só pra poder trafegar entre os dois métodos.
+    struct AutoHit {
+        int rank = 0; QString evId; QString title; QString marker;
+        QString summary; QString docKey; QString linkedSceneId; QString manuscriptId;
+        bool povOther = false;
+    };
+
+    // Ramificações automáticas da Timeline: detecta POV alternado/narrativa
+    // fora de ordem dentro da Narrativa (nunca dentro do Flashback) e separa
+    // em trilhas paralelas (`TimelineDef` kind=Parallel) sem exigir marcação
+    // manual. Ver plano/memória "timeline-auto-branching-design". Chamado
+    // logo depois de montar os eventos de story:main em syncStoryTimeline(),
+    // mutando os mesmos events/conns/defs antes do push final pra cena.
+    void syncAutoBranches(const QList<AutoHit>& mainHits,
+                          const QHash<QString, QStringList>& presentByEvId,
+                          QList<TimelineEvent>& events,
+                          QList<TimelineConn>& conns,
+                          QList<TimelineDef>& defs);
+    // Persistência de decisões do popup de ambiguidade (evId -> branchId
+    // escolhido), por projeto — nunca repergunta pro mesmo evento.
+    QHash<QString, QString> loadBranchAssignments() const;
+    void saveBranchAssignment(const QString& evId, const QString& branchId);
+    // Enfileira o popup de desambiguação (só se o painel estiver visível —
+    // ver comentário em syncAutoBranches). Enquanto não decidido, o hit fica
+    // na ramificação de origem (reabsorvido, decisão não persistida ainda).
+    void enqueueBranchAmbiguity(const QString& evId, const QString& evTitle,
+                                const QStringList& candidateIds,
+                                const QStringList& candidateLabels);
+
     TimelineScene*  m_scene        = nullptr;
     TimelineView*   m_view         = nullptr;
     QWidget*        m_toolbar      = nullptr;
@@ -103,6 +142,12 @@ private:
     ElementsStore*  m_elementsStore = nullptr;
     std::function<QString(const QString&)> m_docTextResolver;
     PresenceProvider m_presenceProvider;
+
+    // Popup de desambiguação de ramificações — fila, canto inferior-direito,
+    // mesmo padrão do PresencePopup. Criado sob demanda (só quando o
+    // algoritmo de fato encontra um caso ambíguo).
+    TimelineBranchPopup* m_branchPopup = nullptr;
+    TimelineBranchPopup* ensureBranchPopup();
 
     // dados — preenchidos nas etapas seguintes
     QList<TimelineDef>   m_timelines;

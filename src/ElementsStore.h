@@ -57,6 +57,11 @@ public:
     QList<ElementType> elementTypes() const { return m_elementTypes; }
     const ElementType* findType(const QString& id) const;
 
+    // true se algum personagem da obra está marcado como Narrador — usado pra
+    // decidir se o toggle de POV (ramificações automáticas da Timeline) faz
+    // sentido de aparecer nos diálogos de capítulo/cena.
+    bool hasNarrator() const;
+
     // docElements: chapter/scene key -> [elementId, ...] (presença detectada)
     QJsonObject docElements() const { return m_docElements; }
     QStringList docElementIds(const QString& docKey) const;

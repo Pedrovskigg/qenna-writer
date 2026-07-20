@@ -51,6 +51,7 @@ QJsonObject sceneToJson(const Scene& s) {
     }
     if (!s.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), s.timeMarker);
     if (!s.summary.isEmpty()) o.insert(QStringLiteral("summary"), s.summary);
+    if (s.povOther) o.insert(QStringLiteral("povOther"), true);
     return o;
 }
 
@@ -64,6 +65,7 @@ Scene sceneFromJson(const QJsonObject& o) {
     s.activeVariationId = jsonString(o.value(QStringLiteral("activeVariationId")));
     s.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     s.summary = jsonString(o.value(QStringLiteral("summary")));
+    s.povOther = o.value(QStringLiteral("povOther")).toBool(false);
     return s;
 }
 
@@ -81,6 +83,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     }
     if (!c.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), c.timeMarker);
     if (!c.summary.isEmpty()) o.insert(QStringLiteral("summary"), c.summary);
+    if (c.povOther) o.insert(QStringLiteral("povOther"), true);
     return o;
 }
 
@@ -95,6 +98,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     for (const auto& sv : scenes) c.scenes.append(sceneFromJson(sv.toObject()));
     c.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     c.summary = jsonString(o.value(QStringLiteral("summary")));
+    c.povOther = o.value(QStringLiteral("povOther")).toBool(false);
     return c;
 }
 
@@ -1173,7 +1177,7 @@ bool ProjectModel::updateChapterTimeMarker(const QString& chapterId, const QStri
         if (c.id != chapterId) continue;
         if (c.timeMarker == marker) return true;
         c.timeMarker = marker;
-        emit chaptersChanged();
+        notifyChaptersChanged();
         return true;
     }
     return false;
@@ -1184,7 +1188,18 @@ bool ProjectModel::updateChapterSummary(const QString& chapterId, const QString&
         if (c.id != chapterId) continue;
         if (c.summary == summary) return true;
         c.summary = summary;
-        emit chaptersChanged();
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterPovOther(const QString& chapterId, bool value) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.povOther == value) return true;
+        c.povOther = value;
+        notifyChaptersChanged();
         return true;
     }
     return false;
@@ -1283,7 +1298,7 @@ bool ProjectModel::updateSceneTimeMarker(const QString& chapterId, int sceneInde
         if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
         if (c.scenes[sceneIndex].timeMarker == marker) return true;
         c.scenes[sceneIndex].timeMarker = marker;
-        emit chaptersChanged();
+        notifyChaptersChanged();
         return true;
     }
     return false;
@@ -1295,10 +1310,40 @@ bool ProjectModel::updateSceneSummary(const QString& chapterId, int sceneIndex, 
         if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
         if (c.scenes[sceneIndex].summary == summary) return true;
         c.scenes[sceneIndex].summary = summary;
-        emit chaptersChanged();
+        notifyChaptersChanged();
         return true;
     }
     return false;
+}
+
+bool ProjectModel::updateScenePovOther(const QString& chapterId, int sceneIndex, bool value) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].povOther == value) return true;
+        c.scenes[sceneIndex].povOther = value;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+void ProjectModel::notifyChaptersChanged() {
+    if (m_batching) { m_batchChaptersDirty = true; return; }
+    emit chaptersChanged();
+}
+
+void ProjectModel::beginBatchUpdate() {
+    m_batching = true;
+    m_batchChaptersDirty = false;
+}
+
+void ProjectModel::endBatchUpdate() {
+    m_batching = false;
+    if (m_batchChaptersDirty) {
+        m_batchChaptersDirty = false;
+        emit chaptersChanged();
+    }
 }
 
 const Chapter* ProjectModel::findChapter(const QString& chapterId) const {

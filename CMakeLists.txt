@@ -213,6 +213,10 @@ qt_add_executable(qenna-writer
     src/TimelineEventPopup.h
     src/TimelinePanel.cpp
     src/TimelinePanel.h
+    src/TimelineGeneratorDialog.cpp
+    src/TimelineGeneratorDialog.h
+    src/TimelineBranchPopup.cpp
+    src/TimelineBranchPopup.h
     src/CardItem.cpp
     src/CardItem.h
     src/ConnectionItem.cpp

@@ -20,6 +20,10 @@ struct Scene {
     QString activeVariationId;
     QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
     QString summary;      // resumo opcional — alimenta a descrição na Timeline
+    // Gatilho explícito de POV pras ramificações automáticas da Timeline: "esta
+    // cena não é do narrador / é de outro POV". Só relevante em obras com um
+    // Element narrador definido.
+    bool povOther = false;
 };
 
 struct Chapter {
@@ -31,6 +35,7 @@ struct Chapter {
     QList<Scene> scenes;
     QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
     QString summary;      // resumo opcional — alimenta a descrição na Timeline
+    bool povOther = false; // mesmo gatilho de POV, no nível de capítulo (sem cenas)
 };
 
 struct Manuscript {
@@ -258,11 +263,21 @@ public:
     bool updateChapterTitle(const QString& chapterId, const QString& title);
     bool updateChapterTimeMarker(const QString& chapterId, const QString& marker);
     bool updateChapterSummary(const QString& chapterId, const QString& summary);
+    bool updateChapterPovOther(const QString& chapterId, bool value);
     bool removeChapter(const QString& chapterId);
     bool reorderChapter(const QString& chapterId, int targetIndex);
     bool updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title);
     bool updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker);
     bool updateSceneSummary(const QString& chapterId, int sceneIndex, const QString& summary);
+    bool updateScenePovOther(const QString& chapterId, int sceneIndex, bool value);
+
+    // Suprime chaptersChanged() enquanto ativo, coalescendo em uma única
+    // emissão no fim — usado por edições em lote (ex.: Gerador de Timeline)
+    // pra não disparar um resync completo da Timeline por campo alterado.
+    // Chamadas aninhadas não são suportadas (não precisa hoje).
+    void beginBatchUpdate();
+    void endBatchUpdate();
+
     const Chapter* findChapter(const QString& chapterId) const;
     const Scene* findScene(const QString& chapterId, int sceneIndex) const;
 
@@ -319,4 +334,8 @@ private:
     QJsonObject m_dataExtras;
     QList<Group> m_groups;
     QList<CharacterBond> m_characterBonds;
+
+    void notifyChaptersChanged();
+    bool m_batching = false;
+    bool m_batchChaptersDirty = false;
 };

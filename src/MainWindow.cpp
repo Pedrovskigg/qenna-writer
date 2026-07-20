@@ -121,6 +121,7 @@
 #include "MemoryAddPopup.h"
 #include "LousaPanel.h"
 #include "TimelinePanel.h"
+#include "TimelineGeneratorDialog.h"
 #include "CharacterSheetPanel.h"
 #include "MentionPopup.h"
 #include "RemindersPanel.h"
@@ -162,9 +163,14 @@ QFont sizedFont(const QString& family, qreal pt)
 
 // Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional)
 // + resumo (opcional). Usado tanto na criação quanto na edição. Retorna false
-// se cancelado.
+// se cancelado. povOther != nullptr mostra o toggle de POV (gatilho C das
+// ramificações automáticas da Timeline) — chamador só passa não-nulo quando a
+// obra tem algum Element narrador definido (ElementsStore::hasNarrator()). O
+// valor inicial de *povOther pré-marca o checkbox (modo edição); o valor final
+// é escrito de volta em *povOther, mesmo padrão in/out de title/marker/summary.
 bool promptChapterDialog(QWidget* parent, bool editMode,
-                         QString* title, QString* marker, QString* summary)
+                         QString* title, QString* marker, QString* summary,
+                         bool* povOther = nullptr)
 {
     QDialog dlg(parent);
     dlg.setWindowTitle(editMode ? QObject::tr("Editar capítulo")
@@ -206,6 +212,13 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
     summaryHint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
     root->addWidget(summaryHint);
 
+    QCheckBox* povCheck = nullptr;
+    if (povOther) {
+        povCheck = new QCheckBox(QObject::tr("Este capítulo não é do narrador / é de outro POV"), &dlg);
+        povCheck->setChecked(*povOther);
+        root->addWidget(povCheck);
+    }
+
     auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
     btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
                                                          : QObject::tr("Criar"));
@@ -221,6 +234,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
     *title   = t;
     *marker  = markerEdit->text().trimmed();
     *summary = summaryEdit->toPlainText().trimmed();
+    if (povOther) *povOther = povCheck->isChecked();
     return true;
 }
 
@@ -228,9 +242,11 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
 // promptChapterDialog). Se optOutChecked != nullptr, mostra o checkbox
 // "não mostrar novamente" (usado só no popup automático de criação via
 // "----" — a edição manual pelo menu de contexto não precisa dele).
+// povOther segue o mesmo contrato de promptChapterDialog (ver comentário lá).
 // Retorna false se cancelado.
 bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
-                       QString* marker, QString* summary, bool* optOutChecked = nullptr)
+                       QString* marker, QString* summary, bool* optOutChecked = nullptr,
+                       bool* povOther = nullptr)
 {
     QDialog dlg(parent);
     dlg.setWindowTitle(editMode ? QObject::tr("Editar cena") : QObject::tr("Nova cena"));
@@ -285,6 +301,13 @@ bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
         root->addWidget(optOutHint);
     }
 
+    QCheckBox* povCheck = nullptr;
+    if (povOther) {
+        povCheck = new QCheckBox(QObject::tr("Esta cena não é do narrador / é de outro POV"), &dlg);
+        povCheck->setChecked(*povOther);
+        root->addWidget(povCheck);
+    }
+
     auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
     btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
                                                          : QObject::tr("Criar"));
@@ -301,6 +324,7 @@ bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
     *marker  = markerEdit->text().trimmed();
     *summary = summaryEdit->toPlainText().trimmed();
     if (optOutChecked) *optOutChecked = optOutCheck->isChecked();
+    if (povOther) *povOther = povCheck->isChecked();
     return true;
 }
 
@@ -1005,10 +1029,14 @@ void MainWindow::setupEditor()
                 QString title = tr("Cena %1").arg(newIndex + 1);
                 QString marker, summary;
                 bool optOut = false;
-                if (promptSceneDialog(this, false, &title, &marker, &summary, &optOut)) {
+                bool povOther = false;
+                const bool showPov = elementsStore && elementsStore->hasNarrator();
+                if (promptSceneDialog(this, false, &title, &marker, &summary, &optOut,
+                                      showPov ? &povOther : nullptr)) {
                     projectModel->updateSceneTitle(chId, newIndex, title);
                     projectModel->updateSceneTimeMarker(chId, newIndex, marker);
                     projectModel->updateSceneSummary(chId, newIndex, summary);
+                    if (showPov) projectModel->updateScenePovOther(chId, newIndex, povOther);
                     if (optOut) projectModel->setShowScenePopupOnHr(false);
                 }
             }
@@ -1647,13 +1675,17 @@ void MainWindow::setupEditor()
             if (msId.isEmpty()) return;
         }
         QString title, marker, summary;
-        if (!promptChapterDialog(this, false, &title, &marker, &summary)) return;
+        bool povOther = false;
+        const bool showPov = elementsStore && elementsStore->hasNarrator();
+        if (!promptChapterDialog(this, false, &title, &marker, &summary,
+                                 showPov ? &povOther : nullptr)) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
         c.timeMarker = marker;
         c.summary = summary;
+        c.povOther = povOther;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -2220,13 +2252,17 @@ void MainWindow::setupEditor()
             if (msId.isEmpty()) return;
         }
         QString title, marker, summary;
-        if (!promptChapterDialog(this, false, &title, &marker, &summary)) return;
+        bool povOther = false;
+        const bool showPov = elementsStore && elementsStore->hasNarrator();
+        if (!promptChapterDialog(this, false, &title, &marker, &summary,
+                                 showPov ? &povOther : nullptr)) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
         c.timeMarker = marker;
         c.summary = summary;
+        c.povOther = povOther;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -2270,10 +2306,14 @@ void MainWindow::setupEditor()
         QString newTitle = c->title;
         QString newMarker = c->timeMarker;
         QString newSummary = c->summary;
-        if (!promptChapterDialog(this, true, &newTitle, &newMarker, &newSummary)) return;
+        bool newPovOther = c->povOther;
+        const bool showPov = elementsStore && elementsStore->hasNarrator();
+        if (!promptChapterDialog(this, true, &newTitle, &newMarker, &newSummary,
+                                 showPov ? &newPovOther : nullptr)) return;
         projectModel->updateChapterTitle(chapterId, newTitle);
         projectModel->updateChapterTimeMarker(chapterId, newMarker);
         projectModel->updateChapterSummary(chapterId, newSummary);
+        if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::elementsPresentRequested, this,
@@ -2329,10 +2369,14 @@ void MainWindow::setupEditor()
         QString newTitle = s->title.isEmpty() ? tr("Cena %1").arg(sceneIndex + 1) : s->title;
         QString newMarker = s->timeMarker;
         QString newSummary = s->summary;
-        if (!promptSceneDialog(this, true, &newTitle, &newMarker, &newSummary)) return;
+        bool newPovOther = s->povOther;
+        const bool showPov = elementsStore && elementsStore->hasNarrator();
+        if (!promptSceneDialog(this, true, &newTitle, &newMarker, &newSummary, nullptr,
+                               showPov ? &newPovOther : nullptr)) return;
         projectModel->updateSceneTitle(chapterId, sceneIndex, newTitle);
         projectModel->updateSceneTimeMarker(chapterId, sceneIndex, newMarker);
         projectModel->updateSceneSummary(chapterId, sceneIndex, newSummary);
+        if (showPov) projectModel->updateScenePovOther(chapterId, sceneIndex, newPovOther);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::createVariationRequested, this, [this](const QString& chapterId, int sceneIndex) {
@@ -5257,6 +5301,13 @@ void MainWindow::onSettingsRequested()
         });
         connect(settingsPanel, &SettingsPanel::rescanAllScenesRequested,
                 this, &MainWindow::rescanAllChapterScenesPresence);
+        connect(settingsPanel, &SettingsPanel::timelineGeneratorRequested, this, [this]() {
+            if (!projectModel) return;
+            TimelineGeneratorDialog dlg(projectModel, settingsPanel);
+            if (dlg.exec() == QDialog::Accepted && timelinePanel) {
+                timelinePanel->refreshFromModel();
+            }
+        });
         // Lê preferências globais (não por projeto)
         m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
     }

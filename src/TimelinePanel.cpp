@@ -6,6 +6,7 @@
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "Theme.h"
+#include "TimelineBranchPopup.h"
 #include "TimelineChrono.h"
 
 #include <QAction>
@@ -20,6 +21,7 @@
 
 #include <QCloseEvent>
 #include <QColorDialog>
+#include <QCryptographicHash>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -38,9 +40,12 @@
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QSaveFile>
+#include <QSet>
+#include <QSettings>
 #include <QToolButton>
 #include <QUuid>
 #include <QVBoxLayout>
+#include <QVector>
 #include <algorithm>
 
 namespace {
@@ -668,6 +673,13 @@ void TimelinePanel::setProjectModel(ProjectModel* model)
     }
 }
 
+void TimelinePanel::refreshFromModel()
+{
+    if (!m_projectModel) return;
+    syncCharacterTimelines(false);
+    syncStoryTimeline();
+}
+
 void TimelinePanel::setDocTextResolver(std::function<QString(const QString&)> resolver)
 {
     m_docTextResolver = std::move(resolver);
@@ -959,11 +971,7 @@ void TimelinePanel::syncStoryTimeline()
     // ── Capítulos/cenas COM marcador, em ordem de leitura global ────────────────
     // Cena com marcador próprio usa o dela; sem marcador, herda o do capítulo
     // (mesmo fallback já usado nas trilhas de personagem, TimelinePanel.cpp).
-    struct StoryHit {
-        int rank; QString evId; QString title; QString marker;
-        QString summary; QString docKey; QString linkedSceneId; QString manuscriptId;
-    };
-    QList<StoryHit> hits;
+    QList<AutoHit> hits;
     {
         const QList<Manuscript>& mss = m_projectModel->manuscripts();
         const QList<Chapter>&    chs = m_projectModel->chapters();
@@ -986,7 +994,7 @@ void TimelinePanel::syncStoryTimeline()
             if (c.scenes.isEmpty()) {
                 if (!c.timeMarker.trimmed().isEmpty()) {
                     hits.append({ tick, QStringLiteral("story:%1:0").arg(c.id), chapTitle,
-                        c.timeMarker, c.summary, docKey, QString(), c.manuscriptId });
+                        c.timeMarker, c.summary, docKey, QString(), c.manuscriptId, c.povOther });
                     ++tick;
                 }
             } else {
@@ -998,7 +1006,7 @@ void TimelinePanel::syncStoryTimeline()
                     const QString sceneLabel = s.title.isEmpty() ? tr("Cena %1").arg(si + 1) : s.title;
                     hits.append({ tick, QStringLiteral("story:%1:%2").arg(c.id).arg(si),
                         chapTitle + QStringLiteral(" · ") + sceneLabel, marker, summary, docKey,
-                        QStringLiteral("%1:%2").arg(c.id).arg(si), c.manuscriptId });
+                        QStringLiteral("%1:%2").arg(c.id).arg(si), c.manuscriptId, s.povOther });
                     ++tick;
                 }
             }
@@ -1078,13 +1086,15 @@ void TimelinePanel::syncStoryTimeline()
                   QString::fromLatin1(TimelineWeight::Backstory));
     }
 
-    for (const StoryHit& h : hits) {
+    QList<AutoHit> mainHits; // hits não-Flashback — insumo do detector de ramificações
+    for (const AutoHit& h : hits) {
         bool okChap = false;
         const qreal chapChrono = TimelineChrono::parse(h.marker, &okChap);
         const Base base = baseByMs.value(h.manuscriptId);
         const bool isFlashback = base.ok && okChap && chapChrono < base.chrono;
         const QString tid = isFlashback ? kFlashId : kMainId;
         desiredEvIds.insert(h.evId);
+        if (!isFlashback) mainHits.append(h);
 
         TimelineEvent* found = nullptr;
         for (auto& e : events) if (e.id == h.evId) { found = &e; break; }
@@ -1115,6 +1125,10 @@ void TimelinePanel::syncStoryTimeline()
             events.append(e);
         }
     }
+
+    // Ramificações automáticas — só dentro da Narrativa (mainHits nunca inclui
+    // Flashback). Muta events/conns/defs in-place antes do push final.
+    syncAutoBranches(mainHits, presentByEvId, events, conns, defs);
 
     // remove eventos auto obsoletos das duas trilhas (capítulo apagado / marcador
     // esvaziado). Identidade "é meu" = prefixo "story:" do id (não dá pra usar
@@ -1157,6 +1171,289 @@ void TimelinePanel::syncStoryTimeline()
     refreshFocusButtons();
     save();
     CrashLogger::log("tlSyncStory done");
+}
+
+// ── Ramificações automáticas ────────────────────────────────────────────────
+// Ver design em memória/plano "timeline-auto-branching-design". v1: pesos de
+// desempate (kTieEpsilon, penalidade de obsolescência, janela de agrupamento
+// de anomalias) são heurísticas razoáveis, não uma fórmula calibrada — vão
+// precisar de ajuste depois de testar com manuscritos reais.
+void TimelinePanel::syncAutoBranches(const QList<AutoHit>& mainHits,
+                                     const QHash<QString, QStringList>& presentByEvId,
+                                     QList<TimelineEvent>& events,
+                                     QList<TimelineConn>& conns,
+                                     QList<TimelineDef>& defs)
+{
+    static const QString kMainId = QStringLiteral("story:main");
+    if (mainHits.isEmpty()) return;
+
+    const QHash<QString, QString> assignments = loadBranchAssignments();
+
+    struct Branch {
+        QString id;
+        QString parentId;
+        qreal   lastChrono = 0.0;
+        bool    lastChronoOk = false;
+        QSet<QString> lastCast;
+        int     lastActiveTick = 0;
+        QString lastEvId;
+    };
+    QVector<Branch> branches;
+    { Branch main; main.id = kMainId; branches.append(main); }
+    auto findBranch = [&](const QString& id) -> Branch* {
+        for (auto& b : branches) if (b.id == id) return &b;
+        return nullptr;
+    };
+    Branch* current = &branches[0];
+
+    // Candidato pendente pra regra "2+ anomalias agrupando" (ponto 1 do
+    // design) — uma anomalia isolada nunca vira ramificação nova sozinha.
+    struct PendingCandidate {
+        bool active = false;
+        QString firstEvId;
+        qreal chrono = 0.0; bool chronoOk = false;
+        QSet<QString> cast;
+        QString originId;
+    };
+    PendingCandidate pending;
+
+    auto castFor = [&](const AutoHit& h) -> QSet<QString> {
+        const QStringList names = presentByEvId.value(h.evId);
+        return QSet<QString>(names.cbegin(), names.cend());
+    };
+    auto assignEvent = [&](const QString& evId, const QString& branchId) {
+        for (auto& e : events) if (e.id == evId) { e.timelineId = branchId; return; }
+    };
+    auto touchBranch = [&](Branch* b, qreal chrono, bool chronoOk,
+                           const QSet<QString>& cast, const AutoHit& h) {
+        b->lastChrono = chrono; b->lastChronoOk = chronoOk;
+        b->lastCast = cast; b->lastActiveTick = h.rank; b->lastEvId = h.evId;
+        assignEvent(h.evId, b->id);
+    };
+    auto addConvergence = [&](const QString& fromEvId, const QString& toEvId) {
+        if (fromEvId.isEmpty() || fromEvId == toEvId) return;
+        for (const auto& c : conns) {
+            if ((c.fromEventId == fromEvId && c.toEventId == toEvId)
+             || (c.fromEventId == toEvId && c.toEventId == fromEvId)) return;
+        }
+        TimelineConn tc;
+        tc.id = QStringLiteral("branch-conn:%1:%2").arg(fromEvId, toEvId);
+        tc.fromEventId = fromEvId;
+        tc.toEventId   = toEvId;
+        tc.type = QString::fromLatin1(TimelineConnType::Branch);
+        conns.append(tc);
+    };
+    // Distância heurística: cronologia é o fator primário (ponto 3 do
+    // design); obsolescência penaliza ramificações silenciosas há muitos
+    // capítulos (ponto 9); elenco só desempata quando a cronologia empata
+    // (ponto 4) — aqui entra como parte da MESMA conta via kTieEpsilon.
+    auto distance = [&](qreal chrono, bool chronoOk, const Branch& b, int tick) -> qreal {
+        qreal d = 1e9;
+        if (chronoOk && b.lastChronoOk) d = qAbs(chrono - b.lastChrono);
+        const qreal obsolescence = qMax(0, tick - b.lastActiveTick) * 0.05;
+        return d + obsolescence;
+    };
+    constexpr qreal kTieEpsilon = 0.35; // "dias" no escalar do TimelineChrono
+
+    for (const AutoHit& h : mainHits) {
+        bool chronoOk = false;
+        const qreal chrono = TimelineChrono::parse(h.marker, &chronoOk);
+        const QSet<QString> cast = castFor(h);
+
+        // Decisão do usuário já persistida pra este evento? Usa direto.
+        if (assignments.contains(h.evId)) {
+            const QString forcedId = assignments.value(h.evId);
+            Branch* b = findBranch(forcedId);
+            if (!b) { Branch nb; nb.id = forcedId; branches.append(nb); b = &branches.last(); }
+            touchBranch(b, chrono, chronoOk, cast, h);
+            current = b;
+            pending.active = false;
+            continue;
+        }
+
+        const bool triggerA = chronoOk && current->lastChronoOk && chrono < current->lastChrono;
+        const bool triggerB = !triggerA && chronoOk && current->lastChronoOk
+                             && !cast.isEmpty() && !current->lastCast.isEmpty()
+                             && (cast & current->lastCast).isEmpty();
+        const bool triggerC = h.povOther;
+
+        if (!triggerA && !triggerB && !triggerC) {
+            pending.active = false; // sequência normal quebra qualquer candidato pendente
+            touchBranch(current, chrono, chronoOk, cast, h);
+            continue;
+        }
+
+        // Anomalia. Acha, entre as ramificações JÁ existentes (fora a
+        // corrente), a mais próxima — candidata a "resumir".
+        Branch* bestOther = nullptr; qreal bestOtherDist = 1e18;
+        for (auto& b : branches) {
+            if (&b == current) continue;
+            const qreal d = distance(chrono, chronoOk, b, h.rank);
+            if (d < bestOtherDist) { bestOtherDist = d; bestOther = &b; }
+        }
+        const qreal distOrigin = distance(chrono, chronoOk, *current, h.rank);
+        const bool closerToOrigin = !bestOther || (distOrigin + kTieEpsilon < bestOtherDist);
+        const bool closerToOther  = bestOther && (bestOtherDist + kTieEpsilon < distOrigin);
+
+        if (closerToOrigin) {
+            // Reabsorve — fora de ordem isolado, não confirma nada (ponto 1).
+            pending.active = false;
+            touchBranch(current, chrono, chronoOk, cast, h);
+            continue;
+        }
+        if (closerToOther) {
+            // Retoma a ramificação existente mais próxima; conecta com a
+            // origem (convergência, ponto 6 — só conecta, nunca funde).
+            pending.active = false;
+            const QString originLastEv = current->lastEvId;
+            touchBranch(bestOther, chrono, chronoOk, cast, h);
+            addConvergence(originLastEv, h.evId);
+            current = bestOther;
+            continue;
+        }
+        if (bestOther) {
+            // Empate real entre origem e outra ramificação — resíduo que só
+            // o usuário decide (ponto 5). Reabsorve na origem enquanto isso.
+            const QString mainLabel = current->id == kMainId ? tr("Narrativa") : current->id;
+            const QString otherLabel = bestOther->id == kMainId ? tr("Narrativa") : bestOther->id;
+            enqueueBranchAmbiguity(h.evId, h.title,
+                { current->id, bestOther->id },
+                { tr("Continua em: %1").arg(mainLabel), tr("Retoma: %1").arg(otherLabel) });
+            pending.active = false;
+            touchBranch(current, chrono, chronoOk, cast, h);
+            continue;
+        }
+
+        // Nenhuma outra ramificação compete — candidata a ramificação NOVA.
+        const bool matchesPending = pending.active && pending.originId == current->id
+            && ((chronoOk && pending.chronoOk && qAbs(chrono - pending.chrono) < 3.0)
+             || (!cast.isEmpty() && !pending.cast.isEmpty() && !(cast & pending.cast).isEmpty()));
+
+        if (matchesPending) {
+            // 2ª anomalia confirma o padrão (ponto 1) — cria a ramificação
+            // agora, retroativa ao primeiro hit candidato.
+            const QString newId = QStringLiteral("branch:auto:%1").arg(pending.firstEvId);
+            Branch nb;
+            nb.id = newId; nb.parentId = current->id;
+            branches.append(nb);
+            Branch* created = &branches.last();
+
+            bool defFound = false;
+            for (auto& d : defs) {
+                if (d.id != newId) continue;
+                d.kind = QString::fromLatin1(TimelineKind::Parallel);
+                defFound = true;
+                break;
+            }
+            if (!defFound) {
+                TimelineDef d;
+                d.id = newId;
+                d.name = tr("Ramificação: %1").arg(h.title);
+                d.kind = QString::fromLatin1(TimelineKind::Parallel);
+                d.weight = QStringLiteral("secondary");
+                d.parentId = current->id;
+                d.branchFromEventId = pending.firstEvId;
+                d.autoGenerated = true;
+                d.railOrder = defs.size();
+                defs.append(d);
+            }
+
+            assignEvent(pending.firstEvId, newId);
+            touchBranch(created, chrono, chronoOk, cast, h);
+            current = created;
+            pending.active = false;
+        } else {
+            // Primeira anomalia isolada — candidata pendente, mas continua
+            // na origem por enquanto.
+            pending.active = true;
+            pending.firstEvId = h.evId;
+            pending.chrono = chrono; pending.chronoOk = chronoOk;
+            pending.cast = cast;
+            pending.originId = current->id;
+            touchBranch(current, chrono, chronoOk, cast, h);
+        }
+    }
+
+    // Limpa ramificações auto que ficaram sem nenhum evento (capítulo
+    // apagado / marcador editado até deixar de ser anômalo).
+    for (int i = defs.size() - 1; i >= 0; --i) {
+        const TimelineDef& d = defs[i];
+        if (!d.autoGenerated || d.kind != QString::fromLatin1(TimelineKind::Parallel)) continue;
+        const bool hasEvents = std::any_of(events.begin(), events.end(),
+            [&](const TimelineEvent& e){ return e.timelineId == d.id; });
+        if (!hasEvents) defs.removeAt(i);
+    }
+}
+
+QHash<QString, QString> TimelinePanel::loadBranchAssignments() const
+{
+    QHash<QString, QString> out;
+    if (m_projectRoot.isEmpty()) return out;
+    QSettings qs;
+    qs.beginGroup(QStringLiteral("timelineBranchingState"));
+    qs.beginGroup(QString::fromLatin1(
+        QCryptographicHash::hash(m_projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
+    const QStringList pairs = qs.value(QStringLiteral("eventBranchAssignment")).toStringList();
+    qs.endGroup();
+    qs.endGroup();
+    for (const QString& p : pairs) {
+        const int eq = p.indexOf(QLatin1Char('='));
+        if (eq <= 0) continue;
+        out.insert(p.left(eq), p.mid(eq + 1));
+    }
+    return out;
+}
+
+void TimelinePanel::saveBranchAssignment(const QString& evId, const QString& branchId)
+{
+    if (m_projectRoot.isEmpty()) return;
+    QHash<QString, QString> all = loadBranchAssignments();
+    all.insert(evId, branchId);
+    QStringList pairs;
+    for (auto it = all.constBegin(); it != all.constEnd(); ++it)
+        pairs << (it.key() + QLatin1Char('=') + it.value());
+    QSettings qs;
+    qs.beginGroup(QStringLiteral("timelineBranchingState"));
+    qs.beginGroup(QString::fromLatin1(
+        QCryptographicHash::hash(m_projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
+    qs.setValue(QStringLiteral("eventBranchAssignment"), pairs);
+    qs.endGroup();
+    qs.endGroup();
+}
+
+TimelineBranchPopup* TimelinePanel::ensureBranchPopup()
+{
+    if (!m_branchPopup) {
+        m_branchPopup = new TimelineBranchPopup(this);
+        connect(m_branchPopup, &TimelineBranchPopup::branchChosen, this,
+                [this](const QString& evId, const QString& branchId) {
+            saveBranchAssignment(evId, branchId);
+            syncStoryTimeline(); // resync completo já aplica a decisão persistida
+        });
+    }
+    return m_branchPopup;
+}
+
+void TimelinePanel::enqueueBranchAmbiguity(const QString& evId, const QString& evTitle,
+                                           const QStringList& candidateIds,
+                                           const QStringList& candidateLabels)
+{
+    // Só enfileira com o painel visível — se o resync rodou escondido (ex.:
+    // depois do Gerador de Timeline em lote), o hit fica reabsorvido na
+    // origem sem persistir nada; um resync futuro com o painel aberto
+    // reavalia e pode perguntar de novo então.
+    if (!isVisible()) return;
+    TimelineBranchPopup::Ambiguity item;
+    item.evId = evId;
+    item.title = evTitle;
+    item.candidateIds = candidateIds;
+    item.candidateLabels = candidateLabels;
+    auto* popup = ensureBranchPopup();
+    popup->enqueue(item);
+    popup->adjustSize();
+    const QRect win = this->geometry();
+    popup->move(win.x() + win.width() - popup->width() - 20,
+               win.y() + win.height() - popup->height() - 20);
 }
 
 void TimelinePanel::resizeEvent(QResizeEvent* event)
