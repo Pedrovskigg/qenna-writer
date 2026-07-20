@@ -9,10 +9,15 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <algorithm>
+
+namespace {
+constexpr int kSummaryBoxHeight = 64; // ~3 linhas — resumo curto, mas legível
+}
 
 TimelineGeneratorDialog::TimelineGeneratorDialog(ProjectModel* model, QWidget* parent)
     : QDialog(parent)
@@ -21,7 +26,7 @@ TimelineGeneratorDialog::TimelineGeneratorDialog(ProjectModel* model, QWidget* p
     setWindowTitle(tr("Gerador de Timeline"));
     setModal(true);
     if (parent) setStyleSheet(parent->styleSheet());
-    resize(640, 560);
+    resize(720, 640);
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(16, 16, 16, 16);
@@ -110,12 +115,14 @@ void TimelineGeneratorDialog::rebuildRows()
 
         auto* titleLabel = new QLabel(chapTitle, m_rowsContainer);
         titleLabel->setStyleSheet(QStringLiteral("font-weight:600;"));
-        m_rowsLayout->addWidget(titleLabel, row, 0);
+        m_rowsLayout->addWidget(titleLabel, row, 0, Qt::AlignTop);
         auto* markerEdit = new QLineEdit(c.timeMarker, m_rowsContainer);
         markerEdit->setPlaceholderText(tr("ex.: Dia 5, Verão de 1999…"));
-        m_rowsLayout->addWidget(markerEdit, row, 1);
-        auto* summaryEdit = new QLineEdit(c.summary, m_rowsContainer);
+        m_rowsLayout->addWidget(markerEdit, row, 1, Qt::AlignTop);
+        auto* summaryEdit = new QPlainTextEdit(m_rowsContainer);
+        summaryEdit->setPlainText(c.summary);
         summaryEdit->setPlaceholderText(tr("Resumo curto do capítulo…"));
+        summaryEdit->setFixedHeight(kSummaryBoxHeight);
         m_rowsLayout->addWidget(summaryEdit, row, 2);
         m_rows.append({ c.id, -1, markerEdit, summaryEdit });
         ++row;
@@ -128,12 +135,14 @@ void TimelineGeneratorDialog::rebuildRows()
 
             auto* scLabel = new QLabel(QStringLiteral("    ↳ %1").arg(scTitle), m_rowsContainer);
             scLabel->setStyleSheet(QStringLiteral("color:%1;").arg(muted));
-            m_rowsLayout->addWidget(scLabel, row, 0);
+            m_rowsLayout->addWidget(scLabel, row, 0, Qt::AlignTop);
             auto* scMarkerEdit = new QLineEdit(sc.timeMarker, m_rowsContainer);
             scMarkerEdit->setPlaceholderText(tr("herda do capítulo se vazio"));
-            m_rowsLayout->addWidget(scMarkerEdit, row, 1);
-            auto* scSummaryEdit = new QLineEdit(sc.summary, m_rowsContainer);
+            m_rowsLayout->addWidget(scMarkerEdit, row, 1, Qt::AlignTop);
+            auto* scSummaryEdit = new QPlainTextEdit(m_rowsContainer);
+            scSummaryEdit->setPlainText(sc.summary);
             scSummaryEdit->setPlaceholderText(tr("herda do capítulo se vazio"));
+            scSummaryEdit->setFixedHeight(kSummaryBoxHeight);
             m_rowsLayout->addWidget(scSummaryEdit, row, 2);
             m_rows.append({ c.id, sceneIndex, scMarkerEdit, scSummaryEdit });
             ++row;
@@ -149,10 +158,10 @@ void TimelineGeneratorDialog::saveAll()
     for (const RowRef& r : m_rows) {
         if (r.sceneIndex < 0) {
             m_model->updateChapterTimeMarker(r.chapterId, r.markerEdit->text().trimmed());
-            m_model->updateChapterSummary(r.chapterId, r.summaryEdit->text().trimmed());
+            m_model->updateChapterSummary(r.chapterId, r.summaryEdit->toPlainText().trimmed());
         } else {
             m_model->updateSceneTimeMarker(r.chapterId, r.sceneIndex, r.markerEdit->text().trimmed());
-            m_model->updateSceneSummary(r.chapterId, r.sceneIndex, r.summaryEdit->text().trimmed());
+            m_model->updateSceneSummary(r.chapterId, r.sceneIndex, r.summaryEdit->toPlainText().trimmed());
         }
     }
     m_model->endBatchUpdate();

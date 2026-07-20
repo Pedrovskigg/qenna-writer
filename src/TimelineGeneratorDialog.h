@@ -8,6 +8,7 @@ class ProjectModel;
 class QComboBox;
 class QGridLayout;
 class QLineEdit;
+class QPlainTextEdit;
 class QWidget;
 
 // "Gerador de Timeline" — painel acessível em Configurações que lista todos
@@ -29,7 +30,7 @@ private:
         QString chapterId;
         int sceneIndex = -1;   // -1 = a linha é do capítulo, não de uma cena
         QLineEdit* markerEdit = nullptr;
-        QLineEdit* summaryEdit = nullptr;
+        QPlainTextEdit* summaryEdit = nullptr;
     };
 
     ProjectModel* m_model;

@@ -12,6 +12,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QSlider>
 #include <QSpinBox>
 #include <QVBoxLayout>
@@ -30,7 +31,9 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     setObjectName(QStringLiteral("settingsPanel"));
     setWindowTitle(tr("Configurações"));
     setModal(false);
-    resize(660, 460);
+    resize(830, 620);
+    setMinimumWidth(830);
+    setMaximumHeight(680);
 
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -307,8 +310,11 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit maxDocsChanged(v);
     });
 
-    // Montagem em duas colunas
-    auto* cols = new QHBoxLayout;
+    // Montagem em duas colunas — dentro de um scroll, porque a coluna direita
+    // já não cabe mais numa janela de altura razoável (5 grupos empilhados).
+    auto* colsWidget = new QWidget(this);
+    auto* cols = new QHBoxLayout(colsWidget);
+    cols->setContentsMargins(0, 0, 0, 0);
     cols->setSpacing(16);
 
     auto* leftCol = new QVBoxLayout;
@@ -328,7 +334,14 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     cols->addLayout(leftCol, 1);
     cols->addLayout(rightCol, 1);
-    root->addLayout(cols);
+
+    auto* scrollArea = new QScrollArea(this);
+    scrollArea->setObjectName(QStringLiteral("settingsScrollArea"));
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setFrameShape(QFrame::NoFrame);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setWidget(colsWidget);
+    root->addWidget(scrollArea, 1);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Close, this);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::accept);
@@ -490,6 +503,10 @@ void SettingsPanel::applyTheme()
     setStyleSheet(QStringLiteral(R"(
         #settingsPanel {
             background-color: %1;
+        }
+        #settingsScrollArea, #settingsScrollArea > QWidget > QWidget {
+            background: transparent;
+            border: none;
         }
         #settingsPanel QLabel {
             color: %4;

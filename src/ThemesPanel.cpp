@@ -261,7 +261,8 @@ ThemesPanel::ThemesPanel(QWidget* parent)
     setObjectName(QStringLiteral("themesPanel"));
     setWindowTitle(tr("Temas"));
     setModal(false);
-    resize(720, 580);
+    resize(800, 580);
+    setMinimumWidth(800);
 
     buildUi();
     applyDialogStyle();
