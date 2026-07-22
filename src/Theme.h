@@ -228,4 +228,11 @@ int editorOpacity();
 // ImageOverlay etc. Reaplicar em themeChanged().
 QString globalStyleSheet();
 
+// QToolTip ignora `background-color` do QSS em vários estilos nativos
+// (Windows Vista style, por exemplo) — só a borda/padding do QSS pega,
+// o fundo continua preto do SO. QPalette::ToolTipBase/ToolTipText é o jeito
+// confiável de recolorir tooltip nativo. Chamar junto com
+// setStyleSheet(globalStyleSheet()) — no boot e em themeChanged().
+void applyToolTipPalette();
+
 } // namespace Theme

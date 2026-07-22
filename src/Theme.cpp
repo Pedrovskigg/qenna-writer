@@ -2,6 +2,7 @@
 
 #include "CrashLogger.h"
 
+#include <QApplication>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
@@ -9,6 +10,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPalette>
 #include <QSettings>
 #include <QTimer>
 
@@ -6457,6 +6459,13 @@ QString globalStyleSheet()
         QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
             background: transparent;
         }
+        QToolTip {
+            background-color: %2;
+            color: %4;
+            border: 1px solid %3;
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
     )")
         .arg(appBg,       // %1
              panelBg,     // %2
@@ -6471,6 +6480,14 @@ QString globalStyleSheet()
         .arg(selBg,       // %11 (não usado; reservado)
              accentBg,    // %12
              accentBg);   // %13
+}
+
+void applyToolTipPalette()
+{
+    QPalette pal = QApplication::palette();
+    pal.setColor(QPalette::ToolTipBase, QColor(panelBackground()));
+    pal.setColor(QPalette::ToolTipText, QColor(textPrimary()));
+    QApplication::setPalette(pal);
 }
 
 } // namespace Theme

@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     // Stylesheet global vive em Theme::globalStyleSheet() — derivada do tema
     // corrente. MainWindow::onThemeChanged() reaplica em troca de tema.
     app.setStyleSheet(Theme::globalStyleSheet());
+    Theme::applyToolTipPalette();
 
     QTranslator translator;
     {

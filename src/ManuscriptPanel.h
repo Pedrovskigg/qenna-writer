@@ -12,6 +12,7 @@ class QPushButton;
 class ProjectModel;
 class DialogueStore;
 class WordCounter;
+class ElementsStore;
 
 class ManuscriptPanel : public QWidget {
     Q_OBJECT
@@ -27,6 +28,10 @@ public:
     // durante a construção, antes do MainWindow acabar de ligar tudo).
     void setDialogueStore(DialogueStore* store);
     void setWordCounter(WordCounter* counter);
+    // Só guardado pra repassar pro ChapterStatsDialog quando a pilula for
+    // clicada — não precisa reagir a mudanças (a janela de estatísticas é
+    // "burra", calcula tudo na abertura).
+    void setElementsStore(ElementsStore* store) { m_elementsStore = store; }
 
 signals:
     void chapterActivated(QString manuscriptId, QString chapterId);
@@ -46,6 +51,12 @@ signals:
     void openSceneInRefMenuRequested(QString manuscriptId, QString chapterId, int sceneIndex);
     void elementsPresentRequested(QString manuscriptId, QString chapterId);
     void sceneElementsPresentRequested(QString manuscriptId, QString chapterId, int sceneIndex);
+    // Clique na pilula de diálogo/narração de um capítulo — pede a janela de
+    // estatísticas (ChapterStatsDialog), montada por quem escuta (MainWindow).
+    // anchorGlobalPos: canto (borda direita do painel, topo da pilula clicada)
+    // em coordenadas globais, pra a janela abrir ao lado do painel, alinhada
+    // com o capítulo clicado, em vez de em cima do cursor.
+    void chapterStatsRequested(QString manuscriptId, QString chapterId, QPoint anchorGlobalPos);
     // Drag&drop reorder
     void reorderChapterRequested(QString chapterId, int targetIndex);
     void reorderSceneRequested(QString chapterId, int srcIndex, int targetIndex);
@@ -80,6 +91,7 @@ private:
     ProjectModel* m_model;
     DialogueStore* m_dialogueStore = nullptr;
     WordCounter* m_wordCounter = nullptr;
+    ElementsStore* m_elementsStore = nullptr;
     QComboBox* m_combo;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;

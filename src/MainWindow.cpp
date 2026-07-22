@@ -32,6 +32,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QScreen>
 #include <QCryptographicHash>
 #include <QPainter>
 #include <QScrollArea>
@@ -123,6 +124,7 @@
 #include "TimelinePanel.h"
 #include "TimelineGeneratorDialog.h"
 #include "CharacterSheetPanel.h"
+#include "ChapterStatsDialog.h"
 #include "MentionPopup.h"
 #include "RemindersPanel.h"
 #include "RemindersStore.h"
@@ -1604,6 +1606,7 @@ void MainWindow::setupEditor()
     if (manuscriptPanel) {
         manuscriptPanel->setWordCounter(wordCounter);
         manuscriptPanel->setDialogueStore(dialogueStore);
+        manuscriptPanel->setElementsStore(elementsStore);
     }
     // Tracking de tempo: cursor/texto/seleção contam como atividade.
     connect(editor, &QTextEdit::cursorPositionChanged, wordCounter, &WordCounter::registerCursorActivity);
@@ -2379,6 +2382,25 @@ void MainWindow::setupEditor()
             saveDetectionState();
         });
         dlg->exec();
+    });
+    connect(manuscriptPanel, &ManuscriptPanel::chapterStatsRequested, this,
+            [this](const QString& manuscriptId, const QString& chapterId, const QPoint& anchorGlobalPos) {
+        auto* dlg = new ChapterStatsDialog(wordCounter, dialogueStore, elementsStore, projectModel,
+                                            manuscriptId, chapterId, this);
+        const QSize sz = dlg->size();
+        // Por padrão abre encostada na borda direita do painel, alinhada com
+        // a pilula clicada — só cai pra esquerda dela se não couber na tela.
+        QPoint pos(anchorGlobalPos.x() + 8, anchorGlobalPos.y());
+        if (QScreen* scr = QApplication::screenAt(anchorGlobalPos)) {
+            const QRect avail = scr->availableGeometry();
+            if (pos.x() + sz.width() > avail.right())
+                pos.setX(anchorGlobalPos.x() - sz.width() - 8);
+            if (pos.y() + sz.height() > avail.bottom()) pos.setY(avail.bottom() - sz.height());
+            if (pos.x() < avail.left()) pos.setX(avail.left());
+            if (pos.y() < avail.top()) pos.setY(avail.top());
+        }
+        dlg->move(pos);
+        dlg->show();
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteChapterRequested, this, [this](const QString& chapterId) {
@@ -5443,6 +5465,7 @@ void MainWindow::onThemeChanged()
     // de imagem/fonte) é derivada do tema e precisa ser reaplicada.
     if (auto* a = qobject_cast<QApplication*>(QApplication::instance())) {
         a->setStyleSheet(Theme::globalStyleSheet());
+        Theme::applyToolTipPalette();
     }
 
     applyBackgroundFromTheme();
