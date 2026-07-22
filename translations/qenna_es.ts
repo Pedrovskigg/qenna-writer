@@ -1800,49 +1800,41 @@ La carpeta del proyecto se borrará del disco. Esta acción NO se puede deshacer
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="231"/>
-        <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
         <translation>Protagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="232"/>
-        <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
         <translation>Deuteragonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="233"/>
-        <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
         <translation>Personaje secundario</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="234"/>
-        <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
         <translation>Antagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="235"/>
-        <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
         <translation>Contraste</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="236"/>
-        <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
         <translation>Trickster</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="237"/>
-        <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="238"/>
-        <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
         <translation>Figurante</translation>
     </message>
@@ -5411,7 +5403,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <location filename="../src/MainWindow.cpp" line="1284"/>
         <location filename="../src/MainWindow.cpp" line="1298"/>
         <location filename="../src/MainWindow.cpp" line="2428"/>
-        <location filename="../src/MainWindow.cpp" line="6273"/>
+        <location filename="../src/MainWindow.cpp" line="6299"/>
         <source>Cena %1</source>
         <translation>Escena %1</translation>
     </message>
@@ -5477,15 +5469,15 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1267"/>
-        <location filename="../src/MainWindow.cpp" line="6271"/>
-        <location filename="../src/MainWindow.cpp" line="6280"/>
+        <location filename="../src/MainWindow.cpp" line="6297"/>
+        <location filename="../src/MainWindow.cpp" line="6306"/>
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1285"/>
         <location filename="../src/MainWindow.cpp" line="1299"/>
-        <location filename="../src/MainWindow.cpp" line="6274"/>
+        <location filename="../src/MainWindow.cpp" line="6300"/>
         <source>%1 — %2</source>
         <translation>%1 — %2</translation>
     </message>
@@ -5610,9 +5602,9 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2849"/>
-        <location filename="../src/MainWindow.cpp" line="6022"/>
-        <location filename="../src/MainWindow.cpp" line="6295"/>
-        <location filename="../src/MainWindow.cpp" line="6503"/>
+        <location filename="../src/MainWindow.cpp" line="6048"/>
+        <location filename="../src/MainWindow.cpp" line="6321"/>
+        <location filename="../src/MainWindow.cpp" line="6529"/>
         <source>(sem nome)</source>
         <translation>(sin nombre)</translation>
     </message>
@@ -5870,80 +5862,85 @@ El contenido existente puede sobrescribirse.</translation>
         <translation>Exportar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5936"/>
-        <location filename="../src/MainWindow.cpp" line="5979"/>
+        <location filename="../src/MainWindow.cpp" line="5458"/>
+        <source>Carregando área de Temas…</source>
+        <translation>Cargando área de Temas…</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="5962"/>
+        <location filename="../src/MainWindow.cpp" line="6005"/>
         <source>Excluir vínculo</source>
         <translation>Eliminar vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5937"/>
-        <location filename="../src/MainWindow.cpp" line="5980"/>
+        <location filename="../src/MainWindow.cpp" line="5963"/>
+        <location filename="../src/MainWindow.cpp" line="6006"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar este vínculo? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6002"/>
+        <location filename="../src/MainWindow.cpp" line="6028"/>
         <source>Documento do vínculo</source>
         <translation>Documento del vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6010"/>
-        <location filename="../src/MainWindow.cpp" line="6493"/>
+        <location filename="../src/MainWindow.cpp" line="6036"/>
+        <location filename="../src/MainWindow.cpp" line="6519"/>
         <source>Nome do documento:</source>
         <translation>Nombre del documento:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6016"/>
-        <location filename="../src/MainWindow.cpp" line="6499"/>
+        <location filename="../src/MainWindow.cpp" line="6042"/>
+        <location filename="../src/MainWindow.cpp" line="6525"/>
         <source>Gaveta de destino:</source>
         <translation>Cajón de destino:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4521"/>
-        <location filename="../src/MainWindow.cpp" line="6034"/>
-        <location filename="../src/MainWindow.cpp" line="6531"/>
+        <location filename="../src/MainWindow.cpp" line="6060"/>
+        <location filename="../src/MainWindow.cpp" line="6557"/>
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6035"/>
-        <location filename="../src/MainWindow.cpp" line="6532"/>
+        <location filename="../src/MainWindow.cpp" line="6061"/>
+        <location filename="../src/MainWindow.cpp" line="6558"/>
         <source>Criar</source>
         <translation>Crear</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6053"/>
+        <location filename="../src/MainWindow.cpp" line="6079"/>
         <source>%1 — %2 de %3</source>
         <translation>%1 — %2 de %3</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6285"/>
+        <location filename="../src/MainWindow.cpp" line="6311"/>
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6459"/>
         <location filename="../src/MainWindow.cpp" line="6485"/>
+        <location filename="../src/MainWindow.cpp" line="6511"/>
         <source>Criar documento</source>
         <translation>Crear documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6460"/>
+        <location filename="../src/MainWindow.cpp" line="6486"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Crea un cajón antes de usar esta función.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6518"/>
+        <location filename="../src/MainWindow.cpp" line="6544"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
         <translation>A continuación se abrirá el formulario de personaje (foto y rol).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6519"/>
+        <location filename="../src/MainWindow.cpp" line="6545"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
         <translation>A continuación se abrirá el formulario de escenario (foto).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6520"/>
+        <location filename="../src/MainWindow.cpp" line="6546"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation>A continuación se abrirá el formulario de objeto (foto).</translation>
     </message>

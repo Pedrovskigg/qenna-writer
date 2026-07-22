@@ -1780,49 +1780,41 @@ A pasta do projeto será apagada do disco. Esta ação NÃO pode ser desfeita.</
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="231"/>
-        <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="232"/>
-        <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="233"/>
-        <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="234"/>
-        <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="235"/>
-        <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="236"/>
-        <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="237"/>
-        <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="238"/>
-        <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5381,7 +5373,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <location filename="../src/MainWindow.cpp" line="1284"/>
         <location filename="../src/MainWindow.cpp" line="1298"/>
         <location filename="../src/MainWindow.cpp" line="2428"/>
-        <location filename="../src/MainWindow.cpp" line="6273"/>
+        <location filename="../src/MainWindow.cpp" line="6299"/>
         <source>Cena %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5446,15 +5438,15 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1267"/>
-        <location filename="../src/MainWindow.cpp" line="6271"/>
-        <location filename="../src/MainWindow.cpp" line="6280"/>
+        <location filename="../src/MainWindow.cpp" line="6297"/>
+        <location filename="../src/MainWindow.cpp" line="6306"/>
         <source>Capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1285"/>
         <location filename="../src/MainWindow.cpp" line="1299"/>
-        <location filename="../src/MainWindow.cpp" line="6274"/>
+        <location filename="../src/MainWindow.cpp" line="6300"/>
         <source>%1 — %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5579,9 +5571,9 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2849"/>
-        <location filename="../src/MainWindow.cpp" line="6022"/>
-        <location filename="../src/MainWindow.cpp" line="6295"/>
-        <location filename="../src/MainWindow.cpp" line="6503"/>
+        <location filename="../src/MainWindow.cpp" line="6048"/>
+        <location filename="../src/MainWindow.cpp" line="6321"/>
+        <location filename="../src/MainWindow.cpp" line="6529"/>
         <source>(sem nome)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5832,80 +5824,85 @@ Conteúdo existente pode ser sobrescrito.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5936"/>
-        <location filename="../src/MainWindow.cpp" line="5979"/>
+        <location filename="../src/MainWindow.cpp" line="5458"/>
+        <source>Carregando área de Temas…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="5962"/>
+        <location filename="../src/MainWindow.cpp" line="6005"/>
         <source>Excluir vínculo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5937"/>
-        <location filename="../src/MainWindow.cpp" line="5980"/>
+        <location filename="../src/MainWindow.cpp" line="5963"/>
+        <location filename="../src/MainWindow.cpp" line="6006"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6002"/>
+        <location filename="../src/MainWindow.cpp" line="6028"/>
         <source>Documento do vínculo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6010"/>
-        <location filename="../src/MainWindow.cpp" line="6493"/>
+        <location filename="../src/MainWindow.cpp" line="6036"/>
+        <location filename="../src/MainWindow.cpp" line="6519"/>
         <source>Nome do documento:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6016"/>
-        <location filename="../src/MainWindow.cpp" line="6499"/>
+        <location filename="../src/MainWindow.cpp" line="6042"/>
+        <location filename="../src/MainWindow.cpp" line="6525"/>
         <source>Gaveta de destino:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="4521"/>
-        <location filename="../src/MainWindow.cpp" line="6034"/>
-        <location filename="../src/MainWindow.cpp" line="6531"/>
+        <location filename="../src/MainWindow.cpp" line="6060"/>
+        <location filename="../src/MainWindow.cpp" line="6557"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6035"/>
-        <location filename="../src/MainWindow.cpp" line="6532"/>
+        <location filename="../src/MainWindow.cpp" line="6061"/>
+        <location filename="../src/MainWindow.cpp" line="6558"/>
         <source>Criar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6053"/>
+        <location filename="../src/MainWindow.cpp" line="6079"/>
         <source>%1 — %2 de %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6285"/>
+        <location filename="../src/MainWindow.cpp" line="6311"/>
         <source>Documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6459"/>
         <location filename="../src/MainWindow.cpp" line="6485"/>
+        <location filename="../src/MainWindow.cpp" line="6511"/>
         <source>Criar documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6460"/>
+        <location filename="../src/MainWindow.cpp" line="6486"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6518"/>
+        <location filename="../src/MainWindow.cpp" line="6544"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6519"/>
+        <location filename="../src/MainWindow.cpp" line="6545"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6520"/>
+        <location filename="../src/MainWindow.cpp" line="6546"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation type="unfinished"></translation>
     </message>

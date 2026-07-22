@@ -5451,7 +5451,33 @@ void MainWindow::onExportRequested()
 void MainWindow::onThemePanelRequested()
 {
     if (!themesPanel) {
+        // A construção monta um preview por tema (tem muito tema) e trava a
+        // thread por 2-4s — mostra um toast antes, força o repaint na unha
+        // (processEvents) já que o próprio construtor bloqueante impede o
+        // Qt de pintar sozinho, e só então constrói o painel de verdade.
+        auto* loadingToast = new QLabel(tr("Carregando área de Temas…"), this);
+        loadingToast->setObjectName(QStringLiteral("themesLoadingToast"));
+        loadingToast->setAlignment(Qt::AlignCenter);
+        loadingToast->setStyleSheet(QStringLiteral(
+            "QLabel#themesLoadingToast {"
+            "  background: %1;"
+            "  color: %2;"
+            "  border: 1px solid %3;"
+            "  border-radius: 6px;"
+            "  padding: 8px 20px;"
+            "  font-family: 'Lora','Crimson Text',serif;"
+            "  font-size: 13px;"
+            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+        loadingToast->adjustSize();
+        const QPoint center = rect().center();
+        loadingToast->move(center.x() - loadingToast->width() / 2,
+                            center.y() - loadingToast->height() / 2);
+        loadingToast->show();
+        loadingToast->raise();
+        QApplication::processEvents();
+
         themesPanel = new ThemesPanel(this);
+        loadingToast->deleteLater();
     }
     themesPanel->show();
     themesPanel->raise();

@@ -42,8 +42,12 @@ AmbienceManager::~AmbienceManager()
 
 void AmbienceManager::resolveDirectory()
 {
+    // Instalador copia a pasta pra {app}\ambience-sounds\, sem prefixo
+    // "assets" — mesmo mismatch que existia no bundledImagePath do
+    // Theme.cpp (o caminho de prod tinha "assets/" a mais e nunca batia
+    // com o que o instalador entrega de verdade pro usuário final).
     const QString prod = QCoreApplication::applicationDirPath()
-        + QStringLiteral("/assets/ambience-sounds");
+        + QStringLiteral("/ambience-sounds");
     if (QDir(prod).exists()) {
         m_dir = prod;
         return;

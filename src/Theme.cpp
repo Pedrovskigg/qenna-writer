@@ -18,13 +18,14 @@ namespace Theme {
 
 namespace {
 
-// Resolve o caminho de uma imagem bundled em assets/theme-images/.
-// Tenta primeiro ao lado do exe (deploy) e depois DEV_ASSETS_DIR (dev).
+// Resolve o caminho de uma imagem bundled em theme-images/.
+// Tenta primeiro ao lado do exe (deploy — instalador copia a pasta pra
+// {app}\theme-images\, sem prefixo "assets") e depois DEV_ASSETS_DIR (dev).
 // Vazio se não encontrar.
 QString bundledImagePath(const QString& filename)
 {
     const QString prod = QCoreApplication::applicationDirPath()
-        + QStringLiteral("/assets/theme-images/") + filename;
+        + QStringLiteral("/theme-images/") + filename;
     if (QFile::exists(prod)) return prod;
 #ifdef DEV_ASSETS_DIR
     const QString dev = QString::fromUtf8(DEV_ASSETS_DIR)
@@ -5557,6 +5558,150 @@ void Manager::loadBundled()
           QStringLiteral("#e0b8ac"), QStringLiteral("#906258"), QStringLiteral("#f6e0d8"),
           QStringLiteral("#c8242e"), QStringLiteral("#1c0e0a"), QStringLiteral("#e0b8ac"));
 
+    // ---- Leva "mais temas" (2026-07-22) — 20 temas novos, 5 por categoria
+    // sólida (estampados ficam de fora de novo, mesma razão: dependem de
+    // fotos novas). Mesmo helper `solid` acima, mesmo espírito de flips
+    // ocasionais (UI e página nem sempre combinam).
+
+    // -- Claros (light) --
+    solid(QStringLiteral("moonstone"), QStringLiteral("Moonstone"), false, QStringLiteral("42,38,54"),
+          QStringLiteral("#eceaf2"), QStringLiteral("#f6f4fa"), QStringLiteral("#d3cee0"),
+          QStringLiteral("#2a2636"), QStringLiteral("#7d7690"), QStringLiteral("#17141f"),
+          QStringLiteral("#5b57c9"), QStringLiteral("#ffffff"), QStringLiteral("#221f2c"));
+
+    solid(QStringLiteral("dovetail"), QStringLiteral("Dovetail"), false, QStringLiteral("38,50,56"),
+          QStringLiteral("#e6ebee"), QStringLiteral("#f2f6f8"), QStringLiteral("#c9d4da"),
+          QStringLiteral("#263238"), QStringLiteral("#6d818a"), QStringLiteral("#141c20"),
+          QStringLiteral("#2e8b96"), QStringLiteral("#ffffff"), QStringLiteral("#1c2529"));
+
+    solid(QStringLiteral("birchwood"), QStringLiteral("Birchwood"), false, QStringLiteral("44,42,32"),
+          QStringLiteral("#efece4"), QStringLiteral("#f8f6ef"), QStringLiteral("#ddd6c4"),
+          QStringLiteral("#2c2a20"), QStringLiteral("#7e7a68"), QStringLiteral("#18160f"),
+          QStringLiteral("#5c7a4a"), QStringLiteral("#fffdf6"), QStringLiteral("#221f16"));
+
+    solid(QStringLiteral("powder-blue"), QStringLiteral("Powder Blue"), false, QStringLiteral("28,48,64"),
+          QStringLiteral("#e4edf4"), QStringLiteral("#f0f6fb"), QStringLiteral("#c3d8e6"),
+          QStringLiteral("#1c3040"), QStringLiteral("#647e8e"), QStringLiteral("#0e1c26"),
+          QStringLiteral("#1f77c9"), QStringLiteral("#ffffff"), QStringLiteral("#16242e"));
+
+    // UI clara e neutra, mas a página vira carvão quente — o "flip" da leva.
+    solid(QStringLiteral("eggshell"), QStringLiteral("Eggshell"), false, QStringLiteral("48,42,30"),
+          QStringLiteral("#ece7de"), QStringLiteral("#f7f3ea"), QStringLiteral("#d6cdb8"),
+          QStringLiteral("#302a1e"), QStringLiteral("#857c68"), QStringLiteral("#1a160e"),
+          QStringLiteral("#d97a56"), QStringLiteral("#1c1a16"), QStringLiteral("#ece4d4"));
+
+    // -- Amarelados (warm) --
+    solid(QStringLiteral("turmeric"), QStringLiteral("Turmeric"), false, QStringLiteral("60,44,6"),
+          QStringLiteral("#f6e8c8"), QStringLiteral("#fbf1d8"), QStringLiteral("#e6c778"),
+          QStringLiteral("#3c2c06"), QStringLiteral("#8a743a"), QStringLiteral("#241a02"),
+          QStringLiteral("#d68c12"), QStringLiteral("#fffaf0"), QStringLiteral("#2e2204"));
+
+    // UI marrom-vinho bem escura, mas página clara — outro "flip" da leva.
+    solid(QStringLiteral("fig-preserve"), QStringLiteral("Fig Preserve"), true, QStringLiteral("230,205,214"),
+          QStringLiteral("#22141a"), QStringLiteral("#2a1a20"), QStringLiteral("#4a2e38"),
+          QStringLiteral("#e6cdd6"), QStringLiteral("#8a6a74"), QStringLiteral("#f6e6ec"),
+          QStringLiteral("#8a3a58"), QStringLiteral("#f8ede8"), QStringLiteral("#2e1a20"));
+
+    solid(QStringLiteral("butterscotch"), QStringLiteral("Butterscotch"), false, QStringLiteral("64,44,18"),
+          QStringLiteral("#f5e4c2"), QStringLiteral("#faefd6"), QStringLiteral("#e0c185"),
+          QStringLiteral("#402c12"), QStringLiteral("#8f7850"), QStringLiteral("#261a08"),
+          QStringLiteral("#c9761e"), QStringLiteral("#fff8e8"), QStringLiteral("#32220e"));
+
+    solid(QStringLiteral("maple-syrup"), QStringLiteral("Maple Syrup"), false, QStringLiteral("58,36,8"),
+          QStringLiteral("#f0dcc0"), QStringLiteral("#f7e8d2"), QStringLiteral("#d9b47e"),
+          QStringLiteral("#3a2408"), QStringLiteral("#8a6f42"), QStringLiteral("#221402"),
+          QStringLiteral("#a8621a"), QStringLiteral("#fff4e2"), QStringLiteral("#2c1c06"));
+
+    // UI olive-escura, página em creme — mais um "flip" quente da leva.
+    solid(QStringLiteral("cardamom"), QStringLiteral("Cardamom"), true, QStringLiteral("216,207,168"),
+          QStringLiteral("#1c1a10"), QStringLiteral("#242015"), QStringLiteral("#423c22"),
+          QStringLiteral("#d8cfa8"), QStringLiteral("#857c5a"), QStringLiteral("#f0e8c8"),
+          QStringLiteral("#8a9040"), QStringLiteral("#f8f2dc"), QStringLiteral("#2c2814"));
+
+    // -- Escuros (dark) --
+    solid(QStringLiteral("anthracite"), QStringLiteral("Anthracite"), true, QStringLiteral("200,204,210"),
+          QStringLiteral("#0e1013"), QStringLiteral("#14171b"), QStringLiteral("#2a2e34"),
+          QStringLiteral("#c8ccd2"), QStringLiteral("#6e747c"), QStringLiteral("#eef0f4"),
+          QStringLiteral("#4a90d9"), QStringLiteral("#16181c"), QStringLiteral("#c8ccd2"));
+
+    solid(QStringLiteral("ashwood"), QStringLiteral("Ashwood"), true, QStringLiteral("212,205,194"),
+          QStringLiteral("#14120f"), QStringLiteral("#1c1916"), QStringLiteral("#38322c"),
+          QStringLiteral("#d4cdc2"), QStringLiteral("#7e766a"), QStringLiteral("#f2ece2"),
+          QStringLiteral("#b0704a"), QStringLiteral("#1a1714"), QStringLiteral("#d4cdc2"));
+
+    solid(QStringLiteral("cast-iron"), QStringLiteral("Cast Iron"), true, QStringLiteral("196,202,206"),
+          QStringLiteral("#101214"), QStringLiteral("#181b1e"), QStringLiteral("#303538"),
+          QStringLiteral("#c4cace"), QStringLiteral("#6a7074"), QStringLiteral("#eceef0"),
+          QStringLiteral("#6a7de0"), QStringLiteral("#1a1d20"), QStringLiteral("#c4cace"));
+
+    solid(QStringLiteral("void-static"), QStringLiteral("Void Static"), true, QStringLiteral("184,204,200"),
+          QStringLiteral("#0a0c0c"), QStringLiteral("#101414"), QStringLiteral("#242c2c"),
+          QStringLiteral("#b8ccc8"), QStringLiteral("#5e726e"), QStringLiteral("#e2f2ee"),
+          QStringLiteral("#3ee8b8"), QStringLiteral("#0e1212"), QStringLiteral("#b8ccc8"));
+
+    solid(QStringLiteral("tarnish"), QStringLiteral("Tarnish"), true, QStringLiteral("200,208,192"),
+          QStringLiteral("#12140f"), QStringLiteral("#1a1d16"), QStringLiteral("#363a2c"),
+          QStringLiteral("#c8d0c0"), QStringLiteral("#6e786a"), QStringLiteral("#eef4e8"),
+          QStringLiteral("#8fae7a"), QStringLiteral("#181b14"), QStringLiteral("#c8d0c0"));
+
+    // -- Coloridos (colorful) --
+    solid(QStringLiteral("cobalt-bloom"), QStringLiteral("Cobalt Bloom"), true, QStringLiteral("205,214,248"),
+          QStringLiteral("#0a1030"), QStringLiteral("#101848"), QStringLiteral("#2a3878"),
+          QStringLiteral("#cdd6f8"), QStringLiteral("#6e7cb0"), QStringLiteral("#eef1ff"),
+          QStringLiteral("#ff3d9e"), QStringLiteral("#0c1238"), QStringLiteral("#cdd6f8"));
+
+    solid(QStringLiteral("chartreuse-riot"), QStringLiteral("Chartreuse Riot"), true, QStringLiteral("214,232,168"),
+          QStringLiteral("#10140a"), QStringLiteral("#181f0e"), QStringLiteral("#33401a"),
+          QStringLiteral("#d6e8a8"), QStringLiteral("#7a8a5a"), QStringLiteral("#eef8d0"),
+          QStringLiteral("#a8e022"), QStringLiteral("#141a0c"), QStringLiteral("#d6e8a8"));
+
+    solid(QStringLiteral("magenta-static"), QStringLiteral("Magenta Static"), true, QStringLiteral("232,200,232"),
+          QStringLiteral("#140a14"), QStringLiteral("#1c101c"), QStringLiteral("#3a1e3a"),
+          QStringLiteral("#e8c8e8"), QStringLiteral("#8a6a8a"), QStringLiteral("#fce8fc"),
+          QStringLiteral("#e022c8"), QStringLiteral("#180c18"), QStringLiteral("#e8c8e8"));
+
+    solid(QStringLiteral("solar-flare"), QStringLiteral("Solar Flare"), true, QStringLiteral("240,205,184"),
+          QStringLiteral("#140a06"), QStringLiteral("#1e0f08"), QStringLiteral("#402014"),
+          QStringLiteral("#f0cdb8"), QStringLiteral("#9a6e50"), QStringLiteral("#fce6d4"),
+          QStringLiteral("#ff5a1e"), QStringLiteral("#180d08"), QStringLiteral("#f0cdb8"));
+
+    solid(QStringLiteral("kingfisher"), QStringLiteral("Kingfisher"), true, QStringLiteral("184,232,238"),
+          QStringLiteral("#061418"), QStringLiteral("#0a1e24"), QStringLiteral("#163c46"),
+          QStringLiteral("#b8e8ee"), QStringLiteral("#5e8a90"), QStringLiteral("#e2fbfc"),
+          QStringLiteral("#f0812e"), QStringLiteral("#081a20"), QStringLiteral("#b8e8ee"));
+
+    // ---- Leva "Cardamom fez sucesso" (2026-07-22) — 5 temas com o mesmo
+    // truque do Cardamom: UI escura (às vezes de tom bem frio) mas a página
+    // (editorBg) é sempre creme/marfim amarelado, nunca branco puro.
+
+    solid(QStringLiteral("clove"), QStringLiteral("Clove"), true, QStringLiteral("230,200,206"),
+          QStringLiteral("#180c0e"), QStringLiteral("#201014"), QStringLiteral("#402028"),
+          QStringLiteral("#e6c8ce"), QStringLiteral("#8a6268"), QStringLiteral("#f8e2e6"),
+          QStringLiteral("#a83048"), QStringLiteral("#f8ecd8"), QStringLiteral("#2c1a14"));
+
+    solid(QStringLiteral("cocoa-husk"), QStringLiteral("Cocoa Husk"), true, QStringLiteral("232,212,184"),
+          QStringLiteral("#160f0a"), QStringLiteral("#1e150e"), QStringLiteral("#3c2c1a"),
+          QStringLiteral("#e8d4b8"), QStringLiteral("#8a7458"), QStringLiteral("#f8ecd8"),
+          QStringLiteral("#c8722a"), QStringLiteral("#f7ecd4"), QStringLiteral("#2c2010"));
+
+    solid(QStringLiteral("star-anise"), QStringLiteral("Star Anise"), true, QStringLiteral("226,196,198"),
+          QStringLiteral("#12090a"), QStringLiteral("#1a0e10"), QStringLiteral("#3a1c1e"),
+          QStringLiteral("#e2c4c6"), QStringLiteral("#866062"), QStringLiteral("#f6e0e2"),
+          QStringLiteral("#8a2030"), QStringLiteral("#f6ecd8"), QStringLiteral("#241214"));
+
+    solid(QStringLiteral("tobacco-leaf"), QStringLiteral("Tobacco Leaf"), true, QStringLiteral("220,208,172"),
+          QStringLiteral("#14120a"), QStringLiteral("#1c190e"), QStringLiteral("#3a341c"),
+          QStringLiteral("#dcd0ac"), QStringLiteral("#837a5c"), QStringLiteral("#f2ead0"),
+          QStringLiteral("#b06a24"), QStringLiteral("#f8f0da"), QStringLiteral("#2a2412"));
+
+    // UI fria (azul-esverdeada de fumaça), página creme — o "flip" cruzado
+    // desta leva: a cor da UI nem precisa ser quente pra combinar com página
+    // amarelada.
+    solid(QStringLiteral("juniper-smoke"), QStringLiteral("Juniper Smoke"), true, QStringLiteral("205,224,220"),
+          QStringLiteral("#0c1414"), QStringLiteral("#121c1c"), QStringLiteral("#263838"),
+          QStringLiteral("#cde0dc"), QStringLiteral("#6e8a86"), QStringLiteral("#eef8f6"),
+          QStringLiteral("#4a7a8a"), QStringLiteral("#f8f2de"), QStringLiteral("#182420"));
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -5729,6 +5874,33 @@ void Manager::loadBundled()
         { QStringLiteral("nebula-pop"),            QStringLiteral("colorful")  },
         { QStringLiteral("peacock"),               QStringLiteral("colorful")  },
         { QStringLiteral("cherry-cola"),           QStringLiteral("colorful")  },
+        // Leva "mais temas" (2026-07-22)
+        { QStringLiteral("moonstone"),              QStringLiteral("light")     },
+        { QStringLiteral("dovetail"),               QStringLiteral("light")     },
+        { QStringLiteral("birchwood"),              QStringLiteral("light")     },
+        { QStringLiteral("powder-blue"),             QStringLiteral("light")     },
+        { QStringLiteral("eggshell"),                QStringLiteral("light")     },
+        { QStringLiteral("turmeric"),                QStringLiteral("warm")      },
+        { QStringLiteral("fig-preserve"),            QStringLiteral("warm")      },
+        { QStringLiteral("butterscotch"),            QStringLiteral("warm")      },
+        { QStringLiteral("maple-syrup"),             QStringLiteral("warm")      },
+        { QStringLiteral("cardamom"),                QStringLiteral("warm")      },
+        { QStringLiteral("anthracite"),              QStringLiteral("dark")      },
+        { QStringLiteral("ashwood"),                 QStringLiteral("dark")      },
+        { QStringLiteral("cast-iron"),               QStringLiteral("dark")      },
+        { QStringLiteral("void-static"),             QStringLiteral("dark")      },
+        { QStringLiteral("tarnish"),                 QStringLiteral("dark")      },
+        { QStringLiteral("cobalt-bloom"),            QStringLiteral("colorful")  },
+        { QStringLiteral("chartreuse-riot"),         QStringLiteral("colorful")  },
+        { QStringLiteral("magenta-static"),          QStringLiteral("colorful")  },
+        { QStringLiteral("solar-flare"),             QStringLiteral("colorful")  },
+        { QStringLiteral("kingfisher"),              QStringLiteral("colorful")  },
+        // Leva "Cardamom fez sucesso" (2026-07-22)
+        { QStringLiteral("clove"),                   QStringLiteral("warm")      },
+        { QStringLiteral("cocoa-husk"),              QStringLiteral("warm")      },
+        { QStringLiteral("star-anise"),              QStringLiteral("warm")      },
+        { QStringLiteral("tobacco-leaf"),             QStringLiteral("warm")      },
+        { QStringLiteral("juniper-smoke"),           QStringLiteral("dark")      },
     };
     for (MiraTheme& t : m_themes)
         t.category = kCategory.value(t.id, QStringLiteral("colorful"));
