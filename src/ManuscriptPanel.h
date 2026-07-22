@@ -10,6 +10,8 @@ class QScrollArea;
 class QToolButton;
 class QPushButton;
 class ProjectModel;
+class DialogueStore;
+class WordCounter;
 
 class ManuscriptPanel : public QWidget {
     Q_OBJECT
@@ -19,6 +21,12 @@ public:
     void open();
     void closePanel();
     bool isPanelOpen() const { return isVisible(); }
+
+    // Fontes pra barrinha de proporção diálogo/narração por capítulo — sem
+    // as duas, a barra simplesmente não aparece (painel continua utilizável
+    // durante a construção, antes do MainWindow acabar de ligar tudo).
+    void setDialogueStore(DialogueStore* store);
+    void setWordCounter(WordCounter* counter);
 
 signals:
     void chapterActivated(QString manuscriptId, QString chapterId);
@@ -70,6 +78,8 @@ private:
     void applyHeaderStyles();
 
     ProjectModel* m_model;
+    DialogueStore* m_dialogueStore = nullptr;
+    WordCounter* m_wordCounter = nullptr;
     QComboBox* m_combo;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;

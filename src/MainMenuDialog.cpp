@@ -4,12 +4,15 @@
 #include "IconUtils.h"
 #include "ProjectStorage.h"
 #include "Quotes.h"
+#include "ShelfScene.h"
+#include "ShelfView.h"
 #include "Theme.h"
 
 #include <QAction>
 #include <QBuffer>
 #include <QByteArray>
 #include <QCheckBox>
+#include <QColorDialog>
 #include <QComboBox>
 #include <QContextMenuEvent>
 #include <QCoreApplication>
@@ -47,10 +50,15 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QShowEvent>
+#include <QSlider>
+#include <QSpinBox>
 #include <QStandardPaths>
 #include <QStyle>
+#include <QTabWidget>
 #include <QTimer>
+#include <QToolButton>
 #include <QVBoxLayout>
+#include <QWidgetAction>
 #include <QWidgetItem>
 
 #include <functional>
@@ -172,7 +180,24 @@ struct RecentInfo {
     QString name;
     QString author;
     QString genres;
+    QString synopsis;
     QString coverDataUrl;
+    int     totalWords = -1; // -1 = ainda não cacheado (projeto não resalvo desde essa feature)
+
+    // --- Lombada da Prateleira 3D (persistidos em projectDetails, mesmo
+    // esquema de campos do Mira 1) ---
+    QString coverBgDataUrl;     // render sem texto (Cover Creator) — textura "capa do livro"
+    QString spineColor;         // hex; vazio = cor-padrão por índice
+    QString spineImageTexture;  // "" / "none" | "cover"
+    int     spineBgPosX = 0;    // 0-100, posição horizontal quando spineImageTexture=="cover"
+    QString spineTexture;       // "" / "none" | couro | linho | veludo | fosco | metalico
+    QString spineFontFamily;    // vazio = Alegreya (padrão)
+    QString spineFontColor;     // vazio = creme (padrão)
+    int     spineFontSize = 0;  // 0 = automático (proporcional à largura)
+    QString spineTextOrientation; // "vertical" (padrão) | "horizontal"
+    QString spineTextPosition;   // "top" | "center" (padrão) | "bottom"
+    QString spineWidthMode;      // "auto" (padrão) | "manual"
+    int     spineWidthManual = 0;
 };
 
 // Lê o JSON do projeto e extrai só os campos exibidos no card. Sem carregar
@@ -196,12 +221,27 @@ RecentInfo readRecentInfo(const QString& rootPath)
     const QJsonObject details = data.value(QStringLiteral("projectDetails")).toObject();
     info.author = details.value(QStringLiteral("author")).toString();
     info.genres = details.value(QStringLiteral("genres")).toString();
+    info.synopsis = details.value(QStringLiteral("synopsis")).toString();
+    if (details.contains(QStringLiteral("totalWords")))
+        info.totalWords = details.value(QStringLiteral("totalWords")).toInt(-1);
     // Compat Mira 1: ProjectModel grava em "coverFull"/"cover" (não em
     // "coverDataUrl"). Prefere coverFull (full res), cai pra cover.
     info.coverDataUrl = details.value(QStringLiteral("coverFull")).toString();
     if (info.coverDataUrl.isEmpty()) {
         info.coverDataUrl = details.value(QStringLiteral("cover")).toString();
     }
+    info.coverBgDataUrl = details.value(QStringLiteral("coverBg")).toString();
+    info.spineColor          = details.value(QStringLiteral("spineColor")).toString();
+    info.spineImageTexture   = details.value(QStringLiteral("spineImageTexture")).toString();
+    info.spineBgPosX         = details.value(QStringLiteral("spineBgPosX")).toInt(0);
+    info.spineTexture        = details.value(QStringLiteral("spineTexture")).toString();
+    info.spineFontFamily     = details.value(QStringLiteral("spineFontFamily")).toString();
+    info.spineFontColor      = details.value(QStringLiteral("spineFontColor")).toString();
+    info.spineFontSize       = details.value(QStringLiteral("spineFontSize")).toInt(0);
+    info.spineTextOrientation = details.value(QStringLiteral("spineTextOrientation")).toString();
+    info.spineTextPosition    = details.value(QStringLiteral("spineTextPosition")).toString();
+    info.spineWidthMode       = details.value(QStringLiteral("spineWidthMode")).toString();
+    info.spineWidthManual     = details.value(QStringLiteral("spineWidthManual")).toInt(0);
     if (info.name.isEmpty()) {
         info.name = QFileInfo(rootPath).fileName();
     }
@@ -614,6 +654,54 @@ private:
     CardCallbacks m_cbs;
 };
 
+// Cor-padrão da lombada por índice, quando o projeto não tem uma escolhida —
+// mesma paleta/lógica do Mira 1 (getDefaultSpineColor).
+QColor defaultSpineColor(int idx)
+{
+    static const QColor kColors[] = {
+        QColor("#7a1e28"), QColor("#1a3d5c"), QColor("#2b5c35"), QColor("#5c3a0f"),
+        QColor("#3d1e5c"), QColor("#1a4d4d"), QColor("#6b2020"), QColor("#1e3560"),
+        QColor("#5a4200"), QColor("#1e3d30"), QColor("#401a0f"), QColor("#0f1e4d"),
+    };
+    constexpr int n = int(sizeof(kColors) / sizeof(kColors[0]));
+    return kColors[((idx % n) + n) % n];
+}
+
+// Cor de lombada extraída da própria capa — média das cores numa versão bem
+// reduzida (que já funciona como um blur barato), depois com saturação e
+// luminosidade realçadas pra não sair uma cor lavada/acinzentada (a média
+// crua de uma arte cheia de detalhe tende a ficar meio cinza-marrom sem
+// graça). QColor inválido = falha (capa nula/sem pixels), quem chama cai
+// pro palito de cor padrão por índice.
+QColor extractSpineColorFromCover(const QPixmap& cover)
+{
+    if (cover.isNull()) return QColor();
+    const QImage img = cover.scaled(24, 24, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
+                             .toImage().convertToFormat(QImage::Format_RGB32);
+    if (img.isNull() || img.width() == 0 || img.height() == 0) return QColor();
+
+    qint64 rSum = 0, gSum = 0, bSum = 0;
+    const int total = img.width() * img.height();
+    for (int y = 0; y < img.height(); ++y) {
+        const QRgb* line = reinterpret_cast<const QRgb*>(img.constScanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            rSum += qRed(line[x]);
+            gSum += qGreen(line[x]);
+            bSum += qBlue(line[x]);
+        }
+    }
+    const QColor avg(int(rSum / total), int(gSum / total), int(bSum / total));
+
+    float h, s, v;
+    avg.getHsvF(&h, &s, &v);
+    if (h < 0.0f) h = 0.0f; // acromático (cinza puro) — mantém o tom neutro
+    s = qBound(0.45f, s * 1.35f, 0.85f);
+    v = qBound(0.24f, v, 0.5f);
+    QColor result;
+    result.setHsvF(h, s, v);
+    return result;
+}
+
 // Diálogo de edição dos metadados do projeto (nome, autor, gêneros, sinopse,
 // capa). Não toca no ProjectModel — quem grava é o MainMenuDialog, direto no
 // índice. Visual espelhado no ProjectInfoPanel ("Informações da obra"): capa
@@ -670,10 +758,22 @@ public:
             updateCoverPreview();
         });
         leftCol->addWidget(clearBtn);
+
+        auto* coverCreateBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Criar capa…"), this);
+        coverCreateBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+        coverCreateBtn->setCursor(Qt::PointingHandCursor);
+        QObject::connect(coverCreateBtn, &QPushButton::clicked, this, [this]() {
+            // Fecha o diálogo (sem salvar as outras edições desta sessão,
+            // igual à ação equivalente no menu de contexto) e sinaliza pro
+            // MainMenuDialog abrir o Cover Creator de verdade.
+            m_coverCreateRequested = true;
+            reject();
+        });
+        leftCol->addWidget(coverCreateBtn);
         leftCol->addStretch();
         root->addLayout(leftCol);
 
-        // ---- Coluna direita: header + formulário + footer ----
+        // ---- Coluna direita: header + abas (Detalhes / Lombada) + footer ----
         auto* rightCol = new QVBoxLayout();
         rightCol->setSpacing(10);
 
@@ -681,31 +781,221 @@ public:
         heading->setObjectName(QStringLiteral("projectInfoHeading"));
         rightCol->addWidget(heading);
 
-        auto addLabel = [this, rightCol](const QString& text) {
+        auto* tabs = new QTabWidget(this);
+        tabs->setObjectName(QStringLiteral("projectEditTabs"));
+
+        // ---- Aba "Detalhes" ----
+        auto* detailsPage = new QWidget(tabs);
+        auto* detailsCol = new QVBoxLayout(detailsPage);
+        detailsCol->setContentsMargins(0, 8, 0, 0);
+        detailsCol->setSpacing(8);
+
+        auto addLabel = [this, detailsCol](const QString& text) {
             auto* lab = new QLabel(text, this);
             lab->setObjectName(QStringLiteral("projectInfoLabel"));
-            rightCol->addWidget(lab);
+            detailsCol->addWidget(lab);
         };
 
         addLabel(QCoreApplication::translate("ProjectEditDialog", "Nome do projeto"));
         m_nameEdit = new QLineEdit(this);
         m_nameEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Minha história"));
-        rightCol->addWidget(m_nameEdit);
+        detailsCol->addWidget(m_nameEdit);
 
         addLabel(QCoreApplication::translate("ProjectEditDialog", "Autor"));
         m_authorEdit = new QLineEdit(this);
         m_authorEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Maria Silva"));
-        rightCol->addWidget(m_authorEdit);
+        detailsCol->addWidget(m_authorEdit);
 
         addLabel(QCoreApplication::translate("ProjectEditDialog", "Gêneros"));
         m_genresEdit = new QLineEdit(this);
         m_genresEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Ex: Fantasia, Romance"));
-        rightCol->addWidget(m_genresEdit);
+        detailsCol->addWidget(m_genresEdit);
 
         addLabel(QCoreApplication::translate("ProjectEditDialog", "Sinopse"));
         m_synopsisEdit = new QPlainTextEdit(this);
         m_synopsisEdit->setPlaceholderText(QCoreApplication::translate("ProjectEditDialog", "Escreva uma breve sinopse…"));
-        rightCol->addWidget(m_synopsisEdit, /*stretch=*/1);
+        detailsCol->addWidget(m_synopsisEdit, /*stretch=*/1);
+
+        tabs->addTab(detailsPage, QCoreApplication::translate("ProjectEditDialog", "Detalhes"));
+
+        // ---- Aba "Lombada" (Prateleira 3D) ----
+        auto* spinePage = new QWidget(tabs);
+        auto* spineCol = new QVBoxLayout(spinePage);
+        spineCol->setContentsMargins(0, 8, 0, 0);
+        spineCol->setSpacing(8);
+
+        auto mkSpineLabel = [this](const QString& text) {
+            auto* lab = new QLabel(text, this);
+            lab->setObjectName(QStringLiteral("projectInfoLabel"));
+            return lab;
+        };
+        auto addSpineLabel = [this, spineCol, mkSpineLabel](const QString& text) {
+            spineCol->addWidget(mkSpineLabel(text));
+        };
+
+        // Cor da lombada (vazio = cor-padrão por posição na prateleira)
+        addSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Cor da lombada"));
+        {
+            auto* row = new QHBoxLayout();
+            row->setSpacing(6);
+            m_spineColorBtn = new QPushButton(this);
+            m_spineColorBtn->setObjectName(QStringLiteral("spineColorSwatch"));
+            m_spineColorBtn->setFixedSize(30, 26);
+            m_spineColorBtn->setCursor(Qt::PointingHandCursor);
+            QObject::connect(m_spineColorBtn, &QPushButton::clicked, this, [this]() {
+                const QColor seed = m_spineColor.isValid() ? m_spineColor : QColor(QStringLiteral("#7a1e28"));
+                const QColor c = QColorDialog::getColor(seed, this,
+                    QCoreApplication::translate("ProjectEditDialog", "Cor da lombada"));
+                if (c.isValid()) { m_spineColor = c; updateSwatches(); }
+            });
+            auto* resetBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Padrão"), this);
+            resetBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+            resetBtn->setCursor(Qt::PointingHandCursor);
+            QObject::connect(resetBtn, &QPushButton::clicked, this, [this]() {
+                m_spineColor = QColor();
+                updateSwatches();
+            });
+            row->addWidget(m_spineColorBtn);
+            row->addWidget(resetBtn);
+            row->addStretch();
+            spineCol->addLayout(row);
+        }
+
+        // Base: cor sólida ou a própria capa (fatia horizontal, ajustável)
+        addSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Base da lombada"));
+        m_baseCombo = new QComboBox(this);
+        m_baseCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Cor sólida"),
+                             QStringLiteral("none"));
+        m_baseCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Usar a capa como textura"),
+                             QStringLiteral("cover"));
+        spineCol->addWidget(m_baseCombo);
+
+        auto* posRow = new QHBoxLayout();
+        posRow->setSpacing(8);
+        m_bgPosLabel = new QLabel(QCoreApplication::translate("ProjectEditDialog", "Posição:"), this);
+        m_bgPosLabel->setObjectName(QStringLiteral("projectInfoLabel"));
+        m_bgPosSlider = new QSlider(Qt::Horizontal, this);
+        m_bgPosSlider->setRange(0, 100);
+        m_bgPosValueLabel = new QLabel(QStringLiteral("0%"), this);
+        m_bgPosValueLabel->setObjectName(QStringLiteral("projectInfoLabel"));
+        QObject::connect(m_bgPosSlider, &QSlider::valueChanged, this, [this](int v) {
+            m_bgPosValueLabel->setText(QStringLiteral("%1%").arg(v));
+        });
+        posRow->addWidget(m_bgPosLabel);
+        posRow->addWidget(m_bgPosSlider, 1);
+        posRow->addWidget(m_bgPosValueLabel);
+        spineCol->addLayout(posRow);
+
+        QObject::connect(m_baseCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+            const bool useCover = m_baseCombo->currentData().toString() == QStringLiteral("cover");
+            m_bgPosLabel->setEnabled(useCover);
+            m_bgPosSlider->setEnabled(useCover);
+            m_bgPosValueLabel->setEnabled(useCover);
+        });
+
+        // Acabamento (textura procedural por cima da base)
+        addSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Acabamento"));
+        m_finishCombo = new QComboBox(this);
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Liso"), QStringLiteral("none"));
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Couro"), QStringLiteral("couro"));
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Linho"), QStringLiteral("linho"));
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Veludo"), QStringLiteral("veludo"));
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Fosco"), QStringLiteral("fosco"));
+        m_finishCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Metálico"), QStringLiteral("metalico"));
+        spineCol->addWidget(m_finishCombo);
+
+        // Texto: fonte, cor, tamanho, orientação, posição
+        auto* fontRow = new QHBoxLayout();
+        fontRow->setSpacing(10);
+        {
+            auto* col1 = new QVBoxLayout();
+            col1->addWidget(mkSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Fonte")));
+            m_fontCombo = new QComboBox(this);
+            m_fontCombo->addItem(QStringLiteral("Alegreya"));
+            m_fontCombo->addItem(QStringLiteral("EB Garamond"));
+            m_fontCombo->addItem(QStringLiteral("Inter"));
+            m_fontCombo->addItem(QStringLiteral("Crimson Text"));
+            col1->addWidget(m_fontCombo);
+            fontRow->addLayout(col1, 1);
+
+            auto* col2 = new QVBoxLayout();
+            col2->addWidget(mkSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Cor do texto")));
+            auto* textColorRow = new QHBoxLayout();
+            m_fontColorBtn = new QPushButton(this);
+            m_fontColorBtn->setObjectName(QStringLiteral("spineColorSwatch"));
+            m_fontColorBtn->setFixedSize(30, 26);
+            m_fontColorBtn->setCursor(Qt::PointingHandCursor);
+            QObject::connect(m_fontColorBtn, &QPushButton::clicked, this, [this]() {
+                const QColor seed = m_fontColor.isValid() ? m_fontColor : QColor(245, 240, 226);
+                const QColor c = QColorDialog::getColor(seed, this,
+                    QCoreApplication::translate("ProjectEditDialog", "Cor do texto"));
+                if (c.isValid()) { m_fontColor = c; updateSwatches(); }
+            });
+            auto* fontResetBtn = new QPushButton(QCoreApplication::translate("ProjectEditDialog", "Padrão"), this);
+            fontResetBtn->setObjectName(QStringLiteral("projectInfoBtn"));
+            fontResetBtn->setCursor(Qt::PointingHandCursor);
+            QObject::connect(fontResetBtn, &QPushButton::clicked, this, [this]() {
+                m_fontColor = QColor();
+                updateSwatches();
+            });
+            textColorRow->addWidget(m_fontColorBtn);
+            textColorRow->addWidget(fontResetBtn);
+            col2->addLayout(textColorRow);
+            fontRow->addLayout(col2, 1);
+        }
+        spineCol->addLayout(fontRow);
+
+        auto* orientRow = new QHBoxLayout();
+        orientRow->setSpacing(10);
+        {
+            auto* col1 = new QVBoxLayout();
+            col1->addWidget(mkSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Orientação")));
+            m_orientCombo = new QComboBox(this);
+            m_orientCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Vertical"), QStringLiteral("vertical"));
+            m_orientCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Horizontal"), QStringLiteral("horizontal"));
+            col1->addWidget(m_orientCombo);
+            orientRow->addLayout(col1, 1);
+
+            auto* col2 = new QVBoxLayout();
+            col2->addWidget(mkSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Posição do texto")));
+            m_textPosCombo = new QComboBox(this);
+            m_textPosCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Topo"), QStringLiteral("top"));
+            m_textPosCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Centro"), QStringLiteral("center"));
+            m_textPosCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Baixo"), QStringLiteral("bottom"));
+            col2->addWidget(m_textPosCombo);
+            orientRow->addLayout(col2, 1);
+
+            auto* col3 = new QVBoxLayout();
+            col3->addWidget(mkSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Tam. da fonte (0=auto)")));
+            m_fontSizeSpin = new QSpinBox(this);
+            m_fontSizeSpin->setRange(0, 48);
+            col3->addWidget(m_fontSizeSpin);
+            orientRow->addLayout(col3, 1);
+        }
+        spineCol->addLayout(orientRow);
+
+        // Largura da lombada
+        addSpineLabel(QCoreApplication::translate("ProjectEditDialog", "Largura da lombada"));
+        auto* widthRow = new QHBoxLayout();
+        widthRow->setSpacing(8);
+        m_widthCombo = new QComboBox(this);
+        m_widthCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Conforme o projeto"), QStringLiteral("auto"));
+        m_widthCombo->addItem(QCoreApplication::translate("ProjectEditDialog", "Manual"), QStringLiteral("manual"));
+        m_widthSpin = new QSpinBox(this);
+        m_widthSpin->setRange(10, 240);
+        m_widthSpin->setSuffix(QStringLiteral(" px"));
+        m_widthSpin->setEnabled(false);
+        QObject::connect(m_widthCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+            m_widthSpin->setEnabled(m_widthCombo->currentData().toString() == QStringLiteral("manual"));
+        });
+        widthRow->addWidget(m_widthCombo, 1);
+        widthRow->addWidget(m_widthSpin);
+        spineCol->addLayout(widthRow);
+
+        spineCol->addStretch(1);
+        tabs->addTab(spinePage, QCoreApplication::translate("ProjectEditDialog", "Lombada"));
+
+        rightCol->addWidget(tabs, /*stretch=*/1);
 
         auto* actions = new QHBoxLayout();
         actions->setSpacing(8);
@@ -747,8 +1037,95 @@ public:
     QString genres() const   { return m_genresEdit->text().trimmed(); }
     QString synopsis() const { return m_synopsisEdit->toPlainText().trimmed(); }
     QString coverDataUrl() const { return m_coverDataUrl; }
+    // true quando o usuário clicou "Criar capa…" (o diálogo fecha via
+    // reject() nesse caso — quem chamou exec() precisa checar isso antes de
+    // tratar o retorno como "cancelou").
+    bool coverCreateRequested() const { return m_coverCreateRequested; }
+
+    // Preenche a aba "Lombada" a partir de um RecentInfo já lido do JSON.
+    void setSpineValues(const RecentInfo& info) {
+        m_spineColor = info.spineColor.isEmpty() ? QColor() : QColor(info.spineColor);
+        m_fontColor  = info.spineFontColor.isEmpty() ? QColor() : QColor(info.spineFontColor);
+        updateSwatches();
+
+        // Sem escolha salva ainda: default é usar a capa (se existir alguma
+        // imagem pra usar) — só cai pra cor sólida se o campo já foi
+        // explicitamente deixado em "none", ou se não há capa nenhuma.
+        const bool hasCoverImage = !info.coverDataUrl.isEmpty() || !info.coverBgDataUrl.isEmpty();
+        QString baseChoice = info.spineImageTexture;
+        if (baseChoice.isEmpty()) baseChoice = hasCoverImage ? QStringLiteral("cover") : QStringLiteral("none");
+        const int baseIdx = m_baseCombo->findData(baseChoice);
+        m_baseCombo->setCurrentIndex(qMax(0, baseIdx));
+        m_bgPosSlider->setValue(qBound(0, info.spineBgPosX, 100));
+
+        const int finishIdx = m_finishCombo->findData(
+            info.spineTexture.isEmpty() ? QStringLiteral("none") : info.spineTexture);
+        m_finishCombo->setCurrentIndex(qMax(0, finishIdx));
+
+        const int fontIdx = m_fontCombo->findText(
+            info.spineFontFamily.isEmpty() ? QStringLiteral("Alegreya") : info.spineFontFamily);
+        m_fontCombo->setCurrentIndex(qMax(0, fontIdx));
+
+        m_fontSizeSpin->setValue(qMax(0, info.spineFontSize));
+
+        const int orientIdx = m_orientCombo->findData(
+            info.spineTextOrientation.isEmpty() ? QStringLiteral("vertical") : info.spineTextOrientation);
+        m_orientCombo->setCurrentIndex(qMax(0, orientIdx));
+
+        const int posIdx = m_textPosCombo->findData(
+            info.spineTextPosition.isEmpty() ? QStringLiteral("center") : info.spineTextPosition);
+        m_textPosCombo->setCurrentIndex(qMax(0, posIdx));
+
+        const int widthIdx = m_widthCombo->findData(
+            info.spineWidthMode == QStringLiteral("manual") ? QStringLiteral("manual") : QStringLiteral("auto"));
+        m_widthCombo->setCurrentIndex(qMax(0, widthIdx));
+        m_widthSpin->setValue(info.spineWidthManual > 0 ? info.spineWidthManual : 104);
+    }
+
+    QString spineColor() const { return m_spineColor.isValid() ? m_spineColor.name() : QString(); }
+    // Ao contrário dos outros getters, "none" aqui é salvo explicitamente
+    // (não vira string vazia) — senão não daria pra distinguir "nunca
+    // configurado" de "escolheu cor sólida de propósito", e o padrão de usar
+    // a capa (ver populateActiveView) reverteria a escolha do usuário toda
+    // vez que ele salvasse o diálogo por outro motivo qualquer.
+    QString spineImageTexture() const { return m_baseCombo->currentData().toString(); }
+    int     spineBgPosX() const { return m_bgPosSlider->value(); }
+    QString spineTexture() const {
+        const QString v = m_finishCombo->currentData().toString();
+        return v == QStringLiteral("none") ? QString() : v;
+    }
+    QString spineFontFamily() const {
+        const QString v = m_fontCombo->currentText();
+        return v == QStringLiteral("Alegreya") ? QString() : v;
+    }
+    QString spineFontColor() const { return m_fontColor.isValid() ? m_fontColor.name() : QString(); }
+    int     spineFontSize() const { return m_fontSizeSpin->value(); }
+    QString spineTextOrientation() const {
+        const QString v = m_orientCombo->currentData().toString();
+        return v == QStringLiteral("vertical") ? QString() : v;
+    }
+    QString spineTextPosition() const {
+        const QString v = m_textPosCombo->currentData().toString();
+        return v == QStringLiteral("center") ? QString() : v;
+    }
+    QString spineWidthMode() const {
+        const QString v = m_widthCombo->currentData().toString();
+        return v == QStringLiteral("auto") ? QString() : v;
+    }
+    int     spineWidthManual() const {
+        return spineWidthMode().isEmpty() ? 0 : m_widthSpin->value();
+    }
 
 private:
+    void updateSwatches() {
+        auto paintSwatch = [](QPushButton* btn, const QColor& c, const QColor& fallback) {
+            const QColor use = c.isValid() ? c : fallback;
+            btn->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 4px;").arg(use.name()));
+        };
+        if (m_spineColorBtn) paintSwatch(m_spineColorBtn, m_spineColor, QColor(QStringLiteral("#7a1e28")));
+        if (m_fontColorBtn)  paintSwatch(m_fontColorBtn, m_fontColor, QColor(245, 240, 226));
+    }
+
     void updateCoverPreview() {
         QPixmap pm = decodeCoverDataUrl(m_coverDataUrl);
         if (pm.isNull()) {
@@ -808,6 +1185,47 @@ private:
             QPushButton#projectInfoBtn:default {
                 border-color: %9;
             }
+            #projectEditTabs::pane { border: 1px solid %6; border-radius: 6px; top: -1px; }
+            #projectEditTabs QTabBar::tab {
+                background: %5;
+                color: %4;
+                border: 1px solid %6;
+                border-bottom: none;
+                padding: 5px 12px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+            }
+            #projectEditTabs QTabBar::tab:selected { color: %3; background: %1; }
+            #projectEditDialog QComboBox,
+            #projectEditDialog QSpinBox {
+                background: %5;
+                color: %3;
+                border: 1px solid %6;
+                border-radius: 6px;
+                padding: 4px 8px;
+                min-height: 22px;
+            }
+            #projectEditDialog QComboBox:focus,
+            #projectEditDialog QSpinBox:focus { border-color: %9; }
+            #projectEditDialog QComboBox QAbstractItemView {
+                background: %5;
+                color: %3;
+                border: 1px solid %6;
+                selection-background-color: %7;
+                selection-color: %3;
+            }
+            #spineColorSwatch { border: 1px solid %6; }
+            #projectEditDialog QSlider::groove:horizontal {
+                height: 4px;
+                background: %6;
+                border-radius: 2px;
+            }
+            #projectEditDialog QSlider::handle:horizontal {
+                width: 14px;
+                margin: -6px 0;
+                background: %9;
+                border-radius: 7px;
+            }
         )").arg(
             Theme::appBackground(),     // 1
             Theme::textPrimary(),       // 2
@@ -827,6 +1245,24 @@ private:
     QPlainTextEdit* m_synopsisEdit = nullptr;
     QLabel* m_coverPreview = nullptr;
     QString m_coverDataUrl;
+    bool m_coverCreateRequested = false;
+
+    // --- Aba "Lombada" ---
+    QPushButton* m_spineColorBtn = nullptr;
+    QColor       m_spineColor;               // inválida = usar cor-padrão por índice
+    QComboBox*   m_baseCombo = nullptr;       // "none" | "cover"
+    QLabel*      m_bgPosLabel = nullptr;
+    QSlider*     m_bgPosSlider = nullptr;
+    QLabel*      m_bgPosValueLabel = nullptr;
+    QComboBox*   m_finishCombo = nullptr;
+    QComboBox*   m_fontCombo = nullptr;
+    QPushButton* m_fontColorBtn = nullptr;
+    QColor       m_fontColor;                // inválida = usar creme padrão
+    QComboBox*   m_orientCombo = nullptr;
+    QComboBox*   m_textPosCombo = nullptr;
+    QSpinBox*    m_fontSizeSpin = nullptr;
+    QComboBox*   m_widthCombo = nullptr;
+    QSpinBox*    m_widthSpin = nullptr;
 };
 
 // Confirmação de exclusão com trava de tempo: o botão "Excluir" só habilita
@@ -1077,12 +1513,33 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     m_listaBtn->setObjectName(QStringLiteral("menuViewToggle"));
     m_listaBtn->setCheckable(true);
     m_listaBtn->setCursor(Qt::PointingHandCursor);
+    m_prateleiraBtn = new QPushButton(tr("Prateleira"), this);
+    m_prateleiraBtn->setObjectName(QStringLiteral("menuViewToggle"));
+    // Não-checável de propósito: a Prateleira ainda tá em polimento visual,
+    // então o botão fica travado (nunca ativa o modo de verdade) e só
+    // mostra um toast "Em breve" quando clicado.
+    m_prateleiraBtn->setCheckable(false);
+    m_prateleiraBtn->setCursor(Qt::PointingHandCursor);
     connect(m_estanteBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Estante); });
     connect(m_listaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Lista); });
+    connect(m_prateleiraBtn, &QPushButton::clicked, this, [this]() {
+        showComingSoonToast(m_prateleiraBtn);
+    });
+
+    m_shelfMaterialBtn = new QPushButton(tr("Material"), this);
+    m_shelfMaterialBtn->setObjectName(QStringLiteral("menuViewToggle"));
+    m_shelfMaterialBtn->setCursor(Qt::PointingHandCursor);
+    m_shelfMaterialBtn->setVisible(false);
+    connect(m_shelfMaterialBtn, &QPushButton::clicked, this, [this]() {
+        showShelfMaterialMenu();
+    });
+
     auto* toggleWrap = new QHBoxLayout();
     toggleWrap->setSpacing(6);
+    toggleWrap->addWidget(m_shelfMaterialBtn);
     toggleWrap->addWidget(m_estanteBtn);
     toggleWrap->addWidget(m_listaBtn);
+    toggleWrap->addWidget(m_prateleiraBtn);
     header->addLayout(toggleWrap);
     col->addLayout(header);
 
@@ -1106,6 +1563,31 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     m_listCol->setSpacing(8);
     holderCol->addWidget(m_listContainer);
 
+    // Prateleira: QGraphicsView próprio, sem scroll — quando os livros não
+    // cabem na largura disponível, vira uma nova prateleira embaixo (ver
+    // ShelfView::refreshLayout). Quem rola a página toda continua sendo o
+    // m_recentsScroll de fora, igual Estante/Lista.
+    m_shelfScene = new ShelfScene(this);
+    {
+        QSettings settings;
+        const QString savedTexture = settings.value(QStringLiteral("shelf/floorTexture")).toString();
+        if (!savedTexture.isEmpty()) m_shelfScene->setFloorTexture(savedTexture);
+    }
+    m_shelfView = new ShelfView(m_shelfScene, m_holder);
+    connect(m_shelfScene, &ShelfScene::openRequested,
+            this, &MainMenuDialog::openRecentRequested);
+    connect(m_shelfScene, &ShelfScene::editRequested, this, &MainMenuDialog::editProject);
+    connect(m_shelfScene, &ShelfScene::coverCreateRequested, this, &MainMenuDialog::launchMiraCover);
+    connect(m_shelfScene, &ShelfScene::removeRequested,
+            this, &MainMenuDialog::removeRecentRequested);
+    connect(m_shelfScene, &ShelfScene::deleteRequested,
+            this, &MainMenuDialog::confirmDeleteProject);
+    connect(m_shelfScene, &ShelfScene::orderChanged, this, [this](const QStringList& newOrder) {
+        m_recentPaths = newOrder;
+        emit recentsReordered(newOrder);
+    });
+    holderCol->addWidget(m_shelfView);
+
     m_emptyLabel = new QLabel(
         tr("Você ainda não tem projetos.\n"
            "Clique em \"Novo projeto\" pra começar, ou em \"Carregar pasta\" pra abrir uma existente."),
@@ -1124,8 +1606,11 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     // Estado inicial do alternador.
     m_estanteBtn->setChecked(m_viewMode == ViewMode::Estante);
     m_listaBtn->setChecked(m_viewMode == ViewMode::Lista);
+    m_prateleiraBtn->setChecked(m_viewMode == ViewMode::Prateleira);
     m_gridContainer->setVisible(m_viewMode == ViewMode::Estante);
     m_listContainer->setVisible(m_viewMode == ViewMode::Lista);
+    m_shelfView->setVisible(m_viewMode == ViewMode::Prateleira);
+    m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
 }
 
 void MainMenuDialog::setRecentProjects(const QStringList& paths)
@@ -1153,8 +1638,9 @@ void MainMenuDialog::setHoveredCard(QWidget* hovered)
 void MainMenuDialog::setViewMode(ViewMode mode)
 {
     m_viewMode = mode;
-    if (m_estanteBtn) m_estanteBtn->setChecked(mode == ViewMode::Estante);
-    if (m_listaBtn)   m_listaBtn->setChecked(mode == ViewMode::Lista);
+    if (m_estanteBtn)    m_estanteBtn->setChecked(mode == ViewMode::Estante);
+    if (m_listaBtn)      m_listaBtn->setChecked(mode == ViewMode::Lista);
+    if (m_prateleiraBtn) m_prateleiraBtn->setChecked(mode == ViewMode::Prateleira);
     populateActiveView();
 }
 
@@ -1167,8 +1653,8 @@ void MainMenuDialog::populateActiveView()
 {
     if (!m_gridFlow || !m_listCol) return;
 
-    // Esvazia os dois containers e o estado de hover, destruindo os widgets
-    // antigos. (Ambos são limpos; só o ativo é repovoado.)
+    // Esvazia os containers e o estado de hover, destruindo os widgets
+    // antigos. (Todos são limpos; só o ativo é repovoado.)
     m_cards.clear();
     auto clearLayout = [](QLayout* l) {
         while (QLayoutItem* it = l->takeAt(0)) {
@@ -1178,6 +1664,7 @@ void MainMenuDialog::populateActiveView()
     };
     clearLayout(m_gridFlow);
     clearLayout(m_listCol);
+    if (m_shelfScene) m_shelfScene->clearBooks();
 
     // Coleta os projetos válidos (lê o índice uma única vez por projeto).
     QStringList validPaths;
@@ -1201,6 +1688,8 @@ void MainMenuDialog::populateActiveView()
     if (m_emptyLabel)     m_emptyLabel->setVisible(empty);
     if (m_gridContainer)  m_gridContainer->setVisible(!empty && m_viewMode == ViewMode::Estante);
     if (m_listContainer)  m_listContainer->setVisible(!empty && m_viewMode == ViewMode::Lista);
+    if (m_shelfView)      m_shelfView->setVisible(!empty && m_viewMode == ViewMode::Prateleira);
+    if (m_shelfMaterialBtn) m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
 
     QWidget* parentForCards = (m_viewMode == ViewMode::Estante) ? m_gridContainer
                                                                 : m_listContainer;
@@ -1209,6 +1698,53 @@ void MainMenuDialog::populateActiveView()
         const RecentInfo& info = validInfos.at(i);
         const bool isAutoOpen = !m_autoOpenPath.isEmpty()
             && QDir::cleanPath(capturedPath) == m_autoOpenPath;
+
+        if (m_viewMode == ViewMode::Prateleira) {
+            const QString name = info.name.isEmpty() ? QFileInfo(capturedPath).fileName() : info.name;
+            const QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+            // Espessura de verdade — pela contagem de palavras do projeto
+            // (cacheada em projectDetails.totalWords a cada save pelo
+            // ProjectSaver), igual o Mira 1. Nome do projeto não tem nada a
+            // ver com o tamanho dele; sem essa cache ainda (projeto não
+            // resalvo desde essa feature), cai num meio-termo neutro até o
+            // próximo save preencher o número de verdade.
+            const qreal autoW = info.totalWords >= 0
+                              ? qBound(30.0, 30.0 + (info.totalWords / 100000.0) * 114.0, 144.0)
+                              : 90.0;
+            const qreal spineW = (info.spineWidthMode == QStringLiteral("manual") && info.spineWidthManual > 0)
+                               ? qBound(10.0, qreal(info.spineWidthManual), 240.0)
+                               : autoW;
+            ShelfSpineStyle style;
+            style.coverBg = decodeCoverDataUrl(info.coverBgDataUrl);
+            // Sem escolha salva (projeto nunca editado na aba Lombada):
+            // padrão é usar a capa como textura, se houver alguma imagem —
+            // fica muito melhor que a cor sólida lisa.
+            const bool hasCoverImage = !style.coverBg.isNull() || !cover.isNull();
+            // Sem cor de lombada escolhida: em vez do palito fixo por
+            // índice, tenta combinar com a própria capa (extrai uma cor a
+            // partir dela) — só cai pro palito quando não há capa nenhuma.
+            const QColor spineColor = !info.spineColor.isEmpty() ? QColor(info.spineColor)
+                : [&]() {
+                      const QColor extracted = extractSpineColorFromCover(
+                          !style.coverBg.isNull() ? style.coverBg : cover);
+                      return extracted.isValid() ? extracted : defaultSpineColor(i);
+                  }();
+            style.imageTexture = info.spineImageTexture.isEmpty()
+                                ? (hasCoverImage ? QStringLiteral("cover") : QString())
+                                : info.spineImageTexture;
+            style.bgPosX = info.spineBgPosX;
+            style.finish = info.spineTexture;
+            style.fontFamily = info.spineFontFamily;
+            style.fontColor = info.spineFontColor.isEmpty() ? QColor() : QColor(info.spineFontColor);
+            style.fontSize = info.spineFontSize;
+            style.textOrientation = info.spineTextOrientation;
+            style.textPosition = info.spineTextPosition;
+            if (m_shelfScene) m_shelfScene->addBook(capturedPath, name, info.author,
+                                                    info.genres, info.synopsis, cover,
+                                                    spineColor, spineW, style);
+            continue;
+        }
+
         CardCallbacks cbs;
         cbs.open = [this, capturedPath]() { emit openRecentRequested(capturedPath); };
         cbs.autoOpen = [this, capturedPath](bool enabled) {
@@ -1232,6 +1768,7 @@ void MainMenuDialog::populateActiveView()
         }
     }
 
+    if (m_shelfView) m_shelfView->refreshLayout();
     if (m_recentsScroll) m_recentsScroll->reflow();
 }
 
@@ -1251,6 +1788,84 @@ void MainMenuDialog::refreshActionIcons()
     }
 }
 
+void MainMenuDialog::showComingSoonToast(QWidget* anchor)
+{
+    if (!anchor) return;
+
+    auto* toast = new QLabel(tr("Em breve"));
+    toast->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    toast->setAttribute(Qt::WA_ShowWithoutActivating);
+    toast->setAttribute(Qt::WA_DeleteOnClose);
+    toast->setAlignment(Qt::AlignCenter);
+    toast->setStyleSheet(QStringLiteral(
+        "QLabel { background: %1; color: %2; border: 1px solid %3; "
+        "border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; }")
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+    toast->adjustSize();
+
+    const QPoint anchorTopCenter = anchor->mapToGlobal(QPoint(anchor->width() / 2, 0));
+    toast->move(anchorTopCenter.x() - toast->width() / 2, anchorTopCenter.y() - toast->height() - 10);
+    toast->show();
+
+    auto* opacity = new QGraphicsOpacityEffect(toast);
+    toast->setGraphicsEffect(opacity);
+
+    QTimer::singleShot(1300, toast, [toast, opacity]() {
+        auto* anim = new QPropertyAnimation(opacity, "opacity", toast);
+        anim->setDuration(350);
+        anim->setStartValue(1.0);
+        anim->setEndValue(0.0);
+        QObject::connect(anim, &QPropertyAnimation::finished, toast, &QLabel::close);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
+}
+
+void MainMenuDialog::showShelfMaterialMenu()
+{
+    if (!m_shelfScene) return;
+
+    QMenu menu(this);
+    auto* grid = new QWidget(&menu);
+    auto* layout = new QGridLayout(grid);
+    layout->setSpacing(6);
+    layout->setContentsMargins(8, 8, 8, 8);
+
+    const auto choices = ShelfScene::floorTextureChoices();
+    const QString current = m_shelfScene->floorTexture();
+    int col = 0, row = 0;
+    constexpr int kCols = 4;
+    for (const auto& choice : choices) {
+        const QString id = choice.first;
+        const QString label = choice.second;
+        auto* btn = new QToolButton(grid);
+        btn->setToolTip(label);
+        btn->setCheckable(true);
+        btn->setChecked(id == current);
+        btn->setFixedSize(64, 48);
+        btn->setIconSize(QSize(60, 44));
+        btn->setCursor(Qt::PointingHandCursor);
+        if (id == QStringLiteral("none")) {
+            btn->setText(QCoreApplication::translate("MainMenuDialog", "Nenhuma"));
+        } else {
+            const QPixmap thumb(QStringLiteral(":/shelf/thumbs/%1.jpg").arg(id));
+            if (!thumb.isNull()) btn->setIcon(QIcon(thumb));
+        }
+        connect(btn, &QToolButton::clicked, this, [this, id, &menu]() {
+            m_shelfScene->setFloorTexture(id);
+            QSettings settings;
+            settings.setValue(QStringLiteral("shelf/floorTexture"), id);
+            menu.close();
+        });
+        layout->addWidget(btn, row, col);
+        if (++col >= kCols) { col = 0; ++row; }
+    }
+
+    auto* action = new QWidgetAction(&menu);
+    action->setDefaultWidget(grid);
+    menu.addAction(action);
+    menu.exec(m_shelfMaterialBtn->mapToGlobal(QPoint(0, m_shelfMaterialBtn->height())));
+}
+
 void MainMenuDialog::editProject(const QString& path)
 {
     bool ok = false;
@@ -1265,16 +1880,19 @@ void MainMenuDialog::editProject(const QString& path)
     if (name.isEmpty()) name = idx.value(QStringLiteral("name")).toString();
     QJsonObject data = idx.value(QStringLiteral("data")).toObject();
     QJsonObject pd = data.value(QStringLiteral("projectDetails")).toObject();
-    QString cover = pd.value(QStringLiteral("coverFull")).toString();
-    if (cover.isEmpty()) cover = pd.value(QStringLiteral("cover")).toString();
+
+    const RecentInfo info = readRecentInfo(path);
 
     ProjectEditDialog dlg(this);
     dlg.setValues(name.isEmpty() ? QFileInfo(path).fileName() : name,
-                  pd.value(QStringLiteral("author")).toString(),
-                  pd.value(QStringLiteral("genres")).toString(),
-                  pd.value(QStringLiteral("synopsis")).toString(),
-                  cover);
-    if (dlg.exec() != QDialog::Accepted) return;
+                  info.author, info.genres, info.synopsis, info.coverDataUrl);
+    dlg.setSpineValues(info);
+    const int dlgResult = dlg.exec();
+    if (dlg.coverCreateRequested()) {
+        launchMiraCover(path);
+        return;
+    }
+    if (dlgResult != QDialog::Accepted) return;
 
     const QString newName = dlg.name().isEmpty() ? name : dlg.name();
     // Grava nas duas chaves de nome (compat Mira 1 + leitura do card).
@@ -1285,12 +1903,30 @@ void MainMenuDialog::editProject(const QString& path)
         if (value.isEmpty()) o.remove(key);
         else o.insert(key, value);
     };
+    auto setOrRemoveInt = [](QJsonObject& o, const QString& key, int value, int sentinel) {
+        if (value == sentinel) o.remove(key);
+        else o.insert(key, value);
+    };
     setOrRemove(pd, QStringLiteral("author"), dlg.author());
     setOrRemove(pd, QStringLiteral("genres"), dlg.genres());
     setOrRemove(pd, QStringLiteral("synopsis"), dlg.synopsis());
     const QString newCover = dlg.coverDataUrl();
     setOrRemove(pd, QStringLiteral("cover"), newCover);
     setOrRemove(pd, QStringLiteral("coverFull"), newCover);
+
+    // Lombada (Prateleira 3D)
+    setOrRemove(pd, QStringLiteral("spineColor"), dlg.spineColor());
+    setOrRemove(pd, QStringLiteral("spineImageTexture"), dlg.spineImageTexture());
+    setOrRemoveInt(pd, QStringLiteral("spineBgPosX"),
+                   dlg.spineImageTexture() == QStringLiteral("cover") ? dlg.spineBgPosX() : 0, 0);
+    setOrRemove(pd, QStringLiteral("spineTexture"), dlg.spineTexture());
+    setOrRemove(pd, QStringLiteral("spineFontFamily"), dlg.spineFontFamily());
+    setOrRemove(pd, QStringLiteral("spineFontColor"), dlg.spineFontColor());
+    setOrRemoveInt(pd, QStringLiteral("spineFontSize"), dlg.spineFontSize(), 0);
+    setOrRemove(pd, QStringLiteral("spineTextOrientation"), dlg.spineTextOrientation());
+    setOrRemove(pd, QStringLiteral("spineTextPosition"), dlg.spineTextPosition());
+    setOrRemove(pd, QStringLiteral("spineWidthMode"), dlg.spineWidthMode());
+    setOrRemoveInt(pd, QStringLiteral("spineWidthManual"), dlg.spineWidthManual(), 0);
 
     if (pd.isEmpty()) data.remove(QStringLiteral("projectDetails"));
     else data.insert(QStringLiteral("projectDetails"), pd);
@@ -1386,6 +2022,24 @@ void MainMenuDialog::updateCoverFromFile(const QString& projectPath)
     const QString dataUrl = QStringLiteral("data:image/jpeg;base64,") +
                             QString::fromLatin1(bytes.toBase64());
 
+    // cover-bg.jpg: render sem texto que o Cover Creator grava ao lado da
+    // capa final (mesmo fundo/foco/zoom, só sem o título) — usado como
+    // textura opcional da lombada na Prateleira 3D. Nem toda capa antiga
+    // tem esse arquivo (recurso novo); nesse caso a lombada cai pra "cover".
+    QString coverBgDataUrl;
+    const QString coverBgFilePath = projectPath + QStringLiteral("/cover-bg.jpg");
+    if (QFile::exists(coverBgFilePath)) {
+        QFile bg(coverBgFilePath);
+        if (bg.open(QIODevice::ReadOnly)) {
+            const QByteArray bgBytes = bg.readAll();
+            bg.close();
+            if (!bgBytes.isEmpty()) {
+                coverBgDataUrl = QStringLiteral("data:image/jpeg;base64,") +
+                                 QString::fromLatin1(bgBytes.toBase64());
+            }
+        }
+    }
+
     bool ok = false;
     QJsonObject idx = ProjectStorage::readIndex(projectPath, &ok);
     if (!ok) return;
@@ -1394,6 +2048,7 @@ void MainMenuDialog::updateCoverFromFile(const QString& projectPath)
     QJsonObject details     = projectData.value(QStringLiteral("projectDetails")).toObject();
     details.insert(QStringLiteral("cover"),     dataUrl);
     details.insert(QStringLiteral("coverFull"), dataUrl);
+    if (!coverBgDataUrl.isEmpty()) details.insert(QStringLiteral("coverBg"), coverBgDataUrl);
     projectData.insert(QStringLiteral("projectDetails"), details);
     idx.insert(QStringLiteral("data"), projectData);
 
@@ -1611,6 +2266,8 @@ void MainMenuDialog::applyDialogStyle()
         QFrame#bookRow:hover { background: %7; border-color: %9; }
         #bookRowName { color: %3; font-size: 15px; font-weight: 600; }
         #bookRowMeta { color: %4; font-size: 12px; }
+
+        #menuShelfView { background: transparent; border: none; }
     )").arg(
         Theme::appBackground(),    // 1
         Theme::textPrimary(),      // 2

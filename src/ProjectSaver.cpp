@@ -5,7 +5,9 @@
 #include "ElementsStore.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
+#include "WordCounter.h"
 
+#include <QJsonObject>
 #include <QTimer>
 
 namespace {
@@ -161,7 +163,18 @@ bool ProjectSaver::writeIndexNow(QString* errorOut) {
         if (errorOut) *errorOut = QStringLiteral("Raiz do projeto indefinida.");
         return false;
     }
-    return ProjectStorage::writeIndex(m_root, m_model->toJson(), errorOut);
+    QJsonObject idx = m_model->toJson();
+    if (m_wordCounter) {
+        // Cache leve pra quem só lê o índice (a Prateleira 3D, pra espessura
+        // da lombada) sem carregar o projeto inteiro — countProject() já
+        // soma todos os manuscritos, exatamente o que precisa aqui.
+        QJsonObject data = idx.value(QStringLiteral("data")).toObject();
+        QJsonObject pd = data.value(QStringLiteral("projectDetails")).toObject();
+        pd.insert(QStringLiteral("totalWords"), m_wordCounter->countProject());
+        data.insert(QStringLiteral("projectDetails"), pd);
+        idx.insert(QStringLiteral("data"), data);
+    }
+    return ProjectStorage::writeIndex(m_root, idx, errorOut);
 }
 
 bool ProjectSaver::flushDirtyDocsNow() {

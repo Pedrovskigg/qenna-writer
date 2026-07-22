@@ -32,6 +32,11 @@ public:
 
     const QVector<Dialogue>& dialogues() const { return m_dialogues; }
     QVector<Dialogue> dialoguesForCharacter(const QString& elementId) const;
+    // Soma de palavras de todas as falas atribuídas a um capítulo — usa a
+    // MESMA regra de contagem do WordCounter (letra/número contíguos), pra
+    // ser comparável com WordCounter::countChapter() e montar a proporção
+    // diálogo/narração.
+    int dialogueWordsForChapter(const QString& chapterId) const;
 
     // Uma fala encontrada num scan, já com a cena/rótulo de onde veio.
     struct ScannedLine {
@@ -56,6 +61,14 @@ public:
                            const QVector<ScannedLine>& found);
 
     bool remove(const QString& id);
+    // Correção manual de locutor (menu de contexto no card) — o detector é
+    // bom, mas heurística de proximidade erra quando o nome citado no texto
+    // é de quem está sendo FALADO SOBRE, não de quem fala (ex.: "— Quase
+    // nada. — ele admitiu. — Miya Morikawa dos Santos..." atribui pra Miya
+    // por proximidade, mas quem fala é outro personagem). Sobrevive a
+    // rescans futuros: upsertScanResults só toca characterId em falas NOVAS
+    // (texto mudou o bastante pra não bater o hash), nunca em já casadas.
+    bool setCharacter(const QString& id, const QString& newCharacterId);
 
 signals:
     void changed();

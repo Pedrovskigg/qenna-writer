@@ -10,6 +10,7 @@
 #include "MapPanel.h"
 #include "ProjectModel.h"
 #include "Theme.h"
+#include "WordCounter.h"
 
 #include <QAction>
 #include <QActionGroup>
@@ -20,11 +21,17 @@
 #include <QFrame>
 #include <QGuiApplication>
 #include <QHBoxLayout>
+#include <QHash>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QMenu>
 #include <QMouseEvent>
+#include <QPainter>
+#include <QPainterPath>
 #include <QPushButton>
+#include <QScreen>
 #include <QScrollArea>
 #include <QShowEvent>
 #include <QSizePolicy>
@@ -996,55 +1003,178 @@ void PensarioPanel::rebuildDialogues()
         return tr("Personagem");
     };
 
-    // ---- Botão de filtro (quem fala) ----
-    QString filterLabel = tr("Todos");
-    if (m_dialogueFilter != QStringLiteral("all")) filterLabel = charName(m_dialogueFilter);
+    // ---- Linha do topo: toggle de Estatísticas (se houver diálogo) à
+    // esquerda + "?" de ajuda à direita, sempre presente — explica como o
+    // detector funciona e onde corrigir erros dele.
+    {
+        auto* topRow = new QHBoxLayout();
+        topRow->setContentsMargins(0, 0, 0, 0);
+        topRow->setSpacing(4);
 
-    auto* filterBtn = new QToolButton(m_dialoguesInner);
-    filterBtn->setObjectName(QStringLiteral("pnMemFilterBtn"));
-    filterBtn->setCursor(Qt::PointingHandCursor);
-    filterBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    filterBtn->setText(tr("Fala: %1  ▾").arg(filterLabel));
-    filterBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    filterBtn->setPopupMode(QToolButton::InstantPopup);
+        if (!all.isEmpty()) {
+            // Link discreto, não uma barra do mesmo peso visual dos filtros
+            // — é informação complementar, não um controle primário da aba.
+            auto* statsToggle = new QToolButton(m_dialoguesInner);
+            statsToggle->setObjectName(QStringLiteral("pnDlgStatsToggle"));
+            statsToggle->setCursor(Qt::PointingHandCursor);
+            statsToggle->setToolButtonStyle(Qt::ToolButtonTextOnly);
+            statsToggle->setText(m_dialogueStatsExpanded ? tr("▴  Estatísticas") : tr("▾  Estatísticas"));
+            connect(statsToggle, &QToolButton::clicked, this, [this]() {
+                m_dialogueStatsExpanded = !m_dialogueStatsExpanded;
+                rebuildDialogues();
+            });
+            topRow->addWidget(statsToggle, 0, Qt::AlignLeft);
+        }
 
-    auto* menu = new QMenu(filterBtn);
-    menu->setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 5px 18px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
-            Theme::accentInfoSoft(), Theme::textBright()));
-    auto addFilter = [this, menu](const QString& label, const QString& value) {
-        QAction* a = menu->addAction(label);
-        a->setCheckable(true);
-        a->setChecked(m_dialogueFilter == value);
-        connect(a, &QAction::triggered, this, [this, value]() {
-            m_dialogueFilter = value;
-            rebuildDialogues();
+        topRow->addStretch(1);
+
+        auto* helpBtn = new QToolButton(m_dialoguesInner);
+        helpBtn->setObjectName(QStringLiteral("pnDlgHelpBtn"));
+        helpBtn->setCursor(Qt::PointingHandCursor);
+        helpBtn->setText(QStringLiteral("?"));
+        helpBtn->setToolTip(tr("Como o detector de diálogos funciona"));
+        connect(helpBtn, &QToolButton::clicked, this, [this, helpBtn]() {
+            auto* popup = new QFrame(nullptr);
+            popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
+            popup->setAttribute(Qt::WA_DeleteOnClose);
+            popup->setStyleSheet(QStringLiteral(
+                "QFrame { background: %1; border: 1px solid %2; border-radius: 8px; }")
+                .arg(Theme::panelBackground(), Theme::panelBorder()));
+
+            auto* label = new QLabel(
+                tr("O detector de diálogos lê e interpreta padrões de texto para "
+                   "definir o que é um diálogo e quem o disse.\n"
+                   "É uma ferramenta sólida, mas pode cometer erros.\n"
+                   "Caso um diálogo detectado esteja vinculado ao personagem "
+                   "errado, você pode corrigir através do clique direito.\n"
+                   "As estatísticas são estimativas e não garantem precisão "
+                   "absoluta com o conteúdo dos capítulos."),
+                popup);
+            label->setWordWrap(true);
+            label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;")
+                .arg(Theme::textPrimary()));
+
+            auto* lay = new QVBoxLayout(popup);
+            lay->setContentsMargins(12, 10, 12, 10);
+            lay->addWidget(label);
+
+            const int popupWidth = qMin(280, kPanelWidth - 2 * kMargin);
+            popup->setFixedWidth(popupWidth);
+            popup->adjustSize();
+
+            QPoint pos = helpBtn->mapToGlobal(QPoint(helpBtn->width() - popupWidth, helpBtn->height() + 4));
+            if (auto* screen = helpBtn->screen()) {
+                const QRect avail = screen->availableGeometry();
+                if (pos.x() < avail.left()) pos.setX(avail.left());
+                if (pos.y() + popup->height() > avail.bottom())
+                    pos.setY(helpBtn->mapToGlobal(QPoint(0, 0)).y() - popup->height() - 4);
+            }
+            popup->move(pos);
+            popup->show();
         });
-    };
-    addFilter(tr("Todos os diálogos"), QStringLiteral("all"));
-    QStringList seenSpeakers;
-    for (const DialogueStore::Dialogue& d : all) {
-        if (!d.characterId.isEmpty() && !seenSpeakers.contains(d.characterId))
-            seenSpeakers.append(d.characterId);
-    }
-    if (!seenSpeakers.isEmpty()) {
-        menu->addSeparator();
-        for (const QString& elId : seenSpeakers)
-            addFilter(tr("Falas de %1").arg(charName(elId)), elId);
-    }
-    filterBtn->setMenu(menu);
-    m_dialoguesLay->addWidget(filterBtn);
+        topRow->addWidget(helpBtn, 0, Qt::AlignRight);
 
+        m_dialoguesLay->addLayout(topRow);
+    }
+
+    if (!all.isEmpty()) {
+        if (m_dialogueStatsExpanded) {
+            struct Tally { int words = 0; int count = 0; };
+            QHash<QString, Tally> byChar;
+            QHash<QString, Tally> byChapterTitle;
+            const DialogueStore::Dialogue* longest = nullptr;
+            int longestWords = 0;
+            for (const auto& d : all) {
+                const int w = WordCounter::countWordsInPlain(d.text);
+                Tally& ct = byChar[d.characterId];
+                ct.words += w;
+                ct.count += 1;
+                const QString chapterTitle = d.sourceLabel.section(QStringLiteral(" — "), 0, 0);
+                if (!chapterTitle.isEmpty()) {
+                    Tally& cht = byChapterTitle[chapterTitle];
+                    cht.words += w;
+                    cht.count += 1;
+                }
+                if (!longest || w > longestWords) { longest = &d; longestWords = w; }
+            }
+            QString topCharName;
+            Tally topChar;
+            for (auto it = byChar.constBegin(); it != byChar.constEnd(); ++it) {
+                if (it.value().words > topChar.words) { topChar = it.value(); topCharName = charName(it.key()); }
+            }
+            QString topChapterTitle;
+            Tally topChapter;
+            for (auto it = byChapterTitle.constBegin(); it != byChapterTitle.constEnd(); ++it) {
+                if (it.value().words > topChapter.words) { topChapter = it.value(); topChapterTitle = it.key(); }
+            }
+
+            // Sem card com fundo/borda pesados — só um bloco compacto com
+            // divisórias finas, pra combinar com o resto da aba (que agora é
+            // tudo minimalista: link de estatísticas, filtros discretos).
+            auto* statsCard = new QFrame(m_dialoguesInner);
+            statsCard->setObjectName(QStringLiteral("pnDialogueStats"));
+            statsCard->setStyleSheet(QStringLiteral(
+                "QFrame#pnDialogueStatRow { border-bottom: 1px solid %1; }"
+                "QFrame#pnDialogueStatRow[last=\"true\"] { border-bottom: none; }"
+                "QLabel[role=\"statLabel\"] { color: %2; font-size: 10px; }"
+                "QLabel[role=\"statValue\"] { color: %3; font-size: 11px; font-weight: 600; }")
+                .arg(Theme::panelBorder(), Theme::textMuted(), Theme::textBright()));
+            auto* statsLay = new QVBoxLayout(statsCard);
+            statsLay->setContentsMargins(0, 0, 0, 2);
+            statsLay->setSpacing(0);
+
+            struct StatRow { QString label, value; };
+            QVector<StatRow> rows;
+            if (!topCharName.isEmpty())
+                rows.append({ tr("Quem mais fala"),
+                              tr("%1 · %2 diálogos · %3 palavras").arg(topCharName).arg(topChar.count).arg(topChar.words) });
+            if (!topChapterTitle.isEmpty())
+                rows.append({ tr("Capítulo com mais diálogo"),
+                              tr("%1 · %2 diálogos · %3 palavras").arg(topChapterTitle).arg(topChapter.count).arg(topChapter.words) });
+            if (longest)
+                rows.append({ tr("Diálogo mais longo"), tr("%1 · %2 palavras").arg(charName(longest->characterId)).arg(longestWords) });
+
+            for (int i = 0; i < rows.size(); ++i) {
+                auto* rowFrame = new QFrame(statsCard);
+                rowFrame->setObjectName(QStringLiteral("pnDialogueStatRow"));
+                rowFrame->setProperty("last", i == rows.size() - 1);
+                auto* rowLay = new QVBoxLayout(rowFrame);
+                rowLay->setContentsMargins(2, 4, 2, 4);
+                rowLay->setSpacing(0);
+
+                auto* lab = new QLabel(rows[i].label, rowFrame);
+                lab->setProperty("role", QStringLiteral("statLabel"));
+                lab->setWordWrap(true);
+                auto* val = new QLabel(rows[i].value.toHtmlEscaped(), rowFrame);
+                val->setProperty("role", QStringLiteral("statValue"));
+                val->setWordWrap(true);
+                rowLay->addWidget(lab);
+                rowLay->addWidget(val);
+                statsLay->addWidget(rowFrame);
+            }
+
+            m_dialoguesLay->addWidget(statsCard);
+        }
+    }
+
+    // O filtro de personagem/capítulo agora mora todo dentro de
+    // rebuildDialoguePresenceChips — o botão "+ Personagem" (picker com
+    // fotinha) e o filtro discreto de capítulo/cena ficam lado a lado ali.
     rebuildDialoguePresenceChips(all);
 
     // ---- Lista filtrada ----
     QVector<DialogueStore::Dialogue> list;
     for (const DialogueStore::Dialogue& d : all) {
-        if (m_dialogueFilter != QStringLiteral("all") && d.characterId != m_dialogueFilter) continue;
+        if (!m_dialogueOriginFilter.isEmpty()) {
+            const int sep = m_dialogueOriginFilter.indexOf(QStringLiteral("::"));
+            if (sep < 0) {
+                if (d.chapterId != m_dialogueOriginFilter) continue;
+            } else {
+                const QString chId = m_dialogueOriginFilter.left(sep);
+                const int sc = m_dialogueOriginFilter.mid(sep + 2).toInt();
+                if (d.chapterId != chId || d.sceneIndex != sc) continue;
+            }
+        }
 
         if (!m_dialoguePresenceFilter.isEmpty()) {
             // A cena (capítulo+índice) precisa ter fala de TODOS os
@@ -1069,9 +1199,10 @@ void PensarioPanel::rebuildDialogues()
                   return a.createdAt > b.createdAt;
               });
 
+    const bool noFilters = m_dialogueOriginFilter.isEmpty() && m_dialoguePresenceFilter.isEmpty();
     if (list.isEmpty()) {
         auto* empty = new QLabel(
-            (m_dialogueFilter == QStringLiteral("all") && m_dialoguePresenceFilter.isEmpty())
+            noFilters
                 ? tr("Nenhum diálogo detectado ainda. Escreva falas com travessão "
                      "(“— Não vou, disse Maria.”) e espere alguns segundos.")
                 : tr("Nenhum diálogo neste filtro."),
@@ -1085,10 +1216,7 @@ void PensarioPanel::rebuildDialogues()
     }
 
     for (const DialogueStore::Dialogue& d : list) {
-        const QString title = m_dialogueFilter == QStringLiteral("all")
-            ? tr("%1  ·  %2").arg(charName(d.characterId), d.sourceLabel)
-            : d.sourceLabel;
-        m_dialoguesLay->addWidget(buildDialogueCard(d, title, m_dialoguesInner));
+        m_dialoguesLay->addWidget(buildDialogueCard(d, charName(d.characterId), d.sourceLabel, m_dialoguesInner));
     }
 
     m_dialoguesLay->addStretch();
@@ -1098,13 +1226,6 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
 {
     if (!m_dialoguesLay) return;
 
-    QStringList speakerIds;
-    for (const DialogueStore::Dialogue& d : all) {
-        if (!d.characterId.isEmpty() && !speakerIds.contains(d.characterId))
-            speakerIds.append(d.characterId);
-    }
-    if (speakerIds.size() < 2) return; // não faz sentido cruzar com só 1 personagem falando
-
     auto charName = [this](const QString& elId) -> QString {
         if (m_elements) {
             if (const Element* el = m_elements->findElement(elId))
@@ -1112,64 +1233,332 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
         }
         return tr("Personagem");
     };
+
+    QStringList speakerIds;
+    for (const DialogueStore::Dialogue& d : all) {
+        if (!d.characterId.isEmpty() && !speakerIds.contains(d.characterId))
+            speakerIds.append(d.characterId);
+    }
     std::sort(speakerIds.begin(), speakerIds.end(), [&](const QString& a, const QString& b) {
         return charName(a).compare(charName(b), Qt::CaseInsensitive) < 0;
     });
+    const bool canPickPresence = speakerIds.size() >= 2; // não faz sentido cruzar com só 1 personagem falando
+
+    if (canPickPresence) {
+        // Personagem some do filtro se não fala mais neste conjunto (ex.:
+        // trocou o filtro de capítulo e ele não aparece mais ali).
+        for (auto it = m_dialoguePresenceFilter.begin(); it != m_dialoguePresenceFilter.end();) {
+            if (!speakerIds.contains(*it)) it = m_dialoguePresenceFilter.erase(it);
+            else ++it;
+        }
+    } else {
+        m_dialoguePresenceFilter.clear();
+    }
 
     auto* wrap = new QWidget(m_dialoguesInner);
-    const int maxWidth = kPanelWidth - 2 * kMargin - 4;
-    const int hGap = 5, vGap = 5;
-    int x = 0, y = 0, rowH = 0;
-    for (const QString& elId : speakerIds) {
-        auto* chip = new QPushButton(tr("também fala: %1").arg(charName(elId)), wrap);
-        chip->setObjectName(QStringLiteral("pnMemTagChip"));
-        chip->setCheckable(true);
-        chip->setChecked(m_dialoguePresenceFilter.contains(elId));
-        chip->setCursor(Qt::PointingHandCursor);
-        chip->setStyleSheet(QStringLiteral(R"(
-            QPushButton {
-                background: transparent; color: %1; border: 1px solid %2;
-                border-radius: 9px; padding: 2px 8px; font-size: 10px;
+    auto* wrapLay = new QVBoxLayout(wrap);
+    wrapLay->setContentsMargins(0, 0, 0, 0);
+    wrapLay->setSpacing(5);
+
+    // Um botão "escolhido" por personagem já selecionado (clicar remove) +
+    // uma linha final com o botão "+ Personagem" (abre uma lista com
+    // fotinha pra escolher o próximo) ao lado do filtro discreto de
+    // capítulo/cena — em vez de mostrar TODOS os chips possíveis de uma vez
+    // (poluído) ou duas barras cheias separadas (pesado).
+    QStringList picked;
+    if (canPickPresence) {
+        if (!m_dialoguePresenceFilter.isEmpty()) {
+            auto* label = new QLabel(tr("Também falam na cena com:"), wrap);
+            label->setObjectName(QStringLiteral("pnDlgPresenceLabel"));
+            wrapLay->addWidget(label);
+        }
+        picked = QStringList(m_dialoguePresenceFilter.begin(), m_dialoguePresenceFilter.end());
+        std::sort(picked.begin(), picked.end(), [&](const QString& a, const QString& b) {
+            return charName(a).compare(charName(b), Qt::CaseInsensitive) < 0;
+        });
+        for (const QString& elId : picked) {
+            auto* row = new QToolButton(wrap);
+            row->setObjectName(QStringLiteral("pnDlgPersonPicked"));
+            row->setCursor(Qt::PointingHandCursor);
+            row->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            row->setIcon(QIcon(characterAvatar(elId, 30)));
+            row->setIconSize(QSize(30, 30));
+            row->setText(charName(elId));
+            row->setToolTip(tr("Clique para remover"));
+            row->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            connect(row, &QToolButton::clicked, this, [this, elId]() {
+                m_dialoguePresenceFilter.remove(elId);
+                rebuildDialogues();
+            });
+            wrapLay->addWidget(row);
+        }
+    }
+
+    // ---- Filtro de capítulo/cena — combina em E com o de cima. Só lista
+    // capítulos/cenas que REALMENTE têm diálogo detectado.
+    struct OriginGroup { QString chapterId, manuscriptId, title; QVector<int> scenes; };
+    QVector<OriginGroup> origins;
+    for (const DialogueStore::Dialogue& d : all) {
+        if (d.chapterId.isEmpty()) continue;
+        int gi = -1;
+        for (int i = 0; i < origins.size(); ++i)
+            if (origins[i].chapterId == d.chapterId) { gi = i; break; }
+        if (gi < 0) {
+            OriginGroup g;
+            g.chapterId = d.chapterId;
+            g.manuscriptId = d.manuscriptId;
+            g.title = d.sourceLabel.section(QStringLiteral(" — "), 0, 0);
+            origins.append(g);
+            gi = origins.size() - 1;
+        }
+        if (d.sceneIndex >= 0 && !origins[gi].scenes.contains(d.sceneIndex))
+            origins[gi].scenes.append(d.sceneIndex);
+    }
+    std::sort(origins.begin(), origins.end(), [this](const OriginGroup& a, const OriginGroup& b) {
+        return rankForKey(DocCache::chapterKey(a.manuscriptId, a.chapterId))
+             < rankForKey(DocCache::chapterKey(b.manuscriptId, b.chapterId));
+    });
+
+    QString originLabelText = tr("Todos");
+    if (!m_dialogueOriginFilter.isEmpty()) {
+        const int sep = m_dialogueOriginFilter.indexOf(QStringLiteral("::"));
+        const QString chId = sep < 0 ? m_dialogueOriginFilter : m_dialogueOriginFilter.left(sep);
+        for (const OriginGroup& g : origins) {
+            if (g.chapterId != chId) continue;
+            originLabelText = g.title;
+            if (sep >= 0) {
+                const int sc = m_dialogueOriginFilter.mid(sep + 2).toInt();
+                for (const DialogueStore::Dialogue& d : all) {
+                    if (d.chapterId == chId && d.sceneIndex == sc) {
+                        originLabelText = QStringLiteral("%1 · %2")
+                            .arg(g.title, d.sourceLabel.section(QStringLiteral(" — "), 1, 1));
+                        break;
+                    }
+                }
             }
-            QPushButton:hover   { background: %3; color: %4; }
-            QPushButton:checked { background: %5; color: %4; border-color: %6; }
-        )").arg(Theme::textMuted(), Theme::panelBorder(), Theme::hoverOverlay(),
-                Theme::textBright(), Theme::pressedOverlay(), Theme::accentDefault()));
-        chip->adjustSize();
-        const QSize sz = chip->sizeHint();
-        if (x > 0 && x + sz.width() > maxWidth) { x = 0; y += sz.height() + vGap; }
-        chip->setGeometry(x, y, sz.width(), sz.height());
-        chip->show();
-        x += sz.width() + hGap;
-        rowH = sz.height();
-        connect(chip, &QPushButton::clicked, this, [this, elId]() {
-            if (m_dialoguePresenceFilter.contains(elId)) m_dialoguePresenceFilter.remove(elId);
-            else m_dialoguePresenceFilter.insert(elId);
+            break;
+        }
+    }
+
+    auto* originBtn = new QToolButton(wrap);
+    originBtn->setObjectName(QStringLiteral("pnDlgFilterBtn"));
+    originBtn->setCursor(Qt::PointingHandCursor);
+    originBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    originBtn->setText(tr("Cap.: %1  ▾").arg(originLabelText));
+    originBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    // Lista de verdade (QListWidget), não QMenu — um projeto com muitos
+    // capítulos/cenas fazia o menu abrir enorme, cobrindo a tela inteira.
+    // Um QListWidget com altura travada em ~7 linhas rola o resto de
+    // graça, ao contrário do QMenu (que só encolhe forçado pelo tamanho da
+    // TELA, nunca por um limite que a gente escolhe).
+    connect(originBtn, &QToolButton::clicked, this, [this, originBtn, origins, all]() {
+        auto* popup = new QFrame(nullptr);
+        popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
+        popup->setAttribute(Qt::WA_DeleteOnClose);
+        popup->setStyleSheet(QStringLiteral(
+            "QFrame { background: %1; border: 1px solid %2; border-radius: 6px; }")
+            .arg(Theme::panelBackground(), Theme::panelBorder()));
+
+        auto* plist = new QListWidget(popup);
+        plist->setObjectName(QStringLiteral("pnDlgOriginList"));
+        plist->setFrameShape(QFrame::NoFrame);
+        plist->setFocusPolicy(Qt::NoFocus);
+        plist->setUniformItemSizes(true);
+        plist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        plist->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        // Largura da barra fixada por QSS — sem isso, a barra só reserva
+        // espaço depois que aparece, e o popup (largura já travada antes
+        // dela existir) não sobra espaço: a barra acaba desenhada pra fora
+        // do frame visível.
+        plist->setStyleSheet(QStringLiteral(
+            "QListWidget#pnDlgOriginList { background: transparent; color: %1; outline: none; border: none; }"
+            "QListWidget#pnDlgOriginList::item { padding: 5px 10px; border-radius: 4px; }"
+            "QListWidget#pnDlgOriginList::item:selected { background: %2; color: %3; }"
+            "QListWidget#pnDlgOriginList QScrollBar:vertical { background: transparent; width: 9px; margin: 0; }"
+            "QListWidget#pnDlgOriginList QScrollBar::handle:vertical { background: %4; border-radius: 4px; min-height: 20px; }"
+            "QListWidget#pnDlgOriginList QScrollBar::add-line:vertical, "
+            "QListWidget#pnDlgOriginList QScrollBar::sub-line:vertical { height: 0px; }")
+            .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder()));
+
+        auto addItem = [this, plist](const QString& label, const QString& value) {
+            auto* it = new QListWidgetItem(label, plist);
+            it->setData(Qt::UserRole, value);
+            if (value == m_dialogueOriginFilter) plist->setCurrentItem(it);
+        };
+        addItem(tr("Todos os capítulos"), QString());
+        for (const OriginGroup& gConst : origins) {
+            OriginGroup g = gConst;
+            std::sort(g.scenes.begin(), g.scenes.end());
+            addItem(g.title, g.chapterId);
+            for (int sc : g.scenes) {
+                QString sceneLabel = tr("Cena %1").arg(sc + 1);
+                for (const DialogueStore::Dialogue& d : all) {
+                    if (d.chapterId == g.chapterId && d.sceneIndex == sc) {
+                        const QString part = d.sourceLabel.section(QStringLiteral(" — "), 1, 1);
+                        if (!part.isEmpty()) sceneLabel = part;
+                        break;
+                    }
+                }
+                addItem(QStringLiteral("      · %1").arg(sceneLabel),
+                        QStringLiteral("%1::%2").arg(g.chapterId).arg(sc));
+            }
+        }
+
+        auto* play = new QVBoxLayout(popup);
+        play->setContentsMargins(4, 4, 4, 4);
+        play->addWidget(plist);
+
+        constexpr int kRowH = 27;
+        constexpr int kMaxVisibleRows = 7;
+        constexpr int kMargins = 8; // 4px de cada lado do play
+        const int popupWidth = qMax(240, originBtn->width());
+        plist->setFixedHeight(kRowH * qMin(kMaxVisibleRows, qMax(1, plist->count())));
+        plist->setFixedWidth(popupWidth - kMargins);
+        popup->setFixedWidth(popupWidth);
+
+        connect(plist, &QListWidget::itemClicked, this, [this, popup](QListWidgetItem* it) {
+            m_dialogueOriginFilter = it->data(Qt::UserRole).toString();
+            popup->close();
             rebuildDialogues();
         });
+
+        // Clampa contra a tela: se abrir pra baixo empurrasse o popup pra
+        // fora da borda inferior, abre pra CIMA do botão em vez disso.
+        QPoint pos = originBtn->mapToGlobal(QPoint(0, originBtn->height() + 2));
+        const int popupHeight = plist->height() + 8;
+        if (auto* screen = originBtn->screen()) {
+            const QRect avail = screen->availableGeometry();
+            if (pos.y() + popupHeight > avail.bottom())
+                pos.setY(originBtn->mapToGlobal(QPoint(0, 0)).y() - popupHeight - 2);
+            if (pos.x() + popupWidth > avail.right())
+                pos.setX(avail.right() - popupWidth);
+        }
+        popup->move(pos);
+        popup->show();
+    });
+
+    // Linha final: "+ Personagem" (se ainda sobrar alguém pra adicionar) ao
+    // lado do filtro de capítulo/cena, discreto.
+    auto* lastRow = new QHBoxLayout();
+    lastRow->setContentsMargins(0, 0, 0, 0);
+    lastRow->setSpacing(6);
+    if (canPickPresence && picked.size() < speakerIds.size()) {
+        auto* addBtn = new QToolButton(wrap);
+        addBtn->setObjectName(QStringLiteral("pnDlgPersonAdd"));
+        addBtn->setCursor(Qt::PointingHandCursor);
+        addBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        addBtn->setText(tr("+  Personagem"));
+        addBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        addBtn->setPopupMode(QToolButton::InstantPopup);
+
+        auto* pickMenu = new QMenu(addBtn);
+        pickMenu->setStyleSheet(QStringLiteral(R"(
+            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
+            QMenu::item { padding: 5px 18px; border-radius: 4px; }
+            QMenu::item:selected { background: %4; color: %5; }
+        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+                Theme::accentInfoSoft(), Theme::textBright()));
+        for (const QString& elId : speakerIds) {
+            if (m_dialoguePresenceFilter.contains(elId)) continue;
+            QAction* a = pickMenu->addAction(QIcon(characterAvatar(elId, 24)), charName(elId));
+            connect(a, &QAction::triggered, this, [this, elId]() {
+                m_dialoguePresenceFilter.insert(elId);
+                rebuildDialogues();
+            });
+        }
+        addBtn->setMenu(pickMenu);
+        lastRow->addWidget(addBtn, 1);
     }
-    wrap->setFixedHeight(y + rowH);
+    lastRow->addWidget(originBtn, 1);
+    wrapLay->addLayout(lastRow);
+
     m_dialoguesLay->addWidget(wrap);
 }
 
+QPixmap PensarioPanel::characterAvatar(const QString& elementId, int size) const
+{
+    const Element* el = m_elements ? m_elements->findElement(elementId) : nullptr;
+
+    QPixmap photo;
+    if (el && !el->image.isEmpty()) {
+        const int comma = el->image.indexOf(QLatin1Char(','));
+        const QByteArray raw = QByteArray::fromBase64(el->image.mid(comma + 1).toLatin1());
+        photo.loadFromData(raw);
+    }
+
+    QPixmap circular(size, size);
+    circular.fill(Qt::transparent);
+    QPainter p(&circular);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    QPainterPath clip;
+    clip.addEllipse(0, 0, size, size);
+    p.setClipPath(clip);
+
+    if (!photo.isNull()) {
+        const QPixmap scaled = photo.scaled(size, size, Qt::KeepAspectRatioByExpanding,
+                                             Qt::SmoothTransformation);
+        p.drawPixmap((size - scaled.width()) / 2, (size - scaled.height()) / 2, scaled);
+    } else {
+        // Sem foto: círculo colorido (cor estável, derivada do id — mesmo
+        // personagem sempre cai na mesma cor) com a inicial do nome.
+        const QColor bg = QColor::fromHsv(int(qHash(elementId) % 360), 120, 165);
+        p.fillRect(0, 0, size, size, bg);
+        QFont f = p.font();
+        f.setBold(true);
+        f.setPixelSize(qMax(9, int(size * 0.42)));
+        p.setFont(f);
+        p.setPen(QColor(255, 255, 255, 235));
+        const QString name = el ? el->name.trimmed() : QString();
+        const QString initial = name.isEmpty() ? QStringLiteral("?") : name.left(1).toUpper();
+        p.drawText(circular.rect(), Qt::AlignCenter, initial);
+    }
+    return circular;
+}
+
 QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, const QString& speakerName,
-                                          QWidget* parent)
+                                          const QString& originLabel, QWidget* parent)
 {
     auto* card = new QFrame(parent);
-    card->setObjectName(QStringLiteral("pnMemCard"));
+    card->setObjectName(QStringLiteral("pnDlgCard"));
     card->setCursor(Qt::PointingHandCursor);
     card->setProperty("dlgId", dlg.id);
     card->installEventFilter(this);
+    card->setContextMenuPolicy(Qt::CustomContextMenu);
+    const QString dlgIdForMenu = dlg.id;
+    connect(card, &QWidget::customContextMenuRequested, this, [this, card, dlgIdForMenu](const QPoint& pos) {
+        QMenu menu(card);
+        menu.setStyleSheet(QStringLiteral(R"(
+            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
+            QMenu::item { padding: 5px 18px; border-radius: 4px; }
+            QMenu::item:selected { background: %4; color: %5; }
+        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+                Theme::accentInfoSoft(), Theme::textBright()));
+        QAction* changeSpeaker = menu.addAction(tr("Alterar locutor…"));
+        QAction* chosen = menu.exec(card->mapToGlobal(pos));
+        if (chosen == changeSpeaker) showChangeSpeakerPopup(dlgIdForMenu, card->mapToGlobal(pos));
+    });
 
-    auto* lay = new QVBoxLayout(card);
-    lay->setContentsMargins(12, 9, 10, 10);
-    lay->setSpacing(4);
+    auto* outer = new QHBoxLayout(card);
+    outer->setContentsMargins(11, 9, 10, 9);
+    outer->setSpacing(9);
+
+    constexpr int kAvatarSize = 32;
+    auto* avatarLbl = new QLabel(card);
+    avatarLbl->setFixedSize(kAvatarSize, kAvatarSize);
+    avatarLbl->setPixmap(characterAvatar(dlg.characterId, kAvatarSize));
+    avatarLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    outer->addWidget(avatarLbl, 0, Qt::AlignTop);
+
+    auto* col = new QVBoxLayout();
+    col->setContentsMargins(0, 0, 0, 0);
+    col->setSpacing(2);
 
     auto* topRow = new QHBoxLayout();
     topRow->setContentsMargins(0, 0, 0, 0);
     topRow->setSpacing(4);
     auto* titleLbl = new QLabel(speakerName, card);
-    titleLbl->setObjectName(QStringLiteral("pnMemCardTitle"));
+    titleLbl->setObjectName(QStringLiteral("pnDlgCardName"));
     titleLbl->setWordWrap(true);
     titleLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     topRow->addWidget(titleLbl, 1);
@@ -1185,15 +1574,93 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
         if (m_dialogues) m_dialogues->remove(dlgId);
     });
     topRow->addWidget(delBtn, 0, Qt::AlignTop);
-    lay->addLayout(topRow);
+    col->addLayout(topRow);
+
+    auto* originLbl = new QLabel(originLabel, card);
+    originLbl->setObjectName(QStringLiteral("pnDlgCardOrigin"));
+    originLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    col->addWidget(originLbl);
 
     auto* textLbl = new QLabel(QStringLiteral("“%1”").arg(dlg.text.trimmed()), card);
-    textLbl->setObjectName(QStringLiteral("pnMemCardQuote"));
+    textLbl->setObjectName(QStringLiteral("pnDlgCardQuote"));
     textLbl->setWordWrap(true);
     textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    lay->addWidget(textLbl);
+    col->addWidget(textLbl);
 
+    outer->addLayout(col, 1);
     return card;
+}
+
+void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& globalPos)
+{
+    if (!m_elements || !m_dialogues) return;
+
+    QList<Element> chars;
+    for (const Element& e : m_elements->elements())
+        if (e.type == QStringLiteral("character")) chars.append(e);
+    if (chars.isEmpty()) return;
+    std::sort(chars.begin(), chars.end(), [](const Element& a, const Element& b) {
+        return a.name.compare(b.name, Qt::CaseInsensitive) < 0;
+    });
+
+    auto* popup = new QFrame(nullptr);
+    popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setStyleSheet(QStringLiteral(
+        "QFrame { background: %1; border: 1px solid %2; border-radius: 6px; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder()));
+
+    auto* plist = new QListWidget(popup);
+    plist->setObjectName(QStringLiteral("pnDlgSpeakerList"));
+    plist->setFrameShape(QFrame::NoFrame);
+    plist->setFocusPolicy(Qt::NoFocus);
+    plist->setUniformItemSizes(true);
+    plist->setIconSize(QSize(22, 22));
+    plist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    plist->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    plist->setStyleSheet(QStringLiteral(
+        "QListWidget#pnDlgSpeakerList { background: transparent; color: %1; outline: none; border: none; }"
+        "QListWidget#pnDlgSpeakerList::item { padding: 5px 8px; border-radius: 4px; }"
+        "QListWidget#pnDlgSpeakerList::item:selected { background: %2; color: %3; }"
+        "QListWidget#pnDlgSpeakerList QScrollBar:vertical { background: transparent; width: 9px; margin: 0; }"
+        "QListWidget#pnDlgSpeakerList QScrollBar::handle:vertical { background: %4; border-radius: 4px; min-height: 20px; }"
+        "QListWidget#pnDlgSpeakerList QScrollBar::add-line:vertical, "
+        "QListWidget#pnDlgSpeakerList QScrollBar::sub-line:vertical { height: 0px; }")
+        .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder()));
+
+    for (const Element& e : chars) {
+        auto* it = new QListWidgetItem(QIcon(characterAvatar(e.id, 22)),
+                                        e.name.isEmpty() ? tr("(sem nome)") : e.name, plist);
+        it->setData(Qt::UserRole, e.id);
+    }
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(4, 4, 4, 4);
+    lay->addWidget(plist);
+
+    constexpr int kRowH = 30;
+    constexpr int kMaxVisibleRows = 7;
+    constexpr int kMargins = 8;
+    const int popupWidth = 220;
+    plist->setFixedWidth(popupWidth - kMargins);
+    plist->setFixedHeight(kRowH * qMin(kMaxVisibleRows, qMax(1, plist->count())));
+    popup->setFixedWidth(popupWidth);
+
+    connect(plist, &QListWidget::itemClicked, this, [this, popup, dlgId](QListWidgetItem* it) {
+        const QString newId = it->data(Qt::UserRole).toString();
+        popup->close();
+        if (m_dialogues) m_dialogues->setCharacter(dlgId, newId);
+    });
+
+    QPoint pos = globalPos;
+    const int popupHeight = plist->height() + 8;
+    if (auto* screen = QGuiApplication::screenAt(globalPos)) {
+        const QRect avail = screen->availableGeometry();
+        if (pos.y() + popupHeight > avail.bottom()) pos.setY(avail.bottom() - popupHeight);
+        if (pos.x() + popupWidth > avail.right()) pos.setX(avail.right() - popupWidth);
+    }
+    popup->move(pos);
+    popup->show();
 }
 
 void PensarioPanel::selectTab(Tab tab)
@@ -1758,6 +2225,59 @@ void PensarioPanel::applyTheme()
         }
         #pnMemFilterBtn:hover { color: %5; border-color: %8; }
         #pnMemFilterBtn::menu-indicator { image: none; width: 0; }
+        #pnDlgFilterBtn {
+            color: %3;
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        #pnDlgFilterBtn:hover { color: %5; border-color: %8; }
+        #pnDlgFilterBtn::menu-indicator { image: none; width: 0; }
+        #pnDlgStatsToggle {
+            color: %4;
+            background: transparent;
+            border: none;
+            padding: 2px 0px;
+            font-size: 11px;
+        }
+        #pnDlgStatsToggle:hover { color: %8; }
+        #pnDlgHelpBtn {
+            color: %4;
+            background: transparent;
+            border: 1px solid %9;
+            border-radius: 8px;
+            min-width: 16px;
+            max-width: 16px;
+            min-height: 16px;
+            max-height: 16px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        #pnDlgHelpBtn:hover { color: %5; border-color: %8; }
+        #pnDlgPresenceLabel { color: %4; font-size: 10px; }
+        #pnDlgPersonPicked {
+            color: %5;
+            background: %7;
+            border: 1px solid %8;
+            border-radius: 7px;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+        }
+        #pnDlgPersonPicked:hover { border-color: %4; }
+        #pnDlgPersonAdd {
+            color: %4;
+            background: transparent;
+            border: 1px dashed %9;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+        #pnDlgPersonAdd:hover { color: %3; border-color: %8; }
+        #pnDlgPersonAdd::menu-indicator { image: none; width: 0; }
         #pnMemCard {
             background: %6;
             border: 1px solid %9;
@@ -1766,6 +2286,16 @@ void PensarioPanel::applyTheme()
         #pnMemCard:hover { border-color: %8; }
         #pnMemCardTitle { color: %8; font-size: 11px; font-weight: 700; }
         #pnMemCardQuote { color: %3; font-size: 12px; }
+        #pnDlgCard {
+            background: %6;
+            border: 1px solid %9;
+            border-left: 3px solid %8;
+            border-radius: 8px;
+        }
+        #pnDlgCard:hover { border-color: %8; }
+        #pnDlgCardName { color: %5; font-size: 12px; font-weight: 700; }
+        #pnDlgCardOrigin { color: %4; font-size: 10px; }
+        #pnDlgCardQuote { color: %3; font-size: 12px; }
         #pnMemDelete {
             color: %4;
             background: transparent;

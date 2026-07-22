@@ -1,10 +1,13 @@
 #include "ManuscriptPanel.h"
+#include "DialogueStore.h"
 #include "ProjectModel.h"
 #include "Theme.h"
+#include "WordCounter.h"
 
 #include <QAction>
 #include <QApplication>
 #include <QColor>
+#include <QCoreApplication>
 #include <QComboBox>
 #include <QDrag>
 #include <QDragEnterEvent>
@@ -80,6 +83,63 @@ QString createButtonQss(const QString& accent) {
         }
     )").arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
 }
+
+// Pilulazinha VERTICAL de proporção diálogo/narração, encostada no início
+// do nome do capítulo — azul de destaque (Theme::accentDefault) empilhado
+// por cima pra diálogo, tom neutro (Theme::subtleBorder) embaixo pra
+// narração. Cores lidas do Theme na hora de pintar (não cacheadas), então
+// acompanham a troca de tema de graça — rebuildList() já reconstrói tudo do
+// zero a cada applyTheme(), então nem precisa de conexão própria com
+// themeChanged. Tooltip no hover mostra os dois valores em porcentagem.
+class DialogueRatioBar : public QWidget {
+public:
+    explicit DialogueRatioBar(QWidget* parent = nullptr) : QWidget(parent) {
+        setFixedWidth(5);
+        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    }
+    void setRatio(double dialogueFraction) {
+        m_ratio = qBound(0.0, dialogueFraction, 1.0);
+        const int dlgPct = qRound(m_ratio * 100.0);
+        // QCoreApplication::translate explícito, não tr() — esta classe não
+        // tem Q_OBJECT, então tr() resolveria pro contexto "QWidget" herdado
+        // (nunca consultado em runtime), deixando a tradução presa em
+        // português mesmo com o .ts certinho (mesmo bug já visto antes).
+        // Cor do quadrado de narração: textMuted() (cinza pensado pra ser
+        // LEGÍVEL em cima de fundo escuro), não panelBorder() — aquela é
+        // quase preta (feita pra sutileza contra o painel do app), e some
+        // de vez contra o fundo preto do tooltip nativo do SO.
+        setToolTip(QCoreApplication::translate("DialogueRatioBar",
+                      "Conteúdo do texto:<br>"
+                      "<span style=\"color:%1;\">■</span> Diálogo: %2%<br>"
+                      "<span style=\"color:%3;\">■</span> Narração: %4%")
+            .arg(Theme::accentDefault()).arg(dlgPct)
+            .arg(Theme::textMuted()).arg(100 - dlgPct));
+        update();
+    }
+protected:
+    void paintEvent(QPaintEvent*) override {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, false);
+        const QRectF full = QRectF(rect()).adjusted(0, 2, 0, -2);
+        QPainterPath track;
+        track.addRoundedRect(full, 2, 2);
+        // Theme::subtleBorder() devolve uma string "rgba(r,g,b,a)" (só serve
+        // em QSS) — QColor(QString) não entende esse formato e cai pra
+        // preto opaco silenciosamente. Theme::panelBorder() é hex de
+        // verdade, seguro pra construir QColor direto no C++.
+        p.fillPath(track, QColor(Theme::panelBorder()));
+        if (m_ratio > 0.0) {
+            // Empilhado de CIMA pra baixo: diálogo primeiro.
+            QRectF dlg = full;
+            dlg.setHeight(full.height() * m_ratio);
+            QPainterPath dlgPath;
+            dlgPath.addRoundedRect(dlg, 2, 2);
+            p.fillPath(dlgPath, QColor(Theme::accentDefault()));
+        }
+    }
+private:
+    double m_ratio = 0.0;
+};
 }
 
 ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
@@ -227,6 +287,21 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
 void ManuscriptPanel::applyTheme() {
     setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel")));
     applyHeaderStyles();
+    if (isPanelOpen()) rebuildList();
+}
+
+void ManuscriptPanel::setDialogueStore(DialogueStore* store) {
+    if (m_dialogueStore == store) return;
+    m_dialogueStore = store;
+    if (m_dialogueStore) connect(m_dialogueStore, &DialogueStore::changed, this, &ManuscriptPanel::rebuildList);
+    if (isPanelOpen()) rebuildList();
+}
+
+void ManuscriptPanel::setWordCounter(WordCounter* counter) {
+    if (m_wordCounter == counter) return;
+    m_wordCounter = counter;
+    // countsChanged já é debounced lá dentro — seguro conectar direto.
+    if (m_wordCounter) connect(m_wordCounter, &WordCounter::countsChanged, this, &ManuscriptPanel::rebuildList);
     if (isPanelOpen()) rebuildList();
 }
 
@@ -425,7 +500,35 @@ void ManuscriptPanel::rebuildList() {
         btn->setProperty("kind", QStringLiteral("chapter"));
         btn->setProperty("chapterId", chapterId);
         btn->installEventFilter(this);
-        m_listLayout->insertWidget(row++, btn);
+
+        // Pilula de proporção diálogo/narração encostada no início do
+        // título — só quando há as duas fontes conectadas E o capítulo tem
+        // pelo menos uma palavra (senão vira um traço cinza sem sentido).
+        // Embrulha [pílula][botão] num container só, que é o que entra no
+        // m_listLayout — as propriedades "kind"/"chapterId" são espelhadas
+        // nele também, porque o drag&drop acha o alvo pela posição Y do
+        // widget mais próximo dentro do layout, e agora esse widget é o
+        // container, não mais o botão diretamente.
+        QWidget* chapterRow = btn;
+        if (m_dialogueStore && m_wordCounter) {
+            const int totalWords = m_wordCounter->countChapter(chapterId);
+            if (totalWords > 0) {
+                const int dlgWords = m_dialogueStore->dialogueWordsForChapter(chapterId);
+                auto* bar = new DialogueRatioBar(this);
+                bar->setRatio(double(dlgWords) / double(totalWords));
+
+                auto* container = new QWidget(this);
+                auto* rowLay = new QHBoxLayout(container);
+                rowLay->setContentsMargins(0, 0, 0, 0);
+                rowLay->setSpacing(6);
+                rowLay->addWidget(bar);
+                rowLay->addWidget(btn, 1);
+                container->setProperty("kind", QStringLiteral("chapter"));
+                container->setProperty("chapterId", chapterId);
+                chapterRow = container;
+            }
+        }
+        m_listLayout->insertWidget(row++, chapterRow);
 
         // Cenas indentadas (só aparecem quando há mais de uma).
         if (c.scenes.size() > 1) {

@@ -1,0 +1,26 @@
+<RCC>
+    <qresource prefix="/shelf">
+        <file alias="wood-1.jpg">../src/assets/shelf-textures/wood-1.jpg</file>
+        <file alias="wood-2.jpg">../src/assets/shelf-textures/wood-2.jpg</file>
+        <file alias="wood-3.jpg">../src/assets/shelf-textures/wood-3.jpg</file>
+        <file alias="wood-4.jpg">../src/assets/shelf-textures/wood-4.jpg</file>
+        <file alias="wood-5.jpg">../src/assets/shelf-textures/wood-5.jpg</file>
+        <file alias="wood-6.jpg">../src/assets/shelf-textures/wood-6.jpg</file>
+        <file alias="wood-7.jpg">../src/assets/shelf-textures/wood-7.jpg</file>
+        <file alias="wood-8.jpg">../src/assets/shelf-textures/wood-8.jpg</file>
+        <file alias="steel-1.jpg">../src/assets/shelf-textures/steel-1.jpg</file>
+        <file alias="steel-2.jpg">../src/assets/shelf-textures/steel-2.jpg</file>
+        <file alias="steel-3.jpg">../src/assets/shelf-textures/steel-3.jpg</file>
+        <file alias="thumbs/wood-1.jpg">../src/assets/shelf-textures/thumbs/wood-1.jpg</file>
+        <file alias="thumbs/wood-2.jpg">../src/assets/shelf-textures/thumbs/wood-2.jpg</file>
+        <file alias="thumbs/wood-3.jpg">../src/assets/shelf-textures/thumbs/wood-3.jpg</file>
+        <file alias="thumbs/wood-4.jpg">../src/assets/shelf-textures/thumbs/wood-4.jpg</file>
+        <file alias="thumbs/wood-5.jpg">../src/assets/shelf-textures/thumbs/wood-5.jpg</file>
+        <file alias="thumbs/wood-6.jpg">../src/assets/shelf-textures/thumbs/wood-6.jpg</file>
+        <file alias="thumbs/wood-7.jpg">../src/assets/shelf-textures/thumbs/wood-7.jpg</file>
+        <file alias="thumbs/wood-8.jpg">../src/assets/shelf-textures/thumbs/wood-8.jpg</file>
+        <file alias="thumbs/steel-1.jpg">../src/assets/shelf-textures/thumbs/steel-1.jpg</file>
+        <file alias="thumbs/steel-2.jpg">../src/assets/shelf-textures/thumbs/steel-2.jpg</file>
+        <file alias="thumbs/steel-3.jpg">../src/assets/shelf-textures/thumbs/steel-3.jpg</file>
+    </qresource>
+</RCC>

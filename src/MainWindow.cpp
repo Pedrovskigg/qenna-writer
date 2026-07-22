@@ -1600,6 +1600,11 @@ void MainWindow::setupEditor()
 
     drawerListPanel->setElementsStore(elementsStore);
     wordCounter = new WordCounter(projectModel, docCache, editorHost, this);
+    if (projectSaver) projectSaver->setWordCounter(wordCounter);
+    if (manuscriptPanel) {
+        manuscriptPanel->setWordCounter(wordCounter);
+        manuscriptPanel->setDialogueStore(dialogueStore);
+    }
     // Tracking de tempo: cursor/texto/seleção contam como atividade.
     connect(editor, &QTextEdit::cursorPositionChanged, wordCounter, &WordCounter::registerCursorActivity);
     connect(editor, &QTextEdit::textChanged, wordCounter, &WordCounter::registerCursorActivity);
@@ -4834,6 +4839,14 @@ void MainWindow::openMainMenu()
                     list.removeAll(QDir::cleanPath(path));
                     saveRecentProjects(list);
                     if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
+                });
+
+        // Arrastar na Prateleira pra reordenar — persiste a nova ordem. Abrir
+        // qualquer projeto ainda move ele pro topo depois (rememberLastProject),
+        // então essa ordem manual vale até o próximo projeto ser aberto.
+        connect(mainMenuDialog, &MainMenuDialog::recentsReordered,
+                this, [this](const QStringList& newOrder) {
+                    saveRecentProjects(newOrder);
                 });
 
         // Excluir projeto — apaga a pasta do disco (a confirmação com countdown

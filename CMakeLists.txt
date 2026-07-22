@@ -190,6 +190,12 @@ qt_add_executable(qenna-writer
     src/LousaScene.h
     src/LousaView.cpp
     src/LousaView.h
+    src/ShelfBookItem.cpp
+    src/ShelfBookItem.h
+    src/ShelfScene.cpp
+    src/ShelfScene.h
+    src/ShelfView.cpp
+    src/ShelfView.h
     src/LousaPanel.cpp
     src/LousaPanel.h
     src/LousaTypes.h
@@ -234,6 +240,7 @@ qt_add_executable(qenna-writer
     resources/icons.qrc
     resources/geo.qrc
     resources/flags.qrc
+    resources/shelf.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
 

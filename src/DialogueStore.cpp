@@ -1,5 +1,7 @@
 #include "DialogueStore.h"
 
+#include "WordCounter.h"
+
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -102,6 +104,15 @@ QVector<DialogueStore::Dialogue> DialogueStore::dialoguesForCharacter(const QStr
     return out;
 }
 
+int DialogueStore::dialogueWordsForChapter(const QString& chapterId) const
+{
+    if (chapterId.isEmpty()) return 0;
+    int words = 0;
+    for (const Dialogue& d : m_dialogues)
+        if (d.chapterId == chapterId) words += WordCounter::countWordsInPlain(d.text);
+    return words;
+}
+
 void DialogueStore::upsertScanResults(const QString& manuscriptId, const QString& chapterId,
                                       const QVector<ScannedLine>& found)
 {
@@ -197,4 +208,17 @@ bool DialogueStore::remove(const QString& id)
     if (m_dialogues.size() == before) return false;
     emit changed();
     return true;
+}
+
+bool DialogueStore::setCharacter(const QString& id, const QString& newCharacterId)
+{
+    if (newCharacterId.isEmpty()) return false;
+    for (Dialogue& d : m_dialogues) {
+        if (d.id != id) continue;
+        if (d.characterId == newCharacterId) return false;
+        d.characterId = newCharacterId;
+        emit changed();
+        return true;
+    }
+    return false;
 }

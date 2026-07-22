@@ -3,6 +3,7 @@
 #include "DialogueStore.h"
 #include "MemoriesStore.h"
 
+#include <QPixmap>
 #include <QPoint>
 #include <QSet>
 #include <QString>
@@ -107,7 +108,15 @@ private:
     void rebuildDialogues();
     void rebuildDialoguePresenceChips(const QVector<DialogueStore::Dialogue>& all);
     QWidget* buildDialogueCard(const DialogueStore::Dialogue& dlg, const QString& speakerName,
-                               QWidget* parent);
+                               const QString& originLabel, QWidget* parent);
+    // Miniatura circular do personagem (foto real se tiver; senão um círculo
+    // colorido — cor derivada do id, estável — com a inicial do nome).
+    QPixmap characterAvatar(const QString& elementId, int size) const;
+    // Clique direito num card de diálogo → "Alterar locutor" → esta lista
+    // (todos os personagens do projeto, não só quem já foi detectado
+    // falando) — corrige atribuições erradas do detector (heurística de
+    // proximidade às vezes pega quem é CITADO, não quem fala).
+    void showChangeSpeakerPopup(const QString& dlgId, const QPoint& globalPos);
     void setNameCategory(NameCategory c);
     void updateGenderVisibility();
     void generateNames();
@@ -187,12 +196,18 @@ private:
     QScrollArea* m_dialoguesScroll = nullptr;
     QWidget* m_dialoguesInner = nullptr;
     QVBoxLayout* m_dialoguesLay = nullptr;
-    // Filtro principal da aba Diálogos: "all" | elementId de quem fala.
-    QString m_dialogueFilter = QStringLiteral("all");
+    // Filtro de capítulo/cena: "" (todos os capítulos) | chapterId (capítulo
+    // inteiro) | "chapterId::sceneIndex" (cena específica) — combina em E com
+    // o picker de "também fala" (ex.: "quem fala com a Klara no capítulo 5").
+    QString m_dialogueOriginFilter;
     // Facet ortogonal: só mostra falas de cenas onde estes personagens
     // TAMBÉM têm fala salva (proxy de presença — mais barato que reescanear
     // o texto da cena, e os dados já estão no DialogueStore).
     QSet<QString> m_dialoguePresenceFilter;
+    // Card de estatísticas (quem mais fala, capítulo com mais diálogo,
+    // diálogo mais longo) — recolhido por padrão, atrás de um botão, pra
+    // não poluir a aba com algo sempre visível.
+    bool m_dialogueStatsExpanded = false;
 
     bool m_dragging = false;
     QPoint m_dragOffset;

@@ -15,6 +15,8 @@ class QTimer;
 class QVBoxLayout;
 class FlowLayout;
 class FlowScrollArea;
+class ShelfScene;
+class ShelfView;
 
 // Tela inicial / menu do app — figurino próprio do Mira 2, layout editorial
 // em duas colunas (deliberadamente diferente do topo-centralizado do Mira 1):
@@ -26,6 +28,8 @@ class FlowScrollArea;
 //       * Estante: parede de capas (vitrine 3D) que quebra em linhas, com
 //         scroll vertical. Hover em um card escurece os demais.
 //       * Lista: linhas ricas em metadados (capa miniatura + autor + gêneros).
+//       * Prateleira: livros em 3D de verdade (QGraphicsView), lombada +
+//         capa + páginas, a capa revelada no hover — ver ShelfBookItem.
 //
 // Aparece automaticamente no startup quando não há projeto carregado, e
 // é invocado também quando o usuário pede "Carregar projeto" pela barra.
@@ -44,6 +48,9 @@ signals:
     void removeRecentRequested(const QString& path);
     void deleteProjectRequested(const QString& path);
     void autoOpenChanged(const QString& path, bool enabled);
+    // Emitido depois de arrastar um livro na Prateleira pra reordenar — nova
+    // ordem completa de paths, pra MainWindow persistir nos recentes.
+    void recentsReordered(const QStringList& newOrder);
     // Emitido após o Mira Cover fechar e a capa ser gravada no JSON do projeto.
     void coverUpdated(const QString& projectPath);
     // Emitido quando o user clica em "Verificar atualizações".
@@ -60,7 +67,7 @@ private slots:
     void applyDialogStyle();
 
 private:
-    enum class ViewMode { Estante, Lista };
+    enum class ViewMode { Estante, Lista, Prateleira };
 
     void buildUi();
     void buildSidebar(QVBoxLayout* col);
@@ -93,6 +100,14 @@ private:
     // Recolore os ícones dos botões de ação conforme o tema atual (SVG tintado
     // no load não acompanha troca de tema sozinho).
     void refreshActionIcons();
+    // Popup com miniaturas de madeira/aço pra trocar o material da
+    // Prateleira — escolha persiste em QSettings (preferência do app, não
+    // por projeto).
+    void showShelfMaterialMenu();
+    // Toast pequeno e efêmero ("Em breve") ancorado acima de um widget —
+    // usado pra travar o botão da Prateleira sem tirá-la do código (ainda em
+    // polimento visual).
+    void showComingSoonToast(QWidget* anchor);
 
     // --- Barra lateral ---
     QLabel* m_quoteLabel = nullptr;
@@ -108,16 +123,20 @@ private:
     QLabel* m_countLabel = nullptr;
     QPushButton* m_estanteBtn = nullptr;
     QPushButton* m_listaBtn = nullptr;
+    QPushButton* m_prateleiraBtn = nullptr;
+    QPushButton* m_shelfMaterialBtn = nullptr; // só visível em modo Prateleira
     FlowScrollArea* m_recentsScroll = nullptr;
     QWidget* m_holder = nullptr;          // conteúdo do scroll
     QWidget* m_gridContainer = nullptr;   // parede de capas (FlowLayout)
     QWidget* m_listContainer = nullptr;   // linhas (QVBoxLayout)
+    ShelfScene* m_shelfScene = nullptr;   // prateleira 3D — cena
+    ShelfView*  m_shelfView  = nullptr;   // prateleira 3D — view (container no holderCol)
     FlowLayout* m_gridFlow = nullptr;
     QVBoxLayout* m_listCol = nullptr;
     QLabel* m_emptyLabel = nullptr;
 
     ViewMode m_viewMode = ViewMode::Estante;
-    QList<QWidget*> m_cards;   // BookCards da Estante (para hover-darken)
+    QList<QWidget*> m_cards;         // BookCards da Estante (para hover-darken)
     QStringList m_recentPaths;
     QString m_autoOpenPath;
 };
