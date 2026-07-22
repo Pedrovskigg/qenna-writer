@@ -6,6 +6,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <QBuffer>
 #include <QColor>
 #include <QCoreApplication>
 #include <QComboBox>
@@ -14,6 +15,7 @@
 #include <QDragLeaveEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QEnterEvent>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
@@ -84,6 +86,24 @@ QString createButtonQss(const QString& accent) {
     )").arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
 }
 
+// Quadradinho colorido pronto pra embutir em rich text via <img> — usado no
+// tooltip da pilula em vez de `<span style="color:...">■</span>`: depender
+// de cor de TEXTO em rich text de tooltip nativo se mostrou pouco confiável
+// (ficava preto direto, mesmo com hex válido e o texto forçado como HTML).
+// Uma imagem de verdade não depende de nenhuma interpretação de estilo de
+// texto — os pixels JÁ nascem com a cor certa.
+QString colorSquareImgTag(const QColor& color, int sizePx = 10)
+{
+    QPixmap pm(sizePx, sizePx);
+    pm.fill(color);
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    pm.save(&buf, "PNG");
+    return QStringLiteral("<img src=\"data:image/png;base64,%1\" width=\"%2\" height=\"%2\">")
+        .arg(QString::fromLatin1(bytes.toBase64())).arg(sizePx);
+}
+
 // Pilulazinha VERTICAL de proporção diálogo/narração, encostada no início
 // do nome do capítulo — azul de destaque (Theme::accentDefault) empilhado
 // por cima pra diálogo, tom neutro (Theme::subtleBorder) embaixo pra
@@ -97,6 +117,8 @@ public:
         setFixedWidth(5);
         setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
     }
+    ~DialogueRatioBar() override { hidePopup(); }
+
     void setRatio(double dialogueFraction) {
         m_ratio = qBound(0.0, dialogueFraction, 1.0);
         const int dlgPct = qRound(m_ratio * 100.0);
@@ -104,16 +126,12 @@ public:
         // tem Q_OBJECT, então tr() resolveria pro contexto "QWidget" herdado
         // (nunca consultado em runtime), deixando a tradução presa em
         // português mesmo com o .ts certinho (mesmo bug já visto antes).
-        // Cor do quadrado de narração: textMuted() (cinza pensado pra ser
-        // LEGÍVEL em cima de fundo escuro), não panelBorder() — aquela é
-        // quase preta (feita pra sutileza contra o painel do app), e some
-        // de vez contra o fundo preto do tooltip nativo do SO.
-        setToolTip(QCoreApplication::translate("DialogueRatioBar",
+        m_infoHtml = QCoreApplication::translate("DialogueRatioBar",
                       "Conteúdo do texto:<br>"
-                      "<span style=\"color:%1;\">■</span> Diálogo: %2%<br>"
-                      "<span style=\"color:%3;\">■</span> Narração: %4%")
-            .arg(Theme::accentDefault()).arg(dlgPct)
-            .arg(Theme::textMuted()).arg(100 - dlgPct));
+                      "%1 Diálogo: %2%<br>"
+                      "%3 Narração: %4%")
+            .arg(colorSquareImgTag(QColor(Theme::accentDefault()))).arg(dlgPct)
+            .arg(colorSquareImgTag(QColor(Theme::textMuted()))).arg(100 - dlgPct);
         update();
     }
 protected:
@@ -137,8 +155,47 @@ protected:
             p.fillPath(dlgPath, QColor(Theme::accentDefault()));
         }
     }
+    // Popup próprio em vez de setToolTip()/QToolTip nativo — no Windows, o
+    // estilo nativo (windowsvista) IGNORA background-color do QSS e até a
+    // QPalette::ToolTipBase pra esse widget específico, sempre pintando um
+    // fundo preto do próprio SO por baixo. Um QLabel com Qt::ToolTip (só a
+    // flag de janela, não a classe QToolTip) dá controle total de verdade,
+    // igual o ProjectInfoHover já usa nesta mesma sessão.
+    void enterEvent(QEnterEvent* event) override {
+        showPopup();
+        QWidget::enterEvent(event);
+    }
+    void leaveEvent(QEvent* event) override {
+        hidePopup();
+        QWidget::leaveEvent(event);
+    }
 private:
+    void showPopup() {
+        hidePopup();
+        if (m_infoHtml.isEmpty()) return;
+        m_popup = new QLabel(nullptr);
+        m_popup->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
+        m_popup->setAttribute(Qt::WA_ShowWithoutActivating);
+        m_popup->setTextFormat(Qt::RichText);
+        m_popup->setStyleSheet(QStringLiteral(
+            "QLabel { background-color: %1; color: %2; border: 1px solid %3; "
+            "border-radius: 6px; padding: 6px 10px; font-size: 12px; }")
+            .arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder()));
+        m_popup->setText(m_infoHtml);
+        m_popup->adjustSize();
+        m_popup->move(mapToGlobal(QPoint(width() + 6, 0)));
+        m_popup->show();
+    }
+    void hidePopup() {
+        if (m_popup) {
+            m_popup->deleteLater();
+            m_popup = nullptr;
+        }
+    }
+
     double m_ratio = 0.0;
+    QString m_infoHtml;
+    QLabel* m_popup = nullptr;
 };
 }
 
@@ -516,6 +573,13 @@ void ManuscriptPanel::rebuildList() {
                 const int dlgWords = m_dialogueStore->dialogueWordsForChapter(chapterId);
                 auto* bar = new DialogueRatioBar(this);
                 bar->setRatio(double(dlgWords) / double(totalWords));
+                // Clique abre a janela de estatísticas do capítulo — a barra
+                // não tem Q_OBJECT (de propósito, por causa do tr()), então o
+                // clique é pego via propriedade + eventFilter do painel, não
+                // por sinal direto dela.
+                bar->setProperty("ratioBarChapterId", chapterId);
+                bar->setProperty("ratioBarManuscriptId", manuscriptId);
+                bar->installEventFilter(this);
 
                 auto* container = new QWidget(this);
                 auto* rowLay = new QHBoxLayout(container);
@@ -669,6 +733,26 @@ void ManuscriptPanel::showSceneContextMenu(const QString& manuscriptId, const QS
 // ---- Drag&drop ----------------------------------------------------------
 
 bool ManuscriptPanel::eventFilter(QObject* watched, QEvent* event) {
+    // Pilula de diálogo/narração: não é QToolButton (é a DialogueRatioBar,
+    // sem Q_OBJECT de propósito), então é pega por propriedade em vez de
+    // qobject_cast — checada ANTES do branch de QToolButton abaixo, que é
+    // pros botões de capítulo/cena de verdade.
+    if (event->type() == QEvent::MouseButtonPress) {
+        if (auto* w = qobject_cast<QWidget*>(watched)) {
+            const QVariant chId = w->property("ratioBarChapterId");
+            if (chId.isValid()) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                if (me->button() == Qt::LeftButton) {
+                    QPoint anchor = w->mapToGlobal(QPoint(0, 0));
+                    anchor.setX(mapToGlobal(QPoint(width(), 0)).x());
+                    emit chapterStatsRequested(w->property("ratioBarManuscriptId").toString(),
+                                               chId.toString(), anchor);
+                }
+                return true;
+            }
+        }
+    }
+
     auto* btn = qobject_cast<QToolButton*>(watched);
     if (!btn) return QWidget::eventFilter(watched, event);
     const QString kind = btn->property("kind").toString();
