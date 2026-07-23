@@ -3,6 +3,7 @@
 #include "DialogueStore.h"
 #include "MemoriesStore.h"
 
+#include <QHash>
 #include <QPixmap>
 #include <QPoint>
 #include <QSet>
@@ -50,7 +51,17 @@ public:
     void setMapPinsStore(MapPinsStore* s) { m_mapPins = s; }
     void setMemoriesStore(MemoriesStore* s);
     void setDialogueStore(DialogueStore* s);
-    void setElementsStore(ElementsStore* s) { m_elements = s; }
+    void setElementsStore(ElementsStore* s);
+    // Chamado pelo MainWindow toda vez que o capítulo/cena aberto no editor
+    // muda. Enquanto o usuário não mexer manualmente no filtro "Cap.: " da
+    // aba Diálogos, ele acompanha o capítulo atual — abrir a aba já mostra
+    // as falas de onde o usuário está, em vez de "Todos" (caro em projeto
+    // grande). Depois da primeira escolha manual, para de seguir.
+    void setCurrentChapterId(const QString& chapterId);
+    // Projeto novo carregado: volta o filtro da aba Diálogos pro padrão
+    // (segue o capítulo atual outra vez, paginação zerada) — senão a escolha
+    // manual do projeto anterior (ex.: "Todos") vazava pro projeto seguinte.
+    void resetDialogueFilterState();
 
 signals:
     // Pedido pra abrir um documento no editor e saltar até o trecho comentado.
@@ -61,9 +72,15 @@ signals:
     void openMemoryInRefRequested(MemoriesStore::Memory mem);
     // Pedido pra abrir a fonte de um diálogo detectado no editor.
     void openDialogueInEditorRequested(DialogueStore::Dialogue dlg);
+    // Botão de "load" na aba Diálogos: pede pra varrer todos os capítulos
+    // do projeto em lote (mesma ideia do rescan de presença por cena).
+    void rescanAllDialoguesRequested();
 
 public slots:
     void refresh();
+    // Progresso do scan em lote pedido acima — quem chama (MainWindow) avisa
+    // a cada capítulo processado. running=false com done==total marca o fim.
+    void setDialogueScanState(bool running, int done, int total);
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -111,6 +128,10 @@ private:
                                const QString& originLabel, QWidget* parent);
     // Miniatura circular do personagem (foto real se tiver; senão um círculo
     // colorido — cor derivada do id, estável — com a inicial do nome).
+    // Cacheada em m_avatarCache — em manuscritos grandes, o mesmo personagem
+    // aparece em centenas/milhares de cards de diálogo, e decodificar a
+    // foto (base64 -> QPixmap) e redesenhar o círculo a cada card sozinho já
+    // é fatia relevante do travamento ao entrar/filtrar a aba.
     QPixmap characterAvatar(const QString& elementId, int size) const;
     // Clique direito num card de diálogo → "Alterar locutor" → esta lista
     // (todos os personagens do projeto, não só quem já foi detectado
@@ -208,6 +229,25 @@ private:
     // diálogo mais longo) — recolhido por padrão, atrás de um botão, pra
     // não poluir a aba com algo sempre visível.
     bool m_dialogueStatsExpanded = false;
+    // Capítulo atualmente aberto no editor (setCurrentChapterId) — usado só
+    // pra saber o default do filtro enquanto o usuário não escolhe um na mão.
+    QString m_currentChapterId;
+    bool m_dialogueOriginFilterUserSet = false;
+    // Paginação do filtro "Todos os capítulos" — reseta pra kDialoguePageSize
+    // toda vez que o filtro (origem ou presença) muda.
+    int m_dialogueVisibleCount = 0;
+    // Botão de scan em lote + estado de progresso (persistido aqui pra
+    // sobreviver a um rebuildDialogues() no meio do scan — ex.: usuário mexe
+    // num filtro enquanto o lote roda).
+    QToolButton* m_dlgScanBtn = nullptr;
+    bool m_dialogueScanRunning = false;
+    int m_dialogueScanDone = 0;
+    int m_dialogueScanTotal = 0;
+    // Cache de characterAvatar(), chave "elementId:size". Limpa inteira a
+    // cada ElementsStore::changed() — mais barato que rastrear qual
+    // personagem mudou de foto, e edição de foto é rara comparado a quanto
+    // a aba de Diálogos é reconstruída.
+    mutable QHash<QString, QPixmap> m_avatarCache;
 
     bool m_dragging = false;
     QPoint m_dragOffset;

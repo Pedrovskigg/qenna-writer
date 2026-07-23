@@ -1319,6 +1319,15 @@ void MainWindow::setupEditor()
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
         if (detectionEnabled) dialogueDetectionTimer->start();
     });
+    // Independente do detectionEnabled: avisa o Pensário qual capítulo está
+    // aberto, pra aba Diálogos poder filtrar por ele por padrão em vez de
+    // "Todos" (caro em projeto grande) — ver PensarioPanel::setCurrentChapterId.
+    connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
+        if (!pensarioPanel || !editorHost) return;
+        const EditorHost::ViewMode vm = editorHost->viewMode();
+        if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
+            pensarioPanel->setCurrentChapterId(vm.chapterId);
+    });
     connect(dialogueStore, &DialogueStore::changed, this, [this]() {
         if (dialogueStore) dialogueStore->save();
     });
@@ -2009,6 +2018,8 @@ void MainWindow::setupEditor()
     });
     connect(pensarioPanel, &PensarioPanel::openDialogueInEditorRequested,
             this, &MainWindow::openDialogueInEditor);
+    connect(pensarioPanel, &PensarioPanel::rescanAllDialoguesRequested,
+            this, &MainWindow::rescanAllChapterDialogues);
     connect(toolbar, &TopToolbar::pensarioToggleRequested, this, [this]() {
         if (pensarioPanel) pensarioPanel->togglePanel();
     });
@@ -3912,6 +3923,165 @@ void MainWindow::syncScenePresenceForChapter(const QString& chapterId)
         elementsStore->addManyDocElements(it.key(), it.value());
 }
 
+void MainWindow::scanChapterDialogues(const QString& chapterId)
+{
+    if (!projectModel || !elementsStore || !dialogueStore) return;
+    const Chapter* ch = projectModel->findChapter(chapterId);
+    if (!ch) return;
+
+    const QString chapterKey = DocCache::chapterKey(ch->manuscriptId, chapterId);
+    QString html;
+    if (docCache && docCache->has(chapterKey)) {
+        html = docCache->get(chapterKey);
+    } else {
+        bool ok = false;
+        html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+    }
+    if (html.isEmpty()) return;
+
+    const QString chTitle = !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+
+    const QList<Element> allElements = elementsStore->elements();
+    const Element* narrator = nullptr;
+    for (const Element& e : allElements) {
+        if (e.narrator) { narrator = &e; break; }
+    }
+    const QVector<DialogueScannerToken> tokens = DialogueDetector::buildScannerTokens(allElements);
+    if (tokens.isEmpty()) return;
+
+    struct Segment { QString plainText; int sceneIndex; QString sourceLabel; };
+    QVector<Segment> segments;
+
+    if (!ch->scenes.isEmpty()) {
+        const QStringList sceneHtmls = SceneUtils::splitHtmlIntoScenes(html);
+        for (int si = 0; si < sceneHtmls.size() && si < ch->scenes.size(); ++si) {
+            QTextDocument segDoc;
+            segDoc.setHtml(sceneHtmls.at(si));
+            const QString plain = segDoc.toPlainText();
+            if (plain.trimmed().isEmpty()) continue;
+            const Scene& sc = ch->scenes.at(si);
+            const QString scTitle = !sc.title.isEmpty() ? sc.title : tr("Cena %1").arg(si + 1);
+            segments.append({ plain, si, tr("%1 — %2").arg(chTitle, scTitle) });
+        }
+    } else {
+        QTextDocument doc;
+        doc.setHtml(html);
+        segments.append({ doc.toPlainText(), -1, chTitle });
+    }
+
+    QVector<DialogueStore::ScannedLine> allFound;
+    for (const Segment& seg : segments) {
+        const QVector<DetectedDialogueLine> found =
+            DialogueDetector::scanConfidentDialogues(seg.plainText, tokens, narrator);
+        for (const DetectedDialogueLine& f : found) {
+            allFound.append({ f.text, f.characterId, seg.sceneIndex, seg.sourceLabel });
+        }
+    }
+    dialogueStore->upsertScanResults(ch->manuscriptId, chapterId, allFound);
+}
+
+// Botão no Pensário > Diálogos: mesmo padrão de rescanAllChapterScenesPresence
+// (fila de capítulos + QTimer de intervalo 0, um capítulo por tick) aplicado
+// ao motor de diálogos, pra não travar a UI em projetos grandes.
+void MainWindow::rescanAllChapterDialogues()
+{
+    if (!projectModel || !elementsStore || !dialogueStore) return;
+    if (dialogueScanRunning) return; // já rodando: ignora clique duplicado
+
+    QStringList chapterIds;
+    for (const Chapter& c : projectModel->chapters()) chapterIds << c.id;
+    if (chapterIds.isEmpty()) return;
+
+    dialogueScanRunning = true;
+    const int total = chapterIds.size();
+    if (pensarioPanel) pensarioPanel->setDialogueScanState(true, 0, total);
+    updateDialogueScanToast(0, total);
+
+    auto ids = std::make_shared<QStringList>(chapterIds);
+    auto idx = std::make_shared<int>(0);
+    auto* timer = new QTimer(this);
+    timer->setInterval(0);
+    connect(timer, &QTimer::timeout, this, [this, ids, idx, timer, total]() {
+        if (*idx >= ids->size()) {
+            timer->stop();
+            timer->deleteLater();
+            dialogueScanRunning = false;
+            if (pensarioPanel) pensarioPanel->setDialogueScanState(false, total, total);
+            hideDialogueScanToast();
+            return;
+        }
+        scanChapterDialogues(ids->at(*idx));
+        ++(*idx);
+        updateDialogueScanToast(*idx, total);
+        if (pensarioPanel) pensarioPanel->setDialogueScanState(true, *idx, total);
+    });
+    timer->start();
+}
+
+void MainWindow::updateDialogueScanToast(int done, int total)
+{
+    if (!m_dialogueScanToast) {
+        auto* toast = new QFrame(this);
+        toast->setObjectName(QStringLiteral("dlgScanToast"));
+        auto* shadow = new QGraphicsDropShadowEffect(toast);
+        shadow->setBlurRadius(18);
+        shadow->setColor(QColor(0, 0, 0, 160));
+        shadow->setOffset(0, 3);
+        toast->setGraphicsEffect(shadow);
+
+        auto* lay = new QVBoxLayout(toast);
+        lay->setContentsMargins(16, 12, 16, 12);
+        lay->setSpacing(7);
+
+        m_dialogueScanToastLabel = new QLabel(toast);
+        m_dialogueScanToastLabel->setObjectName(QStringLiteral("dstLabel"));
+        m_dialogueScanToastLabel->setAlignment(Qt::AlignCenter);
+        lay->addWidget(m_dialogueScanToastLabel);
+
+        m_dialogueScanToastBar = new QProgressBar(toast);
+        m_dialogueScanToastBar->setObjectName(QStringLiteral("dstBar"));
+        m_dialogueScanToastBar->setTextVisible(false);
+        m_dialogueScanToastBar->setFixedHeight(6);
+        m_dialogueScanToastBar->setFixedWidth(240);
+        lay->addWidget(m_dialogueScanToastBar);
+
+        toast->setStyleSheet(QStringLiteral(
+            "QFrame#dlgScanToast {"
+            "  background: %1; border: 1px solid %2; border-radius: 10px;"
+            "}"
+            "QLabel#dstLabel { color: %3; font-size: 12px; font-weight: 600; }"
+            "QProgressBar#dstBar { background: %2; border: none; border-radius: 3px; }"
+            "QProgressBar#dstBar::chunk { background: %4; border-radius: 3px; }"
+        ).arg(Theme::panelBackground(), Theme::panelBorder(),
+              Theme::textPrimary(), Theme::accentInfo()));
+
+        m_dialogueScanToast = toast;
+    }
+
+    m_dialogueScanToastLabel->setText(
+        tr("Escaneando diálogos… (%1/%2 capítulos)").arg(done).arg(total));
+    m_dialogueScanToastBar->setRange(0, qMax(1, total));
+    m_dialogueScanToastBar->setValue(done);
+
+    m_dialogueScanToast->adjustSize();
+    const QRect r = rect();
+    const int margin = 28;
+    m_dialogueScanToast->move(r.center().x() - m_dialogueScanToast->width() / 2,
+                              r.bottom() - m_dialogueScanToast->height() - margin);
+    m_dialogueScanToast->show();
+    m_dialogueScanToast->raise();
+}
+
+void MainWindow::hideDialogueScanToast()
+{
+    if (!m_dialogueScanToast) return;
+    m_dialogueScanToast->hide();
+    m_dialogueScanToast->deleteLater();
+    m_dialogueScanToast = nullptr;
+    m_dialogueScanToastLabel = nullptr;
+    m_dialogueScanToastBar = nullptr;
+}
+
 bool MainWindow::findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const
 {
     auto *layout = editor->document()->documentLayout();
@@ -4156,7 +4326,10 @@ void MainWindow::applyProjectRoot(const QString& root)
     }
     if (dialogueStore) {
         dialogueStore->setProjectRoot(root);
-        if (pensarioPanel) pensarioPanel->setDialogueStore(dialogueStore);
+        if (pensarioPanel) {
+            pensarioPanel->resetDialogueFilterState();
+            pensarioPanel->setDialogueStore(dialogueStore);
+        }
         dialogueStore->load();
     }
     if (construtorStore) {

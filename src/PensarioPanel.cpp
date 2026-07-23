@@ -46,6 +46,30 @@
 namespace {
 constexpr int kPanelWidth = 380;
 constexpr int kMargin = 12;
+// Filtro "Todos os capítulos" da aba Diálogos: em projeto grande a lista
+// pode ter milhares de falas. Em vez de renderizar tudo de uma vez (o que
+// travava a aba), mostra por página com um "carregar mais" no final. Filtro
+// por capítulo específico não pagina — o volume já é naturalmente pequeno.
+constexpr int kDialoguePageSize = 60;
+
+// Esvazia um layout de verdade, incluindo widgets escondidos dentro de
+// sub-layouts (ex.: topRow, adicionado via addLayout em rebuildDialogues).
+// Um clear raso (só takeAt + widget() no nível de cima) NUNCA pega esses
+// widgets aninhados — deletar o QLayout pai não deleta os widgets que ele
+// gerencia (eles pertencem ao widget-pai, não ao layout), então sobra lixo
+// órfão, ainda visível, empilhado por cima do rebuild seguinte. Foi o que
+// causava o botão de scan "bugar" (duplicar visualmente) ao navegar.
+void clearLayoutRecursive(QLayout* layout)
+{
+    while (QLayoutItem* item = layout->takeAt(0)) {
+        if (QWidget* w = item->widget()) {
+            w->deleteLater();
+        } else if (QLayout* child = item->layout()) {
+            clearLayoutRecursive(child);
+        }
+        delete item;
+    }
+}
 }
 
 PensarioPanel::PensarioPanel(MarkerStore* markers, ProjectModel* model,
@@ -82,14 +106,63 @@ void PensarioPanel::setMemoriesStore(MemoriesStore* s)
         });
 }
 
+void PensarioPanel::setElementsStore(ElementsStore* s)
+{
+    if (m_elements == s) return;
+    m_elements = s;
+    m_avatarCache.clear();
+    if (m_elements)
+        connect(m_elements, &ElementsStore::changed, this, [this]() { m_avatarCache.clear(); });
+}
+
+void PensarioPanel::setCurrentChapterId(const QString& chapterId)
+{
+    m_currentChapterId = chapterId;
+    if (m_dialogueOriginFilterUserSet) return;
+    if (m_dialogueOriginFilter == chapterId) return;
+    m_dialogueOriginFilter = chapterId;
+    m_dialogueVisibleCount = kDialoguePageSize;
+    if (m_tab == Tab::Dialogues) rebuildDialogues();
+}
+
+void PensarioPanel::resetDialogueFilterState()
+{
+    m_currentChapterId.clear();
+    m_dialogueOriginFilter.clear();
+    m_dialogueOriginFilterUserSet = false;
+    m_dialoguePresenceFilter.clear();
+    m_dialogueVisibleCount = 0;
+}
+
 void PensarioPanel::setDialogueStore(DialogueStore* s)
 {
     if (m_dialogues == s) return;
     m_dialogues = s;
     if (m_dialogues)
         connect(m_dialogues, &DialogueStore::changed, this, [this]() {
-            if (m_tab == Tab::Dialogues) rebuildDialogues();
+            // Durante o scan em lote (setDialogueScanState), o próprio scan
+            // já dispara changed() a cada capítulo — reconstruir a lista
+            // inteira a cada um deles travaria a UI em projeto grande. O
+            // rebuild final acontece quando o scan termina.
+            if (m_tab == Tab::Dialogues && !m_dialogueScanRunning) rebuildDialogues();
         });
+}
+
+void PensarioPanel::setDialogueScanState(bool running, int done, int total)
+{
+    const bool wasRunning = m_dialogueScanRunning;
+    m_dialogueScanRunning = running;
+    m_dialogueScanDone = done;
+    m_dialogueScanTotal = total;
+
+    if (m_dlgScanBtn) {
+        m_dlgScanBtn->setEnabled(!running);
+        m_dlgScanBtn->setToolTip(running
+            ? tr("Escaneando… (%1/%2)").arg(done).arg(total)
+            : tr("Escanear diálogos em todos os capítulos"));
+    }
+
+    if (wasRunning && !running && m_tab == Tab::Dialogues) rebuildDialogues();
 }
 
 void PensarioPanel::buildUi()
@@ -986,11 +1059,8 @@ void PensarioPanel::rebuildDialogues()
 {
     if (!m_dialoguesLay) return;
 
-    while (m_dialoguesLay->count() > 0) {
-        QLayoutItem* item = m_dialoguesLay->takeAt(0);
-        if (QWidget* w = item->widget()) w->deleteLater();
-        delete item;
-    }
+    clearLayoutRecursive(m_dialoguesLay);
+    m_dlgScanBtn = nullptr; // acabou de ser deleteLater'd junto com o topRow
 
     const QVector<DialogueStore::Dialogue> all =
         m_dialogues ? m_dialogues->dialogues() : QVector<DialogueStore::Dialogue>();
@@ -1028,6 +1098,29 @@ void PensarioPanel::rebuildDialogues()
 
         topRow->addStretch(1);
 
+        // Varredura em lote: roda o motor de diálogos em todos os capítulos
+        // do projeto, um por vez, sem travar a UI — pra projetos grandes
+        // onde abrir capítulo por capítulo pra popular o detector não é
+        // viável. Estado (rodando/progresso) sobrevive a rebuilds via
+        // m_dialogueScan* — cobre o caso do usuário mexer num filtro
+        // enquanto o lote roda.
+        m_dlgScanBtn = new QToolButton(m_dialoguesInner);
+        m_dlgScanBtn->setObjectName(QStringLiteral("pnDlgScanBtn"));
+        m_dlgScanBtn->setCursor(Qt::PointingHandCursor);
+        m_dlgScanBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/loadproject.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textPrimary()),
+            QColor(Theme::textBright()), QSize(16, 16)));
+        m_dlgScanBtn->setIconSize(QSize(16, 16));
+        m_dlgScanBtn->setEnabled(!m_dialogueScanRunning);
+        m_dlgScanBtn->setToolTip(m_dialogueScanRunning
+            ? tr("Escaneando… (%1/%2)").arg(m_dialogueScanDone).arg(m_dialogueScanTotal)
+            : tr("Escanear diálogos em todos os capítulos"));
+        connect(m_dlgScanBtn, &QToolButton::clicked, this, [this]() {
+            emit rescanAllDialoguesRequested();
+        });
+        topRow->addWidget(m_dlgScanBtn, 0, Qt::AlignRight);
+
         auto* helpBtn = new QToolButton(m_dialoguesInner);
         helpBtn->setObjectName(QStringLiteral("pnDlgHelpBtn"));
         helpBtn->setCursor(Qt::PointingHandCursor);
@@ -1059,6 +1152,11 @@ void PensarioPanel::rebuildDialogues()
             lay->addWidget(label);
 
             const int popupWidth = qMin(280, kPanelWidth - 2 * kMargin);
+            // A largura do label precisa estar fixada ANTES do adjustSize()
+            // do popup — senão o QVBoxLayout calcula a altura em cima do
+            // sizeHint "largo" (sem quebra) do QLabel, e o texto quebrado de
+            // verdade transborda pra fora da caixa desenhada.
+            label->setFixedWidth(popupWidth - 24); // 12+12 de margem horizontal
             popup->setFixedWidth(popupWidth);
             popup->adjustSize();
 
@@ -1178,9 +1276,9 @@ void PensarioPanel::rebuildDialogues()
 
         if (!m_dialoguePresenceFilter.isEmpty()) {
             // A cena (capítulo+índice) precisa ter fala de TODOS os
-            // personagens marcados nos chips, além do falante desta linha —
-            // proxy de "presença confirmada" usando os próprios diálogos já
-            // salvos (mais barato que reescanear o texto da cena).
+            // personagens marcados nos chips — proxy de "presença
+            // confirmada" usando os próprios diálogos já salvos (mais
+            // barato que reescanear o texto da cena).
             bool ok = true;
             for (const QString& reqId : m_dialoguePresenceFilter) {
                 bool present = false;
@@ -1191,6 +1289,13 @@ void PensarioPanel::rebuildDialogues()
                 if (!present) { ok = false; break; }
             }
             if (!ok) continue;
+
+            // Mas só EXIBE as falas de quem está marcado — com 1 só
+            // personagem escolhido isso vira "holofote" (todas as falas
+            // dele, projeto inteiro se o filtro de capítulo for "Todos");
+            // com 2+, mostra só a conversa entre eles, sem misturar falas de
+            // quem só está de passagem na mesma cena (narrador incluso).
+            if (!m_dialoguePresenceFilter.contains(d.characterId)) continue;
         }
         list.append(d);
     }
@@ -1215,8 +1320,30 @@ void PensarioPanel::rebuildDialogues()
         return;
     }
 
-    for (const DialogueStore::Dialogue& d : list) {
+    // Paginação só entra em "Todos os capítulos" — filtrado por capítulo
+    // específico o volume já é naturalmente pequeno, não precisa.
+    const bool paginate = m_dialogueOriginFilter.isEmpty() && list.size() > kDialoguePageSize;
+    if (paginate) {
+        if (m_dialogueVisibleCount <= 0) m_dialogueVisibleCount = kDialoguePageSize;
+        m_dialogueVisibleCount = qMin(m_dialogueVisibleCount, list.size());
+    }
+    const int visibleCount = paginate ? m_dialogueVisibleCount : list.size();
+
+    for (int i = 0; i < visibleCount; ++i) {
+        const DialogueStore::Dialogue& d = list.at(i);
         m_dialoguesLay->addWidget(buildDialogueCard(d, charName(d.characterId), d.sourceLabel, m_dialoguesInner));
+    }
+
+    if (paginate && visibleCount < list.size()) {
+        auto* loadMore = new QToolButton(m_dialoguesInner);
+        loadMore->setObjectName(QStringLiteral("pnDlgLoadMoreBtn"));
+        loadMore->setCursor(Qt::PointingHandCursor);
+        loadMore->setText(tr("Carregar mais (%1 restantes)").arg(list.size() - visibleCount));
+        connect(loadMore, &QToolButton::clicked, this, [this]() {
+            m_dialogueVisibleCount += kDialoguePageSize;
+            rebuildDialogues();
+        });
+        m_dialoguesLay->addWidget(loadMore);
     }
 
     m_dialoguesLay->addStretch();
@@ -1288,29 +1415,40 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
             row->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
             connect(row, &QToolButton::clicked, this, [this, elId]() {
                 m_dialoguePresenceFilter.remove(elId);
+                m_dialogueVisibleCount = kDialoguePageSize;
                 rebuildDialogues();
             });
             wrapLay->addWidget(row);
         }
     }
 
-    // ---- Filtro de capítulo/cena — combina em E com o de cima. Só lista
-    // capítulos/cenas que REALMENTE têm diálogo detectado.
+    // ---- Filtro de capítulo/cena — combina em E com o de cima. Semeia com
+    // TODOS os capítulos do manuscrito (não só os que já têm diálogo
+    // detectado) — senão capítulo nunca aberto no editor, ou que o scan em
+    // lote ainda não alcançou, simplesmente some do filtro.
     struct OriginGroup { QString chapterId, manuscriptId, title; QVector<int> scenes; };
     QVector<OriginGroup> origins;
+    auto ensureOrigin = [&origins](const QString& chapterId, const QString& manuscriptId,
+                                    const QString& title) -> int {
+        for (int i = 0; i < origins.size(); ++i)
+            if (origins[i].chapterId == chapterId) return i;
+        OriginGroup g;
+        g.chapterId = chapterId;
+        g.manuscriptId = manuscriptId;
+        g.title = title;
+        origins.append(g);
+        return origins.size() - 1;
+    };
+    if (m_model) {
+        for (const Chapter& ch : m_model->chapters()) {
+            ensureOrigin(ch.id, ch.manuscriptId,
+                         ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title);
+        }
+    }
     for (const DialogueStore::Dialogue& d : all) {
         if (d.chapterId.isEmpty()) continue;
-        int gi = -1;
-        for (int i = 0; i < origins.size(); ++i)
-            if (origins[i].chapterId == d.chapterId) { gi = i; break; }
-        if (gi < 0) {
-            OriginGroup g;
-            g.chapterId = d.chapterId;
-            g.manuscriptId = d.manuscriptId;
-            g.title = d.sourceLabel.section(QStringLiteral(" — "), 0, 0);
-            origins.append(g);
-            gi = origins.size() - 1;
-        }
+        const int gi = ensureOrigin(d.chapterId, d.manuscriptId,
+                                    d.sourceLabel.section(QStringLiteral(" — "), 0, 0));
         if (d.sceneIndex >= 0 && !origins[gi].scenes.contains(d.sceneIndex))
             origins[gi].scenes.append(d.sceneIndex);
     }
@@ -1419,6 +1557,8 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
 
         connect(plist, &QListWidget::itemClicked, this, [this, popup](QListWidgetItem* it) {
             m_dialogueOriginFilter = it->data(Qt::UserRole).toString();
+            m_dialogueOriginFilterUserSet = true;
+            m_dialogueVisibleCount = kDialoguePageSize;
             popup->close();
             rebuildDialogues();
         });
@@ -1464,6 +1604,7 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
             QAction* a = pickMenu->addAction(QIcon(characterAvatar(elId, 24)), charName(elId));
             connect(a, &QAction::triggered, this, [this, elId]() {
                 m_dialoguePresenceFilter.insert(elId);
+                m_dialogueVisibleCount = kDialoguePageSize;
                 rebuildDialogues();
             });
         }
@@ -1478,6 +1619,10 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
 
 QPixmap PensarioPanel::characterAvatar(const QString& elementId, int size) const
 {
+    const QString cacheKey = elementId + QLatin1Char(':') + QString::number(size);
+    const auto cached = m_avatarCache.constFind(cacheKey);
+    if (cached != m_avatarCache.constEnd()) return cached.value();
+
     const Element* el = m_elements ? m_elements->findElement(elementId) : nullptr;
 
     QPixmap photo;
@@ -1513,6 +1658,7 @@ QPixmap PensarioPanel::characterAvatar(const QString& elementId, int size) const
         const QString initial = name.isEmpty() ? QStringLiteral("?") : name.left(1).toUpper();
         p.drawText(circular.rect(), Qt::AlignCenter, initial);
     }
+    m_avatarCache.insert(cacheKey, circular);
     return circular;
 }
 
@@ -2235,6 +2381,16 @@ void PensarioPanel::applyTheme()
         }
         #pnDlgFilterBtn:hover { color: %5; border-color: %8; }
         #pnDlgFilterBtn::menu-indicator { image: none; width: 0; }
+        #pnDlgLoadMoreBtn {
+            color: %8;
+            background: transparent;
+            border: 1px dashed %9;
+            border-radius: 6px;
+            padding: 6px 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        #pnDlgLoadMoreBtn:hover { color: %5; border-color: %8; }
         #pnDlgStatsToggle {
             color: %4;
             background: transparent;
@@ -2256,6 +2412,17 @@ void PensarioPanel::applyTheme()
             font-weight: 700;
         }
         #pnDlgHelpBtn:hover { color: %5; border-color: %8; }
+        #pnDlgScanBtn {
+            background: transparent;
+            border: 1px solid %9;
+            border-radius: 5px;
+            min-width: 24px;
+            max-width: 24px;
+            min-height: 24px;
+            max-height: 24px;
+        }
+        #pnDlgScanBtn:hover { border-color: %8; }
+        #pnDlgScanBtn:disabled { border-color: %9; }
         #pnDlgPresenceLabel { color: %4; font-size: 10px; }
         #pnDlgPersonPicked {
             color: %5;

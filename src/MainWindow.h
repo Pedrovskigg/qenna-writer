@@ -247,6 +247,21 @@ private:
     // capítulos do projeto, um por tick de timer (não trava a UI, ver pedido
     // do usuário após crash anterior do detector rodando tudo de uma vez).
     void rescanAllChapterScenesPresence();
+    // Lê um capítulo do docCache/disco (não do editor vivo) e roda o motor
+    // de diálogos nele — usado pelo scan em lote abaixo. O timer de diálogo
+    // "ao vivo" (dialogueDetectionTimer) continua separado, dedicado ao
+    // capítulo aberto no editor.
+    void scanChapterDialogues(const QString& chapterId);
+    // Botão no Pensário > Diálogos: mesmo padrão incremental de
+    // rescanAllChapterScenesPresence, mas pro motor de diálogos — evita ter
+    // que abrir capítulo por capítulo em projetos grandes.
+    void rescanAllChapterDialogues();
+    // Toast flutuante (centro inferior da janela) com barra de progresso do
+    // scan em lote acima — criado no primeiro tick, atualizado a cada um,
+    // destruído no final. Aviso visual mais forte pedido pelo usuário depois
+    // de ver o app "travar" (na real, só sem feedback) num projeto grande.
+    void updateDialogueScanToast(int done, int total);
+    void hideDialogueScanToast();
     // Persiste markAll/neverIds/rejectedKeys em QSettings, por projeto (mesma
     // chave/grupo já usados pro markAll) — chamar sempre que qualquer um dos
     // três mudar, pra decisão do usuário nunca precisar ser repetida.
@@ -366,6 +381,12 @@ private:
     // Timer irmão do de presença, mas dedicado à detecção de diálogos —
     // roda sozinho, sem entrar no DetectionScanState incremental acima.
     QTimer *dialogueDetectionTimer = nullptr;
+    // true enquanto rescanAllChapterDialogues está rodando — evita disparar
+    // um segundo scan em cima do primeiro se o usuário clicar de novo.
+    bool dialogueScanRunning = false;
+    QWidget *m_dialogueScanToast = nullptr;
+    QLabel *m_dialogueScanToastLabel = nullptr;
+    QProgressBar *m_dialogueScanToastBar = nullptr;
     class PresencePopup *presencePopup = nullptr;
     bool detectionEnabled = true;
     bool detectionMarkAll = false;

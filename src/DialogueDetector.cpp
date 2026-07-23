@@ -106,16 +106,14 @@ QString DialogueDetector::attributeLine(const QString& text,
             attributionText = text.mid(m.capturedStart() + 1).trimmed();
     }
 
-    // Narrador em 1ª pessoa: se o texto de atribuição (ou a linha inteira,
-    // quando não há atribuição) tem marcador de 1ª pessoa, é o narrador.
-    if (narrator) {
-        const QString checkTarget = attributionText.isEmpty() ? text : attributionText;
-        if (DialogueVerbs::firstPersonMarkersRegex().match(checkTarget).hasMatch()
-            || DialogueVerbsEN::firstPersonMarkersRegex().match(checkTarget).hasMatch()
-            || DialogueVerbsES::firstPersonMarkersRegex().match(checkTarget).hasMatch())
-            return narrator->id;
-    }
-
+    // Tenta casar um personagem NOMEADO primeiro — tag explícita
+    // (attributionText) ou, sem tag, nome perto de verbo de fala na própria
+    // linha (proximidade). Um nome reconhecido é sinal mais forte que a
+    // presença de "I/my/me" (que aparece em quase qualquer fala, seja de
+    // quem for) — por isso corre ANTES do atalho de narrador em 1ª pessoa
+    // abaixo. Sem isso, uma linha sem tag mas com o nome de outro
+    // personagem por perto (proximidade) era sempre roubada pelo narrador
+    // só por conter um pronome de 1ª pessoa.
     QSet<QString> matched;
     if (!attributionText.isEmpty()) {
         for (const DialogueScannerToken& tok : tokens)
@@ -124,8 +122,21 @@ QString DialogueDetector::attributeLine(const QString& text,
         for (const DialogueScannerToken& tok : tokens)
             if (tok.proximityRe.match(text).hasMatch()) matched.insert(tok.elementId);
     }
+    if (matched.size() == 1) return *matched.begin();
 
-    return matched.size() == 1 ? *matched.begin() : QString();
+    // Narrador em 1ª pessoa: só como fallback, quando nenhum personagem
+    // nomeado foi encontrado com confiança na linha. Usa o texto de
+    // atribuição (ou a linha inteira, quando não há atribuição) em busca de
+    // marcador de 1ª pessoa.
+    if (narrator) {
+        const QString checkTarget = attributionText.isEmpty() ? text : attributionText;
+        if (DialogueVerbs::firstPersonMarkersRegex().match(checkTarget).hasMatch()
+            || DialogueVerbsEN::firstPersonMarkersRegex().match(checkTarget).hasMatch()
+            || DialogueVerbsES::firstPersonMarkersRegex().match(checkTarget).hasMatch())
+            return narrator->id;
+    }
+
+    return QString();
 }
 
 QVector<DetectedDialogueLine> DialogueDetector::scanConfidentDialogues(
