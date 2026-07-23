@@ -23,6 +23,23 @@ public:
         QList<Node> children;
     };
 
+    // Um trecho do manuscrito vinculado a este sistema (ou a um nó específico
+    // dele) via "Salvar como menção ao sistema..." na mini-toolbar de seleção.
+    // Snapshot imutável — só cria/remove, nunca edita (mesma filosofia de
+    // MemoriesStore::Memory).
+    struct Mention {
+        QString id;
+        QString text;          // snapshot do trecho selecionado
+        QString nodeId;        // vazio = menção do sistema como um todo
+        QString sourceType;    // "chapter" | "scene" | "drawer" | ""
+        QString sourceLabel;   // rótulo pronto: "Capítulo 3 — Cena 2"
+        QString chapterId;
+        int     sceneIndex = -1;
+        QString manuscriptId;
+        QString itemId;
+        qint64  createdAt = 0;
+    };
+
     struct System {
         QString id;
         QString name;
@@ -32,6 +49,7 @@ public:
         qint64 updatedAt = 0;
         QString content; // resumo/parecer geral do sistema, sem nó selecionado
         QList<Node> nodes;
+        QList<Mention> mentions;
     };
 
     struct CategoryWaypoint {
@@ -68,6 +86,10 @@ public:
     bool updateNode(const QString& systemId, const QString& nodeId,
                     const QString& name, const QString& content);
     bool removeNode(const QString& systemId, const QString& nodeId);
+
+    // CRUD — menções (nodeId vazio = menção no nível do sistema)
+    QString addMention(const QString& systemId, const Mention& mention);
+    bool removeMention(const QString& systemId, const QString& mentionId);
 
     // Definições de categorias (estático, não varia por projeto)
     static const QList<Category>& categories();

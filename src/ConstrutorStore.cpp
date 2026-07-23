@@ -255,6 +255,38 @@ static ConstrutorStore::Node nodeFromJson(const QJsonObject& o)
     return node;
 }
 
+static QJsonObject mentionToJson(const ConstrutorStore::Mention& m)
+{
+    QJsonObject o;
+    o.insert(QStringLiteral("id"),   m.id);
+    o.insert(QStringLiteral("text"), m.text);
+    if (!m.nodeId.isEmpty())       o.insert(QStringLiteral("nodeId"), m.nodeId);
+    if (!m.sourceType.isEmpty())   o.insert(QStringLiteral("sourceType"), m.sourceType);
+    if (!m.sourceLabel.isEmpty()) o.insert(QStringLiteral("sourceLabel"), m.sourceLabel);
+    if (!m.chapterId.isEmpty())    o.insert(QStringLiteral("chapterId"), m.chapterId);
+    if (m.sceneIndex >= 0)         o.insert(QStringLiteral("sceneIndex"), m.sceneIndex);
+    if (!m.manuscriptId.isEmpty()) o.insert(QStringLiteral("manuscriptId"), m.manuscriptId);
+    if (!m.itemId.isEmpty())       o.insert(QStringLiteral("itemId"), m.itemId);
+    o.insert(QStringLiteral("createdAt"), m.createdAt);
+    return o;
+}
+
+static ConstrutorStore::Mention mentionFromJson(const QJsonObject& o)
+{
+    ConstrutorStore::Mention m;
+    m.id           = o.value(QStringLiteral("id")).toString();
+    m.text         = o.value(QStringLiteral("text")).toString();
+    m.nodeId       = o.value(QStringLiteral("nodeId")).toString();
+    m.sourceType   = o.value(QStringLiteral("sourceType")).toString();
+    m.sourceLabel  = o.value(QStringLiteral("sourceLabel")).toString();
+    m.chapterId    = o.value(QStringLiteral("chapterId")).toString();
+    m.sceneIndex   = o.value(QStringLiteral("sceneIndex")).toInt(-1);
+    m.manuscriptId = o.value(QStringLiteral("manuscriptId")).toString();
+    m.itemId       = o.value(QStringLiteral("itemId")).toString();
+    m.createdAt    = qint64(o.value(QStringLiteral("createdAt")).toDouble());
+    return m;
+}
+
 // ── ConstrutorStore ───────────────────────────────────────────────────────────
 
 ConstrutorStore::ConstrutorStore(QObject* parent)
@@ -302,6 +334,8 @@ bool ConstrutorStore::load()
         sys.content     = o.value(QStringLiteral("content")).toString();
         for (const auto& nv : o.value(QStringLiteral("nodes")).toArray())
             sys.nodes.append(nodeFromJson(nv.toObject()));
+        for (const auto& mv : o.value(QStringLiteral("mentions")).toArray())
+            sys.mentions.append(mentionFromJson(mv.toObject()));
         if (!sys.id.isEmpty())
             m_systems.append(std::move(sys));
     }
@@ -328,6 +362,10 @@ bool ConstrutorStore::save() const
         for (const Node& n : sys.nodes)
             nodes.append(nodeToJson(n));
         o.insert(QStringLiteral("nodes"), nodes);
+        QJsonArray mentions;
+        for (const Mention& m : sys.mentions)
+            mentions.append(mentionToJson(m));
+        o.insert(QStringLiteral("mentions"), mentions);
         systems.append(o);
     }
     QJsonObject root;
@@ -490,6 +528,37 @@ bool ConstrutorStore::removeNode(const QString& systemId, const QString& nodeId)
     System* sys = findSystem(systemId);
     if (!sys) return false;
     if (!removeNodeRecursive(sys->nodes, nodeId)) return false;
+    save();
+    emit changed();
+    return true;
+}
+
+// ── Mentions CRUD ─────────────────────────────────────────────────────────────
+
+QString ConstrutorStore::addMention(const QString& systemId, const Mention& mention)
+{
+    System* sys = findSystem(systemId);
+    if (!sys) return {};
+
+    Mention m = mention;
+    m.id        = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    m.createdAt = QDateTime::currentMSecsSinceEpoch();
+    sys->mentions.append(std::move(m));
+
+    save();
+    emit changed();
+    return sys->mentions.last().id;
+}
+
+bool ConstrutorStore::removeMention(const QString& systemId, const QString& mentionId)
+{
+    System* sys = findSystem(systemId);
+    if (!sys) return false;
+    const int before = sys->mentions.size();
+    sys->mentions.erase(std::remove_if(sys->mentions.begin(), sys->mentions.end(),
+                                        [&](const Mention& m) { return m.id == mentionId; }),
+                         sys->mentions.end());
+    if (sys->mentions.size() == before) return false;
     save();
     emit changed();
     return true;

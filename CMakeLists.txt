@@ -178,6 +178,8 @@ qt_add_executable(qenna-writer
     src/ConstrutorStore.h
     src/ConstrutorWindow.cpp
     src/ConstrutorWindow.h
+    src/ConstrutorMentionAddPopup.cpp
+    src/ConstrutorMentionAddPopup.h
     src/MemoriesStore.cpp
     src/MemoriesStore.h
     src/MemoryAddPopup.cpp

@@ -376,6 +376,31 @@ void ConstrutorWindow::applyTheme()
         }
         QTextEdit#ctrContentEdit:disabled { color: %14; }
 
+        /* ── "Menções no projeto" (overlay flutuante) ───── */
+        QWidget#ctrMentionsPanel {
+            background: %2; border: 1px solid %3; border-radius: 10px;
+        }
+        QWidget#ctrMentionsPanel QScrollArea { background: transparent; border: none; }
+        QWidget#ctrMentionsPanel QScrollArea > QWidget { background: transparent; }
+        QLabel#ctrMentionsTitle {
+            color: %6; font-size: 10px; font-weight: 700; letter-spacing: 1px;
+        }
+        QToolButton#ctrMentionsCloseBtn {
+            color: %6; border: none; background: transparent; font-size: 14px;
+        }
+        QToolButton#ctrMentionsCloseBtn:hover { color: %7; }
+        QLabel#ctrMentionsEmpty { color: %6; font-size: 11px; font-style: italic; }
+        QFrame#ctrMentionCard {
+            background: %15; border: 1px solid %3; border-radius: 6px;
+        }
+        QFrame#ctrMentionCard:hover { border-color: %10; }
+        QLabel#ctrMentionCardSource { color: %6; font-size: 10px; }
+        QLabel#ctrMentionCardQuote { color: %5; font-size: 12px; }
+        QToolButton#ctrMentionDelete {
+            color: %6; border: none; background: transparent; font-size: 13px;
+        }
+        QToolButton#ctrMentionDelete:hover { color: %13; }
+
         /* ── Scrollbars ─────────────────────────────────── */
         QScrollBar:vertical { background: transparent; width: 6px; margin: 0; }
         QScrollBar::handle:vertical { background: %3; border-radius: 3px; min-height: 20px; }
@@ -465,6 +490,7 @@ void ConstrutorWindow::applyTheme()
 #include <QSlider>
 #include <QTextEdit>
 #include <QTimer>
+#include <QToolButton>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 #include <QWidgetAction>
@@ -640,8 +666,36 @@ void ConstrutorWindow::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
+void ConstrutorWindow::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    if (m_mentionsPanel && m_mentionsPanel->isVisible()) anchorMentionsPanel();
+}
+
 bool ConstrutorWindow::eventFilter(QObject* watched, QEvent* event)
 {
+    // Card de menção: clicar abre a origem no editor (sem menu — só há uma
+    // ação possível, o botão × de excluir já é um widget filho próprio).
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (auto* w = qobject_cast<QWidget*>(watched)) {
+            const QVariant idProp = w->property("mentionId");
+            if (idProp.isValid()) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                if (me->button() == Qt::LeftButton && w->rect().contains(me->position().toPoint())) {
+                    const ConstrutorStore::System* sys =
+                        m_store ? m_store->system(m_currentSystemId) : nullptr;
+                    if (sys) {
+                        const QString mentionId = idProp.toString();
+                        for (const auto& m : sys->mentions) {
+                            if (m.id == mentionId) { emit openMentionInEditorRequested(m); break; }
+                        }
+                    }
+                    return true;
+                }
+            }
+        }
+    }
+
     if (m_contentEdit && watched == m_contentEdit->viewport()) {
         if (event->type() == QEvent::MouseButtonPress) {
             auto* me = static_cast<QMouseEvent*>(event);
@@ -1001,6 +1055,20 @@ void ConstrutorWindow::buildUi()
     m_insertImageBtn->setToolTip(tr("Inserir imagem"));
     m_insertImageBtn->setIconSize(QSize(16, 16));
     tbLay->addWidget(m_insertImageBtn);
+
+    tbLay->addWidget(makeSep(toolbar));
+
+    // Mostrar/ocultar "Menções no projeto" — painel flutuante ancorado ao
+    // canto superior direito da janela (mesmo padrão de RefMenu/Pensário).
+    m_mentionsToggleBtn = makeFmtBtn(QStringLiteral("@"), toolbar, true);
+    m_mentionsToggleBtn->setToolTip(tr("Mostrar/ocultar menções no projeto"));
+    connect(m_mentionsToggleBtn, &QPushButton::toggled, this, [this](bool checked) {
+        if (!m_mentionsPanel) return;
+        m_mentionsPanel->setVisible(checked);
+        if (checked) anchorMentionsPanel();
+    });
+    tbLay->addWidget(m_mentionsToggleBtn);
+
     tbLay->addStretch();
 
     // Timestamp de última edição do sistema/nó atualmente aberto
@@ -1049,6 +1117,47 @@ void ConstrutorWindow::buildUi()
     rightLay->addWidget(m_pageScroll, 1);
 
     root->addWidget(rightWidget, 1);
+
+    // Seção "Menções no projeto" — overlay flutuante ancorado ao canto
+    // superior direito da JANELA (filho de `this`, fora do layout principal
+    // — mesmo padrão visual/posicional de RefMenuPanel/PensarioPanel no
+    // MainWindow), aberto/fechado pelo botão "@" da toolbar. Trechos do
+    // manuscrito vinculados a este sistema/nó via "Salvar como menção ao
+    // sistema..." na mini-toolbar de seleção do editor principal.
+    m_mentionsPanel = new QWidget(this);
+    m_mentionsPanel->setObjectName(QStringLiteral("ctrMentionsPanel"));
+    m_mentionsPanel->setAttribute(Qt::WA_StyledBackground, true);
+    m_mentionsPanel->hide();
+    auto* mentionsPanelLay = new QVBoxLayout(m_mentionsPanel);
+    mentionsPanelLay->setContentsMargins(14, 10, 14, 10);
+    mentionsPanelLay->setSpacing(6);
+
+    auto* mentionsHeaderRow = new QHBoxLayout();
+    m_mentionsTitleLabel = new QLabel(m_mentionsPanel);
+    m_mentionsTitleLabel->setObjectName(QStringLiteral("ctrMentionsTitle"));
+    mentionsHeaderRow->addWidget(m_mentionsTitleLabel, 1);
+    m_mentionsCloseBtn = new QToolButton(m_mentionsPanel);
+    m_mentionsCloseBtn->setObjectName(QStringLiteral("ctrMentionsCloseBtn"));
+    m_mentionsCloseBtn->setText(QStringLiteral("×"));
+    m_mentionsCloseBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_mentionsCloseBtn, &QToolButton::clicked, this, [this]() {
+        if (m_mentionsToggleBtn) m_mentionsToggleBtn->setChecked(false);
+    });
+    mentionsHeaderRow->addWidget(m_mentionsCloseBtn, 0, Qt::AlignTop);
+    mentionsPanelLay->addLayout(mentionsHeaderRow);
+
+    m_mentionsScroll = new QScrollArea(m_mentionsPanel);
+    m_mentionsScroll->setObjectName(QStringLiteral("ctrMentionsScroll"));
+    m_mentionsScroll->setFrameShape(QFrame::NoFrame);
+    m_mentionsScroll->setWidgetResizable(true);
+    m_mentionsScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    m_mentionsColumn = new QWidget(m_mentionsScroll);
+    m_mentionsLay = new QVBoxLayout(m_mentionsColumn);
+    m_mentionsLay->setContentsMargins(0, 0, 0, 0);
+    m_mentionsLay->setSpacing(6);
+    m_mentionsScroll->setWidget(m_mentionsColumn);
+    mentionsPanelLay->addWidget(m_mentionsScroll, 1);
 
     // ── Conexões ─────────────────────────────────────────────────────────────
     connect(m_togglePanelBtn, &QPushButton::toggled,
@@ -1288,6 +1397,7 @@ void ConstrutorWindow::loadSystem(const QString& id)
     loadContentIntoEditor(sys->content);
     updateLastEditedLabel(sys->updatedAt);
     m_deleteNodeBtn->setEnabled(false);
+    rebuildMentionsPanel();
 }
 
 // ── Árvore de nós ─────────────────────────────────────────────────────────────
@@ -1358,6 +1468,7 @@ void ConstrutorWindow::showNoSystemOpenState()
         tr("Nenhum sistema aberto. Selecione um sistema à esquerda ou crie um novo para começar."));
     m_contentEdit->blockSignals(false);
     updateLastEditedLabel(0);
+    rebuildMentionsPanel();
 }
 
 void ConstrutorWindow::updateLastEditedLabel(qint64 updatedAt)
@@ -1370,6 +1481,105 @@ void ConstrutorWindow::updateLastEditedLabel(qint64 updatedAt)
     const QDateTime dt = QDateTime::fromMSecsSinceEpoch(updatedAt);
     m_lastEditedLabel->setText(
         tr("Editado em %1").arg(dt.toString(QStringLiteral("dd/MM/yyyy HH:mm"))));
+}
+
+void ConstrutorWindow::rebuildMentionsPanel()
+{
+    if (!m_mentionsPanel) return;
+
+    // takeAt(0) tira o item do layout na hora (deleteLater só adia a
+    // destruição do widget em si) — senão os cards antigos ficam visíveis
+    // sobrepostos aos novos até o próximo tick do event loop.
+    while (QLayoutItem* item = m_mentionsLay->takeAt(0)) {
+        if (QWidget* w = item->widget()) w->deleteLater();
+        delete item;
+    }
+
+    // Visibilidade do painel é só do botão "@" da toolbar — aqui só decide o
+    // CONTEÚDO mostrado dentro dele, mesmo se estiver aberto sem sistema
+    // nenhum carregado ainda.
+    const ConstrutorStore::System* sys =
+        (m_store && !m_currentSystemId.isEmpty()) ? m_store->system(m_currentSystemId) : nullptr;
+    if (!sys) {
+        m_mentionsTitleLabel->setText(tr("Menções no projeto"));
+        auto* empty = new QLabel(tr("Abra um sistema para ver as menções."), m_mentionsColumn);
+        empty->setObjectName(QStringLiteral("ctrMentionsEmpty"));
+        empty->setWordWrap(true);
+        m_mentionsLay->addWidget(empty);
+        m_mentionsLay->addStretch();
+        return;
+    }
+
+    QList<ConstrutorStore::Mention> shown;
+    for (const auto& m : sys->mentions) {
+        const bool matches = m_currentNodeId.isEmpty()
+            ? m.nodeId.isEmpty()
+            : (m.nodeId == m_currentNodeId);
+        if (matches) shown.append(m);
+    }
+
+    m_mentionsTitleLabel->setText(tr("Menções no projeto (%1)").arg(shown.size()));
+    if (shown.isEmpty()) {
+        auto* empty = new QLabel(tr("Nenhuma menção salva ainda para este item."), m_mentionsColumn);
+        empty->setObjectName(QStringLiteral("ctrMentionsEmpty"));
+        empty->setWordWrap(true);
+        m_mentionsLay->addWidget(empty);
+    } else {
+        for (const auto& m : shown)
+            m_mentionsLay->addWidget(buildMentionCard(m, m_mentionsColumn));
+    }
+    m_mentionsLay->addStretch();
+}
+
+QWidget* ConstrutorWindow::buildMentionCard(const ConstrutorStore::Mention& mention, QWidget* parent)
+{
+    auto* card = new QFrame(parent);
+    card->setObjectName(QStringLiteral("ctrMentionCard"));
+    card->setCursor(Qt::PointingHandCursor);
+    card->setProperty("mentionId", mention.id);
+    card->installEventFilter(this);
+
+    auto* lay = new QVBoxLayout(card);
+    lay->setContentsMargins(8, 6, 8, 6);
+    lay->setSpacing(3);
+
+    auto* topRow = new QHBoxLayout();
+    auto* sourceLbl = new QLabel(mention.sourceLabel, card);
+    sourceLbl->setObjectName(QStringLiteral("ctrMentionCardSource"));
+    sourceLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    topRow->addWidget(sourceLbl, 1);
+
+    auto* delBtn = new QToolButton(card);
+    delBtn->setObjectName(QStringLiteral("ctrMentionDelete"));
+    delBtn->setText(QStringLiteral("×"));
+    delBtn->setCursor(Qt::PointingHandCursor);
+    delBtn->setToolTip(tr("Excluir menção"));
+    const QString systemId = m_currentSystemId;
+    const QString mentionId = mention.id;
+    connect(delBtn, &QToolButton::clicked, this, [this, systemId, mentionId]() {
+        if (m_store) m_store->removeMention(systemId, mentionId);
+    });
+    topRow->addWidget(delBtn, 0, Qt::AlignTop);
+    lay->addLayout(topRow);
+
+    auto* textLbl = new QLabel(QStringLiteral("“%1”").arg(mention.text.trimmed()), card);
+    textLbl->setObjectName(QStringLiteral("ctrMentionCardQuote"));
+    textLbl->setWordWrap(true);
+    textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    lay->addWidget(textLbl);
+
+    return card;
+}
+
+void ConstrutorWindow::anchorMentionsPanel()
+{
+    if (!m_mentionsPanel) return;
+    constexpr int kMentionsPanelWidth = 300;
+    constexpr int kMargin = 14;
+    const int h = qMax(200, height() - kMargin * 2);
+    m_mentionsPanel->resize(kMentionsPanelWidth, h);
+    m_mentionsPanel->move(width() - m_mentionsPanel->width() - kMargin, kMargin);
+    m_mentionsPanel->raise();
 }
 
 void ConstrutorWindow::loadContentIntoEditor(const QString& content)
@@ -1427,12 +1637,14 @@ void ConstrutorWindow::onTreeSelectionChanged()
             m_contentEdit->setEnabled(false);
             m_contentEdit->clear();
             updateLastEditedLabel(0);
+            rebuildMentionsPanel();
             return;
         }
         m_contentEdit->setPlaceholderText(
             tr("Escreva um resumo, parecer ou introdução deste sistema…"));
         loadContentIntoEditor(sys->content);
         updateLastEditedLabel(sys->updatedAt);
+        rebuildMentionsPanel();
         return;
     }
 
@@ -1460,6 +1672,7 @@ void ConstrutorWindow::onTreeSelectionChanged()
     m_contentEdit->setPlaceholderText(tr("Escreva aqui…"));
     loadContentIntoEditor(node->content);
     updateLastEditedLabel(node->updatedAt);
+    rebuildMentionsPanel();
 }
 
 void ConstrutorWindow::onTreeItemChanged(QTreeWidgetItem* item, int column)
@@ -1720,6 +1933,9 @@ void ConstrutorWindow::onDeleteNode()
         m_contentEdit->setEnabled(false);
         m_contentEdit->clear();
     }
+    // removeNode() já dispara ConstrutorStore::changed() → onStoreChanged()
+    // → rebuildMentionsPanel() (agora filtrando por nível-sistema, já que
+    // m_currentNodeId foi limpo acima) — sem precisar chamar de novo aqui.
     m_store->removeNode(m_currentSystemId, nodeId);
 }
 
@@ -1758,6 +1974,7 @@ void ConstrutorWindow::onStoreChanged()
             rebuildTree();
         }
     }
+    rebuildMentionsPanel();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

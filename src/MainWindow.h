@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "CharacterDetector.h"
+#include "ConstrutorStore.h"
 #include "DialogueStore.h"
 #include "EditorHost.h"
 #include "MemoriesStore.h"
@@ -66,6 +67,7 @@ class MemoriesStore;
 class MemoryAddPopup;
 class ConstrutorStore;
 class ConstrutorWindow;
+class ConstrutorMentionAddPopup;
 class MainMenuDialog;
 class BackgroundWidget;
 class RemindersStore;
@@ -220,6 +222,17 @@ private:
     void addSelectionToMemory();
     // Abre a fonte da memória no editor e seleciona o trecho ("Ctrl+F" auto).
     void openMemoryInEditor(const MemoriesStore::Memory& mem);
+    // Abre o popup de "Salvar como menção ao sistema…" a partir da seleção atual.
+    void addSelectionToConstrutorMention();
+    // Abre a fonte de uma menção do Construtor no editor ("Ctrl+F" auto).
+    void openConstrutorMentionInEditor(const ConstrutorStore::Mention& mention);
+    // Reconstrói o ViewMode a partir de uma origem (capítulo/cena/gaveta) e faz
+    // um "Ctrl+F" automático pelo início de searchText — lógica compartilhada
+    // por openMemoryInEditor/openConstrutorMentionInEditor (mesmo shape de
+    // origem, tipos de dono diferentes).
+    void reopenSourceLocation(const QString& sourceType, const QString& chapterId,
+                               int sceneIndex, const QString& manuscriptId,
+                               const QString& itemId, const QString& searchText);
     // Abre a fonte de um diálogo detectado no editor e seleciona o trecho.
     void openDialogueInEditor(const DialogueStore::Dialogue& dlg);
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
@@ -314,9 +327,14 @@ private:
     DialogueStore *dialogueStore = nullptr;
     ConstrutorStore *construtorStore = nullptr;
     ConstrutorWindow *construtorWindow = nullptr;
+    ConstrutorMentionAddPopup *construtorMentionAddPopup = nullptr;
     // Memória sendo criada: preenchida em addSelectionToMemory() (texto + fonte)
     // e completada no confirmed do popup (nome + destino).
     std::optional<MemoriesStore::Memory> m_pendingMemory;
+    // Menção ao Construtor sendo criada: preenchida em
+    // addSelectionToConstrutorMention() (texto + fonte) e completada no
+    // confirmed do popup (systemId + nodeId opcional).
+    std::optional<ConstrutorStore::Mention> m_pendingMention;
     RemindersStore *remindersStore = nullptr;
     RemindersPanel *remindersPanel = nullptr;
     SheetTemplatesStore *sheetTemplatesStore = nullptr;

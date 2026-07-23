@@ -113,6 +113,7 @@
 #include "AmbienceManager.h"
 #include "AmbiencePanel.h"
 #include "GlossaryAddPopup.h"
+#include "ConstrutorMentionAddPopup.h"
 #include "ConstrutorStore.h"
 #include "ConstrutorWindow.h"
 #include "GlossaryPanel.h"
@@ -853,6 +854,8 @@ void MainWindow::setupEditor()
         [this]() { createTimelineEventFromSelection(); });
     selectionPopup->addAction(QStringLiteral("elements/heart.svg"), tr("Adicionar à memória..."),
         [this]() { addSelectionToMemory(); });
+    selectionPopup->addAction(QStringLiteral("construtor.svg"), tr("Salvar como menção ao sistema..."),
+        [this]() { addSelectionToConstrutorMention(); });
 
     selectionPopup->addSeparator();
     selectionPopup->addAction(QStringLiteral("align-left.svg"), tr("Alinhar à esquerda"),
@@ -1475,7 +1478,11 @@ void MainWindow::setupEditor()
             if (sep < 0) return;
             const QString systemId = itemId.left(sep);
             const QString nodeId   = itemId.mid(sep + 1);
-            if (!construtorWindow) construtorWindow = new ConstrutorWindow(construtorStore, this);
+            if (!construtorWindow) {
+                construtorWindow = new ConstrutorWindow(construtorStore, this);
+                connect(construtorWindow, &ConstrutorWindow::openMentionInEditorRequested,
+                        this, &MainWindow::openConstrutorMentionInEditor);
+            }
             construtorWindow->show();
             construtorWindow->raise();
             construtorWindow->activateWindow();
@@ -1535,6 +1542,25 @@ void MainWindow::setupEditor()
     // memória de um personagem, com o rótulo da fonte (capítulo/cena).
     construtorStore = new ConstrutorStore(this);
     if (mentionPopup) mentionPopup->setConstrutorStore(construtorStore);
+
+    // Menções ao Construtor: popup de "Salvar como menção ao sistema..." (mini
+    // toolbar de seleção). Vincula o trecho a um Sistema do Construtor e,
+    // opcionalmente, a uma Regra/Seção específica dentro dele.
+    construtorMentionAddPopup = new ConstrutorMentionAddPopup(this);
+    construtorMentionAddPopup->setConstrutorStore(construtorStore);
+    connect(construtorMentionAddPopup, &ConstrutorMentionAddPopup::confirmed, this,
+            [this](const QString& systemId, const QString& nodeId) {
+        if (!construtorStore || !m_pendingMention.has_value()) return;
+        ConstrutorStore::Mention men = *m_pendingMention;
+        men.nodeId = nodeId;
+        construtorStore->addMention(systemId, men);
+        m_pendingMention.reset();
+        showReminderToast(tr("Menção salva"),
+            tr("Trecho vinculado ao sistema do Construtor."));
+    });
+    connect(construtorMentionAddPopup, &ConstrutorMentionAddPopup::cancelled, this,
+            [this]() { m_pendingMention.reset(); });
+
     memoriesStore = new MemoriesStore(this);
     memoryAddPopup = new MemoryAddPopup(this);
     connect(memoryAddPopup, &MemoryAddPopup::confirmed, this,
@@ -2026,6 +2052,8 @@ void MainWindow::setupEditor()
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
         if (!construtorWindow) {
             construtorWindow = new ConstrutorWindow(construtorStore, this);
+            connect(construtorWindow, &ConstrutorWindow::openMentionInEditorRequested,
+                    this, &MainWindow::openConstrutorMentionInEditor);
         }
         construtorWindow->show();
         construtorWindow->raise();
@@ -6504,23 +6532,80 @@ void MainWindow::addSelectionToMemory()
                                memoriesStore ? memoriesStore->allTags() : QStringList());
 }
 
-void MainWindow::openMemoryInEditor(const MemoriesStore::Memory& mem)
+void MainWindow::addSelectionToConstrutorMention()
+{
+    if (!editor || !projectModel || !editorHost || !construtorMentionAddPopup || !construtorStore) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString text = raw.trimmed();
+    if (text.isEmpty()) return;
+
+    // Monta a fonte (de onde o trecho veio) + um rótulo legível — mesmo bloco
+    // de addSelectionToMemory(), só preenchendo Mention em vez de Memory.
+    ConstrutorStore::Mention men;
+    men.text = text;
+    QString sourceLabel;
+    const auto vm = editorHost->viewMode();
+    if (vm.type == EditorHost::SceneDoc) {
+        men.sourceType = QStringLiteral("scene");
+        men.chapterId = vm.chapterId;
+        men.sceneIndex = vm.sceneIndex;
+        men.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
+        const QString chTitle = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        const QString scTitle = (sc && !sc->title.isEmpty())
+            ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
+        sourceLabel = tr("%1 — %2").arg(chTitle, scTitle);
+    } else if (vm.type == EditorHost::ChapterDoc) {
+        men.sourceType = QStringLiteral("chapter");
+        men.chapterId = vm.chapterId;
+        men.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        sourceLabel = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+    } else if (vm.type == EditorHost::DrawerDoc) {
+        men.sourceType = QStringLiteral("drawer");
+        men.itemId = vm.itemId;
+        const DrawerItem* it = projectModel->findDrawerItem(vm.itemId);
+        sourceLabel = (it && !it->title.isEmpty()) ? it->title : tr("Documento");
+    }
+    men.sourceLabel = sourceLabel;
+    m_pendingMention = men;
+
+    QVector<QPair<QString, QString>> systems;
+    for (const auto& sys : construtorStore->systems())
+        systems.append({ sys.id, sys.name });
+
+    // Posiciona o popup logo abaixo do fim da seleção.
+    QTextCursor end(editor->document());
+    end.setPosition(cur.selectionEnd());
+    const QRect r = editor->cursorRect(end);
+    const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft()) + QPoint(0, 6);
+    construtorMentionAddPopup->presentAt(gp, text, sourceLabel, systems);
+}
+
+void MainWindow::reopenSourceLocation(const QString& sourceType, const QString& chapterId,
+                                       int sceneIndex, const QString& manuscriptId,
+                                       const QString& itemId, const QString& searchText)
 {
     if (!editorHost || !editor) return;
 
     EditorHost::ViewMode vm;
-    if (mem.sourceType == QStringLiteral("scene") && !mem.chapterId.isEmpty()) {
+    if (sourceType == QStringLiteral("scene") && !chapterId.isEmpty()) {
         vm.type = EditorHost::SceneDoc;
-        vm.manuscriptId = mem.manuscriptId;
-        vm.chapterId = mem.chapterId;
-        vm.sceneIndex = mem.sceneIndex;
-    } else if (mem.sourceType == QStringLiteral("chapter") && !mem.chapterId.isEmpty()) {
+        vm.manuscriptId = manuscriptId;
+        vm.chapterId = chapterId;
+        vm.sceneIndex = sceneIndex;
+    } else if (sourceType == QStringLiteral("chapter") && !chapterId.isEmpty()) {
         vm.type = EditorHost::ChapterDoc;
-        vm.manuscriptId = mem.manuscriptId;
-        vm.chapterId = mem.chapterId;
-    } else if (mem.sourceType == QStringLiteral("drawer") && !mem.itemId.isEmpty()) {
+        vm.manuscriptId = manuscriptId;
+        vm.chapterId = chapterId;
+    } else if (sourceType == QStringLiteral("drawer") && !itemId.isEmpty()) {
         vm.type = EditorHost::DrawerDoc;
-        vm.itemId = mem.itemId;
+        vm.itemId = itemId;
     } else {
         return;
     }
@@ -6528,7 +6613,7 @@ void MainWindow::openMemoryInEditor(const MemoriesStore::Memory& mem)
 
     // "Ctrl+F" automático: depois do doc carregar, leva o cursor ao início e
     // seleciona o 1º casamento do trecho (1ª linha, até ~60 chars).
-    QString query = mem.text;
+    QString query = searchText;
     query.replace(QChar(0x2029), QChar('\n'));
     const QStringList lines = query.split(QChar('\n'), Qt::SkipEmptyParts);
     query = lines.isEmpty() ? query.trimmed() : lines.first().trimmed();
@@ -6541,6 +6626,18 @@ void MainWindow::openMemoryInEditor(const MemoriesStore::Memory& mem)
             editor->ensureCursorVisible();
         editor->setFocus();
     });
+}
+
+void MainWindow::openMemoryInEditor(const MemoriesStore::Memory& mem)
+{
+    reopenSourceLocation(mem.sourceType, mem.chapterId, mem.sceneIndex,
+                          mem.manuscriptId, mem.itemId, mem.text);
+}
+
+void MainWindow::openConstrutorMentionInEditor(const ConstrutorStore::Mention& mention)
+{
+    reopenSourceLocation(mention.sourceType, mention.chapterId, mention.sceneIndex,
+                          mention.manuscriptId, mention.itemId, mention.text);
 }
 
 void MainWindow::openDialogueInEditor(const DialogueStore::Dialogue& dlg)

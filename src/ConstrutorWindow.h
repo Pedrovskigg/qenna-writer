@@ -24,8 +24,10 @@ class QScrollArea;
 class QSlider;
 class QTextEdit;
 class QTimer;
+class QToolButton;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QVBoxLayout;
 class SystemItemDelegate;
 
 // Janela dedicada do Construtor — worldbuilding estruturado.
@@ -43,8 +45,14 @@ public:
     // nodeId vier vazio, abre só o resumo do sistema.
     void openNode(const QString& systemId, const QString& nodeId);
 
+signals:
+    // Clique num card da seção "Menções no projeto" — pede pra abrir a
+    // origem (capítulo/cena/gaveta) no editor principal.
+    void openMentionInEditorRequested(const ConstrutorStore::Mention& mention);
+
 protected:
     void closeEvent(QCloseEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
@@ -94,6 +102,21 @@ private:
     // Timestamp de última edição — exibido no toolbar do editor de conteúdo,
     // reflete sys->updatedAt (resumo do sistema) ou node->updatedAt (nó).
     void updateLastEditedLabel(qint64 updatedAt);
+
+    // Seção "Menções no projeto" — trechos salvos via "Salvar como menção ao
+    // sistema..." (mini-toolbar de seleção do editor principal). Painel
+    // flutuante ancorado ao canto superior direito da janela (mesmo padrão
+    // visual de RefMenuPanel/PensarioPanel), aberto/fechado pelo botão "@" na
+    // toolbar do editor. rebuildMentionsPanel() é o ponto único de verdade:
+    // decide o filtro (sistema inteiro vs. nó selecionado) e repopula os
+    // cards. Chamada nos mesmos pontos que trocam o conteúdo do editor
+    // (loadSystem/onTreeSelectionChanged/onStoreChanged/showNoSystemOpenState).
+    void rebuildMentionsPanel();
+    QWidget* buildMentionCard(const ConstrutorStore::Mention& mention, QWidget* parent);
+    // Reposiciona o painel de menções no canto superior direito da janela —
+    // chamado ao abrir e em todo resize (painel não faz parte do layout
+    // principal, é um overlay livre, como PensarioPanel::ancorRight()).
+    void anchorMentionsPanel();
 
     // Busca global entre sistemas e nós (por nome) — navega direto pro
     // resultado ao clicar, sem precisar abrir sistema por sistema.
@@ -177,6 +200,17 @@ private:
     QTextEdit*     m_contentEdit    = nullptr;
     ImageOverlay*  m_imageOverlay   = nullptr;
     QTextCursor    m_selectedImageCursor;  // imagem atualmente selecionada pelo overlay
+
+    // ── Seção "Menções no projeto" — overlay flutuante no canto superior
+    // direito da janela (não entra no layout principal), toggle "@" na
+    // toolbar do editor.
+    QPushButton* m_mentionsToggleBtn  = nullptr;
+    QWidget*     m_mentionsPanel      = nullptr;
+    QLabel*      m_mentionsTitleLabel = nullptr;
+    QToolButton* m_mentionsCloseBtn   = nullptr;
+    QScrollArea* m_mentionsScroll     = nullptr;
+    QWidget*     m_mentionsColumn     = nullptr;
+    QVBoxLayout* m_mentionsLay        = nullptr;
 
     bool    m_focusModeEnabled        = false;
     bool    m_firstLineIndentEnabled  = false;  // preferência global, persiste em QSettings
