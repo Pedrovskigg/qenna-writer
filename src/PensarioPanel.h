@@ -133,6 +133,19 @@ private:
     // foto (base64 -> QPixmap) e redesenhar o círculo a cada card sozinho já
     // é fatia relevante do travamento ao entrar/filtrar a aba.
     QPixmap characterAvatar(const QString& elementId, int size) const;
+    // Avatar placeholder para diálogo sem locutor — círculo neutro (não a
+    // paleta hash-por-id de characterAvatar), pra não parecer visualmente
+    // igual ao caso de personagem órfão/deletado (mesmo estilo "sem foto"
+    // de characterAvatar(""), mas semanticamente outra coisa).
+    QPixmap unattributedAvatar(int size) const;
+    // Rótulo do locutor de um diálogo pro card/estatísticas: nome do
+    // personagem, ou "Sem locutor" se characterId vazio. Ponto único pra não
+    // duplicar essa checagem em vários lugares (card, "Diálogo mais longo").
+    QString dialogueSpeakerLabel(const QString& characterId) const;
+    // Diálogo bate no filtro de origem (capítulo/cena) atual? Extraído do
+    // corpo de rebuildDialogues pra ser reaproveitado no cálculo do badge de
+    // "Diálogos sem atribuição" em rebuildDialoguePresenceChips.
+    bool dialogueMatchesOriginFilter(const DialogueStore::Dialogue& d) const;
     // Clique direito num card de diálogo → "Alterar locutor" → esta lista
     // (todos os personagens do projeto, não só quem já foi detectado
     // falando) — corrige atribuições erradas do detector (heurística de

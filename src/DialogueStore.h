@@ -16,7 +16,10 @@ public:
     struct Dialogue {
         QString id;
         QString text;
-        QString characterId;   // id do Element que fala
+        QString characterId;   // id do Element que fala; vazio = sem locutor
+                                // atribuído ainda (estado válido, não um dado
+                                // corrompido — ver PensarioPanel, "Diálogos
+                                // sem atribuição")
         QString manuscriptId;
         QString chapterId;
         int     sceneIndex = -1; // -1 = capítulo sem cenas

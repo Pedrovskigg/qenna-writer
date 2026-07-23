@@ -161,8 +161,9 @@ QVector<DetectedDialogueLine> DialogueDetector::scanConfidentDialogues(
             || text.startsWith(QChar(0x201E));
         if (!startsWithDash && !startsWithQuote) continue;
 
+        // Retido mesmo se vazio (ambíguo/sem locutor) — vira "sem
+        // atribuição" no Pensário, em vez de ser descartado silenciosamente.
         const QString characterId = attributeLine(text, tokens, narrator);
-        if (characterId.isEmpty()) continue;
 
         out.append(DetectedDialogueLine{ text, characterId });
     }

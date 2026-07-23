@@ -61,7 +61,7 @@ bool DialogueStore::load()
         d.sceneIndex   = o.value(QStringLiteral("sceneIndex")).toInt(-1);
         d.sourceLabel  = o.value(QStringLiteral("sourceLabel")).toString();
         d.createdAt    = qint64(o.value(QStringLiteral("createdAt")).toDouble());
-        if (d.id.isEmpty() || d.text.isEmpty() || d.characterId.isEmpty()) continue;
+        if (d.id.isEmpty() || d.text.isEmpty()) continue;
         m_dialogues.append(d);
     }
     emit changed();

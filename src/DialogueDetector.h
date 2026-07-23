@@ -16,7 +16,8 @@ struct DialogueScannerToken {
     QRegularExpression proximityRe;
 };
 
-// Uma fala com atribuição confiante (exatamente 1 personagem casou).
+// Uma fala detectada. characterId vazio = parece diálogo (travessão/aspas)
+// mas sem locutor confiante (0 ou >1 personagem bateu) — "sem atribuição".
 struct DetectedDialogueLine {
     QString text;
     QString characterId;
@@ -36,9 +37,11 @@ public:
 
     // Varre plainText (parágrafos separados por '\n', como
     // QTextEdit::toPlainText() do documento inteiro produz — diferente de
-    // QTextCursor::selectedText(), que usa U+2029) e retorna só as falas com
-    // atribuição confiante. Parágrafos ambíguos (0 ou >1 personagem bateu) são
-    // descartados aqui — quem chama nunca vê a incerteza.
+    // QTextCursor::selectedText(), que usa U+2029) e retorna toda linha que
+    // parece diálogo (começa com travessão/aspas). Parágrafos ambíguos (0 ou
+    // >1 personagem bateu) são retidos com characterId vazio — quem chama
+    // decide o que fazer com a incerteza (hoje: Pensário mostra como "sem
+    // atribuição", permitindo atribuição manual depois).
     // narrator pode ser nullptr (projeto sem narrador marcado).
     static QVector<DetectedDialogueLine> scanConfidentDialogues(
         const QString& plainText,
