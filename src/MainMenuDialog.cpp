@@ -6,6 +6,7 @@
 #include "Quotes.h"
 #include "ShelfScene.h"
 #include "ShelfView.h"
+#include "StackView.h"
 #include "Theme.h"
 
 #include <QAction>
@@ -162,6 +163,8 @@ namespace {
 
 constexpr int kCardCoverW = 240;
 constexpr int kCardCoverH = 360;
+constexpr int kStackHeroCoverW = 340; // capa herói da Pilha — mesma proporção 2:3
+constexpr int kStackHeroCoverH = 510;
 constexpr int kDialogW = 1320;
 constexpr int kDialogH = 1000;
 constexpr int kSidebarW = 410;   // largura da barra lateral
@@ -1520,11 +1523,16 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     // mostra um toast "Em breve" quando clicado.
     m_prateleiraBtn->setCheckable(false);
     m_prateleiraBtn->setCursor(Qt::PointingHandCursor);
+    m_pilhaBtn = new QPushButton(tr("Pilha"), this);
+    m_pilhaBtn->setObjectName(QStringLiteral("menuViewToggle"));
+    m_pilhaBtn->setCheckable(true); // ao contrário da Prateleira — pronta pra uso real
+    m_pilhaBtn->setCursor(Qt::PointingHandCursor);
     connect(m_estanteBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Estante); });
     connect(m_listaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Lista); });
     connect(m_prateleiraBtn, &QPushButton::clicked, this, [this]() {
         showComingSoonToast(m_prateleiraBtn);
     });
+    connect(m_pilhaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Pilha); });
 
     m_shelfMaterialBtn = new QPushButton(tr("Material"), this);
     m_shelfMaterialBtn->setObjectName(QStringLiteral("menuViewToggle"));
@@ -1540,6 +1548,7 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     toggleWrap->addWidget(m_estanteBtn);
     toggleWrap->addWidget(m_listaBtn);
     toggleWrap->addWidget(m_prateleiraBtn);
+    toggleWrap->addWidget(m_pilhaBtn);
     header->addLayout(toggleWrap);
     col->addLayout(header);
 
@@ -1588,6 +1597,27 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     });
     holderCol->addWidget(m_shelfView);
 
+    // Pilha: QWidget simples (sem QGraphicsScene, mais barato que a
+    // Prateleira) com herói em destaque + faixa lateral em peek. Rola dentro
+    // de si mesma (roda do mouse gira o baralho) — o m_recentsScroll de fora
+    // só entra em jogo se o conteúdo não couber verticalmente.
+    m_stackView = new StackView(m_holder);
+    connect(m_stackView, &StackView::openRequested, this, &MainMenuDialog::openRecentRequested);
+    connect(m_stackView, &StackView::autoOpenChanged, this, &MainMenuDialog::autoOpenChanged);
+    connect(m_stackView, &StackView::editRequested, this, &MainMenuDialog::editProject);
+    connect(m_stackView, &StackView::coverCreateRequested, this, &MainMenuDialog::launchMiraCover);
+    connect(m_stackView, &StackView::removeRequested, this, &MainMenuDialog::removeRecentRequested);
+    connect(m_stackView, &StackView::deleteRequested, this, &MainMenuDialog::confirmDeleteProject);
+    // Stretch bem alto (não 1): o holderCol também tem um addStretch(1)
+    // no fim (compartilhado por todos os modos) — com stretch igual, metade
+    // do espaço extra escapava pra aquele spacer externo, sempre sobrando
+    // como vão vazio ABAIXO do StackView, fora do controle do layout interno
+    // dele. Com um stretch bem maior aqui, quase todo o espaço extra vai
+    // pro StackView, e o posicionamento vertical interno dele (ver
+    // StackView::StackView) passa a controlar de verdade onde a composição
+    // fica.
+    holderCol->addWidget(m_stackView, 100);
+
     m_emptyLabel = new QLabel(
         tr("Você ainda não tem projetos.\n"
            "Clique em \"Novo projeto\" pra começar, ou em \"Carregar pasta\" pra abrir uma existente."),
@@ -1607,9 +1637,11 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     m_estanteBtn->setChecked(m_viewMode == ViewMode::Estante);
     m_listaBtn->setChecked(m_viewMode == ViewMode::Lista);
     m_prateleiraBtn->setChecked(m_viewMode == ViewMode::Prateleira);
+    m_pilhaBtn->setChecked(m_viewMode == ViewMode::Pilha);
     m_gridContainer->setVisible(m_viewMode == ViewMode::Estante);
     m_listContainer->setVisible(m_viewMode == ViewMode::Lista);
     m_shelfView->setVisible(m_viewMode == ViewMode::Prateleira);
+    m_stackView->setVisible(m_viewMode == ViewMode::Pilha);
     m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
 }
 
@@ -1641,6 +1673,7 @@ void MainMenuDialog::setViewMode(ViewMode mode)
     if (m_estanteBtn)    m_estanteBtn->setChecked(mode == ViewMode::Estante);
     if (m_listaBtn)      m_listaBtn->setChecked(mode == ViewMode::Lista);
     if (m_prateleiraBtn) m_prateleiraBtn->setChecked(mode == ViewMode::Prateleira);
+    if (m_pilhaBtn)      m_pilhaBtn->setChecked(mode == ViewMode::Pilha);
     populateActiveView();
 }
 
@@ -1689,10 +1722,12 @@ void MainMenuDialog::populateActiveView()
     if (m_gridContainer)  m_gridContainer->setVisible(!empty && m_viewMode == ViewMode::Estante);
     if (m_listContainer)  m_listContainer->setVisible(!empty && m_viewMode == ViewMode::Lista);
     if (m_shelfView)      m_shelfView->setVisible(!empty && m_viewMode == ViewMode::Prateleira);
+    if (m_stackView)      m_stackView->setVisible(!empty && m_viewMode == ViewMode::Pilha);
     if (m_shelfMaterialBtn) m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
 
     QWidget* parentForCards = (m_viewMode == ViewMode::Estante) ? m_gridContainer
                                                                 : m_listContainer;
+    QVector<StackEntry> stackEntries;
     for (int i = 0; i < n; ++i) {
         const QString capturedPath = validPaths.at(i);
         const RecentInfo& info = validInfos.at(i);
@@ -1745,6 +1780,24 @@ void MainMenuDialog::populateActiveView()
             continue;
         }
 
+        if (m_viewMode == ViewMode::Pilha) {
+            QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+            if (cover.isNull())
+                cover = renderDefaultCover(info.name, info.author, kStackHeroCoverW, kStackHeroCoverH);
+            StackEntry e;
+            e.path = capturedPath;
+            e.name = info.name.isEmpty() ? QFileInfo(capturedPath).fileName() : info.name;
+            e.author = info.author;
+            e.genres = info.genres;
+            e.synopsis = info.synopsis;
+            e.totalWords = info.totalWords;
+            e.heroCover = renderVitrineCover(cover, kStackHeroCoverW, kStackHeroCoverH);
+            e.sideCover = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
+            e.autoOpen = isAutoOpen;
+            stackEntries.append(std::move(e));
+            continue;
+        }
+
         CardCallbacks cbs;
         cbs.open = [this, capturedPath]() { emit openRecentRequested(capturedPath); };
         cbs.autoOpen = [this, capturedPath](bool enabled) {
@@ -1767,6 +1820,8 @@ void MainMenuDialog::populateActiveView()
             m_listCol->addWidget(roww);
         }
     }
+
+    if (m_viewMode == ViewMode::Pilha && m_stackView) m_stackView->setEntries(stackEntries);
 
     if (m_shelfView) m_shelfView->refreshLayout();
     if (m_recentsScroll) m_recentsScroll->reflow();
@@ -2268,6 +2323,28 @@ void MainMenuDialog::applyDialogStyle()
         #bookRowMeta { color: %4; font-size: 12px; }
 
         #menuShelfView { background: transparent; border: none; }
+
+        #menuStackView { background: transparent; border: none; }
+        #stackHeroTitle { color: %3; font-size: 22px; font-weight: 700; }
+        #stackHeroAuthor { color: %4; font-size: 14px; font-style: italic; }
+        #stackHeroBreadcrumb { color: %4; font-size: 12px; }
+        #stackSynopsisScroll { background: transparent; border: none; }
+        #stackSynopsisText { color: %2; font-size: 13px; }
+        #stackSynopsisScroll QScrollBar:vertical {
+            background: transparent;
+            width: 8px;
+            margin: 0;
+        }
+        #stackSynopsisScroll QScrollBar::handle:vertical {
+            background: %6;
+            border-radius: 4px;
+            min-height: 28px;
+        }
+        #stackSynopsisScroll QScrollBar::handle:vertical:hover { background: %9; }
+        #stackSynopsisScroll QScrollBar::add-line:vertical,
+        #stackSynopsisScroll QScrollBar::sub-line:vertical { height: 0; }
+        #stackSynopsisScroll QScrollBar::add-page:vertical,
+        #stackSynopsisScroll QScrollBar::sub-page:vertical { background: transparent; }
     )").arg(
         Theme::appBackground(),    // 1
         Theme::textPrimary(),      // 2

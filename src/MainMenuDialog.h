@@ -17,6 +17,7 @@ class FlowLayout;
 class FlowScrollArea;
 class ShelfScene;
 class ShelfView;
+class StackView;
 
 // Tela inicial / menu do app — figurino próprio do Mira 2, layout editorial
 // em duas colunas (deliberadamente diferente do topo-centralizado do Mira 1):
@@ -30,6 +31,9 @@ class ShelfView;
 //       * Lista: linhas ricas em metadados (capa miniatura + autor + gêneros).
 //       * Prateleira: livros em 3D de verdade (QGraphicsView), lombada +
 //         capa + páginas, a capa revelada no hover — ver ShelfBookItem.
+//       * Pilha: livro herói em destaque (capa grande + texto) e os demais
+//         recentes numa faixa lateral em "peek" — roda do mouse gira o
+//         baralho (rotação, não índice) — ver StackView.
 //
 // Aparece automaticamente no startup quando não há projeto carregado, e
 // é invocado também quando o usuário pede "Carregar projeto" pela barra.
@@ -67,7 +71,7 @@ private slots:
     void applyDialogStyle();
 
 private:
-    enum class ViewMode { Estante, Lista, Prateleira };
+    enum class ViewMode { Estante, Lista, Prateleira, Pilha };
 
     void buildUi();
     void buildSidebar(QVBoxLayout* col);
@@ -124,6 +128,7 @@ private:
     QPushButton* m_estanteBtn = nullptr;
     QPushButton* m_listaBtn = nullptr;
     QPushButton* m_prateleiraBtn = nullptr;
+    QPushButton* m_pilhaBtn = nullptr;
     QPushButton* m_shelfMaterialBtn = nullptr; // só visível em modo Prateleira
     FlowScrollArea* m_recentsScroll = nullptr;
     QWidget* m_holder = nullptr;          // conteúdo do scroll
@@ -131,6 +136,7 @@ private:
     QWidget* m_listContainer = nullptr;   // linhas (QVBoxLayout)
     ShelfScene* m_shelfScene = nullptr;   // prateleira 3D — cena
     ShelfView*  m_shelfView  = nullptr;   // prateleira 3D — view (container no holderCol)
+    StackView*  m_stackView  = nullptr;   // pilha — herói + faixa lateral (container no holderCol)
     FlowLayout* m_gridFlow = nullptr;
     QVBoxLayout* m_listCol = nullptr;
     QLabel* m_emptyLabel = nullptr;

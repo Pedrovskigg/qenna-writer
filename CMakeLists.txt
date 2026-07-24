@@ -202,6 +202,8 @@ qt_add_executable(qenna-writer
     src/ShelfScene.h
     src/ShelfView.cpp
     src/ShelfView.h
+    src/StackView.cpp
+    src/StackView.h
     src/LousaPanel.cpp
     src/LousaPanel.h
     src/LousaTypes.h
