@@ -85,6 +85,8 @@ qt_add_executable(qenna-writer
     src/GlobalSearchPanel.h
     src/ElementCreateDialog.cpp
     src/ElementCreateDialog.h
+    src/ImageCropDialog.cpp
+    src/ImageCropDialog.h
     src/ElementsPresentDialog.cpp
     src/ElementsPresentDialog.h
     src/ElementsStore.cpp

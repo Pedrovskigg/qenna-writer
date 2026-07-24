@@ -1,16 +1,13 @@
 #include "ElementCreateDialog.h"
 
+#include "ImageCropDialog.h"
 #include "Theme.h"
 
 #include <QAbstractItemView>
-#include <QBuffer>
 #include <QByteArray>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFileDialog>
 #include <QHBoxLayout>
-#include <QImage>
-#include <QImageReader>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPixmap>
@@ -34,27 +31,6 @@ QString nameLabelForType(const QString& t) {
     if (t == QStringLiteral("setting"))   return QObject::tr("Nome do cenário:");
     if (t == QStringLiteral("object"))    return QObject::tr("Nome do objeto:");
     return QObject::tr("Nome:");
-}
-
-// Carrega imagem do disco, redimensiona pra 400×400 quadrado (crop centralizado)
-// e devolve como data URL JPEG base64.
-QString loadImageAsDataUrl(const QString& path) {
-    QImageReader reader(path);
-    reader.setAutoTransform(true);
-    QImage img = reader.read();
-    if (img.isNull()) return QString();
-    // Crop centralizado pra quadrado
-    const int side = qMin(img.width(), img.height());
-    const int x = (img.width() - side) / 2;
-    const int y = (img.height() - side) / 2;
-    QImage square = img.copy(x, y, side, side);
-    QImage scaled = square.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-    QByteArray bytes;
-    QBuffer buf(&bytes);
-    buf.open(QIODevice::WriteOnly);
-    scaled.save(&buf, "JPEG", 92);
-    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
 }
 
 // Fix de um bug conhecido do Qt: como o combo tem `border-radius` no QSS, o
@@ -411,12 +387,7 @@ void ElementCreateDialog::updatePreview()
 
 void ElementCreateDialog::pickImage()
 {
-    const QString path = QFileDialog::getOpenFileName(this,
-        tr("Selecionar foto"),
-        QString(),
-        tr("Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)"));
-    if (path.isEmpty()) return;
-    const QString dataUrl = loadImageAsDataUrl(path);
+    const QString dataUrl = ImageCropDialog::pickAndCropImage(this);
     if (dataUrl.isEmpty()) return;
     m_imageDataUrl = dataUrl;
     updatePreview();
