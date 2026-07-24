@@ -56,6 +56,9 @@ private:
     void updateButtonsState();
     void refreshAutoSwitchUi();
     void applyDialogStyle();
+    // Toast discreto (fade-out sozinho) ancorado acima do botão Aplicar —
+    // usado pelos temas com mensagem de "lore" própria (Tifu/Tommy).
+    void showThemeIntroToast(const QString& text);
 
     Tab activeTab() const;
     bool selectedIsCustom() const;

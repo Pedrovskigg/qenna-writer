@@ -9,16 +9,19 @@
 #include <QCoreApplication>
 #include <QEvent>
 #include <QFrame>
+#include <QGraphicsOpacityEffect>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPropertyAnimation>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QTabWidget>
 #include <QTimeEdit>
+#include <QTimer>
 #include <QVBoxLayout>
 
 namespace {
@@ -685,6 +688,51 @@ void ThemesPanel::onApplyClicked()
     if (m_selectedId.isEmpty()) return;
     Theme::Manager::instance()->setCurrent(m_selectedId);
     // onThemeChanged vai rebuildar os grids.
+
+    // Temas com "lore" própria — mensagem de bastidores, só na primeira vez
+    // que o usuário aplica (a cada clique em Aplicar, na verdade — decisão
+    // simples: sem persistir "já viu", igual showComingSoonToast).
+    if (m_selectedId == QStringLiteral("tifu")) {
+        showThemeIntroToast(tr("🐈‍⬛ Esse theme foi feito inspirado no gato preto e "
+                               "calmo como a noite — Tifu, O Sábio."));
+    } else if (m_selectedId == QStringLiteral("tommy")) {
+        showThemeIntroToast(tr("🐈 Esse theme foi feito inspirado na hiperatividade e "
+                               "inquietação do melhor gato laranja — Tommy, O Temível."));
+    }
+}
+
+void ThemesPanel::showThemeIntroToast(const QString& text)
+{
+    if (!m_applyButton) return;
+
+    auto* toast = new QLabel(text);
+    toast->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    toast->setAttribute(Qt::WA_ShowWithoutActivating);
+    toast->setAttribute(Qt::WA_DeleteOnClose);
+    toast->setAlignment(Qt::AlignCenter);
+    toast->setWordWrap(true);
+    toast->setFixedWidth(280);
+    toast->setStyleSheet(QStringLiteral(
+        "QLabel { background: %1; color: %2; border: 1px solid %3; "
+        "border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; }")
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+    toast->adjustSize();
+
+    const QPoint anchorTopCenter = m_applyButton->mapToGlobal(QPoint(m_applyButton->width() / 2, 0));
+    toast->move(anchorTopCenter.x() - toast->width() / 2, anchorTopCenter.y() - toast->height() - 10);
+    toast->show();
+
+    auto* opacity = new QGraphicsOpacityEffect(toast);
+    toast->setGraphicsEffect(opacity);
+
+    QTimer::singleShot(3200, toast, [toast, opacity]() {
+        auto* anim = new QPropertyAnimation(opacity, "opacity", toast);
+        anim->setDuration(350);
+        anim->setStartValue(1.0);
+        anim->setEndValue(0.0);
+        QObject::connect(anim, &QPropertyAnimation::finished, toast, &QLabel::close);
+        anim->start(QAbstractAnimation::DeleteWhenStopped);
+    });
 }
 
 void ThemesPanel::onNewClicked()

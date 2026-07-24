@@ -729,6 +729,107 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
     {
+        // Tifu Theme — em homenagem ao gato do usuário: preto meio amarronzado,
+        // olhos verdes, "calmo como a noite". Página cinza neutro (não a mesma
+        // família de cor dos painéis, de propósito — pelagem vs. ambiente),
+        // painéis marrom escuro, destaques verdes (accentDefault E accentInfo,
+        // pra "verde" ser a assinatura visual inconfundível do tema, igual o
+        // magenta é do Tokyo Night).
+        MiraTheme t;
+        t.id = QStringLiteral("tifu");
+        t.name = QStringLiteral("Tifu Theme");
+        t.bundled = true;
+        t.appBackground    = QStringLiteral("#16100c");  // ajustado na unha pelo usuário
+        t.panelBackground  = QStringLiteral("#18120e");  // ajustado na unha pelo usuário
+        t.panelBorder      = QStringLiteral("#443323");  // ajustado na unha pelo usuário
+        t.textPrimary      = QStringLiteral("#c9beae");
+        t.textMuted        = QStringLiteral("#8a7863");
+        t.textBright       = QStringLiteral("#ece4d8");
+        t.hoverOverlay     = QStringLiteral("rgba(236,228,216,0.06)");
+        t.pressedOverlay   = QStringLiteral("rgba(236,228,216,0.04)");
+        t.subtleBorder     = QStringLiteral("rgba(236,228,216,0.10)");
+        t.accentDefault    = QStringLiteral("#6fae5a");  // olhos verdes
+
+        t.hoverStrong         = QStringLiteral("rgba(236,228,216,0.12)");
+        t.borderStrong        = QStringLiteral("rgba(236,228,216,0.22)");
+        t.focusBorder         = QStringLiteral("rgba(236,228,216,0.32)");
+        t.inputBackground     = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText        = QStringLiteral("rgba(236,228,216,0.30)");
+        t.selectionRing       = QStringLiteral("#ece4d8");
+
+        t.accentSuccess           = QStringLiteral("#7fc26a");
+        t.accentSuccessSoft       = QStringLiteral("rgba(127,194,106,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(127,194,106,0.50)");
+        t.accentDanger            = QStringLiteral("#e0615a");
+        t.accentDangerSoft        = QStringLiteral("rgba(224,97,90,0.14)");
+        t.accentDangerBorderSoft  = QStringLiteral("rgba(224,97,90,0.45)");
+        t.accentWarning           = QStringLiteral("#d6a060");
+        t.accentInfo              = QStringLiteral("#6fae5a");  // mesmo verde do accentDefault
+        t.accentInfoSoft          = QStringLiteral("rgba(111,174,90,0.22)");
+        t.accentInfoBorderSoft    = QStringLiteral("rgba(111,174,90,0.55)");
+
+        t.editorBackground = QStringLiteral("#151110");  // ajustado na unha pelo usuário
+        t.editorTextColor  = QStringLiteral("#d9d5cd");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,170)");
+        t.pageShadowRadius = 26;
+        t.pageShadowOffset = 5;
+        m_themes.append(t);
+    }
+    {
+        // Tommy Theme — em homenagem ao gato do usuário: laranja/bege malhado,
+        // olhos castanho-claro, "hiperativo e inquieto". Página bege quente,
+        // painéis quentes, accentDefault laranja (a pelagem) e accentInfo
+        // castanho-claro (os olhos) — duas cores da mesma família mas
+        // distintas, pra selects/destaques lerem "olho" contra o "corpo"
+        // laranja de botões/accent primário.
+        MiraTheme t;
+        t.id = QStringLiteral("tommy");
+        t.name = QStringLiteral("Tommy Theme");
+        t.bundled = true;
+        // Recalibrado de novo (2026-07-23): 1ª tentativa bege-neutra demais,
+        // 2ª (Caramel-based) ficou amarelo-dourada, mas o usuário quer LARANJA
+        // de verdade — Tommy é "gato laranjinha". Hue empurrado de amarelo
+        // (~45°) pra laranja (~30°) em tudo: fundo, painéis e accent (mesmo
+        // laranja queimado do Tangerine, `#e8744a`-like, como pelagem).
+        t.appBackground    = QStringLiteral("#f0bf76");
+        t.panelBackground  = QStringLiteral("#f8d79c");
+        t.panelBorder      = QStringLiteral("#d99a4a");
+        t.textPrimary      = QStringLiteral("#5a3814");
+        t.textMuted        = QStringLiteral("#96703e");
+        t.textBright       = QStringLiteral("#2e1c08");
+        t.hoverOverlay     = QStringLiteral("rgba(46,28,8,0.06)");
+        t.pressedOverlay   = QStringLiteral("rgba(46,28,8,0.04)");
+        t.subtleBorder     = QStringLiteral("rgba(46,28,8,0.14)");
+        t.accentDefault    = QStringLiteral("#e8641e");  // pelagem laranja vívido
+
+        t.hoverStrong         = QStringLiteral("rgba(46,28,8,0.10)");
+        t.borderStrong        = QStringLiteral("rgba(46,28,8,0.24)");
+        t.focusBorder         = QStringLiteral("rgba(46,28,8,0.34)");
+        t.inputBackground     = QStringLiteral("rgba(46,28,8,0.05)");
+        t.disabledText        = QStringLiteral("rgba(46,28,8,0.32)");
+        t.selectionRing       = QStringLiteral("#2e1c08");
+
+        t.accentSuccess           = QStringLiteral("#5e7335");
+        t.accentSuccessSoft       = QStringLiteral("rgba(94,115,53,0.14)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(94,115,53,0.45)");
+        t.accentDanger            = QStringLiteral("#a33030");
+        t.accentDangerSoft        = QStringLiteral("rgba(163,48,48,0.10)");
+        t.accentDangerBorderSoft  = QStringLiteral("rgba(163,48,48,0.45)");
+        t.accentWarning           = QStringLiteral("#e8641e");
+        t.accentInfo              = QStringLiteral("#b8763a");  // olhos castanho-claro
+        t.accentInfoSoft          = QStringLiteral("rgba(184,118,58,0.18)");
+        t.accentInfoBorderSoft    = QStringLiteral("rgba(184,118,58,0.50)");
+
+        t.editorBackground = QStringLiteral("#f8d79c");
+        t.editorTextColor  = QStringLiteral("#2e1c08");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,90)");
+        t.pageShadowRadius = 26;
+        t.pageShadowOffset = 6;
+        m_themes.append(t);
+    }
+    {
         // Catppuccin Mocha — paleta pastel-dark moderna (catppuccin.com).
         // Lilás suave sobre azul-marinho fosco. Vibe acolhedora, cores macias.
         MiraTheme t;
@@ -5702,6 +5803,140 @@ void Manager::loadBundled()
           QStringLiteral("#cde0dc"), QStringLiteral("#6e8a86"), QStringLiteral("#eef8f6"),
           QStringLiteral("#4a7a8a"), QStringLiteral("#f8f2de"), QStringLiteral("#182420"));
 
+    // ---- Leva "afogando mágoas em temas" (2026-07-22) — 10 temas escuros
+    // novos, no mesmo espírito de Tokyo Night/Tokyo Storm/Everforest: cada um
+    // inspirado numa paleta clássica e reconhecida do mundo dev (editor de
+    // código/terminal), com identidade própria e um accent que carrega a
+    // vibe inteira.
+
+    // Kanagawa — xilogravura japonesa (Kanagawa.nvim): tinta sumi + onda azul.
+    solid(QStringLiteral("kanagawa"), QStringLiteral("Kanagawa"), true, QStringLiteral("220,215,186"),
+          QStringLiteral("#1a1a20"), QStringLiteral("#1f1f28"), QStringLiteral("#363646"),
+          QStringLiteral("#dcd7ba"), QStringLiteral("#727169"), QStringLiteral("#f2ecdc"),
+          QStringLiteral("#7e9cd8"), QStringLiteral("#16161d"), QStringLiteral("#dcd7ba"));
+
+    // Monokai Classic — o clássico dos clássicos, verde-oliva quase preto e
+    // rosa-choque de assinatura.
+    solid(QStringLiteral("monokai-classic"), QStringLiteral("Monokai Classic"), true, QStringLiteral("248,248,242"),
+          QStringLiteral("#201f1a"), QStringLiteral("#272822"), QStringLiteral("#49483e"),
+          QStringLiteral("#f8f8f2"), QStringLiteral("#90897a"), QStringLiteral("#ffffff"),
+          QStringLiteral("#f92672"), QStringLiteral("#1e1f1a"), QStringLiteral("#f8f8f2"));
+
+    // Ayu Mirage — azul-acinzentado com um laranja quente de assinatura.
+    solid(QStringLiteral("ayu-mirage"), QStringLiteral("Ayu Mirage"), true, QStringLiteral("203,204,198"),
+          QStringLiteral("#191d26"), QStringLiteral("#1f2430"), QStringLiteral("#363c4d"),
+          QStringLiteral("#cbccc6"), QStringLiteral("#707a8c"), QStringLiteral("#f0f1ea"),
+          QStringLiteral("#ffa759"), QStringLiteral("#1a1f29"), QStringLiteral("#cbccc6"));
+
+    // Night Owl — azul-marinho profundo de quem programa de madrugada.
+    solid(QStringLiteral("night-owl"), QStringLiteral("Night Owl"), true, QStringLiteral("214,222,235"),
+          QStringLiteral("#01111f"), QStringLiteral("#011627"), QStringLiteral("#1d3b53"),
+          QStringLiteral("#d6deeb"), QStringLiteral("#5f7e97"), QStringLiteral("#ffffff"),
+          QStringLiteral("#82aaff"), QStringLiteral("#011220"), QStringLiteral("#d6deeb"));
+
+    // Cobalt Deep — azul saturado + amarelo de alto contraste (Cobalt2).
+    solid(QStringLiteral("cobalt-deep"), QStringLiteral("Cobalt Deep"), true, QStringLiteral("225,239,255"),
+          QStringLiteral("#0e2233"), QStringLiteral("#14324a"), QStringLiteral("#275270"),
+          QStringLiteral("#e1efff"), QStringLiteral("#6f96b8"), QStringLiteral("#ffffff"),
+          QStringLiteral("#ffc600"), QStringLiteral("#102a3e"), QStringLiteral("#e1efff"));
+
+    // Palenight — roxo-azulado do Material Theme, elegante e frio.
+    solid(QStringLiteral("palenight"), QStringLiteral("Palenight"), true, QStringLiteral("166,172,205"),
+          QStringLiteral("#22253a"), QStringLiteral("#292d3e"), QStringLiteral("#414863"),
+          QStringLiteral("#a6accd"), QStringLiteral("#676e95"), QStringLiteral("#d6d9ea"),
+          QStringLiteral("#c792ea"), QStringLiteral("#242837"), QStringLiteral("#a6accd"));
+
+    // Horizon Dusk — pôr-do-sol escuro, rosa-avermelhado sobre roxo-noite.
+    solid(QStringLiteral("horizon-dusk"), QStringLiteral("Horizon Dusk"), true, QStringLiteral("213,216,218"),
+          QStringLiteral("#17181f"), QStringLiteral("#1c1e26"), QStringLiteral("#2e2d3a"),
+          QStringLiteral("#d5d8da"), QStringLiteral("#6c6f93"), QStringLiteral("#ffffff"),
+          QStringLiteral("#e95678"), QStringLiteral("#191a21"), QStringLiteral("#d5d8da"));
+
+    // Zenburn — o avô de baixo contraste, cinza quente e nada berrante.
+    solid(QStringLiteral("zenburn"), QStringLiteral("Zenburn"), true, QStringLiteral("220,220,204"),
+          QStringLiteral("#363633"), QStringLiteral("#3f3f3d"), QStringLiteral("#545248"),
+          QStringLiteral("#dcdccc"), QStringLiteral("#8f8f77"), QStringLiteral("#f0f0e0"),
+          QStringLiteral("#dfaf8f"), QStringLiteral("#383836"), QStringLiteral("#dcdccc"));
+
+    // Oceanic Deep — azul-petróleo profundo com teal de recife.
+    solid(QStringLiteral("oceanic-deep"), QStringLiteral("Oceanic Deep"), true, QStringLiteral("205,211,222"),
+          QStringLiteral("#16232b"), QStringLiteral("#1b2b34"), QStringLiteral("#33454f"),
+          QStringLiteral("#cdd3de"), QStringLiteral("#66798a"), QStringLiteral("#ffffff"),
+          QStringLiteral("#5fb3b3"), QStringLiteral("#182530"), QStringLiteral("#cdd3de"));
+
+    // Spacegray — cinza-azulado minimalista, o mais discreto da leva.
+    solid(QStringLiteral("spacegray"), QStringLiteral("Spacegray"), true, QStringLiteral("192,197,206"),
+          QStringLiteral("#242830"), QStringLiteral("#2b303b"), QStringLiteral("#444b58"),
+          QStringLiteral("#c0c5ce"), QStringLiteral("#65737e"), QStringLiteral("#eff1f5"),
+          QStringLiteral("#8fa1b3"), QStringLiteral("#262a33"), QStringLiteral("#c0c5ce"));
+
+    // ---- Leva "arrisca" (2026-07-22) — quebrando a fórmula de especiaria/
+    // editor de código. Cada tema aqui é batizado por um fenômeno óptico ou
+    // atmosférico raro de verdade, com a cor de assinatura vindo do próprio
+    // fenômeno (o "flash" verde, o glow de Santelmo, o halo do parélio…).
+
+    // Raio Verde — lampejo verde que dura ~1s no instante exato do sol se pôr
+    // no horizonte do mar, condição atmosférica rara o bastante pra virar
+    // superstição de marinheiro.
+    solid(QStringLiteral("green-flash"), QStringLiteral("Green Flash"), true, QStringLiteral("200,224,216"),
+          QStringLiteral("#0a1218"), QStringLiteral("#0f1c24"), QStringLiteral("#1e3540"),
+          QStringLiteral("#c8e0d8"), QStringLiteral("#5e8478"), QStringLiteral("#eafaf2"),
+          QStringLiteral("#2eeb8a"), QStringLiteral("#0c1a20"), QStringLiteral("#c8e0d8"));
+
+    // Fogo de Santelmo — glow elétrico azul-violeta que surge no mastro de
+    // navios e pontas de para-raios durante tempestade, plasma de descarga
+    // de corona.
+    solid(QStringLiteral("st-elmos-fire"), QStringLiteral("St. Elmo's Fire"), true, QStringLiteral("207,200,224"),
+          QStringLiteral("#0e0e16"), QStringLiteral("#16151f"), QStringLiteral("#2e2c3e"),
+          QStringLiteral("#cfc8e0"), QStringLiteral("#726a8a"), QStringLiteral("#f0ecfa"),
+          QStringLiteral("#7c5cff"), QStringLiteral("#121019"), QStringLiteral("#cfc8e0"));
+
+    // Parélio (sundog) — halo de gelo que cria dois "sóis falsos" ao lado do
+    // sol real, comum em dias muito frios com cristais de gelo em suspensão.
+    solid(QStringLiteral("sundog"), QStringLiteral("Sundog"), false, QStringLiteral("36,52,64"),
+          QStringLiteral("#eaf1f6"), QStringLiteral("#f4f9fc"), QStringLiteral("#cfe0ea"),
+          QStringLiteral("#243440"), QStringLiteral("#72899a"), QStringLiteral("#101c24"),
+          QStringLiteral("#8f9fe0"), QStringLiteral("#ffffff"), QStringLiteral("#1c2a34"));
+
+    // Espectro de Brocken — sua própria sombra projetada gigante numa neblina
+    // de montanha, com um halo colorido fantasmagórico ao redor da cabeça.
+    solid(QStringLiteral("brocken-spectre"), QStringLiteral("Brocken Spectre"), false, QStringLiteral("44,42,52"),
+          QStringLiteral("#e6e6ea"), QStringLiteral("#f0f0f4"), QStringLiteral("#cccad6"),
+          QStringLiteral("#2c2a34"), QStringLiteral("#7a7686"), QStringLiteral("#141218"),
+          QStringLiteral("#9a7fc0"), QStringLiteral("#f8f8fa"), QStringLiteral("#201e28"));
+
+    // Arco Circumhorizontal ("fire rainbow") — faixas de arco-íris inteiras
+    // dentro de nuvens de cirrus, precisa do sol muito alto no céu pra
+    // acontecer, raríssimo fora dos trópicos.
+    solid(QStringLiteral("fire-rainbow"), QStringLiteral("Fire Rainbow"), true, QStringLiteral("230,216,240"),
+          QStringLiteral("#100c18"), QStringLiteral("#181228"), QStringLiteral("#332450"),
+          QStringLiteral("#e6d8f0"), QStringLiteral("#8a7aa8"), QStringLiteral("#f8f0fc"),
+          QStringLiteral("#ff6ec8"), QStringLiteral("#140f20"), QStringLiteral("#e6d8f0"));
+
+    // Jato Azul (blue jet) — raio que dispara PRA CIMA do topo de tempestades
+    // até a estratosfera, só fotografado de satélite/avião, um dos
+    // fenômenos elétricos mais raros da atmosfera.
+    solid(QStringLiteral("blue-jet"), QStringLiteral("Blue Jet"), true, QStringLiteral("192,208,240"),
+          QStringLiteral("#050810"), QStringLiteral("#0a0f1c"), QStringLiteral("#1a2440"),
+          QStringLiteral("#c0d0f0"), QStringLiteral("#5a6690"), QStringLiteral("#e8eeff"),
+          QStringLiteral("#3d6cff"), QStringLiteral("#070c16"), QStringLiteral("#c0d0f0"));
+
+    // Nuvens Nacaradas — nuvens estratosféricas polares, só visíveis no
+    // crepúsculo profundo do inverno ártico, iridescência pastel sobre
+    // céu quase negro.
+    solid(QStringLiteral("nacreous"), QStringLiteral("Nacreous"), true, QStringLiteral("208,220,232"),
+          QStringLiteral("#0a1018"), QStringLiteral("#101a24"), QStringLiteral("#22364a"),
+          QStringLiteral("#d0dce8"), QStringLiteral("#647890"), QStringLiteral("#eef4fa"),
+          QStringLiteral("#e0a8d8"), QStringLiteral("#0c1420"), QStringLiteral("#d0dce8"));
+
+    // Anel de Bishop — halo poeirento ao redor do sol/lua causado por cinza
+    // vulcânica em suspensão na alta atmosfera, aparece meses depois de uma
+    // erupção grande.
+    solid(QStringLiteral("bishops-ring"), QStringLiteral("Bishop's Ring"), false, QStringLiteral("58,46,24"),
+          QStringLiteral("#e8ddc8"), QStringLiteral("#f2e9d6"), QStringLiteral("#d4c294"),
+          QStringLiteral("#3a2e18"), QStringLiteral("#8a7850"), QStringLiteral("#221a0c"),
+          QStringLiteral("#b8763a"), QStringLiteral("#fbf4e4"), QStringLiteral("#2c2210"));
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -5901,6 +6136,29 @@ void Manager::loadBundled()
         { QStringLiteral("star-anise"),              QStringLiteral("warm")      },
         { QStringLiteral("tobacco-leaf"),             QStringLiteral("warm")      },
         { QStringLiteral("juniper-smoke"),           QStringLiteral("dark")      },
+        // Leva "afogando mágoas em temas" (2026-07-22)
+        { QStringLiteral("kanagawa"),                QStringLiteral("dark")      },
+        { QStringLiteral("monokai-classic"),         QStringLiteral("dark")      },
+        { QStringLiteral("ayu-mirage"),               QStringLiteral("dark")      },
+        { QStringLiteral("night-owl"),                QStringLiteral("dark")      },
+        { QStringLiteral("cobalt-deep"),              QStringLiteral("dark")      },
+        { QStringLiteral("palenight"),                QStringLiteral("dark")      },
+        { QStringLiteral("horizon-dusk"),             QStringLiteral("dark")      },
+        { QStringLiteral("zenburn"),                  QStringLiteral("dark")      },
+        { QStringLiteral("oceanic-deep"),             QStringLiteral("dark")      },
+        { QStringLiteral("spacegray"),                QStringLiteral("dark")      },
+        // Leva "arrisca" (2026-07-22) — fenômenos ópticos/atmosféricos raros
+        { QStringLiteral("green-flash"),              QStringLiteral("colorful")  },
+        { QStringLiteral("st-elmos-fire"),            QStringLiteral("colorful")  },
+        { QStringLiteral("sundog"),                   QStringLiteral("light")     },
+        { QStringLiteral("brocken-spectre"),          QStringLiteral("light")     },
+        { QStringLiteral("fire-rainbow"),             QStringLiteral("colorful")  },
+        { QStringLiteral("blue-jet"),                 QStringLiteral("dark")      },
+        { QStringLiteral("nacreous"),                 QStringLiteral("colorful")  },
+        { QStringLiteral("bishops-ring"),             QStringLiteral("warm")      },
+        // Em homenagem aos gatos do usuário (2026-07-23)
+        { QStringLiteral("tifu"),                     QStringLiteral("dark")      },
+        { QStringLiteral("tommy"),                    QStringLiteral("warm")      },
     };
     for (MiraTheme& t : m_themes)
         t.category = kCategory.value(t.id, QStringLiteral("colorful"));
