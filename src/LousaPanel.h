@@ -86,6 +86,14 @@ private:
     void exportZones(const QList<CanvasZone>& zones);
     void exportSelectedZone();   // botão da toolbar: exporta a área selecionada
 
+    // Exportar a Lousa inteira como imagem PNG (diferente de exportZones —
+    // aqui é renderização visual do board, não conversão pra documento).
+    void exportBoardAsImage();
+
+    // Templates de layout inicial (só oferecidos com a lousa vazia)
+    void showTemplatePicker();
+    void applyTemplate(const QString& id);
+
     // Criar documento a partir de um card (post-it/comentário/imagem)
     void createDocFromCard(const CanvasCard& c);
 
@@ -95,7 +103,9 @@ private:
     LousaView*   m_view         = nullptr;
     QWidget*     m_toolbar      = nullptr;
     QToolButton* m_colorBtn     = nullptr;
-    QLabel*      m_emptyLabel   = nullptr;
+    QWidget*     m_emptyStateBox   = nullptr;
+    QLabel*      m_emptyLabel      = nullptr;
+    QPushButton* m_useTemplateBtn  = nullptr;
     QLabel*      m_zoomLabel    = nullptr;
     QWidget*     m_helpPanel    = nullptr;
     bool         m_helpOpen     = false;
@@ -141,4 +151,9 @@ private:
     void buildCardPreview();
     void showCardPreview(const CanvasCard& data, const QPoint& screenPos);
     void hideCardPreview();
+    // Tipo/fontSize do card previsto atualmente (ou do último solicitado) —
+    // guardado pra reavaliar se o preview deve continuar visível quando o
+    // zoom muda no meio do hover (ver shouldShowCardPreview em LousaPanel.cpp).
+    QString m_previewCardType;
+    int     m_previewCardFontSize = 0;
 };

@@ -4,7 +4,6 @@
 #include <cmath>
 #include <QBuffer>
 #include <QFontComboBox>
-#include <QLineEdit>
 #include <QColorDialog>
 #include <QDialog>
 #include <QFileDialog>
@@ -544,9 +543,14 @@ bool CardItem::pickText(QWidget* parent, QString& text, QColor& color, QString& 
     outer->setContentsMargins(12, 12, 12, 12);
     outer->setSpacing(9);
 
-    // ── Campo de texto (uma linha) ──
-    auto* edit = new QLineEdit(text, &dlg);
+    // ── Campo de texto (multi-linha — Enter quebra linha de verdade, em vez
+    // de forçar o usuário a empilhar vários adesivos de uma linha só pra
+    // simular um parágrafo). A renderização no canvas já usa setTextWidth(-1)
+    // (sem quebra automática), então só respeita as quebras que o usuário
+    // digitar aqui — comportamento de "adesivo", não de texto corrido.
+    auto* edit = new QPlainTextEdit(text, &dlg);
     edit->setPlaceholderText(tr("Escreva aqui..."));
+    edit->setMinimumHeight(90);
     outer->addWidget(edit);
 
     // ── Fonte ──
@@ -625,7 +629,7 @@ bool CardItem::pickText(QWidget* parent, QString& text, QColor& color, QString& 
 
     edit->setFocus();
     if (dlg.exec() != QDialog::Accepted) return false;
-    text       = edit->text();
+    text       = edit->toPlainText();
     color      = chosen;
     fontFamily = fontCombo->currentFont().family();
     return true;

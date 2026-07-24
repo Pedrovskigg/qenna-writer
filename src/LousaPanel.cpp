@@ -34,6 +34,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QMenu>
+#include <QPainter>
 #include <QPushButton>
 #include <QTextEdit>
 #include <QResizeEvent>
@@ -47,6 +49,25 @@ namespace {
 constexpr int kToolbarH  = 46;
 constexpr int kBtnSize   = 32;
 constexpr int kIconSize  = 20;
+// Acima desse zoom, o conteúdo do card já é legível direto na Lousa — o
+// tooltip de hover só ajuda (em vez de atrapalhar) com o zoom reduzido.
+// Serve pra note/comment/image/doc/etc — tipos com corpo de texto de tamanho
+// FIXO, onde o zoom da lousa sozinho já é uma proxy razoável de legibilidade.
+constexpr qreal kCardPreviewMaxZoom = 0.6;
+// "text" (adesivo) tem fonte ajustável por card (CanvasCard::fontSize) — um
+// adesivo com fonte grande continua legível em zoom bem baixo, então pra esse
+// tipo o que importa é o tamanho EFETIVO na tela (fonte base * zoom), não o
+// zoom isolado.
+constexpr qreal kCardPreviewMinEffectiveFontPx = 14.0;
+
+bool shouldShowCardPreview(const QString& type, int fontSize, qreal zoom)
+{
+    if (type == QStringLiteral("text")) {
+        const int base = fontSize > 0 ? fontSize : 18; // mesmo fallback de CardItem::effFontSize()
+        return base * zoom <= kCardPreviewMinEffectiveFontPx;
+    }
+    return zoom <= kCardPreviewMaxZoom;
+}
 
 QToolButton* makeIconBtn(const QString& tip, QWidget* parent)
 {
@@ -69,6 +90,163 @@ QIcon loadLousaIcon(const QString& path)
         QColor(Theme::textMuted()),
         QColor(Theme::textPrimary()),
         QColor(Theme::textBright()));
+}
+
+// ── Templates de layout inicial ──────────────────────────────────────────────
+// Só oferecidos com a lousa vazia (ver LousaPanel::showTemplatePicker). Cada
+// template é um conjunto pronto de zonas/cards/conexões — ponto de partida
+// pra quem não sabe por onde começar, não um recurso "vivo" (o usuário edita/
+// apaga/substitui à vontade depois de aplicado).
+
+struct BoardTemplate {
+    QList<CanvasZone>       zones;
+    QList<CanvasCard>       cards;
+    QList<CanvasConnection> connections;
+};
+
+// Cria um card "note" compacto (tamanho custom, não o default de nextCardData
+// — aqui os cards são só nós/prompts curtos, não precisam do tamanho padrão
+// de post-it).
+CanvasCard templateNote(const QString& title, const QString& content,
+                        qreal x, qreal y, qreal w, qreal h, const QString& colorHex)
+{
+    CanvasCard c;
+    c.id      = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    c.type    = QStringLiteral("note");
+    c.title   = title;
+    c.content = content;
+    c.x = x; c.y = y; c.width = w; c.height = h;
+    c.color = QColor(colorHex);
+    return c;
+}
+
+CanvasCard templateTitleText(const QString& text, qreal x, qreal y)
+{
+    CanvasCard c;
+    c.id       = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    c.type     = QStringLiteral("text");
+    c.content  = text;
+    c.x = x; c.y = y; c.width = 300; c.height = 50;
+    c.color    = QColor(QStringLiteral("#ffffff"));
+    c.fontSize = 28;
+    return c;
+}
+
+CanvasZone templateZone(const QString& title, qreal x, qreal y, qreal w, qreal h, const QString& colorHex)
+{
+    CanvasZone z;
+    z.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    z.title = title;
+    z.x = x; z.y = y; z.width = w; z.height = h;
+    z.color = QColor(colorHex);
+    return z;
+}
+
+CanvasConnection templateConnection(const QString& fromId, const QString& toId, const QString& colorHex)
+{
+    CanvasConnection conn;
+    conn.id     = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    conn.fromId = fromId;
+    conn.toId   = toId;
+    conn.color  = QColor(colorHex);
+    return conn;
+}
+
+BoardTemplate buildCharacterMapTemplate()
+{
+    BoardTemplate t;
+    t.cards.append(templateTitleText(
+        QObject::tr("Mapa de Personagens — arraste, edite e conecte à vontade"), 60, 20));
+
+    const CanvasCard protagonist = templateNote(
+        QObject::tr("Protagonista"), QObject::tr("Quem carrega a história."),
+        460, 140, 200, 100, QStringLiteral("#6ea8fe"));
+    const CanvasCard mentor = templateNote(
+        QObject::tr("Mentor"), QObject::tr("Guia e ensina o protagonista."),
+        100, 280, 200, 100, QStringLiteral("#34d399"));
+    const CanvasCard ally = templateNote(
+        QObject::tr("Aliado"), QObject::tr("Luta ao lado do protagonista."),
+        820, 280, 200, 100, QStringLiteral("#34d399"));
+    const CanvasCard antagonist = templateNote(
+        QObject::tr("Antagonista"), QObject::tr("Se opõe diretamente ao protagonista."),
+        460, 440, 200, 100, QStringLiteral("#f87171"));
+    const CanvasCard minorVillain = templateNote(
+        QObject::tr("Vilão secundário"), QObject::tr("Serve ou desafia o antagonista principal."),
+        820, 580, 220, 100, QStringLiteral("#fbbf24"));
+
+    t.cards << protagonist << mentor << ally << antagonist << minorVillain;
+    t.connections
+        << templateConnection(protagonist.id, mentor.id,      QStringLiteral("#6ea8fe"))
+        << templateConnection(protagonist.id, ally.id,        QStringLiteral("#6ea8fe"))
+        << templateConnection(protagonist.id, antagonist.id,  QStringLiteral("#f87171"))
+        << templateConnection(antagonist.id,  minorVillain.id, QStringLiteral("#f87171"));
+    return t;
+}
+
+BoardTemplate buildPlotArcTemplate()
+{
+    BoardTemplate t;
+    t.cards.append(templateTitleText(QObject::tr("Arco da História"), 60, 20));
+
+    t.zones
+        << templateZone(QObject::tr("Ato 1 — Detonante"),   40,  100, 320, 420, QStringLiteral("#6ea8fe"))
+        << templateZone(QObject::tr("Ato 2 — Confronto"),   400, 100, 320, 420, QStringLiteral("#f97316"))
+        << templateZone(QObject::tr("Ato 3 — Resolução"),   760, 100, 320, 420, QStringLiteral("#34d399"));
+
+    t.cards
+        << templateNote(QObject::tr("Incidente incitante"),
+               QObject::tr("O que tira o herói da zona de conforto?"),
+               60, 160, 260, 110, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("1º ponto de virada"),
+               QObject::tr("A decisão que não tem mais volta."),
+               60, 320, 260, 110, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("Meio do meio"),
+               QObject::tr("O ponto sem retorno emocional."),
+               420, 160, 260, 110, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("2º ponto de virada"),
+               QObject::tr("A crise que empurra pro clímax."),
+               420, 320, 260, 110, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("Clímax"),
+               QObject::tr("O confronto final."),
+               780, 160, 260, 110, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("Resolução"),
+               QObject::tr("O novo normal do protagonista."),
+               780, 320, 260, 110, QStringLiteral("#ffd060"));
+    return t;
+}
+
+BoardTemplate buildWorldbuildingTemplate()
+{
+    BoardTemplate t;
+    t.cards.append(templateTitleText(QObject::tr("Construção de Mundo"), 60, 20));
+
+    t.zones
+        << templateZone(QObject::tr("Geografia"),             40,  100, 380, 300, QStringLiteral("#34d399"))
+        << templateZone(QObject::tr("Poder & Política"),      460, 100, 380, 300, QStringLiteral("#f87171"))
+        << templateZone(QObject::tr("Cultura & Sociedade"),   40,  440, 380, 300, QStringLiteral("#fbbf24"))
+        << templateZone(QObject::tr("História & Mitologia"),  460, 440, 380, 300, QStringLiteral("#a78bfa"));
+
+    t.cards
+        << templateNote(QObject::tr("Onde isso acontece?"),
+               QObject::tr("Clima, território, o que molda quem vive aqui."),
+               70, 170, 300, 120, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("Quem manda aqui?"),
+               QObject::tr("Como o poder é conquistado, mantido ou perdido."),
+               490, 170, 300, 120, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("Como vivem?"),
+               QObject::tr("Costumes, crenças, o que é considerado normal."),
+               70, 510, 300, 120, QStringLiteral("#ffd060"))
+        << templateNote(QObject::tr("O que aconteceu antes?"),
+               QObject::tr("Os eventos e mitos que ainda pesam no presente."),
+               490, 510, 300, 120, QStringLiteral("#ffd060"));
+    return t;
+}
+
+BoardTemplate buildBoardTemplate(const QString& id)
+{
+    if (id == QStringLiteral("plot"))  return buildPlotArcTemplate();
+    if (id == QStringLiteral("world")) return buildWorldbuildingTemplate();
+    return buildCharacterMapTemplate(); // "characters" (default)
 }
 } // namespace
 
@@ -422,6 +600,14 @@ void LousaPanel::buildUi()
 
     tl->addStretch(1);
 
+    // Exportar Lousa como imagem — grupo separado do "Exportar área" (que é
+    // outra coisa: converte conteúdo em documentos, não gera imagem).
+    auto* btnExportImage = makeIconBtn(tr("Exportar Lousa como imagem"), m_toolbar);
+    btnExportImage->setEnabled(true);
+    m_iconBindings.append({btnExportImage, QStringLiteral(":/icons/download.svg")});
+    tl->addWidget(btnExportImage);
+    connect(btnExportImage, &QToolButton::clicked, this, &LousaPanel::exportBoardAsImage);
+
     // Cor do canvas
     m_colorBtn = new QToolButton(m_toolbar);
     m_colorBtn->setObjectName(QStringLiteral("lousaColorBtn"));
@@ -488,6 +674,13 @@ void LousaPanel::buildUi()
 
     connect(m_view, &LousaView::zoomChanged, this, [this](qreal z) {
         if (m_zoomLabel) m_zoomLabel->setText(QStringLiteral("%1%").arg(qRound(z * 100)));
+        // Se o usuário der zoom in enquanto o mouse continua sobre o mesmo
+        // card (sem sair e reentrar), o hover não dispara de novo — sem essa
+        // checagem o tooltip ficaria "grudado" mesmo já legível sozinho.
+        if (m_cardPreview && m_cardPreview->isVisible()
+            && !shouldShowCardPreview(m_previewCardType, m_previewCardFontSize, z)) {
+            hideCardPreview();
+        }
         save();
     });
     connect(m_scene, &LousaScene::cardDataChanged,       this, [this]() { save(); });
@@ -514,6 +707,12 @@ void LousaPanel::buildUi()
     buildCardPreview();
     connect(m_scene, &LousaScene::cardHoverPreview, this,
             [this](const CanvasCard& data, const QPoint& screenPos) {
+        m_previewCardType = data.type;
+        m_previewCardFontSize = data.fontSize;
+        const qreal zoom = m_view ? m_view->zoomFactor() : 1.0;
+        // Só quando o conteúdo não estiver legível sozinho — em zoom normal
+        // (ou fonte grande o bastante), o tooltip mais atrapalha do que ajuda.
+        if (!shouldShowCardPreview(data.type, data.fontSize, zoom)) return;
         showCardPreview(data, screenPos);
     });
     connect(m_scene, &LousaScene::cardHoverDismissed, this, [this]() {
@@ -587,11 +786,25 @@ void LousaPanel::buildUi()
     });
 
     // ── Placeholder ──────────────────────────────────────────────────────
-    m_emptyLabel = new QLabel(tr("Clique em + para adicionar um card à lousa"), this);
+    m_emptyStateBox = new QWidget(this);
+    m_emptyStateBox->setObjectName(QStringLiteral("lousaEmptyBox"));
+    auto* esLay = new QVBoxLayout(m_emptyStateBox);
+    esLay->setAlignment(Qt::AlignCenter);
+    esLay->setSpacing(10);
+
+    m_emptyLabel = new QLabel(tr("Clique em + para adicionar um card à lousa"), m_emptyStateBox);
     m_emptyLabel->setObjectName(QStringLiteral("lousaEmpty"));
     m_emptyLabel->setAlignment(Qt::AlignCenter);
     m_emptyLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    m_emptyLabel->setVisible(true);
+    esLay->addWidget(m_emptyLabel);
+
+    m_useTemplateBtn = new QPushButton(tr("Ou comece com um modelo…"), m_emptyStateBox);
+    m_useTemplateBtn->setObjectName(QStringLiteral("lousaTemplateBtn"));
+    m_useTemplateBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_useTemplateBtn, &QPushButton::clicked, this, &LousaPanel::showTemplatePicker);
+    esLay->addWidget(m_useTemplateBtn, 0, Qt::AlignHCenter);
+
+    m_emptyStateBox->setVisible(true);
 
     connect(m_scene, &QGraphicsScene::changed, this, [this](const QList<QRectF>&) {
         refreshEmptyState();
@@ -832,6 +1045,81 @@ void LousaPanel::exportSelectedZone()
     }
     for (const CanvasZone& z : m_scene->allZoneData())
         if (z.id == sel) { exportZones({z}); return; }
+}
+
+// ── Exportar a Lousa como imagem (diferente de exportZones — aqui é
+// renderização visual do board pra PNG, não conversão pra documento) ────────
+
+void LousaPanel::exportBoardAsImage()
+{
+    if (!m_scene || m_scene->items().isEmpty()) {
+        QMessageBox::information(this, tr("Exportar como imagem"),
+            tr("A lousa está vazia — não há nada para exportar."));
+        return;
+    }
+
+    const QString path = QFileDialog::getSaveFileName(this, tr("Exportar como imagem"),
+        QStringLiteral("lousa.png"), tr("Imagem PNG (*.png)"));
+    if (path.isEmpty()) return;
+
+    // Some a seleção antes de renderizar — não queremos contorno de seleção
+    // nem alças de resize aparecendo na imagem exportada.
+    m_scene->clearCardSelection();
+    m_scene->clearZoneSelection();
+
+    constexpr qreal kMargin = 24.0;
+    constexpr qreal kMaxDimension = 6000.0; // teto de segurança p/ boards gigantes
+    qreal scale = 2.0; // nitidez em tela de alta densidade
+    const QRectF bounds = m_scene->itemsBoundingRect().adjusted(-kMargin, -kMargin, kMargin, kMargin);
+    const qreal longSide = qMax(bounds.width(), bounds.height()) * scale;
+    if (longSide > kMaxDimension) scale *= kMaxDimension / longSide;
+
+    QImage image(qRound(bounds.width() * scale), qRound(bounds.height() * scale),
+                 QImage::Format_ARGB32);
+    image.fill(m_scene->canvasColor());
+
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    m_scene->render(&painter, QRectF(0, 0, image.width(), image.height()), bounds);
+    painter.end();
+
+    if (!image.save(path, "PNG")) {
+        QMessageBox::warning(this, tr("Exportar como imagem"),
+            tr("Não foi possível salvar a imagem."));
+        return;
+    }
+    QMessageBox::information(this, tr("Exportar como imagem"), tr("Imagem exportada com sucesso."));
+}
+
+// ── Templates de layout inicial (só com a lousa vazia) ──────────────────────
+
+void LousaPanel::showTemplatePicker()
+{
+    if (!m_useTemplateBtn) return;
+    QMenu menu(this);
+    menu.addAction(tr("Mapa de Personagens"), this, [this]() { applyTemplate(QStringLiteral("characters")); });
+    menu.addAction(tr("Arco da História"),    this, [this]() { applyTemplate(QStringLiteral("plot")); });
+    menu.addAction(tr("Construção de Mundo"), this, [this]() { applyTemplate(QStringLiteral("world")); });
+    menu.exec(m_useTemplateBtn->mapToGlobal(QPoint(0, m_useTemplateBtn->height())));
+}
+
+void LousaPanel::applyTemplate(const QString& id)
+{
+    if (!m_scene) return;
+    pushUndo();
+    const BoardTemplate tpl = buildBoardTemplate(id);
+    for (const CanvasZone& z : tpl.zones)                m_scene->addZone(z);
+    for (const CanvasCard& c : tpl.cards)                m_scene->addCard(c);
+    for (const CanvasConnection& conn : tpl.connections) m_scene->addConnection(conn);
+    refreshEmptyState();
+
+    if (m_view && !tpl.cards.isEmpty()) {
+        QRectF bounds;
+        for (const CanvasCard& c : tpl.cards) bounds = bounds.united(QRectF(c.x, c.y, c.width, c.height));
+        for (const CanvasZone& z : tpl.zones) bounds = bounds.united(QRectF(z.x, z.y, z.width, z.height));
+        m_view->fitSceneRect(bounds.adjusted(-40, -40, 40, 40));
+    }
 }
 
 // ── Criar documento a partir de um card ──────────────────────────────────────
@@ -1307,14 +1595,14 @@ void LousaPanel::toggleHelp()
 
 void LousaPanel::refreshEmptyState()
 {
-    if (!m_emptyLabel) return;
+    if (!m_emptyStateBox) return;
     const bool empty = m_scene->items().isEmpty();
-    m_emptyLabel->setVisible(empty);
+    m_emptyStateBox->setVisible(empty);
     if (empty) {
-        m_emptyLabel->adjustSize();
-        m_emptyLabel->move(
-            (width()  - m_emptyLabel->width())  / 2,
-            (height() - m_emptyLabel->height()) / 2 + kToolbarH / 2);
+        m_emptyStateBox->adjustSize();
+        m_emptyStateBox->move(
+            (width()  - m_emptyStateBox->width())  / 2,
+            (height() - m_emptyStateBox->height()) / 2 + kToolbarH / 2);
     }
 }
 
