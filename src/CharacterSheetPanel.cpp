@@ -3,19 +3,16 @@
 #include "EditorLayout.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
+#include "ImageCropDialog.h"
 #include "SheetTemplatesStore.h"
 #include "Theme.h"
 
 #include <QAbstractTextDocumentLayout>
-#include <QBuffer>
 #include <QByteArray>
 #include <QCursor>
 #include <QEvent>
-#include <QFileDialog>
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
-#include <QImage>
-#include <QImageReader>
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
@@ -35,24 +32,6 @@ namespace {
 
 constexpr int kPhotoW = 210;
 constexpr int kPhotoH = 280;   // 3:4 (retrato)
-
-// Carrega imagem do disco como data URL JPEG quadrado 400×400 (crop central).
-QString loadImageAsDataUrl(const QString& path) {
-    QImageReader reader(path);
-    reader.setAutoTransform(true);
-    QImage img = reader.read();
-    if (img.isNull()) return QString();
-    const int side = qMin(img.width(), img.height());
-    const int x = (img.width() - side) / 2;
-    const int y = (img.height() - side) / 2;
-    QImage square = img.copy(x, y, side, side);
-    QImage scaled = square.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    QByteArray bytes;
-    QBuffer buf(&bytes);
-    buf.open(QIODevice::WriteOnly);
-    scaled.save(&buf, "JPEG", 92);
-    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
-}
 
 QPixmap pixmapFromDataUrl(const QString& dataUrl) {
     if (dataUrl.isEmpty()) return QPixmap();
@@ -352,10 +331,7 @@ void CharacterSheetPanel::saveAsTemplate()
 void CharacterSheetPanel::pickPhoto()
 {
     if (m_elementId.isEmpty() || !m_elements) return;
-    const QString path = QFileDialog::getOpenFileName(this, tr("Selecionar foto"), QString(),
-        tr("Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)"));
-    if (path.isEmpty()) return;
-    const QString dataUrl = loadImageAsDataUrl(path);
+    const QString dataUrl = ImageCropDialog::pickAndCropImage(this);
     if (dataUrl.isEmpty()) return;
     if (const Element* e = m_elements->findElement(m_elementId)) {
         Element copy = *e;
