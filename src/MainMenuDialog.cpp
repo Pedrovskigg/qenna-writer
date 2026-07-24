@@ -32,6 +32,7 @@
 #include <QIcon>
 #include <QImage>
 #include <QImageReader>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
@@ -186,6 +187,9 @@ struct RecentInfo {
     QString synopsis;
     QString coverDataUrl;
     int     totalWords = -1; // -1 = ainda não cacheado (projeto não resalvo desde essa feature)
+    int     manuscriptCount = 0; // direto de "data.manuscripts" no índice — sempre disponível
+    int     chapterCount    = 0; // direto de "chapters" no índice — sempre disponível
+    int     documentCount   = 0; // soma de "drawers[].items" no índice — sempre disponível
 
     // --- Lombada da Prateleira 3D (persistidos em projectDetails, mesmo
     // esquema de campos do Mira 1) ---
@@ -227,6 +231,17 @@ RecentInfo readRecentInfo(const QString& rootPath)
     info.synopsis = details.value(QStringLiteral("synopsis")).toString();
     if (details.contains(QStringLiteral("totalWords")))
         info.totalWords = details.value(QStringLiteral("totalWords")).toInt(-1);
+    // Manuscritos/capítulos/documentos não precisam de cache à parte — já
+    // vêm de graça no próprio índice ("data.manuscripts"/"chapters"/
+    // "drawers" fazem parte da estrutura básica do projeto, gravados
+    // sempre, ao contrário de totalWords que só existe depois de um save
+    // com o WordCounter já ter rodado).
+    info.manuscriptCount = data.value(QStringLiteral("manuscripts")).toArray().size();
+    info.chapterCount = root.value(QStringLiteral("chapters")).toArray().size();
+    int docCount = 0;
+    for (const auto& dv : root.value(QStringLiteral("drawers")).toArray())
+        docCount += dv.toObject().value(QStringLiteral("items")).toArray().size();
+    info.documentCount = docCount;
     // Compat Mira 1: ProjectModel grava em "coverFull"/"cover" (não em
     // "coverDataUrl"). Prefere coverFull (full res), cai pra cover.
     info.coverDataUrl = details.value(QStringLiteral("coverFull")).toString();
@@ -1342,6 +1357,17 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
     setWindowIcon(QIcon(QStringLiteral(":/app/mira.png")));
     resize(kDialogW, kDialogH);
     setMinimumSize(1000, 700);
+    {
+        // Restaura o modo de exibição salvo ANTES de montar a UI — o bloco
+        // de estado inicial do alternador dentro de buildUi() já lê
+        // m_viewMode pra marcar o botão certo e mostrar a view certa.
+        QSettings qs;
+        const QString saved = qs.value(QStringLiteral("library/viewMode")).toString();
+        if (saved == QStringLiteral("lista"))           m_viewMode = ViewMode::Lista;
+        else if (saved == QStringLiteral("prateleira")) m_viewMode = ViewMode::Prateleira;
+        else if (saved == QStringLiteral("pilha"))      m_viewMode = ViewMode::Pilha;
+        else                                             m_viewMode = ViewMode::Estante;
+    }
     buildUi();
     applyDialogStyle();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -1675,6 +1701,13 @@ void MainMenuDialog::setViewMode(ViewMode mode)
     if (m_prateleiraBtn) m_prateleiraBtn->setChecked(mode == ViewMode::Prateleira);
     if (m_pilhaBtn)      m_pilhaBtn->setChecked(mode == ViewMode::Pilha);
     populateActiveView();
+
+    QSettings qs;
+    QString key = QStringLiteral("estante");
+    if (mode == ViewMode::Lista)           key = QStringLiteral("lista");
+    else if (mode == ViewMode::Prateleira) key = QStringLiteral("prateleira");
+    else if (mode == ViewMode::Pilha)      key = QStringLiteral("pilha");
+    qs.setValue(QStringLiteral("library/viewMode"), key);
 }
 
 void MainMenuDialog::refreshRecents()
@@ -1791,8 +1824,12 @@ void MainMenuDialog::populateActiveView()
             e.genres = info.genres;
             e.synopsis = info.synopsis;
             e.totalWords = info.totalWords;
+            e.manuscriptCount = info.manuscriptCount;
+            e.chapterCount = info.chapterCount;
+            e.documentCount = info.documentCount;
             e.heroCover = renderVitrineCover(cover, kStackHeroCoverW, kStackHeroCoverH);
             e.sideCover = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
+            e.fullCover = cover; // resolução original, antes do encolhimento pro herói
             e.autoOpen = isAutoOpen;
             stackEntries.append(std::move(e));
             continue;
@@ -2325,6 +2362,11 @@ void MainMenuDialog::applyDialogStyle()
         #menuShelfView { background: transparent; border: none; }
 
         #menuStackView { background: transparent; border: none; }
+        #stackHeroStats {
+            color: %4;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+        }
         #stackHeroTitle { color: %3; font-size: 22px; font-weight: 700; }
         #stackHeroAuthor { color: %4; font-size: 14px; font-style: italic; }
         #stackHeroBreadcrumb { color: %4; font-size: 12px; }

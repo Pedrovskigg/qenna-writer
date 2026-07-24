@@ -2234,10 +2234,31 @@ void MainWindow::setupEditor()
                 lousaPanel->hide();
                 leftBar->clearSelection();
             } else {
-                lousaPanel->show();
-                lousaPanel->raise();
-                lousaPanel->activateWindow();
-                leftBar->setActiveFixedAction(LeftBar::Whiteboard);
+                auto showLousa = [this]() {
+                    lousaPanel->show();
+                    lousaPanel->raise();
+                    lousaPanel->activateWindow();
+                    leftBar->setActiveFixedAction(LeftBar::Whiteboard);
+                };
+                const QVector<LousaBoardMeta> boards = lousaPanel->boardList();
+                if (boards.size() > 1) {
+                    // Mais de uma lousa no projeto: pergunta qual abrir em
+                    // vez de ir direto pra última usada.
+                    QMenu menu(this);
+                    const QString activeId = lousaPanel->activeBoardId();
+                    for (const LousaBoardMeta& b : boards) {
+                        QAction* act = menu.addAction(b.name);
+                        act->setCheckable(true);
+                        act->setChecked(b.id == activeId);
+                        connect(act, &QAction::triggered, this, [this, id = b.id, showLousa]() {
+                            lousaPanel->switchToBoard(id);
+                            showLousa();
+                        });
+                    }
+                    menu.exec(QCursor::pos());
+                } else {
+                    showLousa();
+                }
             }
         } else if (action == LeftBar::Timeline) {
             CrashLogger::log("timelinePanelToggle");
@@ -6350,6 +6371,13 @@ void MainWindow::hideCharacterSheet()
         characterSheetPanel->hide();
     // Contador volta ao escopo normal.
     if (wordCounter) wordCounter->setActiveSheetItem(QString());
+    // Espelha o hide de showCharacterSheet() — sem isso a barra flutuante
+    // ficava escondida pro resto da sessão depois da primeira ficha aberta,
+    // mesmo voltando pra capítulo/cena normal (só reaparecia reabrindo o app).
+    if (externalScrollBar) {
+        externalScrollBar->show();
+        positionExternalScrollBar();
+    }
 }
 
 void MainWindow::positionCharacterSheet()

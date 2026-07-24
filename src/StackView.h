@@ -20,8 +20,15 @@ struct StackEntry {
     QString genres;
     QString synopsis;
     int     totalWords = -1;
+    int     manuscriptCount = 0;
+    int     chapterCount    = 0;
+    int     documentCount   = 0;
     QPixmap heroCover;   // tamanho grande, pro livro em destaque
     QPixmap sideCover;   // tamanho normal (igual card da Estante), pra pilha lateral
+    QPixmap fullCover;   // resolução original decodificada (até 1200px), sem o
+                         // encolhimento pro tamanho de exibição — fonte do hero
+                         // banner borrado, que senão ficava pixelado partindo do
+                         // heroCover já reduzido
     bool    autoOpen = false;
 };
 
@@ -60,6 +67,7 @@ signals:
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
@@ -72,10 +80,22 @@ private:
 
     QVector<StackEntry> m_entries; // [0] = herói atual
 
+    // Hero banner: versão ampliada/borrada/escurecida da capa em foco,
+    // atrás de toda a composição (preenche o vão vazio de cima, tipo
+    // Netflix/Spotify). Filho direto de "this", fora de qualquer QLayout —
+    // geometria calculada à mão em resizeEvent().
+    QLabel* m_backdropLbl = nullptr;
+    QPixmap m_backdropLastPixmap;
+
     // --- Coluna do herói ---
     QWidget* m_heroStage = nullptr;    // palco (maior que a capa, dá folga pro slide)
     QLabel*  m_heroCoverLbl = nullptr;
     QPixmap  m_heroLastPixmap;         // "from" do próximo crossfade
+
+    // Legenda discreta com as estatísticas do projeto em foco, flutuando
+    // acima da capa (sem caixa/borda — só tipografia, pra não competir
+    // visualmente com a capa).
+    QLabel* m_heroStatsLbl = nullptr;
 
     QWidget*   m_textCol = nullptr;
     QLabel*    m_heroTitleLbl = nullptr;

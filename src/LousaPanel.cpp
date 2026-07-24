@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QDir>
 #include <QFileDialog>
+#include <QFont>
 #include <QImage>
 #include <QFile>
 #include <QGraphicsDropShadowEffect>
@@ -617,6 +618,16 @@ void LousaPanel::buildUi()
     connect(m_colorBtn, &QToolButton::clicked, this, &LousaPanel::onPickColor);
     tl->addWidget(m_colorBtn);
 
+    // Nova lousa — reaproveita o estilo circular do botão de ajuda ("?").
+    auto* newBoardBtn = new QToolButton(m_toolbar);
+    newBoardBtn->setObjectName(QStringLiteral("lousaHelpBtn"));
+    newBoardBtn->setText(QStringLiteral("+"));
+    newBoardBtn->setToolTip(tr("Nova lousa"));
+    newBoardBtn->setFixedSize(28, 28);
+    newBoardBtn->setCursor(Qt::PointingHandCursor);
+    connect(newBoardBtn, &QToolButton::clicked, this, &LousaPanel::createNewBoard);
+    tl->addWidget(newBoardBtn);
+
     // Separador
     auto* sep2 = new QFrame(m_toolbar);
     sep2->setObjectName(QStringLiteral("lousaSep"));
@@ -813,7 +824,276 @@ void LousaPanel::buildUi()
     buildHelpPanel();
     buildStashPanel();
     buildMapPanel();
+    buildBoardsPanel();
     reloadIcons();
+}
+
+// ── Múltiplas lousas ─────────────────────────────────────────────────────────
+
+void LousaPanel::buildBoardsPanel()
+{
+    // Botão flutuante no canto inferior direito — mesmo padrão visual dos
+    // botões de Gaveta/Áreas (canto inferior esquerdo), só que espelhado.
+    m_boardsBtn = new QToolButton(this);
+    m_boardsBtn->setObjectName(QStringLiteral("lousaStashBtn"));  // reaproveita o estilo
+    m_boardsBtn->setCursor(Qt::PointingHandCursor);
+    m_boardsBtn->setToolTip(tr("Trocar de lousa"));
+    connect(m_boardsBtn, &QToolButton::clicked, this, &LousaPanel::toggleBoardsPanel);
+
+    m_boardsPanel = new QWidget(this);
+    m_boardsPanel->setObjectName(QStringLiteral("lousaStashPanel"));  // mesmo estilo do stash
+    m_boardsPanel->setVisible(false);
+    auto* vl = new QVBoxLayout(m_boardsPanel);
+    vl->setContentsMargins(12, 12, 12, 12);
+    vl->setSpacing(8);
+    auto* title = new QLabel(tr("Lousas"), m_boardsPanel);
+    title->setObjectName(QStringLiteral("lousaStashTitle"));
+    vl->addWidget(title);
+    m_boardsList = new QListWidget(m_boardsPanel);
+    m_boardsList->setObjectName(QStringLiteral("lousaStashList"));
+    m_boardsList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_boardsList, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+        const QString id = it->data(Qt::UserRole).toString();
+        if (id.isEmpty()) return;
+        switchToBoard(id);
+        refreshBoardsList();
+    });
+    connect(m_boardsList, &QListWidget::customContextMenuRequested, this, [this](const QPoint& pos) {
+        QListWidgetItem* it = m_boardsList->itemAt(pos);
+        if (!it) return;
+        const QString id = it->data(Qt::UserRole).toString();
+        if (id.isEmpty()) return;
+        QMenu menu(this);
+        QAction* renameAct = menu.addAction(tr("Renomear…"));
+        QAction* deleteAct = menu.addAction(tr("Excluir…"));
+        QAction* chosen = menu.exec(m_boardsList->viewport()->mapToGlobal(pos));
+        if (chosen == renameAct) renameBoard(id);
+        else if (chosen == deleteAct) deleteBoard(id);
+    });
+    vl->addWidget(m_boardsList, 1);
+
+    refreshBoardsBtn();
+}
+
+void LousaPanel::positionBoardsPanel()
+{
+    if (m_boardsBtn) {
+        const int bw = qMax(96, m_boardsBtn->sizeHint().width() + 16);
+        m_boardsBtn->setFixedHeight(30);
+        m_boardsBtn->setFixedWidth(bw);
+        m_boardsBtn->move(width() - bw - 14, height() - m_boardsBtn->height() - 14);
+        m_boardsBtn->raise();
+    }
+    if (m_boardsPanel && m_boardsOpen) {
+        const int pw = 240, ph = qMin(280, height() - kToolbarH - 70);
+        m_boardsPanel->setGeometry(width() - pw - 14, height() - ph - 52, pw, ph);
+        m_boardsPanel->raise();
+    }
+}
+
+void LousaPanel::toggleBoardsPanel()
+{
+    if (!m_boardsPanel) return;
+    m_boardsOpen = !m_boardsOpen;
+    if (m_boardsOpen) {
+        refreshBoardsList();
+        positionBoardsPanel();
+        m_boardsPanel->setVisible(true);
+        m_boardsPanel->raise();
+    } else {
+        m_boardsPanel->setVisible(false);
+    }
+}
+
+void LousaPanel::refreshBoardsBtn()
+{
+    if (!m_boardsBtn) return;
+    QString label = tr("Lousas");
+    const int idx = boardIndexOf(m_activeBoardId);
+    if (idx >= 0) {
+        label = m_boards[idx].name;
+        if (label.size() > 22) label = label.left(20) + QStringLiteral("…");
+    }
+    m_boardsBtn->setText(label);
+    positionBoardsPanel();
+}
+
+void LousaPanel::refreshBoardsList()
+{
+    if (!m_boardsList) return;
+    m_boardsList->clear();
+    for (const LousaBoardMeta& b : m_boards) {
+        auto* item = new QListWidgetItem(b.name);
+        item->setData(Qt::UserRole, b.id);
+        if (b.id == m_activeBoardId) {
+            QFont f = item->font();
+            f.setBold(true);
+            item->setFont(f);
+        }
+        m_boardsList->addItem(item);
+    }
+}
+
+QString LousaPanel::boardsManifestPath() const
+{
+    return QDir::cleanPath(m_projectRoot + QStringLiteral("/lousas.json"));
+}
+
+QString LousaPanel::activeBoardFile() const
+{
+    const int idx = boardIndexOf(m_activeBoardId);
+    return idx >= 0 ? m_boards[idx].file : QStringLiteral("canvas.json");
+}
+
+int LousaPanel::boardIndexOf(const QString& boardId) const
+{
+    for (int i = 0; i < m_boards.size(); ++i)
+        if (m_boards[i].id == boardId) return i;
+    return -1;
+}
+
+void LousaPanel::loadBoardsManifest()
+{
+    m_boards.clear();
+    m_activeBoardId.clear();
+
+    QFile f(boardsManifestPath());
+    if (f.exists() && f.open(QIODevice::ReadOnly)) {
+        const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
+        f.close();
+        for (const auto& v : root.value(QStringLiteral("boards")).toArray()) {
+            const QJsonObject o = v.toObject();
+            LousaBoardMeta b;
+            b.id   = o.value(QStringLiteral("id")).toString();
+            b.name = o.value(QStringLiteral("name")).toString();
+            b.file = o.value(QStringLiteral("file")).toString();
+            if (!b.id.isEmpty() && !b.file.isEmpty()) m_boards.append(b);
+        }
+        m_activeBoardId = root.value(QStringLiteral("activeBoardId")).toString();
+    }
+
+    if (m_boards.isEmpty()) {
+        // Projeto sem manifesto ainda — tanto faz se já existia um
+        // canvas.json (projeto de antes das múltiplas lousas) ou se é um
+        // projeto totalmente novo: em ambos os casos nasce com uma única
+        // lousa, migrada automaticamente, sem ação manual do usuário.
+        LousaBoardMeta first;
+        first.id   = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        first.name = tr("Lousa 1");
+        first.file = QStringLiteral("canvas.json");
+        m_boards.append(first);
+        m_activeBoardId = first.id;
+        saveBoardsManifest();
+    } else if (boardIndexOf(m_activeBoardId) < 0) {
+        m_activeBoardId = m_boards.first().id;
+    }
+}
+
+void LousaPanel::saveBoardsManifest() const
+{
+    if (m_projectRoot.isEmpty()) return;
+    QJsonArray boards;
+    for (const LousaBoardMeta& b : m_boards) {
+        QJsonObject o;
+        o.insert(QStringLiteral("id"),   b.id);
+        o.insert(QStringLiteral("name"), b.name);
+        o.insert(QStringLiteral("file"), b.file);
+        boards.append(o);
+    }
+    QJsonObject root;
+    root.insert(QStringLiteral("boards"), boards);
+    root.insert(QStringLiteral("activeBoardId"), m_activeBoardId);
+
+    QSaveFile f(boardsManifestPath());
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
+    f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+    f.commit();
+}
+
+void LousaPanel::switchToBoard(const QString& boardId)
+{
+    if (boardId == m_activeBoardId || boardIndexOf(boardId) < 0) return;
+    save();   // persiste a lousa atual antes de trocar
+    m_activeBoardId = boardId;
+    saveBoardsManifest();
+    // Undo/redo não deve atravessar boards — cada lousa tem sua própria história.
+    m_undo.clear();
+    m_redo.clear();
+    load();
+    refreshBoardsBtn();
+}
+
+void LousaPanel::createNewBoard()
+{
+    bool ok = false;
+    const QString name = QInputDialog::getText(
+        this, tr("Nova lousa"), tr("Nome da lousa:"), QLineEdit::Normal,
+        tr("Lousa %1").arg(m_boards.size() + 1), &ok).trimmed();
+    if (!ok || name.isEmpty()) return;
+
+    save();   // persiste a lousa atual antes de trocar
+
+    LousaBoardMeta meta;
+    meta.id   = QUuid::createUuid().toString(QUuid::WithoutBraces);
+    meta.name = name;
+    meta.file = QStringLiteral("canvas-%1.json").arg(meta.id);
+    m_boards.append(meta);
+    m_activeBoardId = meta.id;
+    saveBoardsManifest();
+
+    m_undo.clear();
+    m_redo.clear();
+    load();   // arquivo ainda não existe → carrega lousa vazia
+    refreshBoardsBtn();
+    refreshBoardsList();
+}
+
+void LousaPanel::renameBoard(const QString& boardId)
+{
+    const int idx = boardIndexOf(boardId);
+    if (idx < 0) return;
+    bool ok = false;
+    const QString newName = QInputDialog::getText(
+        this, tr("Renomear lousa"), tr("Nome da lousa:"), QLineEdit::Normal,
+        m_boards[idx].name, &ok).trimmed();
+    if (!ok || newName.isEmpty()) return;
+    m_boards[idx].name = newName;
+    saveBoardsManifest();
+    refreshBoardsBtn();
+    refreshBoardsList();
+}
+
+void LousaPanel::deleteBoard(const QString& boardId)
+{
+    if (m_boards.size() <= 1) {
+        QMessageBox::information(this, tr("Excluir lousa"),
+            tr("Não é possível excluir a última lousa do projeto."));
+        return;
+    }
+    const int idx = boardIndexOf(boardId);
+    if (idx < 0) return;
+
+    const auto answer = QMessageBox::question(
+        this, tr("Excluir lousa"),
+        tr("Excluir a lousa \"%1\" e todo o seu conteúdo? Essa ação não pode ser desfeita.")
+            .arg(m_boards[idx].name),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (answer != QMessageBox::Yes) return;
+
+    const LousaBoardMeta removed = m_boards.takeAt(idx);
+    QFile::remove(QDir::cleanPath(m_projectRoot + QStringLiteral("/") + removed.file));
+
+    if (removed.id == m_activeBoardId) {
+        m_activeBoardId = m_boards.first().id;
+        saveBoardsManifest();
+        m_undo.clear();
+        m_redo.clear();
+        load();
+    } else {
+        saveBoardsManifest();
+    }
+    refreshBoardsBtn();
+    refreshBoardsList();
 }
 
 // ── Mapa de áreas ────────────────────────────────────────────────────────────
@@ -1613,6 +1893,7 @@ void LousaPanel::resizeEvent(QResizeEvent* event)
     if (m_helpOpen) positionHelpPanel();
     positionStashPanel();
     positionMapPanel();
+    positionBoardsPanel();
 }
 
 void LousaPanel::closeEvent(QCloseEvent* event)
@@ -1771,7 +2052,9 @@ void LousaPanel::setProjectRoot(const QString& root)
 {
     if (m_projectRoot == root) return;
     m_projectRoot = root;
+    loadBoardsManifest();
     load();
+    refreshBoardsBtn();
 }
 
 static CanvasCard cardFromJson(const QJsonObject& o)
@@ -1826,12 +2109,17 @@ static QJsonObject cardToJson(const CanvasCard& c)
 void LousaPanel::load()
 {
     if (m_projectRoot.isEmpty() || !m_scene || !m_view) return;
-    const QString path = QDir::cleanPath(m_projectRoot + QStringLiteral("/canvas.json"));
+    const QString path = QDir::cleanPath(m_projectRoot + QStringLiteral("/") + activeBoardFile());
+    QJsonObject root;
     QFile f(path);
-    if (!f.exists()) return;
-    if (!f.open(QIODevice::ReadOnly)) return;
-    const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
-    f.close();
+    // Board novo, ainda sem arquivo: segue com `root` vazio — os valores
+    // default abaixo (cor/zoom/listas vazias) já produzem uma lousa em
+    // branco, e é preciso mesmo assim limpar a cena (pode estar vindo de
+    // outro board com conteúdo).
+    if (f.exists() && f.open(QIODevice::ReadOnly)) {
+        root = QJsonDocument::fromJson(f.readAll()).object();
+        f.close();
+    }
 
     const QColor color(root.value(QStringLiteral("canvasColor")).toString(QStringLiteral("#1a1a2e")));
     m_scene->setCanvasColor(color.isValid() ? color : QColor(QStringLiteral("#1a1a2e")));
@@ -2036,7 +2324,7 @@ void LousaPanel::save() const
     for (const CanvasCard& c : m_stash) stash.append(cardToJson(c));
     root.insert(QStringLiteral("stash"), stash);
 
-    QSaveFile f(QDir::cleanPath(m_projectRoot + QStringLiteral("/canvas.json")));
+    QSaveFile f(QDir::cleanPath(m_projectRoot + QStringLiteral("/") + activeBoardFile()));
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
     f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
     f.commit();
@@ -2291,6 +2579,8 @@ void LousaPanel::applyTheme()
     if (m_stashPanel) m_stashPanel->setStyleSheet(stashPanelQss);
     if (m_mapBtn)     m_mapBtn->setStyleSheet(stashBtnQss);
     if (m_mapPanel)   m_mapPanel->setStyleSheet(stashPanelQss);
+    if (m_boardsBtn)   m_boardsBtn->setStyleSheet(stashBtnQss);
+    if (m_boardsPanel) m_boardsPanel->setStyleSheet(stashPanelQss);
 
     reloadIcons();
     updateColorBtn();

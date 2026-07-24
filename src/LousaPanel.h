@@ -6,6 +6,7 @@
 #include <QList>
 #include <QPair>
 #include <QString>
+#include <QVector>
 #include <QWidget>
 
 class LousaScene;
@@ -15,6 +16,14 @@ class QLabel;
 class QListWidget;
 class QPushButton;
 class QToolButton;
+
+// Metadados de uma lousa (board) do projeto — os dados visuais (cards/
+// zonas/conexões) ficam no arquivo apontado por `file`, não aqui.
+struct LousaBoardMeta {
+    QString id;
+    QString name;
+    QString file;   // nome do JSON dentro do projectRoot, ex. "canvas.json"
+};
 
 class LousaPanel : public QWidget
 {
@@ -27,6 +36,12 @@ public:
     void setElementsStore(class ElementsStore* store);
     void refreshDocCards();
     void refreshEmptyState();
+
+    // Múltiplas lousas — usado pelo MainWindow para montar o seletor
+    // acionado a partir da LeftBar quando há mais de uma lousa no projeto.
+    QVector<LousaBoardMeta> boardList() const { return m_boards; }
+    QString activeBoardId() const { return m_activeBoardId; }
+    void switchToBoard(const QString& boardId);
 
 signals:
     void closeRequested();
@@ -53,6 +68,21 @@ private:
     void load();
     void updateColorBtn();
     CanvasCard nextCardData(const QString& type) const;
+
+    // Múltiplas lousas — manifesto (lousas.json) + arquivo de dados por board.
+    QString boardsManifestPath() const;
+    QString activeBoardFile() const;
+    int     boardIndexOf(const QString& boardId) const;
+    void    loadBoardsManifest();
+    void    saveBoardsManifest() const;
+    void    createNewBoard();
+    void    renameBoard(const QString& boardId);
+    void    deleteBoard(const QString& boardId);
+    void    buildBoardsPanel();
+    void    positionBoardsPanel();
+    void    toggleBoardsPanel();
+    void    refreshBoardsList();
+    void    refreshBoardsBtn();
 
     // Undo/redo
     struct BoardState {
@@ -140,6 +170,14 @@ private:
     QListWidget* m_mapList  = nullptr;
     QToolButton* m_mapBtn   = nullptr;
     bool         m_mapOpen  = false;
+
+    // Múltiplas lousas
+    QVector<LousaBoardMeta> m_boards;
+    QString      m_activeBoardId;
+    QWidget*     m_boardsPanel = nullptr;
+    QListWidget* m_boardsList  = nullptr;
+    QToolButton* m_boardsBtn   = nullptr;
+    bool         m_boardsOpen  = false;
 
     QString m_cutCardId;   // card recortado (Ctrl+X), aguardando colar
 
