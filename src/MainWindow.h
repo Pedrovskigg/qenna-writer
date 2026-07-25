@@ -14,6 +14,7 @@
 #include <QList>
 #include <QMainWindow>
 #include <QMap>
+#include <QRegularExpression>
 #include <QSet>
 #include <QString>
 #include <QTextCursor>
@@ -427,6 +428,15 @@ private:
         ScanResult result;
     };
     std::unique_ptr<DetectionScanState> m_scanState;
+    // Cache dos regex de detecção — construir QRegularExpression é caro, e
+    // antes disso rodava do zero pra todo o elenco a CADA disparo dos timers
+    // acima (a cada pausa de 3s de digitação), mesmo quando nada no elenco
+    // tinha mudado desde o disparo anterior. Invalidado só quando
+    // ElementsStore::changed dispara de verdade (personagem criado/editado/
+    // removido), não a cada tecla.
+    QHash<QString, QVector<QRegularExpression>> m_presenceRegexCache; // elementId -> regexes de nome/alias
+    QVector<DialogueScannerToken> m_dialogueTokensCache;
+    bool m_dialogueTokensCacheValid = false;
     QStringList availableFontFamilies;
     QString currentFontFamily;
     qreal currentFontSize;
