@@ -40,6 +40,9 @@ public:
     // ser comparável com WordCounter::countChapter() e montar a proporção
     // diálogo/narração.
     int dialogueWordsForChapter(const QString& chapterId) const;
+    // Soma de palavras de todas as falas de UM personagem (mesma regra de
+    // contagem acima) — usado pela área de Estatísticas.
+    int dialogueWordsForCharacter(const QString& elementId) const;
 
     // Uma fala encontrada num scan, já com a cena/rótulo de onde veio.
     struct ScannedLine {

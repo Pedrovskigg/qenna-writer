@@ -62,6 +62,7 @@ private:
     QString bondsContent() const;
     QString worldMapContent() const;
     QString glossaryContent() const;
+    QString statsContent() const;
     QString ambienceContent() const;
     QString remindersContent() const;
     QString sceneVariationContent() const;

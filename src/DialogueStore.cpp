@@ -113,6 +113,15 @@ int DialogueStore::dialogueWordsForChapter(const QString& chapterId) const
     return words;
 }
 
+int DialogueStore::dialogueWordsForCharacter(const QString& elementId) const
+{
+    if (elementId.isEmpty()) return 0;
+    int words = 0;
+    for (const Dialogue& d : m_dialogues)
+        if (d.characterId == elementId) words += WordCounter::countWordsInPlain(d.text);
+    return words;
+}
+
 void DialogueStore::upsertScanResults(const QString& manuscriptId, const QString& chapterId,
                                       const QVector<ScannedLine>& found)
 {

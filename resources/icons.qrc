@@ -74,6 +74,10 @@
         <file alias="mapa-mundi/pin.png">../src/assets/help/mapa-mundi/pin.png</file>
         <file alias="glossario/panel.png">../src/assets/help/glossario/panel.png</file>
         <file alias="glossario/add.png">../src/assets/help/glossario/add.png</file>
+        <file alias="estatisticas/topbar-button.png">../src/assets/help/estatisticas/topbar-button.png</file>
+        <file alias="estatisticas/panel.png">../src/assets/help/estatisticas/panel.png</file>
+        <file alias="estatisticas/char-panel.png">../src/assets/help/estatisticas/char-panel.png</file>
+        <file alias="estatisticas/chemistry-dialog.png">../src/assets/help/estatisticas/chemistry-dialog.png</file>
         <file alias="som-imersivo/panel.png">../src/assets/help/som-imersivo/panel.png</file>
         <file alias="lembretes/panel.png">../src/assets/help/lembretes/panel.png</file>
         <file alias="lembretes/notification.png">../src/assets/help/lembretes/notification.png</file>

@@ -991,6 +991,15 @@ QList<CharacterBond> ProjectModel::characterBondsForDrawer(const QString& drawer
     return out;
 }
 
+QList<CharacterBond> ProjectModel::characterBondsForItem(const QString& itemId) const {
+    QList<CharacterBond> out;
+    if (itemId.isEmpty()) return out;
+    for (const auto& b : m_characterBonds) {
+        if (b.fromItemId == itemId || b.toItemId == itemId) out.append(b);
+    }
+    return out;
+}
+
 QString ProjectModel::addCharacterBond(const QString& drawerKey, const QString& fromItemId,
                                        const QString& toItemId, const QString& type,
                                        const QString& description, const QString& color) {

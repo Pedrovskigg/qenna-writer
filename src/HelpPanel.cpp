@@ -170,7 +170,11 @@ constexpr int kMapPanelThumbWidth     = 700; // nativo 798
 constexpr int kMapNoTextureThumbWidth = 680; // nativo 710
 constexpr int kMapPinThumbWidth       = 480; // nativo 511
 constexpr int kGlossaryPanelThumbWidth = 520; // nativo 542
-constexpr int kGlossaryAddThumbWidth  = 480; // nativo 444
+constexpr int kGlossaryAddThumbWidth  = 400; // nativo 430 (agora mostra o botão no header do Pensário)
+constexpr int kStatsTopbarButtonThumbWidth = 460; // nativo 507
+constexpr int kStatsPanelThumbWidth = 480; // nativo 555, recorte alto (555x937)
+constexpr int kStatsCharPanelThumbWidth = 470; // nativo 546, recorte alto (546x918)
+constexpr int kStatsChemistryDialogThumbWidth = 680; // nativo 980
 constexpr int kAmbiencePanelThumbWidth = 380; // nativo 321
 constexpr int kReminderPanelThumbWidth = 420; // nativo 389
 constexpr int kReminderNotificationThumbWidth = 380; // nativo 295
@@ -226,6 +230,7 @@ void HelpPanel::buildTopics()
         { QStringLiteral("funcao-temas"), tr("Função de Temas") },
         { QStringLiteral("construtor"), tr("Construtor") },
         { QStringLiteral("pensario"), tr("Pensário") },
+        { QStringLiteral("estatisticas"), tr("Estatísticas") },
         { QStringLiteral("consistencia"), tr("Consistência") },
         { QStringLiteral("vinculos"), tr("Vínculos") },
         { QStringLiteral("mapa-mundi"), tr("Mapa-múndi") },
@@ -354,6 +359,7 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("funcao-temas")) return themesContent();
     if (id == QStringLiteral("construtor")) return builderContent();
     if (id == QStringLiteral("pensario")) return pensarioContent();
+    if (id == QStringLiteral("estatisticas")) return statsContent();
     if (id == QStringLiteral("consistencia")) return consistencyContent();
     if (id == QStringLiteral("vinculos")) return bondsContent();
     if (id == QStringLiteral("mapa-mundi")) return worldMapContent();
@@ -405,14 +411,15 @@ QString HelpPanel::startHereContent() const
         { QT_TR_NOOP("Documento em edição."),
           QT_TR_NOOP("Exibe o documento que está sendo editado no momento.") },
         { QT_TR_NOOP("Opções gerais."),
-          QT_TR_NOOP("Aqui, você consegue acessar o Glossário, ativar o Editor Focado e o Modo Foco (que "
-                     "apesar dos nomes similares, são funções diferentes). O Editor Focado recua toda a "
-                     "UI e deixa somente a página em exibição. O Modo Foco esmaece o texto e foca somente "
-                     "no parágrafo que está sendo escrito.") },
+          QT_TR_NOOP("Aqui, você consegue ativar o Editor Focado e o Modo Foco (que apesar dos nomes "
+                     "similares, são funções diferentes). O Editor Focado recua toda a UI e deixa "
+                     "somente a página em exibição. O Modo Foco esmaece o texto e foca somente no "
+                     "parágrafo que está sendo escrito.") },
         { QT_TR_NOOP("Opções de Ambiente de Trabalho."),
           QT_TR_NOOP("Acesso a função de Lembretes e Som Imersivo.") },
         { QT_TR_NOOP("Opções de Referência e Criação."),
-          QT_TR_NOOP("Aqui, você pode acessar as ferramentas: Construtor, Pensário e Menu de Referência.") },
+          QT_TR_NOOP("Aqui, você pode acessar as ferramentas: Construtor, Pensário, Menu de Referência "
+                     "e Estatísticas.") },
         { QT_TR_NOOP("Configurações do programa."),
           QT_TR_NOOP("Alterar o Tema, configurar e ativar o modo tela cheia.") },
     };
@@ -2178,22 +2185,9 @@ QString HelpPanel::glossaryContent() const
 {
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O botão de Glossário fica na barra superior do editor, perto do Editor Focado e do "
-        "Modo Foco."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/glossario/panel.png' style='text-decoration:none;'>"
-        "<img src=':/help/glossario/panel.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kGlossaryPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Clique em \"+ Novo termo\" pra criar uma entrada (ela já vem pronta pra você editar o "
-        "nome). Cada termo tem só dois campos: o termo em si e uma definição opcional. Também "
-        "dá pra adicionar um termo direto selecionando um trecho de texto no editor e usando a "
-        "opção correspondente do menu de seleção."));
+        "O botão de Glossário mora dentro do Pensário (F4 pra abrir), no cabeçalho do painel, "
+        "ao lado do gerador de Nomes e do Mapa-múndi. Clique nele e o painelzinho do Glossário "
+        "abre flutuando por cima — clique de novo (ou no × dele) pra fechar."));
     html += QStringLiteral(
         "<p align='center'>"
         "<a href='zoom:/help/glossario/add.png' style='text-decoration:none;'>"
@@ -2204,10 +2198,129 @@ QString HelpPanel::glossaryContent() const
     ).arg(QString::number(kGlossaryAddThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Clique em \"+ Novo termo\" pra criar uma entrada (ela já vem pronta pra você editar o "
+        "nome). Cada termo tem só dois campos: o termo em si e uma definição opcional. Também "
+        "dá pra adicionar um termo direto selecionando um trecho de texto no editor e usando a "
+        "opção correspondente do menu de seleção."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/glossario/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kGlossaryPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p>%1</p>").arg(tr(
         "Um detalhe que não é óbvio: termos do Glossário não aparecem destacados no texto, "
         "mas o corretor ortográfico para de sublinhá-los como erro — então vale a pena "
         "cadastrar nomes ou termos inventados só por essa vantagem, mesmo que você nunca abra "
         "o painel de novo."));
+
+    return html;
+}
+
+// Conteúdo escrito pelo usuário em help-panel/estatisticas/, montado aqui em HTML.
+QString HelpPanel::statsContent() const
+{
+    QString html;
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "O botão de Estatísticas fica na barra superior do editor, junto dos botões de "
+        "Construtor, Pensário e Menu de Referência. Clique nele pra abrir o painel."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/estatisticas/topbar-button.png' style='text-decoration:none;'>"
+        "<img src=':/help/estatisticas/topbar-button.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kStatsTopbarButtonThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "O painel tem duas partes: uma visão geral do projeto, e um mergulho fundo em cada "
+        "personagem."));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>")
+        .arg(tr("Visão geral."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Logo no topo, uma fileira com a foto de todos os personagens do projeto. Clicar em "
+        "qualquer um deles abre a página individual dele (item 2 abaixo)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Embaixo da fileira, um gráfico de barrinhas mostra a \"Participação\" de cada "
+        "personagem — a porcentagem de cenas do projeto em que ele aparece (mesma detecção "
+        "automática por nome que já existia)."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Mais embaixo, \"Manuscrito, por capítulo\" — um gráfico de barras com um capítulo por "
+        "coluna, numerados na ordem da obra. Um menu no canto (\"Palavras ▾\") deixa escolher a "
+        "métrica: palavras por capítulo, ou % de diálogo em relação à narração. Clicar numa "
+        "barra abre as estatísticas daquele capítulo específico (a mesma janela que já existe "
+        "no Manuscrito)."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Por fim, \"Resumo do projeto\": total de palavras, quantos capítulos e cenas tem o "
+        "manuscrito atual, qual foi o maior e o menor capítulo (em palavras), quantos Vínculos "
+        "existem por tipo, e um resumo da sua sequência de escrita (streak atual, recorde, "
+        "páginas estimadas)."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/estatisticas/panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/estatisticas/panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kStatsPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>2- %1</b></p>")
+        .arg(tr("Por personagem."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Clicando numa foto na fileira, você entra na página daquele personagem. Um botão de "
+        "voltar (←) no cabeçalho do painel te traz de volta pra visão geral."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Aqui você encontra: a foto e o nome, um resumo de presença (em quantas cenas/capítulos "
+        "ele aparece), quantas falas e palavras faladas o Detector de Diálogos já achou pra ele, "
+        "e dois botões — Status e Local — que fazem exatamente o que faziam no antigo Modo "
+        "Consistência (que não existe mais — tudo que ele fazia foi pra cá). Se o personagem "
+        "estiver marcado como Morto ou Desaparecido mas ainda aparecer em alguma cena depois "
+        "disso, um aviso chama atenção pra essa inconsistência."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Logo abaixo, a lista de Vínculos daquele personagem (mesmos vínculos que você já cria "
+        "arrastando um personagem em cima do outro na gaveta) — aqui é só consulta, criar/editar "
+        "vínculo continua sendo na gaveta mesmo."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/estatisticas/char-panel.png' style='text-decoration:none;'>"
+        "<img src=':/help/estatisticas/char-panel.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kStatsCharPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>3- %1</b></p>")
+        .arg(tr("Química."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "Essa é nova: uma lista mostrando com quem aquele personagem mais \"contracenou\" — "
+        "quantas cenas, capítulos e falas cruzadas ele tem com cada outro personagem do elenco. "
+        "Um menu deixa escolher qual dessas três métricas ordena a lista."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Clicando num nome da lista, abre um popup só com os diálogos entre aquele par de "
+        "personagens, com um menu no topo pra pular direto pra um capítulo específico. O popup "
+        "pode ser arrastado pelo título, pra tirar ele do meio do caminho."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/estatisticas/chemistry-dialog.png' style='text-decoration:none;'>"
+        "<img src=':/help/estatisticas/chemistry-dialog.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kStatsChemistryDialogThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>4- %1</b></p>")
+        .arg(tr("Ficha / documento."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Por último, o conteúdo real da ficha (ou do documento livre, se o personagem não usa "
+        "ficha estruturada) daquele personagem, exibido ali mesmo — sem precisar abrir a gaveta. "
+        "Só o texto: fotos que estejam dentro da ficha/doc não aparecem aqui (a foto do "
+        "personagem já está lá em cima). A área tem altura limitada e rola por dentro se o "
+        "conteúdo for grande."));
 
     return html;
 }

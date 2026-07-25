@@ -116,8 +116,8 @@
 #include "ConstrutorMentionAddPopup.h"
 #include "ConstrutorStore.h"
 #include "ConstrutorWindow.h"
-#include "GlossaryPanel.h"
 #include "HelpPanel.h"
+#include "StatsPanel.h"
 #include "GlossaryStore.h"
 #include "MemoriesStore.h"
 #include "MemoryAddPopup.h"
@@ -616,20 +616,6 @@ void MainWindow::setupEditor()
     drawerListPanel = new DrawerListPanel(projectModel, this);
     connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
     connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
-    connect(drawerListPanel, &DrawerListPanel::consistencyModeChanged, this, [this](bool on) {
-        if (on) {
-            // Atualiza a gaveta selecionada visualmente (já foi aberta)
-            if (!drawerListPanel->currentDrawerKey().isEmpty())
-                leftBar->setActiveDrawer(drawerListPanel->currentDrawerKey());
-        } else if (!drawerListPanel->isPanelOpen()) {
-            leftBar->clearSelection();
-        }
-    });
-    connect(drawerListPanel, &DrawerListPanel::consistencyUpdateRequested, this,
-            [this](const QString& itemId, const QString& status,
-                   const QString& statusDetail, const QString& location) {
-        projectModel->updateDrawerItemConsistency(itemId, status, statusDetail, location);
-    });
     m_presenceProvider = [this](
         const QStringList& names,
         QHash<QString, CharPresenceResult>* out,
@@ -752,7 +738,6 @@ void MainWindow::setupEditor()
             }
         }
     };
-    drawerListPanel->setPresenceProvider(m_presenceProvider);
     manuscriptPanel = new ManuscriptPanel(projectModel, this);
     editorHost = new EditorHost(editor, docCache, projectModel, this);
     editor->setEnabled(false);
@@ -1223,8 +1208,6 @@ void MainWindow::setupEditor()
     // Ao carregar novo doc, reinicia o timer e atualiza docKey no painel de consistência
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
         if (detectionEnabled) detectionTimer->start();
-        if (drawerListPanel && editorHost)
-            drawerListPanel->setCurrentDocKey(editorHost->activeKey());
     });
 
     connect(presencePopup, &PresencePopup::markRequested,
@@ -1403,21 +1386,12 @@ void MainWindow::setupEditor()
         ambiencePanel->showNear(toolbar->immersiveSoundButtonGlobalRect());
     });
 
-    // Glossário: store (sidecar JSON), painel flutuante (TopToolbar) e popup de
-    // "Adicionar ao Glossário..." (context menu do editor). Termos alimentam o
+    // Glossário: store (sidecar JSON, aba do Pensário) e popup de "Adicionar
+    // ao Glossário..." (context menu do editor). Termos alimentam o
     // spell-checker pra nunca virarem erro.
     glossaryStore = new GlossaryStore(this);
-    glossaryPanel = new GlossaryPanel(glossaryStore, this);
     glossaryAddPopup = new GlossaryAddPopup(this);
 
-    connect(toolbar, &TopToolbar::glossaryRequested, this, [this]() {
-        if (!glossaryPanel || !toolbar) return;
-        if (glossaryPanel->isVisible()) {
-            glossaryPanel->hide();
-            return;
-        }
-        glossaryPanel->showNear(toolbar->glossaryButtonGlobalRect());
-    });
     connect(editor, &SpellEditor::addToGlossaryRequested, this,
             [this](const QString& word, const QPoint& gp) {
         if (!glossaryAddPopup) return;
@@ -2032,6 +2006,7 @@ void MainWindow::setupEditor()
     pensarioPanel = new PensarioPanel(markerStore, projectModel, notesStore, container);
     pensarioPanel->setMapPinsStore(mapPinsStore);
     pensarioPanel->setElementsStore(elementsStore);
+    pensarioPanel->setGlossaryStore(glossaryStore);
     pensarioPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
     pensarioPanel->raise();
     connect(pensarioPanel, &PensarioPanel::openMarkerRequested,
@@ -2048,6 +2023,17 @@ void MainWindow::setupEditor()
             this, &MainWindow::rescanAllChapterDialogues);
     connect(toolbar, &TopToolbar::pensarioToggleRequested, this, [this]() {
         if (pensarioPanel) pensarioPanel->togglePanel();
+    });
+
+    statsPanel = new StatsPanel(projectModel, elementsStore, container);
+    statsPanel->setDocCache(docCache);
+    statsPanel->setDialogueStore(dialogueStore);
+    statsPanel->setWordCounter(wordCounter);
+    statsPanel->setPresenceProvider(m_presenceProvider);
+    statsPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
+    statsPanel->raise();
+    connect(toolbar, &TopToolbar::statisticsRequested, this, [this]() {
+        if (statsPanel) statsPanel->togglePanel();
     });
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
         if (!construtorWindow) {
@@ -4347,6 +4333,7 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (projectSaver) projectSaver->setProjectRoot(root);
     if (wordCounter) wordCounter->setProjectRoot(root);
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
+    if (statsPanel) statsPanel->setProjectRoot(root);
     if (globalSearchPanel) globalSearchPanel->setProjectRoot(root);
     if (elementsStore) elementsStore->setProjectRoot(root);
     if (spellChecker) spellChecker->setProjectRoot(root);
@@ -5429,6 +5416,14 @@ void MainWindow::positionExternalScrollBar()
         sbH
     );
     externalScrollBar->raise();
+    // externalScrollBar é filho de container, mesmo pai dos painéis flutuantes
+    // (Pensário, RefMenu, Estatísticas...) — o raise() acima venceria o z-order
+    // deles toda vez que o editor rolasse/redimensionasse (ex.: usuário rolando
+    // o texto com o painel de Estatísticas aberto por cima). Reafirma esses
+    // painéis por cima da scrollbar sempre que ela é reposicionada.
+    if (pensarioPanel && pensarioPanel->isVisible()) pensarioPanel->raise();
+    if (refMenuPanel && refMenuPanel->isVisible()) refMenuPanel->raise();
+    if (statsPanel && statsPanel->isVisible()) statsPanel->raise();
     positionAutoNavHint();
 }
 
