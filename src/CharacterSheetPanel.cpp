@@ -1,5 +1,6 @@
 #include "CharacterSheetPanel.h"
 
+#include "AvatarUtils.h"
 #include "EditorLayout.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -32,16 +33,6 @@ namespace {
 
 constexpr int kPhotoW = 210;
 constexpr int kPhotoH = 280;   // 3:4 (retrato)
-
-QPixmap pixmapFromDataUrl(const QString& dataUrl) {
-    if (dataUrl.isEmpty()) return QPixmap();
-    const int comma = dataUrl.indexOf(QLatin1Char(','));
-    if (comma < 0) return QPixmap();
-    const QByteArray raw = QByteArray::fromBase64(dataUrl.mid(comma + 1).toLatin1());
-    QPixmap pm;
-    pm.loadFromData(raw);
-    return pm;
-}
 
 QToolButton* makeFieldBtn(const QString& glyph, const QString& tip) {
     auto* b = new QToolButton;
@@ -348,7 +339,7 @@ void CharacterSheetPanel::refreshPhoto()
     const Element* e = (!m_elementId.isEmpty() && m_elements)
         ? m_elements->findElement(m_elementId) : nullptr;
     if (e && !e->image.isEmpty()) {
-        QPixmap pm = pixmapFromDataUrl(e->image);
+        QPixmap pm = AvatarUtils::decodeDataUrl(e->image);
         if (!pm.isNull()) {
             m_photo->setText(QString());
             QPixmap scaled = pm.scaled(m_photo->size(),

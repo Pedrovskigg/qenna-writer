@@ -46,7 +46,6 @@ public:
     void setTitleAnchorX(int x);
 
     QRect immersiveSoundButtonGlobalRect() const;
-    QRect glossaryButtonGlobalRect() const;
     QRect reminderButtonGlobalRect() const;
     QRect helpButtonGlobalRect() const;
 
@@ -81,8 +80,9 @@ signals:
     void underlineToggled(bool enabled);
     void strikethroughToggled(bool enabled);
     void alignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope);
+    // Abre o painel de Estatísticas (personagens/manuscrito).
+    void statisticsRequested();
     // Placeholders — ainda sem implementação
-    void glossaryRequested();
     void readModeToggled(bool enabled);
     void searchRequested();
     void reminderRequested();
@@ -101,7 +101,7 @@ private:
     QToolButton *italicButton;
     QToolButton *underlineButton;
     QToolButton *strikethroughButton;
-    QToolButton *glossaryButton;
+    QToolButton *statisticsButton;
     QToolButton *readModeButton;
     QToolButton *focusButton;
     QToolButton *searchButton;

@@ -170,8 +170,14 @@ qt_add_executable(qenna-writer
     src/AmbiencePanel.h
     src/GlossaryStore.cpp
     src/GlossaryStore.h
-    src/GlossaryPanel.cpp
-    src/GlossaryPanel.h
+    src/AvatarUtils.cpp
+    src/AvatarUtils.h
+    src/DocPreview.cpp
+    src/DocPreview.h
+    src/DialogueChemistry.cpp
+    src/DialogueChemistry.h
+    src/StatsPanel.cpp
+    src/StatsPanel.h
     src/HelpPanel.cpp
     src/HelpPanel.h
     src/GlossaryAddPopup.cpp

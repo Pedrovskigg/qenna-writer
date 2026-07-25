@@ -1,7 +1,9 @@
 #include "PensarioPanel.h"
 
+#include "AvatarUtils.h"
 #include "DocCache.h"
 #include "ElementsStore.h"
+#include "GlossaryStore.h"
 #include "IconUtils.h"
 #include "MarkerStore.h"
 #include "NameGenerator.h"
@@ -19,6 +21,7 @@
 #include <QComboBox>
 #include <QEvent>
 #include <QFrame>
+#include <QGraphicsDropShadowEffect>
 #include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QHash>
@@ -36,6 +39,7 @@
 #include <QShowEvent>
 #include <QSizePolicy>
 #include <QStackedWidget>
+#include <QTextEdit>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -126,6 +130,17 @@ void PensarioPanel::setElementsStore(ElementsStore* s)
     m_avatarCache.clear();
     if (m_elements)
         connect(m_elements, &ElementsStore::changed, this, [this]() { m_avatarCache.clear(); });
+}
+
+void PensarioPanel::setGlossaryStore(GlossaryStore* s)
+{
+    if (m_glossary == s) return;
+    m_glossary = s;
+    if (m_glossary)
+        connect(m_glossary, &GlossaryStore::changed, this, [this]() {
+            if (m_glossaryPopup && m_glossaryPopup->isVisible()) rebuildGlossaryList();
+        });
+    if (m_glossaryPopup && m_glossaryPopup->isVisible()) rebuildGlossaryList();
 }
 
 void PensarioPanel::setCurrentChapterId(const QString& chapterId)
@@ -250,6 +265,15 @@ void PensarioPanel::buildUi()
     connect(m_mapBtn, &QToolButton::clicked, this, &PensarioPanel::openMapPanel);
     headLay->addWidget(m_mapBtn);
 
+    m_glossaryBtn = new QToolButton(m_header);
+    m_glossaryBtn->setObjectName(QStringLiteral("pnGlossaryBtn"));
+    m_glossaryBtn->setCursor(Qt::PointingHandCursor);
+    m_glossaryBtn->setToolTip(tr("Glossário"));
+    m_glossaryBtn->setFixedSize(28, 28);
+    m_glossaryBtn->setIconSize(QSize(18, 18));
+    connect(m_glossaryBtn, &QToolButton::clicked, this, &PensarioPanel::toggleGlossaryPopup);
+    headLay->addWidget(m_glossaryBtn);
+
     m_closeBtn = new QToolButton(m_header);
     m_closeBtn->setObjectName(QStringLiteral("pnClose"));
     m_closeBtn->setText(QStringLiteral("×")); // ×
@@ -282,7 +306,6 @@ void PensarioPanel::buildUi()
     m_tabNotes     = makeTab(tr("Notas"));
     m_tabMemories  = makeTab(tr("Memórias"));
     m_tabDialogues = makeTab(tr("Diálogos"));
-
     connect(m_tabComments,  &QToolButton::clicked, this, [this]() { selectTab(Tab::Comments); });
     connect(m_tabNotes,     &QToolButton::clicked, this, [this]() { selectTab(Tab::Notes); });
     connect(m_tabMemories,  &QToolButton::clicked, this, [this]() { selectTab(Tab::Memories); });
@@ -319,6 +342,7 @@ void PensarioPanel::buildUi()
     // Página 4: Diálogos detectados automaticamente (funcional)
     m_stack->addWidget(buildDialoguesPage());
 
+    // Página 5: Glossário do projeto (migrado do antigo GlossaryPanel)
     root->addWidget(m_stack, 1);
 
     selectTab(Tab::Comments);
@@ -1677,40 +1701,10 @@ QPixmap PensarioPanel::characterAvatar(const QString& elementId, int size) const
     if (cached != m_avatarCache.constEnd()) return cached.value();
 
     const Element* el = m_elements ? m_elements->findElement(elementId) : nullptr;
+    const QString dataUrl = el ? el->image : QString();
+    const QString name = el ? el->name : QString();
 
-    QPixmap photo;
-    if (el && !el->image.isEmpty()) {
-        const int comma = el->image.indexOf(QLatin1Char(','));
-        const QByteArray raw = QByteArray::fromBase64(el->image.mid(comma + 1).toLatin1());
-        photo.loadFromData(raw);
-    }
-
-    QPixmap circular(size, size);
-    circular.fill(Qt::transparent);
-    QPainter p(&circular);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    QPainterPath clip;
-    clip.addEllipse(0, 0, size, size);
-    p.setClipPath(clip);
-
-    if (!photo.isNull()) {
-        const QPixmap scaled = photo.scaled(size, size, Qt::KeepAspectRatioByExpanding,
-                                             Qt::SmoothTransformation);
-        p.drawPixmap((size - scaled.width()) / 2, (size - scaled.height()) / 2, scaled);
-    } else {
-        // Sem foto: círculo colorido (cor estável, derivada do id — mesmo
-        // personagem sempre cai na mesma cor) com a inicial do nome.
-        const QColor bg = QColor::fromHsv(int(qHash(elementId) % 360), 120, 165);
-        p.fillRect(0, 0, size, size, bg);
-        QFont f = p.font();
-        f.setBold(true);
-        f.setPixelSize(qMax(9, int(size * 0.42)));
-        p.setFont(f);
-        p.setPen(QColor(255, 255, 255, 235));
-        const QString name = el ? el->name.trimmed() : QString();
-        const QString initial = name.isEmpty() ? QStringLiteral("?") : name.left(1).toUpper();
-        p.drawText(circular.rect(), Qt::AlignCenter, initial);
-    }
+    const QPixmap circular = AvatarUtils::circularAvatar(dataUrl, name, elementId, size);
     m_avatarCache.insert(cacheKey, circular);
     return circular;
 }
@@ -1959,6 +1953,313 @@ void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& g
     }
     popup->move(pos);
     popup->show();
+}
+
+void PensarioPanel::ensureGlossaryPopup()
+{
+    if (m_glossaryPopup) return;
+
+    QWidget* host = parentWidget() ? parentWidget() : this;
+    auto* popup = new QFrame(host);
+    m_glossaryPopup = popup;
+    popup->setObjectName(QStringLiteral("pnGlossaryPopup"));
+    popup->setAttribute(Qt::WA_StyledBackground, true);
+    popup->setFixedSize(540, 420);
+    popup->hide();
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(14, 12, 14, 12);
+    lay->setSpacing(8);
+
+    auto* headRow = new QHBoxLayout();
+    auto* title = new QLabel(tr("Glossário"), popup);
+    title->setObjectName(QStringLiteral("pnGlsHeader"));
+    headRow->addWidget(title);
+    headRow->addStretch(1);
+    auto* closeBtn = new QToolButton(popup);
+    closeBtn->setObjectName(QStringLiteral("pnGlsCloseBtn"));
+    closeBtn->setText(QStringLiteral("×"));
+    closeBtn->setCursor(Qt::PointingHandCursor);
+    closeBtn->setFixedSize(22, 22);
+    connect(closeBtn, &QToolButton::clicked, popup, &QWidget::hide);
+    headRow->addWidget(closeBtn);
+    lay->addLayout(headRow);
+
+    auto* topRow = new QHBoxLayout();
+    m_glsAddBtn = new QToolButton(popup);
+    m_glsAddBtn->setObjectName(QStringLiteral("pnGlsAddBtn"));
+    m_glsAddBtn->setText(tr("+ Novo termo"));
+    m_glsAddBtn->setCursor(Qt::PointingHandCursor);
+    m_glsAddBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    connect(m_glsAddBtn, &QToolButton::clicked, this, &PensarioPanel::onGlossaryAddClicked);
+    topRow->addWidget(m_glsAddBtn);
+    lay->addLayout(topRow);
+
+    m_glsSearch = new QLineEdit(popup);
+    m_glsSearch->setObjectName(QStringLiteral("pnGlsSearch"));
+    m_glsSearch->setPlaceholderText(tr("Buscar termo..."));
+    m_glsSearch->setClearButtonEnabled(true);
+    connect(m_glsSearch, &QLineEdit::textChanged, this, &PensarioPanel::onGlossarySearchChanged);
+    lay->addWidget(m_glsSearch);
+
+    auto* split = new QHBoxLayout();
+    split->setSpacing(10);
+
+    m_glsList = new QListWidget(popup);
+    m_glsList->setObjectName(QStringLiteral("pnGlsList"));
+    m_glsList->setFixedWidth(150);
+    m_glsList->setFrameShape(QFrame::NoFrame);
+    m_glsList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+    connect(m_glsList, &QListWidget::currentItemChanged, this,
+            [this](QListWidgetItem* cur, QListWidgetItem*) {
+        if (m_glsSyncing) return;
+        m_glsSelectedId = cur ? cur->data(Qt::UserRole).toString() : QString();
+        updateGlossaryRightPane();
+    });
+    split->addWidget(m_glsList);
+
+    auto* right = new QVBoxLayout();
+    right->setSpacing(6);
+    auto* termLabel = new QLabel(tr("Termo"), popup);
+    termLabel->setObjectName(QStringLiteral("pnGlsFieldLabel"));
+    right->addWidget(termLabel);
+    m_glsTermEdit = new QLineEdit(popup);
+    m_glsTermEdit->setObjectName(QStringLiteral("pnGlsTermEdit"));
+    connect(m_glsTermEdit, &QLineEdit::editingFinished, this, &PensarioPanel::onGlossaryTermEdited);
+    right->addWidget(m_glsTermEdit);
+
+    auto* defLabel = new QLabel(tr("Definição"), popup);
+    defLabel->setObjectName(QStringLiteral("pnGlsFieldLabel"));
+    right->addWidget(defLabel);
+    m_glsDefEdit = new QTextEdit(popup);
+    m_glsDefEdit->setObjectName(QStringLiteral("pnGlsDefEdit"));
+    m_glsDefEdit->setAcceptRichText(false);
+    m_glsDefEdit->setPlaceholderText(tr("Definição opcional..."));
+    m_glsDefEdit->installEventFilter(this); // salva ao perder foco, ver eventFilter()
+    right->addWidget(m_glsDefEdit, 1);
+
+    auto* btnRow = new QHBoxLayout();
+    btnRow->addStretch(1);
+    m_glsRemoveBtn = new QPushButton(tr("Remover"), popup);
+    m_glsRemoveBtn->setObjectName(QStringLiteral("pnGlsRemoveBtn"));
+    m_glsRemoveBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_glsRemoveBtn, &QPushButton::clicked, this, &PensarioPanel::onGlossaryRemoveClicked);
+    btnRow->addWidget(m_glsRemoveBtn);
+    right->addLayout(btnRow);
+
+    split->addLayout(right, 1);
+    lay->addLayout(split, 1);
+
+    auto* shadow = new QGraphicsDropShadowEffect(popup);
+    shadow->setBlurRadius(24);
+    shadow->setColor(QColor(0, 0, 0, 160));
+    shadow->setOffset(0, 4);
+    popup->setGraphicsEffect(shadow);
+
+    applyGlossaryPopupTheme();
+}
+
+void PensarioPanel::applyGlossaryPopupTheme()
+{
+    if (!m_glossaryPopup) return;
+
+    const QString bg      = Theme::panelBackground();
+    const QString border  = Theme::borderStrong();
+    const QString textPri = Theme::textPrimary();
+    const QString textMut = Theme::textMuted();
+    const QString textBrt = Theme::textBright();
+    const QString cardBg  = Theme::inputBackground();
+    const QString cardBd  = Theme::subtleBorder();
+    const QString hover   = Theme::hoverStrong();
+    const QString accent  = Theme::accentDefault();
+
+    m_glossaryPopup->setStyleSheet(QStringLiteral(R"(
+        #pnGlossaryPopup {
+            background: %1;
+            border: 1px solid %2;
+            border-radius: 10px;
+        }
+        #pnGlsHeader { color: %3; font-size: 14px; font-weight: 600; }
+        #pnGlsCloseBtn {
+            color: %4;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+        #pnGlsCloseBtn:hover { background: %7; color: %5; }
+        #pnGlsAddBtn {
+            color: %3;
+            background: %6;
+            border: 1px dashed %9;
+            border-radius: 8px;
+            padding: 9px;
+            font-size: 13px;
+        }
+        #pnGlsAddBtn:hover { background: %7; border-color: %8; }
+        #pnGlsSearch {
+            color: %3;
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        #pnGlsSearch:focus { border-color: %8; }
+        #pnGlsFieldLabel { color: %4; font-size: 11px; }
+        #pnGlsTermEdit, #pnGlsDefEdit {
+            color: %3;
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        #pnGlsTermEdit:focus, #pnGlsDefEdit:focus { border-color: %8; }
+        #pnGlsList {
+            color: %3;
+            background: %6;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 4px;
+            outline: 0;
+        }
+        #pnGlsList::item { padding: 6px 8px; border-radius: 4px; }
+        #pnGlsList::item:hover { background: %7; }
+        #pnGlsList::item:selected { background: %7; color: %5; }
+        #pnGlsRemoveBtn {
+            color: %4;
+            background: transparent;
+            border: 1px solid %9;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        #pnGlsRemoveBtn:hover { color: %5; background: %7; border-color: %8; }
+    )")
+        .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
+}
+
+void PensarioPanel::toggleGlossaryPopup()
+{
+    ensureGlossaryPopup();
+    if (m_glossaryPopup->isVisible()) {
+        m_glossaryPopup->hide();
+        return;
+    }
+    rebuildGlossaryList();
+    const QPoint anchor = m_glossaryBtn->mapToGlobal(QPoint(0, m_glossaryBtn->height() + 4));
+    QPoint pos = m_glossaryPopup->parentWidget()
+        ? m_glossaryPopup->parentWidget()->mapFromGlobal(anchor)
+        : anchor;
+    if (auto* screen = QGuiApplication::screenAt(anchor)) {
+        const QRect avail = screen->availableGeometry();
+        QPoint globalPos = anchor;
+        if (globalPos.x() + m_glossaryPopup->width() > avail.right())
+            globalPos.setX(avail.right() - m_glossaryPopup->width());
+        if (globalPos.y() + m_glossaryPopup->height() > avail.bottom())
+            globalPos.setY(avail.bottom() - m_glossaryPopup->height());
+        pos = m_glossaryPopup->parentWidget()
+            ? m_glossaryPopup->parentWidget()->mapFromGlobal(globalPos)
+            : globalPos;
+    }
+    m_glossaryPopup->move(pos);
+    m_glossaryPopup->show();
+    m_glossaryPopup->raise();
+}
+
+void PensarioPanel::rebuildGlossaryList()
+{
+    if (!m_glsList) return;
+    m_glsSyncing = true;
+    m_glsList->clear();
+
+    const QString needle = m_glsSearch ? m_glsSearch->text().trimmed().toLower() : QString();
+    constexpr int kSearchMinTerms = 3;
+    const bool useFilter = needle.size() >= kSearchMinTerms;
+
+    if (m_glossary) {
+        for (const GlossaryStore::Entry& e : m_glossary->entries()) {
+            if (useFilter && !e.term.toLower().contains(needle)) continue;
+            auto* item = new QListWidgetItem(e.term, m_glsList);
+            item->setData(Qt::UserRole, e.id);
+            if (!e.definition.isEmpty()) item->setToolTip(e.definition);
+        }
+    }
+    selectGlossaryId(m_glsSelectedId);
+    m_glsSyncing = false;
+    if (!m_glsList->currentItem() && m_glsList->count() > 0) m_glsList->setCurrentRow(0);
+    updateGlossaryRightPane();
+}
+
+void PensarioPanel::selectGlossaryId(const QString& id)
+{
+    if (!m_glsList) return;
+    for (int i = 0; i < m_glsList->count(); ++i) {
+        if (m_glsList->item(i)->data(Qt::UserRole).toString() == id) {
+            m_glsList->setCurrentRow(i);
+            return;
+        }
+    }
+}
+
+void PensarioPanel::updateGlossaryRightPane()
+{
+    const bool hasSel = !m_glsSelectedId.isEmpty() && m_glossary;
+    GlossaryStore::Entry e = hasSel ? m_glossary->findById(m_glsSelectedId) : GlossaryStore::Entry{};
+
+    m_glsSyncing = true;
+    if (m_glsTermEdit) m_glsTermEdit->setText(e.term);
+    if (m_glsDefEdit) m_glsDefEdit->setPlainText(e.definition);
+    m_glsSyncing = false;
+
+    if (m_glsTermEdit) m_glsTermEdit->setEnabled(hasSel);
+    if (m_glsDefEdit) m_glsDefEdit->setEnabled(hasSel);
+    if (m_glsRemoveBtn) m_glsRemoveBtn->setEnabled(hasSel);
+}
+
+void PensarioPanel::onGlossarySearchChanged(const QString& /*text*/)
+{
+    rebuildGlossaryList();
+}
+
+void PensarioPanel::onGlossaryTermEdited()
+{
+    if (m_glsSyncing || m_glsSelectedId.isEmpty() || !m_glossary || !m_glsTermEdit) return;
+    const QString next = m_glsTermEdit->text().trimmed();
+    GlossaryStore::Entry e = m_glossary->findById(m_glsSelectedId);
+    if (next.isEmpty() || next == e.term) return;
+    m_glossary->update(m_glsSelectedId, next, e.definition);
+}
+
+void PensarioPanel::onGlossaryDefinitionEdited()
+{
+    if (m_glsSyncing || m_glsSelectedId.isEmpty() || !m_glossary || !m_glsDefEdit) return;
+    GlossaryStore::Entry e = m_glossary->findById(m_glsSelectedId);
+    const QString next = m_glsDefEdit->toPlainText();
+    if (next == e.definition) return;
+    m_glossary->update(m_glsSelectedId, e.term, next);
+}
+
+void PensarioPanel::onGlossaryRemoveClicked()
+{
+    if (m_glsSelectedId.isEmpty() || !m_glossary) return;
+    m_glossary->remove(m_glsSelectedId);
+    m_glsSelectedId.clear();
+}
+
+void PensarioPanel::onGlossaryAddClicked()
+{
+    if (!m_glossary) return;
+    const QString id = m_glossary->add(tr("Novo termo"), QString());
+    m_glsSelectedId = id;
+    rebuildGlossaryList();
+    selectGlossaryId(id);
+    updateGlossaryRightPane();
+    if (m_glsTermEdit) {
+        m_glsTermEdit->setFocus();
+        m_glsTermEdit->selectAll();
+    }
 }
 
 void PensarioPanel::selectTab(Tab tab)
@@ -2234,6 +2535,13 @@ void PensarioPanel::showEvent(QShowEvent* event)
 
 bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    // Glossário: salva a definição quando o textarea perde o foco (sem
+    // flush a cada tecla) — mesmo comportamento do GlossaryPanel original.
+    if (watched == m_glsDefEdit && event->type() == QEvent::FocusOut) {
+        onGlossaryDefinitionEdited();
+        return false;
+    }
+
     // Card de diálogo: clicar abre a cena de origem no editor (sem menu —
     // só há uma ação possível nesta v1).
     if (event->type() == QEvent::MouseButtonRelease) {
@@ -2632,13 +2940,28 @@ void PensarioPanel::applyTheme()
             font-size: 16px;
             font-weight: 600;
         }
+        #pnGlossaryBtn {
+            color: %4;
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            border-radius: 6px;
+        }
+        #pnGlossaryBtn:hover { background: %7; color: %3; }
     )")
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
+
+    applyGlossaryPopupTheme();
 
     // Ícone SVG do mapa precisa ser re-tintado a cada troca de tema.
     if (m_mapBtn) {
         m_mapBtn->setIcon(IconUtils::loadToolbarIcon(
             QStringLiteral(":/icons/worldmap.svg"),
+            QColor(textMut), QColor(textPri), QColor(textBrt), QSize(18, 18)));
+    }
+    if (m_glossaryBtn) {
+        m_glossaryBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/glossary.svg"),
             QColor(textMut), QColor(textPri), QColor(textBrt), QSize(18, 18)));
     }
 }

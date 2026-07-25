@@ -2,6 +2,7 @@
 
 #include "ConstrutorStore.h"
 #include "DocCache.h"
+#include "DocPreview.h"
 #include "EditorHost.h"
 #include "ElementsStore.h"
 #include "FindBar.h"
@@ -1804,25 +1805,7 @@ QString RefMenuPanel::resolveDocHtml(const QString& key) const
     if (key.startsWith(QStringLiteral("it:"))) {
         const QString itemId = key.mid(3);
         const DrawerItem* item = m_model->findDrawerItem(itemId);
-        if (item && item->isSheet) {
-            // Ficha: gera o html dos campos (antes do cache, que pode ter sobra do
-            // editor). Nome/apelido já aparecem no cabeçalho — passa vazio pra não
-            // duplicar. A foto entra como <img> e o RefMenu a extrai pro topo.
-            QString img;
-            if (m_elements && !item->elementId.isEmpty()) {
-                if (const Element* e = m_elements->findElement(item->elementId))
-                    img = e->image;
-            }
-            return ProjectModel::characterSheetToHtml(item->sheet, QString(), QString(), img);
-        }
-        const QString cacheKey = DocCache::itemKey(itemId);
-        if (m_cache && m_cache->has(cacheKey)) return m_cache->get(cacheKey);
-        if (!item) return QString();
-        if (item->hasInlineHtml) return item->html;
-        if (!item->file.isEmpty() && !m_projectRoot.isEmpty()) {
-            bool ok = false;
-            return ProjectStorage::readText(ProjectStorage::joinPath(m_projectRoot, item->file), &ok);
-        }
+        return DocPreview::resolveDrawerItemHtml(item, m_elements, m_cache, m_projectRoot);
     }
     if (key.startsWith(QStringLiteral("ctr:"))) {
         const QStringList parts = key.split(QLatin1Char(':'));

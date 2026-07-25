@@ -243,6 +243,9 @@ public:
 
     const QList<CharacterBond>& characterBonds() const { return m_characterBonds; }
     QList<CharacterBond> characterBondsForDrawer(const QString& drawerKey) const;
+    // Todos os vínculos onde este item (personagem) participa, de qualquer
+    // lado (from ou to) — usado pela área de Estatísticas (drill-down).
+    QList<CharacterBond> characterBondsForItem(const QString& itemId) const;
     QString addCharacterBond(const QString& drawerKey, const QString& fromItemId,
                              const QString& toItemId, const QString& type,
                              const QString& description, const QString& color);

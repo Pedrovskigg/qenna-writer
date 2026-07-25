@@ -101,7 +101,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     , italicButton(makeIconButton(this))
     , underlineButton(makeIconButton(this))
     , strikethroughButton(makeIconButton(this))
-    , glossaryButton(makeIconButton(this))
+    , statisticsButton(makeIconButton(this))
     , readModeButton(makeIconButton(this))
     , focusButton(makeIconButton(this))
     , searchButton(makeIconButton(this))
@@ -222,10 +222,10 @@ TopToolbar::TopToolbar(QWidget *parent)
     connect(strikethroughButton, &QToolButton::toggled, this, &TopToolbar::strikethroughToggled);
 
     // ---------------- Grupo C: Ferramentas ----------------
-    glossaryButton->setObjectName(QStringLiteral("ttbTool"));
-    bindIcon(glossaryButton, QStringLiteral("glossary.svg"));
-    glossaryButton->setToolTip(tr("Glossário"));
-    connect(glossaryButton, &QToolButton::clicked, this, &TopToolbar::glossaryRequested);
+    statisticsButton->setObjectName(QStringLiteral("ttbTool"));
+    bindIcon(statisticsButton, QStringLiteral("stats-chart.svg"));
+    statisticsButton->setToolTip(tr("Estatísticas"));
+    connect(statisticsButton, &QToolButton::clicked, this, &TopToolbar::statisticsRequested);
 
     // Editor focado (distraction-free). Toggle de preferência: alterna o ícone
     // on/off mas NÃO mantém estado "checked" destacado na barra.
@@ -413,7 +413,6 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addStretch(1);
 
     // --- Direita: Ferramentas ---
-    layout->addWidget(glossaryButton);
     layout->addWidget(readModeButton);
     layout->addWidget(focusButton);
     layout->addWidget(searchButton);
@@ -428,6 +427,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(construtorButton);
     layout->addWidget(pensarioButton);
     layout->addWidget(refMenuButton);
+    layout->addWidget(statisticsButton);
     layout->addWidget(makeVSeparator(this));
 
     // --- Direita: Sistema ---
@@ -753,13 +753,6 @@ QRect TopToolbar::immersiveSoundButtonGlobalRect() const
     if (!immersiveSoundButton) return QRect();
     const QPoint topLeft = immersiveSoundButton->mapToGlobal(QPoint(0, 0));
     return QRect(topLeft, immersiveSoundButton->size());
-}
-
-QRect TopToolbar::glossaryButtonGlobalRect() const
-{
-    if (!glossaryButton) return QRect();
-    const QPoint topLeft = glossaryButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, glossaryButton->size());
 }
 
 QRect TopToolbar::reminderButtonGlobalRect() const

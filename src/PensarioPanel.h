@@ -15,6 +15,10 @@ class QLabel;
 class QToolButton;
 class QComboBox;
 class QLineEdit;
+class QTextEdit;
+class QPushButton;
+class QListWidget;
+class QListWidgetItem;
 class QVBoxLayout;
 class QScrollArea;
 class QStackedWidget;
@@ -26,6 +30,7 @@ class NameGenerator;
 class MapPanel;
 class MapPinsStore;
 class ElementsStore;
+class GlossaryStore;
 struct Chapter;
 
 // Pensário — painel "auxiliar criativo" do Mira 2 (Pensarium no i18n).
@@ -52,6 +57,7 @@ public:
     void setMemoriesStore(MemoriesStore* s);
     void setDialogueStore(DialogueStore* s);
     void setElementsStore(ElementsStore* s);
+    void setGlossaryStore(GlossaryStore* s);
     // Chamado pelo MainWindow toda vez que o capítulo/cena aberto no editor
     // muda. Enquanto o usuário não mexer manualmente no filtro "Cap.: " da
     // aba Diálogos, ele acompanha o capítulo atual — abrir a aba já mostra
@@ -151,6 +157,27 @@ private:
     // falando) — corrige atribuições erradas do detector (heurística de
     // proximidade às vezes pega quem é CITADO, não quem fala).
     void showChangeSpeakerPopup(const QString& dlgId, const QPoint& globalPos);
+    // Glossário do projeto: painelzinho flutuante próprio (volta ao formato
+    // de antes do antigo GlossaryPanel standalone), só que aberto por um
+    // botão discreto no header do Pensário em vez da TopToolbar — mesmo
+    // padrão do botão/painel de Mapa-múndi (m_mapBtn/m_mapPanel) logo
+    // acima. Lista mestre-detalhe (termos à esquerda, termo/definição
+    // editáveis à direita).
+    void ensureGlossaryPopup();
+    void toggleGlossaryPopup();
+    // m_glossaryPopup é filho de parentWidget() (irmão do Pensário, não
+    // descendente) — a folha de estilo do Pensário (setStyleSheet em `this`)
+    // não cai em cascata pra ele. Precisa da própria, reaplicada aqui e a
+    // cada troca de tema.
+    void applyGlossaryPopupTheme();
+    void rebuildGlossaryList();
+    void selectGlossaryId(const QString& id);
+    void updateGlossaryRightPane();
+    void onGlossarySearchChanged(const QString& text);
+    void onGlossaryTermEdited();
+    void onGlossaryDefinitionEdited();
+    void onGlossaryRemoveClicked();
+    void onGlossaryAddClicked();
     void setNameCategory(NameCategory c);
     void updateGenderVisibility();
     void generateNames();
@@ -186,6 +213,7 @@ private:
     QToolButton* m_tabDialogues = nullptr;
     QToolButton* m_namesBtn = nullptr; // acesso discreto ao gerador, no header
     QToolButton* m_mapBtn = nullptr;   // acesso ao painel do mapa, no header
+    QToolButton* m_glossaryBtn = nullptr; // acesso ao painelzinho do glossário, no header
     MapPanel* m_mapPanel = nullptr;
     MapPinsStore* m_mapPins = nullptr;
 
@@ -261,6 +289,18 @@ private:
     // personagem mudou de foto, e edição de foto é rara comparado a quanto
     // a aba de Diálogos é reconstruída.
     mutable QHash<QString, QPixmap> m_avatarCache;
+
+    // Glossário (painelzinho próprio, botão discreto no header).
+    GlossaryStore* m_glossary = nullptr;
+    QWidget* m_glossaryPopup = nullptr;
+    QLineEdit* m_glsSearch = nullptr;
+    QListWidget* m_glsList = nullptr;
+    QLineEdit* m_glsTermEdit = nullptr;
+    QTextEdit* m_glsDefEdit = nullptr;
+    QPushButton* m_glsRemoveBtn = nullptr;
+    QToolButton* m_glsAddBtn = nullptr;
+    QString m_glsSelectedId;
+    bool m_glsSyncing = false;
 
     bool m_dragging = false;
     QPoint m_dragOffset;

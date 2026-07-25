@@ -45,65 +45,16 @@ constexpr const char* kItemMime = "application/x-mira-drawer-item";
 
 namespace {
 
-QString pickerPopupQss() {
-    return QStringLiteral(R"(
-        QFrame#consistencyPicker {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: 8px;
-        }
-        QPushButton#pickerOption {
-            background: transparent;
-            color: %3;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            text-align: left;
-            font-family: 'Lora','Crimson Text',serif;
-            font-size: 12px;
-        }
-        QPushButton#pickerOption:hover { background: %4; color: %5; }
-        QPushButton#pickerOptionClear {
-            background: transparent;
-            color: %6;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
-            text-align: left;
-            font-family: 'Lora','Crimson Text',serif;
-            font-size: 11px;
-            font-style: italic;
-        }
-        QPushButton#pickerOptionClear:hover { background: %4; color: %7; }
-        QLineEdit#pickerInput {
-            background: %8;
-            color: %3;
-            border: 1px solid %2;
-            border-radius: 5px;
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-    )").arg(Theme::panelBackground(), Theme::panelBorder(),
-            Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(),
-            Theme::textMuted(), Theme::accentDanger(), Theme::inputBackground());
-}
-
-} // namespace (presets + picker QSS)
-
-namespace {
-
 struct CardSizeParams {
     int cardW;
     int cardH;
-    int cardHConsistency;
-    int cardHConsistencySimple; // consistência sem status/local (Objeto/Cenário) — só a barra de presença
     int cardPhoto;
     int cols;
 };
 static const CardSizeParams kCardSizes[3] = {
-    {  90,  90, 145, 108,  48, 3 },  // 0 = Small
-    { 134, 118, 192, 142,  70, 2 },  // 1 = Medium (default)
-    { 134, 155, 245, 180,  92, 2 },  // 2 = Large (foto maior, card mais alto, 2 colunas)
+    {  90,  90,  48, 3 },  // 0 = Small
+    { 134, 118,  70, 2 },  // 1 = Medium (default)
+    { 134, 155,  92, 2 },  // 2 = Large (foto maior, card mais alto, 2 colunas)
 };
 
 constexpr int kPanelWidth = 300;
@@ -376,38 +327,6 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     });
     headerLayout->addWidget(m_pinBtn);
 
-    // Botão de modo consistência — só visível em gavetas de personagem
-    m_consistencyBtn = new QToolButton(this);
-    m_consistencyBtn->setToolTip(tr("Modo consistência narrativa"));
-    m_consistencyBtn->setCursor(Qt::PointingHandCursor);
-    m_consistencyBtn->setCheckable(true);
-    m_consistencyBtn->setAutoRaise(true);
-    m_consistencyBtn->setMinimumHeight(24);
-    m_consistencyBtn->setFixedWidth(28);
-    m_consistencyBtn->setStyleSheet(miniIconBtnQss());
-    m_consistencyBtn->setVisible(false);
-    {
-        QIcon ic = IconUtils::loadToolbarIcon(
-            QStringLiteral(":/icons/leftbar/consistency.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::textPrimary()),
-            QColor(Theme::textBright()), QSize(16, 16));
-        if (!ic.isNull()) {
-            m_consistencyBtn->setIcon(ic);
-            m_consistencyBtn->setIconSize(QSize(16, 16));
-            m_consistencyBtn->setToolButtonStyle(Qt::ToolButtonIconOnly);
-        } else {
-            m_consistencyBtn->setText(QStringLiteral("C"));
-            m_consistencyBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-        }
-    }
-    connect(m_consistencyBtn, &QToolButton::toggled, this, [this](bool on) {
-        m_consistencyMode = on;
-        if (on) { refreshPresenceCache(); refreshElementPresenceCache(); }
-        rebuildContents();
-        emit consistencyModeChanged(on);
-    });
-    headerLayout->addWidget(m_consistencyBtn);
-
     m_viewBtn = makeMiniBtn(QStringLiteral("⊞"), tr("Alternar exibição"), /*checkable=*/false);
     m_viewBtn->setFixedWidth(28);
     connect(m_viewBtn, &QToolButton::clicked, this, [this]() {
@@ -594,7 +513,6 @@ void DrawerListPanel::setElementsStore(ElementsStore* store) {
     if (store) {
         connect(store, &ElementsStore::changed, this, [this]() {
             if (!isPanelOpen()) return;
-            if (m_consistencyMode) { refreshPresenceCache(); refreshElementPresenceCache(); }
             rebuildContents();
         });
     }
@@ -606,16 +524,6 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
         m_currentFolderId.clear();
         // Reset view mode default por gaveta: grid pra element drawer, list pra genérica.
         m_gridView = currentDrawerIsElement();
-        // Reset modo consistência ao trocar de gaveta
-        if (m_consistencyMode) {
-            m_consistencyMode = false;
-            if (m_consistencyBtn) {
-                m_consistencyBtn->blockSignals(true);
-                m_consistencyBtn->setChecked(false);
-                m_consistencyBtn->blockSignals(false);
-            }
-            emit consistencyModeChanged(false);
-        }
     }
     if (!folderId.isEmpty()) {
         m_currentFolderId = folderId;
@@ -633,467 +541,6 @@ void DrawerListPanel::closePanel() {
     m_currentFolderId.clear();
     hide();
     emit panelClosed();
-}
-
-void DrawerListPanel::openInConsistencyMode(const QString& drawerKey) {
-    // Se drawerKey foi especificada, usa ela; senão, procura a primeira gaveta de personagem
-    QString targetKey = drawerKey;
-    if (targetKey.isEmpty() && m_model) {
-        for (const auto& d : m_model->drawers()) {
-            if (d.drawerElementType == QStringLiteral("character")) {
-                targetKey = d.key;
-                break;
-            }
-        }
-    }
-    if (targetKey.isEmpty()) return;
-
-    // Abre a gaveta (resetará consistency se era outro drawer)
-    openDrawer(targetKey);
-
-    // Ativa modo consistência
-    if (!m_consistencyMode) {
-        m_consistencyMode = true;
-        if (m_consistencyBtn) {
-            m_consistencyBtn->blockSignals(true);
-            m_consistencyBtn->setChecked(true);
-            m_consistencyBtn->blockSignals(false);
-        }
-        refreshPresenceCache();
-        refreshElementPresenceCache();
-        rebuildContents();
-        emit consistencyModeChanged(true);
-    }
-}
-
-void DrawerListPanel::refreshPresenceCache() {
-    m_presenceResults.clear();
-    m_totalScenes   = 0;
-    m_totalChapters = 0;
-    if (!m_model || !m_presenceProvider) return;
-
-    const Drawer* drawer = m_model->findDrawer(m_currentKey);
-    if (!drawer) return;
-
-    QStringList names;
-    for (const auto& it : drawer->items) {
-        if (!it.title.isEmpty()) names.append(it.title);
-    }
-    if (names.isEmpty()) return;
-
-    m_presenceProvider(names, &m_presenceResults, &m_totalScenes, &m_totalChapters);
-}
-
-// Presença de Objeto/Cenário: reconstruída a partir da marcação manual de
-// "elementos presentes" (ElementsStore::docElements), não da detecção
-// automática por menção de nome (essa é exclusiva de personagem). Reaproveita
-// os mesmos totais de m_totalScenes/m_totalChapters (contagem do projeto,
-// independente de qual elemento está sendo consultado).
-void DrawerListPanel::refreshElementPresenceCache() {
-    m_elementPresenceResults.clear();
-    if (!m_model || !m_elementsStore) return;
-
-    for (const Chapter& ch : m_model->chapters()) {
-        const QString chKey = ElementsStore::elementDocKeyForChapter(ch.manuscriptId, ch.id);
-        const QString chTitle = ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title;
-        const bool multiScene = ch.scenes.size() > 1;
-
-        const QStringList chapterElementIds = m_elementsStore->docElementIds(chKey);
-
-        QHash<QString, QList<PresenceSceneEntry>> sceneEntriesByElement;
-        for (int si = 0; si < ch.scenes.size(); ++si) {
-            const QString scKey = ElementsStore::elementDocKeyForScene(
-                ch.manuscriptId, ch.id, ch.scenes[si].id);
-            for (const QString& elId : m_elementsStore->docElementIds(scKey)) {
-                PresenceSceneEntry se;
-                se.index = si;
-                se.title = ch.scenes[si].title;
-                sceneEntriesByElement[elId].append(se);
-            }
-        }
-
-        QSet<QString> allElementIds(chapterElementIds.cbegin(), chapterElementIds.cend());
-        for (auto it = sceneEntriesByElement.cbegin(); it != sceneEntriesByElement.cend(); ++it)
-            allElementIds.insert(it.key());
-
-        for (const QString& elId : allElementIds) {
-            PresenceChapterEntry chEntry;
-            chEntry.id    = ch.id;
-            chEntry.title = chTitle;
-            chEntry.scenes = sceneEntriesByElement.value(elId);
-
-            CharPresenceResult& res = m_elementPresenceResults[elId];
-            res.chapters.append(chEntry);
-            res.chapterCount++;
-            res.sceneCount += !chEntry.scenes.isEmpty()
-                ? chEntry.scenes.size()
-                : (multiScene ? qMax(1, ch.scenes.size()) : 1);
-        }
-    }
-}
-
-void DrawerListPanel::setCurrentDocKey(const QString& key)
-{
-    if (m_currentDocKey == key) return;
-    m_currentDocKey = key;
-    if (m_consistencyMode && isPanelOpen()) rebuildContents();
-}
-
-void DrawerListPanel::showStatusPicker(const QString& itemId, const QPoint& globalPos) {
-    if (!m_model) return;
-    const DrawerItem* item = m_model->findDrawerItem(itemId);
-    if (!item) return;
-
-    const QString currentStatus = item->charStatus;
-    const QString currentDetail = item->charStatusDetail;
-    const QString currentLocation = item->charLocation;
-
-    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
-    popup->setAttribute(Qt::WA_DeleteOnClose);
-    popup->setObjectName(QStringLiteral("consistencyPicker"));
-    popup->setStyleSheet(pickerPopupQss());
-    popup->setFixedWidth(180);
-
-    auto* lay = new QVBoxLayout(popup);
-    lay->setContentsMargins(6, 6, 6, 6);
-    lay->setSpacing(2);
-
-    // Campo de input personalizado
-    auto* customInput = new QLineEdit(popup);
-    customInput->setObjectName(QStringLiteral("pickerInput"));
-    customInput->setPlaceholderText(tr("Status personalizado..."));
-    customInput->setFixedHeight(28);
-    lay->addWidget(customInput);
-
-    // Separador
-    auto* sep = new QFrame(popup);
-    sep->setFrameShape(QFrame::HLine);
-    sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
-    sep->setFixedHeight(1);
-    lay->addWidget(sep);
-
-    // Limpar status (se tiver)
-    if (!currentStatus.isEmpty()) {
-        auto* clearBtn = new QPushButton(tr("Limpar status"), popup);
-        clearBtn->setObjectName(QStringLiteral("pickerOptionClear"));
-        clearBtn->setFixedHeight(26);
-        clearBtn->setCursor(Qt::PointingHandCursor);
-        connect(clearBtn, &QPushButton::clicked, popup, [this, popup, itemId, currentLocation]() {
-            emit consistencyUpdateRequested(itemId, QString(), QString(), currentLocation);
-            popup->close();
-        });
-        lay->addWidget(clearBtn);
-    }
-
-    // Presets
-    const QStringList presetStatuses = {
-        tr("Morto"),       tr("Desaparecido"), tr("Ferido"),
-        tr("Curado"),      tr("Apaixonado"),   tr("Raivoso"),
-        tr("Feliz"),       tr("Triste"),       tr("Confuso"),
-        tr("Traído"),      tr("Com medo"),     tr("Em fuga"),
-        tr("Preso"),       tr("Transformado"), tr("Aliviado"),
-        tr("Perdido"),
-    };
-    for (const auto& s : presetStatuses) {
-        auto* btn = new QPushButton(s, popup);
-        btn->setObjectName(QStringLiteral("pickerOption"));
-        btn->setFixedHeight(26);
-        btn->setCursor(Qt::PointingHandCursor);
-        if (s == currentStatus) {
-            btn->setStyleSheet(QStringLiteral(
-                "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
-                "padding: 0 10px; text-align: left; font-size: 12px; "
-                "font-family: 'Lora','Crimson Text',serif; }")
-                .arg(Theme::hoverOverlay(), Theme::accentDefault()));
-        }
-        connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentLocation]() {
-            emit consistencyUpdateRequested(itemId, s, QString(), currentLocation);
-            popup->close();
-        });
-        lay->addWidget(btn);
-    }
-
-    // Confirma campo personalizado
-    connect(customInput, &QLineEdit::returnPressed, popup, [this, popup, customInput, itemId, currentLocation]() {
-        const QString val = customInput->text().trimmed();
-        if (!val.isEmpty()) {
-            emit consistencyUpdateRequested(itemId, val, QString(), currentLocation);
-            popup->close();
-        }
-    });
-
-    popup->adjustSize();
-    // Posiciona para não sair da tela
-    QPoint pos = globalPos;
-    const QRect screen = popup->screen() ? popup->screen()->availableGeometry() : QRect(0, 0, 1920, 1080);
-    if (pos.x() + popup->width() > screen.right())  pos.setX(screen.right() - popup->width());
-    if (pos.y() + popup->height() > screen.bottom()) pos.setY(globalPos.y() - popup->height() - 30);
-    popup->move(pos);
-    popup->show();
-    customInput->setFocus();
-}
-
-void DrawerListPanel::showLocationPicker(const QString& itemId, const QPoint& globalPos) {
-    if (!m_model) return;
-    const DrawerItem* item = m_model->findDrawerItem(itemId);
-    if (!item) return;
-
-    const QString currentStatus = item->charStatus;
-    const QString currentDetail = item->charStatusDetail;
-    const QString currentLocation = item->charLocation;
-
-    // Coleta cenários de todas as gavetas com drawerElementType == "setting"
-    QStringList settingNames;
-    for (const auto& d : m_model->drawers()) {
-        if (d.drawerElementType == QStringLiteral("setting")) {
-            for (const auto& it : d.items) {
-                if (!it.title.isEmpty()) settingNames.append(it.title);
-            }
-        }
-    }
-
-    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
-    popup->setAttribute(Qt::WA_DeleteOnClose);
-    popup->setObjectName(QStringLiteral("consistencyPicker"));
-    popup->setStyleSheet(pickerPopupQss());
-    popup->setFixedWidth(180);
-
-    auto* lay = new QVBoxLayout(popup);
-    lay->setContentsMargins(6, 6, 6, 6);
-    lay->setSpacing(2);
-
-    // Campo personalizado
-    auto* customInput = new QLineEdit(popup);
-    customInput->setObjectName(QStringLiteral("pickerInput"));
-    customInput->setPlaceholderText(tr("Local personalizado..."));
-    customInput->setFixedHeight(28);
-    lay->addWidget(customInput);
-
-    // Separador
-    auto* sep = new QFrame(popup);
-    sep->setFrameShape(QFrame::HLine);
-    sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
-    sep->setFixedHeight(1);
-    lay->addWidget(sep);
-
-    // Limpar local (se tiver)
-    if (!currentLocation.isEmpty()) {
-        auto* clearBtn = new QPushButton(tr("Limpar local"), popup);
-        clearBtn->setObjectName(QStringLiteral("pickerOptionClear"));
-        clearBtn->setFixedHeight(26);
-        clearBtn->setCursor(Qt::PointingHandCursor);
-        connect(clearBtn, &QPushButton::clicked, popup, [this, popup, itemId, currentStatus, currentDetail]() {
-            emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, QString());
-            popup->close();
-        });
-        lay->addWidget(clearBtn);
-    }
-
-    if (settingNames.isEmpty()) {
-        auto* emptyLbl = new QLabel(tr("Nenhum cenário criado."), popup);
-        emptyLbl->setStyleSheet(QStringLiteral(
-            "color: %1; font-size: 11px; padding: 4px 10px; font-style: italic;").arg(Theme::textMuted()));
-        lay->addWidget(emptyLbl);
-    } else {
-        for (const auto& s : settingNames) {
-            auto* btn = new QPushButton(s, popup);
-            btn->setObjectName(QStringLiteral("pickerOption"));
-            btn->setFixedHeight(26);
-            btn->setCursor(Qt::PointingHandCursor);
-            if (s == currentLocation) {
-                btn->setStyleSheet(QStringLiteral(
-                    "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
-                    "padding: 0 10px; text-align: left; font-size: 12px; "
-                    "font-family: 'Lora','Crimson Text',serif; }")
-                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
-            }
-            connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentStatus, currentDetail]() {
-                emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, s);
-                popup->close();
-            });
-            lay->addWidget(btn);
-        }
-    }
-
-    connect(customInput, &QLineEdit::returnPressed, popup, [this, popup, customInput, itemId, currentStatus, currentDetail]() {
-        const QString val = customInput->text().trimmed();
-        if (!val.isEmpty()) {
-            emit consistencyUpdateRequested(itemId, currentStatus, currentDetail, val);
-            popup->close();
-        }
-    });
-
-    popup->adjustSize();
-    QPoint pos = globalPos;
-    const QRect screen = popup->screen() ? popup->screen()->availableGeometry() : QRect(0, 0, 1920, 1080);
-    if (pos.x() + popup->width() > screen.right())  pos.setX(screen.right() - popup->width());
-    if (pos.y() + popup->height() > screen.bottom()) pos.setY(globalPos.y() - popup->height() - 30);
-    popup->move(pos);
-    popup->show();
-    customInput->setFocus();
-}
-
-void DrawerListPanel::showPresenceDetail(const QString& charName,
-                                         const CharPresenceResult& res,
-                                         QPoint globalPos)
-{
-    if (m_presenceDetailPopup) {
-        m_presenceDetailPopup->close();
-        m_presenceDetailPopup = nullptr;
-    }
-
-    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
-    popup->setAttribute(Qt::WA_DeleteOnClose);
-    popup->setObjectName(QStringLiteral("presenceDetail"));
-    popup->setStyleSheet(QStringLiteral(R"(
-        QFrame#presenceDetail {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: 8px;
-        }
-        QLabel#pdTitle { color: %3; font-size: 10px; font-weight: 700; letter-spacing: 0.4px; }
-        QLabel#pdEntry { color: %4; font-size: 11px; padding: 2px 0; }
-        QLabel#pdEmpty { color: %3; font-style: italic; font-size: 11px; }
-        QPushButton#pdModeBtn {
-            background: transparent; color: %4;
-            border: none; border-radius: 4px;
-            padding: 3px 8px; text-align: left; font-size: 11px;
-        }
-        QPushButton#pdModeBtn:hover { background: %5; }
-        QPushButton#pdModeBtnSel {
-            background: %5; color: %6;
-            border: none; border-radius: 4px;
-            padding: 3px 8px; text-align: left; font-size: 11px; font-weight: 600;
-        }
-    )").arg(Theme::panelBackground(), Theme::panelBorder(),
-            Theme::textMuted(), Theme::textPrimary(),
-            Theme::hoverOverlay(), Theme::textBright()));
-    popup->setFixedWidth(230);
-
-    auto* outerLay = new QVBoxLayout(popup);
-    outerLay->setContentsMargins(10, 8, 10, 10);
-    outerLay->setSpacing(5);
-
-    // Header: nome + gear
-    auto* headerRow = new QHBoxLayout();
-    headerRow->setSpacing(4);
-    auto* titleLbl = new QLabel(charName.toUpper() + QStringLiteral(" — APARECE EM"), popup);
-    titleLbl->setObjectName(QStringLiteral("pdTitle"));
-    headerRow->addWidget(titleLbl);
-    headerRow->addStretch();
-
-    auto* gearBtn = new QToolButton(popup);
-    gearBtn->setText(QStringLiteral("⚙"));
-    gearBtn->setStyleSheet(QStringLiteral(
-        "QToolButton { background: transparent; color: %1; border: none; font-size: 13px; }"
-        "QToolButton:hover { color: %2; }").arg(Theme::textMuted(), Theme::textPrimary()));
-    gearBtn->setCursor(Qt::PointingHandCursor);
-    gearBtn->setFixedSize(20, 20);
-    headerRow->addWidget(gearBtn);
-    outerLay->addLayout(headerRow);
-
-    // Painel de modo (toggle via gear)
-    auto* modePanel = new QWidget(popup);
-    auto* modeLay = new QVBoxLayout(modePanel);
-    modeLay->setContentsMargins(0, 2, 0, 2);
-    modeLay->setSpacing(2);
-    modePanel->setVisible(false);
-
-    for (int m = 0; m < 2; ++m) {
-        const QString label = (m == 0) ? tr("Contar somente cenas")
-                                       : tr("Contar somente capítulos inteiros");
-        const bool sel = (m == m_presenceMode);
-        auto* btn = new QPushButton(label, modePanel);
-        btn->setObjectName(sel ? QStringLiteral("pdModeBtnSel") : QStringLiteral("pdModeBtn"));
-        btn->setCursor(Qt::PointingHandCursor);
-        const int modeIdx = m;
-        connect(btn, &QPushButton::clicked, popup, [this, popup, modeIdx]() {
-            m_presenceMode = modeIdx;
-            popup->close();
-            rebuildContents();
-        });
-        modeLay->addWidget(btn);
-    }
-    outerLay->addWidget(modePanel);
-
-    connect(gearBtn, &QToolButton::clicked, popup, [modePanel, popup]() {
-        modePanel->setVisible(!modePanel->isVisible());
-        popup->adjustSize();
-    });
-
-    // Separador
-    auto* sep = new QFrame(popup);
-    sep->setFrameShape(QFrame::HLine);
-    sep->setStyleSheet(QStringLiteral("background: %1; border: none;").arg(Theme::subtleBorder()));
-    sep->setFixedHeight(1);
-    outerLay->addWidget(sep);
-
-    // Lista scrollável
-    auto* scroll = new QScrollArea(popup);
-    scroll->setFrameShape(QFrame::NoFrame);
-    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    scroll->setWidgetResizable(true);
-
-    auto* listHost = new QWidget();
-    listHost->setStyleSheet(QStringLiteral("background: transparent;"));
-    auto* listLay = new QVBoxLayout(listHost);
-    listLay->setContentsMargins(0, 0, 4, 0);
-    listLay->setSpacing(0);
-
-    if (res.chapters.isEmpty()) {
-        auto* emptyLbl = new QLabel(tr("Sem ocorrências registradas."), listHost);
-        emptyLbl->setObjectName(QStringLiteral("pdEmpty"));
-        listLay->addWidget(emptyLbl);
-    } else if (m_presenceMode == 0) {
-        // Por cena
-        for (const auto& chEntry : res.chapters) {
-            if (chEntry.scenes.isEmpty()) {
-                auto* lbl = new QLabel(chEntry.title, listHost);
-                lbl->setObjectName(QStringLiteral("pdEntry"));
-                listLay->addWidget(lbl);
-            } else {
-                for (const auto& scEntry : chEntry.scenes) {
-                    const QString scTitle = scEntry.title.isEmpty()
-                        ? tr("Cena %1").arg(scEntry.index + 1) : scEntry.title;
-                    auto* lbl = new QLabel(
-                        QStringLiteral("%1: %2").arg(chEntry.title, scTitle), listHost);
-                    lbl->setObjectName(QStringLiteral("pdEntry"));
-                    listLay->addWidget(lbl);
-                }
-            }
-        }
-    } else {
-        // Por capítulo
-        for (const auto& chEntry : res.chapters) {
-            auto* lbl = new QLabel(chEntry.title, listHost);
-            lbl->setObjectName(QStringLiteral("pdEntry"));
-            listLay->addWidget(lbl);
-        }
-    }
-    listLay->addStretch();
-    scroll->setWidget(listHost);
-    scroll->viewport()->setStyleSheet(
-        QStringLiteral("background: %1;").arg(Theme::panelBackground()));
-
-    const int rows = qMax(1, (m_presenceMode == 0) ? res.sceneCount : res.chapterCount);
-    scroll->setFixedHeight(qBound(40, rows * 22 + 8, 200));
-    outerLay->addWidget(scroll);
-
-    m_presenceDetailPopup = popup;
-    connect(popup, &QObject::destroyed, this, [this]() {
-        m_presenceDetailPopup = nullptr;
-    });
-
-    popup->adjustSize();
-
-    QPoint pos = globalPos;
-    const QRect screen = popup->screen() ? popup->screen()->availableGeometry()
-                                         : QRect(0, 0, 1920, 1080);
-    if (pos.x() + popup->width()  > screen.right())  pos.setX(screen.right()  - popup->width());
-    if (pos.y() + popup->height() > screen.bottom())
-        pos.setY(globalPos.y() - popup->height() - 10);
-    popup->move(pos);
-    popup->show();
 }
 
 void DrawerListPanel::onDrawersChanged() {
@@ -1314,20 +761,6 @@ void DrawerListPanel::updateViewButton() {
         ? tr("Exibição: Blocos — clique para Lista")
         : tr("Exibição: Lista — clique para Blocos"));
     updateSizeButton();
-    updateConsistencyBtn();
-}
-
-void DrawerListPanel::updateConsistencyBtn() {
-    if (!m_consistencyBtn) return;
-    const bool isElementDrawer = currentDrawerIsElement();
-    m_consistencyBtn->setVisible(isElementDrawer);
-    if (!isElementDrawer && m_consistencyMode) {
-        m_consistencyMode = false;
-        m_consistencyBtn->blockSignals(true);
-        m_consistencyBtn->setChecked(false);
-        m_consistencyBtn->blockSignals(false);
-    }
-    m_consistencyBtn->setChecked(m_consistencyMode);
 }
 
 void DrawerListPanel::rebuildContents() {
@@ -1432,9 +865,7 @@ void DrawerListPanel::rebuildContents() {
         // entre os cards, deixando respiro pra linhas de vínculo entre eles.
         const CardSizeParams& csz = kCardSizes[m_cardSizeIdx];
         const int maxCols = csz.cols;
-        const bool rowShowConsistency = m_consistencyMode && currentDrawerIsElement();
-        const int rowH = !rowShowConsistency ? csz.cardH
-                        : (currentDrawerIsCharacter() ? csz.cardHConsistency : csz.cardHConsistencySimple);
+        const int rowH = csz.cardH;
         QHBoxLayout* currentRow = nullptr;
         int colInRow = 0;
         for (const auto& it : items) {
@@ -1519,27 +950,6 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         }
     }
 
-    // Dados de consistência do item (pode ser nulo se não for personagem)
-    QString charStatus, charStatusDetail, charLocation;
-    if (m_consistencyMode && currentDrawerIsCharacter()) {
-        if (const DrawerItem* it = m_model ? m_model->findDrawerItem(itemId) : nullptr) {
-            charStatus       = it->charStatus;
-            charStatusDetail = it->charStatusDetail;
-            charLocation     = it->charLocation;
-        }
-    }
-    const bool showConsistency = m_consistencyMode && currentDrawerIsElement();
-    // Objeto/Cenário: só a barra de presença (sem status/local, que só fazem
-    // sentido para personagem).
-    const bool showFullConsistency = showConsistency && currentDrawerIsCharacter();
-
-    // Presença no documento atual (via ElementsStore::docElements)
-    const bool presentInDoc = showConsistency
-        && m_elementsStore
-        && !m_currentDocKey.isEmpty()
-        && !elementId.isEmpty()
-        && m_elementsStore->hasDocElement(m_currentDocKey, elementId);
-
     // Cor de grupo (markerId → group color)
     QString groupColor;
     if (const DrawerItem* itemForGroup = m_model->findDrawerItem(itemId)) {
@@ -1554,15 +964,11 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     card->setAttribute(Qt::WA_StyledBackground, true);
     card->setCursor(Qt::PointingHandCursor);
     card->setContextMenuPolicy(Qt::CustomContextMenu);
-    const int cardHeight = !showConsistency ? csz.cardH
-                          : (showFullConsistency ? csz.cardHConsistency : csz.cardHConsistencySimple);
-    card->setFixedSize(csz.cardW, cardHeight);
+    card->setFixedSize(csz.cardW, csz.cardH);
     {
-        const QString normalBorder  = !groupColor.isEmpty() ? groupColor
-                                    : (presentInDoc ? Theme::accentDefault() : Theme::subtleBorder());
-        const QString hoverBorder   = !groupColor.isEmpty() ? groupColor
-                                    : (presentInDoc ? Theme::accentDefault() : Theme::borderStrong());
-        const QString borderWidth   = (!groupColor.isEmpty() || presentInDoc) ? QStringLiteral("2px") : QStringLiteral("1px");
+        const QString normalBorder  = !groupColor.isEmpty() ? groupColor : Theme::subtleBorder();
+        const QString hoverBorder   = !groupColor.isEmpty() ? groupColor : Theme::borderStrong();
+        const QString borderWidth   = !groupColor.isEmpty() ? QStringLiteral("2px") : QStringLiteral("1px");
         card->setStyleSheet(QStringLiteral(R"(
             QFrame#elemCard {
                 background: %1;
@@ -1600,28 +1006,12 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     photo->installEventFilter(this);
     lay->addWidget(photo, 0, Qt::AlignHCenter);
 
-    // Linha do nome: dot de presença + label
     auto* nameLbl = new QLabel(title.isEmpty() ? tr("(sem nome)") : title, card);
     nameLbl->setStyleSheet(QStringLiteral(
         "color: %1; font-size: 12px; font-weight: 700;").arg(Theme::textBright()));
     nameLbl->setAlignment(Qt::AlignHCenter);
     nameLbl->setWordWrap(true);
-
-    if (presentInDoc) {
-        auto* nameRow = new QHBoxLayout();
-        nameRow->setSpacing(4);
-        nameRow->setContentsMargins(0, 0, 0, 0);
-        nameRow->setAlignment(Qt::AlignHCenter);
-        auto* dot = new QLabel(card);
-        dot->setFixedSize(7, 7);
-        dot->setStyleSheet(QStringLiteral(
-            "background: %1; border-radius: 3px;").arg(Theme::accentDefault()));
-        nameRow->addWidget(dot, 0, Qt::AlignVCenter);
-        nameRow->addWidget(nameLbl);
-        lay->addLayout(nameRow);
-    } else {
-        lay->addWidget(nameLbl);
-    }
+    lay->addWidget(nameLbl);
 
     // Botão discreto de criar vínculo — overlay no canto sup direito do card,
     // só visível ao hover. Vira o handle de drag (substituindo o nome).
@@ -1663,135 +1053,7 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         lay->addWidget(roleLbl);
     }
 
-    if (showConsistency) {
-        // Separador fino
-        auto* sep = new QFrame(card);
-        sep->setFrameShape(QFrame::HLine);
-        sep->setFixedHeight(1);
-        sep->setStyleSheet(QStringLiteral("background: %1; border: none; margin: 2px 0;").arg(Theme::subtleBorder()));
-        lay->addWidget(sep);
-
-        // Barra de presença (clicável, exibe lista de cenas/capítulos). Personagem
-        // usa detecção automática por menção de nome (m_presenceResults); Objeto/
-        // Cenário usa a marcação manual de "elementos presentes" (m_elementPresenceResults).
-        const CharPresenceResult presRes = showFullConsistency
-            ? m_presenceResults.value(title.toLower())
-            : m_elementPresenceResults.value(elementId);
-        const int presCount = (m_presenceMode == 0) ? presRes.sceneCount : presRes.chapterCount;
-        const int presTotal = (m_presenceMode == 0) ? m_totalScenes    : m_totalChapters;
-        const int pct = (presTotal > 0) ? qMin(100, (presCount * 100) / presTotal) : 0;
-        const QString modeStr = (m_presenceMode == 0) ? tr("cena(s)") : tr("capítulo(s)");
-
-        auto* presenceBar = new QProgressBar(card);
-        presenceBar->setRange(0, 100);
-        presenceBar->setValue(pct);
-        presenceBar->setFixedHeight(5);
-        presenceBar->setTextVisible(false);
-        presenceBar->setCursor(Qt::PointingHandCursor);
-        presenceBar->setToolTip(tr("Aparece em %1 de %2 %3 (%4%) — clique para detalhes")
-            .arg(presCount).arg(presTotal).arg(modeStr).arg(pct));
-        if (showFullConsistency)
-            presenceBar->setProperty("presenceBarName", title);
-        else
-            presenceBar->setProperty("presenceBarElementId", elementId);
-        presenceBar->installEventFilter(this);
-        presenceBar->setStyleSheet(QStringLiteral(R"(
-            QProgressBar {
-                background: %1;
-                border: none;
-                border-radius: 2px;
-            }
-            QProgressBar::chunk {
-                background: %2;
-                border-radius: 2px;
-            }
-        )").arg(Theme::hoverOverlay(), Theme::accentDefault()));
-        lay->addWidget(presenceBar);
-
-        if (!showFullConsistency) {
-            lay->addStretch();
-        } else {
-        // Botão Status
-        auto* statusBtn = new QPushButton(card);
-        statusBtn->setObjectName(QStringLiteral("pickerOption"));
-        statusBtn->setCursor(Qt::PointingHandCursor);
-        statusBtn->setFixedHeight(22);
-        const QString statusText = charStatus.isEmpty()
-            ? tr("Status: —")
-            : tr("Status: %1").arg(charStatus);
-        statusBtn->setText(statusText);
-        statusBtn->setStyleSheet(QStringLiteral(R"(
-            QPushButton {
-                background: %1;
-                color: %2;
-                border: 1px solid %3;
-                border-radius: 5px;
-                padding: 0 6px;
-                text-align: left;
-                font-family: 'Lora','Crimson Text',serif;
-                font-size: 10px;
-            }
-            QPushButton:hover { background: %4; color: %5; border-color: %6; }
-        )").arg(Theme::pressedOverlay(),
-                charStatus.isEmpty() ? Theme::textMuted() : Theme::textBright(),
-                Theme::subtleBorder(), Theme::hoverOverlay(),
-                Theme::textBright(), Theme::borderStrong()));
-        if (!charStatusDetail.isEmpty())
-            statusBtn->setToolTip(charStatusDetail);
-        connect(statusBtn, &QPushButton::clicked, this, [this, itemId, statusBtn]() {
-            showStatusPicker(itemId, statusBtn->mapToGlobal(
-                QPoint(0, statusBtn->height() + 2)));
-        });
-        lay->addWidget(statusBtn);
-
-        // Aviso de inconsistência: personagem "ausente" mas ainda detectado em cenas
-        static const QStringList kAbsentStatuses = {
-            QStringLiteral("Morto"), QStringLiteral("Desaparecido")
-        };
-        if (!charStatus.isEmpty() && kAbsentStatuses.contains(charStatus) && presCount > 0) {
-            auto* warnLbl = new QLabel(
-                tr("⚠ Aparece em %1 cena(s) após %2").arg(presCount).arg(charStatus.toLower()), card);
-            warnLbl->setWordWrap(true);
-            warnLbl->setStyleSheet(QStringLiteral(
-                "color: %1; font-size: 9px; font-weight: 700; padding: 2px 0;")
-                .arg(Theme::accentWarning()));
-            lay->addWidget(warnLbl);
-        }
-
-        // Botão Último local
-        auto* locBtn = new QPushButton(card);
-        locBtn->setObjectName(QStringLiteral("pickerOption"));
-        locBtn->setCursor(Qt::PointingHandCursor);
-        locBtn->setFixedHeight(22);
-        const QString locText = charLocation.isEmpty()
-            ? tr("Local: —")
-            : tr("Local: %1").arg(charLocation);
-        locBtn->setText(locText);
-        locBtn->setStyleSheet(QStringLiteral(R"(
-            QPushButton {
-                background: %1;
-                color: %2;
-                border: 1px solid %3;
-                border-radius: 5px;
-                padding: 0 6px;
-                text-align: left;
-                font-family: 'Lora','Crimson Text',serif;
-                font-size: 10px;
-            }
-            QPushButton:hover { background: %4; color: %5; border-color: %6; }
-        )").arg(Theme::pressedOverlay(),
-                charLocation.isEmpty() ? Theme::textMuted() : Theme::textBright(),
-                Theme::subtleBorder(), Theme::hoverOverlay(),
-                Theme::textBright(), Theme::borderStrong()));
-        connect(locBtn, &QPushButton::clicked, this, [this, itemId, locBtn]() {
-            showLocationPicker(itemId, locBtn->mapToGlobal(
-                QPoint(0, locBtn->height() + 2)));
-        });
-        lay->addWidget(locBtn);
-        } // showFullConsistency
-    } else {
-        lay->addStretch();
-    }
+    lay->addStretch();
 
     const QString drawerKey = m_currentKey;
     card->installEventFilter(this);
@@ -2076,29 +1338,6 @@ bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
         } else if (event->type() == QEvent::HoverLeave) {
             if (auto* btn = w->findChild<QToolButton*>(QStringLiteral("bondCreateBtn")))
                 btn->setVisible(false);
-        }
-    }
-
-    // ---- Click na barra de presença abre popup de detalhes ----
-    if (w && (w->property("presenceBarName").isValid() || w->property("presenceBarElementId").isValid())) {
-        if (event->type() == QEvent::MouseButtonRelease) {
-            auto* me = static_cast<QMouseEvent*>(event);
-            if (me->button() == Qt::LeftButton) {
-                if (w->property("presenceBarName").isValid()) {
-                    const QString charName = w->property("presenceBarName").toString();
-                    const CharPresenceResult& res = m_presenceResults.value(charName.toLower());
-                    showPresenceDetail(charName, res,
-                                       w->mapToGlobal(QPoint(0, w->height() + 4)));
-                } else {
-                    const QString elementId = w->property("presenceBarElementId").toString();
-                    const Element* el = m_elementsStore ? m_elementsStore->findElement(elementId) : nullptr;
-                    const QString elName = el ? el->name : elementId;
-                    const CharPresenceResult& res = m_elementPresenceResults.value(elementId);
-                    showPresenceDetail(elName, res,
-                                       w->mapToGlobal(QPoint(0, w->height() + 4)));
-                }
-                return true;
-            }
         }
     }
 
