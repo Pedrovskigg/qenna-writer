@@ -1130,11 +1130,22 @@ void MainWindow::setupEditor()
             if (elem.narrator) {
                 detected = (s.wordCount >= CharacterDetector::kNarratorMinWords);
             } else {
-                const QStringList tokens = CharacterDetector::buildTokensPublic(elem);
-                for (const QString& token : tokens) {
-                    const QString pattern = QStringLiteral("\\b")
-                        + QRegularExpression::escape(token) + QStringLiteral("\\b");
-                    QRegularExpression re(pattern, QRegularExpression::CaseInsensitiveOption);
+                // Regex compilada é cara — reaproveita entre disparos do timer
+                // em vez de recompilar do zero a cada pausa de digitação (ver
+                // m_presenceRegexCache).
+                auto cacheIt = m_presenceRegexCache.find(elem.id);
+                if (cacheIt == m_presenceRegexCache.end()) {
+                    QVector<QRegularExpression> regexes;
+                    const QStringList tokens = CharacterDetector::buildTokensPublic(elem);
+                    regexes.reserve(tokens.size());
+                    for (const QString& token : tokens) {
+                        const QString pattern = QStringLiteral("\\b")
+                            + QRegularExpression::escape(token) + QStringLiteral("\\b");
+                        regexes.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+                    }
+                    cacheIt = m_presenceRegexCache.insert(elem.id, regexes);
+                }
+                for (const QRegularExpression& re : cacheIt.value()) {
                     int count = 0;
                     auto it = re.globalMatch(s.lowerText);
                     while (it.hasNext()) { it.next(); if (++count >= CharacterDetector::kThreshold) { detected = true; break; } }
@@ -1190,8 +1201,13 @@ void MainWindow::setupEditor()
     });
 
     // Se um elemento é criado durante o scan, o snapshot fica desatualizado —
-    // cancelar para que o próximo ciclo recomece com o estado correto.
+    // cancelar para que o próximo ciclo recomece com o estado correto. Além
+    // disso, qualquer mudança real no elenco (nome, apelido, criação,
+    // remoção) invalida os caches de regex acima — eles só valem enquanto o
+    // elenco não muda.
     connect(elementsStore, &ElementsStore::changed, this, [this]() {
+        m_presenceRegexCache.clear();
+        m_dialogueTokensCacheValid = false;
         if (!m_scanState || !elementsStore) return;
         if (m_scanState->elements.size() != elementsStore->elements().size()) {
             qDebug() << "[detect] lista de elementos mudou durante scan — cancelando";
@@ -1257,7 +1273,14 @@ void MainWindow::setupEditor()
         for (const Element& e : allElements) {
             if (e.narrator) { narrator = &e; break; }
         }
-        const QVector<DialogueScannerToken> tokens = DialogueDetector::buildScannerTokens(allElements);
+        // Reaproveita os tokens/regex compilados entre disparos do timer (ver
+        // m_dialogueTokensCache) — só recompila quando o elenco muda de
+        // verdade, não a cada pausa de digitação.
+        if (!m_dialogueTokensCacheValid) {
+            m_dialogueTokensCache = DialogueDetector::buildScannerTokens(allElements);
+            m_dialogueTokensCacheValid = true;
+        }
+        const QVector<DialogueScannerToken>& tokens = m_dialogueTokensCache;
         if (tokens.isEmpty()) return;
 
         struct Segment { QString plainText; int sceneIndex; QString sourceLabel; };
