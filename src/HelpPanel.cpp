@@ -149,10 +149,6 @@ constexpr int kMarkerPlainThumbWidth        = 400; // nativo 387
 constexpr int kMemoryCreationMenuThumbWidth = 480; // nativo 446
 constexpr int kMemoryCreationDialogThumbWidth = 380; // nativo 338
 constexpr int kMemoryPensarioTabThumbWidth  = 420; // nativo 395
-constexpr int kConsistencyToggleThumbWidth  = 420; // nativo 317
-constexpr int kConsistencyLocationThumbWidth = 280; // nativo 191
-constexpr int kConsistencyPresenceThumbWidth = 500; // nativo 461
-constexpr int kConsistencyStatusThumbWidth  = 520; // nativo 496
 constexpr int kBuilderSystemCreatorThumbWidth = 680; // nativo 908
 constexpr int kBuilderSoftHardThumbWidth    = 320; // nativo 251, recorte alto (251x813)
 constexpr int kBuilderSectionsRulesThumbWidth = 420; // nativo 260
@@ -231,7 +227,6 @@ void HelpPanel::buildTopics()
         { QStringLiteral("construtor"), tr("Construtor") },
         { QStringLiteral("pensario"), tr("Pensário") },
         { QStringLiteral("estatisticas"), tr("Estatísticas") },
-        { QStringLiteral("consistencia"), tr("Consistência") },
         { QStringLiteral("vinculos"), tr("Vínculos") },
         { QStringLiteral("mapa-mundi"), tr("Mapa-múndi") },
         { QStringLiteral("glossario"), tr("Glossário") },
@@ -360,7 +355,6 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("construtor")) return builderContent();
     if (id == QStringLiteral("pensario")) return pensarioContent();
     if (id == QStringLiteral("estatisticas")) return statsContent();
-    if (id == QStringLiteral("consistencia")) return consistencyContent();
     if (id == QStringLiteral("vinculos")) return bondsContent();
     if (id == QStringLiteral("mapa-mundi")) return worldMapContent();
     if (id == QStringLiteral("glossario")) return glossaryContent();
@@ -567,7 +561,7 @@ QString HelpPanel::drawersContent() const
         "imagem acima)."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
-        .arg(tr("Fixar, Modo de Consistência, alternar exibição entre listas e blocos, "
+        .arg(tr("Fixar, alternar exibição entre listas e blocos, "
                 "configurar o tamanho dos blocos e ordenar os itens da gaveta."),
              tr("A ordenação inclui opções como A-Z e ordem de criação, entre outras."));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
@@ -577,8 +571,7 @@ QString HelpPanel::drawersContent() const
                 "projeto."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Algumas opções só existem em gavetas de elementos (como o Modo de Consistência e o "
-        "tamanho dos blocos)."));
+        "Algumas opções só existem em gavetas de elementos (como o tamanho dos blocos)."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "Para os documentos e itens dentro das gavetas, você encontra as seguintes opções ao "
@@ -1995,81 +1988,6 @@ QString HelpPanel::pensarioContent() const
         "</a>"
         "</p>"
     ).arg(QString::number(kPensarioNameGeneratorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    return html;
-}
-
-// Conteúdo escrito pelo usuário em help-panel/consistency/, montado aqui em HTML.
-QString HelpPanel::consistencyContent() const
-{
-    QString html;
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O Modo de Consistência é uma forma de acompanhar, de relance, o quanto cada "
-        "personagem, cenário ou objeto está realmente presente na sua história — e pegar erros "
-        "de continuidade antes que um leitor pegue primeiro."));
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra ativar, abra uma gaveta de elemento (Personagens, Cenários ou Objetos) e clique no "
-        "botão de \"Modo consistência narrativa\" na barra de ferramentas da gaveta."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/consistencia/toggle-options.png' style='text-decoration:none;'>"
-        "<img src=':/help/consistencia/toggle-options.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kConsistencyToggleThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>1- %1</b></p>").arg(tr("Barra de presença."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Todo item ganha uma barrinha mostrando em quantos capítulos (ou cenas) ele aparece, em "
-        "porcentagem do total do manuscrito. Passe o mouse pra ver o número exato, ou clique na "
-        "barra pra abrir um detalhe com a lista de onde ele aparece."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/consistencia/presence.png' style='text-decoration:none;'>"
-        "<img src=':/help/consistencia/presence.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kConsistencyPresenceThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>")
-        .arg(tr("Status e Último local (só em gavetas de Personagens)."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Personagens ganham dois controles extras: Status (Morto, Desaparecido, Ferido, Curado, "
-        "Apaixonado, Raivoso, ou um texto personalizado seu) e Último local (também com opções "
-        "prontas ou texto livre). Use pra acompanhar o estado atual de cada um conforme a "
-        "história avança."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/consistencia/status.png' style='text-decoration:none;'>"
-        "<img src=':/help/consistencia/status.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kConsistencyStatusThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/consistencia/location.png' style='text-decoration:none;'>"
-        "<img src=':/help/consistencia/location.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kConsistencyLocationThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
-        .arg(tr("O aviso de inconsistência."),
-             tr("Aqui está o motivo de tudo isso existir: se você marcar um personagem como "
-                "\"Morto\" ou \"Desaparecido\", e a barra de presença mostrar que ele ainda "
-                "aparece em cenas escritas depois desse ponto, um aviso vermelho aparece no card "
-                "dele — \"⚠ Aparece em X cena(s) após morto\". É o app te avisando que talvez "
-                "tenha esquecido de um personagem morto aparecendo vivo mais adiante (ou que "
-                "precisa ajustar o status)."));
-
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Cenários e Objetos não têm Status/Último local (não fazem sentido pra eles), só a "
-        "barra de presença — ainda assim é útil pra ver, por exemplo, se aquele objeto "
-        "importante que você criou faz tempo sumiu do meio da história sem querer."));
 
     return html;
 }
