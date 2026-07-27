@@ -115,7 +115,15 @@ class DialogueRatioBar : public QWidget {
 public:
     explicit DialogueRatioBar(QWidget* parent = nullptr) : QWidget(parent) {
         setFixedWidth(5);
-        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+        // Fixed, não Expanding: sem sizeHint próprio, uma policy vertical
+        // Expanding aqui faz essa barra (e a linha inteira do capítulo, já
+        // que ela mora dentro de um container ao lado do botão) engolir todo
+        // o espaço sobrando da lista de capítulos — texto do capítulo fica
+        // verticalmente centralizado num vão gigante e empurra as cenas pra
+        // baixo. Altura fixa em 34 pra casar com btn->setMinimumHeight(34)
+        // logo abaixo, que é quem realmente define a altura da linha.
+        setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        setFixedHeight(34);
     }
     ~DialogueRatioBar() override { hidePopup(); }
 

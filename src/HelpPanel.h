@@ -58,7 +58,6 @@ private:
     QString themesContent() const;
     QString builderContent() const;
     QString pensarioContent() const;
-    QString consistencyContent() const;
     QString bondsContent() const;
     QString worldMapContent() const;
     QString glossaryContent() const;
