@@ -47,4 +47,14 @@ QString stripImages(const QString& html)
     return out;
 }
 
+QString stripForegroundColors(const QString& html)
+{
+    static const QRegularExpression re(
+        QStringLiteral("(?<!background-)color\\s*:\\s*[^;\"']+;?"),
+        QRegularExpression::CaseInsensitiveOption);
+    QString out = html;
+    out.remove(re);
+    return out;
+}
+
 } // namespace DocPreview

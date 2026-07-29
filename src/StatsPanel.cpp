@@ -163,6 +163,7 @@ QWidget* StatsPanel::buildOverviewPage()
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
 
     auto* inner = new QWidget(scroll);
     auto* lay = new QVBoxLayout(inner);
@@ -266,6 +267,7 @@ QWidget* StatsPanel::buildCharacterPage()
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
     scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
 
     auto* page = new QWidget(scroll);
     auto* lay = new QVBoxLayout(page);
@@ -400,6 +402,7 @@ QWidget* StatsPanel::buildCharacterPage()
     docScroll->setWidgetResizable(true);
     docScroll->setFrameShape(QFrame::NoFrame);
     docScroll->setFixedHeight(kDocHeight);
+    docScroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
 
     m_charDoc = new QLabel(docScroll);
     m_charDoc->setObjectName(QStringLiteral("stCharDoc"));
@@ -833,6 +836,7 @@ void StatsPanel::rebuildCharacterPage()
         QString html = DocPreview::resolveDrawerItemHtml(
             item, m_elements, m_cache, m_projectRoot, /*includePhoto=*/false);
         html = DocPreview::stripImages(html);
+        html = DocPreview::stripForegroundColors(html);
         m_charDoc->setText(html.trimmed().isEmpty()
             ? tr("<i>Sem ficha ou documento vinculado a este personagem.</i>")
             : html);
@@ -964,6 +968,7 @@ void StatsPanel::openChemistryPopup(const QString& otherElementId)
     auto* scroll = new QScrollArea(popup);
     scroll->setWidgetResizable(true);
     scroll->setFrameShape(QFrame::NoFrame);
+    scroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     auto* inner = new QWidget(scroll);
     auto* innerLay = new QVBoxLayout(inner);
     innerLay->setContentsMargins(0, 0, 0, 0);
