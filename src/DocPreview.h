@@ -28,4 +28,11 @@ QString resolveDrawerItemHtml(const DrawerItem* item, ElementsStore* elements,
 // que não têm espaço/motivo pra renderizar imagem embutida.
 QString stripImages(const QString& html);
 
+// Remove cor de texto embutida inline (herdada do tema do editor no momento
+// em que o campo/doc foi escrito, via toHtml()) — sem isso, o texto atropela
+// a cor de tema do widget que mostra o preview (ex. StatsPanel), podendo
+// ficar ilegível dependendo da combinação de temas. Preserva background-color
+// (marcador de texto é formatação intencional do autor, não sobra de tema).
+QString stripForegroundColors(const QString& html);
+
 } // namespace DocPreview
