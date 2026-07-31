@@ -11,6 +11,7 @@ class SheetTemplatesStore;
 class QScrollArea;
 class QLabel;
 class QLineEdit;
+class QPushButton;
 class QTextEdit;
 class QVBoxLayout;
 class QTimer;
@@ -41,6 +42,15 @@ public:
     // Store de modelos de ficha (opcional) — habilita o botão "Salvar como modelo".
     void setTemplatesStore(SheetTemplatesStore* store) { m_templates = store; }
 
+    // Raiz do projeto atual — usada só pra registrar na galeria de imagens
+    // geradas (GeneratedImageGallery) quando o botão "Gerar imagem" é usado.
+    void setProjectRoot(const QString& root) { m_projectRoot = root; }
+
+    // Redesenha a foto a partir do Element atual — público pra permitir que a
+    // MainWindow atualize a ficha se ela estiver aberta quando a imagem for
+    // gerada por um gatilho externo (menu de contexto da gaveta, tool da Mira).
+    void refreshPhoto();
+
 signals:
     void edited();        // disparado (com debounce) quando algo muda — pede save
     void closeRequested();
@@ -66,7 +76,7 @@ private:
     void toggleColumns();
     void saveAsTemplate();
     void pickPhoto();
-    void refreshPhoto();
+    void generateImage();
     QWidget* buildFieldWidget(const SheetField& f);
     QWidget* buildHeader(bool vertical);  // foto + nome + apelido
 
@@ -75,11 +85,13 @@ private:
     SheetTemplatesStore* m_templates = nullptr;
     QString m_itemId;
     QString m_elementId;
+    QString m_projectRoot;
     CharacterSheet m_sheet;     // cópia de trabalho
 
     QScrollArea* m_scroll = nullptr;
     QWidget* m_content = nullptr;
     QLabel* m_photo = nullptr;
+    QPushButton* m_genImageBtn = nullptr;
     QTimer* m_saveTimer = nullptr;
     QFont m_contentFont;        // fonte do conteúdo (escrita); rótulos usam a da UI
 

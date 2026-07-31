@@ -74,6 +74,7 @@ signals:
     void pensarioToggleRequested();
     void helpRequested();
     void construtorToggleRequested();
+    void miraToggleRequested();
     void sceneVarRequested();
     void boldToggled(bool enabled);
     void italicToggled(bool enabled);
@@ -120,6 +121,7 @@ private:
     QToolButton *pensarioButton;
     QToolButton *helpButton;
     QToolButton *construtorButton;
+    QToolButton *miraButton;
     QLabel *docTitleLabel;
     QLabel *docSubtitleLabel; // "Cena x" embaixo do título, quando aplicável
     QToolButton *sceneVarButton; // abre popup de variações da cena atual

@@ -1,5 +1,6 @@
 #include "MapPanel.h"
 
+#include "CrashLogger.h"
 #include "GeoData.h"
 #include "MapView.h"
 #include "MapPinsStore.h"
@@ -518,6 +519,8 @@ void MapPanel::savePinFromPopup()
         p.linkId = m_pinLink->currentData().toString();
         if (!p.linkId.isEmpty()) p.linkLabel = m_pinLink->currentText();
     }
+    CrashLogger::log(QStringLiteral("MapPanel::savePin %1 label=%2")
+        .arg(m_editPinId.isEmpty() ? QStringLiteral("new") : QStringLiteral("edit"), label));
     if (m_editPinId.isEmpty()) m_pins->addPin(p);
     else m_pins->updatePin(p);
     m_pinPopup->hide();

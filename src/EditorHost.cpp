@@ -50,6 +50,9 @@ EditorHost::EditorHost(QTextEdit* editor, DocCache* cache, ProjectModel* model, 
 }
 
 bool EditorHost::eventFilter(QObject* watched, QEvent* event) {
+    if (watched == m_editor && event->type() == QEvent::MouseButtonPress) {
+        CrashLogger::log("EditorHost: clique no editor");
+    }
     if (watched == m_editor && event->type() == QEvent::KeyPress) {
         auto* key = static_cast<QKeyEvent*>(event);
         if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {

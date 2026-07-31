@@ -1,5 +1,6 @@
 #include "AvatarUtils.h"
 
+#include <QBuffer>
 #include <QColor>
 #include <QFont>
 #include <QHash>
@@ -17,6 +18,20 @@ QPixmap decodeDataUrl(const QString& dataUrl)
     QPixmap pm;
     pm.loadFromData(raw);
     return pm;
+}
+
+QString encodeDataUrl(const QImage& img, int maxSide, int jpegQuality)
+{
+    if (img.isNull()) return QString();
+    const QImage scaled = (img.width() > maxSide || img.height() > maxSide)
+        ? img.scaled(maxSide, maxSide, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+        : img;
+
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    scaled.save(&buf, "JPEG", jpegQuality);
+    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
 }
 
 QPixmap circularAvatar(const QString& dataUrl, const QString& name,

@@ -120,6 +120,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     , pensarioButton(makeIconButton(this))
     , helpButton(new QToolButton(this))
     , construtorButton(makeIconButton(this))
+    , miraButton(makeIconButton(this))
     , docTitleLabel(new QLabel(this))
     , docSubtitleLabel(new QLabel(this))
     , sceneVarButton(makeIconButton(this))
@@ -353,6 +354,11 @@ TopToolbar::TopToolbar(QWidget *parent)
     construtorButton->setToolTip(tr("Construtor"));
     connect(construtorButton, &QToolButton::clicked, this, &TopToolbar::construtorToggleRequested);
 
+    miraButton->setObjectName(QStringLiteral("ttbSystem"));
+    bindIcon(miraButton, QStringLiteral("elements/star.svg"));
+    miraButton->setToolTip(tr("Mira — chat com a assistente de IA"));
+    connect(miraButton, &QToolButton::clicked, this, &TopToolbar::miraToggleRequested);
+
     // ---------------- Título do documento (centro) ----------------
     docTitleLabel->setObjectName(QStringLiteral("ttbDocTitle"));
     docTitleLabel->setAlignment(Qt::AlignCenter);
@@ -428,6 +434,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(pensarioButton);
     layout->addWidget(refMenuButton);
     layout->addWidget(statisticsButton);
+    layout->addWidget(miraButton);
     layout->addWidget(makeVSeparator(this));
 
     // --- Direita: Sistema ---

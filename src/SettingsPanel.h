@@ -8,6 +8,7 @@
 class QCheckBox;
 class QComboBox;
 class QLabel;
+class QLineEdit;
 class QPushButton;
 class QSlider;
 class QSpinBox;
@@ -90,6 +91,13 @@ private:
     QLabel* m_vMarginValue = nullptr;
     QLabel* m_spellHint = nullptr;
     QLabel* m_pageHint = nullptr;
+    QLineEdit* m_aiApiKeyEdit  = nullptr;
+    QLineEdit* m_aiBaseUrlEdit = nullptr;
+    QLineEdit* m_aiModelEdit   = nullptr;
+    QCheckBox* m_aiAutoScanCheck = nullptr;
+    QComboBox* m_imgModelCombo   = nullptr;
+    QComboBox* m_imgQualityCombo = nullptr;
+    QComboBox* m_imgSizeCombo    = nullptr;
     bool m_blockSignals = false;
     bool m_blockLayoutSignals = false;
 };

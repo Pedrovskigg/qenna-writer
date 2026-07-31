@@ -23,12 +23,27 @@ public:
     static QString pickAndCropImage(QWidget* parent,
                                      const QString& fileDialogTitle = tr("Selecionar foto"));
 
+    // Mesmo diálogo de crop interativo, mas a partir de uma QImage já em
+    // memória (sem QFileDialog) — usado depois de uma imagem gerada por IA.
+    static QString cropImage(const QImage& source, QWidget* parent,
+                              const QString& dialogTitle = tr("Ajustar recorte da foto"));
+
+    // Sem UI — recorte automático (quadrado central), mesmo cálculo do
+    // retângulo inicial do crop interativo. Usado no caminho headless (tool
+    // de IA no chat), onde não há usuário no loop pra ajustar manualmente.
+    static QString autoSquareDataUrl(const QImage& source);
+
 private:
     explicit ImageCropDialog(const QImage& original, QWidget* parent);
 
     // Aplica o retângulo de crop escolhido (convertido de volta pra
     // coordenadas da imagem original) + o pipeline de encode final.
     QString resultDataUrl() const;
+
+    // Recorte quadrado (coords da imagem original) + encode final (400x400
+    // JPEG 92% em data URL) — núcleo compartilhado por resultDataUrl() e
+    // autoSquareDataUrl().
+    static QString cropAndEncode(const QImage& original, const QRect& cropRect);
 
     QImage       m_original;  // resolução plena — só ela é usada no copy() final
     CropCanvas*  m_canvas = nullptr;

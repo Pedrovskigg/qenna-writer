@@ -49,6 +49,7 @@ signals:
     void openInRefMenuRequested(QString drawerKey, QString itemId);
     void addElementRequested(QString drawerKey, QString itemId);
     void removeElementRequested(QString drawerKey, QString itemId);
+    void generateCharacterImageRequested(QString drawerKey, QString itemId);
     void panelWidthChanged();
     void panelHeightChanged();
     // Vínculos: arrastar nome de personagem em outro card

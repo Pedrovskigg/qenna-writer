@@ -1,6 +1,7 @@
 #include "PensarioPanel.h"
 
 #include "AvatarUtils.h"
+#include "CrashLogger.h"
 #include "DocCache.h"
 #include "ElementsStore.h"
 #include "GlossaryStore.h"
@@ -2508,6 +2509,7 @@ void PensarioPanel::openPanel()
 
 void PensarioPanel::closePanel()
 {
+    CrashLogger::log("PensarioPanel::closePanel");
     hide();
 }
 

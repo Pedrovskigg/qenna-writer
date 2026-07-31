@@ -95,6 +95,9 @@
 #include "ElementsStore.h"
 #include "FindBar.h"
 #include "GlobalSearchPanel.h"
+#include "CharacterImageGenDialog.h"
+#include "DocPreview.h"
+#include "ImageCropDialog.h"
 #include "ImageInsertDialog.h"
 #include "ImageOverlay.h"
 #include "LeftBar.h"
@@ -132,6 +135,8 @@
 #include "SheetTemplatesStore.h"
 #include "GroupsPanel.h"
 #include "MarkerHoverPopup.h"
+#include "AIChatPanel.h"
+#include "AISelectionChat.h"
 #include "MarkerPickPopup.h"
 #include "MarkerStore.h"
 #include "PresencePopup.h"
@@ -841,6 +846,10 @@ void MainWindow::setupEditor()
         [this]() { addSelectionToMemory(); });
     selectionPopup->addAction(QStringLiteral("construtor.svg"), tr("Salvar como menção ao sistema..."),
         [this]() { addSelectionToConstrutorMention(); });
+    selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a Mira"),
+        [this]() { openAISelectionChat(); });
+    selectionPopup->addAction(QStringLiteral("add-image.svg"), tr("Gerar imagem disso..."),
+        [this]() { generateImageFromSelection(); });
 
     selectionPopup->addSeparator();
     selectionPopup->addAction(QStringLiteral("align-left.svg"), tr("Alinhar à esquerda"),
@@ -2058,6 +2067,28 @@ void MainWindow::setupEditor()
     connect(toolbar, &TopToolbar::statisticsRequested, this, [this]() {
         if (statsPanel) statsPanel->togglePanel();
     });
+
+    aiChatPanel = new AIChatPanel(projectModel, elementsStore, docCache, container);
+    aiChatPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
+    aiChatPanel->setMarkerStore(markerStore);
+    aiChatPanel->setNotesStore(notesStore);
+    aiChatPanel->setWordCounter(wordCounter);
+    aiChatPanel->setDialogueStore(dialogueStore);
+    aiChatPanel->setConstrutorStore(construtorStore);
+    aiChatPanel->setGlossaryStore(glossaryStore);
+    aiChatPanel->setMapPinsStore(mapPinsStore);
+    aiChatPanel->setDocOpener([this](const QString& docKey) { openDocKeyInEditor(docKey); });
+    aiChatPanel->setCurrentDocTitleProvider([this]() { return currentEditorDocTitle(); });
+    connect(aiChatPanel, &AIChatPanel::characterImageUpdated, this, [this](const QString& itemId) {
+        if (characterSheetPanel && characterSheetPanel->currentItemId() == itemId) {
+            characterSheetPanel->refreshPhoto();
+        }
+    });
+    aiChatPanel->raise();
+    connect(toolbar, &TopToolbar::miraToggleRequested, this, [this]() {
+        if (aiChatPanel) aiChatPanel->togglePanel();
+    });
+
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
         if (!construtorWindow) {
             construtorWindow = new ConstrutorWindow(construtorStore, this);
@@ -2180,6 +2211,10 @@ void MainWindow::setupEditor()
     auto* homeShortcut = new QShortcut(QKeySequence(Qt::Key_F12), this);
     connect(homeShortcut, &QShortcut::activated, this, [this]() {
         openMainMenu();
+    });
+    auto* miraShortcut = new QShortcut(QKeySequence(Qt::Key_F9), this);
+    connect(miraShortcut, &QShortcut::activated, this, [this]() {
+        if (aiChatPanel) aiChatPanel->togglePanel();
     });
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
@@ -2811,6 +2846,37 @@ void MainWindow::setupEditor()
         // Limpa elementType/Icon/Id — o doc puro permanece (html/file inalterados).
         // O Element no ElementsStore continua existindo (pode estar vinculado em outro lugar).
         projectModel->setDrawerItemElement(itemId, QString(), QString(), QString());
+    });
+
+    connect(drawerListPanel, &DrawerListPanel::generateCharacterImageRequested, this,
+            [this](const QString& /*drawerKey*/, const QString& itemId) {
+        const DrawerItem* item = projectModel->findDrawerItem(itemId);
+        if (!item || item->elementId.isEmpty() || !elementsStore) return;
+        const Element* e = elementsStore->findElement(item->elementId);
+        if (!e) return;
+
+        // Funciona tanto pra ficha estruturada quanto pra documento livre —
+        // resolveDrawerItemHtml já sintetiza a ficha em html quando isSheet,
+        // ou devolve o html do documento livre quando não é.
+        const QString html = DocPreview::resolveDrawerItemHtml(item, elementsStore, docCache,
+            projectRoot, /*includePhoto=*/false);
+        QTextDocument plainDoc;
+        plainDoc.setHtml(html);
+        const QString context = plainDoc.toPlainText().trimmed();
+        CharacterImageGenDialog dlg(e->name, context, this);
+        dlg.setProjectRoot(projectRoot);
+        if (dlg.exec() != QDialog::Accepted) return;
+
+        const QString dataUrl = ImageCropDialog::cropImage(dlg.resultImage(), this);
+        if (dataUrl.isEmpty()) return;
+        if (const Element* cur = elementsStore->findElement(item->elementId)) {
+            Element copy = *cur;
+            copy.image = dataUrl;
+            elementsStore->updateElement(item->elementId, copy);
+        }
+        if (characterSheetPanel && characterSheetPanel->currentItemId() == itemId) {
+            characterSheetPanel->refreshPhoto();
+        }
     });
 
     connect(drawerListPanel, &DrawerListPanel::openInRefMenuRequested, this,
@@ -4357,6 +4423,8 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (wordCounter) wordCounter->setProjectRoot(root);
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
     if (statsPanel) statsPanel->setProjectRoot(root);
+    if (aiChatPanel) aiChatPanel->setProjectRoot(root);
+    if (characterSheetPanel) characterSheetPanel->setProjectRoot(root);
     if (globalSearchPanel) globalSearchPanel->setProjectRoot(root);
     if (elementsStore) elementsStore->setProjectRoot(root);
     if (spellChecker) spellChecker->setProjectRoot(root);
@@ -6252,6 +6320,75 @@ void MainWindow::openBondEditPopup(const QString& drawerKey, const QString& bond
     Q_UNUSED(drawerKey);
 }
 
+QString MainWindow::currentSceneCharacterNames() const
+{
+    if (!elementsStore || !editorHost || !projectModel) return QString();
+
+    const auto vm = editorHost->viewMode();
+    QString docKey;
+    if (vm.type == EditorHost::SceneDoc) {
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        if (!ch || vm.sceneIndex < 0 || vm.sceneIndex >= ch->scenes.size()) return QString();
+        docKey = ElementsStore::elementDocKeyForScene(vm.manuscriptId, vm.chapterId,
+                                                       ch->scenes[vm.sceneIndex].id);
+    } else if (vm.type == EditorHost::ChapterDoc) {
+        docKey = ElementsStore::elementDocKeyForChapter(vm.manuscriptId, vm.chapterId);
+    } else {
+        return QString();
+    }
+    if (docKey.isEmpty()) return QString();
+
+    const QStringList ids = elementsStore->docElementIds(docKey);
+    if (ids.isEmpty()) return QString();
+
+    const QList<Element>& all = elementsStore->elements();
+    QStringList names;
+    for (const QString& id : ids) {
+        for (const auto& e : all) {
+            if (e.id == id) { names.append(e.name); break; }
+        }
+    }
+    return names.join(QStringLiteral(", "));
+}
+
+void MainWindow::openAISelectionChat()
+{
+    if (!editor) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString text = raw.trimmed();
+    if (text.isEmpty()) return;
+
+    closeAISelectionChat();
+
+    const QString charactersCtx = currentSceneCharacterNames();
+    const int selStart = cur.selectionStart();
+    const int selEnd = cur.selectionEnd();
+
+    aiSelectionChat = new AISelectionChat(editorContainer, editor, selStart, selEnd,
+        text, charactersCtx,
+        [this]() { return editor ? editor->toPlainText() : QString(); });
+    const QPoint p = computeBondSpawnPos(editorContainer, drawerListPanel,
+                                         aiSelectionChat->width(), aiSelectionChat->minimumHeight());
+    aiSelectionChat->move(p);
+    aiSelectionChat->show();
+    aiSelectionChat->raise();
+
+    connect(aiSelectionChat, &AISelectionChat::closeRequested, this, &MainWindow::closeAISelectionChat);
+}
+
+void MainWindow::closeAISelectionChat()
+{
+    if (aiSelectionChat) {
+        aiSelectionChat->hide();
+        aiSelectionChat->deleteLater();
+        aiSelectionChat = nullptr;
+    }
+}
+
 void MainWindow::createDocFromBond(const QString& drawerKey, const QString& bondId)
 {
     if (!projectModel) return;
@@ -6783,6 +6920,57 @@ void MainWindow::openMarkerInEditor(const QString& docKey, int start, int end, c
         editor->ensureCursorVisible();
         editor->setFocus();
     });
+}
+
+void MainWindow::openDocKeyInEditor(const QString& docKey)
+{
+    if (!editorHost || docKey.isEmpty()) return;
+    EditorHost::ViewMode vm = viewModeForDocKey(docKey);
+    if (vm.type == EditorHost::Disabled) return;
+    editorHost->setViewMode(vm);
+}
+
+QString MainWindow::currentEditorDocTitle() const
+{
+    if (!editorHost || !projectModel) return QString();
+
+    const auto vm = editorHost->viewMode();
+    if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) {
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        return ch ? (ch->title.isEmpty() ? tr("Capítulo sem título") : ch->title) : QString();
+    }
+    if (vm.type == EditorHost::DrawerDoc) {
+        const DrawerItem* item = projectModel->findDrawerItem(vm.itemId);
+        return item ? (item->title.isEmpty() ? tr("Documento sem título") : item->title) : QString();
+    }
+    return QString();
+}
+
+void MainWindow::generateImageFromSelection()
+{
+    if (!editor) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    // Texto bruto: Qt usa U+2029 como separador de parágrafo no selectedText().
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString trimmed = raw.trimmed();
+    if (trimmed.isEmpty()) return;
+
+    // Sem personagem alvo nesse gatilho — geração livre.
+    CharacterImageGenDialog dlg(QString(), QString(), this);
+    dlg.setInitialDescription(trimmed.left(600));
+    dlg.setProjectRoot(projectRoot);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    // Exporta direto pra arquivo em vez de tentar associar a um personagem
+    // (exigiria um picker extra sem lugar natural nesse fluxo) — sem crop,
+    // o usuário já escolheu o tamanho/proporção que quis no diálogo.
+    const QString path = QFileDialog::getSaveFileName(this, tr("Salvar imagem gerada"),
+        QString(), tr("PNG (*.png)"));
+    if (path.isEmpty()) return;
+    dlg.resultImage().save(path, "PNG");
 }
 
 void MainWindow::createDocFromSelection()

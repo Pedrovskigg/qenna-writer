@@ -54,6 +54,8 @@ class ProjectInfoPanel;
 class ProjectInfoHover;
 class BondPopup;
 class BondViewPanel;
+class AISelectionChat;
+class AIChatPanel;
 class MarkerStore;
 class NotesStore;
 class MapPinsStore;
@@ -179,6 +181,10 @@ private:
     void openMarkerInEditor(const QString& docKey, int start, int end, const QString& text);
     EditorHost::ViewMode viewModeForDocKey(const QString& docKey) const;
 
+    // Mira (chat de IA): citação clicável — abre o capítulo/ficha referenciado.
+    void openDocKeyInEditor(const QString& docKey);
+    QString currentEditorDocTitle() const;
+
     void openMarkerPickerForSelection(bool withComment);
     void openMarkerPickerForEdit(const QString& markerId);
     void applyMarkerFromPicker(const QColor& color, const QString& comment);
@@ -218,6 +224,7 @@ private:
                            const QPoint& spawnGlobal);
     void createDocFromBond(const QString& drawerKey, const QString& bondId);
     void createDocFromSelection();
+    void generateImageFromSelection();
     void createTimelineEventFromSelection();
     // Abre o popup de "Adicionar à memória…" a partir da seleção atual.
     void addSelectionToMemory();
@@ -225,6 +232,12 @@ private:
     void openMemoryInEditor(const MemoriesStore::Memory& mem);
     // Abre o popup de "Salvar como menção ao sistema…" a partir da seleção atual.
     void addSelectionToConstrutorMention();
+    // Abre a janela de chat da assistente de IA a partir da seleção atual.
+    void openAISelectionChat();
+    void closeAISelectionChat();
+    // Nomes dos personagens já com presença confirmada no documento aberto
+    // (cena ou capítulo) — contexto barato injetado automaticamente na IA.
+    QString currentSceneCharacterNames() const;
     // Abre a fonte de uma menção do Construtor no editor ("Ctrl+F" auto).
     void openConstrutorMentionInEditor(const ConstrutorStore::Mention& mention);
     // Reconstrói o ViewMode a partir de uma origem (capítulo/cena/gaveta) e faz
@@ -312,6 +325,8 @@ private:
     QTimer *projectInfoHoverCloseTimer = nullptr;
     SelectionPopup *selectionPopup;
     BondPopup *bondPopup = nullptr;
+    AISelectionChat *aiSelectionChat = nullptr;
+    AIChatPanel *aiChatPanel = nullptr;
     BondViewPanel *bondViewPanel = nullptr;
     MarkerStore *markerStore = nullptr;
     NotesStore *notesStore = nullptr;

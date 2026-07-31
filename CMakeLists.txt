@@ -87,6 +87,20 @@ qt_add_executable(qenna-writer
     src/ElementCreateDialog.h
     src/ImageCropDialog.cpp
     src/ImageCropDialog.h
+    src/ImageGenClient.cpp
+    src/ImageGenClient.h
+    src/CharacterImageGenService.cpp
+    src/CharacterImageGenService.h
+    src/CharacterImageGenDialog.cpp
+    src/CharacterImageGenDialog.h
+    src/ImageViewerDialog.cpp
+    src/ImageViewerDialog.h
+    src/ClickableImageLabel.cpp
+    src/ClickableImageLabel.h
+    src/GeneratedImageGallery.cpp
+    src/GeneratedImageGallery.h
+    src/ImageGalleryDialog.cpp
+    src/ImageGalleryDialog.h
     src/ElementsPresentDialog.cpp
     src/ElementsPresentDialog.h
     src/ElementsStore.cpp
@@ -251,6 +265,13 @@ qt_add_executable(qenna-writer
     src/NewProjectFlow.h
     src/UpdateChecker.cpp
     src/UpdateChecker.h
+    src/AIClient.cpp
+    src/AIClient.h
+    src/AISelectionChat.cpp
+    src/AISelectionChat.h
+    src/AIChatPanel.cpp
+    src/AIChatPanel.h
+    src/MiraPersonality.h
     resources/icons.qrc
     resources/geo.qrc
     resources/flags.qrc

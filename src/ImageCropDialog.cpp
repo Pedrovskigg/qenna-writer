@@ -234,6 +234,18 @@ ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent)
     root->addLayout(row);
 }
 
+QString ImageCropDialog::cropAndEncode(const QImage& original, const QRect& cropRect)
+{
+    const QImage cropped = original.copy(cropRect);
+    const QImage scaled = cropped.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    scaled.save(&buf, "JPEG", 92);
+    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
+}
+
 QString ImageCropDialog::resultDataUrl() const
 {
     const qreal scale = qMin(1.0, qreal(kMaxDisplaySide) / qMax(m_original.width(), m_original.height()));
@@ -249,14 +261,7 @@ QString ImageCropDialog::resultDataUrl() const
     cropRect.setWidth(side);
     cropRect.setHeight(side);
 
-    const QImage cropped = m_original.copy(cropRect);
-    const QImage scaled = cropped.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-
-    QByteArray bytes;
-    QBuffer buf(&bytes);
-    buf.open(QIODevice::WriteOnly);
-    scaled.save(&buf, "JPEG", 92);
-    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
+    return cropAndEncode(m_original, cropRect);
 }
 
 QString ImageCropDialog::pickAndCropImage(QWidget* parent, const QString& fileDialogTitle)
@@ -273,4 +278,28 @@ QString ImageCropDialog::pickAndCropImage(QWidget* parent, const QString& fileDi
     ImageCropDialog dlg(img, parent);
     if (dlg.exec() != QDialog::Accepted) return QString();
     return dlg.resultDataUrl();
+}
+
+QString ImageCropDialog::cropImage(const QImage& source, QWidget* parent, const QString& dialogTitle)
+{
+    if (source.isNull()) return QString();
+
+    ImageCropDialog dlg(source, parent);
+    dlg.setWindowTitle(dialogTitle);
+    if (dlg.exec() != QDialog::Accepted) return QString();
+    return dlg.resultDataUrl();
+}
+
+QString ImageCropDialog::autoSquareDataUrl(const QImage& source)
+{
+    if (source.isNull()) return QString();
+
+    // Mesmo cálculo do retângulo inicial do CropCanvas (linhas ~41-44 acima),
+    // só que direto em coordenadas da imagem original — não há display
+    // escalado envolvido aqui, então não precisa da conversão de escala que
+    // resultDataUrl() faz.
+    const int side = qMin(source.width(), source.height());
+    const int x = (source.width() - side) / 2;
+    const int y = (source.height() - side) / 2;
+    return cropAndEncode(source, QRect(x, y, side, side));
 }

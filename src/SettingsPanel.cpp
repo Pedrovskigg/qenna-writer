@@ -11,8 +11,10 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QSettings>
 #include <QSlider>
 #include <QSpinBox>
 #include <QVBoxLayout>
@@ -157,6 +159,137 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     pageLayout->addWidget(m_pageHint);
 
     syncPageLayoutFromManager();
+
+    // ---- Seção: Assistente de IA ----
+    auto* aiGroup = new QGroupBox(tr("Assistente de IA"), this);
+    auto* aiLayout = new QVBoxLayout(aiGroup);
+    aiLayout->setContentsMargins(14, 8, 14, 14);
+    aiLayout->setSpacing(6);
+
+    aiLayout->addWidget(new QLabel(tr("Chave de API:"), aiGroup));
+    m_aiApiKeyEdit = new QLineEdit(aiGroup);
+    m_aiApiKeyEdit->setEchoMode(QLineEdit::Password);
+    m_aiApiKeyEdit->setPlaceholderText(tr("sk-..."));
+    aiLayout->addWidget(m_aiApiKeyEdit);
+
+    aiLayout->addWidget(new QLabel(tr("Endpoint (URL base):"), aiGroup));
+    m_aiBaseUrlEdit = new QLineEdit(aiGroup);
+    aiLayout->addWidget(m_aiBaseUrlEdit);
+
+    aiLayout->addWidget(new QLabel(tr("Modelo:"), aiGroup));
+    m_aiModelEdit = new QLineEdit(aiGroup);
+    aiLayout->addWidget(m_aiModelEdit);
+
+    auto* aiHint = new QLabel(
+        tr("Usada pela assistente de revisão ao selecionar um trecho no editor. "
+           "A chave fica salva localmente em texto puro, sem criptografia — "
+           "não compartilhe seu computador/config com quem não deva ver essa chave."),
+        aiGroup);
+    aiHint->setObjectName(QStringLiteral("settingsHint"));
+    aiHint->setWordWrap(true);
+    aiLayout->addWidget(aiHint);
+
+    m_aiAutoScanCheck = new QCheckBox(
+        tr("Ler documentos automaticamente na 1ª vez que abrir um projeto"), aiGroup);
+    aiLayout->addWidget(m_aiAutoScanCheck);
+    auto* aiAutoScanHint = new QLabel(
+        tr("Roda o mesmo scan do botão \"Ler documentos do projeto\" (uma "
+           "chamada de API por documento) sozinho, em segundo plano, só na "
+           "primeira vez que um projeto sem resumo salvo ainda é aberto. "
+           "Desligado por padrão — liga sob sua responsabilidade, é custo "
+           "de API real."),
+        aiGroup);
+    aiAutoScanHint->setObjectName(QStringLiteral("settingsHint"));
+    aiAutoScanHint->setWordWrap(true);
+    aiLayout->addWidget(aiAutoScanHint);
+
+    {
+        QSettings settings;
+        m_aiApiKeyEdit->setText(settings.value(QStringLiteral("ai/apiKey")).toString());
+        m_aiBaseUrlEdit->setText(settings.value(QStringLiteral("ai/baseUrl"),
+            QStringLiteral("https://api.openai.com/v1")).toString());
+        m_aiModelEdit->setText(settings.value(QStringLiteral("ai/model"),
+            QStringLiteral("gpt-4o-mini")).toString());
+        m_aiAutoScanCheck->setChecked(settings.value(QStringLiteral("ai/autoScanNewProjects"), false).toBool());
+    }
+    connect(m_aiApiKeyEdit, &QLineEdit::editingFinished, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/apiKey"), m_aiApiKeyEdit->text().trimmed());
+    });
+    connect(m_aiBaseUrlEdit, &QLineEdit::editingFinished, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/baseUrl"), m_aiBaseUrlEdit->text().trimmed());
+    });
+    connect(m_aiModelEdit, &QLineEdit::editingFinished, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/model"), m_aiModelEdit->text().trimmed());
+    });
+    connect(m_aiAutoScanCheck, &QCheckBox::toggled, this, [](bool checked) {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/autoScanNewProjects"), checked);
+    });
+
+    // ---- Seção: Geração de imagem de personagem ----
+    auto* imgGenGroup = new QGroupBox(tr("Geração de imagem de personagem"), this);
+    auto* imgGenLayout = new QVBoxLayout(imgGenGroup);
+    imgGenLayout->setContentsMargins(14, 8, 14, 14);
+    imgGenLayout->setSpacing(6);
+
+    imgGenLayout->addWidget(new QLabel(tr("Modelo:"), imgGenGroup));
+    m_imgModelCombo = new QComboBox(imgGenGroup);
+    m_imgModelCombo->addItem(QStringLiteral("GPT Image 1 Mini"), QStringLiteral("gpt-image-1-mini"));
+    m_imgModelCombo->addItem(QStringLiteral("GPT Image 1"), QStringLiteral("gpt-image-1"));
+    imgGenLayout->addWidget(m_imgModelCombo);
+
+    imgGenLayout->addWidget(new QLabel(tr("Qualidade:"), imgGenGroup));
+    m_imgQualityCombo = new QComboBox(imgGenGroup);
+    m_imgQualityCombo->addItem(tr("Baixa"), QStringLiteral("low"));
+    m_imgQualityCombo->addItem(tr("Média"), QStringLiteral("medium"));
+    m_imgQualityCombo->addItem(tr("Alta"), QStringLiteral("high"));
+    imgGenLayout->addWidget(m_imgQualityCombo);
+
+    imgGenLayout->addWidget(new QLabel(tr("Tamanho:"), imgGenGroup));
+    m_imgSizeCombo = new QComboBox(imgGenGroup);
+    m_imgSizeCombo->addItem(tr("Quadrado"), QStringLiteral("1024x1024"));
+    m_imgSizeCombo->addItem(tr("Retrato"), QStringLiteral("1024x1536"));
+    m_imgSizeCombo->addItem(tr("Paisagem"), QStringLiteral("1536x1024"));
+    imgGenLayout->addWidget(m_imgSizeCombo);
+
+    auto* imgGenHint = new QLabel(
+        tr("Ponto de partida do diálogo de geração (a escolha feita lá "
+           "atualiza estes campos) e também o que a Mira usa quando gera uma "
+           "imagem sozinha durante o chat, sem abrir diálogo nenhum. A "
+           "geração de imagem sempre usa a API oficial da OpenAI "
+           "(api.openai.com) com a Chave de API acima, independente do "
+           "Endpoint configurado pro chat."),
+        imgGenGroup);
+    imgGenHint->setObjectName(QStringLiteral("settingsHint"));
+    imgGenHint->setWordWrap(true);
+    imgGenLayout->addWidget(imgGenHint);
+
+    {
+        QSettings settings;
+        auto restoreCombo = [&settings](QComboBox* combo, const QString& key, const QString& fallback) {
+            const QString saved = settings.value(key, fallback).toString();
+            const int idx = combo->findData(saved);
+            combo->setCurrentIndex(idx >= 0 ? idx : 0);
+        };
+        restoreCombo(m_imgModelCombo, QStringLiteral("ai/imageModel"), QStringLiteral("gpt-image-1-mini"));
+        restoreCombo(m_imgQualityCombo, QStringLiteral("ai/imageQuality"), QStringLiteral("medium"));
+        restoreCombo(m_imgSizeCombo, QStringLiteral("ai/imageSize"), QStringLiteral("1024x1024"));
+    }
+    connect(m_imgModelCombo, &QComboBox::currentIndexChanged, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/imageModel"), m_imgModelCombo->currentData().toString());
+    });
+    connect(m_imgQualityCombo, &QComboBox::currentIndexChanged, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/imageQuality"), m_imgQualityCombo->currentData().toString());
+    });
+    connect(m_imgSizeCombo, &QComboBox::currentIndexChanged, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/imageSize"), m_imgSizeCombo->currentData().toString());
+    });
 
     // ---- Seção: Detecção de personagens ----
     auto* detectGroup = new QGroupBox(tr("Detecção de personagens"), this);
@@ -321,6 +454,8 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     leftCol->setSpacing(10);
     leftCol->addWidget(spellGroup);
     leftCol->addWidget(pageGroup);
+    leftCol->addWidget(aiGroup);
+    leftCol->addWidget(imgGenGroup);
     leftCol->addStretch();
 
     auto* rightCol = new QVBoxLayout;
@@ -565,6 +700,19 @@ void SettingsPanel::applyTheme()
             min-height: 22px;
         }
         #settingsPanel QComboBox:hover {
+            border-color: %9;
+        }
+        #settingsPanel QLineEdit {
+            background: %3;
+            color: %6;
+            border: 1px solid %2;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: normal;
+            min-height: 22px;
+        }
+        #settingsPanel QLineEdit:focus {
             border-color: %9;
         }
         #settingsPanel QComboBox QAbstractItemView {
