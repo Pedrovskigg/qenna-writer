@@ -1,5 +1,7 @@
 #include "TopToolbar.h"
 
+#include "MiraPersonality.h"
+
 #include <QAction>
 #include <QButtonGroup>
 #include <QDoubleValidator>
@@ -356,7 +358,7 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     miraButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(miraButton, QStringLiteral("elements/star.svg"));
-    miraButton->setToolTip(tr("Mira — chat com a assistente de IA"));
+    miraButton->setToolTip(tr("%1 — chat com a assistente de IA").arg(miraAssistantName()));
     connect(miraButton, &QToolButton::clicked, this, &TopToolbar::miraToggleRequested);
 
     // ---------------- Título do documento (centro) ----------------

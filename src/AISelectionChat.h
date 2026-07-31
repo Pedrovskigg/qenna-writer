@@ -11,10 +11,11 @@
 
 class QCheckBox;
 class QLabel;
-class QLineEdit;
 class QPushButton;
+class QScrollArea;
 class QTextEdit;
 class QToolButton;
+class QVBoxLayout;
 
 // Janela de chat compacta e arrastável (mesmo padrão do BondPopup: QFrame
 // filho de editorContainer, sem moldura de janela nativa, posicionada via
@@ -56,11 +57,26 @@ protected:
     void mousePressEvent(QMouseEvent* e) override;
     void mouseMoveEvent(QMouseEvent* e) override;
     void mouseReleaseEvent(QMouseEvent* e) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    // Referências de uma bolha já inserida no transcript — versão
+    // simplificada de AIChatPanel::BubbleHandle (só texto, sem imagem/
+    // trace chips, que não fazem sentido nesse popup compacto). Deliberadamente
+    // não-compartilhada com AIChatPanel — os dois componentes já divergiram
+    // bastante (sessão persistida em disco vs. popup efêmero).
+    struct SelectionBubbleHandle {
+        QFrame* bubble = nullptr;
+        QTextEdit* textEdit = nullptr;
+        QVBoxLayout* bubbleLayout = nullptr;
+    };
+
     void buildUi();
     QString buildSystemPrompt() const;
     void sendUserMessage(const QString& displayText, const QString& payloadText);
+    SelectionBubbleHandle createSelectionBubble(bool isUser, const QString& initialText);
+    void attachFeedbackButtons(SelectionBubbleHandle& handle, const QString& fullText);
+    void fitInputHeight();
     void appendTranscriptEntry(const QString& speakerLabel, const QString& text, bool isAssistant);
     void beginAssistantStreamEntry();
     void appendStreamToken(const QString& token);
@@ -80,11 +96,15 @@ private:
     QVector<AIChatMessage> m_messages;
     bool m_assistantTurnOpen = false;
     QString m_pendingSuggestion;
+    QString m_streamingText; // markdown acumulado token a token da bolha atual
 
     QWidget* m_header = nullptr;
     QToolButton* m_closeBtn = nullptr;
-    QTextEdit* m_transcript = nullptr;
-    QLineEdit* m_inputEdit = nullptr;
+    QScrollArea* m_transcriptScroll = nullptr;
+    QWidget* m_transcriptContent = nullptr;
+    QVBoxLayout* m_transcriptLayout = nullptr;
+    SelectionBubbleHandle m_currentAssistantBubble;
+    QTextEdit* m_inputEdit = nullptr;
     QPushButton* m_sendBtn = nullptr;
     QCheckBox* m_fullContextCheck = nullptr;
     QLabel* m_statusLabel = nullptr;

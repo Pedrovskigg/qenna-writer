@@ -431,7 +431,7 @@ NewProjectFolderDialog::NewProjectFolderDialog(const QString& projectName, QWidg
     root->addLayout(pathRow);
 
     auto* note = new QLabel(
-        tr("Você não precisa criar a pasta — o Mira faz isso automaticamente."), this);
+        tr("Você não precisa criar a pasta — o Qenna Writer faz isso automaticamente."), this);
     note->setObjectName(QStringLiteral("npNote"));
     root->addWidget(note);
 

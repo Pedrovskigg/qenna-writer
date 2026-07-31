@@ -9,6 +9,7 @@ class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
+class QPlainTextEdit;
 class QPushButton;
 class QSlider;
 class QSpinBox;
@@ -91,6 +92,10 @@ private:
     QLabel* m_vMarginValue = nullptr;
     QLabel* m_spellHint = nullptr;
     QLabel* m_pageHint = nullptr;
+    QLineEdit* m_aiNameEdit = nullptr;
+    QSlider* m_aiWarmthSlider = nullptr;
+    QSlider* m_aiHarshnessSlider = nullptr;
+    QPlainTextEdit* m_aiFreeformEdit = nullptr;
     QLineEdit* m_aiApiKeyEdit  = nullptr;
     QLineEdit* m_aiBaseUrlEdit = nullptr;
     QLineEdit* m_aiModelEdit   = nullptr;

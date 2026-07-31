@@ -2,6 +2,7 @@
 
 #include "IconUtils.h"
 #include "MiraPersonality.h"
+#include "MiraStyleStore.h"
 #include "Theme.h"
 
 #include <QCheckBox>
@@ -10,9 +11,10 @@
 #include <QHBoxLayout>
 #include <QJsonArray>
 #include <QLabel>
-#include <QLineEdit>
+#include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
 #include <QTextCharFormat>
@@ -25,6 +27,9 @@ namespace {
 constexpr int kPopupW = 400;
 constexpr int kPopupMinH = 500;
 constexpr int kHeaderH = 36;
+// Largura de texto disponível numa bolha: kPopupW menos margens da bolha
+// (12+12) e do conteúdo do scroll da transcrição (8+8).
+constexpr int kBubbleTextWidth = kPopupW - 24 - 16;
 
 struct Preset {
     const char* label;
@@ -60,6 +65,57 @@ QString chipQss() {
         QPushButton:disabled { color: %6; border-color: %1; }
     )").arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(),
            Theme::hoverOverlay(), Theme::borderStrong(), Theme::disabledText());
+}
+
+// Bolha por mensagem (versão simplificada do padrão de AIChatPanel — só
+// texto, sem imagem/trace chips, e sem largura calculada a partir do
+// painel: aqui a largura é sempre a constante kPopupW).
+QString bubbleQss(bool isUser) {
+    return isUser
+        ? QStringLiteral("QFrame#selectionBubbleUser { background: %1; border-radius: 12px; }")
+            .arg(Theme::accentDefault())
+        : QStringLiteral("QFrame#selectionBubbleMira { background: %1; border: 1px solid %2; border-radius: 12px; }")
+            .arg(Theme::inputBackground(), Theme::subtleBorder());
+}
+
+QString bubbleTextColor(bool isUser) {
+    return isUser ? Theme::textBright() : Theme::textPrimary();
+}
+
+QString bubbleTextQss(const QString& textColorHex) {
+    // Mesmo motivo do AIChatPanel: "padding: 0" não é decorativo — sem ele,
+    // o QTextEdit { padding: 80px 100px; } global (Theme::globalStyleSheet,
+    // escrito pro editor de manuscrito) esmaga o viewport interno da bolha.
+    return QStringLiteral(
+        "QTextEdit#selectionBubbleText { background: transparent; color: %1; border: none; "
+        "padding: 0; font-family: 'Lora','Crimson Text',serif; font-size: 13px; }")
+        .arg(textColorHex);
+}
+
+void forceBubbleTextColor(QTextEdit* te, const QString& hexColor) {
+    QTextCursor cur(te->document());
+    cur.select(QTextCursor::Document);
+    QTextCharFormat fmt;
+    fmt.setForeground(QColor(hexColor));
+    cur.mergeCharFormat(fmt);
+}
+
+QString feedbackBtnQss() {
+    return QStringLiteral(
+        "QToolButton { background: transparent; border: none; font-size: 11px; padding: 1px 3px; }"
+        "QToolButton:hover { background: %1; border-radius: 4px; }"
+        "QToolButton:disabled { background: transparent; }"
+    ).arg(Theme::hoverOverlay());
+}
+
+// Mesma lógica de AIChatPanel::fitBubbleHeight — trava a largura pro
+// conteúdo real (idealWidth) até o teto, senão o texto é desenhado pra
+// largura de teto mas o widget fica menor (sizeHint natural do Qt).
+void fitSelectionBubbleHeight(QTextEdit* te) {
+    te->document()->setTextWidth(kBubbleTextWidth);
+    const int idealW = int(te->document()->idealWidth()) + 1;
+    te->setFixedWidth(qBound(20, idealW + 4, kBubbleTextWidth));
+    te->setFixedHeight(qMax(20, int(te->document()->size().height()) + 6));
 }
 
 QString sendBtnQss() {
@@ -152,10 +208,13 @@ AISelectionChat::AISelectionChat(QWidget* parent,
         assistantMsg.role = QStringLiteral("assistant");
         assistantMsg.content = fullText;
         m_messages.append(assistantMsg);
+        attachFeedbackButtons(m_currentAssistantBubble, fullText);
+        m_currentAssistantBubble = SelectionBubbleHandle();
+        m_assistantTurnOpen = false;
         setBusy(false);
     });
     connect(m_client, &AIClient::errorOccurred, this, [this](const QString& msg) {
-        appendTranscriptEntry(tr("Erro"), msg, false);
+        appendTranscriptEntry(tr("Erro"), msg, true);
         setBusy(false);
     });
     connect(m_client, &AIClient::toolCallReceived, this, &AISelectionChat::onToolCallReceived);
@@ -174,7 +233,7 @@ void AISelectionChat::buildUi()
     auto* hlay = new QHBoxLayout(m_header);
     hlay->setContentsMargins(2, 0, 2, 0);
     hlay->setSpacing(8);
-    auto* title = new QLabel(tr("Mira"), m_header);
+    auto* title = new QLabel(miraAssistantName(), m_header);
     title->setStyleSheet(QStringLiteral(
         "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 14px; font-weight: 700;")
         .arg(Theme::textBright()));
@@ -208,21 +267,30 @@ void AISelectionChat::buildUi()
         .arg(Theme::textMuted(), Theme::inputBackground(), Theme::accentDefault()));
     root->addWidget(quoteLabel);
 
-    // Transcrição
-    m_transcript = new QTextEdit(this);
-    m_transcript->setReadOnly(true);
-    m_transcript->setMinimumHeight(180);
-    m_transcript->setStyleSheet(QStringLiteral(R"(
-        QTextEdit {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: 6px;
-            padding: 8px 10px;
-            font-family: 'Lora','Crimson Text',serif;
-            font-size: 13px;
-        }
-    )").arg(Theme::inputBackground(), Theme::subtleBorder()));
-    root->addWidget(m_transcript, /*stretch=*/1);
+    // Transcrição — QScrollArea com uma bolha (QFrame) por mensagem, mesmo
+    // espírito do AIChatPanel, mas sem imagem/trace chips (não fazem
+    // sentido nesse popup compacto).
+    m_transcriptScroll = new QScrollArea(this);
+    m_transcriptScroll->setWidgetResizable(true);
+    m_transcriptScroll->setFrameShape(QFrame::NoFrame);
+    m_transcriptScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_transcriptScroll->setMinimumHeight(180);
+    m_transcriptScroll->setStyleSheet(QStringLiteral(
+        "QScrollArea { background: %1; border: 1px solid %2; border-radius: 6px; }")
+        .arg(Theme::inputBackground(), Theme::subtleBorder()));
+
+    m_transcriptContent = new QWidget(m_transcriptScroll);
+    m_transcriptContent->setStyleSheet(QStringLiteral("background: transparent;"));
+    m_transcriptLayout = new QVBoxLayout(m_transcriptContent);
+    m_transcriptLayout->setContentsMargins(8, 8, 8, 8);
+    m_transcriptLayout->setSpacing(8);
+    m_transcriptLayout->addStretch(1);
+    m_transcriptScroll->setWidget(m_transcriptContent);
+
+    connect(m_transcriptScroll->verticalScrollBar(), &QScrollBar::rangeChanged, this,
+            [this](int, int max) { m_transcriptScroll->verticalScrollBar()->setValue(max); });
+
+    root->addWidget(m_transcriptScroll, /*stretch=*/1);
 
     m_statusLabel = new QLabel(tr("Pensando…"), this);
     m_statusLabel->setStyleSheet(QStringLiteral(
@@ -335,27 +403,41 @@ void AISelectionChat::buildUi()
     irlay->setContentsMargins(0, 0, 0, 0);
     irlay->setSpacing(6);
 
-    m_inputEdit = new QLineEdit(this);
-    m_inputEdit->setPlaceholderText(tr("Peça algo específico…"));
+    // QTextEdit, não QPlainTextEdit: o motor de layout do QPlainTextEdit
+    // (QPlainTextDocumentLayout) não responde de forma confiável a
+    // document()->setTextWidth() manual, deixando fitInputHeight() sempre
+    // travado numa altura mínima mesmo com texto de várias linhas —
+    // QTextEdit usa o motor "normal" (QTextDocumentLayout), já comprovado
+    // funcionando em createSelectionBubble/fitBubbleHeight.
+    m_inputEdit = new QTextEdit(this);
+    m_inputEdit->setObjectName(QStringLiteral("selectionInputEdit"));
+    m_inputEdit->setAcceptRichText(false);
+    m_inputEdit->setPlaceholderText(tr("Peça algo específico… (Enter envia, Shift+Enter quebra linha)"));
+    m_inputEdit->setTabChangesFocus(true);
+    m_inputEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_inputEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_inputEdit->setFixedHeight(32);
+    // Seletor por objectName (não só "QTextEdit { }"): garante especificidade
+    // contra o QTextEdit { padding: 80px 100px; } global (Theme::globalStyleSheet,
+    // escrito pro editor de manuscrito) — mesmo remédio já usado em
+    // bubbleTextQss() e no CharacterSheetPanel.
     m_inputEdit->setStyleSheet(QStringLiteral(R"(
-        QLineEdit {
+        QTextEdit#selectionInputEdit {
             background: %1; color: %2; border: 1px solid %3;
             border-radius: 6px; padding: 6px 10px; font-size: 12px;
         }
-        QLineEdit:focus { border-color: %4; }
+        QTextEdit#selectionInputEdit:focus { border-color: %4; }
     )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder()));
-    connect(m_inputEdit, &QLineEdit::returnPressed, this, [this]() {
-        const QString text = m_inputEdit->text().trimmed();
-        if (text.isEmpty()) return;
-        sendUserMessage(text, text);
-    });
+    m_inputEdit->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    m_inputEdit->installEventFilter(this);
+    connect(m_inputEdit, &QTextEdit::textChanged, this, [this]() { fitInputHeight(); });
     irlay->addWidget(m_inputEdit, 1);
 
     m_sendBtn = new QPushButton(tr("Enviar"), this);
     m_sendBtn->setCursor(Qt::PointingHandCursor);
     m_sendBtn->setStyleSheet(sendBtnQss());
     connect(m_sendBtn, &QPushButton::clicked, this, [this]() {
-        const QString text = m_inputEdit->text().trimmed();
+        const QString text = m_inputEdit->toPlainText().trimmed();
         if (text.isEmpty()) return;
         sendUserMessage(text, text);
     });
@@ -364,9 +446,103 @@ void AISelectionChat::buildUi()
     root->addWidget(inputRow);
 }
 
+AISelectionChat::SelectionBubbleHandle AISelectionChat::createSelectionBubble(bool isUser, const QString& initialText)
+{
+    auto* row = new QWidget(m_transcriptContent);
+    auto* rowLay = new QHBoxLayout(row);
+    rowLay->setContentsMargins(0, 0, 0, 0);
+    rowLay->setSpacing(0);
+
+    auto* bubble = new QFrame(row);
+    bubble->setObjectName(isUser ? QStringLiteral("selectionBubbleUser") : QStringLiteral("selectionBubbleMira"));
+    bubble->setMaximumWidth(kBubbleTextWidth + 24);
+    bubble->setStyleSheet(bubbleQss(isUser));
+
+    auto* bubbleLay = new QVBoxLayout(bubble);
+    bubbleLay->setContentsMargins(10, 8, 10, 8);
+    bubbleLay->setSpacing(4);
+
+    auto* te = new QTextEdit(bubble);
+    te->setObjectName(QStringLiteral("selectionBubbleText"));
+    te->setReadOnly(true);
+    te->setFrameShape(QFrame::NoFrame);
+    te->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    te->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    te->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    te->document()->setDocumentMargin(0);
+    const QString textColorHex = bubbleTextColor(isUser);
+    te->setStyleSheet(bubbleTextQss(textColorHex));
+    // Mesmo fix de viewport do AIChatPanel — o QSS setado no QTextEdit não
+    // propaga pro viewport() interno (QAbstractScrollArea).
+    te->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    te->setMarkdown(initialText);
+    forceBubbleTextColor(te, textColorHex);
+    fitSelectionBubbleHeight(te);
+    bubbleLay->addWidget(te);
+
+    if (isUser) {
+        rowLay->addStretch();
+        rowLay->addWidget(bubble);
+    } else {
+        rowLay->addWidget(bubble);
+        rowLay->addStretch();
+    }
+
+    // Insere sempre antes do addStretch(1) final, que fica fixo no fim.
+    m_transcriptLayout->insertWidget(m_transcriptLayout->count() - 1, row);
+
+    SelectionBubbleHandle h;
+    h.bubble = bubble;
+    h.textEdit = te;
+    h.bubbleLayout = bubbleLay;
+    return h;
+}
+
+void AISelectionChat::attachFeedbackButtons(SelectionBubbleHandle& handle, const QString& fullText)
+{
+    if (!handle.bubble || fullText.trimmed().isEmpty()) return;
+
+    auto* row = new QWidget(handle.bubble);
+    auto* rowLay = new QHBoxLayout(row);
+    rowLay->setContentsMargins(0, 2, 0, 0);
+    rowLay->setSpacing(2);
+    rowLay->addStretch();
+
+    auto* likeBtn = new QToolButton(row);
+    likeBtn->setObjectName(QStringLiteral("chatFeedbackBtn"));
+    likeBtn->setText(QStringLiteral("👍"));
+    likeBtn->setCursor(Qt::PointingHandCursor);
+    likeBtn->setToolTip(tr("Bom estilo de resposta"));
+    likeBtn->setStyleSheet(feedbackBtnQss());
+
+    auto* dislikeBtn = new QToolButton(row);
+    dislikeBtn->setObjectName(QStringLiteral("chatFeedbackBtn"));
+    dislikeBtn->setText(QStringLiteral("👎"));
+    dislikeBtn->setCursor(Qt::PointingHandCursor);
+    dislikeBtn->setToolTip(tr("Não gostei desse estilo"));
+    dislikeBtn->setStyleSheet(feedbackBtnQss());
+
+    auto vote = [likeBtn, dislikeBtn, fullText](bool positive) {
+        MiraStyleStore::recordFeedback(positive, fullText);
+        likeBtn->setEnabled(false);
+        dislikeBtn->setEnabled(false);
+    };
+    connect(likeBtn, &QToolButton::clicked, this, [vote]() { vote(true); });
+    connect(dislikeBtn, &QToolButton::clicked, this, [vote]() { vote(false); });
+
+    rowLay->addWidget(likeBtn);
+    rowLay->addWidget(dislikeBtn);
+    handle.bubbleLayout->addWidget(row);
+}
+
 QString AISelectionChat::buildSystemPrompt() const
 {
-    QString base = miraPersonalityPrompt();
+    QString base = miraPersonalityPrompt(miraAssistantName());
+    base += miraPersonalityAdjustmentFragment(
+        QSettings().value(QStringLiteral("ai/personalityWarmth"), 50).toInt(),
+        QSettings().value(QStringLiteral("ai/personalityHarshness"), 50).toInt(),
+        QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
+    base += MiraStyleStore::buildPromptFragment();
     base += QStringLiteral(
         "\n\nAqui você está revisando um trecho ESPECÍFICO que o autor "
         "selecionou no editor, não numa conversa livre sobre o projeto "
@@ -390,7 +566,7 @@ void AISelectionChat::sendUserMessage(const QString& displayText, const QString&
     QSettings settings;
     const QString apiKey = settings.value(QStringLiteral("ai/apiKey")).toString();
     if (apiKey.isEmpty()) {
-        appendTranscriptEntry(tr("Mira"),
+        appendTranscriptEntry(miraAssistantName(),
             tr("Nenhuma chave de API configurada. Abra Configurações → Assistente de IA e cole sua chave."),
             true);
         return;
@@ -440,47 +616,26 @@ void AISelectionChat::setBusy(bool busy)
 
 void AISelectionChat::appendTranscriptEntry(const QString& speakerLabel, const QString& text, bool isAssistant)
 {
-    Q_UNUSED(isAssistant);
-    QTextCursor cur(m_transcript->document());
-    cur.movePosition(QTextCursor::End);
-    if (!m_transcript->document()->isEmpty()) cur.insertBlock();
-
-    QTextCharFormat labelFmt;
-    labelFmt.setFontWeight(QFont::Bold);
-    labelFmt.setForeground(QColor(Theme::accentDefault()));
-    cur.insertText(speakerLabel + QStringLiteral(":\n"), labelFmt);
-
-    QTextCharFormat bodyFmt;
-    bodyFmt.setForeground(QColor(Theme::textPrimary()));
-    cur.insertText(text, bodyFmt);
-
-    if (auto* bar = m_transcript->verticalScrollBar()) bar->setValue(bar->maximum());
+    createSelectionBubble(/*isUser=*/!isAssistant,
+        QStringLiteral("**%1:**\n\n%2").arg(speakerLabel, text));
 }
 
 void AISelectionChat::beginAssistantStreamEntry()
 {
-    QTextCursor cur(m_transcript->document());
-    cur.movePosition(QTextCursor::End);
-    if (!m_transcript->document()->isEmpty()) cur.insertBlock();
-
-    QTextCharFormat labelFmt;
-    labelFmt.setFontWeight(QFont::Bold);
-    labelFmt.setForeground(QColor(Theme::accentDefault()));
-    cur.insertText(tr("Mira") + QStringLiteral(":\n"), labelFmt);
+    m_currentAssistantBubble = createSelectionBubble(/*isUser=*/false, QString());
+    m_streamingText.clear();
     m_assistantTurnOpen = true;
 }
 
 void AISelectionChat::appendStreamToken(const QString& token)
 {
     if (!m_assistantTurnOpen) beginAssistantStreamEntry();
+    m_streamingText += token;
 
-    QTextCursor cur(m_transcript->document());
-    cur.movePosition(QTextCursor::End);
-    QTextCharFormat bodyFmt;
-    bodyFmt.setForeground(QColor(Theme::textPrimary()));
-    cur.insertText(token, bodyFmt);
-
-    if (auto* bar = m_transcript->verticalScrollBar()) bar->setValue(bar->maximum());
+    QTextEdit* te = m_currentAssistantBubble.textEdit;
+    te->setMarkdown(QStringLiteral("**%1:**\n\n%2").arg(miraAssistantName(), m_streamingText));
+    forceBubbleTextColor(te, bubbleTextColor(false));
+    fitSelectionBubbleHeight(te);
 }
 
 void AISelectionChat::onToolCallReceived(const QString& id, const QString& name, const QJsonObject& arguments)
@@ -491,7 +646,7 @@ void AISelectionChat::onToolCallReceived(const QString& id, const QString& name,
     const QString text = arguments.value(QStringLiteral("text")).toString();
     if (text.isEmpty()) return;
 
-    appendTranscriptEntry(tr("Mira"), tr("(sugestão de texto pronta — veja o cartão abaixo)"), true);
+    appendTranscriptEntry(miraAssistantName(), tr("(sugestão de texto pronta — veja o cartão abaixo)"), true);
 
     // Guarda como turno assistant simples pra manter o histórico coerente em
     // futuras mensagens, sem precisar replicar o protocolo formal de tool
@@ -573,4 +728,28 @@ void AISelectionChat::mouseReleaseEvent(QMouseEvent* e)
         return;
     }
     QFrame::mouseReleaseEvent(e);
+}
+
+bool AISelectionChat::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_inputEdit && event->type() == QEvent::KeyPress) {
+        auto* ke = static_cast<QKeyEvent*>(event);
+        if ((ke->key() == Qt::Key_Return || ke->key() == Qt::Key_Enter) &&
+            !(ke->modifiers() & Qt::ShiftModifier)) {
+            const QString text = m_inputEdit->toPlainText().trimmed();
+            if (!text.isEmpty()) sendUserMessage(text, text);
+            return true; // consome — Shift+Enter continua inserindo quebra de linha normalmente
+        }
+    } else if (watched == m_inputEdit && event->type() == QEvent::Resize) {
+        fitInputHeight();
+    }
+    return QFrame::eventFilter(watched, event);
+}
+
+void AISelectionChat::fitInputHeight()
+{
+    if (!m_inputEdit) return;
+    m_inputEdit->document()->setTextWidth(m_inputEdit->viewport()->width());
+    const int h = int(m_inputEdit->document()->size().height()) + 14;
+    m_inputEdit->setFixedHeight(qBound(32, h, 120));
 }

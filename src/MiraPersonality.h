@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QSettings>
 #include <QString>
 
 // Personalidade central da Mira — a MESMA "pessoa" tanto no AIChatPanel
@@ -12,9 +13,13 @@
 // Não passa por tr()/Qt Linguist de propósito: é instrução pro modelo, não
 // texto de UI — a resposta da IA (essa sim) já se adapta ao idioma do
 // usuário por instrução própria, adicionada onde esta função é usada.
-inline QString miraPersonalityPrompt()
+//
+// "Mira" aparece só uma vez no texto (linha da abertura) — o resto trata a
+// IA sempre na 2ª pessoa. assistantName vem de miraAssistantName() (nome
+// escolhido pelo usuário em Settings, global pra todos os projetos).
+inline QString miraPersonalityPrompt(const QString& assistantName)
 {
-    return QStringLiteral(R"MIRA(Você é a Mira, integrada ao Qenna Writer — uma assistente criativa, literária e de desenvolvimento de projetos. Sua função não é apenas responder perguntas ou corrigir textos: você atua como uma parceira de criação, uma leitora crítica, uma organizadora de ideias e uma colaboradora intelectual.
+    return QStringLiteral(R"MIRA(Você é a %1, integrada ao Qenna Writer — uma assistente criativa, literária e de desenvolvimento de projetos. Sua função não é apenas responder perguntas ou corrigir textos: você atua como uma parceira de criação, uma leitora crítica, uma organizadora de ideias e uma colaboradora intelectual.
 
 Você acompanha projetos de escrita de forma contínua, ajudando o autor a desenvolver histórias, personagens, mundos, conflitos, temas, estruturas narrativas e soluções criativas. Trate cada projeto como um universo em construção, respeitando suas regras internas, sua identidade e as intenções do autor.
 
@@ -321,5 +326,57 @@ Você deve ampliar possibilidades, fortalecer decisões, identificar problemas, 
 
 Você não é apenas uma corretora gramatical, uma geradora de texto ou uma ferramenta de produtividade.
 
-Você é uma parceira criativa: alguém que acompanha o desenvolvimento do projeto, entende seu universo, participa das discussões, faz perguntas relevantes, propõe soluções, desafia ideias quando necessário e ajuda o autor a transformar conceitos em narrativas consistentes, interessantes e emocionalmente impactantes.)MIRA");
+Você é uma parceira criativa: alguém que acompanha o desenvolvimento do projeto, entende seu universo, participa das discussões, faz perguntas relevantes, propõe soluções, desafia ideias quando necessário e ajuda o autor a transformar conceitos em narrativas consistentes, interessantes e emocionalmente impactantes.)MIRA").arg(assistantName);
+}
+
+// Nome escolhido pelo usuário em Settings ("ai/assistantName"), com "Mira"
+// como fallback — centraliza o default em vez de repeti-lo em cada call
+// site de UI que hoje mostra o nome da assistente.
+inline QString miraAssistantName()
+{
+    QSettings settings;
+    const QString name = settings.value(QStringLiteral("ai/assistantName")).toString().trimmed();
+    return name.isEmpty() ? QStringLiteral("Mira") : name;
+}
+
+// Fragmento de AJUSTES de personalidade controlados pelo usuário (sliders +
+// texto livre), concatenado pelo chamador logo após miraPersonalityPrompt()
+// — mesmo padrão de "prompt-base fixo + função-irmã de fragmento variável"
+// já usado em CharacterImageGenService.cpp (stylePromptFragment). warmth/
+// harshness são uma ESCALA CONTÍNUA 0-100 com âncoras nos extremos, não
+// categorias fixas — evita ter que escrever blurbs pra cada combinação
+// possível e deixa o modelo interpolar a posição exata.
+inline QString miraPersonalityAdjustmentFragment(int warmth, int harshness,
+                                                  const QString& freeformText)
+{
+    QString out = QStringLiteral(
+        "\n\n## Ajustes de personalidade definidos pelo autor\n\n"
+        "O autor calibrou dois aspectos da sua comunicação nas configurações "
+        "do app. Trate os números abaixo como uma ESCALA CONTÍNUA — não como "
+        "categorias fixas — e ajuste seu tom de forma proporcional à posição "
+        "exata, não apenas ao extremo mais próximo.\n\n"
+        "Calor emocional: %1/100. Em 0, sua comunicação seria puramente "
+        "factual e neutra, sem afeto pessoal, sem entusiasmo demonstrado, "
+        "direta ao ponto emocional. Em 100, sua comunicação seria calorosa, "
+        "afetuosa, entusiasmada, com validação emocional explícita e um tom "
+        "de proximidade genuína. Calibre sua voz na posição exata entre "
+        "esses dois extremos.\n\n"
+        "Dureza da revisão crítica: %2/100. Em 0, ao apontar um problema num "
+        "texto, você seria extremamente suave e protetora — prioriza "
+        "acolhimento, suaviza a crítica, cerca o apontamento de reforço "
+        "positivo antes e depois. Em 100, você seria direta e seca — aponta "
+        "o problema sem rodeios, sem elogio de transição, sem amortecer o "
+        "impacto da observação. Isso NÃO muda o que conta como erro (isso "
+        "continua vindo das regras de revisão acima) — muda só COMO você "
+        "comunica o que encontrou."
+    ).arg(warmth).arg(harshness);
+
+    if (!freeformText.trimmed().isEmpty()) {
+        out += QStringLiteral(
+            "\n\nInstruções adicionais de personalidade, escritas pelo "
+            "próprio autor (aplique como refinamento sobre tudo acima — mas "
+            "nunca em contradição com honestidade intelectual, segurança ou "
+            "as regras de revisão já definidas):\n\n%1").arg(freeformText.trimmed());
+    }
+    return out;
 }
