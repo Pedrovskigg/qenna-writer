@@ -27,7 +27,6 @@ class MapPinsStore;
 class QCheckBox;
 class QComboBox;
 class QLabel;
-class QPlainTextEdit;
 class QPushButton;
 class QScrollArea;
 class QTextEdit;
@@ -193,6 +192,8 @@ private:
     void applyLayoutMode();
     void toggleLayoutMode();
     void fitBubbleHeight(QTextEdit* te, int textWidth) const;
+    void fitInputHeight();
+    void refitAllBubbles();
     void saveCurrentPanelSize();
     QString buildSystemPrompt() const;
     QString loadProjectSummaryFile() const;
@@ -215,6 +216,7 @@ private:
     // m_pendingBubbleImages) — só a galeria em disco (GeneratedImageGallery)
     // preserva isso entre sessões.
     void attachBubbleImages(BubbleHandle& handle, const QVector<QImage>& images);
+    void attachFeedbackButtons(BubbleHandle& handle, const QString& fullText);
     void openImageGallery();
     void addUserBubble(const QString& text, const QString& imageDataUrl = QString());
     void addMiraBubble(const QString& text, const QVector<ToolTraceEntry>& traces = {});
@@ -251,6 +253,7 @@ private:
     void handleResummarizeDocumentTool(const QString& id, const QJsonObject& arguments);
     void handleLookupWorldDataTool(const QString& id, const QJsonObject& arguments);
     void handleGenerateCharacterImageTool(const QString& id, const QJsonObject& arguments);
+    void handleGenerateSceneImageTool(const QString& id, const QJsonObject& arguments);
     QString runWorldDataLookup(const QString& query) const;
     void finishToolRoundTrip(const QString& id, const QString& toolName,
                              const QJsonObject& argumentsEcho, const QString& resultText);
@@ -309,7 +312,7 @@ private:
     QVBoxLayout* m_transcriptLayout = nullptr;
     QCheckBox* m_docFocusCheck = nullptr;
     QComboBox* m_docFocusCombo = nullptr;
-    QPlainTextEdit* m_inputEdit = nullptr;
+    QTextEdit* m_inputEdit = nullptr;
     QPushButton* m_sendBtn = nullptr;
     QToolButton* m_attachBtn = nullptr;
     QWidget* m_attachPreviewRow = nullptr;

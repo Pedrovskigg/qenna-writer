@@ -2,6 +2,7 @@
 
 #include "AboutDialog.h"
 #include "EditorLayout.h"
+#include "MiraPersonality.h"
 #include "Theme.h"
 
 #include <QCheckBox>
@@ -12,6 +13,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
@@ -160,6 +162,87 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     syncPageLayoutFromManager();
 
+    // ---- Seção: Personalidade da assistente ----
+    // Global (não por-projeto, diferente de resumo_projeto.md/memoria_mira.md
+    // que vivem dentro de cada projeto) — nome/tom/dureza/descrição livre
+    // moldam o system prompt em TODA conversa, qualquer projeto aberto.
+    auto* personaGroup = new QGroupBox(tr("Personalidade da assistente"), this);
+    auto* personaLayout = new QVBoxLayout(personaGroup);
+    personaLayout->setContentsMargins(14, 8, 14, 14);
+    personaLayout->setSpacing(10);
+
+    personaLayout->addWidget(new QLabel(tr("Nome da assistente:"), personaGroup));
+    m_aiNameEdit = new QLineEdit(personaGroup);
+    m_aiNameEdit->setPlaceholderText(QStringLiteral("Mira"));
+    personaLayout->addWidget(m_aiNameEdit);
+
+    // Lambda própria (duplicada de makeSlider acima) em vez de mudar a
+    // assinatura da existente — evita acoplar esta seção à de "Página de
+    // escrita" por causa de 5 linhas de código.
+    auto makePersonaSlider = [personaGroup]() {
+        auto* s = new QSlider(Qt::Horizontal, personaGroup);
+        s->setRange(0, 100);
+        s->setSingleStep(1);
+        s->setPageStep(10);
+        s->setMinimumWidth(180);
+        return s;
+    };
+
+    auto* warmthRow = new QHBoxLayout();
+    warmthRow->addWidget(new QLabel(tr("Fria"), personaGroup));
+    m_aiWarmthSlider = makePersonaSlider();
+    warmthRow->addWidget(m_aiWarmthSlider, 1);
+    warmthRow->addWidget(new QLabel(tr("Calorosa"), personaGroup));
+    personaLayout->addLayout(warmthRow);
+
+    auto* harshRow = new QHBoxLayout();
+    harshRow->addWidget(new QLabel(tr("Direta/seca"), personaGroup));
+    m_aiHarshnessSlider = makePersonaSlider();
+    harshRow->addWidget(m_aiHarshnessSlider, 1);
+    harshRow->addWidget(new QLabel(tr("Suave/protetora"), personaGroup));
+    personaLayout->addLayout(harshRow);
+
+    personaLayout->addWidget(new QLabel(tr("Descrição livre de personalidade (opcional):"), personaGroup));
+    m_aiFreeformEdit = new QPlainTextEdit(personaGroup);
+    m_aiFreeformEdit->setPlaceholderText(
+        tr("Ex.: \"gosta de fazer analogias com cinema\", \"evita emojis\"…"));
+    m_aiFreeformEdit->setFixedHeight(70);
+    personaLayout->addWidget(m_aiFreeformEdit);
+
+    auto* personaHint = new QLabel(
+        tr("Vale para TODOS os projetos (diferente do resumo/memória, que "
+           "são por projeto). Os sliders não mostram valor numérico de "
+           "propósito — são uma escala contínua pra assistente interpolar, "
+           "não categorias fixas."),
+        personaGroup);
+    personaHint->setObjectName(QStringLiteral("settingsHint"));
+    personaHint->setWordWrap(true);
+    personaLayout->addWidget(personaHint);
+
+    {
+        QSettings settings;
+        m_aiNameEdit->setText(settings.value(QStringLiteral("ai/assistantName")).toString());
+        m_aiWarmthSlider->setValue(settings.value(QStringLiteral("ai/personalityWarmth"), 50).toInt());
+        m_aiHarshnessSlider->setValue(settings.value(QStringLiteral("ai/personalityHarshness"), 50).toInt());
+        m_aiFreeformEdit->setPlainText(settings.value(QStringLiteral("ai/personalityFreeform")).toString());
+    }
+    connect(m_aiNameEdit, &QLineEdit::editingFinished, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/assistantName"), m_aiNameEdit->text().trimmed());
+    });
+    connect(m_aiWarmthSlider, &QSlider::valueChanged, this, [](int v) {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/personalityWarmth"), v);
+    });
+    connect(m_aiHarshnessSlider, &QSlider::valueChanged, this, [](int v) {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/personalityHarshness"), v);
+    });
+    connect(m_aiFreeformEdit, &QPlainTextEdit::textChanged, this, [this]() {
+        QSettings settings;
+        settings.setValue(QStringLiteral("ai/personalityFreeform"), m_aiFreeformEdit->toPlainText());
+    });
+
     // ---- Seção: Assistente de IA ----
     auto* aiGroup = new QGroupBox(tr("Assistente de IA"), this);
     auto* aiLayout = new QVBoxLayout(aiGroup);
@@ -257,11 +340,11 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     auto* imgGenHint = new QLabel(
         tr("Ponto de partida do diálogo de geração (a escolha feita lá "
-           "atualiza estes campos) e também o que a Mira usa quando gera uma "
+           "atualiza estes campos) e também o que a %1 usa quando gera uma "
            "imagem sozinha durante o chat, sem abrir diálogo nenhum. A "
            "geração de imagem sempre usa a API oficial da OpenAI "
            "(api.openai.com) com a Chave de API acima, independente do "
-           "Endpoint configurado pro chat."),
+           "Endpoint configurado pro chat.").arg(miraAssistantName()),
         imgGenGroup);
     imgGenHint->setObjectName(QStringLiteral("settingsHint"));
     imgGenHint->setWordWrap(true);
@@ -454,6 +537,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     leftCol->setSpacing(10);
     leftCol->addWidget(spellGroup);
     leftCol->addWidget(pageGroup);
+    leftCol->addWidget(personaGroup);
     leftCol->addWidget(aiGroup);
     leftCol->addWidget(imgGenGroup);
     leftCol->addStretch();

@@ -99,6 +99,8 @@ qt_add_executable(qenna-writer
     src/ClickableImageLabel.h
     src/GeneratedImageGallery.cpp
     src/GeneratedImageGallery.h
+    src/MiraStyleStore.cpp
+    src/MiraStyleStore.h
     src/ImageGalleryDialog.cpp
     src/ImageGalleryDialog.h
     src/ElementsPresentDialog.cpp

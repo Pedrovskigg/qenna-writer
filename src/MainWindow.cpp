@@ -137,6 +137,7 @@
 #include "MarkerHoverPopup.h"
 #include "AIChatPanel.h"
 #include "AISelectionChat.h"
+#include "MiraPersonality.h"
 #include "MarkerPickPopup.h"
 #include "MarkerStore.h"
 #include "PresencePopup.h"
@@ -846,7 +847,7 @@ void MainWindow::setupEditor()
         [this]() { addSelectionToMemory(); });
     selectionPopup->addAction(QStringLiteral("construtor.svg"), tr("Salvar como menção ao sistema..."),
         [this]() { addSelectionToConstrutorMention(); });
-    selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a Mira"),
+    selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a %1").arg(miraAssistantName()),
         [this]() { openAISelectionChat(); });
     selectionPopup->addAction(QStringLiteral("add-image.svg"), tr("Gerar imagem disso..."),
         [this]() { generateImageFromSelection(); });

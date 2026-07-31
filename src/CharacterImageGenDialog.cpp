@@ -3,6 +3,7 @@
 #include "CharacterImageGenService.h"
 #include "ClickableImageLabel.h"
 #include "GeneratedImageGallery.h"
+#include "MiraPersonality.h"
 #include "Theme.h"
 
 #include <QCheckBox>
@@ -78,8 +79,8 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
     root->setSpacing(10);
 
     auto* hint = new QLabel(tr(
-        "Descreva livremente a cena — a Mira escreve o prompt de imagem "
-        "final por você."), this);
+        "Descreva livremente a cena — a %1 escreve o prompt de imagem "
+        "final por você.").arg(miraAssistantName()), this);
     hint->setObjectName(QStringLiteral("cigHint"));
     hint->setWordWrap(true);
     root->addWidget(hint);
@@ -144,7 +145,7 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
     rawLay->addWidget(rawLabel);
 
     m_rawPromptEdit = new QPlainTextEdit(m_rawSection);
-    m_rawPromptEdit->setPlaceholderText(tr("Cole ou escreva aqui o prompt exato — vai direto pra API de imagem, sem passar pela Mira."));
+    m_rawPromptEdit->setPlaceholderText(tr("Cole ou escreva aqui o prompt exato — vai direto pra API de imagem, sem passar pela %1.").arg(miraAssistantName()));
     m_rawPromptEdit->setFixedHeight(96);
     rawLay->addWidget(m_rawPromptEdit);
 

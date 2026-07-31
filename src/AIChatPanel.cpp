@@ -21,6 +21,7 @@
 #include "MapPinsStore.h"
 #include "MarkerStore.h"
 #include "MiraPersonality.h"
+#include "MiraStyleStore.h"
 #include "NotesStore.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
@@ -49,7 +50,6 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPixmap>
-#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRandomGenerator>
 #include <QRegularExpression>
@@ -178,13 +178,17 @@ QString docFocusCheckQss() {
 }
 
 QString inputEditQss() {
+    // Seletor por objectName (não só "QTextEdit { }"): garante especificidade
+    // contra o QTextEdit { padding: 80px 100px; } global (Theme::globalStyleSheet,
+    // escrito pro editor de manuscrito) — mesmo remédio já usado em
+    // bubbleTextQss() e no CharacterSheetPanel.
     return QStringLiteral(R"(
-        QPlainTextEdit {
+        QTextEdit#chatInputEdit {
             background: %1; color: %2; border: 1px solid %3;
             border-radius: 8px; padding: 8px 10px; font-size: 12px;
             font-family: 'Segoe UI', sans-serif;
         }
-        QPlainTextEdit:focus { border-color: %4; }
+        QTextEdit#chatInputEdit:focus { border-color: %4; }
     )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder());
 }
 
@@ -253,6 +257,14 @@ QString traceChipQss() {
         QToolButton:hover { background: %4; color: %5; border-color: %5; }
     )").arg(Theme::inputBackground(), Theme::textMuted(), Theme::subtleBorder(),
            Theme::hoverOverlay(), Theme::textBright());
+}
+
+QString feedbackBtnQss() {
+    return QStringLiteral(
+        "QToolButton { background: transparent; border: none; font-size: 11px; padding: 1px 3px; }"
+        "QToolButton:hover { background: %1; border-radius: 4px; }"
+        "QToolButton:disabled { background: transparent; }"
+    ).arg(Theme::hoverOverlay());
 }
 
 // Ícone do X do header é gerado com cores do tema (não é QSS), então precisa
@@ -643,6 +655,73 @@ AITool generateCharacterImageTool() {
     return tool;
 }
 
+AITool generateSceneImageTool() {
+    QJsonObject descProp;
+    descProp[QStringLiteral("type")] = QStringLiteral("string");
+    descProp[QStringLiteral("description")] = QStringLiteral(
+        "Descrição livre da CENA/AMBIENTE/OBJETO pedido pelo autor (lugar, "
+        "momento, atmosfera, elementos visuais) — nunca um prompt de imagem "
+        "técnico pronto, isso é gerado depois por você mesma noutra etapa. "
+        "Pode citar personagens de passagem (ex. \"a silhueta de alguém ao "
+        "longe\"), mas isso NÃO é a mesma coisa que gerar o retrato de um "
+        "personagem específico — se o pedido for claramente um retrato "
+        "focado numa pessoa já cadastrada no projeto, use "
+        "generate_character_image em vez desta. Preencha isso OU "
+        "final_prompt, nunca os dois.");
+
+    QJsonObject styleProp;
+    styleProp[QStringLiteral("type")] = QStringLiteral("string");
+    styleProp[QStringLiteral("enum")] = QJsonArray{
+        QStringLiteral("padrao"), QStringLiteral("fotorrealista"),
+        QStringLiteral("realismo_digital"), QStringLiteral("ilustracao_digital"),
+        QStringLiteral("anime"), QStringLiteral("cartoon")
+    };
+    styleProp[QStringLiteral("description")] = QStringLiteral(
+        "Estilo visual pedido. Use \"padrao\" se o autor não especificar. "
+        "Ignorado se final_prompt for usado.");
+
+    QJsonObject finalPromptProp;
+    finalPromptProp[QStringLiteral("type")] = QStringLiteral("string");
+    finalPromptProp[QStringLiteral("description")] = QStringLiteral(
+        "Prompt de imagem JÁ PRONTO fornecido pelo próprio autor (ele "
+        "escreveu/colou o texto exato e pediu explicitamente pra usar "
+        "aquilo, sem reescrever nada). Preencha isso OU description, nunca "
+        "os dois. NUNCA decida sozinha pular a etapa de engenharia de "
+        "prompt achando que sabe escrever melhor.");
+
+    QJsonObject properties;
+    properties[QStringLiteral("description")] = descProp;
+    properties[QStringLiteral("style")] = styleProp;
+    properties[QStringLiteral("final_prompt")] = finalPromptProp;
+
+    QJsonArray required;
+    required.append(QStringLiteral("description"));
+
+    QJsonObject params;
+    params[QStringLiteral("type")] = QStringLiteral("object");
+    params[QStringLiteral("properties")] = properties;
+    params[QStringLiteral("required")] = required;
+
+    AITool tool;
+    tool.name = QStringLiteral("generate_scene_image");
+    tool.description = QStringLiteral(
+        "Gera uma imagem livre — cena, ambiente, objeto, momento do "
+        "enredo — SEM associar a foto de nenhum personagem específico "
+        "(não mexe em nenhuma ficha). A imagem gerada fica disponível na "
+        "galeria do projeto e aparece na sua resposta. Dois modos, "
+        "mutuamente exclusivos: (1) NORMAL — preencha description (+ style "
+        "opcional) em linguagem livre; você NUNCA escreve o prompt técnico "
+        "final nesse modo. (2) MANUAL — se o autor forneceu um prompt "
+        "PRONTO e pediu explicitamente pra usar exatamente aquele texto, "
+        "preencha final_prompt em vez de description. Só chame sob pedido "
+        "EXPLÍCITO do autor pra gerar uma imagem — nunca por iniciativa "
+        "própria. Se o pedido for claramente sobre o retrato de um "
+        "personagem específico já existente no projeto, use "
+        "generate_character_image em vez desta.");
+    tool.parameters = params;
+    return tool;
+}
+
 } // namespace
 
 AIChatPanel::AIChatPanel(ProjectModel* projectModel,
@@ -697,7 +776,7 @@ AIChatPanel::AIChatPanel(ProjectModel* projectModel,
         assistantMsg.role = QStringLiteral("assistant");
         assistantMsg.content = fullText;
         m_messages.append(assistantMsg);
-        logConversation(tr("Mira"), fullText);
+        logConversation(miraAssistantName(), fullText);
         finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages);
         m_pendingToolTraces.clear();
         m_pendingBubbleImages.clear();
@@ -748,7 +827,7 @@ void AIChatPanel::buildUi()
     auto* hlay = new QHBoxLayout(m_header);
     hlay->setContentsMargins(2, 0, 2, 0);
     hlay->setSpacing(6);
-    m_titleLabel = new QLabel(tr("Mira"), m_header);
+    m_titleLabel = new QLabel(miraAssistantName(), m_header);
     hlay->addWidget(m_titleLabel);
     hlay->addStretch();
 
@@ -790,7 +869,7 @@ void AIChatPanel::buildUi()
                             QStringLiteral("gpt-4.1-mini"), QStringLiteral("gpt-4.1") });
     m_modelCombo->setCurrentText(QSettings().value(QStringLiteral("ai/model"),
         QStringLiteral("gpt-4o-mini")).toString());
-    m_modelCombo->setToolTip(tr("Modelo usado pela Mira (troca vale pra próxima mensagem)"));
+    m_modelCombo->setToolTip(tr("Modelo usado pela %1 (troca vale pra próxima mensagem)").arg(miraAssistantName()));
     m_modelCombo->setFixedWidth(102);
     auto saveModelChoice = [this]() {
         QSettings().setValue(QStringLiteral("ai/model"), m_modelCombo->currentText().trimmed());
@@ -909,18 +988,23 @@ void AIChatPanel::buildUi()
     connect(m_attachBtn, &QToolButton::clicked, this, &AIChatPanel::pickAttachImage);
     irlay->addWidget(m_attachBtn);
 
-    m_inputEdit = new QPlainTextEdit(this);
-    m_inputEdit->setPlaceholderText(tr("Converse com a Mira sobre o projeto… (Enter envia, Shift+Enter quebra linha)"));
+    // QTextEdit, não QPlainTextEdit: o motor de layout do QPlainTextEdit
+    // (QPlainTextDocumentLayout) não responde de forma confiável a
+    // document()->setTextWidth() manual, deixando fitInputHeight() sempre
+    // travado numa altura mínima mesmo com texto de várias linhas —
+    // QTextEdit usa o motor "normal" (QTextDocumentLayout), já comprovado
+    // funcionando em createBubbleRow/fitBubbleHeight.
+    m_inputEdit = new QTextEdit(this);
+    m_inputEdit->setObjectName(QStringLiteral("chatInputEdit"));
+    m_inputEdit->setAcceptRichText(false);
+    m_inputEdit->setPlaceholderText(tr("Converse com a %1 sobre o projeto… (Enter envia, Shift+Enter quebra linha)").arg(miraAssistantName()));
     m_inputEdit->setTabChangesFocus(true);
     m_inputEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_inputEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_inputEdit->setFixedHeight(38);
+    m_inputEdit->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     m_inputEdit->installEventFilter(this);
-    connect(m_inputEdit, &QPlainTextEdit::textChanged, this, [this]() {
-        const int docH = int(m_inputEdit->document()->size().height());
-        const int newH = qBound(38, docH + 16, 120);
-        m_inputEdit->setFixedHeight(newH);
-    });
+    connect(m_inputEdit, &QTextEdit::textChanged, this, [this]() { fitInputHeight(); });
     irlay->addWidget(m_inputEdit, 1);
 
     m_sendBtn = new QPushButton(tr("Enviar"), this);
@@ -1001,6 +1085,7 @@ void AIChatPanel::applyTheme()
             const QString name = b->objectName();
             if (name == QStringLiteral("chatTraceToggle")) b->setStyleSheet(traceToggleQss());
             else if (name == QStringLiteral("chatTraceChip")) b->setStyleSheet(traceChipQss());
+            else if (name == QStringLiteral("chatFeedbackBtn")) b->setStyleSheet(feedbackBtnQss());
         }
         for (QLabel* l : m_transcriptContent->findChildren<QLabel*>()) {
             if (l->objectName() == QStringLiteral("chatTraceText")) l->setStyleSheet(traceTextQss());
@@ -1150,6 +1235,11 @@ void AIChatPanel::showEvent(QShowEvent* e)
     QFrame::showEvent(e);
     if (!m_positioned) applyLayoutMode();
     if (m_resizeGrip) m_resizeGrip->raise();
+    // O painel é criado uma única vez e só escondido/mostrado depois — se o
+    // nome mudou em Settings enquanto ele já existia, o título só reflete
+    // ao reabrir. Cobre o fluxo real (ninguém deixa o chat aberto olhando
+    // pra Settings ao mesmo tempo).
+    if (m_titleLabel) m_titleLabel->setText(miraAssistantName());
 }
 
 void AIChatPanel::resizeEvent(QResizeEvent* e)
@@ -1159,6 +1249,7 @@ void AIChatPanel::resizeEvent(QResizeEvent* e)
         const int gs = m_resizeGrip->width();
         m_resizeGrip->move(width() - gs - 3, height() - gs - 3);
     }
+    refitAllBubbles();
 }
 
 void AIChatPanel::ancorRight()
@@ -1268,7 +1359,12 @@ QString AIChatPanel::buildDailyProgressSummary() const
 
 QString AIChatPanel::buildSystemPrompt() const
 {
-    QString base = miraPersonalityPrompt();
+    QString base = miraPersonalityPrompt(miraAssistantName());
+    base += miraPersonalityAdjustmentFragment(
+        QSettings().value(QStringLiteral("ai/personalityWarmth"), 50).toInt(),
+        QSettings().value(QStringLiteral("ai/personalityHarshness"), 50).toInt(),
+        QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
+    base += MiraStyleStore::buildPromptFragment();
     base += QStringLiteral(
         "\n\nVocê está conversando livremente com o autor sobre o projeto "
         "dele — não é uma revisão pontual de um trecho específico do "
@@ -1420,7 +1516,7 @@ void AIChatPanel::sendUserMessage(const QString& text)
         QStringLiteral("gpt-4o-mini")).toString());
     m_client->setTools({ searchProjectTool(), readDocumentTool(), saveProjectNoteTool(),
                          resummarizeDocumentTool(), lookupWorldDataTool(),
-                         generateCharacterImageTool() });
+                         generateCharacterImageTool(), generateSceneImageTool() });
 
     if (m_messages.isEmpty()) {
         AIChatMessage sys;
@@ -1469,6 +1565,8 @@ void AIChatPanel::handleToolCall(const QString& id, const QString& name, const Q
         handleLookupWorldDataTool(id, arguments);
     } else if (name == QStringLiteral("generate_character_image")) {
         handleGenerateCharacterImageTool(id, arguments);
+    } else if (name == QStringLiteral("generate_scene_image")) {
+        handleGenerateSceneImageTool(id, arguments);
     } else {
         m_pendingToolCall = false;
     }
@@ -1483,7 +1581,7 @@ void AIChatPanel::handleSearchProjectTool(const QString& id, const QJsonObject& 
     // dentro da bolha final, atrás da setinha "Ver pesquisas". O log em
     // disco continua com o detalhe completo, pra debug.
     const QString traceText = tr("🔍 Buscando \"%1\"…\n%2").arg(query, result.text);
-    logConversation(tr("Mira"), traceText);
+    logConversation(miraAssistantName(), traceText);
     ToolTraceEntry entry;
     entry.text = traceText;
     entry.docTitles = result.docTitles;
@@ -1511,7 +1609,7 @@ void AIChatPanel::handleReadDocumentTool(const QString& id, const QJsonObject& a
         const QString resultText = tr("Nenhum documento com título parecido com \"%1\" foi encontrado. "
             "Títulos disponíveis: %2").arg(title, titles.join(QStringLiteral(", ")));
         const QString traceText = tr("📖 Tentando ler o documento \"%1\"…\n%2").arg(title, resultText);
-        logConversation(tr("Mira"), traceText);
+        logConversation(miraAssistantName(), traceText);
         ToolTraceEntry entry;
         entry.text = traceText;
         m_pendingToolTraces.append(entry);
@@ -1520,7 +1618,7 @@ void AIChatPanel::handleReadDocumentTool(const QString& id, const QJsonObject& a
     }
 
     const QString traceStart = tr("📖 Lendo o documento inteiro \"%1\" pra responder: %2").arg(match->title, question);
-    logConversation(tr("Mira"), traceStart);
+    logConversation(miraAssistantName(), traceStart);
     ToolTraceEntry entry;
     entry.text = traceStart;
     if (!match->key.isEmpty()) entry.docTitles.append(match->title);
@@ -1613,7 +1711,7 @@ void AIChatPanel::handleSaveProjectNoteTool(const QString& id, const QJsonObject
 
     const QString traceText = tr("💾 Nota salva — %1 %2: \"%3\" — %4")
         .arg(statusEmoji, categoryLabel, title, content);
-    logConversation(tr("Mira"), traceText);
+    logConversation(miraAssistantName(), traceText);
     ToolTraceEntry entry;
     entry.text = traceText;
     m_pendingToolTraces.append(entry);
@@ -1644,7 +1742,7 @@ void AIChatPanel::handleResummarizeDocumentTool(const QString& id, const QJsonOb
     const ScanDoc* match = findDocByTitle(docs, title);
     if (!match) {
         const QString resultText = tr("Nenhum documento com título parecido com \"%1\" foi encontrado.").arg(title);
-        logConversation(tr("Mira"), resultText);
+        logConversation(miraAssistantName(), resultText);
         ToolTraceEntry entry;
         entry.text = resultText;
         m_pendingToolTraces.append(entry);
@@ -1653,7 +1751,7 @@ void AIChatPanel::handleResummarizeDocumentTool(const QString& id, const QJsonOb
     }
 
     const QString traceText = tr("🔄 Relendo \"%1\" por inteiro pra atualizar o resumo…").arg(match->title);
-    logConversation(tr("Mira"), traceText);
+    logConversation(miraAssistantName(), traceText);
     ToolTraceEntry entry;
     entry.text = traceText;
     if (!match->key.isEmpty()) entry.docTitles.append(match->title);
@@ -1712,7 +1810,7 @@ void AIChatPanel::handleLookupWorldDataTool(const QString& id, const QJsonObject
     const QString resultText = runWorldDataLookup(query);
 
     const QString traceText = tr("🌍 Consultando dados geográficos reais de \"%1\"…\n%2").arg(query, resultText);
-    logConversation(tr("Mira"), traceText);
+    logConversation(miraAssistantName(), traceText);
     ToolTraceEntry entry;
     entry.text = traceText;
     m_pendingToolTraces.append(entry);
@@ -1781,7 +1879,7 @@ void AIChatPanel::handleGenerateCharacterImageTool(const QString& id, const QJso
         const QString resultText = tr(
             "Nenhum personagem chamado \"%1\" foi encontrado no projeto. "
             "Crie o personagem primeiro antes de gerar a imagem.").arg(characterName);
-        logConversation(tr("Mira"), resultText);
+        logConversation(miraAssistantName(), resultText);
         finishToolRoundTrip(id, QStringLiteral("generate_character_image"), argsEcho, resultText);
         return;
     }
@@ -1802,7 +1900,7 @@ void AIChatPanel::handleGenerateCharacterImageTool(const QString& id, const QJso
         ? tr("🎨 Gerando imagem pra \"%1\" com prompt fornecido pelo autor (sem reescrita).")
               .arg(resolvedElement->name)
         : tr("🎨 Gerando imagem pra \"%1\": %2").arg(resolvedElement->name, description);
-    logConversation(tr("Mira"), traceText);
+    logConversation(miraAssistantName(), traceText);
     ToolTraceEntry entry;
     entry.text = traceText;
     m_pendingToolTraces.append(entry);
@@ -1876,6 +1974,78 @@ void AIChatPanel::handleGenerateCharacterImageTool(const QString& id, const QJso
         service->generateFromRawPrompt(finalPrompt, imageModel, imageQuality, imageSize);
     } else {
         service->generate(description, imageStylePresetFromKey(styleKey), sheetContext,
+            imageModel, imageQuality, imageSize);
+    }
+}
+
+void AIChatPanel::handleGenerateSceneImageTool(const QString& id, const QJsonObject& arguments)
+{
+    const QString description = arguments.value(QStringLiteral("description")).toString();
+    const QString styleKey = arguments.value(QStringLiteral("style")).toString();
+    const QString finalPrompt = arguments.value(QStringLiteral("final_prompt")).toString().trimmed();
+
+    QJsonObject argsEcho;
+    argsEcho[QStringLiteral("description")] = description;
+    argsEcho[QStringLiteral("style")] = styleKey;
+    if (!finalPrompt.isEmpty()) argsEcho[QStringLiteral("final_prompt")] = finalPrompt;
+
+    const QString traceText = !finalPrompt.isEmpty()
+        ? tr("🎨 Gerando imagem de cena com prompt fornecido pelo autor (sem reescrita).")
+        : tr("🎨 Gerando imagem de cena: %1").arg(description);
+    logConversation(miraAssistantName(), traceText);
+    ToolTraceEntry entry;
+    entry.text = traceText;
+    m_pendingToolTraces.append(entry);
+    m_statusLabel->setText(tr("Gerando imagem…"));
+    m_statusLabel->setVisible(true);
+
+    QSettings settings;
+    const QString imageModel = settings.value(QStringLiteral("ai/imageModel"),
+        QStringLiteral("gpt-image-1-mini")).toString();
+    const QString imageQuality = settings.value(QStringLiteral("ai/imageQuality"),
+        QStringLiteral("medium")).toString();
+    const QString imageSize = settings.value(QStringLiteral("ai/imageSize"),
+        QStringLiteral("1024x1024")).toString();
+
+    auto* service = new CharacterImageGenService(this);
+    // Mesmo compartilhamento entre lambdas de handleGenerateCharacterImageTool:
+    // promptEngineered chega antes de imageReady, que precisa do texto pra
+    // registrar na galeria.
+    auto promptHolder = std::make_shared<QString>();
+
+    connect(service, &CharacterImageGenService::imageReady, this,
+            [this, service, id, argsEcho, finalPrompt, promptHolder](const QImage& img) {
+        // Efêmero, só pra exibir na bolha final — nunca gravado em
+        // AIChatMessage/m_messages (ver comentário em m_pendingBubbleImages).
+        m_pendingBubbleImages.append(img);
+        // Sem personagem associado (characterName vazio) — não mexe em
+        // nenhuma ficha, só entra na galeria geral do projeto.
+        GeneratedImageGallery::save(m_projectRoot, img, QString(),
+            finalPrompt.isEmpty() ? *promptHolder : finalPrompt);
+        finishToolRoundTrip(id, QStringLiteral("generate_scene_image"), argsEcho,
+            tr("Imagem gerada."));
+        service->deleteLater();
+    });
+    connect(service, &CharacterImageGenService::errorOccurred, this,
+            [this, service, id, argsEcho](const QString& err) {
+        finishToolRoundTrip(id, QStringLiteral("generate_scene_image"), argsEcho,
+            tr("Erro ao gerar imagem: %1").arg(err));
+        service->deleteLater();
+    });
+    connect(service, &CharacterImageGenService::promptEngineered, this,
+            [this, promptHolder](const QString& prompt) {
+        *promptHolder = prompt;
+        ToolTraceEntry entry;
+        entry.text = tr("📝 Prompt gerado: %1").arg(prompt);
+        m_pendingToolTraces.append(entry);
+    });
+
+    if (!finalPrompt.isEmpty()) {
+        service->generateFromRawPrompt(finalPrompt, imageModel, imageQuality, imageSize);
+    } else {
+        // characterContext vazio — geração livre, mesmo caminho que
+        // MainWindow::generateImageFromSelection já usa manualmente.
+        service->generate(description, imageStylePresetFromKey(styleKey), QString(),
             imageModel, imageQuality, imageSize);
     }
 }
@@ -2105,6 +2275,18 @@ void AIChatPanel::fitBubbleHeight(QTextEdit* te, int textWidth) const
     te->setFixedHeight(qMax(20, h));
 }
 
+void AIChatPanel::fitInputHeight()
+{
+    if (!m_inputEdit) return;
+    // Mesmo motivo de fitBubbleHeight: sem travar explicitamente a largura
+    // usada pro cálculo de quebra na largura ATUAL do viewport, a altura
+    // calculada não acompanha nem a digitação nem o redimensionamento do
+    // painel.
+    m_inputEdit->document()->setTextWidth(m_inputEdit->viewport()->width());
+    const int h = int(m_inputEdit->document()->size().height()) + 16;
+    m_inputEdit->setFixedHeight(qBound(38, h, 120));
+}
+
 AIChatPanel::BubbleHandle AIChatPanel::createBubbleRow(bool isUser, const QString& initialText,
                                                        const QString& imageDataUrl)
 {
@@ -2190,6 +2372,26 @@ AIChatPanel::BubbleHandle AIChatPanel::createBubbleRow(bool isUser, const QStrin
     return h;
 }
 
+void AIChatPanel::refitAllBubbles()
+{
+    // createBubbleRow trava textWidth/setFixedWidth com a largura do painel
+    // NO MOMENTO da criação — sem isso, bolhas já na tela ficavam com o
+    // texto cortado (largura antiga, maior) ao encolher o painel (troca de
+    // modo painel/janela ou arrasto do canto), mesmo a bolha-frame em si
+    // encolhendo via setMaximumWidth. Chamado a cada resizeEvent.
+    if (!m_transcriptContent) return;
+    const int bubbleMaxW = int(qMax(width(), kPanelWidth) * 0.88);
+    const int textWidth = bubbleMaxW - 24;
+    for (QFrame* bubble : m_transcriptContent->findChildren<QFrame*>()) {
+        const QString name = bubble->objectName();
+        if (name != QStringLiteral("chatBubbleUser") && name != QStringLiteral("chatBubbleMira")) continue;
+        bubble->setMaximumWidth(bubbleMaxW);
+        for (QTextEdit* te : bubble->findChildren<QTextEdit*>()) {
+            if (te->objectName() == QStringLiteral("chatBubbleText")) fitBubbleHeight(te, textWidth);
+        }
+    }
+}
+
 void AIChatPanel::attachToolTraces(BubbleHandle& handle, const QVector<ToolTraceEntry>& traces)
 {
     if (traces.isEmpty() || !handle.bubble) return;
@@ -2271,6 +2473,45 @@ void AIChatPanel::attachBubbleImages(BubbleHandle& handle, const QVector<QImage>
     }
 }
 
+void AIChatPanel::attachFeedbackButtons(BubbleHandle& handle, const QString& fullText)
+{
+    if (!handle.bubble || fullText.trimmed().isEmpty()) return;
+
+    auto* row = new QWidget(handle.bubble);
+    auto* rowLay = new QHBoxLayout(row);
+    rowLay->setContentsMargins(0, 2, 0, 0);
+    rowLay->setSpacing(2);
+    rowLay->addStretch();
+
+    auto* likeBtn = new QToolButton(row);
+    likeBtn->setObjectName(QStringLiteral("chatFeedbackBtn"));
+    likeBtn->setText(QStringLiteral("👍"));
+    likeBtn->setCursor(Qt::PointingHandCursor);
+    likeBtn->setToolTip(tr("Bom estilo de resposta"));
+    likeBtn->setStyleSheet(feedbackBtnQss());
+
+    auto* dislikeBtn = new QToolButton(row);
+    dislikeBtn->setObjectName(QStringLiteral("chatFeedbackBtn"));
+    dislikeBtn->setText(QStringLiteral("👎"));
+    dislikeBtn->setCursor(Qt::PointingHandCursor);
+    dislikeBtn->setToolTip(tr("Não gostei desse estilo"));
+    dislikeBtn->setStyleSheet(feedbackBtnQss());
+
+    // Voto único por mensagem, sem alternar/desfazer — mesmo comportamento
+    // de like/dislike de apps de chat conhecidos.
+    auto vote = [likeBtn, dislikeBtn, fullText](bool positive) {
+        MiraStyleStore::recordFeedback(positive, fullText);
+        likeBtn->setEnabled(false);
+        dislikeBtn->setEnabled(false);
+    };
+    connect(likeBtn, &QToolButton::clicked, this, [vote]() { vote(true); });
+    connect(dislikeBtn, &QToolButton::clicked, this, [vote]() { vote(false); });
+
+    rowLay->addWidget(likeBtn);
+    rowLay->addWidget(dislikeBtn);
+    handle.bubbleLayout->addWidget(row);
+}
+
 void AIChatPanel::addUserBubble(const QString& text, const QString& imageDataUrl)
 {
     logConversation(tr("Você"), imageDataUrl.isEmpty() ? text
@@ -2280,9 +2521,10 @@ void AIChatPanel::addUserBubble(const QString& text, const QString& imageDataUrl
 
 void AIChatPanel::addMiraBubble(const QString& text, const QVector<ToolTraceEntry>& traces)
 {
-    logConversation(tr("Mira"), text);
+    logConversation(miraAssistantName(), text);
     BubbleHandle h = createBubbleRow(/*isUser=*/false, text);
     attachToolTraces(h, traces);
+    attachFeedbackButtons(h, text);
 }
 
 void AIChatPanel::beginMiraStreamBubble()
@@ -2312,6 +2554,7 @@ void AIChatPanel::finalizeMiraStreamBubble(const QVector<ToolTraceEntry>& traces
     }
     attachBubbleImages(m_currentMiraBubble, images);
     attachToolTraces(m_currentMiraBubble, traces);
+    attachFeedbackButtons(m_currentMiraBubble, m_streamingText);
     m_currentMiraBubble = BubbleHandle();
     m_assistantTurnOpen = false;
 }
@@ -2862,6 +3105,11 @@ bool AIChatPanel::eventFilter(QObject* watched, QEvent* event)
             if (!text.isEmpty()) sendUserMessage(text);
             return true; // consome — Shift+Enter continua inserindo quebra de linha normalmente
         }
+    } else if (watched == m_inputEdit && event->type() == QEvent::Resize) {
+        // Painel redimensionado com texto já digitado — sem isso a largura
+        // usada pro cálculo de quebra ficava desatualizada até a próxima
+        // tecla, deixando o texto "invisível" (fora da área calculada).
+        fitInputHeight();
     }
     return QFrame::eventFilter(watched, event);
 }
