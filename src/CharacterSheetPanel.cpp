@@ -1,6 +1,8 @@
 #include "CharacterSheetPanel.h"
 
 #include "AvatarUtils.h"
+#include "CharacterImageGenDialog.h"
+#include "CharacterImageGenService.h"
 #include "EditorLayout.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -333,6 +335,26 @@ void CharacterSheetPanel::pickPhoto()
     scheduleSave();
 }
 
+void CharacterSheetPanel::generateImage()
+{
+    if (m_elementId.isEmpty() || !m_elements) return;
+    const Element* e = m_elements->findElement(m_elementId);
+    CharacterImageGenDialog dlg(e ? e->name : QString(),
+        CharacterImageGenService::sheetContextText(m_sheet), this);
+    dlg.setProjectRoot(m_projectRoot);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    const QString dataUrl = ImageCropDialog::cropImage(dlg.resultImage(), this);
+    if (dataUrl.isEmpty()) return;
+    if (const Element* cur = m_elements->findElement(m_elementId)) {
+        Element copy = *cur;
+        copy.image = dataUrl;
+        m_elements->updateElement(m_elementId, copy);
+    }
+    refreshPhoto();
+    scheduleSave();
+}
+
 void CharacterSheetPanel::refreshPhoto()
 {
     if (!m_photo) return;
@@ -452,6 +474,11 @@ QWidget* CharacterSheetPanel::buildHeader(bool vertical)
     m_photo->installEventFilter(this);
     refreshPhoto();
 
+    m_genImageBtn = new QPushButton(tr("✨ Gerar imagem"));
+    m_genImageBtn->setObjectName(QStringLiteral("sheetGhostBtn"));
+    m_genImageBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_genImageBtn, &QPushButton::clicked, this, &CharacterSheetPanel::generateImage);
+
     auto* nameLbl = new QLabel(e ? e->name : tr("Personagem"));
     nameLbl->setObjectName(QStringLiteral("sheetName"));
     nameLbl->setWordWrap(true);
@@ -469,15 +496,20 @@ QWidget* CharacterSheetPanel::buildHeader(bool vertical)
         v->setContentsMargins(0, 0, 0, 0);
         v->setSpacing(6);
         v->addWidget(m_photo, 0, Qt::AlignLeft);
+        v->addWidget(m_genImageBtn, 0, Qt::AlignLeft);
         v->addSpacing(2);
         v->addWidget(nameLbl);
         if (aliasLbl) v->addWidget(aliasLbl);
     } else {
-        // 1 coluna: foto à esquerda, nome/apelido ao lado.
+        // 1 coluna: foto (+ botão embaixo) à esquerda, nome/apelido ao lado.
         auto* h = new QHBoxLayout(box);
         h->setContentsMargins(0, 0, 0, 0);
         h->setSpacing(18);
-        h->addWidget(m_photo, 0, Qt::AlignTop);
+        auto* photoCol = new QVBoxLayout;
+        photoCol->setSpacing(6);
+        photoCol->addWidget(m_photo, 0, Qt::AlignLeft);
+        photoCol->addWidget(m_genImageBtn, 0, Qt::AlignLeft);
+        h->addLayout(photoCol);
         auto* nameCol = new QVBoxLayout;
         nameCol->setSpacing(2);
         nameCol->addSpacing(6);

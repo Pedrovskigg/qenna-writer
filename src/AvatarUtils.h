@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QImage>
 #include <QPixmap>
 #include <QString>
 
@@ -11,6 +12,11 @@ namespace AvatarUtils {
 // Decodifica um data-URL base64 (ex. "data:image/png;base64,....") pra
 // QPixmap. Retorna pixmap nulo se vazio/inválido.
 QPixmap decodeDataUrl(const QString& dataUrl);
+
+// Inverso de decodeDataUrl: codifica uma QImage em data-URL JPEG, reduzindo
+// (mantendo proporção) se algum lado passar de maxSide. Sem crop — pra
+// recorte quadrado padronizado de avatar, ver ImageCropDialog.
+QString encodeDataUrl(const QImage& img, int maxSide, int jpegQuality);
 
 // Avatar circular pronto pra uso em listas/cards: usa a foto real se houver
 // (crop central, preenchendo o círculo); senão, círculo colorido (cor

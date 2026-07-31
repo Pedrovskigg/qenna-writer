@@ -1550,6 +1550,13 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
         });
     }
 
+    if (item->elementType == QStringLiteral("character")) {
+        auto* genImgAct = menu.addAction(tr("Gerar imagem do personagem…"));
+        connect(genImgAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
+            emit generateCharacterImageRequested(drawerKey, itemId);
+        });
+    }
+
     // ---- Grupos ----
     QMenu* groupMenu = menu.addMenu(tr("Adicionar ao grupo"));
     {
