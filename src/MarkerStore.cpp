@@ -341,6 +341,50 @@ void MarkerStore::clearRange(const QString& docKey, QTextCursor& cursor)
     }
 }
 
+bool MarkerStore::stripInheritedMarker(QTextDocument* doc, int from, int to)
+{
+    if (!doc) return false;
+    const int last = doc->characterCount() - 1; // última posição válida do doc
+    if (last <= 0) return false;
+    from = qBound(0, from, last);
+    to = qBound(0, to, last);
+    if (to <= from) return false;
+
+    // Formato que o trecho recém-inserido herdou.
+    QTextCursor c(doc);
+    c.setPosition(from);
+    c.setPosition(to, QTextCursor::KeepAnchor);
+    const QTextCharFormat fmt = c.charFormat();
+    const QString id = fmt.property(MarkerIdProperty).toString();
+    const QBrush bg = fmt.background();
+    const bool marked = !id.isEmpty()
+        || (bg.style() != Qt::NoBrush && bg.color().alpha() > 0);
+    if (!marked) return false;
+
+    // Ainda dentro do marker? Compara com o caractere seguinte: mesmo GUID
+    // (marker comentado) ou mesma cor (marker sem comentário, que não tem id).
+    if (to < last) {
+        QTextCursor n(doc);
+        n.setPosition(to);
+        n.setPosition(to + 1, QTextCursor::KeepAnchor);
+        const QTextCharFormat nfmt = n.charFormat();
+        const QString nid = nfmt.property(MarkerIdProperty).toString();
+        const QBrush nbg = nfmt.background();
+        const bool inside = !id.isEmpty()
+            ? (nid == id)
+            : (nid.isEmpty() && nbg.style() != Qt::NoBrush
+               && nbg.color() == bg.color());
+        if (inside) return false;
+    }
+
+    QTextCharFormat clear = fmt;
+    clear.clearProperty(MarkerIdProperty);
+    clear.clearBackground();
+    clear.clearForeground();
+    c.setCharFormat(clear);
+    return true;
+}
+
 void MarkerStore::updateMarker(const QString& docKey, QTextDocument* doc, const QString& id,
                                const QColor& color, const QString& comment)
 {
