@@ -1656,6 +1656,23 @@ void MainWindow::setupEditor()
     connect(editor, &QTextEdit::selectionChanged, wordCounter, &WordCounter::registerCursorActivity);
     connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::syncInlineFormatButtons);
 
+    // Marker não contamina o que vem depois. Qualquer caractere digitado na
+    // borda de saída de um trecho marcado herda o fundo/cor do marker (regra
+    // do charFormat do QTextEdit) e propaga o highlight indefinidamente, até
+    // por cima de parágrafos novos. Só insersão pura (removed == 0) entra
+    // aqui: mudança de formato reemite contentsChange com removed == added e
+    // apagaria markers legítimos. Deferido porque mexer no documento de dentro
+    // do próprio contentsChange re-entra — mesmo padrão do MentionPopup.
+    connect(editor->document(), &QTextDocument::contentsChange, this,
+            [this](int pos, int removed, int added) {
+        if (removed != 0 || added != 1) return;
+        if (!markerStore || !editor) return;
+        QTimer::singleShot(0, this, [this, pos]() {
+            if (!markerStore || !editor) return;
+            markerStore->stripInheritedMarker(editor->document(), pos, pos + 1);
+        });
+    });
+
     // Novo bloco criado (Enter): força alinhamento explícito no block format.
     // singleShot(0) garante que o cursor já está no novo bloco quando roda.
     connect(editor->document(), &QTextDocument::blockCountChanged, this, [this]() {
@@ -6075,6 +6092,17 @@ void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comme
         const int sceneHint = (editorHost->viewMode().type == EditorHost::SceneDoc)
             ? editorHost->viewMode().sceneIndex : -1;
         appliedId = markerStore->applyMarkerToSelection(key, cur, color, comment, sceneHint);
+        // Colapsa no fim do trecho JÁ com o formato de digitação limpo. Se o
+        // cursor voltar pro editor com a seleção marcada, o QTextEdit adota o
+        // charFormat do último caractere marcado como formato do que vier a
+        // ser digitado — e o marker vaza pra todo o texto seguinte. Mantém o
+        // resto do formato (negrito/itálico/fonte) intacto.
+        cur.setPosition(qMin(e, editor->document()->characterCount() - 1));
+        QTextCharFormat typing = cur.charFormat();
+        typing.clearProperty(MarkerStore::MarkerIdProperty);
+        typing.clearBackground();
+        typing.clearForeground();
+        cur.setCharFormat(typing);
         editor->setTextCursor(cur);
         editor->viewport()->update();
     }

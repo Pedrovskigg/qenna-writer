@@ -76,6 +76,16 @@ public:
     void updateMarker(const QString& docKey, QTextDocument* doc, const QString& id,
                       const QColor& color, const QString& comment);
 
+    // Anti-vazamento do formato de digitação. O QTextEdit usa o charFormat do
+    // caractere ANTERIOR ao cursor como formato do que for digitado, então
+    // escrever logo depois de um trecho marcado sai com o fundo/cor do marker
+    // — e a contaminação se propaga sozinha, inclusive pra parágrafos novos
+    // (a quebra de bloco também herda o formato corrente). Limpa o marker do
+    // trecho recém-inserido [from, to) quando ele caiu na BORDA DE SAÍDA do
+    // marker; digitar no MEIO do trecho marcado continua estendendo o marker,
+    // que é o comportamento esperado. Retorna true se limpou algo.
+    bool stripInheritedMarker(QTextDocument* doc, int from, int to);
+
     // Lookup direto (usado pelo hover).
     Entry findById(const QString& docKey, const QString& id) const;
     bool hasMarker(const QString& docKey, const QString& id) const;
