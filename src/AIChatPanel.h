@@ -27,6 +27,8 @@ class MapPinsStore;
 class QCheckBox;
 class QComboBox;
 class QLabel;
+class QLineEdit;
+class QListWidget;
 class QPushButton;
 class QScrollArea;
 class QTextEdit;
@@ -122,12 +124,24 @@ public:
     void setGlossaryStore(GlossaryStore* store);
     void setMapPinsStore(MapPinsStore* store);
 
+    // Raízes de todos os projetos conhecidos (recentes), pra alimentar a
+    // coluna de projetos/conversas do modo janela. Chamado pela MainWindow
+    // sempre que o projeto ativo muda (mesma fonte que já alimenta a
+    // Biblioteca — ver loadRecentProjects).
+    void setKnownProjects(const QStringList& roots);
+
     // Navegação: abre no editor o documento (chave "ch:ms:chId"/"it:itemId")
     // referenciado numa busca — usado pelas citações clicáveis.
     void setDocOpener(std::function<void(const QString& docKey)> opener);
     // Título do documento atualmente aberto no editor — usado como padrão
     // do checkbox "Foco em documento" quando ele é marcado.
     void setCurrentDocTitleProvider(std::function<QString()> provider);
+    // Ponteiro pro QTextEdit ativo no momento (mesmo widget reaproveitado
+    // pra qualquer documento, ver EditorHost) — habilita a tool
+    // propose_document_edit, que permite a Mira propor e (sob confirmação
+    // do autor) aplicar uma correção pontual direto no documento aberto,
+    // sem precisar passar pelo AISelectionChat/seleção manual.
+    void setActiveEditorProvider(std::function<QTextEdit*()> provider);
 
     void togglePanel();
     void openPanel();
@@ -140,6 +154,11 @@ signals:
     // se ela estiver aberta no mesmo item (senão a foto só apareceria ao
     // reabrir a ficha).
     void characterImageUpdated(const QString& itemId);
+    // Emitido quando o autor clica "Abrir esse projeto" na barra de
+    // conversa somente-leitura (ver previewForeignSession) — MainWindow
+    // reage trocando o projeto ativo de verdade (mesmo fluxo de
+    // confirmDiscardOrSave + loadProjectFrom usado pela Biblioteca).
+    void openProjectRequested(const QString& root);
 
 protected:
     void showEvent(QShowEvent* e) override;
@@ -170,6 +189,23 @@ private:
         QStringList docTitles;
     };
 
+    // Uma edição proposta pela tool propose_document_edit neste turno — vira
+    // um cartão com Aplicar/Descartar na bolha final (mesmo padrão do
+    // m_pendingBubbleImages: efêmero, populado durante os tool calls do
+    // turno e consumido só na hora de montar a bolha). docTitleAtProposal
+    // guarda o título do documento que estava aberto quando a sugestão foi
+    // criada — como o editor é um QTextEdit ÚNICO reaproveitado pra
+    // qualquer documento (troca de conteúdo por baixo via EditorHost), o
+    // ponteiro continua o mesmo mesmo se o autor trocar de capítulo entre a
+    // sugestão aparecer e o clique em "Aplicar"; sem essa checagem de título
+    // a edição podia acabar caindo no documento errado.
+    struct PendingEditSuggestion {
+        QString originalText;
+        QString newText;
+        QString explanation;
+        QString docTitleAtProposal;
+    };
+
     // Referências de uma bolha já inserida no layout — usado tanto pra
     // mensagens prontas quanto pra atualizar uma bolha da Mira token a
     // token durante o streaming.
@@ -194,6 +230,7 @@ private:
     void fitBubbleHeight(QTextEdit* te, int textWidth) const;
     void fitInputHeight();
     void refitAllBubbles();
+    int transcriptAvailableWidth() const;
     void saveCurrentPanelSize();
     QString buildSystemPrompt() const;
     QString loadProjectSummaryFile() const;
@@ -216,6 +253,10 @@ private:
     // m_pendingBubbleImages) — só a galeria em disco (GeneratedImageGallery)
     // preserva isso entre sessões.
     void attachBubbleImages(BubbleHandle& handle, const QVector<QImage>& images);
+    // Anexa um cartão por sugestão de edição (texto original/novo + botões
+    // Aplicar/Descartar) — mesma efemeridade de attachBubbleImages: nunca
+    // entra em AIChatMessage/m_messages, some ao recarregar a sessão.
+    void attachEditSuggestions(BubbleHandle& handle, const QVector<PendingEditSuggestion>& suggestions);
     void attachFeedbackButtons(BubbleHandle& handle, const QString& fullText);
     void openImageGallery();
     void addUserBubble(const QString& text, const QString& imageDataUrl = QString());
@@ -223,14 +264,57 @@ private:
     void beginMiraStreamBubble();
     void appendStreamToken(const QString& token);
     void finalizeMiraStreamBubble(const QVector<ToolTraceEntry>& traces,
-                                  const QVector<QImage>& images = {});
+                                  const QVector<QImage>& images = {},
+                                  const QVector<PendingEditSuggestion>& editSuggestions = {});
     void clearTranscriptUi();
 
     void saveCurrentSession();
-    QVector<AIChatSessionInfo> listSessions() const;
+    QVector<AIChatSessionInfo> listSessionsForRoot(const QString& root) const;
+    QVector<AIChatSessionInfo> listSessions() const { return listSessionsForRoot(m_projectRoot); }
+    // Lê e parseia uma sessão de QUALQUER projeto (root arbitrário), sem
+    // tocar m_messages/m_currentSessionId/UI — usado pelo modo somente-
+    // leitura (previewForeignSession). loadSession() continua sendo o
+    // caminho pro projeto ATIVO, com todo o efeito colateral de sempre.
+    QVector<AIChatMessage> loadSessionMessagesForRoot(const QString& root, const QString& id) const;
+    // Apaga um ou mais arquivos de sessão em disco (ai_context/sessoes/
+    // <id>.json) — usado pelo menu de contexto "Excluir conversa(s)" do
+    // rail. Se alguma das sessões apagadas for a que está carregada agora
+    // (projeto ativo), começa uma conversa nova pra não deixar
+    // m_currentSessionId apontando pro nada; se estava em preview de uma
+    // delas, sai do preview. Reconstrói o rail só UMA vez no final — fazer
+    // isso por item (como uma versão antiga chegou a fazer) reabre e
+    // reparseia a lista de sessões de TODOS os projetos conhecidos a cada
+    // exclusão, o que trava a UI visivelmente com dezenas de itens
+    // selecionados.
+    void deleteSessionsForRoot(const QString& root, const QStringList& ids);
+    // Reconstrói as bolhas da transcrição a partir de uma lista de
+    // mensagens (mesma regra de loadSession(): só user/assistant viram
+    // bolha, system/tool ficam de fora) — reusado por loadSession() e pelo
+    // modo somente-leitura.
+    void renderMessageHistory(const QVector<AIChatMessage>& messages);
     void loadSession(const QString& id);
     void startNewSession();
     void showSessionMenu();
+
+    // Modo somente-leitura: mostra uma conversa salva de OUTRO projeto
+    // (root != m_projectRoot) sem mexer no projeto ativo nem nas tools —
+    // ver nota de escopo no plano (Mira Studio). Composer fica desabilitado
+    // e uma barra oferece "Abrir esse projeto" (openProjectRequested).
+    void previewForeignSession(const QString& root, const QString& projectName, const QString& id);
+    void exitPreviewMode();
+
+    void rebuildProjectRail();
+    // Aberto ao clicar no avatar/nome da Mira no cabeçalho (modo janela) —
+    // ver eventFilter() e MiraPersonalityDialog.
+    void openPersonalityDialog();
+    // Nome de exibição de um projeto qualquer (root arbitrário) — lê
+    // project.mira.json (mesma API root-agnóstica de rebuildProjectRail),
+    // com fallback pro nome da pasta. Reusado pela barra de contexto.
+    QString projectDisplayName(const QString& root) const;
+    // Atualiza a barra de contexto do topo do chat ("Projeto · Conversa")
+    // e o chip de memória do cabeçalho — chamado sempre que o
+    // projeto/sessão/preview mudam.
+    void updateChatContext();
 
     void refreshDocFocusCombo();
     void onDocFocusChanged();
@@ -250,10 +334,12 @@ private:
     void handleSearchProjectTool(const QString& id, const QJsonObject& arguments);
     void handleReadDocumentTool(const QString& id, const QJsonObject& arguments);
     void handleSaveProjectNoteTool(const QString& id, const QJsonObject& arguments);
+    void handleSaveUserNoteTool(const QString& id, const QJsonObject& arguments);
     void handleResummarizeDocumentTool(const QString& id, const QJsonObject& arguments);
     void handleLookupWorldDataTool(const QString& id, const QJsonObject& arguments);
     void handleGenerateCharacterImageTool(const QString& id, const QJsonObject& arguments);
     void handleGenerateSceneImageTool(const QString& id, const QJsonObject& arguments);
+    void handleProposeDocumentEditTool(const QString& id, const QJsonObject& arguments);
     QString runWorldDataLookup(const QString& query) const;
     void finishToolRoundTrip(const QString& id, const QString& toolName,
                              const QJsonObject& argumentsEcho, const QString& resultText);
@@ -273,8 +359,15 @@ private:
     MapPinsStore* m_mapPinsStore = nullptr;
     std::function<void(const QString&)> m_docOpener;
     std::function<QString()> m_currentDocTitleProvider;
+    std::function<QTextEdit*()> m_activeEditorProvider;
     QString m_projectRoot;
     QString m_dailyGoalNotifiedDateKey; // dia (YYYY-MM-DD) já avisado — evita repetir
+
+    // Modo somente-leitura (ver previewForeignSession) — true enquanto a
+    // transcrição mostra uma conversa de um projeto que NÃO é m_projectRoot.
+    bool m_previewMode = false;
+    QString m_previewRoot;
+    QStringList m_knownProjectRoots; // recentes, ver setKnownProjects
 
     QVector<AIChatMessage> m_messages;
     QString m_currentSessionId; // vazio = conversa ainda não salva em disco
@@ -289,6 +382,7 @@ private:
     // serializa imageDataUrl pra qualquer role, não só "user"). Persistência
     // de verdade fica a cargo de GeneratedImageGallery (arquivo em disco).
     QVector<QImage> m_pendingBubbleImages;
+    QVector<PendingEditSuggestion> m_pendingEditSuggestions; // sugestões de propose_document_edit neste turno
     BubbleHandle m_currentMiraBubble; // bolha em streaming, se houver
     QString m_streamingText;          // acumulado token a token da bolha atual
 
@@ -299,6 +393,29 @@ private:
     QVector<QPair<QString, QString>> m_scanExistingSections; // seções já existentes no arquivo, carregadas antes do scan começar
 
     QWidget* m_header = nullptr;
+    // "Identidade" da Mira — avatar + nome/subtítulo + chip de memória, só
+    // visível em modo janela (mesmo critério do rail: espaço maior, UI mais
+    // rica). Fica ACIMA de m_header, que continua com os ícones de ação em
+    // qualquer modo.
+    QWidget* m_studioHeaderWidget = nullptr;
+    QLabel* m_studioAvatarLabel = nullptr;
+    QLabel* m_studioNameLabel = nullptr;
+    QLabel* m_studioSubtitleLabel = nullptr;
+    QLabel* m_memoryChipLabel = nullptr;
+    // Corpo abaixo do header: rail (só visível em modo janela) + coluna de
+    // chat (transcrição+composer, sempre visível) lado a lado.
+    QWidget* m_railWidget = nullptr;
+    QLineEdit* m_railSearchEdit = nullptr;
+    QString m_railFilterText;
+    QWidget* m_railScrollContent = nullptr;
+    QVBoxLayout* m_railScrollLayout = nullptr;
+    QWidget* m_chatColumnWidget = nullptr;
+    // Barra "Projeto · Conversa" (modo janela, fora do preview) — troca de
+    // lugar com m_previewBanner conforme o estado (ver updateChatContext).
+    QLabel* m_chatContextLabel = nullptr;
+    QWidget* m_previewBanner = nullptr;
+    QLabel* m_previewBannerLabel = nullptr;
+    QPushButton* m_previewOpenBtn = nullptr;
     QLabel* m_titleLabel = nullptr;
     QComboBox* m_modelCombo = nullptr;
     QToolButton* m_scanBtn = nullptr;
@@ -310,8 +427,13 @@ private:
     QScrollArea* m_transcriptScroll = nullptr;
     QWidget* m_transcriptContent = nullptr;
     QVBoxLayout* m_transcriptLayout = nullptr;
+    // m_docFocusCheck/m_docFocusCombo continuam existindo como estado (lidos
+    // por buildSystemPrompt/onDocFocusChanged), mas não vivem mais numa linha
+    // própria da UI — m_docFocusBtn (no composer) é o único jeito de mexer
+    // neles agora, via menu popup.
     QCheckBox* m_docFocusCheck = nullptr;
     QComboBox* m_docFocusCombo = nullptr;
+    QToolButton* m_docFocusBtn = nullptr;
     QTextEdit* m_inputEdit = nullptr;
     QPushButton* m_sendBtn = nullptr;
     QToolButton* m_attachBtn = nullptr;

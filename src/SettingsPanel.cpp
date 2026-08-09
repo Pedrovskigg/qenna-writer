@@ -13,18 +13,37 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
-#include <QPlainTextEdit>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QSettings>
+#include <QSignalBlocker>
 #include <QSlider>
 #include <QSpinBox>
+#include <QStandardItemModel>
 #include <QVBoxLayout>
 
 namespace {
 // Menor folha de altura fixa oferecida pelo slider. Abaixo disso vira inútil;
 // o extremo direito do slider é "Tela cheia" (preenche a janela).
 constexpr int kMinSheetHeight = 240;
+
+// Endpoint fixo de cada provedor + um modelo de exemplo (vira placeholder,
+// não sobrescreve o campo de Modelo — só o Endpoint é preenchido de fato).
+// Todos falam o formato OpenAI chat/completions, que é o único que o
+// AIClient sabe montar; "custom" não tem baseUrl (não mexe no campo).
+struct AiProviderInfo {
+    const char* key;
+    const char* baseUrl;
+    const char* modelHint;
+};
+constexpr AiProviderInfo kAiProviders[] = {
+    { "openai",    "https://api.openai.com/v1",                          "gpt-4o-mini" },
+    { "anthropic", "https://api.anthropic.com/v1",                       "claude-sonnet-5" },
+    { "gemini",    "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-2.5-flash" },
+    { "xai",       "https://api.x.ai/v1",                                "grok-4" },
+    { "custom",    "",                                                   "llama3.2" },
+};
 }
 
 SettingsPanel::SettingsPanel(QWidget* parent)
@@ -162,92 +181,61 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     syncPageLayoutFromManager();
 
-    // ---- Seção: Personalidade da assistente ----
-    // Global (não por-projeto, diferente de resumo_projeto.md/memoria_mira.md
-    // que vivem dentro de cada projeto) — nome/tom/dureza/descrição livre
-    // moldam o system prompt em TODA conversa, qualquer projeto aberto.
-    auto* personaGroup = new QGroupBox(tr("Personalidade da assistente"), this);
-    auto* personaLayout = new QVBoxLayout(personaGroup);
-    personaLayout->setContentsMargins(14, 8, 14, 14);
-    personaLayout->setSpacing(10);
-
-    personaLayout->addWidget(new QLabel(tr("Nome da assistente:"), personaGroup));
-    m_aiNameEdit = new QLineEdit(personaGroup);
-    m_aiNameEdit->setPlaceholderText(QStringLiteral("Mira"));
-    personaLayout->addWidget(m_aiNameEdit);
-
-    // Lambda própria (duplicada de makeSlider acima) em vez de mudar a
-    // assinatura da existente — evita acoplar esta seção à de "Página de
-    // escrita" por causa de 5 linhas de código.
-    auto makePersonaSlider = [personaGroup]() {
-        auto* s = new QSlider(Qt::Horizontal, personaGroup);
-        s->setRange(0, 100);
-        s->setSingleStep(1);
-        s->setPageStep(10);
-        s->setMinimumWidth(180);
-        return s;
-    };
-
-    auto* warmthRow = new QHBoxLayout();
-    warmthRow->addWidget(new QLabel(tr("Fria"), personaGroup));
-    m_aiWarmthSlider = makePersonaSlider();
-    warmthRow->addWidget(m_aiWarmthSlider, 1);
-    warmthRow->addWidget(new QLabel(tr("Calorosa"), personaGroup));
-    personaLayout->addLayout(warmthRow);
-
-    auto* harshRow = new QHBoxLayout();
-    harshRow->addWidget(new QLabel(tr("Direta/seca"), personaGroup));
-    m_aiHarshnessSlider = makePersonaSlider();
-    harshRow->addWidget(m_aiHarshnessSlider, 1);
-    harshRow->addWidget(new QLabel(tr("Suave/protetora"), personaGroup));
-    personaLayout->addLayout(harshRow);
-
-    personaLayout->addWidget(new QLabel(tr("Descrição livre de personalidade (opcional):"), personaGroup));
-    m_aiFreeformEdit = new QPlainTextEdit(personaGroup);
-    m_aiFreeformEdit->setPlaceholderText(
-        tr("Ex.: \"gosta de fazer analogias com cinema\", \"evita emojis\"…"));
-    m_aiFreeformEdit->setFixedHeight(70);
-    personaLayout->addWidget(m_aiFreeformEdit);
-
-    auto* personaHint = new QLabel(
-        tr("Vale para TODOS os projetos (diferente do resumo/memória, que "
-           "são por projeto). Os sliders não mostram valor numérico de "
-           "propósito — são uma escala contínua pra assistente interpolar, "
-           "não categorias fixas."),
-        personaGroup);
-    personaHint->setObjectName(QStringLiteral("settingsHint"));
-    personaHint->setWordWrap(true);
-    personaLayout->addWidget(personaHint);
-
-    {
-        QSettings settings;
-        m_aiNameEdit->setText(settings.value(QStringLiteral("ai/assistantName")).toString());
-        m_aiWarmthSlider->setValue(settings.value(QStringLiteral("ai/personalityWarmth"), 50).toInt());
-        m_aiHarshnessSlider->setValue(settings.value(QStringLiteral("ai/personalityHarshness"), 50).toInt());
-        m_aiFreeformEdit->setPlainText(settings.value(QStringLiteral("ai/personalityFreeform")).toString());
-    }
-    connect(m_aiNameEdit, &QLineEdit::editingFinished, this, [this]() {
-        QSettings settings;
-        settings.setValue(QStringLiteral("ai/assistantName"), m_aiNameEdit->text().trimmed());
-    });
-    connect(m_aiWarmthSlider, &QSlider::valueChanged, this, [](int v) {
-        QSettings settings;
-        settings.setValue(QStringLiteral("ai/personalityWarmth"), v);
-    });
-    connect(m_aiHarshnessSlider, &QSlider::valueChanged, this, [](int v) {
-        QSettings settings;
-        settings.setValue(QStringLiteral("ai/personalityHarshness"), v);
-    });
-    connect(m_aiFreeformEdit, &QPlainTextEdit::textChanged, this, [this]() {
-        QSettings settings;
-        settings.setValue(QStringLiteral("ai/personalityFreeform"), m_aiFreeformEdit->toPlainText());
-    });
-
     // ---- Seção: Assistente de IA ----
+    // Personalidade (nome/tom/dureza/descrição livre) saiu daqui — mora só no
+    // MiraPersonalityDialog agora (clique no nome da assistente no cabeçalho
+    // do chat), pra não duplicar a mesma configuração em dois lugares.
     auto* aiGroup = new QGroupBox(tr("Assistente de IA"), this);
     auto* aiLayout = new QVBoxLayout(aiGroup);
     aiLayout->setContentsMargins(14, 8, 14, 14);
     aiLayout->setSpacing(6);
+
+    auto* aiInfoRow = new QHBoxLayout();
+    aiInfoRow->setContentsMargins(0, 0, 0, 0);
+    aiInfoRow->addStretch(1);
+    auto* aiInfoBtn = new QPushButton(QStringLiteral("?"), aiGroup);
+    aiInfoBtn->setObjectName(QStringLiteral("settingsInfoBtn"));
+    aiInfoBtn->setCursor(Qt::PointingHandCursor);
+    aiInfoBtn->setFixedSize(20, 20);
+    aiInfoBtn->setToolTip(tr("O que é isso?"));
+    connect(aiInfoBtn, &QPushButton::clicked, this, [this]() {
+        QMessageBox::information(this, tr("Assistente de IA"),
+            tr("O Qenna Writer conta com uma configuração completa para uso "
+               "de um assistente de IA para escrita. Ele pode fazer "
+               "revisões, leituras críticas, discutir sobre o projeto, "
+               "pesquisar nele e muito mais.\n\n"
+               "Como o Qenna Writer é uma ferramenta gratuita, o uso dessa "
+               "ferramenta exige que o usuário possua sua própria chave de "
+               "API.\n"
+               "Caso você não tenha uma chave de API ou simplesmente não "
+               "queira usar o assistente, sem problemas. O app não exige e "
+               "jamais exigirá ele para nenhuma função específica."));
+    });
+    aiInfoRow->addWidget(aiInfoBtn);
+    aiLayout->addLayout(aiInfoRow);
+
+    // Cada provedor tem endpoint fixo compatível com o formato OpenAI
+    // (chat/completions + Authorization: Bearer), que é o único formato que
+    // o AIClient fala. "Local" (Ollama/LM Studio etc.) ainda não tem suporte
+    // de verdade — item fica desabilitado no combo (ver abaixo) até isso
+    // existir; a chave "custom" dele hoje só existe pra não sobrescrever
+    // o Endpoint quando alguém configurou algo fora da lista na mão.
+    aiLayout->addWidget(new QLabel(tr("Provedor:"), aiGroup));
+    m_aiProviderCombo = new QComboBox(aiGroup);
+    m_aiProviderCombo->addItem(QStringLiteral("OpenAI"), QStringLiteral("openai"));
+    m_aiProviderCombo->addItem(QStringLiteral("Anthropic (Claude)"), QStringLiteral("anthropic"));
+    m_aiProviderCombo->addItem(QStringLiteral("Google (Gemini)"), QStringLiteral("gemini"));
+    m_aiProviderCombo->addItem(QStringLiteral("xAI (Grok)"), QStringLiteral("xai"));
+    m_aiProviderCombo->addItem(tr("Local — em breve"), QStringLiteral("custom"));
+    // Ainda não dá suporte a modelo local — item fica visível (avisa que vem
+    // por aí) mas desabilitado, pra não deixar selecionar algo que não
+    // funciona ainda.
+    if (auto* model = qobject_cast<QStandardItemModel*>(m_aiProviderCombo->model())) {
+        if (auto* item = model->item(m_aiProviderCombo->count() - 1)) {
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+        }
+    }
+    aiLayout->addWidget(m_aiProviderCombo);
 
     aiLayout->addWidget(new QLabel(tr("Chave de API:"), aiGroup));
     m_aiApiKeyEdit = new QLineEdit(aiGroup);
@@ -272,6 +260,16 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     aiHint->setWordWrap(true);
     aiLayout->addWidget(aiHint);
 
+    auto* aiProviderHint = new QLabel(
+        tr("Trocar o provedor preenche o Endpoint automaticamente (Anthropic, "
+           "Gemini e xAI oferecem endpoints compatíveis com o formato OpenAI, "
+           "que é o único que este app fala). Suporte a modelo local ainda "
+           "está a caminho."),
+        aiGroup);
+    aiProviderHint->setObjectName(QStringLiteral("settingsHint"));
+    aiProviderHint->setWordWrap(true);
+    aiLayout->addWidget(aiProviderHint);
+
     m_aiAutoScanCheck = new QCheckBox(
         tr("Ler documentos automaticamente na 1ª vez que abrir um projeto"), aiGroup);
     aiLayout->addWidget(m_aiAutoScanCheck);
@@ -289,11 +287,32 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     {
         QSettings settings;
         m_aiApiKeyEdit->setText(settings.value(QStringLiteral("ai/apiKey")).toString());
-        m_aiBaseUrlEdit->setText(settings.value(QStringLiteral("ai/baseUrl"),
-            QStringLiteral("https://api.openai.com/v1")).toString());
+        const QString savedBaseUrl = settings.value(QStringLiteral("ai/baseUrl"),
+            QStringLiteral("https://api.openai.com/v1")).toString();
+        m_aiBaseUrlEdit->setText(savedBaseUrl);
         m_aiModelEdit->setText(settings.value(QStringLiteral("ai/model"),
             QStringLiteral("gpt-4o-mini")).toString());
         m_aiAutoScanCheck->setChecked(settings.value(QStringLiteral("ai/autoScanNewProjects"), false).toBool());
+
+        // Provedor inicial deduzido do Endpoint salvo (não de uma chave própria
+        // em QSettings) — assim quem já tinha um Endpoint customizado antes
+        // desta seção existir abre o painel com "Personalizado" já selecionado,
+        // em vez de "OpenAI" por padrão.
+        int providerIdx = m_aiProviderCombo->count() - 1; // último item = "custom"
+        const char* providerModelHint = "llama3.2";
+        for (int i = 0; i < m_aiProviderCombo->count(); ++i) {
+            const QString key = m_aiProviderCombo->itemData(i).toString();
+            for (const AiProviderInfo& info : kAiProviders) {
+                if (key != QLatin1String(info.key)) continue;
+                if (key != QLatin1String("custom") && savedBaseUrl == QLatin1String(info.baseUrl)) {
+                    providerIdx = i;
+                    providerModelHint = info.modelHint;
+                }
+            }
+        }
+        QSignalBlocker blocker(m_aiProviderCombo);
+        m_aiProviderCombo->setCurrentIndex(providerIdx);
+        m_aiModelEdit->setPlaceholderText(QString::fromUtf8(providerModelHint));
     }
     connect(m_aiApiKeyEdit, &QLineEdit::editingFinished, this, [this]() {
         QSettings settings;
@@ -310,6 +329,17 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     connect(m_aiAutoScanCheck, &QCheckBox::toggled, this, [](bool checked) {
         QSettings settings;
         settings.setValue(QStringLiteral("ai/autoScanNewProjects"), checked);
+    });
+    connect(m_aiProviderCombo, qOverload<int>(&QComboBox::activated), this, [this](int idx) {
+        const QString key = m_aiProviderCombo->itemData(idx).toString();
+        for (const AiProviderInfo& info : kAiProviders) {
+            if (key != QLatin1String(info.key)) continue;
+            m_aiModelEdit->setPlaceholderText(QString::fromUtf8(info.modelHint));
+            if (key == QLatin1String("custom")) return;
+            m_aiBaseUrlEdit->setText(QString::fromUtf8(info.baseUrl));
+            QSettings().setValue(QStringLiteral("ai/baseUrl"), QString::fromUtf8(info.baseUrl));
+            return;
+        }
     });
 
     // ---- Seção: Geração de imagem de personagem ----
@@ -537,7 +567,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     leftCol->setSpacing(10);
     leftCol->addWidget(spellGroup);
     leftCol->addWidget(pageGroup);
-    leftCol->addWidget(personaGroup);
     leftCol->addWidget(aiGroup);
     leftCol->addWidget(imgGenGroup);
     leftCol->addStretch();

@@ -1759,7 +1759,7 @@ void MainWindow::setupEditor()
     // Ctrl+S → paulada.
     auto* saveShortcut = new QShortcut(QKeySequence::Save, this);
     connect(saveShortcut, &QShortcut::activated, this, [this]() {
-        if (projectSaver) projectSaver->saveProject();
+        triggerManualSave();
     });
 
     // Ctrl+Shift+N → novo capítulo no manuscrito ativo.
@@ -2097,9 +2097,23 @@ void MainWindow::setupEditor()
     aiChatPanel->setMapPinsStore(mapPinsStore);
     aiChatPanel->setDocOpener([this](const QString& docKey) { openDocKeyInEditor(docKey); });
     aiChatPanel->setCurrentDocTitleProvider([this]() { return currentEditorDocTitle(); });
+    aiChatPanel->setActiveEditorProvider([this]() -> QTextEdit* {
+        return editorHost ? editorHost->editor() : nullptr;
+    });
     connect(aiChatPanel, &AIChatPanel::characterImageUpdated, this, [this](const QString& itemId) {
         if (characterSheetPanel && characterSheetPanel->currentItemId() == itemId) {
             characterSheetPanel->refreshPhoto();
+        }
+    });
+    // Coluna de projetos/conversas (modo janela): abrir uma conversa de
+    // outro projeto oferece "Abrir esse projeto" — mesmo padrão de troca de
+    // projeto usado pela Biblioteca (confirmDiscardOrSave + loadProjectFrom).
+    connect(aiChatPanel, &AIChatPanel::openProjectRequested, this, [this](const QString& root) {
+        if (!confirmDiscardOrSave()) return;
+        QString err;
+        if (!loadProjectFrom(root, &err)) {
+            QMessageBox::warning(this, tr("Erro ao abrir"),
+                tr("Não foi possível abrir o projeto:\n%1").arg(err));
         }
     });
     aiChatPanel->raise();
@@ -3117,7 +3131,7 @@ void MainWindow::setupToolbar()
     connect(toolbar, &TopToolbar::newProjectRequested, this, &MainWindow::onNewProjectRequested);
     connect(toolbar, &TopToolbar::openProjectRequested, this, &MainWindow::onOpenProjectRequested);
     connect(toolbar, &TopToolbar::saveProjectRequested, this, [this]() {
-        if (projectSaver) projectSaver->saveProject();
+        triggerManualSave();
     });
     connect(toolbar, &TopToolbar::settingsRequested, this, &MainWindow::onSettingsRequested);
     connect(toolbar, &TopToolbar::exportRequested, this, &MainWindow::onExportRequested);
@@ -3799,6 +3813,27 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     // Garante que tudo que está no editor vai pro cache antes de avaliar dirty.
     if (editorHost) editorHost->syncEditorToCache();
+
+    // "Nova Ideia" sem projeto formalizado: salvar seria no-op (não há pra
+    // onde escrever), então aqui só cabe avisar e descartar — nunca oferecer
+    // "salvar" no dialog de fechamento.
+    if (m_ideaDraftActive && projectRoot.isEmpty()) {
+        if (!projectSaver->hasDirtyContent()) {
+            QMainWindow::closeEvent(event);
+            return;
+        }
+        const auto choice = QMessageBox::question(this, tr("Descartar rascunho?"),
+            tr("Você tem uma ideia não salva. Se sair agora, o texto será perdido. "
+               "Descartar mesmo assim?"),
+            QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
+        if (choice != QMessageBox::Discard) {
+            event->ignore();
+            return;
+        }
+        QMainWindow::closeEvent(event);
+        return;
+    }
+
     if (!projectSaver->hasDirtyContent() && !projectSaver->isSaving()) {
         QMainWindow::closeEvent(event);
         return;
@@ -4441,7 +4476,10 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (wordCounter) wordCounter->setProjectRoot(root);
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
     if (statsPanel) statsPanel->setProjectRoot(root);
-    if (aiChatPanel) aiChatPanel->setProjectRoot(root);
+    if (aiChatPanel) {
+        aiChatPanel->setProjectRoot(root);
+        aiChatPanel->setKnownProjects(loadRecentProjects());
+    }
     if (characterSheetPanel) characterSheetPanel->setProjectRoot(root);
     if (globalSearchPanel) globalSearchPanel->setProjectRoot(root);
     if (elementsStore) elementsStore->setProjectRoot(root);
@@ -4530,13 +4568,24 @@ bool MainWindow::confirmDiscardOrSave()
     if (!projectSaver) return true;
     if (editorHost) editorHost->syncEditorToCache();
     if (!projectSaver->hasDirtyContent()) return true;
+
+    const bool isDraft = m_ideaDraftActive && projectRoot.isEmpty();
     const auto choice = QMessageBox::question(this, tr("Alterações não salvas"),
-        tr("Há alterações no projeto atual. Salvar antes de continuar?"),
+        isDraft ? tr("Você tem uma ideia não salva. Salvar antes de continuar?")
+                : tr("Há alterações no projeto atual. Salvar antes de continuar?"),
         QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
         QMessageBox::Save);
     if (choice == QMessageBox::Cancel) return false;
     if (choice == QMessageBox::Save) {
-        if (!projectSaver->saveProject()) return false;
+        // No modo rascunho não há projeto ainda pra salvar — formaliza
+        // primeiro (wizard enxuto). Se o usuário cancelar o wizard, trata
+        // como cancelamento da ação original também (não segue descartando).
+        if (isDraft) {
+            formalizeIdeaDraft();
+            if (m_ideaDraftActive) return false;
+        } else if (!projectSaver->saveProject()) {
+            return false;
+        }
     }
     return true;
 }
@@ -4562,6 +4611,8 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
     if (docCache) docCache->clear();
     if (projectModel) projectModel->clear();
     if (elementsStore) elementsStore->clear();
+    m_ideaDraftActive = false;
+    m_ideaDraftChapterId.clear();
 
     applyProjectRoot(root);
 
@@ -5134,6 +5185,8 @@ void MainWindow::openMainMenu()
                         mainMenuDialog->accept();
                     }
                 });
+        connect(mainMenuDialog, &MainMenuDialog::newIdeaRequested,
+                this, [this]() { onNewIdeaRequested(); });
         connect(mainMenuDialog, &MainMenuDialog::loadProjectRequested,
                 this, [this]() {
                     if (!confirmDiscardOrSave()) return;
@@ -5378,6 +5431,8 @@ void MainWindow::onNewProjectRequested()
     if (docCache) docCache->clear();
     if (projectModel) projectModel->clear();
     if (elementsStore) elementsStore->clear();
+    m_ideaDraftActive = false;
+    m_ideaDraftChapterId.clear();
     projectModel->setProjectName(detailsDlg.projectName());
     projectModel->seedFromTemplate(templateId);
     projectModel->setProjectType(detailsDlg.projectType());
@@ -5400,6 +5455,120 @@ void MainWindow::onNewProjectRequested()
     // Fecha o Main Menu se estiver aberto e mostra a janela principal.
     if (mainMenuDialog && mainMenuDialog->isVisible()) mainMenuDialog->accept();
     if (!isVisible()) show();
+}
+
+void MainWindow::onNewIdeaRequested()
+{
+    // Só faz sentido vindo da Biblioteca (nenhum projeto aberto ainda) — se
+    // por algum motivo chegar aqui com um projeto real carregado, ignora.
+    if (hasProjectLoaded()) return;
+    if (!projectModel || !editorHost) return;
+
+    Chapter c;
+    c.id = ProjectModel::uid();
+    c.file = ProjectModel::chapterDefaultFile(QString(), c.id);
+    projectModel->addChapter(c);
+    projectModel->setActiveChapterId(c.id);
+
+    if (docCache) {
+        docCache->set(DocCache::chapterKey(QString(), c.id), QString(), /*markDirty=*/false);
+    }
+
+    m_ideaDraftActive = true;
+    m_ideaDraftChapterId = c.id;
+
+    EditorHost::ViewMode vm;
+    vm.type = EditorHost::ChapterDoc;
+    vm.chapterId = c.id;
+    editorHost->setViewMode(vm);
+
+    if (mainMenuDialog && mainMenuDialog->isVisible()) mainMenuDialog->accept();
+    if (!isVisible()) show();
+    raise();
+    activateWindow();
+}
+
+void MainWindow::formalizeIdeaDraft()
+{
+    if (!m_ideaDraftActive || !projectRoot.isEmpty()) return;
+    if (!projectModel || !projectSaver) return;
+
+    if (editorHost) editorHost->syncEditorToCache();
+
+    NewIdeaNameDialog nameDlg(this);
+    if (nameDlg.exec() != QDialog::Accepted) return;
+
+    NewProjectFolderDialog folderDlg(nameDlg.projectName(), this);
+    if (folderDlg.exec() != QDialog::Accepted) return;
+    const QString fullPath = folderDlg.fullPath();
+
+    if (QDir(fullPath).exists() && !QDir(fullPath).isEmpty()) {
+        const auto answer = QMessageBox::question(this, tr("Pasta já existe"),
+            tr("A pasta '%1' já existe e não está vazia. Usar mesmo assim?\n"
+               "Conteúdo existente pode ser sobrescrito.").arg(fullPath),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        if (answer != QMessageBox::Yes) return;
+    }
+
+    QString err;
+    if (!ProjectStorage::ensureProjectDirs(fullPath, &err)) {
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Falha ao criar o projeto:\n%1").arg(err));
+        return;
+    }
+
+    projectModel->setProjectName(nameDlg.projectName());
+    projectModel->seedFromTemplate(QStringLiteral("blank"));
+    projectModel->setProjectDetails(nameDlg.projectName(), QString(), QString(), QString(), QString());
+
+    Manuscript m;
+    m.id = ProjectModel::uid();
+    m.title = nameDlg.projectName();
+    projectModel->addManuscript(m);
+    projectModel->setActiveManuscriptId(m.id);
+
+    // Adota o capítulo solto do rascunho pro manuscrito recém-criado, movendo
+    // o conteúdo já digitado (que está no DocCache sob a chave "solta") pra
+    // chave definitiva do capítulo dentro do manuscrito.
+    if (!m_ideaDraftChapterId.isEmpty()) {
+        const QString oldKey = DocCache::chapterKey(QString(), m_ideaDraftChapterId);
+        const QString html = (docCache && docCache->has(oldKey)) ? docCache->get(oldKey) : QString();
+
+        projectModel->reassignChapterManuscript(m_ideaDraftChapterId, m.id);
+        projectModel->setActiveChapterId(m_ideaDraftChapterId);
+
+        if (docCache) {
+            docCache->set(DocCache::chapterKey(m.id, m_ideaDraftChapterId), html, /*markDirty=*/true);
+        }
+
+        EditorHost::ViewMode vm;
+        vm.type = EditorHost::ChapterDoc;
+        vm.manuscriptId = m.id;
+        vm.chapterId = m_ideaDraftChapterId;
+        if (editorHost) editorHost->setViewMode(vm);
+    }
+
+    applyProjectRoot(fullPath);
+    applyProjectTypeDefaults();
+
+    if (!projectSaver->saveProject()) {
+        QMessageBox::warning(this, tr("Erro"),
+            tr("Projeto criado, mas falha ao salvar o conteúdo:\n%1")
+                .arg(projectSaver->lastError()));
+    }
+    rememberLastProject(fullPath);
+
+    m_ideaDraftActive = false;
+    m_ideaDraftChapterId.clear();
+}
+
+void MainWindow::triggerManualSave()
+{
+    if (m_ideaDraftActive && projectRoot.isEmpty()) {
+        formalizeIdeaDraft();
+        return;
+    }
+    if (projectSaver) projectSaver->saveProject();
 }
 
 void MainWindow::positionWordCountPanel()
@@ -5647,6 +5816,7 @@ void MainWindow::onSettingsRequested()
 
         connect(settingsPanel, &SettingsPanel::spellEnabledChanged, this, [this](bool enabled) {
             if (!projectModel || !spellChecker) return;
+            CrashLogger::log(QStringLiteral("SettingsPanel::spellEnabledChanged enabled=%1").arg(enabled ? "sim" : "nao"));
             if (enabled) {
                 // Liga com o idioma mostrado no combo (ou o último salvo, se vazio).
                 QString code = settingsPanel->spellLanguage();

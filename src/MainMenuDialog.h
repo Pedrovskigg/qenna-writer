@@ -47,6 +47,7 @@ public:
 
 signals:
     void newProjectRequested();
+    void newIdeaRequested();
     void loadProjectRequested();
     void openRecentRequested(const QString& path);
     void removeRecentRequested(const QString& path);
@@ -119,6 +120,7 @@ private:
     QLabel* m_logoLabel = nullptr;
     QTimer* m_quoteTimer = nullptr;
     QPushButton* m_newBtn = nullptr;
+    QPushButton* m_newIdeaBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;
     QComboBox* m_langCombo = nullptr;
 

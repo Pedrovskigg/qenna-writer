@@ -54,6 +54,18 @@ QString stylePromptFragment(ImageStylePreset preset)
         return QStringLiteral(
             "Estilo: cartoon ocidental — traço simplificado, cores chapadas, "
             "proporções levemente exageradas.");
+    case ImageStylePreset::GtaCoverArt:
+        return QStringLiteral(
+            "Estilo: ilustração vetorial digital no estilo de capa oficial "
+            "de GTA V (Rockstar Games key art) — cel-shading chapado com "
+            "gradientes suaves entre zonas de cor, contornos nítidos e bem "
+            "definidos, acabamento de graphic novel, sem textura de "
+            "pincelada pictórica. Iluminação em contraste marcante de duas "
+            "cores — luz quente dourada/laranja de um lado do rosto e do "
+            "corpo, luz fria azul/roxa de sombra e contorno do outro lado. "
+            "Cores saturadas mas equilibradas, bordas de aparência "
+            "vetorial, mínimo ruído de textura, composição de pôster/key "
+            "art.");
     case ImageStylePreset::Default:
     default:
         return QString();
@@ -265,6 +277,7 @@ QString imageStylePresetLabel(ImageStylePreset preset)
     case ImageStylePreset::DigitalIllustration: return QObject::tr("Ilustração digital");
     case ImageStylePreset::Anime:               return QObject::tr("Anime");
     case ImageStylePreset::Cartoon:             return QObject::tr("Cartoon");
+    case ImageStylePreset::GtaCoverArt:         return QObject::tr("Capa estilo GTA");
     case ImageStylePreset::Default:
     default:                                    return QObject::tr("Padrão");
     }
@@ -278,6 +291,7 @@ QString imageStylePresetKey(ImageStylePreset preset)
     case ImageStylePreset::DigitalIllustration: return QStringLiteral("ilustracao_digital");
     case ImageStylePreset::Anime:               return QStringLiteral("anime");
     case ImageStylePreset::Cartoon:             return QStringLiteral("cartoon");
+    case ImageStylePreset::GtaCoverArt:         return QStringLiteral("capa_gta");
     case ImageStylePreset::Default:
     default:                                    return QStringLiteral("padrao");
     }
@@ -290,6 +304,7 @@ ImageStylePreset imageStylePresetFromKey(const QString& key)
     if (key == QStringLiteral("ilustracao_digital")) return ImageStylePreset::DigitalIllustration;
     if (key == QStringLiteral("anime")) return ImageStylePreset::Anime;
     if (key == QStringLiteral("cartoon")) return ImageStylePreset::Cartoon;
+    if (key == QStringLiteral("capa_gta")) return ImageStylePreset::GtaCoverArt;
     return ImageStylePreset::Default;
 }
 

@@ -3,6 +3,7 @@
 #include "IconUtils.h"
 #include "MiraPersonality.h"
 #include "MiraStyleStore.h"
+#include "MiraUserMemoryStore.h"
 #include "Theme.h"
 
 #include <QCheckBox>
@@ -542,7 +543,17 @@ QString AISelectionChat::buildSystemPrompt() const
         QSettings().value(QStringLiteral("ai/personalityWarmth"), 50).toInt(),
         QSettings().value(QStringLiteral("ai/personalityHarshness"), 50).toInt(),
         QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
+    base += miraTraitsFragment(QSettings().value(QStringLiteral("ai/personalityTraits")).toStringList());
+    base += miraCompanionshipFragment();
     base += MiraStyleStore::buildPromptFragment();
+
+    const QString userMemory = MiraUserMemoryStore::load();
+    if (!userMemory.isEmpty()) {
+        base += QStringLiteral(
+            "\n\nMemória sobre o autor (vale em qualquer projeto):\n\n%1")
+            .arg(userMemory);
+    }
+
     base += QStringLiteral(
         "\n\nAqui você está revisando um trecho ESPECÍFICO que o autor "
         "selecionou no editor, não numa conversa livre sobre o projeto "

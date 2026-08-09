@@ -138,18 +138,37 @@ int main(int argc, char *argv[])
         QSettings qs;
         const QString prefLang = qs.value(QStringLiteral("app/language")).toString();
         bool loaded = false;
+        QString resolvedLang;
         if (!prefLang.isEmpty()) {
             loaded = translator.load(QStringLiteral(":/i18n/qenna_") + prefLang);
+            if (loaded) resolvedLang = prefLang;
         }
         if (!loaded) {
             for (const QString &locale : QLocale::system().uiLanguages()) {
-                if (translator.load(QStringLiteral(":/i18n/qenna_") + QLocale(locale).name())) {
+                const QString code = QLocale(locale).name();
+                if (translator.load(QStringLiteral(":/i18n/qenna_") + code)) {
                     loaded = true;
+                    resolvedLang = code;
                     break;
                 }
             }
         }
+        // Locale do sistema sem tradução disponível: cai pro inglês (não pro
+        // pt-BR do código-fonte) — só quem já é falante de português tende a
+        // ter o Windows configurado em pt-BR.
+        if (!loaded) {
+            loaded = translator.load(QStringLiteral(":/i18n/qenna_en"));
+            if (loaded) resolvedLang = QStringLiteral("en");
+        }
         if (loaded) QApplication::installTranslator(&translator);
+        // Primeira execução (sem preferência salva ainda): grava o idioma
+        // detectado em app/language, senão o combo do Main Menu e os pontos
+        // que leem essa chave direto (fora do QTranslator — GeoData,
+        // WordCountPanel, etc.) ficariam presos assumindo pt-BR por default
+        // enquanto a UI já mostra outro idioma.
+        if (prefLang.isEmpty() && !resolvedLang.isEmpty()) {
+            qs.setValue(QStringLiteral("app/language"), resolvedLang);
+        }
     }
 
     const QStringList customFontFamilies = registerCustomFonts();
