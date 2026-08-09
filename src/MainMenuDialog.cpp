@@ -1452,6 +1452,14 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     connect(m_newBtn, &QPushButton::clicked, this, [this]() { emit newProjectRequested(); });
     col->addWidget(m_newBtn);
 
+    m_newIdeaBtn = new QPushButton(tr("Nova ideia"), this);
+    m_newIdeaBtn->setObjectName(QStringLiteral("menuSecondaryBtn"));
+    m_newIdeaBtn->setCursor(Qt::PointingHandCursor);
+    m_newIdeaBtn->setIconSize(QSize(18, 18));
+    m_newIdeaBtn->setToolTip(tr("Comece a escrever agora, sem criar um projeto ainda"));
+    connect(m_newIdeaBtn, &QPushButton::clicked, this, [this]() { emit newIdeaRequested(); });
+    col->addWidget(m_newIdeaBtn);
+
     m_loadBtn = new QPushButton(tr("Carregar pasta"), this);
     m_loadBtn->setObjectName(QStringLiteral("menuSecondaryBtn"));
     m_loadBtn->setCursor(Qt::PointingHandCursor);
@@ -1877,6 +1885,11 @@ void MainMenuDialog::refreshActionIcons()
         const QColor c(Theme::textPrimary());
         m_loadBtn->setIcon(IconUtils::loadToolbarIcon(
             QStringLiteral(":/icons/loadproject.svg"), c, c, c, QSize(18, 18)));
+    }
+    if (m_newIdeaBtn) {
+        const QColor c(Theme::textPrimary());
+        m_newIdeaBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/doc-plus.svg"), c, c, c, QSize(18, 18)));
     }
 }
 

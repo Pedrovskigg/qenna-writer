@@ -101,6 +101,10 @@ qt_add_executable(qenna-writer
     src/GeneratedImageGallery.h
     src/MiraStyleStore.cpp
     src/MiraStyleStore.h
+    src/MiraUserMemoryStore.cpp
+    src/MiraUserMemoryStore.h
+    src/MiraPersonalityDialog.cpp
+    src/MiraPersonalityDialog.h
     src/ImageGalleryDialog.cpp
     src/ImageGalleryDialog.h
     src/ElementsPresentDialog.cpp

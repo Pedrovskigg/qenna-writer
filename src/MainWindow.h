@@ -144,6 +144,7 @@ private:
     void updateFocusedBlock();
     void onAddImageRequested();
     void onNewProjectRequested();
+    void onNewIdeaRequested();
     void onOpenProjectRequested();
     void onSettingsRequested();
     void onExportRequested();
@@ -167,6 +168,14 @@ private:
     void hideCharacterSheet();
     void positionCharacterSheet();
     bool confirmDiscardOrSave();
+    // "Nova Ideia": formaliza o rascunho solto (sem projeto) num projeto de
+    // verdade — roda o wizard enxuto (nome + pasta) e migra o capítulo
+    // solto pro manuscrito recém-criado. No-op se não houver rascunho ativo.
+    void formalizeIdeaDraft();
+    // Ponto único dos gatilhos explícitos de salvar (Ctrl+S / botão da
+    // toolbar): redireciona pro wizard de formalização quando em modo
+    // "Nova Ideia", ou salva normalmente.
+    void triggerManualSave();
     bool loadProjectFrom(const QString& root, QString* errorOut = nullptr);
     void rememberLastProject(const QString& root);
     QString loadLastProjectPath() const;
@@ -397,6 +406,10 @@ private:
     QToolButton *selUnderlineBtn;
     QToolButton *selStrikeBtn;
     QString projectRoot;
+    // "Nova Ideia": true enquanto há um capítulo solto em memória (sem
+    // projeto/manuscrito) aberto no editor, aguardando ser salvo/formalizado.
+    bool m_ideaDraftActive = false;
+    QString m_ideaDraftChapterId;
     QString baseWindowTitle;
     QTimer *sceneDetectTimer;
     QString sceneDetectKey;

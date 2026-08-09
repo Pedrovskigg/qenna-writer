@@ -262,6 +262,11 @@ public:
     bool removeManuscript(const QString& id);
     const Manuscript* findManuscript(const QString& id) const;
     void addChapter(const Chapter& chapter);
+    // Reatribui o manuscrito de um capítulo já existente e recalcula o
+    // caminho de arquivo esperado — usado pra "adotar" um capítulo criado
+    // solto (manuscriptId vazio, ver "Nova Ideia") assim que um manuscrito
+    // de verdade é criado pra ele.
+    bool reassignChapterManuscript(const QString& chapterId, const QString& newManuscriptId);
     bool updateChapterScenes(const QString& chapterId, const QList<Scene>& scenes);
     bool updateChapterTitle(const QString& chapterId, const QString& title);
     bool updateChapterTimeMarker(const QString& chapterId, const QString& marker);

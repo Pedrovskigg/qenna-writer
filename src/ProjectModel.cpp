@@ -1170,6 +1170,18 @@ bool ProjectModel::updateChapterScenes(const QString& chapterId, const QList<Sce
     return false;
 }
 
+bool ProjectModel::reassignChapterManuscript(const QString& chapterId, const QString& newManuscriptId) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.manuscriptId == newManuscriptId) return true;
+        c.manuscriptId = newManuscriptId;
+        c.file = chapterDefaultFile(newManuscriptId, chapterId);
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
 bool ProjectModel::updateChapterTitle(const QString& chapterId, const QString& title) {
     for (auto& c : m_chapters) {
         if (c.id != chapterId) continue;

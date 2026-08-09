@@ -19,6 +19,7 @@ enum class ImageStylePreset {
     DigitalIllustration,
     Anime,
     Cartoon,
+    GtaCoverArt,
 };
 
 QString imageStylePresetLabel(ImageStylePreset preset);           // rótulo pra UI (combo)

@@ -366,6 +366,92 @@ void NewProjectDetailsDialog::applyDialogStyle() {
 }
 
 // =============================================================
+// NewIdeaNameDialog
+// =============================================================
+
+NewIdeaNameDialog::NewIdeaNameDialog(QWidget* parent)
+    : QDialog(parent)
+{
+    setObjectName(QStringLiteral("newIdeaName"));
+    setWindowTitle(tr("Salvar ideia"));
+    setModal(true);
+    resize(420, 200);
+
+    auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(28, 24, 28, 20);
+    root->setSpacing(8);
+
+    auto* title = new QLabel(tr("Como quer chamar esse projeto?"), this);
+    title->setObjectName(QStringLiteral("npHeading"));
+    root->addWidget(title);
+
+    auto* sub = new QLabel(
+        tr("Só o nome por enquanto — autor, gêneros e sinopse dá pra preencher "
+           "depois nos detalhes do projeto."), this);
+    sub->setObjectName(QStringLiteral("npSub"));
+    sub->setWordWrap(true);
+    root->addWidget(sub);
+
+    root->addSpacing(6);
+
+    m_nameEdit = new QLineEdit(this);
+    m_nameEdit->setPlaceholderText(tr("Ex: Minha nova ideia"));
+    root->addWidget(m_nameEdit);
+
+    root->addStretch();
+
+    auto* actions = new QHBoxLayout;
+    actions->addStretch();
+    auto* cancelBtn = new QPushButton(tr("Cancelar"), this);
+    cancelBtn->setObjectName(QStringLiteral("npBtn"));
+    connect(cancelBtn, &QPushButton::clicked, this, &QDialog::reject);
+    m_continueBtn = new QPushButton(tr("Continuar"), this);
+    m_continueBtn->setObjectName(QStringLiteral("npBtnPrimary"));
+    m_continueBtn->setDefault(true);
+    m_continueBtn->setEnabled(false);
+    connect(m_continueBtn, &QPushButton::clicked, this, &QDialog::accept);
+    actions->addWidget(cancelBtn);
+    actions->addWidget(m_continueBtn);
+    root->addLayout(actions);
+
+    connect(m_nameEdit, &QLineEdit::textChanged, this, [this]() {
+        m_continueBtn->setEnabled(!m_nameEdit->text().trimmed().isEmpty());
+    });
+
+    applyDialogStyle();
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, &NewIdeaNameDialog::applyDialogStyle);
+}
+
+QString NewIdeaNameDialog::projectName() const { return m_nameEdit->text().trimmed(); }
+
+void NewIdeaNameDialog::applyDialogStyle() {
+    setStyleSheet(QStringLiteral(R"(
+        #newIdeaName { background: %1; }
+        #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 4px; }
+        #npSub { color: %4; font-size: 12px; line-height: 150%; }
+        QLineEdit {
+            background: %5; color: %3; border: 1px solid %6;
+            border-radius: 6px; padding: 6px 8px;
+            selection-background-color: %7;
+        }
+        QLineEdit:focus { border-color: %9; }
+        QPushButton#npBtn, QPushButton#npBtnPrimary {
+            background: %5; color: %2; border: 1px solid %6;
+            padding: 6px 16px; border-radius: 6px; font-size: 12px; min-height: 26px;
+        }
+        QPushButton#npBtn:hover { background: %7; color: %3; border-color: %9; }
+        QPushButton#npBtnPrimary { background: %9; color: white; border-color: %9; }
+        QPushButton#npBtnPrimary:hover { background: %9; }
+        QPushButton#npBtnPrimary:disabled { background: %5; color: %4; border-color: %6; }
+    )").arg(
+        Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
+        Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
+        Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
+    ));
+}
+
+// =============================================================
 // NewProjectFolderDialog
 // =============================================================
 

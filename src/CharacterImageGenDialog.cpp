@@ -186,7 +186,8 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
     styleCol->addWidget(m_styleCombo);
     for (auto preset : { ImageStylePreset::Default, ImageStylePreset::Photorealistic,
                          ImageStylePreset::DigitalRealism, ImageStylePreset::DigitalIllustration,
-                         ImageStylePreset::Anime, ImageStylePreset::Cartoon }) {
+                         ImageStylePreset::Anime, ImageStylePreset::Cartoon,
+                         ImageStylePreset::GtaCoverArt }) {
         m_styleCombo->addItem(imageStylePresetLabel(preset), imageStylePresetKey(preset));
     }
     optionsRow->addWidget(m_styleSection);

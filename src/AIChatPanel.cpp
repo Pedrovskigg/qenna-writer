@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "AvatarUtils.h"
 #include "CharacterImageGenService.h"
@@ -21,15 +22,20 @@
 #include "MapPinsStore.h"
 #include "MarkerStore.h"
 #include "MiraPersonality.h"
+#include "MiraPersonalityDialog.h"
 #include "MiraStyleStore.h"
+#include "MiraUserMemoryStore.h"
 #include "NotesStore.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 #include "Theme.h"
 #include "WordCounter.h"
 
+#include <QAbstractItemView>
 #include <QAction>
+#include <QApplication>
 #include <QCheckBox>
+#include <QColor>
 #include <QComboBox>
 #include <QDateTime>
 #include <QDir>
@@ -46,9 +52,11 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QPixmap>
 #include <QPushButton>
 #include <QRandomGenerator>
@@ -72,7 +80,7 @@
 namespace {
 constexpr int kPanelWidth = 420;
 constexpr int kMargin = 12;
-constexpr int kHeaderH = 36;
+constexpr int kHeaderH = 50; // acomoda o bloco nome+subtítulo do modo janela
 // Teto de segurança contra caso patológico (ex. um "documento" que na
 // verdade tem um romance inteiro colado dentro) — não é um limite prático
 // real: gpt-4o-mini tem janela de 128k tokens (~500k caracteres), então até
@@ -138,7 +146,8 @@ QString headerBtnQss() {
     return QStringLiteral(R"(
         QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px; font-size: 12px; }
         QToolButton:hover { background: %1; border-color: %2; }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong());
+        QToolButton:checked { background: %3; border-color: %3; }
+    )").arg(Theme::hoverOverlay(), Theme::borderStrong(), Theme::accentDefault());
 }
 
 QString closeBtnQss() {
@@ -190,6 +199,76 @@ QString inputEditQss() {
         }
         QTextEdit#chatInputEdit:focus { border-color: %4; }
     )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder());
+}
+
+QString previewBannerQss() {
+    return QStringLiteral(
+        "background: %1; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 11.5px;"
+    ).arg(Theme::hoverOverlay(), Theme::accentDefault(), Theme::textBright());
+}
+
+QString railFolderBtnQss(bool active) {
+    return QStringLiteral(
+        "QToolButton { text-align: left; padding: 6px 8px; border-radius: 6px; "
+        "border: none; background: %1; color: %2; font-size: 12px; font-weight: 600; } "
+        "QToolButton:hover { background: %3; }"
+    ).arg(active ? Theme::hoverOverlay() : QStringLiteral("transparent"),
+          Theme::textBright(), Theme::hoverOverlay());
+}
+
+QString railSessionListQss() {
+    return QStringLiteral(
+        "QListWidget { background: transparent; border: none; font-size: 11.5px; color: %1; } "
+        "QListWidget::item { padding: 4px 8px 4px 20px; border-radius: 6px; } "
+        "QListWidget::item:hover { background: %2; } "
+        "QListWidget::item:selected { background: %3; color: %4; }"
+    ).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::hoverOverlay(), Theme::textBright());
+}
+
+QString avatarQss() {
+    return QStringLiteral(
+        "background: %1; color: %2; border-radius: 8px; font-size: 13px; font-weight: 700;"
+    ).arg(Theme::hoverOverlay(), Theme::accentDefault());
+}
+
+QString studioNameQss() {
+    return QStringLiteral("color: %1; font-size: 13.5px; font-weight: 700;").arg(Theme::textBright());
+}
+
+QString studioSubtitleQss() {
+    return QStringLiteral("color: %1; font-size: 10.5px;").arg(Theme::textMuted());
+}
+
+QString memoryChipQss() {
+    return QStringLiteral(
+        "color: %1; font-size: 10px; background: %2; border: 1px solid %3; "
+        "border-radius: 999px; padding: 3px 9px;"
+    ).arg(Theme::textMuted(), Theme::panelBackground(), Theme::subtleBorder());
+}
+
+QString chatContextQss() {
+    return QStringLiteral("color: %1; font-size: 10.5px; padding: 2px 2px;").arg(Theme::textMuted());
+}
+
+// Mesmo remédio de transcriptScrollQss(): sem isso, o viewport/conteúdo
+// interno do QScrollArea usa o background padrão da plataforma (cinza claro
+// do Windows) em vez do tema escuro do resto do painel — bug já visto antes
+// nesse mesmo arquivo.
+QString railScrollQss() {
+    return QStringLiteral(
+        "QScrollArea { background: transparent; border: none; }"
+        "QScrollArea > QWidget > QWidget { background: transparent; }"
+    );
+}
+
+QString railSearchQss() {
+    return QStringLiteral(R"(
+        QLineEdit {
+            background: %1; color: %2; border: 1px solid %3;
+            border-radius: 7px; padding: 5px 8px; font-size: 11px;
+        }
+        QLineEdit:focus { border-color: %4; }
+    )").arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::focusBorder());
 }
 
 QString gripQss() {
@@ -267,12 +346,47 @@ QString feedbackBtnQss() {
     ).arg(Theme::hoverOverlay());
 }
 
+// Cartão de sugestão de edição (propose_document_edit) — mesma paleta
+// "info" já usada no cartão de sugestão do AISelectionChat, só que embutido
+// dentro da bolha da Mira em vez de num painel fixo, porque aqui pode haver
+// mais de uma sugestão pendente na mesma conversa longa.
+QString editCardQss() {
+    return QStringLiteral(
+        "QFrame#chatEditCard { background: %1; border: 1px solid %2; border-radius: 6px; }")
+        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft());
+}
+
+QString editCardTitleQss() {
+    return QStringLiteral(
+        "color: %1; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; background: transparent;")
+        .arg(Theme::textMuted());
+}
+
+QString editCardTextQss() {
+    return QStringLiteral(
+        "color: %1; font-size: 12px; background: transparent;").arg(Theme::textPrimary());
+}
+
+QString editCardStatusQss() {
+    return QStringLiteral(
+        "color: %1; font-size: 11px; font-style: italic; background: transparent;").arg(Theme::textMuted());
+}
+
 // Ícone do X do header é gerado com cores do tema (não é QSS), então precisa
 // ser recriado na troca de tema — mesmo cuidado do SelectionPopup.
 QIcon closeBtnIcon() {
     return IconUtils::loadToolbarIcon(QStringLiteral(":/icons/close.svg"),
         QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
         QSize(14, 14));
+}
+
+// Mesmo padrão de closeBtnIcon() (cores do tema, precisa recriar na troca de
+// tema) pros demais ícones de ação do painel — antes eram emoji (🕐 ＋ 📚
+// 🖼️ ⛶ 📎), trocados por SVG de verdade reaproveitando ícones já existentes
+// no app (mesma família Material usada em MainMenuDialog/TopToolbar).
+QIcon toolIcon(const QString& resourcePath, const QSize& size = QSize(16, 16)) {
+    return IconUtils::loadToolbarIcon(resourcePath,
+        QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()), size);
 }
 
 QString stripHtmlToPlainText(const QString& html) {
@@ -501,6 +615,82 @@ AITool saveProjectNoteTool() {
     return tool;
 }
 
+AITool saveUserNoteTool() {
+    QJsonObject categoryProp;
+    categoryProp[QStringLiteral("type")] = QStringLiteral("string");
+    categoryProp[QStringLiteral("enum")] = QJsonArray{
+        QStringLiteral("preferencia_criativa"), QStringLiteral("processo"),
+        QStringLiteral("ideia_solta"), QStringLiteral("vinculo"),
+        QStringLiteral("pendencia_geral")
+    };
+    categoryProp[QStringLiteral("description")] = QStringLiteral(
+        "preferencia_criativa = gosto/estilo de escrita, temas favoritos, "
+        "limite criativo — independente de qualquer projeto específico. "
+        "processo = como o autor gosta de trabalhar (tipo de feedback que "
+        "prefere, ritmo, o que anima/frustra numa revisão). ideia_solta = "
+        "ideia de história/projeto que ainda não tem um projeto formal no "
+        "Qenna. vinculo = piada interna, forma de conversar, referência "
+        "recorrente — o que mantém a companhia genuína, não descreve a "
+        "obra. pendencia_geral = algo que o autor quer decidir/fazer "
+        "depois, não ligado a um projeto específico.");
+
+    QJsonObject statusProp;
+    statusProp[QStringLiteral("type")] = QStringLiteral("string");
+    statusProp[QStringLiteral("enum")] = QJsonArray{
+        QStringLiteral("confirmada"), QStringLiteral("em_discussao"),
+        QStringLiteral("ideia_futura"), QStringLiteral("descartada")
+    };
+    statusProp[QStringLiteral("description")] = QStringLiteral(
+        "confirmada = fato estável sobre o autor, pode tratar como certo "
+        "daqui pra frente. em_discussao = cogitado nesta conversa, ainda "
+        "NÃO é certeza. ideia_futura = ideia solta pro futuro, sem "
+        "compromisso. descartada = já foi considerado e descartado pelo "
+        "autor — não sugerir de novo sem avisar que já foi descartado.");
+
+    QJsonObject titleProp;
+    titleProp[QStringLiteral("type")] = QStringLiteral("string");
+    titleProp[QStringLiteral("description")] = QStringLiteral(
+        "Título curto da nota, poucas palavras.");
+
+    QJsonObject contentProp;
+    contentProp[QStringLiteral("type")] = QStringLiteral("string");
+    contentProp[QStringLiteral("description")] = QStringLiteral(
+        "O conteúdo da nota, 1 a 4 frases, direto ao ponto.");
+
+    QJsonObject properties;
+    properties[QStringLiteral("category")] = categoryProp;
+    properties[QStringLiteral("status")] = statusProp;
+    properties[QStringLiteral("title")] = titleProp;
+    properties[QStringLiteral("content")] = contentProp;
+
+    QJsonArray required;
+    required.append(QStringLiteral("category"));
+    required.append(QStringLiteral("status"));
+    required.append(QStringLiteral("title"));
+    required.append(QStringLiteral("content"));
+
+    QJsonObject params;
+    params[QStringLiteral("type")] = QStringLiteral("object");
+    params[QStringLiteral("properties")] = properties;
+    params[QStringLiteral("required")] = required;
+
+    AITool tool;
+    tool.name = QStringLiteral("save_user_note");
+    tool.description = QStringLiteral(
+        "Salva uma nota permanente sobre O AUTOR (não sobre a história) — "
+        "vale em QUALQUER projeto, presente ou futuro, diferente de "
+        "save_project_note que é só sobre a obra deste projeto específico. "
+        "Use save_project_note para fatos da história/obra atual; use "
+        "save_user_note para algo sobre o autor: preferência criativa, "
+        "jeito de trabalhar, ideia solta sem projeto ainda, piada ou "
+        "vínculo, pendência pessoal. Chame PROATIVAMENTE quando perceber "
+        "algo assim na conversa — não espere o autor pedir \"lembra "
+        "disso\". Não chame pra conversa casual que não revela nada que "
+        "valha lembrar depois.");
+    tool.parameters = params;
+    return tool;
+}
+
 AITool resummarizeDocumentTool() {
     QJsonObject titleProp;
     titleProp[QStringLiteral("type")] = QStringLiteral("string");
@@ -603,7 +793,7 @@ AITool generateCharacterImageTool() {
     styleProp[QStringLiteral("enum")] = QJsonArray{
         QStringLiteral("padrao"), QStringLiteral("fotorrealista"),
         QStringLiteral("realismo_digital"), QStringLiteral("ilustracao_digital"),
-        QStringLiteral("anime"), QStringLiteral("cartoon")
+        QStringLiteral("anime"), QStringLiteral("cartoon"), QStringLiteral("capa_gta")
     };
     styleProp[QStringLiteral("description")] = QStringLiteral(
         "Estilo visual pedido. Use \"padrao\" se o autor não especificar. "
@@ -674,7 +864,7 @@ AITool generateSceneImageTool() {
     styleProp[QStringLiteral("enum")] = QJsonArray{
         QStringLiteral("padrao"), QStringLiteral("fotorrealista"),
         QStringLiteral("realismo_digital"), QStringLiteral("ilustracao_digital"),
-        QStringLiteral("anime"), QStringLiteral("cartoon")
+        QStringLiteral("anime"), QStringLiteral("cartoon"), QStringLiteral("capa_gta")
     };
     styleProp[QStringLiteral("description")] = QStringLiteral(
         "Estilo visual pedido. Use \"padrao\" se o autor não especificar. "
@@ -718,6 +908,65 @@ AITool generateSceneImageTool() {
         "própria. Se o pedido for claramente sobre o retrato de um "
         "personagem específico já existente no projeto, use "
         "generate_character_image em vez desta.");
+    tool.parameters = params;
+    return tool;
+}
+
+AITool proposeDocumentEditTool() {
+    QJsonObject originalProp;
+    originalProp[QStringLiteral("type")] = QStringLiteral("string");
+    originalProp[QStringLiteral("description")] = QStringLiteral(
+        "O trecho ORIGINAL exatamente como aparece no documento aberto no "
+        "editor agora — copiado literalmente (mesma pontuação, acentuação e "
+        "espaçamento do texto real, nunca parafraseado ou de memória). É "
+        "usado pra localizar onde aplicar a correção; se não bater "
+        "exatamente com o texto do documento, a edição falha. Inclua "
+        "contexto suficiente ao redor pra garantir que o trecho apareça "
+        "só UMA vez no documento — uma frase inteira costuma bastar, uma "
+        "única palavra comum geralmente não.");
+
+    QJsonObject newProp;
+    newProp[QStringLiteral("type")] = QStringLiteral("string");
+    newProp[QStringLiteral("description")] = QStringLiteral(
+        "O texto de substituição, pronto para entrar no lugar exato do "
+        "original_text.");
+
+    QJsonObject explanationProp;
+    explanationProp[QStringLiteral("type")] = QStringLiteral("string");
+    explanationProp[QStringLiteral("description")] = QStringLiteral(
+        "Explicação BREVE (uma frase) do que a mudança resolve — mostrada "
+        "junto do cartão de confirmação. Opcional, mas recomendado.");
+
+    QJsonObject properties;
+    properties[QStringLiteral("original_text")] = originalProp;
+    properties[QStringLiteral("new_text")] = newProp;
+    properties[QStringLiteral("explanation")] = explanationProp;
+
+    QJsonArray required;
+    required.append(QStringLiteral("original_text"));
+    required.append(QStringLiteral("new_text"));
+
+    QJsonObject params;
+    params[QStringLiteral("type")] = QStringLiteral("object");
+    params[QStringLiteral("properties")] = properties;
+    params[QStringLiteral("required")] = required;
+
+    AITool tool;
+    tool.name = QStringLiteral("propose_document_edit");
+    tool.description = QStringLiteral(
+        "Propõe uma correção pontual DIRETO no documento que o autor tem "
+        "aberto no editor agora — aparece como um cartão com Aplicar/"
+        "Descartar na conversa; você NUNCA aplica sozinha, o autor decide. "
+        "Só chame isso quando já tiver identificado um problema concreto e "
+        "uma correção específica (seguindo as mesmas regras de \"Método de "
+        "análise\"/\"Reescritas\" da sua personalidade — corrija erro real "
+        "ou deixe claro que é alternativa de tom, nunca proponha edição só "
+        "por hábito). Não serve pra reescrever o documento inteiro nem pra "
+        "múltiplos trechos não relacionados de uma vez — uma chamada por "
+        "correção pontual; pode chamar várias vezes na mesma resposta se "
+        "houver mais de um ponto. Se nenhum documento estiver aberto no "
+        "editor, a chamada falha — avise o autor que precisa abrir o "
+        "capítulo/cena primeiro.");
     tool.parameters = params;
     return tool;
 }
@@ -777,9 +1026,10 @@ AIChatPanel::AIChatPanel(ProjectModel* projectModel,
         assistantMsg.content = fullText;
         m_messages.append(assistantMsg);
         logConversation(miraAssistantName(), fullText);
-        finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages);
+        finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages, m_pendingEditSuggestions);
         m_pendingToolTraces.clear();
         m_pendingBubbleImages.clear();
+        m_pendingEditSuggestions.clear();
         saveCurrentSession();
         setBusy(false);
     });
@@ -787,9 +1037,10 @@ AIChatPanel::AIChatPanel(ProjectModel* projectModel,
             [this](const QString& id, const QString& name, const QJsonObject& args) {
         if (m_scanning) return; // scan não usa tools; defensivo
         if (++m_toolHopCount > 4) {
-            finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages);
+            finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages, m_pendingEditSuggestions);
             m_pendingToolTraces.clear();
             m_pendingBubbleImages.clear();
+            m_pendingEditSuggestions.clear();
             addMiraBubble(tr("(precisei buscar demais e vou parar por aqui pra não ficar em loop — pode reformular a pergunta?)"));
             setBusy(false);
             return;
@@ -806,9 +1057,10 @@ AIChatPanel::AIChatPanel(ProjectModel* projectModel,
             return;
         }
         m_pendingToolCall = false;
-        finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages);
+        finalizeMiraStreamBubble(m_pendingToolTraces, m_pendingBubbleImages, m_pendingEditSuggestions);
         m_pendingToolTraces.clear();
         m_pendingBubbleImages.clear();
+        m_pendingEditSuggestions.clear();
         addMiraBubble(tr("⚠️ Erro: %1").arg(msg));
         setBusy(false);
     });
@@ -820,44 +1072,96 @@ void AIChatPanel::buildUi()
     root->setContentsMargins(12, 0, 12, 12);
     root->setSpacing(8);
 
-    // Header — drag handle + título + ícones de ação + X
+    // Header — drag handle + título (ou identidade completa, em modo
+    // janela) + ícones de ação + X. UMA barra só, largura cheia — antes
+    // isso era duas barras empilhadas (identidade + ícones), o que num
+    // painel largo (modo janela, rail+chat lado a lado) deixava o título
+    // parecendo flutuar sobre o rail e os ícones sobre o chat, como se
+    // fossem coisas soltas em vez de um cabeçalho único.
     m_header = new QWidget(this);
     m_header->setFixedHeight(kHeaderH);
     m_header->setCursor(Qt::OpenHandCursor);
     auto* hlay = new QHBoxLayout(m_header);
     hlay->setContentsMargins(2, 0, 2, 0);
-    hlay->setSpacing(6);
+    hlay->setSpacing(8);
+
     m_titleLabel = new QLabel(miraAssistantName(), m_header);
     hlay->addWidget(m_titleLabel);
+
+    // Bloco de identidade (avatar + nome/subtítulo) — substitui m_titleLabel
+    // no modo janela (ver applyLayoutMode); os dois nunca ficam visíveis ao
+    // mesmo tempo, é uma troca, não uma segunda linha.
+    m_studioHeaderWidget = new QWidget(m_header);
+    auto* studioLay = new QHBoxLayout(m_studioHeaderWidget);
+    studioLay->setContentsMargins(0, 0, 0, 0);
+    studioLay->setSpacing(8);
+
+    m_studioAvatarLabel = new QLabel(m_studioHeaderWidget);
+    m_studioAvatarLabel->setFixedSize(26, 26);
+    m_studioAvatarLabel->setAlignment(Qt::AlignCenter);
+    m_studioAvatarLabel->setText(miraAssistantName().left(1).toUpper());
+    m_studioAvatarLabel->setStyleSheet(avatarQss());
+    studioLay->addWidget(m_studioAvatarLabel, 0, Qt::AlignVCenter);
+
+    // Nome+subtítulo num QWidget de verdade (não um QLayout solto direto no
+    // QHBoxLayout) — isso garante um sizeHint próprio e evita o esticamento/
+    // sobreposição que addLayout() num QHBoxLayout pode causar quando a
+    // altura calculada do conteúdo não bate exatamente com a altura fixa do
+    // cabeçalho (kHeaderH).
+    auto* whoWidget = new QWidget(m_studioHeaderWidget);
+    auto* whoCol = new QVBoxLayout(whoWidget);
+    whoCol->setContentsMargins(0, 0, 0, 0);
+    whoCol->setSpacing(0);
+    m_studioNameLabel = new QLabel(miraAssistantName(), whoWidget);
+    m_studioNameLabel->setWordWrap(false);
+    m_studioNameLabel->setStyleSheet(studioNameQss());
+    whoCol->addWidget(m_studioNameLabel);
+    m_studioSubtitleLabel = new QLabel(tr("parceira criativa · sempre por perto"), whoWidget);
+    m_studioSubtitleLabel->setWordWrap(false);
+    m_studioSubtitleLabel->setStyleSheet(studioSubtitleQss());
+    whoCol->addWidget(m_studioSubtitleLabel);
+    studioLay->addWidget(whoWidget, 0, Qt::AlignVCenter);
+
+    m_studioHeaderWidget->setVisible(false); // começa em modo painel — applyLayoutMode() decide
+    m_studioHeaderWidget->setCursor(Qt::PointingHandCursor);
+    m_studioHeaderWidget->setToolTip(tr("Clique pra personalizar a %1").arg(miraAssistantName()));
+    m_studioHeaderWidget->installEventFilter(this);
+    hlay->addWidget(m_studioHeaderWidget, 0, Qt::AlignVCenter);
+
     hlay->addStretch();
 
-    auto makeHeaderBtn = [this](const QString& text, const QString& tooltip) {
+    m_memoryChipLabel = new QLabel(m_header);
+    m_memoryChipLabel->setStyleSheet(memoryChipQss());
+    m_memoryChipLabel->setVisible(false);
+    hlay->addWidget(m_memoryChipLabel);
+
+    auto makeHeaderBtn = [this](const QString& iconPath, const QString& tooltip) {
         auto* b = new QToolButton(m_header);
-        b->setText(text);
+        b->setIcon(toolIcon(iconPath));
         b->setToolTip(tooltip);
         b->setCursor(Qt::PointingHandCursor);
         b->setMinimumSize(24, 24);
         return b;
     };
 
-    m_historyBtn = makeHeaderBtn(QStringLiteral("🕐"), tr("Conversas anteriores"));
+    m_historyBtn = makeHeaderBtn(QStringLiteral(":/icons/stats-clock.svg"), tr("Conversas anteriores"));
     connect(m_historyBtn, &QToolButton::clicked, this, &AIChatPanel::showSessionMenu);
     hlay->addWidget(m_historyBtn);
 
-    m_newChatBtn = makeHeaderBtn(QStringLiteral("＋"), tr("Nova conversa"));
+    m_newChatBtn = makeHeaderBtn(QStringLiteral(":/icons/doc-plus.svg"), tr("Nova conversa"));
     connect(m_newChatBtn, &QToolButton::clicked, this, &AIChatPanel::startNewSession);
     hlay->addWidget(m_newChatBtn);
 
-    m_scanBtn = makeHeaderBtn(QStringLiteral("📚"), tr("Ler documentos do projeto"));
+    m_scanBtn = makeHeaderBtn(QStringLiteral(":/icons/glossary.svg"), tr("Ler documentos do projeto"));
     connect(m_scanBtn, &QToolButton::clicked, this, &AIChatPanel::startProjectScan);
     hlay->addWidget(m_scanBtn);
 
-    m_galleryBtn = makeHeaderBtn(QStringLiteral("🖼️"), tr("Galeria de imagens geradas"));
+    m_galleryBtn = makeHeaderBtn(QStringLiteral(":/icons/add-image.svg"), tr("Galeria de imagens geradas"));
     connect(m_galleryBtn, &QToolButton::clicked, this, &AIChatPanel::openImageGallery);
     hlay->addWidget(m_galleryBtn);
 
     m_windowMode = QSettings().value(QStringLiteral("ai/chatWindowMode"), false).toBool();
-    m_layoutBtn = makeHeaderBtn(QStringLiteral("⛶"), m_windowMode
+    m_layoutBtn = makeHeaderBtn(QStringLiteral(":/icons/fullscreen.svg"), m_windowMode
         ? tr("Voltar pro modo painel (ancorado à direita)")
         : tr("Modo janela (centralizada, maior)"));
     connect(m_layoutBtn, &QToolButton::clicked, this, &AIChatPanel::toggleLayoutMode);
@@ -865,8 +1169,16 @@ void AIChatPanel::buildUi()
 
     m_modelCombo = new QComboBox(m_header);
     m_modelCombo->setEditable(true);
+    // Só sugestões — o campo é livre porque o Endpoint (Configurações →
+    // Assistente de IA) decide de fato pra qual provedor a chamada vai.
+    // Trocar o modelo aqui sem trocar o Endpoint pro provedor certo não
+    // funciona (todos falam formatos diferentes de chat/completions).
     m_modelCombo->addItems({ QStringLiteral("gpt-4o-mini"), QStringLiteral("gpt-4o"),
-                            QStringLiteral("gpt-4.1-mini"), QStringLiteral("gpt-4.1") });
+                            QStringLiteral("gpt-4.1-mini"), QStringLiteral("gpt-4.1"),
+                            QStringLiteral("gpt-5-mini"),
+                            QStringLiteral("claude-sonnet-5"), QStringLiteral("claude-opus-5"),
+                            QStringLiteral("gemini-2.5-flash"), QStringLiteral("gemini-2.5-pro"),
+                            QStringLiteral("grok-4") });
     m_modelCombo->setCurrentText(QSettings().value(QStringLiteral("ai/model"),
         QStringLiteral("gpt-4o-mini")).toString());
     m_modelCombo->setToolTip(tr("Modelo usado pela %1 (troca vale pra próxima mensagem)").arg(miraAssistantName()));
@@ -886,6 +1198,82 @@ void AIChatPanel::buildUi()
     connect(m_closeBtn, &QToolButton::clicked, this, [this]() { closePanel(); });
     hlay->addWidget(m_closeBtn);
     root->addWidget(m_header);
+
+    // Corpo: rail de projetos/conversas (só visível em modo janela, ver
+    // applyLayoutMode) + coluna de chat (sempre visível) lado a lado. A
+    // coluna de chat concentra tudo que antes ia direto pro `root` — troca
+    // mecânica de destino, nenhum widget interno muda de comportamento.
+    auto* bodyRow = new QHBoxLayout();
+    bodyRow->setContentsMargins(0, 0, 0, 0);
+    bodyRow->setSpacing(8);
+
+    m_railWidget = new QWidget(this);
+    m_railWidget->setFixedWidth(230);
+    m_railWidget->setVisible(false); // só aparece em modo janela
+    auto* railLay = new QVBoxLayout(m_railWidget);
+    railLay->setContentsMargins(0, 0, 0, 0);
+    railLay->setSpacing(4);
+
+    m_railSearchEdit = new QLineEdit(m_railWidget);
+    m_railSearchEdit->setPlaceholderText(tr("Buscar projeto ou conversa…"));
+    m_railSearchEdit->setStyleSheet(railSearchQss());
+    connect(m_railSearchEdit, &QLineEdit::textChanged, this, [this](const QString& text) {
+        m_railFilterText = text.trimmed();
+        rebuildProjectRail();
+    });
+    railLay->addWidget(m_railSearchEdit);
+
+    auto* railScroll = new QScrollArea(m_railWidget);
+    railScroll->setWidgetResizable(true);
+    railScroll->setFrameShape(QFrame::NoFrame);
+    railScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    railScroll->setStyleSheet(railScrollQss());
+    m_railScrollContent = new QWidget(railScroll);
+    m_railScrollLayout = new QVBoxLayout(m_railScrollContent);
+    m_railScrollLayout->setContentsMargins(4, 4, 4, 4);
+    m_railScrollLayout->setSpacing(2);
+    m_railScrollLayout->addStretch(1);
+    railScroll->setWidget(m_railScrollContent);
+    railLay->addWidget(railScroll);
+
+    bodyRow->addWidget(m_railWidget);
+
+    m_chatColumnWidget = new QWidget(this);
+    auto* chatColumnLay = new QVBoxLayout(m_chatColumnWidget);
+    chatColumnLay->setContentsMargins(0, 0, 0, 0);
+    chatColumnLay->setSpacing(8);
+    bodyRow->addWidget(m_chatColumnWidget, /*stretch=*/1);
+
+    root->addLayout(bodyRow, /*stretch=*/1);
+
+    // Barra de contexto "Projeto · Conversa" (modo janela) — troca de lugar
+    // com m_previewBanner conforme o estado, ver updateChatContext().
+    m_chatContextLabel = new QLabel(m_chatColumnWidget);
+    m_chatContextLabel->setTextFormat(Qt::RichText);
+    m_chatContextLabel->setStyleSheet(chatContextQss());
+    m_chatContextLabel->setVisible(false);
+    chatColumnLay->addWidget(m_chatContextLabel);
+
+    // Barra de "modo somente-leitura" (ver previewForeignSession) — some
+    // por padrão, só aparece ao visualizar a conversa de outro projeto.
+    m_previewBanner = new QWidget(this);
+    auto* previewLay = new QHBoxLayout(m_previewBanner);
+    previewLay->setContentsMargins(8, 6, 8, 6);
+    previewLay->setSpacing(8);
+    m_previewBannerLabel = new QLabel(m_previewBanner);
+    m_previewBannerLabel->setWordWrap(true);
+    m_previewBannerLabel->setTextFormat(Qt::RichText);
+    previewLay->addWidget(m_previewBannerLabel, 1);
+    m_previewOpenBtn = new QPushButton(tr("Abrir esse projeto"), m_previewBanner);
+    m_previewOpenBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_previewOpenBtn, &QPushButton::clicked, this, [this]() {
+        emit openProjectRequested(m_previewRoot);
+    });
+    previewLay->addWidget(m_previewOpenBtn);
+    m_previewBanner->setStyleSheet(previewBannerQss());
+    m_previewOpenBtn->setStyleSheet(sendBtnQss());
+    m_previewBanner->setVisible(false);
+    chatColumnLay->addWidget(m_previewBanner);
 
     // Transcrição — bolhas de chat de verdade (esquerda/direita), não um
     // QLabel de texto corrido (tinha bug de quebra de linha patológica em
@@ -910,27 +1298,32 @@ void AIChatPanel::buildUi()
     connect(m_transcriptScroll->verticalScrollBar(), &QScrollBar::rangeChanged, this,
             [this](int, int max) { m_transcriptScroll->verticalScrollBar()->setValue(max); });
 
-    root->addWidget(m_transcriptScroll, /*stretch=*/1);
+    chatColumnLay->addWidget(m_transcriptScroll, /*stretch=*/1);
 
     m_statusLabel = new QLabel(this);
     m_statusLabel->setWordWrap(true);
     m_statusLabel->setVisible(false);
-    root->addWidget(m_statusLabel);
+    chatColumnLay->addWidget(m_statusLabel);
 
     // Foco em documento — controle manual do que entra como contexto extra
     // nesta conversa (texto INTEIRO de um doc, não só o resumo), sem
     // depender da IA decidir buscar sozinha. Desligado por padrão.
-    auto* focusRow = new QWidget(this);
-    auto* focusLay = new QHBoxLayout(focusRow);
-    focusLay->setContentsMargins(2, 0, 2, 0);
-    focusLay->setSpacing(6);
-
-    m_docFocusCheck = new QCheckBox(tr("Focar em um documento:"), this);
-    focusLay->addWidget(m_docFocusCheck);
-
+    //
+    // m_docFocusCheck/m_docFocusCombo continuam sendo o ESTADO de verdade
+    // (lido por buildSystemPrompt/onDocFocusChanged) — só não viram mais uma
+    // linha própria sempre visível acima do composer (isso ficava chamativo
+    // demais pra um controle usado raramente). Ficam órfãos de layout
+    // (parented a `this`, nunca adicionados/mostrados) e só são mexidos
+    // através do menu de m_docFocusBtn, no composer — ver mais abaixo.
+    m_docFocusCheck = new QCheckBox(this);
     m_docFocusCombo = new QComboBox(this);
     m_docFocusCombo->setEnabled(false);
-    focusLay->addWidget(m_docFocusCombo, 1);
+    // Sem layout dono nenhum — um QWidget filho sem setVisible(false)
+    // explícito herda a visibilidade do pai e flutua na posição padrão
+    // (0,0), foi o que sobrepôs o cabeçalho. Precisam ficar de verdade
+    // escondidos, não só "fora do layout".
+    m_docFocusCheck->setVisible(false);
+    m_docFocusCombo->setVisible(false);
 
     connect(m_docFocusCheck, &QCheckBox::toggled, this, [this](bool checked) {
         m_docFocusCombo->setEnabled(checked);
@@ -946,8 +1339,6 @@ void AIChatPanel::buildUi()
     });
     connect(m_docFocusCombo, qOverload<int>(&QComboBox::currentIndexChanged),
             this, [this](int) { onDocFocusChanged(); });
-
-    root->addWidget(focusRow);
 
     // Preview do anexo de imagem — some quando não há nada anexado ainda.
     m_attachPreviewRow = new QWidget(this);
@@ -965,13 +1356,13 @@ void AIChatPanel::buildUi()
     attachPreviewLay->addWidget(attachLabel, 1);
 
     m_attachClearBtn = new QToolButton(this);
-    m_attachClearBtn->setText(QStringLiteral("✕"));
+    m_attachClearBtn->setIcon(toolIcon(QStringLiteral(":/icons/close.svg"), QSize(12, 12)));
     m_attachClearBtn->setCursor(Qt::PointingHandCursor);
     connect(m_attachClearBtn, &QToolButton::clicked, this, &AIChatPanel::clearAttachImage);
     attachPreviewLay->addWidget(m_attachClearBtn);
 
     m_attachPreviewRow->setVisible(false);
-    root->addWidget(m_attachPreviewRow);
+    chatColumnLay->addWidget(m_attachPreviewRow);
 
     // Campo de pedido livre — multi-linha de verdade (Enter envia, Shift+
     // Enter quebra linha; cresce sozinho até um teto, depois rola por
@@ -982,11 +1373,47 @@ void AIChatPanel::buildUi()
     irlay->setSpacing(6);
 
     m_attachBtn = new QToolButton(this);
-    m_attachBtn->setText(QStringLiteral("📎"));
+    m_attachBtn->setIcon(toolIcon(QStringLiteral(":/icons/add-image.svg")));
     m_attachBtn->setToolTip(tr("Anexar imagem"));
     m_attachBtn->setCursor(Qt::PointingHandCursor);
     connect(m_attachBtn, &QToolButton::clicked, this, &AIChatPanel::pickAttachImage);
     irlay->addWidget(m_attachBtn);
+
+    // Foco em documento (discreto — ver comentário acima de m_docFocusCheck):
+    // menu popup com os documentos do projeto; escolher um liga o foco,
+    // clicar de novo desliga. Ícone marcado (cor de destaque) enquanto ativo.
+    m_docFocusBtn = new QToolButton(this);
+    m_docFocusBtn->setIcon(toolIcon(QStringLiteral(":/icons/readmode.svg")));
+    m_docFocusBtn->setCheckable(true);
+    m_docFocusBtn->setCursor(Qt::PointingHandCursor);
+    m_docFocusBtn->setToolTip(tr("Focar em um documento específico desta conversa"));
+    connect(m_docFocusBtn, &QToolButton::clicked, this, [this]() {
+        if (m_docFocusCheck->isChecked()) {
+            m_docFocusCheck->setChecked(false);
+            m_docFocusBtn->setToolTip(tr("Focar em um documento específico desta conversa"));
+            m_docFocusBtn->setChecked(false);
+            return;
+        }
+        refreshDocFocusCombo();
+        QMenu menu(this);
+        if (m_docFocusCombo->count() == 0) {
+            QAction* empty = menu.addAction(tr("(nenhum documento encontrado)"));
+            empty->setEnabled(false);
+        }
+        for (int i = 0; i < m_docFocusCombo->count(); ++i) {
+            const QString title = m_docFocusCombo->itemText(i);
+            QAction* a = menu.addAction(title);
+            connect(a, &QAction::triggered, this, [this, title]() {
+                const int idx = m_docFocusCombo->findText(title);
+                if (idx >= 0) m_docFocusCombo->setCurrentIndex(idx);
+                m_docFocusCheck->setChecked(true);
+                m_docFocusBtn->setToolTip(tr("Focando em \"%1\" (clique pra desligar)").arg(title));
+            });
+        }
+        menu.exec(m_docFocusBtn->mapToGlobal(QPoint(0, m_docFocusBtn->height())));
+        m_docFocusBtn->setChecked(m_docFocusCheck->isChecked());
+    });
+    irlay->addWidget(m_docFocusBtn);
 
     // QTextEdit, não QPlainTextEdit: o motor de layout do QPlainTextEdit
     // (QPlainTextDocumentLayout) não responde de forma confiável a
@@ -1016,7 +1443,7 @@ void AIChatPanel::buildUi()
     });
     irlay->addWidget(m_sendBtn);
 
-    root->addWidget(inputRow);
+    chatColumnLay->addWidget(inputRow);
 
     // Grip de resize no canto inferior direito — funciona nos dois modos de
     // layout (painel ancorado ou janela centralizada). Overlay solto (não
@@ -1039,6 +1466,19 @@ void AIChatPanel::applyTheme()
     for (QToolButton* b : { m_historyBtn, m_newChatBtn, m_scanBtn, m_galleryBtn, m_layoutBtn }) {
         if (b) b->setStyleSheet(headerQss);
     }
+    // Ícones dependem de cor do tema (mesmo cuidado de closeBtnIcon) —
+    // precisam ser recriados na troca, não só o QSS do botão em volta.
+    if (m_historyBtn) m_historyBtn->setIcon(toolIcon(QStringLiteral(":/icons/stats-clock.svg")));
+    if (m_newChatBtn) m_newChatBtn->setIcon(toolIcon(QStringLiteral(":/icons/doc-plus.svg")));
+    if (m_scanBtn) m_scanBtn->setIcon(toolIcon(QStringLiteral(":/icons/glossary.svg")));
+    if (m_galleryBtn) m_galleryBtn->setIcon(toolIcon(QStringLiteral(":/icons/add-image.svg")));
+    if (m_layoutBtn) m_layoutBtn->setIcon(toolIcon(QStringLiteral(":/icons/fullscreen.svg")));
+    if (m_attachBtn) m_attachBtn->setIcon(toolIcon(QStringLiteral(":/icons/add-image.svg")));
+    if (m_attachClearBtn) m_attachClearBtn->setIcon(toolIcon(QStringLiteral(":/icons/close.svg"), QSize(12, 12)));
+    if (m_docFocusBtn) {
+        m_docFocusBtn->setIcon(toolIcon(QStringLiteral(":/icons/readmode.svg")));
+        m_docFocusBtn->setStyleSheet(headerQss);
+    }
     if (m_closeBtn) {
         m_closeBtn->setStyleSheet(closeBtnQss());
         m_closeBtn->setIcon(closeBtnIcon());
@@ -1052,6 +1492,17 @@ void AIChatPanel::applyTheme()
     if (m_inputEdit) m_inputEdit->setStyleSheet(inputEditQss());
     if (m_sendBtn) m_sendBtn->setStyleSheet(sendBtnQss());
     if (m_resizeGrip) m_resizeGrip->setStyleSheet(gripQss());
+    if (m_previewBanner) m_previewBanner->setStyleSheet(previewBannerQss());
+    if (m_previewOpenBtn) m_previewOpenBtn->setStyleSheet(sendBtnQss());
+    if (m_chatContextLabel) m_chatContextLabel->setStyleSheet(chatContextQss());
+    if (m_memoryChipLabel) m_memoryChipLabel->setStyleSheet(memoryChipQss());
+    if (m_studioAvatarLabel) m_studioAvatarLabel->setStyleSheet(avatarQss());
+    if (m_studioNameLabel) m_studioNameLabel->setStyleSheet(studioNameQss());
+    if (m_studioSubtitleLabel) m_studioSubtitleLabel->setStyleSheet(studioSubtitleQss());
+    if (m_railSearchEdit) m_railSearchEdit->setStyleSheet(railSearchQss());
+    // Folders/sessões do rail usam cores do tema — reconstrói pra não ficar
+    // com o QSS congelado da troca de tema anterior.
+    rebuildProjectRail();
 
     // Bolhas já na tela (inclusive a que está em streaming neste instante).
     // Varre por objectName em vez de manter uma lista paralela de handles: as
@@ -1062,6 +1513,10 @@ void AIChatPanel::applyTheme()
         const QList<QFrame*> bubbles = m_transcriptContent->findChildren<QFrame*>();
         for (QFrame* bubble : bubbles) {
             const QString name = bubble->objectName();
+            if (name == QStringLiteral("chatEditCard")) {
+                bubble->setStyleSheet(editCardQss());
+                continue;
+            }
             const bool isUser = (name == QStringLiteral("chatBubbleUser"));
             if (!isUser && name != QStringLiteral("chatBubbleMira")) continue;
             bubble->setStyleSheet(bubbleQss(isUser));
@@ -1088,7 +1543,18 @@ void AIChatPanel::applyTheme()
             else if (name == QStringLiteral("chatFeedbackBtn")) b->setStyleSheet(feedbackBtnQss());
         }
         for (QLabel* l : m_transcriptContent->findChildren<QLabel*>()) {
-            if (l->objectName() == QStringLiteral("chatTraceText")) l->setStyleSheet(traceTextQss());
+            const QString name = l->objectName();
+            if (name == QStringLiteral("chatTraceText")) l->setStyleSheet(traceTextQss());
+            else if (name == QStringLiteral("chatEditTitle")) l->setStyleSheet(editCardTitleQss());
+            else if (name == QStringLiteral("chatEditText")) l->setStyleSheet(editCardTextQss());
+            else if (name == QStringLiteral("chatEditStatus")) l->setStyleSheet(editCardStatusQss());
+        }
+        // Cartão de sugestão de edição: botões Aplicar/Descartar são
+        // QPushButton (mesma classe do input de envio), não QToolButton.
+        for (QPushButton* b : m_transcriptContent->findChildren<QPushButton*>()) {
+            const QString name = b->objectName();
+            if (name == QStringLiteral("chatEditDismissBtn")) b->setStyleSheet(chipQss());
+            else if (name == QStringLiteral("chatEditApplyBtn")) b->setStyleSheet(sendBtnQss());
         }
     }
 }
@@ -1103,17 +1569,20 @@ void AIChatPanel::setProjectRoot(const QString& root)
     // a raiz). Mesmo reset de startNewSession(), só que disparado pela
     // troca de projeto em vez de um clique explícito do usuário.
     if (root != m_projectRoot) {
+        if (m_previewMode) exitPreviewMode(); // projeto mudou de verdade — preview não faz mais sentido
         saveCurrentSession(); // salva o que tinha, na pasta do projeto ANTIGO
         m_messages.clear();
         m_currentSessionId.clear();
         m_pendingToolTraces.clear();
         m_pendingBubbleImages.clear();
+        m_pendingEditSuggestions.clear();
         m_toolHopCount = 0;
         clearTranscriptUi();
         if (m_docFocusCheck) m_docFocusCheck->setChecked(false); // combo tinha docs do projeto antigo
     }
 
     m_projectRoot = root;
+    updateChatContext();
     if (m_projectRoot.isEmpty()) return;
 
     QSettings settings;
@@ -1168,6 +1637,12 @@ void AIChatPanel::setMapPinsStore(MapPinsStore* store)
     m_mapPinsStore = store;
 }
 
+void AIChatPanel::setKnownProjects(const QStringList& roots)
+{
+    m_knownProjectRoots = roots;
+    rebuildProjectRail();
+}
+
 void AIChatPanel::setDocOpener(std::function<void(const QString&)> opener)
 {
     m_docOpener = std::move(opener);
@@ -1176,6 +1651,11 @@ void AIChatPanel::setDocOpener(std::function<void(const QString&)> opener)
 void AIChatPanel::setCurrentDocTitleProvider(std::function<QString()> provider)
 {
     m_currentDocTitleProvider = std::move(provider);
+}
+
+void AIChatPanel::setActiveEditorProvider(std::function<QTextEdit*()> provider)
+{
+    m_activeEditorProvider = std::move(provider);
 }
 
 void AIChatPanel::setWordCounter(WordCounter* counter)
@@ -1275,13 +1755,26 @@ void AIChatPanel::applyLayoutMode()
     QWidget* p = parentWidget();
     if (!p) return;
 
+    // Coluna de projetos/conversas e a barra de identidade só fazem sentido
+    // no espaço maior do modo janela — no modo painel (compacto), o
+    // histórico continua no QMenu de sempre (showSessionMenu), sem mudança
+    // de comportamento.
+    if (m_railWidget) m_railWidget->setVisible(m_windowMode);
+    if (m_historyBtn) m_historyBtn->setVisible(!m_windowMode);
+    if (m_studioHeaderWidget) m_studioHeaderWidget->setVisible(m_windowMode);
+    if (m_titleLabel) m_titleLabel->setVisible(!m_windowMode);
+    if (m_memoryChipLabel) m_memoryChipLabel->setVisible(m_windowMode);
+    if (m_windowMode) updateChatContext();
+
     if (m_windowMode) {
         // "Janela" — centralizada, maior, mais parecida com ChatGPT/Claude
         // (referência de tamanho pedida pelo usuário: diálogo de Temas).
+        // Mínimo subiu de 480 pra 620: com a coluna de projetos/conversas
+        // (230px fixos) ocupando espaço, 480 deixaria o chat espremido.
         const QSize saved = QSettings().value(QStringLiteral("ai/chatWindowSize")).toSize();
         int w = (saved.isValid() && saved.width() >= 360)
             ? qMin(saved.width(), p->width() - kMargin * 2)
-            : qBound(480, int(p->width() * 0.62), 820);
+            : qBound(620, int(p->width() * 0.62), 900);
         int h = (saved.isValid() && saved.height() >= 320)
             ? qMin(saved.height(), p->height() - kMargin * 2)
             : qBound(480, int(p->height() * 0.78), 680);
@@ -1305,6 +1798,7 @@ void AIChatPanel::toggleLayoutMode()
             : tr("Modo janela (centralizada, maior)"));
     }
     applyLayoutMode();
+    if (m_windowMode) rebuildProjectRail();
 }
 
 void AIChatPanel::saveCurrentPanelSize()
@@ -1364,6 +1858,8 @@ QString AIChatPanel::buildSystemPrompt() const
         QSettings().value(QStringLiteral("ai/personalityWarmth"), 50).toInt(),
         QSettings().value(QStringLiteral("ai/personalityHarshness"), 50).toInt(),
         QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
+    base += miraTraitsFragment(QSettings().value(QStringLiteral("ai/personalityTraits")).toStringList());
+    base += miraCompanionshipFragment();
     base += MiraStyleStore::buildPromptFragment();
     base += QStringLiteral(
         "\n\nVocê está conversando livremente com o autor sobre o projeto "
@@ -1436,6 +1932,16 @@ QString AIChatPanel::buildSystemPrompt() const
             "avise que essa ideia específica já foi descartada antes em vez "
             "de sugerir de novo como se fosse nova.")
             .arg(memory);
+    }
+
+    const QString userMemory = MiraUserMemoryStore::load();
+    if (!userMemory.isEmpty()) {
+        base += QStringLiteral(
+            "\n\nMemória sobre o AUTOR (não sobre este projeto — vale em "
+            "QUALQUER projeto, presente ou futuro; notas que você mesma "
+            "foi salvando ao longo do tempo com save_user_note):\n\n%1"
+            "\n\nMesmas regras de peso do status que valem pra memória do "
+            "projeto acima se aplicam aqui.").arg(userMemory);
     }
 
     if (m_docFocusCheck && m_docFocusCheck->isChecked() &&
@@ -1515,8 +2021,9 @@ void AIChatPanel::sendUserMessage(const QString& text)
     m_client->setModel(settings.value(QStringLiteral("ai/model"),
         QStringLiteral("gpt-4o-mini")).toString());
     m_client->setTools({ searchProjectTool(), readDocumentTool(), saveProjectNoteTool(),
-                         resummarizeDocumentTool(), lookupWorldDataTool(),
-                         generateCharacterImageTool(), generateSceneImageTool() });
+                         saveUserNoteTool(), resummarizeDocumentTool(), lookupWorldDataTool(),
+                         generateCharacterImageTool(), generateSceneImageTool(),
+                         proposeDocumentEditTool() });
 
     if (m_messages.isEmpty()) {
         AIChatMessage sys;
@@ -1540,6 +2047,7 @@ void AIChatPanel::sendUserMessage(const QString& text)
     m_messages.append(userMsg);
 
     addUserBubble(text, imageDataUrl);
+    updateChatContext(); // 1ª mensagem de uma conversa nova já vira título na barra de contexto
     clearAttachImage();
     m_inputEdit->clear();
     m_inputEdit->setFixedHeight(38);
@@ -1559,6 +2067,8 @@ void AIChatPanel::handleToolCall(const QString& id, const QString& name, const Q
         handleReadDocumentTool(id, arguments);
     } else if (name == QStringLiteral("save_project_note")) {
         handleSaveProjectNoteTool(id, arguments);
+    } else if (name == QStringLiteral("save_user_note")) {
+        handleSaveUserNoteTool(id, arguments);
     } else if (name == QStringLiteral("resummarize_document")) {
         handleResummarizeDocumentTool(id, arguments);
     } else if (name == QStringLiteral("lookup_world_data")) {
@@ -1567,6 +2077,8 @@ void AIChatPanel::handleToolCall(const QString& id, const QString& name, const Q
         handleGenerateCharacterImageTool(id, arguments);
     } else if (name == QStringLiteral("generate_scene_image")) {
         handleGenerateSceneImageTool(id, arguments);
+    } else if (name == QStringLiteral("propose_document_edit")) {
+        handleProposeDocumentEditTool(id, arguments);
     } else {
         m_pendingToolCall = false;
     }
@@ -1730,6 +2242,54 @@ void AIChatPanel::handleSaveProjectNoteTool(const QString& id, const QJsonObject
 
     finishToolRoundTrip(id, QStringLiteral("save_project_note"), argsEcho,
         tr("Nota salva com sucesso: [%1] %2 \"%3\".").arg(categoryLabel, statusEmoji, title));
+}
+
+void AIChatPanel::handleSaveUserNoteTool(const QString& id, const QJsonObject& arguments)
+{
+    const QString category = arguments.value(QStringLiteral("category")).toString();
+    const QString status = arguments.value(QStringLiteral("status")).toString();
+    const QString title = arguments.value(QStringLiteral("title")).toString();
+    const QString content = arguments.value(QStringLiteral("content")).toString();
+
+    static const QHash<QString, QString> kCategoryLabels = {
+        { QStringLiteral("preferencia_criativa"), tr("Preferência criativa") },
+        { QStringLiteral("processo"), tr("Jeito de trabalhar") },
+        { QStringLiteral("ideia_solta"), tr("Ideia solta") },
+        { QStringLiteral("vinculo"), tr("Vínculo") },
+        { QStringLiteral("pendencia_geral"), tr("Pendência geral") },
+    };
+    static const QHash<QString, QString> kStatusEmoji = {
+        { QStringLiteral("confirmada"), QStringLiteral("🟢") },
+        { QStringLiteral("em_discussao"), QStringLiteral("🟡") },
+        { QStringLiteral("ideia_futura"), QStringLiteral("🔵") },
+        { QStringLiteral("descartada"), QStringLiteral("🔴") },
+    };
+    const QString categoryLabel = kCategoryLabels.value(category, category);
+    const QString statusEmoji = kStatusEmoji.value(status, QStringLiteral("⚪"));
+
+    MiraUserMemoryStore::appendEntry(category, status, title, content);
+
+    const QString traceText = tr("💾 Nota sobre você salva — %1 %2: \"%3\" — %4")
+        .arg(statusEmoji, categoryLabel, title, content);
+    logConversation(miraAssistantName(), traceText);
+    ToolTraceEntry entry;
+    entry.text = traceText;
+    m_pendingToolTraces.append(entry);
+
+    // Mesmo motivo do save_project_note: atualiza o system prompt já nesta
+    // conversa, senão a nota só entraria no contexto na próxima sessão.
+    if (!m_messages.isEmpty() && m_messages.first().role == QStringLiteral("system")) {
+        m_messages[0].content = buildSystemPrompt();
+    }
+
+    QJsonObject argsEcho;
+    argsEcho[QStringLiteral("category")] = category;
+    argsEcho[QStringLiteral("status")] = status;
+    argsEcho[QStringLiteral("title")] = title;
+    argsEcho[QStringLiteral("content")] = content;
+
+    finishToolRoundTrip(id, QStringLiteral("save_user_note"), argsEcho,
+        tr("Nota sobre o autor salva com sucesso: [%1] %2 \"%3\".").arg(categoryLabel, statusEmoji, title));
 }
 
 void AIChatPanel::handleResummarizeDocumentTool(const QString& id, const QJsonObject& arguments)
@@ -2050,6 +2610,61 @@ void AIChatPanel::handleGenerateSceneImageTool(const QString& id, const QJsonObj
     }
 }
 
+void AIChatPanel::handleProposeDocumentEditTool(const QString& id, const QJsonObject& arguments)
+{
+    const QString originalText = arguments.value(QStringLiteral("original_text")).toString();
+    const QString newText = arguments.value(QStringLiteral("new_text")).toString();
+    const QString explanation = arguments.value(QStringLiteral("explanation")).toString();
+
+    QJsonObject argsEcho;
+    argsEcho[QStringLiteral("original_text")] = originalText;
+    argsEcho[QStringLiteral("new_text")] = newText;
+    if (!explanation.isEmpty()) argsEcho[QStringLiteral("explanation")] = explanation;
+
+    QTextEdit* editor = m_activeEditorProvider ? m_activeEditorProvider() : nullptr;
+    if (!editor) {
+        finishToolRoundTrip(id, QStringLiteral("propose_document_edit"), argsEcho,
+            tr("Não há nenhum documento aberto no editor agora — não é possível propor uma "
+               "edição. Avise o autor que precisa abrir o capítulo/cena primeiro."));
+        return;
+    }
+    if (originalText.trimmed().isEmpty() || newText.trimmed().isEmpty()) {
+        finishToolRoundTrip(id, QStringLiteral("propose_document_edit"), argsEcho,
+            tr("original_text e new_text não podem ficar vazios."));
+        return;
+    }
+
+    QTextDocument* doc = editor->document();
+    const QTextCursor firstMatch = doc->find(originalText);
+    if (firstMatch.isNull()) {
+        finishToolRoundTrip(id, QStringLiteral("propose_document_edit"), argsEcho,
+            tr("Não encontrei esse trecho, exatamente como foi citado, no documento aberto "
+               "agora. Cite o texto literal (mesma pontuação e espaçamento do original) ou "
+               "avise o autor que não conseguiu localizar o trecho."));
+        return;
+    }
+    const QTextCursor secondMatch = doc->find(originalText, firstMatch.selectionEnd());
+    if (!secondMatch.isNull()) {
+        finishToolRoundTrip(id, QStringLiteral("propose_document_edit"), argsEcho,
+            tr("Esse trecho aparece mais de uma vez no documento — inclua mais contexto ao "
+               "redor pra torná-lo único antes de propor a edição."));
+        return;
+    }
+
+    PendingEditSuggestion suggestion;
+    suggestion.originalText = originalText;
+    suggestion.newText = newText;
+    suggestion.explanation = explanation;
+    suggestion.docTitleAtProposal = m_currentDocTitleProvider ? m_currentDocTitleProvider() : QString();
+    m_pendingEditSuggestions.append(suggestion);
+
+    logConversation(miraAssistantName(), tr("✏️ Sugestão de edição criada, aguardando confirmação do autor."));
+
+    finishToolRoundTrip(id, QStringLiteral("propose_document_edit"), argsEcho,
+        tr("Sugestão de edição criada e exibida ao autor como um cartão de confirmação — ele "
+           "vai decidir se aplica ou descarta, não assuma que já foi aplicada."));
+}
+
 QString AIChatPanel::runWorldDataLookup(const QString& query) const
 {
     const QString needle = query.trimmed();
@@ -2287,6 +2902,19 @@ void AIChatPanel::fitInputHeight()
     m_inputEdit->setFixedHeight(qBound(38, h, 120));
 }
 
+int AIChatPanel::transcriptAvailableWidth() const
+{
+    // Largura ATUAL da área de transcrição (não do painel inteiro) — no modo
+    // janela, m_railWidget (230px fixos) fica ao lado da coluna de chat, então
+    // width() do painel inclui espaço que as bolhas não têm de verdade. Usar
+    // o viewport do scroll da transcrição é o que sobra pra bolha depois de
+    // descontar o rail; cai pra kPanelWidth só antes do 1º layout (viewport
+    // ainda com largura 0).
+    const int viewportW = m_transcriptScroll && m_transcriptScroll->viewport()
+        ? m_transcriptScroll->viewport()->width() : 0;
+    return qMax(viewportW > 0 ? viewportW : width(), kPanelWidth);
+}
+
 AIChatPanel::BubbleHandle AIChatPanel::createBubbleRow(bool isUser, const QString& initialText,
                                                        const QString& imageDataUrl)
 {
@@ -2295,9 +2923,10 @@ AIChatPanel::BubbleHandle AIChatPanel::createBubbleRow(bool isUser, const QStrin
     rowLay->setContentsMargins(0, 0, 0, 0);
     rowLay->setSpacing(0);
 
-    // Largura ATUAL do painel, não uma constante — assim as bolhas se
-    // adaptam sozinhas ao trocar entre modo painel/janela ou redimensionar.
-    const int bubbleMaxW = int(qMax(width(), kPanelWidth) * 0.88);
+    // Largura ATUAL da área de transcrição, não uma constante — assim as
+    // bolhas se adaptam sozinhas ao trocar entre modo painel/janela ou
+    // redimensionar.
+    const int bubbleMaxW = int(transcriptAvailableWidth() * 0.88);
     const int textWidth = bubbleMaxW - 24; // menos as margens horizontais da bolha (12+12)
 
     auto* bubble = new QFrame(row);
@@ -2380,7 +3009,7 @@ void AIChatPanel::refitAllBubbles()
     // modo painel/janela ou arrasto do canto), mesmo a bolha-frame em si
     // encolhendo via setMaximumWidth. Chamado a cada resizeEvent.
     if (!m_transcriptContent) return;
-    const int bubbleMaxW = int(qMax(width(), kPanelWidth) * 0.88);
+    const int bubbleMaxW = int(transcriptAvailableWidth() * 0.88);
     const int textWidth = bubbleMaxW - 24;
     for (QFrame* bubble : m_transcriptContent->findChildren<QFrame*>()) {
         const QString name = bubble->objectName();
@@ -2473,6 +3102,124 @@ void AIChatPanel::attachBubbleImages(BubbleHandle& handle, const QVector<QImage>
     }
 }
 
+void AIChatPanel::attachEditSuggestions(BubbleHandle& handle, const QVector<PendingEditSuggestion>& suggestions)
+{
+    if (suggestions.isEmpty() || !handle.bubble) return;
+
+    for (const PendingEditSuggestion& sug : suggestions) {
+        auto* card = new QFrame(handle.bubble);
+        card->setObjectName(QStringLiteral("chatEditCard"));
+        card->setStyleSheet(editCardQss());
+        auto* cardLay = new QVBoxLayout(card);
+        cardLay->setContentsMargins(10, 8, 10, 8);
+        cardLay->setSpacing(4);
+
+        auto* title = new QLabel(tr("Sugestão de edição:"), card);
+        title->setObjectName(QStringLiteral("chatEditTitle"));
+        title->setStyleSheet(editCardTitleQss());
+        cardLay->addWidget(title);
+
+        if (!sug.explanation.trimmed().isEmpty()) {
+            auto* explanationLabel = new QLabel(sug.explanation.trimmed(), card);
+            explanationLabel->setObjectName(QStringLiteral("chatEditText"));
+            explanationLabel->setWordWrap(true);
+            explanationLabel->setStyleSheet(editCardTextQss());
+            cardLay->addWidget(explanationLabel);
+        }
+
+        auto* beforeLabel = new QLabel(tr("Antes: %1").arg(sug.originalText), card);
+        beforeLabel->setObjectName(QStringLiteral("chatEditText"));
+        beforeLabel->setWordWrap(true);
+        beforeLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        beforeLabel->setStyleSheet(editCardTextQss());
+        cardLay->addWidget(beforeLabel);
+
+        auto* afterLabel = new QLabel(tr("Depois: %1").arg(sug.newText), card);
+        afterLabel->setObjectName(QStringLiteral("chatEditText"));
+        afterLabel->setWordWrap(true);
+        afterLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        afterLabel->setStyleSheet(editCardTextQss());
+        cardLay->addWidget(afterLabel);
+
+        auto* statusLabel = new QLabel(card);
+        statusLabel->setObjectName(QStringLiteral("chatEditStatus"));
+        statusLabel->setWordWrap(true);
+        statusLabel->setStyleSheet(editCardStatusQss());
+        statusLabel->setVisible(false);
+        cardLay->addWidget(statusLabel);
+
+        auto* btnRow = new QWidget(card);
+        auto* btnLay = new QHBoxLayout(btnRow);
+        btnLay->setContentsMargins(0, 2, 0, 0);
+        btnLay->setSpacing(6);
+        btnLay->addStretch();
+        auto* dismissBtn = new QPushButton(tr("Descartar"), btnRow);
+        dismissBtn->setObjectName(QStringLiteral("chatEditDismissBtn"));
+        dismissBtn->setCursor(Qt::PointingHandCursor);
+        dismissBtn->setStyleSheet(chipQss());
+        btnLay->addWidget(dismissBtn);
+        auto* applyBtn = new QPushButton(tr("Aplicar ✓"), btnRow);
+        applyBtn->setObjectName(QStringLiteral("chatEditApplyBtn"));
+        applyBtn->setCursor(Qt::PointingHandCursor);
+        applyBtn->setStyleSheet(sendBtnQss());
+        btnLay->addWidget(applyBtn);
+        cardLay->addWidget(btnRow);
+
+        connect(dismissBtn, &QPushButton::clicked, this, [statusLabel, btnRow]() {
+            statusLabel->setText(QObject::tr("Descartada."));
+            statusLabel->setVisible(true);
+            btnRow->setVisible(false);
+        });
+
+        const QString originalText = sug.originalText;
+        const QString newText = sug.newText;
+        const QString docTitleAtProposal = sug.docTitleAtProposal;
+        connect(applyBtn, &QPushButton::clicked, this,
+                [this, originalText, newText, docTitleAtProposal, statusLabel, btnRow]() {
+            // Mesmo QTextEdit é reaproveitado pra qualquer documento (ver
+            // EditorHost) — se o autor trocou de capítulo desde que a
+            // sugestão apareceu, o ponteiro continua válido mas aponta pro
+            // documento ERRADO, daí a checagem de título antes de tocar em
+            // qualquer QTextCursor.
+            if (m_currentDocTitleProvider && !docTitleAtProposal.isEmpty()
+                    && m_currentDocTitleProvider() != docTitleAtProposal) {
+                statusLabel->setText(tr("⚠️ O documento aberto mudou desde a sugestão — reabra "
+                                        "\"%1\" antes de aplicar.").arg(docTitleAtProposal));
+                statusLabel->setVisible(true);
+                return;
+            }
+            QTextEdit* editor = m_activeEditorProvider ? m_activeEditorProvider() : nullptr;
+            if (!editor) {
+                statusLabel->setText(tr("⚠️ Nenhum documento está aberto agora."));
+                statusLabel->setVisible(true);
+                return;
+            }
+            QTextDocument* doc = editor->document();
+            QTextCursor match = doc->find(originalText);
+            if (match.isNull()) {
+                statusLabel->setText(tr("⚠️ Não encontrei mais esse trecho — o texto pode ter mudado."));
+                statusLabel->setVisible(true);
+                return;
+            }
+            const QTextCursor secondMatch = doc->find(originalText, match.selectionEnd());
+            if (!secondMatch.isNull()) {
+                statusLabel->setText(tr("⚠️ Esse trecho aparece mais de uma vez agora — peça uma "
+                                        "sugestão mais específica."));
+                statusLabel->setVisible(true);
+                return;
+            }
+            match.beginEditBlock();
+            match.insertText(newText);
+            match.endEditBlock();
+            statusLabel->setText(tr("✓ Edição aplicada."));
+            statusLabel->setVisible(true);
+            btnRow->setVisible(false);
+        });
+
+        handle.bubbleLayout->addWidget(card);
+    }
+}
+
 void AIChatPanel::attachFeedbackButtons(BubbleHandle& handle, const QString& fullText)
 {
     if (!handle.bubble || fullText.trimmed().isEmpty()) return;
@@ -2544,15 +3291,17 @@ void AIChatPanel::appendStreamToken(const QString& token)
 }
 
 void AIChatPanel::finalizeMiraStreamBubble(const QVector<ToolTraceEntry>& traces,
-                                           const QVector<QImage>& images)
+                                           const QVector<QImage>& images,
+                                           const QVector<PendingEditSuggestion>& editSuggestions)
 {
-    // Nada foi streamado e não há pistas/imagens pra mostrar — não cria bolha vazia.
-    if (!m_currentMiraBubble.bubble && traces.isEmpty() && images.isEmpty()) return;
+    // Nada foi streamado e não há pistas/imagens/sugestões pra mostrar — não cria bolha vazia.
+    if (!m_currentMiraBubble.bubble && traces.isEmpty() && images.isEmpty() && editSuggestions.isEmpty()) return;
 
     if (!m_currentMiraBubble.bubble) {
         m_currentMiraBubble = createBubbleRow(/*isUser=*/false, QString());
     }
     attachBubbleImages(m_currentMiraBubble, images);
+    attachEditSuggestions(m_currentMiraBubble, editSuggestions);
     attachToolTraces(m_currentMiraBubble, traces);
     attachFeedbackButtons(m_currentMiraBubble, m_streamingText);
     m_currentMiraBubble = BubbleHandle();
@@ -2607,22 +3356,22 @@ void AIChatPanel::saveCurrentSession()
     }
 }
 
-QVector<AIChatSessionInfo> AIChatPanel::listSessions() const
+QVector<AIChatSessionInfo> AIChatPanel::listSessionsForRoot(const QString& root) const
 {
     QVector<AIChatSessionInfo> out;
-    if (m_projectRoot.isEmpty()) return out;
+    if (root.isEmpty()) return out;
 
-    QDir dir(m_projectRoot + QStringLiteral("/ai_context/sessoes"));
+    QDir dir(root + QStringLiteral("/ai_context/sessoes"));
     if (!dir.exists()) return out;
 
     for (const QFileInfo& fi : dir.entryInfoList({ QStringLiteral("*.json") }, QDir::Files)) {
         QFile f(fi.absoluteFilePath());
         if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) continue;
-        const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
+        const QJsonObject obj = QJsonDocument::fromJson(f.readAll()).object();
         AIChatSessionInfo info;
         info.id = fi.completeBaseName();
-        info.title = root.value(QStringLiteral("title")).toString();
-        info.updatedAt = root.value(QStringLiteral("updatedAt")).toString();
+        info.title = obj.value(QStringLiteral("title")).toString();
+        info.updatedAt = obj.value(QStringLiteral("updatedAt")).toString();
         out.append(info);
     }
     std::sort(out.begin(), out.end(), [](const AIChatSessionInfo& a, const AIChatSessionInfo& b) {
@@ -2631,27 +3380,46 @@ QVector<AIChatSessionInfo> AIChatPanel::listSessions() const
     return out;
 }
 
-void AIChatPanel::loadSession(const QString& id)
+QVector<AIChatMessage> AIChatPanel::loadSessionMessagesForRoot(const QString& root, const QString& id) const
 {
-    if (m_projectRoot.isEmpty() || id.isEmpty()) return;
-    if (id == m_currentSessionId) return; // já é essa
+    QVector<AIChatMessage> out;
+    if (root.isEmpty() || id.isEmpty()) return out;
 
-    QFile f(m_projectRoot + QStringLiteral("/ai_context/sessoes/%1.json").arg(id));
-    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return;
-    const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
-
-    saveCurrentSession(); // não perde a conversa atual ao trocar
-
-    m_messages.clear();
-    for (const QJsonValue& v : root.value(QStringLiteral("messages")).toArray()) {
-        m_messages.append(chatMessageFromJson(v.toObject()));
+    QFile f(root + QStringLiteral("/ai_context/sessoes/%1.json").arg(id));
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text)) return out;
+    const QJsonObject obj = QJsonDocument::fromJson(f.readAll()).object();
+    for (const QJsonValue& v : obj.value(QStringLiteral("messages")).toArray()) {
+        out.append(chatMessageFromJson(v.toObject()));
     }
-    m_currentSessionId = id;
-    m_pendingToolTraces.clear();
-    m_toolHopCount = 0;
+    return out;
+}
 
+void AIChatPanel::deleteSessionsForRoot(const QString& root, const QStringList& ids)
+{
+    if (root.isEmpty() || ids.isEmpty()) return;
+
+    if (m_previewMode && m_previewRoot == root) {
+        // Não dá pra checar qual sessão o preview está mostrando (não
+        // guardamos o id da sessão em preview) — mais seguro sair do
+        // preview do que arriscar deixar o banner referenciando algo
+        // apagado.
+        exitPreviewMode();
+    }
+    if (root == m_projectRoot && ids.contains(m_currentSessionId)) {
+        startNewSession(); // já chama rebuildProjectRail() — ok, é só mais 1
+    }
+
+    const QString dir = root + QStringLiteral("/ai_context/sessoes/");
+    for (const QString& id : ids) {
+        QFile::remove(dir + id + QStringLiteral(".json"));
+    }
+    rebuildProjectRail(); // uma vez só pro lote inteiro, não uma por item
+}
+
+void AIChatPanel::renderMessageHistory(const QVector<AIChatMessage>& messages)
+{
     clearTranscriptUi();
-    for (const AIChatMessage& m : m_messages) {
+    for (const AIChatMessage& m : messages) {
         if (m.role == QStringLiteral("user")
             && (!m.content.trimmed().isEmpty() || !m.imageDataUrl.isEmpty())) {
             createBubbleRow(/*isUser=*/true, m.content, m.imageDataUrl);
@@ -2663,8 +3431,298 @@ void AIChatPanel::loadSession(const QString& id)
     }
 }
 
+void AIChatPanel::loadSession(const QString& id)
+{
+    if (m_projectRoot.isEmpty() || id.isEmpty()) return;
+    if (!m_previewMode && id == m_currentSessionId) return; // já é essa
+
+    const QVector<AIChatMessage> loaded = loadSessionMessagesForRoot(m_projectRoot, id);
+    if (loaded.isEmpty()) return;
+
+    if (m_previewMode) exitPreviewMode();
+    else saveCurrentSession(); // não perde a conversa atual ao trocar
+
+    m_messages = loaded;
+    m_currentSessionId = id;
+    m_pendingToolTraces.clear();
+    m_toolHopCount = 0;
+
+    renderMessageHistory(m_messages);
+    rebuildProjectRail();
+    updateChatContext();
+}
+
+void AIChatPanel::previewForeignSession(const QString& root, const QString& projectName, const QString& id)
+{
+    if (root.isEmpty() || id.isEmpty()) return;
+    if (root == m_projectRoot) { loadSession(id); return; } // é o projeto ativo, não é "estrangeiro"
+
+    const QVector<AIChatMessage> loaded = loadSessionMessagesForRoot(root, id);
+    if (loaded.isEmpty()) return;
+
+    // Não mexe em m_messages/m_currentSessionId — a conversa ativa do
+    // projeto de verdade continua intacta em memória, só a TELA muda
+    // temporariamente pra mostrar a conversa alheia.
+    m_previewMode = true;
+    m_previewRoot = root;
+    renderMessageHistory(loaded);
+
+    if (m_inputEdit) m_inputEdit->setEnabled(false);
+    if (m_sendBtn) m_sendBtn->setEnabled(false);
+    if (m_attachBtn) m_attachBtn->setEnabled(false);
+    if (m_previewBanner) m_previewBanner->setVisible(true);
+    if (m_previewBannerLabel) {
+        m_previewBannerLabel->setText(
+            tr("Vendo uma conversa de <b>%1</b> (somente leitura).").arg(projectName.toHtmlEscaped()));
+    }
+    updateChatContext();
+}
+
+void AIChatPanel::exitPreviewMode()
+{
+    if (!m_previewMode) return;
+    m_previewMode = false;
+    m_previewRoot.clear();
+
+    if (m_inputEdit) m_inputEdit->setEnabled(true);
+    if (m_sendBtn) m_sendBtn->setEnabled(true);
+    if (m_attachBtn) m_attachBtn->setEnabled(true);
+    if (m_previewBanner) m_previewBanner->setVisible(false);
+
+    renderMessageHistory(m_messages);
+    updateChatContext();
+}
+
+QString AIChatPanel::projectDisplayName(const QString& root) const
+{
+    if (root.isEmpty()) return QString();
+    bool ok = false;
+    const QJsonObject idx = ProjectStorage::readIndex(root, &ok);
+    QString name = ok ? idx.value(QStringLiteral("name")).toString() : QString();
+    if (name.trimmed().isEmpty()) name = QFileInfo(root).fileName();
+    return name;
+}
+
+void AIChatPanel::updateChatContext()
+{
+    if (m_memoryChipLabel) {
+        m_memoryChipLabel->setText(
+            tr("%1 notas sobre você").arg(MiraUserMemoryStore::entryCount()));
+    }
+
+    if (!m_chatContextLabel || !m_previewBanner) return;
+
+    if (m_previewMode) {
+        m_chatContextLabel->setVisible(false);
+        return; // banner já foi preenchido por previewForeignSession()
+    }
+    m_previewBanner->setVisible(false);
+
+    if (!m_windowMode) { m_chatContextLabel->setVisible(false); return; }
+
+    QString title;
+    for (const AIChatMessage& m : m_messages) {
+        if (m.role == QStringLiteral("user") && !m.content.trimmed().isEmpty()) {
+            title = m.content.trimmed();
+            break;
+        }
+    }
+    if (title.size() > 46) title = title.left(46) + QStringLiteral("…");
+    if (title.isEmpty()) title = tr("Nova conversa");
+
+    m_chatContextLabel->setText(
+        QStringLiteral("<b>%1</b> · %2").arg(projectDisplayName(m_projectRoot).toHtmlEscaped(),
+                                             title.toHtmlEscaped()));
+    m_chatContextLabel->setVisible(true);
+}
+
+void AIChatPanel::openPersonalityDialog()
+{
+    MiraPersonalityDialog dlg(this);
+    connect(&dlg, &MiraPersonalityDialog::nameChanged, this, [this](const QString& newName) {
+        if (m_titleLabel) m_titleLabel->setText(newName);
+        if (m_studioNameLabel) m_studioNameLabel->setText(newName);
+        if (m_studioAvatarLabel) m_studioAvatarLabel->setText(newName.left(1).toUpper());
+        if (m_studioHeaderWidget) m_studioHeaderWidget->setToolTip(tr("Clique pra personalizar a %1").arg(newName));
+        // O system prompt já em conversa (se houver) só pegaria o novo nome
+        // na próxima sessão — atualiza também aqui, mesmo motivo de
+        // handleSaveUserNoteTool/handleSaveProjectNoteTool.
+        if (!m_messages.isEmpty() && m_messages.first().role == QStringLiteral("system")) {
+            m_messages[0].content = buildSystemPrompt();
+        }
+    });
+    dlg.exec();
+}
+
+void AIChatPanel::rebuildProjectRail()
+{
+    if (!m_railScrollLayout) return; // buildUi() ainda não rodou
+
+    // Reconstrução completa — mais simples que reconciliar item a item, e o
+    // custo é desprezível (poucos projetos conhecidos, poucas sessões cada).
+    QLayoutItem* item;
+    while ((item = m_railScrollLayout->takeAt(0)) != nullptr) {
+        if (QWidget* w = item->widget()) w->deleteLater();
+        delete item;
+    }
+    m_railScrollLayout->addStretch(1);
+
+    static const QVector<QString> kPalette = {
+        QStringLiteral("#c0483a"), QStringLiteral("#7a4fc9"), QStringLiteral("#c98f2f"),
+        QStringLiteral("#3a8c7a"), QStringLiteral("#4a7fc9"), QStringLiteral("#c94f8f"),
+    };
+
+    // Projeto ativo sempre primeiro; os demais na ordem de "recentes".
+    QStringList ordered = m_knownProjectRoots;
+    if (!m_projectRoot.isEmpty()) {
+        ordered.removeAll(m_projectRoot);
+        ordered.prepend(m_projectRoot);
+    }
+
+    for (const QString& root : ordered) {
+        if (root.isEmpty()) continue;
+        const QString name = projectDisplayName(root);
+        QVector<AIChatSessionInfo> sessions = listSessionsForRoot(root);
+        const bool isActive = (root == m_projectRoot);
+        const QString color = kPalette.at(int(qHash(root) % uint(kPalette.size())));
+
+        // Filtro de busca (m_railFilterText): pula o projeto inteiro se nem
+        // o nome nem nenhuma sessão baterem; se só as sessões baterem, a
+        // lista mostrada fica reduzida a elas (o projeto continua listado
+        // pra dar contexto de onde a conversa vive).
+        bool nameMatches = true;
+        bool forceExpand = false;
+        if (!m_railFilterText.isEmpty()) {
+            nameMatches = name.contains(m_railFilterText, Qt::CaseInsensitive);
+            if (!nameMatches) {
+                QVector<AIChatSessionInfo> filtered;
+                for (const AIChatSessionInfo& s : sessions) {
+                    if (s.title.contains(m_railFilterText, Qt::CaseInsensitive)) filtered.append(s);
+                }
+                if (filtered.isEmpty()) continue; // nem projeto nem conversa batem — pula
+                sessions = filtered;
+                forceExpand = true;
+            } else {
+                forceExpand = true;
+            }
+        }
+
+        auto* header = new QToolButton(m_railScrollContent);
+        header->setCheckable(true);
+        header->setChecked(isActive || forceExpand);
+        header->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        header->setAutoRaise(true);
+        header->setCursor(Qt::PointingHandCursor);
+        header->setStyleSheet(railFolderBtnQss(isActive));
+        header->setIconSize(QSize(10, 10));
+        {
+            QPixmap dotPm(10, 10);
+            dotPm.fill(Qt::transparent);
+            QPainter painter(&dotPm);
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setBrush(QColor(color));
+            painter.setPen(Qt::NoPen);
+            painter.drawEllipse(0, 0, 10, 10);
+            painter.end();
+            header->setIcon(QIcon(dotPm));
+        }
+        header->setText(QStringLiteral("%1  (%2)").arg(name).arg(sessions.size()));
+        header->setToolTip(root);
+        m_railScrollLayout->insertWidget(m_railScrollLayout->count() - 1, header);
+
+        auto* sessionList = new QListWidget(m_railScrollContent);
+        sessionList->setFrameShape(QFrame::NoFrame);
+        sessionList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        sessionList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        sessionList->setStyleSheet(railSessionListQss());
+        sessionList->setFocusPolicy(Qt::NoFocus);
+        sessionList->setSelectionMode(QAbstractItemView::ExtendedSelection); // Ctrl/Shift+clique
+        for (const AIChatSessionInfo& s : sessions) {
+            QString dateLabel = s.updatedAt;
+            dateLabel.replace(QChar('T'), QChar(' '));
+            if (dateLabel.size() > 16) dateLabel = dateLabel.left(16);
+            auto* it = new QListWidgetItem(QStringLiteral("%1 — %2").arg(
+                s.title.isEmpty() ? tr("Conversa sem título") : s.title, dateLabel));
+            it->setData(Qt::UserRole, s.id);
+            if (isActive && s.id == m_currentSessionId) {
+                QFont f = it->font(); f.setBold(true); it->setFont(f);
+                sessionList->setCurrentItem(it);
+            }
+            sessionList->addItem(it);
+        }
+        if (isActive) {
+            auto* newItem = new QListWidgetItem(QStringLiteral("+ ") + tr("Nova ideia / conversa"));
+            newItem->setData(Qt::UserRole, QString());
+            sessionList->addItem(newItem);
+        }
+        const int rowH = sessionList->count() > 0
+            ? qMax(20, sessionList->sizeHintForRow(0)) : 0;
+        sessionList->setFixedHeight(sessionList->count() * rowH + (sessionList->count() > 0 ? 6 : 0));
+        sessionList->setVisible(isActive || forceExpand);
+
+        connect(header, &QToolButton::toggled, sessionList, &QWidget::setVisible);
+
+        connect(sessionList, &QListWidget::itemClicked, this,
+                [this, root, name](QListWidgetItem* clicked) {
+            // Ctrl/Shift+clique é seleção múltipla pra exclusão em lote, não
+            // navegação — não abre/troca de conversa nesse caso.
+            if (QApplication::keyboardModifiers() & (Qt::ControlModifier | Qt::ShiftModifier)) return;
+            const QString sid = clicked->data(Qt::UserRole).toString();
+            if (sid.isEmpty()) { startNewSession(); return; } // linha "Nova conversa"
+            if (root == m_projectRoot) loadSession(sid);
+            else previewForeignSession(root, name, sid);
+        });
+
+        // Clique direito numa conversa (não na linha "Nova conversa", que
+        // tem id vazio) — oferece excluir, com confirmação de verdade já
+        // que apaga o(s) arquivo(s) em disco pra sempre. Se o item clicado
+        // já faz parte de uma seleção múltipla (Ctrl/Shift+clique), a ação
+        // vale pra seleção inteira — mesmo padrão de gerenciador de
+        // arquivos; clicar num item fora da seleção age só sobre ele.
+        sessionList->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(sessionList, &QListWidget::customContextMenuRequested, this,
+                [this, sessionList, root](const QPoint& pos) {
+            QListWidgetItem* item = sessionList->itemAt(pos);
+            if (!item) return;
+            if (item->data(Qt::UserRole).toString().isEmpty()) return; // "Nova conversa"
+
+            QList<QListWidgetItem*> targets;
+            if (item->isSelected() && sessionList->selectedItems().size() > 1) {
+                targets = sessionList->selectedItems();
+            } else {
+                targets = { item };
+            }
+            QStringList ids;
+            for (QListWidgetItem* it : std::as_const(targets)) {
+                const QString sid = it->data(Qt::UserRole).toString();
+                if (!sid.isEmpty()) ids.append(sid);
+            }
+            if (ids.isEmpty()) return;
+
+            QMenu menu(this);
+            QAction* delAction = menu.addAction(ids.size() == 1
+                ? tr("Excluir conversa")
+                : tr("Excluir %1 conversas selecionadas").arg(ids.size()));
+            const QString singleTitle = item->text();
+            connect(delAction, &QAction::triggered, this, [this, root, ids, singleTitle]() {
+                const QString question = ids.size() == 1
+                    ? tr("Excluir \"%1\" para sempre? Essa ação não pode ser desfeita.").arg(singleTitle)
+                    : tr("Excluir %1 conversas para sempre? Essa ação não pode ser desfeita.").arg(ids.size());
+                const auto choice = QMessageBox::question(this, tr("Excluir conversa"),
+                    question, QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+                if (choice != QMessageBox::Yes) return;
+                deleteSessionsForRoot(root, ids);
+            });
+            menu.exec(sessionList->mapToGlobal(pos));
+        });
+
+        m_railScrollLayout->insertWidget(m_railScrollLayout->count() - 1, sessionList);
+    }
+}
+
 void AIChatPanel::startNewSession()
 {
+    if (m_previewMode) exitPreviewMode();
     saveCurrentSession();
     m_messages.clear();
     m_currentSessionId.clear();
@@ -2672,6 +3730,8 @@ void AIChatPanel::startNewSession()
     m_toolHopCount = 0;
     clearTranscriptUi();
     addMiraBubble(tr("Nova conversa — pode perguntar!"));
+    rebuildProjectRail();
+    updateChatContext();
 }
 
 void AIChatPanel::showSessionMenu()
@@ -3110,6 +4170,9 @@ bool AIChatPanel::eventFilter(QObject* watched, QEvent* event)
         // usada pro cálculo de quebra ficava desatualizada até a próxima
         // tecla, deixando o texto "invisível" (fora da área calculada).
         fitInputHeight();
+    } else if (watched == m_studioHeaderWidget && event->type() == QEvent::MouseButtonPress) {
+        openPersonalityDialog();
+        return true;
     }
     return QFrame::eventFilter(watched, event);
 }
