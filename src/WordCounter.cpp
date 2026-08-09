@@ -1,5 +1,6 @@
 #include "WordCounter.h"
 
+#include "CrashLogger.h"
 #include "DocCache.h"
 #include "EditorHost.h"
 #include "ProjectModel.h"
@@ -431,6 +432,17 @@ int WordCounter::countActiveScopeChars() const {
 
 void WordCounter::loadSettingsFromModel() {
     if (!m_model) return;
+    // Snapshot do progresso do dia ativo ANTES de recarregar, só pra detectar
+    // se a recarga (disparada por qualquer settingsChanged do projeto, não só
+    // por mudança do próprio contador) fez o progresso de hoje regredir.
+    // Suspeita de bug real (relato do usuário: meta zera no meio da escrita,
+    // longe da virada de dia) — vira breadcrumb condicional em vez de log
+    // sempre, porque loadSettingsFromModel roda a cada settingsChanged do
+    // projeto inteiro (fonte comum de ruído, ex. corretor ortográfico).
+    const QString prevKey = m_settings.goalDayKey;
+    const int prevWords = m_settings.progress.value(prevKey).toObject()
+        .value(QStringLiteral("words")).toInt(0);
+
     const QJsonObject all = m_model->settings();
     const QJsonObject wc = all.value(QStringLiteral("wordCounter")).toObject();
     m_settings = WordCounterSettings::fromJson(wc);
@@ -438,6 +450,17 @@ void WordCounter::loadSettingsFromModel() {
     if (m_settings.offDayEveryChangedAt.isEmpty()) {
         m_settings.offDayEveryChangedAt = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd"));
     }
+
+    if (!prevKey.isEmpty()) {
+        const int newWords = m_settings.progress.value(prevKey).toObject()
+            .value(QStringLiteral("words")).toInt(0);
+        if (newWords < prevWords) {
+            CrashLogger::log(QStringLiteral(
+                "WordCounter::loadSettingsFromModel REGRESSAO dia=%1 antes=%2 depois=%3 wcVazio=%4")
+                .arg(prevKey).arg(prevWords).arg(newWords).arg(wc.isEmpty() ? "sim" : "nao"));
+        }
+    }
+
     emit settingsChanged();
     scheduleEmit();
 }
@@ -486,16 +509,22 @@ void WordCounter::setGoalTargetMinutes(int minutes) {
 }
 
 void WordCounter::ensureCurrentDayKey() {
-    const QString todayKey = QDate::currentDate().toString(QStringLiteral("yyyy-MM-dd"));
-    if (m_settings.goalDayKey != todayKey) {
-        // Novo dia de calendário: registra quando começou a escrever hoje.
-        m_settings.goalDayStartAt = QDateTime::currentMSecsSinceEpoch();
-        m_settings.goalDayKey = todayKey;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    // Dia rolante de 24h: só vira quando passam 24h desde que o dia atual
+    // começou, não na virada do calendário (senão uma sessão de escrita que
+    // atravessa a meia-noite via zerada no meio, mesmo sem ter passado 1 dia).
+    if (m_settings.goalDayStartAt <= 0 || now - m_settings.goalDayStartAt >= kGoalDayMs) {
+        m_settings.goalDayStartAt = now;
+        m_settings.goalDayKey = dateKey(now);
     }
 }
 
 QString WordCounter::currentGoalDayKey() const {
-    return QDate::currentDate().toString(QStringLiteral("yyyy-MM-dd"));
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (m_settings.goalDayStartAt <= 0 || now - m_settings.goalDayStartAt >= kGoalDayMs) {
+        return dateKey(now);
+    }
+    return m_settings.goalDayKey;
 }
 
 qint64 WordCounter::currentGoalDayStartAt() const {
@@ -503,8 +532,9 @@ qint64 WordCounter::currentGoalDayStartAt() const {
 }
 
 qint64 WordCounter::goalDayRemainingMs() const {
-    const QDateTime midnight(QDate::currentDate().addDays(1), QTime(0, 0, 0));
-    return qMax<qint64>(0, midnight.toMSecsSinceEpoch() - QDateTime::currentMSecsSinceEpoch());
+    if (m_settings.goalDayStartAt <= 0) return kGoalDayMs;
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    return qMax<qint64>(0, (m_settings.goalDayStartAt + kGoalDayMs) - now);
 }
 
 int WordCounter::progressWords() const {
@@ -691,21 +721,26 @@ int WordCounter::estimatedPages() const {
 
 void WordCounter::writingAverages(int& activeDays, int& wordsPerDay, int& minutesPerDay) const {
     activeDays = 0;
-    int totalWords = 0;
+    qint64 totalWords = 0;
     qint64 totalTimeMs = 0;
     const QJsonObject& prog = m_settings.progress;
     for (auto it = prog.begin(); it != prog.end(); ++it) {
         const QJsonObject day = it.value().toObject();
-        const int w = day.value(QStringLiteral("words")).toInt(0);
-        const qint64 t = static_cast<qint64>(day.value(QStringLiteral("timeMs")).toDouble(0));
+        // Blinda contra entrada de dia corrompida (achamos um fóssil real:
+        // 2026-05-01 tinha timeMs=123459601204953040, ~3,9 milhões de anos
+        // num dia só) — nenhum dia pode ter mais que 24h de tempo nem
+        // palavras negativas, então trava cada dia antes de somar.
+        const qint64 w = qMax<qint64>(0, day.value(QStringLiteral("words")).toInt(0));
+        const qint64 t = qBound<qint64>(0, static_cast<qint64>(day.value(QStringLiteral("timeMs")).toDouble(0)), kGoalDayMs);
         if (w <= 0 && t <= 0) continue;
         ++activeDays;
         totalWords += w;
         totalTimeMs += t;
     }
     if (activeDays == 0) { wordsPerDay = 0; minutesPerDay = 0; return; }
-    wordsPerDay = totalWords / activeDays;
-    minutesPerDay = static_cast<int>((totalTimeMs / activeDays) / 60000);
+    constexpr qint64 kIntSafeMax = 2000000000LL;
+    wordsPerDay = static_cast<int>(qBound<qint64>(0, totalWords / activeDays, kIntSafeMax));
+    minutesPerDay = static_cast<int>(qBound<qint64>(0, (totalTimeMs / activeDays) / 60000, kIntSafeMax));
 }
 
 int WordCounter::sessionWordsManuscript() const {
