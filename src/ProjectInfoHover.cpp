@@ -1,10 +1,10 @@
 #include "ProjectInfoHover.h"
 
+#include "CoverUtils.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 
 #include <QApplication>
-#include <QByteArray>
 #include <QEnterEvent>
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
@@ -19,16 +19,6 @@ namespace {
 constexpr int kPanelWidth = 320;
 constexpr int kCoverW = 280;
 constexpr int kCoverH = 420;
-
-QPixmap pixmapFromDataUrl(const QString& dataUrl) {
-    if (dataUrl.isEmpty()) return QPixmap();
-    const int comma = dataUrl.indexOf(QLatin1Char(','));
-    if (comma < 0) return QPixmap();
-    const QByteArray raw = QByteArray::fromBase64(dataUrl.mid(comma + 1).toLatin1());
-    QPixmap pm;
-    pm.loadFromData(raw);
-    return pm;
-}
 
 }
 
@@ -74,6 +64,13 @@ void ProjectInfoHover::buildUi() {
     m_nameLabel->setWordWrap(true);
     root->addWidget(m_nameLabel);
 
+    m_seriesLabel = new QLabel(this);
+    m_seriesLabel->setObjectName(QStringLiteral("projectInfoHoverMeta"));
+    m_seriesLabel->setWordWrap(true);
+    m_seriesLabel->setTextFormat(Qt::RichText);
+    m_seriesLabel->hide();
+    root->addWidget(m_seriesLabel);
+
     m_authorLabel = new QLabel(this);
     m_authorLabel->setObjectName(QStringLiteral("projectInfoHoverMeta"));
     m_authorLabel->setWordWrap(true);
@@ -103,16 +100,31 @@ void ProjectInfoHover::buildUi() {
     root->addWidget(m_synopsisScroll, 1);
 }
 
-void ProjectInfoHover::refreshFromModel() {
+void ProjectInfoHover::refreshFromModel(const QString& manuscriptIdOverride) {
     if (!m_model) return;
 
-    const QString name = m_model->projectName();
+    const QString activeId = manuscriptIdOverride.isEmpty()
+        ? m_model->activeManuscriptId() : manuscriptIdOverride;
+    const Manuscript* ms = m_model->findManuscript(activeId);
+
+    const QString name = ms ? m_model->manuscriptEffectiveTitle(activeId) : m_model->projectName();
     const QString author = m_model->projectAuthor();
     const QString genres = m_model->projectGenres();
-    const QString synopsis = m_model->projectSynopsis();
-    const QString coverUrl = m_model->projectCoverDataUrl();
+    const QString synopsis = m_model->manuscriptEffectiveSynopsis(activeId);
+    const QString coverUrl = m_model->manuscriptEffectiveCoverDataUrl(activeId);
 
     m_nameLabel->setText(name.isEmpty() ? tr("(sem nome)") : name);
+
+    // Indicativo de que esse nome é de um manuscrito, não do projeto/saga —
+    // só aparece quando os dois nomes realmente divergem (projeto de
+    // manuscrito único normalmente herda o nome do projeto na criação).
+    const QString projectName = m_model->projectName();
+    if (ms && projectName != name) {
+        m_seriesLabel->show();
+        m_seriesLabel->setText(tr("Do projeto: %1").arg(projectName.toHtmlEscaped()));
+    } else {
+        m_seriesLabel->hide();
+    }
 
     if (author.isEmpty()) m_authorLabel->hide();
     else {
@@ -134,7 +146,7 @@ void ProjectInfoHover::refreshFromModel() {
         m_synopsisLabel->setText(synopsis);
     }
 
-    QPixmap pm = pixmapFromDataUrl(coverUrl);
+    QPixmap pm = CoverUtils::pixmapFromDataUrl(coverUrl);
     if (pm.isNull()) {
         m_cover->clear();
         m_cover->setText(tr("Sem capa"));
@@ -144,8 +156,8 @@ void ProjectInfoHover::refreshFromModel() {
     }
 }
 
-void ProjectInfoHover::presentNear(const QPoint& anchorGlobalTopRight) {
-    refreshFromModel();
+void ProjectInfoHover::presentNear(const QPoint& anchorGlobalTopRight, const QString& manuscriptIdOverride) {
+    refreshFromModel(manuscriptIdOverride);
     adjustSize();
 
     // Posiciona com 8px de gap à direita da âncora; clampa ao screen.

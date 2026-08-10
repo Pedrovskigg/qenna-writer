@@ -176,6 +176,8 @@ qt_add_executable(qenna-writer
     src/ProjectInfoPanel.h
     src/ProjectInfoHover.cpp
     src/ProjectInfoHover.h
+    src/CoverUtils.cpp
+    src/CoverUtils.h
     src/BondTypes.cpp
     src/BondTypes.h
     src/BondsLayer.cpp

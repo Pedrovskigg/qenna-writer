@@ -109,6 +109,10 @@ QJsonObject manuscriptToJson(const Manuscript& m) {
     o.insert(QStringLiteral("html"), m.html);
     if (!m.storyStartMarker.isEmpty())
         o.insert(QStringLiteral("storyStartMarker"), m.storyStartMarker);
+    if (!m.synopsis.isEmpty())
+        o.insert(QStringLiteral("synopsis"), m.synopsis);
+    if (!m.coverDataUrl.isEmpty())
+        o.insert(QStringLiteral("coverDataUrl"), m.coverDataUrl);
     return o;
 }
 
@@ -118,6 +122,8 @@ Manuscript manuscriptFromJson(const QJsonObject& o) {
     m.title = jsonString(o.value(QStringLiteral("title")));
     m.html = jsonString(o.value(QStringLiteral("html")));
     m.storyStartMarker = jsonString(o.value(QStringLiteral("storyStartMarker")));
+    m.synopsis = jsonString(o.value(QStringLiteral("synopsis")));
+    m.coverDataUrl = jsonString(o.value(QStringLiteral("coverDataUrl")));
     return m;
 }
 
@@ -511,6 +517,24 @@ QString ProjectModel::projectCoverDataUrl() const {
     const QString full = pd.value(QStringLiteral("coverFull")).toString();
     if (!full.isEmpty()) return full;
     return pd.value(QStringLiteral("cover")).toString();
+}
+
+QString ProjectModel::manuscriptEffectiveTitle(const QString& manuscriptId) const {
+    const Manuscript* m = findManuscript(manuscriptId);
+    if (m && !m->title.trimmed().isEmpty()) return m->title;
+    return m_projectName;
+}
+
+QString ProjectModel::manuscriptEffectiveSynopsis(const QString& manuscriptId) const {
+    const Manuscript* m = findManuscript(manuscriptId);
+    if (m && !m->synopsis.trimmed().isEmpty()) return m->synopsis;
+    return projectSynopsis();
+}
+
+QString ProjectModel::manuscriptEffectiveCoverDataUrl(const QString& manuscriptId) const {
+    const Manuscript* m = findManuscript(manuscriptId);
+    if (m && !m->coverDataUrl.isEmpty()) return m->coverDataUrl;
+    return projectCoverDataUrl();
 }
 
 void ProjectModel::setProjectDetails(const QString& name, const QString& author,
@@ -1103,6 +1127,28 @@ bool ProjectModel::updateManuscriptStoryStart(const QString& id, const QString& 
     return false;
 }
 
+bool ProjectModel::updateManuscriptSynopsis(const QString& id, const QString& synopsis) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        if (m.synopsis == synopsis) return true;
+        m.synopsis = synopsis;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateManuscriptCover(const QString& id, const QString& coverDataUrl) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        if (m.coverDataUrl == coverDataUrl) return true;
+        m.coverDataUrl = coverDataUrl;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
 const Manuscript* ProjectModel::findManuscript(const QString& id) const {
     for (const auto& m : m_manuscripts) {
         if (m.id == id) return &m;
@@ -1566,6 +1612,8 @@ void ProjectModel::loadFromJson(const QJsonObject& root) {
     const QJsonArray manuscripts = data.value(QStringLiteral("manuscripts")).toArray();
     for (const auto& mv : manuscripts) m_manuscripts.append(manuscriptFromJson(mv.toObject()));
     m_activeManuscriptId = jsonStringOrEmpty(data.value(QStringLiteral("activeManuscriptId")));
+    if (m_activeManuscriptId.isEmpty() && !m_manuscripts.isEmpty())
+        m_activeManuscriptId = m_manuscripts.first().id;
     m_activeChapterId = jsonStringOrEmpty(data.value(QStringLiteral("activeChapterId")));
 
     m_characterBonds.clear();

@@ -4,6 +4,7 @@
 #include <QContextMenuEvent>
 #include <QEasingCurve>
 #include <QHBoxLayout>
+#include <QHideEvent>
 #include <QImage>
 #include <QLabel>
 #include <QLocale>
@@ -245,6 +246,9 @@ StackView::StackView(QWidget* parent) : QWidget(parent)
     m_heroCoverLbl->setScaledContents(true);
     m_heroCoverLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
 
+    m_heroCoverCycleTimer = new QTimer(this);
+    connect(m_heroCoverCycleTimer, &QTimer::timeout, this, &StackView::advanceHeroCoverCycle);
+
     // --- Texto: título/autor/breadcrumb/sinopse (com scroll)/auto-abrir.
     // Largura fixa, mais estreita que o espaço todo — não é pra esticar. ---
     m_textCol = new QWidget(this);
@@ -362,6 +366,7 @@ void StackView::rotateBy(int k)
 void StackView::rebuildHeroPanel(bool animate, int direction)
 {
     if (m_entries.isEmpty()) {
+        m_heroCoverCycleTimer->stop();
         m_heroStage->hide();
         m_textCol->hide();
         m_heroStatsLbl->hide();
@@ -401,6 +406,16 @@ void StackView::rebuildHeroPanel(bool animate, int direction)
         m_heroCoverLbl->setPixmap(hero.heroCover);
     }
     m_heroLastPixmap = hero.heroCover;
+
+    // Ciclo automático de capa entre manuscritos — reinicia do zero sempre
+    // que o herói muda (relê m_entries[0] fresco a cada tick, então nunca
+    // fica apontando pro herói antigo).
+    m_heroCoverCycleIdx = 0;
+    if (hero.manuscriptHeroCovers.size() > 1) {
+        m_heroCoverCycleTimer->start(kHeroCoverCycleMs);
+    } else {
+        m_heroCoverCycleTimer->stop();
+    }
 
     m_heroTitleLbl->setText(hero.name);
     m_heroAuthorLbl->setText(hero.author);
@@ -512,6 +527,24 @@ void StackView::crossfadeLabel(QLabel* label, const QPixmap& from, const QPixmap
         slide->setEndValue(restPos);
         slide->start(QAbstractAnimation::DeleteWhenStopped);
     }
+}
+
+void StackView::advanceHeroCoverCycle()
+{
+    if (m_entries.isEmpty()) { m_heroCoverCycleTimer->stop(); return; }
+    const StackEntry& hero = m_entries[0];
+    const int n = hero.manuscriptHeroCovers.size();
+    if (n < 2) { m_heroCoverCycleTimer->stop(); return; }
+    m_heroCoverCycleIdx = (m_heroCoverCycleIdx + 1) % n;
+    const QPixmap to = hero.manuscriptHeroCovers[m_heroCoverCycleIdx];
+    crossfadeLabel(m_heroCoverLbl, m_heroLastPixmap, to, kCrossfadeMs);
+    m_heroLastPixmap = to;
+}
+
+void StackView::hideEvent(QHideEvent* event)
+{
+    m_heroCoverCycleTimer->stop();
+    QWidget::hideEvent(event);
 }
 
 void StackView::wheelEvent(QWheelEvent* event)

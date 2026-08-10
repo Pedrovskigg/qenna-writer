@@ -9,10 +9,12 @@ class QVBoxLayout;
 class QScrollArea;
 class QToolButton;
 class QPushButton;
+class QTimer;
 class ProjectModel;
 class DialogueStore;
 class WordCounter;
 class ElementsStore;
+class ProjectInfoHover;
 
 class ManuscriptPanel : public QWidget {
     Q_OBJECT
@@ -93,6 +95,12 @@ private:
     WordCounter* m_wordCounter = nullptr;
     ElementsStore* m_elementsStore = nullptr;
     QComboBox* m_combo;
+    // Tooltip rica dos itens do popup do combo (não o hover ativo da LeftBar
+    // — instância própria, mostra o manuscrito sob o mouse no popup).
+    ProjectInfoHover* m_comboItemHover = nullptr;
+    QTimer* m_comboHoverOpenTimer = nullptr;
+    QTimer* m_comboHoverCloseTimer = nullptr;
+    QString m_comboHoverPendingManuscriptId;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;
     QWidget* m_header = nullptr;

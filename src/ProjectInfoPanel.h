@@ -10,8 +10,10 @@ class QPushButton;
 class ProjectModel;
 
 // Painel de Informações da obra — invocado pelo botão Info da LeftBar.
-// Edita nome do projeto, autor, gêneros, sinopse e capa. Persiste em
-// data.projectDetails (compat Mira 1) via ProjectModel::setProjectDetails.
+// Nome/autor/gêneros sempre editam o projeto (data.projectDetails, compat
+// Mira 1, via ProjectModel::setProjectDetails). Sinopse/capa editam o
+// manuscrito ativo (ProjectModel::updateManuscriptSynopsis/Cover) quando
+// há um; sem manuscrito ativo, caem no projeto como antes.
 class ProjectInfoPanel : public QDialog {
     Q_OBJECT
 public:
@@ -37,6 +39,7 @@ private:
     QLineEdit* m_nameEdit = nullptr;
     QLineEdit* m_authorEdit = nullptr;
     QLineEdit* m_genresEdit = nullptr;
+    QLabel* m_manuscriptBanner = nullptr;
     QPlainTextEdit* m_synopsisEdit = nullptr;
     QLabel* m_coverPreview = nullptr;
     QPushButton* m_pickCoverBtn = nullptr;
@@ -44,4 +47,7 @@ private:
     QPushButton* m_okBtn = nullptr;
     QPushButton* m_cancelBtn = nullptr;
     QString m_coverDataUrl;
+    // Manuscrito ativo no momento do loadFromModel(), usado pelo onSave()
+    // pra saber se sinopse/capa devem ir pro manuscrito ou pro projeto.
+    QString m_activeManuscriptId;
 };

@@ -43,6 +43,8 @@ struct Manuscript {
     QString title;
     QString html;
     QString storyStartMarker; // "quando a história se passa" — data-base da Timeline
+    QString synopsis;         // sinopse própria, opcional — vazio cai no fallback do projeto
+    QString coverDataUrl;     // capa própria, opcional — "data:image/jpeg;base64,..."
 };
 
 struct Group {
@@ -212,6 +214,13 @@ public:
                            const QString& genres, const QString& synopsis,
                            const QString& coverDataUrl);
 
+    // Título/sinopse/capa "em vigor" de um manuscrito: o próprio dado do
+    // manuscrito se preenchido, senão o do projeto. manuscriptId vazio ou
+    // não encontrado também cai no fallback do projeto.
+    QString manuscriptEffectiveTitle(const QString& manuscriptId) const;
+    QString manuscriptEffectiveSynopsis(const QString& manuscriptId) const;
+    QString manuscriptEffectiveCoverDataUrl(const QString& manuscriptId) const;
+
     // Tipo do projeto: "book" (padrão) ou "screenplay".
     QString projectType() const { return m_projectType; }
     bool isScreenplay() const { return m_projectType == QStringLiteral("screenplay"); }
@@ -259,6 +268,8 @@ public:
     void addManuscript(const Manuscript& manuscript);
     bool updateManuscriptTitle(const QString& id, const QString& title);
     bool updateManuscriptStoryStart(const QString& id, const QString& marker);
+    bool updateManuscriptSynopsis(const QString& id, const QString& synopsis);
+    bool updateManuscriptCover(const QString& id, const QString& coverDataUrl);
     bool removeManuscript(const QString& id);
     const Manuscript* findManuscript(const QString& id) const;
     void addChapter(const Chapter& chapter);
