@@ -8,6 +8,7 @@ class QWidget;
 class QTextDocument;
 struct Chapter;
 struct DrawerItem;
+struct Manuscript;
 
 // Exporta capítulos e documentos de gaveta selecionados. Etapa 1: ODT.
 // O conteúdo é lido do disco/modelo — a MainWindow salva o projeto antes de
@@ -55,9 +56,13 @@ private:
     QString itemHtml(const DrawerItem& it) const;
 
     // Monta o QTextDocument e serializa no formato pedido (ODT ou PDF).
-    QByteArray exportItem(const QString& html, bool includeMarkers, Format fmt) const;
-    QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt) const;
-    QByteArray writeDoc(QTextDocument& doc, Format fmt) const;
+    // docTitle vazio cai no fallback de sempre (nome do projeto) — só passado
+    // explicitamente quando o documento corresponde a um manuscrito específico.
+    QByteArray exportItem(const QString& html, bool includeMarkers, Format fmt,
+                          const QString& docTitle = QString()) const;
+    QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
+                              const QString& docTitle = QString()) const;
+    QByteArray writeDoc(QTextDocument& doc, Format fmt, const QString& docTitle = QString()) const;
 
     // DOCX (OOXML): zip com XMLs do WordprocessingML. O Qt não tem writer nativo,
     // então serializamos o QTextDocument à mão — bloco a bloco, fragmento a
@@ -70,6 +75,11 @@ private:
     // EPUB 3: um único arquivo com todos os itens selecionados como capítulos
     // navegáveis (ignora manuscriptMode), capa, metadados e índice.
     QByteArray buildEpub(const Selection& sel) const;
+
+    // Manuscrito cujos capítulos aparecem na seleção, SE for o único com
+    // capítulos selecionados; nullptr se 0 ou 2+ manuscritos representados
+    // (nesse caso o output combina vários livros — usa identidade do projeto).
+    const Manuscript* singleManuscriptInSelection(const Selection& sel) const;
     QString itemBodyXhtml(const QString& rawHtml, bool includeMarkers,
                           QList<QPair<QString, QByteArray>>& imagesOut,
                           QStringList& imageMimesOut, int& imgCounter) const;

@@ -96,6 +96,7 @@
 #include "FindBar.h"
 #include "GlobalSearchPanel.h"
 #include "CharacterImageGenDialog.h"
+#include "CoverUtils.h"
 #include "DocPreview.h"
 #include "ImageCropDialog.h"
 #include "ImageInsertDialog.h"
@@ -338,20 +339,78 @@ bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
 }
 
 // Diálogo de manuscrito: título + "quando a história se passa" (marcador
-// temporal opcional, data-base da linha do tempo). Usado tanto na criação
-// quanto na edição (rename). Retorna false se cancelado.
+// temporal opcional, data-base da linha do tempo) + sinopse e capa próprias
+// (opcionais — se deixadas em branco, a exibição cai no fallback do
+// projeto, ver ProjectModel::manuscriptEffective*). Usado tanto na criação
+// quanto na edição. Retorna false se cancelado.
 bool promptManuscriptDialog(QWidget* parent, bool editMode,
-                            QString* title, QString* storyStart)
+                            QString* title, QString* storyStart,
+                            QString* synopsis, QString* coverDataUrl)
 {
+    constexpr int kCoverPreviewW = 140;
+    constexpr int kCoverPreviewH = 210;
+
     QDialog dlg(parent);
     dlg.setWindowTitle(editMode ? QObject::tr("Editar manuscrito")
                                 : QObject::tr("Novo manuscrito"));
-    dlg.setMinimumWidth(340);
+    dlg.setMinimumWidth(460);
     if (parent) dlg.setStyleSheet(parent->styleSheet());
 
-    auto* root = new QVBoxLayout(&dlg);
+    auto* root = new QHBoxLayout(&dlg);
     root->setContentsMargins(16, 16, 16, 16);
-    root->setSpacing(10);
+    root->setSpacing(16);
+
+    // ---- Coluna esquerda: capa ----
+    auto* coverCol = new QVBoxLayout;
+    coverCol->setSpacing(8);
+    auto* coverPreview = new QLabel(&dlg);
+    coverPreview->setFixedSize(kCoverPreviewW, kCoverPreviewH);
+    coverPreview->setAlignment(Qt::AlignCenter);
+    coverPreview->setScaledContents(false);
+    coverPreview->setStyleSheet(QStringLiteral(
+        "background:%1; color:%2; border:1px solid %3; border-radius:6px; font-size:11px;")
+        .arg(Theme::panelBackground(), Theme::textMuted(), Theme::panelBorder()));
+    coverCol->addWidget(coverPreview);
+
+    QString localCover = *coverDataUrl;
+    auto updatePreview = [coverPreview, &localCover]() {
+        const QPixmap pm = CoverUtils::pixmapFromDataUrl(localCover);
+        if (pm.isNull()) {
+            coverPreview->clear();
+            coverPreview->setText(QObject::tr("Sem capa\n(usa a do projeto)"));
+        } else {
+            coverPreview->setPixmap(pm.scaled(kCoverPreviewW, kCoverPreviewH,
+                                              Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+    };
+    updatePreview();
+
+    auto* pickCoverBtn = new QPushButton(QObject::tr("Escolher capa…"), &dlg);
+    QObject::connect(pickCoverBtn, &QPushButton::clicked, &dlg, [&dlg, &localCover, updatePreview]() {
+        const QString startDir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+        const QString path = QFileDialog::getOpenFileName(&dlg,
+            QObject::tr("Escolher capa"), startDir,
+            QObject::tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
+        if (path.isEmpty()) return;
+        const QString dataUrl = CoverUtils::loadCoverAsDataUrl(path);
+        if (dataUrl.isEmpty()) return;
+        localCover = dataUrl;
+        updatePreview();
+    });
+    coverCol->addWidget(pickCoverBtn);
+
+    auto* clearCoverBtn = new QPushButton(QObject::tr("Remover capa"), &dlg);
+    QObject::connect(clearCoverBtn, &QPushButton::clicked, &dlg, [&localCover, updatePreview]() {
+        localCover.clear();
+        updatePreview();
+    });
+    coverCol->addWidget(clearCoverBtn);
+    coverCol->addStretch();
+    root->addLayout(coverCol);
+
+    // ---- Coluna direita: form ----
+    auto* rightCol = new QVBoxLayout;
+    rightCol->setSpacing(10);
 
     auto* form = new QFormLayout;
     auto* titleEdit = new QLineEdit(*title, &dlg);
@@ -360,14 +419,20 @@ bool promptManuscriptDialog(QWidget* parent, bool editMode,
     startEdit->setPlaceholderText(QObject::tr("ex.: Dia 1, 15/05, Verão de 1999…"));
     form->addRow(QObject::tr("Título:"), titleEdit);
     form->addRow(QObject::tr("Quando a história se passa:"), startEdit);
-    root->addLayout(form);
+    rightCol->addLayout(form);
 
     auto* hint = new QLabel(QObject::tr(
         "Opcional. É a data-base da linha do tempo: capítulos com marcador "
         "anterior a essa data caem automaticamente na trilha de Flashback."), &dlg);
     hint->setWordWrap(true);
     hint->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
-    root->addWidget(hint);
+    rightCol->addWidget(hint);
+
+    auto* synopsisLabel = new QLabel(QObject::tr("Sinopse (opcional — em branco, usa a do projeto):"), &dlg);
+    rightCol->addWidget(synopsisLabel);
+    auto* synopsisEdit = new QPlainTextEdit(*synopsis, &dlg);
+    synopsisEdit->setPlaceholderText(QObject::tr("Sinopse deste manuscrito…"));
+    rightCol->addWidget(synopsisEdit, /*stretch=*/1);
 
     auto* btns = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
     btns->button(QDialogButtonBox::Ok)->setText(editMode ? QObject::tr("Salvar")
@@ -375,29 +440,36 @@ bool promptManuscriptDialog(QWidget* parent, bool editMode,
     btns->button(QDialogButtonBox::Cancel)->setText(QObject::tr("Cancelar"));
     QObject::connect(btns, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     QObject::connect(btns, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-    root->addWidget(btns);
+    rightCol->addWidget(btns);
+
+    root->addLayout(rightCol, /*stretch=*/1);
 
     titleEdit->setFocus();
     if (dlg.exec() != QDialog::Accepted) return false;
     const QString t = titleEdit->text().trimmed();
     if (t.isEmpty()) return false;
-    *title      = t;
-    *storyStart = startEdit->text().trimmed();
+    *title        = t;
+    *storyStart   = startEdit->text().trimmed();
+    *synopsis     = synopsisEdit->toPlainText().trimmed();
+    *coverDataUrl = localCover;
     return true;
 }
 
-// Pede o título de um manuscrito novo + "quando a história se passa", cria e
-// o torna ativo. Retorna o id do manuscrito criado, ou string vazia se o
-// usuário cancelar.
+// Pede título/sinopse/capa de um manuscrito novo + "quando a história se
+// passa", cria e o torna ativo. Retorna o id do manuscrito criado, ou
+// string vazia se o usuário cancelar.
 QString promptCreateManuscript(QWidget* parent, ProjectModel* projectModel)
 {
-    QString title, storyStart;
-    if (!promptManuscriptDialog(parent, false, &title, &storyStart)) return QString();
+    QString title, storyStart, synopsis, coverDataUrl;
+    if (!promptManuscriptDialog(parent, false, &title, &storyStart, &synopsis, &coverDataUrl))
+        return QString();
 
     Manuscript m;
     m.id = ProjectModel::uid();
     m.title = title;
     m.storyStartMarker = storyStart;
+    m.synopsis = synopsis;
+    m.coverDataUrl = coverDataUrl;
     projectModel->addManuscript(m);
     projectModel->setActiveManuscriptId(m.id);
     return m.id;
@@ -2279,6 +2351,12 @@ void MainWindow::setupEditor()
                 connect(projectInfoPanel, &QDialog::finished, this, [this](int) {
                     leftBar->clearSelection();
                 });
+                // Painel fica não-modal e pode ficar aberto enquanto o usuário
+                // troca de manuscrito ativo em outro lugar (ex. ManuscriptPanel)
+                // — recarrega pra refletir o manuscrito certo.
+                connect(projectModel, &ProjectModel::activeManuscriptChanged, this, [this]() {
+                    if (projectInfoPanel && projectInfoPanel->isVisible()) projectInfoPanel->loadFromModel();
+                });
             }
             // Esconde o hover preview se estava aberto pra evitar sobreposição.
             if (projectInfoHover && projectInfoHover->isVisible()) projectInfoHover->hide();
@@ -2380,6 +2458,13 @@ void MainWindow::setupEditor()
     // Hover preview no botão Info da LeftBar (read-only). Igual Mira 1.
     if (auto* infoBtn = leftBar->fixedButton(LeftBar::Info)) {
         projectInfoHover = new ProjectInfoHover(projectModel, nullptr);
+        // refreshFromModel() já roda do zero a cada presentNear(), então o
+        // conteúdo fica correto sem isso — mas se o popup ficar visível
+        // durante uma troca de manuscrito feita em outro painel, esconde em
+        // vez de mostrar dado desatualizado (evita reposicionar sem âncora).
+        connect(projectModel, &ProjectModel::activeManuscriptChanged, this, [this]() {
+            if (projectInfoHover && projectInfoHover->isVisible()) projectInfoHover->hide();
+        });
         projectInfoHoverOpenTimer = new QTimer(this);
         projectInfoHoverOpenTimer->setSingleShot(true);
         projectInfoHoverOpenTimer->setInterval(350);
@@ -2451,9 +2536,13 @@ void MainWindow::setupEditor()
         if (!ms) return;
         QString newTitle = ms->title.isEmpty() ? tr("(sem título)") : ms->title;
         QString newStoryStart = ms->storyStartMarker;
-        if (!promptManuscriptDialog(this, true, &newTitle, &newStoryStart)) return;
+        QString newSynopsis = ms->synopsis;
+        QString newCover = ms->coverDataUrl;
+        if (!promptManuscriptDialog(this, true, &newTitle, &newStoryStart, &newSynopsis, &newCover)) return;
         projectModel->updateManuscriptTitle(manuscriptId, newTitle);
         projectModel->updateManuscriptStoryStart(manuscriptId, newStoryStart);
+        projectModel->updateManuscriptSynopsis(manuscriptId, newSynopsis);
+        projectModel->updateManuscriptCover(manuscriptId, newCover);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteManuscriptRequested, this, [this](const QString& manuscriptId) {

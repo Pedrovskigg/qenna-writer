@@ -1,15 +1,19 @@
 #include "ManuscriptPanel.h"
+#include "CoverUtils.h"
 #include "DialogueStore.h"
+#include "ProjectInfoHover.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 #include "WordCounter.h"
 
+#include <QAbstractItemView>
 #include <QAction>
 #include <QApplication>
 #include <QBuffer>
 #include <QColor>
 #include <QCoreApplication>
 #include <QComboBox>
+#include <QCursor>
 #include <QDrag>
 #include <QDragEnterEvent>
 #include <QDragLeaveEvent>
@@ -27,6 +31,9 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -37,6 +44,47 @@ constexpr const char* kSceneMime   = "application/x-mira-scene-ref";
 
 namespace {
 constexpr int kPanelWidth = 280;
+constexpr int kComboThumbW = 28, kComboThumbH = 40;
+constexpr int kComboRowH = kComboThumbH + 12;
+
+// Delegate do popup aberto do combo de manuscritos: desenha a miniatura de
+// capa (Qt::DecorationRole) maior que o ícone nativo de combo + o nome ao
+// lado, numa linha mais alta. O combo FECHADO continua desenhando sozinho
+// (ícone pequeno nativo do Qt) — isso só entra em ação no popup.
+class ManuscriptComboDelegate final : public QStyledItemDelegate {
+public:
+    using QStyledItemDelegate::QStyledItemDelegate;
+
+    QSize sizeHint(const QStyleOptionViewItem&, const QModelIndex&) const override {
+        return QSize(220, kComboRowH);
+    }
+
+    void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& index) const override {
+        QStyleOptionViewItem o = opt;
+        initStyleOption(&o, index);
+        o.text.clear();
+        o.icon = QIcon();
+        QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &o, p, o.widget);
+
+        const QPixmap thumb = index.data(Qt::DecorationRole).value<QIcon>()
+                                    .pixmap(kComboThumbW, kComboThumbH);
+        const QString name = index.data(Qt::DisplayRole).toString();
+        const QRect r = opt.rect;
+        const QRect thumbRect(r.left() + 6, r.top() + (r.height() - kComboThumbH) / 2,
+                               kComboThumbW, kComboThumbH);
+
+        p->save();
+        if (!thumb.isNull()) p->drawPixmap(thumbRect, thumb);
+        else p->fillRect(thumbRect, opt.palette.mid());
+
+        const QRect textRect(thumbRect.right() + 10, r.top(),
+                              r.width() - thumbRect.width() - 22, r.height());
+        p->setPen(opt.palette.color(o.state & QStyle::State_Selected
+                                     ? QPalette::HighlightedText : QPalette::Text));
+        p->drawText(textRect, Qt::AlignVCenter | Qt::TextSingleLine, name);
+        p->restore();
+    }
+};
 
 // Mesmo "plus" do botão grande da DrawerListPanel.
 QPixmap circlePlusPixmap(const QColor& color, int size = 18) {
@@ -256,6 +304,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     )").arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
            Theme::panelBackground(), Theme::hoverOverlay()));
     m_combo->setContextMenuPolicy(Qt::CustomContextMenu);
+    m_combo->setItemDelegate(new ManuscriptComboDelegate(m_combo));
     headerLayout->addWidget(m_combo, /*stretch=*/1);
     connect(m_combo, qOverload<int>(&QComboBox::currentIndexChanged),
             this, &ManuscriptPanel::onComboChanged);
@@ -263,6 +312,37 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
         const QString msId = activeManuscriptId();
         if (msId.isEmpty()) return;
         showManuscriptContextMenu(msId, m_combo->mapToGlobal(pos));
+    });
+
+    // Tooltip rica ao passar o mouse num item do popup ABERTO do combo
+    // (não é o combo fechado) — reaproveita o ProjectInfoHover (mesmo
+    // layout capa+autor+gêneros+sinopse do hover da LeftBar), só que numa
+    // instância própria deste painel, mostrando o manuscrito sob o mouse
+    // em vez do ativo. Mesmo par de timers open/close do MainWindow.
+    m_comboItemHover = new ProjectInfoHover(m_model, this);
+    m_combo->view()->installEventFilter(this);
+    m_combo->view()->viewport()->installEventFilter(this);
+    m_comboHoverOpenTimer = new QTimer(this);
+    m_comboHoverOpenTimer->setSingleShot(true);
+    m_comboHoverOpenTimer->setInterval(350);
+    m_comboHoverCloseTimer = new QTimer(this);
+    m_comboHoverCloseTimer->setSingleShot(true);
+    m_comboHoverCloseTimer->setInterval(220);
+    connect(m_comboHoverOpenTimer, &QTimer::timeout, this, [this]() {
+        auto* view = m_combo->view();
+        const QModelIndex idx = view->indexAt(view->viewport()->mapFromGlobal(QCursor::pos()));
+        if (!idx.isValid()) return;
+        const QString msId = idx.data(Qt::UserRole).toString();
+        if (msId.isEmpty()) return;
+        const QRect r = view->visualRect(idx);
+        const QPoint anchor = view->viewport()->mapToGlobal(r.topRight());
+        m_comboItemHover->presentNear(anchor, msId);
+    });
+    connect(m_comboHoverCloseTimer, &QTimer::timeout, this, [this]() {
+        if (m_comboItemHover && !m_comboItemHover->underMouse()) m_comboItemHover->hide();
+    });
+    connect(m_comboItemHover, &ProjectInfoHover::hoverLeft, this, [this]() {
+        if (m_comboItemHover) m_comboItemHover->hide();
     });
 
     auto makeIconBtn = [this](const QString& glyph, const QString& tip) {
@@ -445,7 +525,10 @@ void ManuscriptPanel::syncCombo() {
     m_combo->clear();
     for (const auto& m : m_model->manuscripts()) {
         const QString label = m.title.isEmpty() ? tr("(sem título)") : m.title;
-        m_combo->addItem(label, m.id);
+        const QPixmap cover = CoverUtils::pixmapFromDataUrl(m_model->manuscriptEffectiveCoverDataUrl(m.id));
+        const QIcon icon = cover.isNull() ? QIcon()
+            : QIcon(cover.scaled(kComboThumbW, kComboThumbH, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        m_combo->addItem(icon, label, m.id);
     }
     if (m_combo->count() == 0) {
         m_combo->addItem(tr("Nenhum manuscrito"), QString());
@@ -759,6 +842,38 @@ bool ManuscriptPanel::eventFilter(QObject* watched, QEvent* event) {
                 return true;
             }
         }
+    }
+
+    // Hover num item do popup ABERTO do combo de manuscritos — dispara a
+    // tooltip rica (ProjectInfoHover) do manuscrito sob o mouse.
+    if (watched == m_combo->view()) {
+        if (event->type() == QEvent::Hide) { // popup fechou
+            m_comboHoverOpenTimer->stop();
+            m_comboHoverCloseTimer->stop();
+            m_comboHoverPendingManuscriptId.clear();
+            if (m_comboItemHover) m_comboItemHover->hide();
+        }
+        return QWidget::eventFilter(watched, event);
+    }
+    if (watched == m_combo->view()->viewport()) {
+        if (event->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(event);
+            const QModelIndex idx = m_combo->view()->indexAt(me->pos());
+            const QString msId = idx.isValid() ? idx.data(Qt::UserRole).toString() : QString();
+            if (msId != m_comboHoverPendingManuscriptId) {
+                m_comboHoverPendingManuscriptId = msId;
+                m_comboHoverOpenTimer->stop();
+                m_comboHoverCloseTimer->stop();
+                if (!msId.isEmpty()) m_comboHoverOpenTimer->start();
+                else m_comboHoverCloseTimer->start();
+            }
+        } else if (event->type() == QEvent::Leave) {
+            m_comboHoverOpenTimer->stop();
+            m_comboHoverPendingManuscriptId.clear();
+            m_comboHoverCloseTimer->start();
+        }
+        return QWidget::eventFilter(watched, event); // não engole — combo continua
+                                                       // fazendo seu próprio highlight
     }
 
     auto* btn = qobject_cast<QToolButton*>(watched);

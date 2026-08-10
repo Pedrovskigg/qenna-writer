@@ -1,15 +1,12 @@
 #include "ProjectInfoPanel.h"
 
+#include "CoverUtils.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 
-#include <QBuffer>
-#include <QByteArray>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
-#include <QImage>
-#include <QImageReader>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPixmap>
@@ -23,35 +20,6 @@ namespace {
 
 constexpr int kCoverFrameW = 260;
 constexpr int kCoverFrameH = 390;
-constexpr int kMaxCoverSide = 1200;
-
-// Carrega imagem do disco, redimensiona pra caber em kMaxCoverSide mantendo
-// proporção e devolve data URL JPEG. Sem crop forçado — capa é retrato.
-QString loadCoverAsDataUrl(const QString& path) {
-    QImageReader reader(path);
-    reader.setAutoTransform(true);
-    QImage img = reader.read();
-    if (img.isNull()) return QString();
-    if (img.width() > kMaxCoverSide || img.height() > kMaxCoverSide) {
-        img = img.scaled(kMaxCoverSide, kMaxCoverSide,
-                         Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    }
-    QByteArray bytes;
-    QBuffer buf(&bytes);
-    buf.open(QIODevice::WriteOnly);
-    img.save(&buf, "JPEG", 88);
-    return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
-}
-
-QPixmap pixmapFromDataUrl(const QString& dataUrl) {
-    if (dataUrl.isEmpty()) return QPixmap();
-    const int comma = dataUrl.indexOf(QLatin1Char(','));
-    if (comma < 0) return QPixmap();
-    const QByteArray raw = QByteArray::fromBase64(dataUrl.mid(comma + 1).toLatin1());
-    QPixmap pm;
-    pm.loadFromData(raw);
-    return pm;
-}
 
 } // namespace
 
@@ -128,6 +96,12 @@ void ProjectInfoPanel::buildUi() {
     m_genresEdit->setPlaceholderText(tr("Ex: Fantasia, Romance"));
     rightCol->addWidget(m_genresEdit);
 
+    m_manuscriptBanner = new QLabel(this);
+    m_manuscriptBanner->setObjectName(QStringLiteral("projectInfoManuscriptBanner"));
+    m_manuscriptBanner->setWordWrap(true);
+    m_manuscriptBanner->hide();
+    rightCol->addWidget(m_manuscriptBanner);
+
     addLabel(tr("Sinopse"));
     m_synopsisEdit = new QPlainTextEdit(this);
     m_synopsisEdit->setPlaceholderText(tr("Escreva uma breve sinopse…"));
@@ -158,8 +132,20 @@ void ProjectInfoPanel::loadFromModel() {
     m_nameEdit->setText(m_model->projectName());
     m_authorEdit->setText(m_model->projectAuthor());
     m_genresEdit->setText(m_model->projectGenres());
-    m_synopsisEdit->setPlainText(m_model->projectSynopsis());
-    m_coverDataUrl = m_model->projectCoverDataUrl();
+
+    m_activeManuscriptId = m_model->activeManuscriptId();
+    const Manuscript* ms = m_model->findManuscript(m_activeManuscriptId);
+    if (ms) {
+        m_manuscriptBanner->setText(tr("Manuscrito selecionado: <b>%1</b>")
+            .arg((ms->title.isEmpty() ? tr("(sem título)") : ms->title).toHtmlEscaped()));
+        m_manuscriptBanner->show();
+    } else {
+        m_activeManuscriptId.clear();
+        m_manuscriptBanner->hide();
+    }
+
+    m_synopsisEdit->setPlainText(m_model->manuscriptEffectiveSynopsis(m_activeManuscriptId));
+    m_coverDataUrl = m_model->manuscriptEffectiveCoverDataUrl(m_activeManuscriptId);
     updateCoverPreview();
 }
 
@@ -170,7 +156,7 @@ void ProjectInfoPanel::showEvent(QShowEvent* event) {
 
 void ProjectInfoPanel::updateCoverPreview() {
     if (!m_coverPreview) return;
-    const QPixmap pm = pixmapFromDataUrl(m_coverDataUrl);
+    const QPixmap pm = CoverUtils::pixmapFromDataUrl(m_coverDataUrl);
     if (pm.isNull()) {
         m_coverPreview->clear();
         m_coverPreview->setText(tr("Sem capa"));
@@ -187,7 +173,7 @@ void ProjectInfoPanel::onPickCover() {
         startDir,
         tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
     if (path.isEmpty()) return;
-    const QString dataUrl = loadCoverAsDataUrl(path);
+    const QString dataUrl = CoverUtils::loadCoverAsDataUrl(path);
     if (dataUrl.isEmpty()) return;
     m_coverDataUrl = dataUrl;
     updateCoverPreview();
@@ -201,12 +187,23 @@ void ProjectInfoPanel::onClearCover() {
 
 void ProjectInfoPanel::onSave() {
     if (!m_model) { accept(); return; }
-    m_model->setProjectDetails(
-        m_nameEdit->text().trimmed(),
-        m_authorEdit->text().trimmed(),
-        m_genresEdit->text().trimmed(),
-        m_synopsisEdit->toPlainText().trimmed(),
-        m_coverDataUrl);
+    const QString name = m_nameEdit->text().trimmed();
+    const QString author = m_authorEdit->text().trimmed();
+    const QString genres = m_genresEdit->text().trimmed();
+
+    if (m_activeManuscriptId.isEmpty()) {
+        // Sem manuscrito ativo (projeto ainda sem manuscritos) — sinopse/capa
+        // continuam indo pro projeto, comportamento idêntico ao anterior.
+        m_model->setProjectDetails(name, author, genres,
+            m_synopsisEdit->toPlainText().trimmed(), m_coverDataUrl);
+    } else {
+        // Nome/autor/gêneros seguem pro projeto; sinopse/capa dessa tela
+        // agora pertencem ao manuscrito ativo, não sobrescrevem as do projeto.
+        m_model->setProjectDetails(name, author, genres,
+            m_model->projectSynopsis(), m_model->projectCoverDataUrl());
+        m_model->updateManuscriptSynopsis(m_activeManuscriptId, m_synopsisEdit->toPlainText().trimmed());
+        m_model->updateManuscriptCover(m_activeManuscriptId, m_coverDataUrl);
+    }
     accept();
 }
 
@@ -221,6 +218,12 @@ void ProjectInfoPanel::applyDialogStyle() {
             padding-bottom: 4px;
         }
         #projectInfoLabel { color: %4; font-size: 11px; }
+        #projectInfoManuscriptBanner {
+            color: %9;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 0 4px 0;
+        }
         #projectInfoCover {
             background: %5;
             color: %4;

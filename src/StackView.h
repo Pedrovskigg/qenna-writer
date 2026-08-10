@@ -8,6 +8,8 @@
 class QLabel;
 class QCheckBox;
 class QScrollArea;
+class QTimer;
+class QHideEvent;
 
 // Uma entrada da Pilha — já vem pronta (capas pré-renderizadas na estética
 // vitrine, só em dois tamanhos) do MainMenuDialog::populateActiveView(), que
@@ -29,6 +31,9 @@ struct StackEntry {
                          // encolhimento pro tamanho de exibição — fonte do hero
                          // banner borrado, que senão ficava pixelado partindo do
                          // heroCover já reduzido
+    QVector<QPixmap> manuscriptHeroCovers; // capas (tamanho herói) de cada manuscrito,
+                                            // quando o projeto tem 2+ — vazio/1 item =
+                                            // sem ciclo (comportamento de hoje)
     bool    autoOpen = false;
 };
 
@@ -69,6 +74,9 @@ protected:
     void wheelEvent(QWheelEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
+    // Pausa o ciclo de capa do herói quando a Pilha não está visível (troca
+    // de modo de visualização não desmonta o widget, só esconde).
+    void hideEvent(QHideEvent* event) override;
 
 private:
     void rotateBy(int k);
@@ -77,6 +85,9 @@ private:
     void showContextMenuFor(const QString& path, const QPoint& globalPos);
     void crossfadeLabel(QLabel* label, const QPixmap& from, const QPixmap& to,
                          int durationMs, int slideDirection = 0);
+    // Alterna a capa do herói pro próximo manuscrito do projeto em foco —
+    // chamado pelo m_heroCoverCycleTimer enquanto ele tiver 2+ manuscritos.
+    void advanceHeroCoverCycle();
 
     QVector<StackEntry> m_entries; // [0] = herói atual
 
@@ -112,6 +123,13 @@ private:
 
     int  m_wheelAccum = 0;                 // acumula angleDelta() até completar um "detent"
     bool m_animating = false;              // trava reentrância de rotação
+
+    // Ciclo automático de capa do herói entre manuscritos — um timer só,
+    // reaproveitado (nunca um por entrada); relê m_entries[0] fresco a cada
+    // tick, então nunca fica órfão apontando pro herói antigo.
+    QTimer* m_heroCoverCycleTimer = nullptr;
+    int     m_heroCoverCycleIdx = 0;
+    static constexpr int kHeroCoverCycleMs = 4000;
 
     static constexpr int kVisibleSideSlots = 5;
     static constexpr int kSidePeekOffset = 70; // deslocamento horizontal entre slots

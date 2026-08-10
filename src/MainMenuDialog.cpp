@@ -47,6 +47,7 @@
 #include <QPlainTextEdit>
 #include <QProcess>
 #include <QPropertyAnimation>
+#include <QSet>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QScrollArea>
@@ -59,7 +60,9 @@
 #include <QTabWidget>
 #include <QTimer>
 #include <QToolButton>
+#include <QVariantAnimation>
 #include <QVBoxLayout>
+#include <QVector>
 #include <QWidgetAction>
 #include <QWidgetItem>
 
@@ -172,12 +175,25 @@ constexpr int kSidebarW = 410;   // largura da barra lateral
 constexpr int kLogoSize = 330;   // caixa do logo — cabe na largura interna (410 - margens) com folga
 constexpr int kEditCoverW = 260; // capa grande do diálogo Editar projeto
 constexpr int kEditCoverH = 390;
+constexpr int kListThumbW = 62, kListThumbH = 92; // igual ao thumb único de hoje na Lista
+constexpr int kMaxListThumbs = 4; // além disso, mostra badge "+N"
 
 // Padding ao redor da capa pra acomodar sombra projetada + bloco de páginas.
 constexpr int kVitPadL = 2;
 constexpr int kVitPadT = 3;
 constexpr int kVitPadR = 19;
 constexpr int kVitPadB = 17;
+
+// Metadados por manuscrito, já com fallback resolvido pro projeto — réplica
+// em JSON cru da lógica de ProjectModel::manuscriptEffectiveTitle/
+// CoverDataUrl (este arquivo não carrega ProjectModel, só lê o índice do
+// disco). Sempre populado (mesmo com 1 manuscrito só) — barato, é só
+// QString, decode de imagem fica por conta de quem consome.
+struct ManuscriptCoverInfo {
+    QString id;
+    QString title;
+    QString coverDataUrl;
+};
 
 struct RecentInfo {
     bool valid = false;
@@ -190,6 +206,7 @@ struct RecentInfo {
     int     manuscriptCount = 0; // direto de "data.manuscripts" no índice — sempre disponível
     int     chapterCount    = 0; // direto de "chapters" no índice — sempre disponível
     int     documentCount   = 0; // soma de "drawers[].items" no índice — sempre disponível
+    QList<ManuscriptCoverInfo> manuscripts; // um item por manuscrito, título/capa já efetivos
 
     // --- Lombada da Prateleira 3D (persistidos em projectDetails, mesmo
     // esquema de campos do Mira 1) ---
@@ -236,7 +253,8 @@ RecentInfo readRecentInfo(const QString& rootPath)
     // "drawers" fazem parte da estrutura básica do projeto, gravados
     // sempre, ao contrário de totalWords que só existe depois de um save
     // com o WordCounter já ter rodado).
-    info.manuscriptCount = data.value(QStringLiteral("manuscripts")).toArray().size();
+    const QJsonArray msArr = data.value(QStringLiteral("manuscripts")).toArray();
+    info.manuscriptCount = msArr.size();
     info.chapterCount = root.value(QStringLiteral("chapters")).toArray().size();
     int docCount = 0;
     for (const auto& dv : root.value(QStringLiteral("drawers")).toArray())
@@ -262,6 +280,26 @@ RecentInfo readRecentInfo(const QString& rootPath)
     info.spineWidthManual     = details.value(QStringLiteral("spineWidthManual")).toInt(0);
     if (info.name.isEmpty()) {
         info.name = QFileInfo(rootPath).fileName();
+    }
+    // Título/capa efetivos por manuscrito (réplica de
+    // ProjectModel::manuscriptEffectiveTitle/CoverDataUrl em JSON cru) —
+    // barato: só strings, sem decodificar imagem alguma aqui. Deduplicado
+    // por capa: quando nenhum manuscrito tem capa própria, todos caem no
+    // MESMO fallback (a capa do projeto) — sem isso, os 3 pontos de
+    // exibição (Lista/Prateleira/Pilha) tratariam isso como "N capas
+    // diferentes" e repetiriam a mesma imagem várias vezes.
+    QSet<QString> seenCovers;
+    for (const auto& mv : msArr) {
+        const QJsonObject mo = mv.toObject();
+        ManuscriptCoverInfo mi;
+        mi.id = mo.value(QStringLiteral("id")).toString();
+        const QString title = mo.value(QStringLiteral("title")).toString();
+        mi.title = title.trimmed().isEmpty() ? info.name : title;
+        const QString cover = mo.value(QStringLiteral("coverDataUrl")).toString();
+        mi.coverDataUrl = cover.isEmpty() ? info.coverDataUrl : cover;
+        if (seenCovers.contains(mi.coverDataUrl)) continue;
+        seenCovers.insert(mi.coverDataUrl);
+        info.manuscripts.append(mi);
     }
     return info;
 }
@@ -418,6 +456,23 @@ QPixmap renderVitrineCoverDimmed(const QPixmap& vit, qreal alpha)
     return pm;
 }
 
+// Blend manual entre 2 pixmaps de mesmo tamanho — mesma técnica de
+// StackView::crossfadeLabel (QPainter::setOpacity num pixmap intermediário),
+// aqui reciclada pro BookCard.
+QPixmap blendPixmap(const QPixmap& from, const QPixmap& to, qreal t)
+{
+    const QSize sz = to.size();
+    QPixmap blended(sz);
+    blended.fill(Qt::transparent);
+    QPainter p(&blended);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    p.setOpacity(1.0 - t);
+    p.drawPixmap(0, 0, from);
+    p.setOpacity(t);
+    p.drawPixmap(0, 0, to);
+    return blended;
+}
+
 // Conjunto de callbacks do card — agrupados pra não inflar a assinatura.
 struct CardCallbacks {
     std::function<void()> open;            // clique esquerdo → abrir projeto
@@ -457,6 +512,19 @@ public:
         }
         m_vitNormal = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
         m_vitDimmed = renderVitrineCoverDimmed(m_vitNormal, 0.62);
+
+        // Capas por manuscrito (saga de 2+ livros) — cicla entre elas via
+        // crossfade enquanto ESTE card estiver em hover. info.manuscripts já
+        // vem deduplicado por capa (ver readRecentInfo()), então só existe
+        // aqui quando há variação real a mostrar.
+        if (info.manuscripts.size() > 1) {
+            m_vitManuscripts.reserve(info.manuscripts.size());
+            for (const auto& mi : info.manuscripts) {
+                QPixmap c = decodeCoverDataUrl(mi.coverDataUrl);
+                if (c.isNull()) c = cover;
+                m_vitManuscripts.append(renderVitrineCover(c, kCardCoverW, kCardCoverH));
+            }
+        }
 
         const QSize baseSz = m_vitNormal.size();
         const QSize stageSz(int(baseSz.width()  * kHoverScale),
@@ -519,11 +587,13 @@ protected:
     }
     void enterEvent(QEnterEvent* event) override {
         animateCover(m_hoverRect);
-        if (m_cbs.hover) m_cbs.hover(this, true);
+        if (m_cbs.hover) m_cbs.hover(this, true); // pode chamar setDimmed(false) nesta própria carta
+        startCoverCycle();
         QFrame::enterEvent(event);
     }
     void leaveEvent(QEvent* event) override {
         animateCover(m_normalRect);
+        stopCoverCycle();
         if (m_cbs.hover) m_cbs.hover(this, false);
         QFrame::leaveEvent(event);
     }
@@ -552,7 +622,56 @@ private:
         m_coverAnim->start();
     }
 
+    // Ciclo de capa entre manuscritos, ativo só durante o hover DESTE card
+    // e só quando há 2+ capas realmente diferentes pra mostrar.
+    void startCoverCycle() {
+        if (m_vitManuscripts.size() < 2) return;
+        if (!m_coverCycleTimer) {
+            m_coverCycleTimer = new QTimer(this);
+            connect(m_coverCycleTimer, &QTimer::timeout, this, [this]() { advanceCoverCycle(); });
+        }
+        m_coverCycleTimer->start(kCoverCycleIntervalMs);
+    }
+    void stopCoverCycle() {
+        if (m_coverCycleTimer) m_coverCycleTimer->stop();
+        if (m_coverFadeAnim) { m_coverFadeAnim->stop(); m_coverFadeAnim->deleteLater(); m_coverFadeAnim = nullptr; }
+        m_coverCycleIdx = -1; // -1 = mostrando m_vitNormal, ciclo ainda não começou
+        if (m_coverLbl) m_coverLbl->setPixmap(m_vitNormal);
+    }
+    void advanceCoverCycle() {
+        const int n = m_vitManuscripts.size();
+        if (n < 2 || !m_coverLbl) return;
+        // m_coverCycleIdx < 0 (repouso, mostrando m_vitNormal) → primeiro
+        // blend parte dele; (-1+1)%n == 0, cai certinho no 1º manuscrito.
+        const QPixmap fromPm = m_coverCycleIdx < 0 ? m_vitNormal : m_vitManuscripts[m_coverCycleIdx];
+        const int to = (m_coverCycleIdx + 1) % n;
+        const QPixmap toPm = m_vitManuscripts[to];
+
+        // Sem DeleteWhenStopped de propósito — mesmo padrão de
+        // ShelfBookItem::animateYawTo/animatePitchTo (já provado nesse
+        // arquivo). Com DeleteWhenStopped o Qt se autodestrói ao terminar
+        // (550ms, bem antes do próximo tick em 3.5s) sem eu saber — e o
+        // ponteiro guardado aqui ficava pendurado, apontando pra memória já
+        // liberada no próximo advanceCoverCycle(). Gerenciando o ciclo de
+        // vida à mão (stop+deleteLater+nullptr sempre juntos) evita isso.
+        if (m_coverFadeAnim) { m_coverFadeAnim->stop(); m_coverFadeAnim->deleteLater(); m_coverFadeAnim = nullptr; }
+        m_coverFadeAnim = new QVariantAnimation(this);
+        m_coverFadeAnim->setStartValue(0.0);
+        m_coverFadeAnim->setEndValue(1.0);
+        m_coverFadeAnim->setDuration(kCoverFadeMs);
+        m_coverFadeAnim->setEasingCurve(QEasingCurve::InOutCubic);
+        connect(m_coverFadeAnim, &QVariantAnimation::valueChanged, this,
+                [this, fromPm, toPm](const QVariant& v) {
+            if (m_coverLbl) m_coverLbl->setPixmap(blendPixmap(fromPm, toPm, v.toReal()));
+        });
+        connect(m_coverFadeAnim, &QVariantAnimation::finished, this,
+                [this, to]() { m_coverCycleIdx = to; });
+        m_coverFadeAnim->start();
+    }
+
     static constexpr double kHoverScale = 1.10;
+    static constexpr int kCoverCycleIntervalMs = 3500;
+    static constexpr int kCoverFadeMs = 550;
 
     CardCallbacks m_cbs;
     QWidget* m_stage = nullptr;
@@ -560,6 +679,10 @@ private:
     QPropertyAnimation* m_coverAnim = nullptr;
     QPixmap m_vitNormal;
     QPixmap m_vitDimmed;
+    QVector<QPixmap> m_vitManuscripts; // capas-vitrine por manuscrito (vazio/1 = sem ciclo)
+    QTimer* m_coverCycleTimer = nullptr;
+    QVariantAnimation* m_coverFadeAnim = nullptr;
+    int m_coverCycleIdx = -1; // -1 = repouso (mostrando m_vitNormal)
     QRect m_normalRect;
     QRect m_hoverRect;
 };
@@ -603,15 +726,44 @@ public:
         row->setContentsMargins(12, 9, 16, 9);
         row->setSpacing(14);
 
-        QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
-        if (cover.isNull())
-            cover = renderDefaultCover(info.name, info.author, 120, 180);
-        const QPixmap thumb = renderThumb(cover, 62, 92);
-        auto* thumbLbl = new QLabel(this);
-        thumbLbl->setFixedSize(thumb.size());
-        thumbLbl->setPixmap(thumb);
-        thumbLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        row->addWidget(thumbLbl, 0, Qt::AlignVCenter);
+        auto* thumbsHost = new QWidget(this);
+        auto* thumbsRow = new QHBoxLayout(thumbsHost);
+        thumbsRow->setContentsMargins(0, 0, 0, 0);
+        thumbsRow->setSpacing(4);
+        thumbsHost->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+
+        if (info.manuscripts.size() <= 1) {
+            // Caminho idêntico ao de antes — projeto de manuscrito único não muda.
+            QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+            if (cover.isNull())
+                cover = renderDefaultCover(info.name, info.author, 120, 180);
+            const QPixmap thumb = renderThumb(cover, kListThumbW, kListThumbH);
+            auto* thumbLbl = new QLabel(thumbsHost);
+            thumbLbl->setFixedSize(thumb.size());
+            thumbLbl->setPixmap(thumb);
+            thumbsRow->addWidget(thumbLbl);
+        } else {
+            const int shown = qMin(info.manuscripts.size(), kMaxListThumbs);
+            for (int i = 0; i < shown; ++i) {
+                const auto& mi = info.manuscripts.at(i);
+                QPixmap cover = decodeCoverDataUrl(mi.coverDataUrl);
+                if (cover.isNull())
+                    cover = renderDefaultCover(mi.title, info.author, 120, 180);
+                const QPixmap thumb = renderThumb(cover, kListThumbW, kListThumbH);
+                auto* thumbLbl = new QLabel(thumbsHost);
+                thumbLbl->setFixedSize(thumb.size());
+                thumbLbl->setPixmap(thumb);
+                thumbsRow->addWidget(thumbLbl);
+            }
+            if (info.manuscripts.size() > kMaxListThumbs) {
+                auto* badge = new QLabel(QStringLiteral("+%1").arg(info.manuscripts.size() - kMaxListThumbs), thumbsHost);
+                badge->setObjectName(QStringLiteral("bookRowThumbBadge"));
+                badge->setFixedSize(28, kListThumbH);
+                badge->setAlignment(Qt::AlignCenter);
+                thumbsRow->addWidget(badge);
+            }
+        }
+        row->addWidget(thumbsHost, 0, Qt::AlignVCenter);
 
         auto* textCol = new QVBoxLayout();
         textCol->setSpacing(3);
@@ -1838,6 +1990,14 @@ void MainMenuDialog::populateActiveView()
             e.heroCover = renderVitrineCover(cover, kStackHeroCoverW, kStackHeroCoverH);
             e.sideCover = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
             e.fullCover = cover; // resolução original, antes do encolhimento pro herói
+            if (info.manuscripts.size() > 1) {
+                e.manuscriptHeroCovers.reserve(info.manuscripts.size());
+                for (const auto& mi : info.manuscripts) {
+                    QPixmap c = decodeCoverDataUrl(mi.coverDataUrl);
+                    if (c.isNull()) c = cover; // fallback pro cover efetivo do projeto
+                    e.manuscriptHeroCovers.append(renderVitrineCover(c, kStackHeroCoverW, kStackHeroCoverH));
+                }
+            }
             e.autoOpen = isAutoOpen;
             stackEntries.append(std::move(e));
             continue;
@@ -2371,6 +2531,14 @@ void MainMenuDialog::applyDialogStyle()
         QFrame#bookRow:hover { background: %7; border-color: %9; }
         #bookRowName { color: %3; font-size: 15px; font-weight: 600; }
         #bookRowMeta { color: %4; font-size: 12px; }
+        #bookRowThumbBadge {
+            background: %5;
+            color: %4;
+            border: 1px solid %6;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
 
         #menuShelfView { background: transparent; border: none; }
 

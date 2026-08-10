@@ -12,6 +12,7 @@
 #include <QDateTime>
 #include <QFile>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QProgressDialog>
 #include <QFont>
 #include <QImage>
@@ -176,7 +177,7 @@ QString Exporter::formatExt(Format fmt) {
     }
 }
 
-QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt) const {
+QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt, const QString& docTitle) const {
     if (fmt == Format::Docx) return docxFromDocument(doc);
 
     QByteArray bytes;
@@ -189,7 +190,8 @@ QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt) const {
         writer.setResolution(300);
         writer.setPageSize(QPageSize(QPageSize::A4));
         writer.setPageMargins(QMarginsF(20, 18, 20, 18), QPageLayout::Millimeter);
-        writer.setTitle(m_model ? m_model->projectName() : QString());
+        writer.setTitle(docTitle.trimmed().isEmpty()
+            ? (m_model ? m_model->projectName() : QString()) : docTitle);
         // doc.print pagina automaticamente para o QPagedPaintDevice.
         doc.print(&writer);
     } else {
@@ -420,16 +422,18 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
     return zip.finish();
 }
 
-QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format fmt) const {
+QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format fmt,
+                                const QString& docTitle) const {
     QTextDocument doc;
     doc.setHtml(html.isEmpty() ? QStringLiteral("<p></p>") : html);
     applyParagraphStyle(doc);
     forceBlackText(doc);
     if (!includeMarkers) stripMarkers(doc);
-    return writeDoc(doc, fmt);
+    return writeDoc(doc, fmt, docTitle);
 }
 
-QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt) const {
+QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
+                                    const QString& docTitle) const {
     QTextDocument doc;
     QTextCursor cur(&doc);
     bool first = true;
@@ -457,7 +461,7 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
     applyParagraphStyle(doc);
     forceBlackText(doc);
     if (!includeMarkers) stripMarkers(doc);
-    return writeDoc(doc, fmt);
+    return writeDoc(doc, fmt, docTitle);
 }
 
 QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
@@ -465,10 +469,16 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
     if (!m_model) return files;
 
     // EPUB: um único arquivo com tudo dentro (ignora documento único/separado).
+    // Nome do arquivo usa o manuscrito quando a seleção é de 1 só; senão o
+    // projeto (omnibus com 2+ manuscritos, ou sem manuscrito nenhum).
     if (sel.format == Format::Epub) {
         const QByteArray epub = buildEpub(sel);
-        if (!epub.isEmpty())
-            files.append({ safeName(m_model->projectName()) + QStringLiteral(".epub"), epub });
+        if (!epub.isEmpty()) {
+            const Manuscript* soloMs = singleManuscriptInSelection(sel);
+            const QString baseName = safeName(soloMs
+                ? m_model->manuscriptEffectiveTitle(soloMs->id) : m_model->projectName());
+            files.append({ baseName + QStringLiteral(".epub"), epub });
+        }
         return files;
     }
 
@@ -484,12 +494,13 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
         std::sort(selected.begin(), selected.end(),
                   [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
 
-        const QString msTitle = safeName(ms.title.isEmpty() ? QStringLiteral("Manuscrito") : ms.title);
+        const QString effectiveTitle = m_model->manuscriptEffectiveTitle(ms.id);
+        const QString msTitle = safeName(effectiveTitle.isEmpty() ? QStringLiteral("Manuscrito") : effectiveTitle);
         const QString ext = formatExt(sel.format);
 
         if (sel.manuscriptMode == ManuscriptMode::SingleDocument) {
             files.append({ QStringLiteral("Manuscritos/%1.%2").arg(msTitle, ext),
-                           exportChapters(selected, sel.includeMarkers, sel.format) });
+                           exportChapters(selected, sel.includeMarkers, sel.format, effectiveTitle) });
         } else {
             for (int i = 0; i < selected.size(); ++i) {
                 const Chapter* ch = selected.at(i);
@@ -586,6 +597,22 @@ QString Exporter::itemBodyXhtml(const QString& rawHtml, bool includeMarkers,
     return body;
 }
 
+const Manuscript* Exporter::singleManuscriptInSelection(const Selection& sel) const {
+    if (!m_model) return nullptr;
+    const Manuscript* found = nullptr;
+    for (const Manuscript& ms : m_model->manuscripts()) {
+        bool hasSelected = false;
+        for (const Chapter& ch : m_model->chapters()) {
+            const QString msId = ch.manuscriptId.isEmpty() ? ms.id : ch.manuscriptId;
+            if (msId == ms.id && sel.chapterIds.contains(ch.id)) { hasSelected = true; break; }
+        }
+        if (!hasSelected) continue;
+        if (found) return nullptr; // 2º manuscrito com capítulos selecionados → ambíguo
+        found = &ms;
+    }
+    return found;
+}
+
 QByteArray Exporter::buildEpub(const Selection& sel) const {
     struct Item { QString id; QString title; QString filename; QString body; };
     QList<Item> items;
@@ -639,10 +666,14 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     if (items.isEmpty()) return {};
 
     // ── Metadados ──
-    const QString title = m_model->projectName().trimmed().isEmpty()
-        ? QStringLiteral("Projeto") : m_model->projectName();
+    // Título/sinopse/capa do manuscrito quando a seleção é de 1 só; senão
+    // (2+ manuscritos combinados no mesmo epub, ou nenhum) usa o projeto —
+    // é a identidade da "saga", correta pra um omnibus.
+    const Manuscript* soloMs = singleManuscriptInSelection(sel);
+    const QString rawTitle = soloMs ? m_model->manuscriptEffectiveTitle(soloMs->id) : m_model->projectName();
+    const QString title = rawTitle.trimmed().isEmpty() ? QStringLiteral("Projeto") : rawTitle;
     const QString author = m_model->projectAuthor();
-    const QString synopsis = m_model->projectSynopsis();
+    const QString synopsis = soloMs ? m_model->manuscriptEffectiveSynopsis(soloMs->id) : m_model->projectSynopsis();
     const QString genres = m_model->projectGenres();
     const QString bookId = QStringLiteral("urn:uuid:")
         + QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -650,10 +681,11 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         + QStringLiteral("Z");
 
     // ── Capa ──
+    const QString coverSrc = soloMs ? m_model->manuscriptEffectiveCoverDataUrl(soloMs->id) : m_model->projectCoverDataUrl();
     bool hasCover = false;
     QString coverFilename, coverMime;
     QByteArray coverBytes;
-    if (parseDataUrl(m_model->projectCoverDataUrl(), coverMime, coverBytes)) {
+    if (parseDataUrl(coverSrc, coverMime, coverBytes)) {
         // Capa de e-book tem teto útil ~1600px no lado maior (recomendação
         // Amazon/Kobo). Reduz só pra baixo + re-encoda em JPEG q90 (ou mantém PNG
         // se tiver transparência) — derruba o tamanho sem perda visível em tela.
@@ -838,6 +870,20 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
 
     const QString projName = safeName(m_model ? m_model->projectName() : QString());
 
+    // Nome sugerido: quando o único arquivo já corresponde a um manuscrito
+    // específico (documento único de manuscrito, ou EPUB de 1 manuscrito só),
+    // sugere o nome dele em vez do projeto. Conservador de propósito — não
+    // mexe no nome sugerido pra itens avulsos de gaveta.
+    QString suggestedBaseName = projName;
+    if (files.size() == 1) {
+        if (sel.format == Format::Epub) {
+            if (const Manuscript* soloMs = singleManuscriptInSelection(sel))
+                suggestedBaseName = safeName(m_model->manuscriptEffectiveTitle(soloMs->id));
+        } else if (files.first().path.startsWith(QStringLiteral("Manuscritos/"))) {
+            suggestedBaseName = QFileInfo(files.first().path).completeBaseName();
+        }
+    }
+
     if (files.size() == 1) {
         // Único arquivo → salva direto no formato escolhido.
         const QString ext = formatExt(sel.format);
@@ -856,7 +902,7 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
                 filter = QStringLiteral("Documento ODF (*.odt)");
                 dlgTitle = QStringLiteral("Exportar como ODT"); break;
         }
-        const QString suggested = projName + QStringLiteral(".") + ext;
+        const QString suggested = suggestedBaseName + QStringLiteral(".") + ext;
         const QString dest = QFileDialog::getSaveFileName(
             dialogParent, dlgTitle, suggested, filter);
         if (dest.isEmpty()) return false; // cancelado

@@ -37,7 +37,8 @@ ShelfBookItem* ShelfScene::addBook(const QString& path, const QString& name, con
                                    const QPixmap& cover, const QColor& spineColor, qreal spineWidth,
                                    const ShelfSpineStyle& style)
 {
-    auto* book = new ShelfBookItem(path, name, author, genres, synopsis, cover, spineColor, spineWidth, style);
+    auto* book = new ShelfBookItem(path, name, author, genres, synopsis, cover,
+                                   spineColor, spineWidth, style);
     connect(book, &ShelfBookItem::openRequested, this, &ShelfScene::openRequested);
     connect(book, &ShelfBookItem::editRequested, this, &ShelfScene::editRequested);
     connect(book, &ShelfBookItem::coverCreateRequested, this, &ShelfScene::coverCreateRequested);
