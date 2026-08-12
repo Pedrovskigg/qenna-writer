@@ -3807,7 +3807,7 @@ QVector<AIChatPanel::ScanDoc> AIChatPanel::collectAllDocs() const
         const QString text = stripHtmlToPlainText(html);
         if (text.isEmpty()) continue;
         ScanDoc d;
-        d.title = ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title;
+        d.title = ch.title.isEmpty() ? m_projectModel->chapterDisplayLabel(ch) : ch.title;
         d.plainText = text;
         d.key = cacheKey;
         docs.append(d);

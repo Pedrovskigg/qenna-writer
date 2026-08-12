@@ -26,6 +26,14 @@ struct Scene {
     bool povOther = false;
 };
 
+// Tipo de unidade narrativa (Capítulo/Prólogo/Epílogo/Interlúdio). Catálogo
+// fixo em código (ver ProjectModel::chapterTypes()), mesmo padrão idiomático
+// de ElementType (ElementsStore.h) — id+label, sem enum C++.
+struct ChapterType {
+    QString id;    // "chapter" | "prologue" | "epilogue" | "interlude"
+    QString label; // rótulo fixo, já traduzido
+};
+
 struct Chapter {
     QString id;
     QString manuscriptId;
@@ -36,6 +44,8 @@ struct Chapter {
     QString timeMarker;   // "quando se passa" (tempo da história) — Mira 2
     QString summary;      // resumo opcional — alimenta a descrição na Timeline
     bool povOther = false; // mesmo gatilho de POV, no nível de capítulo (sem cenas)
+    QString type = QStringLiteral("chapter"); // ChapterType::id, ou "custom"
+    QString typeLabel;    // rótulo livre digitado pelo usuário quando type=="custom"
 };
 
 struct Manuscript {
@@ -283,7 +293,44 @@ public:
     bool updateChapterTimeMarker(const QString& chapterId, const QString& marker);
     bool updateChapterSummary(const QString& chapterId, const QString& summary);
     bool updateChapterPovOther(const QString& chapterId, bool value);
+    bool updateChapterType(const QString& chapterId, const QString& type, const QString& typeLabel);
     bool removeChapter(const QString& chapterId);
+
+    // Catálogo fixo de tipos de capítulo (Capítulo/Prólogo/Epílogo/Interlúdio).
+    // "custom" não entra aqui — não tem label fixo, usa Chapter::typeLabel.
+    static QList<ChapterType> chapterTypes();
+    // Label do tipo, ou string vazia se id desconhecido/"custom". Retorna por
+    // valor (não ponteiro) de propósito: chapterTypes() monta uma lista nova
+    // a cada chamada (ver comentário no .cpp), então um ponteiro pra dentro
+    // dela ficaria pendurado assim que a função retornasse.
+    static QString findChapterTypeLabel(const QString& id);
+    // Nome do tipo sem número (label fixo do catálogo, ou typeLabel quando custom).
+    QString chapterTypeName(const Chapter& chapter) const;
+    // Rótulo de exibição completo: tipo + número, omitindo o número quando é
+    // o único capítulo do seu tipo dentro do manuscrito (Capítulo é exceção:
+    // sempre numerado, mesmo sozinho, igual ao comportamento anterior).
+    QString chapterDisplayLabel(const Chapter& chapter) const;
+    QString chapterDisplayLabel(const QString& chapterId) const;
+    // Só o número formatado (arábico ou romano, ver romanChapterNumbers()),
+    // sem a palavra do tipo — string vazia quando o capítulo não é numerado
+    // (tipo especial sozinho no manuscrito). Usado quando o capítulo TEM
+    // título: sidebar mostra "3 - Título" em vez de "Capítulo 3 — Título".
+    QString chapterNumberLabel(const Chapter& chapter) const;
+    static QString toRomanNumeral(int n);
+    // Prévia do rótulo padrão pra um capítulo que ainda não existe (diálogo
+    // de criação) ou que pode mudar de tipo antes de salvar (diálogo de
+    // edição) — mesma regra de numeração de chapterDisplayLabel, mas sem
+    // exigir que o capítulo já esteja em chapters(). excludeChapterId: id do
+    // capítulo sendo editado (pra não contar ele duas vezes no bucket); vazio
+    // no caso de criação.
+    QString previewChapterDisplayLabel(const QString& manuscriptId, const QString& type,
+                                        const QString& typeLabel, const QString& excludeChapterId) const;
+
+    // Preferência de exibição (projeto): numerais romanos em vez de arábicos
+    // pro número do capítulo. Afeta chapterDisplayLabel/chapterNumberLabel.
+    bool romanChapterNumbers() const;
+    void setRomanChapterNumbers(bool enabled);
+
     bool reorderChapter(const QString& chapterId, int targetIndex);
     bool updateSceneTitle(const QString& chapterId, int sceneIndex, const QString& title);
     bool updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker);
@@ -355,6 +402,19 @@ private:
     QList<CharacterBond> m_characterBonds;
 
     void notifyChaptersChanged();
+    // Chave de agrupamento por tipo (id fixo, ou "custom:<rótulo em minúsculas>"
+    // pra tipos customizados com rótulos diferentes não compartilharem numeração).
+    QString chapterBucketKey(const Chapter& chapter) const;
+    // Núcleo compartilhado de chapterNumberInBucket/previewChapterDisplayLabel:
+    // posição (1-based) de `probe` dentro do bucket do seu tipo, comparando
+    // com os capítulos reais do mesmo manuscrito — exceto `excludeId` (o
+    // próprio capítulo, se já existir, pra não contar duas vezes). 0 = não
+    // numerado (tipo especial sozinho no manuscrito, exceto "chapter" que é
+    // sempre numerado).
+    int bucketPosition(const Chapter& probe, const QString& excludeId) const;
+    // Posição (1-based) do capítulo dentro do bucket de mesmo tipo no mesmo
+    // manuscrito; 0 = não numerado (tipo especial sozinho, ver chapterDisplayLabel).
+    int chapterNumberInBucket(const Chapter& chapter) const;
     bool m_batching = false;
     bool m_batchChaptersDirty = false;
 };

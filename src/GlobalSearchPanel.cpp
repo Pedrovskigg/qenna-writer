@@ -319,7 +319,7 @@ void GlobalSearchPanel::runSearch()
 
     // Chapters + scenes
     for (const auto& c : m_model->chapters()) {
-        const QString chTitle = c.title.isEmpty() ? tr("Capítulo") : c.title;
+        const QString chTitle = c.title.isEmpty() ? m_model->chapterDisplayLabel(c) : c.title;
         const bool titleHit = chTitle.toLower().contains(needle);
         const QString html = readChapterHtml(c.manuscriptId, c.id, c.file);
         const QString plain = html.isEmpty() ? QString() : htmlToPlainText(html);

@@ -61,7 +61,10 @@ public:
     // pra todo mundo, mas é a mesma fala, só de "endereço" atualizado).
     // Falas já salvas com o mesmo hash têm sceneIndex/sourceLabel corrigidos
     // se mudaram; texto editado é atualizado quando a correspondência com o
-    // scan atual é inequívoca; falas novas são inseridas. Nada é removido
+    // scan atual é inequívoca; falas novas são inseridas. Falas ainda sem
+    // locutor (characterId vazio — nunca atribuídas, nem manual nem
+    // automaticamente) ganham o characterId achado no scan atual, se houver;
+    // falas já atribuídas nunca são sobrescritas. Nada é removido
     // automaticamente — exclusão é sempre manual.
     void upsertScanResults(const QString& manuscriptId, const QString& chapterId,
                            const QVector<ScannedLine>& found);
@@ -72,8 +75,9 @@ public:
     // é de quem está sendo FALADO SOBRE, não de quem fala (ex.: "— Quase
     // nada. — ele admitiu. — Miya Morikawa dos Santos..." atribui pra Miya
     // por proximidade, mas quem fala é outro personagem). Sobrevive a
-    // rescans futuros: upsertScanResults só toca characterId em falas NOVAS
-    // (texto mudou o bastante pra não bater o hash), nunca em já casadas.
+    // rescans futuros: upsertScanResults só toca characterId em falas SEM
+    // locutor (vazio); uma vez atribuído (manual ou automaticamente), nunca
+    // é sobrescrito por um rescan.
     bool setCharacter(const QString& id, const QString& newCharacterId);
 
 signals:

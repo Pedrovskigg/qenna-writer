@@ -43,6 +43,9 @@ public:
     bool showScenePopupOnHr() const;
     void setShowScenePopupOnHr(bool enabled);
 
+    bool romanChapterNumbers() const;
+    void setRomanChapterNumbers(bool enabled);
+
     // Teto do slider de comprimento de página (px). Acima disso a folha seria
     // cortada fora da janela; no máximo ela bate exatamente na tela.
     void setPageHeightMaximum(int px);
@@ -62,6 +65,7 @@ signals:
     void maxDocsChanged(int n);
     void mentionManuscriptsEnabledChanged(bool enabled);
     void showScenePopupOnHrChanged(bool enabled);
+    void romanChapterNumbersChanged(bool enabled);
     // Botão "Abrir Gerador de Timeline…".
     void timelineGeneratorRequested();
 
@@ -81,6 +85,7 @@ private:
     QSpinBox*  m_maxDocsSpinBox             = nullptr;
     QCheckBox* m_mentionManuscriptsCheck    = nullptr;
     QCheckBox* m_scenePopupCheck            = nullptr;
+    QCheckBox* m_romanNumeralsCheck         = nullptr;
     QSlider* m_pageWidthSlider = nullptr;
     QSlider* m_pageHeightSlider = nullptr;
     QSlider* m_hMarginSlider = nullptr;

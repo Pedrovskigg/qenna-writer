@@ -505,7 +505,7 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
             for (int i = 0; i < selected.size(); ++i) {
                 const Chapter* ch = selected.at(i);
                 const QString chTitle = safeName(ch->title.isEmpty()
-                    ? QStringLiteral("Capítulo %1").arg(i + 1) : ch->title);
+                    ? m_model->chapterDisplayLabel(*ch) : ch->title);
                 const QString path = QStringLiteral("Manuscritos/%1/%2 - %3.%4")
                     .arg(msTitle, QString::number(i + 1).rightJustified(2, QLatin1Char('0')), chTitle, ext);
                 files.append({ path, exportItem(chapterHtmlPrimary(*ch), sel.includeMarkers, sel.format) });

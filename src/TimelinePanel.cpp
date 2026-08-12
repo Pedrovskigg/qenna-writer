@@ -815,7 +815,7 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
         for (const Chapter& c : ordered) {
             const QString ms = c.manuscriptId.isEmpty() ? QStringLiteral("root") : c.manuscriptId;
             chapById.insert(c.id, { gi,
-                c.title.isEmpty() ? tr("Capítulo %1").arg(gi + 1) : c.title,
+                c.title.isEmpty() ? m_projectModel->chapterDisplayLabel(c) : c.title,
                 c.timeMarker,
                 QStringLiteral("ch:%1:%2").arg(ms, c.id) });
             ++gi;
@@ -1064,7 +1064,7 @@ void TimelinePanel::syncStoryTimeline()
         for (const Chapter& c : ordered) {
             const QString ms = c.manuscriptId.isEmpty() ? QStringLiteral("root") : c.manuscriptId;
             const QString docKey = QStringLiteral("ch:%1:%2").arg(ms, c.id);
-            const QString chapTitle = c.title.isEmpty() ? tr("Capítulo %1").arg(gi + 1) : c.title;
+            const QString chapTitle = c.title.isEmpty() ? m_projectModel->chapterDisplayLabel(c) : c.title;
 
             if (c.scenes.isEmpty()) {
                 if (!c.timeMarker.trimmed().isEmpty()) {

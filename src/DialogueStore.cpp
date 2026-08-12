@@ -163,6 +163,16 @@ void DialogueStore::upsertScanResults(const QString& manuscriptId, const QString
             d.sourceLabel = f->sourceLabel;
             dirty = true;
         }
+        // characterId vazio nunca veio de correção manual — setCharacter()
+        // recusa id vazio (ver método abaixo), então só pode significar
+        // "nunca resolvido". Deixa o rescan preencher agora que o scan atual
+        // achou um locutor (ex.: Element criado depois que a fala já
+        // existia no store). Falas já atribuídas (manual ou automaticamente)
+        // continuam protegidas — nunca sobrescritas aqui.
+        if (d.characterId.isEmpty() && !f->characterId.isEmpty()) {
+            d.characterId = f->characterId;
+            dirty = true;
+        }
     }
 
     // Falas cujo texto mudou (linha editada): tenta casar com um candidato
@@ -181,6 +191,9 @@ void DialogueStore::upsertScanResults(const QString& manuscriptId, const QString
             d.text = candidates.first()->text;
             d.sceneIndex = candidates.first()->sceneIndex;
             d.sourceLabel = candidates.first()->sourceLabel;
+            if (d.characterId.isEmpty() && !candidates.first()->characterId.isEmpty()) {
+                d.characterId = candidates.first()->characterId;
+            }
             claimedHashes.insert(hashOf(candidates.first()->text));
             dirty = true;
         }

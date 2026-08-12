@@ -171,6 +171,28 @@ QFont sizedFont(const QString& family, qreal pt)
     return f;
 }
 
+// Avisa (não bloqueia) quando já existe um Element do mesmo tipo com nome
+// idêntico (case-insensitive) — nome duplicado quebra o atalho de "primeiro
+// nome" do detector de diálogos (DialogueDetector::buildScannerTokens só
+// reconhece o primeiro nome sozinho quando é único entre os personagens), e
+// além disso um Element cujo item de gaveta foi excluído mas nunca teve o
+// próprio Element removido também soma pra essa contagem — daí a importância
+// de pegar duplicata JÁ na criação. Retorna true = pode prosseguir.
+bool confirmNoDuplicateElementName(QWidget* parent, ElementsStore* store,
+                                   const QString& type, const QString& name)
+{
+    if (!store || name.trimmed().isEmpty()) return true;
+    for (const Element& e : store->elements()) {
+        if (e.type != type) continue;
+        if (e.name.trimmed().compare(name.trimmed(), Qt::CaseInsensitive) != 0) continue;
+        const auto ret = QMessageBox::question(parent, QObject::tr("Nome já usado"),
+            QObject::tr("Já existe um elemento chamado \"%1\". Criar mesmo assim?").arg(name.trimmed()),
+            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+        return ret == QMessageBox::Yes;
+    }
+    return true;
+}
+
 // Diálogo de capítulo: título + "quando se passa" (marcador temporal opcional)
 // + resumo (opcional). Usado tanto na criação quanto na edição. Retorna false
 // se cancelado. povOther != nullptr mostra o toggle de POV (gatilho C das
@@ -178,8 +200,10 @@ QFont sizedFont(const QString& family, qreal pt)
 // obra tem algum Element narrador definido (ElementsStore::hasNarrator()). O
 // valor inicial de *povOther pré-marca o checkbox (modo edição); o valor final
 // é escrito de volta em *povOther, mesmo padrão in/out de title/marker/summary.
-bool promptChapterDialog(QWidget* parent, bool editMode,
+bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
+                         const QString& manuscriptId, const QString& chapterId,
                          QString* title, QString* marker, QString* summary,
+                         QString* type, QString* typeLabel,
                          bool* povOther = nullptr)
 {
     QDialog dlg(parent);
@@ -194,10 +218,40 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
 
     auto* form = new QFormLayout;
     auto* titleEdit = new QLineEdit(*title, &dlg);
-    titleEdit->setPlaceholderText(QObject::tr("Título do capítulo"));
+    form->addRow(QObject::tr("Título:"), titleEdit);
+    auto* typeCombo = new QComboBox(&dlg);
+    for (const auto& ct : ProjectModel::chapterTypes()) typeCombo->addItem(ct.label, ct.id);
+    typeCombo->addItem(QObject::tr("Outro…"), QStringLiteral("custom"));
+    int typeIdx = typeCombo->findData(*type);
+    typeCombo->setCurrentIndex(typeIdx >= 0 ? typeIdx : 0);
+    form->addRow(QObject::tr("Tipo:"), typeCombo);
+    auto* customLabelEdit = new QLineEdit(*typeLabel, &dlg);
+    customLabelEdit->setPlaceholderText(QObject::tr("ex.: Nota do Autor, Apêndice…"));
+    form->addRow(QObject::tr("Rótulo:"), customLabelEdit);
+    auto updateCustomVisibility = [form, customLabelEdit, typeCombo]() {
+        const bool isCustom = typeCombo->currentData().toString() == QStringLiteral("custom");
+        customLabelEdit->setVisible(isCustom);
+        if (auto* lbl = form->labelForField(customLabelEdit)) lbl->setVisible(isCustom);
+    };
+    updateCustomVisibility();
+    // Placeholder = prévia do rótulo que o capítulo leva se o título ficar
+    // vazio (ex.: "Prólogo", "3") — recalculada a cada troca de tipo/rótulo
+    // customizado, pra sempre bater com o que chapterDisplayLabel() vai
+    // mostrar de verdade depois de criado (mesma função, mesma regra de
+    // numeração por bucket). Deixar vazio não é mais tratado como "cancelou":
+    // é uma escolha válida, o capítulo nasce sem título e usa esse padrão.
+    auto updateTitlePlaceholder = [model, manuscriptId, chapterId, titleEdit, typeCombo, customLabelEdit]() {
+        const QString t = typeCombo->currentData().toString();
+        const QString tl = (t == QStringLiteral("custom")) ? customLabelEdit->text().trimmed() : QString();
+        const QString preview = model ? model->previewChapterDisplayLabel(manuscriptId, t, tl, chapterId) : QString();
+        titleEdit->setPlaceholderText(preview.isEmpty() ? QObject::tr("Título do capítulo") : preview);
+    };
+    updateTitlePlaceholder();
+    QObject::connect(typeCombo, &QComboBox::currentIndexChanged, &dlg, updateTitlePlaceholder);
+    QObject::connect(customLabelEdit, &QLineEdit::textChanged, &dlg, updateTitlePlaceholder);
+    QObject::connect(typeCombo, &QComboBox::currentIndexChanged, &dlg, updateCustomVisibility);
     auto* markerEdit = new QLineEdit(*marker, &dlg);
     markerEdit->setPlaceholderText(QObject::tr("ex.: Dia 5, Verão de 1999, há 10 anos…"));
-    form->addRow(QObject::tr("Título:"), titleEdit);
     form->addRow(QObject::tr("Quando se passa:"), markerEdit);
     root->addLayout(form);
 
@@ -239,11 +293,14 @@ bool promptChapterDialog(QWidget* parent, bool editMode,
 
     titleEdit->setFocus();
     if (dlg.exec() != QDialog::Accepted) return false;
-    const QString t = titleEdit->text().trimmed();
-    if (t.isEmpty()) return false;
-    *title   = t;
-    *marker  = markerEdit->text().trimmed();
-    *summary = summaryEdit->toPlainText().trimmed();
+    // Título vazio não é mais "cancelou" — é "use o padrão" (ver
+    // updateTitlePlaceholder acima). Cancelamento de verdade já foi
+    // resolvido pelo dlg.exec() acima (botão Cancelar/Esc/fechar).
+    *title     = titleEdit->text().trimmed();
+    *marker    = markerEdit->text().trimmed();
+    *summary   = summaryEdit->toPlainText().trimmed();
+    *type      = typeCombo->currentData().toString();
+    *typeLabel = customLabelEdit->text().trimmed();
     if (povOther) *povOther = povCheck->isChecked();
     return true;
 }
@@ -1348,7 +1405,7 @@ void MainWindow::setupEditor()
 
         CrashLogger::log(QStringLiteral("detectDialogue chapterId=%1 scenes=%2")
                           .arg(vm.chapterId).arg(ch->scenes.size()));
-        const QString chTitle = !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
 
         const QList<Element> allElements = elementsStore->elements();
         const Element* narrator = nullptr;
@@ -1845,10 +1902,11 @@ void MainWindow::setupEditor()
             msId = promptCreateManuscript(this, projectModel);
             if (msId.isEmpty()) return;
         }
-        QString title, marker, summary;
+        QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
-        if (!promptChapterDialog(this, false, &title, &marker, &summary,
+        if (!promptChapterDialog(this, false, projectModel, msId, QString(),
+                                 &title, &marker, &summary, &type, &typeLabel,
                                  showPov ? &povOther : nullptr)) return;
         Chapter c;
         c.id = ProjectModel::uid();
@@ -1857,6 +1915,8 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.type = type;
+        c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -2512,10 +2572,11 @@ void MainWindow::setupEditor()
             msId = promptCreateManuscript(this, projectModel);
             if (msId.isEmpty()) return;
         }
-        QString title, marker, summary;
+        QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
-        if (!promptChapterDialog(this, false, &title, &marker, &summary,
+        if (!promptChapterDialog(this, false, projectModel, msId, QString(),
+                                 &title, &marker, &summary, &type, &typeLabel,
                                  showPov ? &povOther : nullptr)) return;
         Chapter c;
         c.id = ProjectModel::uid();
@@ -2524,6 +2585,8 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.type = type;
+        c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
             ProjectStorage::ensureManuscriptDirs(projectRoot, msId);
         }
@@ -2571,13 +2634,17 @@ void MainWindow::setupEditor()
         QString newTitle = c->title;
         QString newMarker = c->timeMarker;
         QString newSummary = c->summary;
+        QString newType = c->type;
+        QString newTypeLabel = c->typeLabel;
         bool newPovOther = c->povOther;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
-        if (!promptChapterDialog(this, true, &newTitle, &newMarker, &newSummary,
+        if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
+                                 &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
                                  showPov ? &newPovOther : nullptr)) return;
         projectModel->updateChapterTitle(chapterId, newTitle);
         projectModel->updateChapterTimeMarker(chapterId, newMarker);
         projectModel->updateChapterSummary(chapterId, newSummary);
+        projectModel->updateChapterType(chapterId, newType, newTypeLabel);
         if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
     });
 
@@ -2793,6 +2860,7 @@ void MainWindow::setupEditor()
             ElementCreateDialog dlg(elemType, this, templates);
             if (dlg.exec() != QDialog::Accepted) return;
             if (dlg.title().isEmpty()) return;
+            if (!confirmNoDuplicateElementName(this, elementsStore, elemType, dlg.title())) return;
             // A escolha Ficha vs Documento livre vem do próprio diálogo (só personagem).
             const bool asSheet = (elemType == QStringLiteral("character")) && dlg.createAsSheet();
             const QString templateId = dlg.selectedTemplateId();
@@ -3014,8 +3082,28 @@ void MainWindow::setupEditor()
             tr("Excluir \"%1\" da gaveta? Esta ação não pode ser desfeita.").arg(title),
             QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
         if (ret != QMessageBox::Yes) return;
+        const QString elementId = item->elementId; // captura antes de remover o item
         projectModel->removeDrawerItem(itemId);
         projectModel->removeBondsForItem(itemId);
+        // O Element vinculado (personagem/cenário/objeto) não some sozinho
+        // quando o item da gaveta é excluído — sem isso ele vira um
+        // "fantasma" permanente em elements.json: nunca mais aparece em
+        // nenhuma UI (nada mais aponta pra ele), mas continua contando pra
+        // checagem de nome único do detector de diálogos e nas Estatísticas
+        // (bug real já visto em produção: personagem "teste" fantasma nas
+        // Estatísticas de outro projeto). Só remove se nenhum OUTRO item da
+        // gaveta ainda apontar pro mesmo elementId (setDrawerItemElement
+        // permite reatribuir o mesmo Element pra um item diferente).
+        if (elementsStore && !elementId.isEmpty()) {
+            bool stillReferenced = false;
+            for (const Drawer& d : projectModel->drawers()) {
+                for (const DrawerItem& di : d.items) {
+                    if (di.elementId == elementId) { stillReferenced = true; break; }
+                }
+                if (stillReferenced) break;
+            }
+            if (!stillReferenced) elementsStore->removeElement(elementId);
+        }
     });
 
     // ---- Vínculos: drag-to-create e clique numa linha ----
@@ -4205,7 +4293,7 @@ void MainWindow::scanChapterDialogues(const QString& chapterId)
     }
     if (html.isEmpty()) return;
 
-    const QString chTitle = !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+    const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
 
     const QList<Element> allElements = elementsStore->elements();
     const Element* narrator = nullptr;
@@ -5951,6 +6039,9 @@ void MainWindow::onSettingsRequested()
         connect(settingsPanel, &SettingsPanel::showScenePopupOnHrChanged, this, [this](bool enabled) {
             if (projectModel) projectModel->setShowScenePopupOnHr(enabled);
         });
+        connect(settingsPanel, &SettingsPanel::romanChapterNumbersChanged, this, [this](bool enabled) {
+            if (projectModel) projectModel->setRomanChapterNumbers(enabled);
+        });
         connect(settingsPanel, &SettingsPanel::rescanAllScenesRequested,
                 this, &MainWindow::rescanAllChapterScenesPresence);
         connect(settingsPanel, &SettingsPanel::timelineGeneratorRequested, this, [this]() {
@@ -5975,6 +6066,7 @@ void MainWindow::onSettingsRequested()
     settingsPanel->setMentionManuscriptsEnabled(
         QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
     settingsPanel->setShowScenePopupOnHr(projectModel ? projectModel->showScenePopupOnHr() : true);
+    settingsPanel->setRomanChapterNumbers(projectModel ? projectModel->romanChapterNumbers() : false);
     // Teto do comprimento de página = altura útil da folha visível. Acima disso a
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
@@ -6966,7 +7058,9 @@ void MainWindow::addSelectionToMemory()
         mem.manuscriptId = vm.manuscriptId;
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
         const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
-        const QString chTitle = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        const QString chTitle = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
         const QString scTitle = (sc && !sc->title.isEmpty())
             ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
         sourceLabel = tr("%1 — %2").arg(chTitle, scTitle);
@@ -6975,7 +7069,9 @@ void MainWindow::addSelectionToMemory()
         mem.chapterId = vm.chapterId;
         mem.manuscriptId = vm.manuscriptId;
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
-        sourceLabel = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        sourceLabel = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
     } else if (vm.type == EditorHost::DrawerDoc) {
         mem.sourceType = QStringLiteral("drawer");
         mem.itemId = vm.itemId;
@@ -7027,7 +7123,9 @@ void MainWindow::addSelectionToConstrutorMention()
         men.manuscriptId = vm.manuscriptId;
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
         const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
-        const QString chTitle = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        const QString chTitle = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
         const QString scTitle = (sc && !sc->title.isEmpty())
             ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
         sourceLabel = tr("%1 — %2").arg(chTitle, scTitle);
@@ -7036,7 +7134,9 @@ void MainWindow::addSelectionToConstrutorMention()
         men.chapterId = vm.chapterId;
         men.manuscriptId = vm.manuscriptId;
         const Chapter* ch = projectModel->findChapter(vm.chapterId);
-        sourceLabel = ch && !ch->title.isEmpty() ? ch->title : tr("Capítulo");
+        sourceLabel = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
     } else if (vm.type == EditorHost::DrawerDoc) {
         men.sourceType = QStringLiteral("drawer");
         men.itemId = vm.itemId;
@@ -7394,6 +7494,7 @@ void MainWindow::createDocFromSelection()
         if (edlg.exec() != QDialog::Accepted) return;
         const QString finalTitle = edlg.title().trimmed();
         if (finalTitle.isEmpty()) return;
+        if (!confirmNoDuplicateElementName(this, elementsStore, elemType, finalTitle)) return;
         role = edlg.role();
         imageDataUrl = edlg.imageDataUrl();
 

@@ -619,7 +619,7 @@ void StatsPanel::rebuildChapterBars()
         bar->setStyleSheet(QStringLiteral(
             "background-color: %1; border: none; border-radius: 4px;")
             .arg(Theme::accentDefault()));
-        const QString chTitle = ch.title.isEmpty() ? tr("Capítulo %1").arg(i + 1) : ch.title;
+        const QString chTitle = ch.title.isEmpty() ? m_model->chapterDisplayLabel(ch) : ch.title;
         const QString tip = (m_chapterMetric == ChapterMetric::Words)
             ? tr("%1: %2 palavra(s)").arg(chTitle).arg(val)
             : tr("%1: %2% diálogo").arg(chTitle).arg(val);
