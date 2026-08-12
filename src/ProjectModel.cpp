@@ -5,6 +5,8 @@
 #include <QJsonDocument>
 #include <QRandomGenerator>
 
+#include <algorithm>
+
 namespace {
 
 QString jsonString(const QJsonValue& v) {
@@ -84,6 +86,8 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     if (!c.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), c.timeMarker);
     if (!c.summary.isEmpty()) o.insert(QStringLiteral("summary"), c.summary);
     if (c.povOther) o.insert(QStringLiteral("povOther"), true);
+    if (c.type != QStringLiteral("chapter")) o.insert(QStringLiteral("type"), c.type);
+    if (!c.typeLabel.isEmpty()) o.insert(QStringLiteral("typeLabel"), c.typeLabel);
     return o;
 }
 
@@ -99,6 +103,9 @@ Chapter chapterFromJson(const QJsonObject& o) {
     c.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     c.summary = jsonString(o.value(QStringLiteral("summary")));
     c.povOther = o.value(QStringLiteral("povOther")).toBool(false);
+    const QString typeVal = jsonString(o.value(QStringLiteral("type")));
+    c.type = typeVal.isEmpty() ? QStringLiteral("chapter") : typeVal;
+    c.typeLabel = jsonString(o.value(QStringLiteral("typeLabel")));
     return c;
 }
 
@@ -1272,6 +1279,18 @@ bool ProjectModel::updateChapterPovOther(const QString& chapterId, bool value) {
     return false;
 }
 
+bool ProjectModel::updateChapterType(const QString& chapterId, const QString& type, const QString& typeLabel) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.type == type && c.typeLabel == typeLabel) return true;
+        c.type = type;
+        c.typeLabel = typeLabel;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
 bool ProjectModel::removeChapter(const QString& chapterId) {
     for (int i = 0; i < m_chapters.size(); ++i) {
         if (m_chapters.at(i).id != chapterId) continue;
@@ -1686,6 +1705,151 @@ QString ProjectModel::chapterDefaultFile(const QString& manuscriptId, const QStr
             .arg(manuscriptId, chapterId);
     }
     return QStringLiteral("content/chapters/ch_%1.html").arg(chapterId);
+}
+
+QList<ChapterType> ProjectModel::chapterTypes() {
+    return {
+        { QStringLiteral("chapter"),   tr("Capítulo") },
+        { QStringLiteral("prologue"),  tr("Prólogo") },
+        { QStringLiteral("epilogue"),  tr("Epílogo") },
+        { QStringLiteral("interlude"), tr("Interlúdio") },
+    };
+}
+
+QString ProjectModel::findChapterTypeLabel(const QString& id) {
+    // Não cachear a lista traduzida: os tr() dentro de chapterTypes() têm que
+    // ser reavaliados a cada chamada, senão travam no idioma do primeiro
+    // chamador do processo (uma lista static local só roda a inicialização
+    // uma vez). O catálogo tem 4 itens fixos — custo irrelevante. Retorna
+    // por valor, não ponteiro: um ponteiro pra dentro desta lista local
+    // ficaria pendurado assim que a função retornasse.
+    const QList<ChapterType> types = chapterTypes();
+    for (const auto& t : types) {
+        if (t.id == id) return t.label;
+    }
+    return QString();
+}
+
+QString ProjectModel::chapterTypeName(const Chapter& chapter) const {
+    if (chapter.type == QStringLiteral("custom")) {
+        const QString lbl = chapter.typeLabel.trimmed();
+        return lbl.isEmpty() ? tr("Outro") : lbl;
+    }
+    const QString label = findChapterTypeLabel(chapter.type);
+    return label.isEmpty() ? tr("Capítulo") : label;
+}
+
+QString ProjectModel::chapterBucketKey(const Chapter& chapter) const {
+    const QString typeId = chapter.type.isEmpty() ? QStringLiteral("chapter") : chapter.type;
+    if (typeId != QStringLiteral("custom")) return typeId;
+    // Tipos "custom" com rótulos diferentes ("Nota do Autor" vs "Apêndice")
+    // não devem compartilhar numeração — a chave usa o texto do rótulo.
+    return QStringLiteral("custom:") + chapterTypeName(chapter).toLower();
+}
+
+int ProjectModel::bucketPosition(const Chapter& probe, const QString& excludeId) const {
+    const QString typeId = probe.type.isEmpty() ? QStringLiteral("chapter") : probe.type;
+    const QString bucketKey = chapterBucketKey(probe);
+
+    QList<const Chapter*> bucket;
+    for (const auto& c : m_chapters) {
+        if (!excludeId.isEmpty() && c.id == excludeId) continue;
+        if (c.manuscriptId != probe.manuscriptId) continue;
+        if (chapterBucketKey(c) == bucketKey) bucket.append(&c);
+    }
+    bucket.append(&probe);
+
+    // "chapter" sempre numerado, mesmo sozinho (comportamento anterior preservado).
+    // Tipos especiais só ganham número a partir da segunda ocorrência.
+    if (bucket.size() <= 1 && typeId != QStringLiteral("chapter")) return 0;
+
+    std::sort(bucket.begin(), bucket.end(),
+              [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
+    for (int i = 0; i < bucket.size(); ++i) {
+        if (bucket.at(i) == &probe) return i + 1;
+    }
+    return 0; // inalcançável — probe está sempre no bucket
+}
+
+int ProjectModel::chapterNumberInBucket(const Chapter& chapter) const {
+    return bucketPosition(chapter, chapter.id);
+}
+
+QString ProjectModel::toRomanNumeral(int n) {
+    if (n <= 0) return QString::number(n);
+    static const QList<QPair<int, QLatin1String>> table = {
+        { 1000, QLatin1String("M") },  { 900, QLatin1String("CM") },
+        { 500,  QLatin1String("D") },  { 400, QLatin1String("CD") },
+        { 100,  QLatin1String("C") },  { 90,  QLatin1String("XC") },
+        { 50,   QLatin1String("L") },  { 40,  QLatin1String("XL") },
+        { 10,   QLatin1String("X") },  { 9,   QLatin1String("IX") },
+        { 5,    QLatin1String("V") },  { 4,   QLatin1String("IV") },
+        { 1,    QLatin1String("I") },
+    };
+    QString result;
+    for (const auto& [value, symbol] : table) {
+        while (n >= value) { result += symbol; n -= value; }
+    }
+    return result;
+}
+
+bool ProjectModel::romanChapterNumbers() const {
+    const auto v = m_settings.value(QStringLiteral("romanChapterNumbers"));
+    if (v.isUndefined() || v.isNull()) return false;
+    return v.toBool(false);
+}
+
+void ProjectModel::setRomanChapterNumbers(bool enabled) {
+    if (romanChapterNumbers() == enabled) return;
+    m_settings.insert(QStringLiteral("romanChapterNumbers"), enabled);
+    emit settingsChanged();
+}
+
+QString ProjectModel::chapterDisplayLabel(const Chapter& chapter) const {
+    const int n = chapterNumberInBucket(chapter);
+    const QString baseLabel = chapterTypeName(chapter);
+    if (n <= 0) return baseLabel;
+    const QString numText = romanChapterNumbers() ? toRomanNumeral(n) : QString::number(n);
+    return QStringLiteral("%1 %2").arg(baseLabel, numText);
+}
+
+QString ProjectModel::chapterDisplayLabel(const QString& chapterId) const {
+    const Chapter* c = findChapter(chapterId);
+    return c ? chapterDisplayLabel(*c) : QString();
+}
+
+QString ProjectModel::chapterNumberLabel(const Chapter& chapter) const {
+    const int n = chapterNumberInBucket(chapter);
+    if (n <= 0) return QString();
+    return romanChapterNumbers() ? toRomanNumeral(n) : QString::number(n);
+}
+
+QString ProjectModel::previewChapterDisplayLabel(const QString& manuscriptId, const QString& type,
+                                                  const QString& typeLabel, const QString& excludeChapterId) const {
+    Chapter probe;
+    probe.manuscriptId = manuscriptId;
+    probe.type = type.isEmpty() ? QStringLiteral("chapter") : type;
+    probe.typeLabel = typeLabel;
+
+    const Chapter* existing = excludeChapterId.isEmpty() ? nullptr : findChapter(excludeChapterId);
+    if (existing) {
+        // Edição: usa a posição real do capítulo (order), pra simular "e se
+        // eu trocasse o tipo agora" sem mudar onde ele está na sequência.
+        probe.id = existing->id;
+        probe.order = existing->order;
+    } else {
+        // Criação: novo capítulo sempre entra no fim do manuscrito.
+        int maxOrder = 0;
+        for (const auto& c : m_chapters)
+            if (c.manuscriptId == manuscriptId && c.order > maxOrder) maxOrder = c.order;
+        probe.order = maxOrder + 1;
+    }
+
+    const QString baseLabel = chapterTypeName(probe);
+    const int n = bucketPosition(probe, excludeChapterId);
+    if (n <= 0) return baseLabel;
+    const QString numText = romanChapterNumbers() ? toRomanNumeral(n) : QString::number(n);
+    return QStringLiteral("%1 %2").arg(baseLabel, numText);
 }
 
 QString ProjectModel::characterSheetToHtml(const CharacterSheet& sheet, const QString& name,

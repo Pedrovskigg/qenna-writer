@@ -488,6 +488,27 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit autoNavEnabledChanged(checked);
     });
 
+    // ---- Seção: Capítulos ----
+    auto* chapterGroup = new QGroupBox(tr("Capítulos"), this);
+    auto* chapterLayout = new QVBoxLayout(chapterGroup);
+    chapterLayout->setContentsMargins(14, 8, 14, 14);
+    chapterLayout->setSpacing(8);
+
+    m_romanNumeralsCheck = new QCheckBox(tr("Usar numerais romanos para os capítulos"), chapterGroup);
+    chapterLayout->addWidget(m_romanNumeralsCheck);
+
+    auto* romanHint = new QLabel(
+        tr("Troca o número que aparece antes do título do capítulo (ex.: \"3 - "
+           "A Batalha\" vira \"III - A Batalha\") na barra lateral do manuscrito."),
+        chapterGroup);
+    romanHint->setObjectName(QStringLiteral("settingsHint"));
+    romanHint->setWordWrap(true);
+    chapterLayout->addWidget(romanHint);
+
+    connect(m_romanNumeralsCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        emit romanChapterNumbersChanged(checked);
+    });
+
     // ---- Seção: Linha do tempo ----
     auto* timelineGroup = new QGroupBox(tr("Linha do tempo"), this);
     auto* timelineLayout = new QVBoxLayout(timelineGroup);
@@ -576,6 +597,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     rightCol->addWidget(detectGroup);
     rightCol->addWidget(mentionGroup);
     rightCol->addWidget(navGroup);
+    rightCol->addWidget(chapterGroup);
     rightCol->addWidget(timelineGroup);
     rightCol->addWidget(memGroup);
     rightCol->addStretch();
@@ -939,6 +961,16 @@ bool SettingsPanel::showScenePopupOnHr() const
 void SettingsPanel::setShowScenePopupOnHr(bool enabled)
 {
     if (m_scenePopupCheck) m_scenePopupCheck->setChecked(enabled);
+}
+
+bool SettingsPanel::romanChapterNumbers() const
+{
+    return m_romanNumeralsCheck ? m_romanNumeralsCheck->isChecked() : false;
+}
+
+void SettingsPanel::setRomanChapterNumbers(bool enabled)
+{
+    if (m_romanNumeralsCheck) m_romanNumeralsCheck->setChecked(enabled);
 }
 
 int SettingsPanel::maxDocs() const

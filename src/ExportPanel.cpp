@@ -223,7 +223,7 @@ void ExportPanel::buildTree() {
             auto* c = new QTreeWidgetItem(msItem);
             const QString num = QString::number(ci + 1).rightJustified(2, QLatin1Char('0'));
             c->setText(0, QStringLiteral("%1  %2").arg(num,
-                ch->title.isEmpty() ? tr("Capítulo %1").arg(ci + 1) : ch->title));
+                ch->title.isEmpty() ? m_model->chapterDisplayLabel(*ch) : ch->title));
             c->setData(0, IdRole, ch->id);
             c->setData(0, KindRole, KindChapter);
             c->setFlags(leafFlags);

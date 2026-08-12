@@ -421,6 +421,9 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
         connect(m_model, &ProjectModel::manuscriptsChanged, this, &ManuscriptPanel::onManuscriptsChanged);
         connect(m_model, &ProjectModel::chaptersChanged, this, &ManuscriptPanel::onChaptersChanged);
         connect(m_model, &ProjectModel::loaded, this, [this]() { syncCombo(); rebuildList(); });
+        // romanChapterNumbers (e outras prefs futuras) mudam o texto exibido
+        // sem mexer na lista de capítulos em si — settingsChanged cobre isso.
+        connect(m_model, &ProjectModel::settingsChanged, this, &ManuscriptPanel::onChaptersChanged);
     }
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -629,7 +632,19 @@ void ManuscriptPanel::rebuildList() {
     int row = 0;
     for (const auto& c : filtered) {
         auto* btn = new QToolButton(this);
-        btn->setText(QStringLiteral("%1.  %2").arg(c.order).arg(c.title.isEmpty() ? tr("(sem título)") : c.title));
+        // Com título: só o número, sem a palavra do tipo ("3 - A Batalha"),
+        // pra todos os tipos — vazio quando o capítulo não é numerado (tipo
+        // especial sozinho no manuscrito), aí é só o título puro. Sem
+        // título: cai no rótulo completo de sempre ("Capítulo 3", "Prólogo").
+        QString btnText;
+        if (c.title.isEmpty()) {
+            btnText = m_model->chapterDisplayLabel(c);
+        } else {
+            const QString numLabel = m_model->chapterNumberLabel(c);
+            btnText = numLabel.isEmpty() ? c.title
+                : QStringLiteral("%1 - %2").arg(numLabel, c.title);
+        }
+        btn->setText(btnText);
         btn->setToolButtonStyle(Qt::ToolButtonTextOnly);
         btn->setCursor(Qt::PointingHandCursor);
         btn->setMinimumHeight(34);

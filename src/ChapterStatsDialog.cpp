@@ -55,8 +55,9 @@ ChapterStatsDialog::ChapterStatsDialog(WordCounter* wordCounter, DialogueStore* 
 void ChapterStatsDialog::buildUi()
 {
     const Chapter* chapter = m_model ? m_model->findChapter(m_chapterId) : nullptr;
-    const QString chapterTitle = chapter && !chapter->title.isEmpty()
-        ? chapter->title : tr("Capítulo sem título");
+    const QString chapterTitle = chapter
+        ? (chapter->title.isEmpty() ? m_model->chapterDisplayLabel(*chapter) : chapter->title)
+        : tr("Capítulo sem título");
     const bool hasMultiScenes = chapter && chapter->scenes.size() > 1;
 
     QLocale loc = statsLocale();
@@ -167,7 +168,7 @@ void ChapterStatsDialog::buildUi()
     };
 
     // — Capítulo —
-    addSection(tr("Capítulo"));
+    addSection(chapter ? m_model->chapterTypeName(*chapter) : tr("Capítulo"));
     addStat(tr("Palavras totais"), loc.toString(totalWords), true);
     addStat(tr("Diálogos detectados"), loc.toString(totalDialogues));
 
