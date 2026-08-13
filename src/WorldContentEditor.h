@@ -15,6 +15,7 @@ class QFontComboBox;
 class QLabel;
 class QPushButton;
 class QScrollArea;
+class QScrollBar;
 class QTextEdit;
 class QTimer;
 
@@ -81,6 +82,15 @@ private:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+
+private:
+    // Scrollbar nativa do QTextEdit fica colada no texto (a "página" tem
+    // largura fixa, bem mais estreita que o painel) — essa flutua solta na
+    // borda direita do painel inteiro, espelhando a posição/valor da nativa
+    // (mesmo padrão do "externalScrollBar" do editor principal, mas sem a
+    // navegação automática entre capítulos, que não se aplica aqui).
+    void positionExternalScrollBar();
 
 private:
     QPushButton*   m_boldBtn        = nullptr;
@@ -103,6 +113,7 @@ private:
     QScrollArea*   m_pageScroll     = nullptr;
     QWidget*       m_pageColumn     = nullptr;
     QTextEdit*     m_contentEdit    = nullptr;
+    QScrollBar*    m_externalScrollBar = nullptr;
     ImageOverlay*  m_imageOverlay   = nullptr;
     QTextCursor    m_selectedImageCursor;
 
