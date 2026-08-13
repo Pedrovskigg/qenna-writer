@@ -1,6 +1,7 @@
 #include "TimelineEventPopup.h"
 
 #include "ProjectModel.h"
+#include "TerritorioStore.h"
 #include "Theme.h"
 
 #include <QColorDialog>
@@ -37,8 +38,10 @@ QPixmap colorPixmap(const QColor& c, int sz = 18)
 
 TimelineEventPopup::TimelineEventPopup(const QList<TimelineDef>& timelines,
                                        ProjectModel* model,
+                                       TerritorioStore* territorioStore,
                                        QWidget* parent)
-    : QDialog(parent, Qt::Dialog), m_timelines(timelines), m_model(model)
+    : QDialog(parent, Qt::Dialog), m_timelines(timelines), m_model(model),
+      m_territorioStore(territorioStore)
 {
     setWindowTitle(tr("Evento da linha do tempo"));
     setMinimumWidth(380);
@@ -126,6 +129,19 @@ void TimelineEventPopup::buildUi(const QList<TimelineDef>& timelines)
             }
         });
         root->addWidget(m_linkCombo);
+    }
+
+    // ── Onde (Território do Criador de Mundos) ────────────────────────────────
+    if (m_territorioStore) {
+        auto* placeLabel = new QLabel(tr("Onde:"), this);
+        placeLabel->setObjectName(QStringLiteral("tlPopupSectionLabel"));
+        root->addWidget(placeLabel);
+
+        m_placeCombo = new QComboBox(this);
+        m_placeCombo->addItem(tr("(sem local)"), QString());
+        for (const auto& t : m_territorioStore->territorios())
+            m_placeCombo->addItem(t.name, t.id);
+        root->addWidget(m_placeCombo);
     }
 
     // ── Timeline ─────────────────────────────────────────────────────────────
@@ -235,6 +251,14 @@ void TimelineEventPopup::setEventData(const TimelineEvent& e)
         }
         m_linkCombo->setCurrentIndex(sel);
     }
+
+    if (m_placeCombo) {
+        int sel = 0;
+        for (int i = 1; i < m_placeCombo->count(); ++i) {
+            if (m_placeCombo->itemData(i).toString() == e.placeId) { sel = i; break; }
+        }
+        m_placeCombo->setCurrentIndex(sel);
+    }
 }
 
 TimelineEvent TimelineEventPopup::eventData() const
@@ -254,6 +278,8 @@ TimelineEvent TimelineEventPopup::eventData() const
         else if (!k.isEmpty())  // ch: ou doc:
             e.linkedDocId = k.mid(k.indexOf(QChar(':')) + 1);
     }
+    if (m_placeCombo)
+        e.placeId = m_placeCombo->currentData().toString();
     return e;
 }
 

@@ -120,6 +120,9 @@
 #include "ConstrutorMentionAddPopup.h"
 #include "ConstrutorStore.h"
 #include "ConstrutorWindow.h"
+#include "TerritorioMentionAddPopup.h"
+#include "TerritorioStore.h"
+#include "TerritorioWindow.h"
 #include "HelpPanel.h"
 #include "StatsPanel.h"
 #include "GlossaryStore.h"
@@ -976,6 +979,8 @@ void MainWindow::setupEditor()
         [this]() { addSelectionToMemory(); });
     selectionPopup->addAction(QStringLiteral("construtor.svg"), tr("Salvar como menção ao sistema..."),
         [this]() { addSelectionToConstrutorMention(); });
+    selectionPopup->addAction(QStringLiteral("elements/map.svg"), tr("Salvar como menção ao Território..."),
+        [this]() { addSelectionToTerritorioMention(); });
     selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a %1").arg(miraAssistantName()),
         [this]() { openAISelectionChat(); });
     selectionPopup->addAction(QStringLiteral("add-image.svg"), tr("Gerar imagem disso..."),
@@ -1608,21 +1613,31 @@ void MainWindow::setupEditor()
             return;
         }
         if (drawerKey == QStringLiteral("__construtor_node__")) {
-            // itemId = "<systemId>:<nodeId>" — abre/foca a janela do Construtor
-            // direto no sistema/nó referenciado (janela própria, não RefMenu).
+            // itemId = "<systemId>:<nodeId>" — Construtor mora dentro do
+            // Criador de Mundos agora, sem janela própria.
             const int sep = itemId.indexOf(QLatin1Char(':'));
             if (sep < 0) return;
             const QString systemId = itemId.left(sep);
             const QString nodeId   = itemId.mid(sep + 1);
-            if (!construtorWindow) {
-                construtorWindow = new ConstrutorWindow(construtorStore, this);
-                connect(construtorWindow, &ConstrutorWindow::openMentionInEditorRequested,
-                        this, &MainWindow::openConstrutorMentionInEditor);
-            }
-            construtorWindow->show();
-            construtorWindow->raise();
-            construtorWindow->activateWindow();
-            construtorWindow->openNode(systemId, nodeId);
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->show();
+            w->raise();
+            w->activateWindow();
+            w->openConstrutorNode(systemId, nodeId);
+            return;
+        }
+        if (drawerKey == QStringLiteral("__lugar_node__")) {
+            // itemId = "<territorioId>:<nodeId>" — abre/foca o Criador de
+            // Mundos direto no território/nó referenciado.
+            const int sep = itemId.indexOf(QLatin1Char(':'));
+            if (sep < 0) return;
+            const QString territorioId = itemId.left(sep);
+            const QString nodeId       = itemId.mid(sep + 1);
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->show();
+            w->raise();
+            w->activateWindow();
+            w->openNode(territorioId, nodeId);
             return;
         }
         if (refMenuPanel)
@@ -1696,6 +1711,30 @@ void MainWindow::setupEditor()
     });
     connect(construtorMentionAddPopup, &ConstrutorMentionAddPopup::cancelled, this,
             [this]() { m_pendingMention.reset(); });
+
+    // Criador de Mundos: store de Territórios (sidecar JSON próprio,
+    // territorios.json). Fase 1 — só o dado, a janela chega no próximo
+    // milestone.
+    territorioStore = new TerritorioStore(this);
+    if (mentionPopup) mentionPopup->setTerritorioStore(territorioStore);
+
+    // Menções ao Território: popup de "Salvar como menção ao Território..."
+    // (mini toolbar de seleção) — mesmo padrão de construtorMentionAddPopup.
+    territorioMentionAddPopup = new TerritorioMentionAddPopup(this);
+    territorioMentionAddPopup->setTerritorioStore(territorioStore);
+    connect(territorioMentionAddPopup, &TerritorioMentionAddPopup::confirmed, this,
+            [this](const QString& territorioId, const QString& nodeId, const QString& category) {
+        if (!territorioStore || !m_pendingTerritorioMention.has_value()) return;
+        TerritorioStore::Mention men = *m_pendingTerritorioMention;
+        men.nodeId = nodeId;
+        men.category = category;
+        territorioStore->addMention(territorioId, men);
+        m_pendingTerritorioMention.reset();
+        showReminderToast(tr("Menção salva"),
+            tr("Trecho vinculado ao território."));
+    });
+    connect(territorioMentionAddPopup, &TerritorioMentionAddPopup::cancelled, this,
+            [this]() { m_pendingTerritorioMention.reset(); });
 
     memoriesStore = new MemoriesStore(this);
     memoryAddPopup = new MemoryAddPopup(this);
@@ -2175,6 +2214,7 @@ void MainWindow::setupEditor()
     // Painel flutuante de Referência — drag/resize livres, geometria persistida em QSettings.
     refMenuPanel = new RefMenuPanel(projectModel, editorHost, docCache, elementsStore, container);
     refMenuPanel->setConstrutorStore(construtorStore);
+    refMenuPanel->setTerritorioStore(territorioStore);
     refMenuPanel->setProjectRoot(projectRoot);
     refMenuPanel->setEditorFontFamily(currentFontFamily);
     refMenuPanel->raise();
@@ -2210,6 +2250,7 @@ void MainWindow::setupEditor()
     statsPanel = new StatsPanel(projectModel, elementsStore, container);
     statsPanel->setDocCache(docCache);
     statsPanel->setDialogueStore(dialogueStore);
+    statsPanel->setTerritorioStore(territorioStore);
     statsPanel->setWordCounter(wordCounter);
     statsPanel->setPresenceProvider(m_presenceProvider);
     statsPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
@@ -2253,15 +2294,16 @@ void MainWindow::setupEditor()
         if (aiChatPanel) aiChatPanel->togglePanel();
     });
 
+    // O Construtor foi absorvido pelo Criador de Mundos — não é mais uma
+    // janela separada, mora embutido no painel direito (ver
+    // ConstrutorWindow standalone=false em TerritorioWindow::setConstrutorStore).
+    // O botão da TopToolbar (ícone/tooltip "construtor.svg" ainda por
+    // herança do nome antigo) agora abre a janela do Criador de Mundos.
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
-        if (!construtorWindow) {
-            construtorWindow = new ConstrutorWindow(construtorStore, this);
-            connect(construtorWindow, &ConstrutorWindow::openMentionInEditorRequested,
-                    this, &MainWindow::openConstrutorMentionInEditor);
-        }
-        construtorWindow->show();
-        construtorWindow->raise();
-        construtorWindow->activateWindow();
+        TerritorioWindow* w = ensureTerritorioWindow();
+        w->show();
+        w->raise();
+        w->activateWindow();
     });
     if (markerStore) {
         connect(markerStore, &MarkerStore::markersChanged, this, [this](const QString&) {
@@ -4695,7 +4737,15 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (construtorStore) {
         construtorStore->setProjectRoot(root);
         construtorStore->load();
-        if (construtorWindow) construtorWindow->setStore(construtorStore);
+        // O Construtor embutido é reconstruído aqui via setConstrutorStore()
+        // (que já lida com o mesmo ponteiro sendo reaproveitado entre
+        // projetos) — não tem mais janela própria pra recarregar em separado.
+        if (territorioWindow) territorioWindow->setConstrutorStore(construtorStore);
+    }
+    if (territorioStore) {
+        territorioStore->setProjectRoot(root);
+        territorioStore->load();
+        if (territorioWindow) territorioWindow->setStore(territorioStore);
     }
     if (lousaPanel) {
         lousaPanel->setProjectModel(projectModel);
@@ -6935,6 +6985,7 @@ TimelinePanel* MainWindow::ensureTimelinePanel()
         });
         timelinePanel->setProjectModel(projectModel);
         timelinePanel->setElementsStore(elementsStore);
+        timelinePanel->setTerritorioStore(territorioStore);
         timelinePanel->setPresenceProvider(m_presenceProvider);
         timelinePanel->setDocTextResolver([this](const QString& key) {
             return docTextForLink(key);
@@ -6943,6 +6994,23 @@ TimelinePanel* MainWindow::ensureTimelinePanel()
             timelinePanel->setProjectRoot(projectRoot);
     }
     return timelinePanel;
+}
+
+TerritorioWindow* MainWindow::ensureTerritorioWindow()
+{
+    if (!territorioWindow) {
+        territorioWindow = new TerritorioWindow(territorioStore, this);
+        territorioWindow->setConstrutorStore(construtorStore);
+        territorioWindow->setPlaceEventsProvider([this](const QString& territorioId) {
+            QStringList out;
+            for (const auto& ev : ensureTimelinePanel()->eventsForPlace(territorioId))
+                out << (ev.title.isEmpty() ? tr("(evento sem título)") : ev.title);
+            return out;
+        });
+        connect(territorioWindow, &TerritorioWindow::openMentionInEditorRequested,
+                this, &MainWindow::openConstrutorMentionInEditor);
+    }
+    return territorioWindow;
 }
 
 QString MainWindow::docTextForLink(const QString& linkKey)
@@ -7156,6 +7224,62 @@ void MainWindow::addSelectionToConstrutorMention()
     const QRect r = editor->cursorRect(end);
     const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft()) + QPoint(0, 6);
     construtorMentionAddPopup->presentAt(gp, text, sourceLabel, systems);
+}
+
+void MainWindow::addSelectionToTerritorioMention()
+{
+    if (!editor || !projectModel || !editorHost || !territorioMentionAddPopup || !territorioStore) return;
+    QTextCursor cur = editor->textCursor();
+    if (!cur.hasSelection()) return;
+
+    QString raw = cur.selectedText();
+    raw.replace(QChar(0x2029), QChar('\n'));
+    const QString text = raw.trimmed();
+    if (text.isEmpty()) return;
+
+    TerritorioStore::Mention men;
+    men.text = text;
+    QString sourceLabel;
+    const auto vm = editorHost->viewMode();
+    if (vm.type == EditorHost::SceneDoc) {
+        men.sourceType = QStringLiteral("scene");
+        men.chapterId = vm.chapterId;
+        men.sceneIndex = vm.sceneIndex;
+        men.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
+        const QString chTitle = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
+        const QString scTitle = (sc && !sc->title.isEmpty())
+            ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
+        sourceLabel = tr("%1 — %2").arg(chTitle, scTitle);
+    } else if (vm.type == EditorHost::ChapterDoc) {
+        men.sourceType = QStringLiteral("chapter");
+        men.chapterId = vm.chapterId;
+        men.manuscriptId = vm.manuscriptId;
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        sourceLabel = ch
+            ? (ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title)
+            : tr("Capítulo");
+    } else if (vm.type == EditorHost::DrawerDoc) {
+        men.sourceType = QStringLiteral("drawer");
+        men.itemId = vm.itemId;
+        const DrawerItem* it = projectModel->findDrawerItem(vm.itemId);
+        sourceLabel = (it && !it->title.isEmpty()) ? it->title : tr("Documento");
+    }
+    men.sourceLabel = sourceLabel;
+    m_pendingTerritorioMention = men;
+
+    QVector<QPair<QString, QString>> territorios;
+    for (const auto& t : territorioStore->territorios())
+        territorios.append({ t.id, t.name });
+
+    QTextCursor end(editor->document());
+    end.setPosition(cur.selectionEnd());
+    const QRect r = editor->cursorRect(end);
+    const QPoint gp = editor->viewport()->mapToGlobal(r.bottomLeft()) + QPoint(0, 6);
+    territorioMentionAddPopup->presentAt(gp, text, sourceLabel, territorios);
 }
 
 void MainWindow::reopenSourceLocation(const QString& sourceType, const QString& chapterId,

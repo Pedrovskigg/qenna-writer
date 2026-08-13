@@ -3,6 +3,7 @@
 
 #include "CharacterDetector.h"
 #include "ConstrutorStore.h"
+#include "TerritorioStore.h"
 #include "DialogueStore.h"
 #include "EditorHost.h"
 #include "MemoriesStore.h"
@@ -71,6 +72,8 @@ class MemoryAddPopup;
 class ConstrutorStore;
 class ConstrutorWindow;
 class ConstrutorMentionAddPopup;
+class TerritorioWindow;
+class TerritorioMentionAddPopup;
 class MainMenuDialog;
 class BackgroundWidget;
 class RemindersStore;
@@ -241,6 +244,7 @@ private:
     void openMemoryInEditor(const MemoriesStore::Memory& mem);
     // Abre o popup de "Salvar como menção ao sistema…" a partir da seleção atual.
     void addSelectionToConstrutorMention();
+    void addSelectionToTerritorioMention();
     // Abre a janela de chat da assistente de IA a partir da seleção atual.
     void openAISelectionChat();
     void closeAISelectionChat();
@@ -259,6 +263,10 @@ private:
     // Abre a fonte de um diálogo detectado no editor e seleciona o trecho.
     void openDialogueInEditor(const DialogueStore::Dialogue& dlg);
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
+    // Cria (lazy) e devolve a janela do Criador de Mundos, já com as duas
+    // stores/provider injetados — o Construtor mora embutido nela, não tem
+    // mais janela própria.
+    TerritorioWindow* ensureTerritorioWindow();
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
     QString docTextForLink(const QString& linkKey);
@@ -351,8 +359,10 @@ private:
     MemoryAddPopup *memoryAddPopup = nullptr;
     DialogueStore *dialogueStore = nullptr;
     ConstrutorStore *construtorStore = nullptr;
-    ConstrutorWindow *construtorWindow = nullptr;
     ConstrutorMentionAddPopup *construtorMentionAddPopup = nullptr;
+    TerritorioMentionAddPopup *territorioMentionAddPopup = nullptr;
+    TerritorioStore *territorioStore = nullptr;
+    TerritorioWindow *territorioWindow = nullptr;
     // Memória sendo criada: preenchida em addSelectionToMemory() (texto + fonte)
     // e completada no confirmed do popup (nome + destino).
     std::optional<MemoriesStore::Memory> m_pendingMemory;
@@ -360,6 +370,8 @@ private:
     // addSelectionToConstrutorMention() (texto + fonte) e completada no
     // confirmed do popup (systemId + nodeId opcional).
     std::optional<ConstrutorStore::Mention> m_pendingMention;
+    // Menção ao Território sendo criada: mesmo padrão de m_pendingMention.
+    std::optional<TerritorioStore::Mention> m_pendingTerritorioMention;
     RemindersStore *remindersStore = nullptr;
     RemindersPanel *remindersPanel = nullptr;
     SheetTemplatesStore *sheetTemplatesStore = nullptr;

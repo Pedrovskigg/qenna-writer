@@ -332,6 +332,8 @@ bool ConstrutorStore::load()
         sys.createdAt   = o.value(QStringLiteral("createdAt")).toVariant().toLongLong();
         sys.updatedAt   = o.value(QStringLiteral("updatedAt")).toVariant().toLongLong();
         sys.content     = o.value(QStringLiteral("content")).toString();
+        for (const auto& tv : o.value(QStringLiteral("territoryIds")).toArray())
+            sys.territoryIds.append(tv.toString());
         for (const auto& nv : o.value(QStringLiteral("nodes")).toArray())
             sys.nodes.append(nodeFromJson(nv.toObject()));
         for (const auto& mv : o.value(QStringLiteral("mentions")).toArray())
@@ -358,6 +360,11 @@ bool ConstrutorStore::save() const
         o.insert(QStringLiteral("updatedAt"),    sys.updatedAt);
         if (!sys.content.isEmpty())
             o.insert(QStringLiteral("content"), sys.content);
+        if (!sys.territoryIds.isEmpty()) {
+            QJsonArray tids;
+            for (const auto& tid : sys.territoryIds) tids.append(tid);
+            o.insert(QStringLiteral("territoryIds"), tids);
+        }
         QJsonArray nodes;
         for (const Node& n : sys.nodes)
             nodes.append(nodeToJson(n));
@@ -442,6 +449,17 @@ bool ConstrutorStore::updateSystemContent(const QString& id, const QString& cont
     if (!sys || sys->content == content) return false;
     sys->content   = content;
     sys->updatedAt = QDateTime::currentMSecsSinceEpoch();
+    save();
+    emit changed();
+    return true;
+}
+
+bool ConstrutorStore::updateSystemTerritories(const QString& id, const QStringList& territoryIds)
+{
+    System* sys = findSystem(id);
+    if (!sys) return false;
+    sys->territoryIds = territoryIds;
+    sys->updatedAt     = QDateTime::currentMSecsSinceEpoch();
     save();
     emit changed();
     return true;

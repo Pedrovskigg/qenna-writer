@@ -2,19 +2,10 @@
 
 #include "ConstrutorStore.h"
 
-#include <QColor>
-#include <QIcon>
-#include <QList>
-#include <QTextCharFormat>
-#include <QTextCursor>
 #include <QWidget>
 
-class ImageOverlay;
-class QAction;
-class QButtonGroup;
-class QComboBox;
-class QFontComboBox;
-class QFrame;
+class TerritorioStore;
+class WorldContentEditor;
 class QLabel;
 class QLineEdit;
 class QListWidget;
@@ -22,49 +13,77 @@ class QListWidgetItem;
 class QPushButton;
 class QScrollArea;
 class QSlider;
-class QTextEdit;
-class QTimer;
 class QToolButton;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QVBoxLayout;
 class SystemItemDelegate;
 
-// Janela dedicada do Construtor — worldbuilding estruturado.
-// Layout: painel esquerdo colapsável (sistemas + slider + árvore de nós)
-// + editor rich text com toolbar de formatação.
+// Navegação/edição de Sistemas do Construtor — sempre embutida no Criador de
+// Mundos como widget filho comum (nunca janela própria; "coexiste"
+// literalmente com o resto da ferramenta). NÃO tem editor de conteúdo
+// próprio: usa o WorldContentEditor compartilhado que o Criador de Mundos já
+// injeta pros nós de Território — Território e Sistema são a mesma função,
+// editados no mesmo lugar, só a árvore de navegação à esquerda muda.
 class ConstrutorWindow : public QWidget {
     Q_OBJECT
 public:
-    explicit ConstrutorWindow(ConstrutorStore* store, QWidget* parent = nullptr);
+    // `editor` é o WorldContentEditor COMPARTILHADO com o resto do Criador
+    // de Mundos — este widget nunca cria o seu próprio.
+    explicit ConstrutorWindow(ConstrutorStore* store, WorldContentEditor* editor,
+                              QWidget* parent = nullptr);
 
     void setStore(ConstrutorStore* store);
+
+    // Filtra a lista de sistemas por Território (vazio = mostra todos,
+    // sistemas tagueados a outros territórios ficam ocultos; sistema sem
+    // tag nenhuma = global, sempre aparece).
+    void setTerritoryFilter(const QString& territorioId);
+
+    // Território(s) do Criador de Mundos, pra alimentar o botão de tag na
+    // ficha do sistema ("pertence a qual território?"). Opcional — sem isso
+    // o botão fica oculto e todo sistema segue implicitamente global.
+    void setTerritorioStore(TerritorioStore* store);
 
     // Navega direto pra um sistema/nó — usado pelo Ctrl+clique numa menção @
     // que aponta pro Construtor (ver refActivated em MainWindow.cpp). Se
     // nodeId vier vazio, abre só o resumo do sistema.
     void openNode(const QString& systemId, const QString& nodeId);
 
+    // Liga/desliga a reação ao editor compartilhado — o Criador de Mundos
+    // chama isso pra arbitrar qual lado (Território ou Construtor) "possui"
+    // o editor no momento, evitando que os dois tentem salvar o mesmo
+    // conteúdo em lugares diferentes. Quando false, este widget ignora
+    // contentChanged() do editor e não escreve nada na store.
+    void setEditorActive(bool active);
+    // Salva o conteúdo atual do editor compartilhado nesta store, mas só se
+    // este widget for o dono corrente (no-op caso contrário) — chamado pelo
+    // host ao fechar a janela, pra não perder edição pendente sem saber de
+    // qual lado ela é.
+    void flushPendingContent();
+
 signals:
     // Clique num card da seção "Menções no projeto" — pede pra abrir a
     // origem (capítulo/cena/gaveta) no editor principal.
     void openMentionInEditorRequested(const ConstrutorStore::Mention& mention);
+    // Emitido sempre que este widget está prestes a assumir o editor
+    // compartilhado (usuário selecionou sistema/nó aqui) — o host
+    // (TerritorioWindow) escuta pra ceder a posse e não sobrescrever.
+    void editorOwnershipRequested();
 
 protected:
-    void closeEvent(QCloseEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void applyTheme();
-    void applyPageLayout();
     void onStoreChanged();
     void onSystemSelected();
     void onSystemNameEdited(const QString& name);
     void onSliderChanged(int index);
     void onTreeSelectionChanged();
     void onTreeItemChanged(QTreeWidgetItem* item, int column);
-    void onNodeContentChanged();
+    void onEditorContentChanged();
     void onNewSystem();
     void onDeleteSystem();
     void onAddRule();
@@ -73,84 +92,46 @@ private slots:
     void onDeleteNode();
     void onTreeContextMenu(const QPoint& pos);
     void onSearchTextChanged(const QString& text);
-    void onTogglePanel();
-    void onCurrentCharFormatChanged(const QTextCharFormat& fmt);
-    void onInsertImage();
-    void setFocusMode(bool enabled);
-    void updateFocusedBlock();
 
 private:
     void buildUi();
+    void rebuildTerritoryMenu();
     void rebuildSystemsList();
     void loadSystem(const QString& id);
     void rebuildTree();
     void populateTreeNode(QTreeWidgetItem* parent, const ConstrutorStore::Node& node);
     void updateSliderDisplay(int index);
-    // Carrega HTML/plain text no editor, normaliza formatação global (indent/
-    // entrelinha/margens) e sincroniza a toolbar — usado tanto pro conteúdo de
-    // um nó quanto pro resumo do sistema (sem nó selecionado).
-    void loadContentIntoEditor(const QString& content);
     // Nenhum sistema aberto — desabilita o editor com uma mensagem explicando
     // que é preciso selecionar/criar um sistema (distinta da mensagem de
     // "sistema aberto, sem nó selecionado" usada pelo resumo do sistema).
     void showNoSystemOpenState();
     void saveCurrentNodeContent();
-    void updateToolbarState(const QTextCharFormat& fmt);
     QString selectedSystemId() const;
     QString selectedNodeId() const;
-
-    // Timestamp de última edição — exibido no toolbar do editor de conteúdo,
-    // reflete sys->updatedAt (resumo do sistema) ou node->updatedAt (nó).
-    void updateLastEditedLabel(qint64 updatedAt);
 
     // Seção "Menções no projeto" — trechos salvos via "Salvar como menção ao
     // sistema..." (mini-toolbar de seleção do editor principal). Painel
     // flutuante ancorado ao canto superior direito da janela (mesmo padrão
-    // visual de RefMenuPanel/PensarioPanel), aberto/fechado pelo botão "@" na
-    // toolbar do editor. rebuildMentionsPanel() é o ponto único de verdade:
+    // visual de RefMenuPanel/PensarioPanel), aberto/fechado pelo botão "@"
+    // no cabeçalho. rebuildMentionsPanel() é o ponto único de verdade:
     // decide o filtro (sistema inteiro vs. nó selecionado) e repopula os
-    // cards. Chamada nos mesmos pontos que trocam o conteúdo do editor
-    // (loadSystem/onTreeSelectionChanged/onStoreChanged/showNoSystemOpenState).
+    // cards.
     void rebuildMentionsPanel();
     QWidget* buildMentionCard(const ConstrutorStore::Mention& mention, QWidget* parent);
-    // Reposiciona o painel de menções no canto superior direito da janela —
-    // chamado ao abrir e em todo resize (painel não faz parte do layout
-    // principal, é um overlay livre, como PensarioPanel::ancorRight()).
     void anchorMentionsPanel();
 
     // Busca global entre sistemas e nós (por nome) — navega direto pro
     // resultado ao clicar, sem precisar abrir sistema por sistema.
     void selectSystemAndNode(const QString& systemId, const QString& nodeId);
 
-    // Formatação global do editor de conteúdo (aplica ao documento inteiro,
-    // não apenas à seleção — espelha o comportamento de fonte/tamanho/
-    // alinhamento/espaçamento do editor principal)
-    void buildSpacingMenu();
-    void applyGlobalAlignment(Qt::Alignment align);
-    void applyLineHeight(int percent);
-    void applyParaSpaceBefore(int px);
-    void applyParaSpaceAfter(int px);
-    void updateLineHeightMenuChecks();
-
-    // Focus Mode — esmaece todo o texto exceto o parágrafo com o cursor.
-    // Mesmo mecanismo do editor principal (MainWindow::applyTextColor/
-    // updateFocusedBlock), simplificado por não haver markers/@menções aqui.
-    void applyFocusTextColor();
-
-    // Overlay de tamanho de imagem (clica na imagem → mostra controles de
-    // +/- largura) — mesmo mecanismo do editor principal (MainWindow::
-    // findImageAt/showOverlayForImage/changeSelectedImageWidth), sem a parte
-    // de alinhamento/frame flutuante, que o Construtor não usa.
-    bool findImageAt(const QPoint& viewportPos, QTextCursor& imageCursor) const;
-    void showOverlayForImage(const QTextCursor& imageCursor);
-    void hideOverlay();
-    void changeSelectedImageWidth(int delta);
+    // Assume o editor compartilhado pra este widget (emite
+    // editorOwnershipRequested, liga onEditorContentChanged).
+    void claimEditor();
 
     ConstrutorStore* m_store = nullptr;
+    WorldContentEditor* m_editor = nullptr;
+    bool m_editorActive = false;
 
-    // ── Painel esquerdo colapsável ─────────────────────────────────────────────
-    QWidget*            m_leftPanel    = nullptr;
-    QFrame*             m_vsep         = nullptr;  // separador vertical
     QLineEdit*          m_searchEdit   = nullptr;
     QListWidget*        m_searchResultsList = nullptr;
     QListWidget*        m_systemsList  = nullptr;
@@ -162,6 +143,10 @@ private:
     QLineEdit*   m_systemNameEdit  = nullptr;
     QLabel*      m_categoryLabel   = nullptr;
     QPushButton* m_deleteSystemBtn = nullptr;
+    QPushButton* m_mentionsToggleBtn = nullptr;
+    // Tag de Território(s) — só visível se m_territorioStore estiver setado.
+    QPushButton* m_territoryBtn    = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     QLabel*      m_waypointName    = nullptr;
     QSlider*     m_slider          = nullptr;
     QLabel*      m_waypointFirst   = nullptr;
@@ -176,35 +161,8 @@ private:
     QPushButton* m_deleteNodeBtn   = nullptr;
     QTreeWidget* m_tree            = nullptr;
 
-    // ── Toolbar + editor (lado direito) ───────────────────────────────────────
-    QPushButton*   m_togglePanelBtn = nullptr;
-    QPushButton*   m_boldBtn        = nullptr;
-    QPushButton*   m_italicBtn      = nullptr;
-    QPushButton*   m_underlineBtn   = nullptr;
-    QPushButton*   m_strikeBtn      = nullptr;
-    QFontComboBox* m_fontCombo      = nullptr;
-    QComboBox*     m_sizeCombo      = nullptr;
-    QButtonGroup*  m_alignGroup     = nullptr;
-    QPushButton*   m_alignLeftBtn   = nullptr;
-    QPushButton*   m_alignCenterBtn = nullptr;
-    QPushButton*   m_alignRightBtn  = nullptr;
-    QPushButton*   m_indentBtn      = nullptr;
-    QPushButton*   m_spacingBtn     = nullptr;
-    QPushButton*   m_focusBtn       = nullptr;
-    QIcon          m_focusOffIcon;
-    QIcon          m_focusOnIcon;
-    QPushButton*   m_insertImageBtn = nullptr;
-    QLabel*        m_lastEditedLabel = nullptr;
-    QScrollArea*   m_pageScroll     = nullptr;  // centraliza a "página" do editor
-    QWidget*       m_pageColumn     = nullptr;  // largura/margens de EditorLayout::Manager
-    QTextEdit*     m_contentEdit    = nullptr;
-    ImageOverlay*  m_imageOverlay   = nullptr;
-    QTextCursor    m_selectedImageCursor;  // imagem atualmente selecionada pelo overlay
-
     // ── Seção "Menções no projeto" — overlay flutuante no canto superior
-    // direito da janela (não entra no layout principal), toggle "@" na
-    // toolbar do editor.
-    QPushButton* m_mentionsToggleBtn  = nullptr;
+    // direito, toggle "@" no cabeçalho do painel.
     QWidget*     m_mentionsPanel      = nullptr;
     QLabel*      m_mentionsTitleLabel = nullptr;
     QToolButton* m_mentionsCloseBtn   = nullptr;
@@ -212,21 +170,8 @@ private:
     QWidget*     m_mentionsColumn     = nullptr;
     QVBoxLayout* m_mentionsLay        = nullptr;
 
-    bool    m_focusModeEnabled        = false;
-    bool    m_firstLineIndentEnabled  = false;  // preferência global, persiste em QSettings
-    QColor  m_baseTextColor;  // Theme::editorTextColor() — base do dim do Focus Mode
-
-    // Estado de espaçamento global (entrelinha + margens de parágrafo)
-    QLabel*         m_paraBeforeLabel  = nullptr;
-    QLabel*         m_paraAfterLabel   = nullptr;
-    QList<QAction*> m_lineHeightActions;
-    int             m_lineHeightPercent = 115;
-    int             m_paraSpaceBefore   = 0;
-    int             m_paraSpaceAfter    = 8;
-
     QString m_currentSystemId;
     QString m_currentNodeId;
+    QString m_territoryFilter;
     bool    m_rebuilding  = false;
-    bool    m_updatingFmt = false;
-    QTimer* m_saveTimer   = nullptr;
 };

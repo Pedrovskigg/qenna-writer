@@ -106,6 +106,12 @@ struct DrawerItem {
     QString charStatus;
     QString charStatusDetail;
     QString charLocation;
+    // Origem/Local atual do Criador de Mundos — guardam o ID do Território
+    // (TerritorioStore::Territorio), não o nome em texto solto como
+    // charLocation acima. O label é sempre resolvido ao vivo a partir do ID,
+    // então renomear o território não deixa referência órfã/desatualizada.
+    QString origemTerritorioId;
+    QString localAtualTerritorioId;
     // Ficha estruturada (formulário). Quando isSheet=true, o documento é a ficha
     // (sheet) em vez do html livre.
     bool isSheet = false;
@@ -250,6 +256,14 @@ public:
                               const QString& elementIcon, const QString& elementId);
     bool updateDrawerItemConsistency(const QString& itemId, const QString& status,
                                      const QString& statusDetail, const QString& location);
+    // Origem/Local atual (Criador de Mundos) — guardam ID de Território, não
+    // texto solto (ver comentário em DrawerItem). String vazia = sem território.
+    bool updateDrawerItemTerritorios(const QString& itemId, const QString& origemTerritorioId,
+                                     const QString& localAtualTerritorioId);
+    // Limpa referências a um Território excluído (ver TerritorioStore::changed
+    // orquestrado em MainWindow) — evita reproduzir com ID o mesmo bug que
+    // charLocation tem com texto solto (referência que nunca se limpa).
+    void clearTerritorioReferences(const QString& territorioId);
     const DrawerItem* findDrawerItem(const QString& itemId, QString* outDrawerKey = nullptr) const;
 
     const QList<Group>& groups() const { return m_groups; }

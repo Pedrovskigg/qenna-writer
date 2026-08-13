@@ -2,6 +2,7 @@
 
 #include "ConstrutorStore.h"
 #include "ProjectModel.h"
+#include "TerritorioStore.h"
 #include "Theme.h"
 
 #include <algorithm>
@@ -27,6 +28,9 @@ static constexpr auto kMsChapter        = "__ms_ch__";
 static constexpr auto kMsScene          = "__ms_sc__";
 static constexpr auto kCtrSystem        = "__ctr_system__";
 static constexpr auto kCtrNode          = "__construtor_node__";
+static constexpr auto kPortalLugar      = "__portal_lug__";
+static constexpr auto kLugTerritorio    = "__lug_territorio__";
+static constexpr auto kLugNode          = "__lugar_node__";
 
 MentionPopup::MentionPopup(ProjectModel* model, QWidget* ownerWindow, QObject* parent)
     : QObject(parent)
@@ -151,6 +155,8 @@ void MentionPopup::rebuildList(const QString& query)
     case Level::Scenes:                 rebuildScenes();                 break;
     case Level::ConstrutorSystems:      rebuildConstrutorSystems();      break;
     case Level::ConstrutorSystemNodes:  rebuildConstrutorSystemNodes();  break;
+    case Level::LugarTerritorios:       rebuildLugarTerritorios();       break;
+    case Level::LugarNodes:             rebuildLugarNodes();             break;
     }
     selectFirstSelectable();
 }
@@ -176,6 +182,9 @@ void MentionPopup::rebuildRoot(const QString& q)
     // Portal do Construtor: idem, sempre visível se houver algum sistema.
     if (m_construtorStore && !m_construtorStore->systems().isEmpty())
         addPortalItem(tr("Construtor"), QLatin1String(kPortalConstrutor));
+    // Portal de Lugares: idem, sempre visível se houver algum território.
+    if (m_territorioStore && !m_territorioStore->territorios().isEmpty())
+        addPortalItem(tr("Lugares"), QLatin1String(kPortalLugar));
 }
 
 void MentionPopup::rebuildChapters()
@@ -250,6 +259,42 @@ void MentionPopup::rebuildConstrutorSystemNodes()
         }
     };
     walk(QString(), sys->nodes);
+}
+
+void MentionPopup::rebuildLugarTerritorios()
+{
+    addBackItem(tr("← Voltar"));
+    if (!m_territorioStore) return;
+    for (const auto& t : m_territorioStore->territorios()) {
+        auto* item = new QListWidgetItem(t.name + QStringLiteral("  ▸"));
+        item->setData(Qt::UserRole,     QLatin1String(kLugTerritorio));
+        item->setData(Qt::UserRole + 1, t.id);
+        item->setData(Qt::UserRole + 2, t.name);
+        m_list->addItem(item);
+    }
+}
+
+void MentionPopup::rebuildLugarNodes()
+{
+    addBackItem(m_drillLugarTerritorioName.isEmpty()
+        ? tr("← Lugares") : QStringLiteral("← %1").arg(m_drillLugarTerritorioName));
+    if (!m_territorioStore) return;
+    const TerritorioStore::Territorio* t = m_territorioStore->territorio(m_drillLugarTerritorioId);
+    if (!t) return;
+
+    std::function<void(const QString&, const QList<TerritorioStore::Node>&)> walk;
+    walk = [&](const QString& breadcrumb, const QList<TerritorioStore::Node>& nodes) {
+        for (const auto& n : nodes) {
+            const QString path = breadcrumb.isEmpty() ? n.name : breadcrumb + QStringLiteral(" ▸ ") + n.name;
+            auto* item = new QListWidgetItem(path);
+            item->setData(Qt::UserRole,     QLatin1String(kLugNode));
+            item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(t->id, n.id));
+            item->setData(Qt::UserRole + 2, n.name);
+            m_list->addItem(item);
+            walk(path, n.children);
+        }
+    };
+    walk(QString(), t->nodes);
 }
 
 void MentionPopup::buildShorthand(const QRegularExpressionMatch& m)
@@ -392,6 +437,8 @@ void MentionPopup::hidePopup()
     m_drillChapterTitle.clear();
     m_drillConstrutorSystemId.clear();
     m_drillConstrutorSystemName.clear();
+    m_drillLugarTerritorioId.clear();
+    m_drillLugarTerritorioName.clear();
 }
 
 void MentionPopup::drillBack()
@@ -405,6 +452,10 @@ void MentionPopup::drillBack()
         m_level = Level::ConstrutorSystems;
         m_drillConstrutorSystemId.clear();
         m_drillConstrutorSystemName.clear();
+    } else if (m_level == Level::LugarNodes) {
+        m_level = Level::LugarTerritorios;
+        m_drillLugarTerritorioId.clear();
+        m_drillLugarTerritorioName.clear();
     } else {
         m_level = Level::Root;
     }
@@ -453,6 +504,13 @@ void MentionPopup::confirm()
         showBelowCursor(m_activeEditor);
         return;
     }
+    // Portal: drill in para a lista de territórios (Criador de Mundos).
+    if (key == QLatin1String(kPortalLugar)) {
+        m_level = Level::LugarTerritorios;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
     // Voltar um nível.
     if (key == QLatin1String(kNavBack)) {
         drillBack();
@@ -474,6 +532,15 @@ void MentionPopup::confirm()
         m_drillConstrutorSystemId   = id;
         m_drillConstrutorSystemName = title;
         m_level = Level::ConstrutorSystemNodes;
+        rebuildList(m_currentQuery);
+        showBelowCursor(m_activeEditor);
+        return;
+    }
+    // Território na lista de Lugares: drill in pros nós dele.
+    if (key == QLatin1String(kLugTerritorio) && m_level == Level::LugarTerritorios) {
+        m_drillLugarTerritorioId   = id;
+        m_drillLugarTerritorioName = title;
+        m_level = Level::LugarNodes;
         rebuildList(m_currentQuery);
         showBelowCursor(m_activeEditor);
         return;

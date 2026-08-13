@@ -50,6 +50,11 @@ public:
         QString content; // resumo/parecer geral do sistema, sem nó selecionado
         QList<Node> nodes;
         QList<Mention> mentions;
+        // Território(s) do Criador de Mundos a que este sistema pertence —
+        // vazio = global (aparece em qualquer território selecionado). IDs
+        // de TerritorioStore::Territorio; ConstrutorStore não depende de
+        // TerritorioStore, só guarda os IDs soltos.
+        QStringList territoryIds;
     };
 
     struct CategoryWaypoint {
@@ -78,6 +83,7 @@ public:
     QString addSystem(const QString& name, const QString& categoryId, int sliderIndex);
     bool updateSystem(const QString& id, const QString& name, int sliderIndex);
     bool updateSystemContent(const QString& id, const QString& content);
+    bool updateSystemTerritories(const QString& id, const QStringList& territoryIds);
     bool removeSystem(const QString& id);
 
     // CRUD — nós (parentNodeId vazio = filho direto do sistema)

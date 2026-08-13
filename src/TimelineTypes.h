@@ -76,6 +76,11 @@ struct TimelineEvent {
     QString linkedSceneId;
     QString linkedDocId;
     QString conclusion;               // resumo da cena (texto livre)
+    // "Onde" — ID de Território (TerritorioStore) onde o evento aconteceu.
+    // Campo manual, sem rastreamento automático — decisão deliberada (ver
+    // world-builder-concept: rastrear localização automaticamente ao longo
+    // do tempo é a mesma classe de problema já recusada pro Construtor).
+    QString placeId;
 
     bool    autoEvent = false;        // veio do detector de presença (ponto "macio")
 };

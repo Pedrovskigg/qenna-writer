@@ -9,13 +9,16 @@ class QLineEdit;
 class QPlainTextEdit;
 class QToolButton;
 class ProjectModel;
+class TerritorioStore;
 
 class TimelineEventPopup : public QDialog {
     Q_OBJECT
 public:
     // model (opcional) habilita o seletor "Vincular a" (capítulo/cena/doc).
+    // territorioStore (opcional) habilita o seletor "Onde" (Território).
     explicit TimelineEventPopup(const QList<TimelineDef>& timelines,
                                 ProjectModel* model = nullptr,
+                                TerritorioStore* territorioStore = nullptr,
                                 QWidget* parent = nullptr);
 
     void setEventData(const TimelineEvent& e);
@@ -40,8 +43,10 @@ private:
 
     class QComboBox* m_timelineCombo = nullptr;
     class QComboBox* m_linkCombo     = nullptr;
+    class QComboBox* m_placeCombo    = nullptr;
     QList<TimelineDef> m_timelines;
     ProjectModel*  m_model = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     std::function<QString(const QString&)> m_docTextResolver;
 
     QString m_eventId;

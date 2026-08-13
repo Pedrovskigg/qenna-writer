@@ -13,6 +13,7 @@
 class TimelineScene;
 class TimelineView;
 class ProjectModel;
+class TerritorioStore;
 class ElementsStore;
 class TimelineBranchPopup;
 
@@ -23,6 +24,11 @@ public:
 
     void setProjectRoot(const QString& root);
     void setProjectModel(ProjectModel* model);
+    void setTerritorioStore(TerritorioStore* store) { m_territorioStore = store; }
+
+    // Eventos com placeId == territorioId — usado pelo "O que aconteceu
+    // aqui" do Criador de Mundos (filtro puro, não duplica dado).
+    QList<TimelineEvent> eventsForPlace(const QString& territorioId) const;
     void setElementsStore(ElementsStore* store);
     // Resolve o texto de um doc vinculado (capítulo/cena/gaveta) p/ a descrição.
     void setDocTextResolver(std::function<QString(const QString&)> resolver);
@@ -140,6 +146,7 @@ private:
 
     QString         m_projectRoot;
     ProjectModel*   m_projectModel  = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     ElementsStore*  m_elementsStore = nullptr;
     std::function<QString(const QString&)> m_docTextResolver;
     PresenceProvider m_presenceProvider;
