@@ -9,6 +9,7 @@
 #include "DocPreview.h"
 #include "ElementsStore.h"
 #include "ProjectModel.h"
+#include "TerritorioStore.h"
 #include "Theme.h"
 #include "WordCounter.h"
 
@@ -319,6 +320,28 @@ QWidget* StatsPanel::buildCharacterPage()
             QPoint(0, m_charLocationBtn->height() + 2)));
     });
     statusRow->addWidget(m_charLocationBtn);
+
+    m_charOrigemBtn = new QPushButton(page);
+    m_charOrigemBtn->setObjectName(QStringLiteral("stStatusBtn"));
+    m_charOrigemBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_charOrigemBtn, &QPushButton::clicked, this, [this]() {
+        const DrawerItem* item = drawerItemForElement(m_currentElementId);
+        if (!item) return;
+        showTerritorioPicker(item->id, m_charOrigemBtn->mapToGlobal(
+            QPoint(0, m_charOrigemBtn->height() + 2)), /*isOrigem=*/true);
+    });
+    statusRow->addWidget(m_charOrigemBtn);
+
+    m_charLocalAtualBtn = new QPushButton(page);
+    m_charLocalAtualBtn->setObjectName(QStringLiteral("stStatusBtn"));
+    m_charLocalAtualBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_charLocalAtualBtn, &QPushButton::clicked, this, [this]() {
+        const DrawerItem* item = drawerItemForElement(m_currentElementId);
+        if (!item) return;
+        showTerritorioPicker(item->id, m_charLocalAtualBtn->mapToGlobal(
+            QPoint(0, m_charLocalAtualBtn->height() + 2)), /*isOrigem=*/false);
+    });
+    statusRow->addWidget(m_charLocalAtualBtn);
     infoCol->addLayout(statusRow);
 
     m_charInconsistencyWarning = new QLabel(page);
@@ -780,6 +803,22 @@ void StatsPanel::rebuildCharacterPage()
         const QString location = item ? item->charLocation : QString();
         m_charLocationBtn->setText(location.isEmpty() ? tr("Local: —") : tr("Local: %1").arg(location));
     }
+    // Origem/Local atual resolvem o nome AO VIVO a partir do ID salvo — ao
+    // contrário de charLocation acima (texto solto), renomear o território
+    // não deixa referência desatualizada.
+    auto territorioName = [this](const QString& id) -> QString {
+        if (id.isEmpty() || !m_territorioStore) return QString();
+        const auto* t = m_territorioStore->territorio(id);
+        return t ? t->name : QString();
+    };
+    if (m_charOrigemBtn) {
+        const QString name = item ? territorioName(item->origemTerritorioId) : QString();
+        m_charOrigemBtn->setText(name.isEmpty() ? tr("Origem: —") : tr("Origem: %1").arg(name));
+    }
+    if (m_charLocalAtualBtn) {
+        const QString name = item ? territorioName(item->localAtualTerritorioId) : QString();
+        m_charLocalAtualBtn->setText(name.isEmpty() ? tr("Está em: —") : tr("Está em: %1").arg(name));
+    }
     if (m_charInconsistencyWarning) {
         static const QStringList kAbsentStatuses = { tr("Morto"), tr("Desaparecido") };
         const QString status = item ? item->charStatus : QString();
@@ -1219,6 +1258,77 @@ void StatsPanel::showLocationPicker(const QString& itemId, const QPoint& globalP
     popup->move(pos);
     popup->show();
     customInput->setFocus();
+}
+
+void StatsPanel::showTerritorioPicker(const QString& itemId, const QPoint& globalPos, bool isOrigem)
+{
+    if (!m_model) return;
+    const DrawerItem* item = m_model->findDrawerItem(itemId);
+    if (!item) return;
+
+    const QString currentOrigem     = item->origemTerritorioId;
+    const QString currentLocalAtual = item->localAtualTerritorioId;
+    const QString currentId         = isOrigem ? currentOrigem : currentLocalAtual;
+
+    auto* popup = new QFrame(nullptr, Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setObjectName(QStringLiteral("stPicker"));
+    popup->setStyleSheet(pickerPopupQss());
+    popup->setFixedWidth(200);
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(6, 6, 6, 6);
+    lay->setSpacing(2);
+
+    auto apply = [this, popup, itemId, isOrigem, currentOrigem, currentLocalAtual](const QString& id) {
+        if (isOrigem) m_model->updateDrawerItemTerritorios(itemId, id, currentLocalAtual);
+        else          m_model->updateDrawerItemTerritorios(itemId, currentOrigem, id);
+        rebuildCharacterPage();
+        popup->close();
+    };
+
+    if (!currentId.isEmpty()) {
+        auto* clearBtn = new QPushButton(tr("Limpar"), popup);
+        clearBtn->setObjectName(QStringLiteral("pickerOptionClear"));
+        clearBtn->setFixedHeight(26);
+        clearBtn->setCursor(Qt::PointingHandCursor);
+        connect(clearBtn, &QPushButton::clicked, popup, [apply]() { apply(QString()); });
+        lay->addWidget(clearBtn);
+    }
+
+    const QList<TerritorioStore::Territorio> territorios =
+        m_territorioStore ? m_territorioStore->territorios() : QList<TerritorioStore::Territorio>();
+    if (territorios.isEmpty()) {
+        auto* emptyLbl = new QLabel(tr("Nenhum território criado ainda."), popup);
+        emptyLbl->setStyleSheet(QStringLiteral(
+            "color: %1; font-size: 11px; padding: 4px 10px; font-style: italic;").arg(Theme::textMuted()));
+        lay->addWidget(emptyLbl);
+    } else {
+        for (const auto& t : territorios) {
+            auto* btn = new QPushButton(t.name, popup);
+            btn->setObjectName(QStringLiteral("pickerOption"));
+            btn->setFixedHeight(26);
+            btn->setCursor(Qt::PointingHandCursor);
+            if (t.id == currentId) {
+                btn->setStyleSheet(QStringLiteral(
+                    "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+                    "padding: 0 10px; text-align: left; font-size: 12px; "
+                    "font-family: 'Lora','Crimson Text',serif; }")
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+            }
+            const QString tid = t.id;
+            connect(btn, &QPushButton::clicked, popup, [apply, tid]() { apply(tid); });
+            lay->addWidget(btn);
+        }
+    }
+
+    popup->adjustSize();
+    QPoint pos2 = globalPos;
+    const QRect screen2 = popup->screen() ? popup->screen()->availableGeometry() : QRect(0, 0, 1920, 1080);
+    if (pos2.x() + popup->width() > screen2.right())  pos2.setX(screen2.right() - popup->width());
+    if (pos2.y() + popup->height() > screen2.bottom()) pos2.setY(globalPos.y() - popup->height() - 30);
+    popup->move(pos2);
+    popup->show();
 }
 
 void StatsPanel::togglePanel()

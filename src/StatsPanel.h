@@ -19,6 +19,7 @@ class QHBoxLayout;
 class ProjectModel;
 class DocCache;
 class DialogueStore;
+class TerritorioStore;
 class WordCounter;
 struct DrawerItem;
 
@@ -36,6 +37,7 @@ public:
 
     void setDocCache(DocCache* cache) { m_cache = cache; }
     void setDialogueStore(DialogueStore* s) { m_dialogues = s; }
+    void setTerritorioStore(TerritorioStore* s) { m_territorioStore = s; }
     void setWordCounter(WordCounter* wc) { m_wordCounter = wc; }
     void setProjectRoot(const QString& root) { m_projectRoot = root; }
 
@@ -80,6 +82,8 @@ private:
     void openChemistryPopup(const QString& otherElementId);
     void showStatusPicker(const QString& itemId, const QPoint& globalPos);
     void showLocationPicker(const QString& itemId, const QPoint& globalPos);
+    // isOrigem=true edita origemTerritorioId; false edita localAtualTerritorioId.
+    void showTerritorioPicker(const QString& itemId, const QPoint& globalPos, bool isOrigem);
     void refreshPresenceCache();
     void openCharacter(const QString& elementId);
     void backToOverview();
@@ -134,6 +138,9 @@ private:
     QLabel* m_charDialogueSummary = nullptr;
     QPushButton* m_charStatusBtn = nullptr;
     QPushButton* m_charLocationBtn = nullptr;
+    QPushButton* m_charOrigemBtn = nullptr;
+    QPushButton* m_charLocalAtualBtn = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     QLabel* m_charInconsistencyWarning = nullptr;
     QWidget* m_charBondsList = nullptr;
     QVBoxLayout* m_charBondsLay = nullptr;

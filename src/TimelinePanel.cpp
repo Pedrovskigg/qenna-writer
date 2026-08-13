@@ -575,7 +575,7 @@ void TimelinePanel::deleteTimeline(const QString& id)
 void TimelinePanel::createEventAt(const QPointF& scenePos)
 {
     CrashLogger::log("tlCreateEventAt");
-    TimelineEventPopup dlg(m_timelines, m_projectModel, this);
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
     dlg.setDocTextResolver(m_docTextResolver);
     if (dlg.exec() != QDialog::Accepted) return;
     commitEvent(dlg.eventData(), scenePos);
@@ -630,7 +630,7 @@ void TimelinePanel::promptNewEvent(const QString& description, const QString& ma
         return picked.isEmpty() ? flat.left(44) : picked.join(QChar(' '));
     };
 
-    TimelineEventPopup dlg(m_timelines, m_projectModel, this);
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
     dlg.setDocTextResolver(m_docTextResolver);
     TimelineEvent seed;
     seed.title       = title.trimmed().isEmpty() ? suggestTitle(description)
@@ -653,7 +653,7 @@ void TimelinePanel::openEditPopup(const QString& id)
 
     const QString oldTimelineId = item->eventData().timelineId;
 
-    TimelineEventPopup dlg(m_timelines, m_projectModel, this);
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
     dlg.setDocTextResolver(m_docTextResolver);
     dlg.setEventData(item->eventData());
     if (dlg.exec() != QDialog::Accepted) return;
@@ -709,6 +709,16 @@ void TimelinePanel::setProjectRoot(const QString& root)
 {
     m_projectRoot = root;
     load();
+}
+
+QList<TimelineEvent> TimelinePanel::eventsForPlace(const QString& territorioId) const
+{
+    QList<TimelineEvent> out;
+    if (territorioId.isEmpty()) return out;
+    const QList<TimelineEvent> all = m_scene ? m_scene->allEventData() : m_events;
+    for (const auto& e : all)
+        if (e.placeId == territorioId) out.append(e);
+    return out;
 }
 
 void TimelinePanel::setProjectModel(ProjectModel* model)
@@ -1597,6 +1607,7 @@ void TimelinePanel::save() const
         o[QStringLiteral("linkedSceneId")] = e.linkedSceneId;
         o[QStringLiteral("linkedDocId")]   = e.linkedDocId;
         o[QStringLiteral("conclusion")]    = e.conclusion;
+        o[QStringLiteral("placeId")]       = e.placeId;
         o[QStringLiteral("autoEvent")]     = e.autoEvent;
         evs.append(o);
     }
@@ -1690,6 +1701,7 @@ void TimelinePanel::load()
         e.linkedSceneId = o[QStringLiteral("linkedSceneId")].toString();
         e.linkedDocId  = o[QStringLiteral("linkedDocId")].toString();
         e.conclusion   = o[QStringLiteral("conclusion")].toString();
+        e.placeId      = o[QStringLiteral("placeId")].toString();
         e.autoEvent    = o[QStringLiteral("autoEvent")].toBool(false);
         tickSeq[e.timelineId] = tickSeq.value(e.timelineId, 0) + 1;
         m_events.append(e);

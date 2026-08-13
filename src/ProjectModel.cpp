@@ -229,6 +229,10 @@ QJsonObject drawerItemToJson(const DrawerItem& it) {
     if (!it.charStatus.isEmpty())       o.insert(QStringLiteral("charStatus"), it.charStatus);
     if (!it.charStatusDetail.isEmpty()) o.insert(QStringLiteral("charStatusDetail"), it.charStatusDetail);
     if (!it.charLocation.isEmpty())     o.insert(QStringLiteral("charLocation"), it.charLocation);
+    if (!it.origemTerritorioId.isEmpty())
+        o.insert(QStringLiteral("origemTerritorioId"), it.origemTerritorioId);
+    if (!it.localAtualTerritorioId.isEmpty())
+        o.insert(QStringLiteral("localAtualTerritorioId"), it.localAtualTerritorioId);
     if (it.isSheet) {
         o.insert(QStringLiteral("isSheet"), true);
         o.insert(QStringLiteral("sheet"), characterSheetToJson(it.sheet));
@@ -256,6 +260,8 @@ DrawerItem drawerItemFromJson(const QJsonObject& o) {
     it.charStatus       = jsonStringOrEmpty(o.value(QStringLiteral("charStatus")));
     it.charStatusDetail = jsonStringOrEmpty(o.value(QStringLiteral("charStatusDetail")));
     it.charLocation     = jsonStringOrEmpty(o.value(QStringLiteral("charLocation")));
+    it.origemTerritorioId     = jsonStringOrEmpty(o.value(QStringLiteral("origemTerritorioId")));
+    it.localAtualTerritorioId = jsonStringOrEmpty(o.value(QStringLiteral("localAtualTerritorioId")));
     if (o.value(QStringLiteral("isSheet")).toBool(false)) {
         it.isSheet = true;
         it.sheet = characterSheetFromJson(o.value(QStringLiteral("sheet")).toObject());
@@ -902,6 +908,36 @@ bool ProjectModel::updateDrawerItemConsistency(const QString& itemId, const QStr
         }
     }
     return false;
+}
+
+bool ProjectModel::updateDrawerItemTerritorios(const QString& itemId, const QString& origemTerritorioId,
+                                               const QString& localAtualTerritorioId) {
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.id != itemId) continue;
+            bool changed = false;
+            if (it.origemTerritorioId != origemTerritorioId) {
+                it.origemTerritorioId = origemTerritorioId; changed = true;
+            }
+            if (it.localAtualTerritorioId != localAtualTerritorioId) {
+                it.localAtualTerritorioId = localAtualTerritorioId; changed = true;
+            }
+            if (changed) emit drawersChanged();
+            return true;
+        }
+    }
+    return false;
+}
+
+void ProjectModel::clearTerritorioReferences(const QString& territorioId) {
+    bool changed = false;
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.origemTerritorioId == territorioId)     { it.origemTerritorioId.clear();     changed = true; }
+            if (it.localAtualTerritorioId == territorioId) { it.localAtualTerritorioId.clear(); changed = true; }
+        }
+    }
+    if (changed) emit drawersChanged();
 }
 
 bool ProjectModel::setDrawerItemElement(const QString& itemId, const QString& elementType,

@@ -210,6 +210,14 @@ qt_add_executable(qenna-writer
     src/ConstrutorWindow.h
     src/ConstrutorMentionAddPopup.cpp
     src/ConstrutorMentionAddPopup.h
+    src/TerritorioStore.cpp
+    src/TerritorioStore.h
+    src/WorldContentEditor.cpp
+    src/WorldContentEditor.h
+    src/TerritorioWindow.cpp
+    src/TerritorioWindow.h
+    src/TerritorioMentionAddPopup.cpp
+    src/TerritorioMentionAddPopup.h
     src/MemoriesStore.cpp
     src/MemoriesStore.h
     src/MemoryAddPopup.cpp

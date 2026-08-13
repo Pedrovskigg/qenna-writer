@@ -5,6 +5,7 @@
 
 class ProjectModel;
 class ConstrutorStore;
+class TerritorioStore;
 struct Chapter;
 class QListWidgetItem;
 class QTextEdit;
@@ -39,6 +40,11 @@ public:
     // listando sistemas/nós (regras/seções) pra referenciar via @.
     void setConstrutorStore(ConstrutorStore* store) { m_construtorStore = store; }
 
+    // Store do Criador de Mundos — habilita o portal "Lugares" no root da
+    // menção, listando territórios/nós pra referenciar via @ (mesmo padrão
+    // do portal do Construtor acima).
+    void setTerritorioStore(TerritorioStore* store) { m_territorioStore = store; }
+
 signals:
     // Emitido após o vigia limpar um anchor herdado (mexe no documento de forma
     // assíncrona). Quem depende do estado do doc (ex.: Focus Mode) deve reagir.
@@ -48,7 +54,8 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
-    enum class Level { Root, Chapters, Scenes, ConstrutorSystems, ConstrutorSystemNodes };
+    enum class Level { Root, Chapters, Scenes, ConstrutorSystems, ConstrutorSystemNodes,
+                       LugarTerritorios, LugarNodes };
 
     struct DocEntry {
         QString drawerKey;
@@ -65,6 +72,8 @@ private:
     void rebuildScenes();
     void rebuildConstrutorSystems();
     void rebuildConstrutorSystemNodes();
+    void rebuildLugarTerritorios();
+    void rebuildLugarNodes();
     void buildShorthand(const QRegularExpressionMatch& m);
     void addPortalItem(const QString& text, const QString& key);
     void addBackItem(const QString& text);
@@ -81,6 +90,7 @@ private:
 
     ProjectModel* m_model;
     ConstrutorStore* m_construtorStore = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     QWidget*      m_owner;
     QListWidget*  m_list          = nullptr;
     QTextEdit*    m_activeEditor  = nullptr;
@@ -92,6 +102,8 @@ private:
     QString       m_drillChapterTitle;
     QString       m_drillConstrutorSystemId;
     QString       m_drillConstrutorSystemName;
+    QString       m_drillLugarTerritorioId;
+    QString       m_drillLugarTerritorioName;
     bool          m_includeManuscripts = false;
     bool          m_insertingMention   = false;
     bool          m_cleaningAnchor     = false;
