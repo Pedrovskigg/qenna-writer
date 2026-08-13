@@ -22,9 +22,11 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPushButton>
+#include <QResizeEvent>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
+#include <QStyle>
 #include <QTextBlock>
 #include <QTextDocument>
 #include <QTextEdit>
@@ -304,6 +306,26 @@ void WorldContentEditor::buildUi()
     m_pageScroll->setWidget(m_pageColumn);
     root->addWidget(m_pageScroll, 1);
 
+    // Scrollbar externa, solta na borda direita do painel — a nativa do
+    // QTextEdit fica colada na "página" (largura fixa, quase sempre bem mais
+    // estreita que o painel inteiro), longe da borda de verdade.
+    m_contentEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_externalScrollBar = new QScrollBar(Qt::Vertical, this);
+    m_externalScrollBar->setObjectName(QStringLiteral("wceExternalScroll"));
+    auto* innerSb = m_contentEdit->verticalScrollBar();
+    m_externalScrollBar->setRange(innerSb->minimum(), innerSb->maximum());
+    m_externalScrollBar->setPageStep(innerSb->pageStep());
+    m_externalScrollBar->setSingleStep(innerSb->singleStep());
+    m_externalScrollBar->setValue(innerSb->value());
+    connect(innerSb, &QAbstractSlider::rangeChanged, this, [this, innerSb]() {
+        m_externalScrollBar->setRange(innerSb->minimum(), innerSb->maximum());
+        m_externalScrollBar->setPageStep(innerSb->pageStep());
+        m_externalScrollBar->setSingleStep(innerSb->singleStep());
+        positionExternalScrollBar();
+    });
+    connect(innerSb, &QAbstractSlider::valueChanged, m_externalScrollBar, &QScrollBar::setValue);
+    connect(m_externalScrollBar, &QAbstractSlider::valueChanged, innerSb, &QScrollBar::setValue);
+
     connect(m_focusBtn, &QPushButton::toggled, this, &WorldContentEditor::setFocusModeEnabled);
 
     connect(m_contentEdit, &QTextEdit::textChanged,
@@ -465,6 +487,12 @@ void WorldContentEditor::applyTheme()
         QWidget#wcePageColumn { background: %10; }
         QTextEdit#wceContentEdit { background: %10; border: none; selection-background-color: %6; }
         QTextEdit#wceContentEdit:disabled { color: %11; }
+
+        QScrollBar#wceExternalScroll:vertical { background: transparent; width: 8px; margin: 0; }
+        QScrollBar#wceExternalScroll::handle:vertical { background: %8; border-radius: 4px; min-height: 24px; }
+        QScrollBar#wceExternalScroll::handle:vertical:hover { background: %9; }
+        QScrollBar#wceExternalScroll::add-line:vertical, QScrollBar#wceExternalScroll::sub-line:vertical { height: 0; }
+        QScrollBar#wceExternalScroll::add-page:vertical, QScrollBar#wceExternalScroll::sub-page:vertical { background: transparent; }
     )").arg(panelBg, border, txtPrim, txtBright)   // %1-4
        .arg(hover, accentSf, accentBd)              // %5-7
        .arg(Theme::subtleBorder(), txtMuted)        // %8-9
@@ -519,6 +547,28 @@ void WorldContentEditor::applyPageLayout()
     if (auto* lay = qobject_cast<QVBoxLayout*>(m_pageColumn->layout()))
         lay->setContentsMargins(0, vm, 0, vm);
     m_contentEdit->document()->setDocumentMargin(hm);
+    positionExternalScrollBar();
+}
+
+void WorldContentEditor::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    positionExternalScrollBar();
+}
+
+void WorldContentEditor::positionExternalScrollBar()
+{
+    if (!m_externalScrollBar || !m_pageScroll) return;
+    const int sbW = style()->pixelMetric(QStyle::PM_ScrollBarExtent);
+    const QPoint vpOrigin = m_pageScroll->mapTo(this, QPoint(0, 0));
+    constexpr int kMargin = 4;
+    m_externalScrollBar->setGeometry(
+        width() - sbW - kMargin,
+        vpOrigin.y(),
+        sbW,
+        m_pageScroll->height()
+    );
+    m_externalScrollBar->raise();
 }
 
 // ── Conteúdo ──────────────────────────────────────────────────────────────────
