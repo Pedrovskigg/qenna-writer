@@ -164,6 +164,10 @@ qt_add_executable(qenna-writer
     src/Theme.h
     src/EditorLayout.cpp
     src/EditorLayout.h
+    src/UiScale.cpp
+    src/UiScale.h
+    src/ScreenDefaults.cpp
+    src/ScreenDefaults.h
     src/ThemesPanel.cpp
     src/ThemesPanel.h
     src/BackgroundWidget.cpp

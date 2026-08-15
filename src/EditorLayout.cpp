@@ -1,5 +1,7 @@
 #include "EditorLayout.h"
 
+#include "ScreenDefaults.h"
+
 #include <QSettings>
 #include <QtGlobal>
 
@@ -26,8 +28,11 @@ Manager::Manager()
 void Manager::load()
 {
     QSettings s;
+    // Sem valor salvo ainda (1º uso nesta máquina): parte de um "chute" que
+    // considera a resolução da tela, pra não nascer largo demais numa tela
+    // pequena — ver ScreenDefaults::recommendedPageWidth().
     m_pageWidth        = qBound(minPageWidth(),
-                                s.value(kKeyPageWidth, m_pageWidth).toInt(),
+                                s.value(kKeyPageWidth, ScreenDefaults::recommendedPageWidth()).toInt(),
                                 maxPageWidth());
     m_pageHeight       = qBound(minPageHeight(),
                                 s.value(kKeyPageHeight, m_pageHeight).toInt(),

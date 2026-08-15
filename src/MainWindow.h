@@ -154,6 +154,7 @@ private:
     void onThemePanelRequested();
     void onThemeChanged();
     void onEditorLayoutChanged();
+    void onUiScaleChanged();
     void applyEditorLayout();
     void resizeEditorColumnToViewport();
     // Altura útil da "folha" visível (viewport do editorScroll menos elementos

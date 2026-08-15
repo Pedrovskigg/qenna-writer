@@ -1,5 +1,6 @@
 #include "ProjectModel.h"
 #include "SceneUtils.h"
+#include "ScreenDefaults.h"
 
 #include <QJsonValue>
 #include <QJsonDocument>
@@ -474,7 +475,10 @@ void ProjectModel::setFontFamily(const QString& family) {
 
 qreal ProjectModel::fontSize() const {
     const auto v = m_settings.value(QStringLiteral("fontSize"));
-    if (v.isUndefined() || v.isNull()) return 16.0;
+    // Projeto sem fontSize salvo ainda (ex.: recém-criado): parte de um "chute"
+    // que considera a resolução da tela, pra não nascer grande demais numa tela
+    // pequena — ver ScreenDefaults::recommendedFontSize().
+    if (v.isUndefined() || v.isNull()) return ScreenDefaults::recommendedFontSize();
     return qBound(6.0, v.toDouble(16.0), 200.0);
 }
 

@@ -1,6 +1,7 @@
 #ifndef TOPTOOLBAR_H
 #define TOPTOOLBAR_H
 
+#include <QHash>
 #include <QLabel>
 #include <QList>
 #include <QPair>
@@ -9,6 +10,9 @@
 #include <QWidget>
 class QToolButton;
 class QLineEdit;
+class QFrame;
+class QMenu;
+class QAction;
 class FontPickerPopup;
 class QWidget;
 
@@ -143,6 +147,16 @@ private:
     int currentParaSpaceBefore = 0;
     int currentParaSpaceAfter = 0;
     int titleAnchorX = -1;
+    // Texto completo (não-elidido); positionDocTitle() re-elide a cada reposicionamento
+    // conforme o espaço livre entre os grupos de botões muda.
+    QString m_rawTitle;
+    QString m_rawSubtitle;
+    // O que o CALLER pediu (setDocumentTitle/setSceneVarButtonVisible) — não o
+    // estado atual do widget, que positionDocTitle() pode esconder por falta
+    // de espaço. Sem essa distinção, o título nunca mais voltaria a aparecer
+    // depois de sumir uma vez numa janela estreita.
+    bool m_subtitleWanted = false;
+    bool m_sceneVarWanted = false;
     QLabel *paraBeforeValueLabel = nullptr;
     QLabel *paraAfterValueLabel = nullptr;
 
@@ -162,8 +176,26 @@ private:
     void applyTheme();
     void applyRootStyle();
     void reloadIcons();
+    void applyUiScale();
+    int currentIconPx() const;
+
+    // Menu de overflow — botões dispensáveis (tema, tela cheia, som imersivo,
+    // ferramentas de worldbuilding etc.) somem pra dentro de "⋯" quando a
+    // janela é estreita demais pra caber tudo, do menos essencial pro mais
+    // essencial (índice 0 primeiro), e voltam na ordem inversa conforme sobra
+    // espaço de novo. Ver updateOverflow().
+    void buildOverflowMenu();
+    void updateOverflow();
+    void collapseToOverflow(QToolButton* btn);
+    void restoreFromOverflow(QToolButton* btn);
+    QToolButton* overflowButton = nullptr;
+    QMenu* m_overflowMenu = nullptr;
+    QList<QToolButton*> m_collapsePriority;
+    QHash<QToolButton*, QAction*> m_overflowActions;
 
     QList<QPair<QToolButton*, QString>> iconBindings;
+    QList<QToolButton*> m_squareButtons; // botões de tamanho padrão (ver applyUiScale)
+    QList<QFrame*> m_separators;
     bool focusCheckedCache = false;
     bool readModeOn = false;
 

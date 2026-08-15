@@ -76,6 +76,8 @@ private:
     QString pageHeightLabelText(int v) const;
     void applyTheme();
 
+    QSlider* m_uiScaleSlider = nullptr;
+    QLabel* m_uiScaleValue = nullptr;
     QCheckBox* m_spellCheck;
     QComboBox* m_langCombo;
     QCheckBox* m_detectionCheck    = nullptr;
