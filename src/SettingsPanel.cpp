@@ -4,6 +4,7 @@
 #include "EditorLayout.h"
 #include "MiraPersonality.h"
 #include "Theme.h"
+#include "UiScale.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -83,6 +84,49 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     });
     titleRow->addWidget(infoBtn);
     root->addLayout(titleRow);
+
+    // ---- Seção: Interface ----
+    auto* uiGroup = new QGroupBox(tr("Interface"), this);
+    auto* uiLayout = new QVBoxLayout(uiGroup);
+    uiLayout->setContentsMargins(14, 8, 14, 14);
+    uiLayout->setSpacing(10);
+
+    auto* uiScaleRow = new QHBoxLayout();
+    uiScaleRow->addWidget(new QLabel(tr("Tamanho da interface"), uiGroup));
+    m_uiScaleSlider = new QSlider(Qt::Horizontal, uiGroup);
+    m_uiScaleSlider->setRange(qRound(UiScale::Manager::minScale() * 100),
+                               qRound(UiScale::Manager::maxScale() * 100));
+    m_uiScaleSlider->setSingleStep(5);
+    m_uiScaleSlider->setPageStep(10);
+    m_uiScaleSlider->setMinimumWidth(180);
+    m_uiScaleSlider->setValue(qRound(UiScale::scale() * 100));
+    uiScaleRow->addWidget(m_uiScaleSlider, 1);
+    m_uiScaleValue = new QLabel(uiGroup);
+    m_uiScaleValue->setObjectName(QStringLiteral("pageValueLabel"));
+    m_uiScaleValue->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_uiScaleValue->setText(tr("%1%").arg(m_uiScaleSlider->value()));
+    m_uiScaleValue->setMinimumWidth(40);
+    uiScaleRow->addWidget(m_uiScaleValue);
+    uiLayout->addLayout(uiScaleRow);
+
+    connect(m_uiScaleSlider, &QSlider::valueChanged, this, [this](int v) {
+        m_uiScaleValue->setText(tr("%1%").arg(v));
+        UiScale::Manager::instance()->setScale(v / 100.0);
+    });
+    connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged, this, [this]() {
+        const int pct = qRound(UiScale::scale() * 100);
+        const QSignalBlocker block(m_uiScaleSlider);
+        m_uiScaleSlider->setValue(pct);
+        m_uiScaleValue->setText(tr("%1%").arg(pct));
+    });
+
+    auto* uiScaleHint = new QLabel(
+        tr("Ajusta o tamanho da barra de ferramentas, da barra lateral e dos "
+           "ícones — útil em telas menores ou de resolução mais alta."),
+        uiGroup);
+    uiScaleHint->setObjectName(QStringLiteral("settingsHint"));
+    uiScaleHint->setWordWrap(true);
+    uiLayout->addWidget(uiScaleHint);
 
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);
@@ -586,6 +630,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     auto* leftCol = new QVBoxLayout;
     leftCol->setSpacing(10);
+    leftCol->addWidget(uiGroup);
     leftCol->addWidget(spellGroup);
     leftCol->addWidget(pageGroup);
     leftCol->addWidget(aiGroup);

@@ -7,6 +7,7 @@
 #include <QDoubleValidator>
 #include <QEasingCurve>
 #include <QFont>
+#include <QFontMetrics>
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
@@ -25,6 +26,7 @@
 #include "FontPickerPopup.h"
 #include "IconUtils.h"
 #include "Theme.h"
+#include "UiScale.h"
 
 namespace {
 
@@ -58,13 +60,14 @@ QToolButton *makeIconButton(QWidget *parent)
     return b;
 }
 
-QIcon loadIcon(const QString &name)
+QIcon loadIcon(const QString &name, int px = kIconSize)
 {
     return IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/%1").arg(name),
         QColor(iconNormalColor()),
         QColor(iconHoverColor()),
-        QColor(iconSelectedColor()));
+        QColor(iconSelectedColor()),
+        QSize(px, px));
 }
 
 QFrame *makeVSeparator(QWidget *parent)
@@ -403,7 +406,8 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(saveProjectButton);
     layout->addWidget(exportButton);
     layout->addWidget(helpButton);
-    layout->addWidget(makeVSeparator(this));
+    m_separators.append(makeVSeparator(this));
+    layout->addWidget(m_separators.last());
 
     // --- Esquerda: Editor (tipografia + inline) ---
     layout->addWidget(fontButton);
@@ -424,12 +428,14 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(readModeButton);
     layout->addWidget(focusButton);
     layout->addWidget(searchButton);
-    layout->addWidget(makeVSeparator(this));
+    m_separators.append(makeVSeparator(this));
+    layout->addWidget(m_separators.last());
 
     // --- Direita: Mídia ---
     layout->addWidget(reminderButton);
     layout->addWidget(immersiveSoundButton);
-    layout->addWidget(makeVSeparator(this));
+    m_separators.append(makeVSeparator(this));
+    layout->addWidget(m_separators.last());
 
     // --- Direita: Ferramentas de worldbuilding ---
     layout->addWidget(construtorButton);
@@ -437,20 +443,134 @@ TopToolbar::TopToolbar(QWidget *parent)
     layout->addWidget(refMenuButton);
     layout->addWidget(statisticsButton);
     layout->addWidget(miraButton);
-    layout->addWidget(makeVSeparator(this));
+    m_separators.append(makeVSeparator(this));
+    layout->addWidget(m_separators.last());
 
     // --- Direita: Sistema ---
     layout->addWidget(themePanelButton);
     layout->addWidget(settingsButton);
     layout->addWidget(fullscreenButton);
 
+    // Botão de overflow ("⋯") — só aparece quando updateOverflow() precisa
+    // esconder algum botão dispensável por falta de espaço. Fica no fim da
+    // barra, sempre com o menu vazio até que isso aconteça.
+    overflowButton = new QToolButton(this);
+    overflowButton->setObjectName(QStringLiteral("ttbSystem"));
+    overflowButton->setAutoRaise(true);
+    overflowButton->setCursor(Qt::PointingHandCursor);
+    overflowButton->setFixedSize(kIconButtonSize, kIconButtonSize);
+    overflowButton->setText(QStringLiteral("⋯"));
+    overflowButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    overflowButton->setToolTip(tr("Mais opções"));
+    overflowButton->setPopupMode(QToolButton::InstantPopup);
+    overflowButton->setVisible(false);
+    m_overflowMenu = new QMenu(overflowButton);
+    overflowButton->setMenu(m_overflowMenu);
+    layout->addWidget(overflowButton);
+
     buildSizeMenu();
     buildSpacingMenu();
     buildAlignMenu();
+    buildOverflowMenu();
     applyRootStyle();
+
+    // Botões "quadrados" padrão (tamanho kIconButtonSize / ícone kIconSize) —
+    // os únicos com dimensão especial (sizeButton, lineHeightButton, sceneVarButton)
+    // ficam de fora e são tratados à parte em applyUiScale().
+    m_squareButtons = {
+        homeButton, newProjectButton, openProjectButton, saveProjectButton,
+        exportButton, helpButton, boldButton, italicButton, underlineButton,
+        strikethroughButton, statisticsButton, readModeButton, focusButton,
+        searchButton, alignButton, imageButton, reminderButton,
+        immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
+        refMenuButton, pensarioButton, construtorButton, miraButton,
+        overflowButton,
+    };
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &TopToolbar::applyTheme);
+    connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
+            this, &TopToolbar::applyUiScale);
+    applyUiScale(); // aplica a escala persistida (icones recarregados no tamanho certo)
+}
+
+void TopToolbar::buildOverflowMenu()
+{
+    // Ordem de colapso: índice 0 é o primeiro a sumir pra dentro de "⋯" quando
+    // falta espaço; os últimos (miraButton, construtorButton...) só colapsam
+    // em janelas realmente minúsculas. Escrita/formatação (grupo da esquerda)
+    // e Projeto/Configurações nunca entram aqui — ficam sempre visíveis.
+    m_collapsePriority = {
+        immersiveSoundButton,
+        fullscreenButton,
+        themePanelButton,
+        reminderButton,
+        readModeButton,
+        searchButton,
+        focusButton,
+        statisticsButton,
+        refMenuButton,
+        pensarioButton,
+        construtorButton,
+        miraButton,
+    };
+
+    for (QToolButton *btn : std::as_const(m_collapsePriority)) {
+        if (!btn) continue;
+        auto *action = new QAction(btn->icon(), btn->toolTip(), m_overflowMenu);
+        action->setCheckable(btn->isCheckable());
+        connect(action, &QAction::triggered, this, [btn]() { btn->click(); });
+        m_overflowActions.insert(btn, action);
+    }
+
+    // Sincroniza o "check" dos itens colapsáveis checkable (focusButton,
+    // fullscreenButton) toda vez que o menu abre — o QAction proxy não recebe
+    // o toggled do botão real automaticamente.
+    connect(m_overflowMenu, &QMenu::aboutToShow, this, [this]() {
+        for (auto it = m_overflowActions.constBegin(); it != m_overflowActions.constEnd(); ++it) {
+            if (it.value()->isCheckable()) it.value()->setChecked(it.key()->isChecked());
+        }
+    });
+}
+
+int TopToolbar::currentIconPx() const
+{
+    return qMax(10, qRound(kIconSize * UiScale::scale()));
+}
+
+void TopToolbar::applyUiScale()
+{
+    const qreal s = UiScale::scale();
+    const int barH = qMax(28, qRound(kBarHeight * s));
+    const int btnSize = qMax(18, qRound(kIconButtonSize * s));
+    const int icoPx = currentIconPx();
+
+    setFixedHeight(barH);
+
+    for (QToolButton *b : std::as_const(m_squareButtons)) {
+        if (!b) continue;
+        b->setFixedSize(btnSize, btnSize);
+        b->setIconSize(QSize(icoPx, icoPx));
+    }
+    if (sizeButton) {
+        sizeButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
+        sizeButton->setIconSize(QSize(icoPx, icoPx));
+    }
+    if (lineHeightButton) {
+        lineHeightButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
+        lineHeightButton->setIconSize(QSize(icoPx, icoPx));
+    }
+    if (sceneVarButton) {
+        const int varSize = qMax(14, qRound(20 * s));
+        sceneVarButton->setFixedSize(varSize, varSize);
+        sceneVarButton->setIconSize(QSize(qMax(10, qRound(14 * s)), qMax(10, qRound(14 * s))));
+    }
+    for (QFrame *sep : std::as_const(m_separators)) {
+        if (sep) sep->setFixedSize(1, qMax(12, qRound(22 * s)));
+    }
+
+    reloadIcons(); // re-renderiza os SVGs no tamanho novo (evita esticar bitmap)
+    positionDocTitle();
 }
 
 void TopToolbar::applyRootStyle()
@@ -547,18 +667,22 @@ void TopToolbar::applyRootStyle()
 
 void TopToolbar::reloadIcons()
 {
-    focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
-    focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
+    const int px = currentIconPx();
+    focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"), px);
+    focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"), px);
     if (focusButton) {
         focusButton->setIcon(focusCheckedCache ? focusOnIcon : focusOffIcon);
     }
-    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"));
-    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"));
+    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"), px);
+    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"), px);
     if (readModeButton) {
         readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
     }
     for (const auto& pair : iconBindings) {
-        if (pair.first) pair.first->setIcon(loadIcon(pair.second));
+        if (!pair.first) continue;
+        // sceneVarButton usa um ícone menor que o padrão da barra (ver applyUiScale).
+        const int iconPx = (pair.first == sceneVarButton) ? sceneVarButton->iconSize().width() : px;
+        pair.first->setIcon(loadIcon(pair.second, iconPx));
     }
     updateAlignButtonIcon();
 }
@@ -575,7 +699,7 @@ static QString alignIconName(Qt::Alignment a)
 
 void TopToolbar::updateAlignButtonIcon()
 {
-    if (alignButton) alignButton->setIcon(loadIcon(alignIconName(m_currentAlignment)));
+    if (alignButton) alignButton->setIcon(loadIcon(alignIconName(m_currentAlignment), currentIconPx()));
 }
 
 void TopToolbar::setCurrentAlignment(Qt::Alignment alignment)
@@ -714,26 +838,19 @@ void TopToolbar::applyTheme()
 void TopToolbar::setDocumentTitle(const QString &title, const QString &subtitle)
 {
     if (!docTitleLabel) return;
-    docTitleLabel->setText(title);
-    docTitleLabel->adjustSize();
-    docTitleLabel->raise();
+    m_rawTitle = title;
+    m_rawSubtitle = subtitle;
+    m_subtitleWanted = !subtitle.isEmpty();
 
-    if (docSubtitleLabel) {
-        docSubtitleLabel->setText(subtitle);
-        docSubtitleLabel->setVisible(!subtitle.isEmpty());
-        docSubtitleLabel->adjustSize();
-        docSubtitleLabel->raise();
-    }
-
-    positionDocTitle();
+    positionDocTitle(); // aplica o texto (elidido conforme o espaço) e reposiciona
 }
 
 void TopToolbar::setSceneVarButtonVisible(bool visible)
 {
     if (!sceneVarButton) return;
-    sceneVarButton->setVisible(visible);
+    m_sceneVarWanted = visible;
     sceneVarButton->raise();
-    positionDocTitle();
+    positionDocTitle(); // decide a visibilidade real (ver hasSubtitle/showVarBtn)
 }
 
 QRect TopToolbar::sceneVarButtonGlobalRect() const
@@ -834,36 +951,152 @@ void TopToolbar::pulsePensarioBadge()
 void TopToolbar::positionDocTitle()
 {
     if (!docTitleLabel) return;
+
+    // Garante que imageButton/readModeButton já tenham a posição DEFINITIVA do
+    // layout antes de ler a geometria deles. Sem isso, geometry() pode devolver
+    // a posição "ainda não lay-outada" (0,0 — QRect::isValid() não pega esse
+    // caso, só checa se tem tamanho) numa chamada muito cedo — ex.: logo no
+    // primeiro documento aberto — e o título gruda perto do canto esquerdo,
+    // por cima dos próprios botões de fonte/tamanho.
+    if (auto *lay = layout()) lay->activate();
+
+    // Colapsa/restaura botões dispensáveis pra dentro do menu "⋯" ANTES de
+    // calcular a faixa livre do título — quanto mais botões sobrarem na
+    // barra, menor a chance de haver espaço de sobra pro título mesmo.
+    updateOverflow();
+
+    // Faixa livre real entre o fim do grupo de botões da esquerda (imageButton)
+    // e o início do grupo da direita (readModeButton). Em janelas estreitas essa
+    // faixa é bem menor que a largura total da toolbar — sem isso o título,
+    // posicionado só pelo centro, atropela os botões (bug em telas pequenas).
+    constexpr int kSideMargin = 10;
+    int leftBound = kSideMargin;
+    int rightBound = width() - kSideMargin;
+    if (imageButton && readModeButton) {
+        leftBound = imageButton->geometry().right() + kSideMargin;
+        rightBound = readModeButton->geometry().left() - kSideMargin;
+    }
+    const int availW = rightBound - leftBound;
+
+    // Nem um título bem elidido cabe de forma legível (janela realmente
+    // minúscula, ou os dois grupos de botões já se tocam) — melhor sumir com
+    // tudo do que sobrepor os botões com um resto ilegível.
+    constexpr int kMinTitleWidth = 40;
+    if (availW < kMinTitleWidth) {
+        docTitleLabel->hide();
+        if (docSubtitleLabel) docSubtitleLabel->hide();
+        if (sceneVarButton) sceneVarButton->hide();
+        return;
+    }
+    docTitleLabel->show();
+
     const int centerX = (titleAnchorX >= 0) ? titleAnchorX : (width() / 2);
-    const bool hasSubtitle = docSubtitleLabel && docSubtitleLabel->isVisible();
+    // hasSubtitle/showVarBtn refletem o que o CALLER pediu (setDocumentTitle /
+    // setSceneVarButtonVisible), não o estado atual do widget — senão, depois
+    // de escondido por falta de espaço, nunca mais voltaria a aparecer quando
+    // a janela crescesse de novo (isVisible() já teria virado false por nós).
+    const bool hasSubtitle = m_subtitleWanted && docSubtitleLabel;
+    const bool showVarBtn = hasSubtitle && m_sceneVarWanted && sceneVarButton;
+    constexpr int kVarBtnGap = 4;
+    const int varBtnW = showVarBtn ? kVarBtnGap + sceneVarButton->width() : 0;
+    if (sceneVarButton) sceneVarButton->setVisible(showVarBtn);
+
+    const QFontMetrics titleFm(docTitleLabel->font());
+    docTitleLabel->setText(titleFm.elidedText(m_rawTitle, Qt::ElideRight, availW));
+    docTitleLabel->adjustSize();
+    docTitleLabel->raise();
 
     if (!hasSubtitle) {
-        const int x = centerX - docTitleLabel->width() / 2;
+        if (docSubtitleLabel) docSubtitleLabel->hide();
+        int x = centerX - docTitleLabel->width() / 2;
+        x = qBound(leftBound, x, qMax(leftBound, rightBound - docTitleLabel->width()));
         const int y = (height() - docTitleLabel->height()) / 2;
         docTitleLabel->move(x, y);
         return;
     }
+    docSubtitleLabel->show();
+
+    const QFontMetrics subFm(docSubtitleLabel->font());
+    docSubtitleLabel->setText(subFm.elidedText(m_rawSubtitle, Qt::ElideRight, qMax(20, availW - varBtnW)));
+    docSubtitleLabel->adjustSize();
+    docSubtitleLabel->raise();
 
     // Título maior em cima, subtítulo menor embaixo — bloco de duas linhas
     // centralizado verticalmente na toolbar (ex.: capítulo + "Cena x").
     const int blockH = docTitleLabel->height() + docSubtitleLabel->height();
     const int topY = (height() - blockH) / 2;
-    docTitleLabel->move(centerX - docTitleLabel->width() / 2, topY);
+    int titleX = centerX - docTitleLabel->width() / 2;
+    titleX = qBound(leftBound, titleX, qMax(leftBound, rightBound - docTitleLabel->width()));
+    docTitleLabel->move(titleX, topY);
 
     // Botão de variações (quando visível) fica colado à direita do
     // subtítulo — a linha "subtítulo + botão" centraliza como um bloco só,
     // sem deslocar a linha do título de cima.
-    const bool showVarBtn = sceneVarButton && sceneVarButton->isVisible();
-    constexpr int kVarBtnGap = 4;
     const int subW = docSubtitleLabel->width();
-    const int comboW = subW + (showVarBtn ? kVarBtnGap + sceneVarButton->width() : 0);
-    const int subX = centerX - comboW / 2;
+    const int comboW = subW + varBtnW;
+    int subX = centerX - comboW / 2;
+    subX = qBound(leftBound, subX, qMax(leftBound, rightBound - comboW));
     const int subY = topY + docTitleLabel->height();
     docSubtitleLabel->move(subX, subY);
     if (showVarBtn) {
         const int subCenterY = subY + docSubtitleLabel->height() / 2;
         sceneVarButton->move(subX + subW + kVarBtnGap, subCenterY - sceneVarButton->height() / 2);
     }
+}
+
+void TopToolbar::collapseToOverflow(QToolButton *btn)
+{
+    if (!btn || !btn->isVisible()) return;
+    btn->hide(); // QLayout ignora widgets escondidos — libera o espaço sozinho
+    QAction *action = m_overflowActions.value(btn);
+    if (action && !m_overflowMenu->actions().contains(action))
+        m_overflowMenu->addAction(action);
+}
+
+void TopToolbar::restoreFromOverflow(QToolButton *btn)
+{
+    if (!btn || btn->isVisible()) return;
+    btn->show();
+    QAction *action = m_overflowActions.value(btn);
+    if (action) m_overflowMenu->removeAction(action);
+}
+
+void TopToolbar::updateOverflow()
+{
+    if (!overflowButton || !layout() || m_collapsePriority.isEmpty()) return;
+
+    // Espaço confortável mínimo pro título (mesmo elidido) — abaixo disso
+    // ainda vale a pena colapsar mais um botão dispensável.
+    constexpr int kTargetGap = 180;
+
+    auto currentGap = [this]() -> int {
+        if (!imageButton || !readModeButton) return width();
+        layout()->invalidate();
+        layout()->activate();
+        return readModeButton->geometry().left() - imageButton->geometry().right();
+    };
+
+    // Encolhe: do menos essencial pro mais essencial, colapsa mais um por vez
+    // até sobrar espaço confortável (ou acabarem os candidatos).
+    for (QToolButton *btn : std::as_const(m_collapsePriority)) {
+        if (currentGap() >= kTargetGap) break;
+        collapseToOverflow(btn);
+    }
+
+    // Cresce: tenta devolver o mais essencial dos colapsados primeiro; se não
+    // coube (ficou apertado de novo), desfaz e para — os que sobraram são
+    // ainda menos essenciais, não adianta tentar.
+    for (int i = m_collapsePriority.size() - 1; i >= 0; --i) {
+        QToolButton *btn = m_collapsePriority.at(i);
+        if (!btn || btn->isVisible()) continue;
+        restoreFromOverflow(btn);
+        if (currentGap() < kTargetGap) {
+            collapseToOverflow(btn);
+            break;
+        }
+    }
+
+    overflowButton->setVisible(!m_overflowMenu->actions().isEmpty());
 }
 
 void TopToolbar::setFontFamilies(const QStringList &families, const QString &current)

@@ -111,12 +111,25 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    migrateSettingsFromMira();
-    migrateSettingsFromQiyva();
+    // Modo de teste: QENNA_FRESH_PROFILE=1 faz o QSettings (registro do
+    // Windows) apontar pra uma chave separada, sempre vazia — simula "abrir o
+    // app pela primeira vez" (sem tema/chave de API/última resolução salvos)
+    // sem tocar no perfil de verdade. Útil pra testar os defaults que reagem à
+    // resolução da tela (ver ScreenDefaults) em várias resoluções seguidas:
+    // repita o launch com a variável setada, nada fica gravado no perfil real.
+    const bool freshProfile = qEnvironmentVariableIsSet("QENNA_FRESH_PROFILE");
+    const QString appName = freshProfile
+        ? QStringLiteral("Qenna Writer (Fresh Test)")
+        : QStringLiteral("Qenna Writer");
 
-    QApplication::setApplicationName("Qenna Writer");
+    if (!freshProfile) {
+        migrateSettingsFromMira();
+        migrateSettingsFromQiyva();
+    }
+
+    QApplication::setApplicationName(appName);
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
-    QApplication::setOrganizationName("Qenna Writer");
+    QApplication::setOrganizationName(appName);
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
 
     CrashLogger::install();

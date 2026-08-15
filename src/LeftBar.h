@@ -62,6 +62,7 @@ protected:
 private slots:
     void rebuildDrawerButtons();
     void applyTheme();
+    void applyUiScale();
 
 private:
     int drawerInsertIndexAt(const QPoint& posInBar) const;

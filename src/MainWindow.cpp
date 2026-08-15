@@ -90,6 +90,7 @@
 #include "DrawerListPanel.h"
 #include "EditorHost.h"
 #include "EditorLayout.h"
+#include "UiScale.h"
 #include "ElementCreateDialog.h"
 #include "ElementsPresentDialog.h"
 #include "ElementsStore.h"
@@ -3359,6 +3360,8 @@ void MainWindow::setupToolbar()
             this, &MainWindow::onThemeChanged);
     connect(EditorLayout::Manager::instance(), &EditorLayout::Manager::layoutChanged,
             this, &MainWindow::onEditorLayoutChanged);
+    connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
+            this, &MainWindow::onUiScaleChanged);
 
     connect(toolbar, &TopToolbar::boldToggled, this, &MainWindow::setBold);
     connect(toolbar, &TopToolbar::italicToggled, this, &MainWindow::setItalic);
@@ -6237,6 +6240,38 @@ void MainWindow::onEditorLayoutChanged()
     applyPageShadow();
     positionSidePanels();
     positionWordCountPanel();
+}
+
+// TopToolbar e LeftBar mudam de altura/largura quando a escala da UI muda —
+// como toolbarHolder é posicionado manualmente (setGeometry, fora de qualquer
+// layout do MainWindow), precisa de um reposicionamento explícito aqui em vez
+// de confiar no relayout automático do Qt.
+void MainWindow::onUiScaleChanged()
+{
+    if (toolbarHolder) {
+        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+        toolbarHolder->raise();
+    }
+    updateEditorContainerMargins();
+    resizeEditorColumnToViewport();
+    positionSidePanels();
+    positionWordCountPanel();
+    positionExternalScrollBar();
+    positionFindBar();
+    positionGlobalSearchPanel();
+    if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
+
+    const int tbH = toolbarHolder ? toolbarHolder->sizeHint().height() : 0;
+    if (pensarioPanel) pensarioPanel->setTopInset(tbH);
+    if (statsPanel) statsPanel->setTopInset(tbH);
+    if (aiChatPanel) aiChatPanel->setTopInset(tbH);
+
+    if (toolbar && editor) {
+        const QPoint editorCenterGlobal =
+            editor->mapToGlobal(QPoint(editor->width() / 2, 0));
+        const int anchorX = toolbar->mapFromGlobal(editorCenterGlobal).x();
+        toolbar->setTitleAnchorX(anchorX);
+    }
 }
 
 void MainWindow::updateEditorContainerMargins()

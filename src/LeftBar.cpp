@@ -2,6 +2,7 @@
 #include "IconUtils.h"
 #include "ProjectModel.h"
 #include "Theme.h"
+#include "UiScale.h"
 
 #include <QApplication>
 #include <QColor>
@@ -31,17 +32,25 @@ constexpr const char* kDrawerMime = "application/x-mira-drawer-key";
 
 namespace {
 
-constexpr int kBarWidth = 60;
-constexpr int kBtnSize  = 40;
-constexpr int kIconSize = 26;
+// Valores-base (escala 1.0). O tamanho de verdade em pixels vem das funções
+// abaixo, que aplicam o fator de UiScale — permite o slider de "Tamanho da
+// interface" nas Configurações reescalar a barra em tempo real.
+constexpr int kBarWidthBase = 60;
+constexpr int kBtnSizeBase  = 40;
+constexpr int kIconSizeBase = 26;
+
+int barWidthPx() { return qMax(40, qRound(kBarWidthBase * UiScale::scale())); }
+int btnSizePx()  { return qMax(24, qRound(kBtnSizeBase  * UiScale::scale())); }
+int iconSizePx() { return qMax(14, qRound(kIconSizeBase * UiScale::scale())); }
 
 QIcon loadLeftbarIcon(const QString& fileName) {
+    const int px = iconSizePx();
     return IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/leftbar/%1").arg(fileName),
         QColor(Theme::textMuted()),
         QColor(Theme::textPrimary()),
         QColor(Theme::textBright()),
-        QSize(kIconSize, kIconSize));
+        QSize(px, px));
 }
 
 QString fixedButtonQss() {
@@ -137,7 +146,7 @@ QFrame* makeGroupSeparator(QWidget* parent) {
 } // namespace
 
 int LeftBar::barWidth() {
-    return kBarWidth;
+    return barWidthPx();
 }
 
 LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
@@ -148,7 +157,7 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
 {
     setObjectName(QStringLiteral("leftBar"));
     setAttribute(Qt::WA_StyledBackground, true);
-    setFixedWidth(kBarWidth);
+    setFixedWidth(barWidthPx());
     setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
     setAcceptDrops(true);
 
@@ -225,6 +234,31 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &LeftBar::applyTheme);
+    connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
+            this, &LeftBar::applyUiScale);
+    applyUiScale(); // aplica a escala persistida (botões/ícones no tamanho certo)
+}
+
+void LeftBar::applyUiScale() {
+    setFixedWidth(barWidthPx());
+    const int btn = btnSizePx();
+    const int ico = iconSizePx();
+
+    for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it) {
+        auto* b = it.value();
+        if (!b) continue;
+        b->setFixedSize(btn, btn);
+        const QString res = b->property("iconRes").toString();
+        if (!res.isEmpty()) {
+            const QIcon ic = loadLeftbarIcon(res);
+            if (!ic.isNull()) {
+                b->setIcon(ic);
+                b->setIconSize(QSize(ico, ico));
+            }
+        }
+    }
+    if (m_newDrawerBtn) m_newDrawerBtn->setFixedSize(btn, btn);
+    rebuildDrawerButtons(); // recria os botões de gaveta já no tamanho novo
 }
 
 void LeftBar::applyTheme() {
@@ -315,7 +349,7 @@ QToolButton* LeftBar::makeFixedButton(const QString& iconResource,
                                      FixedAction action) {
     auto* btn = new QToolButton(this);
     btn->setToolTip(tooltip);
-    btn->setFixedSize(kBtnSize, kBtnSize);
+    btn->setFixedSize(btnSizePx(), btnSizePx());
     btn->setCursor(Qt::PointingHandCursor);
     btn->setCheckable(true);
     btn->setAutoRaise(true);
@@ -328,7 +362,7 @@ QToolButton* LeftBar::makeFixedButton(const QString& iconResource,
         QIcon ic = loadLeftbarIcon(iconResource);
         if (!ic.isNull()) {
             btn->setIcon(ic);
-            btn->setIconSize(QSize(kIconSize, kIconSize));
+            btn->setIconSize(QSize(iconSizePx(), iconSizePx()));
             btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
         } else {
             btn->setText(placeholderLetter);
@@ -358,7 +392,7 @@ QToolButton* LeftBar::makeDrawerButton(const QString& drawerKey,
                                       const QString& iconId) {
     auto* btn = new QToolButton(this);
     btn->setToolTip(title);
-    btn->setFixedSize(kBtnSize, kBtnSize);
+    btn->setFixedSize(btnSizePx(), btnSizePx());
     btn->setCursor(Qt::PointingHandCursor);
     btn->setCheckable(true);
     btn->setAutoRaise(true);
@@ -374,10 +408,10 @@ QToolButton* LeftBar::makeDrawerButton(const QString& drawerKey,
             QColor(accent),
             QColor(accent),
             QColor(Theme::textBright()),
-            QSize(kIconSize, kIconSize));
+            QSize(iconSizePx(), iconSizePx()));
         if (!ic.isNull()) {
             btn->setIcon(ic);
-            btn->setIconSize(QSize(kIconSize, kIconSize));
+            btn->setIconSize(QSize(iconSizePx(), iconSizePx()));
             btn->setToolButtonStyle(Qt::ToolButtonIconOnly);
             iconLoaded = true;
         }
@@ -411,7 +445,7 @@ QToolButton* LeftBar::makeNewDrawerButton() {
     auto* btn = new QToolButton(this);
     btn->setText(QStringLiteral("+"));
     btn->setToolTip(tr("Nova gaveta"));
-    btn->setFixedSize(kBtnSize, kBtnSize);
+    btn->setFixedSize(btnSizePx(), btnSizePx());
     btn->setCursor(Qt::PointingHandCursor);
     btn->setStyleSheet(newDrawerQss());
     connect(btn, &QToolButton::clicked, this, &LeftBar::newDrawerRequested);
