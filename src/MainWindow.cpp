@@ -154,6 +154,7 @@
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
 #include "ThemesPanel.h"
+#include "LoadingToast.h"
 #include "BackgroundWidget.h"
 #include "WordCountPanel.h"
 #include "WordCounter.h"
@@ -4844,6 +4845,22 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
     m_ideaDraftActive = false;
     m_ideaDraftChapterId.clear();
 
+    // A partir daqui é I/O síncrono pesado (project.mira.json + todos os
+    // stores) — em projetos grandes trava a thread por vários segundos com
+    // cara de app travado. Toast antes + processEvents força o repaint na
+    // unha (mesmo padrão do onThemePanelRequested). Centraliza no Main Menu
+    // quando ele está na tela (é a janela visível durante o clique de abrir
+    // projeto); cai pro MainWindow nos outros 2 chamadores (autoload no
+    // startup e "abrir esse projeto" vindo do AIChatPanel), onde o Main Menu
+    // não está em cena.
+    QWidget* loadingHost = (mainMenuDialog && mainMenuDialog->isVisible())
+        ? static_cast<QWidget*>(mainMenuDialog) : static_cast<QWidget*>(this);
+    auto* loadingToast = new LoadingToast(loadingHost, tr("Carregando…"));
+    loadingToast->show();
+    loadingToast->raise();
+    loadingToast->repaint();
+    QApplication::processEvents();
+
     applyProjectRoot(root);
 
     // Carrega index, se existir.
@@ -4854,6 +4871,7 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
         const QJsonObject obj = ProjectStorage::readIndex(root, &ok, &readErr);
         if (!ok) {
             if (errorOut) *errorOut = readErr;
+            loadingToast->deleteLater();
             return false;
         }
         projectModel->loadFromJson(obj);
@@ -4882,6 +4900,8 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     rememberLastProject(root);
     restoreLastDocFor(root);
+
+    loadingToast->deleteLater();
 
     // Mostra a janela principal agora que tem projeto pra editar. Útil quando
     // o app começou escondido (sem autoOpen) e o user escolheu pelo menu.
