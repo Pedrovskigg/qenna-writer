@@ -170,6 +170,8 @@ qt_add_executable(qenna-writer
     src/ScreenDefaults.h
     src/ThemesPanel.cpp
     src/ThemesPanel.h
+    src/LoadingToast.cpp
+    src/LoadingToast.h
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp
