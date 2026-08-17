@@ -97,6 +97,11 @@ private:
     void buildUi();
     void rebuildTerritoryMenu();
     void rebuildSystemsList();
+    // sizeHint() padrão do QListWidget vazio ainda reserva um vão grande
+    // mesmo sem itens (o cap fixo de 210px sozinho não bastava — sobrava
+    // espaço morto entre a busca e o "+ Novo sistema"). Ajusta a altura de
+    // fato ao conteúdo: linhas * altura da linha, com teto de 210px.
+    void updateSystemsListHeight();
     void loadSystem(const QString& id);
     void rebuildTree();
     void populateTreeNode(QTreeWidgetItem* parent, const ConstrutorStore::Node& node);

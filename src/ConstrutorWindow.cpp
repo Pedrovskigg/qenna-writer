@@ -515,18 +515,23 @@ void ConstrutorWindow::buildUi()
     m_searchResultsList = new QListWidget(this);
     m_searchResultsList->setObjectName(QStringLiteral("ctrSearchResults"));
     m_searchResultsList->setFrameShape(QFrame::NoFrame);
+    m_searchResultsList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     m_searchResultsList->setVisible(false);
-    leftLay->addWidget(m_searchResultsList, 1);
+    leftLay->addWidget(m_searchResultsList);
 
-    // Lista de sistemas
+    // Lista de sistemas — altura fixa recalculada em updateSystemsListHeight()
+    // (linhas * altura da linha, teto 210px): o sizeHint() padrão do
+    // QListWidget vazio reserva um vão grande sozinho, então setMaximumHeight
+    // não é suficiente — precisa de setFixedHeight ao conteúdo de verdade.
     m_systemsList = new QListWidget(this);
     m_systemsList->setObjectName(QStringLiteral("ctrSystemsList"));
     m_systemsList->setFrameShape(QFrame::NoFrame);
     m_systemsList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_systemsList->setMaximumHeight(210);
+    m_systemsList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     m_sysDelegate = new SystemItemDelegate(m_systemsList);
     m_systemsList->setItemDelegate(m_sysDelegate);
     leftLay->addWidget(m_systemsList);
+    updateSystemsListHeight();
 
     // Botão novo sistema
     auto* newSysWrap = new QWidget(this);
@@ -811,6 +816,7 @@ void ConstrutorWindow::rebuildSystemsList()
 
     m_systemsList->blockSignals(false);
     m_rebuilding = false;
+    updateSystemsListHeight();
 
     if (m_systemsList->currentItem() == nullptr && !m_currentSystemId.isEmpty()) {
         m_currentSystemId.clear();
@@ -819,6 +825,16 @@ void ConstrutorWindow::rebuildSystemsList()
         m_tree->setVisible(false);
         showNoSystemOpenState();
     }
+}
+
+void ConstrutorWindow::updateSystemsListHeight()
+{
+    // 50px é o sizeHint fixo do SystemItemDelegate (linha 1: nome, linha 2:
+    // categoria/waypoint) — mantém em sincronia com ele.
+    static constexpr int kRowHeight = 50;
+    static constexpr int kMaxHeight = 210;
+    const int count = m_systemsList->count();
+    m_systemsList->setFixedHeight(qMin(count * kRowHeight, kMaxHeight));
 }
 
 void ConstrutorWindow::setTerritoryFilter(const QString& territorioId)
