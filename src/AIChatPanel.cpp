@@ -68,14 +68,17 @@
 #include <QSettings>
 #include <QShowEvent>
 #include <QStringConverter>
+#include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextEdit>
+#include <QTextFormat>
 #include <QTextStream>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QtMath>
 
 namespace {
 constexpr int kPanelWidth = 420;
@@ -291,6 +294,32 @@ QString bubbleTextColor(bool isUser) {
     return isUser ? Theme::textBright() : Theme::textPrimary();
 }
 
+// Espaçamento vertical entre blocos da bolha — pedido do usuário
+// (2026-08-15) pra dar mais respiro visual e separar tópicos, já que a
+// resposta da Mira tende a ter várias seções numa mensagem só. Primeira
+// tentativa foi via QTextDocument::setDefaultStyleSheet() (CSS de p/h1-h6/
+// ul/li), mas não teve efeito nenhum: QTextEdit::setMarkdown() constrói o
+// documento direto por QTextBlockFormat/QTextCharFormat (ver
+// qtextmarkdownimporter no Qt), sem passar pelo pipeline HTML+CSS — a folha
+// de estilo padrão só vale pra setHtml(). Único jeito real de controlar
+// margem de bloco no resultado do setMarkdown() é aplicar QTextBlockFormat
+// depois, bloco a bloco. Chamar sempre logo após setMarkdown() (bolha nova
+// E cada token de streaming, já que streaming rechama setMarkdown() no
+// texto acumulado inteiro a cada token).
+void applyBubbleBlockSpacing(QTextEdit* te) {
+    QTextBlock block = te->document()->begin();
+    while (block.isValid()) {
+        QTextBlockFormat fmt = block.blockFormat();
+        const bool isHeading = fmt.headingLevel() > 0;
+        const bool isListItem = block.textList() != nullptr;
+        fmt.setTopMargin(isHeading ? 10 : 0);
+        fmt.setBottomMargin(isListItem ? 3 : 8);
+        QTextCursor cur(block);
+        cur.mergeBlockFormat(fmt);
+        block = block.next();
+    }
+}
+
 QString bubbleTextQss(const QString& textColorHex) {
     // "padding: 0" NÃO é decorativo — é o que faz o texto da bolha existir na
     // tela. O stylesheet GLOBAL do app (Theme::globalStyleSheet, aplicado com
@@ -311,6 +340,16 @@ QString bubbleTextQss(const QString& textColorHex) {
         "QTextEdit#chatBubbleText { padding: 0; background: transparent; border: none; color: %1;"
         " font-family: 'Segoe UI', sans-serif; font-size: 13px; }")
         .arg(textColorHex);
+}
+
+// QSS do header "Pensando…" da bolha de pensamento — cor passada pronta
+// (com alpha já calculado pelo timer de pulso) em vez de fixa, já que ela
+// muda a cada tick. Ver AIChatPanel::showThinkingBubble().
+QString thinkingToggleQss(const QColor& color) {
+    return QStringLiteral(
+        "QToolButton { background: transparent; border: none; text-align: left; padding: 0;"
+        " font-family: 'Segoe UI', sans-serif; font-size: 13px; color: rgba(%1,%2,%3,%4); }")
+        .arg(color.red()).arg(color.green()).arg(color.blue()).arg(color.alpha());
 }
 
 QString traceToggleQss() {
@@ -1860,6 +1899,8 @@ QString AIChatPanel::buildSystemPrompt() const
         QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
     base += miraTraitsFragment(QSettings().value(QStringLiteral("ai/personalityTraits")).toStringList());
     base += miraCompanionshipFragment();
+    base += miraResponseDensityFragment();
+    base += miraMarkdownFormattingFragment();
     base += MiraStyleStore::buildPromptFragment();
     base += QStringLiteral(
         "\n\nVocê está conversando livremente com o autor sobre o projeto "
@@ -2135,8 +2176,7 @@ void AIChatPanel::handleReadDocumentTool(const QString& id, const QJsonObject& a
     entry.text = traceStart;
     if (!match->key.isEmpty()) entry.docTitles.append(match->title);
     m_pendingToolTraces.append(entry);
-    m_statusLabel->setText(tr("Lendo \"%1\" por inteiro…").arg(match->title));
-    m_statusLabel->setVisible(true);
+    refreshThinkingBubbleDetails();
 
     // Sub-chamada efêmera, num AIClient próprio e descartável: o texto
     // bruto do capítulo (até 100k chars) NÃO entra no histórico principal
@@ -2316,8 +2356,7 @@ void AIChatPanel::handleResummarizeDocumentTool(const QString& id, const QJsonOb
     entry.text = traceText;
     if (!match->key.isEmpty()) entry.docTitles.append(match->title);
     m_pendingToolTraces.append(entry);
-    m_statusLabel->setText(tr("Relendo \"%1\"…").arg(match->title));
-    m_statusLabel->setVisible(true);
+    refreshThinkingBubbleDetails();
 
     // Mesma lógica de sub-chamada efêmera do read_document — o texto bruto
     // do documento não entra no histórico persistente, só o resumo final.
@@ -2464,8 +2503,7 @@ void AIChatPanel::handleGenerateCharacterImageTool(const QString& id, const QJso
     ToolTraceEntry entry;
     entry.text = traceText;
     m_pendingToolTraces.append(entry);
-    m_statusLabel->setText(tr("Gerando imagem de \"%1\"…").arg(resolvedElement->name));
-    m_statusLabel->setVisible(true);
+    refreshThinkingBubbleDetails();
 
     QSettings settings;
     const QString imageModel = settings.value(QStringLiteral("ai/imageModel"),
@@ -2556,8 +2594,7 @@ void AIChatPanel::handleGenerateSceneImageTool(const QString& id, const QJsonObj
     ToolTraceEntry entry;
     entry.text = traceText;
     m_pendingToolTraces.append(entry);
-    m_statusLabel->setText(tr("Gerando imagem…"));
-    m_statusLabel->setVisible(true);
+    refreshThinkingBubbleDetails();
 
     QSettings settings;
     const QString imageModel = settings.value(QStringLiteral("ai/imageModel"),
@@ -2732,6 +2769,12 @@ QString AIChatPanel::runWorldDataLookup(const QString& query) const
 void AIChatPanel::finishToolRoundTrip(const QString& id, const QString& toolName,
                                       const QJsonObject& argumentsEcho, const QString& resultText)
 {
+    // Ponto único por onde TODA tool call passa ao terminar — cobre a
+    // bolha de pensamento com o rastro completo até aqui, mesmo pras
+    // chamadas "silenciosas" (busca no projeto) que não tocavam m_statusLabel
+    // antes.
+    refreshThinkingBubbleDetails();
+
     AIChatMessage assistantMsg;
     assistantMsg.role = QStringLiteral("assistant");
     assistantMsg.content = QString();
@@ -2854,11 +2897,13 @@ void AIChatPanel::setBusy(bool busy)
     m_inputEdit->setEnabled(!busy);
     m_attachBtn->setEnabled(!busy);
     m_scanBtn->setEnabled(!busy);
-    if (!m_scanning) m_statusLabel->setVisible(busy);
-    if (busy && !m_scanning) {
-        m_statusLabel->setText(tr("Pensando…"));
-        m_statusLabel->setVisible(true);
-    }
+    // m_statusLabel aqui era só o "Pensando…" do turno de chat — a varredura
+    // de documentos (m_scanning) usa o mesmo QLabel pra outra coisa e nunca
+    // passa por setBusy(), então esse guard nunca disparava de verdade; mesmo
+    // assim mantido por segurança caso isso mude no futuro.
+    if (m_scanning) return;
+    if (busy) showThinkingBubble();
+    else hideThinkingBubble();
 }
 
 void AIChatPanel::logConversation(const QString& speakerLabel, const QString& text) const
@@ -2978,6 +3023,7 @@ AIChatPanel::BubbleHandle AIChatPanel::createBubbleRow(bool isUser, const QStrin
     // aplicado no preview de ficha do StatsPanel (commit b31a631).
     te->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     te->setMarkdown(initialText);
+    applyBubbleBlockSpacing(te);
     forceBubbleTextColor(te, textColorHex);
     fitBubbleHeight(te, textWidth);
     bubbleLay->addWidget(te);
@@ -3017,6 +3063,135 @@ void AIChatPanel::refitAllBubbles()
         bubble->setMaximumWidth(bubbleMaxW);
         for (QTextEdit* te : bubble->findChildren<QTextEdit*>()) {
             if (te->objectName() == QStringLiteral("chatBubbleText")) fitBubbleHeight(te, textWidth);
+        }
+    }
+}
+
+void AIChatPanel::showThinkingBubble()
+{
+    if (m_thinkingRow) return; // já existe — setBusy(true) só roda 1x por turno, isso é só defensivo
+
+    auto* bubble = new QFrame(m_transcriptContent);
+    bubble->setObjectName(QStringLiteral("chatBubbleMira"));
+    bubble->setMaximumWidth(int(transcriptAvailableWidth() * 0.88));
+    bubble->setStyleSheet(bubbleQss(/*isUser=*/false));
+
+    auto* bubbleLay = new QVBoxLayout(bubble);
+    bubbleLay->setContentsMargins(12, 9, 12, 9);
+    bubbleLay->setSpacing(4);
+
+    // O próprio header é o botão que expande/recolhe — sem seta, o cursor
+    // de mão + o clique no texto já bastam (mesmo espírito minimalista do
+    // pedido: só "Pensando…" pulsando, nada de UI extra até clicar).
+    m_thinkingToggle = new QToolButton(bubble);
+    m_thinkingToggle->setObjectName(QStringLiteral("chatThinkingToggle"));
+    m_thinkingToggle->setText(tr("Pensando…"));
+    m_thinkingToggle->setCheckable(true);
+    m_thinkingToggle->setCursor(Qt::PointingHandCursor);
+    m_thinkingToggle->setToolTip(tr("Clique pra ver o que estou fazendo"));
+    m_thinkingToggle->setStyleSheet(thinkingToggleQss(QColor(Theme::textPrimary())));
+    bubbleLay->addWidget(m_thinkingToggle);
+
+    auto* details = new QWidget(bubble);
+    m_thinkingDetailsLay = new QVBoxLayout(details);
+    m_thinkingDetailsLay->setContentsMargins(0, 2, 0, 0);
+    m_thinkingDetailsLay->setSpacing(6);
+    details->setVisible(false);
+    bubbleLay->addWidget(details);
+
+    connect(m_thinkingToggle, &QToolButton::toggled, this,
+            [details](bool checked) { details->setVisible(checked); });
+
+    auto* row = new QWidget(m_transcriptContent);
+    auto* rowLay = new QHBoxLayout(row);
+    rowLay->setContentsMargins(0, 0, 0, 0);
+    rowLay->addWidget(bubble);
+    rowLay->addStretch();
+    m_transcriptLayout->insertWidget(m_transcriptLayout->count() - 1, row);
+    m_thinkingRow = row;
+
+    refreshThinkingBubbleDetails(); // pega o que já tiver em m_pendingToolTraces (raro, mas seguro)
+
+    // Pulso: sem QGraphicsOpacityEffect de propósito — ele quebra o repaint
+    // dentro de QScrollArea (mesmo gotcha já documentado no StackView da
+    // Biblioteca). Anima a cor do texto direto via QSS a cada tick.
+    m_thinkingPulsePhase = 0.0;
+    m_thinkingPulseTimer = new QTimer(this);
+    connect(m_thinkingPulseTimer, &QTimer::timeout, this, [this]() {
+        if (!m_thinkingToggle) return;
+        m_thinkingPulsePhase += 0.12;
+        const qreal t = (qSin(m_thinkingPulsePhase) + 1.0) / 2.0; // 0..1
+        QColor c(Theme::textPrimary());
+        c.setAlpha(130 + int(t * 125)); // 130..255
+        m_thinkingToggle->setStyleSheet(thinkingToggleQss(c));
+    });
+    m_thinkingPulseTimer->start(60);
+}
+
+void AIChatPanel::hideThinkingBubble()
+{
+    if (m_thinkingPulseTimer) {
+        m_thinkingPulseTimer->stop();
+        m_thinkingPulseTimer->deleteLater();
+        m_thinkingPulseTimer = nullptr;
+    }
+    if (m_thinkingRow) {
+        m_thinkingRow->deleteLater();
+        m_thinkingRow = nullptr;
+    }
+    m_thinkingToggle = nullptr;
+    m_thinkingDetailsLay = nullptr;
+}
+
+// Repopula o painel de detalhe da bolha de pensamento a partir de
+// m_pendingToolTraces inteiro — chamado a cada tool call concluída
+// (finishToolRoundTrip) e nos pontos que já avisavam uma ação demorada
+// (leitura de documento inteiro, geração de imagem), pra quem clicar
+// enquanto a Mira ainda está trabalhando ver o progresso ao vivo, não só
+// o resultado final. Mesmo visual de attachToolTraces (chips de documento
+// clicáveis incluídos), só que reconstruído do zero a cada chamada — a
+// lista é curta (poucos tool calls por turno), não compensa comparar diffs.
+void AIChatPanel::refreshThinkingBubbleDetails()
+{
+    if (!m_thinkingDetailsLay) return;
+    QWidget* detailsContainer = m_thinkingDetailsLay->parentWidget();
+
+    QLayoutItem* item;
+    while ((item = m_thinkingDetailsLay->takeAt(0)) != nullptr) {
+        if (item->widget()) item->widget()->deleteLater();
+        delete item;
+    }
+
+    for (const ToolTraceEntry& traceEntry : m_pendingToolTraces) {
+        auto* text = new QLabel(traceEntry.text, detailsContainer);
+        text->setObjectName(QStringLiteral("chatTraceText"));
+        text->setWordWrap(true);
+        text->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        text->setStyleSheet(traceTextQss());
+        m_thinkingDetailsLay->addWidget(text);
+
+        if (!traceEntry.docTitles.isEmpty()) {
+            auto* chipsRow = new QWidget(detailsContainer);
+            auto* chipsLay = new QHBoxLayout(chipsRow);
+            chipsLay->setContentsMargins(0, 0, 0, 0);
+            chipsLay->setSpacing(4);
+            for (const QString& docTitle : traceEntry.docTitles) {
+                auto* chip = new QToolButton(chipsRow);
+                chip->setObjectName(QStringLiteral("chatTraceChip"));
+                chip->setText(QStringLiteral("📄 %1").arg(docTitle));
+                chip->setCursor(Qt::PointingHandCursor);
+                chip->setToolTip(tr("Abrir no editor"));
+                chip->setStyleSheet(traceChipQss());
+                connect(chip, &QToolButton::clicked, this, [this, docTitle]() {
+                    if (!m_docOpener) return;
+                    const QVector<ScanDoc> docs = collectAllDocs();
+                    const ScanDoc* match = findDocByTitle(docs, docTitle);
+                    if (match && !match->key.isEmpty()) m_docOpener(match->key);
+                });
+                chipsLay->addWidget(chip);
+            }
+            chipsLay->addStretch();
+            m_thinkingDetailsLay->addWidget(chipsRow);
         }
     }
 }
@@ -3276,6 +3451,7 @@ void AIChatPanel::addMiraBubble(const QString& text, const QVector<ToolTraceEntr
 
 void AIChatPanel::beginMiraStreamBubble()
 {
+    hideThinkingBubble(); // a resposta de verdade toma o lugar dela no mesmo ponto do transcript
     m_currentMiraBubble = createBubbleRow(/*isUser=*/false, QString());
     m_streamingText.clear();
     m_assistantTurnOpen = true;
@@ -3286,6 +3462,7 @@ void AIChatPanel::appendStreamToken(const QString& token)
     if (!m_assistantTurnOpen) beginMiraStreamBubble();
     m_streamingText += token;
     m_currentMiraBubble.textEdit->setMarkdown(m_streamingText);
+    applyBubbleBlockSpacing(m_currentMiraBubble.textEdit);
     forceBubbleTextColor(m_currentMiraBubble.textEdit, Theme::textPrimary());
     fitBubbleHeight(m_currentMiraBubble.textEdit, m_currentMiraBubble.textWidth);
 }
