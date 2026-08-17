@@ -18,9 +18,11 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
+#include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextEdit>
+#include <QTextFormat>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -81,6 +83,27 @@ QString bubbleQss(bool isUser) {
 
 QString bubbleTextColor(bool isUser) {
     return isUser ? Theme::textBright() : Theme::textPrimary();
+}
+
+// Mesmo propósito e motivo do AIChatPanel::applyBubbleBlockSpacing (arquivo
+// irmão) — cópia local porque cada .cpp tem sua própria bolha, mesmo padrão
+// já seguido por bubbleQss/bubbleTextColor/bubbleTextQss aqui. QSS de p/h1-
+// h6/ul/li via setDefaultStyleSheet() NÃO funciona com setMarkdown() (que
+// monta o documento direto por QTextBlockFormat, sem passar por HTML+CSS) —
+// só QTextBlockFormat aplicado bloco a bloco tem efeito de verdade. Chamar
+// sempre logo após setMarkdown().
+void applyBubbleBlockSpacing(QTextEdit* te) {
+    QTextBlock block = te->document()->begin();
+    while (block.isValid()) {
+        QTextBlockFormat fmt = block.blockFormat();
+        const bool isHeading = fmt.headingLevel() > 0;
+        const bool isListItem = block.textList() != nullptr;
+        fmt.setTopMargin(isHeading ? 10 : 0);
+        fmt.setBottomMargin(isListItem ? 3 : 8);
+        QTextCursor cur(block);
+        cur.mergeBlockFormat(fmt);
+        block = block.next();
+    }
 }
 
 QString bubbleTextQss(const QString& textColorHex) {
@@ -477,6 +500,7 @@ AISelectionChat::SelectionBubbleHandle AISelectionChat::createSelectionBubble(bo
     // propaga pro viewport() interno (QAbstractScrollArea).
     te->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     te->setMarkdown(initialText);
+    applyBubbleBlockSpacing(te);
     forceBubbleTextColor(te, textColorHex);
     fitSelectionBubbleHeight(te);
     bubbleLay->addWidget(te);
@@ -545,6 +569,8 @@ QString AISelectionChat::buildSystemPrompt() const
         QSettings().value(QStringLiteral("ai/personalityFreeform")).toString());
     base += miraTraitsFragment(QSettings().value(QStringLiteral("ai/personalityTraits")).toStringList());
     base += miraCompanionshipFragment();
+    base += miraResponseDensityFragment();
+    base += miraMarkdownFormattingFragment();
     base += MiraStyleStore::buildPromptFragment();
 
     const QString userMemory = MiraUserMemoryStore::load();
@@ -645,6 +671,7 @@ void AISelectionChat::appendStreamToken(const QString& token)
 
     QTextEdit* te = m_currentAssistantBubble.textEdit;
     te->setMarkdown(QStringLiteral("**%1:**\n\n%2").arg(miraAssistantName(), m_streamingText));
+    applyBubbleBlockSpacing(te);
     forceBubbleTextColor(te, bubbleTextColor(false));
     fitSelectionBubbleHeight(te);
 }

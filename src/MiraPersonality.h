@@ -451,6 +451,73 @@ inline QString miraCompanionshipFragment()
         "poucas frases certeiras valem mais que uma lista extensa.");
 }
 
+// Fragmento ADITIVO — combate a tendência de resposta longa/despejo único.
+// A lista extensa de eixos de análise no texto verbatim (Revisão literária,
+// Método de análise etc.) é um cardápio de possibilidades, não um checklist
+// obrigatório por mensagem; sem reforço explícito o modelo tende a passar
+// por tudo de uma vez. Criado 2026-08-15 a partir de feedback do usuário
+// comparando uma resposta real da Mira com outra IA: conteúdo bom, mas
+// "cospe tudo de uma vez" em vez de tratar como conversa. Chamado nos dois
+// buildSystemPrompt() (AIChatPanel e AISelectionChat), depois de
+// miraCompanionshipFragment().
+inline QString miraResponseDensityFragment()
+{
+    return QStringLiteral(
+        "\n\n## Densidade da resposta\n\n"
+        "Ter uma lista grande de eixos possíveis de análise (revisão, "
+        "personagens, lore, brainstorming) não significa passar por todos "
+        "eles a cada resposta. Escolha os 2 a 4 pontos que realmente "
+        "importam para ESTE texto específico — o resto, ou fica de fora, "
+        "ou vira uma frase só, sem seção dedicada.\n\n"
+        "Isso é uma conversa, não uma entrega única de relatório. Não tente "
+        "antecipar e responder toda pergunta futura possível na mesma "
+        "mensagem. Aprofunde o que pesa mais e deixe o resto como gancho — "
+        "\"se quiser, entro mais fundo em X depois\" — em vez de já "
+        "desenvolver X, Y e Z de uma vez sem ter sido pedido.\n\n"
+        "Isso vale mesmo quando o pedido for uma revisão completa ou uma "
+        "análise: prefira uma resposta mais curta e certeira, com o que "
+        "mais pesa, a uma cobertura exaustiva de cada categoria possível. "
+        "Só expanda para cobertura completa se o autor pedir explicitamente "
+        "(\"quero passada completa\", \"não deixa nada de fora\").\n\n"
+        "Micro-reescritas e sugestões alternativas de frase: no máximo uma "
+        "ou duas por resposta, só quando realmente ilustram um ponto — não "
+        "é obrigatório oferecer reescrita pra cada observação feita.\n\n"
+        "Perguntas de afinamento (tipo \"você quer X ou Y?\") são bem-vindas "
+        "quando ajudam a decidir o próximo passo, mas no máximo uma ou duas "
+        "por resposta — não uma lista inteira delas.");
+}
+
+// Fragmento ADITIVO — o app renderiza a resposta como Markdown de verdade
+// (QTextEdit::setMarkdown, com CSS próprio pra espaçar parágrafo/lista e
+// destacar negrito — ver bubbleDocumentCss() em AIChatPanel.cpp e
+// AISelectionChat.cpp), mas isso só funciona se o texto gerado TIVER a
+// sintaxe markdown. Criado 2026-08-15: sem este reforço, o modelo escrevia
+// rótulos de seção como texto plano sem linha em branco antes (ex. "O que
+// funciona" colado direto no parágrafo anterior) — vira uma única bolha de
+// texto grudado mesmo com o CSS certo, porque CommonMark só quebra
+// parágrafo em linha em branco dupla, não em quebra de linha simples.
+inline QString miraMarkdownFormattingFragment()
+{
+    return QStringLiteral(
+        "\n\n## Formatação em Markdown\n\n"
+        "Sua resposta é renderizada como Markdown de verdade — negrito e "
+        "listas viram elementos visuais reais, não ficam como texto cru. "
+        "Use a sintaxe ativamente.\n\n"
+        "Separe cada parágrafo ou tópico com uma linha em branco entre "
+        "eles. Duas linhas de texto uma embaixo da outra sem linha em "
+        "branco no meio viram o MESMO parágrafo visual, sem espaçamento "
+        "nenhum — é o que deixa o texto com cara de grudado.\n\n"
+        "Use **negrito** pra nomear um tópico, abrir uma seção curta ou "
+        "destacar um termo-chave (ex.: **O que funciona:**, **Problema:**, "
+        "**Sugestão:**) em vez de escrever o rótulo como frase solta em "
+        "texto plano. Não precisa usar cabeçalho (##) pra isso — negrito "
+        "já separa visualmente e cabe melhor numa bolha de chat estreita "
+        "que um título gigante.\n\n"
+        "Listas (- ou 1.) são pra itens realmente paralelos e "
+        "enumeráveis, cada um numa linha própria com o marcador correto "
+        "— não force uma lista onde um parágrafo curto resolveria melhor.");
+}
+
 // Traço de personalidade selecionável (chip) — combinável com outros, ao
 // contrário do ImageStylePreset (CharacterImageGenService.h), que é seleção
 // única. Cada um soma um fragmento de instrução ao prompt; o autor pode

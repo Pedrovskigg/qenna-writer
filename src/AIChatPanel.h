@@ -32,6 +32,7 @@ class QListWidget;
 class QPushButton;
 class QScrollArea;
 class QTextEdit;
+class QTimer;
 class QToolButton;
 
 // Uma conversa salva em disco — título (derivado da 1ª pergunta) + data da
@@ -268,6 +269,17 @@ private:
                                   const QVector<PendingEditSuggestion>& editSuggestions = {});
     void clearTranscriptUi();
 
+    // Bolha "Pensando…" — vive DENTRO do transcript (não mais um status
+    // solto abaixo do scroll), pulsa enquanto aguarda resposta, e expande
+    // ao clicar pra mostrar o rastro de tool calls ao vivo (mesmo visual de
+    // attachToolTraces, só que atualizado durante o turno em vez de só no
+    // fim). Criada em showThinkingBubble() (chamada por setBusy(true)),
+    // destruída em hideThinkingBubble() (setBusy(false) ou início do
+    // streaming de verdade, quando a bolha de resposta toma o lugar dela).
+    void showThinkingBubble();
+    void hideThinkingBubble();
+    void refreshThinkingBubbleDetails();
+
     void saveCurrentSession();
     QVector<AIChatSessionInfo> listSessionsForRoot(const QString& root) const;
     QVector<AIChatSessionInfo> listSessions() const { return listSessionsForRoot(m_projectRoot); }
@@ -441,8 +453,15 @@ private:
     QLabel* m_attachThumb = nullptr;
     QToolButton* m_attachClearBtn = nullptr;
     QImage m_pendingAttachImage; // imagem escolhida pelo usuário, ainda não enviada
-    QLabel* m_statusLabel = nullptr;
+    QLabel* m_statusLabel = nullptr; // usado só pela varredura de documentos (m_scanning) — ver showThinkingBubble() pro status por turno de chat
     QWidget* m_resizeGrip = nullptr;
+
+    // Ver showThinkingBubble()/hideThinkingBubble()/refreshThinkingBubbleDetails().
+    QWidget* m_thinkingRow = nullptr;
+    QToolButton* m_thinkingToggle = nullptr;
+    QVBoxLayout* m_thinkingDetailsLay = nullptr;
+    QTimer* m_thinkingPulseTimer = nullptr;
+    qreal m_thinkingPulsePhase = 0.0;
 
     int m_topInset = 0;
     bool m_positioned = false;
