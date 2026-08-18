@@ -1629,6 +1629,7 @@ QJsonObject ProjectModel::toJson() const {
 
 void ProjectModel::loadFromJson(const QJsonObject& root) {
     m_projectName = jsonString(root.value(QStringLiteral("projectName")));
+    if (m_projectName.isEmpty()) m_projectName = jsonString(root.value(QStringLiteral("name")));
     m_projectType = root.contains(QStringLiteral("projectType"))
         ? jsonString(root.value(QStringLiteral("projectType"))) : QStringLiteral("book");
 
