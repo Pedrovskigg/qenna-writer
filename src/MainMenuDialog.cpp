@@ -240,7 +240,12 @@ RecentInfo readRecentInfo(const QString& rootPath)
     if (err.error != QJsonParseError::NoError || !doc.isObject()) return info;
     const QJsonObject root = doc.object();
     info.valid = true;
-    info.name = root.value(QStringLiteral("name")).toString();
+    // "projectName" é a chave gravada pelo save normal (ProjectModel::toJson);
+    // "name" só existe em projetos editados pelo diálogo do menu (compat) —
+    // sem esse fallback, renomear pelo Painel de Informações dentro do editor
+    // nunca refletia no menu, e o card ficava preso no nome da pasta.
+    info.name = root.value(QStringLiteral("projectName")).toString();
+    if (info.name.isEmpty()) info.name = root.value(QStringLiteral("name")).toString();
     const QJsonObject data = root.value(QStringLiteral("data")).toObject();
     const QJsonObject details = data.value(QStringLiteral("projectDetails")).toObject();
     info.author = details.value(QStringLiteral("author")).toString();
