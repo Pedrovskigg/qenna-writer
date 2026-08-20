@@ -17,6 +17,7 @@
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLineF>
 #include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
@@ -36,6 +37,10 @@ namespace {
 constexpr int kNodeIdRole   = Qt::UserRole;
 constexpr int kNodeTypeRole = Qt::UserRole + 1;
 constexpr int kAvatarSize   = 76;
+// Mesma lógica da BondsLayer (Vínculos de personagem): a linha para na borda
+// do círculo do avatar + uma folga, em vez de ir até o centro — evita
+// invadir a imagem.
+constexpr qreal kLinkEdgeGap = 2.0;
 
 // Overlay transparente a mouse — só pinta as linhas de vínculo entre os
 // círculos do Seletor. A interação (clicar/botão direito numa linha) é feita
@@ -298,6 +303,23 @@ bool TerritorioWindow::eventFilter(QObject* watched, QEvent* event)
             }
         }
     }
+    if (m_selector && watched == m_selector->viewport() && event->type() == QEvent::MouseMove) {
+        auto* me = static_cast<QMouseEvent*>(event);
+        const TerritorioStore::TerritorioLink* link = linkNear(me->pos());
+        const QString linkId = link ? link->id : QString();
+        if (linkId != m_hoveredLinkId) {
+            m_hoveredLinkId = linkId;
+            m_selector->viewport()->setCursor(link ? Qt::PointingHandCursor : Qt::ArrowCursor);
+            if (m_linksOverlay) m_linksOverlay->update();
+        }
+    }
+    if (m_selector && watched == m_selector->viewport() && event->type() == QEvent::Leave) {
+        if (!m_hoveredLinkId.isEmpty()) {
+            m_hoveredLinkId.clear();
+            m_selector->viewport()->unsetCursor();
+            if (m_linksOverlay) m_linksOverlay->update();
+        }
+    }
     return QWidget::eventFilter(watched, event);
 }
 
@@ -361,7 +383,7 @@ void TerritorioWindow::buildUi()
     m_selector->setMovement(QListView::Static);
     m_selector->setResizeMode(QListView::Adjust);
     m_selector->setIconSize(QSize(kAvatarSize, kAvatarSize));
-    m_selector->setGridSize(QSize(104, 112));
+    m_selector->setGridSize(QSize(124, 124));
     m_selector->setWordWrap(true);
     m_selector->setFrameShape(QFrame::NoFrame);
     m_selector->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -383,16 +405,24 @@ void TerritorioWindow::buildUi()
                 if (id == link.toTerritorioId)   toItem   = it;
             }
             if (!fromItem || !toItem) continue;
-            const QPoint a = m_selector->visualItemRect(fromItem).center();
-            const QPoint b = m_selector->visualItemRect(toItem).center();
+            const QPointF centerA = m_selector->visualItemRect(fromItem).center();
+            const QPointF centerB = m_selector->visualItemRect(toItem).center();
+            QLineF line(centerA, centerB);
+            const qreal trim = kAvatarSize / 2.0 + kLinkEdgeGap;
+            if (line.length() <= trim * 2) continue; // avatares colados, sem trecho pra desenhar
+            const QPointF unit = (centerB - centerA) / line.length();
+            const QPointF a = centerA + unit * trim;
+            const QPointF b = centerB - unit * trim;
+            const bool emphasized = link.id == m_currentLinkId || link.id == m_hoveredLinkId;
             QColor color = link.color.isEmpty() ? QColor(Theme::accentDefault()) : QColor(link.color);
-            color.setAlpha(200);
-            QPen pen(color, link.id == m_currentLinkId ? 3.0 : 2.0);
+            color.setAlpha(link.id == m_hoveredLinkId ? 255 : 200);
+            QPen pen(color, emphasized ? 5.0 : 4.0);
             p.setPen(pen);
             p.drawLine(a, b);
         }
     };
     m_selector->viewport()->installEventFilter(this);
+    m_selector->viewport()->setMouseTracking(true);
 
     auto* newTerrWrap = new QWidget(leftPanel);
     auto* newTerrLay  = new QHBoxLayout(newTerrWrap);

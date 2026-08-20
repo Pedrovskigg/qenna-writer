@@ -103,7 +103,7 @@ private:
     void repositionLinksOverlay();
     // Acha o vínculo cuja linha passa perto de `pos` (coords do viewport do
     // seletor), com folga de alguns pixels. nullptr se nenhum.
-    const TerritorioStore::TerritorioLink* linkNear(const QPoint& pos, qreal threshold = 6.0) const;
+    const TerritorioStore::TerritorioLink* linkNear(const QPoint& pos, qreal threshold = 8.0) const;
 
     QString selectedTerritorioId() const;
     QString selectedNodeId() const;
@@ -139,6 +139,7 @@ private:
     QString m_currentTerritorioId;
     QString m_currentNodeId;
     QString m_currentLinkId;
+    QString m_hoveredLinkId; // vínculo sob o mouse no momento — hover visual + cursor
     bool    m_rebuilding = false;
     // Território e Construtor compartilham UM único editor (m_editor) — só
     // um lado por vez "possui" ele. true = Território é quem deve reagir a

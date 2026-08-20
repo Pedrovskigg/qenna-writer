@@ -338,7 +338,10 @@ void ConstrutorWindow::setEditorActive(bool active)
         m_currentSystemId.clear();
         m_currentNodeId.clear();
         if (m_sysDetail) m_sysDetail->setVisible(false);
-        if (m_tree) m_tree->setVisible(false);
+        // m_tree NÃO é escondido — fica sempre presente no layout (só vazio),
+        // igual ao TerritorioWindow, pra sempre segurar o stretch=1 que
+        // absorve o espaço sobrando (ver nota em buildUi()).
+        if (m_tree) m_tree->clear();
         if (m_deleteNodeBtn) m_deleteNodeBtn->setEnabled(false);
         rebuildMentionsPanel();
     }
@@ -517,7 +520,10 @@ void ConstrutorWindow::buildUi()
     m_searchResultsList->setFrameShape(QFrame::NoFrame);
     m_searchResultsList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     m_searchResultsList->setVisible(false);
-    leftLay->addWidget(m_searchResultsList);
+    // stretch=1: quando a busca está ativa, ela substitui a árvore como o
+    // widget que "ocupa o resto do painel" — sem isso, o espaço sobrando
+    // se distribui pelos outros widgets (mesmo bug do m_tree, ver abaixo).
+    leftLay->addWidget(m_searchResultsList, 1);
 
     // Lista de sistemas — altura fixa recalculada em updateSystemsListHeight()
     // (linhas * altura da linha, teto 210px): o sizeHint() padrão do
@@ -683,7 +689,12 @@ void ConstrutorWindow::buildUi()
 
     leftLay->addWidget(m_sysDetail);
 
-    // Árvore de nós (ocupa o resto do painel)
+    // Árvore de nós (ocupa o resto do painel). NUNCA é escondida (mesmo sem
+    // sistema selecionado, fica só vazia) — é o único widget da coluna com
+    // stretch>0, então precisa continuar presente no layout pra sempre
+    // absorver o espaço sobrando; do contrário o Qt distribui esse espaço
+    // entre os outros widgets (header/busca/botão), abrindo vãos entre eles.
+    // Mesmo padrão já usado (sem o bug) no TerritorioWindow.
     m_tree = new QTreeWidget(this);
     m_tree->setObjectName(QStringLiteral("ctrTree"));
     m_tree->setHeaderHidden(true);
@@ -692,7 +703,6 @@ void ConstrutorWindow::buildUi()
     m_tree->setDragDropMode(QAbstractItemView::InternalMove);
     m_tree->setSelectionMode(QAbstractItemView::SingleSelection);
     m_tree->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
-    m_tree->setVisible(false);
     leftLay->addWidget(m_tree, 1);
 
     // ── Seção "Menções no projeto" — overlay flutuante no canto superior
@@ -822,7 +832,7 @@ void ConstrutorWindow::rebuildSystemsList()
         m_currentSystemId.clear();
         m_currentNodeId.clear();
         m_sysDetail->setVisible(false);
-        m_tree->setVisible(false);
+        m_tree->clear();
         showNoSystemOpenState();
     }
 }
@@ -856,7 +866,7 @@ void ConstrutorWindow::onSystemSelected()
         m_currentSystemId.clear();
         m_currentNodeId.clear();
         m_sysDetail->setVisible(false);
-        m_tree->setVisible(false);
+        m_tree->clear();
         showNoSystemOpenState();
         return;
     }
@@ -1343,7 +1353,7 @@ void ConstrutorWindow::onDeleteSystem()
     m_currentSystemId.clear();
     m_currentNodeId.clear();
     m_sysDetail->setVisible(false);
-    m_tree->setVisible(false);
+    m_tree->clear();
     showNoSystemOpenState();
     m_store->removeSystem(sys->id);
 }
@@ -1432,7 +1442,7 @@ void ConstrutorWindow::onStoreChanged()
         if (!sys) {
             m_currentSystemId.clear();
             m_sysDetail->setVisible(false);
-            m_tree->setVisible(false);
+            m_tree->clear();
             if (m_territoryBtn) m_territoryBtn->setVisible(false);
         } else {
             rebuildTree();
@@ -1466,14 +1476,16 @@ void ConstrutorWindow::onSearchTextChanged(const QString& text)
         m_searchResultsList->clear();
         m_systemsList->setVisible(true);
         m_sysDetail->setVisible(!m_currentSystemId.isEmpty());
-        m_tree->setVisible(!m_currentSystemId.isEmpty());
+        // m_tree volta a ficar sempre visível (vazia ou não) — só some
+        // enquanto a busca está ativa, ver bloco abaixo.
+        m_tree->setVisible(true);
         return;
     }
     if (!m_store) return;
 
     m_systemsList->setVisible(false);
     m_sysDetail->setVisible(false);
-    m_tree->setVisible(false);
+    m_tree->setVisible(false); // busca ativa: m_searchResultsList assume o papel de "ocupa o resto"
     m_searchResultsList->clear();
     m_searchResultsList->setVisible(true);
 

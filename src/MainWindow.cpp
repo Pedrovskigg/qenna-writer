@@ -1619,7 +1619,13 @@ void MainWindow::setupEditor()
             // Criador de Mundos agora, sem janela própria.
             const int sep = itemId.indexOf(QLatin1Char(':'));
             if (sep < 0) return;
-            showConstrutorEmReforma();
+            const QString systemId = itemId.left(sep);
+            const QString nodeId   = itemId.mid(sep + 1);
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->show();
+            w->raise();
+            w->activateWindow();
+            w->openConstrutorNode(systemId, nodeId);
             return;
         }
         if (drawerKey == QStringLiteral("__lugar_node__")) {
@@ -1627,7 +1633,13 @@ void MainWindow::setupEditor()
             // Mundos direto no território/nó referenciado.
             const int sep = itemId.indexOf(QLatin1Char(':'));
             if (sep < 0) return;
-            showConstrutorEmReforma();
+            const QString territorioId = itemId.left(sep);
+            const QString nodeId       = itemId.mid(sep + 1);
+            TerritorioWindow* w = ensureTerritorioWindow();
+            w->show();
+            w->raise();
+            w->activateWindow();
+            w->openNode(territorioId, nodeId);
             return;
         }
         if (refMenuPanel)
@@ -2290,7 +2302,10 @@ void MainWindow::setupEditor()
     // O botão da TopToolbar (ícone/tooltip "construtor.svg" ainda por
     // herança do nome antigo) agora abre a janela do Criador de Mundos.
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
-        showConstrutorEmReforma();
+        TerritorioWindow* w = ensureTerritorioWindow();
+        w->show();
+        w->raise();
+        w->activateWindow();
     });
     if (markerStore) {
         connect(markerStore, &MarkerStore::markersChanged, this, [this](const QString&) {
@@ -7034,12 +7049,6 @@ TimelinePanel* MainWindow::ensureTimelinePanel()
             timelinePanel->setProjectRoot(projectRoot);
     }
     return timelinePanel;
-}
-
-void MainWindow::showConstrutorEmReforma()
-{
-    QMessageBox::information(this, tr("Em reforma"),
-        tr("O Criador de Mundos está em reforma no momento e volta em breve."));
 }
 
 TerritorioWindow* MainWindow::ensureTerritorioWindow()
