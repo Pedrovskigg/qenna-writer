@@ -268,11 +268,6 @@ private:
     // stores/provider injetados — o Construtor mora embutido nela, não tem
     // mais janela própria.
     TerritorioWindow* ensureTerritorioWindow();
-    // TEMPORÁRIO: Criador de Mundos/Construtor bloqueado enquanto está em
-    // reforma — mostra aviso em vez de abrir a janela. Remover as chamadas
-    // a este método (e reverter pros 3 pontos que abrem ensureTerritorioWindow
-    // direto) quando a feature voltar.
-    void showConstrutorEmReforma();
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
     QString docTextForLink(const QString& linkKey);
