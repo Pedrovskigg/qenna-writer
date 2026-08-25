@@ -1033,7 +1033,7 @@ void MainWindow::setupEditor()
             // <hr>) — o subtítulo acompanha o scroll: mostra a cena que está
             // no topo da viewport, atualizando conforme o usuário rola.
             if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
-                title = ch->title.isEmpty() ? tr("(capítulo sem título)") : ch->title;
+                title = ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title;
                 if (!ch->scenes.isEmpty() && editor) {
                     const QTextCursor top = editor->cursorForPosition(QPoint(2, 2));
                     const int si = qBound(0,
@@ -1049,7 +1049,7 @@ void MainWindow::setupEditor()
             // Capítulo em cima (maior), "Cena x" embaixo (menor) — contexto de
             // onde a cena está sem precisar abrir o Manuscrito.
             if (const Chapter* ch = projectModel->findChapter(vm.chapterId)) {
-                title = ch->title.isEmpty() ? tr("(capítulo sem título)") : ch->title;
+                title = ch->title.isEmpty() ? projectModel->chapterDisplayLabel(*ch) : ch->title;
             }
             if (const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex)) {
                 subtitle = sc->title.isEmpty()
@@ -6101,6 +6101,12 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("editor/autoNavEnabled"), enabled);
             if (!enabled) deactivateNavZone();
         });
+        connect(settingsPanel, &SettingsPanel::unifiedGoalEnabledChanged, this, [this](bool enabled) {
+            // WordCounter é dono do QSettings dessa preferência (precisa relê-la
+            // sozinho ao trocar de projeto e no timer de sincronização entre
+            // instâncias) — só repassa a chamada, sem escrever QSettings aqui.
+            if (wordCounter) wordCounter->setUnifiedGoalEnabled(enabled);
+        });
         connect(settingsPanel, &SettingsPanel::maxDocsChanged, this, [this](int n) {
             QSettings().setValue(QStringLiteral("docCache/maxDocs"), n);
             if (docCache) docCache->setMaxDocs(n);
@@ -6135,6 +6141,9 @@ void MainWindow::onSettingsRequested()
     settingsPanel->setDetectionEnabled(detectionEnabled);
     settingsPanel->setDetectionMarkAll(detectionMarkAll);
     settingsPanel->setAutoNavEnabled(m_autoNavEnabled);
+    settingsPanel->setUnifiedGoalEnabled(wordCounter
+        ? wordCounter->isUnifiedGoalEnabled()
+        : QSettings().value(QStringLiteral("wordCounter/unifiedGoal"), false).toBool());
     settingsPanel->setMaxDocs(QSettings().value(QStringLiteral("docCache/maxDocs"), 6).toInt());
     settingsPanel->setMentionManuscriptsEnabled(
         QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
@@ -7056,11 +7065,15 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
     if (!territorioWindow) {
         territorioWindow = new TerritorioWindow(territorioStore, this);
         territorioWindow->setConstrutorStore(construtorStore);
+        territorioWindow->setProjectModel(projectModel);
         territorioWindow->setPlaceEventsProvider([this](const QString& territorioId) {
             QStringList out;
             for (const auto& ev : ensureTimelinePanel()->eventsForPlace(territorioId))
                 out << (ev.title.isEmpty() ? tr("(evento sem título)") : ev.title);
             return out;
+        });
+        territorioWindow->setPlaceReferenceCleaner([this](const QString& territorioId) {
+            ensureTimelinePanel()->clearPlaceReferences(territorioId);
         });
         connect(territorioWindow, &TerritorioWindow::openMentionInEditorRequested,
                 this, &MainWindow::openConstrutorMentionInEditor);

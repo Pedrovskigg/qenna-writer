@@ -74,6 +74,11 @@ public:
     // active=false = filtro desligado (ignora matchingEventIds).
     void setCharacterFilter(bool active, const QSet<QString>& matchingEventIds);
 
+    // Filtro por território (M7): esmaece eventos cujo placeId não bate com
+    // o território selecionado. Combina com foco por linha e filtro de
+    // personagem (os três ANDam via applyFocusDimming).
+    void setPlaceFilter(bool active, const QSet<QString>& matchingEventIds);
+
     // ── Layout do Modo Trilho ──────────────────────────────────────────────────
     void  relayout();                       // reposiciona tudo conforme o modo
     qreal railY(int order) const;           // y central da faixa
@@ -128,6 +133,10 @@ private:
     // Filtro por personagem (independente do foco por linha acima)
     bool          m_charFilterActive = false;
     QSet<QString> m_charFilterEventIds;
+
+    // Filtro por território (independente dos dois acima)
+    bool          m_placeFilterActive = false;
+    QSet<QString> m_placeFilterEventIds;
 
     QList<TimelineDef>   m_timelines;
     QList<TimelineEventItem*> m_events;

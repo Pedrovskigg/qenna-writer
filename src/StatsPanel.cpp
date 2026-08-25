@@ -18,6 +18,7 @@
 #include <QActionGroup>
 #include <QComboBox>
 #include <QFrame>
+#include <QGraphicsOpacityEffect>
 #include <QGuiApplication>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -171,9 +172,22 @@ QWidget* StatsPanel::buildOverviewPage()
     lay->setContentsMargins(14, 12, 14, 14);
     lay->setSpacing(6);
 
+    auto* charRow = new QHBoxLayout();
     auto* charLabel = new QLabel(tr("Personagens"), inner);
     charLabel->setObjectName(QStringLiteral("stSectionLabel"));
-    lay->addWidget(charLabel);
+    charRow->addWidget(charLabel);
+    charRow->addStretch();
+    m_territorioFilterBtn = new QToolButton(inner);
+    m_territorioFilterBtn->setObjectName(QStringLiteral("stChemSortBtn"));
+    m_territorioFilterBtn->setCursor(Qt::PointingHandCursor);
+    m_territorioFilterBtn->setPopupMode(QToolButton::InstantPopup);
+    m_territorioFilterBtn->setText(tr("Território: Todos"));
+    m_territorioFilterMenu = new QMenu(m_territorioFilterBtn);
+    connect(m_territorioFilterMenu, &QMenu::aboutToShow, this, &StatsPanel::rebuildTerritorioFilterMenu);
+    m_territorioFilterBtn->setMenu(m_territorioFilterMenu);
+    m_territorioFilterBtn->setVisible(false); // só aparece se houver territórios
+    charRow->addWidget(m_territorioFilterBtn);
+    lay->addLayout(charRow);
 
     auto* avatarScroll = new QScrollArea(inner);
     avatarScroll->setWidgetResizable(true);
@@ -498,6 +512,11 @@ void StatsPanel::rebuildOverview()
         if (QWidget* w = item->widget()) w->deleteLater();
         delete item;
     }
+    m_avatarBtnByElement.clear();
+    m_particRowByElement.clear();
+
+    if (m_territorioFilterBtn)
+        m_territorioFilterBtn->setVisible(m_territorioStore && !m_territorioStore->territorios().isEmpty());
 
     QList<Element> characters = projectCharacters();
     std::sort(characters.begin(), characters.end(), [](const Element& a, const Element& b) {
@@ -526,6 +545,7 @@ void StatsPanel::rebuildOverview()
         const QString id = e.id;
         connect(btn, &QToolButton::clicked, this, [this, id]() { openCharacter(id); });
         m_avatarStripLay->addWidget(btn);
+        m_avatarBtnByElement.insert(id, btn);
 
         const CharPresenceResult res = m_presenceResults.value(e.name.toLower());
         const int pct = (m_totalScenes > 0) ? qMin(100, (res.sceneCount * 100) / m_totalScenes) : 0;
@@ -565,8 +585,67 @@ void StatsPanel::rebuildOverview()
         rowLay->addWidget(pctLbl);
 
         m_participLay->addWidget(row);
+        m_particRowByElement.insert(e.id, row);
     }
     m_avatarStripLay->addStretch();
+    applyTerritorioFilterDimming();
+}
+
+void StatsPanel::rebuildTerritorioFilterMenu()
+{
+    if (!m_territorioFilterMenu || !m_territorioStore) return;
+    m_territorioFilterMenu->clear();
+
+    QAction* all = m_territorioFilterMenu->addAction(tr("Todos"));
+    connect(all, &QAction::triggered, this, [this]() {
+        m_territorioFilterId.clear();
+        if (m_territorioFilterBtn) m_territorioFilterBtn->setText(tr("Território: Todos"));
+        applyTerritorioFilterDimming();
+    });
+    m_territorioFilterMenu->addSeparator();
+
+    QList<TerritorioStore::Territorio> territorios = m_territorioStore->territorios();
+    std::sort(territorios.begin(), territorios.end(),
+              [](const TerritorioStore::Territorio& a, const TerritorioStore::Territorio& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const auto& t : territorios) {
+        const QString name = t.name.isEmpty() ? tr("(sem nome)") : t.name;
+        QAction* a = m_territorioFilterMenu->addAction(name);
+        a->setCheckable(true);
+        a->setChecked(t.id == m_territorioFilterId);
+        const QString id = t.id;
+        connect(a, &QAction::triggered, this, [this, id, name]() {
+            m_territorioFilterId = id;
+            if (m_territorioFilterBtn) m_territorioFilterBtn->setText(tr("Território: %1").arg(name));
+            applyTerritorioFilterDimming();
+        });
+    }
+}
+
+void StatsPanel::applyTerritorioFilterDimming()
+{
+    static constexpr qreal kDimOpacity = 0.16; // mesmo valor de TimelineScene, pra consistência visual
+
+    auto applyTo = [this](QWidget* w, bool lit) {
+        if (!w) return;
+        if (lit) { w->setGraphicsEffect(nullptr); return; }
+        auto* effect = new QGraphicsOpacityEffect(w);
+        effect->setOpacity(kDimOpacity);
+        w->setGraphicsEffect(effect);
+    };
+
+    const bool active = !m_territorioFilterId.isEmpty();
+    for (auto it = m_avatarBtnByElement.constBegin(); it != m_avatarBtnByElement.constEnd(); ++it) {
+        bool lit = true;
+        if (active) {
+            const DrawerItem* di = drawerItemForElement(it.key());
+            lit = di && (di->origemTerritorioId == m_territorioFilterId
+                      || di->localAtualTerritorioId == m_territorioFilterId);
+        }
+        applyTo(it.value(), lit);
+        applyTo(m_particRowByElement.value(it.key()), lit);
+    }
 }
 
 void StatsPanel::rebuildChapterBars()

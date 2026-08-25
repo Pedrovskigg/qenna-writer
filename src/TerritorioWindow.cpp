@@ -2,6 +2,7 @@
 #include "AvatarUtils.h"
 #include "ConstrutorStore.h"
 #include "ConstrutorWindow.h"
+#include "ProjectModel.h"
 #include "Theme.h"
 #include "WorldContentEditor.h"
 
@@ -147,6 +148,14 @@ void TerritorioWindow::setConstrutorStore(ConstrutorStore* store)
             // ConstrutorWindow::setEditorActive(false): clicar de novo no
             // mesmo território/nó precisa voltar a disparar o sinal de
             // seleção e reclamar o editor de volta.
+            //
+            // Flush ANTES de ceder: sem isso, uma tecla digitada dentro dos
+            // ~600ms de debounce do WorldContentEditor era perdida — o
+            // Construtor sobrescreve m_editor->content() com setContent()
+            // antes do timer pendente do Território disparar, e quando ele
+            // finalmente dispara m_editorActiveHere já está false, então
+            // saveCurrentContent() descartava a edição em silêncio.
+            saveCurrentContent();
             m_editorActiveHere = false;
             m_currentTerritorioId.clear();
             m_currentNodeId.clear();
@@ -750,6 +759,12 @@ void TerritorioWindow::onTerritorioContextMenu(const QPoint& pos)
             showNoTerritorioOpenState();
         }
         m_store->removeTerritorio(id);
+        // Limpeza cross-store: sem isso, origemTerritorioId/localAtualTerritorioId
+        // (fichas), placeId (Timeline) e territoryIds (Construtor) ficam
+        // órfãos, apontando pra um território que não existe mais.
+        if (m_projectModel) m_projectModel->clearTerritorioReferences(id);
+        if (m_construtorStore) m_construtorStore->removeTerritoryFromAllSystems(id);
+        if (m_placeReferenceCleaner) m_placeReferenceCleaner(id);
     }
 }
 

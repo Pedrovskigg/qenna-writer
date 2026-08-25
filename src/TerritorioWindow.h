@@ -8,6 +8,7 @@
 #include <functional>
 
 class ConstrutorWindow;
+class ProjectModel;
 class QFrame;
 class QLabel;
 class QListWidget;
@@ -29,6 +30,17 @@ public:
     explicit TerritorioWindow(TerritorioStore* store, QWidget* parent = nullptr);
 
     void setStore(TerritorioStore* store);
+
+    // Usado só pra limpar referências órfãs (origem/local atual do
+    // personagem) em outras gavetas quando um Território é excluído.
+    void setProjectModel(ProjectModel* model) { m_projectModel = model; }
+
+    // Quem hospeda (MainWindow) injeta uma função que zera placeId de
+    // eventos da Timeline apontando pro território excluído — mesma
+    // filosofia do PlaceEventsProvider abaixo, sem acoplar este widget a
+    // TimelineTypes/TimelinePanel.
+    using PlaceReferenceCleaner = std::function<void(const QString& territorioId)>;
+    void setPlaceReferenceCleaner(PlaceReferenceCleaner fn) { m_placeReferenceCleaner = std::move(fn); }
 
     // Construtor absorvido — a ConstrutorWindow de verdade (não uma lista
     // reduzida) embutida como widget filho no painel direito, filtrada pelo
@@ -124,6 +136,8 @@ private:
     QLabel*      m_placeEventsLabel = nullptr; // "O que aconteceu aqui" (eventos da Timeline)
     QLabel*      m_mentionsLabel    = nullptr; // menções salvas (categoria + trecho)
     PlaceEventsProvider m_placeEventsProvider;
+    PlaceReferenceCleaner m_placeReferenceCleaner;
+    ProjectModel* m_projectModel = nullptr;
     QPushButton* m_addFolderBtn    = nullptr;
     QPushButton* m_addDocBtn       = nullptr;
     QPushButton* m_deleteNodeBtn   = nullptr;

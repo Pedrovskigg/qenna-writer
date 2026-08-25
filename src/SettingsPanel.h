@@ -34,6 +34,9 @@ public:
     bool autoNavEnabled() const;
     void setAutoNavEnabled(bool enabled);
 
+    bool unifiedGoalEnabled() const;
+    void setUnifiedGoalEnabled(bool enabled);
+
     int maxDocs() const;
     void setMaxDocs(int n);
 
@@ -62,6 +65,7 @@ signals:
     void detectionEnabledChanged(bool enabled);
     void detectionMarkAllChanged(bool markAll);
     void autoNavEnabledChanged(bool enabled);
+    void unifiedGoalEnabledChanged(bool enabled);
     void maxDocsChanged(int n);
     void mentionManuscriptsEnabledChanged(bool enabled);
     void showScenePopupOnHrChanged(bool enabled);
@@ -84,6 +88,7 @@ private:
     QCheckBox* m_detectionAllCheck = nullptr;
     QPushButton* m_rescanScenesBtn = nullptr;
     QCheckBox* m_autoNavCheck               = nullptr;
+    QCheckBox* m_unifiedGoalCheck           = nullptr;
     QSpinBox*  m_maxDocsSpinBox             = nullptr;
     QCheckBox* m_mentionManuscriptsCheck    = nullptr;
     QCheckBox* m_scenePopupCheck            = nullptr;

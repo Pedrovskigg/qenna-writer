@@ -7,6 +7,7 @@
 #include "EditorHost.h"
 #include "ElementsStore.h"
 #include "FindBar.h"
+#include "AvatarUtils.h"
 #include "IconUtils.h"
 #include "MarkerStore.h"
 #include "MemoriesStore.h"
@@ -24,6 +25,7 @@
 #include <QFile>
 #include <QFontMetrics>
 #include <QFrame>
+#include <QGraphicsOpacityEffect>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QImageReader>
@@ -298,6 +300,17 @@ void RefMenuPanel::buildUi()
     m_drawerPickerBtn->setCursor(Qt::PointingHandCursor);
     connect(m_drawerPickerBtn, &QToolButton::clicked, this, &RefMenuPanel::onDrawerPickerClicked);
     tabsLay->addWidget(m_drawerPickerBtn);
+
+    m_territorioFilterBtn = new QToolButton(m_tabsRow);
+    m_territorioFilterBtn->setObjectName(QStringLiteral("refTabBtnSmall"));
+    m_territorioFilterBtn->setText(tr("Território: Todos"));
+    m_territorioFilterBtn->setCursor(Qt::PointingHandCursor);
+    m_territorioFilterBtn->setPopupMode(QToolButton::InstantPopup);
+    m_territorioFilterMenu = new QMenu(m_territorioFilterBtn);
+    connect(m_territorioFilterMenu, &QMenu::aboutToShow, this, &RefMenuPanel::rebuildTerritorioFilterMenu);
+    m_territorioFilterBtn->setMenu(m_territorioFilterMenu);
+    m_territorioFilterBtn->setVisible(false);
+    tabsLay->addWidget(m_territorioFilterBtn);
 
     tabsLay->addStretch();
 
@@ -616,10 +629,8 @@ void RefMenuPanel::rebuildTabs()
         label = tr("Grupos");
     } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
         label = tr("Timelines");
-    } else if (m_sourceKind == SourceKind::Construtor) {
-        label = tr("Construtor");
-    } else if (m_sourceKind == SourceKind::Lugar) {
-        label = tr("Lugares");
+    } else if (m_sourceKind == SourceKind::WorldExplorer) {
+        label = tr("Explorador de Mundos");
     } else {
         label = tr("Gaveta");
     }
@@ -637,6 +648,45 @@ void RefMenuPanel::rebuildTabs()
         m_viewModeBtn->setVisible(m_sourceKind == SourceKind::Drawer && visualDrawer);
         m_viewModeBtn->setText(m_visualMode ? QStringLiteral("≡") : QStringLiteral("⊞"));
         m_viewModeBtn->setToolTip(m_visualMode ? tr("Modo lista") : tr("Modo visual"));
+    }
+
+    // Filtro por território (M7) — só faz sentido numa gaveta, e só se
+    // houver território cadastrado no projeto.
+    if (m_territorioFilterBtn) {
+        m_territorioFilterBtn->setVisible(m_sourceKind == SourceKind::Drawer
+            && m_territorioStore && !m_territorioStore->territorios().isEmpty());
+    }
+}
+
+void RefMenuPanel::rebuildTerritorioFilterMenu()
+{
+    if (!m_territorioFilterMenu || !m_territorioStore) return;
+    m_territorioFilterMenu->clear();
+
+    QAction* all = m_territorioFilterMenu->addAction(tr("Todos"));
+    connect(all, &QAction::triggered, this, [this]() {
+        m_territorioFilterId.clear();
+        if (m_territorioFilterBtn) m_territorioFilterBtn->setText(tr("Território: Todos"));
+        rebuildNavBody();
+    });
+    m_territorioFilterMenu->addSeparator();
+
+    QList<TerritorioStore::Territorio> territorios = m_territorioStore->territorios();
+    std::sort(territorios.begin(), territorios.end(),
+              [](const TerritorioStore::Territorio& a, const TerritorioStore::Territorio& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const auto& t : territorios) {
+        const QString name = t.name.isEmpty() ? tr("(sem nome)") : t.name;
+        QAction* a = m_territorioFilterMenu->addAction(name);
+        a->setCheckable(true);
+        a->setChecked(t.id == m_territorioFilterId);
+        const QString id = t.id;
+        connect(a, &QAction::triggered, this, [this, id, name]() {
+            m_territorioFilterId = id;
+            if (m_territorioFilterBtn) m_territorioFilterBtn->setText(tr("Território: %1").arg(name));
+            rebuildNavBody();
+        });
     }
 }
 
@@ -666,56 +716,46 @@ void RefMenuPanel::rebuildNavBody()
         buildGroupsView();
     } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
         buildPlaceholderView(tr("Timelines"), tr("Em breve. Vai listar as linhas do tempo."));
-    } else if (m_sourceKind == SourceKind::Construtor) {
-        buildConstrutorView();
-    } else if (m_sourceKind == SourceKind::Lugar) {
-        buildLugarView();
+    } else if (m_sourceKind == SourceKind::WorldExplorer) {
+        buildWorldExplorerView();
     }
 
     m_navInnerLay->addStretch();
 }
 
-void RefMenuPanel::buildConstrutorView()
+const ConstrutorStore::Node* RefMenuPanel::findConstrutorNode(
+    const ConstrutorStore::System* sys, const QString& nodeId) const
 {
-    if (!m_navInner || !m_navInnerLay) return;
-    if (!m_construtorStore || m_construtorStore->systems().isEmpty()) {
-        buildPlaceholderView(tr("Construtor"),
-            tr("Nenhum sistema criado ainda. Use o botão ⚙ Construtor no Pensário pra criar o primeiro."));
-        return;
-    }
+    if (!sys) return nullptr;
+    std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find;
+    find = [&](const QList<ConstrutorStore::Node>& nodes) -> const ConstrutorStore::Node* {
+        for (const auto& n : nodes) {
+            if (n.id == nodeId) return &n;
+            if (const auto* c = find(n.children)) return c;
+        }
+        return nullptr;
+    };
+    return find(sys->nodes);
+}
 
-    // Sistema aberto (drill-down de 1 nível: sistemas → nós daquele sistema
-    // só). Evita misturar regras/seções de sistemas diferentes na mesma
-    // lista quando o projeto tem muitos sistemas — pedido do usuário.
-    const ConstrutorStore::System* openSys = m_currentConstrutorSystemId.isEmpty()
-        ? nullptr : m_construtorStore->system(m_currentConstrutorSystemId);
-    if (!openSys) m_currentConstrutorSystemId.clear();
+const TerritorioStore::Node* RefMenuPanel::findTerritorioNode(
+    const TerritorioStore::Territorio* ter, const QString& nodeId) const
+{
+    if (!ter) return nullptr;
+    std::function<const TerritorioStore::Node*(const QList<TerritorioStore::Node>&)> find;
+    find = [&](const QList<TerritorioStore::Node>& nodes) -> const TerritorioStore::Node* {
+        for (const auto& n : nodes) {
+            if (n.id == nodeId) return &n;
+            if (const auto* c = find(n.children)) return c;
+        }
+        return nullptr;
+    };
+    return find(ter->nodes);
+}
 
-    if (openSys) {
-        auto* row = new QWidget(m_navInner);
-        auto* rowLay = new QHBoxLayout(row);
-        rowLay->setContentsMargins(0, 0, 0, 4);
-        rowLay->setSpacing(6);
-        auto* back = new QToolButton(row);
-        back->setObjectName(QStringLiteral("refTinyBtn"));
-        back->setText(QStringLiteral("←"));
-        back->setCursor(Qt::PointingHandCursor);
-        connect(back, &QToolButton::clicked, this, [this]() {
-            m_currentConstrutorSystemId.clear();
-            rebuildNavBody();
-        });
-        rowLay->addWidget(back);
-        auto* lab = new QLabel(openSys->name, row);
-        lab->setStyleSheet(QStringLiteral("color:%1; font-size:12px; font-weight:600;").arg(Theme::textPrimary()));
-        rowLay->addWidget(lab);
-        rowLay->addStretch();
-        m_navInnerLay->addWidget(row);
-    }
-
-    auto* list = new QListWidget(m_navInner);
-    list->setSelectionMode(QAbstractItemView::SingleSelection);
-    list->setFrameShape(QFrame::NoFrame);
-    list->setStyleSheet(QStringLiteral(R"(
+static QString refListStyleSheet()
+{
+    return QStringLiteral(R"(
         QListWidget {
             background: %1; color: %2;
             border: 1px solid %3; border-radius: 6px;
@@ -729,30 +769,76 @@ void RefMenuPanel::buildConstrutorView()
            Theme::panelBorder(),
            Theme::hoverOverlay(),
            Theme::textBright(),
-           Theme::accentInfoSoft()));
+           Theme::accentInfoSoft());
+}
 
-    if (!openSys) {
-        // Raiz: uma linha por sistema (nome + categoria/waypoint como rótulo).
-        for (const auto& sys : m_construtorStore->systems()) {
-            if (!matchesSearch(sys.name)) continue;
-            QString text = sys.name;
-            if (const auto* cat = ConstrutorStore::categoryById(sys.categoryId)) {
-                text.append(QStringLiteral("   ·  ") + cat->displayName);
-            }
-            auto* li = new QListWidgetItem(text);
-            li->setData(Qt::UserRole, sys.id);
-            list->addItem(li);
+// "Explorador de Mundos" — fusão de Território (Lugares) e Construtor
+// (Sistemas) numa view só. Na raiz mostra as duas seções lado a lado; ao
+// entrar num território/sistema, mostra só os nós daquele um (mesmo
+// comportamento de antes, só realocado pra dentro de uma função só).
+void RefMenuPanel::buildWorldExplorerView()
+{
+    if (!m_navInner || !m_navInnerLay) return;
+    const bool hasTerritorios = m_territorioStore && !m_territorioStore->territorios().isEmpty();
+    const bool hasSistemas = m_construtorStore && !m_construtorStore->systems().isEmpty();
+    if (!hasTerritorios && !hasSistemas) {
+        buildPlaceholderView(tr("Explorador de Mundos"),
+            tr("Nenhum território ou sistema criado ainda. Use o botão do Construtor na barra superior pra abrir o Criador de Mundos."));
+        return;
+    }
+
+    const ConstrutorStore::System* openSys = m_currentConstrutorSystemId.isEmpty()
+        ? nullptr : m_construtorStore->system(m_currentConstrutorSystemId);
+    if (!openSys) m_currentConstrutorSystemId.clear();
+    const TerritorioStore::Territorio* openTer = m_currentLugarTerritorioId.isEmpty()
+        ? nullptr : m_territorioStore->territorio(m_currentLugarTerritorioId);
+    if (!openTer) m_currentLugarTerritorioId.clear();
+
+    auto sectionTitle = [this](const QString& text) {
+        auto* lab = new QLabel(text, m_navInner);
+        lab->setStyleSheet(QStringLiteral("color:%1; font-size:10px; font-weight:700; letter-spacing:1px; padding:6px 6px 2px;")
+                               .arg(Theme::textMuted()));
+        m_navInnerLay->addWidget(lab);
+    };
+    auto makeList = [this]() {
+        auto* lw = new QListWidget(m_navInner);
+        lw->setSelectionMode(QAbstractItemView::SingleSelection);
+        lw->setFrameShape(QFrame::NoFrame);
+        lw->setIconSize(QSize(22, 22));
+        lw->setStyleSheet(refListStyleSheet());
+        return lw;
+    };
+    auto backRow = [this](const QPixmap& avatar, const QString& name, std::function<void()> onBack) {
+        auto* row = new QWidget(m_navInner);
+        auto* rowLay = new QHBoxLayout(row);
+        rowLay->setContentsMargins(0, 0, 0, 4);
+        rowLay->setSpacing(6);
+        auto* back = new QToolButton(row);
+        back->setObjectName(QStringLiteral("refTinyBtn"));
+        back->setText(QStringLiteral("←"));
+        back->setCursor(Qt::PointingHandCursor);
+        connect(back, &QToolButton::clicked, this, [onBack]() { onBack(); });
+        rowLay->addWidget(back);
+        if (!avatar.isNull()) {
+            auto* av = new QLabel(row);
+            av->setPixmap(avatar);
+            av->setFixedSize(avatar.size());
+            rowLay->addWidget(av);
         }
-        connect(list, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
-            if (!it) return;
-            const QString systemId = it->data(Qt::UserRole).toString();
-            m_currentConstrutorSystemId = systemId;
-            setSelected(QStringLiteral("ctr:%1").arg(systemId)); // resumo do sistema
-            rebuildNavBody(); // entra na lista de nós desse sistema
+        auto* lab = new QLabel(name, row);
+        lab->setStyleSheet(QStringLiteral("color:%1; font-size:12px; font-weight:600;").arg(Theme::textPrimary()));
+        rowLay->addWidget(lab);
+        rowLay->addStretch();
+        m_navInnerLay->addWidget(row);
+    };
+
+    if (openSys) {
+        backRow(QPixmap(), openSys->name, [this]() {
+            m_currentConstrutorSystemId.clear();
+            rebuildNavBody();
         });
-    } else {
-        // Dentro de um sistema: só os nós dele, achatados (sem repetir o
-        // nome do sistema no breadcrumb — já está no header acima).
+
+        auto* list = makeList();
         std::function<void(const QString&, const QList<ConstrutorStore::Node>&)> walk;
         walk = [&](const QString& breadcrumb, const QList<ConstrutorStore::Node>& nodes) {
             for (const auto& n : nodes) {
@@ -772,89 +858,27 @@ void RefMenuPanel::buildConstrutorView()
             if (!it) return;
             setSelected(it->data(Qt::UserRole).toString());
         });
-    }
 
-    if (list->count() == 0) {
-        delete list;
-        auto* empty = new QLabel(
-            openSys ? tr("Este sistema ainda não tem regras/seções.") : tr("Nada encontrado."), m_navInner);
-        empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
-        empty->setAlignment(Qt::AlignCenter);
-        m_navInnerLay->addWidget(empty);
+        if (list->count() == 0) {
+            delete list;
+            auto* empty = new QLabel(tr("Este sistema ainda não tem regras/seções."), m_navInner);
+            empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
+            empty->setAlignment(Qt::AlignCenter);
+            m_navInnerLay->addWidget(empty);
+            return;
+        }
+        m_navInnerLay->addWidget(list);
         return;
     }
-
-    m_navInnerLay->addWidget(list);
-}
-
-void RefMenuPanel::buildLugarView()
-{
-    if (!m_navInner || !m_navInnerLay) return;
-    if (!m_territorioStore || m_territorioStore->territorios().isEmpty()) {
-        buildPlaceholderView(tr("Lugares"),
-            tr("Nenhum território criado ainda. Use o botão do Construtor na barra superior pra abrir o Criador de Mundos."));
-        return;
-    }
-
-    const TerritorioStore::Territorio* openTer = m_currentLugarTerritorioId.isEmpty()
-        ? nullptr : m_territorioStore->territorio(m_currentLugarTerritorioId);
-    if (!openTer) m_currentLugarTerritorioId.clear();
 
     if (openTer) {
-        auto* row = new QWidget(m_navInner);
-        auto* rowLay = new QHBoxLayout(row);
-        rowLay->setContentsMargins(0, 0, 0, 4);
-        rowLay->setSpacing(6);
-        auto* back = new QToolButton(row);
-        back->setObjectName(QStringLiteral("refTinyBtn"));
-        back->setText(QStringLiteral("←"));
-        back->setCursor(Qt::PointingHandCursor);
-        connect(back, &QToolButton::clicked, this, [this]() {
+        const QPixmap avatar = AvatarUtils::circularAvatar(openTer->avatarDataUrl, openTer->name, openTer->id, 22);
+        backRow(avatar, openTer->name, [this]() {
             m_currentLugarTerritorioId.clear();
             rebuildNavBody();
         });
-        rowLay->addWidget(back);
-        auto* lab = new QLabel(openTer->name, row);
-        lab->setStyleSheet(QStringLiteral("color:%1; font-size:12px; font-weight:600;").arg(Theme::textPrimary()));
-        rowLay->addWidget(lab);
-        rowLay->addStretch();
-        m_navInnerLay->addWidget(row);
-    }
 
-    auto* list = new QListWidget(m_navInner);
-    list->setSelectionMode(QAbstractItemView::SingleSelection);
-    list->setFrameShape(QFrame::NoFrame);
-    list->setStyleSheet(QStringLiteral(R"(
-        QListWidget {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            outline: none; padding: 4px;
-        }
-        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
-        QListWidget::item:hover { background: %4; color: %5; }
-        QListWidget::item:selected { background: %6; color: %5; }
-    )").arg(Theme::appBackground(),
-           Theme::textPrimary(),
-           Theme::panelBorder(),
-           Theme::hoverOverlay(),
-           Theme::textBright(),
-           Theme::accentInfoSoft()));
-
-    if (!openTer) {
-        for (const auto& t : m_territorioStore->territorios()) {
-            if (!matchesSearch(t.name)) continue;
-            auto* li = new QListWidgetItem(t.name);
-            li->setData(Qt::UserRole, t.id);
-            list->addItem(li);
-        }
-        connect(list, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
-            if (!it) return;
-            const QString territorioId = it->data(Qt::UserRole).toString();
-            m_currentLugarTerritorioId = territorioId;
-            setSelected(QStringLiteral("lug:%1").arg(territorioId)); // resumo do território
-            rebuildNavBody();
-        });
-    } else {
+        auto* list = makeList();
         std::function<void(const QString&, const QList<TerritorioStore::Node>&)> walk;
         walk = [&](const QString& breadcrumb, const QList<TerritorioStore::Node>& nodes) {
             for (const auto& n : nodes) {
@@ -874,19 +898,193 @@ void RefMenuPanel::buildLugarView()
             if (!it) return;
             setSelected(it->data(Qt::UserRole).toString());
         });
-    }
 
-    if (list->count() == 0) {
-        delete list;
-        auto* empty = new QLabel(
-            openTer ? tr("Este território ainda não tem pastas/documentos.") : tr("Nada encontrado."), m_navInner);
-        empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
-        empty->setAlignment(Qt::AlignCenter);
-        m_navInnerLay->addWidget(empty);
+        if (list->count() == 0) {
+            delete list;
+            auto* empty = new QLabel(tr("Este território ainda não tem pastas/documentos."), m_navInner);
+            empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
+            empty->setAlignment(Qt::AlignCenter);
+            m_navInnerLay->addWidget(empty);
+            return;
+        }
+        m_navInnerLay->addWidget(list);
         return;
     }
 
-    m_navInnerLay->addWidget(list);
+    // Raiz: territórios (avatar real, mesmo AvatarUtils::circularAvatar da
+    // StatsPanel) e sistemas (badge de vínculo), como cards — mesmo padrão
+    // visual de "refVisualCard" já usado no modo visual da Drawer
+    // (buildDrawerView), não a lista de texto simples de antes.
+    std::function<int(const QList<TerritorioStore::Node>&)> countTerNodes;
+    countTerNodes = [&](const QList<TerritorioStore::Node>& nodes) -> int {
+        int n = nodes.size();
+        for (const auto& node : nodes) n += countTerNodes(node.children);
+        return n;
+    };
+    std::function<int(const QList<ConstrutorStore::Node>&)> countSysNodes;
+    countSysNodes = [&](const QList<ConstrutorStore::Node>& nodes) -> int {
+        int n = nodes.size();
+        for (const auto& node : nodes) n += countSysNodes(node.children);
+        return n;
+    };
+
+    auto makeCard = [this](const QPixmap& avatar, const QString& title, const QString& meta,
+                            const QStringList& badges, std::function<void()> onClick) {
+        auto* card = new QToolButton(m_navInner);
+        card->setObjectName(QStringLiteral("refVisualCard"));
+        card->setCursor(Qt::PointingHandCursor);
+        card->setMinimumHeight(58);
+        card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        card->setStyleSheet(QStringLiteral(R"(
+            QToolButton#refVisualCard {
+                background: %1;
+                border: 1px solid %2;
+                border-radius: 8px;
+                text-align: left;
+                padding: 0;
+            }
+            QToolButton#refVisualCard:hover { background: %3; border-color: %4; }
+        )").arg(Theme::appBackground(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::borderStrong()));
+
+        auto* inner = new QWidget(card);
+        inner->setAttribute(Qt::WA_TransparentForMouseEvents);
+        auto* inLay = new QHBoxLayout(inner);
+        inLay->setContentsMargins(10, 8, 10, 8);
+        inLay->setSpacing(10);
+
+        auto* avLabel = new QLabel(inner);
+        avLabel->setFixedSize(32, 32);
+        avLabel->setPixmap(avatar);
+        inLay->addWidget(avLabel);
+
+        auto* info = new QWidget(inner);
+        auto* infoLay = new QVBoxLayout(info);
+        infoLay->setContentsMargins(0, 0, 0, 0);
+        infoLay->setSpacing(3);
+        auto* nameLab = new QLabel(title, info);
+        nameLab->setStyleSheet(QStringLiteral("color:%1; font-size:13px; font-weight:600;").arg(Theme::textBright()));
+        infoLay->addWidget(nameLab);
+        if (!meta.isEmpty()) {
+            auto* metaLab = new QLabel(meta, info);
+            metaLab->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+            infoLay->addWidget(metaLab);
+        }
+        if (!badges.isEmpty()) {
+            auto* badgeRow = new QWidget(info);
+            auto* badgeLay = new QHBoxLayout(badgeRow);
+            badgeLay->setContentsMargins(0, 2, 0, 0);
+            badgeLay->setSpacing(4);
+            for (const auto& b : badges) {
+                auto* pill = new QLabel(QStringLiteral(" 🔗 %1 ").arg(b), badgeRow);
+                pill->setStyleSheet(QStringLiteral(
+                    "background:%1; color:%2; border-radius:8px; padding:1px 6px; font-size:10px; font-weight:600;")
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+                badgeLay->addWidget(pill);
+            }
+            badgeLay->addStretch();
+            infoLay->addWidget(badgeRow);
+        }
+        inLay->addWidget(info, /*stretch=*/1);
+
+        auto* chev = new QLabel(QStringLiteral("›"), inner);
+        chev->setStyleSheet(QStringLiteral("color:%1; font-size:18px;").arg(Theme::textMuted()));
+        inLay->addWidget(chev);
+
+        auto* cardLay = new QVBoxLayout(card);
+        cardLay->setContentsMargins(0, 0, 0, 0);
+        cardLay->addWidget(inner);
+
+        connect(card, &QToolButton::clicked, this, [onClick]() { onClick(); });
+        return card;
+    };
+
+    bool anyShown = false;
+
+    if (hasTerritorios) {
+        QList<TerritorioStore::Territorio> hits;
+        for (const auto& t : m_territorioStore->territorios())
+            if (matchesSearch(t.name)) hits.append(t);
+        if (!hits.isEmpty()) {
+            anyShown = true;
+            sectionTitle(tr("TERRITÓRIOS"));
+            auto* col = new QWidget(m_navInner);
+            auto* colLay = new QVBoxLayout(col);
+            colLay->setContentsMargins(0, 0, 0, 0);
+            colLay->setSpacing(6);
+            for (const auto& t : hits) {
+                int linkCount = 0;
+                for (const auto& l : m_territorioStore->links())
+                    if (l.fromTerritorioId == t.id || l.toTerritorioId == t.id) ++linkCount;
+                QString meta = tr("%n documento(s)", nullptr, countTerNodes(t.nodes));
+                if (linkCount > 0) meta += tr(" · %n vínculo(s)", nullptr, linkCount);
+                const QPixmap avatar = AvatarUtils::circularAvatar(t.avatarDataUrl, t.name, t.id, 32);
+                const QString territorioId = t.id;
+                colLay->addWidget(makeCard(avatar, t.name, meta, {}, [this, territorioId]() {
+                    m_currentConstrutorSystemId.clear();
+                    m_currentLugarTerritorioId = territorioId;
+                    setSelected(QStringLiteral("lug:%1").arg(territorioId));
+                    rebuildNavBody();
+                }));
+            }
+            m_navInnerLay->addWidget(col);
+        }
+    }
+
+    if (hasSistemas) {
+        QList<ConstrutorStore::System> hits;
+        for (const auto& s : m_construtorStore->systems())
+            if (matchesSearch(s.name)) hits.append(s);
+        if (!hits.isEmpty()) {
+            anyShown = true;
+            sectionTitle(tr("SISTEMAS"));
+            const QIcon icSys = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/cube.svg"),
+                QColor(Theme::accentDefault()), QColor(Theme::accentDefault()), QColor(Theme::textBright()),
+                QSize(16, 16));
+            QPixmap sysAvatar(32, 32);
+            sysAvatar.fill(Qt::transparent);
+            {
+                QPainter p(&sysAvatar);
+                p.setRenderHint(QPainter::Antialiasing, true);
+                p.setBrush(QColor(58, 140, 122, 40));
+                p.setPen(Qt::NoPen);
+                p.drawEllipse(0, 0, 32, 32);
+                if (!icSys.isNull()) icSys.paint(&p, 8, 8, 16, 16);
+            }
+            auto* col = new QWidget(m_navInner);
+            auto* colLay = new QVBoxLayout(col);
+            colLay->setContentsMargins(0, 0, 0, 0);
+            colLay->setSpacing(6);
+            for (const auto& s : hits) {
+                QString meta;
+                if (const auto* cat = ConstrutorStore::categoryById(s.categoryId)) meta = cat->displayName;
+                const int nodeCount = countSysNodes(s.nodes);
+                if (nodeCount > 0) {
+                    if (!meta.isEmpty()) meta += QStringLiteral(" · ");
+                    meta += tr("%n regra(s)/seção(ões)", nullptr, nodeCount);
+                }
+                QStringList badges;
+                if (m_territorioStore) {
+                    for (const auto& tid : s.territoryIds)
+                        if (const auto* t = m_territorioStore->territorio(tid)) badges << t->name;
+                }
+                const QString systemId = s.id;
+                colLay->addWidget(makeCard(sysAvatar, s.name, meta, badges, [this, systemId]() {
+                    m_currentLugarTerritorioId.clear();
+                    m_currentConstrutorSystemId = systemId;
+                    setSelected(QStringLiteral("ctr:%1").arg(systemId));
+                    rebuildNavBody();
+                }));
+            }
+            m_navInnerLay->addWidget(col);
+        }
+    }
+
+    if (!anyShown) {
+        auto* empty = new QLabel(tr("Nada encontrado."), m_navInner);
+        empty->setStyleSheet(QStringLiteral("color:%1; font-size:11px; padding:8px;").arg(Theme::textMuted()));
+        empty->setAlignment(Qt::AlignCenter);
+        m_navInnerLay->addWidget(empty);
+    }
 }
 
 void RefMenuPanel::buildGroupsView()
@@ -1325,6 +1523,17 @@ void RefMenuPanel::buildDrawerView()
             cardLay->addWidget(inner);
 
             connect(card, &QToolButton::clicked, this, [this, key]() { setSelected(key); });
+
+            // Filtro por território (M7): esmaece (não esconde) quem não bate.
+            if (!m_territorioFilterId.isEmpty()
+                && it.origemTerritorioId != m_territorioFilterId
+                && it.localAtualTerritorioId != m_territorioFilterId) {
+                static constexpr qreal kTerritorioDimOpacity = 0.16; // mesmo valor de TimelineScene
+                auto* effect = new QGraphicsOpacityEffect(card);
+                effect->setOpacity(kTerritorioDimOpacity);
+                card->setGraphicsEffect(effect);
+            }
+
             gridLay->addWidget(card, row++, 0);
         }
         m_navInnerLay->addWidget(gridHost);
@@ -1556,7 +1765,105 @@ void RefMenuPanel::buildSearchAllView()
         m_navInnerLay->addWidget(lw);
     }
 
-    if (msHits.isEmpty() && chHits.isEmpty() && !anyDrawerHit) {
+    // ===== Territórios =====
+    struct TerHit { QString path; QString key; QString territorioId; };
+    QList<TerHit> terHits;
+    if (m_territorioStore) {
+        for (const auto& t : m_territorioStore->territorios()) {
+            if (matchesSearch(t.name))
+                terHits.append({ t.name, QStringLiteral("lug:%1").arg(t.id), t.id });
+            std::function<void(const QString&, const QList<TerritorioStore::Node>&)> walk;
+            walk = [&](const QString& breadcrumb, const QList<TerritorioStore::Node>& nodes) {
+                for (const auto& n : nodes) {
+                    const QString path = breadcrumb + QStringLiteral(" ▸ ") + n.name;
+                    if (matchesSearch(path))
+                        terHits.append({ path, QStringLiteral("lug:%1:%2").arg(t.id, n.id), t.id });
+                    walk(path, n.children);
+                }
+            };
+            walk(t.name, t.nodes);
+        }
+    }
+    if (!terHits.isEmpty()) {
+        sectionTitle(tr("TERRITÓRIOS"));
+        auto* lw = makeList();
+        for (const auto& h : terHits) {
+            const TerritorioStore::Territorio* t = m_territorioStore->territorio(h.territorioId);
+            const QIcon ic(AvatarUtils::circularAvatar(
+                t ? t->avatarDataUrl : QString(), t ? t->name : h.territorioId, h.territorioId, 14));
+            auto* it = new QListWidgetItem(ic, h.path);
+            it->setData(Qt::UserRole, h.key);
+            lw->addItem(it);
+        }
+        lw->setFixedHeight(qMin(160, 6 + 30 * terHits.size() + 4));
+        connect(lw, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            const QString key = it->data(Qt::UserRole).toString();
+            const QStringList parts = key.split(QLatin1Char(':'));
+            if (parts.size() < 2) return;
+            m_currentConstrutorSystemId.clear(); // garante que a view abra em território, não sistema
+            m_currentLugarTerritorioId = parts.at(1);
+            m_sourceKind = SourceKind::WorldExplorer;
+            m_searchQuery.clear();
+            if (m_searchInput) m_searchInput->clear();
+            setSelected(key); // seta m_selectedKey + preview, antes do rebuild abaixo
+            rebuildTabs();
+            rebuildNavBody(); // já entra com o nó certo destacado na lista
+        });
+        m_navInnerLay->addWidget(lw);
+    }
+
+    // ===== Sistemas =====
+    struct SysHit { QString path; QString key; };
+    QList<SysHit> sysHits;
+    if (m_construtorStore) {
+        for (const auto& s : m_construtorStore->systems()) {
+            if (matchesSearch(s.name))
+                sysHits.append({ s.name, QStringLiteral("ctr:%1").arg(s.id) });
+            std::function<void(const QString&, const QList<ConstrutorStore::Node>&)> walk;
+            walk = [&](const QString& breadcrumb, const QList<ConstrutorStore::Node>& nodes) {
+                for (const auto& n : nodes) {
+                    const QString path = breadcrumb + QStringLiteral(" ▸ ") + n.name;
+                    if (matchesSearch(path))
+                        sysHits.append({ path, QStringLiteral("ctr:%1:%2").arg(s.id, n.id) });
+                    walk(path, n.children);
+                }
+            };
+            walk(s.name, s.nodes);
+        }
+    }
+    if (!sysHits.isEmpty()) {
+        sectionTitle(tr("SISTEMAS"));
+        auto* lw = makeList();
+        const QIcon icSys = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/cube.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
+            QSize(14, 14));
+        for (const auto& h : sysHits) {
+            auto* it = new QListWidgetItem(h.path);
+            if (!icSys.isNull()) it->setIcon(icSys);
+            it->setData(Qt::UserRole, h.key);
+            lw->addItem(it);
+        }
+        lw->setFixedHeight(qMin(160, 6 + 30 * sysHits.size() + 4));
+        connect(lw, &QListWidget::itemClicked, this, [this](QListWidgetItem* it) {
+            if (!it) return;
+            const QString key = it->data(Qt::UserRole).toString();
+            const QStringList parts = key.split(QLatin1Char(':'));
+            if (parts.size() < 2) return;
+            m_currentLugarTerritorioId.clear(); // garante que a view abra em sistema, não território
+            m_currentConstrutorSystemId = parts.at(1);
+            m_sourceKind = SourceKind::WorldExplorer;
+            m_searchQuery.clear();
+            if (m_searchInput) m_searchInput->clear();
+            setSelected(key); // seta m_selectedKey + preview, antes do rebuild abaixo
+            rebuildTabs();
+            rebuildNavBody(); // já entra com o nó certo destacado na lista
+        });
+        m_navInnerLay->addWidget(lw);
+    }
+
+    if (msHits.isEmpty() && chHits.isEmpty() && !anyDrawerHit
+        && terHits.isEmpty() && sysHits.isEmpty()) {
         auto* empty = new QLabel(tr("Nada encontrado."), m_navInner);
         empty->setStyleSheet(QStringLiteral("color:%1; font-size:12px; padding:16px;").arg(Theme::textMuted()));
         empty->setAlignment(Qt::AlignCenter);
@@ -1704,44 +2011,28 @@ void RefMenuPanel::rebuildPreview()
         const ConstrutorStore::System* sys =
             (m_construtorStore && parts.size() >= 2) ? m_construtorStore->system(parts.at(1)) : nullptr;
         if (sys && parts.size() >= 3) {
-            std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find;
-            find = [&](const QList<ConstrutorStore::Node>& nodes) -> const ConstrutorStore::Node* {
-                for (const auto& n : nodes) {
-                    if (n.id == parts.at(2)) return &n;
-                    if (const auto* c = find(n.children)) return c;
-                }
-                return nullptr;
-            };
-            if (const ConstrutorStore::Node* node = find(sys->nodes)) {
+            if (const ConstrutorStore::Node* node = findConstrutorNode(sys, parts.at(2))) {
                 title = node->name;
                 role = tr("%1 · %2").arg(
                     node->type == ConstrutorStore::NodeType::Rule ? tr("Regra") : tr("Seção"), sys->name);
             }
         } else if (sys) {
             title = sys->name;
-            role = tr("Sistema · Construtor");
+            role = tr("Sistema · Explorador de Mundos");
         }
     } else if (m_selectedKey.startsWith(QStringLiteral("lug:"))) {
         const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
         const TerritorioStore::Territorio* ter =
             (m_territorioStore && parts.size() >= 2) ? m_territorioStore->territorio(parts.at(1)) : nullptr;
         if (ter && parts.size() >= 3) {
-            std::function<const TerritorioStore::Node*(const QList<TerritorioStore::Node>&)> find;
-            find = [&](const QList<TerritorioStore::Node>& nodes) -> const TerritorioStore::Node* {
-                for (const auto& n : nodes) {
-                    if (n.id == parts.at(2)) return &n;
-                    if (const auto* c = find(n.children)) return c;
-                }
-                return nullptr;
-            };
-            if (const TerritorioStore::Node* node = find(ter->nodes)) {
+            if (const TerritorioStore::Node* node = findTerritorioNode(ter, parts.at(2))) {
                 title = node->name;
                 role = tr("%1 · %2").arg(
                     node->type == TerritorioStore::NodeType::Doc ? tr("Documento") : tr("Pasta"), ter->name);
             }
         } else if (ter) {
             title = ter->name;
-            role = tr("Território · Lugares");
+            role = tr("Território · Explorador de Mundos");
         }
     }
 
@@ -1942,15 +2233,7 @@ QString RefMenuPanel::resolveDocHtml(const QString& key) const
         const ConstrutorStore::System* sys = m_construtorStore->system(parts.at(1));
         if (!sys) return QString();
         if (parts.size() < 3) return sys->content;
-        std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find;
-        find = [&](const QList<ConstrutorStore::Node>& nodes) -> const ConstrutorStore::Node* {
-            for (const auto& n : nodes) {
-                if (n.id == parts.at(2)) return &n;
-                if (const auto* c = find(n.children)) return c;
-            }
-            return nullptr;
-        };
-        const ConstrutorStore::Node* node = find(sys->nodes);
+        const ConstrutorStore::Node* node = findConstrutorNode(sys, parts.at(2));
         return node ? node->content : QString();
     }
     if (key.startsWith(QStringLiteral("lug:"))) {
@@ -1959,15 +2242,7 @@ QString RefMenuPanel::resolveDocHtml(const QString& key) const
         const TerritorioStore::Territorio* ter = m_territorioStore->territorio(parts.at(1));
         if (!ter) return QString();
         if (parts.size() < 3) return ter->content;
-        std::function<const TerritorioStore::Node*(const QList<TerritorioStore::Node>&)> find;
-        find = [&](const QList<TerritorioStore::Node>& nodes) -> const TerritorioStore::Node* {
-            for (const auto& n : nodes) {
-                if (n.id == parts.at(2)) return &n;
-                if (const auto* c = find(n.children)) return c;
-            }
-            return nullptr;
-        };
-        const TerritorioStore::Node* node = find(ter->nodes);
+        const TerritorioStore::Node* node = findTerritorioNode(ter, parts.at(2));
         return node ? node->content : QString();
     }
     return QString();
@@ -2064,10 +2339,8 @@ void RefMenuPanel::onDrawerPickerClicked()
         connect(a, &QAction::triggered, this, [this, kind]() { enterPlaceholderMode(kind); });
     };
     addPlaceholder(QStringLiteral("star"),  tr("Grupos"),             SourceKind::MarkersPlaceholder);
-    if (m_construtorStore)
-        addPlaceholder(QStringLiteral("cube"), tr("Construtor"), SourceKind::Construtor);
-    if (m_territorioStore)
-        addPlaceholder(QStringLiteral("map"), tr("Lugares"), SourceKind::Lugar);
+    if (m_construtorStore || m_territorioStore)
+        addPlaceholder(QStringLiteral("map"), tr("Explorador de Mundos"), SourceKind::WorldExplorer);
     menu.addSeparator();
 
     for (const auto& d : m_model->drawers()) {
@@ -2188,6 +2461,21 @@ QString RefMenuPanel::selectedCacheKey() const
 
 QString RefMenuPanel::editableCacheKey() const
 {
+    // Território/Sistema do Criador de Mundos — editável direto (persiste
+    // em TerritorioStore/ConstrutorStore, não no DocCache), liberado sempre
+    // que o alvo ainda existir. Nunca abre no editor principal, então o
+    // guard de conflito abaixo não se aplica a esses dois prefixos.
+    if (m_selectedKey.startsWith(QStringLiteral("ctr:"))) {
+        const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
+        if (parts.size() < 2 || !m_construtorStore) return QString();
+        return m_construtorStore->system(parts.at(1)) ? m_selectedKey : QString();
+    }
+    if (m_selectedKey.startsWith(QStringLiteral("lug:"))) {
+        const QStringList parts = m_selectedKey.split(QLatin1Char(':'));
+        if (parts.size() < 2 || !m_territorioStore) return QString();
+        return m_territorioStore->territorio(parts.at(1)) ? m_selectedKey : QString();
+    }
+
     // Só capítulos e itens de gaveta têm um HTML completo de 1:1 com a
     // chave de cache. Cenas individuais (parte de um capítulo) ficam de
     // fora por ora.
@@ -2235,7 +2523,38 @@ void RefMenuPanel::updateEditAvailability()
 
 void RefMenuPanel::commitEdit()
 {
-    if (!m_editing || !m_preview || !m_cache || m_editingKey.isEmpty()) return;
+    if (!m_editing || !m_preview || m_editingKey.isEmpty()) return;
+
+    if (m_editingKey.startsWith(QStringLiteral("ctr:"))) {
+        const QStringList parts = m_editingKey.split(QLatin1Char(':'));
+        if (parts.size() < 2 || !m_construtorStore) return;
+        const ConstrutorStore::System* sys = m_construtorStore->system(parts.at(1));
+        if (!sys) return;
+        const QString html = m_preview->toHtml();
+        if (parts.size() >= 3) {
+            if (const ConstrutorStore::Node* node = findConstrutorNode(sys, parts.at(2)))
+                m_construtorStore->updateNode(sys->id, node->id, node->name, html);
+        } else {
+            m_construtorStore->updateSystemContent(sys->id, html);
+        }
+        return;
+    }
+    if (m_editingKey.startsWith(QStringLiteral("lug:"))) {
+        const QStringList parts = m_editingKey.split(QLatin1Char(':'));
+        if (parts.size() < 2 || !m_territorioStore) return;
+        const TerritorioStore::Territorio* ter = m_territorioStore->territorio(parts.at(1));
+        if (!ter) return;
+        const QString html = m_preview->toHtml();
+        if (parts.size() >= 3) {
+            if (const TerritorioStore::Node* node = findTerritorioNode(ter, parts.at(2)))
+                m_territorioStore->updateNode(ter->id, node->id, node->name, html);
+        } else {
+            m_territorioStore->updateTerritorioContent(ter->id, html);
+        }
+        return;
+    }
+
+    if (!m_cache) return;
     m_cache->set(m_editingKey, m_preview->toHtml(), /*markDirty=*/true);
 }
 

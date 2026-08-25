@@ -1,6 +1,8 @@
 #pragma once
 
+#include "ConstrutorStore.h"
 #include "MemoriesStore.h"
+#include "TerritorioStore.h"
 
 #include <QList>
 #include <QPixmap>
@@ -27,8 +29,6 @@ class ProjectModel;
 class EditorHost;
 class DocCache;
 class ElementsStore;
-class ConstrutorStore;
-class TerritorioStore;
 
 // Painel flutuante de Referência. Reescrito 0.5.13 inspirado no RefPanels do Mira 1:
 // header com drag handle, tabs (Manuscritos / Timeline / view mode / Drawer picker ▾),
@@ -102,7 +102,7 @@ private slots:
     void applyTheme();
 
 private:
-    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, Construtor, Lugar };
+    enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, WorldExplorer };
     enum class ResizeEdge { None, Left, Right, Top, Bottom, TL, TR, BL, BR };
 
     void layoutResizeHandles();
@@ -110,13 +110,19 @@ private:
     void buildUi();
     void applyMainStyleSheet();
     void rebuildTabs();
+    // Filtro por território (M7) — repopula o menu; a aplicação em si
+    // (esmaecer cards) acontece dentro de buildDrawerView() a cada rebuild.
+    void rebuildTerritorioFilterMenu();
     void rebuildNavBody();
     void buildManuscriptsView();
     void buildDrawerView();
     void buildGroupsView();
-    void buildConstrutorView();
-    void buildLugarView();
+    void buildWorldExplorerView(); // territórios + sistemas do Criador de Mundos, unificados
     void buildSearchAllView();
+    // Achado recursivo de nó por id — usados pelo preview, pela edição
+    // in-place e pela busca global, pra não duplicar a mesma varredura.
+    const ConstrutorStore::Node* findConstrutorNode(const ConstrutorStore::System* sys, const QString& nodeId) const;
+    const TerritorioStore::Node* findTerritorioNode(const TerritorioStore::Territorio* ter, const QString& nodeId) const;
     void buildPlaceholderView(const QString& title, const QString& subtitle);
     void highlightInPreview(const QString& query);            // "Ctrl+F" no preview
     void rebuildPreview();
@@ -157,6 +163,9 @@ private:
     QString m_currentConstrutorSystemId; // drill-down: sistema aberto na view do Construtor (vazio = lista de sistemas)
     TerritorioStore* m_territorioStore = nullptr;
     QString m_currentLugarTerritorioId; // drill-down: território aberto na view de Lugares
+    // Filtro por território (M7) — só se aplica à view de Drawer visual;
+    // esmaece (não esconde) cards de item cuja origem/local atual não bate.
+    QString m_territorioFilterId;
     QString m_projectRoot;
 
     // Estado lógico
@@ -204,6 +213,8 @@ private:
     QToolButton* m_msTabBtn = nullptr;
     QToolButton* m_viewModeBtn = nullptr;
     QToolButton* m_drawerPickerBtn = nullptr;
+    QToolButton* m_territorioFilterBtn = nullptr;
+    QMenu* m_territorioFilterMenu = nullptr;
 
     // nav body
     QScrollArea* m_navScroll = nullptr;

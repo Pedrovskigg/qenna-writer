@@ -465,6 +465,22 @@ bool ConstrutorStore::updateSystemTerritories(const QString& id, const QStringLi
     return true;
 }
 
+void ConstrutorStore::removeTerritoryFromAllSystems(const QString& territorioId)
+{
+    if (territorioId.isEmpty()) return;
+    bool anyChanged = false;
+    for (auto& sys : m_systems) {
+        if (sys.territoryIds.removeAll(territorioId) > 0) {
+            sys.updatedAt = QDateTime::currentMSecsSinceEpoch();
+            anyChanged = true;
+        }
+    }
+    if (anyChanged) {
+        save();
+        emit changed();
+    }
+}
+
 bool ConstrutorStore::removeSystem(const QString& id)
 {
     const int before = m_systems.size();

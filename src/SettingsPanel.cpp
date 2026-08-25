@@ -621,6 +621,28 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit maxDocsChanged(v);
     });
 
+    // ---- Seção: Meta diária ----
+    auto* goalGroup = new QGroupBox(tr("Meta diária"), this);
+    auto* goalLayout = new QVBoxLayout(goalGroup);
+    goalLayout->setContentsMargins(14, 8, 14, 14);
+    goalLayout->setSpacing(8);
+
+    m_unifiedGoalCheck = new QCheckBox(tr("Meta unificada entre todos os projetos"), goalGroup);
+    goalLayout->addWidget(m_unifiedGoalCheck);
+
+    auto* goalHint = new QLabel(
+        tr("Quando ativado, a meta e o progresso do dia passam a ser somados entre "
+           "todos os projetos abertos no Qenna Writer, em vez de contar isolado "
+           "por projeto — útil pra quem escreve em mais de um no mesmo dia."),
+        goalGroup);
+    goalHint->setObjectName(QStringLiteral("settingsHint"));
+    goalHint->setWordWrap(true);
+    goalLayout->addWidget(goalHint);
+
+    connect(m_unifiedGoalCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        emit unifiedGoalEnabledChanged(checked);
+    });
+
     // Montagem em duas colunas — dentro de um scroll, porque a coluna direita
     // já não cabe mais numa janela de altura razoável (5 grupos empilhados).
     auto* colsWidget = new QWidget(this);
@@ -643,6 +665,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     rightCol->addWidget(mentionGroup);
     rightCol->addWidget(navGroup);
     rightCol->addWidget(chapterGroup);
+    rightCol->addWidget(goalGroup);
     rightCol->addWidget(timelineGroup);
     rightCol->addWidget(memGroup);
     rightCol->addStretch();
@@ -996,6 +1019,16 @@ bool SettingsPanel::autoNavEnabled() const
 void SettingsPanel::setAutoNavEnabled(bool enabled)
 {
     if (m_autoNavCheck) m_autoNavCheck->setChecked(enabled);
+}
+
+bool SettingsPanel::unifiedGoalEnabled() const
+{
+    return m_unifiedGoalCheck ? m_unifiedGoalCheck->isChecked() : false;
+}
+
+void SettingsPanel::setUnifiedGoalEnabled(bool enabled)
+{
+    if (m_unifiedGoalCheck) m_unifiedGoalCheck->setChecked(enabled);
 }
 
 bool SettingsPanel::showScenePopupOnHr() const

@@ -9,8 +9,10 @@
 
 #include <QDateTime>
 #include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonValue>
 #include <QRegularExpression>
+#include <QSettings>
 #include <QTextDocument>
 #include <QTimer>
 
@@ -20,6 +22,11 @@ constexpr qint64 kGoalDayMs = 24LL * 60 * 60 * 1000;
 constexpr int kTimeTickMs = 1000;
 constexpr int kCursorIdleMs = 4000;
 constexpr int kDeltaMaxMs = 5000;
+constexpr int kGlobalRefreshMs = 3000;
+
+const QString kUnifiedGoalKey = QStringLiteral("wordCounter/unifiedGoal");
+const QString kUnifiedSeededKey = QStringLiteral("wordCounter/unifiedSeeded");
+const QString kUnifiedDataKey = QStringLiteral("wordCounter/unifiedData");
 
 QString stripTagsAndEntities(const QString& html) {
     static const QRegularExpression styleBlockRe(
@@ -48,6 +55,19 @@ QString dateKey(const QDateTime& dt) {
 
 QString dateKey(qint64 epochMs) {
     return dateKey(QDateTime::fromMSecsSinceEpoch(epochMs));
+}
+
+// Início da janela de 24h "atual", encadeando a partir de storedStartAt em vez
+// de cair pra data-calendário real assim que uma janela expira. Sem isso, ficar
+// mais de 24h sem escrever fazia o dia "pular" pra hoje (real), sumindo com a
+// janela intermediária que ainda nem tinha vencido — e junto o streak, que
+// olhava pra essa janela fantasma como se já tivesse falhado.
+qint64 currentWindowStart(qint64 storedStartAt, qint64 now) {
+    if (storedStartAt <= 0) return now;
+    const qint64 elapsed = now - storedStartAt;
+    if (elapsed < kGoalDayMs) return storedStartAt;
+    const qint64 periods = elapsed / kGoalDayMs;
+    return storedStartAt + periods * kGoalDayMs;
 }
 
 }
@@ -130,11 +150,15 @@ WordCounter::WordCounter(ProjectModel* model, DocCache* cache, EditorHost* host,
     , m_cache(cache)
     , m_host(host)
     , m_emitDebounce(new QTimer(this))
+    , m_globalRefreshTimer(new QTimer(this))
     , m_timeTickTimer(new QTimer(this))
 {
     m_emitDebounce->setSingleShot(true);
     m_emitDebounce->setInterval(250);
     connect(m_emitDebounce, &QTimer::timeout, this, &WordCounter::emitChange);
+
+    m_globalRefreshTimer->setInterval(kGlobalRefreshMs);
+    connect(m_globalRefreshTimer, &QTimer::timeout, this, &WordCounter::refreshGlobalIfChanged);
 
     m_timeTickTimer->setInterval(kTimeTickMs);
     connect(m_timeTickTimer, &QTimer::timeout, this, &WordCounter::onTimeTick);
@@ -461,6 +485,8 @@ void WordCounter::loadSettingsFromModel() {
         }
     }
 
+    refreshUnifiedState();
+
     emit settingsChanged();
     scheduleEmit();
 }
@@ -472,6 +498,111 @@ void WordCounter::writeSettingsToModel() {
     m_model->setSettings(all);
 }
 
+WordCounterSettings WordCounter::settings() const {
+    if (!m_unifiedEnabled) return m_settings;
+    // Campos "de meta" vêm do armazém global; scope/compactSlot* (cosméticos,
+    // por projeto) continuam vindo de m_settings.
+    WordCounterSettings s = m_settings;
+    s.goalScope = m_globalSettings.goalScope;
+    s.goalType = m_globalSettings.goalType;
+    s.goalTargetWords = m_globalSettings.goalTargetWords;
+    s.goalTargetMinutes = m_globalSettings.goalTargetMinutes;
+    s.goalDayStartAt = m_globalSettings.goalDayStartAt;
+    s.goalDayKey = m_globalSettings.goalDayKey;
+    s.progress = m_globalSettings.progress;
+    s.offDays = m_globalSettings.offDays;
+    s.offDayEvery = m_globalSettings.offDayEvery;
+    s.offDayEveryChangedAt = m_globalSettings.offDayEveryChangedAt;
+    s.folgasEarnedAtChange = m_globalSettings.folgasEarnedAtChange;
+    return s;
+}
+
+WordCounterSettings& WordCounter::activeGoal() {
+    return m_unifiedEnabled ? m_globalSettings : m_settings;
+}
+
+const WordCounterSettings& WordCounter::activeGoal() const {
+    return m_unifiedEnabled ? m_globalSettings : m_settings;
+}
+
+void WordCounter::persistGoalSettings() {
+    if (m_unifiedEnabled) writeGlobalGoalSettings();
+    else writeSettingsToModel();
+}
+
+void WordCounter::loadGlobalGoalSettings() {
+    const QString json = QSettings().value(kUnifiedDataKey).toString();
+    if (json.isEmpty()) { m_globalSettings = WordCounterSettings(); return; }
+    m_globalSettings = WordCounterSettings::fromJson(
+        QJsonDocument::fromJson(json.toUtf8()).object());
+}
+
+void WordCounter::writeGlobalGoalSettings() {
+    QSettings qs;
+    qs.setValue(kUnifiedDataKey, QString::fromUtf8(
+        QJsonDocument(m_globalSettings.toJson()).toJson(QJsonDocument::Compact)));
+    qs.sync();
+}
+
+void WordCounter::refreshUnifiedState() {
+    QSettings qs;
+    const bool enabled = qs.value(kUnifiedGoalKey, false).toBool();
+    m_unifiedEnabled = enabled;
+    if (enabled) {
+        loadGlobalGoalSettings();
+        if (!m_globalRefreshTimer->isActive()) m_globalRefreshTimer->start();
+    } else if (m_globalRefreshTimer->isActive()) {
+        m_globalRefreshTimer->stop();
+    }
+}
+
+void WordCounter::refreshGlobalIfChanged() {
+    if (!m_unifiedEnabled) return;
+    const QString currentJson = QString::fromUtf8(
+        QJsonDocument(m_globalSettings.toJson()).toJson(QJsonDocument::Compact));
+    const QString diskJson = QSettings().value(kUnifiedDataKey).toString();
+    if (diskJson == currentJson) return; // nada mudou (nem por outro processo, nem por nós)
+    loadGlobalGoalSettings();
+    emit settingsChanged();
+    emit progressChanged();
+    scheduleEmit();
+}
+
+void WordCounter::setUnifiedGoalEnabled(bool on) {
+    if (on == m_unifiedEnabled) return;
+    QSettings qs;
+    if (on) {
+        loadGlobalGoalSettings();
+        if (!qs.value(kUnifiedSeededKey, false).toBool()) {
+            // Primeira vez que a meta unificada é ligada em qualquer projeto:
+            // semeia o armazém global com a meta/progresso ATUAL deste projeto,
+            // em vez de começar do zero (evita a sensação de perder progresso
+            // só por ativar o toggle).
+            m_globalSettings.goalScope = m_settings.goalScope;
+            m_globalSettings.goalType = m_settings.goalType;
+            m_globalSettings.goalTargetWords = m_settings.goalTargetWords;
+            m_globalSettings.goalTargetMinutes = m_settings.goalTargetMinutes;
+            m_globalSettings.goalDayStartAt = m_settings.goalDayStartAt;
+            m_globalSettings.goalDayKey = m_settings.goalDayKey;
+            m_globalSettings.progress = m_settings.progress;
+            m_globalSettings.offDays = m_settings.offDays;
+            m_globalSettings.offDayEvery = m_settings.offDayEvery;
+            m_globalSettings.offDayEveryChangedAt = m_settings.offDayEveryChangedAt;
+            m_globalSettings.folgasEarnedAtChange = m_settings.folgasEarnedAtChange;
+            writeGlobalGoalSettings();
+            qs.setValue(kUnifiedSeededKey, true);
+        }
+        m_globalRefreshTimer->start();
+    } else {
+        m_globalRefreshTimer->stop();
+    }
+    m_unifiedEnabled = on;
+    qs.setValue(kUnifiedGoalKey, on);
+    emit settingsChanged();
+    emit progressChanged();
+    scheduleEmit();
+}
+
 void WordCounter::setScope(const QString& scope) {
     if (m_settings.scope == scope) return;
     m_settings.scope = scope;
@@ -481,101 +612,107 @@ void WordCounter::setScope(const QString& scope) {
 }
 
 void WordCounter::setGoalScope(const QString& goalScope) {
-    if (m_settings.goalScope == goalScope) return;
-    m_settings.goalScope = goalScope;
-    writeSettingsToModel();
+    if (activeGoal().goalScope == goalScope) return;
+    activeGoal().goalScope = goalScope;
+    persistGoalSettings();
     emit settingsChanged();
 }
 
 void WordCounter::setGoalType(const QString& goalType) {
-    if (m_settings.goalType == goalType) return;
-    m_settings.goalType = goalType;
-    writeSettingsToModel();
+    if (activeGoal().goalType == goalType) return;
+    activeGoal().goalType = goalType;
+    persistGoalSettings();
     emit settingsChanged();
 }
 
 void WordCounter::setGoalTargetWords(int words) {
-    if (m_settings.goalTargetWords == words) return;
-    m_settings.goalTargetWords = words;
-    writeSettingsToModel();
+    if (activeGoal().goalTargetWords == words) return;
+    activeGoal().goalTargetWords = words;
+    persistGoalSettings();
     emit settingsChanged();
 }
 
 void WordCounter::setGoalTargetMinutes(int minutes) {
-    if (m_settings.goalTargetMinutes == minutes) return;
-    m_settings.goalTargetMinutes = minutes;
-    writeSettingsToModel();
+    if (activeGoal().goalTargetMinutes == minutes) return;
+    activeGoal().goalTargetMinutes = minutes;
+    persistGoalSettings();
     emit settingsChanged();
 }
 
 void WordCounter::ensureCurrentDayKey() {
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    // Dia rolante de 24h: só vira quando passam 24h desde que o dia atual
-    // começou, não na virada do calendário (senão uma sessão de escrita que
-    // atravessa a meia-noite via zerada no meio, mesmo sem ter passado 1 dia).
-    if (m_settings.goalDayStartAt <= 0 || now - m_settings.goalDayStartAt >= kGoalDayMs) {
-        m_settings.goalDayStartAt = now;
-        m_settings.goalDayKey = dateKey(now);
+    WordCounterSettings& g = activeGoal();
+    // Dia rolante de 24h, encadeado: se ficou mais de uma janela sem escrever,
+    // avança pro início da janela ATUAL (múltiplo de 24h a partir da âncora
+    // original), não pra "agora" — senão a janela intermediária nunca fica
+    // registrada e o streak enxerga um buraco que nem chegou a vencer ainda.
+    const qint64 windowStart = currentWindowStart(g.goalDayStartAt, now);
+    if (windowStart != g.goalDayStartAt) {
+        g.goalDayStartAt = windowStart;
+        g.goalDayKey = dateKey(windowStart);
     }
 }
 
 QString WordCounter::currentGoalDayKey() const {
+    const WordCounterSettings& g = activeGoal();
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    if (m_settings.goalDayStartAt <= 0 || now - m_settings.goalDayStartAt >= kGoalDayMs) {
-        return dateKey(now);
-    }
-    return m_settings.goalDayKey;
+    return dateKey(currentWindowStart(g.goalDayStartAt, now));
 }
 
 qint64 WordCounter::currentGoalDayStartAt() const {
-    return m_settings.goalDayStartAt;
+    const WordCounterSettings& g = activeGoal();
+    return currentWindowStart(g.goalDayStartAt, QDateTime::currentMSecsSinceEpoch());
 }
 
 qint64 WordCounter::goalDayRemainingMs() const {
-    if (m_settings.goalDayStartAt <= 0) return kGoalDayMs;
+    const WordCounterSettings& g = activeGoal();
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
-    return qMax<qint64>(0, (m_settings.goalDayStartAt + kGoalDayMs) - now);
+    const qint64 windowStart = currentWindowStart(g.goalDayStartAt, now);
+    return qMax<qint64>(0, (windowStart + kGoalDayMs) - now);
 }
 
 int WordCounter::progressWords() const {
     const QString key = currentGoalDayKey();
-    const QJsonObject today = m_settings.progress.value(key).toObject();
+    const QJsonObject today = activeGoal().progress.value(key).toObject();
     return today.value(QStringLiteral("words")).toInt(0);
 }
 
 qint64 WordCounter::progressTimeMs() const {
     const QString key = currentGoalDayKey();
-    const QJsonObject today = m_settings.progress.value(key).toObject();
+    const QJsonObject today = activeGoal().progress.value(key).toObject();
     return static_cast<qint64>(today.value(QStringLiteral("timeMs")).toDouble(0));
 }
 
 bool WordCounter::isGoalMet() const {
-    if (m_settings.goalType == QStringLiteral("time")) {
-        return progressTimeMs() >= static_cast<qint64>(m_settings.goalTargetMinutes) * 60000;
+    const WordCounterSettings& g = activeGoal();
+    if (g.goalType == QStringLiteral("time")) {
+        return progressTimeMs() >= static_cast<qint64>(g.goalTargetMinutes) * 60000;
     }
-    return progressWords() >= m_settings.goalTargetWords;
+    return progressWords() >= g.goalTargetWords;
 }
 
 void WordCounter::resetGoalDay() {
     const qint64 now = QDateTime::currentMSecsSinceEpoch();
     const QString key = dateKey(now);
+    WordCounterSettings& g = activeGoal();
     // Zera o progresso do dia atual (mantém histórico anterior intacto).
-    m_settings.progress.remove(key);
-    m_settings.goalDayStartAt = now;
-    m_settings.goalDayKey = key;
+    g.progress.remove(key);
+    g.goalDayStartAt = now;
+    g.goalDayKey = key;
     // Reseta também o snapshot de palavras pra não contar como delta o que já estava no editor.
     m_goalWordSnapshot.clear();
-    writeSettingsToModel();
+    persistGoalSettings();
     emit progressChanged();
     emit settingsChanged();
 }
 
 bool WordCounter::dayMetGoal(const QString& dateKey) const {
-    const QJsonObject day = m_settings.progress.value(dateKey).toObject();
+    const WordCounterSettings& g = activeGoal();
+    const QJsonObject day = g.progress.value(dateKey).toObject();
     if (day.isEmpty()) return false;
-    const QString type = day.value(QStringLiteral("goalType")).toString(m_settings.goalType);
-    const int tWords = day.value(QStringLiteral("goalTargetWords")).toInt(m_settings.goalTargetWords);
-    const int tMinutes = day.value(QStringLiteral("goalTargetMinutes")).toInt(m_settings.goalTargetMinutes);
+    const QString type = day.value(QStringLiteral("goalType")).toString(g.goalType);
+    const int tWords = day.value(QStringLiteral("goalTargetWords")).toInt(g.goalTargetWords);
+    const int tMinutes = day.value(QStringLiteral("goalTargetMinutes")).toInt(g.goalTargetMinutes);
     if (type == QStringLiteral("time")) {
         const qint64 ms = static_cast<qint64>(day.value(QStringLiteral("timeMs")).toDouble(0));
         return tMinutes > 0 && ms >= static_cast<qint64>(tMinutes) * 60000;
@@ -584,7 +721,7 @@ bool WordCounter::dayMetGoal(const QString& dateKey) const {
 }
 
 WordCounter::OffDayType WordCounter::offDayType(const QString& dateKey) const {
-    const QJsonValue v = m_settings.offDays.value(dateKey);
+    const QJsonValue v = activeGoal().offDays.value(dateKey);
     if (v.isUndefined()) return OffDayType::None;
     if (v.isString() && v.toString() == QStringLiteral("stolen")) return OffDayType::Stolen;
     if (v.toBool(false)) return OffDayType::Legit;
@@ -592,65 +729,69 @@ WordCounter::OffDayType WordCounter::offDayType(const QString& dateKey) const {
 }
 
 int WordCounter::remainingFolgas() const {
-    const int every = m_settings.offDayEvery;
+    const WordCounterSettings& g = activeGoal();
+    const int every = g.offDayEvery;
     if (every == 999) return 0;          // nunca
     if (every == 0) return 999;          // ilimitado
-    const QString since = m_settings.offDayEveryChangedAt;
+    const QString since = g.offDayEveryChangedAt;
     int metSince = 0;
     int usedLegit = 0;
-    const QJsonObject& prog = m_settings.progress;
+    const QJsonObject& prog = g.progress;
     for (auto it = prog.begin(); it != prog.end(); ++it) {
         const QString k = it.key();
         if (since.isEmpty() || k >= since) {
             if (dayMetGoal(k)) ++metSince;
         }
     }
-    for (auto it = m_settings.offDays.begin(); it != m_settings.offDays.end(); ++it) {
+    for (auto it = g.offDays.begin(); it != g.offDays.end(); ++it) {
         if (offDayType(it.key()) == OffDayType::Legit) ++usedLegit;
     }
     const int earnedSince = metSince / every;
-    return qMax(0, m_settings.folgasEarnedAtChange + earnedSince - usedLegit);
+    return qMax(0, g.folgasEarnedAtChange + earnedSince - usedLegit);
 }
 
 bool WordCounter::setOffDay(const QString& dateKey, OffDayType type) {
+    WordCounterSettings& g = activeGoal();
     if (type == OffDayType::None) {
-        if (!m_settings.offDays.contains(dateKey)) return false;
-        m_settings.offDays.remove(dateKey);
+        if (!g.offDays.contains(dateKey)) return false;
+        g.offDays.remove(dateKey);
     } else if (type == OffDayType::Legit) {
-        m_settings.offDays.insert(dateKey, true);
+        g.offDays.insert(dateKey, true);
     } else { // Stolen
-        m_settings.offDays.insert(dateKey, QStringLiteral("stolen"));
+        g.offDays.insert(dateKey, QStringLiteral("stolen"));
     }
-    writeSettingsToModel();
+    persistGoalSettings();
     emit settingsChanged();
     emit progressChanged();
     return true;
 }
 
 bool WordCounter::setOffDayEvery(int every) {
-    if (m_settings.offDayEvery == every) return true;
+    WordCounterSettings& g = activeGoal();
+    if (g.offDayEvery == every) return true;
     // Banking: salva ganhas até agora antes de mudar.
     const int prevRemaining = remainingFolgas();
     // Soma folgas usadas (legit) com remaining → total ganho até agora.
     int usedLegit = 0;
-    for (auto it = m_settings.offDays.begin(); it != m_settings.offDays.end(); ++it) {
+    for (auto it = g.offDays.begin(); it != g.offDays.end(); ++it) {
         if (offDayType(it.key()) == OffDayType::Legit) ++usedLegit;
     }
-    m_settings.folgasEarnedAtChange = prevRemaining + usedLegit;
-    m_settings.offDayEvery = every;
-    m_settings.offDayEveryChangedAt = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd"));
-    writeSettingsToModel();
+    g.folgasEarnedAtChange = prevRemaining + usedLegit;
+    g.offDayEvery = every;
+    g.offDayEveryChangedAt = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd"));
+    persistGoalSettings();
     emit settingsChanged();
     return true;
 }
 
 int WordCounter::daysUntilOffDayChange() const {
-    const int every = m_settings.offDayEvery;
+    const WordCounterSettings& g = activeGoal();
+    const int every = g.offDayEvery;
     if (every == 0 || every == 999) return 0; // sem lock
-    const QString since = m_settings.offDayEveryChangedAt;
+    const QString since = g.offDayEveryChangedAt;
     if (since.isEmpty()) return 0;
     int metSince = 0;
-    const QJsonObject& prog = m_settings.progress;
+    const QJsonObject& prog = g.progress;
     for (auto it = prog.begin(); it != prog.end(); ++it) {
         if (it.key() >= since && dayMetGoal(it.key())) ++metSince;
     }
@@ -662,16 +803,20 @@ bool WordCounter::isOffDayChangeLocked() const {
 }
 
 int WordCounter::currentStreak() const {
-    const QDate today = QDate::currentDate();
-    const QString todayKey = today.toString(QStringLiteral("yyyy-MM-dd"));
+    // "Hoje" pra fins de streak é o dia da META (janela rolante de 24h), não o
+    // dia do calendário real — senão escrever tarde da noite faz o streak
+    // olhar pro dia seguinte (ainda sem nada escrito) como referência.
+    const QString todayKey = currentGoalDayKey();
+    const QDate today = QDate::fromString(todayKey, QStringLiteral("yyyy-MM-dd"));
+    const WordCounterSettings& g = activeGoal();
     const bool todayMet = dayMetGoal(todayKey);
-    const bool todayIsOff = m_settings.offDays.contains(todayKey);
+    const bool todayIsOff = g.offDays.contains(todayKey);
     const int startOffset = (todayMet || todayIsOff) ? 0 : 1;
     int streak = 0;
     for (int i = startOffset; i < 3650; ++i) {
         const QDate d = today.addDays(-i);
         const QString key = d.toString(QStringLiteral("yyyy-MM-dd"));
-        if (m_settings.offDays.contains(key)) continue;
+        if (g.offDays.contains(key)) continue;
         if (!dayMetGoal(key)) break;
         ++streak;
     }
@@ -679,7 +824,8 @@ int WordCounter::currentStreak() const {
 }
 
 int WordCounter::longestStreak() const {
-    QStringList keys = m_settings.progress.keys();
+    const WordCounterSettings& g = activeGoal();
+    QStringList keys = g.progress.keys();
     keys.sort();
     int best = 0, current = 0;
     QDate previousDate;
@@ -702,7 +848,7 @@ int WordCounter::longestStreak() const {
                 bool allOff = true;
                 for (int i = 1; i < diffDays; ++i) {
                     const QString iKey = previousDate.addDays(i).toString(QStringLiteral("yyyy-MM-dd"));
-                    if (!m_settings.offDays.contains(iKey)) { allOff = false; break; }
+                    if (!g.offDays.contains(iKey)) { allOff = false; break; }
                 }
                 current = allOff ? current + 1 : 1;
             }
@@ -723,7 +869,7 @@ void WordCounter::writingAverages(int& activeDays, int& wordsPerDay, int& minute
     activeDays = 0;
     qint64 totalWords = 0;
     qint64 totalTimeMs = 0;
-    const QJsonObject& prog = m_settings.progress;
+    const QJsonObject& prog = activeGoal().progress;
     for (auto it = prog.begin(); it != prog.end(); ++it) {
         const QJsonObject day = it.value().toObject();
         // Blinda contra entrada de dia corrompida (achamos um fóssil real:
@@ -745,13 +891,13 @@ void WordCounter::writingAverages(int& activeDays, int& wordsPerDay, int& minute
 
 int WordCounter::sessionWordsManuscript() const {
     const QString key = currentGoalDayKey();
-    return m_settings.progress.value(key).toObject()
+    return activeGoal().progress.value(key).toObject()
         .value(QStringLiteral("wordsManuscript")).toInt(0);
 }
 
 int WordCounter::sessionWordsAll() const {
     const QString key = currentGoalDayKey();
-    return m_settings.progress.value(key).toObject()
+    return activeGoal().progress.value(key).toObject()
         .value(QStringLiteral("wordsAll")).toInt(0);
 }
 
@@ -782,8 +928,9 @@ void WordCounter::updateGoalProgress(int deltaGoalWords, qint64 deltaTimeMs, int
     const bool any = deltaGoalWords > 0 || deltaTimeMs > 0 || deltaSessionManuscript > 0 || deltaSessionAll > 0;
     if (!any) return;
     ensureCurrentDayKey();
-    const QString key = m_settings.goalDayKey;
-    QJsonObject today = m_settings.progress.value(key).toObject();
+    WordCounterSettings& g = activeGoal();
+    const QString key = g.goalDayKey;
+    QJsonObject today = g.progress.value(key).toObject();
 
     // Registra o documento editado hoje (sem duplicar). Só passa a valer dos dias
     // em diante — dias anteriores não têm esse histórico.
@@ -807,19 +954,19 @@ void WordCounter::updateGoalProgress(int deltaGoalWords, qint64 deltaTimeMs, int
         today.insert(QStringLiteral("wordsAll"),
             today.value(QStringLiteral("wordsAll")).toInt(0) + deltaSessionAll);
     if (!today.contains(QStringLiteral("goalType"))) {
-        today.insert(QStringLiteral("goalType"), m_settings.goalType);
-        today.insert(QStringLiteral("goalTargetWords"), m_settings.goalTargetWords);
-        today.insert(QStringLiteral("goalTargetMinutes"), m_settings.goalTargetMinutes);
+        today.insert(QStringLiteral("goalType"), g.goalType);
+        today.insert(QStringLiteral("goalTargetWords"), g.goalTargetWords);
+        today.insert(QStringLiteral("goalTargetMinutes"), g.goalTargetMinutes);
     }
-    m_settings.progress.insert(key, today);
-    writeSettingsToModel();
+    g.progress.insert(key, today);
+    persistGoalSettings();
     emit progressChanged();
 }
 
 bool WordCounter::shouldCountTimeNow() const {
     if (!m_host) return false;
     const auto vm = m_host->viewMode();
-    const QString gs = m_settings.goalScope;
+    const QString gs = activeGoal().goalScope;
     auto isManuscriptView = [](EditorHost::ViewModeType t) {
         return t == EditorHost::ChapterDoc || t == EditorHost::SceneDoc || t == EditorHost::ManuscriptDoc;
     };
@@ -877,7 +1024,7 @@ void WordCounter::onEditorContentFlushed(const QString& key) {
     if (delta <= 0) return;
 
     // Filtra meta diária pelo goalScope; métricas de sessão sempre rastreiam.
-    const QString gs = m_settings.goalScope;
+    const QString gs = activeGoal().goalScope;
     const bool countsForGoal =
         (gs == QStringLiteral("manuscript") && isChapter) ||
         (gs == QStringLiteral("all-items") && isItem) ||
