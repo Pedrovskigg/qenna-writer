@@ -29,6 +29,10 @@ public:
     // Eventos com placeId == territorioId — usado pelo "O que aconteceu
     // aqui" do Criador de Mundos (filtro puro, não duplica dado).
     QList<TimelineEvent> eventsForPlace(const QString& territorioId) const;
+    // Zera placeId de todo evento que apontava pro território excluído —
+    // chamado pelo MainWindow ao excluir um Território no Criador de Mundos,
+    // pra não deixar placeId órfão apontando pra um território inexistente.
+    void clearPlaceReferences(const QString& territorioId);
     void setElementsStore(ElementsStore* store);
     // Resolve o texto de um doc vinculado (capítulo/cena/gaveta) p/ a descrição.
     void setDocTextResolver(std::function<QString(const QString&)> resolver);
@@ -89,6 +93,9 @@ private:
     // Filtro por personagem — repopula o menu e aplica o filtro selecionado
     void rebuildCharFilterMenu();
     void setCharFilter(const QString& characterId); // vazio = sem filtro
+    // Filtro por território (M7) — mesmo padrão do filtro de personagem
+    void rebuildTerritorioFilterMenu();
+    void setPlaceFilter(const QString& territorioId); // vazio = sem filtro
     // Gera/atualiza as trilhas automáticas de personagem a partir do detector
     // de presença + roles. askSecondary = perguntar sobre papéis secundários.
     // Também gera conexões automáticas de copresença (mesma cena) entre
@@ -143,6 +150,9 @@ private:
     class QToolButton* m_btnCharFilter   = nullptr; // popup — filtro por personagem presente
     class QMenu*       m_charFilterMenu  = nullptr;
     QString            m_charFilterId;              // Element::id filtrado; vazio = sem filtro
+    class QToolButton* m_btnPlaceFilter  = nullptr; // popup — filtro por território (M7)
+    class QMenu*       m_placeFilterMenu = nullptr;
+    QString            m_placeFilterId;              // TerritorioStore::Territorio::id filtrado; vazio = sem filtro
 
     QString         m_projectRoot;
     ProjectModel*   m_projectModel  = nullptr;

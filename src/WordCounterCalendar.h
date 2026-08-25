@@ -31,6 +31,11 @@ private:
     void buildUi();
     void shiftMonth(int delta);
     void goToToday();
+    // "Hoje" pro calendário é o dia da META (WordCounter::currentGoalDayKey,
+    // janela rolante de 24h), não o dia do calendário real — senão escrever
+    // tarde da noite mostra o dia seguinte (ainda sem nada) como "hoje" mesmo
+    // a meta ainda não ter resetado.
+    QDate goalToday() const;
     int starsForDay(const QString& dateKey) const;
     QString tooltipForDay(const QString& dateKey) const;
     void showDayDetails(const QString& dateKey);

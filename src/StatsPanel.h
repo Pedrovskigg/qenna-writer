@@ -16,6 +16,7 @@ class QScrollArea;
 class QStackedWidget;
 class QVBoxLayout;
 class QHBoxLayout;
+class QMenu;
 class ProjectModel;
 class DocCache;
 class DialogueStore;
@@ -74,6 +75,10 @@ private:
     QWidget* buildOverviewPage();
     QWidget* buildCharacterPage();
     void rebuildOverview();
+    // Filtro por território (M7) — repopula o menu e reaplica o esmaecimento
+    // sem refazer os cards inteiros (mais barato que rebuildOverview()).
+    void rebuildTerritorioFilterMenu();
+    void applyTerritorioFilterDimming();
     void rebuildChapterBars();
     void rebuildOverviewStats();
     void openChapterStats(const QString& manuscriptId, const QString& chapterId);
@@ -122,6 +127,15 @@ private:
     QHBoxLayout* m_avatarStripLay = nullptr;
     QWidget* m_participInner = nullptr;
     QVBoxLayout* m_participLay = nullptr;
+
+    // Filtro por território (M7) — esmaece (não esconde) quem não bate.
+    QToolButton* m_territorioFilterBtn = nullptr;
+    QMenu* m_territorioFilterMenu = nullptr;
+    QString m_territorioFilterId; // Territorio::id filtrado; vazio = sem filtro
+    // Card (avatar + linha de participação) de cada personagem, pra
+    // reaplicar o esmaecimento sem refazer rebuildOverview() inteiro.
+    QHash<QString, QWidget*> m_avatarBtnByElement;
+    QHash<QString, QWidget*> m_particRowByElement;
 
     enum class ChapterMetric { Words, DialogueRatio };
     ChapterMetric m_chapterMetric = ChapterMetric::Words;

@@ -52,6 +52,8 @@ WordCounterCalendar::WordCounterCalendar(WordCounter* counter, QWidget* parent)
     setObjectName(QStringLiteral("wcpCalendar"));
     buildUi();
     if (m_counter) {
+        const QDate gt = goalToday();
+        m_currentMonth = QDate(gt.year(), gt.month(), 1);
         connect(m_counter, &WordCounter::progressChanged, this, &WordCounterCalendar::refresh);
         connect(m_counter, &WordCounter::settingsChanged, this, &WordCounterCalendar::refresh);
     }
@@ -206,9 +208,18 @@ void WordCounterCalendar::shiftMonth(int delta)
 
 void WordCounterCalendar::goToToday()
 {
-    const QDate today = QDate::currentDate();
+    const QDate today = goalToday();
     m_currentMonth = QDate(today.year(), today.month(), 1);
     refresh();
+}
+
+QDate WordCounterCalendar::goalToday() const
+{
+    if (m_counter) {
+        const QDate d = QDate::fromString(m_counter->currentGoalDayKey(), QStringLiteral("yyyy-MM-dd"));
+        if (d.isValid()) return d;
+    }
+    return QDate::currentDate();
 }
 
 int WordCounterCalendar::starsForDay(const QString& key) const
@@ -258,7 +269,7 @@ void WordCounterCalendar::refresh()
     // dayOfWeek do Qt: segunda=1...domingo=7. Quero domingo como col 0.
     int firstDow = firstOfMonth.dayOfWeek() % 7; // segunda=1→1, domingo=7→0
     const int daysInMonth = firstOfMonth.daysInMonth();
-    const QDate today = QDate::currentDate();
+    const QDate today = goalToday();
 
     int row = 1;
     int col = firstDow;

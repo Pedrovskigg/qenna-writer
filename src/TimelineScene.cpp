@@ -547,7 +547,7 @@ void TimelineScene::applyFocusDimming()
     const bool hasTrackFocus = !m_focusTimelineId.isEmpty();
     m_focusSet = hasTrackFocus ? eventsWithinFocus() : QSet<QString>();
 
-    if (!hasTrackFocus && !m_charFilterActive) {
+    if (!hasTrackFocus && !m_charFilterActive && !m_placeFilterActive) {
         for (auto* it : m_events)      { it->setOpacity(1.0); it->setShowMarker(false); }
         for (auto* c  : m_connections) c->setOpacity(1.0);
         return;
@@ -557,6 +557,7 @@ void TimelineScene::applyFocusDimming()
         bool lit = true;
         if (hasTrackFocus)       lit = lit && m_focusSet.contains(d.id);
         if (m_charFilterActive)  lit = lit && m_charFilterEventIds.contains(d.id);
+        if (m_placeFilterActive) lit = lit && m_placeFilterEventIds.contains(d.id);
         it->setOpacity(lit ? 1.0 : kDimOpacity);
         // marcador ao lado da bolinha só nos eventos da linha focada
         it->setShowMarker(hasTrackFocus && d.timelineId == m_focusTimelineId);
@@ -571,6 +572,10 @@ void TimelineScene::applyFocusDimming()
             lit = lit && m_charFilterEventIds.contains(d.fromEventId)
                        && m_charFilterEventIds.contains(d.toEventId);
         }
+        if (m_placeFilterActive) {
+            lit = lit && m_placeFilterEventIds.contains(d.fromEventId)
+                       && m_placeFilterEventIds.contains(d.toEventId);
+        }
         c->setOpacity(lit ? 1.0 : kDimOpacity);
     }
 }
@@ -579,6 +584,13 @@ void TimelineScene::setCharacterFilter(bool active, const QSet<QString>& matchin
 {
     m_charFilterActive   = active;
     m_charFilterEventIds = matchingEventIds;
+    applyFocusDimming();
+}
+
+void TimelineScene::setPlaceFilter(bool active, const QSet<QString>& matchingEventIds)
+{
+    m_placeFilterActive   = active;
+    m_placeFilterEventIds = matchingEventIds;
     applyFocusDimming();
 }
 

@@ -6,6 +6,7 @@
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "Theme.h"
+#include "TerritorioStore.h"
 #include "TimelineBranchPopup.h"
 #include "TimelineChrono.h"
 
@@ -165,6 +166,14 @@ void TimelinePanel::buildUi()
     m_btnCharFilter->setMenu(m_charFilterMenu);
     connect(m_charFilterMenu, &QMenu::aboutToShow, this, &TimelinePanel::rebuildCharFilterMenu);
     tl->addWidget(m_btnCharFilter);
+
+    // ── Filtro por território (M7 — Criador de Mundos) ──────────────────────────
+    m_btnPlaceFilter = makeBtn(tr("Território: Todos"), tr("Filtrar eventos por território (onde aconteceu)"), m_toolbar);
+    m_btnPlaceFilter->setPopupMode(QToolButton::InstantPopup);
+    m_placeFilterMenu = new QMenu(m_btnPlaceFilter);
+    m_btnPlaceFilter->setMenu(m_placeFilterMenu);
+    connect(m_placeFilterMenu, &QMenu::aboutToShow, this, &TimelinePanel::rebuildTerritorioFilterMenu);
+    tl->addWidget(m_btnPlaceFilter);
 
     // ── Trilhas de personagem (legado) — desligado por padrão ───────────────────
     m_btnLegacyChars = makeBtn(tr("Personagens (legado)"), tr(
@@ -412,6 +421,56 @@ void TimelinePanel::setCharFilter(const QString& characterId)
         if (keys.contains(e.id.mid(kPrefix.size()))) matchingIds.insert(e.id);
     }
     m_scene->setCharacterFilter(true, matchingIds);
+}
+
+// ── Filtro por território (M7) ───────────────────────────────────────────────
+
+void TimelinePanel::rebuildTerritorioFilterMenu()
+{
+    if (!m_placeFilterMenu || !m_territorioStore) return;
+    m_placeFilterMenu->clear();
+
+    QAction* all = m_placeFilterMenu->addAction(tr("Todos"));
+    connect(all, &QAction::triggered, this, [this]() { setPlaceFilter(QString()); });
+    m_placeFilterMenu->addSeparator();
+
+    QList<TerritorioStore::Territorio> territorios = m_territorioStore->territorios();
+    std::sort(territorios.begin(), territorios.end(),
+              [](const TerritorioStore::Territorio& a, const TerritorioStore::Territorio& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const auto& t : territorios) {
+        const QString name = t.name.isEmpty() ? tr("(sem nome)") : t.name;
+        QAction* a = m_placeFilterMenu->addAction(name);
+        a->setCheckable(true);
+        a->setChecked(t.id == m_placeFilterId);
+        const QString id = t.id;
+        connect(a, &QAction::triggered, this, [this, id]() { setPlaceFilter(id); });
+    }
+}
+
+void TimelinePanel::setPlaceFilter(const QString& territorioId)
+{
+    m_placeFilterId = territorioId;
+
+    QString placeName;
+    if (!territorioId.isEmpty() && m_territorioStore) {
+        if (const auto* t = m_territorioStore->territorio(territorioId)) placeName = t->name;
+    }
+    if (m_btnPlaceFilter) {
+        m_btnPlaceFilter->setText(placeName.isEmpty() ? tr("Território: Todos")
+                                                       : tr("Território: %1").arg(placeName));
+    }
+
+    if (!m_scene) return;
+    if (placeName.isEmpty()) {
+        m_scene->setPlaceFilter(false, {});
+        return;
+    }
+
+    QSet<QString> matchingIds;
+    for (const auto& e : eventsForPlace(territorioId)) matchingIds.insert(e.id);
+    m_scene->setPlaceFilter(true, matchingIds);
 }
 
 bool TimelinePanel::editTimelineDef(TimelineDef& def, bool isNew)
@@ -719,6 +778,25 @@ QList<TimelineEvent> TimelinePanel::eventsForPlace(const QString& territorioId) 
     for (const auto& e : all)
         if (e.placeId == territorioId) out.append(e);
     return out;
+}
+
+void TimelinePanel::clearPlaceReferences(const QString& territorioId)
+{
+    if (territorioId.isEmpty()) return;
+    bool changed = false;
+    for (auto& e : m_events) {
+        if (e.placeId != territorioId) continue;
+        e.placeId.clear();
+        changed = true;
+        if (m_scene) {
+            if (auto* item = m_scene->findEvent(e.id)) {
+                TimelineEvent d = item->eventData();
+                d.placeId.clear();
+                item->setEventData(d);
+            }
+        }
+    }
+    if (changed) save();
 }
 
 void TimelinePanel::setProjectModel(ProjectModel* model)

@@ -81,12 +81,21 @@ public:
     QString activeSheetItem() const { return m_activeSheetItem; }
 
     // Settings — getters e setters granulares (escrevem em project.settings.wordCounter)
-    WordCounterSettings settings() const { return m_settings; }
+    // Composto: campos "de meta" (progress, goalType/Target*, goalScope, offDays,
+    // folgas) vêm do armazém global quando isUnifiedGoalEnabled(); os demais
+    // (scope, compactSlot*) são sempre por projeto. Ver activeGoal() no .cpp.
+    WordCounterSettings settings() const;
     void setScope(const QString& scope);
     void setGoalScope(const QString& goalScope);
     void setGoalType(const QString& goalType);
     void setGoalTargetWords(int words);
     void setGoalTargetMinutes(int minutes);
+
+    // Meta unificada entre projetos (opcional, preferência global via QSettings).
+    // Quando ativa, progresso/meta/streaks/folgas passam a ser compartilhados
+    // entre todos os projetos abertos no app em vez de isolados por projeto.
+    bool isUnifiedGoalEnabled() const { return m_unifiedEnabled; }
+    void setUnifiedGoalEnabled(bool on);
 
     // Meta diária
     QString currentGoalDayKey() const;
@@ -164,11 +173,23 @@ private:
     QString viewModeScope() const; // scope name pra rastrear baseline
     QString keyForCurrentEdit() const; // chapter ou item
 
+    // Meta unificada — fonte de dados "de meta" ativa (global ou local) e
+    // persistência dela no armazém certo. Ver comentário de settings() acima.
+    WordCounterSettings& activeGoal();
+    const WordCounterSettings& activeGoal() const;
+    void persistGoalSettings();
+    void loadGlobalGoalSettings();
+    void writeGlobalGoalSettings();
+    void refreshUnifiedState();     // relê o toggle global; garante m_globalSettings/timer coerentes
+    void refreshGlobalIfChanged();  // tick do m_globalRefreshTimer: só recarrega/emite se algo mudou
+
     ProjectModel* m_model;
     DocCache* m_cache;
     EditorHost* m_host;
     QString m_root;
     WordCounterSettings m_settings;
+    bool m_unifiedEnabled = false;
+    WordCounterSettings m_globalSettings;
     mutable QHash<QString, int> m_chapterCounts;       // chapterId -> words
     mutable QHash<QString, int> m_itemCounts;          // itemId -> words
     mutable QHash<QString, int> m_chapterCharCounts;   // chapterId -> chars
@@ -176,6 +197,7 @@ private:
     QHash<QString, int> m_goalWordSnapshot;            // key -> last known word count, pra diff
     QString m_activeSheetItem;                          // ficha em foco no painel (override de contagem)
     QTimer* m_emitDebounce;
+    QTimer* m_globalRefreshTimer;
     QTimer* m_timeTickTimer;
     qint64 m_lastTimeTickAt = 0;
     qint64 m_lastCursorActivityAt = 0;

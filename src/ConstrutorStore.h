@@ -85,6 +85,10 @@ public:
     bool updateSystemContent(const QString& id, const QString& content);
     bool updateSystemTerritories(const QString& id, const QStringList& territoryIds);
     bool removeSystem(const QString& id);
+    // Remove um território excluído de todos os sistemas que o tinham
+    // marcado — chamado ao excluir um Território no Criador de Mundos, pra
+    // não deixar territoryIds órfão apontando pra um território inexistente.
+    void removeTerritoryFromAllSystems(const QString& territorioId);
 
     // CRUD — nós (parentNodeId vazio = filho direto do sistema)
     QString addNode(const QString& systemId, const QString& parentNodeId,
