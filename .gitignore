@@ -119,3 +119,6 @@ site/
 # Rascunhos de conteúdo do Help Panel (txt + screenshots brutos) — os
 # assets finais processados vivem em src/assets/help/, versionados.
 help-panel/
+
+# Rascunho pessoal de patch notes, nunca vai pro repo.
+Patch note.txt

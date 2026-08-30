@@ -237,6 +237,11 @@ public:
     QString manuscriptEffectiveSynopsis(const QString& manuscriptId) const;
     QString manuscriptEffectiveCoverDataUrl(const QString& manuscriptId) const;
 
+    // Capítulos do manuscrito dado, na ordem de leitura (campo order). Capítulos
+    // com manuscriptId vazio são tratados como pertencentes ao manuscrito cujo
+    // id bate (compatibilidade com projetos de manuscrito único legado).
+    QList<const Chapter*> orderedChaptersForManuscript(const QString& manuscriptId) const;
+
     // Tipo do projeto: "book" (padrão) ou "screenplay".
     QString projectType() const { return m_projectType; }
     bool isScreenplay() const { return m_projectType == QStringLiteral("screenplay"); }

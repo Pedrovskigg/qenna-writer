@@ -759,6 +759,11 @@ void ManuscriptPanel::showManuscriptContextMenu(const QString& manuscriptId, con
         emit renameManuscriptRequested(manuscriptId);
     });
 
+    auto* previewAct = menu.addAction(tr("Visualizar como e-reader"));
+    connect(previewAct, &QAction::triggered, this, [this, manuscriptId]() {
+        emit previewEreaderRequested(manuscriptId);
+    });
+
     menu.addSeparator();
 
     auto* deleteAct = menu.addAction(tr("Excluir manuscrito"));

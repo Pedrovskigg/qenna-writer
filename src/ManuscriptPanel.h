@@ -42,6 +42,7 @@ signals:
     void newManuscriptRequested();
     void renameManuscriptRequested(QString manuscriptId);
     void deleteManuscriptRequested(QString manuscriptId);
+    void previewEreaderRequested(QString manuscriptId);
     void panelClosed();
     // Context menus
     void renameChapterRequested(QString chapterId);

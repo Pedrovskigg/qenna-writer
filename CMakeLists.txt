@@ -57,6 +57,10 @@ qt_add_executable(qenna-writer
     src/WordCounter.h
     src/WordCountPanel.cpp
     src/WordCountPanel.h
+    src/ReaderPreviewPanel.cpp
+    src/ReaderPreviewPanel.h
+    src/ReaderPreviewDeviceView.cpp
+    src/ReaderPreviewDeviceView.h
     src/WordCounterCalendar.cpp
     src/WordCounterCalendar.h
     src/WritingStatsDialog.cpp

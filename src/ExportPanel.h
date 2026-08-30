@@ -21,6 +21,10 @@ public:
 
 signals:
     void exportRequested(const Exporter::Selection& selection);
+    // Seleção atual corresponde a exatamente um manuscrito — ver
+    // soloManuscriptOfSelection(). Não fecha o painel: usuário pode voltar
+    // e ajustar a seleção antes de exportar de fato.
+    void previewRequested(const QString& manuscriptId);
 
 private:
     void buildTree();
@@ -28,6 +32,9 @@ private:
     void recomputeCount();
     void setAllChecked(bool checked);
     void onExportClicked();
+    // "" se a seleção atual de capítulos cobrir 0 ou 2+ manuscritos distintos
+    // (ambíguo pra preview, que é sempre de um manuscrito só).
+    QString soloManuscriptOfSelection() const;
 
     enum Role { IdRole = Qt::UserRole + 1, KindRole };
     enum Kind { KindHeader, KindGroup, KindChapter, KindItem };
@@ -36,6 +43,7 @@ private:
     QTreeWidget* m_tree = nullptr;
     QLabel* m_countLabel = nullptr;
     QPushButton* m_exportBtn = nullptr;
+    QPushButton* m_previewBtn = nullptr;
     QList<QPushButton*> m_formatBtns;
     QRadioButton* m_singleRadio = nullptr;
     QRadioButton* m_separateRadio = nullptr;

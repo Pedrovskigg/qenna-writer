@@ -150,6 +150,7 @@
 #include "SettingsPanel.h"
 #include "ExportPanel.h"
 #include "Exporter.h"
+#include "ReaderPreviewPanel.h"
 #include "SpellChecker.h"
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
@@ -2424,6 +2425,12 @@ void MainWindow::setupEditor()
     connect(miraShortcut, &QShortcut::activated, this, [this]() {
         if (aiChatPanel) aiChatPanel->togglePanel();
     });
+    auto* readerPreviewShortcut = new QShortcut(QKeySequence(Qt::Key_F8), this);
+    connect(readerPreviewShortcut, &QShortcut::activated, this, [this]() {
+        if (!editorHost) return;
+        const QString msId = editorHost->viewMode().manuscriptId;
+        if (!msId.isEmpty()) openReaderPreview(msId);
+    });
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
         manuscriptPanel->closePanel();
@@ -2671,6 +2678,8 @@ void MainWindow::setupEditor()
         }
         projectModel->removeManuscript(manuscriptId);
     });
+
+    connect(manuscriptPanel, &ManuscriptPanel::previewEreaderRequested, this, &MainWindow::openReaderPreview);
 
     connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
         const Chapter* c = projectModel->findChapter(chapterId);
@@ -5040,7 +5049,7 @@ void MainWindow::positionReminderToast()
         r.bottom() - m_reminderToast->height() - margin);
 }
 
-static QString formatUpdateNotes(const QString& markdown, int maxChars = 300)
+static QString formatUpdateNotes(const QString& markdown, int maxChars = 6000)
 {
     QStringList out;
     for (const QString& raw : markdown.split(QLatin1Char('\n'))) {
@@ -5108,8 +5117,25 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
         m_updateToastNotes = new QLabel(m_updateToast);
         m_updateToastNotes->setObjectName(QStringLiteral("utNotes"));
         m_updateToastNotes->setWordWrap(true);
-        m_updateToastNotes->hide();
-        root->addWidget(m_updateToastNotes);
+        m_updateToastNotes->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+        m_updateToastNotesScroll = new QScrollArea(m_updateToast);
+        m_updateToastNotesScroll->setObjectName(QStringLiteral("utNotesScroll"));
+        m_updateToastNotesScroll->setWidget(m_updateToastNotes);
+        m_updateToastNotesScroll->setWidgetResizable(true);
+        m_updateToastNotesScroll->setFrameShape(QFrame::NoFrame);
+        m_updateToastNotesScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        // Sem isso, o viewport (widget interno do scroll area) não herda o
+        // "background: transparent" do QSS — fica com o fundo padrão do SO
+        // por cima do fundo do toast (mesmo bug de QAbstractScrollArea que já
+        // mordeu StatsPanel/AIChatPanel; ver memória qt-viewport-transparent-bg-bug).
+        m_updateToastNotesScroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+        // Cresce com o conteúdo até um teto — notas curtas não sobram espaço
+        // vazio, notas longas (patch notes com várias seções) rolam em vez de
+        // cortar o texto ou empurrar o toast pra fora da tela.
+        m_updateToastNotesScroll->setMaximumHeight(260);
+        m_updateToastNotesScroll->hide();
+        root->addWidget(m_updateToastNotesScroll);
 
         m_updateToastError = new QLabel(m_updateToast);
         m_updateToastError->setObjectName(QStringLiteral("utError"));
@@ -5152,7 +5178,8 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
         "  background: %1; border: 1px solid %2; border-radius: 10px;"
         "}"
         "QLabel#utTitle { color: %3; font-size: 13px; font-weight: 600; }"
-        "QLabel#utNotes { color: %4; font-size: 11px; }"
+        "QScrollArea#utNotesScroll { background: transparent; border: none; }"
+        "QLabel#utNotes { color: %4; font-size: 11px; background: transparent; }"
         "QLabel#utError { color: %8; font-size: 11px; font-weight: 600; }"
         "QToolButton#utClose {"
         "  background: transparent; border: none;"
@@ -5197,9 +5224,9 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
     const QString notes = formatUpdateNotes(releaseNotes);
     if (!notes.isEmpty()) {
         m_updateToastNotes->setText(notes);
-        m_updateToastNotes->show();
+        m_updateToastNotesScroll->show();
     } else {
-        m_updateToastNotes->hide();
+        m_updateToastNotesScroll->hide();
     }
 
     m_updateToastError->hide();
@@ -6167,6 +6194,7 @@ void MainWindow::onExportRequested()
 
     auto* panel = new ExportPanel(projectModel, this);
     panel->setAttribute(Qt::WA_DeleteOnClose);
+    connect(panel, &ExportPanel::previewRequested, this, &MainWindow::openReaderPreview);
     connect(panel, &ExportPanel::exportRequested, this,
             [this](const Exporter::Selection& sel) {
         Exporter::DocStyle style;
@@ -7079,6 +7107,33 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
                 this, &MainWindow::openConstrutorMentionInEditor);
     }
     return territorioWindow;
+}
+
+ReaderPreviewPanel* MainWindow::ensureReaderPreviewPanel()
+{
+    if (!readerPreviewPanel) {
+        Exporter::DocStyle style;
+        style.fontFamily = currentFontFamily;
+        style.fontSize = currentFontSize;
+        style.lineHeightPercent = currentLineHeight;
+        style.firstLineIndent = firstLineIndentEnabled;
+        style.spacingBefore = paragraphSpacingBefore;
+        style.spacingAfter = paragraphSpacingAfter;
+        readerPreviewPanel = new ReaderPreviewPanel(projectModel, projectRoot, style, this);
+    }
+    return readerPreviewPanel;
+}
+
+void MainWindow::openReaderPreview(const QString& manuscriptId)
+{
+    if (!projectModel || manuscriptId.isEmpty()) return;
+    // Garante que o disco reflete as edições atuais antes de ler pro preview.
+    if (projectSaver) projectSaver->saveProject();
+    ReaderPreviewPanel* panel = ensureReaderPreviewPanel();
+    panel->setManuscript(manuscriptId);
+    panel->show();
+    panel->raise();
+    panel->activateWindow();
 }
 
 QString MainWindow::docTextForLink(const QString& linkKey)

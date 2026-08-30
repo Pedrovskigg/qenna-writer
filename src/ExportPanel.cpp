@@ -163,12 +163,20 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     auto* cancel = new QPushButton(tr("Cancelar"), footer);
     cancel->setObjectName(QStringLiteral("exportCancel"));
     cancel->setCursor(Qt::PointingHandCursor);
+    m_previewBtn = new QPushButton(tr("Pré-visualizar"), footer);
+    m_previewBtn->setObjectName(QStringLiteral("exportPreview"));
+    m_previewBtn->setCursor(Qt::PointingHandCursor);
     m_exportBtn = new QPushButton(tr("Exportar"), footer);
     m_exportBtn->setObjectName(QStringLiteral("exportConfirm"));
     m_exportBtn->setCursor(Qt::PointingHandCursor);
     connect(cancel, &QPushButton::clicked, this, &QDialog::reject);
+    connect(m_previewBtn, &QPushButton::clicked, this, [this]() {
+        const QString solo = soloManuscriptOfSelection();
+        if (!solo.isEmpty()) emit previewRequested(solo);
+    });
     connect(m_exportBtn, &QPushButton::clicked, this, &ExportPanel::onExportClicked);
     btnRow->addWidget(cancel);
+    btnRow->addWidget(m_previewBtn);
     btnRow->addWidget(m_exportBtn);
     fl->addLayout(btnRow);
 
@@ -315,6 +323,35 @@ void ExportPanel::recomputeCount() {
             ? tr("Exportar (%1)").arg(selected)
             : tr("Exportar"));
     }
+    if (m_previewBtn) {
+        const bool solo = !soloManuscriptOfSelection().isEmpty();
+        m_previewBtn->setEnabled(solo);
+        m_previewBtn->setToolTip(solo ? QString()
+            : tr("Selecione capítulos de um único manuscrito para pré-visualizar"));
+    }
+}
+
+QString ExportPanel::soloManuscriptOfSelection() const {
+    QString found;
+    QTreeWidgetItemIterator it(m_tree);
+    while (*it) {
+        if ((*it)->data(0, KindRole).toInt() == KindChapter && (*it)->checkState(0) == Qt::Checked) {
+            const Chapter* ch = m_model->findChapter((*it)->data(0, IdRole).toString());
+            if (!ch) { ++it; continue; }
+            QString msId = ch->manuscriptId;
+            if (msId.isEmpty()) {
+                // Projeto de manuscrito único legado: só existe um manuscrito
+                // possível pra herdar (não há ambiguidade real nesse caso).
+                const auto& all = m_model->manuscripts();
+                if (all.size() == 1) msId = all.first().id;
+            }
+            if (msId.isEmpty()) { ++it; continue; }
+            if (found.isEmpty()) found = msId;
+            else if (found != msId) return QString();
+        }
+        ++it;
+    }
+    return found;
 }
 
 void ExportPanel::onExportClicked() {

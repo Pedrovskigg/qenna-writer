@@ -706,6 +706,58 @@ void WordCounter::resetGoalDay() {
     emit settingsChanged();
 }
 
+QTime WordCounter::goalResetTime() const {
+    const WordCounterSettings& g = activeGoal();
+    if (g.goalDayStartAt <= 0) return QTime(0, 0);
+    return QDateTime::fromMSecsSinceEpoch(g.goalDayStartAt).time();
+}
+
+bool WordCounter::setGoalResetTime(int hour, int minute) {
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return false;
+    WordCounterSettings& g = activeGoal();
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+
+    // A nova âncora é a ocorrência mais recente do horário escolhido (hoje ou
+    // ontem, o que já tiver passado) — representa o INÍCIO da janela em
+    // andamento. Continua sendo uma âncora de 24h rolante, só reposicionada;
+    // nunca vira "meia-noite de calendário" de novo.
+    QDateTime candidate(QDateTime::currentDateTime().date(), QTime(hour, minute));
+    if (candidate.toMSecsSinceEpoch() > now) candidate = candidate.addDays(-1);
+    const qint64 newAnchor = candidate.toMSecsSinceEpoch();
+
+    const QString oldKey = dateKey(currentWindowStart(g.goalDayStartAt, now));
+    const QString newKey = dateKey(newAnchor);
+
+    if (newKey != oldKey && g.progress.contains(oldKey)) {
+        QJsonObject moving = g.progress.value(oldKey).toObject();
+        g.progress.remove(oldKey);
+        if (g.progress.contains(newKey)) {
+            // Já tem algo na chave de destino (raro): soma em vez de sobrescrever.
+            QJsonObject target = g.progress.value(newKey).toObject();
+            for (const auto& field : {QStringLiteral("words"), QStringLiteral("wordsAll"), QStringLiteral("wordsManuscript")}) {
+                target.insert(field, target.value(field).toInt(0) + moving.value(field).toInt(0));
+            }
+            target.insert(QStringLiteral("timeMs"), static_cast<double>(
+                static_cast<qint64>(target.value(QStringLiteral("timeMs")).toDouble(0)) +
+                static_cast<qint64>(moving.value(QStringLiteral("timeMs")).toDouble(0))));
+            QJsonArray docs = target.value(QStringLiteral("docs")).toArray();
+            for (const QJsonValue& d : moving.value(QStringLiteral("docs")).toArray())
+                if (!docs.contains(d)) docs.append(d);
+            target.insert(QStringLiteral("docs"), docs);
+            g.progress.insert(newKey, target);
+        } else {
+            g.progress.insert(newKey, moving);
+        }
+    }
+
+    g.goalDayStartAt = newAnchor;
+    g.goalDayKey = newKey;
+    persistGoalSettings();
+    emit settingsChanged();
+    emit progressChanged();
+    return true;
+}
+
 bool WordCounter::dayMetGoal(const QString& dateKey) const {
     const WordCounterSettings& g = activeGoal();
     const QJsonObject day = g.progress.value(dateKey).toObject();

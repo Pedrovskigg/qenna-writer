@@ -11,6 +11,8 @@
 #include <QScreen>
 #include <QComboBox>
 #include <QContextMenuEvent>
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QEvent>
 #include <QFrame>
 #include <QKeyEvent>
@@ -27,6 +29,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QSpinBox>
+#include <QTimeEdit>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -587,6 +590,8 @@ QFrame* WordCountPanel::buildGoalSection()
 
     m_goalResetLine = new QLabel(QStringLiteral(""), section);
     m_goalResetLine->setObjectName(QStringLiteral("wcpMeta"));
+    m_goalResetLine->setCursor(Qt::PointingHandCursor);
+    m_goalResetLine->setToolTip(tr("Duplo clique para escolher o horário do reset"));
     lay->addWidget(m_goalResetLine);
 
     // Linha de estatísticas (2 rows × 3 cols)
@@ -799,6 +804,10 @@ bool WordCountPanel::eventFilter(QObject* watched, QEvent* event)
     if (watched == m_body && event->type() == QEvent::ContextMenu) {
         auto* ce = static_cast<QContextMenuEvent*>(event);
         openCompactContextMenu(ce->globalPos());
+        return true;
+    }
+    if (watched == m_goalResetLine && event->type() == QEvent::MouseButtonDblClick) {
+        openGoalResetTimeDialog();
         return true;
     }
     // Cheat code global: Ctrl + l-a-z-y-a-s-s. Só checa enquanto o painel F está aberto.
@@ -1167,6 +1176,62 @@ void WordCountPanel::tickSprint()
         return;
     }
     --m_sprintSecondsLeft;
+}
+
+void WordCountPanel::openGoalResetTimeDialog()
+{
+    if (!m_counter) return;
+
+    QDialog dlg(this, Qt::Dialog | Qt::FramelessWindowHint);
+    dlg.setObjectName(QStringLiteral("wcpDayDialog"));
+    dlg.setModal(true);
+
+    auto* lay = new QVBoxLayout(&dlg);
+    lay->setContentsMargins(18, 16, 18, 14);
+    lay->setSpacing(10);
+
+    auto* title = new QLabel(tr("Horário do reset da meta"), &dlg);
+    title->setObjectName(QStringLiteral("wcpDayTitle"));
+    lay->addWidget(title);
+
+    auto* hint = new QLabel(
+        tr("O que já foi escrito hoje NÃO é apagado.\n"
+           "A meta que já está em andamento só fica mais curta\n"
+           "ou mais longa essa vez, pra se encaixar no horário\n"
+           "novo. Dias seguintes, ela sempre vira nesse horário."), &dlg);
+    hint->setWordWrap(true);
+    hint->setStyleSheet(QStringLiteral("opacity: 0.75; font-size: 11px;"));
+    lay->addWidget(hint);
+
+    auto* timeEdit = new QTimeEdit(m_counter->goalResetTime(), &dlg);
+    timeEdit->setDisplayFormat(QStringLiteral("HH:mm"));
+    lay->addWidget(timeEdit);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    lay->addSpacing(4);
+    lay->addWidget(buttons);
+
+    dlg.setStyleSheet(QStringLiteral(R"(
+        #wcpDayDialog { background: %1; border: 1px solid %6; border-radius: 8px; }
+        #wcpDayDialog QLabel { color: %2; font-size: 12px; }
+        #wcpDayDialog QLabel#wcpDayTitle { color: %3; font-size: 15px; font-weight: bold; }
+        #wcpDayDialog QTimeEdit {
+            background: %6; color: %3; border: 1px solid %6; border-radius: 5px;
+            padding: 4px 8px; font-size: 13px;
+        }
+        #wcpDayDialog QPushButton {
+            background: %4; color: %2; border: none; padding: 6px 16px; border-radius: 5px; font-size: 12px;
+        }
+        #wcpDayDialog QPushButton:hover { background: %5; color: %3; }
+    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(),
+            Theme::hoverOverlay(), Theme::hoverStrong(), Theme::subtleBorder()));
+
+    if (dlg.exec() == QDialog::Accepted) {
+        const QTime t = timeEdit->time();
+        m_counter->setGoalResetTime(t.hour(), t.minute());
+    }
 }
 
 void WordCountPanel::openCompactContextMenu(const QPoint& globalPos)
