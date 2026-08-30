@@ -59,6 +59,7 @@ private:
     void stopSprint();
     void tickSprint();
     void openCompactContextMenu(const QPoint& globalPos);
+    void openGoalResetTimeDialog();
 
     WordCounter* m_counter;
     EditorHost* m_host;

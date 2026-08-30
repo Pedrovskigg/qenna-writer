@@ -22,26 +22,31 @@
 #include <QPageSize>
 #include <QPdfWriter>
 #include <QRegularExpression>
+#include <QSet>
 #include <QStringList>
+#include <QUrl>
 #include <QUuid>
 #include <QTextBlock>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QTextDocumentWriter>
+#include <QTextFrame>
 #include <algorithm>
 #include <functional>
 
 namespace {
 // O HTML salvo carrega a cor de texto do tema da tela (clara, pra fundo escuro),
-// que sobre o papel branco do ODT fica ilegível/apagada. Na exportação queremos
-// tinta preta: força o foreground de todo o documento pra preto, preservando
-// negrito/itálico/sublinhado e os marca-textos (que são cor de fundo).
-void forceBlackText(QTextDocument& doc) {
+// que sobre papel claro (ODT/EPUB) ou fundo trocado (preview) fica
+// ilegível/errada. Força o foreground de todo o documento pra uma cor fixa,
+// preservando negrito/itálico/sublinhado e os marca-textos (que são cor de
+// fundo). Exportação sempre chama com preto; o preview de e-reader passa a
+// cor de tinta da paleta ativa (clara ou escura).
+void forceTextColor(QTextDocument& doc, const QColor& color) {
     QTextCursor c(&doc);
     c.select(QTextCursor::Document);
     QTextCharFormat fmt;
-    fmt.setForeground(QColor(Qt::black));
+    fmt.setForeground(color);
     c.mergeCharFormat(fmt);
 }
 
@@ -69,6 +74,56 @@ void stripMarkers(QTextDocument& doc) {
         c.setPosition(r.from);
         c.setPosition(r.to, QTextCursor::KeepAnchor);
         c.setCharFormat(r.fmt);
+    }
+}
+
+// Preview em preto-e-branco: em vez de apagar o marca-texto (como
+// stripMarkers), converte o fundo colorido pra um cinza de luminância
+// equivalente — o usuário quer VER que ali tinha um marcador, só sem cor.
+void desaturateMarkerBackgrounds(QTextDocument& doc) {
+    struct Range { int from; int to; QTextCharFormat fmt; };
+    QList<Range> ranges;
+    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+        for (auto it = blk.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid()) continue;
+            QTextCharFormat fmt = frag.charFormat();
+            if (fmt.background().style() == Qt::NoBrush) continue;
+            const int gray = qGray(fmt.background().color().rgb());
+            fmt.setBackground(QColor(gray, gray, gray));
+            ranges.append({ frag.position(), frag.position() + frag.length(), fmt });
+        }
+    }
+    for (const Range& r : ranges) {
+        QTextCursor c(&doc);
+        c.setPosition(r.from);
+        c.setPosition(r.to, QTextCursor::KeepAnchor);
+        c.setCharFormat(r.fmt);
+    }
+}
+
+// Preview em preto-e-branco: dessatura toda imagem embutida no documento
+// (capa e imagens de corpo). Funciona tanto pra imagem inserida via
+// QTextCursor::insertImage (cover, resource pré-registrado) quanto pra <img
+// data:...> vindo de insertHtml (o próprio Qt decodifica e cacheia o recurso
+// sob o nome/URL da tag na primeira vez que doc.resource() é chamado).
+void desaturateImages(QTextDocument& doc) {
+    QSet<QString> names;
+    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+        for (auto it = blk.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid()) continue;
+            const QTextCharFormat fmt = frag.charFormat();
+            if (fmt.isImageFormat()) names.insert(fmt.toImageFormat().name());
+        }
+    }
+    for (const QString& name : names) {
+        const QUrl url(name);
+        const QImage img = doc.resource(QTextDocument::ImageResource, url).value<QImage>();
+        if (img.isNull()) continue;
+        const QImage gray = img.convertToFormat(QImage::Format_Grayscale8)
+                                .convertToFormat(QImage::Format_RGB32);
+        doc.addResource(QTextDocument::ImageResource, url, gray);
     }
 }
 
@@ -120,6 +175,20 @@ void Exporter::applyParagraphStyle(QTextDocument& doc) const {
     bf.setTopMargin(m_style.spacingBefore);
     bf.setBottomMargin(m_style.spacingAfter);
     c.mergeBlockFormat(bf);
+}
+
+QString Exporter::previewCss(const QColor& fg, const QColor& bg) const {
+    const QString lh = QString::number(m_style.lineHeightPercent / 100.0, 'f', 2);
+    const QString indent = m_style.firstLineIndent ? QStringLiteral("1.5em") : QStringLiteral("0");
+    QString bodyExtra = QStringLiteral("color: %1;").arg(fg.name());
+    if (bg.isValid()) bodyExtra += QStringLiteral(" background-color: %1;").arg(bg.name());
+    return QStringLiteral("body { font-family: Georgia, 'Times New Roman', serif; line-height: ")
+        + lh + QStringLiteral("; margin: 0 5%; ") + bodyExtra + QStringLiteral(" }\n")
+        + QStringLiteral("p { margin: 0 0 0.4em; text-indent: ") + indent + QStringLiteral("; }\n")
+        + QStringLiteral("h1.chapter-title { text-align: center; font-weight: bold; margin: 1em 0 1.5em; text-indent: 0; }\n")
+        + QStringLiteral("strong, b { font-weight: bold; } em, i { font-style: italic; }\n")
+        + QStringLiteral("u { text-decoration: underline; } s, del { text-decoration: line-through; }\n")
+        + QStringLiteral("img { max-width: 100%; height: auto; display: block; margin: 1em auto; }\n");
 }
 
 QString Exporter::safeName(const QString& s) {
@@ -218,7 +287,7 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
         return QString::asprintf("%02X%02X%02X", c.red(), c.green(), c.blue());
     };
 
-    // <w:rPr> a partir do formato do fragmento. Foreground é ignorado: forceBlackText
+    // <w:rPr> a partir do formato do fragmento. Foreground é ignorado: forceTextColor
     // já uniformizou pra preto (default do Word). Marca-texto vira sombreamento (w:shd).
     // A ordem dos filhos de <w:rPr> é fixada pelo schema OOXML (CT_RPr):
     // rFonts → b → i → strike → sz/szCs → u → shd. Fora de ordem, Word tolera
@@ -427,7 +496,7 @@ QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format
     QTextDocument doc;
     doc.setHtml(html.isEmpty() ? QStringLiteral("<p></p>") : html);
     applyParagraphStyle(doc);
-    forceBlackText(doc);
+    forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     return writeDoc(doc, fmt, docTitle);
 }
@@ -459,7 +528,7 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
     }
 
     applyParagraphStyle(doc);
-    forceBlackText(doc);
+    forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     return writeDoc(doc, fmt, docTitle);
 }
@@ -485,14 +554,10 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
     // ── Manuscritos ──
     for (const Manuscript& ms : m_model->manuscripts()) {
         QList<const Chapter*> selected;
-        for (const Chapter& ch : m_model->chapters()) {
-            const QString msId = ch.manuscriptId.isEmpty() ? ms.id : ch.manuscriptId;
-            if (msId == ms.id && sel.chapterIds.contains(ch.id))
-                selected.append(&ch);
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+            if (sel.chapterIds.contains(ch->id)) selected.append(ch);
         }
         if (selected.isEmpty()) continue;
-        std::sort(selected.begin(), selected.end(),
-                  [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
 
         const QString effectiveTitle = m_model->manuscriptEffectiveTitle(ms.id);
         const QString msTitle = safeName(effectiveTitle.isEmpty() ? QStringLiteral("Manuscrito") : effectiveTitle);
@@ -542,7 +607,7 @@ QString Exporter::itemBodyXhtml(const QString& rawHtml, bool includeMarkers,
                                 QStringList& imageMimesOut, int& imgCounter) const {
     QTextDocument doc;
     doc.setHtml(rawHtml.isEmpty() ? QStringLiteral("<p></p>") : rawHtml);
-    forceBlackText(doc);
+    forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     QString html = doc.toHtml();
 
@@ -602,9 +667,8 @@ const Manuscript* Exporter::singleManuscriptInSelection(const Selection& sel) co
     const Manuscript* found = nullptr;
     for (const Manuscript& ms : m_model->manuscripts()) {
         bool hasSelected = false;
-        for (const Chapter& ch : m_model->chapters()) {
-            const QString msId = ch.manuscriptId.isEmpty() ? ms.id : ch.manuscriptId;
-            if (msId == ms.id && sel.chapterIds.contains(ch.id)) { hasSelected = true; break; }
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+            if (sel.chapterIds.contains(ch->id)) { hasSelected = true; break; }
         }
         if (!hasSelected) continue;
         if (found) return nullptr; // 2º manuscrito com capítulos selecionados → ambíguo
@@ -624,12 +688,9 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     // Capítulos por manuscrito, em ordem.
     for (const Manuscript& ms : m_model->manuscripts()) {
         QList<const Chapter*> chaps;
-        for (const Chapter& ch : m_model->chapters()) {
-            const QString msId = ch.manuscriptId.isEmpty() ? ms.id : ch.manuscriptId;
-            if (msId == ms.id && sel.chapterIds.contains(ch.id)) chaps.append(&ch);
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+            if (sel.chapterIds.contains(ch->id)) chaps.append(ch);
         }
-        std::sort(chaps.begin(), chaps.end(),
-                  [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
         for (const Chapter* ch : chaps) {
             ++counter;
             Item it;
@@ -720,16 +781,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     }
 
     // ── CSS ──
-    const QString lh = QString::number(m_style.lineHeightPercent / 100.0, 'f', 2);
-    const QString indent = m_style.firstLineIndent ? QStringLiteral("1.5em") : QStringLiteral("0");
-    const QString css =
-        QStringLiteral("body { font-family: Georgia, 'Times New Roman', serif; line-height: ")
-        + lh + QStringLiteral("; margin: 0 5%; color: #1a1a1a; }\n")
-        + QStringLiteral("p { margin: 0 0 0.4em; text-indent: ") + indent + QStringLiteral("; }\n")
-        + QStringLiteral("h1.chapter-title { text-align: center; font-weight: bold; margin: 1em 0 1.5em; text-indent: 0; }\n")
-        + QStringLiteral("strong, b { font-weight: bold; } em, i { font-style: italic; }\n")
-        + QStringLiteral("u { text-decoration: underline; } s, del { text-decoration: line-through; }\n")
-        + QStringLiteral("img { max-width: 100%; height: auto; display: block; margin: 1em auto; }\n");
+    const QString css = previewCss(QColor(0x1a, 0x1a, 0x1a), QColor());
 
     // ── Monta os XMLs ──
     QString manifest, spine, navList, ncxNav;
@@ -934,4 +986,94 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
     f.write(zipBytes);
     f.close();
     return true;
+}
+
+QTextDocument* Exporter::buildPreviewDocument(const QString& manuscriptId,
+                                               bool includeMarkers,
+                                               const QColor& textColor,
+                                               const QColor& backgroundColor,
+                                               bool grayscale,
+                                               QObject* docParent) const {
+    if (!m_model || manuscriptId.isEmpty()) return nullptr;
+    const QList<const Chapter*> chapters = m_model->orderedChaptersForManuscript(manuscriptId);
+    if (chapters.isEmpty()) return nullptr;
+
+    auto* doc = new QTextDocument(docParent);
+    // Precisa ser setado ANTES de inserir conteúdo: insertHtml() só honra o
+    // stylesheet vigente no momento em que cada fragmento é parseado (h1,
+    // img, strong/em/u/s). Setar depois do loop de capítulos (como estava)
+    // é tarde demais — nenhuma regra chega a valer.
+    doc->setDefaultStyleSheet(previewCss(textColor, backgroundColor));
+    QTextCursor cur(doc);
+    bool wroteAnything = false;
+
+    // Capa, se houver — vira "página 0" do preview (device-frame) ou cabeçalho
+    // (modo janela), sem lógica extra: é só o primeiro conteúdo do documento.
+    QString coverMime;
+    QByteArray coverBytes;
+    const QString coverSrc = m_model->manuscriptEffectiveCoverDataUrl(manuscriptId);
+    if (parseDataUrl(coverSrc, coverMime, coverBytes)) {
+        const QImage img = QImage::fromData(coverBytes);
+        if (!img.isNull()) {
+            const QUrl coverRes(QStringLiteral("readerpreview://cover"));
+            doc->addResource(QTextDocument::ImageResource, coverRes, img);
+            QTextImageFormat imgFmt;
+            imgFmt.setName(coverRes.toString());
+            double w = img.width(), h = img.height();
+            const double maxW = 360.0;
+            if (w > maxW && w > 0) { h *= maxW / w; w = maxW; }
+            imgFmt.setWidth(w);
+            imgFmt.setHeight(h);
+
+            QTextBlockFormat coverBlock;
+            coverBlock.setAlignment(Qt::AlignHCenter);
+            cur.setBlockFormat(coverBlock);
+            cur.insertImage(imgFmt);
+            wroteAnything = true;
+        }
+    }
+
+    for (const Chapter* ch : chapters) {
+        // Quebra de página antes de cada capítulo, menos o primeiro conteúdo
+        // do documento (que já começa na "página 0"). Diferente do PDF: um
+        // e-reader pagina pelo fluxo de texto, não força quebra por capítulo
+        // — só a transição capa→capítulo 1 (ou início do documento) importa.
+        QTextBlockFormat titleBlock;
+        if (wroteAnything) titleBlock.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
+        if (wroteAnything) cur.insertBlock(titleBlock);
+        else cur.setBlockFormat(titleBlock);
+        wroteAnything = true;
+
+        QTextCharFormat titleChar;
+        titleChar.setFontWeight(QFont::Bold);
+        titleChar.setFontPointSize(16);
+        const QString title = ch->title.trimmed().isEmpty()
+            ? QStringLiteral("Capítulo") : ch->title;
+        cur.insertText(title, titleChar);
+
+        QTextBlockFormat bodyBlock;
+        cur.insertBlock(bodyBlock, QTextCharFormat());
+        cur.insertHtml(chapterHtmlPrimary(*ch));
+    }
+
+    applyParagraphStyle(*doc);
+    forceTextColor(*doc, textColor);
+    if (!includeMarkers) stripMarkers(*doc);
+    if (grayscale) {
+        desaturateImages(*doc);
+        desaturateMarkerBackgrounds(*doc);
+    }
+
+    // Fundo da página garantido via QTextFrameFormat no frame raiz — mais
+    // confiável que depender de "body { background-color }" no CSS: o frame
+    // raiz sempre cobre a largura inteira do documento, enquanto regras de
+    // nível body em fragmentos inseridos via insertHtml podem não se aplicar
+    // de forma uniforme. Documento e margem fixos garantem uma coluna de
+    // leitura consistente independente de peculiaridades do parser de HTML.
+    QTextFrameFormat rootFmt = doc->rootFrame()->frameFormat();
+    rootFmt.setBackground(backgroundColor);
+    doc->rootFrame()->setFrameFormat(rootFmt);
+    doc->setDocumentMargin(28);
+
+    return doc;
 }

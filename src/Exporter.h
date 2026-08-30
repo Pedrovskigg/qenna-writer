@@ -6,6 +6,8 @@
 class ProjectModel;
 class QWidget;
 class QTextDocument;
+class QColor;
+class QObject;
 struct Chapter;
 struct DrawerItem;
 struct Manuscript;
@@ -44,6 +46,20 @@ public:
     // *nothingExported vira true se a seleção não produziu nenhum arquivo.
     bool run(const Selection& sel, QWidget* dialogParent,
              QString* error = nullptr, bool* nothingExported = nullptr);
+
+    // Monta um QTextDocument pronto pra EXIBIÇÃO (não exportação) com o
+    // manuscrito inteiro: capa (se houver) seguida dos capítulos em ordem,
+    // cor de tinta/fundo parametrizáveis (preview de e-reader tem paleta
+    // clara e escura independentes do tema do app) e grayscale opcional
+    // (dessatura capa, imagens de corpo e fundo de marca-texto). Retorna
+    // nullptr se o manuscrito não existir ou não tiver capítulos. docParent
+    // recebe a posse do QTextDocument (é um QObject).
+    QTextDocument* buildPreviewDocument(const QString& manuscriptId,
+                                         bool includeMarkers,
+                                         const QColor& textColor,
+                                         const QColor& backgroundColor,
+                                         bool grayscale,
+                                         QObject* docParent = nullptr) const;
 
 private:
     struct OutFile {
@@ -88,6 +104,11 @@ private:
     static QString formatExt(Format fmt);
 
     void applyParagraphStyle(QTextDocument& doc) const;
+
+    // CSS base (fonte serif, recuo, título de capítulo) reaproveitado pelo
+    // EPUB e pelo preview de e-reader. bg inválido (QColor() default) omite
+    // a linha background-color — usado pelo EPUB, que não define fundo.
+    QString previewCss(const QColor& fg, const QColor& bg) const;
 
     ProjectModel* m_model;
     QString m_root;

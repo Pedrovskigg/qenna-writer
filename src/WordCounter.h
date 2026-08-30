@@ -5,6 +5,7 @@
 #include <QJsonObject>
 #include <QObject>
 #include <QString>
+#include <QTime>
 
 class ProjectModel;
 class DocCache;
@@ -105,8 +106,17 @@ public:
     bool isGoalMet() const;
     qint64 goalDayRemainingMs() const;
 
-    // Reseta o "dia" da meta agora (botão ↻).
+    // Reseta o "dia" da meta agora (botão ↻). Apaga o progresso de hoje de propósito.
     void resetGoalDay();
+
+    // Horário (hh:mm) em que a meta reseta todo dia, derivado de goalDayStartAt.
+    QTime goalResetTime() const;
+    // Reagenda o horário de reset SEM apagar o progresso já registrado hoje —
+    // mantém a âncora rolante de 24h (não volta a virar por meia-noite de
+    // calendário, que foi a causa do bug antigo de pular dia). Se o novo
+    // horário empurrar "hoje" pra outra chave de calendário, migra (soma,
+    // se já houver algo lá) em vez de deixar órfão.
+    bool setGoalResetTime(int hour, int minute);
 
     // Folgas — Mira 1 Style.
     enum class OffDayType { None, Legit, Stolen };

@@ -554,6 +554,17 @@ QString ProjectModel::manuscriptEffectiveCoverDataUrl(const QString& manuscriptI
     return projectCoverDataUrl();
 }
 
+QList<const Chapter*> ProjectModel::orderedChaptersForManuscript(const QString& manuscriptId) const {
+    QList<const Chapter*> result;
+    for (const Chapter& ch : m_chapters) {
+        const QString msId = ch.manuscriptId.isEmpty() ? manuscriptId : ch.manuscriptId;
+        if (msId == manuscriptId) result.append(&ch);
+    }
+    std::sort(result.begin(), result.end(),
+              [](const Chapter* a, const Chapter* b) { return a->order < b->order; });
+    return result;
+}
+
 void ProjectModel::setProjectDetails(const QString& name, const QString& author,
                                      const QString& genres, const QString& synopsis,
                                      const QString& coverDataUrl) {

@@ -73,6 +73,7 @@ class ConstrutorStore;
 class ConstrutorWindow;
 class ConstrutorMentionAddPopup;
 class TerritorioWindow;
+class ReaderPreviewPanel;
 class TerritorioMentionAddPopup;
 class MainMenuDialog;
 class BackgroundWidget;
@@ -268,6 +269,14 @@ private:
     // stores/provider injetados — o Construtor mora embutido nela, não tem
     // mais janela própria.
     TerritorioWindow* ensureTerritorioWindow();
+    // Cria (lazy) e devolve o painel de preview de e-reader — feature de uso
+    // ocasional, não vale pagar custo de boot criando eager como os painéis
+    // sempre visíveis (wordCountPanel etc.).
+    ReaderPreviewPanel* ensureReaderPreviewPanel();
+    // Ponto de entrada único do preview (menu de contexto do manuscrito,
+    // atalho F8, botão do ExportPanel). Salva o projeto antes de abrir, pro
+    // disco refletir edições (mesmo racional do onExportRequested).
+    void openReaderPreview(const QString& manuscriptId);
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
     QString docTextForLink(const QString& linkKey);
@@ -364,6 +373,7 @@ private:
     TerritorioMentionAddPopup *territorioMentionAddPopup = nullptr;
     TerritorioStore *territorioStore = nullptr;
     TerritorioWindow *territorioWindow = nullptr;
+    ReaderPreviewPanel *readerPreviewPanel = nullptr;
     // Memória sendo criada: preenchida em addSelectionToMemory() (texto + fonte)
     // e completada no confirmed do popup (nome + destino).
     std::optional<MemoriesStore::Memory> m_pendingMemory;
@@ -391,6 +401,7 @@ private:
     QFrame      *m_updateToast         = nullptr;
     QLabel      *m_updateToastLabel    = nullptr;
     QLabel      *m_updateToastNotes    = nullptr;
+    QScrollArea *m_updateToastNotesScroll = nullptr;
     QLabel      *m_updateToastError    = nullptr;
     QToolButton *m_updateToastBtn      = nullptr;
     QToolButton *m_updateToastCancelBtn = nullptr;

@@ -101,6 +101,8 @@
         <file alias="folder.svg">../src/assets/icons/folder.svg</file>
         <file alias="fullscreen.svg">../src/assets/icons/fullscreen.svg</file>
         <file alias="glossary.svg">../src/assets/icons/glossary.svg</file>
+        <file alias="reader-dark-mode.svg">../src/assets/icons/reader-dark-mode.svg</file>
+        <file alias="reader-grayscale.svg">../src/assets/icons/reader-grayscale.svg</file>
         <file alias="immersive-sound.svg">../src/assets/icons/immersive-sound.svg</file>
         <file alias="italic.svg">../src/assets/icons/italic.svg</file>
         <file alias="loadproject.svg">../src/assets/icons/loadproject.svg</file>
