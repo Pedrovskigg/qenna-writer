@@ -57,6 +57,15 @@ public:
     void setRescanScenesButtonText(const QString& text);
     void setRescanScenesButtonEnabled(bool enabled);
 
+    // --- Backup completo de projeto ---
+    // mode: 0=Desligado, 1=Automático, 2=Só lembrete (ver BackupService::Mode).
+    void setBackupMode(int mode);
+    void setBackupFolder(const QString& folder);
+    void setBackupIntervalMinutes(int minutes);
+    // Texto pronto tipo "Último backup: há 2 horas" ou "Nunca fez backup".
+    void setBackupStatusText(const QString& text);
+    void setBackupRunButtonEnabled(bool enabled);
+
 signals:
     // Botão "Detectar presença por cena em todos os capítulos".
     void rescanAllScenesRequested();
@@ -72,6 +81,12 @@ signals:
     void romanChapterNumbersChanged(bool enabled);
     // Botão "Abrir Gerador de Timeline…".
     void timelineGeneratorRequested();
+
+    // --- Backup completo de projeto ---
+    void backupModeChanged(int mode);
+    void backupIntervalMinutesChanged(int minutes);
+    void backupFolderChanged(const QString& folder);
+    void backupRunNowRequested();
 
 private:
     void onCheckToggled(bool checked);
@@ -111,6 +126,14 @@ private:
     QComboBox* m_imgModelCombo   = nullptr;
     QComboBox* m_imgQualityCombo = nullptr;
     QComboBox* m_imgSizeCombo    = nullptr;
+    QComboBox*   m_backupModeCombo     = nullptr;
+    QLineEdit*   m_backupFolderEdit    = nullptr;
+    QPushButton* m_backupFolderBtn     = nullptr;
+    QComboBox*   m_backupIntervalCombo = nullptr;
+    QPushButton* m_backupRunBtn        = nullptr;
+    QLabel*      m_backupStatusLabel   = nullptr;
+    QWidget*     m_backupFolderRow     = nullptr;
+    QWidget*     m_backupIntervalRow   = nullptr;
     bool m_blockSignals = false;
     bool m_blockLayoutSignals = false;
 };

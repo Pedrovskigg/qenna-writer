@@ -1,6 +1,7 @@
 #include "MainMenuDialog.h"
 
 #include "AboutDialog.h"
+#include "TrashDialog.h"
 #include "IconUtils.h"
 #include "ProjectStorage.h"
 #include "Quotes.h"
@@ -1444,7 +1445,7 @@ private:
 // após um countdown de 5s, dando margem pra desistir de uma ação destrutiva.
 class DeleteConfirmDialog : public QDialog {
 public:
-    DeleteConfirmDialog(const QString& projectName, QWidget* parent = nullptr)
+    DeleteConfirmDialog(const QString& projectName, const QString& projectPath, QWidget* parent = nullptr)
         : QDialog(parent)
     {
         setObjectName(QStringLiteral("deleteConfirmDialog"));
@@ -1455,11 +1456,15 @@ public:
         root->setContentsMargins(24, 22, 24, 18);
         root->setSpacing(16);
 
+        // Mostra o CAMINHO real, não só o nome — um nome como "Teste" não diz
+        // nada sobre qual pasta vai ser movida pra lixeira; o caminho sim.
         auto* msg = new QLabel(
             QCoreApplication::translate("DeleteConfirmDialog",
                 "Tem certeza que deseja excluir \"%1\"?\n\n"
-                "A pasta do projeto será apagada do disco. "
-                "Esta ação NÃO pode ser desfeita.").arg(projectName),
+                "Pasta: %2\n\n"
+                "O projeto vai para a Lixeira (acessível pelo ícone de lixeira "
+                "aqui embaixo), de onde pode ser restaurado depois.")
+                .arg(projectName, QDir::toNativeSeparators(projectPath)),
             this);
         msg->setWordWrap(true);
         root->addWidget(msg);
@@ -1679,6 +1684,19 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
         dlg.exec();
     });
     langRow->addWidget(infoBtn);
+
+    m_trashBtn = new QPushButton(this);
+    m_trashBtn->setObjectName(QStringLiteral("menuInfoBtn"));
+    m_trashBtn->setCursor(Qt::PointingHandCursor);
+    m_trashBtn->setFixedSize(24, 24);
+    m_trashBtn->setIconSize(QSize(14, 14));
+    m_trashBtn->setToolTip(tr("Lixeira — projetos excluídos"));
+    connect(m_trashBtn, &QPushButton::clicked, this, [this]() {
+        TrashDialog dlg(this);
+        dlg.exec();
+        refreshRecents();
+    });
+    langRow->addWidget(m_trashBtn);
 
     col->addLayout(langRow);
 }
@@ -2056,6 +2074,11 @@ void MainMenuDialog::refreshActionIcons()
         m_newIdeaBtn->setIcon(IconUtils::loadToolbarIcon(
             QStringLiteral(":/icons/doc-plus.svg"), c, c, c, QSize(18, 18)));
     }
+    if (m_trashBtn) {
+        const QColor c(Theme::textPrimary());
+        m_trashBtn->setIcon(IconUtils::loadToolbarIcon(
+            QStringLiteral(":/icons/trash.svg"), c, c, c, QSize(14, 14)));
+    }
 }
 
 void MainMenuDialog::showComingSoonToast(QWidget* anchor)
@@ -2333,7 +2356,7 @@ void MainMenuDialog::confirmDeleteProject(const QString& path)
 {
     const RecentInfo info = readRecentInfo(path);
     const QString nm = info.name.isEmpty() ? QFileInfo(path).fileName() : info.name;
-    DeleteConfirmDialog dlg(nm, this);
+    DeleteConfirmDialog dlg(nm, path, this);
     if (dlg.exec() != QDialog::Accepted) return;
     // A exclusão de fato (apagar pasta + atualizar recentes) fica com o
     // MainWindow, que conhece o estado do projeto aberto e a lista.

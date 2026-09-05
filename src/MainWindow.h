@@ -207,6 +207,9 @@ private:
                              QRect& outBoundsGlobal) const;
 
     void showReminderToast(const QString& title, const QString& body);
+    // Atualiza o texto "Último backup: ..." e o estado do botão "Fazer backup
+    // agora" no SettingsPanel a partir do projeto aberto no momento.
+    void refreshBackupStatusLabel();
     void positionReminderToast();
 
     // Atualizações (GitHub Releases): checagem silenciosa no startup; se
@@ -387,6 +390,11 @@ private:
     RemindersPanel *remindersPanel = nullptr;
     SheetTemplatesStore *sheetTemplatesStore = nullptr;
     QTimer *m_reminderPollTimer = nullptr;
+    // Backup completo de projeto (ver BackupService) — mesmo padrão de poll
+    // a cada 60s do m_reminderPollTimer, checando se já passou do intervalo
+    // configurado desde o último backup/lembrete do projeto aberto agora.
+    QTimer *m_backupPollTimer = nullptr;
+    bool m_backupFailWarnedThisSession = false;
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;
     TimelinePanel *timelinePanel = nullptr;
