@@ -232,6 +232,14 @@ qt_add_executable(qenna-writer
     src/MemoriesStore.h
     src/MemoryAddPopup.cpp
     src/MemoryAddPopup.h
+    src/SystemFolderGuard.cpp
+    src/SystemFolderGuard.h
+    src/BackupService.cpp
+    src/BackupService.h
+    src/TrashService.cpp
+    src/TrashService.h
+    src/TrashDialog.cpp
+    src/TrashDialog.h
     src/RemindersStore.cpp
     src/RemindersStore.h
     src/RemindersPanel.cpp

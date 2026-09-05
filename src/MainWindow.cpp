@@ -154,7 +154,10 @@
 #include "SpellChecker.h"
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
+#include "BackupService.h"
+#include "SystemFolderGuard.h"
 #include "ThemesPanel.h"
+#include "TrashService.h"
 #include "LoadingToast.h"
 #include "BackgroundWidget.h"
 #include "WordCountPanel.h"
@@ -1812,6 +1815,43 @@ void MainWindow::setupEditor()
         if (anyFired) remindersStore->save();
     });
     m_reminderPollTimer->start();
+
+    // Backup completo de projeto (ver BackupService) — mesmo padrão de poll
+    // a cada 60s acima, checando se já passou do intervalo configurado desde
+    // o último backup/lembrete do projeto aberto agora.
+    m_backupPollTimer = new QTimer(this);
+    m_backupPollTimer->setInterval(60'000);
+    connect(m_backupPollTimer, &QTimer::timeout, this, [this]() {
+        if (projectRoot.isEmpty()) return;
+        const BackupService::Settings s = BackupService::loadSettings();
+        if (s.mode == BackupService::Mode::Off) return;
+        const qint64 now = QDateTime::currentMSecsSinceEpoch();
+        const qint64 intervalMs = qint64(s.intervalMinutes) * 60'000;
+        const qint64 lastBackup = BackupService::lastBackupAt(projectRoot);
+        if (now - lastBackup < intervalMs) return;
+
+        if (s.mode == BackupService::Mode::Automatic) {
+            QString zipPath, err;
+            if (BackupService::runBackupNow(projectRoot, s.folder, &zipPath, &err)) {
+                m_backupFailWarnedThisSession = false;
+                showReminderToast(tr("Backup automático"), tr("Projeto salvo em:\n%1").arg(zipPath));
+            } else if (!m_backupFailWarnedThisSession) {
+                m_backupFailWarnedThisSession = true;
+                showReminderToast(tr("Backup automático falhou"), err);
+            }
+        } else {
+            // Modo lembrete: só reavisa depois de outro intervalo inteiro,
+            // pra não repetir o toast a cada 60s enquanto o usuário ignora.
+            const qint64 lastReminder = BackupService::lastReminderAt(projectRoot);
+            if (now - lastReminder < intervalMs) return;
+            BackupService::markReminderShown(projectRoot, now);
+            const QString name = projectModel ? projectModel->projectName() : QString();
+            showReminderToast(tr("Hora de fazer backup"),
+                tr("Já faz um tempo desde o último backup de \"%1\". Abra "
+                   "Configurações > Backup de projeto para salvar uma cópia.").arg(name));
+        }
+    });
+    m_backupPollTimer->start();
 
     drawerListPanel->setElementsStore(elementsStore);
     wordCounter = new WordCounter(projectModel, docCache, editorHost, this);
@@ -4840,6 +4880,16 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
         if (errorOut) *errorOut = tr("Pasta do projeto não existe: %1").arg(root);
         return false;
     }
+    QString guardReason;
+    if (SystemFolderGuard::isProtected(root, &guardReason)) {
+        if (errorOut) {
+            *errorOut = tr("Esta pasta é %1, não um projeto — abri-la aqui criaria "
+                           "arquivos do Qenna Writer dentro dela e depois excluí-la "
+                           "apagaria tudo que já existe lá. Escolha (ou crie) uma "
+                           "subpasta dedicada ao projeto.").arg(guardReason);
+        }
+        return false;
+    }
     QString ensureErr;
     if (!ProjectStorage::ensureProjectDirs(root, &ensureErr)) {
         if (errorOut) *errorOut = ensureErr;
@@ -5519,8 +5569,9 @@ void MainWindow::openMainMenu()
                     saveRecentProjects(newOrder);
                 });
 
-        // Excluir projeto — apaga a pasta do disco (a confirmação com countdown
-        // já passou no MainMenuDialog) e atualiza recentes + autoOpen.
+        // Excluir projeto — move a pasta pra Lixeira (ver TrashService) em vez
+        // de apagar de vez, e atualiza recentes + autoOpen. A confirmação com
+        // countdown já passou no MainMenuDialog.
         connect(mainMenuDialog, &MainMenuDialog::deleteProjectRequested,
                 this, [this](const QString& path) {
                     const QString clean = QDir::cleanPath(path);
@@ -5531,10 +5582,10 @@ void MainWindow::openMainMenu()
                             tr("Este é o projeto aberto no momento. Feche-o antes de excluí-lo."));
                         return;
                     }
-                    QDir dir(path);
-                    if (dir.exists() && !dir.removeRecursively()) {
+                    QString trashErr;
+                    if (QDir(path).exists() && !TrashService::trashProject(path, &trashErr)) {
                         QMessageBox::warning(mainMenuDialog, tr("Erro ao excluir"),
-                            tr("Não foi possível apagar a pasta do projeto."));
+                            tr("Não foi possível mover o projeto para a lixeira.\n%1").arg(trashErr));
                         return;
                     }
                     QStringList list = loadRecentProjects();
@@ -6085,6 +6136,28 @@ void MainWindow::onOpenProjectRequested()
     openMainMenu();
 }
 
+namespace {
+QString backupStatusLabelText(qint64 lastRunMs)
+{
+    if (lastRunMs <= 0) return MainWindow::tr("Nunca fez backup deste projeto.");
+    const qint64 mins = (QDateTime::currentMSecsSinceEpoch() - lastRunMs) / 60'000;
+    if (mins < 1) return MainWindow::tr("Último backup: agora mesmo.");
+    if (mins < 60) return MainWindow::tr("Último backup: há %1 min.").arg(mins);
+    const qint64 hours = mins / 60;
+    if (hours < 24) return MainWindow::tr("Último backup: há %1h.").arg(hours);
+    const qint64 days = hours / 24;
+    return MainWindow::tr("Último backup: há %1 dia(s).").arg(days);
+}
+} // namespace
+
+void MainWindow::refreshBackupStatusLabel()
+{
+    if (!settingsPanel) return;
+    settingsPanel->setBackupStatusText(
+        projectRoot.isEmpty() ? QString() : backupStatusLabelText(BackupService::lastBackupAt(projectRoot)));
+    settingsPanel->setBackupRunButtonEnabled(!projectRoot.isEmpty());
+}
+
 void MainWindow::onSettingsRequested()
 {
     if (!settingsPanel) {
@@ -6157,6 +6230,41 @@ void MainWindow::onSettingsRequested()
                 timelinePanel->refreshFromModel();
             }
         });
+        connect(settingsPanel, &SettingsPanel::backupModeChanged, this, [this](int mode) {
+            BackupService::Settings s = BackupService::loadSettings();
+            s.mode = static_cast<BackupService::Mode>(mode);
+            BackupService::saveSettings(s);
+            m_backupFailWarnedThisSession = false;
+        });
+        connect(settingsPanel, &SettingsPanel::backupIntervalMinutesChanged, this, [this](int minutes) {
+            BackupService::Settings s = BackupService::loadSettings();
+            s.intervalMinutes = minutes;
+            BackupService::saveSettings(s);
+        });
+        connect(settingsPanel, &SettingsPanel::backupFolderChanged, this, [this](const QString& folder) {
+            BackupService::Settings s = BackupService::loadSettings();
+            s.folder = folder;
+            BackupService::saveSettings(s);
+        });
+        connect(settingsPanel, &SettingsPanel::backupRunNowRequested, this, [this]() {
+            if (projectRoot.isEmpty()) return;
+            const BackupService::Settings s = BackupService::loadSettings();
+            if (s.folder.trimmed().isEmpty()) {
+                QMessageBox::information(settingsPanel, tr("Escolha uma pasta"),
+                    tr("Escolha primeiro uma pasta de destino para o backup."));
+                return;
+            }
+            settingsPanel->setBackupRunButtonEnabled(false);
+            QString zipPath, err;
+            const bool ok = BackupService::runBackupNow(projectRoot, s.folder, &zipPath, &err);
+            refreshBackupStatusLabel();
+            if (ok) {
+                QMessageBox::information(settingsPanel, tr("Backup concluído"),
+                    tr("Projeto salvo em:\n%1").arg(zipPath));
+            } else {
+                QMessageBox::warning(settingsPanel, tr("Erro ao fazer backup"), err);
+            }
+        });
         // Lê preferências globais (não por projeto)
         m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();
     }
@@ -6179,6 +6287,13 @@ void MainWindow::onSettingsRequested()
     // Teto do comprimento de página = altura útil da folha visível. Acima disso a
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
+    {
+        const BackupService::Settings bs = BackupService::loadSettings();
+        settingsPanel->setBackupMode(static_cast<int>(bs.mode));
+        settingsPanel->setBackupFolder(bs.folder);
+        settingsPanel->setBackupIntervalMinutes(bs.intervalMinutes);
+    }
+    refreshBackupStatusLabel();
 
     settingsPanel->show();
     settingsPanel->raise();

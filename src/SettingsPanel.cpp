@@ -9,6 +9,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
@@ -643,6 +644,89 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit unifiedGoalEnabledChanged(checked);
     });
 
+    // ---- Seção: Backup completo de projeto ----
+    auto* backupGroup = new QGroupBox(tr("Backup de projeto"), this);
+    auto* backupLayout = new QVBoxLayout(backupGroup);
+    backupLayout->setContentsMargins(14, 8, 14, 14);
+    backupLayout->setSpacing(8);
+
+    m_backupModeCombo = new QComboBox(backupGroup);
+    m_backupModeCombo->addItem(tr("Desligado"), 0);
+    m_backupModeCombo->addItem(tr("Automático"), 1);
+    m_backupModeCombo->addItem(tr("Só lembrete"), 2);
+    backupLayout->addWidget(m_backupModeCombo);
+
+    auto* backupHint = new QLabel(
+        tr("Zipa a pasta inteira do projeto (manuscritos, fichas, lousas, tudo) "
+           "periodicamente. Escolha uma pasta de destino FORA da pasta do "
+           "projeto e, se possível, fora de Documentos — outro disco, pendrive "
+           "ou uma pasta sincronizada na nuvem protegem de verdade contra "
+           "perder o projeto e o backup juntos."),
+        backupGroup);
+    backupHint->setObjectName(QStringLiteral("settingsHint"));
+    backupHint->setWordWrap(true);
+    backupLayout->addWidget(backupHint);
+
+    m_backupFolderRow = new QWidget(backupGroup);
+    auto* folderRowLay = new QHBoxLayout(m_backupFolderRow);
+    folderRowLay->setContentsMargins(0, 0, 0, 0);
+    folderRowLay->setSpacing(8);
+    m_backupFolderEdit = new QLineEdit(m_backupFolderRow);
+    m_backupFolderEdit->setReadOnly(true);
+    m_backupFolderEdit->setPlaceholderText(tr("Nenhuma pasta escolhida"));
+    m_backupFolderBtn = new QPushButton(tr("Escolher pasta…"), m_backupFolderRow);
+    folderRowLay->addWidget(m_backupFolderEdit, 1);
+    folderRowLay->addWidget(m_backupFolderBtn);
+    backupLayout->addWidget(m_backupFolderRow);
+
+    m_backupIntervalRow = new QWidget(backupGroup);
+    auto* intervalRowLay = new QHBoxLayout(m_backupIntervalRow);
+    intervalRowLay->setContentsMargins(0, 0, 0, 0);
+    intervalRowLay->setSpacing(8);
+    intervalRowLay->addWidget(new QLabel(tr("A cada:"), m_backupIntervalRow));
+    m_backupIntervalCombo = new QComboBox(m_backupIntervalRow);
+    m_backupIntervalCombo->addItem(tr("1 dia"), 1440);
+    m_backupIntervalCombo->addItem(tr("2 dias"), 2880);
+    m_backupIntervalCombo->addItem(tr("3 dias"), 4320);
+    m_backupIntervalCombo->addItem(tr("4 dias"), 5760);
+    m_backupIntervalCombo->addItem(tr("5 dias"), 7200);
+    m_backupIntervalCombo->addItem(tr("6 dias"), 8640);
+    m_backupIntervalCombo->addItem(tr("7 dias"), 10080);
+    intervalRowLay->addWidget(m_backupIntervalCombo);
+    intervalRowLay->addStretch();
+    backupLayout->addWidget(m_backupIntervalRow);
+
+    auto* runRow = new QHBoxLayout();
+    runRow->setSpacing(8);
+    m_backupRunBtn = new QPushButton(tr("Fazer backup agora"), backupGroup);
+    m_backupStatusLabel = new QLabel(backupGroup);
+    m_backupStatusLabel->setObjectName(QStringLiteral("settingsHint"));
+    runRow->addWidget(m_backupRunBtn);
+    runRow->addWidget(m_backupStatusLabel, 1);
+    backupLayout->addLayout(runRow);
+
+    connect(m_backupModeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        const int mode = m_backupModeCombo->itemData(idx).toInt();
+        if (m_backupIntervalRow) m_backupIntervalRow->setVisible(mode != 0);
+        if (m_blockSignals) return;
+        emit backupModeChanged(mode);
+    });
+    connect(m_backupIntervalCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit backupIntervalMinutesChanged(m_backupIntervalCombo->itemData(idx).toInt());
+    });
+    connect(m_backupFolderBtn, &QPushButton::clicked, this, [this]() {
+        const QString chosen = QFileDialog::getExistingDirectory(this,
+            tr("Escolher pasta de destino do backup"), m_backupFolderEdit->text(),
+            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        if (chosen.isEmpty()) return;
+        m_backupFolderEdit->setText(chosen);
+        emit backupFolderChanged(chosen);
+    });
+    connect(m_backupRunBtn, &QPushButton::clicked, this, [this]() {
+        emit backupRunNowRequested();
+    });
+
     // Montagem em duas colunas — dentro de um scroll, porque a coluna direita
     // já não cabe mais numa janela de altura razoável (5 grupos empilhados).
     auto* colsWidget = new QWidget(this);
@@ -668,6 +752,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     rightCol->addWidget(goalGroup);
     rightCol->addWidget(timelineGroup);
     rightCol->addWidget(memGroup);
+    rightCol->addWidget(backupGroup);
     rightCol->addStretch();
 
     cols->addLayout(leftCol, 1);
@@ -769,6 +854,40 @@ void SettingsPanel::setRescanScenesButtonText(const QString& text)
 void SettingsPanel::setRescanScenesButtonEnabled(bool enabled)
 {
     if (m_rescanScenesBtn) m_rescanScenesBtn->setEnabled(enabled);
+}
+
+void SettingsPanel::setBackupMode(int mode)
+{
+    if (!m_backupModeCombo) return;
+    m_blockSignals = true;
+    const int idx = m_backupModeCombo->findData(mode);
+    if (idx >= 0) m_backupModeCombo->setCurrentIndex(idx);
+    if (m_backupIntervalRow) m_backupIntervalRow->setVisible(mode != 0);
+    m_blockSignals = false;
+}
+
+void SettingsPanel::setBackupFolder(const QString& folder)
+{
+    if (m_backupFolderEdit) m_backupFolderEdit->setText(folder);
+}
+
+void SettingsPanel::setBackupIntervalMinutes(int minutes)
+{
+    if (!m_backupIntervalCombo) return;
+    m_blockSignals = true;
+    const int idx = m_backupIntervalCombo->findData(minutes);
+    if (idx >= 0) m_backupIntervalCombo->setCurrentIndex(idx);
+    m_blockSignals = false;
+}
+
+void SettingsPanel::setBackupStatusText(const QString& text)
+{
+    if (m_backupStatusLabel) m_backupStatusLabel->setText(text);
+}
+
+void SettingsPanel::setBackupRunButtonEnabled(bool enabled)
+{
+    if (m_backupRunBtn) m_backupRunBtn->setEnabled(enabled);
 }
 
 void SettingsPanel::setAvailableSpellLanguages(const QList<QPair<QString, QString>>& langs)
