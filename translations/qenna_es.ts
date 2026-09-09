@@ -20475,8 +20475,8 @@ Modo editor enfocado con barras que se retraen. Igual que en la primera versión
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="167"/>
-        <source>Voltar ao menu principal</source>
-        <translation>Volver al menú principal</translation>
+        <source>Voltar ao menu principal (F12)</source>
+        <translation>Volver al menú principal (F12)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="187"/>
@@ -20500,13 +20500,13 @@ Modo editor enfocado con barras que se retraen. Igual que en la primera versión
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="250"/>
-        <source>Modo foco</source>
-        <translation>Modo enfoque</translation>
+        <source>Modo foco (Ctrl+F10)</source>
+        <translation>Modo enfoque (Ctrl+F10)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="259"/>
-        <source>Buscar</source>
-        <translation>Buscar</translation>
+        <source>Buscar (Ctrl+Shift+F)</source>
+        <translation>Buscar (Ctrl+Shift+F)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="290"/>
@@ -20535,8 +20535,8 @@ Modo editor enfocado con barras que se retraen. Igual que en la primera versión
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="322"/>
-        <source>Lembretes</source>
-        <translation>Recordatorios</translation>
+        <source>Lembretes (F7)</source>
+        <translation>Recordatorios (F7)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="327"/>
@@ -20555,18 +20555,18 @@ Modo editor enfocado con barras que se retraen. Igual que en la primera versión
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="344"/>
-        <source>Tela cheia</source>
-        <translation>Pantalla completa</translation>
+        <source>Tela cheia (F11)</source>
+        <translation>Pantalla completa (F11)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="349"/>
-        <source>Painel de Referência</source>
-        <translation>Panel de Referencia</translation>
+        <source>Painel de Referência (F6)</source>
+        <translation>Panel de Referencia (F6)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="354"/>
-        <source>Pensário</source>
-        <translation>Pensario</translation>
+        <source>Pensário (F4)</source>
+        <translation>Pensario (F4)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="359"/>
@@ -20575,8 +20575,8 @@ Modo editor enfocado con barras que se retraen. Igual que en la primera versión
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="364"/>
-        <source>%1 — chat com a assistente de IA</source>
-        <translation>%1 — chat con la asistente de IA</translation>
+        <source>%1 — chat com a assistente de IA (F9)</source>
+        <translation>%1 — chat con la asistente de IA (F9)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="390"/>

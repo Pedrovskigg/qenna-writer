@@ -20475,8 +20475,8 @@ Focused editor mode with bars that retract. Just like in the first classic versi
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="167"/>
-        <source>Voltar ao menu principal</source>
-        <translation>Back to main menu</translation>
+        <source>Voltar ao menu principal (F12)</source>
+        <translation>Back to main menu (F12)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="187"/>
@@ -20500,13 +20500,13 @@ Focused editor mode with bars that retract. Just like in the first classic versi
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="250"/>
-        <source>Modo foco</source>
-        <translation>Focus mode</translation>
+        <source>Modo foco (Ctrl+F10)</source>
+        <translation>Focus mode (Ctrl+F10)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="259"/>
-        <source>Buscar</source>
-        <translation>Search</translation>
+        <source>Buscar (Ctrl+Shift+F)</source>
+        <translation>Search (Ctrl+Shift+F)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="290"/>
@@ -20535,8 +20535,8 @@ Focused editor mode with bars that retract. Just like in the first classic versi
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="322"/>
-        <source>Lembretes</source>
-        <translation>Reminders</translation>
+        <source>Lembretes (F7)</source>
+        <translation>Reminders (F7)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="327"/>
@@ -20555,18 +20555,18 @@ Focused editor mode with bars that retract. Just like in the first classic versi
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="344"/>
-        <source>Tela cheia</source>
-        <translation>Fullscreen</translation>
+        <source>Tela cheia (F11)</source>
+        <translation>Fullscreen (F11)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="349"/>
-        <source>Painel de Referência</source>
-        <translation>Reference Panel</translation>
+        <source>Painel de Referência (F6)</source>
+        <translation>Reference Panel (F6)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="354"/>
-        <source>Pensário</source>
-        <translation>Pensarium</translation>
+        <source>Pensário (F4)</source>
+        <translation>Pensarium (F4)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="359"/>
@@ -20575,8 +20575,8 @@ Focused editor mode with bars that retract. Just like in the first classic versi
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="364"/>
-        <source>%1 — chat com a assistente de IA</source>
-        <translation>%1 — chat with the AI assistant</translation>
+        <source>%1 — chat com a assistente de IA (F9)</source>
+        <translation>%1 — chat with the AI assistant (F9)</translation>
     </message>
     <message>
         <location filename="../src/TopToolbar.cpp" line="390"/>
