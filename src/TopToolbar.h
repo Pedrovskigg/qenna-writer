@@ -48,18 +48,15 @@ public:
     void setItalicChecked(bool checked);
     void setUnderlineChecked(bool checked);
     void setStrikethroughChecked(bool checked);
+    void setReadModeChecked(bool checked);
     void setFocusModeChecked(bool checked);
     void setFullscreenChecked(bool checked);
     // `subtitle` opcional: quando presente, mostra `title` maior em cima e
     // `subtitle` menor embaixo (ex.: capítulo em cima, "Cena x" embaixo).
-    void setDocumentTitle(const QString &title, const QString &subtitle = QString());
     // Botão discreto ao lado do subtítulo — só faz sentido quando o
     // subtítulo é uma cena de verdade (viewMode SceneDoc), abre o popup de
     // variações. Escondido por padrão.
-    void setSceneVarButtonVisible(bool visible);
-    QRect sceneVarButtonGlobalRect() const;
     // x em coords locais da TopToolbar; passe -1 para retomar o centro geométrico.
-    void setTitleAnchorX(int x);
 
     QRect immersiveSoundButtonGlobalRect() const;
     QRect reminderButtonGlobalRect() const;
@@ -106,7 +103,6 @@ signals:
     void helpRequested();
     void construtorToggleRequested();
     void miraToggleRequested();
-    void sceneVarRequested();
     void boldToggled(bool enabled);
     void italicToggled(bool enabled);
     void underlineToggled(bool enabled);
@@ -153,9 +149,6 @@ private:
     QToolButton *helpButton;
     QToolButton *construtorButton;
     QToolButton *miraButton;
-    QLabel *docTitleLabel;
-    QLabel *docSubtitleLabel; // "Cena x" embaixo do título, quando aplicável
-    QToolButton *sceneVarButton; // abre popup de variações da cena atual
 
     QIcon focusOffIcon;
     QIcon focusOnIcon;
@@ -173,17 +166,6 @@ private:
     int currentLineHeightPercent;
     int currentParaSpaceBefore = 0;
     int currentParaSpaceAfter = 0;
-    int titleAnchorX = -1;
-    // Texto completo (não-elidido); positionDocTitle() re-elide a cada reposicionamento
-    // conforme o espaço livre entre os grupos de botões muda.
-    QString m_rawTitle;
-    QString m_rawSubtitle;
-    // O que o CALLER pediu (setDocumentTitle/setSceneVarButtonVisible) — não o
-    // estado atual do widget, que positionDocTitle() pode esconder por falta
-    // de espaço. Sem essa distinção, o título nunca mais voltaria a aparecer
-    // depois de sumir uma vez numa janela estreita.
-    bool m_subtitleWanted = false;
-    bool m_sceneVarWanted = false;
     QLabel *paraBeforeValueLabel = nullptr;
     QLabel *paraAfterValueLabel = nullptr;
 
@@ -191,7 +173,7 @@ private:
     void buildSpacingMenu();
     void buildAlignMenu();
     void updateAlignButtonIcon();
-    void positionDocTitle();
+    void refreshLayoutAndOverflow();
     void updateSizeMenuState();
     void updateSpacingMenuChecks();
     // Texto vira tooltip quando vertical (ícone-only) — "17.5" ou "1.3" não
@@ -224,6 +206,11 @@ private:
     // espaço de novo. Ver updateOverflow().
     void buildOverflowMenu();
     void updateOverflow();
+    // Largura de referencia ESTAVEL pro overflow (ver definicao).
+    int availableBarWidth() const;
+    // Trava de reentrancia: updateOverflow muda visibilidade de botao, o que
+    // dispara resizeEvent, que chama updateOverflow de novo.
+    bool m_inOverflowUpdate = false;
     void collapseToOverflow(QToolButton* btn);
     void restoreFromOverflow(QToolButton* btn);
     QToolButton* overflowButton = nullptr;
@@ -245,9 +232,17 @@ private:
     QToolButton*  m_alignBtnJustify  = nullptr;
 
     QLabel *reminderBadge = nullptr;
+    QLabel *makeBadge(const QString &objectName);
+    void positionBadge(QLabel *badge, QToolButton *button);
+    void positionModeBadges();
     void positionReminderBadge();
 
     QLabel *pensarioBadge = nullptr;
+    // Luzinhas de MODO ativo (editor focado, modo foco). Mesma linguagem visual
+    // dos badges de aviso acima, mas acesas de forma continua: elas sinalizam um
+    // estado ligado, nao um evento que acabou de acontecer.
+    QLabel *readModeBadge = nullptr;
+    QLabel *focusModeBadge = nullptr;
     void positionPensarioBadge();
 
     Qt::Edge m_barSide = Qt::TopEdge;

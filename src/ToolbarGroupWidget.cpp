@@ -186,7 +186,10 @@ QString ToolbarGroupWidget::composedToolTip(const QWidget* button) const
     const QString hintHtml = QStringLiteral("<div style=\"color:%1;\">%2</div>")
                                  .arg(m_handleColor.name(), hint.toHtmlEscaped());
     if (base.isEmpty()) return hintHtml;
-    return QStringLiteral("<div>%1</div>%2").arg(base.toHtmlEscaped(), hintHtml);
+    // Quebra de linha no tooltip do botão vira <br>: escapar pra HTML sozinho
+    // engoliria a quebra e juntaria nome e descrição numa linha só.
+    const QString baseHtml = base.toHtmlEscaped().replace(QLatin1Char('\n'), QStringLiteral("<br>"));
+    return QStringLiteral("<div>%1</div>%2").arg(baseHtml, hintHtml);
 }
 
 void ToolbarGroupWidget::startLongPress(QWidget* button)

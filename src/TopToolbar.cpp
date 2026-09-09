@@ -22,6 +22,7 @@
 #include <QRadioButton>
 #include <QSet>
 #include <QSettings>
+#include <QScopeGuard>
 #include <QSignalBlocker>
 #include <QStyle>
 #include <QToolButton>
@@ -147,9 +148,6 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     , helpButton(new QToolButton(this))
     , construtorButton(makeIconButton(this))
     , miraButton(makeIconButton(this))
-    , docTitleLabel(new QLabel(this))
-    , docSubtitleLabel(new QLabel(this))
-    , sceneVarButton(makeIconButton(this))
     , fontPicker(nullptr)
     , sizeStepperEdit(nullptr)
     , currentFontFamily(QStringLiteral("Alegreya"))
@@ -162,17 +160,10 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     if (isVertical()) setFixedWidth(kBarHeight);
     else setFixedHeight(kBarHeight);
 
-    reminderBadge = new QLabel(this);
-    reminderBadge->setObjectName(QStringLiteral("reminderBadge"));
-    reminderBadge->setFixedSize(9, 9);
-    reminderBadge->setAttribute(Qt::WA_TransparentForMouseEvents);
-    reminderBadge->setVisible(false);
-
-    pensarioBadge = new QLabel(this);
-    pensarioBadge->setObjectName(QStringLiteral("pensarioBadge"));
-    pensarioBadge->setFixedSize(9, 9);
-    pensarioBadge->setAttribute(Qt::WA_TransparentForMouseEvents);
-    pensarioBadge->setVisible(false);
+    reminderBadge   = makeBadge(QStringLiteral("reminderBadge"));
+    pensarioBadge   = makeBadge(QStringLiteral("pensarioBadge"));
+    readModeBadge   = makeBadge(QStringLiteral("modeBadge"));
+    focusModeBadge  = makeBadge(QStringLiteral("modeBadge"));
 
     focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
@@ -256,24 +247,35 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     statisticsButton->setToolTip(tr("Estatísticas"));
     connect(statisticsButton, &QToolButton::clicked, this, &TopToolbar::statisticsRequested);
 
-    // Editor focado (distraction-free). Toggle de preferência: alterna o ícone
-    // on/off mas NÃO mantém estado "checked" destacado na barra.
-    readModeButton->setObjectName(QStringLiteral("ttbTool"));
+    // Editor focado (distraction-free). Checkable de proposito: o destaque de
+    // "ligado" na barra e o unico indicativo de que o modo esta ativo, ja que
+    // ele esconde justamente a UI que mostraria isso. Mesmo tratamento do
+    // Modo Foco.
+    readModeButton->setObjectName(QStringLiteral("ttbMode"));
     readModeButton->setIcon(readModeOffIcon);
-    readModeButton->setToolTip(tr("Editor focado"));
-    connect(readModeButton, &QToolButton::clicked, this, [this]() {
-        readModeOn = !readModeOn;
+    // Nome no text() e descricao no toolTip(): o botao e icone-only, entao o
+    // text() nao e desenhado — ele serve pro rotulo no menu "..." de overflow
+    // (ver buildOverflowMenu), onde a descricao inteira nao caberia.
+    readModeButton->setText(tr("Editor Focado (Modo clássico)"));
+    readModeButton->setToolTip(tr("Editor Focado (Modo clássico)\n"
+                                  "Modo editor focado com barras que recuam. Igual na "
+                                  "primeira versão clássica do app (Mira Writing)."));
+    readModeButton->setCheckable(true);
+    connect(readModeButton, &QToolButton::toggled, this, [this](bool on) {
+        readModeOn = on;
         readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
+        positionModeBadges();
         emit readModeToggled(readModeOn);
     });
 
-    focusButton->setObjectName(QStringLiteral("ttbTool"));
+    focusButton->setObjectName(QStringLiteral("ttbMode"));
     focusButton->setIcon(focusOffIcon);
     focusButton->setCheckable(true);
     focusButton->setToolTip(tr("Modo foco (Ctrl+F10)"));
     connect(focusButton, &QToolButton::toggled, this, [this](bool on) {
         focusCheckedCache = on;
         focusButton->setIcon(on ? focusOnIcon : focusOffIcon);
+        positionModeBadges();
         emit focusModeToggled(on);
     });
 
@@ -384,33 +386,6 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     miraButton->setToolTip(tr("%1 — chat com a assistente de IA (F9)").arg(miraAssistantName()));
     connect(miraButton, &QToolButton::clicked, this, &TopToolbar::miraToggleRequested);
 
-    // ---------------- Título do documento (centro) ----------------
-    docTitleLabel->setObjectName(QStringLiteral("ttbDocTitle"));
-    docTitleLabel->setAlignment(Qt::AlignCenter);
-    docTitleLabel->setTextInteractionFlags(Qt::NoTextInteraction);
-    docTitleLabel->setText(QString());
-    // Sai do fluxo do layout: posicionado manualmente sobre o centro real da
-    // TopToolbar, para não deslocar quando um lado fica mais largo que o outro.
-    docTitleLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-
-    // Subtítulo opcional embaixo do título (ex.: "Cena x" sob o capítulo) —
-    // mesmo tratamento de posicionamento manual, some quando vazio.
-    docSubtitleLabel->setObjectName(QStringLiteral("ttbDocSubtitle"));
-    docSubtitleLabel->setAlignment(Qt::AlignCenter);
-    docSubtitleLabel->setTextInteractionFlags(Qt::NoTextInteraction);
-    docSubtitleLabel->setText(QString());
-    docSubtitleLabel->setAttribute(Qt::WA_TransparentForMouseEvents);
-    docSubtitleLabel->setVisible(false);
-
-    // Botão de variações — só aparece junto do subtítulo em modo SceneDoc.
-    sceneVarButton->setObjectName(QStringLiteral("ttbSceneVar"));
-    sceneVarButton->setFixedSize(20, 20);
-    sceneVarButton->setIconSize(QSize(14, 14));
-    bindIcon(sceneVarButton, QStringLiteral("scene-var.svg"));
-    sceneVarButton->setToolTip(tr("Variações desta cena"));
-    sceneVarButton->setVisible(false);
-    connect(sceneVarButton, &QToolButton::clicked, this, &TopToolbar::sceneVarRequested);
-
     // ---------------- Layout ----------------
     // Início (esquerda quando horizontal / topo quando vertical): Projeto
     // (new/open/save) + Editor (font/size/lineHeight/indent/B/I)
@@ -460,7 +435,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     }
 
     // Botões "quadrados" padrão (tamanho kIconButtonSize / ícone kIconSize) —
-    // os únicos com dimensão especial (sizeButton, lineHeightButton, sceneVarButton)
+    // os únicos com dimensão especial (sizeButton, lineHeightButton)
     // ficam de fora e são tratados à parte em applyUiScale().
     m_squareButtons = {
         homeButton, newProjectButton, openProjectButton, saveProjectButton,
@@ -653,17 +628,21 @@ void TopToolbar::rebuildGroupLayout()
     for (int i = 0; i < visible.size(); ++i) {
         ToolbarGroupWidget* g = m_groupWidgets.value(visible.at(i));
         m_mainLayout->addWidget(g);
-        if (i == 1) {
-            // Reserva de espaco pro titulo (so horizontal — ver
-            // positionDocTitle) sempre depois do 2o grupo NA ORDEM ATUAL,
-            // nao de grupos especificos — assim continua fazendo sentido
-            // nao importa como o usuario reorganizou.
-            m_mainLayout->addStretch(1);
-        } else if (i < visible.size() - 1) {
-            auto* sep = makeVSeparator(this, vertical);
-            m_separators.append(sep);
-            m_mainLayout->addWidget(sep);
-        }
+        if (i == visible.size() - 1) continue;
+
+        // Horizontal: so grupos e separadores, sem espaco elastico. A barra
+        // agora tem a largura do CONTEUDO (ver sizePolicy abaixo e
+        // MainWindow::layoutToolbarHolder), entao nao existe sobra pra
+        // distribuir — o antigo stretch no meio era o vao reservado pro titulo
+        // do documento, que mudou de casa (ver DocHeaderBar) e virou buraco.
+        //
+        // A vertical fica como estava (um stretch depois do 2o grupo, o resto
+        // empilhado): la a barra ocupa a altura toda da janela de qualquer
+        // jeito, e mudar isso seria mexer no que ninguem pediu.
+        auto* sep = makeVSeparator(this, vertical);
+        m_separators.append(sep);
+        m_mainLayout->addWidget(sep);
+        if (vertical && i == 1) m_mainLayout->addStretch(1);
     }
     if (overflowButton) m_mainLayout->addWidget(overflowButton);
 
@@ -765,7 +744,10 @@ void TopToolbar::buildOverflowMenu()
 
     for (QToolButton *btn : std::as_const(m_collapsePriority)) {
         if (!btn) continue;
-        auto *action = new QAction(btn->icon(), btn->toolTip(), m_overflowMenu);
+        // text() quando existe: alguns botoes tem tooltip de varias linhas com
+        // descricao, e a descricao inteira nao cabe num item de menu.
+        const QString label = btn->text().isEmpty() ? btn->toolTip() : btn->text();
+        auto *action = new QAction(btn->icon(), label, m_overflowMenu);
         action->setCheckable(btn->isCheckable());
         connect(action, &QAction::triggered, this, [btn]() { btn->click(); });
         m_overflowActions.insert(btn, action);
@@ -794,8 +776,17 @@ void TopToolbar::applyUiScale()
     const int btnSize = qMax(18, qRound(kIconButtonSize * s));
     const int icoPx = currentIconPx();
 
-    if (isVertical()) setFixedWidth(barH);
-    else setFixedHeight(barH);
+    if (isVertical()) {
+        setFixedWidth(barH);
+    } else {
+        setFixedHeight(barH);
+        // Maximum na horizontal: a barra nunca passa da largura do proprio
+        // conteudo (fica uma faixa centralizada no topo, em vez de esticar de
+        // ponta a ponta e deixar um vazio enorme no meio), mas ainda PODE ser
+        // espremida numa janela estreita — e e isso que faz o updateOverflow()
+        // perceber que precisa colapsar botoes pro menu "...".
+        setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+    }
 
     // O polish do QStyleSheetStyle é PREGUIÇOSO (roda no primeiro layout) e é
     // ele quem traduz `min-width` do QSS em setMinimumWidth() no widget. Se
@@ -829,11 +820,6 @@ void TopToolbar::applyUiScale()
         if (isVertical()) lineHeightButton->setFixedSize(btnSize, btnSize);
         else lineHeightButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
     }
-    if (sceneVarButton) {
-        const int varSize = qMax(14, qRound(20 * s));
-        sceneVarButton->setFixedSize(varSize, varSize);
-        sceneVarButton->setIconSize(QSize(qMax(10, qRound(14 * s)), qMax(10, qRound(14 * s))));
-    }
     const int sepLen = qMax(12, qRound(22 * s));
     for (QFrame *sep : std::as_const(m_separators)) {
         if (!sep) continue;
@@ -848,7 +834,7 @@ void TopToolbar::applyUiScale()
     }
     if (layout()) layout()->activate();
 
-    positionDocTitle();
+    refreshLayoutAndOverflow();
 }
 
 // Fonte/tamanho/espaçamento são os únicos botões que mudam de NATUREZA com o
@@ -916,7 +902,7 @@ void TopToolbar::setBarSide(Qt::Edge side)
 
     applyUiScale();     // re-fixa tamanhos e o eixo certo da barra
     updateAlignButtonIcon();
-    positionDocTitle();
+    refreshLayoutAndOverflow();
 
     emit barSideChanged(m_barSide);
 }
@@ -1031,6 +1017,14 @@ void TopToolbar::applyRootStyle()
             color: %5;
         }
         QToolButton::menu-indicator { image: none; width: 0; }
+        /* Os botoes de MODO nao usam o realce de "checked": esse destaque e a
+           linguagem do negrito/italico (estado de formatacao). Um modo do app e
+           sinalizado pela luzinha no canto — ver positionModeBadges(). */
+        QToolButton#ttbMode:checked {
+            background: transparent;
+            border-color: transparent;
+            color: %2;
+        }
         QToolButton#ttbSize, QToolButton#ttbLineHeight {
             padding: 0px 1px;
             spacing: 1px;
@@ -1066,45 +1060,22 @@ void TopToolbar::applyRootStyle()
             "}").arg(Theme::accentDanger()));
     }
 
+    for (QLabel *badge : { readModeBadge, focusModeBadge }) {
+        if (!badge) continue;
+        // Ponto aceso com halo: o halo e o que faz parecer luz e nao sujeira.
+        badge->setStyleSheet(QStringLiteral(
+            "QLabel#modeBadge {"
+            "  background: %1;"
+            "  border: 1px solid %2;"
+            "  border-radius: 4px;"
+            "}").arg(Theme::accentDefault(), Theme::panelBackground()));
+    }
+
     if (pensarioBadge) {
         pensarioBadge->setStyleSheet(QStringLiteral(
             "QLabel#pensarioBadge {"
             "  background: %1; border-radius: 4px;"
             "}").arg(Theme::accentSuccess()));
-    }
-
-    if (docTitleLabel) {
-        docTitleLabel->setStyleSheet(QStringLiteral(
-            "QLabel#ttbDocTitle {"
-            "  color: %1;"
-            "  background: transparent;"
-            "  font-family: 'Lora','Crimson Text',serif;"
-            "  font-size: 18px;"
-            "  font-weight: 700;"
-            "}").arg(Theme::textBright()));
-    }
-
-    if (docSubtitleLabel) {
-        docSubtitleLabel->setStyleSheet(QStringLiteral(
-            "QLabel#ttbDocSubtitle {"
-            "  color: %1;"
-            "  background: transparent;"
-            "  font-family: 'Lora','Crimson Text',serif;"
-            "  font-size: 12px;"
-            "  font-weight: 500;"
-            "}").arg(Theme::textMuted()));
-    }
-
-    if (sceneVarButton) {
-        sceneVarButton->setStyleSheet(QStringLiteral(
-            "QToolButton#ttbSceneVar {"
-            "  background: transparent;"
-            "  border: none;"
-            "  border-radius: 4px;"
-            "}"
-            "QToolButton#ttbSceneVar:hover {"
-            "  background: %1;"
-            "}").arg(Theme::hoverOverlay()));
     }
 }
 
@@ -1124,10 +1095,9 @@ void TopToolbar::reloadIcons()
     for (const auto& pair : iconBindings) {
         if (!pair.first) continue;
         // Respeita o iconSize() JÁ configurado no próprio botão — não assume
-        // `px` (padrão da barra) pra todo mundo. sceneVarButton, por exemplo, é
-        // menor; sobrescrever com `px` recarregava o ícone renderizado no
-        // tamanho errado, esticado pro tamanho real do widget (ficava
-        // borrado/sumido/pequeno demais).
+        // `px` (padrão da barra) pra todo mundo — sobrescrever com `px`
+        // recarregava o ícone renderizado no tamanho errado, esticado pro
+        // tamanho real do widget (ficava borrado/sumido/pequeno demais).
         const int currentPx = pair.first->iconSize().width();
         const int iconPx = currentPx > 0 ? currentPx : px;
         pair.first->setIcon(loadIcon(pair.second, iconPx));
@@ -1290,37 +1260,13 @@ void TopToolbar::applyTheme()
     }
 }
 
-void TopToolbar::setDocumentTitle(const QString &title, const QString &subtitle)
-{
-    if (!docTitleLabel) return;
-    m_rawTitle = title;
-    m_rawSubtitle = subtitle;
-    m_subtitleWanted = !subtitle.isEmpty();
-
-    positionDocTitle(); // aplica o texto (elidido conforme o espaço) e reposiciona
-}
-
-void TopToolbar::setSceneVarButtonVisible(bool visible)
-{
-    if (!sceneVarButton) return;
-    m_sceneVarWanted = visible;
-    sceneVarButton->raise();
-    positionDocTitle(); // decide a visibilidade real (ver hasSubtitle/showVarBtn)
-}
-
-QRect TopToolbar::sceneVarButtonGlobalRect() const
-{
-    if (!sceneVarButton) return QRect();
-    const QPoint topLeft = sceneVarButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, sceneVarButton->size());
-}
-
 void TopToolbar::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    positionDocTitle();
+    refreshLayoutAndOverflow();
     positionReminderBadge();
     positionPensarioBadge();
+    positionModeBadges();
 }
 
 // Sair do modo de reorganização é clicar em qualquer coisa que não seja um
@@ -1360,12 +1306,6 @@ bool TopToolbar::eventFilter(QObject *watched, QEvent *event)
     return QWidget::eventFilter(watched, event);
 }
 
-void TopToolbar::setTitleAnchorX(int x)
-{
-    titleAnchorX = x;
-    positionDocTitle();
-}
-
 QRect TopToolbar::immersiveSoundButtonGlobalRect() const
 {
     if (!immersiveSoundButton) return QRect();
@@ -1395,20 +1335,50 @@ void TopToolbar::setReminderBadge(bool active)
     }
 }
 
+QLabel *TopToolbar::makeBadge(const QString &objectName)
+{
+    auto *b = new QLabel(this);
+    b->setObjectName(objectName);
+    b->setFixedSize(9, 9);
+    b->setAttribute(Qt::WA_TransparentForMouseEvents);
+    b->setVisible(false);
+    return b;
+}
+
+void TopToolbar::positionBadge(QLabel *badge, QToolButton *button)
+{
+    if (!badge || !button || !badge->isVisible()) return;
+    // mapTo(this, ...) e NAO geometry(): desde que os botoes passaram a morar
+    // dentro de ToolbarGroupWidget, geometry() e relativa ao GRUPO, enquanto o
+    // badge continua filho da barra. Comparar os dois punha a luzinha num lugar
+    // qualquer — mesmo motivo do mapTo em positionDocTitle na epoca.
+    const QPoint tl = button->mapTo(this, QPoint(0, 0));
+    badge->move(tl.x() + button->width() - 10, tl.y() + 2);
+    badge->raise();
+}
+
 void TopToolbar::positionReminderBadge()
 {
-    if (!reminderBadge || !reminderButton || !reminderBadge->isVisible()) return;
-    const QRect br = reminderButton->geometry();
-    reminderBadge->move(br.right() - 10, br.top() + 2);
-    reminderBadge->raise();
+    positionBadge(reminderBadge, reminderButton);
 }
 
 void TopToolbar::positionPensarioBadge()
 {
-    if (!pensarioBadge || !pensarioButton || !pensarioBadge->isVisible()) return;
-    const QRect br = pensarioButton->geometry();
-    pensarioBadge->move(br.right() - 10, br.top() + 2);
-    pensarioBadge->raise();
+    positionBadge(pensarioBadge, pensarioButton);
+}
+
+// Acesas enquanto o modo estiver ligado. O modo focado esconde justamente a UI
+// que mostraria que ele esta ativo, entao a luzinha e o unico sinal que sobra.
+void TopToolbar::positionModeBadges()
+{
+    if (readModeBadge) {
+        readModeBadge->setVisible(readModeOn && readModeButton && readModeButton->isVisible());
+        positionBadge(readModeBadge, readModeButton);
+    }
+    if (focusModeBadge) {
+        focusModeBadge->setVisible(focusCheckedCache && focusButton && focusButton->isVisible());
+        positionBadge(focusModeBadge, focusButton);
+    }
 }
 
 // Pisca o badge do Pensário por alguns segundos e some sozinho — feedback de
@@ -1440,123 +1410,20 @@ void TopToolbar::pulsePensarioBadge()
     anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
-void TopToolbar::positionDocTitle()
+// O título do documento saiu daqui: ele agora mora numa faixa fixa no topo da
+// folha do editor (DocHeaderBar), nos DOIS modos de barra. Ele dependia de um
+// espaço reservado entre grupos específicos e de medir a distância entre dois
+// botões nomeados — nada disso sobrevive a grupos e botões que o usuário pode
+// arrastar pra onde quiser. Um lugar só pro título, e o que já funcionava.
+//
+// O que sobrou aqui é a faxina de layout que o resto do arquivo depende:
+// activate() é o que avisa o QBoxLayout pra recalcular posições depois que
+// applyUiScale() redimensiona botões — sem isso os vizinhos de baixo ficam com
+// geometria antiga, sobrepondo quem está acima.
+void TopToolbar::refreshLayoutAndOverflow()
 {
-    if (!docTitleLabel) return;
-
-    // activate() tem que rodar SEMPRE, mesmo quando a barra é vertical e o
-    // resto da função não se aplica — é o que avisa o QBoxLayout pra
-    // recalcular posições depois que applyUiScale() redimensiona botões
-    // (sizeButton/lineHeightButton). Sem isso, os botões abaixo deles ficam
-    // com geometria antiga (sobrepondo o vizinho de cima) até a próxima
-    // reposição por outro motivo qualquer.
     if (auto *lay = layout()) lay->activate();
-
-    // Barra vertical: 48px de largura não dá pra mostrar um título horizontal
-    // de forma legível (eliria pra 2-3 letras) — decisão consciente de
-    // esconder, não uma limitação esquecida. O contexto do capítulo/cena
-    // continua disponível pela Drawer/RefMenu.
-    if (isVertical()) {
-        docTitleLabel->hide();
-        if (docSubtitleLabel) docSubtitleLabel->hide();
-        if (sceneVarButton) sceneVarButton->hide();
-        return;
-    }
-
-    // Garante que imageButton/readModeButton já tenham a posição DEFINITIVA do
-    // layout antes de ler a geometria deles. Sem isso, geometry() pode devolver
-    // a posição "ainda não lay-outada" (0,0 — QRect::isValid() não pega esse
-    // caso, só checa se tem tamanho) numa chamada muito cedo — ex.: logo no
-    // primeiro documento aberto — e o título gruda perto do canto esquerdo,
-    // por cima dos próprios botões de fonte/tamanho.
-    if (auto *lay = layout()) lay->activate();
-
-    // Colapsa/restaura botões dispensáveis pra dentro do menu "⋯" ANTES de
-    // calcular a faixa livre do título — quanto mais botões sobrarem na
-    // barra, menor a chance de haver espaço de sobra pro título mesmo.
     updateOverflow();
-
-    // Faixa livre real entre o fim do grupo de botões da esquerda (imageButton)
-    // e o início do grupo da direita (readModeButton). Em janelas estreitas essa
-    // faixa é bem menor que a largura total da toolbar — sem isso o título,
-    // posicionado só pelo centro, atropela os botões (bug em telas pequenas).
-    constexpr int kSideMargin = 10;
-    int leftBound = kSideMargin;
-    int rightBound = width() - kSideMargin;
-    if (imageButton && readModeButton) {
-        // mapTo(this, ...), não .geometry() cru — os dois agora moram dentro
-        // de ToolbarGroupWidget (Editor/Ferramentas), então .geometry() seria
-        // relativo ao GRUPO, não à TopToolbar (comparar os dois direto daria
-        // conta errada, cada um num sistema de coordenadas diferente).
-        leftBound = imageButton->mapTo(this, QPoint(imageButton->width(), 0)).x() + kSideMargin;
-        rightBound = readModeButton->mapTo(this, QPoint(0, 0)).x() - kSideMargin;
-    }
-    const int availW = rightBound - leftBound;
-
-    // Nem um título bem elidido cabe de forma legível (janela realmente
-    // minúscula, ou os dois grupos de botões já se tocam) — melhor sumir com
-    // tudo do que sobrepor os botões com um resto ilegível.
-    constexpr int kMinTitleWidth = 40;
-    if (availW < kMinTitleWidth) {
-        docTitleLabel->hide();
-        if (docSubtitleLabel) docSubtitleLabel->hide();
-        if (sceneVarButton) sceneVarButton->hide();
-        return;
-    }
-    docTitleLabel->show();
-
-    const int centerX = (titleAnchorX >= 0) ? titleAnchorX : (width() / 2);
-    // hasSubtitle/showVarBtn refletem o que o CALLER pediu (setDocumentTitle /
-    // setSceneVarButtonVisible), não o estado atual do widget — senão, depois
-    // de escondido por falta de espaço, nunca mais voltaria a aparecer quando
-    // a janela crescesse de novo (isVisible() já teria virado false por nós).
-    const bool hasSubtitle = m_subtitleWanted && docSubtitleLabel;
-    const bool showVarBtn = hasSubtitle && m_sceneVarWanted && sceneVarButton;
-    constexpr int kVarBtnGap = 4;
-    const int varBtnW = showVarBtn ? kVarBtnGap + sceneVarButton->width() : 0;
-    if (sceneVarButton) sceneVarButton->setVisible(showVarBtn);
-
-    const QFontMetrics titleFm(docTitleLabel->font());
-    docTitleLabel->setText(titleFm.elidedText(m_rawTitle, Qt::ElideRight, availW));
-    docTitleLabel->adjustSize();
-    docTitleLabel->raise();
-
-    if (!hasSubtitle) {
-        if (docSubtitleLabel) docSubtitleLabel->hide();
-        int x = centerX - docTitleLabel->width() / 2;
-        x = qBound(leftBound, x, qMax(leftBound, rightBound - docTitleLabel->width()));
-        const int y = (height() - docTitleLabel->height()) / 2;
-        docTitleLabel->move(x, y);
-        return;
-    }
-    docSubtitleLabel->show();
-
-    const QFontMetrics subFm(docSubtitleLabel->font());
-    docSubtitleLabel->setText(subFm.elidedText(m_rawSubtitle, Qt::ElideRight, qMax(20, availW - varBtnW)));
-    docSubtitleLabel->adjustSize();
-    docSubtitleLabel->raise();
-
-    // Título maior em cima, subtítulo menor embaixo — bloco de duas linhas
-    // centralizado verticalmente na toolbar (ex.: capítulo + "Cena x").
-    const int blockH = docTitleLabel->height() + docSubtitleLabel->height();
-    const int topY = (height() - blockH) / 2;
-    int titleX = centerX - docTitleLabel->width() / 2;
-    titleX = qBound(leftBound, titleX, qMax(leftBound, rightBound - docTitleLabel->width()));
-    docTitleLabel->move(titleX, topY);
-
-    // Botão de variações (quando visível) fica colado à direita do
-    // subtítulo — a linha "subtítulo + botão" centraliza como um bloco só,
-    // sem deslocar a linha do título de cima.
-    const int subW = docSubtitleLabel->width();
-    const int comboW = subW + varBtnW;
-    int subX = centerX - comboW / 2;
-    subX = qBound(leftBound, subX, qMax(leftBound, rightBound - comboW));
-    const int subY = topY + docTitleLabel->height();
-    docSubtitleLabel->move(subX, subY);
-    if (showVarBtn) {
-        const int subCenterY = subY + docSubtitleLabel->height() / 2;
-        sceneVarButton->move(subX + subW + kVarBtnGap, subCenterY - sceneVarButton->height() / 2);
-    }
 }
 
 void TopToolbar::collapseToOverflow(QToolButton *btn)
@@ -1576,47 +1443,63 @@ void TopToolbar::restoreFromOverflow(QToolButton *btn)
     if (action) m_overflowMenu->removeAction(action);
 }
 
+// Colapsa botões dispensáveis pra dentro do menu "⋯" quando a barra horizontal
+// não tem largura pra todos.
+//
+// O critério antes era "sobrar 180px entre o imageButton e o readModeButton",
+// porque esse vão era onde o título do documento morava. Duas coisas mataram
+// isso: o título saiu da barra (ver refreshLayoutAndOverflow) e os botões
+// passaram a ser arrastáveis — medir a distância entre dois botões nomeados
+// deixou de significar qualquer coisa quando o usuário pode trocá-los de lugar.
+// Agora a pergunta é direta: o conteúdo cabe na barra?
+// Largura de referência ESTÁVEL pra decidir o overflow: a da janela, não a da
+// própria barra.
+//
+// Desde que a barra horizontal passou a ter a largura do conteúdo
+// (QSizePolicy::Maximum), medir contra `width()` virou realimentação: colapsar
+// um botão encolhe o conteúdo, o que encolhe a barra, o que faz o conteúdo
+// "caber" de novo, o que manda restaurar o botão, o que cresce... e o
+// resizeEvent fecha o ciclo. Na prática a barra piscava sem parar, com os
+// botões pulando sozinhos.
+int TopToolbar::availableBarWidth() const
+{
+    // 24 = margens laterais do holder (12 de cada lado, ver MainWindow).
+    constexpr int kHolderSideMargins = 24;
+    const QWidget *win = window();
+    return qMax(0, (win ? win->width() : width()) - kHolderSideMargins);
+}
+
 void TopToolbar::updateOverflow()
 {
-    if (!overflowButton || !layout() || m_collapsePriority.isEmpty()) return;
-    // A conta de "espaço livre" abaixo é toda em X (largura) — não faz
-    // sentido numa barra vertical, onde o eixo que pode faltar é Y (altura da
-    // janela) e o título (motivo original de colapsar botões) já fica
-    // escondido (ver positionDocTitle). Não colapsa nada nesse modo por
-    // enquanto — telas muito baixas podem cortar botões visualmente, mas
-    // nada quebra/corrompe.
+    if (!overflowButton || !m_mainLayout || m_collapsePriority.isEmpty()) return;
+    // A conta é toda em X — numa barra vertical o eixo apertado é o Y, e lá o
+    // pior caso é cortar embaixo, sem corromper nada. Ver ToolbarGroupWidget.
     if (isVertical()) return;
+    // Mostrar/esconder botão redimensiona a barra, o que dispara resizeEvent, que
+    // chama isto de novo — sem a trava, uma volta vira uma cascata.
+    if (m_inOverflowUpdate) return;
+    m_inOverflowUpdate = true;
+    const auto releaseGuard = qScopeGuard([this]() { m_inOverflowUpdate = false; });
 
-    // Espaço confortável mínimo pro título (mesmo elidido) — abaixo disso
-    // ainda vale a pena colapsar mais um botão dispensável.
-    constexpr int kTargetGap = 180;
-
-    auto currentGap = [this]() -> int {
-        if (!imageButton || !readModeButton) return width();
-        layout()->invalidate();
-        layout()->activate();
-        // mapTo(this, ...) pelo mesmo motivo do positionDocTitle() acima —
-        // os dois botões moram dentro de grupos diferentes agora.
-        const int rmLeft = readModeButton->mapTo(this, QPoint(0, 0)).x();
-        const int imgRight = imageButton->mapTo(this, QPoint(imageButton->width(), 0)).x();
-        return rmLeft - imgRight;
+    auto tooWide = [this]() {
+        m_mainLayout->invalidate();
+        m_mainLayout->activate();
+        return m_mainLayout->minimumSize().width() > availableBarWidth();
     };
 
-    // Encolhe: do menos essencial pro mais essencial, colapsa mais um por vez
-    // até sobrar espaço confortável (ou acabarem os candidatos).
+    // Encolhe: do menos essencial pro mais essencial, um por vez, até caber.
     for (QToolButton *btn : std::as_const(m_collapsePriority)) {
-        if (currentGap() >= kTargetGap) break;
+        if (!tooWide()) break;
         collapseToOverflow(btn);
     }
 
     // Cresce: tenta devolver o mais essencial dos colapsados primeiro; se não
-    // coube (ficou apertado de novo), desfaz e para — os que sobraram são
-    // ainda menos essenciais, não adianta tentar.
+    // coube, desfaz e para — os que sobraram são ainda menos essenciais.
     for (int i = m_collapsePriority.size() - 1; i >= 0; --i) {
         QToolButton *btn = m_collapsePriority.at(i);
         if (!btn || btn->isVisible()) continue;
         restoreFromOverflow(btn);
-        if (currentGap() < kTargetGap) {
+        if (tooWide()) {
             collapseToOverflow(btn);
             break;
         }
@@ -1676,6 +1559,18 @@ void TopToolbar::setStrikethroughChecked(bool checked)
     strikethroughButton->setChecked(checked);
 }
 
+// Sincroniza o botao sem reemitir o sinal — usado na restauracao do estado
+// salvo, onde quem manda e o QSettings e nao um clique do usuario.
+void TopToolbar::setReadModeChecked(bool checked)
+{
+    if (!readModeButton) return;
+    QSignalBlocker block(readModeButton);
+    readModeButton->setChecked(checked);
+    readModeOn = checked;
+    readModeButton->setIcon(checked ? readModeOnIcon : readModeOffIcon);
+    positionModeBadges();
+}
+
 void TopToolbar::setFocusModeChecked(bool checked)
 {
     if (!focusButton) return;
@@ -1683,6 +1578,7 @@ void TopToolbar::setFocusModeChecked(bool checked)
     focusButton->setChecked(checked);
     focusCheckedCache = checked;
     focusButton->setIcon(checked ? focusOnIcon : focusOffIcon);
+    positionModeBadges();
 }
 
 void TopToolbar::setFullscreenChecked(bool checked)

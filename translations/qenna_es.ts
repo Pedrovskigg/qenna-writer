@@ -20429,6 +20429,16 @@ Quer acompanhá-lo com uma trilha na linha do tempo?</source>
 <context>
     <name>TopToolbar</name>
     <message>
+        <source>Editor Focado (Modo clássico)</source>
+        <translation>Editor Enfocado (Modo clásico)</translation>
+    </message>
+    <message>
+        <source>Editor Focado (Modo clássico)
+Modo editor focado com barras que recuam. Igual na primeira versão clássica do app (Mira Writing).</source>
+        <translation>Editor Enfocado (Modo clásico)
+Modo editor enfocado con barras que se retraen. Igual que en la primera versión clásica de la app (Mira Writing).</translation>
+    </message>
+    <message>
         <location filename="../src/TopToolbar.cpp" line="172"/>
         <source>Novo projeto</source>
         <translation>Nuevo proyecto</translation>

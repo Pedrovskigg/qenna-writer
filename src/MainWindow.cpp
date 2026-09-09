@@ -1,4 +1,7 @@
 #include "MainWindow.h"
+#include <QEasingCurve>
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
 
 #include "DocHeaderBar.h"
 
@@ -178,6 +181,12 @@ constexpr int kLargeDocCharThreshold = 30'000;
 // lida uma vez na construção da janela. Trocar de lado é decisão de
 // configuração que pede reiniciar o app (mesmo padrão do seletor de idioma),
 // não uma troca ao vivo — por isso só é lida aqui, nunca recalculada depois.
+Qt::Edge loadLeftBarSide()
+{
+    const int v = QSettings().value(QStringLiteral("ui/leftBarSide"), int(Qt::LeftEdge)).toInt();
+    return (v == int(Qt::RightEdge)) ? Qt::RightEdge : Qt::LeftEdge;
+}
+
 Qt::Edge loadTopToolbarSide()
 {
     const int v = QSettings().value(QStringLiteral("ui/topToolbarSide"), int(Qt::TopEdge)).toInt();
@@ -715,7 +724,12 @@ MainWindow::MainWindow(QWidget *parent)
     holderLayout->setContentsMargins(toolbarVertical ? 0 : 12, toolbarVertical ? 12 : 0,
                                       toolbarVertical ? 4 : 12, toolbarVertical ? 12 : 4);
     holderLayout->setSpacing(0);
+    // Stretch dos dois lados: com a barra horizontal tendo a largura do proprio
+    // conteudo (QSizePolicy::Maximum), sao eles que a centralizam no topo. Na
+    // vertical o holder ja e do tamanho da barra e eles ficam com zero.
+    holderLayout->addStretch(1);
     holderLayout->addWidget(toolbar);
+    holderLayout->addStretch(1);
     toolbar->installEventFilter(this); // auto-hide da toolbar no modo focado
     // Troca de lado ao vivo: a TopToolbar cuida de si mesma e avisa; o resto da
     // janela (holder, faixa de titulo, insets, folha) reage aqui.
@@ -776,6 +790,11 @@ void MainWindow::setupEditor()
 
     leftBar = new LeftBar(projectModel, this);
     leftBar->installEventFilter(this); // auto-hide no modo focado
+    // Lado salvo da LeftBar. Só DEPOIS dela existir — o applyLeftBarSide() em si
+    // fica pra depois do editorContainer ser montado (ver fim do construtor),
+    // porque ele mexe no layout do container.
+    leftBar->setBarSide(loadLeftBarSide());
+    connect(leftBar, &LeftBar::barSideChanged, this, [this]() { applyLeftBarSide(); });
     drawerListPanel = new DrawerListPanel(projectModel, this);
     connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
     connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
@@ -1093,8 +1112,8 @@ void MainWindow::setupEditor()
             title.clear();
             break;
         }
-        toolbar->setDocumentTitle(title, subtitle);
-        toolbar->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
+        // O título do documento (e o botão de variação da cena) moram na faixa
+        // fixa acima da folha, nos dois modos de barra — ver DocHeaderBar.
         if (docHeader) {
             docHeader->setDocumentTitle(title, subtitle);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
@@ -1106,10 +1125,6 @@ void MainWindow::setupEditor()
     connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
     // ChapterDoc: recalcula a cena do subtítulo conforme o usuário rola.
     connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
-
-    connect(toolbar, &TopToolbar::sceneVarRequested, this, [this]() {
-        if (toolbar && variationBar) variationBar->toggleNear(toolbar->sceneVarButtonGlobalRect(), toolbar->barSide());
-    });
 
     // Toda vez que um doc é carregado no editor, reaplica o style do projeto
     // (font, line-height, indent) — caso contrário, o HTML serializado do doc
@@ -2255,14 +2270,12 @@ void MainWindow::setupEditor()
     // e qualquer folga abriria uma emenda com o fundo do app no meio.
     pageStackLayout->setSpacing(0);
 
-    // Faixa de titulo (ver DocHeaderBar). Criada SEMPRE, mas so visivel com a
-    // TopToolbar na lateral: no modo topo a propria barra ja mostra o documento
-    // em edicao, e duas copias da mesma informacao seria so ruido. Criar sempre
-    // (em vez de so no modo vertical) e o que permite trocar de lado ao vivo sem
-    // ter que montar meio editor de novo.
+    // Faixa de titulo (ver DocHeaderBar) — o unico lugar onde o documento em
+    // edicao aparece, nos DOIS modos de barra. A topbar horizontal ja mostrou
+    // isso no meio dela, mas aquilo dependia de espaco reservado entre grupos
+    // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
-    docHeader->setVisible(toolbar && toolbar->isVertical());
     connect(docHeader, &DocHeaderBar::sceneVarRequested, this, [this]() {
         if (!docHeader || !variationBar) return;
         // Qt::TopEdge (e nao o lado da barra): a faixa fica no topo do editor,
@@ -2297,6 +2310,22 @@ void MainWindow::setupEditor()
 
     // Largura e margens internas — vêm do EditorLayout (global, QSettings).
     applyEditorLayout();
+
+    // Posiciona a LeftBar no lado salvo. Aqui, e não junto do setBarSide lá em
+    // cima: applyLeftBarSide() mexe no layout do editorContainer, que só existe
+    // a partir deste ponto.
+    applyLeftBarSide();
+
+    // Modo focado salvo. Diferido: setReadMode() mede a viewport, e neste ponto
+    // do construtor a janela ainda nao foi mostrada — medir agora leria
+    // geometria de placeholder (o mesmo erro que ja custou caro em outros
+    // pontos deste arquivo).
+    if (QSettings().value(QStringLiteral("ui/readMode"), false).toBool()) {
+        QTimer::singleShot(0, this, [this]() {
+            if (toolbar) toolbar->setReadModeChecked(true);
+            setReadMode(true);
+        });
+    }
 
     setCentralWidget(container);
 
@@ -4020,6 +4049,9 @@ void MainWindow::navigateAdjacentChapter(int dir)
 void MainWindow::setReadMode(bool enabled)
 {
     readModeEnabled = enabled;
+    // Preferencia, nao estado de sessao: o modo focado fica ligado ate o usuario
+    // desligar, inclusive entre aberturas do app.
+    QSettings().setValue(QStringLiteral("ui/readMode"), enabled);
 
     // Painéis flutuantes que somem no modo focado.
     if (drawerListPanel) drawerListPanel->hide();
@@ -4030,7 +4062,6 @@ void MainWindow::setReadMode(bool enabled)
     if (enabled) {
         // Toolbar flutuante: esconder o holder inteiro libera o topo da janela.
         if (toolbarHolder) toolbarHolder->hide();
-        updateEditorContainerMargins();
         if (leftBar) leftBar->setChromeHidden(true);
         if (wordCountPanel) wordCountPanel->hide();
 
@@ -4055,7 +4086,6 @@ void MainWindow::setReadMode(bool enabled)
             toolbarHolder->show();
             toolbarHolder->raise();
         }
-        updateEditorContainerMargins();
         if (leftBar) leftBar->setChromeHidden(false);
         if (wordCountPanel && hasProjectLoaded()) {
             wordCountPanel->show();
@@ -4063,7 +4093,17 @@ void MainWindow::setReadMode(bool enabled)
         }
         if (readModeHotTop) readModeHotTop->hide();
         if (readModeHotLeft) readModeHotLeft->hide();
+        // Recuos agendados nao fazem mais sentido fora do modo focado.
+        cancelChromeHide(toolbarHolder);
+        cancelChromeHide(leftBar);
     }
+
+    // Aqui, e nao dentro dos ramos: a chrome ja terminou de sumir/voltar, entao
+    // a folha e medida contra a viewport definitiva. Antes so a margem era
+    // atualizada e a coluna do editor ficava com a altura da configuracao
+    // anterior — a pagina "encolhia" e o QScrollArea a centralizava, deixando
+    // faixas vazias em cima e embaixo.
+    relayoutEditorForChrome();
 
     if (editor) editor->setFocus();
 }
@@ -4080,7 +4120,11 @@ void MainWindow::positionReadModeHotzones()
         readModeHotTop->raise();
     }
     if (readModeHotLeft && editorContainer) {
-        readModeHotLeft->setGeometry(0, 0, 6, editorContainer->height());
+        // A faixa que revela a barra no modo focado tem que ficar na borda ONDE A
+        // BARRA ESTA, senao encostar no canto errado nao revela nada.
+        const bool onRight = (leftBar && leftBar->barSide() == Qt::RightEdge);
+        readModeHotLeft->setGeometry(onRight ? editorContainer->width() - 6 : 0, 0,
+                                     6, editorContainer->height());
         readModeHotLeft->raise();
     }
 }
@@ -4202,29 +4246,156 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QMainWindow::closeEvent(event);
 }
 
+namespace {
+// Descanso antes da barra recuar quando o mouse sai. Sem ele a barra some no
+// instante em que o ponteiro cruza a borda — inclusive quando ele so estava
+// passando a caminho de um botao dela.
+constexpr int kChromeHideDelayMs = 600;
+constexpr int kChromeFadeMs = 160;
+}
+
+// Enquanto houver painel, menu ou popup aberto a barra NAO recua: some por baixo
+// do proprio menu que ela abriu, e o usuario fica olhando pra um menu flutuando
+// sozinho no meio da tela.
+bool MainWindow::chromeBusy() const
+{
+    // Cobre menus de QToolButton, o seletor de fonte e qualquer popup nativo,
+    // sem precisar enumerar um por um.
+    if (QApplication::activePopupWidget()) return true;
+
+    const QList<const QWidget*> panels = {
+        drawerListPanel, manuscriptPanel, refMenuPanel, pensarioPanel, statsPanel,
+        aiChatPanel, ambiencePanel, helpPanel, remindersPanel, settingsPanel,
+        themesPanel, projectInfoPanel, characterSheetPanel, globalSearchPanel,
+        timelinePanel, lousaPanel, groupsPanel, bondViewPanel, readerPreviewPanel,
+    };
+    for (const QWidget* w : panels)
+        if (w && w->isVisible()) return true;
+    return false;
+}
+
+// Fade de opacidade. Guardamos o ponteiro da animacao pra poder cancelar uma em
+// curso (mouse entrando e saindo rapido), e ele e ZERADO no finished(): com
+// DeleteWhenStopped a animacao se autodestroi, e um ponteiro membro apontando
+// pra ela viraria lixo. Ver o mesmo padrao em ShelfBookItem::animateYawTo.
+void MainWindow::fadeChrome(QWidget* target, bool appearing, std::function<void()> onFinished)
+{
+    if (!target) { if (onFinished) onFinished(); return; }
+
+    QPointer<QPropertyAnimation>& slot = (target == toolbarHolder) ? m_toolbarFade : m_leftBarFade;
+    if (slot) { slot->stop(); slot.clear(); }
+
+    auto* effect = qobject_cast<QGraphicsOpacityEffect*>(target->graphicsEffect());
+    if (!effect) {
+        effect = new QGraphicsOpacityEffect(target);
+        target->setGraphicsEffect(effect);
+    }
+    effect->setOpacity(appearing ? 0.0 : effect->opacity());
+
+    auto* anim = new QPropertyAnimation(effect, "opacity", this);
+    anim->setDuration(kChromeFadeMs);
+    anim->setStartValue(appearing ? 0.0 : effect->opacity());
+    anim->setEndValue(appearing ? 1.0 : 0.0);
+    anim->setEasingCurve(QEasingCurve::InOutQuad);
+    slot = anim;
+    connect(anim, &QPropertyAnimation::finished, this, [this, target, appearing, onFinished]() {
+        QPointer<QPropertyAnimation>& s = (target == toolbarHolder) ? m_toolbarFade : m_leftBarFade;
+        s.clear(); // a animacao se autodestroi logo em seguida
+        if (!appearing) {
+            if (onFinished) onFinished();
+            // Opacidade de volta ao normal: quem foi escondido some por outro
+            // meio (hide() ou setChromeHidden), nao por continuar transparente.
+            if (auto* e = qobject_cast<QGraphicsOpacityEffect*>(target->graphicsEffect()))
+                e->setOpacity(1.0);
+        } else if (onFinished) {
+            onFinished();
+        }
+    });
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainWindow::cancelChromeHide(QWidget* bar)
+{
+    QTimer* t = (bar == toolbarHolder) ? m_toolbarHideTimer : m_leftBarHideTimer;
+    if (t) t->stop();
+}
+
+void MainWindow::scheduleChromeHide(QWidget* bar)
+{
+    QTimer*& t = (bar == toolbarHolder) ? m_toolbarHideTimer : m_leftBarHideTimer;
+    if (!t) {
+        t = new QTimer(this);
+        t->setSingleShot(true);
+        t->setInterval(kChromeHideDelayMs);
+        const bool isToolbar = (bar == toolbarHolder);
+        connect(t, &QTimer::timeout, this, [this, isToolbar]() {
+            if (isToolbar) hideToolbarChrome();
+            else           hideLeftBarChrome();
+        });
+    }
+    t->start();
+}
+
+void MainWindow::revealToolbarChrome()
+{
+    cancelChromeHide(toolbarHolder);
+    if (!toolbarHolder || toolbarHolder->isVisible()) return;
+    toolbarHolder->show();
+    toolbarHolder->raise();
+    fadeChrome(toolbarHolder, /*appearing=*/true);
+}
+
+void MainWindow::hideToolbarChrome()
+{
+    if (!readModeEnabled) return; // saiu do modo focado com recuo agendado
+    if (!toolbarHolder || !toolbarHolder->isVisible()) return;
+    if (chromeBusy()) { scheduleChromeHide(toolbarHolder); return; } // tenta de novo depois
+    // Mouse voltou pra cima da barra no meio do caminho.
+    if (toolbar && toolbar->rect().contains(toolbar->mapFromGlobal(QCursor::pos()))) return;
+    fadeChrome(toolbarHolder, /*appearing=*/false, [this]() { toolbarHolder->hide(); });
+}
+
+void MainWindow::revealLeftBarChrome()
+{
+    cancelChromeHide(leftBar);
+    if (!leftBar || !leftBar->chromeHidden()) return;
+    leftBar->setChromeHidden(false);
+    fadeChrome(leftBar, /*appearing=*/true);
+}
+
+void MainWindow::hideLeftBarChrome()
+{
+    if (!readModeEnabled) return;
+    if (!leftBar || leftBar->chromeHidden()) return;
+    if (chromeBusy()) { scheduleChromeHide(leftBar); return; }
+    if (leftBar->rect().contains(leftBar->mapFromGlobal(QCursor::pos()))) return;
+    fadeChrome(leftBar, /*appearing=*/false, [this]() { leftBar->setChromeHidden(true); });
+}
+
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
     // Modo focado: a hotzone revela a barra (o conteúdo reaparece no espaço
     // já reservado, sem reflow); sair da barra a esconde de novo.
     if (readModeEnabled) {
         if (watched == readModeHotTop && event->type() == QEvent::Enter) {
-            if (toolbarHolder) { toolbarHolder->show(); toolbarHolder->raise(); }
+            revealToolbarChrome();
             return false;
         }
         if (watched == readModeHotLeft && event->type() == QEvent::Enter) {
-            if (leftBar) leftBar->setChromeHidden(false);
+            revealLeftBarChrome();
             return false;
         }
-        if (toolbar && watched == toolbar && event->type() == QEvent::Leave) {
-            const QPoint g = QCursor::pos();
-            if (!toolbar->rect().contains(toolbar->mapFromGlobal(g)))
-                if (toolbarHolder) toolbarHolder->hide();
-        }
-        if (leftBar && watched == leftBar && event->type() == QEvent::Leave) {
-            const QPoint g = QCursor::pos();
-            if (!leftBar->rect().contains(leftBar->mapFromGlobal(g)))
-                leftBar->setChromeHidden(true);
-        }
+        // Entrar na propria barra cancela um recuo agendado — o mouse "voltou".
+        if (toolbar && watched == toolbar && event->type() == QEvent::Enter)
+            cancelChromeHide(toolbarHolder);
+        if (leftBar && watched == leftBar && event->type() == QEvent::Enter)
+            cancelChromeHide(leftBar);
+
+        // Sair NAO esconde na hora: agenda. Ver kChromeHideDelayMs.
+        if (toolbar && watched == toolbar && event->type() == QEvent::Leave)
+            scheduleChromeHide(toolbarHolder);
+        if (leftBar && watched == leftBar && event->type() == QEvent::Leave)
+            scheduleChromeHide(leftBar);
     }
 
     // Hover preview do botão Info da LeftBar.
@@ -6158,14 +6329,20 @@ void MainWindow::positionSidePanels()
     if (!parent) return;
     const int margin = 10;
     const int topInset = chromeInset(Qt::TopEdge);
-    const int x = margin + leftBar->width() + margin;
     const int y = topInset + margin;
     const int maxH = qMax(0, parent->height() - topInset - margin * 2);
+    // Os paineis abrem colados na LeftBar, do lado de DENTRO da tela — com a
+    // barra na direita eles crescem pra esquerda, senao sairiam pela borda.
+    const bool leftBarOnRight = (leftBar->barSide() == Qt::RightEdge);
+    auto panelX = [&](const QWidget* panel) {
+        if (!leftBarOnRight) return margin + leftBar->width() + margin;
+        return parent->width() - margin - leftBar->width() - margin - panel->width();
+    };
 
     // DrawerListPanel: respeita altura escolhida pelo usuário (se houver),
     // só clampa pra caber. Senão, expande full-height (comportamento antigo).
     if (drawerListPanel) {
-        drawerListPanel->move(x, y);
+        drawerListPanel->move(panelX(drawerListPanel), y);
         int targetH;
         if (drawerListPanel->heightIsUserSet()) {
             // Usa desiredHeight, não height() — pode ter sido encolhido por show().
@@ -6180,7 +6357,7 @@ void MainWindow::positionSidePanels()
 
     // ManuscriptPanel: continua sempre full-height por enquanto.
     if (manuscriptPanel) {
-        manuscriptPanel->move(x, y);
+        manuscriptPanel->move(panelX(manuscriptPanel), y);
         manuscriptPanel->resize(manuscriptPanel->width(), maxH);
         if (manuscriptPanel->isVisible()) manuscriptPanel->raise();
     }
@@ -6236,12 +6413,6 @@ void MainWindow::relayoutChrome()
     if (m_reminderToast && m_reminderToast->isVisible()) positionReminderToast();
     if (m_updateToast && m_updateToast->isVisible()) positionUpdateToast();
     if (readModeEnabled) positionReadModeHotzones();
-    if (toolbar && editor) {
-        const QPoint editorCenterGlobal =
-            editor->mapToGlobal(QPoint(editor->width() / 2, 0));
-        const int anchorX = toolbar->mapFromGlobal(editorCenterGlobal).x();
-        toolbar->setTitleAnchorX(anchorX);
-    }
     // RefMenuPanel: drag/resize livres. O showEvent dele já mantém dentro do pai
     // quando reaberto, e a geometria persiste em QSettings.
 }
@@ -6270,6 +6441,61 @@ QString backupStatusLabelText(qint64 lastRunMs)
 
 // Tudo que precisa acompanhar uma troca de lado da barra que NAO mora dentro da
 // propria TopToolbar. Chamado no fim da construcao e a cada barSideChanged.
+// Refaz a geometria do editor depois que a CHROME muda: barra trocou de lado,
+// apareceu, sumiu, ou mudou de largura.
+//
+// Existe como funcao unica porque a MESMA sequencia ja foi esquecida em tres
+// lugares diferentes, sempre com o mesmo sintoma: mudar a margem nao muda a
+// geometria na hora — isso so acontece quando o layout roda. Medir a viewport
+// na mesma funcao que acabou de mexer na margem le o tamanho ANTIGO, e a folha
+// fica dimensionada pra configuracao anterior. Como o QScrollArea centraliza a
+// coluna, o resultado aparece como faixas vazias em volta da pagina.
+void MainWindow::relayoutEditorForChrome()
+{
+    updateEditorContainerMargins();
+    // Sincrono: poe a margem nova em vigor ANTES de qualquer medida.
+    if (editorContainer && editorContainer->layout()) editorContainer->layout()->activate();
+
+    applyEditorLayout();
+    resizeEditorColumnToViewport();
+    updatePanelInsets();
+    positionExternalScrollBar();
+
+    // Diferido: o sizeHint do holder e a viewport do QScrollArea so assentam na
+    // volta seguinte do event loop. Barato, e evita depender de adivinhar
+    // quantos activate() sincronos seriam suficientes.
+    QTimer::singleShot(0, this, [this]() {
+        updateEditorContainerMargins();
+        resizeEditorColumnToViewport();
+        positionExternalScrollBar();
+        // A barra segue o centro da pagina (ver layoutToolbarHolder), entao
+        // qualquer mudanca de geometria do editor a reposiciona junto.
+        layoutToolbarHolder();
+    });
+}
+
+// Ordem da LeftBar no QHBoxLayout do editorContainer e tudo que assumia que
+// ela mora na esquerda.
+void MainWindow::applyLeftBarSide()
+{
+    if (!leftBar || !editorContainer) return;
+    auto* lay = qobject_cast<QHBoxLayout*>(editorContainer->layout());
+    if (!lay) return;
+
+    const bool onRight = (leftBar->barSide() == Qt::RightEdge);
+    // Tirar e reinserir e o que move a barra de lado: no QHBoxLayout, quem esta
+    // no indice 0 fica na esquerda e quem esta no fim fica na direita.
+    lay->removeWidget(leftBar);
+    if (onRight) lay->addWidget(leftBar);
+    else         lay->insertWidget(0, leftBar);
+    leftBar->show(); // removeWidget nao esconde, mas insertWidget apos reparent sim
+
+    relayoutEditorForChrome();
+    positionSidePanels();
+    if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
+    positionReadModeHotzones();
+}
+
 void MainWindow::applyToolbarSide()
 {
     if (!toolbar) return;
@@ -6285,37 +6511,12 @@ void MainWindow::applyToolbarSide()
         toolbarHolder->raise();
     }
 
-    // A faixa de titulo existe sempre; no modo topo ela so nao aparece.
-    if (docHeader) docHeader->setVisible(vertical);
-
-    updateEditorContainerMargins();
-    // A margem que acabou de mudar so vira geometria real quando o layout roda.
-    // Sem forcar aqui, o resizeEditorColumnToViewport() abaixo leria a viewport
-    // ANTIGA — ainda com o espaco da barra reservado no topo — e dimensionaria a
-    // folha pelo tamanho velho; como a coluna e centralizada verticalmente no
-    // QScrollArea, sobrava uma faixa vazia onde a barra estava.
-    if (editorContainer && editorContainer->layout()) editorContainer->layout()->activate();
-
-    applyEditorLayout();            // recalcula a folha (a chrome mudou de lado)
-    resizeEditorColumnToViewport();
-    updatePanelInsets();
+    relayoutEditorForChrome();
     positionSidePanels();
     positionWordCountPanel();
-    positionExternalScrollBar();
     positionFindBar();
     positionGlobalSearchPanel();
-
-    // Rede de seguranca: o sizeHint do holder e a viewport do QScrollArea so
-    // assentam na volta seguinte do event loop. Barato, e evita depender de
-    // adivinhar quantos activate() sincronos seriam suficientes.
-    QTimer::singleShot(0, this, [this]() {
-        layoutToolbarHolder();
-        updateEditorContainerMargins();
-        resizeEditorColumnToViewport();
-        updatePanelInsets();
-        positionSidePanels();
-        positionExternalScrollBar();
-    });
+    QTimer::singleShot(0, this, [this]() { layoutToolbarHolder(); });
 }
 
 void MainWindow::layoutToolbarHolder()
@@ -6325,19 +6526,50 @@ void MainWindow::layoutToolbarHolder()
         const int w = toolbarHolder->sizeHint().width();
         toolbarHolder->setGeometry(width() - w, 0, w, height());
     } else {
-        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+        // O holder acompanha a LARGURA DA BARRA, nao a da janela. Enquanto a
+        // barra ocupava a tela toda os dois coincidiam; depois que ela virou uma
+        // faixa centralizada, um holder de ponta a ponta ficou aparecendo como
+        // um "fantasma" da barra antiga — e, sendo opaco e por cima, ainda
+        // bloqueava o clique no pedaco da LeftBar que cobria (visivel no modo
+        // focado, com as duas barras reveladas ao mesmo tempo).
+        const QSize hint = toolbarHolder->sizeHint();
+        const int w = qMin(hint.width(), width());
+        // Centralizada na PAGINA, nao na janela. A pagina e centralizada dentro
+        // da area do editor, que exclui a LeftBar — entao centralizar a barra na
+        // janela deixava as duas desalinhadas pela metade da largura da LeftBar.
+        // A barra e chrome do editor: quem manda na posicao e a folha.
+        int centerX = width() / 2;
+        if (editor && editor->isVisible() && editor->width() > 0)
+            centerX = editor->mapTo(this, QPoint(editor->width() / 2, 0)).x();
+        const int x = qBound(0, centerX - w / 2, qMax(0, width() - w));
+        toolbarHolder->setGeometry(x, 0, w, hint.height());
     }
 }
 
+// Chrome que FLUTUA por cima do conteudo — hoje so a TopToolbar, que e filha
+// da janela e nao entra em layout nenhum. E ela que exige margem reservada,
+// senao o editor passaria por baixo.
+//
+// A LeftBar NAO entra aqui de proposito: ela e membro do QHBoxLayout do
+// editorContainer e ja ocupa o proprio espaco. Somar a largura dela na margem
+// reservaria o dobro — foi exatamente isso que descolou a barra da borda da
+// tela quando ela ganhou a opcao de ir pra direita.
+int MainWindow::floatingChromeInset(Qt::Edge edge) const
+{
+    const bool toolbarShown = toolbarHolder && toolbarHolder->isVisible();
+    if (toolbarShown && toolbar && toolbar->barSide() == edge) return toolbar->thickness();
+    return 0;
+}
+
+// Chrome TOTAL naquela borda, incluindo a LeftBar. E o que interessa pra quem
+// se posiciona por cima do editorContainer (paineis flutuantes, barra de busca,
+// ficha de personagem): esses precisam desviar da LeftBar tambem.
 int MainWindow::chromeInset(Qt::Edge edge) const
 {
     int inset = 0;
     const bool toolbarShown = toolbarHolder && toolbarHolder->isVisible();
     if (toolbarShown && toolbar && toolbar->barSide() == edge) inset += toolbar->thickness();
-    // LeftBar ainda não tem opção de lado (sempre Qt::LeftEdge) — quando/se
-    // ganhar (ver ideia na geladeira), basta trocar esse literal por
-    // leftBar->barSide(), igual já é feito acima pra TopToolbar.
-    if (edge == Qt::LeftEdge && leftBar && leftBar->isVisible()) inset += leftBar->width();
+    if (leftBar && leftBar->isVisible() && leftBar->barSide() == edge) inset += leftBar->width();
     return inset;
 }
 
@@ -6431,6 +6663,12 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("ui/topToolbarSide"), int(newSide));
             toolbar->setBarSide(newSide);
         });
+        connect(settingsPanel, &SettingsPanel::leftBarSideChanged, this, [this](int value) {
+            const Qt::Edge newSide = (value == 1) ? Qt::RightEdge : Qt::LeftEdge;
+            if (!leftBar || leftBar->barSide() == newSide) return;
+            QSettings().setValue(QStringLiteral("ui/leftBarSide"), int(newSide));
+            leftBar->setBarSide(newSide); // dispara applyLeftBarSide()
+        });
         connect(settingsPanel, &SettingsPanel::backupModeChanged, this, [this](int mode) {
             BackupService::Settings s = BackupService::loadSettings();
             s.mode = static_cast<BackupService::Mode>(mode);
@@ -6489,6 +6727,7 @@ void MainWindow::onSettingsRequested()
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
     settingsPanel->setTopToolbarSide(toolbar && toolbar->barSide() == Qt::RightEdge ? 1 : 0);
+    settingsPanel->setLeftBarSide(leftBar && leftBar->barSide() == Qt::RightEdge ? 1 : 0);
     {
         const BackupService::Settings bs = BackupService::loadSettings();
         settingsPanel->setBackupMode(static_cast<int>(bs.mode));
@@ -6637,12 +6876,6 @@ void MainWindow::onUiScaleChanged()
 
     updatePanelInsets();
 
-    if (toolbar && editor) {
-        const QPoint editorCenterGlobal =
-            editor->mapToGlobal(QPoint(editor->width() / 2, 0));
-        const int anchorX = toolbar->mapFromGlobal(editorCenterGlobal).x();
-        toolbar->setTitleAnchorX(anchorX);
-    }
 }
 
 void MainWindow::updateEditorContainerMargins()
@@ -6653,7 +6886,8 @@ void MainWindow::updateEditorContainerMargins()
     // Sem respiro vertical: a folha começa colada na base/lado da toolbar e
     // vai até o fim da janela. Assim, no comprimento máximo (ou "Tela cheia"),
     // a página bate exatamente nos limites da janela — sem folgas.
-    lay->setContentsMargins(10, chromeInset(Qt::TopEdge), 10 + chromeInset(Qt::RightEdge), 0);
+    lay->setContentsMargins(10, floatingChromeInset(Qt::TopEdge),
+                            10 + floatingChromeInset(Qt::RightEdge), 0);
 }
 
 void MainWindow::applyEditorLayout()
@@ -6688,13 +6922,10 @@ void MainWindow::applyEditorLayout()
     // sua altura precisa ser ajustada manualmente ao tamanho da viewport.
     resizeEditorColumnToViewport();
 
-    // Reposiciona o título da toolbar — ele segue o centro horizontal do editor.
-    if (toolbar && editor) {
-        const QPoint editorCenterGlobal =
-            editor->mapToGlobal(QPoint(editor->width() / 2, 0));
-        const int anchorX = toolbar->mapFromGlobal(editorCenterGlobal).x();
-        toolbar->setTitleAnchorX(anchorX);
-    }
+    // A barra horizontal e centralizada na PAGINA (ver layoutToolbarHolder): se
+    // a largura da pagina muda, ela tem que acompanhar. Diferido porque a
+    // geometria nova do editor so vale depois que o layout roda.
+    QTimer::singleShot(0, this, [this]() { layoutToolbarHolder(); });
 }
 
 void MainWindow::resizeEditorColumnToViewport()
@@ -7383,9 +7614,11 @@ void MainWindow::positionCharacterSheet()
     if (!characterSheetPanel || !editorContainer) return;
     const int topInset = chromeInset(Qt::TopEdge);
     const int rightInset = chromeInset(Qt::RightEdge);
-    int lx = 0;
-    if (leftBar && leftBar->isVisible()) lx = leftBar->x() + leftBar->width();
-    const int w = qMax(0, editorContainer->width() - lx - rightInset);
+    // A ficha ocupa o vao entre as chromes; com a LeftBar na direita, o vao
+    // comeca na borda esquerda da tela e o desconto vai pro outro lado.
+    const int leftInset = chromeInset(Qt::LeftEdge);
+    const int lx = leftInset;
+    const int w = qMax(0, editorContainer->width() - leftInset - rightInset);
     const int h = qMax(0, editorContainer->height() - topInset);
     characterSheetPanel->setGeometry(lx, topInset, w, h);
 }

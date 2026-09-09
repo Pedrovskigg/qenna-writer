@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include "CharacterDetector.h"
+#include <QPointer>
+#include <functional>
 #include "ConstrutorStore.h"
 #include "TerritorioStore.h"
 #include "DialogueStore.h"
@@ -29,6 +31,7 @@ class QScrollArea;
 class QScrollBar;
 class QTextEdit;
 class QTimer;
+class QPropertyAnimation;
 // TopToolbar já incluído acima (necessário para TopToolbar::AlignScope)
 class ImageOverlay;
 class LeftBar;
@@ -234,6 +237,8 @@ private:
     // assumindo "toolbar sempre no topo"; qualquer nova barra móvel futura
     // (ex.: LeftBar) só precisa entrar aqui, não em cada função de novo.
     int chromeInset(Qt::Edge edge) const;
+    // So a chrome que FLUTUA por cima do conteudo (ver definicao).
+    int floatingChromeInset(Qt::Edge edge) const;
     // Geometria do toolbarHolder (filho flutuante fora do layout system) —
     // faixa horizontal no topo, ou coluna vertical na direita, conforme
     // toolbar->barSide(). Chamado nos 3 lugares que antes duplicavam essa
@@ -242,6 +247,29 @@ private:
     // Reage a uma troca de lado da barra AO VIVO (holder, faixa de titulo,
     // insets dos paineis, layout do editor). Ver TopToolbar::setBarSide.
     void applyToolbarSide();
+    // Refaz a geometria do editor depois que a chrome muda (ver definicao).
+    void relayoutEditorForChrome();
+    // --- modo focado: revelar/esconder as barras no hover ---
+    // Verdadeiro enquanto houver painel, menu ou popup aberto: nesse estado a
+    // barra NAO recua, senao ela some por baixo do proprio menu que abriu.
+    bool chromeBusy() const;
+    // Esconde com atraso (ver kChromeHideDelayMs) e cancela se o mouse voltar.
+    void scheduleChromeHide(QWidget* bar);
+    void cancelChromeHide(QWidget* bar);
+    void revealToolbarChrome();
+    void revealLeftBarChrome();
+    void hideToolbarChrome();
+    void hideLeftBarChrome();
+    // Fade de opacidade. `onFinished` roda no fim (pra so esconder depois).
+    void fadeChrome(QWidget* target, bool appearing, std::function<void()> onFinished = {});
+
+    QTimer* m_toolbarHideTimer = nullptr;
+    QTimer* m_leftBarHideTimer = nullptr;
+    QPointer<QPropertyAnimation> m_toolbarFade;
+    QPointer<QPropertyAnimation> m_leftBarFade;
+    // Reage a LeftBar trocar de lado (ordem no layout, hotzone do modo focado,
+    // paineis flutuantes que abriam colados nela).
+    void applyLeftBarSide();
     void positionReminderToast();
 
     // Atualizações (GitHub Releases): checagem silenciosa no startup; se

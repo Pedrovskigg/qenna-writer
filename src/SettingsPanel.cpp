@@ -142,6 +142,21 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit topToolbarSideChanged(m_toolbarSideCombo->itemData(idx).toInt());
     });
 
+    auto* leftBarSideRow = new QHBoxLayout;
+    leftBarSideRow->addWidget(new QLabel(tr("Barra lateral:"), uiGroup));
+    m_leftBarSideCombo = new QComboBox(uiGroup);
+    // Só esquerda/direita: deitada em cima ou embaixo, o conteúdo dela
+    // (gavetas, capítulos) atrapalharia o centro da tela.
+    m_leftBarSideCombo->addItem(tr("Esquerda"), 0);
+    m_leftBarSideCombo->addItem(tr("Direita"), 1);
+    leftBarSideRow->addWidget(m_leftBarSideCombo, 1);
+    uiLayout->addLayout(leftBarSideRow);
+
+    connect(m_leftBarSideCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit leftBarSideChanged(m_leftBarSideCombo->itemData(idx).toInt());
+    });
+
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);
     auto* spellLayout = new QVBoxLayout(spellGroup);
@@ -875,6 +890,15 @@ void SettingsPanel::setTopToolbarSide(int side)
     m_blockSignals = true;
     const int idx = m_toolbarSideCombo->findData(side);
     if (idx >= 0) m_toolbarSideCombo->setCurrentIndex(idx);
+    m_blockSignals = false;
+}
+
+void SettingsPanel::setLeftBarSide(int side)
+{
+    if (!m_leftBarSideCombo) return;
+    m_blockSignals = true;
+    const int idx = m_leftBarSideCombo->findData(side);
+    if (idx >= 0) m_leftBarSideCombo->setCurrentIndex(idx);
     m_blockSignals = false;
 }
 

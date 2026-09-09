@@ -20429,6 +20429,16 @@ Would you like to track them with a timeline track?</translation>
 <context>
     <name>TopToolbar</name>
     <message>
+        <source>Editor Focado (Modo clássico)</source>
+        <translation>Focused Editor (Classic mode)</translation>
+    </message>
+    <message>
+        <source>Editor Focado (Modo clássico)
+Modo editor focado com barras que recuam. Igual na primeira versão clássica do app (Mira Writing).</source>
+        <translation>Focused Editor (Classic mode)
+Focused editor mode with bars that retract. Just like in the first classic version of the app (Mira Writing).</translation>
+    </message>
+    <message>
         <location filename="../src/TopToolbar.cpp" line="172"/>
         <source>Novo projeto</source>
         <translation>New project</translation>

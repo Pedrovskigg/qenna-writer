@@ -282,7 +282,19 @@ void LeftBar::applyTheme() {
     rebuildDrawerButtons();
 }
 
+// A barra em si nao muda nada ao trocar de lado (ela e vertical dos dois
+// lados); quem reposiciona e o MainWindow, ouvindo barSideChanged. Guardar o
+// lado aqui existe pra que chromeInset() e os paineis flutuantes possam
+// perguntar "de que lado voce esta?" em vez de assumir a esquerda.
+void LeftBar::setBarSide(Qt::Edge side)
+{
+    if (m_barSide == side) return;
+    m_barSide = side;
+    emit barSideChanged(m_barSide);
+}
+
 void LeftBar::setChromeHidden(bool hidden) {
+    m_chromeHidden = hidden;
     for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it)
         if (it.value()) it.value()->setVisible(!hidden);
     for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)

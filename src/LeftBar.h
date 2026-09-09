@@ -27,6 +27,15 @@ public:
 
     explicit LeftBar(ProjectModel* model, QWidget* parent = nullptr);
 
+    // A LeftBar so faz sentido colada numa lateral: deitada em cima ou embaixo,
+    // o conteudo dela (gavetas, capitulos) atrapalharia o centro da tela. Por
+    // isso `side` aceita apenas Qt::LeftEdge (padrao) ou Qt::RightEdge, e a
+    // barra continua SEMPRE vertical — nada de orientacao aqui, diferente da
+    // TopToolbar.
+    Qt::Edge barSide() const { return m_barSide; }
+    void setBarSide(Qt::Edge side);
+
+
     static int barWidth();
 
     bool isMirrored() const { return m_mirrored; }
@@ -45,8 +54,12 @@ public:
     // mantendo a largura (não sai do layout) pra não deslocar o editor. A
     // imagem de fundo do tema aparece atrás.
     void setChromeHidden(bool hidden);
+    // Estado consultavel: o modo focado precisa saber se a barra ja esta
+    // recuada antes de decidir revelar ou esconder de novo.
+    bool chromeHidden() const { return m_chromeHidden; }
 
 signals:
+    void barSideChanged(Qt::Edge side);
     void fixedActionTriggered(LeftBar::FixedAction action);
     void drawerSelected(QString drawerKey);
     void newDrawerRequested();
@@ -65,6 +78,8 @@ private slots:
     void applyUiScale();
 
 private:
+    Qt::Edge m_barSide = Qt::LeftEdge;
+    bool m_chromeHidden = false;
     int drawerInsertIndexAt(const QPoint& posInBar) const;
     void updateDropIndicator(int targetIndex);
     void clearDropIndicator();
