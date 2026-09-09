@@ -14,7 +14,8 @@ public:
     explicit FontPickerPopup(QWidget *parent = nullptr);
 
     void setFontFamilies(const QStringList &families, const QString &current);
-    void showAtBelow(const QPoint &globalAnchor);
+    // barSide = lado da tela onde mora a barra do botão-anchor.
+    void showNear(const QRect &anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
 
 signals:
     void fontSelected(const QString &family);

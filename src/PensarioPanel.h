@@ -53,6 +53,10 @@ public:
 
     // Altura da TopToolbar flutuante — o painel ancora logo abaixo dela.
     void setTopInset(int px) { m_topInset = px; }
+    // Espaço reservado na borda direita por causa de uma barra vertical ali
+    // (ex.: TopToolbar configurada pra ficar na lateral) — sem isso o painel
+    // (que já se ancora à direita, ver ancorRight()) nasceria por baixo dela.
+    void setRightInset(int px) { m_rightInset = px; }
     void setMapPinsStore(MapPinsStore* s) { m_mapPins = s; }
     void setMemoriesStore(MemoriesStore* s);
     void setDialogueStore(DialogueStore* s);
@@ -200,6 +204,7 @@ private:
     Tab m_tab = Tab::Comments;
     SortMode m_sortMode = SortMode::Chapters;
     int m_topInset = 0;
+    int m_rightInset = 0;
     bool m_positioned = false;
 
     QWidget* m_header = nullptr;

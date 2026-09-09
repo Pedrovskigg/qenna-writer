@@ -1,5 +1,7 @@
 #include "MainWindow.h"
 
+#include "DocHeaderBar.h"
+
 #include "CrashLogger.h"
 #include "MainMenuDialog.h"
 #include "NewProjectFlow.h"
@@ -32,6 +34,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 #include <QResizeEvent>
+#include <QShowEvent>
 #include <QScreen>
 #include <QCryptographicHash>
 #include <QPainter>
@@ -170,6 +173,16 @@ namespace {
 // Documentos com mais de este número de caracteres têm rehighlight do spell
 // diferido por 400ms para não bloquear a UI ao abrir o doc.
 constexpr int kLargeDocCharThreshold = 30'000;
+
+// Lado da tela onde a TopToolbar mora — configuração global (QSettings),
+// lida uma vez na construção da janela. Trocar de lado é decisão de
+// configuração que pede reiniciar o app (mesmo padrão do seletor de idioma),
+// não uma troca ao vivo — por isso só é lida aqui, nunca recalculada depois.
+Qt::Edge loadTopToolbarSide()
+{
+    const int v = QSettings().value(QStringLiteral("ui/topToolbarSide"), int(Qt::TopEdge)).toInt();
+    return v == int(Qt::RightEdge) ? Qt::RightEdge : Qt::TopEdge;
+}
 
 // QFont com tamanho fracionário (meio-ponto). O construtor QFont(family, int)
 // truncaria 14.5 → 14; setPointSizeF preserva a fração.
@@ -649,7 +662,7 @@ MainWindow::~MainWindow() {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , editor(new SpellEditor)
-    , toolbar(new TopToolbar(this))
+    , toolbar(new TopToolbar(this, loadTopToolbarSide()))
     , imageOverlay(nullptr)
     , leftBar(nullptr)
     , drawerListPanel(nullptr)
@@ -696,11 +709,17 @@ MainWindow::MainWindow(QWidget *parent)
     holder->setAttribute(Qt::WA_StyledBackground, true);
     holder->setStyleSheet(QStringLiteral("#topToolbarHolder { background: %1; }").arg(Theme::appBackground()));
     toolbarHolder = holder;
-    auto *holderLayout = new QHBoxLayout(holder);
-    holderLayout->setContentsMargins(12, 0, 12, 4);
+    const bool toolbarVertical = toolbar->isVertical();
+    auto *holderLayout = new QBoxLayout(
+        toolbarVertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight, holder);
+    holderLayout->setContentsMargins(toolbarVertical ? 0 : 12, toolbarVertical ? 12 : 0,
+                                      toolbarVertical ? 4 : 12, toolbarVertical ? 12 : 4);
     holderLayout->setSpacing(0);
     holderLayout->addWidget(toolbar);
     toolbar->installEventFilter(this); // auto-hide da toolbar no modo focado
+    // Troca de lado ao vivo: a TopToolbar cuida de si mesma e avisa; o resto da
+    // janela (holder, faixa de titulo, insets, folha) reage aqui.
+    connect(toolbar, &TopToolbar::barSideChanged, this, [this]() { applyToolbarSide(); });
 
     resize(1100, 800);
     setWindowState(windowState() | Qt::WindowMaximized);
@@ -1076,6 +1095,10 @@ void MainWindow::setupEditor()
         }
         toolbar->setDocumentTitle(title, subtitle);
         toolbar->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
+        if (docHeader) {
+            docHeader->setDocumentTitle(title, subtitle);
+            docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
+        }
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
@@ -1085,7 +1108,7 @@ void MainWindow::setupEditor()
     connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
 
     connect(toolbar, &TopToolbar::sceneVarRequested, this, [this]() {
-        if (toolbar && variationBar) variationBar->toggleNear(toolbar->sceneVarButtonGlobalRect());
+        if (toolbar && variationBar) variationBar->toggleNear(toolbar->sceneVarButtonGlobalRect(), toolbar->barSide());
     });
 
     // Toda vez que um doc é carregado no editor, reaplica o style do projeto
@@ -1556,7 +1579,7 @@ void MainWindow::setupEditor()
             ambiencePanel->hide();
             return;
         }
-        ambiencePanel->showNear(toolbar->immersiveSoundButtonGlobalRect());
+        ambiencePanel->showNear(toolbar->immersiveSoundButtonGlobalRect(), toolbar->barSide());
     });
 
     // Glossário: store (sidecar JSON, aba do Pensário) e popup de "Adicionar
@@ -1576,7 +1599,7 @@ void MainWindow::setupEditor()
     helpPanel = new HelpPanel(this);
     connect(toolbar, &TopToolbar::helpRequested, this, [this]() {
         if (!helpPanel || !toolbar) return;
-        helpPanel->openNear(toolbar->helpButtonGlobalRect());
+        helpPanel->openNear(toolbar->helpButtonGlobalRect(), toolbar->barSide());
     });
     // Autocomplete de menções (@) no editor principal.
     mentionPopup = new MentionPopup(projectModel, this, this);
@@ -1790,7 +1813,7 @@ void MainWindow::setupEditor()
             remindersPanel->hide();
             return;
         }
-        remindersPanel->showNear(toolbar->reminderButtonGlobalRect());
+        remindersPanel->showNear(toolbar->reminderButtonGlobalRect(), toolbar->barSide());
     });
     connect(remindersStore, &RemindersStore::changed, this, [this]() {
         if (!remindersStore) return;
@@ -2206,7 +2229,49 @@ void MainWindow::setupEditor()
         }
     });
 
-    editorRowLayout->addWidget(editor, /*stretch=*/1);
+    // A faixa de titulo e a pagina moram na MESMA coluna vertical. E isso, e nao
+    // um alinhamento ou uma sincronia de largura, que garante que as duas
+    // comecem no mesmo x e tenham exatamente a mesma largura: tentar acertar
+    // isso por fora errou tres vezes seguidas, porque a coluna externa e mais
+    // larga que a pagina (reserva o espaco da scrollbar externa) e o
+    // QWidgetItem centraliza item sem flag de alinhamento.
+    //
+    // O pageStack nao precisa de largura propria: um QVBoxLayout tem largura
+    // maxima igual a menor das maximas dos filhos, e o editor tem largura FIXA
+    // (EditorLayout::pageWidth) — entao o stack inteiro fica travado no tamanho
+    // da pagina, e a faixa preenche essa largura sozinha.
+    auto* pageStack = new QWidget(editorRow);
+    // Fixed na horizontal e obrigatorio, nao gosto: o QVBoxLayout ate limita a
+    // largura ao menor maximo dos filhos (a pagina), mas isso NAO vira o
+    // maximumSize do widget. Com a politica padrao (Preferred, que tem
+    // GrowFlag), qSmartMaxSize deixa o stack esticar dentro do editorRow — o
+    // editor fica travado em pageWidth e so a faixa acompanha o estiramento,
+    // sobrando pra fora da folha. Fixed faz o maximo virar o sizeHint, que e a
+    // largura da pagina.
+    pageStack->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+    auto* pageStackLayout = new QVBoxLayout(pageStack);
+    pageStackLayout->setContentsMargins(0, 0, 0, 0);
+    // Zero: a faixa pinta o mesmo fundo da folha pra parecer o topo da pagina,
+    // e qualquer folga abriria uma emenda com o fundo do app no meio.
+    pageStackLayout->setSpacing(0);
+
+    // Faixa de titulo (ver DocHeaderBar). Criada SEMPRE, mas so visivel com a
+    // TopToolbar na lateral: no modo topo a propria barra ja mostra o documento
+    // em edicao, e duas copias da mesma informacao seria so ruido. Criar sempre
+    // (em vez de so no modo vertical) e o que permite trocar de lado ao vivo sem
+    // ter que montar meio editor de novo.
+    docHeader = new DocHeaderBar(pageStack);
+    pageStackLayout->addWidget(docHeader);
+    docHeader->setVisible(toolbar && toolbar->isVertical());
+    connect(docHeader, &DocHeaderBar::sceneVarRequested, this, [this]() {
+        if (!docHeader || !variationBar) return;
+        // Qt::TopEdge (e nao o lado da barra): a faixa fica no topo do editor,
+        // entao o popup tem que crescer pra BAIXO a partir dela.
+        variationBar->toggleNear(docHeader->sceneVarButtonGlobalRect(), Qt::TopEdge);
+    });
+
+    pageStackLayout->addWidget(editor, /*stretch=*/1);
+    editorRowLayout->addWidget(pageStack, /*stretch=*/1);
     // externalScrollBar não entra no layout — é posicionado como overlay flutuante
     // por positionExternalScrollBar(), chamado em resizeEvent e positionSidePanels.
 
@@ -2238,7 +2303,7 @@ void MainWindow::setupEditor()
     // Toolbar flutua sobre o centralWidget: posicionar e levantar depois do
     // setCentralWidget, senão o resize do central a empurra pra baixo.
     if (toolbarHolder) {
-        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+        layoutToolbarHolder();
         toolbarHolder->raise();
     }
     updateEditorContainerMargins();
@@ -2264,6 +2329,7 @@ void MainWindow::setupEditor()
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
     connect(refMenuPanel, &RefMenuPanel::selectedKeyChanged, this, &MainWindow::updateDocCachePinnedKeys);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
+        updatePanelInsets();
         if (refMenuPanel) refMenuPanel->togglePanel();
     });
 
@@ -2272,7 +2338,8 @@ void MainWindow::setupEditor()
     pensarioPanel->setMapPinsStore(mapPinsStore);
     pensarioPanel->setElementsStore(elementsStore);
     pensarioPanel->setGlossaryStore(glossaryStore);
-    pensarioPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
+    pensarioPanel->setTopInset(chromeInset(Qt::TopEdge));
+    pensarioPanel->setRightInset(chromeInset(Qt::RightEdge));
     pensarioPanel->raise();
     connect(pensarioPanel, &PensarioPanel::openMarkerRequested,
             this, &MainWindow::openMarkerInEditor);
@@ -2287,6 +2354,7 @@ void MainWindow::setupEditor()
     connect(pensarioPanel, &PensarioPanel::rescanAllDialoguesRequested,
             this, &MainWindow::rescanAllChapterDialogues);
     connect(toolbar, &TopToolbar::pensarioToggleRequested, this, [this]() {
+        updatePanelInsets();
         if (pensarioPanel) pensarioPanel->togglePanel();
     });
 
@@ -2296,14 +2364,17 @@ void MainWindow::setupEditor()
     statsPanel->setTerritorioStore(territorioStore);
     statsPanel->setWordCounter(wordCounter);
     statsPanel->setPresenceProvider(m_presenceProvider);
-    statsPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
+    statsPanel->setTopInset(chromeInset(Qt::TopEdge));
+    statsPanel->setRightInset(chromeInset(Qt::RightEdge));
     statsPanel->raise();
     connect(toolbar, &TopToolbar::statisticsRequested, this, [this]() {
+        updatePanelInsets();
         if (statsPanel) statsPanel->togglePanel();
     });
 
     aiChatPanel = new AIChatPanel(projectModel, elementsStore, docCache, container);
-    aiChatPanel->setTopInset(toolbarHolder ? toolbarHolder->sizeHint().height() : 0);
+    aiChatPanel->setTopInset(chromeInset(Qt::TopEdge));
+    aiChatPanel->setRightInset(chromeInset(Qt::RightEdge));
     aiChatPanel->setMarkerStore(markerStore);
     aiChatPanel->setNotesStore(notesStore);
     aiChatPanel->setWordCounter(wordCounter);
@@ -2434,6 +2505,7 @@ void MainWindow::setupEditor()
     });
     auto* pensarioShortcut = new QShortcut(QKeySequence(Qt::Key_F4), this);
     connect(pensarioShortcut, &QShortcut::activated, this, [this]() {
+        updatePanelInsets();
         if (pensarioPanel) pensarioPanel->togglePanel();
     });
     auto* mapShortcut = new QShortcut(QKeySequence(QStringLiteral("Shift+F4")), this);
@@ -2446,6 +2518,7 @@ void MainWindow::setupEditor()
     });
     auto* refMenuShortcut = new QShortcut(QKeySequence(Qt::Key_F6), this);
     connect(refMenuShortcut, &QShortcut::activated, this, [this]() {
+        updatePanelInsets();
         if (refMenuPanel) refMenuPanel->togglePanel();
     });
     auto* remindersShortcut = new QShortcut(QKeySequence(Qt::Key_F7), this);
@@ -2455,7 +2528,7 @@ void MainWindow::setupEditor()
             remindersPanel->hide();
             return;
         }
-        remindersPanel->showNear(toolbar->reminderButtonGlobalRect());
+        remindersPanel->showNear(toolbar->reminderButtonGlobalRect(), toolbar->barSide());
     });
     auto* homeShortcut = new QShortcut(QKeySequence(Qt::Key_F12), this);
     connect(homeShortcut, &QShortcut::activated, this, [this]() {
@@ -3998,7 +4071,12 @@ void MainWindow::setReadMode(bool enabled)
 void MainWindow::positionReadModeHotzones()
 {
     if (readModeHotTop) {
-        readModeHotTop->setGeometry(0, 0, width(), 6);
+        // Hotzone de revelar a TopToolbar escondida no modo focado — cobre o
+        // lado onde ela mora (topo, ou a lateral direita se estiver vertical).
+        if (toolbar && toolbar->isVertical())
+            readModeHotTop->setGeometry(width() - 6, 0, 6, height());
+        else
+            readModeHotTop->setGeometry(0, 0, width(), 6);
         readModeHotTop->raise();
     }
     if (readModeHotLeft && editorContainer) {
@@ -5907,11 +5985,11 @@ void MainWindow::positionWordCountPanel()
     // Altura disponível entre a base da TopToolbar e a base do container. O painel
     // (scroll interno) é limitado a isso, então o conteúdo nunca passa atrás da
     // toolbar — quando é maior, rola (e abre já mostrando o calendário no fim).
-    int topSafe = 0;
-    if (toolbarHolder && toolbarHolder->isVisible()) {
-        topSafe = parent->mapFromGlobal(
-            toolbarHolder->mapToGlobal(QPoint(0, toolbarHolder->height()))).y();
-    }
+    // chromeInset já é 0 quando a toolbar está vertical (não ocupa o topo) —
+    // mapeado a partir da própria MainWindow (não do toolbarHolder, que em
+    // modo vertical tem a altura da janela inteira, não a espessura da barra).
+    const int topSafe = parent->mapFromGlobal(
+        this->mapToGlobal(QPoint(0, chromeInset(Qt::TopEdge)))).y();
     const int bottomMargin = 10;
     const int toggleH = 18;   // altura do botão ▼ que fica fora do scroll
     const int avail = parent->height() - topSafe - bottomMargin - toggleH;
@@ -5929,11 +6007,12 @@ void MainWindow::positionFindBar()
     if (!findBar || !editorContainer) return;
     findBar->adjustSize();
     const int margin = 12;
-    const int tbH = (toolbarHolder && toolbarHolder->isVisible()) ? toolbarHolder->height() : 0;
+    const int topInset = chromeInset(Qt::TopEdge);
+    const int rightInset = chromeInset(Qt::RightEdge);
     const int w = qMax(360, findBar->sizeHint().width());
     findBar->resize(w, findBar->height());
-    const int x = editorContainer->width() - w - margin;
-    const int y = tbH + margin;
+    const int x = editorContainer->width() - rightInset - w - margin;
+    const int y = topInset + margin;
     findBar->move(qMax(margin, x), y);
     if (findBar->isVisible()) findBar->raise();
 }
@@ -5943,12 +6022,14 @@ void MainWindow::positionGlobalSearchPanel()
     if (!globalSearchPanel || !editorContainer) return;
     globalSearchPanel->adjustSize();
     const int margin = 12;
-    const int tbH = (toolbarHolder && toolbarHolder->isVisible()) ? toolbarHolder->height() : 0;
+    const int topInset = chromeInset(Qt::TopEdge);
+    const int rightInset = chromeInset(Qt::RightEdge);
+    const int availW = editorContainer->width() - rightInset;
     const int w = globalSearchPanel->width();
-    const int h = qMin(520, editorContainer->height() - tbH - margin * 2);
+    const int h = qMin(520, editorContainer->height() - topInset - margin * 2);
     globalSearchPanel->resize(w, h);
-    const int x = qMax(margin, (editorContainer->width() - w) / 2);
-    const int y = tbH + margin + 8;
+    const int x = qMax(margin, (availW - w) / 2);
+    const int y = topInset + margin + 8;
     globalSearchPanel->move(x, y);
     if (globalSearchPanel->isVisible()) globalSearchPanel->raise();
 }
@@ -6050,18 +6131,36 @@ void MainWindow::positionAutoNavHint()
     m_autoNavHint->raise();
 }
 
+// chromeInset() depende de toolbarHolder->isVisible(), que ainda e FALSO
+// durante a construcao da janela. Os paineis recebiam o inset uma unica vez, na
+// criacao, quando ele valia 0 — e o unico lugar que recalculava era o
+// onUiScaleChanged(). Resultado: abriam atras da barra lateral ate alguem mexer
+// no slider de escala. Por isso isto virou um metodo chamado de todo lugar que
+// reposiciona chrome, e nao um calculo feito uma vez so.
+void MainWindow::updatePanelInsets()
+{
+    const int top = chromeInset(Qt::TopEdge);
+    const int right = chromeInset(Qt::RightEdge);
+    if (pensarioPanel) { pensarioPanel->setTopInset(top); pensarioPanel->setRightInset(right); }
+    if (statsPanel)    { statsPanel->setTopInset(top);    statsPanel->setRightInset(right); }
+    if (aiChatPanel)   { aiChatPanel->setTopInset(top);   aiChatPanel->setRightInset(right); }
+    // RefMenu e janela propria: so guarda o valor e se afasta quando for abrir.
+    if (refMenuPanel)  { refMenuPanel->setRightInset(right); }
+}
+
 void MainWindow::positionSidePanels()
 {
+    updatePanelInsets();
     // Posiciona o DrawerListPanel e o ManuscriptPanel como overlays flutuantes
     // logo à direita da LeftBar — não entram no layout pra não empurrar o editor.
     if (!leftBar) return;
     QWidget* parent = drawerListPanel ? drawerListPanel->parentWidget() : nullptr;
     if (!parent) return;
     const int margin = 10;
-    const int tbH = (toolbarHolder && toolbarHolder->isVisible()) ? toolbarHolder->height() : 0;
+    const int topInset = chromeInset(Qt::TopEdge);
     const int x = margin + leftBar->width() + margin;
-    const int y = tbH + margin;
-    const int maxH = qMax(0, parent->height() - tbH - margin * 2);
+    const int y = topInset + margin;
+    const int maxH = qMax(0, parent->height() - topInset - margin * 2);
 
     // DrawerListPanel: respeita altura escolhida pelo usuário (se houver),
     // só clampa pra caber. Senão, expande full-height (comportamento antigo).
@@ -6103,8 +6202,27 @@ void MainWindow::resizeEvent(QResizeEvent *event)
         backgroundWidget->setGeometry(rect());
         backgroundWidget->lower();
     }
+    relayoutChrome();
+}
+
+void MainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    // Primeira exibição de verdade da janela — é só agora que width()/height()
+    // refletem o tamanho MAXIMIZADO real (no construtor, resize(1100,800) +
+    // setWindowState(Maximized) ainda não tinham sido processados pelo window
+    // manager). A TopToolbar vertical usa height() pra se dimensionar; sem
+    // este recálculo aqui, ela ficava montada pra uma altura menor que a
+    // real até o usuário mexer manualmente na janela (o que dispara
+    // resizeEvent de verdade e resolve sozinho) — sintoma: botões
+    // "espremidos" no primeiro load, normais depois de qualquer resize.
+    relayoutChrome();
+}
+
+void MainWindow::relayoutChrome()
+{
     if (toolbarHolder && toolbarHolder->isVisible()) {
-        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+        layoutToolbarHolder();
         toolbarHolder->raise();
     }
     updateEditorContainerMargins();
@@ -6149,6 +6267,79 @@ QString backupStatusLabelText(qint64 lastRunMs)
     return MainWindow::tr("Último backup: há %1 dia(s).").arg(days);
 }
 } // namespace
+
+// Tudo que precisa acompanhar uma troca de lado da barra que NAO mora dentro da
+// propria TopToolbar. Chamado no fim da construcao e a cada barSideChanged.
+void MainWindow::applyToolbarSide()
+{
+    if (!toolbar) return;
+    const bool vertical = toolbar->isVertical();
+
+    if (toolbarHolder) {
+        if (auto* hl = qobject_cast<QBoxLayout*>(toolbarHolder->layout())) {
+            hl->setDirection(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
+            hl->setContentsMargins(vertical ? 0 : 12, vertical ? 12 : 0,
+                                   vertical ? 4 : 12, vertical ? 12 : 4);
+        }
+        layoutToolbarHolder();
+        toolbarHolder->raise();
+    }
+
+    // A faixa de titulo existe sempre; no modo topo ela so nao aparece.
+    if (docHeader) docHeader->setVisible(vertical);
+
+    updateEditorContainerMargins();
+    // A margem que acabou de mudar so vira geometria real quando o layout roda.
+    // Sem forcar aqui, o resizeEditorColumnToViewport() abaixo leria a viewport
+    // ANTIGA — ainda com o espaco da barra reservado no topo — e dimensionaria a
+    // folha pelo tamanho velho; como a coluna e centralizada verticalmente no
+    // QScrollArea, sobrava uma faixa vazia onde a barra estava.
+    if (editorContainer && editorContainer->layout()) editorContainer->layout()->activate();
+
+    applyEditorLayout();            // recalcula a folha (a chrome mudou de lado)
+    resizeEditorColumnToViewport();
+    updatePanelInsets();
+    positionSidePanels();
+    positionWordCountPanel();
+    positionExternalScrollBar();
+    positionFindBar();
+    positionGlobalSearchPanel();
+
+    // Rede de seguranca: o sizeHint do holder e a viewport do QScrollArea so
+    // assentam na volta seguinte do event loop. Barato, e evita depender de
+    // adivinhar quantos activate() sincronos seriam suficientes.
+    QTimer::singleShot(0, this, [this]() {
+        layoutToolbarHolder();
+        updateEditorContainerMargins();
+        resizeEditorColumnToViewport();
+        updatePanelInsets();
+        positionSidePanels();
+        positionExternalScrollBar();
+    });
+}
+
+void MainWindow::layoutToolbarHolder()
+{
+    if (!toolbarHolder) return;
+    if (toolbar && toolbar->isVertical()) {
+        const int w = toolbarHolder->sizeHint().width();
+        toolbarHolder->setGeometry(width() - w, 0, w, height());
+    } else {
+        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+    }
+}
+
+int MainWindow::chromeInset(Qt::Edge edge) const
+{
+    int inset = 0;
+    const bool toolbarShown = toolbarHolder && toolbarHolder->isVisible();
+    if (toolbarShown && toolbar && toolbar->barSide() == edge) inset += toolbar->thickness();
+    // LeftBar ainda não tem opção de lado (sempre Qt::LeftEdge) — quando/se
+    // ganhar (ver ideia na geladeira), basta trocar esse literal por
+    // leftBar->barSide(), igual já é feito acima pra TopToolbar.
+    if (edge == Qt::LeftEdge && leftBar && leftBar->isVisible()) inset += leftBar->width();
+    return inset;
+}
 
 void MainWindow::refreshBackupStatusLabel()
 {
@@ -6230,6 +6421,16 @@ void MainWindow::onSettingsRequested()
                 timelinePanel->refreshFromModel();
             }
         });
+        connect(settingsPanel, &SettingsPanel::topToolbarSideChanged, this, [this](int value) {
+            const Qt::Edge newSide = (value == 1) ? Qt::RightEdge : Qt::TopEdge;
+            if (!toolbar || toolbar->barSide() == newSide) return; // sem mudança real
+            // Troca AO VIVO. Antes isto relançava o app inteiro (e o usuário
+            // voltava na tela inicial, tendo que reabrir o projeto) — nada aqui
+            // toca em documento, então também não precisa mais do fluxo de
+            // "salvar ou descartar" que o relançamento exigia.
+            QSettings().setValue(QStringLiteral("ui/topToolbarSide"), int(newSide));
+            toolbar->setBarSide(newSide);
+        });
         connect(settingsPanel, &SettingsPanel::backupModeChanged, this, [this](int mode) {
             BackupService::Settings s = BackupService::loadSettings();
             s.mode = static_cast<BackupService::Mode>(mode);
@@ -6287,6 +6488,7 @@ void MainWindow::onSettingsRequested()
     // Teto do comprimento de página = altura útil da folha visível. Acima disso a
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
+    settingsPanel->setTopToolbarSide(toolbar && toolbar->barSide() == Qt::RightEdge ? 1 : 0);
     {
         const BackupService::Settings bs = BackupService::loadSettings();
         settingsPanel->setBackupMode(static_cast<int>(bs.mode));
@@ -6421,7 +6623,7 @@ void MainWindow::onEditorLayoutChanged()
 void MainWindow::onUiScaleChanged()
 {
     if (toolbarHolder) {
-        toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+        layoutToolbarHolder();
         toolbarHolder->raise();
     }
     updateEditorContainerMargins();
@@ -6433,10 +6635,7 @@ void MainWindow::onUiScaleChanged()
     positionGlobalSearchPanel();
     if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
 
-    const int tbH = toolbarHolder ? toolbarHolder->sizeHint().height() : 0;
-    if (pensarioPanel) pensarioPanel->setTopInset(tbH);
-    if (statsPanel) statsPanel->setTopInset(tbH);
-    if (aiChatPanel) aiChatPanel->setTopInset(tbH);
+    updatePanelInsets();
 
     if (toolbar && editor) {
         const QPoint editorCenterGlobal =
@@ -6451,12 +6650,10 @@ void MainWindow::updateEditorContainerMargins()
     if (!editorContainer) return;
     auto* lay = qobject_cast<QHBoxLayout*>(editorContainer->layout());
     if (!lay) return;
-    const int tbH = (toolbarHolder && toolbarHolder->isVisible())
-                    ? toolbarHolder->sizeHint().height() : 0;
-    // Sem respiro vertical: a folha começa colada na base da toolbar e vai até o
-    // fundo da janela. Assim, no comprimento máximo (ou "Tela cheia"), a página
-    // bate exatamente nos limites da janela — sem folgas em cima nem embaixo.
-    lay->setContentsMargins(10, tbH, 10, 0);
+    // Sem respiro vertical: a folha começa colada na base/lado da toolbar e
+    // vai até o fim da janela. Assim, no comprimento máximo (ou "Tela cheia"),
+    // a página bate exatamente nos limites da janela — sem folgas.
+    lay->setContentsMargins(10, chromeInset(Qt::TopEdge), 10 + chromeInset(Qt::RightEdge), 0);
 }
 
 void MainWindow::applyEditorLayout()
@@ -6526,7 +6723,9 @@ void MainWindow::resizeEditorColumnToViewport()
         // acabamos de mudar a altura fixa do editor e o sizeHint do layout ainda
         // não recalculou — leria um valor velho e a coluna ficaria do tamanho
         // errado (folha encolhida e centralizada, com folgas em cima e embaixo).
-        colH = effPh;
+        // A folha foi limitada a availableSheetHeight(), que ja desconta a
+        // faixa; a COLUNA precisa somar as duas de volta.
+        colH = effPh + docHeaderExtent();
     } else {
         colH = vpH;
     }
@@ -6536,7 +6735,14 @@ void MainWindow::resizeEditorColumnToViewport()
 int MainWindow::availableSheetHeight() const
 {
     if (!editorScroll) return 0;
-    return qMax(0, editorScroll->viewport()->height());
+    return qMax(0, editorScroll->viewport()->height() - docHeaderExtent());
+}
+
+// Zero quando a faixa nao existe (barra no topo) — e e por isso que o modo
+// horizontal nao sente nada dessa conta.
+int MainWindow::docHeaderExtent() const
+{
+    return (docHeader && !docHeader->isHidden()) ? docHeader->height() : 0;
 }
 
 void MainWindow::applyPageShadow()
@@ -7175,12 +7381,13 @@ void MainWindow::hideCharacterSheet()
 void MainWindow::positionCharacterSheet()
 {
     if (!characterSheetPanel || !editorContainer) return;
-    const int tbH = (toolbarHolder && toolbarHolder->isVisible()) ? toolbarHolder->height() : 0;
+    const int topInset = chromeInset(Qt::TopEdge);
+    const int rightInset = chromeInset(Qt::RightEdge);
     int lx = 0;
     if (leftBar && leftBar->isVisible()) lx = leftBar->x() + leftBar->width();
-    const int w = qMax(0, editorContainer->width() - lx);
-    const int h = qMax(0, editorContainer->height() - tbH);
-    characterSheetPanel->setGeometry(lx, tbH, w, h);
+    const int w = qMax(0, editorContainer->width() - lx - rightInset);
+    const int h = qMax(0, editorContainer->height() - topInset);
+    characterSheetPanel->setGeometry(lx, topInset, w, h);
 }
 
 TimelinePanel* MainWindow::ensureTimelinePanel()

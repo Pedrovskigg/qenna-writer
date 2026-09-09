@@ -129,6 +129,19 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     uiScaleHint->setWordWrap(true);
     uiLayout->addWidget(uiScaleHint);
 
+    auto* toolbarSideRow = new QHBoxLayout();
+    toolbarSideRow->addWidget(new QLabel(tr("Barra de ferramentas:"), uiGroup));
+    m_toolbarSideCombo = new QComboBox(uiGroup);
+    m_toolbarSideCombo->addItem(tr("Topo"), 0);
+    m_toolbarSideCombo->addItem(tr("Lateral direita"), 1);
+    toolbarSideRow->addWidget(m_toolbarSideCombo, 1);
+    uiLayout->addLayout(toolbarSideRow);
+
+    connect(m_toolbarSideCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit topToolbarSideChanged(m_toolbarSideCombo->itemData(idx).toInt());
+    });
+
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);
     auto* spellLayout = new QVBoxLayout(spellGroup);
@@ -854,6 +867,15 @@ void SettingsPanel::setRescanScenesButtonText(const QString& text)
 void SettingsPanel::setRescanScenesButtonEnabled(bool enabled)
 {
     if (m_rescanScenesBtn) m_rescanScenesBtn->setEnabled(enabled);
+}
+
+void SettingsPanel::setTopToolbarSide(int side)
+{
+    if (!m_toolbarSideCombo) return;
+    m_blockSignals = true;
+    const int idx = m_toolbarSideCombo->findData(side);
+    if (idx >= 0) m_toolbarSideCombo->setCurrentIndex(idx);
+    m_blockSignals = false;
 }
 
 void SettingsPanel::setBackupMode(int mode)

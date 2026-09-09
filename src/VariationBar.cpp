@@ -1,4 +1,5 @@
 #include "VariationBar.h"
+#include "AnchorUtils.h"
 #include "EditorHost.h"
 #include "ProjectModel.h"
 #include "Theme.h"
@@ -188,7 +189,7 @@ void VariationBar::applyTheme() {
     if (isVisible()) rebuildButtons();
 }
 
-void VariationBar::toggleNear(const QRect& anchorGlobal)
+void VariationBar::toggleNear(const QRect& anchorGlobal, Qt::Edge barSide)
 {
     if (isVisible()) { hide(); return; }
     if (!m_host || !m_model) return;
@@ -200,15 +201,24 @@ void VariationBar::toggleNear(const QRect& anchorGlobal)
     rebuildButtons();
     adjustSize();
     const QSize ps = size();
-    QPoint pos(anchorGlobal.left() + anchorGlobal.width() / 2 - ps.width() / 2,
-               anchorGlobal.bottom() + kGapBelowAnchor);
-    const QScreen* screen = QGuiApplication::screenAt(pos);
+
+    // Ancora "centralizado" no botão em vez de alinhado à esquerda/topo dele
+    // — constrói um retângulo-anchor sintético do tamanho do popup, centrado
+    // no botão real, e deixa o AnchorUtils resolver o lado de crescimento.
+    QRect effectiveAnchor = anchorGlobal;
+    if (barSide == Qt::TopEdge || barSide == Qt::BottomEdge) {
+        effectiveAnchor.moveLeft(anchorGlobal.center().x() - ps.width() / 2);
+        effectiveAnchor.setWidth(ps.width());
+    } else {
+        effectiveAnchor.moveTop(anchorGlobal.center().y() - ps.height() / 2);
+        effectiveAnchor.setHeight(ps.height());
+    }
+
+    QPoint pos = effectiveAnchor.topLeft();
+    const QScreen* screen = QGuiApplication::screenAt(anchorGlobal.center());
     if (screen) {
-        const QRect avail = screen->availableGeometry();
-        if (pos.y() + ps.height() > avail.bottom())
-            pos.setY(anchorGlobal.top() - ps.height() - kGapBelowAnchor);
-        if (pos.x() < avail.left()) pos.setX(avail.left() + 4);
-        if (pos.x() + ps.width() > avail.right()) pos.setX(avail.right() - ps.width() - 4);
+        pos = AnchorUtils::positionNear(effectiveAnchor, ps, barSide,
+                                         screen->availableGeometry(), kGapBelowAnchor);
     }
     move(pos);
     show();

@@ -50,6 +50,8 @@ public:
     // Altura da TopToolbar flutuante — o painel ancora logo abaixo dela
     // (mesmo raciocínio do PensarioPanel::setTopInset).
     void setTopInset(int px) { m_topInset = px; }
+    // Idem, mas pra borda direita — barra vertical ali (ver PensarioPanel).
+    void setRightInset(int px) { m_rightInset = px; }
 
     // Mesma forma do PresenceProvider de DrawerListPanel/TimelinePanel —
     // fn(charNames, outResults, outTotalScenes, outTotalChapters).
@@ -113,6 +115,7 @@ private:
     int m_totalChapters = 0;
 
     int m_topInset = 0;
+    int m_rightInset = 0;
     bool m_positioned = false;
 
     QWidget* m_header = nullptr;

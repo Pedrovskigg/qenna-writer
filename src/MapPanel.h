@@ -33,6 +33,8 @@ public:
     void closePanel();
     bool isPanelOpen() const;
     void setTopInset(int px) { m_topInset = px; }
+    // Idem, mas pra borda direita — barra vertical ali (ver PensarioPanel).
+    void setRightInset(int px) { m_rightInset = px; }
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -115,6 +117,7 @@ private:
     QHash<QString, QString> m_countryNames;           // cc -> nome do país
     bool m_indexBuilt = false;
     int m_topInset = 0;
+    int m_rightInset = 0;
     bool m_positioned = false;
     bool m_dragging = false;
     QPoint m_dragOffset;

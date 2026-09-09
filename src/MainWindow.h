@@ -38,6 +38,7 @@ class ProjectModel;
 class DocCache;
 class EditorHost;
 class VariationBar;
+class DocHeaderBar;
 class ProjectSaver;
 class WordCounter;
 class WordCountPanel;
@@ -110,6 +111,17 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    // A altura/largura "real" da janela maximizada só existe depois que o
+    // window manager efetivamente mostra a janela — no construtor,
+    // this->height()/width() ainda refletem o resize(1100,800) provisório.
+    // Sem isso, a TopToolbar vertical (que usa height() pra se dimensionar)
+    // fica montada pra uma altura errada até o usuário mexer na janela na
+    // mão (o que dispara resizeEvent de verdade e conserta sozinho).
+    void showEvent(QShowEvent *event) override;
+    // Corpo comum de resizeEvent/showEvent — reposiciona toda a chrome
+    // flutuante (toolbar, painéis, hotzones) a partir das dimensões atuais
+    // da janela.
+    void relayoutChrome();
     void changeEvent(QEvent *event) override;
 
 private:
@@ -162,11 +174,16 @@ private:
     // fora da folha). É o teto natural do comprimento de página: acima disso a
     // folha seria cortada fora da janela.
     int availableSheetHeight() const;
+    // Altura que a faixa de titulo rouba da folha; 0 quando ela nao existe.
+    int docHeaderExtent() const;
     void applyPageShadow();
     void applyBackgroundFromTheme();
     void applySpellLanguageFromModel();
     void positionWordCountPanel();
     void positionSidePanels();
+    // Reaplica nos paineis flutuantes a largura da chrome (barras) que eles
+    // precisam evitar. Tem que rodar DEPOIS da janela aparecer — ver definicao.
+    void updatePanelInsets();
     // Ficha de Personagem: painel embutido que substitui o editor para itens isSheet.
     CharacterSheetPanel* ensureCharacterSheetPanel();
     void showCharacterSheet(const QString& itemId);
@@ -210,6 +227,21 @@ private:
     // Atualiza o texto "Último backup: ..." e o estado do botão "Fazer backup
     // agora" no SettingsPanel a partir do projeto aberto no momento.
     void refreshBackupStatusLabel();
+    // Espaço reservado nessa borda da janela por causa de uma barra de chrome
+    // fixa (hoje só a TopToolbar, que mora no Top ou no Right conforme
+    // configuração) — 0 se nenhuma barra ocupa esse lado. Centraliza a conta
+    // que antes cada função de posicionamento (~10 delas) fazia na mão
+    // assumindo "toolbar sempre no topo"; qualquer nova barra móvel futura
+    // (ex.: LeftBar) só precisa entrar aqui, não em cada função de novo.
+    int chromeInset(Qt::Edge edge) const;
+    // Geometria do toolbarHolder (filho flutuante fora do layout system) —
+    // faixa horizontal no topo, ou coluna vertical na direita, conforme
+    // toolbar->barSide(). Chamado nos 3 lugares que antes duplicavam essa
+    // conta na mão (setCentralWidget, resizeEvent, onUiScaleChanged).
+    void layoutToolbarHolder();
+    // Reage a uma troca de lado da barra AO VIVO (holder, faixa de titulo,
+    // insets dos paineis, layout do editor). Ver TopToolbar::setBarSide.
+    void applyToolbarSide();
     void positionReminderToast();
 
     // Atualizações (GitHub Releases): checagem silenciosa no startup; se
@@ -430,6 +462,9 @@ private:
     int markerPendingEnd = -1;
     QWidget *editorContainer;
     QWidget *editorColumn;
+    // Faixa de titulo no topo da folha; so existe com a TopToolbar na lateral,
+    // onde a barra nao tem mais onde mostrar o documento em edicao.
+    DocHeaderBar *docHeader = nullptr;
     QScrollArea *editorScroll = nullptr;
     QScrollBar *externalScrollBar = nullptr;
     QWidget *toolbarHolder;

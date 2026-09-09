@@ -122,3 +122,6 @@ help-panel/
 
 # Rascunho pessoal de patch notes, nunca vai pro repo.
 Patch note.txt
+
+# Rascunhos internos (posts, notas) — nao vao pro repo publico
+reddit-post-*.txt

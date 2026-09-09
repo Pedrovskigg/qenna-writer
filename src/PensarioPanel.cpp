@@ -545,6 +545,7 @@ void PensarioPanel::openMapPanel()
         QWidget* host = parentWidget() ? parentWidget() : this;
         m_mapPanel = new MapPanel(m_mapPins, m_model, host);
         m_mapPanel->setTopInset(m_topInset);
+        m_mapPanel->setRightInset(m_rightInset);
     }
     m_mapPanel->togglePanel();
 }
@@ -2525,7 +2526,7 @@ void PensarioPanel::ancorRight()
     const int top = m_topInset + kMargin; // começa abaixo da TopToolbar flutuante
     const int h = qMax(200, p->height() - top - kMargin);
     resize(kPanelWidth, h);
-    move(p->width() - width() - kMargin, top);
+    move(p->width() - width() - kMargin - m_rightInset, top);
     m_positioned = true;
 }
 

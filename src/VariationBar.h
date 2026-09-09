@@ -19,7 +19,8 @@ public:
 
     // Alterna: se já visível, fecha; senão reconstrói o conteúdo e abre
     // ancorado perto de `anchorGlobal` (retângulo global do botão clicado).
-    void toggleNear(const QRect& anchorGlobal);
+    // barSide = lado da tela onde mora a barra do botão-anchor.
+    void toggleNear(const QRect& anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
 
 public slots:
     // Reconstrói o conteúdo se o popup já estiver aberto; fecha sozinho se

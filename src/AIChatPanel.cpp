@@ -1646,6 +1646,11 @@ void AIChatPanel::setTopInset(int px)
     m_topInset = px;
 }
 
+void AIChatPanel::setRightInset(int px)
+{
+    m_rightInset = px;
+}
+
 void AIChatPanel::setMarkerStore(MarkerStore* store)
 {
     m_markerStore = store;
@@ -1777,15 +1782,16 @@ void AIChatPanel::ancorRight()
     if (!p) return;
     const int top = m_topInset + kMargin;
 
+    const int availW = p->width() - m_rightInset;
     const QSize saved = QSettings().value(QStringLiteral("ai/chatPanelSize")).toSize();
     int w = (saved.isValid() && saved.width() >= 360)
-        ? qMin(saved.width(), p->width() - kMargin * 2) : kPanelWidth;
+        ? qMin(saved.width(), availW - kMargin * 2) : kPanelWidth;
     int h = (saved.isValid() && saved.height() >= 320)
         ? qMin(saved.height(), p->height() - top - kMargin)
         : qMax(320, p->height() - top - kMargin);
 
     resize(w, h);
-    move(p->width() - w - kMargin, top);
+    move(availW - w - kMargin, top);
     m_positioned = true;
 }
 

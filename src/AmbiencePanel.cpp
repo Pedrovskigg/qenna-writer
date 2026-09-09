@@ -1,4 +1,5 @@
 #include "AmbiencePanel.h"
+#include "AnchorUtils.h"
 
 #include "AmbienceManager.h"
 #include "Theme.h"
@@ -248,7 +249,7 @@ void AmbiencePanel::refreshPlayIcon(bool playing)
     m_playBtn->setToolTip(playing ? tr("Pausar") : tr("Reproduzir"));
 }
 
-void AmbiencePanel::showNear(const QRect& anchorGlobal)
+void AmbiencePanel::showNear(const QRect& anchorGlobal, Qt::Edge barSide)
 {
     if (m_manager) m_manager->refresh();
     adjustSize();
@@ -256,14 +257,8 @@ void AmbiencePanel::showNear(const QRect& anchorGlobal)
     QPoint pos(anchorGlobal.left(), anchorGlobal.bottom() + kGapBelowAnchor);
     const QScreen* screen = QGuiApplication::screenAt(anchorGlobal.center());
     if (screen) {
-        const QRect avail = screen->availableGeometry();
-        if (pos.x() + ps.width() > avail.right()) {
-            pos.setX(anchorGlobal.right() - ps.width());
-        }
-        if (pos.x() < avail.left()) pos.setX(avail.left() + 4);
-        if (pos.y() + ps.height() > avail.bottom()) {
-            pos.setY(anchorGlobal.top() - ps.height() - kGapBelowAnchor);
-        }
+        pos = AnchorUtils::positionNear(anchorGlobal, ps, barSide,
+                                         screen->availableGeometry(), kGapBelowAnchor);
     }
     move(pos);
     show();

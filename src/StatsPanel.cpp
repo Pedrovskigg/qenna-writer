@@ -1442,7 +1442,7 @@ void StatsPanel::ancorRight()
     const int top = m_topInset + kMargin;
     const int h = qMax(200, p->height() - top - kMargin);
     resize(kPanelWidth, h);
-    move(p->width() - width() - kMargin, top);
+    move(p->width() - width() - kMargin - m_rightInset, top);
     m_positioned = true;
 }
 

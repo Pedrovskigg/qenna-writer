@@ -3,6 +3,7 @@
 #include "MiraPersonality.h"
 
 #include <QAction>
+#include <QApplication>
 #include <QButtonGroup>
 #include <QDoubleValidator>
 #include <QEasingCurve>
@@ -15,10 +16,14 @@
 #include <QLineEdit>
 #include <QLocale>
 #include <QMenu>
+#include <QMouseEvent>
 #include <QPair>
 #include <QPropertyAnimation>
 #include <QRadioButton>
+#include <QSet>
+#include <QSettings>
 #include <QSignalBlocker>
+#include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
@@ -26,6 +31,7 @@
 #include "FontPickerPopup.h"
 #include "IconUtils.h"
 #include "Theme.h"
+#include "ToolbarGroupWidget.h"
 #include "UiScale.h"
 
 namespace {
@@ -36,7 +42,11 @@ QString iconNormalColor()   { return Theme::textMuted(); }
 QString iconHoverColor()    { return Theme::textPrimary(); }
 QString iconSelectedColor() { return Theme::textBright(); }
 
-constexpr int kBarHeight = 48;
+// Igual à LeftBar (LeftBar.cpp: kBarWidthBase=60, floor=40) — antes eram
+// 48/28, então LeftBar e TopToolbar cresciam/encolhiam em proporções
+// diferentes ao mexer no slider de escala de UI, ficando visivelmente
+// desencontradas (uma sempre maior que a outra). Ver TopToolbar::applyUiScale.
+constexpr int kBarHeight = 60;
 constexpr int kIconButtonSize = 32;
 constexpr int kIconSize = 20;
 
@@ -70,13 +80,16 @@ QIcon loadIcon(const QString &name, int px = kIconSize)
         QSize(px, px));
 }
 
-QFrame *makeVSeparator(QWidget *parent)
+// vertical=true monta o separador pra uma barra vertical (linha horizontal,
+// "HLine") — o nome do objeto (ttbVSep) fica genérico de propósito, é só
+// estilizado por QSS uma vez só.
+QFrame *makeVSeparator(QWidget *parent, bool vertical = false)
 {
     auto *line = new QFrame(parent);
     line->setObjectName(QStringLiteral("ttbVSep"));
-    line->setFrameShape(QFrame::VLine);
+    line->setFrameShape(vertical ? QFrame::HLine : QFrame::VLine);
     line->setFrameShadow(QFrame::Plain);
-    line->setFixedSize(1, 22);
+    line->setFixedSize(vertical ? QSize(22, 1) : QSize(1, 22));
     return line;
 }
 
@@ -87,6 +100,14 @@ int fontButtonPointSize(qreal editorPt)
 
 }
 
+int TopToolbar::thickness() const
+{
+    // Não usa a constante kBarHeight direto — a espessura real muda com a
+    // escala de UI (ver applyUiScale()); ler a dimensão fixada de verdade
+    // evita as duas ficarem dessincronizadas.
+    return isVertical() ? width() : height();
+}
+
 // "14" para inteiros, "14.5" para meios-pontos. Sem ".0" pendurado.
 QString TopToolbar::sizeText(qreal pt)
 {
@@ -95,7 +116,7 @@ QString TopToolbar::sizeText(qreal pt)
     return QString::number(pt, 'f', 1);
 }
 
-TopToolbar::TopToolbar(QWidget *parent)
+TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     : QWidget(parent)
     , homeButton(makeIconButton(this))
     , newProjectButton(makeIconButton(this))
@@ -134,10 +155,12 @@ TopToolbar::TopToolbar(QWidget *parent)
     , currentFontFamily(QStringLiteral("Alegreya"))
     , currentFontSize(16)
     , currentLineHeightPercent(115)
+    , m_barSide(side)
 {
     setObjectName(QStringLiteral("topToolbar"));
     setAttribute(Qt::WA_StyledBackground, true);
-    setFixedHeight(kBarHeight);
+    if (isVertical()) setFixedWidth(kBarHeight);
+    else setFixedHeight(kBarHeight);
 
     reminderBadge = new QLabel(this);
     reminderBadge->setObjectName(QStringLiteral("reminderBadge"));
@@ -164,7 +187,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     // ---------------- Grupo A: Projeto ----------------
     homeButton->setObjectName(QStringLiteral("ttbProject"));
     bindIcon(homeButton, QStringLiteral("home.svg"));
-    homeButton->setToolTip(tr("Voltar ao menu principal"));
+    homeButton->setToolTip(tr("Voltar ao menu principal (F12)"));
     connect(homeButton, &QToolButton::clicked, this, &TopToolbar::mainMenuRequested);
 
     newProjectButton->setObjectName(QStringLiteral("ttbProject"));
@@ -247,7 +270,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     focusButton->setObjectName(QStringLiteral("ttbTool"));
     focusButton->setIcon(focusOffIcon);
     focusButton->setCheckable(true);
-    focusButton->setToolTip(tr("Modo foco"));
+    focusButton->setToolTip(tr("Modo foco (Ctrl+F10)"));
     connect(focusButton, &QToolButton::toggled, this, [this](bool on) {
         focusCheckedCache = on;
         focusButton->setIcon(on ? focusOnIcon : focusOffIcon);
@@ -256,50 +279,47 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     searchButton->setObjectName(QStringLiteral("ttbTool"));
     bindIcon(searchButton, QStringLiteral("search.svg"));
-    searchButton->setToolTip(tr("Buscar"));
+    searchButton->setToolTip(tr("Buscar (Ctrl+Shift+F)"));
     connect(searchButton, &QToolButton::clicked, this, &TopToolbar::searchRequested);
 
     // ---------------- Grupo D: Tipografia ----------------
     fontButton->setObjectName(QStringLiteral("ttbFont"));
-    fontButton->setText(currentFontFamily);
-    applyFontButtonStyle();
+    sizeButton->setObjectName(QStringLiteral("ttbSize"));
+    lineHeightButton->setObjectName(QStringLiteral("ttbLineHeight"));
+
+    // O ícone é vinculado SEMPRE, mesmo no modo horizontal onde o botão mostra
+    // texto: sem isso, trocar pra lateral ao vivo acharia o binding inexistente
+    // e o botão nasceria sem ícone.
+    bindIcon(fontButton, QStringLiteral("change-font.svg"));
+    bindIcon(sizeButton, QStringLiteral("font-size.svg"));
+    bindIcon(lineHeightButton, QStringLiteral("text-spacing.svg"));
+
+    sizeButton->setPopupMode(QToolButton::InstantPopup);
+    lineHeightButton->setPopupMode(QToolButton::InstantPopup);
+
+    applyTypographyButtonMode();
 
     fontPicker = new FontPickerPopup(this);
     connect(fontPicker, &FontPickerPopup::fontSelected, this, [this](const QString &family) {
         currentFontFamily = family;
-        fontButton->setText(family);
-        applyFontButtonStyle();
+        if (isVertical()) fontButton->setToolTip(family);
+        else { fontButton->setText(family); applyFontButtonStyle(); }
         emit fontFamilyChanged(family);
     });
     connect(fontButton, &QToolButton::clicked, this, [this]() {
         if (!fontPicker) return;
         fontPicker->setFontFamilies(fontFamilies, currentFontFamily);
-        const QPoint anchor = fontButton->mapToGlobal(QPoint(0, fontButton->height()));
-        fontPicker->showAtBelow(anchor);
+        const QRect anchor(fontButton->mapToGlobal(QPoint(0, 0)), fontButton->size());
+        fontPicker->showNear(anchor, m_barSide);
     });
-
-    const QSize iconSize(kIconSize, kIconSize);
-
-    sizeButton->setObjectName(QStringLiteral("ttbSize"));
-    sizeButton->setPopupMode(QToolButton::InstantPopup);
-    sizeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    bindIcon(sizeButton, QStringLiteral("font-size.svg"));
-    sizeButton->setIconSize(QSize(kIconSize, kIconSize));
-    sizeButton->setText(sizeText(currentFontSize));
-    sizeButton->setFixedSize(26, kIconButtonSize);
-    sizeButton->setToolTip(tr("Tamanho da fonte"));
-
-    lineHeightButton->setObjectName(QStringLiteral("ttbLineHeight"));
-    lineHeightButton->setPopupMode(QToolButton::InstantPopup);
-    lineHeightButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    bindIcon(lineHeightButton, QStringLiteral("text-spacing.svg"));
-    lineHeightButton->setIconSize(QSize(kIconSize, kIconSize));
-    lineHeightButton->setText(QString::number(currentLineHeightPercent / 100.0, 'f', 1));
-    lineHeightButton->setFixedSize(26, kIconButtonSize);
-    lineHeightButton->setToolTip(tr("Espaçamento"));
 
     indentButton->setObjectName(QStringLiteral("ttbIndent"));
     indentButton->setText(QStringLiteral("¶"));
+    // Único botão do grupo Editor sem tamanho fixo/ícone de verdade — ficava
+    // do tamanho natural do glifo "¶", inconsistente com os vizinhos
+    // quadrados (mais visível agora que os grupos têm política de tamanho
+    // rígida). Adicionado a m_squareButtons abaixo pra escalar igual aos outros.
+    indentButton->setFixedSize(kIconButtonSize, kIconButtonSize);
     indentButton->setCheckable(true);
     indentButton->setChecked(true);
     indentButton->setToolTip(tr("Identação de parágrafo"));
@@ -319,7 +339,7 @@ TopToolbar::TopToolbar(QWidget *parent)
     // ---------------- Grupo E: Mídia ----------------
     reminderButton->setObjectName(QStringLiteral("ttbMedia"));
     bindIcon(reminderButton, QStringLiteral("reminder.svg"));
-    reminderButton->setToolTip(tr("Lembretes"));
+    reminderButton->setToolTip(tr("Lembretes (F7)"));
     connect(reminderButton, &QToolButton::clicked, this, &TopToolbar::reminderRequested);
 
     immersiveSoundButton->setObjectName(QStringLiteral("ttbMedia"));
@@ -341,17 +361,17 @@ TopToolbar::TopToolbar(QWidget *parent)
     fullscreenButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(fullscreenButton, QStringLiteral("fullscreen.svg"));
     fullscreenButton->setCheckable(true);
-    fullscreenButton->setToolTip(tr("Tela cheia"));
+    fullscreenButton->setToolTip(tr("Tela cheia (F11)"));
     connect(fullscreenButton, &QToolButton::toggled, this, &TopToolbar::fullscreenToggled);
 
     refMenuButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(refMenuButton, QStringLiteral("refmenu.svg"));
-    refMenuButton->setToolTip(tr("Painel de Referência"));
+    refMenuButton->setToolTip(tr("Painel de Referência (F6)"));
     connect(refMenuButton, &QToolButton::clicked, this, &TopToolbar::refMenuToggleRequested);
 
     pensarioButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(pensarioButton, QStringLiteral("pensario.svg"));
-    pensarioButton->setToolTip(tr("Pensário"));
+    pensarioButton->setToolTip(tr("Pensário (F4)"));
     connect(pensarioButton, &QToolButton::clicked, this, &TopToolbar::pensarioToggleRequested);
 
     construtorButton->setObjectName(QStringLiteral("ttbSystem"));
@@ -361,7 +381,7 @@ TopToolbar::TopToolbar(QWidget *parent)
 
     miraButton->setObjectName(QStringLiteral("ttbSystem"));
     bindIcon(miraButton, QStringLiteral("elements/star.svg"));
-    miraButton->setToolTip(tr("%1 — chat com a assistente de IA").arg(miraAssistantName()));
+    miraButton->setToolTip(tr("%1 — chat com a assistente de IA (F9)").arg(miraAssistantName()));
     connect(miraButton, &QToolButton::clicked, this, &TopToolbar::miraToggleRequested);
 
     // ---------------- Título do documento (centro) ----------------
@@ -392,68 +412,27 @@ TopToolbar::TopToolbar(QWidget *parent)
     connect(sceneVarButton, &QToolButton::clicked, this, &TopToolbar::sceneVarRequested);
 
     // ---------------- Layout ----------------
-    // Esquerda: Projeto (new/open/save) + Editor (font/size/lineHeight/indent/B/I)
-    // Centro: título do documento
-    // Direita: Ferramentas + Mídia + Worldbuilding (Construtor/Pensário/RefMenu) + Sistema
-    auto *layout = new QHBoxLayout(this);
-    layout->setContentsMargins(14, 4, 14, 4);
-    layout->setSpacing(6);
+    // Início (esquerda quando horizontal / topo quando vertical): Projeto
+    // (new/open/save) + Editor (font/size/lineHeight/indent/B/I)
+    // Meio: título do documento (só horizontal — ver positionDocTitle)
+    // Fim: Ferramentas + Mídia + Worldbuilding (Construtor/Pensário/RefMenu) + Sistema
+    //
+    // Cada bloco acima virou um ToolbarGroupWidget arrastável (ver
+    // buildGroups()) — a ORDEM entre eles é o que fica configurável (modo de
+    // edição, ligado por duplo clique na barra). m_mainLayout é membro (não variável
+    // local) porque rebuildGroupLayout() precisa reconstruí-lo sempre que a
+    // ordem muda, não só uma vez na construção.
+    const bool vertical = isVertical();
+    m_mainLayout = new QBoxLayout(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight, this);
+    m_mainLayout->setContentsMargins(vertical ? 4 : 14, vertical ? 14 : 4, vertical ? 4 : 14, vertical ? 14 : 4);
+    m_mainLayout->setSpacing(6);
 
-    // --- Esquerda: Projeto ---
-    layout->addWidget(homeButton);
-    layout->addWidget(newProjectButton);
-    layout->addWidget(openProjectButton);
-    layout->addWidget(saveProjectButton);
-    layout->addWidget(exportButton);
-    layout->addWidget(helpButton);
-    m_separators.append(makeVSeparator(this));
-    layout->addWidget(m_separators.last());
-
-    // --- Esquerda: Editor (tipografia + inline) ---
-    layout->addWidget(fontButton);
-    layout->addWidget(sizeButton);
-    layout->addWidget(lineHeightButton);
-    layout->addWidget(indentButton);
-    layout->addWidget(alignButton);
-    layout->addWidget(boldButton);
-    layout->addWidget(italicButton);
-    layout->addWidget(underlineButton);
-    layout->addWidget(strikethroughButton);
-    layout->addWidget(imageButton);
-
-    // --- Centro: stretch reservado (título é posicionado manualmente) ---
-    layout->addStretch(1);
-
-    // --- Direita: Ferramentas ---
-    layout->addWidget(readModeButton);
-    layout->addWidget(focusButton);
-    layout->addWidget(searchButton);
-    m_separators.append(makeVSeparator(this));
-    layout->addWidget(m_separators.last());
-
-    // --- Direita: Mídia ---
-    layout->addWidget(reminderButton);
-    layout->addWidget(immersiveSoundButton);
-    m_separators.append(makeVSeparator(this));
-    layout->addWidget(m_separators.last());
-
-    // --- Direita: Ferramentas de worldbuilding ---
-    layout->addWidget(construtorButton);
-    layout->addWidget(pensarioButton);
-    layout->addWidget(refMenuButton);
-    layout->addWidget(statisticsButton);
-    layout->addWidget(miraButton);
-    m_separators.append(makeVSeparator(this));
-    layout->addWidget(m_separators.last());
-
-    // --- Direita: Sistema ---
-    layout->addWidget(themePanelButton);
-    layout->addWidget(settingsButton);
-    layout->addWidget(fullscreenButton);
+    buildGroups();
 
     // Botão de overflow ("⋯") — só aparece quando updateOverflow() precisa
     // esconder algum botão dispensável por falta de espaço. Fica no fim da
-    // barra, sempre com o menu vazio até que isso aconteça.
+    // barra, sempre com o menu vazio até que isso aconteça. Fora do sistema
+    // de grupos (não arrasta, sempre por último).
     overflowButton = new QToolButton(this);
     overflowButton->setObjectName(QStringLiteral("ttbSystem"));
     overflowButton->setAutoRaise(true);
@@ -466,13 +445,19 @@ TopToolbar::TopToolbar(QWidget *parent)
     overflowButton->setVisible(false);
     m_overflowMenu = new QMenu(overflowButton);
     overflowButton->setMenu(m_overflowMenu);
-    layout->addWidget(overflowButton);
+
+    m_groupOrder = loadGroupOrder();
+    m_groupButtons = loadButtonLayout();
+    rebuildGroupLayout();
 
     buildSizeMenu();
     buildSpacingMenu();
     buildAlignMenu();
     buildOverflowMenu();
     applyRootStyle();
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
+        if (g) g->applyTheme(QColor(Theme::textMuted()), QColor(Theme::accentDefault()));
+    }
 
     // Botões "quadrados" padrão (tamanho kIconButtonSize / ícone kIconSize) —
     // os únicos com dimensão especial (sizeButton, lineHeightButton, sceneVarButton)
@@ -484,7 +469,7 @@ TopToolbar::TopToolbar(QWidget *parent)
         searchButton, alignButton, imageButton, reminderButton,
         immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
         refMenuButton, pensarioButton, construtorButton, miraButton,
-        overflowButton,
+        overflowButton, indentButton,
     };
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -492,6 +477,269 @@ TopToolbar::TopToolbar(QWidget *parent)
     connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
             this, &TopToolbar::applyUiScale);
     applyUiScale(); // aplica a escala persistida (icones recarregados no tamanho certo)
+}
+
+void TopToolbar::buildGroups()
+{
+    const Qt::Orientation orient = isVertical() ? Qt::Vertical : Qt::Horizontal;
+    for (const QString& id : defaultGroupOrder()) {
+        auto* g = new ToolbarGroupWidget(id, orient, this);
+        connect(g, &ToolbarGroupWidget::groupDroppedOn, this, &TopToolbar::onGroupDropped);
+        connect(g, &ToolbarGroupWidget::buttonDroppedOn, this, &TopToolbar::onButtonDropped);
+        connect(g, &ToolbarGroupWidget::toggleEditModeRequested,
+                this, [this]() { setEditMode(!m_editMode); });
+        m_groupWidgets.insert(id, g);
+    }
+
+    // Ids ESTAVEIS: e isso que vai pro QSettings. Renomear um id aqui invalida
+    // a organizacao salva do usuario (cai no padrao, ver loadButtonLayout) —
+    // entao trate como formato de arquivo, nao como detalhe interno.
+    m_buttonsById = {
+        { QStringLiteral("home"),           homeButton },
+        { QStringLiteral("newProject"),     newProjectButton },
+        { QStringLiteral("openProject"),    openProjectButton },
+        { QStringLiteral("saveProject"),    saveProjectButton },
+        { QStringLiteral("export"),         exportButton },
+        { QStringLiteral("help"),           helpButton },
+        { QStringLiteral("font"),           fontButton },
+        { QStringLiteral("size"),           sizeButton },
+        { QStringLiteral("lineHeight"),     lineHeightButton },
+        { QStringLiteral("indent"),         indentButton },
+        { QStringLiteral("align"),          alignButton },
+        { QStringLiteral("bold"),           boldButton },
+        { QStringLiteral("italic"),         italicButton },
+        { QStringLiteral("underline"),      underlineButton },
+        { QStringLiteral("strikethrough"),  strikethroughButton },
+        { QStringLiteral("image"),          imageButton },
+        { QStringLiteral("readMode"),       readModeButton },
+        { QStringLiteral("focus"),          focusButton },
+        { QStringLiteral("search"),         searchButton },
+        { QStringLiteral("reminder"),       reminderButton },
+        { QStringLiteral("immersiveSound"), immersiveSoundButton },
+        { QStringLiteral("construtor"),     construtorButton },
+        { QStringLiteral("pensario"),       pensarioButton },
+        { QStringLiteral("refMenu"),        refMenuButton },
+        { QStringLiteral("statistics"),     statisticsButton },
+        { QStringLiteral("mira"),           miraButton },
+        { QStringLiteral("themePanel"),     themePanelButton },
+        { QStringLiteral("settings"),       settingsButton },
+        { QStringLiteral("fullscreen"),     fullscreenButton },
+    };
+}
+
+QHash<QString, QStringList> TopToolbar::defaultButtonLayout() const
+{
+    return {
+        { QStringLiteral("project"), { QStringLiteral("home"), QStringLiteral("newProject"),
+                                       QStringLiteral("openProject"), QStringLiteral("saveProject"),
+                                       QStringLiteral("export"), QStringLiteral("help") } },
+        { QStringLiteral("editor"),  { QStringLiteral("font"), QStringLiteral("size"),
+                                       QStringLiteral("lineHeight"), QStringLiteral("indent"),
+                                       QStringLiteral("align"), QStringLiteral("bold"),
+                                       QStringLiteral("italic"), QStringLiteral("underline"),
+                                       QStringLiteral("strikethrough"), QStringLiteral("image") } },
+        { QStringLiteral("tools"),   { QStringLiteral("readMode"), QStringLiteral("focus"),
+                                       QStringLiteral("search") } },
+        { QStringLiteral("media"),   { QStringLiteral("reminder"), QStringLiteral("immersiveSound") } },
+        { QStringLiteral("worldbuilding"), { QStringLiteral("construtor"), QStringLiteral("pensario"),
+                                             QStringLiteral("refMenu"), QStringLiteral("statistics"),
+                                             QStringLiteral("mira") } },
+        { QStringLiteral("system"),  { QStringLiteral("themePanel"), QStringLiteral("settings"),
+                                       QStringLiteral("fullscreen") } },
+    };
+}
+
+QStringList TopToolbar::defaultGroupOrder() const
+{
+    return { QStringLiteral("project"), QStringLiteral("editor"), QStringLiteral("tools"),
+             QStringLiteral("media"), QStringLiteral("worldbuilding"), QStringLiteral("system") };
+}
+
+QStringList TopToolbar::loadGroupOrder() const
+{
+    const QStringList def = defaultGroupOrder();
+    const QStringList saved = QSettings().value(QStringLiteral("ui/topToolbarGroupOrder")).toStringList();
+    // Settings corrompida, de versao antiga sem esse valor, ou de uma versao
+    // futura com grupos diferentes — ignora e volta pro padrao em vez de
+    // arriscar desenhar a barra incompleta ou travar em algum lugar.
+    const QSet<QString> savedSet(saved.begin(), saved.end());
+    const QSet<QString> defSet(def.begin(), def.end());
+    if (saved.size() == def.size() && savedSet == defSet) return saved;
+    return def;
+}
+
+void TopToolbar::saveGroupOrder() const
+{
+    QSettings().setValue(QStringLiteral("ui/topToolbarGroupOrder"), m_groupOrder);
+}
+
+// Serializado como uma QStringList de "grupo=id1,id2,id3" — um valor so no
+// registro, e legivel a olho nu se precisar depurar.
+void TopToolbar::saveButtonLayout() const
+{
+    QStringList out;
+    for (const QString& gid : m_groupOrder)
+        out << QStringLiteral("%1=%2").arg(gid, m_groupButtons.value(gid).join(QLatin1Char(',')));
+    QSettings().setValue(QStringLiteral("ui/topToolbarButtonLayout"), out);
+}
+
+QHash<QString, QStringList> TopToolbar::loadButtonLayout() const
+{
+    const QHash<QString, QStringList> def = defaultButtonLayout();
+    const QStringList saved = QSettings().value(QStringLiteral("ui/topToolbarButtonLayout")).toStringList();
+    if (saved.isEmpty()) return def;
+
+    QHash<QString, QStringList> parsed;
+    QSet<QString> seen;
+    for (const QString& entry : saved) {
+        const int eq = entry.indexOf(QLatin1Char('='));
+        if (eq <= 0) return def; // formato estranho: nao tenta adivinhar
+        const QString gid = entry.left(eq);
+        if (!m_groupWidgets.contains(gid) || parsed.contains(gid)) return def;
+        QStringList ids;
+        const QString rhs = entry.mid(eq + 1);
+        if (!rhs.isEmpty()) ids = rhs.split(QLatin1Char(','), Qt::SkipEmptyParts);
+        for (const QString& id : std::as_const(ids)) {
+            // Id desconhecido (versao antiga/futura) ou repetido em dois grupos
+            // deixaria um botao orfao ou duplicado na barra — melhor recomecar.
+            if (!m_buttonsById.contains(id) || seen.contains(id)) return def;
+            seen.insert(id);
+        }
+        parsed.insert(gid, ids);
+    }
+    // Todo botao conhecido precisa estar em exatamente um grupo. Se a versao
+    // nova do app ganhou um botao que o layout salvo nao tem, o salvo e velho
+    // demais pra ser reaproveitado sem sumir com o botao novo.
+    if (seen.size() != m_buttonsById.size()) return def;
+    for (const QString& gid : m_groupWidgets.keys())
+        if (!parsed.contains(gid)) parsed.insert(gid, QStringList());
+    return parsed;
+}
+
+void TopToolbar::rebuildGroupLayout()
+{
+    if (!m_mainLayout) return;
+
+    QLayoutItem* item;
+    while ((item = m_mainLayout->takeAt(0)) != nullptr) delete item; // nao deleta os widgets
+    for (QFrame* sep : std::as_const(m_separators)) if (sep) sep->deleteLater();
+    m_separators.clear();
+
+    // Repovoa cada grupo a partir da composicao atual (que o usuario pode ter
+    // mudado arrastando botoes), nao da divisao fixa de codigo.
+    for (const QString& gid : std::as_const(m_groupOrder)) {
+        ToolbarGroupWidget* g = m_groupWidgets.value(gid);
+        if (!g) continue;
+        g->clearButtons();
+        for (const QString& bid : m_groupButtons.value(gid)) {
+            if (QToolButton* b = m_buttonsById.value(bid)) g->addButton(b, bid);
+        }
+        g->refreshEmptyPlaceholder();
+    }
+
+    const bool vertical = isVertical();
+    // Grupos vazios so ocupam lugar (e so recebem drop) durante o modo de
+    // edicao; fora dele sao invisiveis, e um separador ao lado de nada fica
+    // parecendo sujeira na barra.
+    QStringList visible;
+    for (const QString& gid : std::as_const(m_groupOrder)) {
+        ToolbarGroupWidget* g = m_groupWidgets.value(gid);
+        if (!g) continue;
+        if (g->isEmpty() && !m_editMode) { g->hide(); continue; }
+        g->show();
+        visible << gid;
+    }
+
+    for (int i = 0; i < visible.size(); ++i) {
+        ToolbarGroupWidget* g = m_groupWidgets.value(visible.at(i));
+        m_mainLayout->addWidget(g);
+        if (i == 1) {
+            // Reserva de espaco pro titulo (so horizontal — ver
+            // positionDocTitle) sempre depois do 2o grupo NA ORDEM ATUAL,
+            // nao de grupos especificos — assim continua fazendo sentido
+            // nao importa como o usuario reorganizou.
+            m_mainLayout->addStretch(1);
+        } else if (i < visible.size() - 1) {
+            auto* sep = makeVSeparator(this, vertical);
+            m_separators.append(sep);
+            m_mainLayout->addWidget(sep);
+        }
+    }
+    if (overflowButton) m_mainLayout->addWidget(overflowButton);
+
+    // Mesmo raciocinio de centralizacao de sempre, agora nos GRUPOS (que ja
+    // centralizam seus proprios botoes por dentro, ver ToolbarGroupWidget)
+    // em vez de botao por botao.
+    const Qt::Alignment crossAxisAlign = vertical ? Qt::AlignHCenter : Qt::AlignVCenter;
+    for (int i = 0; i < m_mainLayout->count(); ++i) {
+        if (QWidget* w = m_mainLayout->itemAt(i)->widget())
+            m_mainLayout->setAlignment(w, crossAxisAlign);
+    }
+    // Separadores nascem com o tamanho base; sem isto ficam do tamanho errado
+    // quando a escala de UI nao e 100% (rebuild acontece depois do applyUiScale).
+    const int sepLen = qMax(12, qRound(22 * UiScale::scale()));
+    for (QFrame* sep : std::as_const(m_separators)) {
+        if (vertical) sep->setFixedSize(sepLen, 1);
+        else          sep->setFixedSize(1, sepLen);
+    }
+}
+
+void TopToolbar::setEditMode(bool on)
+{
+    if (m_editMode == on) return;
+    m_editMode = on;
+    // Só enquanto edita: um filtro de aplicação permanente veria TODO evento do
+    // app pra nada, e este aqui existe só pra perceber o clique que encerra.
+    if (on) qApp->installEventFilter(this);
+    else    qApp->removeEventFilter(this);
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
+        if (g) g->setDraggable(on);
+    }
+    // Um grupo que ficou sem nenhum botao so aparece durante a edicao — e e
+    // justamente durante a edicao que ele precisa aparecer, senao nao ha onde
+    // soltar um botao pra devolve-lo. Ver rebuildGroupLayout().
+    rebuildGroupLayout();
+}
+
+void TopToolbar::onButtonDropped(const QString& buttonId, const QString& targetGroupId, int index)
+{
+    if (!m_buttonsById.contains(buttonId) || !m_groupButtons.contains(targetGroupId)) return;
+
+    QString sourceGroupId;
+    int sourceIndex = -1;
+    for (auto it = m_groupButtons.constBegin(); it != m_groupButtons.constEnd(); ++it) {
+        const int i = it.value().indexOf(buttonId);
+        if (i >= 0) { sourceGroupId = it.key(); sourceIndex = i; break; }
+    }
+    if (sourceGroupId.isEmpty()) return;
+
+    int target = qBound(0, index, m_groupButtons.value(targetGroupId).size());
+    if (sourceGroupId == targetGroupId) {
+        // Tirar o botao da lista desloca pra tras tudo que vem depois dele, e o
+        // indice de insercao foi calculado ANTES dessa remocao.
+        if (sourceIndex < target) --target;
+        if (target == sourceIndex) return; // soltou onde ja estava
+    }
+
+    m_groupButtons[sourceGroupId].removeAt(sourceIndex);
+    QStringList& targetList = m_groupButtons[targetGroupId];
+    targetList.insert(qBound(0, target, targetList.size()), buttonId);
+
+    saveButtonLayout();
+    rebuildGroupLayout();
+}
+
+void TopToolbar::onGroupDropped(const QString& draggedId, const QString& targetId)
+{
+    if (draggedId == targetId) return;
+    const int fromIdx = m_groupOrder.indexOf(draggedId);
+    if (fromIdx < 0 || !m_groupOrder.contains(targetId)) return;
+    m_groupOrder.removeAt(fromIdx);
+    const int toIdx = m_groupOrder.indexOf(targetId); // recalculado após o remove acima
+    m_groupOrder.insert(toIdx, draggedId);
+    saveGroupOrder();
+    saveButtonLayout(); // serializado na ordem dos grupos — precisa acompanhar
+    rebuildGroupLayout();
 }
 
 void TopToolbar::buildOverflowMenu()
@@ -538,48 +786,233 @@ int TopToolbar::currentIconPx() const
     return qMax(10, qRound(kIconSize * UiScale::scale()));
 }
 
+
 void TopToolbar::applyUiScale()
 {
     const qreal s = UiScale::scale();
-    const int barH = qMax(28, qRound(kBarHeight * s));
+    const int barH = qMax(40, qRound(kBarHeight * s));
     const int btnSize = qMax(18, qRound(kIconButtonSize * s));
     const int icoPx = currentIconPx();
 
-    setFixedHeight(barH);
+    if (isVertical()) setFixedWidth(barH);
+    else setFixedHeight(barH);
+
+    // O polish do QStyleSheetStyle é PREGUIÇOSO (roda no primeiro layout) e é
+    // ele quem traduz `min-width` do QSS em setMinimumWidth() no widget. Se
+    // deixarmos acontecer sozinho, ele pousa DEPOIS dos setFixedSize() abaixo e
+    // rouba o mínimo deles — era exatamente esse o bug da barra vertical (ver
+    // verticalGeometryReset()). Forçar aqui inverte a ordem: o QSS aplica o que
+    // tem pra aplicar primeiro, e o tamanho fixo abaixo é a última palavra.
+    for (QToolButton *b : { fontButton, sizeButton, lineHeightButton, indentButton }) {
+        if (b) b->ensurePolished();
+    }
 
     for (QToolButton *b : std::as_const(m_squareButtons)) {
         if (!b) continue;
         b->setFixedSize(btnSize, btnSize);
         b->setIconSize(QSize(icoPx, icoPx));
     }
+    // fontButton não está em m_squareButtons (no horizontal ele é um botão de
+    // largura variável com o nome da fonte) — só precisa escalar como um
+    // quadrado igual aos outros quando é ícone-only (vertical).
+    if (fontButton && isVertical()) {
+        fontButton->setFixedSize(btnSize, btnSize);
+        fontButton->setIconSize(QSize(icoPx, icoPx));
+    }
     if (sizeButton) {
-        sizeButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
         sizeButton->setIconSize(QSize(icoPx, icoPx));
+        if (isVertical()) sizeButton->setFixedSize(btnSize, btnSize);
+        else sizeButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
     }
     if (lineHeightButton) {
-        lineHeightButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
         lineHeightButton->setIconSize(QSize(icoPx, icoPx));
+        if (isVertical()) lineHeightButton->setFixedSize(btnSize, btnSize);
+        else lineHeightButton->setFixedSize(qMax(18, qRound(26 * s)), btnSize);
     }
     if (sceneVarButton) {
         const int varSize = qMax(14, qRound(20 * s));
         sceneVarButton->setFixedSize(varSize, varSize);
         sceneVarButton->setIconSize(QSize(qMax(10, qRound(14 * s)), qMax(10, qRound(14 * s))));
     }
+    const int sepLen = qMax(12, qRound(22 * s));
     for (QFrame *sep : std::as_const(m_separators)) {
-        if (sep) sep->setFixedSize(1, qMax(12, qRound(22 * s)));
+        if (!sep) continue;
+        if (isVertical()) sep->setFixedSize(sepLen, 1);
+        else sep->setFixedSize(1, sepLen);
     }
 
     reloadIcons(); // re-renderiza os SVGs no tamanho novo (evita esticar bitmap)
+
+    for (ToolbarGroupWidget *g : std::as_const(m_groupWidgets)) {
+        if (g && g->layout()) g->layout()->activate();
+    }
+    if (layout()) layout()->activate();
+
     positionDocTitle();
+}
+
+// Fonte/tamanho/espaçamento são os únicos botões que mudam de NATUREZA com o
+// lado da barra, e é por isso que trocar de lado já exigiu reiniciar o app:
+// no topo o de fonte é um botão de TEXTO que mostra o nome da fonte escrito na
+// própria fonte (pré-visualização), e o de tamanho mostra o valor ao lado do
+// ícone; na lateral não cabe texto numa coluna de ~48px, então os três viram
+// quadrados ícone-only e o valor vai pro tooltip.
+//
+// Tudo aqui é idempotente de propósito: roda no construtor e de novo a cada
+// setBarSide().
+// Troca o lado da barra AO VIVO. Antes isso exigia relançar o app inteiro, o
+// que jogava o usuário de volta na tela inicial.
+//
+// A ordem aqui importa e não é arbitrária:
+//   1. natureza dos botões (texto <-> ícone) ANTES de qualquer medida;
+//   2. direção do layout e orientação dos grupos;
+//   3. rebuild (é ele que recria os separadores na forma certa e reaplica o
+//      alinhamento de cada botão, que é definido em ToolbarGroupWidget::addButton);
+//   4. folha de estilo nova;
+//   5. re-polir os botões de tipografia — ver comentário abaixo;
+//   6. tamanhos.
+void TopToolbar::setBarSide(Qt::Edge side)
+{
+    if (m_barSide == side) return;
+    m_barSide = side;
+    const bool vertical = isVertical();
+
+    // O modo de reorganização não sobrevive à troca: alças e orientação são
+    // refeitas embaixo dele.
+    if (m_editMode) setEditMode(false);
+
+    applyTypographyButtonMode();
+
+    if (m_mainLayout) {
+        m_mainLayout->setDirection(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
+        m_mainLayout->setContentsMargins(vertical ? 4 : 14, vertical ? 14 : 4,
+                                         vertical ? 4 : 14, vertical ? 14 : 4);
+    }
+    for (ToolbarGroupWidget *g : std::as_const(m_groupWidgets)) {
+        if (g) g->setOrientation(vertical ? Qt::Vertical : Qt::Horizontal);
+    }
+    rebuildGroupLayout();
+
+    // A barra tinha altura OU largura fixa; setFixedWidth/Height mexe em min E
+    // max, então o eixo que deixou de ser fixo ficaria preso no valor antigo.
+    setMinimumSize(0, 0);
+    setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
+    applyRootStyle();
+
+    // As restrições de geometria do QSS (`min-width`) só entram no widget
+    // durante o polish, que já aconteceu há muito tempo — sem forçar aqui, o
+    // botão de fonte voltaria pro modo horizontal SEM o min-width de 130px que
+    // ele precisa pra caber o nome da fonte, e no caminho inverso levaria junto
+    // a restrição do modo antigo. Zerar antes é o que faz o QSS novo valer de
+    // fato; ver verticalGeometryReset() pro mecanismo completo.
+    for (QToolButton *b : { fontButton, sizeButton, lineHeightButton, indentButton }) {
+        if (!b) continue;
+        b->setMinimumSize(0, 0);
+        b->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        style()->unpolish(b);
+        style()->polish(b);
+    }
+
+    applyUiScale();     // re-fixa tamanhos e o eixo certo da barra
+    updateAlignButtonIcon();
+    positionDocTitle();
+
+    emit barSideChanged(m_barSide);
+}
+
+void TopToolbar::applyTypographyButtonMode()
+{
+    const bool vertical = isVertical();
+
+    if (fontButton) {
+        if (vertical) {
+            fontButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+            fontButton->setText(QString());
+            fontButton->setToolTip(currentFontFamily);
+        } else {
+            // Solta o tamanho fixo que o modo lateral impôs — no topo a largura
+            // é livre, ela acompanha o nome da fonte.
+            fontButton->setMinimumSize(0, 0);
+            fontButton->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+            fontButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+            fontButton->setToolTip(QString());
+            fontButton->setText(currentFontFamily);
+            applyFontButtonStyle();
+        }
+    }
+
+    const Qt::ToolButtonStyle sizeStyle = vertical
+        ? Qt::ToolButtonIconOnly : Qt::ToolButtonTextBesideIcon;
+    if (sizeButton) {
+        sizeButton->setToolButtonStyle(sizeStyle);
+        if (!vertical) sizeButton->setToolTip(tr("Tamanho da fonte"));
+    }
+    if (lineHeightButton) {
+        lineHeightButton->setToolButtonStyle(sizeStyle);
+        if (!vertical) lineHeightButton->setToolTip(tr("Espaçamento"));
+    }
+    // Reescrevem texto/tooltip conforme o modo (ver as duas funções).
+    updateSizeButtonLabel();
+    updateLineHeightButtonLabel();
+}
+
+// Neutraliza, SÓ no modo vertical, as regras de geometria que o QSS global
+// (Theme::globalStyleSheet, aplicado no qApp) impõe aos botões de tipografia.
+//
+// Aquelas regras foram escritas para a barra HORIZONTAL, onde #ttbFont exibe o
+// NOME da fonte como texto e por isso pede min-width: 130px. Na barra vertical
+// os mesmos botões viram quadrados ícone-only de tamanho fixo (applyUiScale) e
+// esse mínimo passa a ser veneno:
+//
+//   QStyleSheetStyle aplica `min-width` chamando setMinimumWidth() no próprio
+//   widget, durante o polish. Polish é PREGUIÇOSO — acontece no primeiro
+//   layout, ou seja DEPOIS do setFixedSize() do construtor. O mínimo do QSS
+//   sobrescreve o tamanho fixo e, como setGeometry_sys() faz qMax(w, minw)
+//   depois de qMin(w, maxw), o MÍNIMO GANHA DO MÁXIMO. No cold start o
+//   #ttbFont nascia deitado com 148px (130 + padding 16 + borda 2) dentro de
+//   uma coluna de 48px — sumia da barra; #ttbSize/#ttbLineHeight nasciam com
+//   64px (60 + 2 + 2) e o ícone ficava centralizado nessa caixa larga demais,
+//   parecendo "descentralizado". Mexer no slider de escala de UI destravava
+//   porque um segundo setFixedSize(), já com o widget polido, gruda.
+//
+// A folha de um ancestral (esta) vence a do QApplication independente de
+// especificidade — por isso basta redeclarar aqui. Modo horizontal fica
+// intocado.
+//
+// O `padding` é redeclarado junto, e de propósito IGUAL ao da regra genérica
+// `#topToolbar QToolButton` (4px 6px): cada um desses quatro tinha um padding
+// próprio pensado pro modo horizontal (`4px 8px` no #ttbFont, `4px 0` no
+// #ttbIndent...), e como o padding encolhe a área de conteúdo, ele acaba
+// decidindo o tamanho FINAL do ícone — o `setIconSize` só vale até onde a
+// caixa deixa. Padding diferente = ícone renderizado em tamanho diferente do
+// resto da barra, que foi exatamente a queixa de "ficou apertado" (mais tinta
+// na mesma caixa = menos ar entre os botões). Uniformizando o padding, os 30
+// botões renderizam no mesmo tamanho.
+QString TopToolbar::verticalGeometryReset() const
+{
+    if (!isVertical()) return QString();
+    return QStringLiteral(R"(
+        QToolButton#ttbFont, QToolButton#ttbSize,
+        QToolButton#ttbLineHeight, QToolButton#ttbIndent {
+            min-width: 0px;
+            padding: 4px 6px;
+        }
+    )");
 }
 
 void TopToolbar::applyRootStyle()
 {
-    // Background da toolbar segue o app (sem caixa), botões transparentes com
-    // hover sutil. As cores dos ícones já vêm tintadas via loadIcon().
+    // Mesmo estilo "painel" da LeftBar/painéis flutuantes (panelBackground +
+    // borda + raio configurável no Editor de Temas) — antes era um
+    // background liso (appBackground, sem borda/raio), inconsistente com o
+    // resto do chrome do app. Botões continuam transparentes com hover sutil;
+    // as cores dos ícones já vêm tintadas via loadIcon().
     setStyleSheet(QStringLiteral(R"(
         QWidget#topToolbar {
             background: %1;
+            border: 1px solid %7;
+            border-radius: %8;
         }
         QToolButton {
             background: transparent;
@@ -601,19 +1034,29 @@ void TopToolbar::applyRootStyle()
         QToolButton#ttbSize, QToolButton#ttbLineHeight {
             padding: 0px 1px;
             spacing: 1px;
-            font-size: 11px;
+            font-size: %9px;
+            color: %10;
+        }
+        QToolButton#ttbSize:hover, QToolButton#ttbLineHeight:hover {
+            color: %5;
         }
         QFrame#ttbVSep {
             color: %4;
             background: %4;
         }
+        %11
     )").arg(
-        Theme::appBackground(),    // 1 — fundo
-        Theme::textPrimary(),      // 2 — texto dos botões em estado normal
-        Theme::hoverOverlay(),     // 3 — hover bg
-        Theme::subtleBorder(),     // 4 — borda hover / separador
-        Theme::textBright(),       // 5 — texto hover/checked
-        Theme::pressedOverlay()    // 6 — checked bg
+        Theme::panelBackground(),    // 1 — fundo
+        Theme::textPrimary(),        // 2 — texto dos botões em estado normal
+        Theme::hoverOverlay(),       // 3 — hover bg
+        Theme::subtleBorder(),       // 4 — borda hover / separador
+        Theme::textBright(),         // 5 — texto hover/checked
+        Theme::pressedOverlay(),     // 6 — checked bg
+        Theme::panelBorder(),        // 7 — borda do corpo da barra
+        Theme::panelBorderRadius(),  // 8 — raio configurável (Editor de Temas)
+        QString::number(isVertical() ? 10 : 11), // 9 — texto do tamanho/espaçamento
+        Theme::textMuted(),          // 10 — cor discreta desse mesmo texto
+        verticalGeometryReset()      // 11 — anula min-width do QSS global (ver abaixo)
     ));
 
     if (reminderBadge) {
@@ -680,8 +1123,13 @@ void TopToolbar::reloadIcons()
     }
     for (const auto& pair : iconBindings) {
         if (!pair.first) continue;
-        // sceneVarButton usa um ícone menor que o padrão da barra (ver applyUiScale).
-        const int iconPx = (pair.first == sceneVarButton) ? sceneVarButton->iconSize().width() : px;
+        // Respeita o iconSize() JÁ configurado no próprio botão — não assume
+        // `px` (padrão da barra) pra todo mundo. sceneVarButton, por exemplo, é
+        // menor; sobrescrever com `px` recarregava o ícone renderizado no
+        // tamanho errado, esticado pro tamanho real do widget (ficava
+        // borrado/sumido/pequeno demais).
+        const int currentPx = pair.first->iconSize().width();
+        const int iconPx = currentPx > 0 ? currentPx : px;
         pair.first->setIcon(loadIcon(pair.second, iconPx));
     }
     updateAlignButtonIcon();
@@ -832,7 +1280,14 @@ void TopToolbar::buildAlignMenu()
 void TopToolbar::applyTheme()
 {
     applyRootStyle();
-    reloadIcons();
+    // applyUiScale() no lugar de reloadIcons() direto: ele já recarrega os
+    // ícones E re-afirma os tamanhos fixos. Necessário porque setStyleSheet()
+    // faz o Qt re-polir os botões, e o polish reaplica a geometria do QSS por
+    // cima do que fixamos (mesmo mecanismo do bug da barra vertical).
+    applyUiScale();
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
+        if (g) g->applyTheme(QColor(Theme::textMuted()), QColor(Theme::accentDefault()));
+    }
 }
 
 void TopToolbar::setDocumentTitle(const QString &title, const QString &subtitle)
@@ -866,6 +1321,43 @@ void TopToolbar::resizeEvent(QResizeEvent *event)
     positionDocTitle();
     positionReminderBadge();
     positionPensarioBadge();
+}
+
+// Sair do modo de reorganização é clicar em qualquer coisa que não seja um
+// ícone arrastável — a mesma ideia de "tocar fora" que todo celular usa.
+// Precisar segurar de novo pra sair era contraintuitivo.
+//
+// Este handler cobre as partes vazias da própria barra (margens, frestas entre
+// grupos, separadores, área do título). Um clique na área vazia de um GRUPO
+// também cai aqui: o ToolbarGroupWidget ignora o press quando ele não é na
+// alça, e evento ignorado sobe pro pai. Clique FORA da barra inteira é o outro
+// caminho, no eventFilter abaixo.
+void TopToolbar::mousePressEvent(QMouseEvent *event)
+{
+    if (m_editMode && event->button() == Qt::LeftButton) {
+        setEditMode(false);
+        event->accept();
+        return;
+    }
+    QWidget::mousePressEvent(event);
+}
+
+// Filtro no nível do QApplication, instalado SÓ enquanto o modo de edição está
+// ligado (ver setEditMode) — é o que permite perceber um clique em qualquer
+// outro lugar do app: no texto, na LeftBar, num painel.
+//
+// O evento não é consumido de propósito: quem clicou no meio do texto quer o
+// cursor ali, não só sair do modo de edição. Sair é efeito colateral do
+// clique, não substituto dele.
+bool TopToolbar::eventFilter(QObject *watched, QEvent *event)
+{
+    if (m_editMode && event->type() == QEvent::MouseButtonPress) {
+        // Um filtro de aplicação vê eventos de QWindow também, não só de
+        // widget; só os de widget interessam aqui.
+        auto *w = qobject_cast<QWidget*>(watched);
+        if (w && w != this && !isAncestorOf(w)) setEditMode(false);
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 void TopToolbar::setTitleAnchorX(int x)
@@ -952,6 +1444,25 @@ void TopToolbar::positionDocTitle()
 {
     if (!docTitleLabel) return;
 
+    // activate() tem que rodar SEMPRE, mesmo quando a barra é vertical e o
+    // resto da função não se aplica — é o que avisa o QBoxLayout pra
+    // recalcular posições depois que applyUiScale() redimensiona botões
+    // (sizeButton/lineHeightButton). Sem isso, os botões abaixo deles ficam
+    // com geometria antiga (sobrepondo o vizinho de cima) até a próxima
+    // reposição por outro motivo qualquer.
+    if (auto *lay = layout()) lay->activate();
+
+    // Barra vertical: 48px de largura não dá pra mostrar um título horizontal
+    // de forma legível (eliria pra 2-3 letras) — decisão consciente de
+    // esconder, não uma limitação esquecida. O contexto do capítulo/cena
+    // continua disponível pela Drawer/RefMenu.
+    if (isVertical()) {
+        docTitleLabel->hide();
+        if (docSubtitleLabel) docSubtitleLabel->hide();
+        if (sceneVarButton) sceneVarButton->hide();
+        return;
+    }
+
     // Garante que imageButton/readModeButton já tenham a posição DEFINITIVA do
     // layout antes de ler a geometria deles. Sem isso, geometry() pode devolver
     // a posição "ainda não lay-outada" (0,0 — QRect::isValid() não pega esse
@@ -973,8 +1484,12 @@ void TopToolbar::positionDocTitle()
     int leftBound = kSideMargin;
     int rightBound = width() - kSideMargin;
     if (imageButton && readModeButton) {
-        leftBound = imageButton->geometry().right() + kSideMargin;
-        rightBound = readModeButton->geometry().left() - kSideMargin;
+        // mapTo(this, ...), não .geometry() cru — os dois agora moram dentro
+        // de ToolbarGroupWidget (Editor/Ferramentas), então .geometry() seria
+        // relativo ao GRUPO, não à TopToolbar (comparar os dois direto daria
+        // conta errada, cada um num sistema de coordenadas diferente).
+        leftBound = imageButton->mapTo(this, QPoint(imageButton->width(), 0)).x() + kSideMargin;
+        rightBound = readModeButton->mapTo(this, QPoint(0, 0)).x() - kSideMargin;
     }
     const int availW = rightBound - leftBound;
 
@@ -1064,6 +1579,13 @@ void TopToolbar::restoreFromOverflow(QToolButton *btn)
 void TopToolbar::updateOverflow()
 {
     if (!overflowButton || !layout() || m_collapsePriority.isEmpty()) return;
+    // A conta de "espaço livre" abaixo é toda em X (largura) — não faz
+    // sentido numa barra vertical, onde o eixo que pode faltar é Y (altura da
+    // janela) e o título (motivo original de colapsar botões) já fica
+    // escondido (ver positionDocTitle). Não colapsa nada nesse modo por
+    // enquanto — telas muito baixas podem cortar botões visualmente, mas
+    // nada quebra/corrompe.
+    if (isVertical()) return;
 
     // Espaço confortável mínimo pro título (mesmo elidido) — abaixo disso
     // ainda vale a pena colapsar mais um botão dispensável.
@@ -1073,7 +1595,11 @@ void TopToolbar::updateOverflow()
         if (!imageButton || !readModeButton) return width();
         layout()->invalidate();
         layout()->activate();
-        return readModeButton->geometry().left() - imageButton->geometry().right();
+        // mapTo(this, ...) pelo mesmo motivo do positionDocTitle() acima —
+        // os dois botões moram dentro de grupos diferentes agora.
+        const int rmLeft = readModeButton->mapTo(this, QPoint(0, 0)).x();
+        const int imgRight = imageButton->mapTo(this, QPoint(imageButton->width(), 0)).x();
+        return rmLeft - imgRight;
     };
 
     // Encolhe: do menos essencial pro mais essencial, colapsa mais um por vez
@@ -1103,8 +1629,8 @@ void TopToolbar::setFontFamilies(const QStringList &families, const QString &cur
 {
     fontFamilies = families;
     currentFontFamily = current;
-    fontButton->setText(currentFontFamily);
-    applyFontButtonStyle();
+    if (isVertical()) fontButton->setToolTip(currentFontFamily);
+    else { fontButton->setText(currentFontFamily); applyFontButtonStyle(); }
 }
 
 void TopToolbar::setFontSize(qreal pt)
@@ -1116,7 +1642,7 @@ void TopToolbar::setFontSize(qreal pt)
 void TopToolbar::setLineHeightPercent(int percent)
 {
     currentLineHeightPercent = percent;
-    lineHeightButton->setText(QString::number(percent / 100.0, 'f', 1));
+    updateLineHeightButtonLabel();
     updateSpacingMenuChecks();
 }
 
@@ -1280,7 +1806,7 @@ void TopToolbar::commitSizeEditor()
 
 void TopToolbar::updateSizeMenuState()
 {
-    sizeButton->setText(sizeText(currentFontSize));
+    updateSizeButtonLabel();
     applyFontButtonStyle();
     if (sizeStepperEdit) {
         QSignalBlocker block(sizeStepperEdit);
@@ -1288,6 +1814,33 @@ void TopToolbar::updateSizeMenuState()
     }
     for (QAction *a : std::as_const(sizePresetActions)) {
         a->setChecked(qFuzzyCompare(currentFontSize, qreal(a->data().toInt())));
+    }
+}
+
+void TopToolbar::updateSizeButtonLabel()
+{
+    if (!sizeButton) return;
+    const QString txt = sizeText(currentFontSize);
+    // Limpar a representação do outro modo não é zelo: numa troca ao vivo o
+    // texto antigo sobreviveria e o botão ícone-only ficaria com um "17.5"
+    // fantasma influenciando o sizeHint.
+    if (isVertical()) {
+        sizeButton->setText(QString());
+        sizeButton->setToolTip(tr("Tamanho da fonte (%1)").arg(txt));
+    } else {
+        sizeButton->setText(txt);
+    }
+}
+
+void TopToolbar::updateLineHeightButtonLabel()
+{
+    if (!lineHeightButton) return;
+    const QString txt = QString::number(currentLineHeightPercent / 100.0, 'f', 1);
+    if (isVertical()) {
+        lineHeightButton->setText(QString());
+        lineHeightButton->setToolTip(tr("Espaçamento (%1)").arg(txt));
+    } else {
+        lineHeightButton->setText(txt);
     }
 }
 
@@ -1326,7 +1879,7 @@ void TopToolbar::buildSpacingMenu()
         a->setProperty("ttbRole", QStringLiteral("lineHeight"));
         connect(a, &QAction::triggered, this, [this, percent]() {
             currentLineHeightPercent = percent;
-            lineHeightButton->setText(QString::number(percent / 100.0, 'f', 1));
+            updateLineHeightButtonLabel();
             emit lineHeightChanged(percent);
             updateSpacingMenuChecks();
         });

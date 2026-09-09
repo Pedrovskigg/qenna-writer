@@ -192,26 +192,30 @@ void ThemePreviewWidget::paintEvent(QPaintEvent* /*event*/)
     if (m_showChrome) {
         const int ttbH = qMax(14, full.height() / 14);
         const int leftW = qMax(14, full.width() / 22);
+        // Raio proporcional ao da miniatura — panelRadius é pensado pra
+        // barras/painéis em tamanho real (0-24px), escalado aqui só pra dar
+        // uma ideia relativa de "mais quadrado" vs "mais arredondado".
+        const qreal previewRadius = qBound(1.0, m_theme.panelRadius * 0.35, 10.0);
         // top toolbar
         QRectF ttbRect(margin, margin, full.width() - margin * 2, ttbH);
         p.setPen(Qt::NoPen);
         p.setBrush(panelBg.isValid() ? panelBg : QColor("#1a1a1a"));
-        p.drawRoundedRect(ttbRect, 4, 4);
+        p.drawRoundedRect(ttbRect, previewRadius, previewRadius);
         if (panelBorder.isValid()) {
             p.setPen(QPen(panelBorder, 1.0));
             p.setBrush(Qt::NoBrush);
-            p.drawRoundedRect(ttbRect, 4, 4);
+            p.drawRoundedRect(ttbRect, previewRadius, previewRadius);
         }
         // left bar
         const int lbY = margin + ttbH + margin / 2;
         QRectF lbRect(margin, lbY, leftW, full.height() - lbY - margin);
         p.setPen(Qt::NoPen);
         p.setBrush(panelBg.isValid() ? panelBg : QColor("#1a1a1a"));
-        p.drawRoundedRect(lbRect, 4, 4);
+        p.drawRoundedRect(lbRect, previewRadius, previewRadius);
         if (panelBorder.isValid()) {
             p.setPen(QPen(panelBorder, 1.0));
             p.setBrush(Qt::NoBrush);
-            p.drawRoundedRect(lbRect, 4, 4);
+            p.drawRoundedRect(lbRect, previewRadius, previewRadius);
         }
 
         contentX = margin + leftW + margin;

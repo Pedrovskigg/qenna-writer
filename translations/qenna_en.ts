@@ -16350,17 +16350,17 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="22"/>
         <source>O primeiro livro de Agatha Christie, &apos;O Misterioso Caso de Styles&apos;, foi rejeitado por 5 editoras antes de ser aceito.</source>
-        <translation>Agatha Christie&apos;s first book, &amp;apos;The Mysterious Affair at Styles&amp;apos;, was rejected by 5 publishers before being accepted.</translation>
+        <translation>Agatha Christie&apos;s first book, &apos;The Mysterious Affair at Styles&apos;, was rejected by 5 publishers before being accepted.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="23"/>
         <source>O romance &apos;O Grande Gatsby&apos; de F. Scott Fitzgerald foi rejeitado por 8 editoras antes de ser publicado.</source>
-        <translation>F. Scott Fitzgerald&apos;s novel &amp;apos;The Great Gatsby&amp;apos; was rejected by 8 publishers before it was published.</translation>
+        <translation>F. Scott Fitzgerald&apos;s novel &apos;The Great Gatsby&apos; was rejected by 8 publishers before it was published.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="24"/>
         <source>O livro &apos;Moby Dick&apos; de Herman Melville foi rejeitado por várias editoras antes de se tornar um clássico da literatura.</source>
-        <translation>Herman Melville&apos;s &amp;apos;Moby Dick&amp;apos; was rejected by several publishers before becoming a literary classic.</translation>
+        <translation>Herman Melville&apos;s &apos;Moby Dick&apos; was rejected by several publishers before becoming a literary classic.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="25"/>
@@ -16390,17 +16390,17 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="30"/>
         <source>&apos;O Morro dos Ventos Uivantes&apos; de Emily Brontë é um clássico da literatura inglesa, publicado em 1847.</source>
-        <translation>Emily Brontë&amp;apos;s &amp;apos;Wuthering Heights&amp;apos; is a classic of English literature, published in 1847.</translation>
+        <translation>Emily Brontë&apos;s &apos;Wuthering Heights&apos; is a classic of English literature, published in 1847.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="31"/>
         <source>&apos;Frankenstein&apos; de Mary Shelley é considerado o primeiro romance de ficção científica, publicado em 1818.</source>
-        <translation>Mary Shelley&amp;apos;s &amp;apos;Frankenstein&amp;apos; is considered the first science fiction novel, published in 1818.</translation>
+        <translation>Mary Shelley&apos;s &apos;Frankenstein&apos; is considered the first science fiction novel, published in 1818.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="32"/>
         <source>&apos;Crepúsculo&apos; de Stephenie Meyer é um fenômeno literário com milhões de fãs, mas foi rejeitado por várias editoras.</source>
-        <translation>Stephenie Meyer&amp;apos;s &amp;apos;Twilight&amp;apos; is a literary phenomenon with millions of fans, but it was rejected by several publishers.</translation>
+        <translation>Stephenie Meyer&apos;s &apos;Twilight&apos; is a literary phenomenon with millions of fans, but it was rejected by several publishers.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="33"/>
@@ -16430,7 +16430,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="38"/>
         <source>&apos;Eu perdi tudo&apos; — Tony Silva, após ter perdido todo seu projeto em um bug nas versões antigas do Qenna Writer. Obs.: Já foi corrigido há várias versões, não se preocupe.</source>
-        <translation>&amp;apos;I lost everything&amp;apos; — Tony Silva, after losing his entire project to a bug in old versions of Qenna Writer. Note: it&amp;apos;s been fixed for many versions now, don&amp;apos;t worry.</translation>
+        <translation>&apos;I lost everything&apos; — Tony Silva, after losing his entire project to a bug in old versions of Qenna Writer. Note: it&apos;s been fixed for many versions now, don&apos;t worry.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="39"/>
@@ -16440,7 +16440,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="40"/>
         <source>Experimente o &apos;FocusWriter&apos; de Gott Code. Foi o meu editor mais usado até o Qenna Writer nascer.</source>
-        <translation>Try &amp;apos;FocusWriter&amp;apos; by Gott Code. It was my most-used editor before Qenna Writer was born.</translation>
+        <translation>Try &apos;FocusWriter&apos; by Gott Code. It was my most-used editor before Qenna Writer was born.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="41"/>
@@ -16460,12 +16460,12 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="44"/>
         <source>Isaac Asimov escreveu a série &apos;Fundação&apos; inspirando-se na história do Império Romano.</source>
-        <translation>Isaac Asimov wrote the &amp;apos;Foundation&amp;apos; series drawing inspiration from the history of the Roman Empire.</translation>
+        <translation>Isaac Asimov wrote the &apos;Foundation&apos; series drawing inspiration from the history of the Roman Empire.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="45"/>
         <source>J.K. Rowling escreveu o primeiro rascunho de &apos;Harry Potter&apos; à mão, em um caderno enquanto estava em um café.</source>
-        <translation>J.K. Rowling wrote the first draft of &amp;apos;Harry Potter&amp;apos; by hand, in a notebook, while sitting in a café.</translation>
+        <translation>J.K. Rowling wrote the first draft of &apos;Harry Potter&apos; by hand, in a notebook, while sitting in a café.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="46"/>
@@ -16490,7 +16490,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="50"/>
         <source>Frank Herbert escreveu &apos;Duna&apos; inspirando-se em suas experiências com ecologia e política, e o livro se tornou um dos maiores clássicos da ficção científica.</source>
-        <translation>Frank Herbert wrote &amp;apos;Dune&amp;apos; drawing on his experiences with ecology and politics, and the book became one of the greatest classics of science fiction.</translation>
+        <translation>Frank Herbert wrote &apos;Dune&apos; drawing on his experiences with ecology and politics, and the book became one of the greatest classics of science fiction.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="51"/>
@@ -16875,27 +16875,27 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="127"/>
         <source>O livro &apos;O Sol é para Todos&apos; de Harper Lee é um clássico da literatura americana, publicado em 1960, que aborda temas como racismo e justiça social através dos olhos de uma criança.</source>
-        <translation>Harper Lee&apos;s &amp;apos;To Kill a Mockingbird&amp;apos; is a classic of American literature, published in 1960, that tackles themes like racism and social justice through a child&apos;s eyes.</translation>
+        <translation>Harper Lee&apos;s &apos;To Kill a Mockingbird&apos; is a classic of American literature, published in 1960, that tackles themes like racism and social justice through a child&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="128"/>
         <source>O romance &apos;1984&apos; de George Orwell é um clássico da literatura distópica, publicado em 1949, que explora temas como totalitarismo, vigilância e controle social.</source>
-        <translation>George Orwell&apos;s novel &amp;apos;1984&amp;apos; is a classic of dystopian literature, published in 1949, exploring themes like totalitarianism, surveillance, and social control.</translation>
+        <translation>George Orwell&apos;s novel &apos;1984&apos; is a classic of dystopian literature, published in 1949, exploring themes like totalitarianism, surveillance, and social control.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="129"/>
         <source>A série &apos;As Crônicas de Gelo e Fogo&apos; de George R.R. Martin é conhecida por sua narrativa complexa, personagens moralmente ambíguos e reviravoltas inesperadas.</source>
-        <translation>George R.R. Martin&apos;s &amp;apos;A Song of Ice and Fire&amp;apos; series is known for its complex narrative, morally ambiguous characters, and unexpected twists.</translation>
+        <translation>George R.R. Martin&apos;s &apos;A Song of Ice and Fire&apos; series is known for its complex narrative, morally ambiguous characters, and unexpected twists.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="130"/>
         <source>O livro &apos;O Apanhador no Campo de Centeio&apos; de J.D. Salinger é um clássico da literatura americana, publicado em 1951, que aborda temas como alienação e adolescência através dos olhos de um jovem narrador.</source>
-        <translation>J.D. Salinger&apos;s &amp;apos;The Catcher in the Rye&amp;apos; is a classic of American literature, published in 1951, tackling themes like alienation and adolescence through a young narrator&apos;s eyes.</translation>
+        <translation>J.D. Salinger&apos;s &apos;The Catcher in the Rye&apos; is a classic of American literature, published in 1951, tackling themes like alienation and adolescence through a young narrator&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="131"/>
         <source>O romance &apos;Orgulho e Preconceito&apos; de Jane Austen é um clássico da literatura inglesa, publicado em 1813, que explora temas como classe social, casamento e moralidade através dos olhos de uma jovem protagonista.</source>
-        <translation>Jane Austen&apos;s novel &amp;apos;Pride and Prejudice&amp;apos; is a classic of English literature, published in 1813, exploring themes like social class, marriage, and morality through a young protagonist&apos;s eyes.</translation>
+        <translation>Jane Austen&apos;s novel &apos;Pride and Prejudice&apos; is a classic of English literature, published in 1813, exploring themes like social class, marriage, and morality through a young protagonist&apos;s eyes.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="132"/>
@@ -16910,37 +16910,37 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="134"/>
         <source>&apos;O que é um homem? Uma pilha miserável de segredos.&apos; — Drácula, Castlevania</source>
-        <translation>&amp;apos;What is a man? A miserable little pile of secrets.&amp;apos; — Dracula, Castlevania</translation>
+        <translation>&apos;What is a man? A miserable little pile of secrets.&apos; — Dracula, Castlevania</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="135"/>
         <source>&apos;Que desgraça é para o homem envelhecer sem nunca ver a beleza e a força do que o seu corpo é capaz&apos; — Sócrates</source>
-        <translation>&amp;apos;What a disgrace it is for a man to grow old without ever seeing the beauty and strength of which his body is capable.&amp;apos; — Socrates</translation>
+        <translation>&apos;What a disgrace it is for a man to grow old without ever seeing the beauty and strength of which his body is capable.&apos; — Socrates</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="136"/>
         <source>&apos;Escrever é a maneira mais profunda de ler a vida.&apos; — Anaïs Nin</source>
-        <translation>&amp;apos;Writing is the deepest way of reading life.&amp;apos; — Anaïs Nin</translation>
+        <translation>&apos;Writing is the deepest way of reading life.&apos; — Anaïs Nin</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="137"/>
         <source>&apos;Escrever é a pintura da voz.&apos; — Voltaire</source>
-        <translation>&amp;apos;Writing is the painting of the voice.&amp;apos; — Voltaire</translation>
+        <translation>&apos;Writing is the painting of the voice.&apos; — Voltaire</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="138"/>
         <source>&apos;A escrita é a arte de descobrir o que você acredita.&apos; — Gustave Flaubert</source>
-        <translation>&amp;apos;Writing is the art of discovering what you believe.&amp;apos; — Gustave Flaubert</translation>
+        <translation>&apos;Writing is the art of discovering what you believe.&apos; — Gustave Flaubert</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="139"/>
         <source>&apos;Escrever é a única coisa que, quando faço, não sinto que deveria estar fazendo outra coisa.&apos; — Gloria Steinem</source>
-        <translation>&amp;apos;Writing is the only thing that, when I do it, I don&apos;t feel I should be doing something else.&amp;apos; — Gloria Steinem</translation>
+        <translation>&apos;Writing is the only thing that, when I do it, I don&apos;t feel I should be doing something else.&apos; — Gloria Steinem</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="140"/>
         <source>Sun Tzu foi um general, estrategista militar e filósofo chinês, autor de &apos;A Arte da Guerra&apos;, um tratado sobre estratégia e tática militar que é amplamente estudado até hoje por líderes empresariais, políticos e militares em todo o mundo.</source>
-        <translation>Sun Tzu was a Chinese general, military strategist, and philosopher, author of &amp;apos;The Art of War&amp;apos;, a treatise on strategy and military tactics still widely studied today by business, political, and military leaders around the world.</translation>
+        <translation>Sun Tzu was a Chinese general, military strategist, and philosopher, author of &apos;The Art of War&apos;, a treatise on strategy and military tactics still widely studied today by business, political, and military leaders around the world.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="141"/>
@@ -16955,12 +16955,12 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="143"/>
         <source>&apos;Não escreva para ser entendido, escreva para não ser mal interpretado.&apos; — Carlos Ruiz Zafón</source>
-        <translation>&amp;apos;Don&apos;t write to be understood, write so you won&apos;t be misunderstood.&amp;apos; — Carlos Ruiz Zafón</translation>
+        <translation>&apos;Don&apos;t write to be understood, write so you won&apos;t be misunderstood.&apos; — Carlos Ruiz Zafón</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="144"/>
         <source>&apos;O seu primeiro livro será uma merda quando você terminá-lo. Mas se orgulhe, a maioria nunca chegou nem na metade.&apos;</source>
-        <translation>&amp;apos;Your first book will be crap when you finish it. But be proud — most people never even got halfway.&amp;apos;</translation>
+        <translation>&apos;Your first book will be crap when you finish it. But be proud — most people never even got halfway.&apos;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="145"/>
@@ -16985,7 +16985,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="149"/>
         <source>&apos;Perdido em Marte&apos; de Andy Weir é um romance de ficção científica publicado em 2011, que segue a história de um astronauta que fica preso em Marte e luta para sobreviver enquanto tenta encontrar uma maneira de ser resgatado.</source>
-        <translation>Andy Weir&apos;s &amp;apos;The Martian&amp;apos; is a science fiction novel published in 2011, following an astronaut stranded on Mars who fights to survive while trying to find a way to get rescued.</translation>
+        <translation>Andy Weir&apos;s &apos;The Martian&apos; is a science fiction novel published in 2011, following an astronaut stranded on Mars who fights to survive while trying to find a way to get rescued.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="150"/>
@@ -17015,7 +17015,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="155"/>
         <source>&apos;A Empregada&apos; de Freida McFadden é um romance de suspense psicológico publicado em 2019, que segue a história de uma jovem que se torna a empregada de uma família rica e descobre segredos sombrios sobre eles.</source>
-        <translation>Freida McFadden&apos;s &amp;apos;The Housemaid&amp;apos; is a psychological thriller published in 2019, following a young woman who becomes a housemaid for a wealthy family and uncovers their dark secrets.</translation>
+        <translation>Freida McFadden&apos;s &apos;The Housemaid&apos; is a psychological thriller published in 2019, following a young woman who becomes a housemaid for a wealthy family and uncovers their dark secrets.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="156"/>
@@ -17060,12 +17060,12 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="164"/>
         <source>A Graphic Novel &apos;Maus&apos; de Art Spiegelman é um clássico da literatura gráfica, publicado em 1991, que conta a história do Holocausto através da perspectiva de um sobrevivente e seu filho, usando animais para representar diferentes grupos étnicos.</source>
-        <translation>Art Spiegelman&apos;s graphic novel &amp;apos;Maus&amp;apos; is a classic of graphic literature, published in 1991, telling the story of the Holocaust from the perspective of a survivor and his son, using animals to represent different ethnic groups.</translation>
+        <translation>Art Spiegelman&apos;s graphic novel &apos;Maus&apos; is a classic of graphic literature, published in 1991, telling the story of the Holocaust from the perspective of a survivor and his son, using animals to represent different ethnic groups.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="165"/>
         <source>O primeiro mangá da história foi &apos;Toba Ehon&apos; de 1100, criado por um monge budista japonês chamado Toba Sōjō, e é considerado o precursor dos mangás modernos.</source>
-        <translation>The first manga in history was &amp;apos;Toba Ehon&amp;apos; from 1100, created by a Japanese Buddhist monk named Toba Sōjō, considered the precursor to modern manga.</translation>
+        <translation>The first manga in history was &apos;Toba Ehon&apos; from 1100, created by a Japanese Buddhist monk named Toba Sōjō, considered the precursor to modern manga.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="166"/>
@@ -17080,12 +17080,12 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="168"/>
         <source>Isaac Asimov criou o termo &apos;robótica&apos; em um conto de ficção científica chamado &apos;Liar!&apos;. Ele não sabia que o termo ainda não existia. Hoje, é usado de verdade em inúmeros campos científicos.</source>
-        <translation>Isaac Asimov coined the term &amp;quot;robotics&amp;quot; in a science fiction short story called &amp;apos;Liar!&amp;apos;. He didn&apos;t even realize the term didn&apos;t already exist. Today, it&apos;s used for real across countless scientific fields.</translation>
+        <translation>Isaac Asimov coined the term &quot;robotics&quot; in a science fiction short story called &apos;Liar!&apos;. He didn&apos;t even realize the term didn&apos;t already exist. Today, it&apos;s used for real across countless scientific fields.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="169"/>
         <source>Frank Herbert desenvolveu uma obsessão por ecologia dos desertos, o que o levou a criar &apos;Duna&apos;. Antes, ele trabalhava como jornalista, o que torna a escrita dele sempre clara e fluída.</source>
-        <translation>Frank Herbert developed an obsession with desert ecology, which led him to create &amp;apos;Dune&amp;apos;. Before that, he worked as a journalist, which is why his writing always reads so clear and fluid.</translation>
+        <translation>Frank Herbert developed an obsession with desert ecology, which led him to create &apos;Dune&apos;. Before that, he worked as a journalist, which is why his writing always reads so clear and fluid.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="170"/>
@@ -17095,17 +17095,17 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="171"/>
         <source>Ursula K. Le Guin era uma antropóloga, o que a ajudava a criar culturas e sociedades complexas e realistas em seus livros de ficção científica e fantasia, como &apos;A Mão Esquerda da Escuridão&apos; e &apos;O Feiticeiro de Terramar&apos;.</source>
-        <translation>Ursula K. Le Guin was an anthropologist, which helped her build complex, realistic cultures and societies in her science fiction and fantasy books, like &amp;apos;The Left Hand of Darkness&amp;apos; and &amp;apos;A Wizard of Earthsea&amp;apos;.</translation>
+        <translation>Ursula K. Le Guin was an anthropologist, which helped her build complex, realistic cultures and societies in her science fiction and fantasy books, like &apos;The Left Hand of Darkness&apos; and &apos;A Wizard of Earthsea&apos;.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="172"/>
         <source>A vida às vezes imita a arte. Quando William Gibson escreveu &apos;Neuromancer&apos; — uma das obras precursoras do subgênero cyberpunk, ele já falava sobre hackers, internet, IA&apos;s e até realidade virtual, muitos conceitos que sequer haviam sido imaginados na época.</source>
-        <translation>Life sometimes imitates art. When William Gibson wrote &amp;apos;Neuromancer&amp;apos; — one of the founding works of the cyberpunk subgenre — he was already writing about hackers, the internet, AIs, and even virtual reality, many concepts that hadn&apos;t even been imagined yet at the time.</translation>
+        <translation>Life sometimes imitates art. When William Gibson wrote &apos;Neuromancer&apos; — one of the founding works of the cyberpunk subgenre — he was already writing about hackers, the internet, AIs, and even virtual reality, many concepts that hadn&apos;t even been imagined yet at the time.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="173"/>
         <source>Robert A. Heinlein, autor de &apos;Tropas Estelares&apos;, era um engenheiro naval e militar, o que fez com que suas obras tivessem uma base sólida em ciência e militarismo.</source>
-        <translation>Robert A. Heinlein, author of &amp;apos;Starship Troopers&amp;apos;, was a naval and military engineer, which gave his work a solid grounding in science and military life.</translation>
+        <translation>Robert A. Heinlein, author of &apos;Starship Troopers&apos;, was a naval and military engineer, which gave his work a solid grounding in science and military life.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="174"/>
@@ -17115,17 +17115,17 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="175"/>
         <source>J.R.R. Tolkien criou idiomas completos antes mesmo de desenvolver a história de &apos;O Senhor dos Anéis&apos;.</source>
-        <translation>J.R.R. Tolkien created entire languages before he even developed the story of &amp;apos;The Lord of the Rings&amp;apos;.</translation>
+        <translation>J.R.R. Tolkien created entire languages before he even developed the story of &apos;The Lord of the Rings&apos;.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="176"/>
         <source>Franz Kafka, autor de &apos;A Metamorfose&apos; e &apos;O Processo&apos;, pediu para  seu amigo Max Brod queimasse suas obras após sua morte. Ele não as achava boas o suficiente.</source>
-        <translation>Franz Kafka, author of &amp;apos;The Metamorphosis&amp;apos; and &amp;apos;The Trial&amp;apos;, asked his friend Max Brod to burn his work after his death. He didn&apos;t think it was good enough.</translation>
+        <translation>Franz Kafka, author of &apos;The Metamorphosis&apos; and &apos;The Trial&apos;, asked his friend Max Brod to burn his work after his death. He didn&apos;t think it was good enough.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="177"/>
         <source>Mary Shelley escreveu &apos;Frankenstein&apos; aos 18 anos durante um desafio entre amigos.</source>
-        <translation>Mary Shelley wrote &amp;apos;Frankenstein&amp;apos; at age 18, during a challenge among friends.</translation>
+        <translation>Mary Shelley wrote &apos;Frankenstein&apos; at age 18, during a challenge among friends.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="178"/>
@@ -17170,7 +17170,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="186"/>
         <source>Aldous Huxley, autor de &apos;Admirável Mundo Novo&apos;, morreu no mesmo dia que John F. Kennedy foi assassinado.</source>
-        <translation>Aldous Huxley, author of &amp;apos;Brave New World&amp;apos;, died on the same day John F. Kennedy was assassinated.</translation>
+        <translation>Aldous Huxley, author of &apos;Brave New World&apos;, died on the same day John F. Kennedy was assassinated.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="187"/>
@@ -17190,7 +17190,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="190"/>
         <source>&apos;Você não precisa de motivação para escrever, precisa de disciplina.&apos;</source>
-        <translation>&amp;apos;You don&apos;t need motivation to write. You need discipline.&amp;apos;</translation>
+        <translation>&apos;You don&apos;t need motivation to write. You need discipline.&apos;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="191"/>
@@ -17220,7 +17220,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="200"/>
         <source>Você não é obrigado a ter uma gaveta chamada &apos;personagens&apos; para salvar seus personagens e ter acesso as ferramentas deles. Ela pode ter qualquer nome e ícone, desde que durante a criação, você adicione o elemento &apos;Personagem&apos; a ela. O que realmente importa para as gavetas é o Elemento, não o nome ou ícone.</source>
-        <translation>You don&apos;t have to have a drawer named &amp;quot;characters&amp;quot; to save your characters and access their tools. It can have any name and icon, as long as you add the &amp;quot;Character&amp;quot; element to it during creation. What really matters for drawers is the Element, not the name or icon.</translation>
+        <translation>You don&apos;t have to have a drawer named &quot;characters&quot; to save your characters and access their tools. It can have any name and icon, as long as you add the &quot;Character&quot; element to it during creation. What really matters for drawers is the Element, not the name or icon.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="201"/>
@@ -17280,7 +17280,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="212"/>
         <source>Caso queira registrar algum comentário sobre algum trecho do seu projeto, selecione-o e clique em &apos;adicionar comentário&apos;.</source>
-        <translation>If you want to leave a comment on a passage in your project, select it and click &amp;quot;add comment.&amp;quot;</translation>
+        <translation>If you want to leave a comment on a passage in your project, select it and click &quot;add comment.&quot;</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="213"/>
@@ -17340,7 +17340,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="224"/>
         <source>O Qenna Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
-        <translation>Qenna Writer automatically backs up your project every time the app closes. You can find them inside your project folder, in &amp;quot;backups&amp;quot; — you can change this folder in settings.</translation>
+        <translation>Qenna Writer automatically backs up your project every time the app closes. You can find them inside your project folder, in &quot;backups&quot; — you can change this folder in settings.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="225"/>
@@ -17360,7 +17360,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="228"/>
         <source>Caso ocorra algum problema com o seu projeto, você pode recuperar um backup através da pasta &apos;backups&apos; ou .mira-guard na raiz do seu projeto.</source>
-        <translation>If something goes wrong with your project, you can recover a backup from the &amp;quot;backups&amp;quot; folder or .mira-guard at the root of your project.</translation>
+        <translation>If something goes wrong with your project, you can recover a backup from the &quot;backups&quot; folder or .mira-guard at the root of your project.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="229"/>
@@ -17440,7 +17440,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="244"/>
         <source>Divida o seu capítulos em cenas utilizando &apos;---&apos; em qualquer momento.</source>
-        <translation>Split your chapters into scenes using &amp;quot;---&amp;quot; anywhere you like.</translation>
+        <translation>Split your chapters into scenes using &quot;---&quot; anywhere you like.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="245"/>
@@ -17560,7 +17560,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="268"/>
         <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultar o glossário a qualquer momento através da barra superior.</source>
-        <translation>The glossary is for saving words and terms you&apos;ve invented for your project. Just select the word and click &amp;quot;Add to Glossary.&amp;quot; You can check the glossary anytime from the top bar.</translation>
+        <translation>The glossary is for saving words and terms you&apos;ve invented for your project. Just select the word and click &quot;Add to Glossary.&quot; You can check the glossary anytime from the top bar.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="269"/>
@@ -17580,7 +17580,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="272"/>
         <source>Arraste personagens para dentro de uma pasta para colocá-los lá. Se ainda não tiver uma pasta, arrastar o personagem para a opção de criar pasta também criará uma.</source>
-        <translation>Drag characters into a folder to put them there. If you don&apos;t have one yet, dragging a character onto the &amp;quot;create folder&amp;quot; option will make one for you.</translation>
+        <translation>Drag characters into a folder to put them there. If you don&apos;t have one yet, dragging a character onto the &quot;create folder&quot; option will make one for you.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="273"/>
@@ -17640,7 +17640,7 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <location filename="../src/_quotes_data.inc" line="284"/>
         <source>Temas são necessários. Por isso o app tem 101 deles. E caso queira modificar algo em algum, eles podem ser usados como templates para temas personalizados. Basta escolher a opção &apos;Duplicar&apos; para editá-lo.</source>
-        <translation>Themes matter. That&apos;s why the app has 101 of them. And if you want to tweak one, they can be used as templates for custom themes. Just choose &amp;quot;Duplicate&amp;quot; to edit it.</translation>
+        <translation>Themes matter. That&apos;s why the app has 101 of them. And if you want to tweak one, they can be used as templates for custom themes. Just choose &quot;Duplicate&quot; to edit it.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="285"/>
@@ -21723,6 +21723,24 @@ following days, it always resets at this new time.</translation>
         <location filename="../src/ZoneItem.cpp" line="331"/>
         <source>Remover área</source>
         <translation>Remove area</translation>
+    </message>
+</context>
+<context>
+    <name>ToolbarGroupWidget</name>
+    <message>
+        <source>Arraste para mover</source>
+        <translation>Drag to move</translation>
+    </message>
+    <message>
+        <source>Clique e segure para reorganizar</source>
+        <translation>Click and hold to rearrange</translation>
+    </message>
+</context>
+<context>
+    <name>DocHeaderBar</name>
+    <message>
+        <source>Variações desta cena</source>
+        <translation>Variations of this scene</translation>
     </message>
 </context>
 </TS>

@@ -35,6 +35,11 @@ struct MiraTheme {
     QString appBackground;
     QString panelBackground;
     QString panelBorder;
+    // Arredondamento dos cantos de painéis/barras (px) — existia no Mira 1
+    // como um slider global ("Arredondamento", 0-24px, default 14); aqui é
+    // por-tema, editável no Editor de Temas. Default 10 preserva o valor que
+    // já era hardcoded antes disso existir como configuração.
+    int panelRadius = 10;
     QString textPrimary;
     QString textMuted;
     QString textBright;
@@ -180,6 +185,9 @@ private:
 QString appBackground();
 QString panelBackground();
 QString panelBorder();
+// Valor cru (px) do tema atual — usado pelo Editor de Temas (spinbox/slider).
+int panelRadius();
+// Mesmo valor formatado "Npx", pronto pra interpolar em QSS.
 QString panelBorderRadius();
 QString textPrimary();
 QString textMuted();

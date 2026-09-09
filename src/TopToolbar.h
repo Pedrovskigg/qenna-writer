@@ -13,7 +13,9 @@ class QLineEdit;
 class QFrame;
 class QMenu;
 class QAction;
+class QBoxLayout;
 class FontPickerPopup;
+class ToolbarGroupWidget;
 class QWidget;
 
 class TopToolbar : public QWidget
@@ -24,7 +26,17 @@ public:
     enum class AlignScope { ThisDoc, AllDocs, Manuscript, Drawers };
     Q_ENUM(AlignScope)
 
-    explicit TopToolbar(QWidget *parent = nullptr);
+    // side: Qt::TopEdge (padrão, horizontal) ou Qt::RightEdge (vertical, na
+    // lateral direita). Fixo pra vida do objeto — trocar de lado é decisão de
+    // configuração (pede reiniciar o app, mesmo padrão do seletor de idioma
+    // na tela inicial), não uma troca ao vivo de layout.
+    explicit TopToolbar(QWidget *parent = nullptr, Qt::Edge side = Qt::TopEdge);
+
+    Qt::Edge barSide() const { return m_barSide; }
+    bool isVertical() const { return m_barSide == Qt::LeftEdge || m_barSide == Qt::RightEdge; }
+    // Espessura fixa da barra (48px) — largura quando vertical, altura quando
+    // horizontal. MainWindow usa isso pra reservar espaço de layout.
+    int thickness() const;
 
     void setFontFamilies(const QStringList &families, const QString &current);
     void setFontSize(qreal pt);
@@ -53,14 +65,29 @@ public:
     QRect reminderButtonGlobalRect() const;
     QRect helpButtonGlobalRect() const;
 
+    // Troca o lado da barra AO VIVO (antes exigia reiniciar o app). Reconfigura
+    // orientacao, layout, folha de estilo e a natureza dos botoes de tipografia
+    // — no topo o de fonte e um botao de TEXTO com o nome da fonte, na lateral e
+    // um icone quadrado. Quem estiver ouvindo barSideChanged reage ao resto
+    // (holder, faixa de titulo, insets dos paineis).
+    void setBarSide(Qt::Edge side);
+
     void setReminderBadge(bool active);
     void pulsePensarioBadge();
     void setCurrentAlignment(Qt::Alignment alignment);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    // Clicar em qualquer lugar que nao seja um icone arrastavel SAI do modo de
+    // reorganizacao (mesma logica de "tocar fora" do celular). A entrada e o
+    // clique-e-segurar num icone, em ToolbarGroupWidget.
+    void mousePressEvent(QMouseEvent *event) override;
+    // Clique fora da barra inteira: mesmo efeito, capturado no nivel do app
+    // enquanto o modo de edicao esta ligado.
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
+    void barSideChanged(Qt::Edge side);
     void fontFamilyChanged(const QString &family);
     void fontSizeChanged(qreal pt);
     void lineHeightChanged(int percent);
@@ -167,12 +194,23 @@ private:
     void positionDocTitle();
     void updateSizeMenuState();
     void updateSpacingMenuChecks();
+    // Texto vira tooltip quando vertical (ícone-only) — "17.5" ou "1.3" não
+    // se assenta legivelmente embaixo de um ícone de 32-48px numa coluna
+    // estreita, é mais robusto mostrar só sob demanda do que tentar encaixar.
+    void updateSizeButtonLabel();
+    void updateLineHeightButtonLabel();
     void applySize(qreal pt);
     void commitSizeEditor();
     static QString sizeText(qreal pt);
     void applyParaSpaceBefore(int px);
     void applyParaSpaceAfter(int px);
     void applyFontButtonStyle();
+    // Fonte/tamanho/espacamento mudam de natureza conforme o lado da barra.
+    // Extraido do construtor pra poder rodar de novo numa troca ao vivo.
+    void applyTypographyButtonMode();
+    // Ver definição em TopToolbar.cpp: anula o min-width que o QSS global impõe
+    // aos botões de tipografia, inválido quando a barra está na vertical.
+    QString verticalGeometryReset() const;
     void applyTheme();
     void applyRootStyle();
     void reloadIcons();
@@ -211,6 +249,35 @@ private:
 
     QLabel *pensarioBadge = nullptr;
     void positionPensarioBadge();
+
+    Qt::Edge m_barSide = Qt::TopEdge;
+
+    // ---------------- Reorganização da barra (grupos arrastáveis) ----------------
+    // Cada grupo (Projeto/Editor/Ferramentas/Mídia/Worldbuilding/Sistema) é uma
+    // unidade de arrastar (ToolbarGroupWidget) — a ordem entre eles persiste em
+    // QSettings. overflowButton fica DE FORA do sistema de
+    // grupos, sempre fixos (início/fim), igual antes.
+    QBoxLayout* m_mainLayout = nullptr;
+    QHash<QString, ToolbarGroupWidget*> m_groupWidgets;
+    QStringList m_groupOrder;
+    // Id estável -> botão. O id é o que vai pro QSettings, então NUNCA pode
+    // virar índice nem depender da ordem de construção.
+    QHash<QString, QToolButton*> m_buttonsById;
+    // Composição atual de cada grupo (groupId -> ids de botão, em ordem).
+    QHash<QString, QStringList> m_groupButtons;
+    bool m_editMode = false;
+
+    void buildGroups();
+    void rebuildGroupLayout();
+    QStringList defaultGroupOrder() const;
+    QStringList loadGroupOrder() const;
+    void saveGroupOrder() const;
+    QHash<QString, QStringList> defaultButtonLayout() const;
+    QHash<QString, QStringList> loadButtonLayout() const;
+    void saveButtonLayout() const;
+    void setEditMode(bool on);
+    void onGroupDropped(const QString& draggedId, const QString& targetId);
+    void onButtonDropped(const QString& buttonId, const QString& targetGroupId, int index);
 };
 
 #endif

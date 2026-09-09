@@ -62,5 +62,8 @@ private:
     QSlider* m_opacitySlider;
     QLabel* m_opacityLabel;
 
+    QSlider* m_panelRadiusSlider;
+    QLabel* m_panelRadiusLabel;
+
     ThemePreviewWidget* m_preview;
 };

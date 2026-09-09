@@ -23,7 +23,7 @@ public:
 
     // Só posiciona a janela da primeira vez que abre; chamadas seguintes só
     // trazem pra frente, preservando onde/como o usuário deixou a janela.
-    void openNear(const QRect& anchorGlobal);
+    void openNear(const QRect& anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
 
 private slots:
     void onTopicSelected();

@@ -2602,7 +2602,28 @@ void RefMenuPanel::openPanel()
     refresh();
     show();
     raise();
+    nudgeClearOfChrome();
     emit geometryChanged();
+}
+
+// O RefMenu e uma janela livre com geometria propria salva (o usuario escolhe
+// onde ela fica), entao NAO reposicionamos por gosto: so empurramos pra
+// esquerda quando ela ficaria literalmente escondida atras da barra lateral.
+// Sem isto, quem tinha o painel salvo no canto direito de antes da barra virar
+// vertical passa a abri-lo debaixo dela.
+void RefMenuPanel::nudgeClearOfChrome()
+{
+    if (m_rightInset <= 0) return;
+    QWidget* p = parentWidget();
+    if (!p || !p->window()) return;
+    const QRect win = p->window()->geometry();
+    constexpr int kGap = 12;
+    const int limit = win.right() - m_rightInset - kGap;
+    QRect g = geometry();
+    if (g.right() <= limit) return; // ja esta livre
+    g.moveRight(qMax(win.left() + kGap, limit));
+    setGeometry(g);
+    scheduleGeometrySave();
 }
 
 void RefMenuPanel::closePanel()

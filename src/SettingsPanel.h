@@ -57,6 +57,9 @@ public:
     void setRescanScenesButtonText(const QString& text);
     void setRescanScenesButtonEnabled(bool enabled);
 
+    // 0 = Qt::TopEdge (padrão), 1 = Qt::RightEdge — ver TopToolbar::barSide().
+    void setTopToolbarSide(int side);
+
     // --- Backup completo de projeto ---
     // mode: 0=Desligado, 1=Automático, 2=Só lembrete (ver BackupService::Mode).
     void setBackupMode(int mode);
@@ -81,6 +84,11 @@ signals:
     void romanChapterNumbersChanged(bool enabled);
     // Botão "Abrir Gerador de Timeline…".
     void timelineGeneratorRequested();
+
+    // Pediu pra trocar de lado — MainWindow decide se confirma descarte de
+    // alterações + reinicia (troca de lado não é ao vivo, ver TopToolbar).
+    // value: 0=Qt::TopEdge, 1=Qt::RightEdge.
+    void topToolbarSideChanged(int value);
 
     // --- Backup completo de projeto ---
     void backupModeChanged(int mode);
@@ -126,6 +134,7 @@ private:
     QComboBox* m_imgModelCombo   = nullptr;
     QComboBox* m_imgQualityCombo = nullptr;
     QComboBox* m_imgSizeCombo    = nullptr;
+    QComboBox*   m_toolbarSideCombo    = nullptr;
     QComboBox*   m_backupModeCombo     = nullptr;
     QLineEdit*   m_backupFolderEdit    = nullptr;
     QPushButton* m_backupFolderBtn     = nullptr;

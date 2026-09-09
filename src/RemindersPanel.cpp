@@ -1,5 +1,6 @@
 #include "RemindersPanel.h"
 
+#include "AnchorUtils.h"
 #include "RemindersStore.h"
 #include "Theme.h"
 
@@ -296,7 +297,7 @@ void RemindersPanel::removeItem(const QString& id)
     if (m_store) m_store->remove(id);
 }
 
-void RemindersPanel::showNear(const QRect& anchorGlobal)
+void RemindersPanel::showNear(const QRect& anchorGlobal, Qt::Edge barSide)
 {
     if (m_store) {
         rebuildActiveList();
@@ -308,11 +309,8 @@ void RemindersPanel::showNear(const QRect& anchorGlobal)
     QPoint pos(anchorGlobal.left(), anchorGlobal.bottom() + kGapBelowAnchor);
     const QScreen* screen = QGuiApplication::screenAt(anchorGlobal.center());
     if (screen) {
-        const QRect avail = screen->availableGeometry();
-        if (pos.x() + width() > avail.right())  pos.setX(anchorGlobal.right() - width());
-        if (pos.x() < avail.left())              pos.setX(avail.left() + 4);
-        if (pos.y() + height() > avail.bottom())
-            pos.setY(anchorGlobal.top() - height() - kGapBelowAnchor);
+        pos = AnchorUtils::positionNear(anchorGlobal, size(), barSide,
+                                         screen->availableGeometry(), kGapBelowAnchor);
     }
     move(pos);
     show();

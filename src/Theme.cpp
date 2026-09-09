@@ -6470,6 +6470,7 @@ QJsonObject themeToJson(const MiraTheme& t)
     o["accentInfoBorderSoft"] = t.accentInfoBorderSoft;
     o["editorBackground"] = t.editorBackground;
     o["editorTextColor"] = t.editorTextColor;
+    o["panelRadius"] = t.panelRadius;
     o["pageShadowEnabled"] = t.pageShadowEnabled;
     o["pageShadowColor"] = t.pageShadowColor;
     o["pageShadowRadius"] = t.pageShadowRadius;
@@ -6514,6 +6515,7 @@ MiraTheme themeFromJson(const QJsonObject& o)
     t.accentInfoBorderSoft = o.value("accentInfoBorderSoft").toString();
     t.editorBackground = o.value("editorBackground").toString();
     t.editorTextColor = o.value("editorTextColor").toString();
+    t.panelRadius = o.value("panelRadius").toInt(10);
     t.pageShadowEnabled = o.value("pageShadowEnabled").toBool(false);
     t.pageShadowColor = o.value("pageShadowColor").toString(QStringLiteral("rgba(0,0,0,140)"));
     t.pageShadowRadius = o.value("pageShadowRadius").toInt(24);
@@ -6694,7 +6696,8 @@ void Manager::setCurrent(const QString& id)
 QString appBackground()     { return Manager::instance()->current().appBackground; }
 QString panelBackground()   { return Manager::instance()->current().panelBackground; }
 QString panelBorder()       { return Manager::instance()->current().panelBorder; }
-QString panelBorderRadius() { return QStringLiteral("10px"); }
+int panelRadius()           { return Manager::instance()->current().panelRadius; }
+QString panelBorderRadius() { return QStringLiteral("%1px").arg(panelRadius()); }
 QString textPrimary()       { return Manager::instance()->current().textPrimary; }
 QString textMuted()         { return Manager::instance()->current().textMuted; }
 QString textBright()        { return Manager::instance()->current().textBright; }

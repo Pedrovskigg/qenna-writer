@@ -52,6 +52,10 @@ public:
 
     void togglePanel();
     void openPanel();
+    // Largura da chrome do app colada na direita da janela principal (a
+    // TopToolbar quando esta no modo lateral). Mesmo padrao de
+    // PensarioPanel/StatsPanel/AIChatPanel. Zero = nada na direita.
+    void setRightInset(int px) { m_rightInset = px; }
     void closePanel();
     void openForDrawer(const QString& drawerKey, const QString& itemId = QString());
     void openForChapter(const QString& manuscriptId, const QString& chapterId);
@@ -181,6 +185,8 @@ private:
     QString m_editingKey; // chave DocCache do doc em edição (vazio = nenhum)
     bool m_navHidden = false;
     int m_previewFontPt = 13;
+    int m_rightInset = 0;
+    void nudgeClearOfChrome();
     QString m_editorFontFamily;   // família da fonte de escrita (preview de fichas)
 
     // UI - root

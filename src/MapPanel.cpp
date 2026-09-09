@@ -218,10 +218,11 @@ void MapPanel::centerInParent()
 {
     QWidget* p = parentWidget();
     if (!p) return;
-    const int w = qMin(kWidth, p->width() - kMargin * 2);
+    const int availW = p->width() - m_rightInset;
+    const int w = qMin(kWidth, availW - kMargin * 2);
     const int h = qMin(kHeight, p->height() - m_topInset - kMargin * 2);
     resize(qMax(280, w), qMax(240, h));
-    move((p->width() - width()) / 2,
+    move((availW - width()) / 2,
          m_topInset + qMax(kMargin, (p->height() - m_topInset - height()) / 2));
     m_positioned = true;
 }
@@ -250,7 +251,7 @@ void MapPanel::toggleMaximize()
         m_normalGeom = geometry();
         m_maximized = true;
         const int m = 8;
-        setGeometry(m, m_topInset + m, p->width() - 2 * m, p->height() - m_topInset - 2 * m);
+        setGeometry(m, m_topInset + m, p->width() - m_rightInset - 2 * m, p->height() - m_topInset - 2 * m);
     } else {
         m_maximized = false;
         if (m_normalGeom.isValid()) setGeometry(m_normalGeom);

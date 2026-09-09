@@ -236,6 +236,12 @@ qt_add_executable(qenna-writer
     src/SystemFolderGuard.h
     src/BackupService.cpp
     src/BackupService.h
+    src/AnchorUtils.cpp
+    src/AnchorUtils.h
+    src/ToolbarGroupWidget.cpp
+    src/ToolbarGroupWidget.h
+    src/DocHeaderBar.cpp
+    src/DocHeaderBar.h
     src/TrashService.cpp
     src/TrashService.h
     src/TrashDialog.cpp

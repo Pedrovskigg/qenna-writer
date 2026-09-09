@@ -113,6 +113,8 @@ public:
 
     void setProjectRoot(const QString& root);
     void setTopInset(int px);
+    // Idem, mas pra borda direita — barra vertical ali (ver PensarioPanel).
+    void setRightInset(int px);
 
     // Fontes de dados adicionais (opcionais — Mira funciona sem elas, só com
     // capítulos/gavetas). Injetadas via setter pelo MainWindow, mesmo padrão
@@ -464,6 +466,7 @@ private:
     qreal m_thinkingPulsePhase = 0.0;
 
     int m_topInset = 0;
+    int m_rightInset = 0;
     bool m_positioned = false;
     bool m_windowMode = false; // false = ancorado (padrão), true = janela centralizada maior
     bool m_dragging = false;

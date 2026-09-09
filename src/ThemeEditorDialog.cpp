@@ -85,6 +85,8 @@ ThemeEditorDialog::ThemeEditorDialog(const Theme::MiraTheme& base, QWidget* pare
     , m_imageModeCombo(new QComboBox(this))
     , m_opacitySlider(new QSlider(Qt::Horizontal, this))
     , m_opacityLabel(new QLabel(this))
+    , m_panelRadiusSlider(new QSlider(Qt::Horizontal, this))
+    , m_panelRadiusLabel(new QLabel(this))
     , m_preview(new ThemePreviewWidget(this))
 {
     setObjectName(QStringLiteral("themeEditorDialog"));
@@ -198,6 +200,33 @@ void ThemeEditorDialog::buildUi()
         leftLayout->addWidget(group);
     }
 
+    // ---- Grupo: Painéis e barras ----
+    // Arredondamento dos cantos de painéis/barras (LeftBar, TopToolbar,
+    // Pensário, etc.) — existia no Mira 1 como slider global "Arredondamento"
+    // (0-24px); aqui virou por-tema.
+    {
+        auto* group = new QGroupBox(tr("Painéis e barras"), leftContent);
+        group->setObjectName(QStringLiteral("themeGroup"));
+        auto* gl = new QVBoxLayout(group);
+        gl->setSpacing(8);
+
+        auto* radiusRow = new QHBoxLayout;
+        radiusRow->setSpacing(8);
+        auto* panelRadiusLbl = new QLabel(tr("Arredondamento:"), group);
+        panelRadiusLbl->setObjectName(QStringLiteral("themeEditorFieldLabel"));
+        panelRadiusLbl->setMinimumWidth(120);
+        m_panelRadiusSlider->setRange(0, 24);
+        m_panelRadiusSlider->setValue(qBound(0, m_theme.panelRadius, 24));
+        m_panelRadiusLabel->setText(tr("%1px").arg(m_panelRadiusSlider->value()));
+        m_panelRadiusLabel->setMinimumWidth(40);
+        radiusRow->addWidget(panelRadiusLbl);
+        radiusRow->addWidget(m_panelRadiusSlider, 1);
+        radiusRow->addWidget(m_panelRadiusLabel);
+        gl->addLayout(radiusRow);
+
+        leftLayout->addWidget(group);
+    }
+
     // ---- Grupo: Página (sombra + opacidade) ----
     {
         auto* group = new QGroupBox(tr("Página de texto"), leftContent);
@@ -282,6 +311,7 @@ void ThemeEditorDialog::buildUi()
         m_theme.pageShadowOffset = m_shadowOffset->value();
         m_theme.backgroundMode = m_imageModeCombo->currentData().toInt();
         m_theme.editorOpacity = m_opacitySlider->value();
+        m_theme.panelRadius = m_panelRadiusSlider->value();
         accept();
     });
     connect(footer, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -354,6 +384,11 @@ void ThemeEditorDialog::wireSignals()
     connect(m_opacitySlider, &QSlider::valueChanged, this, [this](int v) {
         m_opacityLabel->setText(QStringLiteral("%1%").arg(v));
         m_theme.editorOpacity = v;
+        refreshPreview();
+    });
+    connect(m_panelRadiusSlider, &QSlider::valueChanged, this, [this](int v) {
+        m_panelRadiusLabel->setText(tr("%1px").arg(v));
+        m_theme.panelRadius = v;
         refreshPreview();
     });
     connect(m_shadowEnabled, &QCheckBox::toggled, this, [this](bool on) {

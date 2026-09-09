@@ -1,4 +1,5 @@
 #include "HelpPanel.h"
+#include "AnchorUtils.h"
 
 #include "Theme.h"
 
@@ -2407,19 +2408,23 @@ void HelpPanel::openImageZoom(const QString& resourcePath)
     dlg->activateWindow();
 }
 
-void HelpPanel::openNear(const QRect& anchorGlobal)
+void HelpPanel::openNear(const QRect& anchorGlobal, Qt::Edge barSide)
 {
     if (!m_positioned) {
         m_positioned = true;
         QPoint pos(anchorGlobal.right() - width(), anchorGlobal.bottom() + kGapBelowAnchor);
         const QScreen* screen = QGuiApplication::screenAt(anchorGlobal.center());
         if (screen) {
-            const QRect avail = screen->availableGeometry();
-            if (pos.x() + width() > avail.right()) pos.setX(avail.right() - width() - 4);
-            if (pos.x() < avail.left()) pos.setX(avail.left() + 4);
-            if (pos.y() + height() > avail.bottom()) {
-                pos.setY(qMax(avail.top(), anchorGlobal.top() - height() - kGapBelowAnchor));
+            // Alinhado à direita do anchor (não à esquerda) quando a barra é
+            // horizontal — constrói um anchor sintético já deslocado, pra
+            // reaproveitar o mesmo AnchorUtils::positionNear dos outros popups.
+            QRect effectiveAnchor = anchorGlobal;
+            if (barSide == Qt::TopEdge || barSide == Qt::BottomEdge) {
+                effectiveAnchor.moveLeft(anchorGlobal.right() - width());
+                effectiveAnchor.setWidth(width());
             }
+            pos = AnchorUtils::positionNear(effectiveAnchor, size(), barSide,
+                                             screen->availableGeometry(), kGapBelowAnchor);
         }
         move(pos);
     }

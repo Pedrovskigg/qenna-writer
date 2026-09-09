@@ -20,7 +20,7 @@ public:
     explicit AmbiencePanel(AmbienceManager* manager, QWidget* parent = nullptr);
 
     // Abre o painel próximo ao retângulo do botão (em coords globais).
-    void showNear(const QRect& anchorGlobal);
+    void showNear(const QRect& anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

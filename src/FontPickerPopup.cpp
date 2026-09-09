@@ -1,5 +1,7 @@
 #include "FontPickerPopup.h"
 
+#include "AnchorUtils.h"
+
 #include <QFont>
 #include <QListWidget>
 #include <QListWidgetItem>
@@ -51,18 +53,12 @@ void FontPickerPopup::setFontFamilies(const QStringList &families, const QString
     }
 }
 
-void FontPickerPopup::showAtBelow(const QPoint &globalAnchor)
+void FontPickerPopup::showNear(const QRect &anchorGlobal, Qt::Edge barSide)
 {
-    QPoint pos = globalAnchor;
-    const QScreen *screen = QGuiApplication::screenAt(pos);
+    QPoint pos = anchorGlobal.bottomLeft();
+    const QScreen *screen = QGuiApplication::screenAt(anchorGlobal.center());
     if (screen) {
-        const QRect avail = screen->availableGeometry();
-        if (pos.x() + width() > avail.right()) {
-            pos.setX(avail.right() - width());
-        }
-        if (pos.y() + height() > avail.bottom()) {
-            pos.setY(globalAnchor.y() - height());
-        }
+        pos = AnchorUtils::positionNear(anchorGlobal, size(), barSide, screen->availableGeometry());
     }
     move(pos);
     show();

@@ -21725,4 +21725,22 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Quitar área</translation>
     </message>
 </context>
+<context>
+    <name>ToolbarGroupWidget</name>
+    <message>
+        <source>Arraste para mover</source>
+        <translation>Arrastra para mover</translation>
+    </message>
+    <message>
+        <source>Clique e segure para reorganizar</source>
+        <translation>Haz clic y mantén pulsado para reorganizar</translation>
+    </message>
+</context>
+<context>
+    <name>DocHeaderBar</name>
+    <message>
+        <source>Variações desta cena</source>
+        <translation>Variaciones de esta escena</translation>
+    </message>
+</context>
 </TS>

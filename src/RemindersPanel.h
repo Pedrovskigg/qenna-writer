@@ -19,7 +19,10 @@ class RemindersPanel : public QFrame
 public:
     explicit RemindersPanel(RemindersStore* store, QWidget* parent = nullptr);
 
-    void showNear(const QRect& anchorGlobal);
+    // barSide = de que lado da tela mora a barra que tem o botão-anchor
+    // (normalmente Qt::TopEdge, mas Qt::RightEdge se a TopToolbar estiver
+    // vertical na lateral) — decide se o popup cresce pra baixo ou pro lado.
+    void showNear(const QRect& anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
