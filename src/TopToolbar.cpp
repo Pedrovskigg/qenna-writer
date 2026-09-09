@@ -164,6 +164,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     pensarioBadge   = makeBadge(QStringLiteral("pensarioBadge"));
     readModeBadge   = makeBadge(QStringLiteral("modeBadge"));
     focusModeBadge  = makeBadge(QStringLiteral("modeBadge"));
+    indentBadge     = makeBadge(QStringLiteral("modeBadge"));
 
     focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
     focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
@@ -325,7 +326,10 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     indentButton->setCheckable(true);
     indentButton->setChecked(true);
     indentButton->setToolTip(tr("Identação de parágrafo"));
-    connect(indentButton, &QToolButton::toggled, this, &TopToolbar::firstLineIndentToggled);
+    connect(indentButton, &QToolButton::toggled, this, [this](bool on) {
+        positionModeBadges();
+        emit firstLineIndentToggled(on);
+    });
 
     alignButton->setObjectName(QStringLiteral("ttbAlign"));
     alignButton->setPopupMode(QToolButton::InstantPopup);
@@ -1020,7 +1024,7 @@ void TopToolbar::applyRootStyle()
         /* Os botoes de MODO nao usam o realce de "checked": esse destaque e a
            linguagem do negrito/italico (estado de formatacao). Um modo do app e
            sinalizado pela luzinha no canto — ver positionModeBadges(). */
-        QToolButton#ttbMode:checked {
+        QToolButton#ttbMode:checked, QToolButton#ttbIndent:checked {
             background: transparent;
             border-color: transparent;
             color: %2;
@@ -1060,7 +1064,7 @@ void TopToolbar::applyRootStyle()
             "}").arg(Theme::accentDanger()));
     }
 
-    for (QLabel *badge : { readModeBadge, focusModeBadge }) {
+    for (QLabel *badge : { readModeBadge, focusModeBadge, indentBadge }) {
         if (!badge) continue;
         // Ponto aceso com halo: o halo e o que faz parecer luz e nao sujeira.
         badge->setStyleSheet(QStringLiteral(
@@ -1379,6 +1383,13 @@ void TopToolbar::positionModeBadges()
         focusModeBadge->setVisible(focusCheckedCache && focusButton && focusButton->isVisible());
         positionBadge(focusModeBadge, focusButton);
     }
+    // Identacao de primeira linha entra aqui e nao no grupo do negrito/italico:
+    // ela e uma preferencia do documento inteiro, ligada ou desligada, e nao uma
+    // formatacao aplicada ao trecho selecionado.
+    if (indentBadge) {
+        indentBadge->setVisible(indentButton && indentButton->isChecked() && indentButton->isVisible());
+        positionBadge(indentBadge, indentButton);
+    }
 }
 
 // Pisca o badge do Pensário por alguns segundos e some sozinho — feedback de
@@ -1533,6 +1544,7 @@ void TopToolbar::setFirstLineIndentEnabled(bool enabled)
 {
     QSignalBlocker block(indentButton);
     indentButton->setChecked(enabled);
+    positionModeBadges();
 }
 
 void TopToolbar::setBoldChecked(bool checked)

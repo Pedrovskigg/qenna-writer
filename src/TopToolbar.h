@@ -243,6 +243,7 @@ private:
     // estado ligado, nao um evento que acabou de acontecer.
     QLabel *readModeBadge = nullptr;
     QLabel *focusModeBadge = nullptr;
+    QLabel *indentBadge = nullptr;
     void positionPensarioBadge();
 
     Qt::Edge m_barSide = Qt::TopEdge;

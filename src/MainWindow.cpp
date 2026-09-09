@@ -4374,6 +4374,17 @@ void MainWindow::hideLeftBarChrome()
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 {
+    // A barra horizontal tem a largura do CONTEUDO, e o holder e dimensionado a
+    // partir dela (ver layoutToolbarHolder). Varias coisas mudam essa largura
+    // depois do arranque: o nome da fonte que chega quando o projeto carrega, o
+    // valor do tamanho ("15.5" e mais largo que "12"), um botao colapsando pro
+    // menu "...". Escutar o LayoutRequest do proprio Qt cobre todas de uma vez —
+    // a alternativa seria chamar layoutToolbarHolder() em cada um desses pontos,
+    // que e exatamente como se esquece o quarto. Sem isso o holder ficava com a
+    // largura velha, a barra era espremida e os botoes se sobrepunham.
+    if (toolbar && watched == toolbar && event->type() == QEvent::LayoutRequest)
+        layoutToolbarHolder();
+
     // Modo focado: a hotzone revela a barra (o conteúdo reaparece no espaço
     // já reservado, sem reflow); sair da barra a esconde de novo.
     if (readModeEnabled) {
