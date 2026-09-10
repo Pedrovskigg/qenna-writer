@@ -186,11 +186,19 @@ void ThesaurusPopup::rebuild()
 
     int shown = 0, hidden = 0;
     for (const Thesaurus::Sense& s : senses) {
-        // O primeiro sinônimo É a palavra que nomeia a acepção — vira cabeçalho
-        // e sai da lista, senão aparece duas vezes seguidas.
+        // Quando NÃO há definição, o primeiro sinônimo é a palavra que nomeia a
+        // acepção: vira cabeçalho e sai da lista, senão apareceria duas vezes
+        // seguidas. Com definição, ela é o cabeçalho e nenhum sinônimo se perde.
+        const bool headIsDef = !s.label.isEmpty()
+            && s.label.contains(QLatin1Char(' ')) && s.label.size() > 24;
         QStringList rest = s.synonyms;
-        if (!rest.isEmpty()) rest.removeFirst();
-        // Acepção que só tinha a própria palavra-líder não acrescenta nada.
+        if (!headIsDef && !rest.isEmpty()) rest.removeFirst();
+
+        // Sentido de UMA palavra só ("punhal → adaga") é pouco, mas é o único
+        // que existe para boa parte do vocabulário — descartá-lo fazia o verbete
+        // inteiro sumir do popup.
+        if (rest.isEmpty() && !s.synonyms.isEmpty() && !headIsDef)
+            rest = s.synonyms;
         if (rest.isEmpty()) continue;
 
         if (limitList && shown >= kInitialLimit) { ++hidden; continue; }
@@ -204,11 +212,10 @@ void ThesaurusPopup::rebuild()
         cardLay->setSpacing(5);
 
         const QString head = s.label.isEmpty() ? s.category : s.label;
-        // O cabeçalho é clicável quando é uma palavra (aí ele é um sinônimo
-        // como os outros), mas NÃO quando é uma definição — clicar numa frase
-        // inteira substituiria a palavra do texto pela definição dela.
-        const bool headIsDefinition =
-            head.contains(QLatin1Char(' ')) && head.size() > 24;
+        const bool headIsDefinition = headIsDef;
+        // Sentido de uma palavra só: o cabeçalho seria idêntico ao único
+        // sinônimo listado, então some.
+        const bool skipHead = !headIsDefinition && rest.size() == s.synonyms.size();
         QLabel* headLabel = headIsDefinition
             ? new QLabel(QStringLiteral("<span style=\"%2\">%1</span>")
                              .arg(head.toHtmlEscaped(), headStyle), m_body)
@@ -216,6 +223,7 @@ void ThesaurusPopup::rebuild()
                              .arg(head.toHtmlEscaped(), headStyle));
         headLabel->setObjectName(QStringLiteral("thSenseHead"));
         headLabel->setWordWrap(true);
+        if (skipHead) headLabel->hide();
         cardLay->addWidget(headLabel);
 
         QStringList links;
