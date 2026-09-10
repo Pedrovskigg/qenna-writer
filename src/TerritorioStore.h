@@ -100,6 +100,13 @@ public:
     bool removeNode(const QString& territorioId, const QString& nodeId);
 
     // CRUD — menções (nodeId vazio = menção no nível do território)
+
+    // Aplica trocas de nome no TEXTO das menções (pares antigo->novo). O trecho
+    // guardado é um SNAPSHOT do manuscrito, não uma referência: quando o
+    // manuscrito é renomeado, a citação continua mostrando o nome antigo.
+    // Mesmo caso de DialogueStore/MemoriesStore. Retorna quantas mudaram.
+    int replaceInMentionTexts(const QVector<QPair<QString, QString>>& terms);
+
     QString addMention(const QString& territorioId, const Mention& mention);
     bool removeMention(const QString& territorioId, const QString& mentionId);
 

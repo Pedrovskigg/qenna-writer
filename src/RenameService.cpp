@@ -1,12 +1,19 @@
 #include "RenameService.h"
 
+#include "ConstrutorStore.h"
 #include "DialogueStore.h"
 #include "ElementsStore.h"
+#include "MapPinsStore.h"
 #include "MemoriesStore.h"
+#include "TerritorioStore.h"
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 
+#include <QDir>
 #include <QHash>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QRegularExpressionMatchIterator>
@@ -363,6 +370,97 @@ RenameService::Plan RenameService::scan(const QString& elementId, const QString&
     return plan;
 }
 
+
+void RenameService::applyLinkedCaches(const Plan& plan)
+{
+    const QString itemId = itemIdForElement(plan.elementId);
+    if (itemId.isEmpty()) return;
+
+    // --- Pin do mapa -------------------------------------------------------
+    // linkLabel e' copia do titulo do item, com o id do lado. Nao aparece na
+    // tela do mapa: quem le' e' o contexto enviado ao assistente de IA, que
+    // passaria a descrever o personagem pelo nome antigo.
+    if (m_mapPinsStore) {
+        const QVector<MapPinsStore::Pin> pins = m_mapPinsStore->pins();
+        for (const MapPinsStore::Pin& p : pins) {
+            if (p.linkId != itemId || p.linkLabel == plan.newName) continue;
+            MapPinsStore::Pin copy = p;
+            copy.linkLabel = plan.newName;
+            m_mapPinsStore->updatePin(copy);
+        }
+    }
+
+    // --- Local do personagem ----------------------------------------------
+    // charLocation guarda NOME de lugar em texto solto (o proprio codigo marca
+    // isso como o caso ruim). Como e' campo de valor unico, so' troca quando
+    // bate exatamente o nome antigo — se o autor escreveu outra coisa ali, e'
+    // conteudo dele.
+    if (m_model) {
+        for (const Drawer& d : m_model->drawers()) {
+            for (const DrawerItem& it : d.items) {
+                if (it.charLocation != plan.oldName) continue;
+                m_model->updateDrawerItemConsistency(it.id, it.charStatus,
+                                                     it.charStatusDetail, plan.newName);
+            }
+        }
+    }
+
+    // --- Cards da Lousa ----------------------------------------------------
+    // O titulo do card e' EDITAVEL pelo autor (CardItem tem editor proprio),
+    // entao nao e' cache puro: sobrescrever apagaria um titulo personalizado
+    // tipo "Klara (vilã)". So' troca quando o titulo e' exatamente o nome
+    // antigo, que e' o caso em que ninguem mexeu nele.
+    // Vai por arquivo, e nao pelo LousaPanel, porque o painel pode nunca ter
+    // sido aberto na sessao.
+    const QString lousaDir = m_root;
+    QStringList boardFiles;
+    {
+        QFile mf(lousaDir + QStringLiteral("/lousas.json"));
+        if (mf.open(QIODevice::ReadOnly)) {
+            const QJsonDocument d = QJsonDocument::fromJson(mf.readAll());
+            mf.close();
+            const QJsonArray arr = d.isArray() ? d.array()
+                                               : d.object().value(QStringLiteral("boards")).toArray();
+            for (const QJsonValue& v : arr) {
+                const QString f = v.toObject().value(QStringLiteral("file")).toString();
+                if (!f.isEmpty()) boardFiles << f;
+            }
+        }
+    }
+    if (boardFiles.isEmpty()) boardFiles << QStringLiteral("canvas.json");
+
+    for (const QString& bf : boardFiles) {
+        const QString path = lousaDir + QLatin1Char('/') + bf;
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly)) continue;
+        const QByteArray raw = f.readAll();
+        f.close();
+
+        QJsonDocument doc = QJsonDocument::fromJson(raw);
+        if (!doc.isObject()) continue;
+        QJsonObject root = doc.object();
+        QJsonArray cards = root.value(QStringLiteral("cards")).toArray();
+
+        bool touched = false;
+        for (int i = 0; i < cards.size(); ++i) {
+            QJsonObject c = cards.at(i).toObject();
+            if (c.value(QStringLiteral("linkedItemId")).toString() != itemId) continue;
+            if (c.value(QStringLiteral("title")).toString() != plan.oldName) continue;
+            c.insert(QStringLiteral("title"), plan.newName);
+            cards.replace(i, c);
+            touched = true;
+        }
+        if (!touched) continue;
+
+        root.insert(QStringLiteral("cards"), cards);
+        QFile out(path);
+        if (out.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            out.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
+            out.close();
+        }
+    }
+}
+
 bool RenameService::apply(const Plan& plan, QString* error) {
     if (!m_model || !m_elements) {
         if (error) *error = QStringLiteral("Projeto não carregado.");
@@ -485,7 +583,11 @@ bool RenameService::apply(const Plan& plan, QString* error) {
     if (!appliedTerms.isEmpty()) {
         if (m_dialogueStore) m_dialogueStore->replaceInTexts(appliedTerms);
         if (m_memoriesStore) m_memoriesStore->replaceInTexts(appliedTerms);
+        if (m_construtorStore) m_construtorStore->replaceInMentionTexts(appliedTerms);
+        if (m_territorioStore) m_territorioStore->replaceInMentionTexts(appliedTerms);
     }
+
+    applyLinkedCaches(plan);
 
     return true;
 }

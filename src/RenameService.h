@@ -8,6 +8,9 @@ class ProjectModel;
 class ElementsStore;
 class DialogueStore;
 class MemoriesStore;
+class MapPinsStore;
+class ConstrutorStore;
+class TerritorioStore;
 
 // Renomeia um elemento (personagem, lugar, objeto) em todo o projeto de uma vez.
 //
@@ -110,6 +113,12 @@ public:
     // Opcionais: sem eles a renomeação funciona, só não atualiza as cópias.
     void setDialogueStore(DialogueStore* s) { m_dialogueStore = s; }
     void setMemoriesStore(MemoriesStore* s) { m_memoriesStore = s; }
+    // Pin do mapa: guarda o id do item e o nome só como cache de exibição.
+    void setMapPinsStore(MapPinsStore* s) { m_mapPinsStore = s; }
+    // Construtor e Criador de Mundos guardam SNAPSHOT do trecho citado, igual
+    // aos diálogos e às memórias.
+    void setConstrutorStore(ConstrutorStore* s) { m_construtorStore = s; }
+    void setTerritorioStore(TerritorioStore* s) { m_territorioStore = s; }
 
     // Varre o projeto sem alterar nada. oldName é explícito (e não lido do
     // ElementsStore) porque o fluxo de edição do item já gravou o nome novo
@@ -143,10 +152,17 @@ private:
     void scanChapters(Plan& plan) const;
     void scanDrawerItems(Plan& plan) const;
     QString itemIdForElement(const QString& elementId) const;
+    // Camadas que guardam o nome como CACHE ao lado de um id: a troca é certa e
+    // não passa pelo preview. Exceção deliberada é o título do card da Lousa,
+    // que o autor pode ter editado à mão — ver o .cpp.
+    void applyLinkedCaches(const Plan& plan);
 
     ProjectModel* m_model = nullptr;
     ElementsStore* m_elements = nullptr;
     DialogueStore* m_dialogueStore = nullptr;
     MemoriesStore* m_memoriesStore = nullptr;
+    MapPinsStore* m_mapPinsStore = nullptr;
+    ConstrutorStore* m_construtorStore = nullptr;
+    TerritorioStore* m_territorioStore = nullptr;
     QString m_root;
 };

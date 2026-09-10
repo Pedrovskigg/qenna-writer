@@ -1,5 +1,7 @@
 #include "ConstrutorStore.h"
 
+#include <QRegularExpression>
+
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
@@ -568,6 +570,38 @@ bool ConstrutorStore::removeNode(const QString& systemId, const QString& nodeId)
 }
 
 // ── Mentions CRUD ─────────────────────────────────────────────────────────────
+
+int ConstrutorStore::replaceInMentionTexts(const QVector<QPair<QString, QString>>& terms)
+{
+    if (terms.isEmpty()) return 0;
+
+    QVector<QPair<QRegularExpression, QString>> compiled;
+    compiled.reserve(terms.size());
+    for (const auto& t : terms) {
+        if (t.first.isEmpty() || t.first == t.second) continue;
+        compiled.append({ QRegularExpression(
+                              QStringLiteral("(?<![\p{L}\p{N}_])%1(?![\p{L}\p{N}_])")
+                                  .arg(QRegularExpression::escape(t.first)),
+                              QRegularExpression::UseUnicodePropertiesOption),
+                          t.second });
+    }
+    if (compiled.isEmpty()) return 0;
+
+    int touched = 0;
+    for (System& it : m_systems) {
+        for (Mention& mn : it.mentions) {
+            const QString before = mn.text;
+            for (const auto& c : compiled) mn.text.replace(c.first, c.second);
+            if (mn.text != before) ++touched;
+        }
+    }
+
+    if (touched > 0) {
+        save();
+        emit changed();
+    }
+    return touched;
+}
 
 QString ConstrutorStore::addMention(const QString& systemId, const Mention& mention)
 {

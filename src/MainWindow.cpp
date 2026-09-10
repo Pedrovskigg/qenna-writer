@@ -8263,6 +8263,9 @@ void MainWindow::offerProjectWideRename(const QString& elementId, const QString&
     RenameService svc(projectModel, elementsStore, projectRoot);
     svc.setDialogueStore(dialogueStore);
     svc.setMemoriesStore(memoriesStore);
+    svc.setMapPinsStore(mapPinsStore);
+    svc.setConstrutorStore(construtorStore);
+    svc.setTerritorioStore(territorioStore);
     // A varredura lê todos os capítulos, variações e documentos do disco: em
     // projeto grande ela segura a interface por alguns segundos.
     QApplication::setOverrideCursor(Qt::WaitCursor);
