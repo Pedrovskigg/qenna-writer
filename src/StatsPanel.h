@@ -23,6 +23,7 @@ class DialogueStore;
 class TerritorioStore;
 class WordCounter;
 struct DrawerItem;
+struct Chapter;
 
 // Painel de Estatísticas — visão global do elenco/manuscrito (Fase 1: fileira
 // de avatares + barras de participação) e drill-down por personagem (foto,
@@ -80,6 +81,11 @@ private:
     // Filtro por território (M7) — repopula o menu e reaplica o esmaecimento
     // sem refazer os cards inteiros (mais barato que rebuildOverview()).
     void rebuildTerritorioFilterMenu();
+    // Escopo do painel: um manuscrito ou a obra inteira.
+    void rebuildManuscriptScopeMenu();
+    // Capítulos do escopo atual, já na ordem de leitura (por manuscrito, depois
+    // por order) — a lista crua de chapters() segue a ordem de criação.
+    QList<Chapter> scopedChapters() const;
     void applyTerritorioFilterDimming();
     void rebuildChapterBars();
     void rebuildOverviewStats();
@@ -139,6 +145,11 @@ private:
     // reaplicar o esmaecimento sem refazer rebuildOverview() inteiro.
     QHash<QString, QWidget*> m_avatarBtnByElement;
     QHash<QString, QWidget*> m_particRowByElement;
+
+    // "" = segue o manuscrito ativo (padrão) | "*" = obra inteira | <id>
+    QString m_msScope;
+    QToolButton* m_msScopeBtn = nullptr;
+    QMenu* m_msScopeMenu = nullptr;
 
     enum class ChapterMetric { Words, DialogueRatio };
     ChapterMetric m_chapterMetric = ChapterMetric::Words;

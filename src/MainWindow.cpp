@@ -161,6 +161,10 @@
 #include "SpellEditor.h"
 #include "SpellHighlighter.h"
 #include "BackupService.h"
+#include "RenameDialog.h"
+#include "RenameService.h"
+#include "Thesaurus.h"
+#include "ThesaurusPopup.h"
 #include "SystemFolderGuard.h"
 #include "ThemesPanel.h"
 #include "TrashService.h"
@@ -1607,6 +1611,73 @@ void MainWindow::setupEditor()
             [this](const QString& word, const QPoint& gp) {
         if (!glossaryAddPopup) return;
         glossaryAddPopup->presentAt(gp, word);
+    });
+
+    // Sinônimos: dicionário MyThes baixado sob demanda (ver Thesaurus.h). O
+    // idioma acompanha o do corretor — não faz sentido sugerir sinônimo em
+    // português num texto que está sendo revisado em inglês.
+    thesaurus = new Thesaurus(this);
+    thesaurusPopup = new ThesaurusPopup(thesaurus, this);
+
+    // Submenu rápido: a palavra que nomeia cada acepção, uma por sentido. É o
+    // melhor resumo possível de uma consulta — "casa" devolve lar, domicílio,
+    // prédio, família em vez de dez variações do mesmo sentido — e evita a
+    // pergunta impossível de qual acepção o autor quis dizer.
+    editor->setSynonymProvider([this](const QString& word) -> QStringList {
+        if (!thesaurus) return {};
+        QString lang = projectModel ? projectModel->spellLanguage() : QString();
+        if (lang.isEmpty() || !Thesaurus::isLanguageSupported(lang))
+            lang = QStringLiteral("pt_BR");
+        thesaurus->setLanguage(lang);
+        if (!thesaurus->hasData()) return {};
+        if (!thesaurus->isReady()) {
+            // Indexar custa cerca de um segundo e acontece uma vez por sessão.
+            QApplication::setOverrideCursor(Qt::WaitCursor);
+            thesaurus->buildIndex();
+            QApplication::restoreOverrideCursor();
+        }
+        QStringList out;
+        for (const Thesaurus::Sense& s : thesaurus->lookup(word)) {
+            const QString label = s.label.trimmed();
+            if (label.isEmpty() || label.contains(QLatin1Char(' '))) continue;
+            if (!out.contains(label, Qt::CaseInsensitive)) out << label;
+            if (out.size() >= 10) break;
+        }
+        return out;
+    });
+
+    connect(editor, &SpellEditor::synonymChosen, this, [this](const QString& replacement) {
+        if (!editor || replacement.isEmpty()) return;
+        QTextCursor cur = editor->textCursor();
+        if (!cur.hasSelection()) return;
+        cur.insertText(replacement);
+    });
+    connect(editor, &SpellEditor::synonymsRequested, this,
+            [this](const QString& word, const QPoint& gp) {
+        if (!thesaurusPopup || !thesaurus) return;
+        QString lang = projectModel ? projectModel->spellLanguage() : QString();
+        if (lang.isEmpty() || !Thesaurus::isLanguageSupported(lang))
+            lang = QStringLiteral("pt_BR");
+        thesaurus->setLanguage(lang);
+
+        // Contexto: o parágrafo do cursor mais os vizinhos. Um parágrafo curto
+        // ("— Sim. — ela disse.") não tem palavra de conteúdo nenhuma, e aí a
+        // ordenação não teria em que se apoiar.
+        QString ctx;
+        if (editor) {
+            const QTextBlock blk = editor->textCursor().block();
+            if (blk.previous().isValid()) ctx += blk.previous().text() + QLatin1Char('\n');
+            ctx += blk.text();
+            if (blk.next().isValid()) ctx += QLatin1Char('\n') + blk.next().text();
+        }
+        thesaurusPopup->presentAt(gp, word, ctx, manuscriptCorpusForRanking());
+    });
+    connect(thesaurusPopup, &ThesaurusPopup::replaceRequested, this,
+            [this](const QString& replacement) {
+        if (!editor || replacement.isEmpty()) return;
+        QTextCursor cur = editor->textCursor();
+        if (!cur.hasSelection()) return;
+        cur.insertText(replacement);
     });
 
     // Painel de Ajuda: janela própria (não modal, sem auto-fechar) — fica
@@ -3161,6 +3232,11 @@ void MainWindow::setupEditor()
         const QString newTrack = dlg.trackMode();
         const QStringList newAliases = dlg.aliases();
 
+        // Guardados antes de qualquer escrita: updateDrawerItemMeta já grava o
+        // nome novo, e a propagação precisa saber o que procurar.
+        const QString oldTitle = item->title;
+        const QString renameElementId = item->elementId;
+
         projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
 
         // Sincroniza Element vinculado, se houver. Foto só é editável quando há elementId.
@@ -3192,6 +3268,12 @@ void MainWindow::setupEditor()
             const QString newElementId = elementsStore->addElement(elem);
             projectModel->setDrawerItemElement(itemId, elemType, item->elementIcon, newElementId);
         }
+
+        // Renomear já é o gesto que o autor usa aqui — a propagação vem junto,
+        // em vez de virar um comando separado que ele teria que descobrir.
+        if (!renameElementId.isEmpty() && !oldTitle.isEmpty() && newTitle != oldTitle)
+            offerProjectWideRename(renameElementId, oldTitle, newTitle);
+
         Q_UNUSED(drawerKey);
     });
 
@@ -6152,6 +6234,10 @@ void MainWindow::formalizeIdeaDraft()
 
 void MainWindow::triggerManualSave()
 {
+    // O corpus de ranking dos sinônimos vira pó a cada save: é a hora natural de
+    // reconhecer que o texto mudou, sem pagar a remontagem a cada consulta.
+    rankCorpusCache.clear();
+
     if (m_ideaDraftActive && projectRoot.isEmpty()) {
         formalizeIdeaDraft();
         return;
@@ -8121,6 +8207,99 @@ void MainWindow::openMarkerInEditor(const QString& docKey, int start, int end, c
         editor->ensureCursorVisible();
         editor->setFocus();
     });
+}
+
+QString MainWindow::manuscriptCorpusForRanking()
+{
+    if (!rankCorpusCache.isEmpty()) return rankCorpusCache;
+    if (!projectModel) return QString();
+
+    static const QRegularExpression kBreaks(
+        QStringLiteral("</p>|</h[1-6]>|<br[^>]*>"), QRegularExpression::CaseInsensitiveOption);
+    static const QRegularExpression kTags(QStringLiteral("<[^>]*>"));
+
+    QString all;
+    const QString msId = projectModel->activeManuscriptId();
+    for (const Chapter* ch : projectModel->orderedChaptersForManuscript(msId)) {
+        if (!ch) continue;
+        QString html;
+        const QString key = DocCache::chapterKey(ch->manuscriptId, ch->id);
+        if (docCache && docCache->has(key)) {
+            html = docCache->get(key);
+        } else if (!ch->file.isEmpty()) {
+            bool ok = false;
+            html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+            if (!ok) continue;
+        }
+        if (html.isEmpty()) continue;
+
+        // Fim de parágrafo vira quebra de linha: o ranker mede vizinhança por
+        // parágrafo, então perder essa fronteira misturaria assuntos distantes.
+        html.replace(kBreaks, QStringLiteral("\n"));
+        html.remove(kTags);
+        html.replace(QStringLiteral("&nbsp;"), QStringLiteral(" "));
+        html.replace(QStringLiteral("&quot;"), QStringLiteral("\""));
+        html.replace(QStringLiteral("&lt;"), QStringLiteral("<"));
+        html.replace(QStringLiteral("&gt;"), QStringLiteral(">"));
+        html.replace(QStringLiteral("&amp;"), QStringLiteral("&"));
+        all += html;
+        all += QLatin1Char('\n');
+    }
+
+    rankCorpusCache = all;
+    return rankCorpusCache;
+}
+
+void MainWindow::offerProjectWideRename(const QString& elementId, const QString& oldName,
+                                        const QString& newName) {
+    if (!projectModel || !elementsStore || projectRoot.isEmpty()) return;
+
+    // O motor lê e grava direto no disco. Sem descarregar editor -> cache ->
+    // disco antes, ele varreria conteúdo velho — e o save seguinte desfaria a
+    // troca por cima.
+    if (editorHost) editorHost->syncEditorToCache();
+    triggerManualSave();
+
+    RenameService svc(projectModel, elementsStore, projectRoot);
+    svc.setDialogueStore(dialogueStore);
+    svc.setMemoriesStore(memoriesStore);
+    // A varredura lê todos os capítulos, variações e documentos do disco: em
+    // projeto grande ela segura a interface por alguns segundos.
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const RenameService::Plan plan = svc.scan(elementId, oldName, newName);
+    QApplication::restoreOverrideCursor();
+    if (plan.isEmpty()) return;
+
+    RenameDialog dlg(plan, this);
+    if (dlg.exec() != QDialog::Accepted) return;
+
+    // O editor precisa LARGAR o documento antes da troca. Só limpar o DocCache
+    // não basta: o texto antigo continua vivo no QTextDocument e volta pro disco
+    // no save seguinte. E reabrir depois também não resolve sozinho, porque
+    // openDocKeyInEditor() chama setViewMode() com o mesmo modo que já está
+    // ativo — o que não recarrega nada. Sintoma real disso: de 13 capítulos,
+    // exatamente o que estava aberto ficava com o nome velho.
+    const QString reopenKey = editorHost ? editorHost->activeKey() : QString();
+    if (editorHost) editorHost->disable();
+
+    QString error;
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    const bool ok = svc.apply(dlg.resultPlan(), &error);
+    QApplication::restoreOverrideCursor();
+    if (!ok) {
+        if (!reopenKey.isEmpty()) openDocKeyInEditor(reopenKey);
+        QMessageBox::warning(this, tr("Renomear"),
+                             error.isEmpty() ? tr("Não foi possível renomear.") : error);
+        return;
+    }
+
+    if (docCache) docCache->clear();
+    // Os regexes de detecção são chaveados por nome, não por id — com o nome
+    // velho ali dentro a presença continuaria casando com quem não existe mais.
+    m_presenceRegexCache.clear();
+
+    if (!reopenKey.isEmpty()) openDocKeyInEditor(reopenKey);
+    triggerManualSave();
 }
 
 void MainWindow::openDocKeyInEditor(const QString& docKey)

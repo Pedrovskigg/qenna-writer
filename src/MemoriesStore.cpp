@@ -6,6 +6,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QUuid>
 #include <algorithm>
@@ -154,6 +155,36 @@ QString MemoriesStore::add(const Memory& memIn)
     m_memories.append(m);
     emit changed();
     return m.id;
+}
+
+int MemoriesStore::replaceInTexts(const QVector<QPair<QString, QString>>& terms)
+{
+    if (terms.isEmpty() || m_memories.isEmpty()) return 0;
+
+    QVector<QPair<QRegularExpression, QString>> compiled;
+    compiled.reserve(terms.size());
+    for (const auto& t : terms) {
+        if (t.first.isEmpty() || t.first == t.second) continue;
+        compiled.append({ QRegularExpression(
+                              QStringLiteral("(?<![\\p{L}\\p{N}_])%1(?![\\p{L}\\p{N}_])")
+                                  .arg(QRegularExpression::escape(t.first)),
+                              QRegularExpression::UseUnicodePropertiesOption),
+                          t.second });
+    }
+    if (compiled.isEmpty()) return 0;
+
+    int touched = 0;
+    for (Memory& m : m_memories) {
+        const QString before = m.text;
+        for (const auto& c : compiled) m.text.replace(c.first, c.second);
+        if (m.text != before) ++touched;
+    }
+
+    if (touched > 0) {
+        save();
+        emit changed();
+    }
+    return touched;
 }
 
 bool MemoriesStore::remove(const QString& id)

@@ -1,7 +1,8 @@
 # Third-Party Notices
 
-Qenna Writer (this repository) is licensed under the GNU General Public
-License v3.0 — see [LICENSE](LICENSE). It also uses the third-party
+Qenna Writer (this repository) is licensed under the **Qenna Writer License**
+— GPLv3 as a base, with a Commons Clause condition and an attribution
+requirement under GPL §7(b). See [LICENSE](LICENSE) for the binding text. It also uses the third-party
 components listed below, each under its own license. Full license texts are
 in the [`licenses/`](licenses/) folder except where noted.
 
@@ -79,6 +80,33 @@ required by any executable built with the MinGW-w64 GCC toolchain.
 - **`libwinpthread-1.dll`:** MIT-style license.
   Full text: [`licenses/MIT.txt`](licenses/MIT.txt)
 - **Source:** https://www.mingw-w64.org
+
+## OpenWordnet-PT (thesaurus data, Brazilian Portuguese)
+
+Bundled as `src/assets/thesaurus/th_pt_BR.dat`, installed alongside the
+executable. This file is a **derivative work**: the synsets, glosses and
+part-of-speech data from OpenWordnet-PT were converted from the original
+RDF/Turtle distribution into the flat lookup format the application reads.
+No lexical content was added or altered.
+
+- **License:** Creative Commons Attribution 4.0 International (CC BY 4.0).
+- **Attribution:** OpenWordnet-PT — Valeria de Paiva, Alexandre Rademaker,
+  Gerard de Melo, and contributors.
+- **Source:** https://github.com/own-pt/openWordnet-PT
+- **Full text:** https://creativecommons.org/licenses/by/4.0/
+
+## MyThes thesaurus data (English, Spanish)
+
+Not bundled. Downloaded on demand, only when the user asks for synonyms in a
+language other than Portuguese, and stored in the user's application data
+folder. Fetched from the LibreOffice dictionaries repository.
+
+- **`th_en_US_v2.dat`:** derived from Princeton WordNet — see the WordNet
+  license at https://wordnet.princeton.edu/license-and-commercial-use
+- **`th_es_v2.dat`:** see the license bundled in the source repository.
+- **MyThes format/engine reference license:** BSD 3-Clause,
+  Copyright 2003 Kevin B. Hendricks.
+- **Source:** https://github.com/LibreOffice/dictionaries
 
 ## Bundled fonts
 

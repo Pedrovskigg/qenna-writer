@@ -9,6 +9,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 #include <QSaveFile>
 #include <QSet>
 #include <QUuid>
@@ -219,6 +220,61 @@ void DialogueStore::upsertScanResults(const QString& manuscriptId, const QString
     }
 
     if (dirty) emit changed();
+}
+
+int DialogueStore::replaceInTexts(const QVector<QPair<QString, QString>>& terms)
+{
+    if (terms.isEmpty() || m_dialogues.isEmpty()) return 0;
+
+    QVector<QPair<QRegularExpression, QString>> compiled;
+    compiled.reserve(terms.size());
+    for (const auto& t : terms) {
+        if (t.first.isEmpty() || t.first == t.second) continue;
+        compiled.append({ QRegularExpression(
+                              QStringLiteral("(?<![\\p{L}\\p{N}_])%1(?![\\p{L}\\p{N}_])")
+                                  .arg(QRegularExpression::escape(t.first)),
+                              QRegularExpression::UseUnicodePropertiesOption),
+                          t.second });
+    }
+    if (compiled.isEmpty()) return 0;
+
+    int touched = 0;
+    for (Dialogue& d : m_dialogues) {
+        const QString before = d.text;
+        for (const auto& c : compiled) d.text.replace(c.first, c.second);
+        if (d.text != before) ++touched;
+    }
+    if (touched == 0) return 0;
+
+    // Corrigir o texto reencontra as gêmeas: um rescan feito com o manuscrito já
+    // renomeado inseriu a versão nova de cada fala sem remover a antiga (a
+    // identidade é o hash do texto, que tinha mudado). Agora que as duas ficaram
+    // iguais, elas viram duplicata visível — some com uma. Fica a que tem
+    // locutor; empatando, a mais antiga, que é a que outras telas referenciam.
+    QHash<QString, int> keepByKey;
+    QVector<Dialogue> deduped;
+    deduped.reserve(m_dialogues.size());
+    for (const Dialogue& d : m_dialogues) {
+        const QString key = d.chapterId + QLatin1Char('\n') + QString::number(d.sceneIndex)
+                          + QLatin1Char('\n') + d.text;
+        auto it = keepByKey.constFind(key);
+        if (it == keepByKey.constEnd()) {
+            keepByKey.insert(key, deduped.size());
+            deduped.append(d);
+            continue;
+        }
+        Dialogue& kept = deduped[it.value()];
+        const bool keptHasSpeaker = !kept.characterId.isEmpty();
+        const bool thisHasSpeaker = !d.characterId.isEmpty();
+        if (!keptHasSpeaker && thisHasSpeaker) kept.characterId = d.characterId;
+        if (d.createdAt > 0 && (kept.createdAt == 0 || d.createdAt < kept.createdAt))
+            kept.createdAt = d.createdAt;
+    }
+    m_dialogues = deduped;
+
+    save();
+    emit changed();
+    return touched;
 }
 
 bool DialogueStore::remove(const QString& id)

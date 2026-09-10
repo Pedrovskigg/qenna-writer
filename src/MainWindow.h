@@ -217,6 +217,12 @@ private:
 
     // Mira (chat de IA): citação clicável — abre o capítulo/ficha referenciado.
     void openDocKeyInEditor(const QString& docKey);
+
+    // Depois que o autor renomeia um elemento pelo diálogo de edição do item,
+    // oferece propagar o nome novo pro resto do projeto (prosa, @menções,
+    // fichas, variações de cena). Silencioso quando não há nada a trocar.
+    void offerProjectWideRename(const QString& elementId, const QString& oldName,
+                                const QString& newName);
     QString currentEditorDocTitle() const;
 
     void openMarkerPickerForSelection(bool withComment);
@@ -429,6 +435,14 @@ private:
     HelpPanel *helpPanel = nullptr;
     GlossaryAddPopup *glossaryAddPopup = nullptr;
     MemoriesStore *memoriesStore = nullptr;
+    class Thesaurus *thesaurus = nullptr;
+    class ThesaurusPopup *thesaurusPopup = nullptr;
+    // Texto plano do manuscrito ativo, usado só pra ordenar sinônimos por
+    // contexto. Montado sob demanda e zerado a cada save — ficar alguns
+    // parágrafos atrasado não muda a ordenação, e reconstruir a cada consulta
+    // custaria centenas de ms.
+    QString rankCorpusCache;
+    QString manuscriptCorpusForRanking();
     MemoryAddPopup *memoryAddPopup = nullptr;
     DialogueStore *dialogueStore = nullptr;
     ConstrutorStore *construtorStore = nullptr;

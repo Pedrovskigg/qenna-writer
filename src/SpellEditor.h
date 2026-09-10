@@ -13,6 +13,12 @@ public:
     void setSpellChecker(SpellChecker* checker);
     SpellChecker* spellChecker() const { return m_checker; }
 
+    // Devolve uma lista CURTA de sinônimos para o submenu rápido do menu de
+    // contexto (o gesto do Word: botão direito, Sinônimos, clica, pronto).
+    // Injetado de fora pra não amarrar o editor ao dicionário.
+    using SynonymProvider = std::function<QStringList(const QString&)>;
+    void setSynonymProvider(SynonymProvider fn) { m_synProvider = std::move(fn); }
+
     // Expõe setViewportMargins (protected em QAbstractScrollArea) para a
     // MainWindow ajustar o respiro interno da "página" de escrita.
     void setPageMargins(int left, int top, int right, int bottom)
@@ -32,6 +38,13 @@ signals:
     // contexto. word = texto selecionado (ou WordUnderCursor), pos = global.
     void addToGlossaryRequested(QString word, QPoint globalPos);
 
+    // "Sinônimos" no menu de contexto — abre a lista completa. Só dispara para
+    // uma palavra única.
+    void synonymsRequested(QString word, QPoint globalPos);
+
+    // Troca direta pelo submenu rápido, sem abrir painel nenhum.
+    void synonymChosen(QString replacement);
+
     // Ctrl+clique sobre um link de referência (menção @ ou nome do Codex).
     // href no formato "ref:<drawerKey>:<itemId>".
     void refActivated(QString href);
@@ -49,5 +62,6 @@ protected:
 
 private:
     SpellChecker* m_checker = nullptr;
+    SynonymProvider m_synProvider;
     bool m_screenplayMode = false;
 };

@@ -47,6 +47,11 @@ public:
     QString add(const Memory& mem); // gera id/createdAt se vazios; retorna id
     bool remove(const QString& id);
 
+    // Aplica trocas de nome no TEXTO das memórias (pares antigo→novo). O trecho
+    // guardado é uma cópia do manuscrito e não acompanha uma renomeação
+    // sozinho. Retorna quantas mudaram. Mesmo caso de DialogueStore.
+    int replaceInTexts(const QVector<QPair<QString, QString>>& terms);
+
 signals:
     void changed();
 

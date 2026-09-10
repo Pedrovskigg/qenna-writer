@@ -18,7 +18,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Svg Multimedia Network LinguistTools)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Svg Multimedia Network TextToSpeech LinguistTools)
 
 qt_standard_project_setup()
 
@@ -234,6 +234,16 @@ qt_add_executable(qenna-writer
     src/MemoryAddPopup.h
     src/SystemFolderGuard.cpp
     src/SystemFolderGuard.h
+    src/RenameService.cpp
+    src/RenameService.h
+    src/RenameDialog.cpp
+    src/RenameDialog.h
+    src/Thesaurus.cpp
+    src/Thesaurus.h
+    src/ThesaurusPopup.cpp
+    src/ThesaurusPopup.h
+    src/ThesaurusRanker.cpp
+    src/ThesaurusRanker.h
     src/BackupService.cpp
     src/BackupService.h
     src/AnchorUtils.cpp
@@ -334,6 +344,7 @@ target_link_libraries(qenna-writer PRIVATE
     Qt6::Svg
     Qt6::Multimedia
     Qt6::Network
+    Qt6::TextToSpeech
     hunspell
 )
 
@@ -350,3 +361,19 @@ set_target_properties(qenna-writer PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
 )
+
+# Assets que o app lê do DISCO em runtime (não do .qrc) e que o instalador pega
+# do diretório de build. Sem cópia automática, esse diretório congela no dia em
+# que alguém copiou à mão: em 2026-09-10 o build-release ainda tinha o logo de
+# maio (a arte do nome ANTIGO, "Mira") e 10 imagens de tema a menos que a fonte,
+# e era isso que ia dentro do instalador publicado.
+# copy_directory_if_different não recopia o que não mudou, então o custo por
+# build é desprezível.
+foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
+    add_custom_command(TARGET qenna-writer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+                "${CMAKE_SOURCE_DIR}/src/assets/${asset_dir}"
+                "$<TARGET_FILE_DIR:qenna-writer>/${asset_dir}"
+        COMMENT "Sincronizando assets de runtime: ${asset_dir}"
+        VERBATIM)
+endforeach()

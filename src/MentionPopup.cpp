@@ -191,14 +191,26 @@ void MentionPopup::rebuildChapters()
 {
     addBackItem(tr("← Voltar"));
     if (!m_model) return;
-    for (const Chapter& ch : m_model->chapters()) {
-        const QString t = ch.title.trimmed();
-        if (t.isEmpty()) continue;
-        auto* item = new QListWidgetItem(t);
-        item->setData(Qt::UserRole,     QLatin1String(kMsChapter));
-        item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(ch.manuscriptId, ch.id));
-        item->setData(Qt::UserRole + 2, t);
-        m_list->addItem(item);
+    // Percorre manuscrito por manuscrito, cada um na ordem de leitura: a lista
+    // crua de chapters() segue a ordem de criação e intercalava os livros.
+    // E com vários manuscritos o título sozinho é ambíguo — numa saga, todo
+    // livro tem um "Capítulo 1". O RÓTULO ganha o nome do manuscrito, mas o
+    // valor guardado na menção continua sendo só o título.
+    const bool multi = m_model->manuscripts().size() > 1;
+    for (const Manuscript& ms : m_model->manuscripts()) {
+        const QString msTitle = m_model->manuscriptEffectiveTitle(ms.id);
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+            if (!ch) continue;
+            const QString t = ch->title.trimmed();
+            if (t.isEmpty()) continue;
+            const QString label = (multi && !msTitle.isEmpty())
+                ? QStringLiteral("%1 · %2").arg(msTitle, t) : t;
+            auto* item = new QListWidgetItem(label);
+            item->setData(Qt::UserRole,     QLatin1String(kMsChapter));
+            item->setData(Qt::UserRole + 1, QStringLiteral("%1:%2").arg(ch->manuscriptId, ch->id));
+            item->setData(Qt::UserRole + 2, t);
+            m_list->addItem(item);
+        }
     }
 }
 

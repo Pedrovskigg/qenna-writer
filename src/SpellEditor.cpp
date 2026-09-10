@@ -172,6 +172,51 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
         }
     }
 
+    // "Sinônimos de..." — só faz sentido para UMA palavra: o dicionário é
+    // indexado por verbete, não por expressão.
+    {
+        QString word;
+        QTextCursor target = textCursor();
+        const bool hadSelection = target.hasSelection();
+        if (!hadSelection) {
+            target = cursorForPosition(event->pos());
+            target.select(QTextCursor::WordUnderCursor);
+        }
+        word = target.selectedText().trimmed();
+        word.remove(QChar(0x2029));
+
+        if (!word.isEmpty() && !word.contains(QLatin1Char(' '))) {
+            const QPoint globalPos = event->globalPos();
+            // Selecionar antes de qualquer ação: o autor vê o que vai ser
+            // trocado, e quem recebe o sinal só mexe no cursor atual em vez de
+            // recalcular a posição do clique.
+            auto ensureSelected = [this, target, hadSelection]() {
+                if (!hadSelection) setTextCursor(target);
+            };
+
+            const QStringList quick = m_synProvider ? m_synProvider(word) : QStringList();
+
+            auto* synMenu = new QMenu(tr("Sinônimos"), menu);
+            for (const QString& s : quick) {
+                QAction* a = synMenu->addAction(s);
+                connect(a, &QAction::triggered, this, [this, s, ensureSelected]() {
+                    ensureSelected();
+                    emit synonymChosen(s);
+                });
+            }
+            if (!quick.isEmpty()) synMenu->addSeparator();
+
+            QAction* moreAct = synMenu->addAction(
+                quick.isEmpty() ? tr("Procurar sinônimos...") : tr("Todos os sinônimos..."));
+            connect(moreAct, &QAction::triggered, this, [this, word, globalPos, ensureSelected]() {
+                ensureSelected();
+                emit synonymsRequested(word, globalPos);
+            });
+
+            menu->insertMenu(stdAnchor, synMenu);
+        }
+    }
+
     // "Adicionar ao Glossário..." — SEMPRE disponível, mesmo sem seleção.
     // Usa a seleção atual ou, se vazia, a palavra sob o cursor. Inserido logo
     // antes das ações padrão (Undo, Cut, Copy...). Trim de paragraph-separator

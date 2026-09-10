@@ -69,6 +69,14 @@ public:
     void upsertScanResults(const QString& manuscriptId, const QString& chapterId,
                            const QVector<ScannedLine>& found);
 
+    // Aplica trocas de nome NO TEXTO das falas já salvas (pares antigo→novo).
+    // O texto de uma fala é uma CÓPIA de um trecho do manuscrito: renomeado o
+    // manuscrito, a cópia precisa acompanhar. Sem isso o painel segue mostrando
+    // o nome velho e — pior — o rescan não corrige, porque a identidade da fala
+    // é o hash do próprio texto: a fala renomeada entra como NOVA e a antiga
+    // fica órfã, sem locutor. Retorna quantas falas mudaram.
+    int replaceInTexts(const QVector<QPair<QString, QString>>& terms);
+
     bool remove(const QString& id);
     // Correção manual de locutor (menu de contexto no card) — o detector é
     // bom, mas heurística de proximidade erra quando o nome citado no texto

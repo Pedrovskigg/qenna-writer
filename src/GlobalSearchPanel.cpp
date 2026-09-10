@@ -397,10 +397,20 @@ bool GlobalSearchPanel::resultPassesFilter(const Result& r) const
 
 QString GlobalSearchPanel::typeMeta(const Result& r) const
 {
+    // Num projeto de vários manuscritos, dizer só "Capítulo" deixa o resultado
+    // ambíguo: numa saga, todo livro tem um "Capítulo 1", e a busca varre todos.
+    QString book;
+    if (m_model && m_model->manuscripts().size() > 1 && !r.manuscriptId.isEmpty())
+        book = m_model->manuscriptEffectiveTitle(r.manuscriptId);
+    const auto withBook = [&book](const QString& s) {
+        return book.isEmpty() ? s : QStringLiteral("%1 · %2").arg(book, s);
+    };
+
     switch (r.type) {
-    case RChapter: return tr("Capítulo");
+    case RChapter: return withBook(tr("Capítulo"));
     case RManuscript: return tr("Manuscrito");
-    case RScene: return tr("%1 • Cena").arg(r.chapterTitle.isEmpty() ? tr("Capítulo") : r.chapterTitle);
+    case RScene:
+        return withBook(tr("%1 • Cena").arg(r.chapterTitle.isEmpty() ? tr("Capítulo") : r.chapterTitle));
     case RDrawerItem: return r.drawerTitle.isEmpty() ? tr("Documento") : r.drawerTitle;
     }
     return QString();

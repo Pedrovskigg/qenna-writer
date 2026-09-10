@@ -192,7 +192,11 @@ private:
     // Rótulo de origem completo ("Capítulo X" ou "Capítulo X • Cena Y").
     QString originLabel(const QString& docKey, int sceneIndex) const;
     // Posição do doc na ordem da obra (capítulos primeiro, na ordem; resto ao fim).
+    // Agrupa por manuscrito: numa saga, os livros não podem ficar intercalados.
     int rankForKey(const QString& docKey) const;
+    // Rótulo do capítulo, prefixado com o manuscrito quando o projeto tem mais
+    // de um — senão "Capítulo 1" aparece repetido e indistinguível.
+    QString chapterLabel(const QString& manuscriptId, const QString& title) const;
     void ancorRight();
 
     MarkerStore* m_markers = nullptr;

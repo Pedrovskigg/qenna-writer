@@ -1,0 +1,6 @@
+# Dados de dicionário: o formato é definido linha a linha com "\n" e o arquivo
+# é lido cru pelo app. Deixar o Git converter para CRLF no checkout mudaria o
+# conteúdo sem ninguém pedir.
+*.dat  -text
+*.dic  -text
+*.aff  -text

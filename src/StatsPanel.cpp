@@ -219,6 +219,18 @@ QWidget* StatsPanel::buildOverviewPage()
     chapterRow->addWidget(chapterLabel);
     chapterRow->addStretch();
 
+    // Escopo: um manuscrito ou a obra inteira. Só aparece em projeto com mais de
+    // um manuscrito — numa saga, "o manuscrito ativo" raramente é a pergunta.
+    m_msScopeBtn = new QToolButton(inner);
+    m_msScopeBtn->setObjectName(QStringLiteral("stChemSortBtn"));
+    m_msScopeBtn->setCursor(Qt::PointingHandCursor);
+    m_msScopeBtn->setPopupMode(QToolButton::InstantPopup);
+    m_msScopeMenu = new QMenu(m_msScopeBtn);
+    connect(m_msScopeMenu, &QMenu::aboutToShow, this, &StatsPanel::rebuildManuscriptScopeMenu);
+    m_msScopeBtn->setMenu(m_msScopeMenu);
+    m_msScopeBtn->setVisible(false);
+    chapterRow->addWidget(m_msScopeBtn);
+
     m_chapterMetricBtn = new QToolButton(inner);
     m_chapterMetricBtn->setObjectName(QStringLiteral("stChemSortBtn"));
     m_chapterMetricBtn->setCursor(Qt::PointingHandCursor);
@@ -518,6 +530,20 @@ void StatsPanel::rebuildOverview()
     if (m_territorioFilterBtn)
         m_territorioFilterBtn->setVisible(m_territorioStore && !m_territorioStore->territorios().isEmpty());
 
+    if (m_msScopeBtn) {
+        const int msCount = m_model ? m_model->manuscripts().size() : 0;
+        m_msScopeBtn->setVisible(msCount > 1);
+        QString label;
+        if (m_msScope == QLatin1String("*")) {
+            label = tr("Obra inteira");
+        } else {
+            const QString id = m_msScope.isEmpty() ? m_model->activeManuscriptId() : m_msScope;
+            label = m_model->manuscriptEffectiveTitle(id);
+            if (label.isEmpty()) label = tr("Manuscrito");
+        }
+        m_msScopeBtn->setText(label + QStringLiteral(" ▾"));
+    }
+
     QList<Element> characters = projectCharacters();
     std::sort(characters.begin(), characters.end(), [](const Element& a, const Element& b) {
         return a.name.toLower() < b.name.toLower();
@@ -589,6 +615,46 @@ void StatsPanel::rebuildOverview()
     }
     m_avatarStripLay->addStretch();
     applyTerritorioFilterDimming();
+}
+
+QList<Chapter> StatsPanel::scopedChapters() const
+{
+    QList<Chapter> out;
+    if (!m_model) return out;
+    const bool all = (m_msScope == QLatin1String("*"));
+    const QString target = m_msScope.isEmpty() ? m_model->activeManuscriptId() : m_msScope;
+    for (const Manuscript& ms : m_model->manuscripts()) {
+        if (!all && ms.id != target) continue;
+        for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id))
+            if (ch) out.append(*ch);
+    }
+    return out;
+}
+
+void StatsPanel::rebuildManuscriptScopeMenu()
+{
+    if (!m_msScopeMenu || !m_model) return;
+    m_msScopeMenu->clear();
+
+    const QString active = m_model->activeManuscriptId();
+    auto addEntry = [this](const QString& label, const QString& scope) {
+        QAction* a = m_msScopeMenu->addAction(label);
+        a->setCheckable(true);
+        a->setChecked(m_msScope == scope);
+        connect(a, &QAction::triggered, this, [this, scope]() {
+            m_msScope = scope;
+            refresh();
+        });
+    };
+
+    addEntry(tr("Obra inteira"), QStringLiteral("*"));
+    m_msScopeMenu->addSeparator();
+    for (const Manuscript& ms : m_model->manuscripts()) {
+        QString label = m_model->manuscriptEffectiveTitle(ms.id);
+        if (label.isEmpty()) label = tr("Manuscrito sem título");
+        if (ms.id == active) label += tr("  (aberto)");
+        addEntry(label, ms.id);
+    }
 }
 
 void StatsPanel::rebuildTerritorioFilterMenu()
@@ -666,13 +732,7 @@ void StatsPanel::rebuildChapterBars()
         return;
     }
 
-    const QString activeMs = m_model->activeManuscriptId();
-    QList<Chapter> chapters;
-    for (const Chapter& ch : m_model->chapters())
-        if (ch.manuscriptId == activeMs) chapters.append(ch);
-    std::sort(chapters.begin(), chapters.end(), [](const Chapter& a, const Chapter& b) {
-        return a.order < b.order;
-    });
+    const QList<Chapter> chapters = scopedChapters();
 
     if (chapters.isEmpty()) {
         auto* empty = new QLabel(tr("Nenhum capítulo neste manuscrito."), m_chapterBarsHost);
@@ -760,10 +820,7 @@ void StatsPanel::rebuildOverviewStats()
 
     const int totalWords = m_wordCounter->countProject();
 
-    const QString activeMs = m_model->activeManuscriptId();
-    QList<Chapter> chapters;
-    for (const Chapter& ch : m_model->chapters())
-        if (ch.manuscriptId == activeMs) chapters.append(ch);
+    const QList<Chapter> chapters = scopedChapters();
 
     QString biggest, smallest;
     int biggestWords = -1, smallestWords = -1;

@@ -1520,8 +1520,7 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
     };
     if (m_model) {
         for (const Chapter& ch : m_model->chapters()) {
-            ensureOrigin(ch.id, ch.manuscriptId,
-                         ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title);
+            ensureOrigin(ch.id, ch.manuscriptId, chapterLabel(ch.manuscriptId, ch.title));
         }
     }
     for (const DialogueStore::Dialogue& d : all) {
@@ -2450,13 +2449,29 @@ QString PensarioPanel::originLabel(const QString& docKey, int sceneIndex) const
 int PensarioPanel::rankForKey(const QString& docKey) const
 {
     if (m_model) {
-        int i = 0;
-        for (const Chapter& ch : m_model->chapters()) {
-            if (DocCache::chapterKey(ch.manuscriptId, ch.id) == docKey) return i;
-            ++i;
+        // Percorre manuscrito por manuscrito, cada um na ordem de leitura. A
+        // lista crua de chapters() mistura os manuscritos na ordem em que os
+        // capítulos foram criados, então ordenar por ela intercalava os livros
+        // de uma saga.
+        int rank = 0;
+        for (const Manuscript& ms : m_model->manuscripts()) {
+            for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id)) {
+                if (ch && DocCache::chapterKey(ch->manuscriptId, ch->id) == docKey) return rank;
+                ++rank;
+            }
         }
     }
     return std::numeric_limits<int>::max(); // não-capítulos vão pro fim
+}
+
+QString PensarioPanel::chapterLabel(const QString& manuscriptId, const QString& title) const
+{
+    const QString t = title.isEmpty() ? tr("Capítulo sem título") : title;
+    // Num projeto de vários manuscritos "Capítulo 1" sozinho é ambíguo: numa
+    // saga, todo livro tem um.
+    if (!m_model || m_model->manuscripts().size() < 2) return t;
+    const QString ms = m_model->manuscriptEffectiveTitle(manuscriptId);
+    return ms.isEmpty() ? t : QStringLiteral("%1 · %2").arg(ms, t);
 }
 
 QString PensarioPanel::docTitleForKey(const QString& docKey) const
@@ -2466,7 +2481,7 @@ QString PensarioPanel::docTitleForKey(const QString& docKey) const
     // Capítulo? (compara chaves computadas em vez de parsear strings)
     for (const Chapter& ch : m_model->chapters()) {
         if (DocCache::chapterKey(ch.manuscriptId, ch.id) == docKey)
-            return ch.title.isEmpty() ? tr("Capítulo sem título") : ch.title;
+            return chapterLabel(ch.manuscriptId, ch.title);
     }
     // Item de gaveta?
     for (const Drawer& d : m_model->drawers()) {
