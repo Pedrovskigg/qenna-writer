@@ -1654,7 +1654,7 @@ void MainWindow::setupEditor()
             // aumentar", a sugestão útil é "pressionou", não "pressionar".
             QString shown = label;
             if (sc && lookupWord != word) {
-                const QString inflected = sc->inflectLike(label, word);
+                const QString inflected = sc->inflectLike(label, word, lookupWord);
                 if (!inflected.isEmpty()) shown = inflected;
             }
             if (!out.contains(shown, Qt::CaseInsensitive)) out << shown;
@@ -1697,7 +1697,7 @@ void MainWindow::setupEditor()
         thesaurusPopup->setLookupWord(lemma);
         thesaurusPopup->setInflector([sc, word, lemma](const QString& s) -> QString {
             if (!sc || lemma.isEmpty()) return s;
-            const QString f = sc->inflectLike(s, word);
+            const QString f = sc->inflectLike(s, word, lemma);
             return f.isEmpty() ? s : f;
         });
         thesaurusPopup->presentAt(gp, word, ctx, manuscriptCorpusForRanking());

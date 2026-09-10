@@ -1,5 +1,7 @@
 #include "SpellChecker.h"
 
+#include <QVector>
+
 #include <hunspell.hxx>
 
 #include <QCoreApplication>
@@ -99,13 +101,80 @@ QString SpellChecker::stemOf(const QString& word) const
     return QString::fromStdString(roots.front());
 }
 
-QString SpellChecker::inflectLike(const QString& lemma, const QString& like) const
+QString SpellChecker::inflectLike(const QString& lemma, const QString& inflected,
+                                  const QString& baseLemma) const
 {
-    if (!m_hunspell || lemma.isEmpty() || like.isEmpty()) return QString();
-    const std::vector<std::string> forms =
-        m_hunspell->generate(lemma.toStdString(), like.toStdString());
-    if (forms.empty()) return QString();
-    return QString::fromStdString(forms.front());
+    if (!m_hunspell) return QString();
+    const QString target = lemma.trimmed().toLower();
+    const QString form = inflected.trimmed().toLower();
+    const QString base = baseLemma.trimmed().toLower();
+    if (target.isEmpty() || form.isEmpty() || base.isEmpty()) return QString();
+    if (form == base) return target; // não estava flexionado
+
+    static const QStringList kInf = { QStringLiteral("ar"), QStringLiteral("er"),
+                                      QStringLiteral("ir"), QStringLiteral("or") };
+
+    // Radical vem de CORTAR A TERMINAÇÃO DO INFINITIVO, não do prefixo comum
+    // entre lema e forma: "chegar"/"chegando" compartilham "chega", o que
+    // deixaria o sufixo como "ndo" e não casaria com nada.
+    QString baseStem;
+    for (const QString& inf : kInf) {
+        if (base.endsWith(inf)) { baseStem = base.left(base.size() - inf.size()); break; }
+    }
+    if (baseStem.isEmpty() || !form.startsWith(baseStem)) return QString();
+
+    const QString formSuffix = form.mid(baseStem.size()); // "ando", "ou", "aria"
+    if (formSuffix.isEmpty()) return QString();
+
+    // Mesmo tempo escrito nas três conjugações — sem isto um sinônimo de outra
+    // conjugação ("seguir" para "chegando") viraria "seguando".
+    static const QVector<QStringList> kGroups = {
+        { QStringLiteral("ar"),    QStringLiteral("er"),    QStringLiteral("ir")    },
+        { QStringLiteral("ando"),  QStringLiteral("endo"),  QStringLiteral("indo")  },
+        { QStringLiteral("ado"),   QStringLiteral("ido")   },
+        { QStringLiteral("ada"),   QStringLiteral("ida")   },
+        { QStringLiteral("ados"),  QStringLiteral("idos")  },
+        { QStringLiteral("adas"),  QStringLiteral("idas")  },
+        { QStringLiteral("ou"),    QStringLiteral("eu"),    QStringLiteral("iu")    },
+        { QStringLiteral("ava"),   QStringLiteral("ia")    },
+        { QStringLiteral("avam"),  QStringLiteral("iam")   },
+        { QStringLiteral("ava"),   QStringLiteral("ia")    },
+        { QStringLiteral("aria"),  QStringLiteral("eria"), QStringLiteral("iria")  },
+        { QStringLiteral("ariam"), QStringLiteral("eriam"),QStringLiteral("iriam") },
+        { QStringLiteral("aram"),  QStringLiteral("eram"), QStringLiteral("iram")  },
+        { QStringLiteral("asse"),  QStringLiteral("esse"), QStringLiteral("isse")  },
+        { QStringLiteral("assem"), QStringLiteral("essem"),QStringLiteral("issem") },
+        { QStringLiteral("ei"),    QStringLiteral("i")     },
+        { QStringLiteral("amos"),  QStringLiteral("emos"), QStringLiteral("imos")  },
+        { QStringLiteral("aremos"),QStringLiteral("eremos"),QStringLiteral("iremos")},
+        { QStringLiteral("ará"),   QStringLiteral("erá"),  QStringLiteral("irá")   },
+        { QStringLiteral("arão"),  QStringLiteral("erão"), QStringLiteral("irão")  },
+        { QStringLiteral("am"),    QStringLiteral("em")    },
+        { QStringLiteral("a"),     QStringLiteral("e")     },
+        { QStringLiteral("as"),    QStringLiteral("es")    },
+    };
+
+    QStringList suffixes { formSuffix };
+    for (const QStringList& g : kGroups) {
+        if (!g.contains(formSuffix)) continue;
+        for (const QString& alt : g)
+            if (!suffixes.contains(alt)) suffixes << alt;
+    }
+
+    QString targetStem;
+    for (const QString& inf : kInf) {
+        if (target.endsWith(inf)) { targetStem = target.left(target.size() - inf.size()); break; }
+    }
+    // Alvo que não é verbo não tem como receber flexão verbal.
+    if (targetStem.isEmpty()) return QString();
+
+    for (const QString& suf : suffixes) {
+        const QString cand = targetStem + suf;
+        if (cand == target) continue;
+        // O dicionário é o juiz: nunca sai palavra inventada.
+        if (isCorrect(cand)) return cand;
+    }
+    return QString();
 }
 
 bool SpellChecker::addToPersonalDictionary(const QString& word)

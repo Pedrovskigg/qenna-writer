@@ -33,9 +33,17 @@ public:
     // é feito de verbo conjugado — sem isto, metade das consultas não acha nada.
     QString stemOf(const QString& word) const;
 
-    // Flexiona 'lemma' seguindo o exemplo de 'like': ("pressionar", "apertou")
-    // -> "pressionou". Vazio se não conseguir; quem chama cai no lema.
-    QString inflectLike(const QString& lemma, const QString& like) const;
+    // Flexiona 'lemma' na mesma forma em que 'inflected' está flexionado, dado
+    // que 'inflected' é flexão de 'baseLemma':
+    //   inflectLike("achar", "chegando", "chegar") -> "achando"
+    //
+    // O generate() do hunspell não funciona com o dicionário pt_BR (devolve
+    // vazio sempre — testado), então a flexão é feita por ANALOGIA: descobre o
+    // sufixo que separou a forma do seu lema e aplica o equivalente no alvo,
+    // tentando também as outras conjugações. Cada candidato é validado contra o
+    // próprio dicionário, então nunca sai palavra inventada.
+    QString inflectLike(const QString& lemma, const QString& inflected,
+                        const QString& baseLemma) const;
 
     bool addToPersonalDictionary(const QString& word);
     QSet<QString> personalWords() const { return m_personal; }
