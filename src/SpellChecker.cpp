@@ -88,6 +88,26 @@ QStringList SpellChecker::suggest(const QString& word) const
     return result;
 }
 
+QString SpellChecker::stemOf(const QString& word) const
+{
+    if (!m_hunspell || word.isEmpty()) return QString();
+    const std::vector<std::string> roots =
+        m_hunspell->stem(word.toLower().toStdString());
+    if (roots.empty()) return QString();
+    // O hunspell pode devolver várias raízes (ambiguidade morfológica). A
+    // primeira é a análise mais provável.
+    return QString::fromStdString(roots.front());
+}
+
+QString SpellChecker::inflectLike(const QString& lemma, const QString& like) const
+{
+    if (!m_hunspell || lemma.isEmpty() || like.isEmpty()) return QString();
+    const std::vector<std::string> forms =
+        m_hunspell->generate(lemma.toStdString(), like.toStdString());
+    if (forms.empty()) return QString();
+    return QString::fromStdString(forms.front());
+}
+
 bool SpellChecker::addToPersonalDictionary(const QString& word)
 {
     const QString trimmed = word.trimmed();

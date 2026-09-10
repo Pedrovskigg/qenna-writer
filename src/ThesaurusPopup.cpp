@@ -131,11 +131,14 @@ void ThesaurusPopup::rebuild()
     if (!m_th->hasData()) { showDownloadOffer(); return; }
     if (!m_th->isReady()) m_th->buildIndex();
 
-    const QList<Thesaurus::Sense> raw = m_th->lookup(m_word);
+    // Consulta pelo lema quando a palavra do texto está flexionada — o
+    // dicionário é indexado por forma de dicionário.
+    const QString lookupWord = m_lemma.isEmpty() ? m_word : m_lemma;
+    const QList<Thesaurus::Sense> raw = m_th->lookup(lookupWord);
     // Ordena pelo que combina com o texto em volta, usando o manuscrito como
     // referência — sem isso "casa" abre em "armazém" e "botoeira".
     const QList<ThesaurusRanker::RankedSense> ranked =
-        ThesaurusRanker::rank(raw, m_word, m_context, m_corpus);
+        ThesaurusRanker::rank(raw, lookupWord, m_context, m_corpus);
 
     QList<Thesaurus::Sense> senses;
     bool anyGrounded = false;
@@ -227,9 +230,14 @@ void ThesaurusPopup::rebuild()
         cardLay->addWidget(headLabel);
 
         QStringList links;
-        for (const QString& syn : rest)
+        for (const QString& syn : rest) {
+            // O texto exibido (e inserido) acompanha a flexão da palavra
+            // original: em "apertou para aumentar", a sugestão é "pressionou",
+            // não "pressionar".
+            const QString shown = m_inflect ? m_inflect(syn) : syn;
             links << QStringLiteral("<a href=\"%1\" style=\"%2\">%1</a>")
-                         .arg(syn.toHtmlEscaped(), linkStyle);
+                         .arg(shown.toHtmlEscaped(), linkStyle);
+        }
 
         // line-height solta as linhas: com o wrap padrão elas encostam umas nas
         // outras e o bloco vira um borrão.

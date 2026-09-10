@@ -1636,11 +1636,28 @@ void MainWindow::setupEditor()
             thesaurus->buildIndex();
             QApplication::restoreOverrideCursor();
         }
+        // O dicionário é indexado pela forma de dicionário: "apertou" não está
+        // lá, "apertar" está. Sem lematizar, verbo conjugado — que é metade de
+        // um romance — nunca devolvia nada.
+        QString lookupWord = word;
+        SpellChecker* sc = editor ? editor->spellChecker() : nullptr;
+        if (thesaurus->isReady() && thesaurus->lookup(lookupWord).isEmpty() && sc) {
+            const QString stem = sc->stemOf(word);
+            if (!stem.isEmpty()) lookupWord = stem;
+        }
+
         QStringList out;
-        for (const Thesaurus::Sense& s : thesaurus->lookup(word)) {
+        for (const Thesaurus::Sense& s : thesaurus->lookup(lookupWord)) {
             const QString label = s.label.trimmed();
             if (label.isEmpty() || label.contains(QLatin1Char(' '))) continue;
-            if (!out.contains(label, Qt::CaseInsensitive)) out << label;
+            // Devolve na mesma flexão da palavra original: em "apertou para
+            // aumentar", a sugestão útil é "pressionou", não "pressionar".
+            QString shown = label;
+            if (sc && lookupWord != word) {
+                const QString inflected = sc->inflectLike(label, word);
+                if (!inflected.isEmpty()) shown = inflected;
+            }
+            if (!out.contains(shown, Qt::CaseInsensitive)) out << shown;
             if (out.size() >= 10) break;
         }
         return out;
@@ -1670,6 +1687,19 @@ void MainWindow::setupEditor()
             ctx += blk.text();
             if (blk.next().isValid()) ctx += QLatin1Char('\n') + blk.next().text();
         }
+        // Mesma lematização do submenu — ver comentário no provider acima.
+        SpellChecker* sc = editor ? editor->spellChecker() : nullptr;
+        QString lemma;
+        if (thesaurus->isReady() && thesaurus->lookup(word).isEmpty() && sc) {
+            const QString stem = sc->stemOf(word);
+            if (!stem.isEmpty() && stem != word) lemma = stem;
+        }
+        thesaurusPopup->setLookupWord(lemma);
+        thesaurusPopup->setInflector([sc, word, lemma](const QString& s) -> QString {
+            if (!sc || lemma.isEmpty()) return s;
+            const QString f = sc->inflectLike(s, word);
+            return f.isEmpty() ? s : f;
+        });
         thesaurusPopup->presentAt(gp, word, ctx, manuscriptCorpusForRanking());
     });
     connect(thesaurusPopup, &ThesaurusPopup::replaceRequested, this,

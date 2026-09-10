@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QWidget>
+#include <functional>
 
 class Thesaurus;
 class QLabel;
@@ -26,6 +27,14 @@ public:
     void presentAt(const QPoint& globalPos, const QString& word,
                    const QString& context = QString(), const QString& corpus = QString());
 
+    // Palavra que o dicionário conhece, quando a do texto está flexionada
+    // ("apertou" -> "apertar"), e como devolver a sugestão na mesma flexão
+    // ("pressionar" -> "pressionou"). Sem isso o popup ou não acha nada, ou
+    // oferece o infinitivo no meio de uma frase no passado.
+    using Inflector = std::function<QString(const QString& lemma)>;
+    void setLookupWord(const QString& lemma) { m_lemma = lemma; }
+    void setInflector(Inflector fn) { m_inflect = std::move(fn); }
+
 signals:
     // Usuário escolheu um sinônimo — quem ouve troca a palavra no editor.
     void replaceRequested(const QString& replacement);
@@ -41,6 +50,8 @@ private:
 
     Thesaurus* m_th = nullptr;
     QString m_word;
+    QString m_lemma;    // forma de dicionário, quando difere da escrita
+    Inflector m_inflect;
     QString m_context;
     QString m_corpus;
     int m_senseCount = 0;   // acepções realmente exibidas, para o título

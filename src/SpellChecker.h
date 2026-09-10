@@ -27,6 +27,16 @@ public:
     bool isCorrect(const QString& word) const;
     QStringList suggest(const QString& word) const;
 
+    // Forma de dicionário de uma palavra flexionada: "apertou" -> "apertar".
+    // Vazio quando o corretor está desligado ou a palavra não é reconhecida.
+    // Existe porque o dicionário de sinônimos é indexado por lema, e um romance
+    // é feito de verbo conjugado — sem isto, metade das consultas não acha nada.
+    QString stemOf(const QString& word) const;
+
+    // Flexiona 'lemma' seguindo o exemplo de 'like': ("pressionar", "apertou")
+    // -> "pressionou". Vazio se não conseguir; quem chama cai no lema.
+    QString inflectLike(const QString& lemma, const QString& like) const;
+
     bool addToPersonalDictionary(const QString& word);
     QSet<QString> personalWords() const { return m_personal; }
 
