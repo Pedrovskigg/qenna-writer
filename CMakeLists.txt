@@ -369,11 +369,19 @@ set_target_properties(qenna-writer PROPERTIES
 # e era isso que ia dentro do instalador publicado.
 # copy_directory_if_different não recopia o que não mudou, então o custo por
 # build é desprezível.
+# Sincroniza os assets de runtime num alvo PRÓPRIO, que roda em toda build.
+# Amarrar isso ao POST_BUILD do executável não bastava: quando só os assets
+# mudam, o ninja não relinka nada, o POST_BUILD nunca dispara e o instalador sai
+# com o conteúdo antigo — exatamente o que já tinha acontecido com o logo do
+# nome anterior. copy_directory_if_different não recopia o que está igual, então
+# rodar sempre é barato.
+add_custom_target(sync-runtime-assets ALL)
 foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
-    add_custom_command(TARGET qenna-writer POST_BUILD
+    add_custom_command(TARGET sync-runtime-assets POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
                 "${CMAKE_SOURCE_DIR}/src/assets/${asset_dir}"
                 "$<TARGET_FILE_DIR:qenna-writer>/${asset_dir}"
         COMMENT "Sincronizando assets de runtime: ${asset_dir}"
         VERBATIM)
 endforeach()
+add_dependencies(sync-runtime-assets qenna-writer)

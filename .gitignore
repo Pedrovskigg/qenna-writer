@@ -107,6 +107,11 @@ third_party/hunspell/
 # distribuído. Em dev: copiar da pasta correspondente do Mira 1
 # (mira-writing/assets/ambience-sounds/) ou baixar separadamente.
 src/assets/ambience-sounds/
+# Originais em WAV, guardados depois da conversão pra OGG (517 MB). Ficam fora
+# do que o CMake copia pro build e nunca vão pro instalador.
+src/assets/_ambience-wav-originais/
+# Idem para as imagens de tema, antes de serem reduzidas a 2560px.
+src/assets/_theme-images-originais/
 
 # Notas internas de dev (não são doc pro usuário final) e artefatos do instalador
 BRIEFING_image_textwrap.md
