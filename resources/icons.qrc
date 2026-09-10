@@ -3,6 +3,7 @@
         <file alias="mira.png">../src/assets/logo/app-icon-256.png</file>
         <file alias="logo.png">../src/assets/logo/logo.png</file>
         <file alias="splash.png">../src/assets/logo/splash.png</file>
+        <file alias="splash-2.png">../src/assets/logo/splash-2-app.png</file>
     </qresource>
     <qresource prefix="/help">
         <file alias="start-here/numbered-ui.png">../src/assets/help/start-here/numbered-ui.png</file>

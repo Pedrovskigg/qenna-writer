@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
     CrashLogger::install();
 
-    QSplashScreen splash(QPixmap(":/app/splash.png"));
+    QSplashScreen splash(QPixmap(":/app/splash-2.png"));
     splash.setAttribute(Qt::WA_TranslucentBackground);
     splash.setWindowFlag(Qt::FramelessWindowHint);
     splash.show();
