@@ -1,4 +1,4 @@
-# Qenna Writer
+<img width="1530" height="658" alt="splash-3" src="https://github.com/user-attachments/assets/b82dc2d1-a054-4371-9e37-2a1c7921be6d" />
 
 Qenna Writer (formerly Mira Writing, briefly Qiyva Writer) is a complete
 C++/Qt rebuild of the original Mira Writing (JSX) — same project, new name
