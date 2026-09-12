@@ -1,5 +1,8 @@
 #pragma once
 
+// ProjectModel traz Drawer/DrawerItem/Folder, usados por valor na busca.
+#include "ProjectModel.h"
+
 #include <QFrame>
 #include <QHash>
 #include <QList>
@@ -18,6 +21,8 @@ class QScrollArea;
 class ProjectModel;
 class ElementsStore;
 class BondsLayer;
+class DocCache;
+class QLineEdit;
 
 class DrawerListPanel : public QWidget {
     Q_OBJECT
@@ -27,6 +32,10 @@ public:
     explicit DrawerListPanel(ProjectModel* model, QWidget* parent = nullptr);
 
     void setElementsStore(ElementsStore* store);
+    // Necessários para a busca olhar o CONTEÚDO dos documentos, não só o
+    // título: o cache evita reler do disco o que já está aberto.
+    void setDocCache(DocCache* cache) { m_cache = cache; }
+    void setProjectRoot(const QString& root) { m_projectRoot = root; }
 
     void openDrawer(const QString& drawerKey, const QString& folderId = QString());
     void closePanel();
@@ -83,6 +92,16 @@ private:
     QWidget* makeRow(const QString& label, bool isFolder, const QString& id, const QString& role);
     QWidget* makeElementCard(const QString& itemId, const QString& title, const QString& role, const QString& elementId);
     QWidget* makeEmptyState();
+
+    // ── Busca dentro da gaveta aberta ──
+    // Escopada à gaveta, e ignorando a pasta atual de propósito: o caso de uso
+    // é justamente achar o item que está numa subpasta que o autor não lembra
+    // qual é. Por isso cada resultado mostra em que pasta mora.
+    void setSearchActive(bool on);
+    void runDrawerSearch();
+    QList<DrawerItem> searchHits() const;
+    QString itemFolderPath(const QString& folderId) const;
+    QString itemPlainText(const DrawerItem& it) const;
     QString folderTitle(const QString& folderId) const;
     QStringList ancestorFolderIds(const QString& folderId) const;
 
@@ -125,6 +144,14 @@ private:
     QToolButton* m_viewBtn;
     QToolButton* m_sortBtn;
     QToolButton* m_sizeBtn;
+    QToolButton* m_searchBtn = nullptr;
+    QLineEdit* m_searchEdit = nullptr;
+    QString m_searchQuery;
+    DocCache* m_cache = nullptr;
+    QString m_projectRoot;
+    // Conteúdo em texto puro por item, montado sob demanda e jogado fora ao
+    // fechar a busca. Sem isso, cada tecla digitada releria os arquivos todos.
+    mutable QHash<QString, QString> m_searchTextCache;
     QPushButton* m_createBtn;
     QPushButton* m_folderBtn;
     QWidget* m_folderStrip = nullptr;

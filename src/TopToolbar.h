@@ -60,6 +60,7 @@ public:
 
     QRect immersiveSoundButtonGlobalRect() const;
     QRect readAloudButtonGlobalRect() const;
+    QRect repetitionsButtonGlobalRect() const;
     QRect reminderButtonGlobalRect() const;
     QRect helpButtonGlobalRect() const;
 
@@ -114,6 +115,9 @@ signals:
     // Lê em voz alta: o trecho selecionado, ou do cursor até o fim se não
     // houver seleção. Quem decide é a MainWindow, que enxerga o editor.
     void readAloudRequested();
+    // Detector de Repetições ligado/desligado — é um interruptor, não um
+    // painel: ligado, o texto passa a grifar o que se repete.
+    void repetitionsToggled(bool enabled);
     // Placeholders — ainda sem implementação
     void readModeToggled(bool enabled);
     void searchRequested();
@@ -135,6 +139,7 @@ private:
     QToolButton *strikethroughButton;
     QToolButton *statisticsButton;
     QToolButton *readAloudButton;
+    QToolButton *repetitionsButton;
     QToolButton *readModeButton;
     QToolButton *focusButton;
     QToolButton *searchButton;

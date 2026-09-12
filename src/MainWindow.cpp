@@ -166,6 +166,7 @@
 #include "Thesaurus.h"
 #include "ReadAloudController.h"
 #include "ReadAloudPanel.h"
+#include "RepetitionDetector.h"
 #include "ThesaurusPopup.h"
 #include "SystemFolderGuard.h"
 #include "ThemesPanel.h"
@@ -802,6 +803,9 @@ void MainWindow::setupEditor()
     leftBar->setBarSide(loadLeftBarSide());
     connect(leftBar, &LeftBar::barSideChanged, this, [this]() { applyLeftBarSide(); });
     drawerListPanel = new DrawerListPanel(projectModel, this);
+    // Busca dentro da gaveta: precisa do cache (documento aberto tem a versão
+    // mais nova, ainda não salva) e da raiz do projeto (pra ler o resto).
+    drawerListPanel->setDocCache(docCache);
     connect(drawerListPanel, &DrawerListPanel::panelWidthChanged, this, &MainWindow::positionSidePanels);
     connect(drawerListPanel, &DrawerListPanel::panelHeightChanged, this, &MainWindow::positionSidePanels);
     m_presenceProvider = [this](
@@ -1751,7 +1755,12 @@ void MainWindow::setupEditor()
             sel.cursor = QTextCursor(editor->document());
             sel.cursor.setPosition(start);
             sel.cursor.setPosition(start + len, QTextCursor::KeepAnchor);
-            sel.format.setBackground(QColor(Theme::accentInfoSoft()));
+            // accentInfoSoft é string CSS ("rgba(74,158,255,0.30)") e QColor NÃO
+            // entende rgba com alpha decimal — devolve cor inválida, que pinta
+            // PRETO. Monta-se a transparência a partir do hex sólido.
+            QColor realce(Theme::accentInfo());
+            realce.setAlpha(90);
+            sel.format.setBackground(realce);
             sel.format.setForeground(QColor(Theme::textBright()));
             setEditorSelectionsLayer(QStringLiteral("readAloud"), {sel});
 
@@ -1802,6 +1811,26 @@ void MainWindow::setupEditor()
                 readAloudPanel->setStatusText(tr("Leitura interrompida: o texto mudou."));
         });
     }
+
+    // Detector de Repetições: um interruptor, não um painel. Ligado, o texto
+    // grifa em azul o que se repete perto demais — ler e ver, sem lista
+    // paralela pra consultar.
+    connect(toolbar, &TopToolbar::repetitionsToggled, this, [this](bool on) {
+        repetitionsOn = on;
+        if (on) runRepetitionScan();
+        else setEditorSelectionsLayer(QStringLiteral("repetitions"), {});
+    });
+
+    // Reanálise após parar de digitar. O detector varre o documento aberto
+    // inteiro, então não pode correr a cada tecla — mesmo cuidado dos outros
+    // detectores do app.
+    repetitionTimer = new QTimer(this);
+    repetitionTimer->setSingleShot(true);
+    repetitionTimer->setInterval(700);
+    connect(repetitionTimer, &QTimer::timeout, this, &MainWindow::runRepetitionScan);
+    connect(editor, &QTextEdit::textChanged, this, [this]() {
+        if (repetitionsOn && repetitionTimer) repetitionTimer->start();
+    });
 
     // Painel de Ajuda: janela própria (não modal, sem auto-fechar) — fica
     // aberta lado a lado com o app. Clicar em "?" de novo só traz pra frente.
@@ -4334,6 +4363,129 @@ void MainWindow::positionReadModeHotzones()
     }
 }
 
+void MainWindow::runRepetitionScan()
+{
+    if (!editor) return;
+    if (!repetitionsOn) {
+        setEditorSelectionsLayer(QStringLiteral("repetitions"), {});
+        return;
+    }
+
+    RepetitionDetector det;
+    det.setProximity(repetitionProximity);
+
+    QString lang = projectModel ? projectModel->spellLanguage() : QString();
+    if (lang.isEmpty()) lang = QStringLiteral("pt_BR");
+    det.setLanguage(lang);
+
+    // Nome de personagem/lugar repete por necessidade — a alternativa seria
+    // encher o texto de pronome. Grifar isso seria só ruído azul, e o projeto
+    // já sabe quais são esses nomes.
+    QSet<QString> ignorar;
+    if (elementsStore) {
+        for (const Element& e : elementsStore->elements()) {
+            const QString nome = e.name.trimmed().toLower();
+            if (!nome.isEmpty()) {
+                ignorar.insert(nome);
+                // "Klara Castelo" também precisa entrar como "klara" e
+                // "castelo": o texto corrido usa o primeiro nome sozinho.
+                for (const QString& parte : nome.split(QLatin1Char(' '), Qt::SkipEmptyParts))
+                    if (parte.size() >= RepetitionDetector::kMinWordLength) ignorar.insert(parte);
+            }
+            for (const QString& alias : e.aliases) {
+                const QString a = alias.trimmed().toLower();
+                if (!a.isEmpty()) ignorar.insert(a);
+            }
+        }
+    }
+    det.setIgnoredWords(ignorar);
+
+    // Texto do EDITOR, não do disco: o autor quer ver a repetição que acabou
+    // de escrever, antes de salvar.
+    const auto grupos = det.analyze(editor->toPlainText());
+
+    // Grifo azul, em camada própria — o Modo Foco, os links de menção e a busca
+    // têm as suas, e o helper soma todas sem um atropelar o outro.
+    const int docLast = editor->document()->characterCount() - 1;
+    QList<QTextEdit::ExtraSelection> sels;
+    for (const RepetitionDetector::Group& g : grupos) {
+        for (int i = 0; i < g.hits.size(); ++i) {
+            const RepetitionDetector::Occurrence& o = g.hits.at(i);
+            // A PRIMEIRA vez não é repetição — é o uso original da palavra.
+            // Grifar as duas faz o texto parecer duas vezes mais problemático
+            // do que é, e ainda esconde qual delas o autor deveria trocar.
+            // No acúmulo de advérbios a PRIMEIRA também é grifada: ali o
+            // defeito é o conjunto, não uma ocorrência culpada.
+            if (i == 0 && g.kind != RepetitionDetector::AdverbPileup) continue;
+            if (o.position < 0 || o.position + o.length > docLast) continue;
+            QTextEdit::ExtraSelection sel;
+            sel.cursor = QTextCursor(editor->document());
+            sel.cursor.setPosition(o.position);
+            sel.cursor.setPosition(o.position + o.length, QTextCursor::KeepAnchor);
+            // Mesma armadilha do realce de leitura: accentInfoSoft é CSS e
+            // QColor(rgba(...)) sai inválido = preto. Daí o grifo ter saído
+            // escuro em vez de azul no primeiro teste.
+            QColor grifo(Theme::accentInfo());
+            grifo.setAlpha(70);
+            sel.format.setBackground(grifo);
+            // A cor do texto fica como está: fundo colorido JUNTO com texto
+            // colorido é o que deixava a marca pesada e difícil de ler.
+            // Tooltip diz POR QUE aquilo está grifado: sem isso o autor vê a
+            // marca e precisa caçar sozinho a outra ocorrência.
+            // Diz POR QUE está grifado. Sem isso o autor vê a marca e não tem
+            // como saber o motivo: a outra metade do par está atrás, fora da
+            // vista e sem grifo. Foi a primeira dúvida real no uso.
+            if (g.kind == RepetitionDetector::AdverbPileup) {
+                sel.format.setToolTip(tr("%1 advérbios em -mente neste trecho")
+                                          .arg(g.hits.size()));
+            } else {
+                sel.format.setToolTip(tr("repete \"%1\", %2 palavras atrás")
+                                          .arg(g.hits.at(i - 1).word)
+                                          .arg(o.wordsSincePrevious));
+            }
+            sels.append(sel);
+        }
+    }
+    // ── Parágrafos longos ──
+    // Trazido do "Revisor Mira" do app antigo (ver a busca em C:/mira-writing),
+    // que marcava o bloco inteiro com faixa laranja e tooltip "considere
+    // dividir". Aqui vira fundo laranja bem fraco: o ExtraSelection não desenha
+    // borda lateral, e fundo forte no parágrafo inteiro competiria com a
+    // leitura. Laranja, não azul, pra não confundir com repetição.
+    QColor aviso(Theme::accentWarning());
+    // 10% de opacidade era invisivel na pratica. O CSS do app antigo usava
+    // fundo a 8% MAIS uma faixa lateral de 3px a 60% — a faixa era o que
+    // dava o sinal, e ela nao tem equivalente em ExtraSelection. Sem a
+    // faixa, o fundo precisa carregar o recado sozinho.
+    aviso.setAlpha(55);
+    for (QTextBlock blk = editor->document()->begin(); blk.isValid(); blk = blk.next()) {
+        // Conta palavras a mao, sem regex: a versao anterior usava um
+        // padrao escrito com uma barra so, que em C++ nao e escape valido —
+        // virava a LETRA "s", e o paragrafo era dividido nos "s" em vez dos
+        // espacos. Contagem de ficcao, e o compilador nao reclama alto.
+        int palavras = 0;
+        bool dentroDePalavra = false;
+        for (const QChar& c : blk.text()) {
+            if (c.isLetterOrNumber()) {
+                if (!dentroDePalavra) { ++palavras; dentroDePalavra = true; }
+            } else {
+                dentroDePalavra = false;
+            }
+        }
+        if (palavras < kLongParagraphWords) continue;
+        QTextEdit::ExtraSelection sel;
+        sel.cursor = QTextCursor(editor->document());
+        sel.cursor.setPosition(blk.position());
+        sel.cursor.setPosition(blk.position() + blk.length() - 1, QTextCursor::KeepAnchor);
+        sel.format.setBackground(aviso);
+        sel.format.setToolTip(tr("Parágrafo longo (%1 palavras). Considere dividir.")
+                                  .arg(palavras));
+        sels.append(sel);
+    }
+
+    setEditorSelectionsLayer(QStringLiteral("repetitions"), sels);
+}
+
 void MainWindow::readAloudSelectionOrFromCursor()
 {
     if (!editor) return;
@@ -5258,6 +5410,7 @@ void MainWindow::applyProjectRoot(const QString& root)
     ProjectStorage::ensureProjectDirs(root, &err);
     if (editorHost) editorHost->setProjectRoot(root);
     if (projectSaver) projectSaver->setProjectRoot(root);
+    if (drawerListPanel) drawerListPanel->setProjectRoot(root);
     if (wordCounter) wordCounter->setProjectRoot(root);
     if (refMenuPanel) refMenuPanel->setProjectRoot(root);
     if (statsPanel) statsPanel->setProjectRoot(root);

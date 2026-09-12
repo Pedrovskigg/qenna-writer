@@ -238,6 +238,8 @@ qt_add_executable(qenna-writer
     src/RenameService.h
     src/RenameDialog.cpp
     src/RenameDialog.h
+    src/RepetitionDetector.cpp
+    src/RepetitionDetector.h
     src/ReadAloudController.cpp
     src/ReadAloudController.h
     src/ReadAloudPanel.cpp

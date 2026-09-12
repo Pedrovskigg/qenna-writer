@@ -130,6 +130,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     , strikethroughButton(makeIconButton(this))
     , statisticsButton(makeIconButton(this))
     , readAloudButton(makeIconButton(this))
+    , repetitionsButton(makeIconButton(this))
     , readModeButton(makeIconButton(this))
     , focusButton(makeIconButton(this))
     , searchButton(makeIconButton(this))
@@ -253,6 +254,12 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     bindIcon(readAloudButton, QStringLiteral("read-aloud.svg"));
     readAloudButton->setToolTip(tr("Ler em voz alta a seleção"));
     connect(readAloudButton, &QToolButton::clicked, this, &TopToolbar::readAloudRequested);
+
+    repetitionsButton->setObjectName(QStringLiteral("ttbTool"));
+    bindIcon(repetitionsButton, QStringLiteral("repetitions.svg"));
+    repetitionsButton->setToolTip(tr("Grifar repetições"));
+    repetitionsButton->setCheckable(true);
+    connect(repetitionsButton, &QToolButton::toggled, this, &TopToolbar::repetitionsToggled);
 
     // Editor focado (distraction-free). Checkable de proposito: o destaque de
     // "ligado" na barra e o unico indicativo de que o modo esta ativo, ja que
@@ -450,7 +457,8 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     m_squareButtons = {
         homeButton, newProjectButton, openProjectButton, saveProjectButton,
         exportButton, helpButton, boldButton, italicButton, underlineButton,
-        strikethroughButton, statisticsButton, readAloudButton, readModeButton, focusButton,
+        strikethroughButton, statisticsButton, readAloudButton, repetitionsButton,
+        readModeButton, focusButton,
         searchButton, alignButton, imageButton, reminderButton,
         immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
         refMenuButton, pensarioButton, construtorButton, miraButton,
@@ -506,6 +514,7 @@ void TopToolbar::buildGroups()
         { QStringLiteral("refMenu"),        refMenuButton },
         { QStringLiteral("statistics"),     statisticsButton },
         { QStringLiteral("readAloud"),      readAloudButton },
+        { QStringLiteral("repetitions"),    repetitionsButton },
         { QStringLiteral("mira"),           miraButton },
         { QStringLiteral("themePanel"),     themePanelButton },
         { QStringLiteral("settings"),       settingsButton },
@@ -525,7 +534,8 @@ QHash<QString, QStringList> TopToolbar::defaultButtonLayout() const
                                        QStringLiteral("italic"), QStringLiteral("underline"),
                                        QStringLiteral("strikethrough"), QStringLiteral("image") } },
         { QStringLiteral("tools"),   { QStringLiteral("readMode"), QStringLiteral("focus"),
-                                       QStringLiteral("search"), QStringLiteral("readAloud") } },
+                                       QStringLiteral("search"), QStringLiteral("readAloud"),
+                                       QStringLiteral("repetitions") } },
         { QStringLiteral("media"),   { QStringLiteral("reminder"), QStringLiteral("immersiveSound") } },
         { QStringLiteral("worldbuilding"), { QStringLiteral("construtor"), QStringLiteral("pensario"),
                                              QStringLiteral("refMenu"), QStringLiteral("statistics"),
@@ -1343,6 +1353,12 @@ QRect TopToolbar::readAloudButtonGlobalRect() const
     if (!readAloudButton) return QRect();
     const QPoint topLeft = readAloudButton->mapToGlobal(QPoint(0, 0));
     return QRect(topLeft, readAloudButton->size());
+}
+
+QRect TopToolbar::repetitionsButtonGlobalRect() const
+{
+    if (!repetitionsButton) return QRect();
+    return QRect(repetitionsButton->mapToGlobal(QPoint(0, 0)), repetitionsButton->size());
 }
 
 QRect TopToolbar::reminderButtonGlobalRect() const

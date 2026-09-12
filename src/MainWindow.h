@@ -10,6 +10,7 @@
 #include "EditorHost.h"
 #include "MemoriesStore.h"
 #include "PresenceTypes.h"
+#include "RepetitionDetector.h"
 #include "TopToolbar.h"
 
 #include <QColor>
@@ -439,6 +440,19 @@ private:
     class ThesaurusPopup *thesaurusPopup = nullptr;
     class ReadAloudController *readAloud = nullptr;
     class ReadAloudPanel *readAloudPanel = nullptr;
+    // Detector de Repetições: interruptor na TopToolbar. Ligado, grifa em azul
+    // o que se repete perto demais no documento aberto.
+    bool repetitionsOn = false;
+    // Janela em palavras. As regras (quantas palavras/parágrafos liberam a
+    // repetição) ainda estão em aberto — o usuário quis decidir depois de ver
+    // funcionando, então fica como constante até virar ajuste de verdade.
+    int repetitionProximity = RepetitionDetector::Tight;
+    QTimer *repetitionTimer = nullptr;
+    void runRepetitionScan();
+    // Parágrafo longo: limite herdado do "Revisor Mira" do app antigo, onde o
+    // número foi calibrado no uso real. 120 palavras num bloco só é hora de
+    // considerar dividir.
+    static constexpr int kLongParagraphWords = 120;
     // Inicia a leitura em voz alta. end < 0 = do cursor até o fim do doc.
     void startReadAloud(int start, int end);
     // Entrada compartilhada pelo botão da toolbar e pelo popup de seleção:

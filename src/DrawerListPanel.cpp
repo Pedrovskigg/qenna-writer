@@ -1,7 +1,9 @@
 #include "DrawerListPanel.h"
 #include "BondsLayer.h"
 #include "ElementsStore.h"
+#include "DocCache.h"
 #include "IconUtils.h"
+#include "ProjectStorage.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "Theme.h"
@@ -20,6 +22,10 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QSignalBlocker>
+#include <QTextDocument>
+#include <QLineEdit>
+#include <QSignalBlocker>
 #include <QLocale>
 #include <QMenu>
 #include <QMimeData>
@@ -336,6 +342,17 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     });
     headerLayout->addWidget(m_viewBtn);
 
+    m_searchBtn = makeMiniBtn(QString(), tr("Buscar nesta gaveta"), /*checkable=*/true);
+    m_searchBtn->setFixedWidth(28);
+    m_searchBtn->setIcon(IconUtils::loadToolbarIcon(
+        QStringLiteral(":/icons/search.svg"),
+        QColor(Theme::textPrimary()),
+        QColor(Theme::textBright()),
+        QColor(Theme::textBright()),
+        QSize(13, 13)));
+    connect(m_searchBtn, &QToolButton::toggled, this, &DrawerListPanel::setSearchActive);
+    headerLayout->addWidget(m_searchBtn);
+
     m_sizeBtn = makeMiniBtn(QStringLiteral("M"), tr("Tamanho dos cards"));
     m_sizeBtn->setFixedWidth(28);
     m_sizeBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -393,6 +410,21 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     headerLayout->addWidget(btnClose);
 
     root->addWidget(header);
+
+    // ---- Campo de busca (escondido até a lupa ser ligada) ----
+    m_searchEdit = new QLineEdit(this);
+    m_searchEdit->setPlaceholderText(tr("Buscar nesta gaveta..."));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->hide();
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [this](const QString& q) {
+        m_searchQuery = q.trimmed();
+        rebuildContents();
+    });
+    // Esc fecha a busca e devolve a gaveta como estava.
+    connect(m_searchEdit, &QLineEdit::returnPressed, this, [this]() {
+        if (m_searchQuery.isEmpty() && m_searchBtn) m_searchBtn->setChecked(false);
+    });
+    root->addWidget(m_searchEdit);
 
     // ---- Barra de ação (criar item + pasta) ----
     auto* actionBar = new QWidget(this);
@@ -519,6 +551,17 @@ void DrawerListPanel::setElementsStore(ElementsStore* store) {
 }
 
 void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folderId) {
+    // Trocar de gaveta zera a busca — resultado da gaveta anterior não vale
+    // aqui, e deixar o campo preenchido faria a nova abrir "vazia".
+    if (drawerKey != m_currentKey) {
+        m_searchQuery.clear();
+        m_searchTextCache.clear();
+        if (m_searchEdit) { m_searchEdit->clear(); m_searchEdit->hide(); }
+        if (m_searchBtn && m_searchBtn->isChecked()) {
+            const QSignalBlocker blocker(m_searchBtn);
+            m_searchBtn->setChecked(false);
+        }
+    }
     if (m_currentKey != drawerKey) {
         m_currentKey = drawerKey;
         m_currentFolderId.clear();
@@ -544,6 +587,8 @@ void DrawerListPanel::closePanel() {
 }
 
 void DrawerListPanel::onDrawersChanged() {
+    // Documento editado/renomeado: o texto guardado pra busca envelheceu.
+    m_searchTextCache.clear();
     if (m_currentKey.isEmpty()) return;
     if (m_model && !m_model->findDrawer(m_currentKey)) {
         closePanel();
@@ -763,6 +808,108 @@ void DrawerListPanel::updateViewButton() {
     updateSizeButton();
 }
 
+
+// ───────────────────────── Busca dentro da gaveta ─────────────────────────
+
+void DrawerListPanel::setSearchActive(bool on)
+{
+    if (!m_searchEdit) return;
+    m_searchEdit->setVisible(on);
+    if (on) {
+        m_searchEdit->setFocus();
+        m_searchEdit->selectAll();
+    } else {
+        m_searchEdit->clear();          // dispara textChanged -> volta a lista normal
+        m_searchQuery.clear();
+        // O texto dos documentos só interessa enquanto a busca está aberta;
+        // segurar isso em memória depois seria desperdício num projeto grande.
+        m_searchTextCache.clear();
+        rebuildContents();
+    }
+}
+
+QString DrawerListPanel::itemPlainText(const DrawerItem& it) const
+{
+    auto cached = m_searchTextCache.constFind(it.id);
+    if (cached != m_searchTextCache.constEnd()) return cached.value();
+
+    QString html;
+    if (it.isSheet) {
+        // Ficha de personagem não tem arquivo: o conteúdo vive nos campos.
+        html = ProjectModel::characterSheetToHtml(it.sheet, it.title, QString(), QString());
+    } else if (it.hasInlineHtml) {
+        html = it.html;
+    } else if (m_cache && m_cache->has(DocCache::itemKey(it.id))) {
+        // Documento aberto nesta sessão: usa o que está em memória, que também
+        // é a versão mais recente (pode ter edição ainda não salva).
+        html = m_cache->get(DocCache::itemKey(it.id));
+    } else if (!m_projectRoot.isEmpty() && !it.file.isEmpty()) {
+        bool ok = false;
+        html = ProjectStorage::readText(
+            ProjectStorage::joinPath(m_projectRoot, it.file), &ok);
+        if (!ok) html.clear();
+    }
+
+    QString plain;
+    if (!html.isEmpty()) {
+        QTextDocument doc;
+        doc.setHtml(html);
+        plain = doc.toPlainText();
+    }
+    m_searchTextCache.insert(it.id, plain);
+    return plain;
+}
+
+QString DrawerListPanel::itemFolderPath(const QString& folderId) const
+{
+    if (folderId.isEmpty() || !m_model) return QString();
+    const Drawer* drawer = m_model->findDrawer(m_currentKey);
+    if (!drawer) return QString();
+    QStringList partes;
+    QString cur = folderId;
+    // Sobe até a raiz montando o caminho; o guarda de 20 níveis existe só pra
+    // um dado corrompido (ciclo de pastas) não travar a UI.
+    for (int guard = 0; guard < 20 && !cur.isEmpty(); ++guard) {
+        const Folder* achou = nullptr;
+        for (const Folder& f : drawer->folders) {
+            if (f.id == cur) { achou = &f; break; }
+        }
+        if (!achou) break;
+        partes.prepend(achou->title);
+        cur = achou->parentId;
+    }
+    return partes.join(QStringLiteral(" / "));
+}
+
+QList<DrawerItem> DrawerListPanel::searchHits() const
+{
+    QList<DrawerItem> hits;
+    if (!m_model || m_searchQuery.isEmpty()) return hits;
+    const Drawer* drawer = m_model->findDrawer(m_currentKey);
+    if (!drawer) return hits;
+
+    const QString needle = m_searchQuery.toLower();
+    // Conteúdo só a partir de 3 letras. Com 1 ou 2, a busca por texto casaria
+    // com quase tudo e ainda obrigaria a ler TODOS os documentos da gaveta de
+    // uma vez — trabalho pesado disparado pela primeira tecla digitada, que é
+    // exatamente o tipo de varredura que já travou o app antes. Título continua
+    // valendo desde a primeira letra, e é barato.
+    const bool varrerConteudo = needle.size() >= 3;
+
+    // Título primeiro, conteúdo só se o título não bater: ler documento é o
+    // caro aqui, e a maioria das buscas acha pelo nome.
+    QList<DrawerItem> porTitulo, porConteudo;
+    for (const DrawerItem& it : drawer->items) {
+        if (it.title.toLower().contains(needle)) { porTitulo.append(it); continue; }
+        if (varrerConteudo && itemPlainText(it).toLower().contains(needle))
+            porConteudo.append(it);
+    }
+    // Quem bate no título vem antes: é quase sempre o que se procurava.
+    hits = porTitulo;
+    hits += porConteudo;
+    return hits;
+}
+
 void DrawerListPanel::rebuildContents() {
     if (!m_listLayout) return;
 
@@ -794,8 +941,13 @@ void DrawerListPanel::rebuildContents() {
     updateBreadcrumb();
     updateViewButton();
 
+    // Em busca, a pasta atual é ignorada de propósito: o valor está em achar o
+    // que está numa subpasta que o autor não lembra qual é.
+    const bool buscando = !m_searchQuery.isEmpty();
+
     int row = 0;
-    if (!m_currentFolderId.isEmpty()) {
+    // "Voltar" sai de cena durante a busca — não há pasta corrente pra voltar.
+    if (!m_currentFolderId.isEmpty() && !buscando) {
         auto* back = new QToolButton(this);
         back->setText(QStringLiteral("↑  %1").arg(tr("Voltar")));
         back->setCursor(Qt::PointingHandCursor);
@@ -824,10 +976,13 @@ void DrawerListPanel::rebuildContents() {
     // Pastas agora ficam no strip horizontal acima (rebuildFolderStrip),
     // não como linhas verticais.
 
-    // Itens filtrados pelo folder atual.
     QList<DrawerItem> items;
-    for (const auto& it : drawer->items) {
-        if (it.folderId == m_currentFolderId) items.append(it);
+    if (buscando) {
+        items = searchHits();
+    } else {
+        for (const auto& it : drawer->items) {
+            if (it.folderId == m_currentFolderId) items.append(it);
+        }
     }
 
     // Resolve role efetivo (item.role; senão, do Element vinculado).
@@ -839,9 +994,10 @@ void DrawerListPanel::rebuildContents() {
         return QString();
     };
 
-    // Sort
-    const SortMode mode = m_sortMode;
-    const bool asc = m_sortAscending;
+    // Sort — a busca já vem ordenada por relevância (título antes de conteúdo),
+    // então reordenar aqui só atrapalharia.
+    const SortMode mode = buscando ? SortCreation : m_sortMode;
+    const bool asc = buscando ? true : m_sortAscending;
     if (mode == SortAlpha) {
         std::sort(items.begin(), items.end(), [](const DrawerItem& a, const DrawerItem& b) {
             return QString::localeAwareCompare(a.title, b.title) < 0;
@@ -858,7 +1014,9 @@ void DrawerListPanel::rebuildContents() {
         std::reverse(items.begin(), items.end());
     }
 
-    const bool gridView = m_gridView && currentDrawerIsElement();
+    // Resultado de busca sai sempre em lista: o card em grade não tem onde
+    // dizer de qual pasta o item veio, que é metade da resposta.
+    const bool gridView = !buscando && m_gridView && currentDrawerIsElement();
     if (gridView) {
         // Distribui os cards com stretches iguais antes, entre e depois — assim o
         // espaço extra (quando o painel é alargado) vira afastamento proporcional
@@ -903,13 +1061,37 @@ void DrawerListPanel::rebuildContents() {
         }
     } else {
         for (const auto& it : items) {
-            m_listLayout->insertWidget(row++, makeRow(it.title, /*isFolder=*/false, it.id, effectiveRole(it)));
+            QString label = it.title;
+            if (buscando) {
+                const QString pasta = itemFolderPath(it.folderId);
+                label += QStringLiteral("   ·  %1")
+                    .arg(pasta.isEmpty() ? tr("(raiz da gaveta)") : pasta);
+            }
+            m_listLayout->insertWidget(row++,
+                makeRow(label, /*isFolder=*/false, it.id,
+                        buscando ? QString() : effectiveRole(it)));
             ++displayedCount;
         }
     }
 
     if (displayedCount == 0) {
-        m_listLayout->insertWidget(row++, makeEmptyState());
+        if (buscando) {
+            // O estado vazio normal convida a criar um item, o que não faz
+            // sentido como resposta a uma busca sem resultado.
+            auto* vazio = new QLabel(tr("Nada encontrado em %1.")
+                                     .arg(m_model->findDrawer(m_currentKey)
+                                          ? m_model->findDrawer(m_currentKey)->title
+                                          : tr("nesta gaveta")), this);
+            vazio->setAlignment(Qt::AlignCenter);
+            vazio->setWordWrap(true);
+            vazio->setStyleSheet(QStringLiteral(
+                "color: %1; font-family: 'Lora','Crimson Text',serif;"
+                "font-size: 13px; font-style: italic; padding: 18px 8px;")
+                .arg(Theme::textMuted()));
+            m_listLayout->insertWidget(row++, vazio);
+        } else {
+            m_listLayout->insertWidget(row++, makeEmptyState());
+        }
     }
 
     // Hint de vínculos no rodapé (só em gavetas de personagem)
