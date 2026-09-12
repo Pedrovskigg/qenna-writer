@@ -156,6 +156,29 @@ void migrateSettingsFromQiyva()
 
 int main(int argc, char *argv[])
 {
+    // MOTOR DE FONTES — precisa ser escolhido ANTES do QApplication.
+    //
+    // O padrão no Windows é o DirectWrite, e ele NÃO entrega ao gerador de PDF
+    // o arquivo da fonte quando ela foi carregada pelo app (as 123 famílias que
+    // vêm na pasta fonts/). Sem o arquivo, o Qt desiste de embutir e desenha
+    // cada letra como contorno vetorial: o PDF de um manuscrito passa de ~120 KB
+    // para ~30 MB, e o texto deixa de ser texto — não dá pra selecionar, buscar
+    // nem copiar, e nenhuma editora aceita isso.
+    //
+    // Medido no mesmo capítulo, mesma fonte (Alegreya, do bundle):
+    //   directwrite  30.713 KB   fonte NÃO embutida
+    //   gdi             135 KB   fonte embutida
+    //   freetype        124 KB   fonte embutida
+    //
+    // FreeType resolve porque guarda o caminho do arquivo da fonte, que é
+    // exatamente o que o gerador de PDF procura. Fontes do sistema (Georgia,
+    // Times) já funcionavam nos três — o problema era só com as do bundle.
+    //
+    // Se algum dia isso for revertido, o sintoma volta como "exportação de PDF
+    // gigante" ou "margem enorme no PDF", que não parecem problema de fonte.
+    if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM"))
+        qputenv("QT_QPA_PLATFORM", "windows:fontengine=freetype");
+
     QApplication app(argc, argv);
 
     // Modo de teste: QENNA_FRESH_PROFILE=1 faz o QSettings (registro do
