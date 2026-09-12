@@ -1,6 +1,8 @@
 #pragma once
 
 #include <QDialog>
+#include <QHash>
+#include <QImage>
 #include <QPixmap>
 #include <QString>
 #include <QStringList>
@@ -12,6 +14,7 @@ class QHBoxLayout;
 class QLabel;
 class QPushButton;
 class QTimer;
+class QVariantAnimation;
 class QVBoxLayout;
 class FlowLayout;
 class FlowScrollArea;
@@ -67,6 +70,7 @@ signals:
 
 protected:
     void showEvent(QShowEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
 
 private slots:
     void applyDialogStyle();
@@ -86,6 +90,16 @@ private:
     // Troca o texto do quote pelo próximo e reagenda o timer, com fade-in.
     // Chamado ao fim do fade-out de rotateQuote (ou direto na 1ª exibição).
     void showNextQuote();
+    // --- Logo rotativo da sidebar ---
+    // Varre assets/logo/main-menu-Q em busca das artes da letra Q. A pasta é
+    // copiada pro lado do executável pelo alvo sync-runtime-assets, então
+    // basta jogar um PNG novo lá: nada neste arquivo precisa mudar.
+    void loadLogoVariants();
+    // Arte do índice, já normalizada e cacheada — carregada na primeira vez
+    // que é pedida, não todas de uma vez na abertura do menu.
+    QImage logoVariant(int index);
+    // Faz o crossfade da arte atual pra próxima e reagenda o timer.
+    void rotateLogo();
     // Hover-darken: realça o card sob o cursor escurecendo todos os outros.
     // Passar nullptr restaura todos pra opacidade cheia. Só age na Estante.
     void setHoveredCard(QWidget* hovered);
@@ -119,6 +133,12 @@ private:
     QGraphicsOpacityEffect* m_quoteOpacity = nullptr;
     QLabel* m_logoLabel = nullptr;
     QTimer* m_quoteTimer = nullptr;
+    // Caminhos das artes do Q, em ordem alfabética. Vazio = logo fixo antigo.
+    QStringList m_logoPaths;
+    QHash<int, QImage> m_logoFrames;
+    int m_logoIndex = -1;
+    QTimer* m_logoTimer = nullptr;
+    QVariantAnimation* m_logoAnim = nullptr;
     QPushButton* m_newBtn = nullptr;
     QPushButton* m_newIdeaBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;

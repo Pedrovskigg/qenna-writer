@@ -2,15 +2,20 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
+#include <QEasingCurve>
+#include <QElapsedTimer>
 #include <QFontDatabase>
 #include <QIcon>
+#include <QImage>
 #include <QLocale>
+#include <QPainter>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QSet>
 #include <QSettings>
 #include <QSplashScreen>
 #include <QStringList>
+#include <QThread>
 #include <QTranslator>
 
 #include "CrashLogger.h"
@@ -23,6 +28,48 @@ namespace {
 // são registradas como famílias separadas pelo Qt mas são inúteis no picker —
 // a família base ("Bodoni Moda") já cobre todos os pesos via variable font.
 const QRegularExpression kOpticalSizeRe(QStringLiteral("\\d+pt"));
+
+// Splash: duração do fade preto e branco -> cor, e tempo mínimo total que a
+// tela fica visível. O Qenna carrega rápido, então sem o mínimo a arte
+// colorida apareceria por um piscar — o fade terminaria e a janela já estaria
+// pronta pra assumir.
+constexpr int kSplashFadeMs = 900;
+constexpr int kSplashMinMs = 2200;
+constexpr int kSplashFrameMs = 16;
+
+// Dessatura preservando o canal alpha. Format_Grayscale8 seria mais curto mas
+// descarta a transparência, e a arte do splash é recortada — viraria um
+// retângulo opaco na tela.
+QImage desaturated(const QImage &source)
+{
+    QImage img = source.convertToFormat(QImage::Format_ARGB32);
+    for (int y = 0; y < img.height(); ++y) {
+        QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            const int g = qGray(line[x]);
+            line[x] = qRgba(g, g, g, qAlpha(line[x]));
+        }
+    }
+    return img;
+}
+
+// Mistura a versão colorida sobre a cinza. SourceAtop em vez do SourceOver
+// padrão porque ele preserva o alpha do destino: compondo por cima na marra,
+// as bordas anti-aliased das letras somariam opacidade e ganhariam halo no
+// meio da transição.
+QPixmap splashFrame(const QPixmap &gray, const QPixmap &color, qreal progress)
+{
+    QPixmap frame(color.size());
+    frame.setDevicePixelRatio(color.devicePixelRatio());
+    frame.fill(Qt::transparent);
+
+    QPainter painter(&frame);
+    painter.drawPixmap(0, 0, gray);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+    painter.setOpacity(progress);
+    painter.drawPixmap(0, 0, color);
+    return frame;
+}
 
 QStringList registerCustomFonts()
 {
@@ -134,11 +181,33 @@ int main(int argc, char *argv[])
 
     CrashLogger::install();
 
-    QSplashScreen splash(QPixmap(":/app/splash-2.png"));
+    const QPixmap splashColor(QStringLiteral(":/app/splash-3.png"));
+    const QPixmap splashGray = QPixmap::fromImage(desaturated(splashColor.toImage()));
+
+    QSplashScreen splash(splashGray);
     splash.setAttribute(Qt::WA_TranslucentBackground);
     splash.setWindowFlag(Qt::FramelessWindowHint);
     splash.show();
     app.processEvents();
+
+    QElapsedTimer splashClock;
+    splashClock.start();
+
+    // A arte abre em preto e branco e ganha cor — as cinco paletas do logo
+    // acendendo. Roda aqui, antes do carregamento, porque daqui até
+    // splash.finish() tudo é síncrono: não há event loop, então um QTimer
+    // nunca dispararia.
+    {
+        const QEasingCurve curve(QEasingCurve::InOutQuad);
+        forever {
+            const qreal linear = qMin(qreal(1), splashClock.elapsed() / qreal(kSplashFadeMs));
+            splash.setPixmap(splashFrame(splashGray, splashColor, curve.valueForProgress(linear)));
+            QApplication::processEvents();
+            if (linear >= qreal(1))
+                break;
+            QThread::msleep(kSplashFrameMs);
+        }
+    }
 
     // Stylesheet global vive em Theme::globalStyleSheet() — derivada do tema
     // corrente. MainWindow::onThemeChanged() reaplica em troca de tema.
@@ -198,6 +267,13 @@ int main(int argc, char *argv[])
 
     MainWindow window;
     window.setAvailableFontFamilies(allFontFamilies);
+
+    // Segura o splash até o tempo mínimo. Não é atraso fixo: se o carregamento
+    // já passou disso — projeto grande, disco lento — não espera nada.
+    while (splashClock.elapsed() < kSplashMinMs) {
+        QApplication::processEvents();
+        QThread::msleep(kSplashFrameMs);
+    }
 
     // Só revela a janela se já tem projeto carregado (autoOpen). Sem projeto,
     // o construtor agenda a abertura do Main Menu — e a MainWindow ganha

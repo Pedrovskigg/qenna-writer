@@ -17,6 +17,7 @@
 #include <QColorDialog>
 #include <QComboBox>
 #include <QContextMenuEvent>
+#include <QAbstractAnimation>
 #include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>
@@ -50,6 +51,7 @@
 #include <QPropertyAnimation>
 #include <QSet>
 #include <QPushButton>
+#include <QRandomGenerator>
 #include <QResizeEvent>
 #include <QScrollArea>
 #include <QSettings>
@@ -174,6 +176,74 @@ constexpr int kDialogW = 1320;
 constexpr int kDialogH = 1000;
 constexpr int kSidebarW = 410;   // largura da barra lateral
 constexpr int kLogoSize = 330;   // caixa do logo — cabe na largura interna (410 - margens) com folga
+constexpr int kLogoHoldMs = 5000;   // tempo de cada arte do Q parada na tela
+constexpr int kLogoFadeMs = 900;    // duração do crossfade entre duas artes
+
+// Menor retângulo que contém tudo que não é transparente. As artes do Q vêm
+// do gerador de imagem com enquadramentos diferentes (1024², 1254², 1536x1024…)
+// e margem vazia variável em volta; sem recortar por aqui, cada arte entraria
+// com um tamanho e a letra pularia a cada troca.
+QRect opaqueBounds(const QImage& img)
+{
+    int left = img.width(), right = -1, top = img.height(), bottom = -1;
+    for (int y = 0; y < img.height(); ++y) {
+        const QRgb* line = reinterpret_cast<const QRgb*>(img.constScanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            if (qAlpha(line[x]) <= 8) continue;   // tolera lixo de anti-alias
+            if (x < left) left = x;
+            if (x > right) right = x;
+            if (y < top) top = y;
+            if (y > bottom) bottom = y;
+        }
+    }
+    if (right < left || bottom < top) return {};
+    return QRect(QPoint(left, top), QPoint(right, bottom));
+}
+
+// Recorta pelo conteúdo, escala pra caber na caixa e centraliza. Todas as
+// artes saem daqui com o mesmo tamanho de quadro e a letra na mesma posição,
+// que é o que o crossfade precisa pra não tremer. Imagem sem canal alpha cai
+// no caminho de baixo e é usada inteira.
+QImage normalizedLogo(const QString& path, int box)
+{
+    QImage img(path);
+    if (img.isNull()) return {};
+    img = img.convertToFormat(QImage::Format_ARGB32);
+    const QRect bounds = opaqueBounds(img);
+    if (bounds.isValid()) img = img.copy(bounds);
+
+    const QImage scaled = img.scaled(box, box, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QImage frame(box, box, QImage::Format_ARGB32_Premultiplied);
+    frame.fill(Qt::transparent);
+    QPainter painter(&frame);
+    painter.drawImage((box - scaled.width()) / 2, (box - scaled.height()) / 2, scaled);
+    return frame;
+}
+
+// Crossfade interpolando os quatro canais. Compor uma por cima da outra com
+// setOpacity não serve aqui: as artes têm silhuetas ligeiramente diferentes
+// (foram geradas em rodadas separadas), então ou sobra resíduo da anterior nas
+// bordas, ou a letra pisca translúcida no meio do caminho. Com as imagens em
+// premultiplicado, interpolar RGB e alpha linearmente é o resultado correto.
+QPixmap crossfadedLogo(const QImage& from, const QImage& to, qreal progress)
+{
+    if (from.size() != to.size()) return QPixmap::fromImage(to);
+
+    QImage out(from.size(), QImage::Format_ARGB32_Premultiplied);
+    const int count = from.width() * from.height();
+    const auto* a = reinterpret_cast<const QRgb*>(from.constBits());
+    const auto* b = reinterpret_cast<const QRgb*>(to.constBits());
+    auto* dst = reinterpret_cast<QRgb*>(out.bits());
+
+    const int w = qBound(0, int(progress * 256), 256);
+    for (int i = 0; i < count; ++i) {
+        dst[i] = qRgba((qRed(a[i])   * (256 - w) + qRed(b[i])   * w) >> 8,
+                       (qGreen(a[i]) * (256 - w) + qGreen(b[i]) * w) >> 8,
+                       (qBlue(a[i])  * (256 - w) + qBlue(b[i])  * w) >> 8,
+                       (qAlpha(a[i]) * (256 - w) + qAlpha(b[i]) * w) >> 8);
+    }
+    return QPixmap::fromImage(out);
+}
 constexpr int kEditCoverW = 260; // capa grande do diálogo Editar projeto
 constexpr int kEditCoverH = 390;
 constexpr int kListThumbW = 62, kListThumbH = 92; // igual ao thumb único de hoje na Lista
@@ -1575,13 +1645,29 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     // --- Logo no topo (bom tamanho), centralizado ---
     m_logoLabel = new QLabel(this);
     m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
-    QPixmap logoPm(QStringLiteral(":/app/logo.png"));
-    if (!logoPm.isNull()) {
-        m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
-                                             Qt::KeepAspectRatio,
-                                             Qt::SmoothTransformation));
+    m_logoLabel->setFixedSize(kLogoSize, kLogoSize);
+    m_logoLabel->setAlignment(Qt::AlignCenter);
+
+    loadLogoVariants();
+    if (!m_logoPaths.isEmpty()) {
+        // Começa num ponto aleatório da lista: abrir o menu várias vezes no
+        // mesmo dia não deve mostrar sempre o mesmo mundo primeiro.
+        m_logoIndex = QRandomGenerator::global()->bounded(m_logoPaths.size());
+        m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+
+        m_logoTimer = new QTimer(this);
+        m_logoTimer->setSingleShot(true);
+        connect(m_logoTimer, &QTimer::timeout, this, &MainMenuDialog::rotateLogo);
     } else {
-        m_logoLabel->setText(QStringLiteral("Qenna Writer"));
+        // Pasta ausente ou vazia: cai no logo fixo de sempre.
+        QPixmap logoPm(QStringLiteral(":/app/logo.png"));
+        if (!logoPm.isNull()) {
+            m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
+                                                 Qt::KeepAspectRatio,
+                                                 Qt::SmoothTransformation));
+        } else {
+            m_logoLabel->setText(QStringLiteral("Qenna Writer"));
+        }
     }
     col->addSpacing(6);
     col->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
@@ -2402,11 +2488,94 @@ void MainMenuDialog::showNextQuote()
     }
 }
 
+void MainMenuDialog::loadLogoVariants()
+{
+    // Mesmo padrão de registerCustomFonts(): pasta ao lado do executável em
+    // build/instalação, código-fonte como fallback no ambiente de dev.
+    QString dir = QCoreApplication::applicationDirPath()
+                  + QStringLiteral("/logo/main-menu-Q");
+    if (!QDir(dir).exists()) {
+        dir = QString::fromUtf8(DEV_ASSETS_DIR) + QStringLiteral("/logo/main-menu-Q");
+    }
+    if (!QDir(dir).exists()) return;
+
+    const QStringList filters{QStringLiteral("*.png"), QStringLiteral("*.webp"),
+                              QStringLiteral("*.jpg"), QStringLiteral("*.jpeg")};
+    const QFileInfoList files = QDir(dir).entryInfoList(filters, QDir::Files, QDir::Name);
+    for (const QFileInfo& fi : files) {
+        m_logoPaths << fi.absoluteFilePath();
+    }
+}
+
+QImage MainMenuDialog::logoVariant(int index)
+{
+    if (index < 0 || index >= m_logoPaths.size()) return {};
+    auto it = m_logoFrames.constFind(index);
+    if (it != m_logoFrames.constEnd()) return it.value();
+
+    const QImage frame = normalizedLogo(m_logoPaths.at(index), kLogoSize);
+    m_logoFrames.insert(index, frame);
+    return frame;
+}
+
+void MainMenuDialog::rotateLogo()
+{
+    if (!m_logoLabel || m_logoPaths.size() < 2) return;
+    if (m_logoAnim) return;   // transição já em curso
+
+    const int nextIndex = (m_logoIndex + 1) % m_logoPaths.size();
+    const QImage from = logoVariant(m_logoIndex);
+    const QImage to = logoVariant(nextIndex);
+    if (to.isNull()) {           // arquivo ilegível: pula pro seguinte
+        m_logoIndex = nextIndex;
+        if (m_logoTimer) m_logoTimer->start(kLogoHoldMs);
+        return;
+    }
+
+    m_logoAnim = new QVariantAnimation(this);
+    m_logoAnim->setDuration(kLogoFadeMs);
+    m_logoAnim->setStartValue(0.0);
+    m_logoAnim->setEndValue(1.0);
+    m_logoAnim->setEasingCurve(QEasingCurve::InOutQuad);
+    connect(m_logoAnim, &QVariantAnimation::valueChanged, this,
+            [this, from, to](const QVariant& v) {
+                m_logoLabel->setPixmap(crossfadedLogo(from, to, v.toReal()));
+            });
+    connect(m_logoAnim, &QVariantAnimation::finished, this, [this, nextIndex, to]() {
+        // Assenta na arte pura, sem passar pela interpolação.
+        m_logoIndex = nextIndex;
+        m_logoLabel->setPixmap(QPixmap::fromImage(to));
+        m_logoAnim = nullptr;   // DeleteWhenStopped se destrói sozinha
+        // Adianta a decodificação da próxima enquanto a tela está parada —
+        // assim o primeiro quadro do crossfade seguinte não engasga.
+        logoVariant((m_logoIndex + 1) % m_logoPaths.size());
+        if (m_logoTimer) m_logoTimer->start(kLogoHoldMs);
+    });
+    m_logoAnim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
 void MainMenuDialog::showEvent(QShowEvent* event)
 {
     rotateQuote();
     refreshRecents();
+    if (m_logoTimer && !m_logoTimer->isActive() && !m_logoAnim) {
+        m_logoTimer->start(kLogoHoldMs);
+    }
     QDialog::showEvent(event);
+}
+
+void MainMenuDialog::hideEvent(QHideEvent* event)
+{
+    // Menu escondido não precisa animar: para o relógio e corta um crossfade
+    // em andamento, senão o app segue compondo pixmap a 60fps sem ninguém
+    // olhando.
+    if (m_logoTimer) m_logoTimer->stop();
+    if (m_logoAnim) {
+        m_logoAnim->stop();   // DeleteWhenStopped destrói; finished não dispara
+        m_logoAnim = nullptr;
+        m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+    }
+    QDialog::hideEvent(event);
 }
 
 void MainMenuDialog::applyDialogStyle()
