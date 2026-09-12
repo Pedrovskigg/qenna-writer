@@ -3,6 +3,12 @@
 #include "ProjectModel.h"
 #include "Theme.h"
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QFormLayout>
+#include <QLineEdit>
+#include <QTextEdit>
+
 #include <QButtonGroup>
 #include <QFont>
 #include <QHBoxLayout>
@@ -116,6 +122,7 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
             m_format = f;
             for (QPushButton* btn : m_formatBtns)
                 btn->setChecked(btn->property("fmt").toString() == f);
+            refreshSubmissionAvailability();
         });
         m_formatBtns.append(b);
         fmtRow->addWidget(b);
@@ -138,6 +145,8 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     modeRow->addWidget(m_singleRadio);
     modeRow->addWidget(m_separateRadio);
     modeRow->addStretch();
+    connect(m_separateRadio, &QRadioButton::toggled, this,
+            [this]() { refreshSubmissionAvailability(); });
     fl->addLayout(modeRow);
 
     // Linha: marcadores (marca-texto) no documento exportado
@@ -156,6 +165,35 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     markersRow->addWidget(m_markersRemoveRadio);
     markersRow->addStretch();
     fl->addLayout(markersRow);
+
+    // Linha: formato de submissão (padrão Shunn)
+    auto* subRow = new QHBoxLayout;
+    subRow->setSpacing(8);
+    m_submissionCheck = new QCheckBox(tr("Manuscrito para submissão"), footer);
+    m_submissionCheck->setToolTip(tr(
+        "Formato que editoras e revistas esperam receber (padrão Shunn): "
+        "Courier 12, entrelinha dupla, margens de 1 polegada, página de rosto "
+        "com contato e contagem de palavras, cabeçalho corrido e \"#\" como "
+        "quebra de cena."));
+    m_submissionDataBtn = new QPushButton(tr("Dados do autor..."), footer);
+    m_submissionDataBtn->setObjectName(QStringLiteral("exportCancel"));
+    m_submissionDataBtn->setCursor(Qt::PointingHandCursor);
+    connect(m_submissionDataBtn, &QPushButton::clicked, this, &ExportPanel::editSubmissionData);
+    m_submissionHint = new QLabel(footer);
+    m_submissionHint->setObjectName(QStringLiteral("exportFieldLabel"));
+    m_submissionHint->setWordWrap(true);
+    subRow->addWidget(m_submissionCheck);
+    subRow->addWidget(m_submissionDataBtn);
+    subRow->addWidget(m_submissionHint, 1);
+    fl->addLayout(subRow);
+
+    m_submission = Exporter::SubmissionInfo::load();
+    // Byline em branco cai no autor do projeto: quem já preencheu os dados do
+    // projeto não precisa redigitar.
+    if (m_submission.byline.trimmed().isEmpty() && m_model)
+        m_submission.byline = m_model->projectAuthor();
+    connect(m_submissionCheck, &QCheckBox::toggled, this,
+            [this]() { refreshSubmissionAvailability(); });
 
     // Linha: botões
     auto* btnRow = new QHBoxLayout;
@@ -185,6 +223,72 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     buildTree();
     applyTheme();
     recomputeCount();
+    refreshSubmissionAvailability();
+}
+
+void ExportPanel::refreshSubmissionAvailability() {
+    if (!m_submissionCheck) return;
+    const bool paged = (m_format != QStringLiteral("epub"));
+    const bool single = !m_separateRadio || !m_separateRadio->isChecked();
+    const bool usable = paged && single;
+
+    m_submissionCheck->setEnabled(usable);
+    if (!usable) m_submissionCheck->setChecked(false);
+    const bool on = m_submissionCheck->isChecked();
+    if (m_submissionDataBtn) m_submissionDataBtn->setVisible(on);
+
+    QString hint;
+    if (!paged)
+        hint = tr("Não se aplica ao EPUB: o texto reflui, não tem página fixa.");
+    else if (!single)
+        hint = tr("Exige \"Documento único\" — o formato numera as páginas do "
+                  "manuscrito inteiro.");
+    else if (on && m_format == QStringLiteral("odt"))
+        hint = tr("Em ODT o cabeçalho corrido não sai; use DOCX ou PDF para "
+                  "enviar de verdade.");
+    else if (on && m_submission.legalName.trimmed().isEmpty())
+        hint = tr("Falta preencher os dados do autor.");
+    if (m_submissionHint) m_submissionHint->setText(hint);
+}
+
+void ExportPanel::editSubmissionData() {
+    QDialog dlg(this);
+    dlg.setWindowTitle(tr("Dados para submissão"));
+    auto* form = new QFormLayout(&dlg);
+
+    auto* legal = new QLineEdit(m_submission.legalName, &dlg);
+    legal->setPlaceholderText(tr("Nome que assina contrato"));
+    auto* address = new QTextEdit(m_submission.address, &dlg);
+    address->setAcceptRichText(false);
+    address->setFixedHeight(70);
+    auto* contact = new QLineEdit(m_submission.contact, &dlg);
+    contact->setPlaceholderText(tr("E-mail e/ou telefone"));
+    auto* byline = new QLineEdit(m_submission.byline, &dlg);
+    byline->setPlaceholderText(tr("Nome de publicação, se for diferente"));
+    auto* shortTitle = new QLineEdit(m_submission.titleShort, &dlg);
+    shortTitle->setPlaceholderText(tr("Uma ou duas palavras, para o cabeçalho"));
+
+    form->addRow(tr("Nome legal:"), legal);
+    form->addRow(tr("Endereço:"), address);
+    form->addRow(tr("Contato:"), contact);
+    form->addRow(tr("Assinar como:"), byline);
+    form->addRow(tr("Título curto:"), shortTitle);
+
+    auto* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
+    connect(box, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+    connect(box, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+    form->addRow(box);
+
+    if (dlg.exec() != QDialog::Accepted) return;
+    m_submission.legalName  = legal->text();
+    m_submission.address    = address->toPlainText();
+    m_submission.contact    = contact->text();
+    m_submission.byline     = byline->text();
+    m_submission.titleShort = shortTitle->text();
+    // Grava na hora: é dado do AUTOR, não do projeto — quem preenche uma vez
+    // não deveria digitar de novo no livro seguinte.
+    m_submission.save();
+    refreshSubmissionAvailability();
 }
 
 void ExportPanel::buildTree() {
@@ -364,6 +468,9 @@ void ExportPanel::onExportClicked() {
         ? Exporter::ManuscriptMode::SingleDocument
         : Exporter::ManuscriptMode::SeparateChapters;
     sel.includeMarkers = !m_markersRemoveRadio || !m_markersRemoveRadio->isChecked();
+    sel.submissionFormat = m_submissionCheck && m_submissionCheck->isChecked()
+                           && m_submissionCheck->isEnabled();
+    sel.submission = m_submission;
 
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {

@@ -4,8 +4,11 @@
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
 #include "ZipWriter.h"
+#include "WordCounter.h"
 
 #include <QBuffer>
+#include <QCoreApplication>
+#include <QSettings>
 #include <QApplication>
 #include <QBrush>
 #include <QColor>
@@ -161,12 +164,57 @@ bool parseDataUrl(const QString& url, QString& mimeOut, QByteArray& bytesOut) {
 Exporter::Exporter(ProjectModel* model, const QString& projectRoot, const DocStyle& style)
     : m_model(model), m_root(projectRoot), m_style(style) {}
 
-void Exporter::applyParagraphStyle(QTextDocument& doc) const {
+namespace {
+// Corpo do texto na exportação para página (ODT/PDF/DOCX). O preview de
+// e-reader não usa isto — lá vale o tamanho do editor.
+constexpr double kExportBodyPt = 12.0;
+// userState que marca bloco de título de capítulo, pra ele escapar do reescalo.
+constexpr int kExportTitleBlock = 101;
+
+} // namespace
+
+void Exporter::applyParagraphStyle(QTextDocument& doc, double bodyPointSize) const {
+    // O editor trabalha em tamanho de LEITURA EM TELA (16pt é comum). Numa
+    // folha A4 isso rende poucas palavras por linha e faz a página parecer
+    // toda margem — foi exatamente o que apareceu num manuscrito de 468
+    // páginas. Pra papel, o corpo vai pra kExportBodyPt.
+    const double target = bodyPointSize > 0 ? bodyPointSize : m_style.fontSize;
     if (!m_style.fontFamily.isEmpty()) {
         QFont f(m_style.fontFamily);
-        f.setPointSizeF(m_style.fontSize);
+        f.setPointSizeF(target);
         doc.setDefaultFont(f);
     }
+
+    if (bodyPointSize > 0 && m_style.fontSize > 0) {
+        // Reescala PROPORCIONAL, não tamanho fixo: quem deixou um trecho maior
+        // de propósito (epígrafe, grito) continua maior depois da conversão.
+        // Título de capítulo fica de fora — ele é marcado na inserção e já
+        // nasce dimensionado.
+        const double factor = bodyPointSize / m_style.fontSize;
+        struct Resize { int pos; int len; double pt; };
+        QVector<Resize> plan;
+        for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+            if (blk.userState() == kExportTitleBlock) continue;
+            for (QTextBlock::iterator it = blk.begin(); !it.atEnd(); ++it) {
+                const QTextFragment frag = it.fragment();
+                if (!frag.isValid() || frag.length() == 0) continue;
+                double pt = frag.charFormat().fontPointSize();
+                if (pt <= 0) pt = m_style.fontSize;   // herdou do documento
+                plan.append({ frag.position(), frag.length(), pt * factor });
+            }
+        }
+        // Aplica depois de mapear: mexer no documento durante a varredura
+        // invalida os fragmentos que ainda não foram lidos.
+        for (const Resize& r : plan) {
+            QTextCursor fc(&doc);
+            fc.setPosition(r.pos);
+            fc.setPosition(r.pos + r.len, QTextCursor::KeepAnchor);
+            QTextCharFormat cf;
+            cf.setFontPointSize(r.pt);
+            fc.mergeCharFormat(cf);
+        }
+    }
+
     QTextCursor c(&doc);
     c.select(QTextCursor::Document);
     QTextBlockFormat bf;
@@ -191,11 +239,21 @@ QString Exporter::previewCss(const QColor& fg, const QColor& bg) const {
         + QStringLiteral("img { max-width: 100%; height: auto; display: block; margin: 1em auto; }\n");
 }
 
+namespace {
+// Exporter não é QObject, então não existe tr() aqui. Sem um helper, o caminho
+// de menor esforço vira QStringLiteral — foi assim que o aviso de exportação e
+// os diálogos de salvar ficaram FORA da tradução desde sempre, sem ninguém
+// notar. Toda string visível ao usuário neste arquivo passa por aqui.
+QString subTr(const char* text) {
+    return QCoreApplication::translate("Exporter", text);
+}
+} // namespace
+
 QString Exporter::safeName(const QString& s) {
     QString out = s;
     out.replace(QRegularExpression(QStringLiteral("[\\\\/:*?\"<>|]")), QStringLiteral("-"));
     out = out.trimmed();
-    return out.isEmpty() ? QStringLiteral("Documento") : out;
+    return out.isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Documento")) : out;
 }
 
 QString Exporter::chapterHtmlPrimary(const Chapter& ch) const {
@@ -258,10 +316,28 @@ QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt, const QString& doc
         // de rasterização em ~16x, sem perda perceptível: texto é vetorial.
         writer.setResolution(300);
         writer.setPageSize(QPageSize(QPageSize::A4));
-        writer.setPageMargins(QMarginsF(20, 18, 20, 18), QPageLayout::Millimeter);
+        // 1 polegada = 25,4 mm nos quatro lados, igual ao DOCX e ao preset de
+        // submissão — exportar o mesmo capítulo em formatos diferentes tem
+        // que dar a mesma página.
+        writer.setPageMargins(QMarginsF(25.4, 25.4, 25.4, 25.4), QPageLayout::Millimeter);
         writer.setTitle(docTitle.trimmed().isEmpty()
             ? (m_model ? m_model->projectName() : QString()) : docTitle);
-        // doc.print pagina automaticamente para o QPagedPaintDevice.
+
+        // ARMADILHA DO QT: QTextDocument::print() aplica 2 cm de margem POR
+        // CONTA PRÓPRIA quando o documento não tem pageSize definido — ele
+        // clona o doc e sobrescreve o formato do frame raiz, e é por isso que
+        // zerar documentMargin/frameFormat aqui não muda nada. Essa margem
+        // SOMA com a do writer: 25,4 mm viravam 45 mm na página.
+        //
+        // Definir o pageSize faz o documento contar como "paginado", e aí o
+        // print() respeita só a margem do writer. Medido: 45,2 mm -> 28,3 mm
+        // (os 2,9 mm que sobram são o recuo de primeira linha do autor).
+        // O pageSize tem que vir na régua de 96 dpi (a que o Qt assume para
+        // documento), NÃO em pixels do device: passar device pixels dá uma
+        // página 3x maior que a real e o texto sai microscópico.
+        const QRect paint = writer.pageLayout().paintRectPixels(writer.resolution());
+        const double escala = writer.resolution() / 96.0;
+        doc.setPageSize(QSizeF(paint.width() / escala, paint.height() / escala));
         doc.print(&writer);
     } else {
         QTextDocumentWriter writer(&buf, "ODF");
@@ -271,13 +347,15 @@ QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt, const QString& doc
     return bytes;
 }
 
-QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
+QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& runningHeader) const {
     // EMU (English Metric Units): unidade de tamanho do DrawingML. 1 px (96dpi) =
     // 9525 EMU. Twips (1/20 pt): unidade de medida do WordprocessingML; 1 px = 15.
     constexpr qint64 kEmuPerPx  = 9525;
     constexpr int    kTwipsPerPx = 15;
-    // Largura útil da página A4 com margens de ~20mm (= 9638 twips → EMU).
-    constexpr qint64 kMaxImgCx  = 9638LL * 635;
+    // Largura útil da página A4 (11906 twips) com margem de 1 polegada dos
+    // dois lados: 11906 - 2×1440 = 9026 twips → EMU. Tem que andar junto com
+    // o pgMar lá embaixo: imagem calibrada pra margem antiga vaza pra fora.
+    constexpr qint64 kMaxImgCx  = 9026LL * 635;
 
     struct Img { QString path; QByteArray bytes; QString rId; };
     QList<Img> images;
@@ -443,9 +521,24 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
         "xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" "
         "xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
         "<w:body>") + body + QStringLiteral(
-        "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/>"
-        "<w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1134\" "
-        "w:header=\"708\" w:footer=\"708\" w:gutter=\"0\"/></w:sectPr>"
+        "<w:sectPr>") + (runningHeader.isEmpty() ? QString() : QStringLiteral(
+        // titlePg impede o Word de repetir o cabeçalho na primeira página,
+        // que é a capa e já traz nome e título.
+        "<w:headerReference w:type=\"default\" r:id=\"rIdHdr\"/>"))
+        + QStringLiteral("<w:pgSz w:w=\"11906\" w:h=\"16838\"/>")
+        // Margem de 1 polegada (1440 twips) nos quatro lados, cabeçalho a meia
+        // polegada (720) do topo. Nasceu como exigência do formato de
+        // submissão e virou o padrão de toda exportação: é a margem que o
+        // olho espera num documento de texto, e dá espaço pra quem imprime
+        // anotar na lateral.
+        + QStringLiteral("<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" "
+                         "w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/>")
+        // titlePg (não repetir o cabeçalho na primeira página, que é a capa)
+        // vem DEPOIS de pgMar: a ordem dos filhos de CT_SectPr é fixada pelo
+        // schema, e fora de ordem o Word tolera mas LibreOffice recusa o
+        // arquivo inteiro — mesma armadilha já anotada no <w:rPr> acima.
+        + (runningHeader.isEmpty() ? QString() : QStringLiteral("<w:titlePg/>"))
+        + QStringLiteral("</w:sectPr>"
         "</w:body></w:document>\n");
 
     // ── document.xml.rels: estilos (rId1) + imagens ──
@@ -459,11 +552,15 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
         rels += QStringLiteral("<Relationship Id=\"%1\" "
             "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" "
             "Target=\"%2\"/>").arg(im.rId, im.path);
+    if (!runningHeader.isEmpty())
+        rels += QStringLiteral("<Relationship Id=\"rIdHdr\" "
+            "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header\" "
+            "Target=\"header1.xml\"/>");
     rels += QStringLiteral("</Relationships>\n");
 
     // ── Empacota ──
     ZipWriter zip;
-    zip.addFile(QStringLiteral("[Content_Types].xml"), QByteArrayLiteral(
+    zip.addFile(QStringLiteral("[Content_Types].xml"), (QStringLiteral(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
         "<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"
         "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
@@ -475,14 +572,40 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc) const {
         "<Override PartName=\"/word/document.xml\" "
         "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>"
         "<Override PartName=\"/word/styles.xml\" "
-        "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>"
-        "</Types>\n"));
+        "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>")
+        // Parte não declarada aqui faz o Word recusar o arquivo inteiro,
+        // não só ignorar o cabeçalho.
+        + (runningHeader.isEmpty() ? QString() : QStringLiteral(
+            "<Override PartName=\"/word/header1.xml\" "
+            "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml\"/>"))
+        + QStringLiteral("</Types>\n")).toUtf8());
     zip.addFile(QStringLiteral("_rels/.rels"), QByteArrayLiteral(
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
         "<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"
         "<Relationship Id=\"rId1\" "
         "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" "
         "Target=\"word/document.xml\"/></Relationships>\n"));
+    if (!runningHeader.isEmpty()) {
+        // "Sobrenome / Título / 3": o número é um campo PAGE, então o Word
+        // renumera sozinho quando o texto cresce. instrText leva
+        // xml:space=preserve porque os espaços em volta de PAGE fazem parte
+        // do campo — sem eles o Word lê o nome do campo errado.
+        const QString hdr = QStringLiteral(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+            "<w:hdr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" "
+            "xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\">"
+            "<w:p><w:pPr><w:jc w:val=\"right\"/>"
+            "<w:rPr><w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\"/>"
+            "<w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr></w:pPr>"
+            "<w:r><w:rPr><w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\"/>"
+            "<w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr>"
+            "<w:t xml:space=\"preserve\">%1 / </w:t></w:r>"
+            "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r>"
+            "<w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r>"
+            "<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>"
+            "</w:p></w:hdr>\n").arg(runningHeader.toHtmlEscaped());
+        zip.addFile(QStringLiteral("word/header1.xml"), hdr.toUtf8());
+    }
     zip.addFile(QStringLiteral("word/document.xml"), document.toUtf8());
     zip.addFile(QStringLiteral("word/styles.xml"), styles.toUtf8());
     zip.addFile(QStringLiteral("word/_rels/document.xml.rels"), rels.toUtf8());
@@ -495,7 +618,7 @@ QByteArray Exporter::exportItem(const QString& html, bool includeMarkers, Format
                                 const QString& docTitle) const {
     QTextDocument doc;
     doc.setHtml(html.isEmpty() ? QStringLiteral("<p></p>") : html);
-    applyParagraphStyle(doc);
+    applyParagraphStyle(doc, kExportBodyPt);
     forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     return writeDoc(doc, fmt, docTitle);
@@ -518,7 +641,8 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
         titleChar.setFontWeight(QFont::Bold);
         titleChar.setFontPointSize(16);
         const QString title = ch->title.trimmed().isEmpty()
-            ? QStringLiteral("Capítulo") : ch->title;
+            ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title;
+        cur.block().setUserState(kExportTitleBlock);
         cur.insertText(title, titleChar);
 
         // Corpo: novo bloco, formatação limpa, conteúdo do capítulo.
@@ -527,10 +651,321 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
         cur.insertHtml(chapterHtmlPrimary(*ch));
     }
 
-    applyParagraphStyle(doc);
+    applyParagraphStyle(doc, kExportBodyPt);
     forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     return writeDoc(doc, fmt, docTitle);
+}
+
+// ─────────────────────────── Formato de submissão ───────────────────────────
+
+// Padrão Shunn ("Modern Manuscript Format"), o que editora e revista esperam
+// receber: monoespaçada 12, entrelinha dupla, margens de 1 polegada, recuo de
+// meia polegada, alinhado à esquerda (nunca justificado), cabeçalho corrido e
+// "#" como quebra de cena. É deliberadamente feio — a função dele é ser fácil
+// de marcar e de estimar, não bonito.
+
+namespace {
+
+// RÉGUA DO DOCUMENTO: o writer DOCX daqui assume pixels a 96 dpi
+// (kTwipsPerPx = 15 → 1 px = 0,75 pt), então o documento é montado nessa mesma
+// régua e o PDF escala por resolução/96. Sem isso, a mesma medida sairia com
+// tamanhos diferentes em cada formato.
+constexpr int kSubMarginPx    = 96;   // 1 polegada
+constexpr int kSubIndentPx    = 48;   // recuo de primeira linha: 0,5 polegada
+constexpr int kSubHeaderTopPx = 48;   // cabeçalho corrido a 0,5 pol do topo
+constexpr int kSubTitleDropPx = 288;  // título a ~3 pol do topo da capa
+constexpr double kSubFontPt   = 12.0;
+// A4 em px a 96 dpi (210 × 297 mm). O app usa A4 no resto das exportações.
+constexpr int kSubPageWPx = 794;
+constexpr int kSubPageHPx = 1123;
+
+// Estado de bloco, pra reconhecer o que é o quê depois de o HTML já estar no
+// documento: o corpo vem de insertHtml e não dá pra marcar na inserção.
+enum SubBlockKind { SubBody = 0, SubTitlePage = 1, SubChapterTitle = 2, SubSceneBreak = 3 };
+
+// Sobrenome pro cabeçalho corrido. Shunn pede o sobrenome do autor; usa o nome
+// de publicação quando existe, porque é ele que o editor vê na capa.
+QString surnameFor(const Exporter::SubmissionInfo& info)
+{
+    const QString src = info.byline.trimmed().isEmpty() ? info.legalName.trimmed()
+                                                        : info.byline.trimmed();
+    const QStringList parts = src.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+    return parts.isEmpty() ? QString() : parts.last();
+}
+
+} // namespace
+
+Exporter::SubmissionInfo Exporter::SubmissionInfo::load()
+{
+    QSettings s;
+    SubmissionInfo info;
+    info.legalName  = s.value(QStringLiteral("submission/legalName")).toString();
+    info.address    = s.value(QStringLiteral("submission/address")).toString();
+    info.contact    = s.value(QStringLiteral("submission/contact")).toString();
+    info.byline     = s.value(QStringLiteral("submission/byline")).toString();
+    info.titleShort = s.value(QStringLiteral("submission/titleShort")).toString();
+    return info;
+}
+
+void Exporter::SubmissionInfo::save() const
+{
+    QSettings s;
+    s.setValue(QStringLiteral("submission/legalName"), legalName);
+    s.setValue(QStringLiteral("submission/address"), address);
+    s.setValue(QStringLiteral("submission/contact"), contact);
+    s.setValue(QStringLiteral("submission/byline"), byline);
+    s.setValue(QStringLiteral("submission/titleShort"), titleShort);
+}
+
+void Exporter::insertSubmissionTitlePage(QTextCursor& cur, const QString& manuscriptTitle,
+                                        const SubmissionInfo& info, int wordCount) const
+{
+    QTextCharFormat plain;
+    plain.setFontFamilies({ QStringLiteral("Courier New") });
+    plain.setFontPointSize(kSubFontPt);
+
+    // Entrelinha simples no bloco de contato — só o CORPO do manuscrito é que
+    // vai em entrelinha dupla.
+    QTextBlockFormat single;
+    single.setLineHeight(100, QTextBlockFormat::ProportionalHeight);
+    single.setTextIndent(0);
+    single.setTopMargin(0);
+    single.setBottomMargin(0);
+
+    auto line = [&](const QString& text, Qt::Alignment align, bool firstBlock) {
+        QTextBlockFormat bf = single;
+        bf.setAlignment(align);
+        if (firstBlock) cur.setBlockFormat(bf);
+        else            cur.insertBlock(bf, plain);
+        cur.block().setUserState(SubTitlePage);
+        if (!text.isEmpty()) cur.insertText(text, plain);
+    };
+
+    // A contagem vai numa linha própria à direita, em vez de lado a lado com o
+    // nome como no layout clássico: alinhar dois blocos na mesma linha exigiria
+    // tabela ou tab stop, e nenhum dos dois sobrevive igual nos três formatos
+    // que exportamos. A informação que o editor procura continua no lugar que
+    // ele olha — topo da primeira página.
+    bool first = true;
+    if (wordCount > 0) {
+        line(subTr(QT_TRANSLATE_NOOP("Exporter", "Aproximadamente %1 palavras")).arg(QLocale().toString(wordCount)),
+             Qt::AlignRight, first);
+        first = false;
+    }
+
+    QStringList contactLines;
+    if (!info.legalName.trimmed().isEmpty()) contactLines << info.legalName.trimmed();
+    const QStringList addr = info.address.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    for (const QString& a : addr) contactLines << a.trimmed();
+    const QStringList contact = info.contact.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+    for (const QString& c : contact) contactLines << c.trimmed();
+
+    for (const QString& l : contactLines) { line(l, Qt::AlignLeft, first); first = false; }
+    if (first) line(QString(), Qt::AlignLeft, true); // capa sem dado nenhum
+
+    // Título e byline no meio da página, empurrados por margem (não por linhas
+    // vazias — linha vazia depende da entrelinha e some no DOCX).
+    QTextBlockFormat titleBf = single;
+    titleBf.setAlignment(Qt::AlignHCenter);
+    titleBf.setTopMargin(kSubTitleDropPx);
+    cur.insertBlock(titleBf, plain);
+    cur.block().setUserState(SubTitlePage);
+    cur.insertText(manuscriptTitle.toUpper(), plain);
+
+    QTextBlockFormat bylineBf = single;
+    bylineBf.setAlignment(Qt::AlignHCenter);
+    bylineBf.setTopMargin(24);
+    const QString byline = info.byline.trimmed().isEmpty() ? info.legalName.trimmed()
+                                                           : info.byline.trimmed();
+    if (!byline.isEmpty()) {
+        cur.insertBlock(bylineBf, plain);
+        cur.block().setUserState(SubTitlePage);
+        cur.insertText(subTr(QT_TRANSLATE_NOOP("Exporter", "por %1")).arg(byline), plain);
+    }
+}
+
+void Exporter::buildSubmissionBody(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                                   bool includeMarkers) const
+{
+    QTextCursor cur(&doc);
+    cur.movePosition(QTextCursor::End);
+
+    QTextCharFormat plain;
+    plain.setFontFamilies({ QStringLiteral("Courier New") });
+    plain.setFontPointSize(kSubFontPt);
+
+    for (const Chapter* ch : chapters) {
+        // Todo capítulo abre em página nova — inclusive o primeiro, que vem
+        // depois da capa.
+        QTextBlockFormat titleBf;
+        titleBf.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
+        titleBf.setAlignment(Qt::AlignHCenter);
+        titleBf.setTextIndent(0);
+        titleBf.setTopMargin(0);
+        titleBf.setBottomMargin(0);
+        cur.insertBlock(titleBf, plain);
+        cur.block().setUserState(SubChapterTitle);
+
+        const QString title = ch->title.trimmed().isEmpty()
+            ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title.trimmed();
+        // Sem negrito: manuscrito de submissão não usa peso de fonte pra
+        // hierarquia, o editor marca isso na diagramação.
+        cur.insertText(title.toUpper(), plain);
+
+        QTextBlockFormat bodyBf;
+        bodyBf.setTextIndent(kSubIndentPx);
+        cur.insertBlock(bodyBf, plain);
+        cur.insertHtml(chapterHtmlPrimary(*ch));
+    }
+
+    // Uniformiza o corpo inteiro DEPOIS da inserção: o HTML do capítulo traz
+    // formatação do editor (fonte serif, justificado, espaçamento) que não tem
+    // lugar num manuscrito de submissão.
+    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+        if (blk.userState() == SubTitlePage) continue;   // capa tem layout próprio
+
+        // Normaliza SÓ família e tamanho. Itálico, negrito e sublinhado do
+        // autor são informação (ênfase, título de obra citada) e passam
+        // intactos — o formato dita a régua da página, não o que o texto diz.
+        QTextCursor bc(blk);
+        bc.select(QTextCursor::BlockUnderCursor);
+        QTextCharFormat cf;
+        cf.setFontFamilies({ QStringLiteral("Courier New") });
+        cf.setFontPointSize(kSubFontPt);
+        bc.mergeCharFormat(cf);
+
+        QTextBlockFormat bf = blk.blockFormat();
+        bf.setLineHeight(200, QTextBlockFormat::ProportionalHeight);  // entrelinha dupla
+        bf.setTopMargin(0);
+        bf.setBottomMargin(0);
+        if (blk.userState() == SubChapterTitle) {
+            bf.setAlignment(Qt::AlignHCenter);
+            bf.setTextIndent(0);
+        } else {
+            bf.setAlignment(Qt::AlignLeft);      // nunca justificado
+            bf.setTextIndent(kSubIndentPx);
+        }
+        // Régua de cena: o manuscrito guarda quebra de cena como <hr>, que no
+        // formato de submissão é um "#" centralizado — linha em branco sozinha
+        // se perde na virada de página e o editor não a vê.
+        if (bf.hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) {
+            bf.clearProperty(QTextFormat::BlockTrailingHorizontalRulerWidth);
+            bf.setAlignment(Qt::AlignHCenter);
+            bf.setTextIndent(0);
+            QTextCursor hc(blk);
+            hc.select(QTextCursor::BlockUnderCursor);
+            hc.removeSelectedText();
+            QTextCursor ins(blk);
+            ins.insertText(QStringLiteral("#"), plain);
+        }
+        QTextCursor bfc(blk);
+        bfc.setBlockFormat(bf);
+    }
+
+    forceTextColor(doc, Qt::black);
+    if (!includeMarkers) stripMarkers(doc);
+}
+
+QByteArray Exporter::submissionPdf(QTextDocument& doc, const QString& runningHeader,
+                                  const QString& docTitle) const
+{
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    {
+        QPdfWriter writer(&buf);
+        writer.setResolution(300);
+        writer.setPageSize(QPageSize(QPageSize::A4));
+        // Margem zero no writer: a margem de 1 polegada é desenhada por nós,
+        // porque o cabeçalho corrido mora DENTRO dela.
+        writer.setPageMargins(QMarginsF(0, 0, 0, 0), QPageLayout::Millimeter);
+        writer.setTitle(docTitle.trimmed().isEmpty()
+            ? (m_model ? m_model->projectName() : QString()) : docTitle);
+
+        const int contentW = kSubPageWPx - 2 * kSubMarginPx;
+        const int contentH = kSubPageHPx - 2 * kSubMarginPx;
+        doc.setPageSize(QSizeF(contentW, contentH));
+
+        QPainter painter(&writer);
+        // QTextDocument::print() não desenha cabeçalho com número de página,
+        // então a paginação é feita aqui: escala px(96dpi) → device e desenha
+        // uma página por vez.
+        const double scale = writer.resolution() / 96.0;
+        painter.scale(scale, scale);
+
+        QFont headerFont(QStringLiteral("Courier New"));
+        headerFont.setPointSizeF(kSubFontPt);
+
+        const int pages = doc.pageCount();
+        for (int i = 0; i < pages; ++i) {
+            if (i > 0) writer.newPage();
+
+            // Cabeçalho corrido a partir da segunda página — a primeira é a
+            // capa, que já traz nome e título.
+            if (i > 0 && !runningHeader.isEmpty()) {
+                painter.save();
+                painter.setFont(headerFont);
+                painter.setPen(Qt::black);
+                const QRect hr(kSubMarginPx, kSubHeaderTopPx, contentW, 24);
+                painter.drawText(hr, Qt::AlignRight | Qt::AlignVCenter,
+                                 QStringLiteral("%1 / %2").arg(runningHeader).arg(i + 1));
+                painter.restore();
+            }
+
+            painter.save();
+            painter.translate(kSubMarginPx, kSubMarginPx);
+            // Recorta na altura da página pra linha partida não vazar na
+            // margem de baixo, e translada pra fatia certa do documento.
+            painter.setClipRect(QRectF(0, 0, contentW, contentH));
+            painter.translate(0, -double(i) * contentH);
+            doc.drawContents(&painter,
+                             QRectF(0, double(i) * contentH, contentW, contentH));
+            painter.restore();
+        }
+    }
+    buf.close();
+    return bytes;
+}
+
+QByteArray Exporter::exportSubmission(const QList<const Chapter*>& chapters,
+                                      const QString& manuscriptTitle,
+                                      const SubmissionInfo& info,
+                                      bool includeMarkers, Format fmt) const
+{
+    // Contagem ARREDONDADA, como o formato pede: o editor quer ordem de
+    // grandeza pra estimar páginas, não o número exato — e número exato
+    // envelhece a cada save.
+    int words = 0;
+    for (const Chapter* ch : chapters)
+        words += WordCounter::countWordsInHtml(chapterHtmlPrimary(*ch));
+    const int rounded = words >= 10000 ? (words + 500) / 1000 * 1000
+                      : words >= 1000  ? (words + 50) / 100 * 100
+                                       : words;
+
+    QTextDocument doc;
+    QFont base(QStringLiteral("Courier New"));
+    base.setPointSizeF(kSubFontPt);
+    doc.setDefaultFont(base);
+    doc.setDocumentMargin(0);   // a margem da página é nossa, não do documento
+
+    QTextCursor cur(&doc);
+    insertSubmissionTitlePage(cur, manuscriptTitle, info, rounded);
+    buildSubmissionBody(doc, chapters, includeMarkers);
+
+    const QString shortTitle = info.titleShort.trimmed().isEmpty()
+        ? manuscriptTitle.trimmed() : info.titleShort.trimmed();
+    const QString surname = surnameFor(info);
+    QString header = surname.isEmpty() ? shortTitle
+                   : shortTitle.isEmpty() ? surname
+                   : QStringLiteral("%1 / %2").arg(surname, shortTitle);
+
+    if (fmt == Format::Pdf)  return submissionPdf(doc, header, manuscriptTitle);
+    if (fmt == Format::Docx) return docxFromDocument(doc, header);
+    // ODT: o writer é o do Qt e não aceita cabeçalho corrido injetado. Todo o
+    // resto do formato vale; o painel avisa que a numeração de página fica de
+    // fora nesse caso.
+    return writeDoc(doc, fmt, manuscriptTitle);
 }
 
 QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
@@ -560,12 +995,15 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
         if (selected.isEmpty()) continue;
 
         const QString effectiveTitle = m_model->manuscriptEffectiveTitle(ms.id);
-        const QString msTitle = safeName(effectiveTitle.isEmpty() ? QStringLiteral("Manuscrito") : effectiveTitle);
+        const QString msTitle = safeName(effectiveTitle.isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Manuscrito")) : effectiveTitle);
         const QString ext = formatExt(sel.format);
 
         if (sel.manuscriptMode == ManuscriptMode::SingleDocument) {
-            files.append({ QStringLiteral("Manuscritos/%1.%2").arg(msTitle, ext),
-                           exportChapters(selected, sel.includeMarkers, sel.format, effectiveTitle) });
+            const QByteArray bytes = submissionApplies(sel)
+                ? exportSubmission(selected, effectiveTitle, sel.submission,
+                                   sel.includeMarkers, sel.format)
+                : exportChapters(selected, sel.includeMarkers, sel.format, effectiveTitle);
+            files.append({ QStringLiteral("Manuscritos/%1.%2").arg(msTitle, ext), bytes });
         } else {
             for (int i = 0; i < selected.size(); ++i) {
                 const Chapter* ch = selected.at(i);
@@ -695,7 +1133,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
             ++counter;
             Item it;
             it.id = QStringLiteral("ch_%1").arg(counter);
-            it.title = ch->title.trimmed().isEmpty() ? QStringLiteral("Capítulo") : ch->title;
+            it.title = ch->title.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title;
             it.filename = it.id + QStringLiteral(".xhtml");
             it.body = itemBodyXhtml(chapterHtmlPrimary(*ch), sel.includeMarkers,
                                     images, imageMimes, imgCounter);
@@ -712,7 +1150,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
                 ++counter;
                 Item it;
                 it.id = QStringLiteral("doc_%1").arg(counter);
-                it.title = di.title.trimmed().isEmpty() ? QStringLiteral("Documento") : di.title;
+                it.title = di.title.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Documento")) : di.title;
                 it.filename = it.id + QStringLiteral(".xhtml");
                 it.body = itemBodyXhtml(itemHtml(di), sel.includeMarkers,
                                         images, imageMimes, imgCounter);
@@ -732,7 +1170,7 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     // é a identidade da "saga", correta pra um omnibus.
     const Manuscript* soloMs = singleManuscriptInSelection(sel);
     const QString rawTitle = soloMs ? m_model->manuscriptEffectiveTitle(soloMs->id) : m_model->projectName();
-    const QString title = rawTitle.trimmed().isEmpty() ? QStringLiteral("Projeto") : rawTitle;
+    const QString title = rawTitle.trimmed().isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Projeto")) : rawTitle;
     const QString author = m_model->projectAuthor();
     const QString synopsis = soloMs ? m_model->manuscriptEffectiveSynopsis(soloMs->id) : m_model->projectSynopsis();
     const QString genres = m_model->projectGenres();
@@ -902,10 +1340,11 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
     QList<OutFile> files;
     {
         QProgressDialog progress(
-            QStringLiteral("Exportando… Esse processo pode levar alguns instantes.\n"
-                           "Não encerre o programa caso ele pare de responder."),
+            subTr(QT_TRANSLATE_NOOP("Exporter",
+                  "Exportando… Esse processo pode levar alguns instantes.\n"
+                  "Não encerre o programa caso ele pare de responder.")),
             QString(), 0, 0, dialogParent);
-        progress.setWindowTitle(QStringLiteral("Exportando"));
+        progress.setWindowTitle(subTr(QT_TRANSLATE_NOOP("Exporter", "Exportando")));
         progress.setWindowModality(Qt::ApplicationModal);
         progress.setCancelButton(nullptr);
         progress.setMinimumDuration(0);
@@ -942,17 +1381,17 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
         QString filter, dlgTitle;
         switch (sel.format) {
             case Format::Pdf:
-                filter = QStringLiteral("Documento PDF (*.pdf)");
-                dlgTitle = QStringLiteral("Exportar como PDF"); break;
+                filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Documento PDF (*.pdf)"));
+                dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como PDF")); break;
             case Format::Epub:
-                filter = QStringLiteral("Livro EPUB (*.epub)");
-                dlgTitle = QStringLiteral("Exportar como EPUB"); break;
+                filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Livro EPUB (*.epub)"));
+                dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como EPUB")); break;
             case Format::Docx:
-                filter = QStringLiteral("Documento Word (*.docx)");
-                dlgTitle = QStringLiteral("Exportar como DOCX"); break;
+                filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Documento Word (*.docx)"));
+                dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como DOCX")); break;
             default:
-                filter = QStringLiteral("Documento ODF (*.odt)");
-                dlgTitle = QStringLiteral("Exportar como ODT"); break;
+                filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Documento ODF (*.odt)"));
+                dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como ODT")); break;
         }
         const QString suggested = suggestedBaseName + QStringLiteral(".") + ext;
         const QString dest = QFileDialog::getSaveFileName(
@@ -960,7 +1399,7 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
         if (dest.isEmpty()) return false; // cancelado
         QFile f(dest);
         if (!f.open(QIODevice::WriteOnly)) {
-            if (error) *error = QStringLiteral("Não foi possível gravar o arquivo.");
+            if (error) *error = subTr(QT_TRANSLATE_NOOP("Exporter", "Não foi possível gravar o arquivo."));
             return false;
         }
         f.write(files.first().bytes);
@@ -975,12 +1414,12 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
 
     const QString suggested = projName + QStringLiteral(".zip");
     const QString dest = QFileDialog::getSaveFileName(
-        dialogParent, QStringLiteral("Exportar projeto (.zip)"),
-        suggested, QStringLiteral("Arquivo ZIP (*.zip)"));
+        dialogParent, subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar projeto (.zip)")),
+        suggested, subTr(QT_TRANSLATE_NOOP("Exporter", "Arquivo ZIP (*.zip)")));
     if (dest.isEmpty()) return false;
     QFile f(dest);
     if (!f.open(QIODevice::WriteOnly)) {
-        if (error) *error = QStringLiteral("Não foi possível gravar o arquivo.");
+        if (error) *error = subTr(QT_TRANSLATE_NOOP("Exporter", "Não foi possível gravar o arquivo."));
         return false;
     }
     f.write(zipBytes);
@@ -1048,7 +1487,7 @@ QTextDocument* Exporter::buildPreviewDocument(const QString& manuscriptId,
         titleChar.setFontWeight(QFont::Bold);
         titleChar.setFontPointSize(16);
         const QString title = ch->title.trimmed().isEmpty()
-            ? QStringLiteral("Capítulo") : ch->title;
+            ? subTr(QT_TRANSLATE_NOOP("Exporter", "Capítulo")) : ch->title;
         cur.insertText(title, titleChar);
 
         QTextBlockFormat bodyBlock;

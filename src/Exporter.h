@@ -6,6 +6,7 @@
 class ProjectModel;
 class QWidget;
 class QTextDocument;
+class QTextCursor;
 class QColor;
 class QObject;
 struct Chapter;
@@ -32,13 +33,43 @@ public:
         int spacingAfter = 0;
     };
 
+    // Dados que o formato de submissão exige e que não vivem no projeto: o
+    // nome LEGAL (quem assina o contrato) pode ser diferente do nome de
+    // publicação, e endereço/contato não são assunto de manuscrito. Ficam em
+    // QSettings, globais ao autor, não por projeto.
+    struct SubmissionInfo {
+        QString legalName;   // nome real, canto superior esquerdo da 1ª página
+        QString address;     // endereço postal, uma linha por quebra
+        QString contact;     // e-mail / telefone
+        QString byline;      // nome de publicação ("by ..."), pode ser pseudônimo
+        QString titleShort;  // título curto pro cabeçalho corrido
+        // Carrega/grava em QSettings (chaves "submission/*").
+        static SubmissionInfo load();
+        void save() const;
+    };
+
     struct Selection {
         QSet<QString> chapterIds;
         QSet<QString> itemIds;
         Format format = Format::Odt;
         ManuscriptMode manuscriptMode = ManuscriptMode::SingleDocument;
         bool includeMarkers = true;   // marca-textos saem no documento?
+        // Formato de manuscrito para submissão (padrão Shunn): Courier 12,
+        // entrelinha dupla, margens de 1 polegada, página de título com
+        // contato e contagem de palavras, cabeçalho corrido, "#" como quebra
+        // de cena. Só faz sentido no manuscrito em documento único — ver
+        // submissionApplies().
+        bool submissionFormat = false;
+        SubmissionInfo submission;
     };
+
+    // O preset de submissão é sobre PÁGINA PAGINADA: num EPUB (texto que
+    // reflui) nada disso significa coisa alguma, e em capítulos separados a
+    // contagem de palavras e o cabeçalho corrido perdem sentido.
+    static bool submissionApplies(const Selection& sel) {
+        return sel.submissionFormat && sel.format != Format::Epub
+            && sel.manuscriptMode == ManuscriptMode::SingleDocument;
+    }
 
     Exporter(ProjectModel* model, const QString& projectRoot, const DocStyle& style);
 
@@ -78,13 +109,39 @@ private:
                           const QString& docTitle = QString()) const;
     QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
                               const QString& docTitle = QString()) const;
+
+    // ── Formato de submissão (padrão Shunn) ──
+    // Monta o manuscrito inteiro no formato que editora/revista espera, em vez
+    // do estilo de leitura do projeto. Devolve os bytes já serializados porque
+    // a paginação (cabeçalho corrido, número de página) precisa ser feita na
+    // hora de escrever, não depois.
+    QByteArray exportSubmission(const QList<const Chapter*>& chapters,
+                                const QString& manuscriptTitle,
+                                const SubmissionInfo& info,
+                                bool includeMarkers, Format fmt) const;
+    // Corpo do manuscrito com a formatação Shunn aplicada (sem a página de
+    // título, que é montada à parte por precisar de layout próprio).
+    void buildSubmissionBody(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                             bool includeMarkers) const;
+    // Página de título: contato à esquerda, contagem à direita, título e
+    // byline no meio da página.
+    void insertSubmissionTitlePage(QTextCursor& cur, const QString& manuscriptTitle,
+                                   const SubmissionInfo& info, int wordCount) const;
+    // PDF paginado à mão, porque QTextDocument::print() não sabe desenhar
+    // cabeçalho corrido com número de página.
+    QByteArray submissionPdf(QTextDocument& doc, const QString& runningHeader,
+                             const QString& docTitle) const;
     QByteArray writeDoc(QTextDocument& doc, Format fmt, const QString& docTitle = QString()) const;
 
     // DOCX (OOXML): zip com XMLs do WordprocessingML. O Qt não tem writer nativo,
     // então serializamos o QTextDocument à mão — bloco a bloco, fragmento a
     // fragmento — preservando negrito/itálico/sublinhado/tachado, marca-textos,
     // alinhamento, recuo, espaçamento e imagens embutidas.
-    QByteArray docxFromDocument(QTextDocument& doc) const;
+    // runningHeader não-vazio adiciona cabeçalho corrido (canto superior
+    // direito, com número de página via campo PAGE do Word) a partir da
+    // segunda página — exigência do formato de submissão.
+    QByteArray docxFromDocument(QTextDocument& doc,
+                                const QString& runningHeader = QString()) const;
 
     QList<OutFile> buildFiles(const Selection& sel) const;
 
@@ -103,7 +160,10 @@ private:
     static QString safeName(const QString& s);
     static QString formatExt(Format fmt);
 
-    void applyParagraphStyle(QTextDocument& doc) const;
+    // bodyPointSize > 0 REESCALA o corpo pra esse tamanho (usado na exportação
+    // pra papel, ver kExportBodyPt). 0 mantém o tamanho do editor — é o que o
+    // preview de e-reader quer, porque lá é leitura em tela.
+    void applyParagraphStyle(QTextDocument& doc, double bodyPointSize = 0.0) const;
 
     // CSS base (fonte serif, recuo, título de capítulo) reaproveitado pelo
     // EPUB e pelo preview de e-reader. bg inválido (QColor() default) omite

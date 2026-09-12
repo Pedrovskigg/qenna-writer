@@ -10,6 +10,7 @@ class QTreeWidgetItem;
 class QLabel;
 class QPushButton;
 class QRadioButton;
+class QCheckBox;
 
 // Modal "Exportar projeto": árvore de manuscritos→capítulos e gavetas→itens
 // (checkboxes tri-state), formato e modo do manuscrito. Espelha o painel do
@@ -49,6 +50,16 @@ private:
     QRadioButton* m_separateRadio = nullptr;
     QRadioButton* m_markersIncludeRadio = nullptr;
     QRadioButton* m_markersRemoveRadio = nullptr;
+    QCheckBox* m_submissionCheck = nullptr;
+    QPushButton* m_submissionDataBtn = nullptr;
+    QLabel* m_submissionHint = nullptr;
+    Exporter::SubmissionInfo m_submission;
+
+    // Liga/desliga a opção de submissão conforme formato e modo: ela só
+    // significa alguma coisa em página paginada e documento único.
+    void refreshSubmissionAvailability();
+    // Diálogo dos dados que o formato exige (nome legal, contato, byline).
+    void editSubmissionData();
 
     QString m_format = QStringLiteral("odt");
     int m_totalLeaves = 0;
