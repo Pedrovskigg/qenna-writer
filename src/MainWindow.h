@@ -437,6 +437,18 @@ private:
     MemoriesStore *memoriesStore = nullptr;
     class Thesaurus *thesaurus = nullptr;
     class ThesaurusPopup *thesaurusPopup = nullptr;
+    class ReadAloudController *readAloud = nullptr;
+    class ReadAloudPanel *readAloudPanel = nullptr;
+    // Inicia a leitura em voz alta. end < 0 = do cursor até o fim do doc.
+    void startReadAloud(int start, int end);
+    // Entrada compartilhada pelo botão da toolbar e pelo popup de seleção:
+    // lê a seleção, ou do cursor até o fim; se já estiver lendo, para.
+    void readAloudSelectionOrFromCursor();
+    // Tamanho do doc quando a leitura começou. QTextEdit::textChanged também
+    // dispara em mudança só de FORMATO (o Modo Foco repinta o texto a cada
+    // movimento de cursor) — comparar o tamanho separa edição de verdade de
+    // repintura, senão a leitura morreria sozinha a cada parágrafo.
+    int readAloudDocChars = -1;
     // Texto plano do manuscrito ativo, usado só pra ordenar sinônimos por
     // contexto. Montado sob demanda e zerado a cada save — ficar alguns
     // parágrafos atrasado não muda a ordenação, e reconstruir a cada consulta

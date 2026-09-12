@@ -114,6 +114,7 @@
         <file alias="stats-streak.svg">../src/assets/icons/stats-streak.svg</file>
         <file alias="stats-clock.svg">../src/assets/icons/stats-clock.svg</file>
         <file alias="stats-chart.svg">../src/assets/icons/stats-chart.svg</file>
+        <file alias="read-aloud.svg">../src/assets/icons/read-aloud.svg</file>
         <file alias="readmode.svg">../src/assets/icons/readmode.svg</file>
         <file alias="refmenu.svg">../src/assets/icons/refmenu.svg</file>
         <file alias="pensario.svg">../src/assets/icons/pensario.svg</file>

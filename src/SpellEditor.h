@@ -45,6 +45,11 @@ signals:
     // Troca direta pelo submenu rápido, sem abrir painel nenhum.
     void synonymChosen(QString replacement);
 
+    // "Ler em voz alta" no menu de contexto. Com seleção, lê só o trecho
+    // (start/end em posições de documento); sem seleção, end = -1 e a leitura
+    // vai do cursor até o fim.
+    void readAloudRequested(int start, int end);
+
     // Ctrl+clique sobre um link de referência (menção @ ou nome do Codex).
     // href no formato "ref:<drawerKey>:<itemId>".
     void refActivated(QString href);

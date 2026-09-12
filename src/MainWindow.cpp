@@ -164,6 +164,8 @@
 #include "RenameDialog.h"
 #include "RenameService.h"
 #include "Thesaurus.h"
+#include "ReadAloudController.h"
+#include "ReadAloudPanel.h"
 #include "ThesaurusPopup.h"
 #include "SystemFolderGuard.h"
 #include "ThemesPanel.h"
@@ -1021,6 +1023,8 @@ void MainWindow::setupEditor()
         });
     selectionPopup->addAction(QStringLiteral("doc-plus.svg"), tr("Criar documento disso..."),
         [this]() { createDocFromSelection(); });
+    selectionPopup->addAction(QStringLiteral("read-aloud.svg"), tr("Ler em voz alta"),
+        [this]() { readAloudSelectionOrFromCursor(); });
     selectionPopup->addAction(QStringLiteral("leftbar/timeline.svg"), tr("Criar evento da linha do tempo..."),
         [this]() { createTimelineEventFromSelection(); });
     selectionPopup->addAction(QStringLiteral("elements/heart.svg"), tr("Adicionar à memória..."),
@@ -1709,6 +1713,95 @@ void MainWindow::setupEditor()
         if (!cur.hasSelection()) return;
         cur.insertText(replacement);
     });
+
+    connect(toolbar, &TopToolbar::readAloudRequested, this,
+            [this]() { readAloudSelectionOrFromCursor(); });
+
+    // Ler em voz alta: ferramenta de REVISÃO (ouvir o texto denuncia frase
+    // truncada, repetição e diálogo que não soa natural), não interface por
+    // voz. Offline, via motor do sistema.
+    readAloud = new ReadAloudController(this);
+    if (readAloud->isAvailable()) {
+        readAloudPanel = new ReadAloudPanel(readAloud, this);
+
+        connect(editor, &SpellEditor::readAloudRequested, this,
+                &MainWindow::startReadAloud);
+
+        // Realce em camada própria — o Modo Foco e os links de menção têm as
+        // suas, e o helper soma todas (ver setEditorSelectionsLayer).
+        connect(readAloud, &ReadAloudController::highlightRange, this,
+                [this](int start, int len) mutable {
+            if (!editor) return;
+            if (len <= 0) {
+                setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
+                return;
+            }
+            const int docLast = editor->document()->characterCount() - 1;
+            if (start < 0 || start > docLast || start + len > docLast) {
+                CrashLogger::log(QStringLiteral(
+                    "readAloud realce fora do doc: start=%1 len=%2 docLast=%3")
+                    .arg(start).arg(len).arg(docLast));
+                const int s = qBound(0, start, docLast);
+                const int e = qBound(s, start + len, docLast);
+                if (s == e) { setEditorSelectionsLayer(QStringLiteral("readAloud"), {}); return; }
+                start = s;
+                len = e - s;
+            }
+            QTextEdit::ExtraSelection sel;
+            sel.cursor = QTextCursor(editor->document());
+            sel.cursor.setPosition(start);
+            sel.cursor.setPosition(start + len, QTextCursor::KeepAnchor);
+            sel.format.setBackground(QColor(Theme::accentInfoSoft()));
+            sel.format.setForeground(QColor(Theme::textBright()));
+            setEditorSelectionsLayer(QStringLiteral("readAloud"), {sel});
+
+            // Mantém a palavra lida à vista, mas só quando ela saiu da tela —
+            // rolar a cada palavra brigaria com quem está lendo junto.
+            const QRect r = editor->cursorRect(sel.cursor);
+            if (!editor->viewport()->rect().contains(r.center()))
+                editor->ensureCursorVisible();
+        });
+
+        connect(readAloud, &ReadAloudController::finished, this, [this]() {
+            CrashLogger::log("readAloud fim da fila");
+            setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
+            if (readAloudPanel) readAloudPanel->hide();
+        });
+
+        connect(readAloudPanel, &ReadAloudPanel::playPauseRequested, this, [this]() {
+            if (!readAloud) return;
+            if (!readAloud->isSpeaking()) startReadAloud(editor ? editor->textCursor().position() : 0, -1);
+            else if (readAloud->isPaused()) readAloud->resume();
+            else readAloud->pause();
+        });
+        connect(readAloudPanel, &ReadAloudPanel::stopRequested, this, [this]() {
+            CrashLogger::log("readAloud botao parar (painel)");
+            if (readAloud) readAloud->stop();
+            setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
+            if (readAloudPanel) readAloudPanel->hide();
+        });
+        connect(readAloudPanel, &ReadAloudPanel::restartRequested, this, [this]() {
+            startReadAloud(editor ? editor->textCursor().position() : 0, -1);
+        });
+
+        // Editar durante a leitura desalinha o áudio do texto (as posições do
+        // realce deixam de valer). Parar é menos irritante do que continuar
+        // narrando um texto que não existe mais — e corrigir no meio da
+        // revisão é exatamente o que a feature convida a fazer.
+        connect(editor, &QTextEdit::textChanged, this, [this]() {
+            if (!readAloud || !readAloud->isSpeaking()) return;
+            // Só edição de verdade interrompe: repintura de formato (Modo
+            // Foco, realce de menção) mantém o tamanho do documento.
+            const int now = editor ? editor->document()->characterCount() : -1;
+            if (now == readAloudDocChars) return;
+            readAloudDocChars = now;
+            CrashLogger::log("readAloud interrompido: texto mudou");
+            readAloud->stop();
+            setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
+            if (readAloudPanel)
+                readAloudPanel->setStatusText(tr("Leitura interrompida: o texto mudou."));
+        });
+    }
 
     // Painel de Ajuda: janela própria (não modal, sem auto-fechar) — fica
     // aberta lado a lado com o app. Clicar em "?" de novo só traz pra frente.
@@ -4239,6 +4332,54 @@ void MainWindow::positionReadModeHotzones()
                                      6, editorContainer->height());
         readModeHotLeft->raise();
     }
+}
+
+void MainWindow::readAloudSelectionOrFromCursor()
+{
+    if (!editor) return;
+    // Botão e popup são "toggle": clicar de novo durante a leitura para. Sem
+    // isso o gesto natural de "clicar pra calar a boca" reiniciaria a leitura.
+    if (readAloud && readAloud->isSpeaking()) {
+        CrashLogger::log("readAloud toggle: parando");
+        readAloud->stop();
+        setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
+        if (readAloudPanel) readAloudPanel->hide();
+        return;
+    }
+    const QTextCursor cur = editor->textCursor();
+    if (cur.hasSelection()) startReadAloud(cur.selectionStart(), cur.selectionEnd());
+    else startReadAloud(cur.position(), -1);
+}
+
+void MainWindow::startReadAloud(int start, int end)
+{
+    if (!readAloud || !readAloud->isAvailable() || !editor) return;
+
+    // Idioma acompanha o do corretor: ouvir a própria prosa com a voz de outro
+    // idioma não revisa nada. Sem voz instalada pro idioma, o controller
+    // mantém a do sistema em vez de emudecer.
+    QString lang = projectModel ? projectModel->spellLanguage() : QString();
+    if (lang.isEmpty()) lang = QStringLiteral("pt_BR");
+    readAloud->setLanguageCode(lang);
+
+    if (readAloudPanel) {
+        readAloudPanel->setStatusText(QString());
+        // Ancora na linha do cursor, não numa barra: a leitura nasce de um
+        // ponto do texto, e o painel perto dele é o que o olho procura.
+        QRect anchor = editor->cursorRect();
+        anchor.moveTopLeft(editor->viewport()->mapToGlobal(anchor.topLeft()));
+        readAloudPanel->showNear(anchor, Qt::TopEdge);
+        if (!readAloud->supportsWordProgress()) {
+            readAloudPanel->setStatusText(
+                tr("Esta voz não marca palavra por palavra — o realce acompanha a frase."));
+        }
+    }
+
+    readAloudDocChars = editor->document()->characterCount();
+    CrashLogger::log(QStringLiteral("readAloud inicia start=%1 end=%2 idioma=%3 docChars=%4")
+                     .arg(start).arg(end).arg(lang).arg(readAloudDocChars));
+    if (end >= 0) readAloud->speakRange(editor->document(), start, end);
+    else readAloud->speakDocument(editor->document(), start);
 }
 
 void MainWindow::setEditorSelectionsLayer(const QString& layer,

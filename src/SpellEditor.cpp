@@ -247,6 +247,27 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
         menu->insertSeparator(stdAnchor);
     }
 
+    // "Ler em voz alta" — ferramenta de revisão: ouvir o texto denuncia frase
+    // truncada e diálogo que não soa natural. Com seleção lê só o trecho; sem
+    // seleção, lê do clique até o fim (não do começo do documento — quem está
+    // revisando quer continuar de onde parou).
+    {
+        QTextCursor sel = textCursor();
+        const bool hasSel = sel.hasSelection();
+        const int start = hasSel ? sel.selectionStart()
+                                 : cursorForPosition(event->pos()).position();
+        const int end = hasSel ? sel.selectionEnd() : -1;
+
+        QAction* readAct = new QAction(
+            hasSel ? tr("Ler seleção em voz alta") : tr("Ler em voz alta a partir daqui"),
+            menu);
+        connect(readAct, &QAction::triggered, this, [this, start, end]() {
+            emit readAloudRequested(start, end);
+        });
+        menu->insertAction(stdAnchor, readAct);
+        menu->insertSeparator(stdAnchor);
+    }
+
     menu->exec(event->globalPos());
     delete menu;
 }

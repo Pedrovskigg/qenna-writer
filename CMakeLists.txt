@@ -238,6 +238,10 @@ qt_add_executable(qenna-writer
     src/RenameService.h
     src/RenameDialog.cpp
     src/RenameDialog.h
+    src/ReadAloudController.cpp
+    src/ReadAloudController.h
+    src/ReadAloudPanel.cpp
+    src/ReadAloudPanel.h
     src/Thesaurus.cpp
     src/Thesaurus.h
     src/ThesaurusPopup.cpp
@@ -384,4 +388,38 @@ foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
         COMMENT "Sincronizando assets de runtime: ${asset_dir}"
         VERBATIM)
 endforeach()
+# O módulo de voz (Ler em voz alta) não existia quando as DLLs do Qt foram
+# copiadas à mão pra pasta de build, e plugin que falta não dá erro de link:
+# o app abre e a feature simplesmente não aparece. Copiar aqui garante que
+# build limpa e instalador saiam com ela — mesmo problema que já mordeu com
+# assets de tema ficando pra trás na release.
+if(WIN32)
+    get_target_property(_qt_tts_dll Qt6::TextToSpeech IMPORTED_LOCATION_RELEASE)
+    if(NOT _qt_tts_dll)
+        get_target_property(_qt_tts_dll Qt6::TextToSpeech IMPORTED_LOCATION)
+    endif()
+    if(_qt_tts_dll AND EXISTS "${_qt_tts_dll}")
+        add_custom_command(TARGET sync-runtime-assets POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${_qt_tts_dll}" "$<TARGET_FILE_DIR:qenna-writer>/"
+            COMMENT "Sincronizando runtime de voz: Qt6TextToSpeech"
+            VERBATIM)
+    endif()
+    # Plugin SAPI: sem ele o QTextToSpeech nasce em estado Error e a feature
+    # se desliga sozinha.
+    get_target_property(_qt_bin Qt6::qmake IMPORTED_LOCATION)
+    if(_qt_bin)
+        get_filename_component(_qt_bin_dir "${_qt_bin}" DIRECTORY)
+        set(_qt_tts_plugin "${_qt_bin_dir}/../plugins/texttospeech/qtexttospeech_sapi.dll")
+        if(EXISTS "${_qt_tts_plugin}")
+            add_custom_command(TARGET sync-runtime-assets POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${_qt_tts_plugin}"
+                        "$<TARGET_FILE_DIR:qenna-writer>/texttospeech/"
+                COMMENT "Sincronizando runtime de voz: plugin SAPI"
+                VERBATIM)
+        endif()
+    endif()
+endif()
+
 add_dependencies(sync-runtime-assets qenna-writer)

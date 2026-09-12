@@ -129,6 +129,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     , underlineButton(makeIconButton(this))
     , strikethroughButton(makeIconButton(this))
     , statisticsButton(makeIconButton(this))
+    , readAloudButton(makeIconButton(this))
     , readModeButton(makeIconButton(this))
     , focusButton(makeIconButton(this))
     , searchButton(makeIconButton(this))
@@ -247,6 +248,11 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     bindIcon(statisticsButton, QStringLiteral("stats-chart.svg"));
     statisticsButton->setToolTip(tr("Estatísticas"));
     connect(statisticsButton, &QToolButton::clicked, this, &TopToolbar::statisticsRequested);
+
+    readAloudButton->setObjectName(QStringLiteral("ttbTool"));
+    bindIcon(readAloudButton, QStringLiteral("read-aloud.svg"));
+    readAloudButton->setToolTip(tr("Ler em voz alta a seleção"));
+    connect(readAloudButton, &QToolButton::clicked, this, &TopToolbar::readAloudRequested);
 
     // Editor focado (distraction-free). Checkable de proposito: o destaque de
     // "ligado" na barra e o unico indicativo de que o modo esta ativo, ja que
@@ -444,7 +450,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     m_squareButtons = {
         homeButton, newProjectButton, openProjectButton, saveProjectButton,
         exportButton, helpButton, boldButton, italicButton, underlineButton,
-        strikethroughButton, statisticsButton, readModeButton, focusButton,
+        strikethroughButton, statisticsButton, readAloudButton, readModeButton, focusButton,
         searchButton, alignButton, imageButton, reminderButton,
         immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
         refMenuButton, pensarioButton, construtorButton, miraButton,
@@ -499,6 +505,7 @@ void TopToolbar::buildGroups()
         { QStringLiteral("pensario"),       pensarioButton },
         { QStringLiteral("refMenu"),        refMenuButton },
         { QStringLiteral("statistics"),     statisticsButton },
+        { QStringLiteral("readAloud"),      readAloudButton },
         { QStringLiteral("mira"),           miraButton },
         { QStringLiteral("themePanel"),     themePanelButton },
         { QStringLiteral("settings"),       settingsButton },
@@ -518,7 +525,7 @@ QHash<QString, QStringList> TopToolbar::defaultButtonLayout() const
                                        QStringLiteral("italic"), QStringLiteral("underline"),
                                        QStringLiteral("strikethrough"), QStringLiteral("image") } },
         { QStringLiteral("tools"),   { QStringLiteral("readMode"), QStringLiteral("focus"),
-                                       QStringLiteral("search") } },
+                                       QStringLiteral("search"), QStringLiteral("readAloud") } },
         { QStringLiteral("media"),   { QStringLiteral("reminder"), QStringLiteral("immersiveSound") } },
         { QStringLiteral("worldbuilding"), { QStringLiteral("construtor"), QStringLiteral("pensario"),
                                              QStringLiteral("refMenu"), QStringLiteral("statistics"),
@@ -586,10 +593,24 @@ QHash<QString, QStringList> TopToolbar::loadButtonLayout() const
         }
         parsed.insert(gid, ids);
     }
-    // Todo botao conhecido precisa estar em exatamente um grupo. Se a versao
-    // nova do app ganhou um botao que o layout salvo nao tem, o salvo e velho
-    // demais pra ser reaproveitado sem sumir com o botao novo.
-    if (seen.size() != m_buttonsById.size()) return def;
+    // Todo botao conhecido precisa estar em exatamente um grupo. Quando uma
+    // versao nova do app ganha um botao, o layout salvo nao o conhece —
+    // antes isso jogava a organizacao inteira fora e voltava pro padrao.
+    // Perder a barra que o usuario arrumou a mao toda vez que nasce uma
+    // feature e caro demais: agora o botao que falta e ENCAIXADO no grupo
+    // onde o padrao o coloca, e o resto da organizacao fica de pe.
+    if (seen.size() != m_buttonsById.size()) {
+        for (auto it = def.constBegin(); it != def.constEnd(); ++it) {
+            for (const QString& id : it.value()) {
+                if (seen.contains(id) || !m_buttonsById.contains(id)) continue;
+                parsed[it.key()].append(id);
+                seen.insert(id);
+            }
+        }
+        // Botao conhecido que nem o padrao posiciona (descuido de quem
+        // adicionou): ai sim recomeca, senao ele ficaria orfao e invisivel.
+        if (seen.size() != m_buttonsById.size()) return def;
+    }
     for (const QString& gid : m_groupWidgets.keys())
         if (!parsed.contains(gid)) parsed.insert(gid, QStringList());
     return parsed;
@@ -1315,6 +1336,13 @@ QRect TopToolbar::immersiveSoundButtonGlobalRect() const
     if (!immersiveSoundButton) return QRect();
     const QPoint topLeft = immersiveSoundButton->mapToGlobal(QPoint(0, 0));
     return QRect(topLeft, immersiveSoundButton->size());
+}
+
+QRect TopToolbar::readAloudButtonGlobalRect() const
+{
+    if (!readAloudButton) return QRect();
+    const QPoint topLeft = readAloudButton->mapToGlobal(QPoint(0, 0));
+    return QRect(topLeft, readAloudButton->size());
 }
 
 QRect TopToolbar::reminderButtonGlobalRect() const

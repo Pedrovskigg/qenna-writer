@@ -59,6 +59,7 @@ public:
     // x em coords locais da TopToolbar; passe -1 para retomar o centro geométrico.
 
     QRect immersiveSoundButtonGlobalRect() const;
+    QRect readAloudButtonGlobalRect() const;
     QRect reminderButtonGlobalRect() const;
     QRect helpButtonGlobalRect() const;
 
@@ -110,6 +111,9 @@ signals:
     void alignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope);
     // Abre o painel de Estatísticas (personagens/manuscrito).
     void statisticsRequested();
+    // Lê em voz alta: o trecho selecionado, ou do cursor até o fim se não
+    // houver seleção. Quem decide é a MainWindow, que enxerga o editor.
+    void readAloudRequested();
     // Placeholders — ainda sem implementação
     void readModeToggled(bool enabled);
     void searchRequested();
@@ -130,6 +134,7 @@ private:
     QToolButton *underlineButton;
     QToolButton *strikethroughButton;
     QToolButton *statisticsButton;
+    QToolButton *readAloudButton;
     QToolButton *readModeButton;
     QToolButton *focusButton;
     QToolButton *searchButton;
