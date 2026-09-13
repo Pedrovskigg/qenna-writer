@@ -340,6 +340,8 @@ qt_add_translations(qenna-writer
         translations/qenna_pt_BR.ts
         translations/qenna_en.ts
         translations/qenna_es.ts
+        translations/qenna_it.ts
+        translations/qenna_fr.ts
     SOURCE_TARGETS qenna-writer
 )
 

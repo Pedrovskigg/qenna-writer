@@ -55,6 +55,9 @@ void GeoData::load()
 
     QSettings qs;
     const QString uiLang = qs.value(QStringLiteral("app/language")).toString();
+    // O Natural Earth traz o nome em vários idiomas (NAME_ES, NAME_IT...).
+    // Sem preferência gravada, o código-fonte é pt-BR.
+    const QString langSuffix = uiLang.isEmpty() ? QStringLiteral("pt") : uiLang.left(2).toLower();
 
     // ---------------- Países (fronteiras) ----------------
     QFile cf(QStringLiteral(":/geo/countries.geojson"));
@@ -65,14 +68,11 @@ void GeoData::load()
             const QJsonObject props = f.value(QStringLiteral("properties")).toObject();
             Country c;
             c.nameEn = props.value(QStringLiteral("NAME")).toString();
-            if (uiLang == QStringLiteral("en")) {
+            if (langSuffix == QStringLiteral("en")) {
                 c.name = c.nameEn;
-            } else if (uiLang == QStringLiteral("es")) {
-                const QString es = props.value(QStringLiteral("NAME_ES")).toString();
-                c.name = es.isEmpty() ? c.nameEn : es;
             } else {
-                const QString pt = props.value(QStringLiteral("NAME_PT")).toString();
-                c.name = pt.isEmpty() ? c.nameEn : pt;
+                const QString local = props.value(QStringLiteral("NAME_") + langSuffix.toUpper()).toString();
+                c.name = local.isEmpty() ? c.nameEn : local;
             }
             c.iso = props.value(QStringLiteral("ISO_A2")).toString();
             c.labelLon = props.value(QStringLiteral("LABEL_X")).toDouble();
@@ -92,14 +92,11 @@ void GeoData::load()
             const QJsonObject props = f.value(QStringLiteral("properties")).toObject();
             State st;
             const QString stateEn = props.value(QStringLiteral("name")).toString();
-            if (uiLang == QStringLiteral("en")) {
+            if (langSuffix == QStringLiteral("en")) {
                 st.name = stateEn;
-            } else if (uiLang == QStringLiteral("es")) {
-                const QString es = props.value(QStringLiteral("name_es")).toString();
-                st.name = es.isEmpty() ? stateEn : es;
             } else {
-                const QString pt = props.value(QStringLiteral("name_pt")).toString();
-                st.name = pt.isEmpty() ? stateEn : pt;
+                const QString local = props.value(QStringLiteral("name_") + langSuffix).toString();
+                st.name = local.isEmpty() ? stateEn : local;
             }
             st.country = props.value(QStringLiteral("admin")).toString();
             st.rings = extractRings(f.value(QStringLiteral("geometry")).toObject());

@@ -26,9 +26,8 @@ namespace {
 QLocale statsLocale()
 {
     QSettings qs;
-    const bool en = qs.value(QStringLiteral("app/language")).toString() == QStringLiteral("en");
-    return en ? QLocale(QLocale::English, QLocale::UnitedStates)
-              : QLocale(QLocale::Portuguese, QLocale::Brazil);
+    const QString lang = qs.value(QStringLiteral("app/language")).toString();
+    return lang.isEmpty() ? QLocale(QLocale::Portuguese, QLocale::Brazil) : QLocale(lang);
 }
 
 } // namespace

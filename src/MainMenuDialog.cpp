@@ -1731,6 +1731,8 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     m_langCombo->addItem(tr("Português (BR)"), QStringLiteral("pt_BR"));
     m_langCombo->addItem(tr("English"),        QStringLiteral("en"));
     m_langCombo->addItem(tr("Español"),        QStringLiteral("es"));
+    m_langCombo->addItem(QStringLiteral("Italiano"), QStringLiteral("it"));
+    m_langCombo->addItem(QStringLiteral("Français"), QStringLiteral("fr"));
     {
         QSettings qs;
         const QString cur = qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString();

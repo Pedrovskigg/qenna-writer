@@ -151,3 +151,68 @@ primeiro, e só then buscar `<source>`/`<translation>` dentro de cada bloco.
 - Classes locais definidas dentro de `.cpp` (padrão comum neste projeto pra
   widgets pequenos) — checar se têm `Q_OBJECT`. Se não tiverem, qualquer `tr()`
   solto ali dentro é suspeito (ver bug #2).
+
+## Italiano e francês (2026-09-13)
+
+`translations/qenna_it.ts` e `translations/qenna_fr.ts`, traduzidos do português
+(o EN serviu só de referência). O combo do Main Menu lista "Italiano" e
+"Français" como texto fixo, sem `tr()`: nome de idioma no seletor é sempre o
+nome nativo, e o mesmo "Italiano" em `QObject` (lista de idiomas do mapa)
+precisa virar "Italien" no francês.
+
+**Registro:** italiano usa *tu*; francês usa *vous*. Botões no italiano em
+imperativo ("Salva"), no francês em infinitivo ("Enregistrer"). No francês, o
+espaço antes de `: ; ? ! »` é inquebrável (U+00A0).
+
+**Termos de marca:** Pensário → *Pensarium* e Lousa → *Board* nos dois idiomas
+(`la Board` no italiano, `le Board` / `les Boards` no francês).
+
+| PT | IT | FR |
+|----|----|----|
+| Gaveta | Cassetto | Tiroir |
+| Construtor | Costruttore | Constructeur |
+| Criador / Explorador de Mundos | Creatore / Esploratore di Mondi | Créateur / Explorateur de Mondes |
+| Manuscrito | Manoscritto | Manuscrit |
+| Menu de Referência | Menu di Riferimento | Menu de Référence |
+| Help Panel | Pannello Guida | Panneau d'aide |
+| Marcador | Marcatore | Marqueur |
+| Cenário (elemento) | Ambientazione | Lieu |
+| Vínculo | Legame | Lien |
+| Variação | Variante | Variante |
+| Linha do tempo / Timeline | Timeline | Chronologie |
+| Trilho / Ramificações / Espiral | Traccia / Rami / Spirale | Piste / Branches / Spirale |
+| Narrativa / História (eixos) | Narrativa / Backstory | Narration / Passé |
+| Marcador temporal | riferimento temporale | repère temporel |
+| Estante / Prateleira / Vitrine | Scaffale / Libreria / Vetrina | Étagère / Rayonnage / Vitrine |
+| Meta diária / streak / folga | Obiettivo giornaliero / serie / pausa | Objectif quotidien / série / jour de repos |
+| Lixeira | Cestino | Corbeille |
+| Modo Foco / Editor Focado | Modalità focus / Editor focalizzato | Mode concentration / Éditeur épuré |
+| Bíblia do universo | Bibbia dell'universo | Bible de l'univers |
+| Manuscrito para submissão | Manoscritto per l'invio | Manuscrit de soumission |
+| Backup | Backup | Sauvegarde |
+| Assistente de IA (feminino) | l'assistente IA | l'assistante IA |
+
+**Quotes do Main Menu:** reescritas com os títulos de livro da edição local de
+cada país ("Il Signore degli Anelli", "Le Seigneur des anneaux", "Il Trono di
+Spade", "Le Trône de fer"...), mantendo as piadas internas (Tony Silva, os "404
+quotes").
+
+**Fora dos `.ts`, mas dependente de idioma** (ajustado junto):
+- Formatação de data/número (`statsLocale()` em `WordCountPanel`,
+  `WordCounterCalendar`, `WritingStatsDialog`, `ChapterStatsDialog`): agora
+  `QLocale(app/language)`. Antes, qualquer idioma que não fosse `en` caía em
+  pt-BR (o espanhol mostrava mês em português).
+- Nomes de países/estados no mapa (`GeoData.cpp`): lê `NAME_<IDIOMA>` do Natural
+  Earth genericamente (IT e FR já vinham no GeoJSON).
+- Dicionário de sinônimos (`Thesaurus.cpp`): `it_IT/th_it_IT_v2.dat` e
+  `fr_FR/dictionaries/thes_fr.dat` do repositório LibreOffice (ambos UTF-8).
+- Detector de Repetições: listas de palavras funcionais e pronomes IT/FR, e
+  elisão ("l'uomo", "d'une") separada antes da contagem. O acúmulo de
+  advérbios (-mente/-ment) tem regra própria, medida contra os dicionários do
+  LibreOffice (ver `adverbioItalianoOuFrances` em `MainWindow.cpp`).
+- EPUB: `dc:language`, `xml:lang` e os títulos "Índice"/"Capa" seguem o
+  idioma do corretor do projeto (antes era `pt-BR` fixo em qualquer idioma).
+
+**Validação usada:** placeholders `%1`/`%n`, tags HTML, atalhos (Ctrl/Shift/F*),
+quebras de linha e espaços nas pontas iguais ao original; duas formas de
+plural; varredura de português esquecido e de "Pizarra/Lavagna/Tableau".

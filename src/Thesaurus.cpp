@@ -20,6 +20,8 @@ const RemoteEntry kRemotes[] = {
     { "pt_BR", "pt_BR/th_pt_BR.dat" },
     { "en_US", "en/th_en_US_v2.dat" },
     { "es_ES", "es/th_es_v2.dat" },
+    { "it_IT", "it_IT/th_it_IT_v2.dat" },
+    { "fr_FR", "fr_FR/dictionaries/thes_fr.dat" },
 };
 
 const char* kRemoteBase = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/";
