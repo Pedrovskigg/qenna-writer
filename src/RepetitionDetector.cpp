@@ -57,6 +57,42 @@ const char* const kStopEs[] = {
     "sí","también","solo","entonces","ahora","después","antes","aquí","allí","así","bien",
     "mal","quizás","casi","siempre","nunca","jamás","mientras","durante",
 };
+// Italiano e francês: artigo e preposição elididos ("l'uomo", "d'une") são
+// separados da palavra antes de chegar aqui — ver elidedPrefixLength().
+const char* const kStopIt[] = {
+    "il","lo","la","i","gli","le","un","uno","una","di","del","dello","della","dei","degli",
+    "delle","a","al","allo","alla","ai","agli","alle","da","dal","dallo","dalla","dai",
+    "dagli","dalle","in","nel","nello","nella","nei","negli","nelle","su","sul","sullo",
+    "sulla","sui","sugli","sulle","con","per","tra","fra","senza","sotto","sopra","dopo",
+    "prima","verso","contro","che","chi","cui","quale","quali","quando","dove","come",
+    "perché","poiché","ma","però","tuttavia","eppure","o","oppure","né","se","già","ancora",
+    "più","meno","molto","molta","molti","molte","poco","poca","pochi","poche","tanto",
+    "tanta","tanti","tante","tutto","tutta","tutti","tutte","altro","altra","altri","altre",
+    "stesso","stessa","stessi","stesse","questo","questa","questi","queste","quello",
+    "quella","quelli","quelle","ciò","mi","ti","si","ci","vi","gli","ne","lo","mio","mia",
+    "miei","mie","tuo","tua","tuoi","tue","suo","sua","suoi","sue","nostro","nostra",
+    "vostro","vostra","loro","essere","avere","stare","era","erano","fu","furono","sia",
+    "siano","è","sono","stava","stavano","ha","hanno","aveva","avevano","non","sì","anche",
+    "solo","soltanto","allora","ora","adesso","poi","qui","qua","lì","là","così","bene",
+    "male","forse","quasi","sempre","mai","mentre","durante","qualche","qualcuno",
+    "qualcosa","niente","nulla","ogni","qualsiasi","dietro","davanti","dentro","fuori",
+    "vicino","lontano","insieme",
+};
+const char* const kStopFr[] = {
+    "le","la","les","un","une","des","de","du","au","aux","en","dans","par","pour","avec",
+    "sans","sous","sur","entre","jusque","depuis","après","avant","devant","derrière",
+    "contre","vers","chez","que","qui","quoi","dont","quel","quelle","quels","quelles",
+    "quand","où","comme","parce","car","mais","pourtant","cependant","ou","ni","si","déjà",
+    "encore","plus","moins","très","trop","peu","beaucoup","tant","tout","toute","tous",
+    "toutes","autre","autres","même","mêmes","ce","cet","cette","ces","cela","ça","ceci",
+    "celui","celle","ceux","celles","me","te","se","lui","nous","vous","leur","leurs","mon",
+    "ma","mes","ton","ta","tes","son","sa","ses","notre","nos","votre","vos","être","avoir",
+    "était","étaient","fut","furent","soit","soient","est","sont","avait","avaient","a",
+    "ont","ne","pas","non","oui","aussi","seulement","alors","maintenant","puis","ensuite",
+    "ici","là","ainsi","bien","mal","peut-être","presque","toujours","jamais","pendant",
+    "tandis","quelque","quelques","quelqu'un","rien","chaque","aucun",
+    "aucune","dedans","dehors","près","loin","ensemble","y",
+};
 
 // Sem acento e em minúsculas, pra comparar "papéis" com "papel".
 QString simplify(const QString& w)
@@ -83,6 +119,26 @@ const char* const kPronEn[] = {
 const char* const kPronEs[] = {
     "yo","tú","él","ella","nosotros","vosotros","ellos","ellas","usted","ustedes",
 };
+const char* const kPronIt[] = {
+    "io","tu","lui","lei","noi","voi","loro","egli","ella","essi","esse",
+};
+// "il/elle" repetido é o vício; "on" entra porque narração em francês abusa dele.
+const char* const kPronFr[] = {
+    "je","tu","il","elle","nous","vous","ils","elles","on",
+};
+
+// Elisão do italiano e do francês: "l'uomo", "dell'anima", "d'une", "qu'il".
+// Devolve quantos caracteres pular pra chegar na palavra de verdade — sem
+// isso "l'homme" e "homme" seriam palavras diferentes e a repetição escaparia.
+int elidedPrefixLength(const QString& lowerWord)
+{
+    for (int i = 0; i < lowerWord.size() && i <= 5; ++i) {
+        const QChar c = lowerWord.at(i);
+        if (c == QLatin1Char('\'') || c == QChar(0x2019))
+            return (i + 1 < lowerWord.size()) ? i + 1 : 0;
+    }
+    return 0;
+}
 
 QSet<QString> makeSet(const char* const* words, int count)
 {
@@ -117,6 +173,12 @@ void RepetitionDetector::setLanguage(const QString& langCode)
     } else if (lang == QLatin1String("es")) {
         m_stopWords = makeSet(kStopEs, int(std::size(kStopEs)));
         m_pronouns  = makeSet(kPronEs, int(std::size(kPronEs)));
+    } else if (lang == QLatin1String("it")) {
+        m_stopWords = makeSet(kStopIt, int(std::size(kStopIt)));
+        m_pronouns  = makeSet(kPronIt, int(std::size(kPronIt)));
+    } else if (lang == QLatin1String("fr")) {
+        m_stopWords = makeSet(kStopFr, int(std::size(kStopFr)));
+        m_pronouns  = makeSet(kPronFr, int(std::size(kPronFr)));
     } else {
         m_stopWords = makeSet(kStopPt, int(std::size(kStopPt)));
         m_pronouns  = makeSet(kPronPt, int(std::size(kPronPt)));
@@ -139,26 +201,43 @@ QVector<RepetitionDetector::Group> RepetitionDetector::analyze(const QString& pl
     QVector<Group> resultado;
     if (plainText.isEmpty()) return resultado;
 
-    struct Token { int pos; int len; QString word; QString key; int index; };
+    struct Token { int pos; int len; QString word; QString key; int index; int paragraph; };
     QVector<Token> tokens;
     // Índice em PALAVRAS (todas, inclusive as ignoradas): a distância que o
     // leitor percebe é medida em palavras lidas, não em caracteres — um trecho
     // com palavras longas não "afasta" a repetição.
     int wordIndex = 0;
+    // Parágrafo de cada palavra. toPlainText() do documento separa blocos com
+    // '\n'; selectedText() usaria U+2029 — aceitar os dois.
+    int paragrafo = 0;
+    int varridoAte = 0;
 
     auto it = wordRe().globalMatch(plainText);
     while (it.hasNext()) {
         const auto m = it.next();
-        const QString bruto = m.captured();
-        const QString lower = bruto.toLower();
+        const int inicio = int(m.capturedStart());
+        for (int c = varridoAte; c < inicio; ++c) {
+            const QChar ch = plainText.at(c);
+            if (ch == QLatin1Char('\n') || ch == QChar::ParagraphSeparator) ++paragrafo;
+        }
+        varridoAte = int(m.capturedEnd());
+
+        QString bruto = m.captured();
+        int pos = inicio;
         const int idxAtual = wordIndex++;
+        if (m_lang == QLatin1String("it") || m_lang == QLatin1String("fr")) {
+            const int corte = elidedPrefixLength(bruto.toLower());
+            bruto = bruto.mid(corte);
+            pos += corte;
+        }
+        const QString lower = bruto.toLower();
         if (isIgnored(lower)) continue;
 
         // A chave é a própria palavra, sem acento pra "papéis" não escapar de
         // "papeis" digitado sem acento — mas SEM reduzir a raiz: flexão
         // diferente é palavra diferente aqui, por decisão do usuário.
-        tokens.append({ int(m.capturedStart()), int(m.capturedLength()), bruto,
-                        simplify(lower), idxAtual });
+        tokens.append({ pos, int(bruto.size()), bruto,
+                        simplify(lower), idxAtual, paragrafo });
     }
     if (tokens.size() < 2) return resultado;
 
@@ -177,9 +256,12 @@ QVector<RepetitionDetector::Group> RepetitionDetector::analyze(const QString& pl
         // olhar a primeira pra saber se o grupo é de pronome.
         const int janela = isPronoun(tokens[idxs.first()].word.toLower())
                                ? m_pronounProximity : m_proximity;
+        const int janelaCruzada = qMin(janela, kCrossParagraphProximity);
         for (int i = 1; i < idxs.size(); ++i) {
-            const int gap = tokens[idxs[i]].index - tokens[idxs[i - 1]].index;
-            if (gap <= janela) {
+            const Token& a = tokens[idxs[i - 1]];
+            const Token& b = tokens[idxs[i]];
+            const int gap = b.index - a.index;
+            if (gap <= (a.paragraph == b.paragraph ? janela : janelaCruzada)) {
                 proximas.insert(idxs[i - 1]);
                 proximas.insert(idxs[i]);
                 menorGap = qMin(menorGap, gap);
@@ -225,20 +307,23 @@ QVector<RepetitionDetector::Group> RepetitionDetector::analyze(const QString& pl
         }
         // Janela dobrada: o vício se mede por parágrafo, não por frase. Dois
         // "-mente" na mesma frase são raros; o que empesta é o punhado deles
-        // espalhado pelo mesmo fôlego de leitura.
+        // espalhado pelo mesmo fôlego de leitura. E o fôlego acaba na quebra
+        // de parágrafo: advérbio de um parágrafo não empilha com o do próximo.
         const int janela = m_proximity * 2;
         int i = 0;
         while (i < adverbios.size()) {
             int j = i;
             while (j + 1 < adverbios.size()
+                   && tokens[adverbios[j + 1]].paragraph == tokens[adverbios[j]].paragraph
                    && tokens[adverbios[j + 1]].index - tokens[adverbios[j]].index <= janela) {
                 ++j;
             }
             if (j > i) {   // dois ou mais no mesmo trecho
                 Group g;
                 g.kind = AdverbPileup;
-                g.stem = QStringLiteral("-mente");
-                g.label = QStringLiteral("-mente");
+                g.stem = (m_lang == QLatin1String("fr")) ? QStringLiteral("-ment")
+                                                         : QStringLiteral("-mente");
+                g.label = g.stem;
                 g.closestGap = INT_MAX;
                 int anterior = -1;
                 for (int k = i; k <= j; ++k) {

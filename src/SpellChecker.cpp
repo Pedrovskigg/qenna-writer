@@ -2,15 +2,41 @@
 
 #include <QVector>
 
+#include <memory>
+
 #include <hunspell.hxx>
 
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QSaveFile>
+#include <QSettings>
+#include <QStandardPaths>
 #include <QTextStream>
 
 namespace {
+
+// Dicionários que o app sabe baixar do repositório do LibreOffice (o mesmo de
+// onde saíram os embarcados e o thesaurus). Os nomes não seguem padrão — o
+// francês mora numa subpasta e não tem região —, então cada um é mapeado na
+// mão. Os três embarcados ficam de fora: já vêm com o app.
+struct RemoteDict { const char* lang; const char* aff; const char* dic; };
+const RemoteDict kRemoteDicts[] = {
+    { "it_IT", "it_IT/it_IT.aff", "it_IT/it_IT.dic" },
+    { "fr_FR", "fr_FR/dictionaries/fr.aff", "fr_FR/dictionaries/fr.dic" },
+};
+const char* kRemoteDictBase = "https://raw.githubusercontent.com/LibreOffice/dictionaries/master/";
+
+const RemoteDict* remoteDictFor(const QString& code)
+{
+    for (const RemoteDict& r : kRemoteDicts)
+        if (code == QLatin1String(r.lang)) return &r;
+    return nullptr;
+}
 
 QString hunspellPathString(const QString& path)
 {
@@ -46,12 +72,130 @@ SpellChecker::~SpellChecker()
     unloadHunspell();
 }
 
+QString SpellChecker::dictionaryForAppLanguage()
+{
+    const QString app = QSettings().value(QStringLiteral("app/language")).toString();
+    const QString lang = app.left(2).toLower();
+    if (lang == QLatin1String("pt")) return QStringLiteral("pt_BR");
+    if (lang == QLatin1String("es")) return QStringLiteral("es_ES");
+    if (lang == QLatin1String("it")) return QStringLiteral("it_IT");
+    if (lang == QLatin1String("fr")) return QStringLiteral("fr_FR");
+    // Sem preferência gravada, o main.cpp resolve a interface para inglês.
+    return QStringLiteral("en_US");
+}
+
+QString SpellChecker::resolveLanguage(const QString& setting)
+{
+    return setting == followAppValue() ? dictionaryForAppLanguage() : setting;
+}
+
+QString SpellChecker::labelForLanguage(const QString& code)
+{
+    return labelFor(code);
+}
+
+QString SpellChecker::downloadedSpellDir()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
+         + QStringLiteral("/spell");
+}
+
+QString SpellChecker::dictionaryDir(const QString& code)
+{
+    if (code.isEmpty()) return QString();
+    // Embarcado primeiro: o baixado nunca substitui o que veio com o app.
+    for (const QString& base : { assetsSpellDir(), downloadedSpellDir() }) {
+        if (base.isEmpty()) continue;
+        const QString dir = base + QStringLiteral("/") + code;
+        if (QFile::exists(dir + QStringLiteral("/index.aff"))
+            && QFile::exists(dir + QStringLiteral("/index.dic")))
+            return dir;
+    }
+    return QString();
+}
+
+bool SpellChecker::isInstalled(const QString& code)
+{
+    return !dictionaryDir(code).isEmpty();
+}
+
+bool SpellChecker::isDownloadable(const QString& code)
+{
+    return remoteDictFor(code) != nullptr;
+}
+
 void SpellChecker::setLanguage(const QString& langCode)
 {
     if (m_lang == langCode) return;
     m_lang = langCode;
     loadHunspell();
+    // Idioma sem dicionário em disco que dá pra baixar: baixa e ativa sozinho.
+    // Até terminar, o corretor fica desligado (nada grifado) em vez de corrigir
+    // italiano com dicionário português.
+    if (!m_hunspell && !m_lang.isEmpty() && !isInstalled(m_lang) && isDownloadable(m_lang))
+        downloadDictionary(m_lang);
     emit changed();
+}
+
+void SpellChecker::downloadDictionary(const QString& code)
+{
+    const RemoteDict* remote = remoteDictFor(code);
+    if (!remote || m_downloadingLang == code) return;
+    m_downloadingLang = code;
+    if (!m_net) m_net = new QNetworkAccessManager(this);
+    emit dictionaryDownloadStarted(code);
+
+    // Dois arquivos; só grava quando os DOIS chegaram. Um .aff sem o .dic
+    // correspondente faria isInstalled() mentir e o download nunca mais rodar.
+    struct State { QByteArray aff, dic; int pending = 2; bool failed = false; QString error; };
+    auto state = std::make_shared<State>();
+
+    auto fetch = [this, code, state](const char* path, bool isAff) {
+        QNetworkRequest req{ QUrl(QLatin1String(kRemoteDictBase) + QLatin1String(path)) };
+        req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                         QNetworkRequest::NoLessSafeRedirectPolicy);
+        QNetworkReply* reply = m_net->get(req);
+        connect(reply, &QNetworkReply::finished, this, [this, code, state, reply, isAff]() {
+            reply->deleteLater();
+            if (reply->error() != QNetworkReply::NoError) {
+                state->failed = true;
+                state->error = reply->errorString();
+            } else {
+                (isAff ? state->aff : state->dic) = reply->readAll();
+            }
+            if (--state->pending > 0) return;
+
+            m_downloadingLang.clear();
+            if (!state->failed && (state->aff.isEmpty() || state->dic.isEmpty())) {
+                state->failed = true;
+                state->error = tr("Download vazio.");
+            }
+            if (!state->failed) {
+                const QString dir = downloadedSpellDir() + QStringLiteral("/") + code;
+                QDir().mkpath(dir);
+                // QSaveFile: download interrompido não deixa arquivo pela metade
+                // que depois seria carregado como se estivesse completo. O .dic
+                // vai por último — é ele que isInstalled() confere junto do .aff.
+                for (const auto& [name, bytes] : { std::pair{ QStringLiteral("index.aff"), state->aff },
+                                                   std::pair{ QStringLiteral("index.dic"), state->dic } }) {
+                    QSaveFile out(dir + QStringLiteral("/") + name);
+                    if (!out.open(QIODevice::WriteOnly) || out.write(bytes) != bytes.size()
+                        || !out.commit()) {
+                        state->failed = true;
+                        state->error = tr("Falha ao gravar o arquivo.");
+                        break;
+                    }
+                }
+            }
+            if (!state->failed && m_lang == code) {
+                loadHunspell();
+                emit changed();
+            }
+            emit dictionaryDownloadFinished(code, !state->failed, state->error);
+        });
+    };
+    fetch(remote->aff, true);
+    fetch(remote->dic, false);
 }
 
 void SpellChecker::setProjectRoot(const QString& root)
@@ -210,17 +354,19 @@ void SpellChecker::setGlossaryWords(const QSet<QString>& words)
 QList<QPair<QString, QString>> SpellChecker::availableLanguages()
 {
     QList<QPair<QString, QString>> result;
-    const QString spellDir = assetsSpellDir();
-    if (spellDir.isEmpty()) return result;
-    QDir d(spellDir);
-    const QStringList subdirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    for (const QString& sub : subdirs) {
-        const QString aff = d.absoluteFilePath(sub + QStringLiteral("/index.aff"));
-        const QString dic = d.absoluteFilePath(sub + QStringLiteral("/index.dic"));
-        if (QFile::exists(aff) && QFile::exists(dic)) {
+    QStringList vistos;
+    for (const QString& base : { assetsSpellDir(), downloadedSpellDir() }) {
+        if (base.isEmpty()) continue;
+        QDir d(base);
+        const QStringList subdirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QString& sub : subdirs) {
+            if (vistos.contains(sub) || !isInstalled(sub)) continue;
+            vistos.append(sub);
             result.append({sub, labelFor(sub)});
         }
     }
+    std::sort(result.begin(), result.end(),
+              [](const auto& a, const auto& b) { return a.first < b.first; });
     return result;
 }
 
@@ -229,16 +375,13 @@ void SpellChecker::loadHunspell()
     unloadHunspell();
     if (m_lang.isEmpty()) return;
 
-    const QString spellDir = assetsSpellDir();
-    if (spellDir.isEmpty()) return;
-
-    const QString affPath = spellDir + QStringLiteral("/") + m_lang + QStringLiteral("/index.aff");
-    const QString dicPath = spellDir + QStringLiteral("/") + m_lang + QStringLiteral("/index.dic");
-    if (!QFile::exists(affPath) || !QFile::exists(dicPath)) {
-        qWarning("SpellChecker: dictionary not found for '%s' at %s",
-                 qUtf8Printable(m_lang), qUtf8Printable(spellDir));
+    const QString dir = dictionaryDir(m_lang);
+    if (dir.isEmpty()) {
+        qWarning("SpellChecker: dictionary not found for '%s'", qUtf8Printable(m_lang));
         return;
     }
+    const QString affPath = dir + QStringLiteral("/index.aff");
+    const QString dicPath = dir + QStringLiteral("/index.dic");
 
     const QByteArray affBytes = hunspellPathString(affPath).toLocal8Bit();
     const QByteArray dicBytes = hunspellPathString(dicPath).toLocal8Bit();

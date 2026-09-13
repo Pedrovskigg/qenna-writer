@@ -66,6 +66,12 @@ public:
     void setPronounProximity(int words) { m_pronounProximity = words; }
     static constexpr int kPronounProximity = 12;
 
+    // Janela quando o par ATRAVESSA uma quebra de parágrafo. A quebra é pausa
+    // de leitura: "chuva" no fim de um parágrafo e no começo do outro ainda
+    // soa, mas 25 palavras depois, do outro lado da pausa, já não. Decidido em
+    // 2026-09-13 (opção "mista"): dentro do parágrafo vale a janela normal.
+    static constexpr int kCrossParagraphProximity = 10;
+
     // Decide se uma palavra é advérbio de modo. Injetado de fora porque a
     // resposta depende do dicionário do corretor (ver MainWindow): sem teste,
     // o acúmulo de advérbios simplesmente não é detectado — melhor não acusar

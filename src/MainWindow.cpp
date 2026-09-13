@@ -180,6 +180,63 @@
 #include "VariationBar.h"
 
 namespace {
+// Advérbio em -mente (italiano) ou -ment (francês), pergunta feita ao hunspell.
+// `w` já chega em minúsculas e com o sufixo certo.
+//
+// A regra do português (base existe no dicionário) não serve aqui, porque os
+// dois idiomas têm SUBSTANTIVOS com a mesma terminação e base real:
+// "département" = "départe" + ment, "sentiment" = "senti" + ment,
+// "demente"/"veemente" são adjetivos. A pista que separa os dois vem do próprio
+// dicionário: substantivo e adjetivo têm plural ("départements", "dementi"),
+// advérbio não tem. Não basta o plural existir — "completamenti" existe, mas é
+// plural de "completamento"; o que conta é o plural remontar à própria palavra.
+//
+// Medido contra os dicionários do LibreOffice em 2026-09-13 (1.931 raízes em
+// -ment aceitas sem nenhum substantivo; lista de controle com "moment",
+// "gouvernement", "enferment", "clemente", "esprimente"... 0 falsos).
+bool adverbioItalianoOuFrances(const SpellChecker* sc, const QString& w, const QString& lang2)
+{
+    if (w.contains(QLatin1Char('-')) || !sc->isCorrect(w)) return false;
+    const bool frances = lang2 == QLatin1String("fr");
+    const QString base = w.left(w.size() - (frances ? 4 : 5));
+
+    if (!frances) {
+        // Base com 4+ letras pelo mesmo motivo do português ("de"-mente,
+        // "se"-mente). "facilmente"/"regolarmente" perdem o -e do adjetivo.
+        if (base.size() < 4) return false;
+        if (sc->stemsOf(w.chopped(1) + QLatin1Char('i')).contains(w)) return false;
+        return sc->isCorrect(base)
+            || ((base.endsWith(QLatin1Char('l')) || base.endsWith(QLatin1Char('r')))
+                && sc->isCorrect(base + QLatin1Char('e')));
+    }
+
+    // "complètement" também é substantivo no dicionário ("les complètements"),
+    // mas no texto de ficção é o advérbio em praticamente 100% das vezes — e é
+    // um dos mais usados da língua. Exceção declarada em vez de regra frouxa.
+    if (w == QStringLiteral("complètement")) return true;
+    // Forma verbal: "enferment" (ils enferment) tem base "enfer", que existe.
+    for (const QString& raiz : sc->stemsOf(w)) {
+        if (raiz == w) continue;
+        if (raiz.endsWith(QLatin1String("er")) || raiz.endsWith(QLatin1String("ir"))
+            || raiz.endsWith(QLatin1String("re")))
+            return false;
+    }
+    if (sc->stemsOf(w + QLatin1Char('s')).contains(w)) return false;
+    // "évidemment" <- évident, "constamment" <- constant.
+    if (w.endsWith(QLatin1String("emment")) && sc->isCorrect(w.left(w.size() - 6) + QStringLiteral("ent")))
+        return true;
+    if (w.endsWith(QLatin1String("amment")) && sc->isCorrect(w.left(w.size() - 6) + QStringLiteral("ant")))
+        return true;
+    if (base.size() < 4) return false;
+    if (sc->isCorrect(base)) return true;
+    // "énormément" <- énorme, "profondément" <- profond, "assidûment" <- assidu.
+    if (base.endsWith(QChar(0x00E9)))
+        return sc->isCorrect(base.chopped(1) + QLatin1Char('e')) || sc->isCorrect(base.chopped(1));
+    if (base.endsWith(QChar(0x00FB)))
+        return sc->isCorrect(base.chopped(1) + QLatin1Char('u'));
+    return false;
+}
+
 // Documentos com mais de este número de caracteres têm rehighlight do spell
 // diferido por 400ms para não bloquear a UI ao abrir o doc.
 constexpr int kLargeDocCharThreshold = 30'000;
@@ -956,6 +1013,21 @@ void MainWindow::setupEditor()
     // Spell checker + highlighter. Idioma e custom dict são aplicados a partir
     // do projectModel quando ele carrega (onLoaded → applySpellLanguageFromModel).
     spellChecker = new SpellChecker(this);
+    // Dicionário que não vem com o app é baixado sozinho (ver
+    // SpellChecker::setLanguage); o aviso existe pra que o corretor calado
+    // durante o download não pareça defeito.
+    connect(spellChecker, &SpellChecker::dictionaryDownloadStarted, this, [this](const QString& code) {
+        showEditorToast(tr("Baixando dicionário: %1…").arg(SpellChecker::labelForLanguage(code)), 2500);
+    });
+    connect(spellChecker, &SpellChecker::dictionaryDownloadFinished, this,
+            [this](const QString& code, bool ok, const QString& error) {
+        if (ok) {
+            showEditorToast(tr("Dicionário pronto: %1").arg(SpellChecker::labelForLanguage(code)));
+        } else {
+            CrashLogger::log(QStringLiteral("SpellChecker: download de %1 falhou: %2").arg(code, error));
+            showEditorToast(tr("Não foi possível baixar o dicionário (%1)").arg(error), 4000);
+        }
+    });
     editor->setSpellChecker(spellChecker);
     spellHighlighter = new SpellHighlighter(editor->document(), spellChecker, this);
     // Durante o load de um doc novo, o highlight roda numa thread única e pode
@@ -4378,34 +4450,40 @@ void MainWindow::runRepetitionScan()
     if (lang.isEmpty()) lang = QStringLiteral("pt_BR");
     det.setLanguage(lang);
 
-    // ── Advérbio em -mente: só em português e espanhol, e só com corretor ──
-    // Nas duas línguas o advérbio é o adjetivo + "mente" ("lenta" ->
-    // "lentamente"), então a pergunta é se o dicionário reconhece a base. Testado
-    // contra o hunspell: 16/16 advérbios e 0/24 falsos em português, 6/6 e 0/8
-    // em espanhol.
+    // ── Advérbio em -mente/-ment: PT, ES, IT e FR, e só com corretor ──
+    // Nas quatro línguas o advérbio é o adjetivo + sufixo ("lenta" ->
+    // "lentamente", "lente" -> "lentement"), então a pergunta é se o dicionário
+    // reconhece a base. Testado contra o hunspell: 16/16 advérbios e 0/24 falsos
+    // em português, 6/6 e 0/8 em espanhol, 38/39 e 0/17 em italiano, 32/34 e
+    // 0/38 em francês. IT e FR têm regra própria — ver adverbioItalianoOuFrances.
     //
     // FORA de propósito:
     //  - inglês: o -ly forma advérbio ("quick" -> "quickly") E adjetivo
     //    ("friend" -> "friendly"); nenhuma regra olhando só a palavra separa os
     //    dois. Lá o detector fica só com repetição de palavra idêntica.
-    //  - idiomas ainda não testados (italiano, francês): o francês tem
-    //    substantivos em -ment ("moment", "appartement") e precisa ser medido
-    //    com o dicionário real antes de ligar.
     //  - corretor desligado: SpellChecker::isCorrect() responde VERDADEIRO para
     //    qualquer coisa, e a regra aceitaria "experi" como palavra.
     const QString lang2 = lang.left(2).toLower();
     SpellChecker* sc = editor->spellChecker();
+    const bool italianoOuFrances = lang2 == QLatin1String("it") || lang2 == QLatin1String("fr");
     if (sc && sc->isEnabled()
-        && (lang2 == QLatin1String("pt") || lang2 == QLatin1String("es"))) {
+        && (lang2 == QLatin1String("pt") || lang2 == QLatin1String("es") || italianoOuFrances)) {
         if (adverbCacheLang != sc->language()) {
             adverbCache.clear();
             adverbCacheLang = sc->language();
         }
-        det.setAdverbTest([this, sc](const QString& w) -> bool {
-            static const QString sufixo = QStringLiteral("mente");
+        det.setAdverbTest([this, sc, lang2, italianoOuFrances](const QString& w) -> bool {
+            const QString sufixo = lang2 == QLatin1String("fr") ? QStringLiteral("ment")
+                                                                : QStringLiteral("mente");
             if (!w.endsWith(sufixo)) return false;
             const auto emCache = adverbCache.constFind(w);
             if (emCache != adverbCache.constEnd()) return emCache.value();
+
+            if (italianoOuFrances) {
+                const bool r = adverbioItalianoOuFrances(sc, w, lang2);
+                adverbCache.insert(w, r);
+                return r;
+            }
 
             bool adverbio = false;
             // Forma verbal nunca é advérbio: "atormente" tem a base "ator", que
@@ -6509,6 +6587,9 @@ void MainWindow::onNewProjectRequested()
         detailsDlg.coverDataUrl());
     applyProjectRoot(fullPath);
     applyProjectTypeDefaults();
+    // Projeto novo não passa pelo loaded(): sem isto, o corretor ficaria no
+    // idioma do projeto que estava aberto antes.
+    applySpellLanguageFromModel();
 
     if (projectSaver && !projectSaver->saveProject()) {
         QMessageBox::warning(this, tr("Erro"),
@@ -6584,6 +6665,7 @@ void MainWindow::formalizeIdeaDraft()
 
     projectModel->setProjectName(nameDlg.projectName());
     projectModel->seedFromTemplate(QStringLiteral("blank"));
+    applySpellLanguageFromModel();
     projectModel->setProjectDetails(nameDlg.projectName(), QString(), QString(), QString(), QString());
 
     Manuscript m;
@@ -7083,14 +7165,13 @@ void MainWindow::onSettingsRequested()
             if (!projectModel || !spellChecker) return;
             CrashLogger::log(QStringLiteral("SettingsPanel::spellEnabledChanged enabled=%1").arg(enabled ? "sim" : "nao"));
             if (enabled) {
-                // Liga com o idioma mostrado no combo (ou o último salvo, se vazio).
+                // Liga com o idioma mostrado no combo; sem nada escolhido,
+                // acompanha o idioma do app (antes caía no primeiro da lista em
+                // ordem alfabética — inglês — até pra quem escreve em português).
                 QString code = settingsPanel->spellLanguage();
-                if (code.isEmpty()) {
-                    const auto langs = SpellChecker::availableLanguages();
-                    if (!langs.isEmpty()) code = langs.first().first;
-                }
+                if (code.isEmpty()) code = SpellChecker::followAppValue();
                 projectModel->setSpellLanguage(code);
-                spellChecker->setLanguage(code);
+                spellChecker->setLanguage(SpellChecker::resolveLanguage(code));
                 settingsPanel->setSpellLanguage(code);
             } else {
                 projectModel->setSpellLanguage(QString());
@@ -7100,7 +7181,7 @@ void MainWindow::onSettingsRequested()
         connect(settingsPanel, &SettingsPanel::spellLanguageChanged, this, [this](const QString& code) {
             if (!projectModel || !spellChecker) return;
             projectModel->setSpellLanguage(code);
-            spellChecker->setLanguage(code);
+            spellChecker->setLanguage(SpellChecker::resolveLanguage(code));
         });
         connect(settingsPanel, &SettingsPanel::detectionEnabledChanged, this, [this](bool enabled) {
             detectionEnabled = enabled;
@@ -7201,7 +7282,7 @@ void MainWindow::onSettingsRequested()
     }
 
     // Atualiza a UI do painel com o estado atual antes de mostrar.
-    const QString lang = projectModel ? projectModel->spellLanguage() : QString();
+    const QString lang = projectModel ? projectModel->spellLanguageSetting() : QString();
     settingsPanel->setSpellEnabled(!lang.isEmpty());
     if (!lang.isEmpty()) settingsPanel->setSpellLanguage(lang);
     settingsPanel->setDetectionEnabled(detectionEnabled);
@@ -7261,23 +7342,7 @@ void MainWindow::onExportRequested()
         Exporter exporter(projectModel, projectRoot, style);
         QString err;
         if (exporter.runBible(src, fmt, this, &err)) {
-            if (editorContainer) {
-                auto* toast = new QLabel(tr("Bíblia do universo exportada"), editorContainer);
-                toast->setObjectName(QStringLiteral("sceneToast"));
-                toast->setAlignment(Qt::AlignCenter);
-                toast->setStyleSheet(QStringLiteral(
-                    "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
-                    " border-radius: 6px; padding: 6px 16px;"
-                    " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
-                    .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
-                toast->adjustSize();
-                const QPoint center = editorContainer->rect().center();
-                toast->move(center.x() - toast->width() / 2,
-                            editorContainer->height() - toast->height() - 32);
-                toast->show();
-                toast->raise();
-                QTimer::singleShot(1800, toast, [toast]() { toast->deleteLater(); });
-            }
+            showEditorToast(tr("Bíblia do universo exportada"));
         } else if (!err.isEmpty()) {
             QMessageBox::warning(this, tr("Exportar"), err);
         }
@@ -7565,14 +7630,34 @@ void MainWindow::applyBackgroundFromTheme()
 #endif
 }
 
+void MainWindow::showEditorToast(const QString& text, int durationMs)
+{
+    if (!editorContainer) return;
+    auto* toast = new QLabel(text, editorContainer);
+    toast->setObjectName(QStringLiteral("sceneToast"));
+    toast->setAlignment(Qt::AlignCenter);
+    toast->setStyleSheet(QStringLiteral(
+        "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
+        " border-radius: 6px; padding: 6px 16px;"
+        " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+    toast->adjustSize();
+    const QPoint center = editorContainer->rect().center();
+    toast->move(center.x() - toast->width() / 2,
+                editorContainer->height() - toast->height() - 32);
+    toast->show();
+    toast->raise();
+    QTimer::singleShot(durationMs, toast, [toast]() { toast->deleteLater(); });
+}
+
 void MainWindow::applySpellLanguageFromModel()
 {
     if (!projectModel || !spellChecker) return;
-    const QString code = projectModel->spellLanguage();
-    spellChecker->setLanguage(code);
+    const QString setting = projectModel->spellLanguageSetting();
+    spellChecker->setLanguage(SpellChecker::resolveLanguage(setting));
     if (settingsPanel) {
-        settingsPanel->setSpellEnabled(!code.isEmpty());
-        if (!code.isEmpty()) settingsPanel->setSpellLanguage(code);
+        settingsPanel->setSpellEnabled(!setting.isEmpty());
+        if (!setting.isEmpty()) settingsPanel->setSpellLanguage(setting);
     }
 }
 

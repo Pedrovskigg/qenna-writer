@@ -172,8 +172,12 @@ public:
     qreal fontSize() const;
     void setFontSize(qreal pt);
 
-    // "" = corretor desligado; "pt_BR", "en_US", ... = idioma do dicionário.
+    // "" = corretor desligado; "pt_BR", "en_US", ... = idioma do dicionário;
+    // "app" = acompanha o idioma da interface (padrão de projeto novo).
+    // spellLanguage() já devolve o código resolvido, pronto pra usar;
+    // spellLanguageSetting() devolve o valor cru, pra mostrar a escolha na UI.
     QString spellLanguage() const;
+    QString spellLanguageSetting() const;
     void setSpellLanguage(const QString& code);
 
     // Mostrar popup de marcador/resumo ao criar cena nova via "----". Pode ser

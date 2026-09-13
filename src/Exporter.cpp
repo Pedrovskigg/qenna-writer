@@ -1498,6 +1498,31 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     const QString now = QDateTime::currentDateTimeUtc().toString(QStringLiteral("yyyy-MM-ddThh:mm:ss"))
         + QStringLiteral("Z");
 
+    // ── Idioma do livro ──
+    // É o idioma em que o texto foi ESCRITO, não o da interface: o e-reader usa
+    // isso pra hifenização, voz de leitura e dicionário. O corretor do projeto
+    // é a melhor pista que existe (segue o idioma do app quando o autor não
+    // escolheu outro). "Índice" e "Capa" seguem o livro pelo mesmo motivo — um
+    // livro em italiano com sumário em português é defeito do arquivo.
+    QString bookLang = m_model->spellLanguage();
+    if (bookLang.isEmpty()) bookLang = QStringLiteral("pt_BR");
+    bookLang.replace(QLatin1Char('_'), QLatin1Char('-'));
+    const QString langPrefix = bookLang.left(2).toLower();
+    QString tocLabel = QStringLiteral("Índice");
+    QString coverLabel = QStringLiteral("Capa");
+    if (langPrefix == QLatin1String("en")) {
+        tocLabel = QStringLiteral("Contents");            coverLabel = QStringLiteral("Cover");
+    } else if (langPrefix == QLatin1String("es")) {
+        tocLabel = QStringLiteral("Índice");              coverLabel = QStringLiteral("Portada");
+    } else if (langPrefix == QLatin1String("it")) {
+        tocLabel = QStringLiteral("Indice");              coverLabel = QStringLiteral("Copertina");
+    } else if (langPrefix == QLatin1String("fr")) {
+        tocLabel = QStringLiteral("Table des matières");  coverLabel = QStringLiteral("Couverture");
+    } else if (langPrefix == QLatin1String("de")) {
+        tocLabel = QStringLiteral("Inhalt");              coverLabel = QStringLiteral("Cover");
+    }
+    const QString langAttr = QStringLiteral(" xml:lang=\"%1\" lang=\"%1\"").arg(bookLang);
+
     // ── Capa ──
     const QString coverSrc = soloMs ? m_model->manuscriptEffectiveCoverDataUrl(soloMs->id) : m_model->projectCoverDataUrl();
     bool hasCover = false;
@@ -1572,11 +1597,11 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
 
     const QString opf =
         QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        "<package version=\"3.0\" xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"book-id\" xml:lang=\"pt-BR\">\n"
+        "<package version=\"3.0\" xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"book-id\" xml:lang=\"") + bookLang + QStringLiteral("\">\n"
         "  <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n"
         "    <dc:identifier id=\"book-id\">") + bookId + QStringLiteral("</dc:identifier>\n"
         "    <dc:title>") + escXml(title) + QStringLiteral("</dc:title>\n"
-        "    <dc:language>pt-BR</dc:language>\n"
+        "    <dc:language>") + bookLang + QStringLiteral("</dc:language>\n"
         "    <meta property=\"dcterms:modified\">") + now + QStringLiteral("</meta>\n")
         + metaExtra + QStringLiteral("  </metadata>\n"
         "  <manifest>\n"
@@ -1592,9 +1617,9 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
     const QString nav =
         QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
         "<!DOCTYPE html>\n"
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\" xml:lang=\"pt-BR\" lang=\"pt-BR\">\n"
-        "<head><meta charset=\"UTF-8\"/><title>Índice</title></head>\n"
-        "<body>\n  <nav epub:type=\"toc\" id=\"toc\">\n    <h1>Índice</h1>\n    <ol>\n")
+        "<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\"") + langAttr + QStringLiteral(">\n"
+        "<head><meta charset=\"UTF-8\"/><title>") + tocLabel + QStringLiteral("</title></head>\n"
+        "<body>\n  <nav epub:type=\"toc\" id=\"toc\">\n    <h1>") + tocLabel + QStringLiteral("</h1>\n    <ol>\n")
         + navList + QStringLiteral("    </ol>\n  </nav>\n</body>\n</html>\n");
 
     const QString ncx =
@@ -1607,10 +1632,10 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         "  <docTitle><text>") + escXml(title) + QStringLiteral("</text></docTitle>\n  <navMap>\n")
         + ncxNav + QStringLiteral("  </navMap>\n</ncx>\n");
 
-    auto pageXhtml = [](const QString& t, const QString& body) {
+    auto pageXhtml = [&langAttr](const QString& t, const QString& body) {
         return QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<!DOCTYPE html>\n"
-            "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"pt-BR\" lang=\"pt-BR\">\n"
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\"") + langAttr + QStringLiteral(">\n"
             "<head><meta charset=\"UTF-8\"/><title>") + escXml(t)
             + QStringLiteral("</title><link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/></head>\n"
             "<body>\n<h1 class=\"chapter-title\">") + escXml(t) + QStringLiteral("</h1>\n")
@@ -1638,10 +1663,10 @@ QByteArray Exporter::buildEpub(const Selection& sel) const {
         const QString coverPage =
             QStringLiteral("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
             "<!DOCTYPE html>\n"
-            "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"pt-BR\" lang=\"pt-BR\">\n"
-            "<head><meta charset=\"UTF-8\"/><title>Capa</title>\n"
+            "<html xmlns=\"http://www.w3.org/1999/xhtml\"") + langAttr + QStringLiteral(">\n"
+            "<head><meta charset=\"UTF-8\"/><title>") + coverLabel + QStringLiteral("</title>\n"
             "<style>html,body{margin:0;padding:0;text-align:center;}img{max-width:100%;max-height:100vh;height:auto;}</style>\n"
-            "</head>\n<body><img src=\"") + coverFilename + QStringLiteral("\" alt=\"Capa\"/></body>\n</html>\n");
+            "</head>\n<body><img src=\"") + coverFilename + QStringLiteral("\" alt=\"") + coverLabel + QStringLiteral("\"/></body>\n</html>\n");
         zip.addFile(QStringLiteral("OEBPS/cover.xhtml"), coverPage.toUtf8());
     }
     zip.addFile(QStringLiteral("OEBPS/content.opf"), opf.toUtf8());

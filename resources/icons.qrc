@@ -5,6 +5,7 @@
         <file alias="splash.png">../src/assets/logo/splash.png</file>
         <file alias="splash-2.png">../src/assets/logo/splash-2-app.png</file>
         <file alias="splash-3.png">../src/assets/logo/splash-3-app.png</file>
+        <file alias="splash-4.png">../src/assets/logo/splash-4-app.png</file>
     </qresource>
     <qresource prefix="/help">
         <file alias="start-here/numbered-ui.png">../src/assets/help/start-here/numbered-ui.png</file>

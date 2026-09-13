@@ -8,6 +8,7 @@
 #include <QStringList>
 
 class Hunspell;
+class QNetworkAccessManager;
 
 class SpellChecker : public QObject {
     Q_OBJECT
@@ -57,11 +58,30 @@ public:
     // O Glossário (quando vier) alimenta esse set; palavras aqui nunca viram erro.
     void setGlossaryWords(const QSet<QString>& words);
 
-    // Idiomas bundled disponíveis em disco. Retorna {code, label} ordenado.
+    // Idiomas instalados (embarcados + baixados). Retorna {code, label} ordenado.
     static QList<QPair<QString, QString>> availableLanguages();
+
+    // ── Dicionário que acompanha o idioma do app ──
+    // Decidido em 2026-09-12: quem usa o app em italiano escreve em italiano, e
+    // não deveria ter de caçar o dicionário. O projeto guarda "app" em vez de um
+    // código fixo, e o código real sai do idioma da interface na hora de usar.
+    // Projeto com código explícito (livro em português, app em inglês) não muda.
+    static QString followAppValue() { return QStringLiteral("app"); }
+    static QString dictionaryForAppLanguage();
+    // "app" vira o dicionário do idioma do app; qualquer outro valor passa direto.
+    static QString resolveLanguage(const QString& setting);
+    static QString labelForLanguage(const QString& code);
+
+    static bool isInstalled(const QString& code);
+    // Existe no repositório de dicionários do LibreOffice e sabemos baixar?
+    static bool isDownloadable(const QString& code);
+    bool isDownloading() const { return !m_downloadingLang.isEmpty(); }
 
 signals:
     void changed();
+    // Dicionário que não vem com o app começou a ser baixado / terminou.
+    void dictionaryDownloadStarted(const QString& code);
+    void dictionaryDownloadFinished(const QString& code, bool ok, const QString& error);
 
 private:
     void loadHunspell();
@@ -70,7 +90,14 @@ private:
     void savePersonalDictionary();
     QString personalDictPath() const;
     static QString assetsSpellDir();
+    // Onde ficam os dicionários baixados: AppData, nunca a pasta do app.
+    static QString downloadedSpellDir();
+    // Pasta que contém <code>/index.aff e index.dic, ou vazio.
+    static QString dictionaryDir(const QString& code);
+    void downloadDictionary(const QString& code);
 
+    QNetworkAccessManager* m_net = nullptr;
+    QString m_downloadingLang;
     QString m_lang;
     QString m_projectRoot;
     Hunspell* m_hunspell = nullptr;

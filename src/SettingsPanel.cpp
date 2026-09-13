@@ -3,6 +3,7 @@
 #include "AboutDialog.h"
 #include "EditorLayout.h"
 #include "MiraPersonality.h"
+#include "SpellChecker.h"
 #include "Theme.h"
 #include "UiScale.h"
 
@@ -941,6 +942,11 @@ void SettingsPanel::setAvailableSpellLanguages(const QList<QPair<QString, QStrin
     m_blockSignals = true;
     const QString prev = spellLanguage();
     m_langCombo->clear();
+    // Primeira opção: acompanhar o idioma do app. Aparece mesmo quando esse
+    // dicionário ainda não foi baixado — escolher dispara o download.
+    const QString appDict = SpellChecker::dictionaryForAppLanguage();
+    m_langCombo->addItem(tr("Idioma do app (%1)").arg(SpellChecker::labelForLanguage(appDict)),
+                         SpellChecker::followAppValue());
     for (const auto& pair : langs) {
         m_langCombo->addItem(pair.second, pair.first);
     }

@@ -183,6 +183,8 @@ private:
     void applyPageShadow();
     void applyBackgroundFromTheme();
     void applySpellLanguageFromModel();
+    // Aviso curto no rodapé do editor, some sozinho.
+    void showEditorToast(const QString& text, int durationMs = 1800);
     void positionWordCountPanel();
     void positionSidePanels();
     // Reaplica nos paineis flutuantes a largura da chrome (barras) que eles

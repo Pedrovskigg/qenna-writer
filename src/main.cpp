@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 
     CrashLogger::install();
 
-    const QPixmap splashColor(QStringLiteral(":/app/splash-3.png"));
+    const QPixmap splashColor(QStringLiteral(":/app/splash-4.png"));
     const QPixmap splashGray = QPixmap::fromImage(desaturated(splashColor.toImage()));
 
     QSplashScreen splash(splashGray);

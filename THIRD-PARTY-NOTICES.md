@@ -67,6 +67,20 @@ its folder.
   [`licenses/LGPL-3.0.txt`](licenses/LGPL-3.0.txt). Source:
   https://github.com/LibreOffice/dictionaries (`es/` folder).
 
+## Spell-checking dictionaries downloaded on demand (it_IT, fr_FR)
+
+Not bundled. Downloaded only when a project's spell-checking language follows
+an app language whose dictionary is not shipped with the installer, and
+stored unmodified in the user's application data folder (`spell/<locale>/`).
+Fetched from https://github.com/LibreOffice/dictionaries.
+
+- **it_IT** — Italian Writing Aids extension, © LibreItalia – Marina Latini
+  and earlier authors. **GNU GPL 3.0.** Source: `it_IT/` folder (license and
+  credits in `README_it_IT.txt`).
+- **fr_FR** — "Dictionnaires orthographiques français" v7.7, by Olivier R.
+  (Grammalecte) and contributors. **Mozilla Public License 2.0.** Source:
+  `fr_FR/dictionaries/` folder (credits in `README_dict_fr.txt`).
+
 ## MinGW-w64 runtime
 
 Bundled as `libgcc_s_seh-1.dll`, `libstdc++-6.dll`, `libwinpthread-1.dll` —
@@ -103,7 +117,11 @@ folder. Fetched from the LibreOffice dictionaries repository.
 
 - **`th_en_US_v2.dat`:** derived from Princeton WordNet — see the WordNet
   license at https://wordnet.princeton.edu/license-and-commercial-use
-- **`th_es_v2.dat`:** see the license bundled in the source repository.
+  (copy in the source repository as `en/WordNet_license.txt`).
+- **`th_es_v2.dat`:** OpenThesaurus – Tesauro Español, by Marcelo Garrone.
+  **GNU LGPL 2.1.** Credits in `es/README_th_es.txt`; full text in
+  [`licenses/hunspell/COPYING-LGPL-2.1.txt`](licenses/hunspell/COPYING-LGPL-2.1.txt)
+  (same license text).
 - **MyThes format/engine reference license:** BSD 3-Clause,
   Copyright 2003 Kevin B. Hendricks.
 - **Source:** https://github.com/LibreOffice/dictionaries

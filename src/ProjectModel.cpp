@@ -1,6 +1,7 @@
 #include "ProjectModel.h"
 #include "SceneUtils.h"
 #include "ScreenDefaults.h"
+#include "SpellChecker.h"
 
 #include <QJsonValue>
 #include <QJsonDocument>
@@ -489,14 +490,18 @@ void ProjectModel::setFontSize(qreal pt) {
     emit settingsChanged();
 }
 
-QString ProjectModel::spellLanguage() const {
+QString ProjectModel::spellLanguageSetting() const {
     const auto v = m_settings.value(QStringLiteral("spellLanguage"));
     if (v.isUndefined() || v.isNull()) return QString();
     return v.toString();
 }
 
+QString ProjectModel::spellLanguage() const {
+    return SpellChecker::resolveLanguage(spellLanguageSetting());
+}
+
 void ProjectModel::setSpellLanguage(const QString& code) {
-    if (spellLanguage() == code) return;
+    if (spellLanguageSetting() == code) return;
     if (code.isEmpty()) {
         m_settings.remove(QStringLiteral("spellLanguage"));
     } else {
@@ -603,6 +608,10 @@ void ProjectModel::addDrawer(const Drawer& drawer) {
 }
 
 void ProjectModel::seedFromTemplate(const QString& templateId) {
+    // Projeto novo nasce com o corretor ligado no idioma do app. Projeto antigo
+    // sem a chave continua desligado — pode ter sido o autor quem desligou.
+    m_settings.insert(QStringLiteral("spellLanguage"), SpellChecker::followAppValue());
+
     auto mkItem = [](const QString& title) {
         DrawerItem it;
         it.id = uid();
