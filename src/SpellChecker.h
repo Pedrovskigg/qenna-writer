@@ -33,6 +33,12 @@ public:
     // é feito de verbo conjugado — sem isto, metade das consultas não acha nada.
     QString stemOf(const QString& word) const;
 
+    // Todas as raízes que o dicionário reconhece para a palavra, sem escolher
+    // uma. Serve pra perguntas do tipo "esta palavra PODE ser forma de verbo?"
+    // — o Detector de Repetições usa isso para não tomar "atormente" (de
+    // atormentar) por advérbio em -mente. Vazio com o corretor desligado.
+    QStringList stemsOf(const QString& word) const;
+
     // Flexiona 'lemma' na mesma forma em que 'inflected' está flexionado, dado
     // que 'inflected' é flexão de 'baseLemma':
     //   inflectLike("achar", "chegando", "chegar") -> "achando"

@@ -3,6 +3,7 @@
 #include <QSet>
 #include <QString>
 #include <QVector>
+#include <functional>
 
 // Detector de Repetições — acha a mesma palavra (ou palavras da mesma raiz)
 // reaparecendo perto demais no texto.
@@ -57,6 +58,22 @@ public:
     };
 
     void setProximity(int words) { m_proximity = words; }
+
+    // Janela dos PRONOMES pessoais, menor que a das palavras comuns. Pronome
+    // repetido é vício real ("ela... ela... ela"), mas numa janela de 30
+    // palavras ele acenderia em quase todo parágrafo de narração em terceira
+    // pessoa. Perto assim, sim, é o que o leitor sente.
+    void setPronounProximity(int words) { m_pronounProximity = words; }
+    static constexpr int kPronounProximity = 12;
+
+    // Decide se uma palavra é advérbio de modo. Injetado de fora porque a
+    // resposta depende do dicionário do corretor (ver MainWindow): sem teste,
+    // o acúmulo de advérbios simplesmente não é detectado — melhor não acusar
+    // do que chutar. É assim que o INGLÊS fica: lá o -ly forma advérbio
+    // ("quick" -> "quickly") E adjetivo ("friend" -> "friendly"), e nenhuma
+    // regra olhando só a palavra separa os dois (testado contra o hunspell).
+    using AdverbTest = std::function<bool(const QString& lowerWord)>;
+    void setAdverbTest(AdverbTest fn) { m_adverbTest = std::move(fn); }
     int proximity() const { return m_proximity; }
 
     // Palavras a ignorar além das funcionais: nomes de personagens e lugares do
@@ -77,8 +94,12 @@ public:
 
 private:
     bool isIgnored(const QString& lowerWord) const;
+    bool isPronoun(const QString& lowerWord) const { return m_pronouns.contains(lowerWord); }
 
     int m_proximity = Normal;
+    int m_pronounProximity = kPronounProximity;
+    AdverbTest m_adverbTest;
+    QSet<QString> m_pronouns;
     QString m_lang = QStringLiteral("pt");
     QSet<QString> m_ignored;
     QSet<QString> m_stopWords;

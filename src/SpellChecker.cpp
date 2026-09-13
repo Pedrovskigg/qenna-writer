@@ -101,6 +101,15 @@ QString SpellChecker::stemOf(const QString& word) const
     return QString::fromStdString(roots.front());
 }
 
+QStringList SpellChecker::stemsOf(const QString& word) const
+{
+    QStringList out;
+    if (!m_hunspell || word.isEmpty()) return out;
+    for (const std::string& r : m_hunspell->stem(word.toLower().toStdString()))
+        out << QString::fromStdString(r);
+    return out;
+}
+
 QString SpellChecker::inflectLike(const QString& lemma, const QString& inflected,
                                   const QString& baseLemma) const
 {

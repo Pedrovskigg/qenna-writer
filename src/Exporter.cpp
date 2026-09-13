@@ -5,6 +5,10 @@
 #include "SceneUtils.h"
 #include "ZipWriter.h"
 #include "WordCounter.h"
+#include "GlossaryStore.h"
+#include "ConstrutorStore.h"
+#include "TerritorioStore.h"
+#include "MapPinsStore.h"
 
 #include <QBuffer>
 #include <QCoreApplication>
@@ -12,6 +16,7 @@
 #include <QApplication>
 #include <QBrush>
 #include <QColor>
+#include <QDate>
 #include <QDateTime>
 #include <QFile>
 #include <QFileDialog>
@@ -19,6 +24,7 @@
 #include <QProgressDialog>
 #include <QFont>
 #include <QImage>
+#include <QLocale>
 #include <QMarginsF>
 #include <QPainter>
 #include <QPageLayout>
@@ -655,6 +661,319 @@ QByteArray Exporter::exportChapters(const QList<const Chapter*>& chapters, bool 
     forceTextColor(doc, Qt::black);
     if (!includeMarkers) stripMarkers(doc);
     return writeDoc(doc, fmt, docTitle);
+}
+
+// ─────────────────────────── Bíblia do universo ───────────────────────────
+// Um documento só com tudo que não é manuscrito: gavetas (fichas, lugares,
+// objetos), vínculos, glossário, territórios, sistemas do mundo e locais do
+// mapa. Serve pra mandar pra editora, co-autor ou ilustrador — gente que
+// precisa consultar o universo sem abrir o app.
+
+QString Exporter::biblePlainOf(const QString& html)
+{
+    if (html.trimmed().isEmpty()) return QString();
+    QTextDocument d;
+    d.setHtml(html);
+    return d.toPlainText();
+}
+
+QByteArray Exporter::buildBible(const BibleSources& src, Format fmt) const
+{
+    QTextDocument doc;
+    QTextCursor cur(&doc);
+    bool primeiroBloco = true;
+
+    // Títulos ficam marcados com kExportTitleBlock: assim escapam do reescalo
+    // do corpo para 12pt e mantêm a hierarquia visual.
+    auto titulo = [&](const QString& texto, int nivel, bool paginaNova) {
+        QTextBlockFormat bf;
+        if (paginaNova) bf.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
+        bf.setTopMargin(nivel == 1 ? 0 : (nivel == 2 ? 18 : 10));
+        bf.setBottomMargin(nivel == 1 ? 14 : 4);
+        QTextCharFormat cf;
+        cf.setFontWeight(QFont::Bold);
+        cf.setFontPointSize(nivel == 1 ? 22 : (nivel == 2 ? 16 : 13));
+        if (primeiroBloco) {
+            cur.setBlockFormat(bf);
+            cur.setCharFormat(cf);
+            primeiroBloco = false;
+        } else {
+            cur.insertBlock(bf, cf);
+        }
+        cur.block().setUserState(kExportTitleBlock);
+        cur.insertText(texto, cf);
+    };
+
+    // Conteúdo que o app guarda ora como HTML (editores ricos), ora como texto
+    // puro (campos simples). HTML vazio do editor ("<html>...<p></p>") conta
+    // como vazio — senão a bíblia enche de parágrafos em branco.
+    auto corpo = [&](const QString& conteudo) {
+        if (conteudo.trimmed().isEmpty()) return;
+        const bool rico = Qt::mightBeRichText(conteudo);
+        if (rico && biblePlainOf(conteudo).trimmed().isEmpty()) return;
+        cur.insertBlock(QTextBlockFormat(), QTextCharFormat());
+        if (rico) cur.insertHtml(conteudo);
+        else cur.insertText(conteudo.trimmed());
+    };
+
+    // Linha de apoio em itálico (pasta de origem, data, rótulos).
+    auto nota = [&](const QString& texto) {
+        if (texto.trimmed().isEmpty()) return;
+        QTextCharFormat cf;
+        cf.setFontItalic(true);
+        cur.insertBlock(QTextBlockFormat(), cf);
+        cur.insertText(texto, cf);
+    };
+
+    // ── Capa ──
+    // Quem nunca renomeou o projeto fica com o nome padrão gravado ("Projeto"),
+    // e uma capa escrita "Projeto" não identifica nada. Nesse caso o nome da
+    // pasta é o que o autor reconhece — é o que aparece na Biblioteca.
+    QString projeto = m_model ? m_model->projectName().trimmed() : QString();
+    if (projeto.isEmpty() || projeto == QLatin1String("Projeto"))
+        projeto = QFileInfo(m_root).fileName();
+    titulo(projeto.trimmed().isEmpty()
+               ? subTr(QT_TRANSLATE_NOOP("Exporter", "Projeto")) : projeto.trimmed(), 1, false);
+    nota(subTr(QT_TRANSLATE_NOOP("Exporter", "Bíblia do universo")));
+    if (m_model && !m_model->projectAuthor().trimmed().isEmpty())
+        nota(subTr(QT_TRANSLATE_NOOP("Exporter", "por %1")).arg(m_model->projectAuthor().trimmed()));
+    nota(subTr(QT_TRANSLATE_NOOP("Exporter", "Gerada em %1"))
+             .arg(QLocale().toString(QDate::currentDate(), QLocale::LongFormat)));
+
+    // ── Gavetas ──
+    if (m_model) {
+        for (const Drawer& d : m_model->drawers()) {
+            if (d.items.isEmpty()) continue;
+            titulo(d.title.trimmed().isEmpty()
+                       ? subTr(QT_TRANSLATE_NOOP("Exporter", "Gaveta")) : d.title.trimmed(),
+                   1, true);
+
+            // Mesma ordem que o autor vê na gaveta: itens da raiz, depois cada
+            // pasta na ordem em que foi criada, descendo nas subpastas.
+            std::function<void(const QString&, const QString&)> percorrer =
+                [&](const QString& pastaId, const QString& caminho) {
+                    for (const DrawerItem& it : d.items) {
+                        if (it.folderId != pastaId) continue;
+                        titulo(it.title.trimmed().isEmpty()
+                                   ? subTr(QT_TRANSLATE_NOOP("Exporter", "Documento"))
+                                   : it.title.trimmed(),
+                               2, false);
+                        if (!caminho.isEmpty()) nota(caminho);
+                        corpo(itemHtml(it));
+                    }
+                    for (const Folder& f : d.folders) {
+                        if (f.parentId != pastaId) continue;
+                        percorrer(f.id, caminho.isEmpty()
+                                            ? f.title
+                                            : caminho + QStringLiteral(" / ") + f.title);
+                    }
+                };
+            percorrer(QString(), QString());
+
+            // Vínculos no fim da própria gaveta: só fazem sentido perto dos
+            // itens que ligam.
+            const QList<CharacterBond> bonds = m_model->characterBondsForDrawer(d.key);
+            if (!bonds.isEmpty()) {
+                titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Vínculos")), 2, false);
+                auto nomeDe = [&d](const QString& id) {
+                    for (const DrawerItem& it : d.items)
+                        if (it.id == id) return it.title.trimmed();
+                    return QString();
+                };
+                for (const CharacterBond& b : bonds) {
+                    const QString a = nomeDe(b.fromItemId);
+                    const QString c = nomeDe(b.toItemId);
+                    if (a.isEmpty() || c.isEmpty()) continue;   // item apagado
+                    QString linha = QStringLiteral("%1 — %2").arg(a, c);
+                    if (!b.type.trimmed().isEmpty())
+                        linha += QStringLiteral(" (%1)").arg(b.type.trimmed());
+                    if (!b.description.trimmed().isEmpty())
+                        linha += QStringLiteral(": ") + b.description.trimmed();
+                    cur.insertBlock(QTextBlockFormat(), QTextCharFormat());
+                    cur.insertText(linha);
+                }
+            }
+        }
+    }
+
+    // ── Glossário ──
+    if (src.glossary && !src.glossary->entries().isEmpty()) {
+        titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Glossário")), 1, true);
+        QVector<GlossaryStore::Entry> termos = src.glossary->entries();
+        std::sort(termos.begin(), termos.end(),
+                  [](const GlossaryStore::Entry& a, const GlossaryStore::Entry& b) {
+                      return QString::localeAwareCompare(a.term, b.term) < 0;
+                  });
+        for (const GlossaryStore::Entry& e : termos) {
+            if (e.term.trimmed().isEmpty()) continue;
+            titulo(e.term.trimmed(), 3, false);
+            corpo(e.definition);
+        }
+    }
+
+    // ── Territórios ──
+    if (src.territorios && !src.territorios->territorios().isEmpty()) {
+        titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Territórios")), 1, true);
+
+        std::function<void(const TerritorioStore::Node&)> noTerritorio =
+            [&](const TerritorioStore::Node& n) {
+                titulo(n.name.trimmed(), 3, false);
+                corpo(n.content);
+                for (const TerritorioStore::Node& filho : n.children) noTerritorio(filho);
+            };
+        auto nomeTerritorio = [&src](const QString& id) {
+            for (const TerritorioStore::Territorio& t : src.territorios->territorios())
+                if (t.id == id) return t.name.trimmed();
+            return QString();
+        };
+
+        for (const TerritorioStore::Territorio& t : src.territorios->territorios()) {
+            titulo(t.name.trimmed(), 2, false);
+            corpo(t.content);
+            for (const TerritorioStore::Node& n : t.nodes) noTerritorio(n);
+        }
+
+        // Ligações entre territórios (guerra, aliança, história em comum).
+        bool cabecalho = false;
+        for (const TerritorioStore::TerritorioLink& l : src.territorios->links()) {
+            const QString a = nomeTerritorio(l.fromTerritorioId);
+            const QString b = nomeTerritorio(l.toTerritorioId);
+            if (a.isEmpty() || b.isEmpty()) continue;
+            if (!cabecalho) {
+                titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Relações entre territórios")), 2, false);
+                cabecalho = true;
+            }
+            titulo(QStringLiteral("%1 — %2").arg(a, b), 3, false);
+            corpo(l.docContent);
+        }
+    }
+
+    // ── Sistemas do mundo (Construtor) ──
+    if (src.construtor && !src.construtor->systems().isEmpty()) {
+        titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Sistemas do mundo")), 1, true);
+
+        std::function<void(const ConstrutorStore::Node&)> noSistema =
+            [&](const ConstrutorStore::Node& n) {
+                titulo(n.name.trimmed(), 3, false);
+                corpo(n.content);
+                for (const ConstrutorStore::Node& filho : n.children) noSistema(filho);
+            };
+
+        // Agrupados por categoria, na ordem em que o app apresenta as
+        // categorias; o que não tiver categoria conhecida vai para o fim.
+        QSet<QString> exportados;
+        auto sistemasDa = [&](const QString& categoriaId, const QString& rotulo) {
+            bool cabecalho = false;
+            for (const ConstrutorStore::System& s : src.construtor->systems()) {
+                if (exportados.contains(s.id)) continue;
+                if (!categoriaId.isEmpty() && s.categoryId != categoriaId) continue;
+                if (!cabecalho && !rotulo.isEmpty()) { nota(rotulo); cabecalho = true; }
+                exportados.insert(s.id);
+                titulo(s.name.trimmed(), 2, false);
+                corpo(s.content);
+                for (const ConstrutorStore::Node& n : s.nodes) noSistema(n);
+            }
+        };
+        for (const ConstrutorStore::Category& c : ConstrutorStore::categories())
+            sistemasDa(c.id, c.displayName);
+        sistemasDa(QString(), QString());
+    }
+
+    // ── Locais no mapa ──
+    if (src.mapPins && !src.mapPins->pins().isEmpty()) {
+        titulo(subTr(QT_TRANSLATE_NOOP("Exporter", "Locais no mapa")), 1, true);
+        for (const MapPinsStore::Pin& p : src.mapPins->pins()) {
+            const QString nome = p.label.trimmed().isEmpty() ? p.linkLabel.trimmed()
+                                                             : p.label.trimmed();
+            if (nome.isEmpty()) continue;
+            titulo(nome, 3, false);
+            if (!p.linkLabel.trimmed().isEmpty() && p.linkLabel.trimmed() != nome)
+                nota(subTr(QT_TRANSLATE_NOOP("Exporter", "Ligado a: %1")).arg(p.linkLabel.trimmed()));
+            corpo(p.note);
+        }
+    }
+
+    // Mesmo tratamento de página do resto da exportação: corpo em tamanho de
+    // papel, cor preta, sem marca-texto de revisão.
+    applyParagraphStyle(doc, kExportBodyPt);
+    for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
+        QTextCursor tc(blk);
+        if (blk.userState() == kExportTitleBlock) {
+            // O recuo de primeira linha é para prosa; em título só desalinha.
+            QTextBlockFormat bf = blk.blockFormat();
+            bf.setTextIndent(0);
+            tc.setBlockFormat(bf);
+            continue;
+        }
+        // Corpo UNIFORME, diferente da exportação do manuscrito. Lá o reescalo
+        // é proporcional para preservar ênfase na prosa; aqui cada ficha e
+        // documento foi escrito num tamanho diferente, e o proporcional deixava
+        // uma ficha a 11pt e a seguinte a 13pt (medido no teste). Obra de
+        // referência precisa ler homogênea — negrito e itálico continuam.
+        tc.select(QTextCursor::BlockUnderCursor);
+        QTextCharFormat cf;
+        cf.setFontPointSize(kExportBodyPt);
+        tc.mergeCharFormat(cf);
+    }
+    forceTextColor(doc, Qt::black);
+    stripMarkers(doc);
+
+    const QString titulo_doc = QStringLiteral("%1 — %2").arg(
+        projeto.trimmed(), subTr(QT_TRANSLATE_NOOP("Exporter", "Bíblia do universo")));
+    return writeDoc(doc, fmt, titulo_doc);
+}
+
+bool Exporter::runBible(const BibleSources& src, Format fmt, QWidget* dialogParent,
+                        QString* error)
+{
+    if (!m_model) return false;
+    if (fmt == Format::Epub) {
+        // O writer de EPUB do app é construído em torno de capítulos do
+        // manuscrito; a bíblia sai nos formatos de página.
+        if (error) *error = subTr(QT_TRANSLATE_NOOP("Exporter",
+            "A bíblia do universo pode ser exportada em PDF, DOCX ou ODT."));
+        return false;
+    }
+
+    QByteArray bytes;
+    {
+        QProgressDialog progress(
+            subTr(QT_TRANSLATE_NOOP("Exporter", "Montando a bíblia do universo...")),
+            QString(), 0, 0, dialogParent);
+        progress.setWindowTitle(subTr(QT_TRANSLATE_NOOP("Exporter", "Exportando")));
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setCancelButton(nullptr);
+        progress.setMinimumDuration(0);
+        progress.show();
+        QApplication::processEvents();
+        bytes = buildBible(src, fmt);
+    }
+    if (bytes.isEmpty()) {
+        if (error) *error = subTr(QT_TRANSLATE_NOOP("Exporter", "Não foi possível gravar o arquivo."));
+        return false;
+    }
+
+    const QString ext = formatExt(fmt);
+    // Mesmo critério da capa: nome padrão nunca renomeado vira o da pasta.
+    QString nomeProjeto = m_model->projectName().trimmed();
+    if (nomeProjeto.isEmpty() || nomeProjeto == QLatin1String("Projeto"))
+        nomeProjeto = QFileInfo(m_root).fileName();
+    const QString sugerido = safeName(QStringLiteral("%1 - %2").arg(
+        nomeProjeto, subTr(QT_TRANSLATE_NOOP("Exporter", "Bíblia do universo"))))
+        + QStringLiteral(".") + ext;
+    const QString destino = QFileDialog::getSaveFileName(
+        dialogParent, subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar bíblia do universo")),
+        sugerido, QStringLiteral("*.%1").arg(ext));
+    if (destino.isEmpty()) return false;   // cancelado
+
+    QFile f(destino);
+    if (!f.open(QIODevice::WriteOnly)) {
+        if (error) *error = subTr(QT_TRANSLATE_NOOP("Exporter", "Não foi possível gravar o arquivo."));
+        return false;
+    }
+    f.write(bytes);
+    f.close();
+    return true;
 }
 
 // ─────────────────────────── Formato de submissão ───────────────────────────

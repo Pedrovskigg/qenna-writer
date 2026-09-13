@@ -26,6 +26,9 @@ signals:
     // soloManuscriptOfSelection(). Não fecha o painel: usuário pode voltar
     // e ajustar a seleção antes de exportar de fato.
     void previewRequested(const QString& manuscriptId);
+    // Bíblia do universo no formato escolhido. Independe da árvore de seleção:
+    // a bíblia é o universo inteiro, não um recorte do manuscrito.
+    void bibleRequested(Exporter::Format format);
 
 private:
     void buildTree();
@@ -45,6 +48,8 @@ private:
     QLabel* m_countLabel = nullptr;
     QPushButton* m_exportBtn = nullptr;
     QPushButton* m_previewBtn = nullptr;
+    QPushButton* m_bibleBtn = nullptr;
+    Exporter::Format currentFormat() const;
     QList<QPushButton*> m_formatBtns;
     QRadioButton* m_singleRadio = nullptr;
     QRadioButton* m_separateRadio = nullptr;

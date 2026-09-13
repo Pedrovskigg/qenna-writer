@@ -17,7 +17,7 @@ const char* const kStopPt[] = {
     "pouca","poucos","poucas","tão","tanto","tanta","todo","toda","todos","todas","outro",
     "outra","outros","outras","mesmo","mesma","mesmos","mesmas","este","esta","estes",
     "estas","esse","essa","esses","essas","aquele","aquela","aqueles","aquelas","isto",
-    "isso","aquilo","eu","tu","ele","ela","nós","vós","eles","elas","você","vocês","me",
+    "isso","aquilo","me",
     "te","se","lhe","nos","vos","lhes","meu","minha","meus","minhas","teu","tua","teus",
     "tuas","seu","sua","seus","suas","nosso","nossa","nossos","nossas","dele","dela",
     "deles","delas","ser","estar","ter","haver","era","eram","foi","foram","seja","sejam",
@@ -37,7 +37,7 @@ const char* const kStopEn[] = {
     "between","through","during","before","after","above","below","up","down","out","off",
     "again","further","is","are","was","were","be","been","being","have","has","had",
     "having","do","does","did","doing","will","would","shall","should","can","could","may",
-    "might","must","i","you","he","she","it","we","they","me","him","her","us","them","my",
+    "might","must","it","me","him","her","us","them","my",
     "your","his","its","our","their","mine","yours","hers","ours","theirs","who","whom",
     "which","what","when","where","why","how","all","any","both","each","few","more","most",
     "other","some","such","no","nor","not","only","own","same","so","too","very","just",
@@ -50,8 +50,8 @@ const char* const kStopEs[] = {
     "si","ya","aún","más","menos","mucho","mucha","muchos","muchas","poco","poca","pocos",
     "pocas","tan","tanto","tanta","todo","toda","todos","todas","otro","otra","otros",
     "otras","mismo","misma","este","esta","estos","estas","ese","esa","esos","esas","aquel",
-    "aquella","esto","eso","aquello","yo","tú","él","ella","nosotros","vosotros","ellos",
-    "ellas","usted","ustedes","me","te","se","le","nos","os","les","mi","mis","tu","tus",
+    "aquella","esto","eso","aquello",
+    "me","te","se","le","nos","os","les","mi","mis","tu","tus",
     "su","sus","nuestro","nuestra","ser","estar","tener","haber","era","eran","fue","fueron",
     "sea","sean","está","están","estaba","estaban","tiene","tienen","tenía","había","no",
     "sí","también","solo","entonces","ahora","después","antes","aquí","allí","así","bien",
@@ -69,14 +69,20 @@ QString simplify(const QString& w)
     return out;
 }
 
-// Advérbio de modo: -mente em pt/es, -ly em inglês. O tamanho mínimo evita
-// pegar o substantivo "mente" e companhia — advérbio de modo é palavra longa.
-bool ehAdverbioDeModo(const QString& lower, const QString& lang)
-{
-    if (lang == QLatin1String("en"))
-        return lower.size() >= 6 && lower.endsWith(QLatin1String("ly"));
-    return lower.size() >= 8 && lower.endsWith(QLatin1String("mente"));
-}
+// Pronomes pessoais do caso reto, pela norma culta. Saíram das palavras
+// funcionais: repetir "ela... ela... ela" é vício que o leitor sente, ao
+// contrário de "de" e "que". Janela própria e curta (kPronounProximity).
+// Inglês fica sem "it": o português omite o sujeito neutro, então não há
+// vício equivalente a imitar — e "it" repete por pura mecânica da língua.
+const char* const kPronPt[] = {
+    "eu","tu","ele","ela","nós","vós","eles","elas","você","vocês",
+};
+const char* const kPronEn[] = {
+    "i","you","he","she","we","they",
+};
+const char* const kPronEs[] = {
+    "yo","tú","él","ella","nosotros","vosotros","ellos","ellas","usted","ustedes",
+};
 
 QSet<QString> makeSet(const char* const* words, int count)
 {
@@ -105,16 +111,23 @@ void RepetitionDetector::setLanguage(const QString& langCode)
 {
     const QString lang = langCode.left(2).toLower();
     m_lang = lang;
-    if (lang == QLatin1String("en"))
+    if (lang == QLatin1String("en")) {
         m_stopWords = makeSet(kStopEn, int(std::size(kStopEn)));
-    else if (lang == QLatin1String("es"))
+        m_pronouns  = makeSet(kPronEn, int(std::size(kPronEn)));
+    } else if (lang == QLatin1String("es")) {
         m_stopWords = makeSet(kStopEs, int(std::size(kStopEs)));
-    else
+        m_pronouns  = makeSet(kPronEs, int(std::size(kPronEs)));
+    } else {
         m_stopWords = makeSet(kStopPt, int(std::size(kStopPt)));
+        m_pronouns  = makeSet(kPronPt, int(std::size(kPronPt)));
+    }
 }
 
 bool RepetitionDetector::isIgnored(const QString& lowerWord) const
 {
+    // Pronome vem antes do tamanho mínimo: "ele", "ela", "he" e "we" são
+    // curtos e seriam descartados justamente sendo o vício que se quer ver.
+    if (isPronoun(lowerWord)) return m_ignored.contains(lowerWord);
     if (lowerWord.size() < kMinWordLength) return true;
     if (m_stopWords.contains(lowerWord)) return true;
     if (m_ignored.contains(lowerWord)) return true;
@@ -160,9 +173,13 @@ QVector<RepetitionDetector::Group> RepetitionDetector::analyze(const QString& pl
         // palavra usada 8 vezes ao longo de um capítulo inteiro não é defeito.
         int menorGap = INT_MAX;
         QSet<int> proximas;
+        // Todas as ocorrências de uma chave são a mesma palavra, então basta
+        // olhar a primeira pra saber se o grupo é de pronome.
+        const int janela = isPronoun(tokens[idxs.first()].word.toLower())
+                               ? m_pronounProximity : m_proximity;
         for (int i = 1; i < idxs.size(); ++i) {
             const int gap = tokens[idxs[i]].index - tokens[idxs[i - 1]].index;
-            if (gap <= m_proximity) {
+            if (gap <= janela) {
                 proximas.insert(idxs[i - 1]);
                 proximas.insert(idxs[i]);
                 menorGap = qMin(menorGap, gap);
@@ -199,10 +216,12 @@ QVector<RepetitionDetector::Group> RepetitionDetector::analyze(const QString& pl
     // Aqui as palavras são DIFERENTES entre si ("rapidamente", "lentamente") —
     // o defeito é a terminação voltando, não a palavra. Por isso nenhuma busca
     // por repetição literal pega isso, e por isso escapa tanto.
-    {
+    // Sem teste de advérbio (inglês, idioma sem dicionário, corretor desligado)
+    // esta parte não roda — ver setAdverbTest.
+    if (m_adverbTest) {
         QVector<int> adverbios;
         for (int i = 0; i < tokens.size(); ++i) {
-            if (ehAdverbioDeModo(tokens[i].word.toLower(), m_lang)) adverbios.append(i);
+            if (m_adverbTest(tokens[i].word.toLower())) adverbios.append(i);
         }
         // Janela dobrada: o vício se mede por parágrafo, não por frase. Dois
         // "-mente" na mesma frase são raros; o que empesta é o punhado deles

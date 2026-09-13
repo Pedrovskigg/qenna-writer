@@ -4378,6 +4378,77 @@ void MainWindow::runRepetitionScan()
     if (lang.isEmpty()) lang = QStringLiteral("pt_BR");
     det.setLanguage(lang);
 
+    // ── Advérbio em -mente: só em português e espanhol, e só com corretor ──
+    // Nas duas línguas o advérbio é o adjetivo + "mente" ("lenta" ->
+    // "lentamente"), então a pergunta é se o dicionário reconhece a base. Testado
+    // contra o hunspell: 16/16 advérbios e 0/24 falsos em português, 6/6 e 0/8
+    // em espanhol.
+    //
+    // FORA de propósito:
+    //  - inglês: o -ly forma advérbio ("quick" -> "quickly") E adjetivo
+    //    ("friend" -> "friendly"); nenhuma regra olhando só a palavra separa os
+    //    dois. Lá o detector fica só com repetição de palavra idêntica.
+    //  - idiomas ainda não testados (italiano, francês): o francês tem
+    //    substantivos em -ment ("moment", "appartement") e precisa ser medido
+    //    com o dicionário real antes de ligar.
+    //  - corretor desligado: SpellChecker::isCorrect() responde VERDADEIRO para
+    //    qualquer coisa, e a regra aceitaria "experi" como palavra.
+    const QString lang2 = lang.left(2).toLower();
+    SpellChecker* sc = editor->spellChecker();
+    if (sc && sc->isEnabled()
+        && (lang2 == QLatin1String("pt") || lang2 == QLatin1String("es"))) {
+        if (adverbCacheLang != sc->language()) {
+            adverbCache.clear();
+            adverbCacheLang = sc->language();
+        }
+        det.setAdverbTest([this, sc](const QString& w) -> bool {
+            static const QString sufixo = QStringLiteral("mente");
+            if (!w.endsWith(sufixo)) return false;
+            const auto emCache = adverbCache.constFind(w);
+            if (emCache != adverbCache.constEnd()) return emCache.value();
+
+            bool adverbio = false;
+            // Forma verbal nunca é advérbio: "atormente" tem a base "ator", que
+            // existe, mas o dicionário sabe que a palavra vem de "atormentar".
+            // Sem esta checagem ela passava — foi pega testando antes de ligar.
+            bool verbo = false;
+            for (const QString& raiz : sc->stemsOf(w)) {
+                if (raiz == w || raiz.size() < 3) continue;
+                if (raiz.endsWith(QLatin1String("ar")) || raiz.endsWith(QLatin1String("er"))
+                    || raiz.endsWith(QLatin1String("ir"))) {
+                    verbo = true;
+                    break;
+                }
+            }
+            const QString base = w.left(w.size() - sufixo.size());
+            // Base com 4+ letras: abaixo disso sobra "se" (semente), "de"
+            // (demente), "ali" (alimente) — palavras reais que não são o
+            // adjetivo de advérbio nenhum.
+            if (!verbo && base.size() >= 4) {
+                if (sc->isCorrect(base)) {
+                    adverbio = true;
+                } else {
+                    // O português tira o acento ao formar o advérbio ("rápida"
+                    // -> "rapidamente"); a base crua não existe, mas o corretor
+                    // sugere a forma acentuada.
+                    auto semAcento = [](const QString& s) {
+                        const QString d = s.toLower().normalized(QString::NormalizationForm_D);
+                        QString o;
+                        for (const QChar& c : d)
+                            if (c.category() != QChar::Mark_NonSpacing) o.append(c);
+                        return o;
+                    };
+                    const QString alvo = semAcento(base);
+                    for (const QString& sug : sc->suggest(base)) {
+                        if (semAcento(sug) == alvo) { adverbio = true; break; }
+                    }
+                }
+            }
+            adverbCache.insert(w, adverbio);
+            return adverbio;
+        });
+    }
+
     // Nome de personagem/lugar repete por necessidade — a alternativa seria
     // encher o texto de pronome. Grifar isso seria só ruído azul, e o projeto
     // já sabe quais são esses nomes.
@@ -7172,6 +7243,45 @@ void MainWindow::onExportRequested()
     auto* panel = new ExportPanel(projectModel, this);
     panel->setAttribute(Qt::WA_DeleteOnClose);
     connect(panel, &ExportPanel::previewRequested, this, &MainWindow::openReaderPreview);
+    connect(panel, &ExportPanel::bibleRequested, this, [this](Exporter::Format fmt) {
+        Exporter::DocStyle style;
+        style.fontFamily = currentFontFamily;
+        style.fontSize = currentFontSize;
+        style.lineHeightPercent = currentLineHeight;
+        style.firstLineIndent = firstLineIndentEnabled;
+        style.spacingBefore = paragraphSpacingBefore;
+        style.spacingAfter = paragraphSpacingAfter;
+
+        Exporter::BibleSources src;
+        src.glossary = glossaryStore;
+        src.construtor = construtorStore;
+        src.territorios = territorioStore;
+        src.mapPins = mapPinsStore;
+
+        Exporter exporter(projectModel, projectRoot, style);
+        QString err;
+        if (exporter.runBible(src, fmt, this, &err)) {
+            if (editorContainer) {
+                auto* toast = new QLabel(tr("Bíblia do universo exportada"), editorContainer);
+                toast->setObjectName(QStringLiteral("sceneToast"));
+                toast->setAlignment(Qt::AlignCenter);
+                toast->setStyleSheet(QStringLiteral(
+                    "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
+                    " border-radius: 6px; padding: 6px 16px;"
+                    " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
+                    .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+                toast->adjustSize();
+                const QPoint center = editorContainer->rect().center();
+                toast->move(center.x() - toast->width() / 2,
+                            editorContainer->height() - toast->height() - 32);
+                toast->show();
+                toast->raise();
+                QTimer::singleShot(1800, toast, [toast]() { toast->deleteLater(); });
+            }
+        } else if (!err.isEmpty()) {
+            QMessageBox::warning(this, tr("Exportar"), err);
+        }
+    });
     connect(panel, &ExportPanel::exportRequested, this,
             [this](const Exporter::Selection& sel) {
         Exporter::DocStyle style;

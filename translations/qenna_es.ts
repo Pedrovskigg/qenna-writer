@@ -2598,49 +2598,41 @@ El proyecto irá a la Papelera (accesible por el ícono de papelera aquí abajo)
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="207" />
-        <location filename="../src/RoleTiers.h" line="28" />
         <source>Protagonista</source>
         <translation>Protagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="208" />
-        <location filename="../src/RoleTiers.h" line="30" />
         <source>Deuteragonista</source>
         <translation>Deuteragonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="209" />
-        <location filename="../src/RoleTiers.h" line="32" />
         <source>Coadjuvante</source>
         <translation>Personaje secundario</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="210" />
-        <location filename="../src/RoleTiers.h" line="34" />
         <source>Antagonista</source>
         <translation>Antagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="211" />
-        <location filename="../src/RoleTiers.h" line="36" />
         <source>Contraponto</source>
         <translation>Contraste</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="212" />
-        <location filename="../src/RoleTiers.h" line="38" />
         <source>Trickster</source>
         <translation>Trickster</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="213" />
-        <location filename="../src/RoleTiers.h" line="40" />
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="214" />
-        <location filename="../src/RoleTiers.h" line="42" />
         <source>Figurante</source>
         <translation>Figurante</translation>
     </message>
@@ -2828,118 +2820,134 @@ El proyecto irá a la Papelera (accesible por el ícono de papelera aquí abajo)
         <translation>Datos del autor...</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="201" />
+        <location filename="../src/ExportPanel.cpp" line="202" />
+        <source>Bíblia do universo...</source>
+        <translation>Biblia del universo...</translation>
+    </message>
+    <message>
+        <location filename="../src/ExportPanel.cpp" line="205" />
+        <location filename="../src/ExportPanel.cpp" line="260" />
+        <source>Um documento só com gavetas, fichas, vínculos, glossário, territórios, sistemas do mundo e locais do mapa — para quem precisa consultar o universo sem abrir o app.</source>
+        <translation>Un solo documento con cajones, fichas, vínculos, glosario, territorios, sistemas del mundo y lugares del mapa — para quien necesita consultar el universo sin abrir la app.</translation>
+    </message>
+    <message>
+        <location filename="../src/ExportPanel.cpp" line="218" />
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="204" />
+        <location filename="../src/ExportPanel.cpp" line="221" />
         <source>Pré-visualizar</source>
         <translation>Vista previa</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="207" />
-        <location filename="../src/ExportPanel.cpp" line="428" />
+        <location filename="../src/ExportPanel.cpp" line="224" />
+        <location filename="../src/ExportPanel.cpp" line="462" />
         <source>Exportar</source>
         <translation>Exportar</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="242" />
+        <location filename="../src/ExportPanel.cpp" line="263" />
+        <source>A bíblia do universo sai em PDF, DOCX ou ODT.</source>
+        <translation>La biblia del universo se exporta en PDF, DOCX u ODT.</translation>
+    </message>
+    <message>
+        <location filename="../src/ExportPanel.cpp" line="276" />
         <source>Não se aplica ao EPUB: o texto reflui, não tem página fixa.</source>
         <translation>No se aplica al EPUB: el texto se readapta, no hay páginas fijas.</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="244" />
+        <location filename="../src/ExportPanel.cpp" line="278" />
         <source>Exige "Documento único" — o formato numera as páginas do manuscrito inteiro.</source>
         <translation>Requiere "Documento único" — el formato numera las páginas de todo el manuscrito.</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="247" />
+        <location filename="../src/ExportPanel.cpp" line="281" />
         <source>Em ODT o cabeçalho corrido não sai; use DOCX ou PDF para enviar de verdade.</source>
         <translation>En ODT no sale el encabezado corrido; usa DOCX o PDF para enviarlo de verdad.</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="250" />
+        <location filename="../src/ExportPanel.cpp" line="284" />
         <source>Falta preencher os dados do autor.</source>
         <translation>Faltan los datos del autor.</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="256" />
+        <location filename="../src/ExportPanel.cpp" line="290" />
         <source>Dados para submissão</source>
         <translation>Datos para el envío</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="260" />
+        <location filename="../src/ExportPanel.cpp" line="294" />
         <source>Nome que assina contrato</source>
         <translation>El nombre que firma contratos</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="265" />
+        <location filename="../src/ExportPanel.cpp" line="299" />
         <source>E-mail e/ou telefone</source>
         <translation>Correo electrónico y/o teléfono</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="267" />
+        <location filename="../src/ExportPanel.cpp" line="301" />
         <source>Nome de publicação, se for diferente</source>
         <translation>Nombre de publicación, si es distinto</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="269" />
+        <location filename="../src/ExportPanel.cpp" line="303" />
         <source>Uma ou duas palavras, para o cabeçalho</source>
         <translation>Una o dos palabras, para el encabezado</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="271" />
+        <location filename="../src/ExportPanel.cpp" line="305" />
         <source>Nome legal:</source>
         <translation>Nombre legal:</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="272" />
+        <location filename="../src/ExportPanel.cpp" line="306" />
         <source>Endereço:</source>
         <translation>Dirección:</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="273" />
+        <location filename="../src/ExportPanel.cpp" line="307" />
         <source>Contato:</source>
         <translation>Contacto:</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="274" />
+        <location filename="../src/ExportPanel.cpp" line="308" />
         <source>Assinar como:</source>
         <translation>Firmar como:</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="275" />
+        <location filename="../src/ExportPanel.cpp" line="309" />
         <source>Título curto:</source>
         <translation>Título corto:</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="314" />
+        <location filename="../src/ExportPanel.cpp" line="348" />
         <source>MANUSCRITOS</source>
         <translation>MANUSCRITOS</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="328" />
+        <location filename="../src/ExportPanel.cpp" line="362" />
         <source>Manuscrito</source>
         <translation>Manuscrito</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="352" />
+        <location filename="../src/ExportPanel.cpp" line="386" />
         <source>GAVETAS</source>
         <translation>CAJONES</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="362" />
+        <location filename="../src/ExportPanel.cpp" line="396" />
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="427" />
+        <location filename="../src/ExportPanel.cpp" line="461" />
         <source>Exportar (%1)</source>
         <translation>Exportar (%1)</translation>
     </message>
     <message>
-        <location filename="../src/ExportPanel.cpp" line="434" />
+        <location filename="../src/ExportPanel.cpp" line="468" />
         <source>Selecione capítulos de um único manuscrito para pré-visualizar</source>
         <translation>Selecciona capítulos de un único manuscrito para previsualizar</translation>
     </message>
@@ -2947,104 +2955,177 @@ El proyecto irá a la Papelera (accesible por el ícono de papelera aquí abajo)
 <context>
     <name>Exporter</name>
     <message>
-        <location filename="../src/Exporter.cpp" line="256" />
-        <location filename="../src/Exporter.cpp" line="1153" />
+        <location filename="../src/Exporter.cpp" line="262" />
+        <location filename="../src/Exporter.cpp" line="758" />
+        <location filename="../src/Exporter.cpp" line="1472" />
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="644" />
-        <location filename="../src/Exporter.cpp" line="811" />
-        <location filename="../src/Exporter.cpp" line="1136" />
-        <location filename="../src/Exporter.cpp" line="1490" />
+        <location filename="../src/Exporter.cpp" line="650" />
+        <location filename="../src/Exporter.cpp" line="1130" />
+        <location filename="../src/Exporter.cpp" line="1455" />
+        <location filename="../src/Exporter.cpp" line="1809" />
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="752" />
+        <location filename="../src/Exporter.cpp" line="1071" />
         <source>Aproximadamente %1 palavras</source>
         <translation>Aproximadamente %1 palabras</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="784" />
+        <location filename="../src/Exporter.cpp" line="739" />
+        <location filename="../src/Exporter.cpp" line="1103" />
         <source>por %1</source>
         <translation>por %1</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="998" />
+        <location filename="../src/Exporter.cpp" line="1317" />
         <source>Manuscrito</source>
         <translation>Manuscrito</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1173" />
+        <location filename="../src/Exporter.cpp" line="736" />
+        <location filename="../src/Exporter.cpp" line="1492" />
         <source>Projeto</source>
         <translation>Proyecto</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1343" />
+        <location filename="../src/Exporter.cpp" line="1662" />
         <source>Exportando… Esse processo pode levar alguns instantes.
 Não encerre o programa caso ele pare de responder.</source>
         <translation>Exportando... este proceso puede tardar un momento.
 No cierres el programa si deja de responder.</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1347" />
+        <location filename="../src/Exporter.cpp" line="943" />
+        <location filename="../src/Exporter.cpp" line="1666" />
         <source>Exportando</source>
         <translation>Exportando</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1384" />
+        <location filename="../src/Exporter.cpp" line="737" />
+        <location filename="../src/Exporter.cpp" line="922" />
+        <location filename="../src/Exporter.cpp" line="962" />
+        <source>Bíblia do universo</source>
+        <translation>Biblia del universo</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="740" />
+        <source>Gerada em %1</source>
+        <translation>Generada el %1</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="748" />
+        <source>Gaveta</source>
+        <translation>Cajón</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="777" />
+        <source>Vínculos</source>
+        <translation>Vínculos</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="801" />
+        <source>Glossário</source>
+        <translation>Glosario</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="816" />
+        <source>Territórios</source>
+        <translation>Territorios</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="843" />
+        <source>Relações entre territórios</source>
+        <translation>Relaciones entre territorios</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="853" />
+        <source>Sistemas do mundo</source>
+        <translation>Sistemas del mundo</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="884" />
+        <source>Locais no mapa</source>
+        <translation>Lugares en el mapa</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="891" />
+        <source>Ligado a: %1</source>
+        <translation>Vinculado a: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="933" />
+        <source>A bíblia do universo pode ser exportada em PDF, DOCX ou ODT.</source>
+        <translation>La biblia del universo se puede exportar en PDF, DOCX u ODT.</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="941" />
+        <source>Montando a bíblia do universo...</source>
+        <translation>Armando la biblia del universo...</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="965" />
+        <source>Exportar bíblia do universo</source>
+        <translation>Exportar biblia del universo</translation>
+    </message>
+    <message>
+        <location filename="../src/Exporter.cpp" line="1703" />
         <source>Documento PDF (*.pdf)</source>
         <translation>Documento PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1385" />
+        <location filename="../src/Exporter.cpp" line="1704" />
         <source>Exportar como PDF</source>
         <translation>Exportar como PDF</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1387" />
+        <location filename="../src/Exporter.cpp" line="1706" />
         <source>Livro EPUB (*.epub)</source>
         <translation>Libro EPUB (*.epub)</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1388" />
+        <location filename="../src/Exporter.cpp" line="1707" />
         <source>Exportar como EPUB</source>
         <translation>Exportar como EPUB</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1390" />
+        <location filename="../src/Exporter.cpp" line="1709" />
         <source>Documento Word (*.docx)</source>
         <translation>Documento Word (*.docx)</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1391" />
+        <location filename="../src/Exporter.cpp" line="1710" />
         <source>Exportar como DOCX</source>
         <translation>Exportar como DOCX</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1393" />
+        <location filename="../src/Exporter.cpp" line="1712" />
         <source>Documento ODF (*.odt)</source>
         <translation>Documento ODF (*.odt)</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1394" />
+        <location filename="../src/Exporter.cpp" line="1713" />
         <source>Exportar como ODT</source>
         <translation>Exportar como ODT</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1402" />
-        <location filename="../src/Exporter.cpp" line="1422" />
+        <location filename="../src/Exporter.cpp" line="952" />
+        <location filename="../src/Exporter.cpp" line="971" />
+        <location filename="../src/Exporter.cpp" line="1721" />
+        <location filename="../src/Exporter.cpp" line="1741" />
         <source>Não foi possível gravar o arquivo.</source>
         <translation>No se pudo guardar el archivo.</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1417" />
+        <location filename="../src/Exporter.cpp" line="1736" />
         <source>Exportar projeto (.zip)</source>
         <translation>Exportar proyecto (.zip)</translation>
     </message>
     <message>
-        <location filename="../src/Exporter.cpp" line="1418" />
+        <location filename="../src/Exporter.cpp" line="1737" />
         <source>Arquivo ZIP (*.zip)</source>
         <translation>Archivo ZIP (*.zip)</translation>
     </message>
@@ -6577,9 +6658,9 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <location filename="../src/MainWindow.cpp" line="1507" />
         <location filename="../src/MainWindow.cpp" line="3138" />
         <location filename="../src/MainWindow.cpp" line="5077" />
-        <location filename="../src/MainWindow.cpp" line="8232" />
-        <location filename="../src/MainWindow.cpp" line="8297" />
-        <location filename="../src/MainWindow.cpp" line="8354" />
+        <location filename="../src/MainWindow.cpp" line="8271" />
+        <location filename="../src/MainWindow.cpp" line="8336" />
+        <location filename="../src/MainWindow.cpp" line="8393" />
         <source>Cena %1</source>
         <translation>Escena %1</translation>
     </message>
@@ -6659,12 +6740,12 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation>Justificar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8230" />
-        <location filename="../src/MainWindow.cpp" line="8241" />
-        <location filename="../src/MainWindow.cpp" line="8295" />
-        <location filename="../src/MainWindow.cpp" line="8306" />
-        <location filename="../src/MainWindow.cpp" line="8352" />
-        <location filename="../src/MainWindow.cpp" line="8363" />
+        <location filename="../src/MainWindow.cpp" line="8269" />
+        <location filename="../src/MainWindow.cpp" line="8280" />
+        <location filename="../src/MainWindow.cpp" line="8334" />
+        <location filename="../src/MainWindow.cpp" line="8345" />
+        <location filename="../src/MainWindow.cpp" line="8391" />
+        <location filename="../src/MainWindow.cpp" line="8402" />
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
@@ -6672,9 +6753,9 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <location filename="../src/MainWindow.cpp" line="1494" />
         <location filename="../src/MainWindow.cpp" line="1508" />
         <location filename="../src/MainWindow.cpp" line="5078" />
-        <location filename="../src/MainWindow.cpp" line="8233" />
-        <location filename="../src/MainWindow.cpp" line="8298" />
-        <location filename="../src/MainWindow.cpp" line="8355" />
+        <location filename="../src/MainWindow.cpp" line="8272" />
+        <location filename="../src/MainWindow.cpp" line="8337" />
+        <location filename="../src/MainWindow.cpp" line="8394" />
         <source>%1 — %2</source>
         <translation>%1 — %2</translation>
     </message>
@@ -6858,9 +6939,9 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="3622" />
-        <location filename="../src/MainWindow.cpp" line="7920" />
-        <location filename="../src/MainWindow.cpp" line="8256" />
-        <location filename="../src/MainWindow.cpp" line="8740" />
+        <location filename="../src/MainWindow.cpp" line="7959" />
+        <location filename="../src/MainWindow.cpp" line="8295" />
+        <location filename="../src/MainWindow.cpp" line="8779" />
         <source>(sem nome)</source>
         <translation>(sin nombre)</translation>
     </message>
@@ -7219,132 +7300,138 @@ El contenido existente puede sobrescribirse.</translation>
         <translation>Error al hacer la copia de seguridad</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7191" />
+        <location filename="../src/MainWindow.cpp" line="7194" />
+        <source>Bíblia do universo exportada</source>
+        <translation>Biblia del universo exportada</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="7230" />
         <source>Exportado com sucesso</source>
         <translation>Exportado con éxito</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7208" />
+        <location filename="../src/MainWindow.cpp" line="7211" />
+        <location filename="../src/MainWindow.cpp" line="7247" />
         <source>Exportar</source>
         <translation>Exportar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7222" />
+        <location filename="../src/MainWindow.cpp" line="7261" />
         <source>Carregando área de Temas…</source>
         <translation>Cargando área de Temas…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7765" />
-        <location filename="../src/MainWindow.cpp" line="7808" />
+        <location filename="../src/MainWindow.cpp" line="7804" />
+        <location filename="../src/MainWindow.cpp" line="7847" />
         <source>Excluir vínculo</source>
         <translation>Eliminar vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7766" />
-        <location filename="../src/MainWindow.cpp" line="7809" />
+        <location filename="../src/MainWindow.cpp" line="7805" />
+        <location filename="../src/MainWindow.cpp" line="7848" />
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar este vínculo? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7900" />
+        <location filename="../src/MainWindow.cpp" line="7939" />
         <source>Documento do vínculo</source>
         <translation>Documento del vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7908" />
-        <location filename="../src/MainWindow.cpp" line="8730" />
+        <location filename="../src/MainWindow.cpp" line="7947" />
+        <location filename="../src/MainWindow.cpp" line="8769" />
         <source>Nome do documento:</source>
         <translation>Nombre del documento:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7914" />
-        <location filename="../src/MainWindow.cpp" line="8736" />
+        <location filename="../src/MainWindow.cpp" line="7953" />
+        <location filename="../src/MainWindow.cpp" line="8775" />
         <source>Gaveta de destino:</source>
         <translation>Cajón de destino:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5882" />
-        <location filename="../src/MainWindow.cpp" line="7932" />
-        <location filename="../src/MainWindow.cpp" line="8768" />
+        <location filename="../src/MainWindow.cpp" line="7971" />
+        <location filename="../src/MainWindow.cpp" line="8807" />
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7933" />
-        <location filename="../src/MainWindow.cpp" line="8769" />
+        <location filename="../src/MainWindow.cpp" line="7972" />
+        <location filename="../src/MainWindow.cpp" line="8808" />
         <source>Criar</source>
         <translation>Crear</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7951" />
+        <location filename="../src/MainWindow.cpp" line="7990" />
         <source>%1 — %2 de %3</source>
         <translation>%1 — %2 de %3</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8076" />
+        <location filename="../src/MainWindow.cpp" line="8115" />
         <source>(evento sem título)</source>
         <translation>(evento sin título)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8246" />
-        <location filename="../src/MainWindow.cpp" line="8311" />
-        <location filename="../src/MainWindow.cpp" line="8368" />
+        <location filename="../src/MainWindow.cpp" line="8285" />
+        <location filename="../src/MainWindow.cpp" line="8350" />
+        <location filename="../src/MainWindow.cpp" line="8407" />
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8618" />
+        <location filename="../src/MainWindow.cpp" line="8657" />
         <source>Renomear</source>
         <translation>Renombrar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8619" />
+        <location filename="../src/MainWindow.cpp" line="8658" />
         <source>Não foi possível renomear.</source>
         <translation>No se pudo renombrar.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8647" />
+        <location filename="../src/MainWindow.cpp" line="8686" />
         <source>Capítulo sem título</source>
         <translation>Capítulo sin título</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8651" />
+        <location filename="../src/MainWindow.cpp" line="8690" />
         <source>Documento sem título</source>
         <translation>Documento sin título</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8677" />
+        <location filename="../src/MainWindow.cpp" line="8716" />
         <source>Salvar imagem gerada</source>
         <translation>Guardar imagen generada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8678" />
+        <location filename="../src/MainWindow.cpp" line="8717" />
         <source>PNG (*.png)</source>
         <translation>PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8696" />
-        <location filename="../src/MainWindow.cpp" line="8722" />
+        <location filename="../src/MainWindow.cpp" line="8735" />
+        <location filename="../src/MainWindow.cpp" line="8761" />
         <source>Criar documento</source>
         <translation>Crear documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8697" />
+        <location filename="../src/MainWindow.cpp" line="8736" />
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Crea un cajón antes de usar esta función.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8755" />
+        <location filename="../src/MainWindow.cpp" line="8794" />
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
         <translation>A continuación se abrirá el formulario de personaje (foto y rol).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8756" />
+        <location filename="../src/MainWindow.cpp" line="8795" />
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
         <translation>A continuación se abrirá el formulario de escenario (foto).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8757" />
+        <location filename="../src/MainWindow.cpp" line="8796" />
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation>A continuación se abrirá el formulario de objeto (foto).</translation>
     </message>
@@ -19518,6 +19605,11 @@ Si no tienes una clave de API o simplemente no quieres usar el asistente, no hay
         <location filename="../src/TerritorioWindow.cpp" line="300" />
         <source>Excluir vínculo</source>
         <translation>Eliminar vínculo</translation>
+    </message>
+    <message>
+        <location filename="../src/TerritorioWindow.cpp" line="351" />
+        <source>☰ Territórios</source>
+        <translation>☰ Territorios</translation>
     </message>
     <message>
         <location filename="../src/TerritorioWindow.cpp" line="358" />

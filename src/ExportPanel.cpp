@@ -197,6 +197,23 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
 
     // Linha: botões
     auto* btnRow = new QHBoxLayout;
+    // Bíblia do universo à esquerda, separada dos botões da exportação comum:
+    // não depende da árvore de seleção acima.
+    m_bibleBtn = new QPushButton(tr("Bíblia do universo..."), footer);
+    m_bibleBtn->setObjectName(QStringLiteral("exportCancel"));
+    m_bibleBtn->setCursor(Qt::PointingHandCursor);
+    m_bibleBtn->setToolTip(tr(
+        "Um documento só com gavetas, fichas, vínculos, glossário, territórios, "
+        "sistemas do mundo e locais do mapa — para quem precisa consultar o "
+        "universo sem abrir o app."));
+    connect(m_bibleBtn, &QPushButton::clicked, this, [this]() {
+        // Fecha antes de emitir: quem ouve abre progresso e diálogo de salvar,
+        // e empilhar isso por cima deste modal fica confuso.
+        const Exporter::Format fmt = currentFormat();
+        accept();
+        emit bibleRequested(fmt);
+    });
+    btnRow->addWidget(m_bibleBtn);
     btnRow->addStretch();
     auto* cancel = new QPushButton(tr("Cancelar"), footer);
     cancel->setObjectName(QStringLiteral("exportCancel"));
@@ -226,9 +243,26 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     refreshSubmissionAvailability();
 }
 
+Exporter::Format ExportPanel::currentFormat() const {
+    if (m_format == QStringLiteral("pdf"))  return Exporter::Format::Pdf;
+    if (m_format == QStringLiteral("epub")) return Exporter::Format::Epub;
+    if (m_format == QStringLiteral("docx")) return Exporter::Format::Docx;
+    return Exporter::Format::Odt;
+}
+
 void ExportPanel::refreshSubmissionAvailability() {
-    if (!m_submissionCheck) return;
     const bool paged = (m_format != QStringLiteral("epub"));
+    // A bíblia sai só em formato de página (o writer de EPUB é construído em
+    // torno de capítulos do manuscrito). Mesma regra de disponibilidade.
+    if (m_bibleBtn) {
+        m_bibleBtn->setEnabled(paged);
+        m_bibleBtn->setToolTip(paged
+            ? tr("Um documento só com gavetas, fichas, vínculos, glossário, territórios, "
+                 "sistemas do mundo e locais do mapa — para quem precisa consultar o "
+                 "universo sem abrir o app.")
+            : tr("A bíblia do universo sai em PDF, DOCX ou ODT."));
+    }
+    if (!m_submissionCheck) return;
     const bool single = !m_separateRadio || !m_separateRadio->isChecked();
     const bool usable = paged && single;
 

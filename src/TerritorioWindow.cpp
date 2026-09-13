@@ -348,7 +348,7 @@ void TerritorioWindow::buildUi()
     auto* topStripLay = new QHBoxLayout(topStrip);
     topStripLay->setContentsMargins(8, 4, 8, 4);
     topStripLay->setSpacing(6);
-    m_toggleLeftBtn = new QPushButton(QStringLiteral("☰ Territórios"), topStrip);
+    m_toggleLeftBtn = new QPushButton(tr("☰ Territórios"), topStrip);
     m_toggleLeftBtn->setObjectName(QStringLiteral("terrToggleBtn"));
     m_toggleLeftBtn->setCursor(Qt::PointingHandCursor);
     m_toggleLeftBtn->setCheckable(true);

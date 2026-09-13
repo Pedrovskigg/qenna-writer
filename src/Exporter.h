@@ -7,6 +7,10 @@ class ProjectModel;
 class QWidget;
 class QTextDocument;
 class QTextCursor;
+class GlossaryStore;
+class ConstrutorStore;
+class TerritorioStore;
+class MapPinsStore;
 class QColor;
 class QObject;
 struct Chapter;
@@ -71,7 +75,23 @@ public:
             && sel.manuscriptMode == ManuscriptMode::SingleDocument;
     }
 
+    // Fontes da bíblia do universo que não vivem no ProjectModel. Qualquer uma
+    // pode vir nula — a seção correspondente simplesmente não aparece.
+    struct BibleSources {
+        GlossaryStore* glossary = nullptr;
+        ConstrutorStore* construtor = nullptr;
+        TerritorioStore* territorios = nullptr;
+        MapPinsStore* mapPins = nullptr;
+    };
+
     Exporter(ProjectModel* model, const QString& projectRoot, const DocStyle& style);
+
+    // Bíblia do universo: gavetas + vínculos + glossário + territórios +
+    // sistemas do mundo + locais do mapa num documento só, para quem precisa
+    // consultar o universo sem o app (editora, co-autor, ilustrador). Pede o
+    // destino e grava. EPUB não é suportado — ver runBible.
+    bool runBible(const BibleSources& src, Format fmt, QWidget* dialogParent,
+                  QString* error = nullptr);
 
     // Abre um diálogo de destino e grava. true em sucesso; *error em falha.
     // *nothingExported vira true se a seleção não produziu nenhum arquivo.
@@ -109,6 +129,10 @@ private:
                           const QString& docTitle = QString()) const;
     QByteArray exportChapters(const QList<const Chapter*>& chapters, bool includeMarkers, Format fmt,
                               const QString& docTitle = QString()) const;
+
+    // ── Bíblia do universo ──
+    QByteArray buildBible(const BibleSources& src, Format fmt) const;
+    static QString biblePlainOf(const QString& html);
 
     // ── Formato de submissão (padrão Shunn) ──
     // Monta o manuscrito inteiro no formato que editora/revista espera, em vez

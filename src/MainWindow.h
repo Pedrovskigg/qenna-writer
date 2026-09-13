@@ -449,6 +449,12 @@ private:
     int repetitionProximity = RepetitionDetector::Tight;
     QTimer *repetitionTimer = nullptr;
     void runRepetitionScan();
+    // Veredito "é advérbio em -mente?" por palavra. Consultar o corretor (e às
+    // vezes pedir sugestões) é caro, e a reanálise roda a cada pausa na
+    // digitação — a mesma palavra não precisa ser julgada de novo. Zera quando
+    // o idioma do corretor muda.
+    QHash<QString, bool> adverbCache;
+    QString adverbCacheLang;
     // Parágrafo longo: limite herdado do "Revisor Mira" do app antigo, onde o
     // número foi calibrado no uso real. 120 palavras num bloco só é hora de
     // considerar dividir.
