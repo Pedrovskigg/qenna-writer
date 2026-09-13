@@ -64,8 +64,7 @@ However, any and all redistribution of the code must remain free of
 charge and open. See the full license here: [LICENSE](LICENSE).
 
 (GPL-3.0, supplemented by a Commons Clause condition and a mandatory
-author-attribution term — releases published before 2026-07-15 remain
-under plain GPL-3.0, as published at the time.)
+author-attribution term.)
 
 Third-party components (Qt, Hunspell, FFmpeg, bundled fonts, etc.)
 keep their own licenses — see
