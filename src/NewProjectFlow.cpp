@@ -340,6 +340,16 @@ void NewProjectDetailsDialog::applyDialogStyle() {
         #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 6px; }
         #npLabel { color: %4; font-size: 11px; margin-top: 4px; }
         #npNote { color: %4; font-size: 11px; font-style: italic; padding: 6px 0; }
+        #npTemplateOption { color: %2; font-size: 13px; padding: 4px 2px; spacing: 10px; }
+        #npTemplateOption::indicator {
+            width: 14px; height: 14px;
+            border: 1px solid %6; border-radius: 3px; background: %5;
+        }
+        #npTemplateOption::indicator:hover { border-color: %9; }
+        #npTemplateOption::indicator:checked {
+            background: %9; border-color: %9;
+            image: url(:/icons/check.svg);
+        }
         #npCover {
             background: %5; color: %4; border: 1px solid %6;
             border-radius: 6px; font-size: 11px;

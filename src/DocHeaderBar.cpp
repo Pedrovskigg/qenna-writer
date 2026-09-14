@@ -96,6 +96,21 @@ void DocHeaderBar::applyTheme()
         .arg(bg.red()).arg(bg.green()).arg(bg.blue())
         .arg(QString::number(bg.alphaF(), 'f', 3));
 
+    // A faixa fica em cima da FOLHA, não do chrome: o texto tem que sair das
+    // cores do editor. Com textBright/textMuted, tema de mesa escura e papel
+    // claro (Mahogany: #f4e0cc sobre #efe2cc) deixava o título invisível.
+    const QColor ink(Theme::editorTextColor());
+    const QColor paper(Theme::editorBackground());
+    const auto mix = [&](qreal t) {
+        return QColor::fromRgbF(ink.redF()   * (1 - t) + paper.redF()   * t,
+                                ink.greenF() * (1 - t) + paper.greenF() * t,
+                                ink.blueF()  * (1 - t) + paper.blueF()  * t).name();
+    };
+    const QString titleColor = ink.name();
+    const QString subtitleColor = mix(0.45);
+    const QString hover = QStringLiteral("rgba(%1,%2,%3,0.08)")
+        .arg(ink.red()).arg(ink.green()).arg(ink.blue());
+
     setStyleSheet(QStringLiteral(R"(
         QWidget#docHeaderBar { background: %1; }
         QLabel#docHeaderTitle {
@@ -118,11 +133,11 @@ void DocHeaderBar::applyTheme()
             border-radius: 4px;
         }
         QToolButton#docHeaderVar:hover { background: %4; }
-    )").arg(bgCss, Theme::textBright(), Theme::textMuted(), Theme::hoverOverlay()));
+    )").arg(bgCss, titleColor, subtitleColor, hover));
 
     m_varButton->setIcon(IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/scene-var.svg"),
-        QColor(Theme::textMuted()), QColor(Theme::textPrimary()), QColor(Theme::textBright()),
+        QColor(subtitleColor), QColor(mix(0.2)), ink,
         m_varButton->iconSize()));
 }
 
