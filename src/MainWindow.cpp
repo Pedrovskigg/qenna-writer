@@ -9,6 +9,7 @@
 #include "MainMenuDialog.h"
 #include "NewProjectFlow.h"
 #include "UpdateChecker.h"
+#include "WhatsNewDialog.h"
 
 #ifdef Q_OS_WIN
 #include <dwmapi.h>
@@ -1699,6 +1700,17 @@ void MainWindow::setupEditor()
     thesaurus = new Thesaurus(this);
     thesaurusPopup = new ThesaurusPopup(thesaurus, this);
 
+    // Quem escolhe um idioma no app escreve nele: o corretor e os sinônimos
+    // desse idioma já começam a baixar na abertura, sem esperar a primeira
+    // consulta nem o primeiro projeto. Trocar de idioma reinicia o app, então
+    // este ponto cobre a troca também. Em silêncio — sem internet, tenta de
+    // novo na próxima abertura, e o download sob demanda continua existindo.
+    {
+        const QString idiomaDoApp = SpellChecker::dictionaryForAppLanguage();
+        thesaurus->ensureDownloaded(idiomaDoApp);
+        if (spellChecker) spellChecker->ensureDictionary(idiomaDoApp);
+    }
+
     // Submenu rápido: a palavra que nomeia cada acepção, uma por sentido. É o
     // melhor resumo possível de uma consulta — "casa" devolve lar, domicílio,
     // prédio, família em vez de dez variações do mesmo sentido — e evita a
@@ -2284,6 +2296,22 @@ void MainWindow::setupEditor()
         // aparecer pra o dialog ter parent visível.
         if (projectRoot.isEmpty()) {
             openMainMenu();
+        }
+
+        // Primeira abertura depois de atualizar: patch note por cima do que
+        // abriu (Main Menu ou projeto). Um respiro de atraso pra janela de
+        // baixo terminar de aparecer — senão a de novidades nasce atrás dela.
+        if (WhatsNewDialog::shouldShow()) {
+            QTimer::singleShot(500, this, [this]() {
+                // Gravado ao abrir, não ao fechar: se o app cair com a janela
+                // aberta, ela não volta a cada inicialização.
+                WhatsNewDialog::markSeen();
+                QWidget* host = (mainMenuDialog && mainMenuDialog->isVisible())
+                    ? static_cast<QWidget*>(mainMenuDialog) : static_cast<QWidget*>(this);
+                auto* dlg = new WhatsNewDialog(host);
+                dlg->setAttribute(Qt::WA_DeleteOnClose);
+                dlg->open();
+            });
         }
     });
 

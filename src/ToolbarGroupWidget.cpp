@@ -10,6 +10,7 @@
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QSettings>
 #include <QTimer>
 #include <QHelpEvent>
 #include <QToolButton>
@@ -127,6 +128,11 @@ void ToolbarGroupWidget::refreshEmptyPlaceholder()
     if (!reserve) return;
     if (m_orientation == Qt::Horizontal) setMinimumWidth(kEmptyDropExtent);
     else                                 setMinimumHeight(kEmptyDropExtent);
+}
+
+void ToolbarGroupWidget::setSpacing(int px)
+{
+    m_layout->setSpacing(px);
 }
 
 void ToolbarGroupWidget::applyTheme(const QColor& handleColor, const QColor& dropHighlight)
@@ -473,3 +479,123 @@ void ToolbarGroupWidget::paintEvent(QPaintEvent* event)
         p.drawRoundedRect(insertionMarkerRect(m_dropIndex), 1.5, 1.5);
     }
 }
+
+// ------------------------------------------------------------ composição --
+
+namespace ToolbarLayout {
+
+QStringList loadGroupOrder(const QString& key, const QStringList& def)
+{
+    const QStringList saved = QSettings().value(key).toStringList();
+    // Settings corrompida, de versao antiga sem esse valor, ou de uma versao
+    // futura com grupos diferentes — ignora e volta pro padrao em vez de
+    // arriscar desenhar a barra incompleta ou travar em algum lugar.
+    const QSet<QString> savedSet(saved.begin(), saved.end());
+    const QSet<QString> defSet(def.begin(), def.end());
+    if (saved.size() == def.size() && savedSet == defSet) return saved;
+    return def;
+}
+
+void saveGroupOrder(const QString& key, const QStringList& order)
+{
+    QSettings().setValue(key, order);
+}
+
+// Um valor so no registro, e legivel a olho nu se precisar depurar.
+void saveButtonLayout(const QString& key, const QStringList& order,
+                      const QHash<QString, QStringList>& layout)
+{
+    QStringList out;
+    for (const QString& gid : order)
+        out << QStringLiteral("%1=%2").arg(gid, layout.value(gid).join(QLatin1Char(',')));
+    QSettings().setValue(key, out);
+}
+
+QHash<QString, QStringList> loadButtonLayout(const QString& key,
+                                             const QHash<QString, QStringList>& def,
+                                             const QSet<QString>& groupIds,
+                                             const QSet<QString>& buttonIds)
+{
+    const QStringList saved = QSettings().value(key).toStringList();
+    if (saved.isEmpty()) return def;
+
+    QHash<QString, QStringList> parsed;
+    QSet<QString> seen;
+    for (const QString& entry : saved) {
+        const int eq = entry.indexOf(QLatin1Char('='));
+        if (eq <= 0) return def; // formato estranho: nao tenta adivinhar
+        const QString gid = entry.left(eq);
+        if (!groupIds.contains(gid) || parsed.contains(gid)) return def;
+        QStringList ids;
+        const QString rhs = entry.mid(eq + 1);
+        if (!rhs.isEmpty()) ids = rhs.split(QLatin1Char(','), Qt::SkipEmptyParts);
+        for (const QString& id : std::as_const(ids)) {
+            // Id desconhecido (versao antiga/futura) ou repetido em dois grupos
+            // deixaria um botao orfao ou duplicado na barra — melhor recomecar.
+            if (!buttonIds.contains(id) || seen.contains(id)) return def;
+            seen.insert(id);
+        }
+        parsed.insert(gid, ids);
+    }
+    // Todo botao conhecido precisa estar em exatamente um grupo. Quando uma
+    // versao nova do app ganha um botao, o layout salvo nao o conhece —
+    // antes isso jogava a organizacao inteira fora e voltava pro padrao.
+    // Perder a barra que o usuario arrumou a mao toda vez que nasce uma
+    // feature e caro demais: agora o botao que falta e ENCAIXADO no grupo
+    // onde o padrao o coloca, e o resto da organizacao fica de pe.
+    if (seen.size() != buttonIds.size()) {
+        for (auto it = def.constBegin(); it != def.constEnd(); ++it) {
+            for (const QString& id : it.value()) {
+                if (seen.contains(id) || !buttonIds.contains(id)) continue;
+                parsed[it.key()].append(id);
+                seen.insert(id);
+            }
+        }
+        // Botao conhecido que nem o padrao posiciona (descuido de quem
+        // adicionou): ai sim recomeca, senao ele ficaria orfao e invisivel.
+        if (seen.size() != buttonIds.size()) return def;
+    }
+    for (const QString& gid : groupIds)
+        if (!parsed.contains(gid)) parsed.insert(gid, QStringList());
+    return parsed;
+}
+
+bool moveButton(QHash<QString, QStringList>& layout, const QString& buttonId,
+                const QString& targetGroupId, int index)
+{
+    if (!layout.contains(targetGroupId)) return false;
+
+    QString sourceGroupId;
+    int sourceIndex = -1;
+    for (auto it = layout.constBegin(); it != layout.constEnd(); ++it) {
+        const int i = it.value().indexOf(buttonId);
+        if (i >= 0) { sourceGroupId = it.key(); sourceIndex = i; break; }
+    }
+    if (sourceGroupId.isEmpty()) return false;
+
+    int target = qBound(0, index, layout.value(targetGroupId).size());
+    if (sourceGroupId == targetGroupId) {
+        // Tirar o botao da lista desloca pra tras tudo que vem depois dele, e o
+        // indice de insercao foi calculado ANTES dessa remocao.
+        if (sourceIndex < target) --target;
+        if (target == sourceIndex) return false; // soltou onde ja estava
+    }
+
+    layout[sourceGroupId].removeAt(sourceIndex);
+    QStringList& targetList = layout[targetGroupId];
+    targetList.insert(qBound(0, target, targetList.size()), buttonId);
+    return true;
+}
+
+bool moveGroup(QStringList& order, const QString& draggedId, const QString& targetId)
+{
+    if (draggedId == targetId) return false;
+    const int fromIdx = order.indexOf(draggedId);
+    if (fromIdx < 0 || !order.contains(targetId)) return false;
+    order.removeAt(fromIdx);
+    const int toIdx = order.indexOf(targetId); // recalculado após o remove acima
+    order.insert(toIdx, draggedId);
+    return true;
+}
+
+} // namespace ToolbarLayout

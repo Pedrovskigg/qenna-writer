@@ -109,11 +109,12 @@ No lexical content was added or altered.
 - **Source:** https://github.com/own-pt/openWordnet-PT
 - **Full text:** https://creativecommons.org/licenses/by/4.0/
 
-## MyThes thesaurus data (English, Spanish)
+## MyThes thesaurus data (English, Spanish, Italian, French)
 
-Not bundled. Downloaded on demand, only when the user asks for synonyms in a
-language other than Portuguese, and stored in the user's application data
-folder. Fetched from the LibreOffice dictionaries repository.
+Not bundled. Downloaded on demand — when the app starts in one of these
+languages, or when the user asks for synonyms in it — and stored in the
+user's application data folder. Fetched from the LibreOffice dictionaries
+repository.
 
 - **`th_en_US_v2.dat`:** derived from Princeton WordNet — see the WordNet
   license at https://wordnet.princeton.edu/license-and-commercial-use
@@ -122,6 +123,13 @@ folder. Fetched from the LibreOffice dictionaries repository.
   **GNU LGPL 2.1.** Credits in `es/README_th_es.txt`; full text in
   [`licenses/hunspell/COPYING-LGPL-2.1.txt`](licenses/hunspell/COPYING-LGPL-2.1.txt)
   (same license text).
+- **`th_it_IT_v2.dat`:** Dizionario dei sinonimi italiano, © Daniela Volta,
+  Giovanni Zuliani, Davide Prina, Andrea Pescetti, LibreItalia – Marina
+  Latini. **GNU GPL 3.0.** Credits in `it_IT/README_th_it_IT.txt`.
+- **`thes_fr.dat`:** Dictionnaire des synonymes français myThes v2.3, by
+  Frédéric Labbé (Dicollecte/Grammalecte). **GNU LGPL 2.1 or later.** Credits
+  in `fr_FR/dictionaries/README_thes_fr.txt`; full text in
+  [`licenses/hunspell/COPYING-LGPL-2.1.txt`](licenses/hunspell/COPYING-LGPL-2.1.txt).
 - **MyThes format/engine reference license:** BSD 3-Clause,
   Copyright 2003 Kevin B. Hendricks.
 - **Source:** https://github.com/LibreOffice/dictionaries

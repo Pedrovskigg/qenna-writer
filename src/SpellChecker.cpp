@@ -137,25 +137,31 @@ void SpellChecker::setLanguage(const QString& langCode)
     emit changed();
 }
 
-void SpellChecker::downloadDictionary(const QString& code)
+void SpellChecker::ensureDictionary(const QString& code)
+{
+    if (!code.isEmpty() && !isInstalled(code) && isDownloadable(code))
+        downloadDictionary(code, /*quiet=*/true);
+}
+
+void SpellChecker::downloadDictionary(const QString& code, bool quiet)
 {
     const RemoteDict* remote = remoteDictFor(code);
     if (!remote || m_downloadingLang == code) return;
     m_downloadingLang = code;
     if (!m_net) m_net = new QNetworkAccessManager(this);
-    emit dictionaryDownloadStarted(code);
+    if (!quiet) emit dictionaryDownloadStarted(code);
 
     // Dois arquivos; só grava quando os DOIS chegaram. Um .aff sem o .dic
     // correspondente faria isInstalled() mentir e o download nunca mais rodar.
     struct State { QByteArray aff, dic; int pending = 2; bool failed = false; QString error; };
     auto state = std::make_shared<State>();
 
-    auto fetch = [this, code, state](const char* path, bool isAff) {
+    auto fetch = [this, code, state, quiet](const char* path, bool isAff) {
         QNetworkRequest req{ QUrl(QLatin1String(kRemoteDictBase) + QLatin1String(path)) };
         req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
                          QNetworkRequest::NoLessSafeRedirectPolicy);
         QNetworkReply* reply = m_net->get(req);
-        connect(reply, &QNetworkReply::finished, this, [this, code, state, reply, isAff]() {
+        connect(reply, &QNetworkReply::finished, this, [this, code, state, reply, isAff, quiet]() {
             reply->deleteLater();
             if (reply->error() != QNetworkReply::NoError) {
                 state->failed = true;
@@ -191,7 +197,7 @@ void SpellChecker::downloadDictionary(const QString& code)
                 loadHunspell();
                 emit changed();
             }
-            emit dictionaryDownloadFinished(code, !state->failed, state->error);
+            if (!quiet) emit dictionaryDownloadFinished(code, !state->failed, state->error);
         });
     };
     fetch(remote->aff, true);

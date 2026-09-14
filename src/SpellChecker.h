@@ -76,6 +76,9 @@ public:
     // Existe no repositório de dicionários do LibreOffice e sabemos baixar?
     static bool isDownloadable(const QString& code);
     bool isDownloading() const { return !m_downloadingLang.isEmpty(); }
+    // Baixa em segundo plano, sem avisos na tela, o dicionário de `code` se ele
+    // ainda não existir. Usado na abertura do app com o idioma da interface.
+    void ensureDictionary(const QString& code);
 
 signals:
     void changed();
@@ -94,7 +97,8 @@ private:
     static QString downloadedSpellDir();
     // Pasta que contém <code>/index.aff e index.dic, ou vazio.
     static QString dictionaryDir(const QString& code);
-    void downloadDictionary(const QString& code);
+    // quiet: não emite os sinais de início/fim (que viram aviso na tela).
+    void downloadDictionary(const QString& code, bool quiet = false);
 
     QNetworkAccessManager* m_net = nullptr;
     QString m_downloadingLang;

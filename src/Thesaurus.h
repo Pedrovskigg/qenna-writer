@@ -11,8 +11,9 @@ class QNetworkReply;
 // Dicionário de sinônimos (MyThes, o mesmo formato que o LibreOffice usa).
 //
 // Os arquivos NÃO são embarcados: somados dão ~36 MB nos três idiomas, e a
-// maioria dos autores usa um só. O app baixa sob demanda na primeira consulta e
-// guarda em AppData — mesmo caminho já adotado pelo Mira Cover.
+// maioria dos autores usa um só. O idioma do app é baixado já na abertura
+// (ensureDownloaded); os demais, sob demanda na primeira consulta. Tudo fica em
+// AppData — mesmo caminho já adotado pelo Mira Cover.
 //
 // Formato do .dat (não tem .idx nestes arquivos, o índice é construído aqui):
 //   linha 1: nome da codificação ("UTF-8" no pt_BR)
@@ -64,6 +65,13 @@ public:
     void download();
     void cancelDownload();
 
+    // Garante, em segundo plano, que o idioma `code` tenha dados em disco — sem
+    // mexer no idioma atual. Chamado na abertura do app com o idioma da
+    // interface: quem escolhe francês já encontra os sinônimos em francês
+    // prontos na primeira consulta. Falha é silenciosa; tenta de novo na
+    // próxima abertura.
+    void ensureDownloaded(const QString& code);
+
 signals:
     void readyChanged();
     void downloadProgress(qint64 received, qint64 total);
@@ -71,7 +79,8 @@ signals:
 
 private:
     QString dataDir() const;
-    QString dataPath() const;
+    QString dataPath() const { return dataPathFor(m_lang); }
+    QString dataPathFor(const QString& code) const;
     static QString remoteUrlFor(const QString& code);
 
     QString m_lang;
@@ -83,4 +92,7 @@ private:
 
     QNetworkAccessManager* m_net = nullptr;
     QNetworkReply* m_reply = nullptr;
+    // Pré-download do ensureDownloaded(): separado de m_reply porque trocar de
+    // idioma cancela m_reply, e o pré-download não pode morrer por isso.
+    QNetworkReply* m_prefetch = nullptr;
 };

@@ -4,9 +4,11 @@
 #include <QList>
 #include <QPoint>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
 
 class QFrame;
+class ToolbarGroupWidget;
 
 class QVBoxLayout;
 class QToolButton;
@@ -67,6 +69,7 @@ signals:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
@@ -95,6 +98,24 @@ private:
     QToolButton* makeNewDrawerButton();
     QToolButton* m_newDrawerBtn = nullptr;
     QList<QFrame*> m_groupSeparators;
+
+    // Botões fixos reorganizáveis — mesmo conceito e mesmo container da
+    // TopToolbar (clique-e-segurar liga a edição, ver ToolbarGroupWidget).
+    // As gavetas ficam de fora: são do PROJETO, já se reordenam com arrasto
+    // direto e a ordem delas vai pro ProjectModel, não pro QSettings.
+    void buildGroups();
+    QHash<QString, QStringList> defaultButtonLayout() const;
+    QStringList defaultGroupOrder() const;
+    void rebuildGroupLayout();
+    void setEditMode(bool on);
+    void onGroupDropped(const QString& draggedId, const QString& targetId);
+    void onButtonDropped(const QString& buttonId, const QString& targetGroupId, int index);
+    QVBoxLayout* m_groupsLayout = nullptr;
+    QHash<QString, ToolbarGroupWidget*> m_groupWidgets;
+    QHash<QString, QToolButton*> m_buttonsById;
+    QStringList m_groupOrder;
+    QHash<QString, QStringList> m_groupButtons;
+    bool m_editMode = false;
     void applyMirrorStyle();
     void refreshActiveStates();
 

@@ -13,6 +13,7 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QSettings>
+#include "WhatsNewDialog.h"
 #include <QSplashScreen>
 #include <QStringList>
 #include <QThread>
@@ -200,6 +201,10 @@ int main(int argc, char *argv[])
     QApplication::setApplicationName(appName);
     QApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
     QApplication::setOrganizationName(appName);
+    // Tem que ser a primeira leitura do QSettings depois de nomear o app: logo
+    // abaixo o idioma detectado já é gravado, e o registro deixaria de parecer
+    // vazio numa instalação nova.
+    WhatsNewDialog::markFreshInstall(QSettings().allKeys().isEmpty());
     QApplication::setWindowIcon(QIcon(":/app/mira.png"));
 
     CrashLogger::install();

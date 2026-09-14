@@ -156,6 +156,8 @@ qt_add_executable(qenna-writer
     src/SettingsPanel.h
     src/AboutDialog.cpp
     src/AboutDialog.h
+    src/WhatsNewDialog.cpp
+    src/WhatsNewDialog.h
     src/SelectionPopup.cpp
     src/SelectionPopup.h
     src/MarkerStore.cpp
@@ -332,6 +334,7 @@ qt_add_executable(qenna-writer
     resources/geo.qrc
     resources/flags.qrc
     resources/shelf.qrc
+    resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
 
@@ -416,7 +419,11 @@ if(WIN32)
         get_filename_component(_qt_bin_dir "${_qt_bin}" DIRECTORY)
         set(_qt_tts_plugin "${_qt_bin_dir}/../plugins/texttospeech/qtexttospeech_sapi.dll")
         if(EXISTS "${_qt_tts_plugin}")
+            # copy_if_different não cria a pasta de destino: sem o
+            # make_directory, uma build limpa (ex.: build-release) falha aqui.
             add_custom_command(TARGET sync-runtime-assets POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E make_directory
+                        "$<TARGET_FILE_DIR:qenna-writer>/texttospeech"
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                         "${_qt_tts_plugin}"
                         "$<TARGET_FILE_DIR:qenna-writer>/texttospeech/"

@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/whatsnew">
+        <file alias="whatsnew_pt_BR.md">whatsnew/whatsnew_pt_BR.md</file>
+        <file alias="whatsnew_en.md">whatsnew/whatsnew_en.md</file>
+        <file alias="whatsnew_es.md">whatsnew/whatsnew_es.md</file>
+        <file alias="whatsnew_it.md">whatsnew/whatsnew_it.md</file>
+        <file alias="whatsnew_fr.md">whatsnew/whatsnew_fr.md</file>
+    </qresource>
+</RCC>

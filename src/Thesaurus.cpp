@@ -30,7 +30,14 @@ const char* kRemoteBase = "https://raw.githubusercontent.com/LibreOffice/diction
 
 Thesaurus::Thesaurus(QObject* parent) : QObject(parent) {}
 
-Thesaurus::~Thesaurus() { cancelDownload(); }
+Thesaurus::~Thesaurus()
+{
+    cancelDownload();
+    if (m_prefetch) {
+        m_prefetch->disconnect(this);
+        m_prefetch->abort();
+    }
+}
 
 bool Thesaurus::isLanguageSupported(const QString& code)
 {
@@ -63,10 +70,10 @@ QString Thesaurus::dataDir() const
          + QStringLiteral("/thesaurus");
 }
 
-QString Thesaurus::dataPath() const
+QString Thesaurus::dataPathFor(const QString& code) const
 {
-    if (m_lang.isEmpty()) return QString();
-    const QString file = QStringLiteral("/th_") + m_lang + QStringLiteral(".dat");
+    if (code.isEmpty()) return QString();
+    const QString file = QStringLiteral("/th_") + code + QStringLiteral(".dat");
 
     // O português vai embarcado: são 1,8 MB (base OpenWordnet-PT, muito melhor
     // curada que o MyThes do LibreOffice) e é o idioma da esmagadora maioria
@@ -236,6 +243,33 @@ void Thesaurus::download()
         m_offsets.clear();
         buildIndex();
         emit downloadFinished(true, QString());
+    });
+}
+
+void Thesaurus::ensureDownloaded(const QString& code)
+{
+    if (m_prefetch || !isLanguageSupported(code) || QFile::exists(dataPathFor(code))) return;
+    QDir().mkpath(dataDir());
+    if (!m_net) m_net = new QNetworkAccessManager(this);
+    QNetworkRequest req{ QUrl(remoteUrlFor(code)) };
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                     QNetworkRequest::NoLessSafeRedirectPolicy);
+    m_prefetch = m_net->get(req);
+    connect(m_prefetch, &QNetworkReply::finished, this, [this, code]() {
+        QNetworkReply* r = m_prefetch;
+        m_prefetch = nullptr;
+        r->deleteLater();
+        if (r->error() != QNetworkReply::NoError) return;
+        const QByteArray body = r->readAll();
+        // O download manual pode ter chegado primeiro; não regrava por cima.
+        if (body.isEmpty() || QFile::exists(dataPathFor(code))) return;
+        QSaveFile out(dataDir() + QStringLiteral("/th_") + code + QStringLiteral(".dat"));
+        if (!out.open(QIODevice::WriteOnly) || out.write(body) != body.size() || !out.commit())
+            return;
+        if (m_lang == code && !m_indexed) {
+            buildIndex();
+            emit downloadFinished(true, QString());
+        }
     });
 }
 

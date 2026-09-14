@@ -2,6 +2,7 @@
 #include "IconUtils.h"
 #include "ProjectModel.h"
 #include "Theme.h"
+#include "ToolbarGroupWidget.h"
 #include "UiScale.h"
 
 #include <QApplication>
@@ -165,54 +166,35 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     m_rootLayout->setContentsMargins(8, 10, 8, 10);
     m_rootLayout->setSpacing(4);
 
-    // ---- Grupo 1: Projeto ----
-    m_rootLayout->addWidget(makeFixedButton(
-        QStringLiteral("projectinfo.svg"),
-        QStringLiteral("i"),
-        tr("Informações do projeto"),
-        Info));
+    // ---- Botões fixos: Projeto / Planejamento / Escrita ----
+    // Cada bloco é um ToolbarGroupWidget; a composição (ordem dos grupos e
+    // quais botões cada um tem) vem do QSettings e é montada em
+    // rebuildGroupLayout(), que também cuida dos separadores.
+    makeFixedButton(QStringLiteral("projectinfo.svg"), QStringLiteral("i"),
+                    tr("Informações do projeto"), Info);
+    makeFixedButton(QStringLiteral("whiteboard.svg"), QStringLiteral("L"),
+                    tr("Lousa de planejamento"), Whiteboard);
+    makeFixedButton(QStringLiteral("timeline.svg"), QStringLiteral("T"),
+                    tr("Linha do tempo"), Timeline);
+    makeFixedButton(QStringLiteral("manuscriptpanel.svg"), QStringLiteral("T"),
+                    tr("Manuscritos"), Manuscripts);
+    makeFixedButton(QStringLiteral("groups.svg"), QStringLiteral("G"),
+                    tr("Grupos"), Groups);
 
-    {
-        auto* sep = makeGroupSeparator(this);
-        m_groupSeparators.append(sep);
-        m_rootLayout->addWidget(sep);
-    }
+    m_groupsLayout = new QVBoxLayout();
+    m_groupsLayout->setContentsMargins(0, 0, 0, 0);
+    m_groupsLayout->setSpacing(4);
+    m_rootLayout->addLayout(m_groupsLayout);
 
-    // ---- Grupo 2: Planejamento ----
-    m_rootLayout->addWidget(makeFixedButton(
-        QStringLiteral("whiteboard.svg"),
-        QStringLiteral("L"),
-        tr("Lousa de planejamento"),
-        Whiteboard));
-    m_rootLayout->addWidget(makeFixedButton(
-        QStringLiteral("timeline.svg"),
-        QStringLiteral("T"),
-        tr("Linha do tempo"),
-        Timeline));
-
-    {
-        auto* sep = makeGroupSeparator(this);
-        m_groupSeparators.append(sep);
-        m_rootLayout->addWidget(sep);
-    }
-
-    // ---- Grupo 3: Escrita ----
-    m_rootLayout->addWidget(makeFixedButton(
-        QStringLiteral("manuscriptpanel.svg"),
-        QStringLiteral("T"),
-        tr("Manuscritos"),
-        Manuscripts));
-    m_rootLayout->addWidget(makeFixedButton(
-        QStringLiteral("groups.svg"),
-        QStringLiteral("G"),
-        tr("Grupos"),
-        Groups));
-
-    {
-        auto* sep = makeGroupSeparator(this);
-        m_groupSeparators.append(sep);
-        m_rootLayout->addWidget(sep);
-    }
+    buildGroups();
+    const QStringList groupIds = m_groupWidgets.keys();
+    const QStringList buttonIds = m_buttonsById.keys();
+    m_groupOrder = ToolbarLayout::loadGroupOrder(QStringLiteral("ui/leftBarGroupOrder"), defaultGroupOrder());
+    m_groupButtons = ToolbarLayout::loadButtonLayout(QStringLiteral("ui/leftBarButtonLayout"),
+                                                     defaultButtonLayout(),
+                                                     QSet<QString>(groupIds.begin(), groupIds.end()),
+                                                     QSet<QString>(buttonIds.begin(), buttonIds.end()));
+    rebuildGroupLayout();
 
     // ---- Botão "+" (nova gaveta) — fica logo acima da lista, igual Mira 1
     m_newDrawerBtn = makeNewDrawerButton();
@@ -278,6 +260,9 @@ void LeftBar::applyTheme() {
     for (auto* sep : m_groupSeparators) {
         if (sep) sep->setStyleSheet(separatorQss());
     }
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
+        if (g) g->applyTheme(QColor(Theme::textMuted()), QColor(Theme::accentDefault()));
+    }
     // Recria botões de gaveta pra refletirem accent/textBright atualizados.
     rebuildDrawerButtons();
 }
@@ -294,9 +279,14 @@ void LeftBar::setBarSide(Qt::Edge side)
 }
 
 void LeftBar::setChromeHidden(bool hidden) {
+    // Modo focado recolhendo a barra no meio de uma reorganização: sai da
+    // edição antes, senão os grupos voltariam tracejados quando ela reaparecer.
+    if (hidden) setEditMode(false);
     m_chromeHidden = hidden;
     for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it)
         if (it.value()) it.value()->setVisible(!hidden);
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets))
+        if (g && !g->isEmpty()) g->setVisible(!hidden);
     for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)
         if (it.value()) it.value()->setVisible(!hidden);
     if (m_newDrawerBtn) m_newDrawerBtn->setVisible(!hidden);
@@ -464,7 +454,135 @@ QToolButton* LeftBar::makeNewDrawerButton() {
     return btn;
 }
 
+void LeftBar::buildGroups() {
+    for (const QString& id : defaultGroupOrder()) {
+        auto* g = new ToolbarGroupWidget(id, Qt::Vertical, this);
+        g->setSpacing(4); // o mesmo passo que os botões sempre tiveram na barra
+        connect(g, &ToolbarGroupWidget::groupDroppedOn, this, &LeftBar::onGroupDropped);
+        connect(g, &ToolbarGroupWidget::buttonDroppedOn, this, &LeftBar::onButtonDropped);
+        connect(g, &ToolbarGroupWidget::toggleEditModeRequested,
+                this, [this]() { setEditMode(!m_editMode); });
+        g->applyTheme(QColor(Theme::textMuted()), QColor(Theme::accentDefault()));
+        m_groupWidgets.insert(id, g);
+    }
+
+    // Ids ESTÁVEIS: é isso que vai pro QSettings. Renomear um id aqui invalida
+    // a organização salva do usuário — trate como formato de arquivo.
+    m_buttonsById = {
+        { QStringLiteral("info"),        m_fixedButtons.value(Info) },
+        { QStringLiteral("whiteboard"),  m_fixedButtons.value(Whiteboard) },
+        { QStringLiteral("timeline"),    m_fixedButtons.value(Timeline) },
+        { QStringLiteral("manuscripts"), m_fixedButtons.value(Manuscripts) },
+        { QStringLiteral("groups"),      m_fixedButtons.value(Groups) },
+    };
+}
+
+QHash<QString, QStringList> LeftBar::defaultButtonLayout() const {
+    return {
+        { QStringLiteral("project"),  { QStringLiteral("info") } },
+        { QStringLiteral("planning"), { QStringLiteral("whiteboard"), QStringLiteral("timeline") } },
+        { QStringLiteral("writing"),  { QStringLiteral("manuscripts"), QStringLiteral("groups") } },
+    };
+}
+
+QStringList LeftBar::defaultGroupOrder() const {
+    return { QStringLiteral("project"), QStringLiteral("planning"), QStringLiteral("writing") };
+}
+
+void LeftBar::rebuildGroupLayout() {
+    if (!m_groupsLayout) return;
+
+    QLayoutItem* item;
+    while ((item = m_groupsLayout->takeAt(0)) != nullptr) delete item; // não deleta os widgets
+    // hide() antes do deleteLater: fora do layout, o separador velho ficaria
+    // desenhado na posição antiga até o próximo giro do event loop.
+    for (QFrame* sep : std::as_const(m_groupSeparators)) if (sep) { sep->hide(); sep->deleteLater(); }
+    m_groupSeparators.clear();
+
+    for (const QString& gid : std::as_const(m_groupOrder)) {
+        ToolbarGroupWidget* g = m_groupWidgets.value(gid);
+        if (!g) continue;
+        g->clearButtons();
+        for (const QString& bid : m_groupButtons.value(gid)) {
+            if (QToolButton* b = m_buttonsById.value(bid)) g->addButton(b, bid);
+        }
+        g->refreshEmptyPlaceholder();
+    }
+
+    // Grupo vazio só ocupa lugar durante a edição (é onde se devolve um botão
+    // pra ele); fora dela some, junto com o separador que ficaria sobrando.
+    for (const QString& gid : std::as_const(m_groupOrder)) {
+        ToolbarGroupWidget* g = m_groupWidgets.value(gid);
+        if (!g) continue;
+        if (g->isEmpty() && !m_editMode) { g->hide(); continue; }
+        g->setVisible(!m_chromeHidden);
+        m_groupsLayout->addWidget(g, 0, Qt::AlignHCenter);
+        // Separador DEPOIS de cada grupo, inclusive o último: é ele que divide
+        // os botões fixos do "+" e das gavetas, como sempre foi.
+        auto* sep = makeGroupSeparator(this);
+        sep->setVisible(!m_chromeHidden);
+        m_groupSeparators.append(sep);
+        m_groupsLayout->addWidget(sep);
+    }
+}
+
+void LeftBar::setEditMode(bool on) {
+    if (m_editMode == on) return;
+    m_editMode = on;
+    // Filtro de aplicação só enquanto edita — existe só pra perceber o clique
+    // fora da barra que encerra a edição (ver eventFilter).
+    if (on) qApp->installEventFilter(this);
+    else    qApp->removeEventFilter(this);
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
+        if (g) g->setDraggable(on);
+    }
+    rebuildGroupLayout();
+}
+
+void LeftBar::onButtonDropped(const QString& buttonId, const QString& targetGroupId, int index) {
+    if (!m_buttonsById.contains(buttonId)) return;
+    if (!ToolbarLayout::moveButton(m_groupButtons, buttonId, targetGroupId, index)) return;
+    ToolbarLayout::saveButtonLayout(QStringLiteral("ui/leftBarButtonLayout"), m_groupOrder, m_groupButtons);
+    rebuildGroupLayout();
+}
+
+void LeftBar::onGroupDropped(const QString& draggedId, const QString& targetId) {
+    if (!ToolbarLayout::moveGroup(m_groupOrder, draggedId, targetId)) return;
+    ToolbarLayout::saveGroupOrder(QStringLiteral("ui/leftBarGroupOrder"), m_groupOrder);
+    // O layout é serializado na ordem dos grupos — precisa acompanhar.
+    ToolbarLayout::saveButtonLayout(QStringLiteral("ui/leftBarButtonLayout"), m_groupOrder, m_groupButtons);
+    rebuildGroupLayout();
+}
+
+// Sair da reorganização é clicar em qualquer coisa que não seja um ícone
+// arrastável. Este handler cobre o vazio da própria barra — inclusive o de
+// dentro de um grupo, cujo press ignorado sobe pra cá. Clique fora da barra é
+// o eventFilter; gaveta e "+" são tratados lá também.
+void LeftBar::mousePressEvent(QMouseEvent* event) {
+    if (m_editMode && event->button() == Qt::LeftButton) {
+        setEditMode(false);
+        event->accept();
+        return;
+    }
+    QWidget::mousePressEvent(event);
+}
+
 bool LeftBar::eventFilter(QObject* watched, QEvent* event) {
+    // Filtro de aplicação (só instalado durante a edição). O clique não é
+    // consumido: quem clicou no texto quer o cursor lá, e quem clicou numa
+    // gaveta quer a gaveta aberta — sair da edição é efeito colateral.
+    if (m_editMode && event->type() == QEvent::MouseButtonPress) {
+        auto* w = qobject_cast<QWidget*>(watched);
+        if (w && w != this) {
+            bool insideGroup = false;
+            for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets))
+                if (g && (w == g || g->isAncestorOf(w))) { insideGroup = true; break; }
+            // Dentro da barra mas fora dos grupos (gaveta, "+"): também encerra.
+            // O vazio da barra em si cai no mousePressEvent acima.
+            if (!insideGroup) setEditMode(false);
+        }
+    }
+
     auto* btn = qobject_cast<QToolButton*>(watched);
     if (btn && m_drawerButtons.values().contains(btn)) {
         if (event->type() == QEvent::MouseButtonPress) {

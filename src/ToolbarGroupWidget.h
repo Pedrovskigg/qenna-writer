@@ -1,9 +1,12 @@
 #pragma once
 
+#include <QHash>
 #include <QList>
 #include <QPair>
 #include <QPoint>
+#include <QSet>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
 
 class QBoxLayout;
@@ -65,6 +68,10 @@ public:
     // ultimo drop nao pode colapsar pra zero, senao nao ha onde soltar um botao
     // pra devolve-lo — vira uma armadilha de mao unica.
     void refreshEmptyPlaceholder();
+    // Espaço entre os botões do grupo. A LeftBar usa um passo menor que a
+    // TopToolbar e, sem isto, os ícones dela ficariam mais afastados dentro do
+    // grupo do que sempre foram.
+    void setSpacing(int px);
 
     void applyTheme(const QColor& handleColor, const QColor& dropHighlight);
 
@@ -138,3 +145,33 @@ private:
     QColor m_handleColor;
     QColor m_dropHighlightColor;
 };
+
+// Composição de uma barra reorganizável — a ordem dos grupos e quais botões
+// cada um contém — e sua persistência no QSettings. Compartilhada pela
+// TopToolbar e pela LeftBar: as duas regras de validação têm que ser a mesma,
+// senão uma barra passa a perder a organização do usuário em casos em que a
+// outra não perde.
+namespace ToolbarLayout {
+
+// Ordem salva em `key`, ou `def` se ela não tiver exatamente os mesmos grupos.
+QStringList loadGroupOrder(const QString& key, const QStringList& def);
+void saveGroupOrder(const QString& key, const QStringList& order);
+
+// Serializado como uma QStringList de "grupo=id1,id2,id3", na ordem dos grupos.
+void saveButtonLayout(const QString& key, const QStringList& order,
+                      const QHash<QString, QStringList>& layout);
+// `groupIds`/`buttonIds`: tudo que a barra conhece hoje. Botão novo que o
+// layout salvo não tem é encaixado onde `def` o coloca; qualquer outra
+// inconsistência (id desconhecido, repetido, formato estranho) volta pra `def`.
+QHash<QString, QStringList> loadButtonLayout(const QString& key,
+                                             const QHash<QString, QStringList>& def,
+                                             const QSet<QString>& groupIds,
+                                             const QSet<QString>& buttonIds);
+
+// Aplicam um drop à composição. Devolvem false quando nada mudou (soltou onde
+// já estava, id desconhecido) — aí não há o que salvar nem reconstruir.
+bool moveButton(QHash<QString, QStringList>& layout, const QString& buttonId,
+                const QString& targetGroupId, int index);
+bool moveGroup(QStringList& order, const QString& draggedId, const QString& targetId);
+
+} // namespace ToolbarLayout

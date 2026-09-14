@@ -21,6 +21,10 @@ public:
     // coverDir = pasta onde está Mira Cover.exe (lê cover-version.txt de lá).
     void checkCover(const QString& coverDir);
 
+    // -1 se a < b, 0 se iguais, 1 se a > b ("0.17.0" vs "0.16.1"). Público
+    // porque a janela de novidades compara a versão instalada com a última vista.
+    static int compareVersions(const QString& a, const QString& b);
+
 signals:
     void updateAvailable(const QString& version, const QString& downloadUrl, const QString& releaseUrl, const QString& releaseNotes);
     void checkFinished();       // dispara ao fim da checagem (update ou não)
@@ -30,7 +34,6 @@ signals:
 private:
     void onReplyFinished(QNetworkReply* reply);
     void onCoverReplyFinished(QNetworkReply* reply, const QString& installedVersion);
-    static int compareVersions(const QString& a, const QString& b);
     static QString readInstalledCoverVersion(const QString& coverDir);
 
     QNetworkAccessManager* m_nam;
