@@ -7002,6 +7002,358 @@ void Manager::loadBundled()
         t.editorOpacity = 100;
         m_themes.append(t);
     }
+    // Receita do Tokyo Noir: paleta exata do Dracula, cidade em faixas de luz neon roxas, rosa e amarelas.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("dracula-nightlife");
+        t.name = QStringLiteral("Dracula Nightlife");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#282a36");
+        t.panelBackground = QStringLiteral("#343746");
+        t.panelBorder = QStringLiteral("#bd93f9");
+        t.textPrimary = QStringLiteral("#f8f8f2");
+        t.textMuted = QStringLiteral("#6272a4");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(248,248,242,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(248,248,242,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(248,248,242,0.10)");
+        t.accentDefault = QStringLiteral("#bd93f9");
+        t.hoverStrong = QStringLiteral("rgba(248,248,242,0.12)");
+        t.borderStrong = QStringLiteral("rgba(248,248,242,0.22)");
+        t.focusBorder = QStringLiteral("rgba(248,248,242,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(248,248,242,0.30)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#50fa7b");
+        t.accentSuccessSoft = QStringLiteral("rgba(80,250,123,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(80,250,123,0.50)");
+        t.accentDanger = QStringLiteral("#ff5555");
+        t.accentDangerSoft = QStringLiteral("rgba(255,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,85,85,0.50)");
+        t.accentWarning = QStringLiteral("#ffb86c");
+        t.accentInfo = QStringLiteral("#8be9fd");
+        t.accentInfoSoft = QStringLiteral("rgba(139,233,253,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(139,233,253,0.55)");
+        t.editorBackground = QStringLiteral("#21222c");
+        t.editorTextColor = QStringLiteral("#f8f8f2");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,190)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-dracula-nightlife.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Catppuccin Mocha, Via Láctea em azul, malva e rosewater.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("catppuccin-milky-way");
+        t.name = QStringLiteral("Catppuccin Milky Way");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#1e1e2e");
+        t.panelBackground = QStringLiteral("#313244");
+        t.panelBorder = QStringLiteral("#cba6f7");
+        t.textPrimary = QStringLiteral("#cdd6f4");
+        t.textMuted = QStringLiteral("#7f849c");
+        t.textBright = QStringLiteral("#f5e0dc");
+        t.hoverOverlay = QStringLiteral("rgba(205,214,244,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(205,214,244,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(205,214,244,0.10)");
+        t.accentDefault = QStringLiteral("#cba6f7");
+        t.hoverStrong = QStringLiteral("rgba(205,214,244,0.12)");
+        t.borderStrong = QStringLiteral("rgba(205,214,244,0.22)");
+        t.focusBorder = QStringLiteral("rgba(205,214,244,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(205,214,244,0.30)");
+        t.selectionRing = QStringLiteral("#f5e0dc");
+        t.accentSuccess = QStringLiteral("#a6e3a1");
+        t.accentSuccessSoft = QStringLiteral("rgba(166,227,161,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(166,227,161,0.50)");
+        t.accentDanger = QStringLiteral("#f38ba8");
+        t.accentDangerSoft = QStringLiteral("rgba(243,139,168,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(243,139,168,0.50)");
+        t.accentWarning = QStringLiteral("#f9e2af");
+        t.accentInfo = QStringLiteral("#89b4fa");
+        t.accentInfoSoft = QStringLiteral("rgba(137,180,250,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(137,180,250,0.55)");
+        t.editorBackground = QStringLiteral("#181825");
+        t.editorTextColor = QStringLiteral("#cdd6f4");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,190)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-catppuccin-milky-way.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Rosé Pine, floresta com raios de luz em pine, foam e rose.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("rose-pine-hollow");
+        t.name = QStringLiteral("Rosé Pine Hollow");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#191724");
+        t.panelBackground = QStringLiteral("#1f1d2e");
+        t.panelBorder = QStringLiteral("#c4a7e7");
+        t.textPrimary = QStringLiteral("#e0def4");
+        t.textMuted = QStringLiteral("#6e6a86");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(224,222,244,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(224,222,244,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(224,222,244,0.10)");
+        t.accentDefault = QStringLiteral("#c4a7e7");
+        t.hoverStrong = QStringLiteral("rgba(224,222,244,0.12)");
+        t.borderStrong = QStringLiteral("rgba(224,222,244,0.22)");
+        t.focusBorder = QStringLiteral("rgba(224,222,244,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(224,222,244,0.30)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#9ccfd8");
+        t.accentSuccessSoft = QStringLiteral("rgba(156,207,216,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(156,207,216,0.50)");
+        t.accentDanger = QStringLiteral("#eb6f92");
+        t.accentDangerSoft = QStringLiteral("rgba(235,111,146,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(235,111,146,0.50)");
+        t.accentWarning = QStringLiteral("#f6c177");
+        t.accentInfo = QStringLiteral("#31748f");
+        t.accentInfoSoft = QStringLiteral("rgba(49,116,143,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(49,116,143,0.55)");
+        t.editorBackground = QStringLiteral("#1a1828");
+        t.editorTextColor = QStringLiteral("#e0def4");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,190)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-rose-pine-hollow.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Kanagawa, ondas quebrando como a Grande Onda, em waveBlue e fujiWhite.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("kanagawa-wave");
+        t.name = QStringLiteral("Kanagawa Wave");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#1a1a20");
+        t.panelBackground = QStringLiteral("#1f1f28");
+        t.panelBorder = QStringLiteral("#7e9cd8");
+        t.textPrimary = QStringLiteral("#dcd7ba");
+        t.textMuted = QStringLiteral("#727169");
+        t.textBright = QStringLiteral("#f2ecdc");
+        t.hoverOverlay = QStringLiteral("rgba(220,215,186,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(220,215,186,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(220,215,186,0.10)");
+        t.accentDefault = QStringLiteral("#7e9cd8");
+        t.hoverStrong = QStringLiteral("rgba(220,215,186,0.12)");
+        t.borderStrong = QStringLiteral("rgba(220,215,186,0.22)");
+        t.focusBorder = QStringLiteral("rgba(220,215,186,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(220,215,186,0.30)");
+        t.selectionRing = QStringLiteral("#f2ecdc");
+        t.accentSuccess = QStringLiteral("#98bb6c");
+        t.accentSuccessSoft = QStringLiteral("rgba(152,187,108,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(152,187,108,0.50)");
+        t.accentDanger = QStringLiteral("#e46876");
+        t.accentDangerSoft = QStringLiteral("rgba(228,104,118,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(228,104,118,0.50)");
+        t.accentWarning = QStringLiteral("#ffa066");
+        t.accentInfo = QStringLiteral("#7fb4ca");
+        t.accentInfoSoft = QStringLiteral("rgba(127,180,202,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(127,180,202,0.55)");
+        t.editorBackground = QStringLiteral("#16161d");
+        t.editorTextColor = QStringLiteral("#dcd7ba");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,190)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-kanagawa-wave.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Monokai, cidade com letreiros em verde, rosa e amarelo.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("monokai-neon");
+        t.name = QStringLiteral("Monokai Neon");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#201f1a");
+        t.panelBackground = QStringLiteral("#272822");
+        t.panelBorder = QStringLiteral("#f92672");
+        t.textPrimary = QStringLiteral("#f8f8f2");
+        t.textMuted = QStringLiteral("#90897a");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(248,248,242,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(248,248,242,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(248,248,242,0.10)");
+        t.accentDefault = QStringLiteral("#f92672");
+        t.hoverStrong = QStringLiteral("rgba(248,248,242,0.12)");
+        t.borderStrong = QStringLiteral("rgba(248,248,242,0.22)");
+        t.focusBorder = QStringLiteral("rgba(248,248,242,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(248,248,242,0.30)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#a6e22e");
+        t.accentSuccessSoft = QStringLiteral("rgba(166,226,46,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(166,226,46,0.50)");
+        t.accentDanger = QStringLiteral("#f92672");
+        t.accentDangerSoft = QStringLiteral("rgba(249,38,114,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(249,38,114,0.50)");
+        t.accentWarning = QStringLiteral("#fd971f");
+        t.accentInfo = QStringLiteral("#66d9ef");
+        t.accentInfoSoft = QStringLiteral("rgba(102,217,239,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(102,217,239,0.55)");
+        t.editorBackground = QStringLiteral("#1e1f1a");
+        t.editorTextColor = QStringLiteral("#f8f8f2");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,190)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-monokai-neon.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Solarized Dark, a Terra vista do espaço em azul e ciano com luzes amarelas.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("solarized-earthrise");
+        t.name = QStringLiteral("Solarized Earthrise");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#002b36");
+        t.panelBackground = QStringLiteral("#073642");
+        t.panelBorder = QStringLiteral("#2aa198");
+        t.textPrimary = QStringLiteral("#93a1a1");
+        t.textMuted = QStringLiteral("#586e75");
+        t.textBright = QStringLiteral("#eee8d5");
+        t.hoverOverlay = QStringLiteral("rgba(147,161,161,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(147,161,161,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(147,161,161,0.10)");
+        t.accentDefault = QStringLiteral("#2aa198");
+        t.hoverStrong = QStringLiteral("rgba(147,161,161,0.12)");
+        t.borderStrong = QStringLiteral("rgba(147,161,161,0.22)");
+        t.focusBorder = QStringLiteral("rgba(147,161,161,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(147,161,161,0.30)");
+        t.selectionRing = QStringLiteral("#eee8d5");
+        t.accentSuccess = QStringLiteral("#859900");
+        t.accentSuccessSoft = QStringLiteral("rgba(133,153,0,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(133,153,0,0.50)");
+        t.accentDanger = QStringLiteral("#dc322f");
+        t.accentDangerSoft = QStringLiteral("rgba(220,50,47,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(220,50,47,0.50)");
+        t.accentWarning = QStringLiteral("#cb4b16");
+        t.accentInfo = QStringLiteral("#268bd2");
+        t.accentInfoSoft = QStringLiteral("rgba(38,139,210,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(38,139,210,0.55)");
+        t.editorBackground = QStringLiteral("#073642");
+        t.editorTextColor = QStringLiteral("#93a1a1");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,180)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-solarized-earthrise.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Night Owl, Saturno em azul, verde-água e dourado.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("night-owl-saturn");
+        t.name = QStringLiteral("Night Owl Saturn");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#01111f");
+        t.panelBackground = QStringLiteral("#011627");
+        t.panelBorder = QStringLiteral("#82aaff");
+        t.textPrimary = QStringLiteral("#d6deeb");
+        t.textMuted = QStringLiteral("#5f7e97");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(214,222,235,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(214,222,235,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(214,222,235,0.10)");
+        t.accentDefault = QStringLiteral("#82aaff");
+        t.hoverStrong = QStringLiteral("rgba(214,222,235,0.12)");
+        t.borderStrong = QStringLiteral("rgba(214,222,235,0.22)");
+        t.focusBorder = QStringLiteral("rgba(214,222,235,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(214,222,235,0.30)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#addb67");
+        t.accentSuccessSoft = QStringLiteral("rgba(173,219,103,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(173,219,103,0.50)");
+        t.accentDanger = QStringLiteral("#ef5350");
+        t.accentDangerSoft = QStringLiteral("rgba(239,83,80,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(239,83,80,0.50)");
+        t.accentWarning = QStringLiteral("#f78c6c");
+        t.accentInfo = QStringLiteral("#7fdbca");
+        t.accentInfoSoft = QStringLiteral("rgba(127,219,202,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(127,219,202,0.55)");
+        t.editorBackground = QStringLiteral("#011220");
+        t.editorTextColor = QStringLiteral("#d6deeb");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,200)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-night-owl-saturn.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Receita do Tokyo Noir: paleta exata do Basalt, asteroides e o planeta ao fundo em cinza e roxo.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("basalt-belt");
+        t.name = QStringLiteral("Basalt Belt");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#0e0e12");
+        t.panelBackground = QStringLiteral("#16161c");
+        t.panelBorder = QStringLiteral("#7a3fc8");
+        t.textPrimary = QStringLiteral("#c8c6d8");
+        t.textMuted = QStringLiteral("#726f88");
+        t.textBright = QStringLiteral("#eeecf8");
+        t.hoverOverlay = QStringLiteral("rgba(200,198,216,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(200,198,216,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(200,198,216,0.10)");
+        t.accentDefault = QStringLiteral("#7a3fc8");
+        t.hoverStrong = QStringLiteral("rgba(200,198,216,0.12)");
+        t.borderStrong = QStringLiteral("rgba(200,198,216,0.22)");
+        t.focusBorder = QStringLiteral("rgba(200,198,216,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(200,198,216,0.30)");
+        t.selectionRing = QStringLiteral("#eeecf8");
+        t.accentSuccess = QStringLiteral("#7bc592");
+        t.accentSuccessSoft = QStringLiteral("rgba(123,197,146,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(123,197,146,0.50)");
+        t.accentDanger = QStringLiteral("#e05555");
+        t.accentDangerSoft = QStringLiteral("rgba(224,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(224,85,85,0.50)");
+        t.accentWarning = QStringLiteral("#d6a060");
+        t.accentInfo = QStringLiteral("#4a9eff");
+        t.accentInfoSoft = QStringLiteral("rgba(74,158,255,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(74,158,255,0.55)");
+        t.editorBackground = QStringLiteral("#18181e");
+        t.editorTextColor = QStringLiteral("#c8c6d8");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,210)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-basalt-belt.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
 
     // -- Claros (light) --
     // Folha de mimeógrafo de escola: papel barato e texto em tinta roxa.
@@ -7836,6 +8188,14 @@ void Manager::loadBundled()
         { QStringLiteral("nord-summit"),                 QStringLiteral("estampados") },
         { QStringLiteral("india-ink-clouds"),            QStringLiteral("estampados") },
         { QStringLiteral("lead-bridge"),                 QStringLiteral("estampados") },
+        { QStringLiteral("dracula-nightlife"),           QStringLiteral("estampados") },
+        { QStringLiteral("catppuccin-milky-way"),        QStringLiteral("estampados") },
+        { QStringLiteral("rose-pine-hollow"),            QStringLiteral("estampados") },
+        { QStringLiteral("kanagawa-wave"),               QStringLiteral("estampados") },
+        { QStringLiteral("monokai-neon"),                QStringLiteral("estampados") },
+        { QStringLiteral("solarized-earthrise"),         QStringLiteral("estampados") },
+        { QStringLiteral("night-owl-saturn"),            QStringLiteral("estampados") },
+        { QStringLiteral("basalt-belt"),                 QStringLiteral("estampados") },
     };
     for (MiraTheme& t : m_themes)
         t.category = kCategory.value(t.id, QStringLiteral("colorful"));
