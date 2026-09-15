@@ -27,20 +27,34 @@ constexpr int kMaxChunkChars = 400;
 ReadAloudController::ReadAloudController(QObject* parent)
     : QObject(parent)
 {
+    createEngine(QString());
+}
+
+void ReadAloudController::createEngine(const QString& voiceName)
+{
     // Sem motor de voz instalado o construtor ainda funciona, mas o estado
     // fica Error — tratamos como indisponível em vez de deixar a UI prometer
     // algo que não vai sair.
     auto* tts = new QTextToSpeech(this);
     if (tts->state() == QTextToSpeech::Error) {
         delete tts;
+        m_tts = nullptr;
         return;
     }
     m_tts = tts;
     m_tts->setVolume(m_volume);
     m_tts->setRate(m_rate);
+    if (!m_languageCode.isEmpty()) setLanguageCode(m_languageCode);
+    if (!voiceName.isEmpty()) {
+        const QList<QVoice> voices = m_tts->availableVoices();
+        for (const QVoice& v : voices) {
+            if (v.name() == voiceName) { m_tts->setVoice(v); break; }
+        }
+    }
 
     connect(m_tts, &QTextToSpeech::stateChanged, this,
             [this](QTextToSpeech::State state) {
+        const EngineCallbackGuard guard(m_engineCallbackDepth);
         if (state == QTextToSpeech::Speaking || state == QTextToSpeech::Synthesizing) {
             // O motor confirmou que o pedaço atual começou: a partir daqui, um
             // Ready significa mesmo "terminou".
@@ -66,6 +80,7 @@ ReadAloudController::ReadAloudController(QObject* parent)
 
     connect(m_tts, &QTextToSpeech::sayingWord, this,
             [this](const QString&, qsizetype, qsizetype start, qsizetype length) {
+        const EngineCallbackGuard guard(m_engineCallbackDepth);
         if (m_index < 0 || m_index >= m_chunks.size()) return;
         const Chunk& c = m_chunks.at(m_index);
         emit highlightRange(c.docStart + int(start), int(length));
@@ -306,11 +321,41 @@ void ReadAloudController::stop()
     if (!m_tts) return;
     CrashLogger::log(QStringLiteral("readAloud stop (estava no pedaco %1 de %2)")
                      .arg(m_index + 1).arg(m_chunks.size()));
+    const bool busy = m_waitingForStart || m_tts->state() != QTextToSpeech::Ready;
     m_stopping = true;
     m_waitingForStart = false;
     m_index = -1;
     m_chunks.clear();
-    m_tts->stop(QTextToSpeech::BoundaryHint::Immediate);
+
+    if (busy && m_engineCallbackDepth == 0) {
+        // NÃO usar m_tts->stop() com fala em andamento: no plugin SAPI do Qt
+        // 6.8 isso derruba o app. O Windows ainda entrega um aviso de "palavra
+        // falada" que já estava na fila, e o plugin recorta essa palavra de um
+        // texto que o stop acabou de descartar — memmove em memória inválida
+        // (0xC0000005 em msvcrt, pilha sapi.dll -> qtexttospeech_sapi ->
+        // QString(QChar*, len)). Reproduzido isolado em 2026-09-14: cai com o
+        // stop chegando de 10 a 60 ms depois do say(), com qualquer
+        // BoundaryHint e mesmo sem conexão em sayingWord.
+        //
+        // Destruir o motor e criar outro leva ~50 ms e sobreviveu a 244
+        // paradas seguidas em todos os tempos de 0 a 300 ms: com o objeto
+        // destruído na hora, a janela de notificação do SAPI vai junto e o
+        // aviso atrasado não tem mais para onde ir. Tem que ser delete
+        // síncrono — deleteLater deixaria a fila rodar antes, e é ali que cai.
+        const QString voiceName = m_tts->voice().name();
+        QTextToSpeech* old = m_tts;
+        m_tts = nullptr;
+        old->disconnect(this);
+        delete old;
+        createEngine(voiceName);
+        if (!m_tts)
+            CrashLogger::log("readAloud motor nao voltou depois do stop");
+    } else if (busy) {
+        // Dentro de um sinal do próprio motor não dá pra destruí-lo. Nenhum
+        // caminho atual chama stop() daí; se um dia chamar, fica o stop comum.
+        CrashLogger::log("readAloud stop dentro de callback do motor");
+        m_tts->stop(QTextToSpeech::BoundaryHint::Immediate);
+    }
     emit highlightRange(0, 0);
     emitState();
 }

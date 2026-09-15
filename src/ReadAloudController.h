@@ -79,6 +79,17 @@ private:
         QString text;
     };
 
+    // Conta quantos sinais do motor estão rodando agora — stop() não pode
+    // destruir o QTextToSpeech enquanto um deles está na pilha.
+    struct EngineCallbackGuard {
+        explicit EngineCallbackGuard(int& d) : depth(d) { ++depth; }
+        ~EngineCallbackGuard() { --depth; }
+        int& depth;
+    };
+
+    // Cria (ou recria, depois de um stop) o motor com idioma, voz, volume e
+    // velocidade atuais. Deixa m_tts nulo se não houver motor no sistema.
+    void createEngine(const QString& voiceName);
     void buildChunks(const QTextDocument* doc, int start, int end);
     void speakNext();
     void emitState();
@@ -92,6 +103,7 @@ private:
     // assíncrona) seria lido como "acabou o pedaço" e pularia o primeiro da
     // fila nova — some justamente a frase onde o autor mandou começar.
     bool m_waitingForStart = false;
+    int m_engineCallbackDepth = 0;
     QString m_languageCode;
     double m_rate = 0.0;    // escala do Qt: -1.0 (lento) a 1.0 (rápido)
     double m_volume = 1.0;
