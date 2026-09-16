@@ -132,7 +132,7 @@ QString WhatsNewDialog::loadNotes() const
 
 void WhatsNewDialog::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #whatsNewDialog {
             background: %1;
         }
@@ -152,14 +152,14 @@ void WhatsNewDialog::applyTheme()
             color: %2;
             border: 1px solid %3;
             padding: 6px 18px;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #whatsNewDialog QPushButton:hover {
             background: %5;
             color: %7;
         }
-    )").arg(
+    )")).arg(
         Theme::panelBackground(),  // 1
         Theme::textPrimary(),      // 2
         Theme::panelBorder(),      // 3

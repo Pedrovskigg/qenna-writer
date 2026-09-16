@@ -23,14 +23,14 @@ void show(const QImage& image, QWidget* parent, const QString& suggestedFileName
     QDialog dlg(parent);
     dlg.setWindowTitle(QObject::tr("Visualizar imagem"));
     dlg.setModal(true);
-    dlg.setStyleSheet(QStringLiteral(
+    dlg.setStyleSheet(Theme::qss(QStringLiteral(
         "QDialog { background: %1; border: 1px solid %2; }"
         "QPushButton {"
         "  background: transparent; color: %3; border: 1px solid %2;"
-        "  border-radius: 6px; padding: 6px 16px; font-size: 12px;"
+        "  border-radius: @radius-control; padding: 6px 16px; font-size: 12px;"
         "}"
         "QPushButton:hover { background: %4; }"
-    ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textBright(), Theme::hoverOverlay()));
+    ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textBright(), Theme::hoverOverlay())));
 
     auto* root = new QVBoxLayout(&dlg);
     root->setContentsMargins(14, 14, 14, 14);

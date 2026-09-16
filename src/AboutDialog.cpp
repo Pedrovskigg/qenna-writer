@@ -148,7 +148,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 
 void AboutDialog::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #aboutDialog {
             background: %1;
         }
@@ -189,14 +189,14 @@ void AboutDialog::applyTheme()
             color: %2;
             border: 1px solid %3;
             padding: 6px 18px;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #aboutDialog QPushButton:hover {
             background: %6;
             color: %7;
         }
-    )").arg(
+    )")).arg(
         Theme::panelBackground(),  // 1
         Theme::textPrimary(),      // 2
         Theme::panelBorder(),      // 3

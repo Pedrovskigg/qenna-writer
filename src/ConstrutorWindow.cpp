@@ -84,7 +84,7 @@ void ConstrutorWindow::applyTheme()
     const QString success   = Theme::accentSuccess();
     const QString warning   = Theme::accentWarning();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         ConstrutorWindow { background: %1; }
 
         QWidget#ctrLeftHeader { background: %1; border-bottom: 1px solid %4; }
@@ -99,7 +99,7 @@ void ConstrutorWindow::applyTheme()
             background: %2;
             color: %5;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 12px;
         }
@@ -112,7 +112,7 @@ void ConstrutorWindow::applyTheme()
             font-size: 12px;
             outline: none;
         }
-        QListWidget#ctrSearchResults::item { padding: 6px 8px; border-radius: 6px; }
+        QListWidget#ctrSearchResults::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget#ctrSearchResults::item:hover { background: %8; color: %7; }
         QListWidget#ctrSearchResults::item:selected { background: %9; color: %7; }
 
@@ -123,7 +123,7 @@ void ConstrutorWindow::applyTheme()
             font-size: 13px;
             outline: none;
         }
-        QListWidget#ctrSystemsList::item { padding: 4px 8px; border-radius: 6px; }
+        QListWidget#ctrSystemsList::item { padding: 4px 8px; border-radius: @radius-item; }
         QListWidget#ctrSystemsList::item:hover { background: %8; color: %7; }
         QListWidget#ctrSystemsList::item:selected { background: %9; color: %7; }
 
@@ -131,7 +131,7 @@ void ConstrutorWindow::applyTheme()
             background: %9;
             color: %7;
             border: 1px solid %10;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             font-size: 12px;
             font-weight: 600;
@@ -145,7 +145,7 @@ void ConstrutorWindow::applyTheme()
             background: %2;
             color: %7;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 13px;
             font-weight: 600;
@@ -159,14 +159,14 @@ void ConstrutorWindow::applyTheme()
             font-weight: 700;
             padding: 2px 8px;
             border: 1px solid %10;
-            border-radius: 9px;
+            border-radius: @radius-item;
         }
 
         QPushButton#ctrDeleteSys, QPushButton#ctrMentionsToggle {
             background: transparent;
             color: %6;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 13px;
             font-weight: 600;
         }
@@ -196,20 +196,20 @@ void ConstrutorWindow::applyTheme()
         }
         QPushButton#ctrTradeoffExpand {
             background: transparent; color: %6; border: 1px solid %3;
-            border-radius: 9px; font-size: 10px; font-weight: 700;
+            border-radius: @radius-control; font-size: 10px; font-weight: 700;
         }
         QPushButton#ctrTradeoffExpand:hover { background: %8; color: %7; border-color: %4; }
         QPushButton#ctrTradeoffExpand:checked { background: %9; color: %7; border-color: %10; }
 
         QPushButton#ctrAddRule, QPushButton#ctrAddSection {
             background: %9; color: %7; border: 1px solid %10;
-            border-radius: 6px; padding: 4px 10px; font-size: 11px;
+            border-radius: @radius-control; padding: 4px 10px; font-size: 11px;
         }
         QPushButton#ctrAddRule:hover, QPushButton#ctrAddSection:hover { background: %10; }
 
         QPushButton#ctrDeleteNode {
             background: transparent; color: %6; border: 1px solid %3;
-            border-radius: 6px; font-size: 13px; font-weight: 600;
+            border-radius: @radius-control; font-size: 13px; font-weight: 600;
         }
         QPushButton#ctrDeleteNode:hover { background: %12; color: %13; border-color: %13; }
         QPushButton#ctrDeleteNode:disabled { color: %14; border-color: %3; }
@@ -218,12 +218,12 @@ void ConstrutorWindow::applyTheme()
             background: %1; color: %5; border: none;
             font-size: 13px; outline: none;
         }
-        QTreeWidget#ctrTree::item { padding: 4px 6px; border-radius: 4px; }
+        QTreeWidget#ctrTree::item { padding: 4px 6px; border-radius: @radius-item; }
         QTreeWidget#ctrTree::item:hover { background: %8; color: %7; }
         QTreeWidget#ctrTree::item:selected { background: %9; color: %7; }
 
         QWidget#ctrMentionsPanel {
-            background: %2; border: 1px solid %3; border-radius: 10px;
+            background: %2; border: 1px solid %3; border-radius: @radius-panel;
         }
         QWidget#ctrMentionsPanel QScrollArea { background: transparent; border: none; }
         QWidget#ctrMentionsPanel QScrollArea > QWidget { background: transparent; }
@@ -236,7 +236,7 @@ void ConstrutorWindow::applyTheme()
         QToolButton#ctrMentionsCloseBtn:hover { color: %7; }
         QLabel#ctrMentionsEmpty { color: %6; font-size: 11px; font-style: italic; }
         QFrame#ctrMentionCard {
-            background: %15; border: 1px solid %3; border-radius: 6px;
+            background: %15; border: 1px solid %3; border-radius: @radius-panel;
         }
         QFrame#ctrMentionCard:hover { border-color: %10; }
         QLabel#ctrMentionCardSource { color: %6; font-size: 10px; }
@@ -251,7 +251,7 @@ void ConstrutorWindow::applyTheme()
         QScrollBar::handle:vertical:hover { background: %6; }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
-    )").arg(panelBg, panelBg, border, subtle, txtPrim)   // %1-5
+    )")).arg(panelBg, panelBg, border, subtle, txtPrim)   // %1-5
        .arg(txtMuted, txtBright, hover, accentSf)      // %6-9
        .arg(accentBd, accentDef, dangerSf, danger)     // %10-13
        .arg(disabled, editorBg)                        // %14-15

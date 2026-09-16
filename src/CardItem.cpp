@@ -1,5 +1,7 @@
 #include "CardItem.h"
 
+#include "Theme.h"
+
 #include <algorithm>
 #include <cmath>
 #include <QBuffer>
@@ -249,6 +251,13 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
 
 // ── Conteúdo rico (doc / character) ──────────────────────────────────────────
 
+
+// Raio do card, vindo do tema (o card e pintado a mao, fora do QSS).
+qreal CardItem::radius()
+{
+    return static_cast<qreal>(Theme::panelRadius());
+}
+
 void CardItem::rebuildRichDoc()
 {
     const bool isChar = (m_data.type == QStringLiteral("character"));
@@ -481,9 +490,9 @@ bool CardItem::pickSymbol(QWidget* parent, QString& symbol, QColor& color)
     swatch->setFixedSize(28, 28);
     swatch->setCursor(Qt::PointingHandCursor);
     auto paintSwatch = [&]() {
-        swatch->setStyleSheet(QStringLiteral(
-            "QToolButton{background:%1;border:1px solid rgba(255,255,255,0.3);border-radius:6px;}")
-            .arg(chosen.name()));
+        swatch->setStyleSheet(Theme::qss(QStringLiteral(
+            "QToolButton{background:%1;border:1px solid rgba(255,255,255,0.3);border-radius: @radius-control;}")
+            .arg(chosen.name())));
     };
     paintSwatch();
     QObject::connect(swatch, &QToolButton::clicked, &dlg, [&]() {
@@ -579,20 +588,20 @@ bool CardItem::pickText(QWidget* parent, QString& text, QColor& color, QString& 
         for (QToolButton* b : swatches) {
             const QColor c(b->property("col").toString());
             const bool sel = (c.rgb() == chosen.rgb());
-            b->setStyleSheet(QStringLiteral(
-                "QToolButton{background:%1;border:%2;border-radius:5px;}")
+            b->setStyleSheet(Theme::qss(QStringLiteral(
+                "QToolButton{background:%1;border:%2;border-radius: @radius-control;}")
                 .arg(c.name(),
                      sel ? QStringLiteral("2px solid #6ea8fe")
-                         : QStringLiteral("1px solid rgba(255,255,255,0.25)")));
+                         : QStringLiteral("1px solid rgba(255,255,255,0.25)"))));
         }
         if (customBtn) {
             const bool isPreset = std::any_of(swatches.begin(), swatches.end(),
                 [&](QToolButton* b){ return QColor(b->property("col").toString()).rgb() == chosen.rgb(); });
-            customBtn->setStyleSheet(QStringLiteral(
-                "QToolButton{background:%1;border:%2;border-radius:5px;color:#fff;}")
+            customBtn->setStyleSheet(Theme::qss(QStringLiteral(
+                "QToolButton{background:%1;border:%2;border-radius: @radius-control;color:#fff;}")
                 .arg(isPreset ? QStringLiteral("rgba(255,255,255,0.08)") : chosen.name(),
                      (!isPreset) ? QStringLiteral("2px solid #6ea8fe")
-                                 : QStringLiteral("1px solid rgba(255,255,255,0.25)")));
+                                 : QStringLiteral("1px solid rgba(255,255,255,0.25)"))));
         }
     };
     for (const char* hex : kPresets) {
@@ -699,7 +708,7 @@ QPainterPath CardItem::shape() const
         p.addRect(boundingRect()); // toda a área (conteúdo + controles + alça) é interativa
         return p;
     }
-    p.addRoundedRect(QRectF(0, 0, m_data.width, m_data.height), kRadius, kRadius);
+    p.addRoundedRect(QRectF(0, 0, m_data.width, m_data.height), radius(), radius());
     return p;
 }
 
@@ -906,9 +915,9 @@ void CardItem::paintSelectionRing(QPainter* p) const
     p->save();
     p->setBrush(Qt::NoBrush);
     p->setPen(QPen(QColor(110, 168, 254, 60), 6));
-    p->drawRoundedRect(QRectF(-1, -1, w + 2, h + 2), kRadius + 1, kRadius + 1);
+    p->drawRoundedRect(QRectF(-1, -1, w + 2, h + 2), radius() + 1, radius() + 1);
     p->setPen(QPen(QColor(QStringLiteral("#6ea8fe")), 2));
-    p->drawRoundedRect(QRectF(-1, -1, w + 2, h + 2), kRadius + 1, kRadius + 1);
+    p->drawRoundedRect(QRectF(-1, -1, w + 2, h + 2), radius() + 1, radius() + 1);
     p->restore();
 }
 
@@ -1096,7 +1105,7 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
         // Borda top colorida (3px)
         p->setPen(QPen(accentColor, 3));
         p->setBrush(Qt::NoBrush);
-        p->drawLine(QPointF(kRadius, 1.5), QPointF(w - kRadius, 1.5));
+        p->drawLine(QPointF(radius(), 1.5), QPointF(w - radius(), 1.5));
 
         // Header bar
         constexpr qreal kDocH = 26.0;
@@ -1169,7 +1178,7 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
         p->drawRoundedRect(QRectF(0,0,w,h), 10, 10);
         // Borda top
         p->setPen(QPen(accent, 3)); p->setBrush(Qt::NoBrush);
-        p->drawLine(QPointF(kRadius,1.5), QPointF(w-kRadius,1.5));
+        p->drawLine(QPointF(radius(),1.5), QPointF(w-radius(),1.5));
 
         // Foto ou iniciais (dimmed quando overlay de doc aberto)
         p->save();
@@ -1258,23 +1267,23 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
         QPen snapPen(m_snapColor, 3.0);
         p->setPen(snapPen);
         p->setOpacity(0.85);
-        p->drawRoundedRect(QRectF(-3, -3, w+6, h+6), kRadius+2, kRadius+2);
+        p->drawRoundedRect(QRectF(-3, -3, w+6, h+6), radius()+2, radius()+2);
         // Glow difuso
         QPen glowPen(m_snapColor, 12.0);
         p->setPen(glowPen);
         p->setOpacity(0.22);
-        p->drawRoundedRect(QRectF(-6, -6, w+12, h+12), kRadius+4, kRadius+4);
+        p->drawRoundedRect(QRectF(-6, -6, w+12, h+12), radius()+4, radius()+4);
         p->setOpacity(1.0);
     }
 
     // Sombra (note/comment)
     p->setPen(Qt::NoPen);
     p->setBrush(QColor(0, 0, 0, 40));
-    p->drawRoundedRect(QRectF(3, 5, w, h), kRadius, kRadius);
+    p->drawRoundedRect(QRectF(3, 5, w, h), radius(), radius());
 
     // Fundo
     p->setBrush(bg);
-    p->drawRoundedRect(QRectF(0, 0, w, h), kRadius, kRadius);
+    p->drawRoundedRect(QRectF(0, 0, w, h), radius(), radius());
 
     // Comment: área de corpo com cor escurecida + rabinho abaixo
     if (m_data.type == QStringLiteral("comment")) {

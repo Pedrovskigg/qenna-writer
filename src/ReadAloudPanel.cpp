@@ -231,11 +231,11 @@ void ReadAloudPanel::showNear(const QRect& anchorGlobal, Qt::Edge barSide)
 
 void ReadAloudPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#readAloudPanel {"
         "  background: %1;"
         "  border: 1px solid %2;"
-        "  border-radius: 8px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QLabel#raHeader { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#raCaption { color: %4; font-size: 11px; }"
@@ -257,7 +257,7 @@ void ReadAloudPanel::applyTheme()
         "  background: %7;"
         "  color: %3;"
         "  border: 1px solid %2;"
-        "  border-radius: 6px;"
+        "  border-radius: @radius-control;"
         "  padding: 4px 8px;"
         "  font-size: 11px;"
         "}"
@@ -280,7 +280,7 @@ void ReadAloudPanel::applyTheme()
           Theme::hoverOverlay(),
           Theme::disabledText(),
           Theme::inputBackground(),
-          Theme::accentDefault()));
+          Theme::accentDefault())));
 
     // QComboBox é QAbstractScrollArea: a view dele não herda o background do
     // pai por stylesheet em todos os estilos. Ver o histórico de viewport

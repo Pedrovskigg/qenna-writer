@@ -275,12 +275,12 @@ void ElementCreateDialog::buildUi()
     btnRow->addWidget(m_okBtn);
     outer->addLayout(btnRow);
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog#elementCreateDialog { background: %1; }
         QDialog#elementCreateDialog QLabel { color: %2; font-size: 12px; }
         QDialog#elementCreateDialog QLineEdit, QDialog#elementCreateDialog QComboBox {
             background: %3; color: %4;
-            border: 1px solid %5; border-radius: 4px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 6px 8px; min-height: 24px;
             /* combobox-popup: 0 força o Qt a não abrir o dropdown numa janela
                top-level separada — no Windows essa janela ficava translúcida
@@ -297,14 +297,14 @@ void ElementCreateDialog::buildUi()
         }
         QToolButton#ecdPickerBtn {
             background: %3; color: %4;
-            border: 1px solid %5; border-radius: 4px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 6px 8px; min-height: 24px;
             text-align: left;
         }
         QToolButton#ecdPickerBtn:hover { border-color: %10; }
         QWidget#ecdOptionsPanel {
             background: %3; color: %4;
-            border: 1px solid %5; border-radius: 4px;
+            border: 1px solid %5; border-radius: @radius-control;
             margin-top: -6px;
         }
         QToolButton#ecdOptionRow {
@@ -315,12 +315,12 @@ void ElementCreateDialog::buildUi()
         QToolButton#ecdOptionRow:hover { background: %6; }
         QLabel#ecdImagePreview {
             background: %3; color: %7;
-            border: 1px dashed %5; border-radius: 4px;
+            border: 1px dashed %5; border-radius: @radius-item;
             font-size: 10px;
         }
         QPushButton#ecdBtn {
             background: %8; color: %2;
-            border: 1px solid %5; border-radius: 4px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 6px 14px; min-height: 26px;
         }
         QPushButton#ecdBtn:hover { background: %9; color: %4; }
@@ -328,7 +328,7 @@ void ElementCreateDialog::buildUi()
         QCheckBox#ecdNarratorCheck { color: %2; font-size: 12px; spacing: 6px; }
         QCheckBox#ecdNarratorCheck::indicator { width: 14px; height: 14px; border: 1px solid %5; border-radius: 3px; background: %3; }
         QCheckBox#ecdNarratorCheck::indicator:checked { background: %6; border-color: %10; }
-    )").arg(Theme::panelBackground(),     // 1
+    )")).arg(Theme::panelBackground(),     // 1
            Theme::textPrimary(),          // 2
            Theme::inputBackground(),      // 3
            Theme::textBright(),           // 4

@@ -134,11 +134,11 @@ void AmbiencePanel::buildUi()
 
 void AmbiencePanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#ambiencePanel {"
         "  background: %1;"
         "  border: 1px solid %2;"
-        "  border-radius: 8px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QLabel#ambHeader { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#ambPath { color: %4; font-size: 10px; }"
@@ -147,13 +147,13 @@ void AmbiencePanel::applyTheme()
         "  background: %5;"
         "  color: %3;"
         "  border: 1px solid %2;"
-        "  border-radius: 6px;"
+        "  border-radius: @radius-control;"
         "  padding: 4px;"
         "  outline: 0;"
         "}"
         "QListWidget#ambList::item {"
         "  padding: 6px 8px;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-item;"
         "}"
         "QListWidget#ambList::item:hover { background: %6; }"
         "QListWidget#ambList::item:selected { background: %7; color: %3; }"
@@ -181,7 +181,7 @@ void AmbiencePanel::applyTheme()
           Theme::editorBackground(),
           Theme::hoverOverlay(),
           Theme::pressedOverlay(),
-          Theme::accentDefault()));
+          Theme::accentDefault())));
 }
 
 void AmbiencePanel::rebuildList()

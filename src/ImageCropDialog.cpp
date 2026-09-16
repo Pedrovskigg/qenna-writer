@@ -188,18 +188,18 @@ ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent)
 {
     setModal(true);
     setWindowTitle(tr("Ajustar recorte da foto"));
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QDialog { background: %1; border: 1px solid %2; }"
         "QLabel#cropHint { color: %3; font-size: 11px; }"
         "QPushButton {"
         "  background: transparent; color: %4;"
-        "  border: 1px solid %2; border-radius: 6px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 5px 14px; font-size: 12px;"
         "}"
         "QPushButton:hover { background: %5; }"
         "QPushButton#cropOk { border-color: %6; }"
     ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textMuted(),
-          Theme::textBright(), Theme::hoverOverlay(), Theme::accentDefault()));
+          Theme::textBright(), Theme::hoverOverlay(), Theme::accentDefault())));
 
     const qreal scale = qMin(1.0, qreal(kMaxDisplaySide) / qMax(m_original.width(), m_original.height()));
     const QSize displaySize = m_original.size() * scale;

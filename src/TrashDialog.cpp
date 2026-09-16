@@ -159,7 +159,7 @@ void TrashDialog::rebuildList()
 
 void TrashDialog::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #trashDialog {
             background: %1;
         }
@@ -187,7 +187,7 @@ void TrashDialog::applyTheme()
         QFrame#trashRow {
             background: %4;
             border: 1px solid %5;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #trashRowName {
             color: %2;
@@ -202,7 +202,7 @@ void TrashDialog::applyTheme()
             background: %6;
             color: %2;
             border: 1px solid %7;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 12px;
             font-size: 12px;
         }
@@ -213,7 +213,7 @@ void TrashDialog::applyTheme()
             background: transparent;
             color: %9;
             border: 1px solid %10;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 12px;
             font-size: 12px;
         }
@@ -226,13 +226,13 @@ void TrashDialog::applyTheme()
             color: %2;
             border: 1px solid %5;
             padding: 6px 18px;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #trashDialog QDialogButtonBox QPushButton:hover {
             background: %8;
         }
-    )").arg(
+    )")).arg(
         Theme::panelBackground(),      // 1
         Theme::textPrimary(),          // 2
         Theme::textMuted(),            // 3

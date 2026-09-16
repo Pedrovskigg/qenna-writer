@@ -24,7 +24,7 @@ ElementsPresentDialog::ElementsPresentDialog(ElementsStore* store, const QString
 
 void ElementsPresentDialog::buildUi()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog { background: %1; color: %2; }
         QLabel#groupLabel {
             color: %3;
@@ -36,15 +36,15 @@ void ElementsPresentDialog::buildUi()
         QCheckBox { color: %2; padding: 3px 0; }
         QPushButton#okBtn {
             background: %4; color: %5; border: none;
-            border-radius: 6px; padding: 6px 14px; font-weight: 600;
+            border-radius: @radius-control; padding: 6px 14px; font-weight: 600;
         }
         QPushButton#okBtn:hover { background: %6; }
         QPushButton#cancelBtn {
             background: transparent; color: %3;
-            border: 1px solid %7; border-radius: 6px; padding: 6px 14px;
+            border: 1px solid %7; border-radius: @radius-control; padding: 6px 14px;
         }
         QPushButton#cancelBtn:hover { background: %8; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textMuted(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textMuted(),
             Theme::accentDefault(), Theme::textBright(), Theme::borderStrong(),
             Theme::panelBorder(), Theme::hoverOverlay()));
 

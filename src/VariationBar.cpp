@@ -26,12 +26,12 @@ QString chipQss(bool active, bool primary) {
     const QString borderColor = active ? Theme::textBright() : Theme::panelBorder();
     const QString color = active ? Theme::textBright() : Theme::textPrimary();
     Q_UNUSED(primary);
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 3px 8px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 11px;
@@ -42,16 +42,16 @@ QString chipQss(bool active, bool primary) {
             color: %5;
             border-color: %5;
         }
-    )").arg(base, color, borderColor, Theme::hoverOverlay(), Theme::textBright());
+    )")).arg(base, color, borderColor, Theme::hoverOverlay(), Theme::textBright());
 }
 
 QString iconBtnQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 3px 6px;
             font-size: 11px;
         }
@@ -63,7 +63,7 @@ QString iconBtnQss() {
         QToolButton:disabled {
             color: %5;
         }
-    )").arg(Theme::textMuted(), Theme::hoverOverlay(),
+    )")).arg(Theme::textMuted(), Theme::hoverOverlay(),
            Theme::textBright(), Theme::subtleBorder(),
            Theme::disabledText());
 }
@@ -171,14 +171,14 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
 }
 
 void VariationBar::applyRootStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #variationBar {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QFrame#varBarSep { color: %2; }
-    )").arg(Theme::panelBackground(), Theme::panelBorder()));
+    )")).arg(Theme::panelBackground(), Theme::panelBorder()));
 }
 
 void VariationBar::applyTheme() {

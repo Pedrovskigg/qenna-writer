@@ -285,25 +285,25 @@ TimelineEvent TimelineEventPopup::eventData() const
 
 void TimelineEventPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog { background: %1; }
         QLabel  { color: %2; font-size: 13px; }
         QLabel#tlPopupSectionLabel { color: %3; font-size: 11px; font-weight: 600;
                                      text-transform: uppercase; letter-spacing: 1px; }
         QLineEdit, QPlainTextEdit {
             background: %4; color: %2;
-            border: 1px solid %5; border-radius: 5px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 4px 8px; font-size: 13px;
         }
         QLineEdit:focus, QPlainTextEdit:focus { border-color: %6; }
         QComboBox {
             background: %4; color: %2;
-            border: 1px solid %5; border-radius: 5px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 4px 8px; font-size: 13px;
         }
         QToolButton#colorPickBtn, QToolButton#tlSmallBtn {
             background: %4; color: %2;
-            border: 1px solid %5; border-radius: 5px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 2px 8px; font-size: 12px;
         }
         QToolButton#colorPickBtn:hover, QToolButton#tlSmallBtn:hover {
@@ -311,12 +311,12 @@ void TimelineEventPopup::applyTheme()
         }
         QDialogButtonBox QPushButton {
             background: %4; color: %2;
-            border: 1px solid %5; border-radius: 5px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 5px 16px; font-size: 13px; min-width: 80px;
         }
         QDialogButtonBox QPushButton:hover { background: %7; border-color: %6; }
         QDialogButtonBox QPushButton:default { border-color: %6; color: %8; }
-    )").arg(Theme::panelBackground(),  // 1
+    )")).arg(Theme::panelBackground(),  // 1
             Theme::textPrimary(),      // 2
             Theme::textMuted(),        // 3
             Theme::inputBackground(),  // 4

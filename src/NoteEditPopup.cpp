@@ -24,11 +24,11 @@ QString swatchStyle(const QString& color, bool selected)
     const QString border = selected
         ? QStringLiteral("2px solid %1").arg(Theme::textBright())
         : QStringLiteral("1px solid %1").arg(Theme::subtleBorder());
-    return QStringLiteral(
-        "QToolButton { background:%1; border:%2; border-radius:4px;"
+    return Theme::qss(QStringLiteral(
+        "QToolButton { background:%1; border:%2; border-radius: @radius-control;"
         "  min-width:%3px; max-width:%3px; min-height:%3px; max-height:%3px; }"
         "QToolButton:hover { border:2px solid %4; }"
-    ).arg(color, border, QString::number(kSwatchSize), Theme::textBright());
+    ).arg(color, border, QString::number(kSwatchSize), Theme::textBright()));
 }
 }
 
@@ -186,18 +186,18 @@ void NoteEditPopup::keyPressEvent(QKeyEvent* event)
 
 void NoteEditPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #noteEditPopup {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         #noteTitle { color: %3; font-size: 15px; font-weight: 600; }
         #noteTitleEdit {
             background: %4;
             color: %3;
             border: 1px solid %5;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             padding: 7px 8px;
             font-size: 13px;
         }
@@ -205,21 +205,21 @@ void NoteEditPopup::applyTheme()
             background: %4;
             color: %3;
             border: 1px solid %5;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             padding: 8px;
             font-size: 13px;
         }
         #noteCancel {
             color: %6; background: transparent; border: none;
-            border-radius: 6px; padding: 6px 14px; font-size: 13px;
+            border-radius: @radius-control; padding: 6px 14px; font-size: 13px;
         }
         #noteCancel:hover { background: %7; color: %3; }
         #noteSave {
             color: %3; background: %8; border: none;
-            border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600;
+            border-radius: @radius-control; padding: 6px 16px; font-size: 13px; font-weight: 600;
         }
         #noteSave:hover { background: %9; }
-    )")
+    )"))
         .arg(Theme::panelBackground(), Theme::borderStrong(), Theme::textPrimary(),
              Theme::inputBackground(), Theme::subtleBorder(), Theme::textMuted(),
              Theme::hoverStrong(), Theme::accentDefault(), Theme::hoverStrong()));

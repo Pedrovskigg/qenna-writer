@@ -91,20 +91,20 @@ void GlossaryAddPopup::buildUi()
 
 void GlossaryAddPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#glsAddPopup {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#glsAddHeader { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#glsAddFieldLabel { color: %4; font-size: 11px; }"
         "QLineEdit, QTextEdit {"
         "  background: %5; color: %3;"
-        "  border: 1px solid %2; border-radius: 4px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px; font-size: 12px;"
         "}"
         "QPushButton {"
         "  background: transparent; color: %3;"
-        "  border: 1px solid %2; border-radius: 6px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px 12px; font-size: 11px;"
         "}"
         "QPushButton:hover { background: %6; }"
@@ -118,7 +118,7 @@ void GlossaryAddPopup::applyTheme()
           Theme::hoverOverlay(),
           Theme::accentSuccess(),
           Theme::accentSuccessBorderSoft(),
-          Theme::accentSuccessSoft()));
+          Theme::accentSuccessSoft())));
 }
 
 void GlossaryAddPopup::presentAt(const QPoint& globalAnchor, const QString& seedTerm)

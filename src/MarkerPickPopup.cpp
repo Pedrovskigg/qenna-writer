@@ -40,25 +40,25 @@ QString swatchStyle(const QString& color, bool selected)
     const QString border = selected
         ? QStringLiteral("2px solid %1").arg(Theme::textBright())
         : QStringLiteral("1px solid %1").arg(Theme::subtleBorder());
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QToolButton {"
         "  background: %1;"
         "  border: %2;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-control;"
         "  min-width: %3px; max-width: %3px;"
         "  min-height: %3px; max-height: %3px;"
         "}"
         "QToolButton:hover { border: 2px solid %4; }"
-    ).arg(color, border, QString::number(kSwatchSize), Theme::textBright());
+    ).arg(color, border, QString::number(kSwatchSize), Theme::textBright()));
 }
 
 QString actionBtnStyle()
 {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QToolButton {"
         "  background: transparent;"
         "  border: 1px solid %1;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-control;"
         "  color: %2;"
         "  min-width: %3px; max-width: %3px;"
         "  min-height: %3px; max-height: %3px;"
@@ -73,23 +73,23 @@ QString actionBtnStyle()
           Theme::hoverOverlay(),
           Theme::textBright(),
           Theme::accentSuccess(),
-          Theme::accentSuccessSoft());
+          Theme::accentSuccessSoft()));
 }
 
 QString customBtnStyle(const QString& color)
 {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QToolButton {"
         "  background: qlineargradient(x1:0,y1:0,x2:1,y2:1,"
         "    stop:0 %1, stop:0.5 #ff8a65, stop:1 #ba68c8);"
         "  border: 1px solid %2;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-control;"
         "  min-width: %3px; max-width: %3px;"
         "  min-height: %3px; max-height: %3px;"
         "}"
         "QToolButton:hover { border: 2px solid %4; }"
     ).arg(color, Theme::subtleBorder(),
-          QString::number(kSwatchSize), Theme::textBright());
+          QString::number(kSwatchSize), Theme::textBright()));
 }
 
 }
@@ -220,17 +220,17 @@ void MarkerPickPopup::rebuildLayout()
 
 void MarkerPickPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#markerPickPopup {"
         "  background: %1;"
         "  border: 1px solid %2;"
-        "  border-radius: 8px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QTextEdit {"
         "  background: %3;"
         "  color: %4;"
         "  border: 1px solid %5;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-control;"
         "  padding: 4px;"
         "  font-size: 12px;"
         "}"
@@ -238,7 +238,7 @@ void MarkerPickPopup::applyTheme()
           Theme::panelBorder(),
           Theme::editorBackground(),
           Theme::textPrimary(),
-          Theme::subtleBorder()));
+          Theme::subtleBorder())));
 
     if (m_customBtn) m_customBtn->setStyleSheet(customBtnStyle(Theme::panelBackground()));
     if (m_confirmBtn) m_confirmBtn->setStyleSheet(actionBtnStyle());

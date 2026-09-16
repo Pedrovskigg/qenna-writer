@@ -320,11 +320,11 @@ void ThesaurusPopup::keyPressEvent(QKeyEvent* event)
 
 void ThesaurusPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#thesaurusPopup {
             background: %1;
             border: 1px solid %5;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         /* A área de rolagem tem que desaparecer: com fundo e borda próprios ela
            vira uma caixa dentro da caixa. */
@@ -340,7 +340,7 @@ void ThesaurusPopup::applyTheme()
         QLabel#thHint { color: %7; font-size: 12px; }
         QPushButton#thBtn {
             background: %8; color: %2;
-            border: 1px solid %5; border-radius: 5px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 8px 14px; min-height: 28px;
         }
         QPushButton#thBtn:hover { background: %9; color: %4; }
@@ -364,7 +364,7 @@ void ThesaurusPopup::applyTheme()
         QScrollBar::handle:vertical:hover { background: %6; }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
-    )").arg(Theme::panelBackground(),   // 1
+    )")).arg(Theme::panelBackground(),   // 1
            Theme::textPrimary(),        // 2
            Theme::inputBackground(),    // 3
            Theme::textBright(),         // 4

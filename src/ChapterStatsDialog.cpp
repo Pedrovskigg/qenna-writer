@@ -252,11 +252,11 @@ void ChapterStatsDialog::buildUi()
 
     outer->addWidget(scrollArea);
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog#chapterStatsDialog {
             background: %1;
             border: 1px solid %3;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QWidget#chStatsHeader, QWidget#chStatsBody { background: transparent; }
         QScrollArea#chStatsScroll { background: transparent; border: none; }
@@ -283,7 +283,7 @@ void ChapterStatsDialog::buildUi()
             background: transparent;
             color: %4;
             border: none;
-            border-radius: 4px;
+            border-radius: @radius-control;
             font-size: 10px;
         }
         QPushButton#chStatsClose:hover { background: %2; color: %5; }
@@ -327,7 +327,7 @@ void ChapterStatsDialog::buildUi()
             color: %4;
             font-size: 10px;
         }
-    )")
+    )"))
         .arg(Theme::panelBackground(),  // 1
              Theme::hoverOverlay(),     // 2
              Theme::panelBorder(),      // 3

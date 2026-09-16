@@ -185,17 +185,17 @@ void ProjectInfoHover::leaveEvent(QEvent* event) {
 }
 
 void ProjectInfoHover::applyPanelStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QFrame#projectInfoHover {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         QLabel#projectInfoHoverCover {
             background: %3;
             color: %4;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 11px;
         }
         QLabel#projectInfoHoverName {
@@ -229,7 +229,7 @@ void ProjectInfoHover::applyPanelStyle() {
             min-height: 24px;
         }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
-    )").arg(
+    )")).arg(
         Theme::panelBackground(),   // 1
         Theme::panelBorder(),       // 2
         Theme::inputBackground(),   // 3

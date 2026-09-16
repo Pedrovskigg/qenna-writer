@@ -53,17 +53,17 @@ constexpr int kDocHeight = 260;  // Ficha/documento: altura fixa, rola por dentr
 // QSS dos pickers de Status/Local — migrado de DrawerListPanel (Modo
 // Consistência), que deixou de existir nesta mesma fase.
 QString pickerPopupQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QFrame#stPicker {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QPushButton#pickerOption {
             background: transparent;
             color: %3;
             border: none;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 5px 10px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -74,7 +74,7 @@ QString pickerPopupQss() {
             background: transparent;
             color: %6;
             border: none;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 5px 10px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -86,11 +86,11 @@ QString pickerPopupQss() {
             background: %8;
             color: %3;
             border: 1px solid %2;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 12px;
         }
-    )").arg(Theme::panelBackground(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::panelBorder(),
             Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(),
             Theme::textMuted(), Theme::accentDanger(), Theme::inputBackground());
 }
@@ -778,9 +778,9 @@ void StatsPanel::rebuildChapterBars()
         bar->setAttribute(Qt::WA_StyledBackground, true);
         bar->setFixedSize(kChapterBarWidth, barH);
         bar->setCursor(Qt::PointingHandCursor);
-        bar->setStyleSheet(QStringLiteral(
-            "background-color: %1; border: none; border-radius: 4px;")
-            .arg(Theme::accentDefault()));
+        bar->setStyleSheet(Theme::qss(QStringLiteral(
+            "background-color: %1; border: none; border-radius: @radius-control;")
+            .arg(Theme::accentDefault())));
         const QString chTitle = ch.title.isEmpty() ? m_model->chapterDisplayLabel(ch) : ch.title;
         const QString tip = (m_chapterMetric == ChapterMetric::Words)
             ? tr("%1: %2 palavra(s)").arg(chTitle).arg(val)
@@ -994,7 +994,7 @@ void StatsPanel::rebuildCharacterPage()
                 dot->setFixedSize(10, 10);
                 QColor c(b.color);
                 if (!c.isValid()) c = QColor(QStringLiteral("#4a9eff"));
-                dot->setStyleSheet(QStringLiteral("background:%1; border-radius:5px;").arg(c.name()));
+                dot->setStyleSheet(Theme::qss(QStringLiteral("background:%1; border-radius: @radius-control;")).arg(c.name()));
                 rowLay->addWidget(dot);
 
                 auto* lbl = new QLabel(tr("%1 — %2").arg(otherName, BondTypes::displayName(b.type)), row);
@@ -1102,9 +1102,9 @@ void StatsPanel::openChemistryPopup(const QString& otherElementId)
     // botão de fechar explícito abaixo.
     popup->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
     popup->setAttribute(Qt::WA_DeleteOnClose);
-    popup->setStyleSheet(QStringLiteral(
-        "QFrame#stChemPopup { background: %1; border: 1px solid %2; border-radius: 8px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    popup->setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#stChemPopup { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
     popup->setFixedSize(420, 480);
 
     auto* lay = new QVBoxLayout(popup);
@@ -1125,19 +1125,19 @@ void StatsPanel::openChemistryPopup(const QString& otherElementId)
     closeBtn->setText(QStringLiteral("×"));
     closeBtn->setCursor(Qt::PointingHandCursor);
     closeBtn->setFixedSize(22, 22);
-    closeBtn->setStyleSheet(QStringLiteral(
-        "QToolButton { background: transparent; border: none; font-size: 16px; color: %1; border-radius: 6px; }"
+    closeBtn->setStyleSheet(Theme::qss(QStringLiteral(
+        "QToolButton { background: transparent; border: none; font-size: 16px; color: %1; border-radius: @radius-control; }"
         "QToolButton:hover { color: %2; background: %3; }")
-        .arg(Theme::textMuted(), Theme::textBright(), Theme::hoverOverlay()));
+        .arg(Theme::textMuted(), Theme::textBright(), Theme::hoverOverlay())));
     connect(closeBtn, &QToolButton::clicked, popup, &QWidget::close);
     headerRow->addWidget(closeBtn);
 
     lay->addLayout(headerRow);
 
     auto* chapterPicker = new QComboBox(popup);
-    chapterPicker->setStyleSheet(QStringLiteral(
-        "QComboBox { color: %1; background: %2; border: 1px solid %3; border-radius: 6px; padding: 4px 8px; }")
-        .arg(Theme::textPrimary(), Theme::inputBackground(), Theme::subtleBorder()));
+    chapterPicker->setStyleSheet(Theme::qss(QStringLiteral(
+        "QComboBox { color: %1; background: %2; border: 1px solid %3; border-radius: @radius-control; padding: 4px 8px; }")
+        .arg(Theme::textPrimary(), Theme::inputBackground(), Theme::subtleBorder())));
     lay->addWidget(chapterPicker);
 
     auto* scroll = new QScrollArea(popup);
@@ -1262,11 +1262,11 @@ void StatsPanel::showStatusPicker(const QString& itemId, const QPoint& globalPos
         btn->setFixedHeight(26);
         btn->setCursor(Qt::PointingHandCursor);
         if (s == currentStatus) {
-            btn->setStyleSheet(QStringLiteral(
-                "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+            btn->setStyleSheet(Theme::qss(QStringLiteral(
+                "QPushButton { background: %1; color: %2; border: none; border-radius: @radius-control; "
                 "padding: 0 10px; text-align: left; font-size: 12px; "
                 "font-family: 'Lora','Crimson Text',serif; }")
-                .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+                .arg(Theme::hoverOverlay(), Theme::accentDefault())));
         }
         connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentLocation]() {
             m_model->updateDrawerItemConsistency(itemId, s, QString(), currentLocation);
@@ -1361,11 +1361,11 @@ void StatsPanel::showLocationPicker(const QString& itemId, const QPoint& globalP
             btn->setFixedHeight(26);
             btn->setCursor(Qt::PointingHandCursor);
             if (s == currentLocation) {
-                btn->setStyleSheet(QStringLiteral(
-                    "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+                btn->setStyleSheet(Theme::qss(QStringLiteral(
+                    "QPushButton { background: %1; color: %2; border: none; border-radius: @radius-control; "
                     "padding: 0 10px; text-align: left; font-size: 12px; "
                     "font-family: 'Lora','Crimson Text',serif; }")
-                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault())));
             }
             connect(btn, &QPushButton::clicked, popup, [this, popup, itemId, s, currentStatus, currentDetail]() {
                 m_model->updateDrawerItemConsistency(itemId, currentStatus, currentDetail, s);
@@ -1446,11 +1446,11 @@ void StatsPanel::showTerritorioPicker(const QString& itemId, const QPoint& globa
             btn->setFixedHeight(26);
             btn->setCursor(Qt::PointingHandCursor);
             if (t.id == currentId) {
-                btn->setStyleSheet(QStringLiteral(
-                    "QPushButton { background: %1; color: %2; border: none; border-radius: 5px; "
+                btn->setStyleSheet(Theme::qss(QStringLiteral(
+                    "QPushButton { background: %1; color: %2; border: none; border-radius: @radius-control; "
                     "padding: 0 10px; text-align: left; font-size: 12px; "
                     "font-family: 'Lora','Crimson Text',serif; }")
-                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault())));
             }
             const QString tid = t.id;
             connect(btn, &QPushButton::clicked, popup, [apply, tid]() { apply(tid); });
@@ -1565,11 +1565,11 @@ void StatsPanel::applyTheme()
     const QString hover   = Theme::hoverStrong();
     const QString accent  = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #statsPanel {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         #statsPanel QScrollArea { background: transparent; border: none; }
         #statsPanel QScrollArea > QWidget { background: transparent; }
@@ -1580,7 +1580,7 @@ void StatsPanel::applyTheme()
             border: none;
             background: transparent;
             font-size: 16px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #stClose:hover, #stBack:hover { background: %7; color: %5; }
         #stSectionLabel {
@@ -1595,7 +1595,7 @@ void StatsPanel::applyTheme()
             color: %3;
             background: transparent;
             border: none;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             font-size: 11px;
             padding: 4px;
         }
@@ -1606,7 +1606,7 @@ void StatsPanel::applyTheme()
         #stCharPhoto {
             background: %6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             color: %4;
             font-size: 12px;
         }
@@ -1616,7 +1616,7 @@ void StatsPanel::applyTheme()
             background: %6;
             color: %4;
             border: 1px solid %9;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 3px 8px;
             font-size: 11px;
             text-align: left;
@@ -1627,7 +1627,7 @@ void StatsPanel::applyTheme()
             color: %4;
             background: transparent;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 3px 8px;
             font-size: 11px;
         }
@@ -1637,7 +1637,7 @@ void StatsPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 12px;
             text-align: left;
@@ -1646,13 +1646,13 @@ void StatsPanel::applyTheme()
         #stChapterBar {
             background: %8;
             border: none;
-            border-radius: 4px;
+            border-radius: @radius-control;
         }
         #stChapterBar:hover { background: %5; }
         #stCharDocScroll {
             background: %6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #stCharDocScroll QWidget { background: transparent; }
         #stCharDoc {
@@ -1660,7 +1660,7 @@ void StatsPanel::applyTheme()
             padding: 10px;
             font-size: 13px;
         }
-    )")
+    )"))
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd)
         .arg(Theme::accentWarning()));
 }

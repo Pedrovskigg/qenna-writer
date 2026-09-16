@@ -1,5 +1,7 @@
 #include "ZoneItem.h"
 
+#include "Theme.h"
+
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QGraphicsSceneContextMenuEvent>
@@ -30,7 +32,9 @@ constexpr qreal kHandleR  = 7.0;   // raio do círculo de handle
 constexpr qreal kHandleHit = 14.0; // raio de hit-test
 constexpr qreal kCtrlH    = 50.0;  // altura da faixa de controles no topo
 constexpr qreal kMinSize  = 80.0;
-constexpr qreal kRadius   = 10.0;
+// Segue o arredondamento do tema: a zona e pintada por QPainter,
+// entao nao passa pelo QSS.
+inline qreal kRadiusFn() { return static_cast<qreal>(Theme::panelRadius()); }
 } // namespace
 
 // ─── Constructor ────────────────────────────────────────────────────────────
@@ -94,7 +98,7 @@ void ZoneItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     if (!m_hovered) {
         p->setPen(Qt::NoPen);
         p->setBrush(QColor(clr.red(), clr.green(), clr.blue(), 10));
-        p->drawRoundedRect(QRectF(0, 0, w, h), kRadius, kRadius);
+        p->drawRoundedRect(QRectF(0, 0, w, h), kRadiusFn(), kRadiusFn());
     }
 
     // Borda dashed
@@ -102,13 +106,13 @@ void ZoneItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     dashedPen.setDashPattern({6, 4});
     p->setPen(dashedPen);
     p->setBrush(Qt::NoBrush);
-    p->drawRoundedRect(QRectF(0, 0, w, h), kRadius, kRadius);
+    p->drawRoundedRect(QRectF(0, 0, w, h), kRadiusFn(), kRadiusFn());
 
     // Realce de seleção (para exportar): contorno sólido azul.
     if (m_selected) {
         p->setPen(QPen(QColor(QStringLiteral("#6ea8fe")), 2.5));
         p->setBrush(Qt::NoBrush);
-        p->drawRoundedRect(QRectF(-2, -2, w + 4, h + 4), kRadius + 2, kRadius + 2);
+        p->drawRoundedRect(QRectF(-2, -2, w + 4, h + 4), kRadiusFn() + 2, kRadiusFn() + 2);
     }
 
     // ── Título centralizado (grande, 45% opacity) ──────────────────────────

@@ -89,12 +89,12 @@ QString sortLabelFor(DrawerListPanel::SortMode mode, bool asc) {
 }
 
 QString miniIconBtnQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
             padding: 2px 6px;
         }
@@ -108,16 +108,16 @@ QString miniIconBtnQss() {
             color: %3;
             border-color: %4;
         }
-    )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder(), Theme::pressedOverlay());
+    )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder(), Theme::pressedOverlay());
 }
 
 QString folderPillQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: transparent;
             color: %1;
             border: 1px dashed %2;
-            border-radius: 11px;
+            border-radius: @radius-control;
             padding: 2px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 11px;
@@ -127,17 +127,17 @@ QString folderPillQss() {
             color: %4;
             border-color: %5;
         }
-    )").arg(Theme::textMuted(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted());
+    )")).arg(Theme::textMuted(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted());
 }
 
 QString folderChipQss() {
     // Chip de pasta: arredondado, fundo translúcido, ícone de pasta à esquerda.
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %3;
             color: %1;
             border: 1px solid %4;
-            border-radius: 11px;
+            border-radius: @radius-control;
             padding: 2px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 11px;
@@ -148,19 +148,19 @@ QString folderChipQss() {
             color: %2;
             border-color: %6;
         }
-    )").arg(Theme::textPrimary(), Theme::textBright(),
+    )")).arg(Theme::textPrimary(), Theme::textBright(),
            Theme::hoverOverlay(), Theme::subtleBorder(),
            Theme::hoverStrong(), Theme::borderStrong());
 }
 
 QString folderBackQss() {
     // Botão "voltar" exibido quando se está dentro de uma pasta.
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %3;
             color: %1;
             border: 1px solid %4;
-            border-radius: 11px;
+            border-radius: @radius-control;
             padding: 2px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 11px;
@@ -171,7 +171,7 @@ QString folderBackQss() {
             color: %2;
             border-color: %6;
         }
-    )").arg(Theme::textBright(), Theme::textBright(),
+    )")).arg(Theme::textBright(), Theme::textBright(),
            Theme::hoverOverlay(), Theme::subtleBorder(),
            Theme::hoverStrong(), Theme::focusBorder());
 }
@@ -184,12 +184,12 @@ QString createButtonQss(const QString& accent) {
     QColor bgHover = c; bgHover.setAlphaF(0.20);
     const QString bgStr = QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(0.10);
     const QString bgHoverStr = QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(0.20);
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %4;
             color: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 10px 12px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 14px;
@@ -202,7 +202,7 @@ QString createButtonQss(const QString& accent) {
         QPushButton:pressed {
             background: %5;
         }
-    )").arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
+    )")).arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
 }
 
 QPixmap circlePlusPixmap(const QColor& color, int size = 18) {
@@ -369,17 +369,17 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     m_sortBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
     connect(m_sortBtn, &QToolButton::clicked, this, [this]() {
         QMenu menu(this);
-        menu.setStyleSheet(QStringLiteral(R"(
+        menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
             QMenu {
                 background: %1;
                 color: %2;
                 border: 1px solid %3;
-                border-radius: 6px;
+                border-radius: @radius-panel;
                 padding: 4px;
             }
-            QMenu::item { padding: 6px 14px; border-radius: 4px; font-size: 12px; }
+            QMenu::item { padding: 6px 14px; border-radius: @radius-item; font-size: 12px; }
             QMenu::item:selected { background: %4; color: %5; }
-        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+        )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
                Theme::hoverOverlay(), Theme::textBright()));
 
         auto addOpt = [&](const QString& label, SortMode mode, bool ascending) {
@@ -952,12 +952,12 @@ void DrawerListPanel::rebuildContents() {
         back->setText(QStringLiteral("↑  %1").arg(tr("Voltar")));
         back->setCursor(Qt::PointingHandCursor);
         back->setMinimumHeight(28);
-        back->setStyleSheet(QStringLiteral(R"(
+        back->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton {
                 background: transparent;
                 color: %1;
                 border: 1px solid transparent;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 padding: 4px 10px;
                 text-align: left;
                 font-family: 'Lora','Crimson Text',serif;
@@ -965,7 +965,7 @@ void DrawerListPanel::rebuildContents() {
                 font-style: italic;
             }
             QToolButton:hover { background: %2; color: %3; }
-        )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
+        )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
         back->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         connect(back, &QToolButton::clicked, this, &DrawerListPanel::goUpOneLevel);
         m_listLayout->insertWidget(row++, back);
@@ -1151,17 +1151,17 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         const QString normalBorder  = !groupColor.isEmpty() ? groupColor : Theme::subtleBorder();
         const QString hoverBorder   = !groupColor.isEmpty() ? groupColor : Theme::borderStrong();
         const QString borderWidth   = !groupColor.isEmpty() ? QStringLiteral("2px") : QStringLiteral("1px");
-        card->setStyleSheet(QStringLiteral(R"(
+        card->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QFrame#elemCard {
                 background: %1;
                 border: %5 solid %2;
-                border-radius: 8px;
+                border-radius: @radius-panel;
             }
             QFrame#elemCard:hover {
                 background: %3;
                 border-color: %4;
             }
-        )").arg(Theme::pressedOverlay(), normalBorder,
+        )")).arg(Theme::pressedOverlay(), normalBorder,
                 Theme::hoverOverlay(), hoverBorder, borderWidth));
     }
 
@@ -1172,9 +1172,9 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     auto* photo = new QLabel(card);
     photo->setFixedSize(csz.cardPhoto, csz.cardPhoto);
     photo->setAlignment(Qt::AlignCenter);
-    photo->setStyleSheet(QStringLiteral(
-        "background: %1; border-radius: 6px; color: %2; font-size: 9px;")
-        .arg(Theme::inputBackground(), Theme::textMuted()));
+    photo->setStyleSheet(Theme::qss(QStringLiteral(
+        "background: %1; border-radius: @radius-panel; color: %2; font-size: 9px;")
+        .arg(Theme::inputBackground(), Theme::textMuted())));
     QPixmap pm = pixFromDataUrl(imageDataUrl);
     if (!pm.isNull()) {
         photo->setPixmap(photoRounded(pm, csz.cardPhoto, 6));
@@ -1207,9 +1207,9 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
         bondBtn->setAutoRaise(true);
         bondBtn->setVisible(false);
         bondBtn->setToolTip(tr("Arrastar para criar vínculo"));
-        bondBtn->setStyleSheet(QStringLiteral(
-            "QToolButton { background: transparent; border: none; border-radius: 4px; }"
-            "QToolButton:hover { background: %1; }").arg(Theme::hoverOverlay()));
+        bondBtn->setStyleSheet(Theme::qss(QStringLiteral(
+            "QToolButton { background: transparent; border: none; border-radius: @radius-control; }"
+            "QToolButton:hover { background: %1; }").arg(Theme::hoverOverlay())));
         {
             const QIcon ic = IconUtils::loadToolbarIcon(
                 QStringLiteral(":/icons/create-bond.svg"),
@@ -1274,8 +1274,8 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
     if (!groupColor.isEmpty()) {
         auto* dot = new QFrame(wrap);
         dot->setFixedSize(4, 22);
-        dot->setStyleSheet(QStringLiteral(
-            "background: %1; border-radius: 2px; margin: 4px 4px 4px 0;").arg(groupColor));
+        dot->setStyleSheet(Theme::qss(QStringLiteral(
+            "background: %1; border-radius: @radius-control; margin: 4px 4px 4px 0;").arg(groupColor)));
         wrapLay->addWidget(dot, 0, Qt::AlignVCenter);
     }
 
@@ -1291,12 +1291,12 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
     btn->setCursor(Qt::PointingHandCursor);
     btn->setMinimumHeight(30);
     btn->setContextMenuPolicy(Qt::CustomContextMenu);
-    btn->setStyleSheet(QStringLiteral(R"(
+    btn->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 10px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -1307,7 +1307,7 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
             color: %3;
             border-color: %4;
         }
-    )").arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+    )")).arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
     btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     wrapLay->addWidget(btn);
 
@@ -1592,7 +1592,7 @@ void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setFixedWidth(300);
 
-    dlg->setStyleSheet(QStringLiteral(R"(
+    dlg->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog {
             background: %1;
             color: %2;
@@ -1601,14 +1601,14 @@ void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
             background: %3;
             color: %2;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 10px;
         }
         QPushButton#okBtn {
             background: %5;
             color: %6;
             border: none;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 14px;
             font-weight: 600;
         }
@@ -1617,11 +1617,11 @@ void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
             background: transparent;
             color: %8;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 14px;
         }
         QPushButton#cancelBtn:hover { background: %9; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(),
             Theme::inputBackground(), Theme::panelBorder(),
             Theme::accentDefault(), Theme::textBright(),
             Theme::borderStrong(), Theme::textMuted(),
@@ -1645,11 +1645,13 @@ void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
         cb->setFixedSize(24, 24);
         cb->setCheckable(true);
         if (col == chosenColor) cb->setChecked(true);
-        cb->setStyleSheet(QStringLiteral(
+        cb->setStyleSheet(Theme::qss(QStringLiteral(
+            // Swatch redondo: o botão é 24x24, o raio é metade do lado. Fora da
+            // escala do tema de propósito — com outro raio deixa de ser círculo.
             "QPushButton { background: %1; border-radius: 12px; border: 2px solid transparent; }"
             "QPushButton:checked { border-color: %2; }"
             "QPushButton:hover   { border-color: %3; }")
-            .arg(col, Theme::textBright(), Theme::textMuted()));
+            .arg(col, Theme::textBright(), Theme::textMuted())));
         colorRow->addWidget(cb);
         colorBtns.append(cb);
     }
@@ -1700,19 +1702,19 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
     const bool hasElement = !item->elementType.isEmpty();
 
     QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
+    menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
         QMenu {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-panel;
             padding: 4px;
         }
-        QMenu::item { padding: 6px 16px; border-radius: 4px; }
+        QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
         QMenu::item:disabled { color: %6; }
         QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
            Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted()));
 
     auto* editAct = menu.addAction(tr("Editar metadados…"));
@@ -1850,17 +1852,17 @@ void DrawerListPanel::showFolderContextMenu(const QString& folderId, const QPoin
     if (!drawer) return;
 
     QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
+    menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
         QMenu {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-panel;
             padding: 4px;
         }
-        QMenu::item { padding: 6px 16px; border-radius: 4px; }
+        QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
            Theme::hoverOverlay(), Theme::textBright()));
 
     QMenu* moveMenu = menu.addMenu(tr("Mover pasta para"));
@@ -1967,8 +1969,8 @@ void DrawerListPanel::showItemDropIndicatorAt(QWidget* targetCard, bool before) 
         // Indicador é uma linha fina filha do mesmo parent do card.
         m_dropIndicator = new QWidget(targetCard->parentWidget());
         m_dropIndicator->setFixedHeight(2);
-        m_dropIndicator->setStyleSheet(QStringLiteral(
-            "background: %1; border-radius: 1px;").arg(Theme::accentDefault()));
+        m_dropIndicator->setStyleSheet(Theme::qss(QStringLiteral(
+            "background: %1; border-radius: @radius-item;").arg(Theme::accentDefault())));
         m_dropIndicator->setAttribute(Qt::WA_TransparentForMouseEvents);
     } else if (m_dropIndicator->parentWidget() != targetCard->parentWidget()) {
         m_dropIndicator->setParent(targetCard->parentWidget());

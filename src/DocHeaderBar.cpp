@@ -111,7 +111,7 @@ void DocHeaderBar::applyTheme()
     const QString hover = QStringLiteral("rgba(%1,%2,%3,0.08)")
         .arg(ink.red()).arg(ink.green()).arg(ink.blue());
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#docHeaderBar { background: %1; }
         QLabel#docHeaderTitle {
             color: %2;
@@ -130,10 +130,10 @@ void DocHeaderBar::applyTheme()
         QToolButton#docHeaderVar {
             background: transparent;
             border: none;
-            border-radius: 4px;
+            border-radius: @radius-control;
         }
         QToolButton#docHeaderVar:hover { background: %4; }
-    )").arg(bgCss, titleColor, subtitleColor, hover));
+    )")).arg(bgCss, titleColor, subtitleColor, hover));
 
     m_varButton->setIcon(IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/scene-var.svg"),

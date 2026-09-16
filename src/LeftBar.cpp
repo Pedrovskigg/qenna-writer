@@ -58,11 +58,11 @@ QString fixedButtonQss() {
     // Sem fundo no estado normal; borda translúcida no hover; outline em
     // accent + leve tint no estado checked (= painel aberto). Sem mudança
     // de tamanho — todas as bordas têm 1px reservado em transparent.
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 8px;
+            border-radius: @radius-control;
             color: %1;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 15px;
@@ -78,7 +78,7 @@ QString fixedButtonQss() {
             border-color: %5;
             color: %4;
         }
-    )").arg(Theme::textMuted(),
+    )")).arg(Theme::textMuted(),
             Theme::hoverOverlay(),
             Theme::subtleBorder(),
             Theme::textBright(),
@@ -89,11 +89,11 @@ QString fixedButtonQss() {
 QString drawerButtonQss(const QString& accent) {
     // Letra colorida com o accent da gaveta; fundo sempre transparente.
     // Hover e checked usam a própria cor da gaveta como borda.
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 8px;
+            border-radius: @radius-control;
             color: %1;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 17px;
@@ -109,18 +109,18 @@ QString drawerButtonQss(const QString& accent) {
             border-color: %1;
             color: %2;
         }
-    )").arg(accent, Theme::textBright(),
+    )")).arg(accent, Theme::textBright(),
            Theme::hoverOverlay(), Theme::subtleBorder(),
            Theme::pressedOverlay());
 }
 
 QString newDrawerQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px dashed %2;
-            border-radius: 8px;
+            border-radius: @radius-control;
             font-size: 22px;
             font-weight: 300;
         }
@@ -129,7 +129,7 @@ QString newDrawerQss() {
             border-color: %4;
             background: %5;
         }
-    )").arg(Theme::textMuted(),
+    )")).arg(Theme::textMuted(),
             Theme::panelBorder(),
             Theme::textBright(),
             Theme::textMuted(),
@@ -644,8 +644,8 @@ void LeftBar::updateDropIndicator(int targetIndex) {
     if (!m_dropIndicator) {
         m_dropIndicator = new QWidget(this);
         m_dropIndicator->setFixedHeight(2);
-        m_dropIndicator->setStyleSheet(QStringLiteral(
-            "background: %1; border-radius: 1px;").arg(Theme::accentDefault()));
+        m_dropIndicator->setStyleSheet(Theme::qss(QStringLiteral(
+            "background: %1; border-radius: @radius-control;").arg(Theme::accentDefault())));
         m_dropIndicator->hide();
     }
 

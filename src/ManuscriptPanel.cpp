@@ -113,12 +113,12 @@ QString createButtonQss(const QString& accent) {
         .arg(c.red()).arg(c.green()).arg(c.blue()).arg(0.10);
     const QString bgHoverStr = QStringLiteral("rgba(%1,%2,%3,%4)")
         .arg(c.red()).arg(c.green()).arg(c.blue()).arg(0.20);
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %4;
             color: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 10px 12px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 14px;
@@ -131,7 +131,7 @@ QString createButtonQss(const QString& accent) {
         QPushButton:pressed {
             background: %5;
         }
-    )").arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
+    )")).arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
 }
 
 // Quadradinho colorido pronto pra embutir em rich text via <img> — usado no
@@ -233,10 +233,10 @@ private:
         m_popup->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint);
         m_popup->setAttribute(Qt::WA_ShowWithoutActivating);
         m_popup->setTextFormat(Qt::RichText);
-        m_popup->setStyleSheet(QStringLiteral(
+        m_popup->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel { background-color: %1; color: %2; border: 1px solid %3; "
-            "border-radius: 6px; padding: 6px 10px; font-size: 12px; }")
-            .arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder()));
+            "border-radius: @radius-control; padding: 6px 10px; font-size: 12px; }")
+            .arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder())));
         m_popup->setText(m_infoHtml);
         m_popup->adjustSize();
         m_popup->move(mapToGlobal(QPoint(width() + 6, 0)));
@@ -283,12 +283,12 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     headerLayout->setSpacing(4);
 
     m_combo = new QComboBox(header);
-    m_combo->setStyleSheet(QStringLiteral(R"(
+    m_combo->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QComboBox {
             background: transparent;
             color: %1;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 13px;
@@ -301,7 +301,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
             border: 1px solid %2;
             selection-background-color: %5;
         }
-    )").arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
+    )")).arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
            Theme::panelBackground(), Theme::hoverOverlay()));
     m_combo->setContextMenuPolicy(Qt::CustomContextMenu);
     m_combo->setItemDelegate(new ManuscriptComboDelegate(m_combo));
@@ -351,12 +351,12 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
         b->setToolTip(tip);
         b->setFixedSize(28, 28);
         b->setCursor(Qt::PointingHandCursor);
-        b->setStyleSheet(QStringLiteral(R"(
+        b->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton {
                 background: transparent;
                 color: %1;
                 border: 1px solid transparent;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 font-size: 15px;
             }
             QToolButton:hover {
@@ -364,7 +364,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
                 color: %3;
                 border-color: %4;
             }
-        )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+        )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
         m_headerIconBtns.append(b);
         return b;
     };
@@ -459,12 +459,12 @@ void ManuscriptPanel::applyHeaderStyles() {
             "#manuscriptHeader { border-bottom: 1px solid %1; }").arg(Theme::panelBorder()));
     }
     if (m_combo) {
-        m_combo->setStyleSheet(QStringLiteral(R"(
+        m_combo->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QComboBox {
                 background: transparent;
                 color: %1;
                 border: 1px solid %2;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 padding: 4px 10px;
                 font-family: 'Lora','Crimson Text',serif;
                 font-size: 13px;
@@ -477,17 +477,17 @@ void ManuscriptPanel::applyHeaderStyles() {
                 border: 1px solid %2;
                 selection-background-color: %5;
             }
-        )").arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
+        )")).arg(Theme::textBright(), Theme::panelBorder(), Theme::subtleBorder(),
                Theme::panelBackground(), Theme::hoverOverlay()));
     }
     for (auto* b : m_headerIconBtns) {
         if (!b) continue;
-        b->setStyleSheet(QStringLiteral(R"(
+        b->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton {
                 background: transparent;
                 color: %1;
                 border: 1px solid transparent;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 font-size: 15px;
             }
             QToolButton:hover {
@@ -495,7 +495,7 @@ void ManuscriptPanel::applyHeaderStyles() {
                 color: %3;
                 border-color: %4;
             }
-        )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+        )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
     }
     if (m_createChapterBtn) {
         m_createChapterBtn->setStyleSheet(createButtonQss(Theme::accentDefault()));
@@ -593,12 +593,12 @@ void ManuscriptPanel::rebuildList() {
         return;
     }
 
-    const QString chapterQss = QStringLiteral(R"(
+    const QString chapterQss = Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -609,14 +609,14 @@ void ManuscriptPanel::rebuildList() {
             color: %3;
             border-color: %4;
         }
-    )").arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder());
+    )")).arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder());
 
-    const QString sceneQss = QStringLiteral(R"(
+    const QString sceneQss = Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 10px 4px 26px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -627,7 +627,7 @@ void ManuscriptPanel::rebuildList() {
             background: %2;
             color: %3;
         }
-    )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright());
+    )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright());
 
     int row = 0;
     for (const auto& c : filtered) {
@@ -734,19 +734,19 @@ void ManuscriptPanel::rebuildList() {
 }
 
 static QString contextMenuQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QMenu {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-panel;
             padding: 4px;
         }
-        QMenu::item { padding: 6px 16px; border-radius: 4px; }
+        QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
         QMenu::item:disabled { color: %6; }
         QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
            Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted());
 }
 
@@ -977,8 +977,8 @@ void ManuscriptPanel::showDropIndicatorAt(QWidget* target, bool before) {
     if (!m_dropIndicator) {
         m_dropIndicator = new QWidget(target->parentWidget());
         m_dropIndicator->setFixedHeight(2);
-        m_dropIndicator->setStyleSheet(QStringLiteral(
-            "background: %1; border-radius: 1px;").arg(Theme::accentDefault()));
+        m_dropIndicator->setStyleSheet(Theme::qss(QStringLiteral(
+            "background: %1; border-radius: @radius-control;").arg(Theme::accentDefault())));
         m_dropIndicator->setAttribute(Qt::WA_TransparentForMouseEvents);
     } else if (m_dropIndicator->parentWidget() != target->parentWidget()) {
         m_dropIndicator->setParent(target->parentWidget());

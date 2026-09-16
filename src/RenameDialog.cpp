@@ -202,16 +202,16 @@ void RenameDialog::buildUi() {
 
     resize(620, m_groups.isEmpty() ? 320 : 600);
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog#renameDialog { background: %1; }
         QDialog#renameDialog QLabel { color: %2; font-size: 12px; }
         QLabel#rnTitle { font-size: 14px; color: %4; }
         QLabel#rnSectionTitle { font-size: 12px; color: %4; font-weight: bold; margin-top: 6px; }
         QLabel#rnHint { color: %7; font-size: 11px; }
         QLabel#rnSnippet { color: %7; font-size: 11px; font-style: italic; }
-        QFrame#rnLinkedBox { background: %3; border: 1px solid %10; border-radius: 4px; }
+        QFrame#rnLinkedBox { background: %3; border: 1px solid %10; border-radius: @radius-control; }
         QLabel#rnLinkedTitle { color: %4; font-weight: bold; }
-        QScrollArea#rnScroll { background: %3; border: 1px solid %5; border-radius: 4px; }
+        QScrollArea#rnScroll { background: %3; border: 1px solid %5; border-radius: @radius-item; }
         QCheckBox#rnCheck { color: %2; font-size: 12px; spacing: 6px; }
         QCheckBox#rnCheck::indicator {
             width: 14px; height: 14px; border: 1px solid %5;
@@ -223,12 +223,12 @@ void RenameDialog::buildUi() {
         QCheckBox#rnCheck::indicator:hover { border-color: %10; }
         QPushButton#rnBtn {
             background: %8; color: %2;
-            border: 1px solid %5; border-radius: 4px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 6px 14px; min-height: 26px;
         }
         QPushButton#rnBtn:hover { background: %9; color: %4; }
         QPushButton#rnBtn:default { background: %6; color: %4; border-color: %10; }
-    )").arg(Theme::panelBackground(),      // 1
+    )")).arg(Theme::panelBackground(),      // 1
            Theme::textPrimary(),           // 2
            Theme::inputBackground(),       // 3
            Theme::textBright(),            // 4

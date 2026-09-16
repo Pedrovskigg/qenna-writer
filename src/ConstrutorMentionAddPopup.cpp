@@ -109,20 +109,20 @@ void ConstrutorMentionAddPopup::buildUi()
 
 void ConstrutorMentionAddPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#ctrMentionAddPopup {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#ctrMentAddHeader { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#ctrMentAddSource { color: %7; font-size: 11px; font-style: italic; }"
         "QLabel#ctrMentAddPreview {"
         "  color: %4; font-size: 12px;"
-        "  background: %5; border: 1px solid %2; border-radius: 6px; padding: 6px 8px;"
+        "  background: %5; border: 1px solid %2; border-radius: @radius-control; padding: 6px 8px;"
         "}"
         "QLabel#ctrMentAddFieldLabel { color: %4; font-size: 11px; }"
         "QComboBox {"
         "  background: %5; color: %3;"
-        "  border: 1px solid %2; border-radius: 4px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px 6px; font-size: 12px;"
         "}"
         "QComboBox::drop-down { border: none; width: 18px; }"
@@ -132,7 +132,7 @@ void ConstrutorMentionAddPopup::applyTheme()
         "}"
         "QPushButton {"
         "  background: transparent; color: %3;"
-        "  border: 1px solid %2; border-radius: 6px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px 12px; font-size: 11px;"
         "}"
         "QPushButton:hover { background: %6; }"
@@ -146,7 +146,7 @@ void ConstrutorMentionAddPopup::applyTheme()
           Theme::editorBackground(),  // 5
           Theme::hoverOverlay(),      // 6
           Theme::textBright(),        // 7 (source label)
-          Theme::accentDefault()));   // 8
+          Theme::accentDefault())));   // 8
 }
 
 void ConstrutorMentionAddPopup::rebuildNodeCombo()

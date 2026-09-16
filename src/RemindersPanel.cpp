@@ -338,19 +338,19 @@ bool RemindersPanel::eventFilter(QObject* /*watched*/, QEvent* event)
 
 void RemindersPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#remindersPanel {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#remHeader { color: %3; font-size: 14px; font-weight: 600; }"
         "QLabel#remEmpty  { color: %4; font-size: 12px; padding: 8px 0; }"
         "QLineEdit#remInput {"
         "  background: %5; color: %3; border: 1px solid %2;"
-        "  border-radius: 6px; padding: 4px 8px; font-size: 12px;"
+        "  border-radius: @radius-control; padding: 4px 8px; font-size: 12px;"
         "}"
         "QLineEdit#remInput:focus { border-color: %6; }"
         "QPushButton#remAddBtn {"
-        "  background: %6; color: %7; border: none; border-radius: 6px;"
+        "  background: %6; color: %7; border: none; border-radius: @radius-control;"
         "  font-size: 18px; font-weight: 300;"
         "}"
         "QPushButton#remAddBtn:hover  { background: %8; }"
@@ -358,7 +358,7 @@ void RemindersPanel::applyTheme()
         "QCheckBox#remNotifyCheck { color: %4; font-size: 11px; }"
         "QTimeEdit#remTimeEdit {"
         "  background: %5; color: %3; border: 1px solid %2;"
-        "  border-radius: 4px; padding: 2px 4px; font-size: 11px;"
+        "  border-radius: @radius-control; padding: 2px 4px; font-size: 11px;"
         "}"
         "QFrame#remSep { color: %2; }"
         "QListWidget#remActiveList, QListWidget#remHistList {"
@@ -366,7 +366,7 @@ void RemindersPanel::applyTheme()
         "  color: %3; font-size: 12px;"
         "}"
         "QListWidget#remActiveList::item, QListWidget#remHistList::item {"
-        "  padding: 2px 4px; border-radius: 4px;"
+        "  padding: 2px 4px; border-radius: @radius-item;"
         "}"
         "QListWidget#remActiveList::item:hover { background: %9; }"
         "QListWidget#remHistList { color: %4; }"
@@ -391,5 +391,5 @@ void RemindersPanel::applyTheme()
          Theme::hoverStrong(),         // 8
          Theme::hoverOverlay(),        // 9
          Theme::accentDanger(),        // 10
-         Theme::accentDanger()));      // 11
+         Theme::accentDanger())));      // 11
 }

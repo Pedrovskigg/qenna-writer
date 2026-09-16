@@ -136,17 +136,17 @@ void GlobalSearchPanel::closePanel()
 
 void GlobalSearchPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #globalSearchPanel {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         #gsInput {
             background: %3;
             color: %4;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             font-size: 13px;
             selection-background-color: %5;
@@ -156,7 +156,7 @@ void GlobalSearchPanel::applyTheme()
             border: none;
             background: transparent;
             color: %4;
-            border-radius: 5px;
+            border-radius: @radius-control;
         }
         QToolButton#gsCloseBtn:hover { background: %6; }
 
@@ -164,7 +164,7 @@ void GlobalSearchPanel::applyTheme()
             background: transparent;
             color: %7;
             border: 1px solid %2;
-            border-radius: 12px;
+            border-radius: @radius-item;
             padding: 3px 10px;
             font-size: 11px;
         }
@@ -182,13 +182,13 @@ void GlobalSearchPanel::applyTheme()
         QListWidget#gsResults::item {
             color: %4;
             padding: 6px 8px;
-            border-radius: 6px;
+            border-radius: @radius-item;
         }
         QListWidget#gsResults::item:hover { background: %6; }
         QListWidget#gsResults::item:selected { background: %5; color: %1; }
 
         #gsEmpty { color: %7; font-size: 11px; padding: 14px; }
-    )")
+    )"))
         .arg(Theme::panelBackground())
         .arg(Theme::panelBorder())
         .arg(Theme::inputBackground())

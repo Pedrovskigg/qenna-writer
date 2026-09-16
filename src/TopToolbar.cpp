@@ -956,7 +956,7 @@ void TopToolbar::applyRootStyle()
     // background liso (appBackground, sem borda/raio), inconsistente com o
     // resto do chrome do app. Botões continuam transparentes com hover sutil;
     // as cores dos ícones já vêm tintadas via loadIcon().
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#topToolbar {
             background: %1;
             border: 1px solid %7;
@@ -965,7 +965,7 @@ void TopToolbar::applyRootStyle()
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             color: %2;
         }
         QToolButton:hover {
@@ -1001,7 +1001,7 @@ void TopToolbar::applyRootStyle()
             background: %4;
         }
         %11
-    )").arg(
+    )")).arg(
         Theme::panelBackground(),    // 1 — fundo
         Theme::textPrimary(),        // 2 — texto dos botões em estado normal
         Theme::hoverOverlay(),       // 3 — hover bg
@@ -1016,28 +1016,28 @@ void TopToolbar::applyRootStyle()
     ));
 
     if (reminderBadge) {
-        reminderBadge->setStyleSheet(QStringLiteral(
+        reminderBadge->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#reminderBadge {"
-            "  background: %1; border-radius: 4px;"
-            "}").arg(Theme::accentDanger()));
+            "  background: %1; border-radius: @radius-control;"
+            "}").arg(Theme::accentDanger())));
     }
 
     for (QLabel *badge : { readModeBadge, focusModeBadge, indentBadge }) {
         if (!badge) continue;
         // Ponto aceso com halo: o halo e o que faz parecer luz e nao sujeira.
-        badge->setStyleSheet(QStringLiteral(
+        badge->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#modeBadge {"
             "  background: %1;"
             "  border: 1px solid %2;"
-            "  border-radius: 4px;"
-            "}").arg(Theme::accentDefault(), Theme::panelBackground()));
+            "  border-radius: @radius-control;"
+            "}").arg(Theme::accentDefault(), Theme::panelBackground())));
     }
 
     if (pensarioBadge) {
-        pensarioBadge->setStyleSheet(QStringLiteral(
+        pensarioBadge->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#pensarioBadge {"
-            "  background: %1; border-radius: 4px;"
-            "}").arg(Theme::accentSuccess()));
+            "  background: %1; border-radius: @radius-control;"
+            "}").arg(Theme::accentSuccess())));
     }
 }
 
@@ -1189,9 +1189,9 @@ void TopToolbar::buildAlignMenu()
     wa->setDefaultWidget(container);
     menu->addAction(wa);
 
-    menu->setStyleSheet(QStringLiteral(R"(
-        QMenu#ttbAlignMenu { background: %1; border: 1px solid %2; border-radius: 8px; padding: 2px; }
-        QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; color: %3; }
+    menu->setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QMenu#ttbAlignMenu { background: %1; border: 1px solid %2; border-radius: @radius-panel; padding: 2px; }
+        QToolButton { background: transparent; border: 1px solid transparent; border-radius: @radius-control; color: %3; }
         QToolButton:hover { background: %4; border-color: %5; }
         QToolButton:checked { background: %5; border-color: %5; }
         QLabel#ttbAlignScopeLabel { color: %6; font-size: 11px; font-weight: bold; margin-top: 2px; }
@@ -1202,7 +1202,7 @@ void TopToolbar::buildAlignMenu()
         }
         QRadioButton#ttbAlignScope::indicator:checked { background: %5; border-color: %5; }
         QFrame { color: %2; }
-    )").arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
+    )")).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
             Theme::hoverOverlay(), Theme::accentDefault(),
             Theme::textMuted(), Theme::inputBackground()));
 

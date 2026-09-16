@@ -93,29 +93,29 @@ constexpr int kHeaderH = 50; // acomoda o bloco nome+subtítulo do modo janela
 constexpr int kMaxCharsPerDoc = 100000;
 
 QString chipQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 12px;
             font-family: 'Segoe UI', sans-serif;
             font-size: 12px;
         }
         QPushButton:hover { background: %4; border-color: %5; }
         QPushButton:disabled { color: %6; border-color: %1; }
-    )").arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(),
+    )")).arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(),
            Theme::hoverOverlay(), Theme::borderStrong(), Theme::disabledText());
 }
 
 QString sendBtnQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %1;
             color: %2;
             border: none;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 8px 18px;
             font-family: 'Segoe UI', sans-serif;
             font-size: 12px;
@@ -123,7 +123,7 @@ QString sendBtnQss() {
         }
         QPushButton:hover { background: %3; }
         QPushButton:disabled { background: %4; color: %5; }
-    )").arg(Theme::accentDefault(), Theme::textBright(), Theme::accentDefault(),
+    )")).arg(Theme::accentDefault(), Theme::textBright(), Theme::accentDefault(),
            Theme::subtleBorder(), Theme::disabledText());
 }
 
@@ -134,9 +134,9 @@ QString sendBtnQss() {
 // reaplicado na troca de tema e fica congelado nas cores antigas.
 
 QString panelFrameQss() {
-    return QStringLiteral(
-        "QFrame#aiChatPanel { background: %1; border: 1px solid %2; border-radius: 10px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder());
+    return Theme::qss(QStringLiteral(
+        "QFrame#aiChatPanel { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder()));
 }
 
 QString titleQss() {
@@ -146,37 +146,37 @@ QString titleQss() {
 }
 
 QString headerBtnQss() {
-    return QStringLiteral(R"(
-        QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px; font-size: 12px; }
+    return Theme::qss(QStringLiteral(R"(
+        QToolButton { background: transparent; border: 1px solid transparent; border-radius: @radius-control; padding: 2px; font-size: 12px; }
         QToolButton:hover { background: %1; border-color: %2; }
         QToolButton:checked { background: %3; border-color: %3; }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong(), Theme::accentDefault());
+    )")).arg(Theme::hoverOverlay(), Theme::borderStrong(), Theme::accentDefault());
 }
 
 QString closeBtnQss() {
-    return QStringLiteral(R"(
-        QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px; }
+    return Theme::qss(QStringLiteral(R"(
+        QToolButton { background: transparent; border: 1px solid transparent; border-radius: @radius-control; padding: 2px; }
         QToolButton:hover { background: %1; border-color: %2; }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong());
+    )")).arg(Theme::hoverOverlay(), Theme::borderStrong());
 }
 
 QString smallComboQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QComboBox {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 4px; padding: 2px 6px; font-size: 10px;
+            border-radius: @radius-control; padding: 2px 6px; font-size: 10px;
         }
         QComboBox:hover { border-color: %4; }
         QComboBox:disabled { color: %5; }
-    )").arg(Theme::inputBackground(), Theme::textMuted(), Theme::subtleBorder(),
+    )")).arg(Theme::inputBackground(), Theme::textMuted(), Theme::subtleBorder(),
            Theme::borderStrong(), Theme::disabledText());
 }
 
 QString transcriptScrollQss() {
-    return QStringLiteral(
-        "QScrollArea { background: %1; border: 1px solid %2; border-radius: 10px; }"
+    return Theme::qss(QStringLiteral(
+        "QScrollArea { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"
         "QScrollArea > QWidget > QWidget { background: transparent; }"
-    ).arg(Theme::inputBackground(), Theme::subtleBorder());
+    ).arg(Theme::inputBackground(), Theme::subtleBorder()));
 }
 
 QString statusLabelQss() {
@@ -194,44 +194,44 @@ QString inputEditQss() {
     // contra o QTextEdit { padding: 80px 100px; } global (Theme::globalStyleSheet,
     // escrito pro editor de manuscrito) — mesmo remédio já usado em
     // bubbleTextQss() e no CharacterSheetPanel.
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QTextEdit#chatInputEdit {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 8px; padding: 8px 10px; font-size: 12px;
+            border-radius: @radius-control; padding: 8px 10px; font-size: 12px;
             font-family: 'Segoe UI', sans-serif;
         }
         QTextEdit#chatInputEdit:focus { border-color: %4; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder());
+    )")).arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder());
 }
 
 QString previewBannerQss() {
-    return QStringLiteral(
-        "background: %1; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 11.5px;"
-    ).arg(Theme::hoverOverlay(), Theme::accentDefault(), Theme::textBright());
+    return Theme::qss(QStringLiteral(
+        "background: %1; border: 1px solid %2; border-radius: @radius-panel; color: %3; font-size: 11.5px;"
+    ).arg(Theme::hoverOverlay(), Theme::accentDefault(), Theme::textBright()));
 }
 
 QString railFolderBtnQss(bool active) {
-    return QStringLiteral(
-        "QToolButton { text-align: left; padding: 6px 8px; border-radius: 6px; "
+    return Theme::qss(QStringLiteral(
+        "QToolButton { text-align: left; padding: 6px 8px; border-radius: @radius-control; "
         "border: none; background: %1; color: %2; font-size: 12px; font-weight: 600; } "
         "QToolButton:hover { background: %3; }"
     ).arg(active ? Theme::hoverOverlay() : QStringLiteral("transparent"),
-          Theme::textBright(), Theme::hoverOverlay());
+          Theme::textBright(), Theme::hoverOverlay()));
 }
 
 QString railSessionListQss() {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QListWidget { background: transparent; border: none; font-size: 11.5px; color: %1; } "
-        "QListWidget::item { padding: 4px 8px 4px 20px; border-radius: 6px; } "
+        "QListWidget::item { padding: 4px 8px 4px 20px; border-radius: @radius-item; } "
         "QListWidget::item:hover { background: %2; } "
         "QListWidget::item:selected { background: %3; color: %4; }"
-    ).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::hoverOverlay(), Theme::textBright());
+    ).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::hoverOverlay(), Theme::textBright()));
 }
 
 QString avatarQss() {
-    return QStringLiteral(
-        "background: %1; color: %2; border-radius: 8px; font-size: 13px; font-weight: 700;"
-    ).arg(Theme::hoverOverlay(), Theme::accentDefault());
+    return Theme::qss(QStringLiteral(
+        "background: %1; color: %2; border-radius: @radius-panel; font-size: 13px; font-weight: 700;"
+    ).arg(Theme::hoverOverlay(), Theme::accentDefault()));
 }
 
 QString studioNameQss() {
@@ -243,10 +243,10 @@ QString studioSubtitleQss() {
 }
 
 QString memoryChipQss() {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "color: %1; font-size: 10px; background: %2; border: 1px solid %3; "
-        "border-radius: 999px; padding: 3px 9px;"
-    ).arg(Theme::textMuted(), Theme::panelBackground(), Theme::subtleBorder());
+        "border-radius: @radius-item; padding: 3px 9px;"
+    ).arg(Theme::textMuted(), Theme::panelBackground(), Theme::subtleBorder()));
 }
 
 QString chatContextQss() {
@@ -265,27 +265,27 @@ QString railScrollQss() {
 }
 
 QString railSearchQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QLineEdit {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 7px; padding: 5px 8px; font-size: 11px;
+            border-radius: @radius-control; padding: 5px 8px; font-size: 11px;
         }
         QLineEdit:focus { border-color: %4; }
-    )").arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::focusBorder());
+    )")).arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::focusBorder());
 }
 
 QString gripQss() {
-    return QStringLiteral(
-        "background: transparent; border-bottom: 3px solid %1; border-right: 3px solid %1; border-bottom-right-radius: 8px;"
-    ).arg(Theme::subtleBorder());
+    return Theme::qss(QStringLiteral(
+        "background: transparent; border-bottom: 3px solid %1; border-right: 3px solid %1; border-bottom-right-radius: @radius-panel;"
+    ).arg(Theme::subtleBorder()));
 }
 
 QString bubbleQss(bool isUser) {
-    return isUser
-        ? QStringLiteral("QFrame#chatBubbleUser { background: %1; border-radius: 14px; }")
+    return Theme::qss(isUser
+        ? Theme::qss(QStringLiteral("QFrame#chatBubbleUser { background: %1; border-radius: @radius-panel; }"))
             .arg(Theme::accentDefault())
-        : QStringLiteral("QFrame#chatBubbleMira { background: %1; border: 1px solid %2; border-radius: 14px; }")
-            .arg(Theme::panelBackground(), Theme::subtleBorder());
+        : Theme::qss(QStringLiteral("QFrame#chatBubbleMira { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"))
+            .arg(Theme::panelBackground(), Theme::subtleBorder()));
 }
 
 // Cor do texto da bolha: sobre o acento (usuário) usa textBright; sobre o
@@ -366,23 +366,23 @@ QString traceTextQss() {
 }
 
 QString traceChipQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 9px; padding: 1px 7px; font-size: 9px;
+            border-radius: @radius-control; padding: 1px 7px; font-size: 9px;
             font-style: normal; font-family: 'Segoe UI', sans-serif;
         }
         QToolButton:hover { background: %4; color: %5; border-color: %5; }
-    )").arg(Theme::inputBackground(), Theme::textMuted(), Theme::subtleBorder(),
+    )")).arg(Theme::inputBackground(), Theme::textMuted(), Theme::subtleBorder(),
            Theme::hoverOverlay(), Theme::textBright());
 }
 
 QString feedbackBtnQss() {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QToolButton { background: transparent; border: none; font-size: 11px; padding: 1px 3px; }"
-        "QToolButton:hover { background: %1; border-radius: 4px; }"
+        "QToolButton:hover { background: %1; border-radius: @radius-control; }"
         "QToolButton:disabled { background: transparent; }"
-    ).arg(Theme::hoverOverlay());
+    ).arg(Theme::hoverOverlay()));
 }
 
 // Cartão de sugestão de edição (propose_document_edit) — mesma paleta
@@ -390,9 +390,9 @@ QString feedbackBtnQss() {
 // dentro da bolha da Mira em vez de num painel fixo, porque aqui pode haver
 // mais de uma sugestão pendente na mesma conversa longa.
 QString editCardQss() {
-    return QStringLiteral(
-        "QFrame#chatEditCard { background: %1; border: 1px solid %2; border-radius: 6px; }")
-        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft());
+    return Theme::qss(QStringLiteral(
+        "QFrame#chatEditCard { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft()));
 }
 
 QString editCardTitleQss() {

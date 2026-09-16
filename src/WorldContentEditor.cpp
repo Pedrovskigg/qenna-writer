@@ -452,11 +452,11 @@ void WorldContentEditor::applyTheme()
     const QString editorBg  = Theme::editorBackground();
     const QColor  editorTxt = QColor(Theme::editorTextColor());
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#wceToolbar { background: %1; border-bottom: 1px solid %2; }
         QPushButton#wceFmtBtn {
             background: transparent; color: %3;
-            border: 1px solid transparent; border-radius: 5px; font-size: 13px;
+            border: 1px solid transparent; border-radius: @radius-control; font-size: 13px;
         }
         QPushButton#wceFmtBtn:hover { background: %5; border-color: %2; color: %4; }
         QPushButton#wceFmtBtn:checked { background: %6; border-color: %7; color: %4; }
@@ -465,7 +465,7 @@ void WorldContentEditor::applyTheme()
         QFrame#wceToolbarSep { background: %2; border: none; max-width: 1px; margin: 2px 3px; }
         QFontComboBox#wceFontCombo, QComboBox#wceSizeCombo {
             background: %1; color: %3;
-            border: 1px solid %8; border-radius: 5px;
+            border: 1px solid %8; border-radius: @radius-control;
             padding: 2px 4px; font-size: 12px;
             selection-background-color: %6;
         }
@@ -474,9 +474,9 @@ void WorldContentEditor::applyTheme()
         QLabel#wceStatusLabel { color: %9; font-size: 10px; padding: 0 4px; }
         QMenu#wceSpacingMenu {
             background: %1; color: %3;
-            border: 1px solid %8; border-radius: 8px; padding: 6px;
+            border: 1px solid %8; border-radius: @radius-panel; padding: 6px;
         }
-        QMenu#wceSpacingMenu::item { padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        QMenu#wceSpacingMenu::item { padding: 5px 10px; border-radius: @radius-item; font-size: 12px; }
         QMenu#wceSpacingMenu::item:selected { background: %5; color: %4; }
         QMenu#wceSpacingMenu::item:disabled {
             color: %9; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
@@ -493,7 +493,7 @@ void WorldContentEditor::applyTheme()
         QScrollBar#wceExternalScroll::handle:vertical:hover { background: %9; }
         QScrollBar#wceExternalScroll::add-line:vertical, QScrollBar#wceExternalScroll::sub-line:vertical { height: 0; }
         QScrollBar#wceExternalScroll::add-page:vertical, QScrollBar#wceExternalScroll::sub-page:vertical { background: transparent; }
-    )").arg(panelBg, border, txtPrim, txtBright)   // %1-4
+    )")).arg(panelBg, border, txtPrim, txtBright)   // %1-4
        .arg(hover, accentSf, accentBd)              // %5-7
        .arg(Theme::subtleBorder(), txtMuted)        // %8-9
        .arg(editorBg, disabled));                   // %10-11

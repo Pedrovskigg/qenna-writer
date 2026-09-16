@@ -456,9 +456,9 @@ QWidget* PensarioPanel::buildNoteCard(const QString& id, const QString& color,
     if (!c.isValid()) c = QColor(QStringLiteral("#FFD54F"));
     auto* stripe = new QWidget(card);
     stripe->setFixedHeight(4);
-    stripe->setStyleSheet(QStringLiteral(
-        "background:%1; border-top-left-radius:8px; border-top-right-radius:8px;")
-        .arg(c.name()));
+    stripe->setStyleSheet(Theme::qss(QStringLiteral(
+        "background:%1; border-top-left-radius:@radius-panel; border-top-right-radius:@radius-panel;")
+        .arg(c.name())));
     outer->addWidget(stripe);
 
     auto* body = new QWidget(card);
@@ -841,12 +841,12 @@ void PensarioPanel::rebuildMemories()
     filterBtn->setPopupMode(QToolButton::InstantPopup);
 
     auto* menu = new QMenu(filterBtn);
-    menu->setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 5px 18px; border-radius: 4px; }
+    menu->setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+        QMenu::item { padding: 5px 18px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
         QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::accentInfoSoft(), Theme::textBright()));
     auto addFilter = [this, menu](const QString& label, const QString& value) {
         QAction* a = menu->addAction(label);
@@ -959,14 +959,14 @@ void PensarioPanel::rebuildMemTagChips(const QVector<MemoriesStore::Memory>& all
         chip->setCheckable(true);
         chip->setChecked(m_memTagFilter.contains(tag));
         chip->setCursor(Qt::PointingHandCursor);
-        chip->setStyleSheet(QStringLiteral(R"(
+        chip->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QPushButton {
                 background: transparent; color: %1; border: 1px solid %2;
-                border-radius: 9px; padding: 2px 8px; font-size: 10px;
+                border-radius: @radius-control; padding: 2px 8px; font-size: 10px;
             }
             QPushButton:hover   { background: %3; color: %4; }
             QPushButton:checked { background: %5; color: %4; border-color: %6; }
-        )").arg(Theme::textMuted(), Theme::panelBorder(), Theme::hoverOverlay(),
+        )")).arg(Theme::textMuted(), Theme::panelBorder(), Theme::hoverOverlay(),
                 Theme::textBright(), Theme::pressedOverlay(), Theme::accentDefault()));
         chip->adjustSize();
         const QSize sz = chip->sizeHint();
@@ -1055,11 +1055,11 @@ void PensarioPanel::showMemoryActions(const QString& memId, const QPoint& global
     if (!found) return;
 
     QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 6px 18px; border-radius: 4px; }
+    menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+        QMenu::item { padding: 6px 18px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::accentInfoSoft(), Theme::textBright()));
     QAction* aEditor = menu.addAction(tr("Abrir no editor"));
     QAction* aRef    = menu.addAction(tr("Abrir no menu de referência"));
@@ -1169,9 +1169,9 @@ void PensarioPanel::rebuildDialogues()
             auto* popup = new QFrame(nullptr);
             popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
             popup->setAttribute(Qt::WA_DeleteOnClose);
-            popup->setStyleSheet(QStringLiteral(
-                "QFrame { background: %1; border: 1px solid %2; border-radius: 8px; }")
-                .arg(Theme::panelBackground(), Theme::panelBorder()));
+            popup->setStyleSheet(Theme::qss(QStringLiteral(
+                "QFrame { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+                .arg(Theme::panelBackground(), Theme::panelBorder())));
 
             auto* label = new QLabel(
                 tr("O detector de diálogos lê e interpreta padrões de texto para "
@@ -1443,11 +1443,11 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
         unattrBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
         unattrBtn->setText(tr("Diálogos sem atribuição (%1)").arg(unattributedCount));
         unattrBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        unattrBtn->setStyleSheet(QStringLiteral(
-            "QToolButton#pnDlgUnattributedChip { border: 1px dashed %1; border-radius: 5px; "
+        unattrBtn->setStyleSheet(Theme::qss(QStringLiteral(
+            "QToolButton#pnDlgUnattributedChip { border: 1px dashed %1; border-radius: @radius-item; "
             "padding: 4px 8px; color: %2; }"
             "QToolButton#pnDlgUnattributedChip:checked { background: %3; color: %4; border-style: solid; }")
-            .arg(Theme::panelBorder(), Theme::textMuted(), Theme::accentInfoSoft(), Theme::textBright()));
+            .arg(Theme::panelBorder(), Theme::textMuted(), Theme::accentInfoSoft(), Theme::textBright())));
         connect(unattrBtn, &QToolButton::clicked, this, [this]() {
             if (m_dialoguePresenceFilter.contains(kUnattributedDialogueId))
                 m_dialoguePresenceFilter.remove(kUnattributedDialogueId);
@@ -1572,9 +1572,9 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
         auto* popup = new QFrame(nullptr);
         popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
         popup->setAttribute(Qt::WA_DeleteOnClose);
-        popup->setStyleSheet(QStringLiteral(
-            "QFrame { background: %1; border: 1px solid %2; border-radius: 6px; }")
-            .arg(Theme::panelBackground(), Theme::panelBorder()));
+        popup->setStyleSheet(Theme::qss(QStringLiteral(
+            "QFrame { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+            .arg(Theme::panelBackground(), Theme::panelBorder())));
 
         auto* plist = new QListWidget(popup);
         plist->setObjectName(QStringLiteral("pnDlgOriginList"));
@@ -1587,15 +1587,15 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
         // espaço depois que aparece, e o popup (largura já travada antes
         // dela existir) não sobra espaço: a barra acaba desenhada pra fora
         // do frame visível.
-        plist->setStyleSheet(QStringLiteral(
+        plist->setStyleSheet(Theme::qss(QStringLiteral(
             "QListWidget#pnDlgOriginList { background: transparent; color: %1; outline: none; border: none; }"
-            "QListWidget#pnDlgOriginList::item { padding: 5px 10px; border-radius: 4px; }"
+            "QListWidget#pnDlgOriginList::item { padding: 5px 10px; border-radius: @radius-item; }"
             "QListWidget#pnDlgOriginList::item:selected { background: %2; color: %3; }"
             "QListWidget#pnDlgOriginList QScrollBar:vertical { background: transparent; width: 9px; margin: 0; }"
             "QListWidget#pnDlgOriginList QScrollBar::handle:vertical { background: %4; border-radius: 4px; min-height: 20px; }"
             "QListWidget#pnDlgOriginList QScrollBar::add-line:vertical, "
             "QListWidget#pnDlgOriginList QScrollBar::sub-line:vertical { height: 0px; }")
-            .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder()));
+            .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder())));
 
         auto addItem = [this, plist](const QString& label, const QString& value) {
             auto* it = new QListWidgetItem(label, plist);
@@ -1671,11 +1671,11 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
         addBtn->setPopupMode(QToolButton::InstantPopup);
 
         auto* pickMenu = new QMenu(addBtn);
-        pickMenu->setStyleSheet(QStringLiteral(R"(
-            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-            QMenu::item { padding: 5px 18px; border-radius: 4px; }
+        pickMenu->setStyleSheet(Theme::qss(QStringLiteral(R"(
+            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+            QMenu::item { padding: 5px 18px; border-radius: @radius-item; }
             QMenu::item:selected { background: %4; color: %5; }
-        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+        )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
                 Theme::accentInfoSoft(), Theme::textBright()));
         for (const QString& elId : speakerIds) {
             if (m_dialoguePresenceFilter.contains(elId)) continue;
@@ -1772,11 +1772,11 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
     const bool unattributed = dlg.characterId.isEmpty();
     connect(card, &QWidget::customContextMenuRequested, this, [this, card, dlgIdForMenu, unattributed](const QPoint& pos) {
         QMenu menu(card);
-        menu.setStyleSheet(QStringLiteral(R"(
-            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-            QMenu::item { padding: 5px 18px; border-radius: 4px; }
+        menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
+            QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+            QMenu::item { padding: 5px 18px; border-radius: @radius-item; }
             QMenu::item:selected { background: %4; color: %5; }
-        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+        )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
                 Theme::accentInfoSoft(), Theme::textBright()));
         QAction* changeSpeaker = menu.addAction(
             unattributed ? tr("Atribuir ao personagem…") : tr("Alterar locutor…"));
@@ -1882,9 +1882,9 @@ void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& g
     auto* popup = new QFrame(nullptr);
     popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
     popup->setAttribute(Qt::WA_DeleteOnClose);
-    popup->setStyleSheet(QStringLiteral(
-        "QFrame { background: %1; border: 1px solid %2; border-radius: 6px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    popup->setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
 
     auto* plist = new QListWidget(popup);
     plist->setObjectName(QStringLiteral("pnDlgSpeakerList"));
@@ -1894,15 +1894,15 @@ void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& g
     plist->setIconSize(QSize(22, 22));
     plist->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     plist->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    plist->setStyleSheet(QStringLiteral(
+    plist->setStyleSheet(Theme::qss(QStringLiteral(
         "QListWidget#pnDlgSpeakerList { background: transparent; color: %1; outline: none; border: none; }"
-        "QListWidget#pnDlgSpeakerList::item { padding: 5px 8px; border-radius: 4px; }"
+        "QListWidget#pnDlgSpeakerList::item { padding: 5px 8px; border-radius: @radius-item; }"
         "QListWidget#pnDlgSpeakerList::item:selected { background: %2; color: %3; }"
         "QListWidget#pnDlgSpeakerList QScrollBar:vertical { background: transparent; width: 9px; margin: 0; }"
         "QListWidget#pnDlgSpeakerList QScrollBar::handle:vertical { background: %4; border-radius: 4px; min-height: 20px; }"
         "QListWidget#pnDlgSpeakerList QScrollBar::add-line:vertical, "
         "QListWidget#pnDlgSpeakerList QScrollBar::sub-line:vertical { height: 0px; }")
-        .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder()));
+        .arg(Theme::textPrimary(), Theme::accentInfoSoft(), Theme::textBright(), Theme::panelBorder())));
 
     for (const Element& e : chars) {
         auto* it = new QListWidgetItem(QIcon(characterAvatar(e.id, 22)),
@@ -2074,11 +2074,11 @@ void PensarioPanel::applyGlossaryPopupTheme()
     const QString hover   = Theme::hoverStrong();
     const QString accent  = Theme::accentDefault();
 
-    m_glossaryPopup->setStyleSheet(QStringLiteral(R"(
+    m_glossaryPopup->setStyleSheet(Theme::qss(QStringLiteral(R"(
         #pnGlossaryPopup {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         #pnGlsHeader { color: %3; font-size: 14px; font-weight: 600; }
         #pnGlsCloseBtn {
@@ -2086,14 +2086,14 @@ void PensarioPanel::applyGlossaryPopupTheme()
             background: transparent;
             border: none;
             font-size: 16px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #pnGlsCloseBtn:hover { background: %7; color: %5; }
         #pnGlsAddBtn {
             color: %3;
             background: %6;
             border: 1px dashed %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             padding: 9px;
             font-size: 13px;
         }
@@ -2102,7 +2102,7 @@ void PensarioPanel::applyGlossaryPopupTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 12px;
         }
@@ -2112,7 +2112,7 @@ void PensarioPanel::applyGlossaryPopupTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 12px;
         }
@@ -2121,23 +2121,23 @@ void PensarioPanel::applyGlossaryPopupTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px;
             outline: 0;
         }
-        #pnGlsList::item { padding: 6px 8px; border-radius: 4px; }
+        #pnGlsList::item { padding: 6px 8px; border-radius: @radius-item; }
         #pnGlsList::item:hover { background: %7; }
         #pnGlsList::item:selected { background: %7; color: %5; }
         #pnGlsRemoveBtn {
             color: %4;
             background: transparent;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 10px;
             font-size: 11px;
         }
         #pnGlsRemoveBtn:hover { color: %5; background: %7; border-color: %8; }
-    )")
+    )"))
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
 }
 
@@ -2377,8 +2377,8 @@ QWidget* PensarioPanel::buildCommentCard(const QString& docKey, const QString& c
     stripe->setFixedWidth(4);
     QColor c(color);
     if (!c.isValid()) c = QColor(QStringLiteral("#FFD54F"));
-    stripe->setStyleSheet(QStringLiteral("background:%1;border-top-left-radius:8px;"
-                                         "border-bottom-left-radius:8px;").arg(c.name()));
+    stripe->setStyleSheet(Theme::qss(QStringLiteral("background:%1;border-top-left-radius:@radius-panel;"
+                                         "border-bottom-left-radius:@radius-panel;").arg(c.name())));
     row->addWidget(stripe);
 
     auto* body = new QWidget(card);
@@ -2674,11 +2674,11 @@ void PensarioPanel::applyTheme()
     const QString hover    = Theme::hoverStrong();
     const QString accent   = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #pensarioPanel {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         /* Áreas de rolagem e seus viewports herdam o fundo do painel
            (senão mostram a cor base padrão do Qt e destoam do tema). */
@@ -2697,7 +2697,7 @@ void PensarioPanel::applyTheme()
             border: none;
             background: transparent;
             font-size: 18px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #pnClose:hover { background: %7; color: %5; }
         #pnNamesBtn {
@@ -2705,17 +2705,17 @@ void PensarioPanel::applyTheme()
             background: transparent;
             border: none;
             font-size: 15px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #pnNamesBtn:hover { background: %7; color: %3; }
         #pnNamesBtn:checked { background: %8; color: %5; }
-        #pnMapBtn { background: transparent; border: none; border-radius: 6px; }
+        #pnMapBtn { background: transparent; border: none; border-radius: @radius-control; }
         #pnMapBtn:hover { background: %7; }
         #pnSort {
             color: %4;
             background: transparent;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 3px 8px;
             font-size: 11px;
         }
@@ -2730,7 +2730,7 @@ void PensarioPanel::applyTheme()
             color: %4;
             background: transparent;
             border: none;
-            border-radius: 7px;
+            border-radius: @radius-control;
             padding: 6px 4px;
             font-size: 12px;
         }
@@ -2747,7 +2747,7 @@ void PensarioPanel::applyTheme()
         #pnCard {
             background: %6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #pnCard:hover { border-color: %8; }
         #pnCardComment {
@@ -2763,7 +2763,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px dashed %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             padding: 9px;
             font-size: 13px;
         }
@@ -2771,7 +2771,7 @@ void PensarioPanel::applyTheme()
         #pnNoteCard {
             background: %6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #pnNoteCard:hover { border-color: %8; }
         #pnNoteCardTitle { color: %3; font-size: 13px; font-weight: 600; }
@@ -2781,14 +2781,14 @@ void PensarioPanel::applyTheme()
             background: transparent;
             border: none;
             font-size: 16px;
-            border-radius: 4px;
+            border-radius: @radius-item;
         }
         #pnNoteDelete:hover { color: %5; background: %7; }
         #pnCatBtn {
             color: %4;
             background: transparent;
             border: 1px solid %9;
-            border-radius: 7px;
+            border-radius: @radius-control;
             padding: 5px 4px;
             font-size: 12px;
         }
@@ -2798,7 +2798,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %8;
             border: none;
-            border-radius: 7px;
+            border-radius: @radius-control;
             padding: 6px 16px;
             font-size: 13px;
             font-weight: 600;
@@ -2808,7 +2808,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 13px;
         }
@@ -2822,7 +2822,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 7px 10px;
             font-size: 13px;
             text-align: left;
@@ -2832,7 +2832,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 12px;
         }
@@ -2842,7 +2842,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             font-size: 12px;
             text-align: left;
@@ -2853,7 +2853,7 @@ void PensarioPanel::applyTheme()
             color: %3;
             background: %6;
             border: 1px solid %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 5px 8px;
             font-size: 11px;
         }
@@ -2863,7 +2863,7 @@ void PensarioPanel::applyTheme()
             color: %8;
             background: transparent;
             border: 1px dashed %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 8px;
             font-size: 12px;
             font-weight: 600;
@@ -2881,7 +2881,7 @@ void PensarioPanel::applyTheme()
             color: %4;
             background: transparent;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             min-width: 16px;
             max-width: 16px;
             min-height: 16px;
@@ -2893,7 +2893,7 @@ void PensarioPanel::applyTheme()
         #pnDlgScanBtn {
             background: transparent;
             border: 1px solid %9;
-            border-radius: 5px;
+            border-radius: @radius-control;
             min-width: 24px;
             max-width: 24px;
             min-height: 24px;
@@ -2906,7 +2906,7 @@ void PensarioPanel::applyTheme()
             color: %5;
             background: %7;
             border: 1px solid %8;
-            border-radius: 7px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             font-size: 13px;
             font-weight: 600;
@@ -2917,7 +2917,7 @@ void PensarioPanel::applyTheme()
             color: %4;
             background: transparent;
             border: 1px dashed %9;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 11px;
         }
@@ -2926,7 +2926,7 @@ void PensarioPanel::applyTheme()
         #pnMemCard {
             background: %6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #pnMemCard:hover { border-color: %8; }
         #pnMemCardTitle { color: %8; font-size: 11px; font-weight: 700; }
@@ -2935,7 +2935,7 @@ void PensarioPanel::applyTheme()
             background: %6;
             border: 1px solid %9;
             border-left: 3px solid %8;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #pnDlgCard:hover { border-color: %8; }
         #pnDlgCardName { color: %5; font-size: 12px; font-weight: 700; }
@@ -2946,7 +2946,7 @@ void PensarioPanel::applyTheme()
             background: transparent;
             border: none;
             font-size: 16px;
-            border-radius: 4px;
+            border-radius: @radius-item;
         }
         #pnMemDelete:hover { color: %5; background: %7; }
         #pnEmpty, #pnPlaceholderSub {
@@ -2963,10 +2963,10 @@ void PensarioPanel::applyTheme()
             background: transparent;
             border: none;
             font-size: 15px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #pnGlossaryBtn:hover { background: %7; color: %3; }
-    )")
+    )"))
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
 
     applyGlossaryPopupTheme();

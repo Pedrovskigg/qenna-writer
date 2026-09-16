@@ -1,5 +1,7 @@
 #include "ThemeEditorDialog.h"
 
+#include "Theme.h"
+
 #include "ThemePreviewWidget.h"
 
 #include <QCheckBox>
@@ -62,11 +64,11 @@ void paintSwatch(QPushButton* btn, const QString& colorStr)
             .arg(QString::number(c.alphaF(), 'f', 3))
         : QStringLiteral("#444");
     btn->setText(QString());
-    btn->setStyleSheet(QStringLiteral(
+    btn->setStyleSheet(Theme::qss(QStringLiteral(
         "QPushButton#themeSwatch { background: %1; border: 1px solid rgba(255,255,255,0.30);"
-        " border-radius: 4px; min-width: 56px; min-height: 22px; }"
+        " border-radius: @radius-item; min-width: 56px; min-height: 22px; }"
         "QPushButton#themeSwatch:hover { border-color: rgba(255,255,255,0.65); }"
-    ).arg(css));
+    ).arg(css)));
 }
 
 } // namespace
@@ -491,7 +493,7 @@ void ThemeEditorDialog::refreshSwatch(QPushButton* btn, const QString& colorStr)
 
 void ThemeEditorDialog::applyDialogStyle()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #themeEditorDialog {
             background: %1;
         }
@@ -522,7 +524,7 @@ void ThemeEditorDialog::applyDialogStyle()
         #themeEditorDialog QGroupBox#themeGroup {
             color: %3;
             border: 1px solid %6;
-            border-radius: 6px;
+            border-radius: @radius-panel;
             margin-top: 14px;
             padding-top: 16px;
             font-weight: 600;
@@ -537,7 +539,7 @@ void ThemeEditorDialog::applyDialogStyle()
             background: %5;
             color: %2;
             border: 1px solid %6;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 4px 6px;
             min-height: 22px;
         }
@@ -546,7 +548,7 @@ void ThemeEditorDialog::applyDialogStyle()
             color: %2;
             border: 1px solid %6;
             padding: 6px 12px;
-            border-radius: 4px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #themeEditorDialog QPushButton:hover {
@@ -578,9 +580,9 @@ void ThemeEditorDialog::applyDialogStyle()
         }
         #themeEditorPreview {
             border: 1px solid %6;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
-    )").arg(
+    )")).arg(
         Theme::appBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3

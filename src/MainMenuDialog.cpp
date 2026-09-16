@@ -1366,7 +1366,7 @@ private:
     void updateSwatches() {
         auto paintSwatch = [](QPushButton* btn, const QColor& c, const QColor& fallback) {
             const QColor use = c.isValid() ? c : fallback;
-            btn->setStyleSheet(QStringLiteral("background-color: %1; border-radius: 4px;").arg(use.name()));
+            btn->setStyleSheet(Theme::qss(QStringLiteral("background-color: %1; border-radius: @radius-item;")).arg(use.name()));
         };
         if (m_spineColorBtn) paintSwatch(m_spineColorBtn, m_spineColor, QColor(QStringLiteral("#7a1e28")));
         if (m_fontColorBtn)  paintSwatch(m_fontColorBtn, m_fontColor, QColor(245, 240, 226));
@@ -1385,7 +1385,7 @@ private:
     }
 
     void applyDialogStyle() {
-        setStyleSheet(QStringLiteral(R"(
+        setStyleSheet(Theme::qss(QStringLiteral(R"(
             #projectEditDialog { background: %1; }
             #projectEditDialog QLabel { color: %2; font-size: 12px; }
             #projectInfoHeading {
@@ -1399,7 +1399,7 @@ private:
                 background: %5;
                 color: %4;
                 border: 1px solid %6;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 font-size: 11px;
             }
             #projectEditDialog QLineEdit,
@@ -1407,7 +1407,7 @@ private:
                 background: %5;
                 color: %3;
                 border: 1px solid %6;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 padding: 6px 8px;
                 selection-background-color: %7;
             }
@@ -1420,7 +1420,7 @@ private:
                 color: %2;
                 border: 1px solid %6;
                 padding: 6px 14px;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 font-size: 12px;
                 min-height: 26px;
             }
@@ -1431,15 +1431,15 @@ private:
             QPushButton#projectInfoBtn:default {
                 border-color: %9;
             }
-            #projectEditTabs::pane { border: 1px solid %6; border-radius: 6px; top: -1px; }
+            #projectEditTabs::pane { border: 1px solid %6; border-radius: @radius-control; top: -1px; }
             #projectEditTabs QTabBar::tab {
                 background: %5;
                 color: %4;
                 border: 1px solid %6;
                 border-bottom: none;
                 padding: 5px 12px;
-                border-top-left-radius: 6px;
-                border-top-right-radius: 6px;
+                border-top-left-radius: @radius-control;
+                border-top-right-radius: @radius-control;
             }
             #projectEditTabs QTabBar::tab:selected { color: %3; background: %1; }
             #projectEditDialog QComboBox,
@@ -1447,7 +1447,7 @@ private:
                 background: %5;
                 color: %3;
                 border: 1px solid %6;
-                border-radius: 6px;
+                border-radius: @radius-control;
                 padding: 4px 8px;
                 min-height: 22px;
             }
@@ -1472,7 +1472,7 @@ private:
                 background: %9;
                 border-radius: 7px;
             }
-        )").arg(
+        )")).arg(
             Theme::appBackground(),     // 1
             Theme::textPrimary(),       // 2
             Theme::textBright(),        // 3
@@ -2178,10 +2178,10 @@ void MainMenuDialog::showComingSoonToast(QWidget* anchor)
     toast->setAttribute(Qt::WA_ShowWithoutActivating);
     toast->setAttribute(Qt::WA_DeleteOnClose);
     toast->setAlignment(Qt::AlignCenter);
-    toast->setStyleSheet(QStringLiteral(
+    toast->setStyleSheet(Theme::qss(QStringLiteral(
         "QLabel { background: %1; color: %2; border: 1px solid %3; "
-        "border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; }")
-        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+        "border-radius: @radius-panel; padding: 6px 14px; font-size: 12px; font-weight: 600; }")
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
     toast->adjustSize();
 
     const QPoint anchorTopCenter = anchor->mapToGlobal(QPoint(anchor->width() / 2, 0));
@@ -2582,7 +2582,7 @@ void MainMenuDialog::hideEvent(QHideEvent* event)
 
 void MainMenuDialog::applyDialogStyle()
 {
-    const QString css = QStringLiteral(R"(
+    const QString css = Theme::qss(QStringLiteral(R"(
         #mainMenuDialog { background: %1; }
         #menuSidebar { background: %5; border-right: 1px solid %6; }
         #menuMainArea { background: %1; }
@@ -2598,7 +2598,7 @@ void MainMenuDialog::applyDialogStyle()
             background: %9;
             color: #f5f7f6;
             border: 1px solid %9;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 10px 14px;
             font-size: 13px;
             font-weight: 600;
@@ -2611,7 +2611,7 @@ void MainMenuDialog::applyDialogStyle()
             background: transparent;
             color: %2;
             border: 1px solid %6;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 10px 14px;
             font-size: 13px;
             min-height: 22px;
@@ -2623,7 +2623,7 @@ void MainMenuDialog::applyDialogStyle()
             background: transparent;
             color: %4;
             border: 1px solid %6;
-            border-radius: 12px;
+            border-radius: @radius-control;
             font-size: 13px;
             padding: 0;
         }
@@ -2635,7 +2635,7 @@ void MainMenuDialog::applyDialogStyle()
             background: %1;
             color: %2;
             border: 1px solid %6;
-            border-radius: 5px;
+            border-radius: @radius-control;
             padding: 3px 8px;
             font-size: 11px;
         }
@@ -2661,7 +2661,7 @@ void MainMenuDialog::applyDialogStyle()
             background: %5;
             color: %4;
             border: 1px solid %6;
-            border-radius: 7px;
+            border-radius: @radius-control;
             padding: 5px 16px;
             font-size: 12px;
             min-height: 22px;
@@ -2725,7 +2725,7 @@ void MainMenuDialog::applyDialogStyle()
         QFrame#bookRow {
             background: %5;
             border: 1px solid %6;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         QFrame#bookRow:hover { background: %7; border-color: %9; }
         #bookRowName { color: %3; font-size: 15px; font-weight: 600; }
@@ -2734,7 +2734,7 @@ void MainMenuDialog::applyDialogStyle()
             background: %5;
             color: %4;
             border: 1px solid %6;
-            border-radius: 3px;
+            border-radius: @radius-item;
             font-size: 11px;
             font-weight: 600;
         }
@@ -2767,7 +2767,7 @@ void MainMenuDialog::applyDialogStyle()
         #stackSynopsisScroll QScrollBar::sub-line:vertical { height: 0; }
         #stackSynopsisScroll QScrollBar::add-page:vertical,
         #stackSynopsisScroll QScrollBar::sub-page:vertical { background: transparent; }
-    )").arg(
+    )")).arg(
         Theme::appBackground(),    // 1
         Theme::textPrimary(),      // 2
         Theme::textBright(),       // 3

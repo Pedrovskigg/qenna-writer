@@ -126,20 +126,20 @@ void MemoryAddPopup::buildUi()
 
 void MemoryAddPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#memAddPopup {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#memAddHeader { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#memAddSource { color: %7; font-size: 11px; font-style: italic; }"
         "QLabel#memAddPreview {"
         "  color: %4; font-size: 12px;"
-        "  background: %5; border: 1px solid %2; border-radius: 6px; padding: 6px 8px;"
+        "  background: %5; border: 1px solid %2; border-radius: @radius-control; padding: 6px 8px;"
         "}"
         "QLabel#memAddFieldLabel { color: %4; font-size: 11px; }"
         "QLineEdit, QComboBox {"
         "  background: %5; color: %3;"
-        "  border: 1px solid %2; border-radius: 4px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px 6px; font-size: 12px;"
         "}"
         "QComboBox::drop-down { border: none; width: 18px; }"
@@ -149,7 +149,7 @@ void MemoryAddPopup::applyTheme()
         "}"
         "QPushButton {"
         "  background: transparent; color: %3;"
-        "  border: 1px solid %2; border-radius: 6px;"
+        "  border: 1px solid %2; border-radius: @radius-control;"
         "  padding: 4px 12px; font-size: 11px;"
         "}"
         "QPushButton:hover { background: %6; }"
@@ -157,7 +157,7 @@ void MemoryAddPopup::applyTheme()
         "QPushButton#memAddOk { color: %3; border-color: %8; }"
         "QPushButton#memAddOk:hover { background: %6; }"
         "QPushButton#memAddTagChip {"
-        "  padding: 2px 8px; border-radius: 9px; font-size: 10px; color: %4;"
+        "  padding: 2px 8px; border-radius: @radius-item; font-size: 10px; color: %4;"
         "}"
         "QPushButton#memAddTagChip:hover { background: %6; color: %3; border-color: %8; }"
     ).arg(Theme::panelBackground(),   // 1
@@ -167,7 +167,7 @@ void MemoryAddPopup::applyTheme()
           Theme::editorBackground(),  // 5
           Theme::hoverOverlay(),      // 6
           Theme::textBright(),        // 7 (source label)
-          Theme::accentDefault()));   // 8
+          Theme::accentDefault())));   // 8
 }
 
 void MemoryAddPopup::refreshCharVisibility()

@@ -135,7 +135,7 @@ NewProjectTemplateDialog::NewProjectTemplateDialog(QWidget* parent)
 }
 
 void NewProjectTemplateDialog::applyDialogStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #newProjectTemplate { background: %1; }
         #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 6px; }
         #npHint { color: %4; font-size: 11px; font-style: italic; padding: 8px 2px; line-height: 150%; }
@@ -151,7 +151,7 @@ void NewProjectTemplateDialog::applyDialogStyle() {
         }
         QPushButton#npBtn, QPushButton#npBtnPrimary {
             background: %5; color: %2; border: 1px solid %6;
-            padding: 6px 16px; border-radius: 6px; font-size: 12px; min-height: 26px;
+            padding: 6px 16px; border-radius: @radius-control; font-size: 12px; min-height: 26px;
         }
         QPushButton#npBtn:hover, QPushButton#npBtnPrimary:hover {
             background: %7; color: %3; border-color: %9;
@@ -162,7 +162,7 @@ void NewProjectTemplateDialog::applyDialogStyle() {
         QPushButton#npBtnPrimary:hover {
             background: %9; color: white;
         }
-    )").arg(
+    )")).arg(
         Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
@@ -335,7 +335,7 @@ QString NewProjectDetailsDialog::projectType() const {
 }
 
 void NewProjectDetailsDialog::applyDialogStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #newProjectDetails { background: %1; }
         #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 6px; }
         #npLabel { color: %4; font-size: 11px; margin-top: 4px; }
@@ -352,23 +352,23 @@ void NewProjectDetailsDialog::applyDialogStyle() {
         }
         #npCover {
             background: %5; color: %4; border: 1px solid %6;
-            border-radius: 6px; font-size: 11px;
+            border-radius: @radius-control; font-size: 11px;
         }
         QLineEdit, QPlainTextEdit {
             background: %5; color: %3; border: 1px solid %6;
-            border-radius: 6px; padding: 6px 8px;
+            border-radius: @radius-control; padding: 6px 8px;
             selection-background-color: %7;
         }
         QLineEdit:focus, QPlainTextEdit:focus { border-color: %9; }
         QPushButton#npBtn, QPushButton#npBtnPrimary {
             background: %5; color: %2; border: 1px solid %6;
-            padding: 6px 16px; border-radius: 6px; font-size: 12px; min-height: 26px;
+            padding: 6px 16px; border-radius: @radius-control; font-size: 12px; min-height: 26px;
         }
         QPushButton#npBtn:hover { background: %7; color: %3; border-color: %9; }
         QPushButton#npBtnPrimary { background: %9; color: white; border-color: %9; }
         QPushButton#npBtnPrimary:hover { background: %9; }
         QPushButton#npBtnPrimary:disabled { background: %5; color: %4; border-color: %6; }
-    )").arg(
+    )")).arg(
         Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
@@ -436,25 +436,25 @@ NewIdeaNameDialog::NewIdeaNameDialog(QWidget* parent)
 QString NewIdeaNameDialog::projectName() const { return m_nameEdit->text().trimmed(); }
 
 void NewIdeaNameDialog::applyDialogStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #newIdeaName { background: %1; }
         #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 4px; }
         #npSub { color: %4; font-size: 12px; line-height: 150%; }
         QLineEdit {
             background: %5; color: %3; border: 1px solid %6;
-            border-radius: 6px; padding: 6px 8px;
+            border-radius: @radius-control; padding: 6px 8px;
             selection-background-color: %7;
         }
         QLineEdit:focus { border-color: %9; }
         QPushButton#npBtn, QPushButton#npBtnPrimary {
             background: %5; color: %2; border: 1px solid %6;
-            padding: 6px 16px; border-radius: 6px; font-size: 12px; min-height: 26px;
+            padding: 6px 16px; border-radius: @radius-control; font-size: 12px; min-height: 26px;
         }
         QPushButton#npBtn:hover { background: %7; color: %3; border-color: %9; }
         QPushButton#npBtnPrimary { background: %9; color: white; border-color: %9; }
         QPushButton#npBtnPrimary:hover { background: %9; }
         QPushButton#npBtnPrimary:disabled { background: %5; color: %4; border-color: %6; }
-    )").arg(
+    )")).arg(
         Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
@@ -567,26 +567,26 @@ void NewProjectFolderDialog::updatePathDisplay() {
 }
 
 void NewProjectFolderDialog::applyDialogStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #newProjectFolder { background: %1; }
         #npHeading { color: %3; font-size: 16px; font-weight: 600; padding-bottom: 4px; }
         #npSub { color: %4; font-size: 12px; line-height: 150%; }
         #npNote { color: %4; font-size: 11px; font-style: italic; padding-top: 8px; }
         #npPathBox {
-            background: %5; border: 1px solid %6; border-radius: 8px;
+            background: %5; border: 1px solid %6; border-radius: @radius-panel;
         }
         #npPath { color: %2; font-size: 12px; }
         QPushButton#npBtn {
             background: %5; color: %2; border: 1px solid %6;
-            padding: 6px 14px; border-radius: 6px; font-size: 12px; min-height: 26px;
+            padding: 6px 14px; border-radius: @radius-control; font-size: 12px; min-height: 26px;
         }
         QPushButton#npBtn:hover { background: %7; color: %3; border-color: %9; }
         QPushButton#npBtnPrimary {
             background: %9; color: white; border: 1px solid %9;
-            padding: 6px 16px; border-radius: 6px; font-size: 12px; min-height: 26px;
+            padding: 6px 16px; border-radius: @radius-control; font-size: 12px; min-height: 26px;
         }
         QPushButton#npBtnPrimary:hover { background: %9; }
-    )").arg(
+    )")).arg(
         Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()

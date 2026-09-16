@@ -290,7 +290,7 @@ void HelpPanel::buildUi()
 
 void HelpPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#helpPanel {"
         "  background: %1;"
         "}"
@@ -303,7 +303,7 @@ void HelpPanel::applyTheme()
         "  background: transparent; color: %4;"
         "  border: none; outline: 0;"
         "}"
-        "QListWidget#helpList::item { padding: 7px 8px; border-radius: 4px; }"
+        "QListWidget#helpList::item { padding: 7px 8px; border-radius: @radius-item; }"
         "QListWidget#helpList::item:hover { background: %5; color: %3; }"
         "QListWidget#helpList::item:selected { background: %7; color: %3; }"
         "QTextBrowser#helpContent {"
@@ -316,7 +316,7 @@ void HelpPanel::applyTheme()
           Theme::textMuted(),
           Theme::hoverOverlay(),
           Theme::editorBackground(),
-          Theme::pressedOverlay()));
+          Theme::pressedOverlay())));
 }
 
 void HelpPanel::rebuildList()
@@ -1066,10 +1066,10 @@ QString HelpPanel::keyboardShortcutsContent() const
         "tudo) também funcionam normalmente e não estão listados abaixo."));
 
     auto key = [](const QString& k) {
-        return QStringLiteral(
-            "<span style='background:%1;color:%2;border-radius:4px;padding:1px 7px;"
+        return Theme::qss(QStringLiteral(
+            "<span style='background:%1;color:%2;border-radius: @radius-item;padding:1px 7px;"
             "font-family:Consolas,monospace;font-size:12px;'>%3</span>")
-            .arg(Theme::hoverOverlay(), Theme::textPrimary(), k);
+            .arg(Theme::hoverOverlay(), Theme::textPrimary(), k));
     };
     auto row = [&key](const QString& k, const QString& desc) {
         return QStringLiteral(

@@ -17,33 +17,33 @@ constexpr int kPanelMinH = 200;
 constexpr int kHeaderH = 28;
 
 QString headerIconQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 2px;
         }
         QToolButton:hover {
             background: %1;
             border-color: %2;
         }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong());
+    )")).arg(Theme::hoverOverlay(), Theme::borderStrong());
 }
 
 QString deleteIconQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 2px;
         }
         QToolButton:hover {
             background: %1;
             border-color: %2;
         }
-    )").arg(Theme::accentDangerSoft(), Theme::accentDangerBorderSoft());
+    )")).arg(Theme::accentDangerSoft(), Theme::accentDangerBorderSoft());
 }
 
 } // namespace
@@ -60,9 +60,9 @@ BondViewPanel::BondViewPanel(QWidget* parent,
     setFrameShape(QFrame::NoFrame);
     setFixedWidth(kPanelW);
     setMinimumHeight(kPanelMinH);
-    setStyleSheet(QStringLiteral(
-        "QFrame#bondViewPanel { background: %1; border: 1px solid %2; border-radius: 8px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#bondViewPanel { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
 
     buildUi(bond, fromTitle, toTitle);
 }

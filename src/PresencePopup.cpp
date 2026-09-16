@@ -101,25 +101,25 @@ void PresencePopup::buildUi()
 
 void PresencePopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QFrame#presencePopup {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QLabel#ppCaption { color: %3; font-size: 10px; }
         QLabel#ppName    { color: %4; font-size: 13px; font-weight: 600; }
         QLabel#ppPhoto   {
             background: %5; border: 1px solid %2;
-            border-radius: 4px; color: %3; font-size: 9px;
+            border-radius: @radius-item; color: %3; font-size: 9px;
         }
         QPushButton#ppBtn {
             background: %6; color: %4;
-            border: 1px solid %2; border-radius: 4px;
+            border: 1px solid %2; border-radius: @radius-control;
             padding: 4px 10px; font-size: 11px;
         }
         QPushButton#ppBtn:hover { background: %7; }
-    )").arg(Theme::panelBackground(),
+    )")).arg(Theme::panelBackground(),
             Theme::panelBorder(),
             Theme::textMuted(),
             Theme::textPrimary(),

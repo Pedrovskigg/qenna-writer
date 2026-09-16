@@ -54,19 +54,19 @@ const Preset kPresets[] = {
 };
 
 QString chipQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %1;
             color: %2;
             border: 1px solid %3;
-            border-radius: 12px;
+            border-radius: @radius-control;
             padding: 4px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 11px;
         }
         QPushButton:hover { background: %4; border-color: %5; }
         QPushButton:disabled { color: %6; border-color: %1; }
-    )").arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(),
+    )")).arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(),
            Theme::hoverOverlay(), Theme::borderStrong(), Theme::disabledText());
 }
 
@@ -74,11 +74,11 @@ QString chipQss() {
 // texto, sem imagem/trace chips, e sem largura calculada a partir do
 // painel: aqui a largura é sempre a constante kPopupW).
 QString bubbleQss(bool isUser) {
-    return isUser
-        ? QStringLiteral("QFrame#selectionBubbleUser { background: %1; border-radius: 12px; }")
+    return Theme::qss(isUser
+        ? Theme::qss(QStringLiteral("QFrame#selectionBubbleUser { background: %1; border-radius: @radius-panel; }"))
             .arg(Theme::accentDefault())
-        : QStringLiteral("QFrame#selectionBubbleMira { background: %1; border: 1px solid %2; border-radius: 12px; }")
-            .arg(Theme::inputBackground(), Theme::subtleBorder());
+        : Theme::qss(QStringLiteral("QFrame#selectionBubbleMira { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"))
+            .arg(Theme::inputBackground(), Theme::subtleBorder()));
 }
 
 QString bubbleTextColor(bool isUser) {
@@ -125,11 +125,11 @@ void forceBubbleTextColor(QTextEdit* te, const QString& hexColor) {
 }
 
 QString feedbackBtnQss() {
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QToolButton { background: transparent; border: none; font-size: 11px; padding: 1px 3px; }"
-        "QToolButton:hover { background: %1; border-radius: 4px; }"
+        "QToolButton:hover { background: %1; border-radius: @radius-control; }"
         "QToolButton:disabled { background: transparent; }"
-    ).arg(Theme::hoverOverlay());
+    ).arg(Theme::hoverOverlay()));
 }
 
 // Mesma lógica de AIChatPanel::fitBubbleHeight — trava a largura pro
@@ -143,12 +143,12 @@ void fitSelectionBubbleHeight(QTextEdit* te) {
 }
 
 QString sendBtnQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %1;
             color: %2;
             border: none;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 16px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 12px;
@@ -156,7 +156,7 @@ QString sendBtnQss() {
         }
         QPushButton:hover { background: %3; }
         QPushButton:disabled { background: %4; color: %5; }
-    )").arg(Theme::accentDefault(), Theme::textBright(), Theme::accentDefault(),
+    )")).arg(Theme::accentDefault(), Theme::textBright(), Theme::accentDefault(),
            Theme::subtleBorder(), Theme::disabledText());
 }
 
@@ -212,9 +212,9 @@ AISelectionChat::AISelectionChat(QWidget* parent,
     setFrameShape(QFrame::NoFrame);
     setFixedWidth(kPopupW);
     setMinimumHeight(kPopupMinH);
-    setStyleSheet(QStringLiteral(
-        "QFrame#aiSelectionChat { background: %1; border: 1px solid %2; border-radius: 8px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#aiSelectionChat { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
 
     auto* shadow = new QGraphicsDropShadowEffect(this);
     shadow->setBlurRadius(24);
@@ -271,10 +271,10 @@ void AISelectionChat::buildUi()
     m_closeBtn->setToolTip(tr("Fechar"));
     m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setMinimumSize(24, 24);
-    m_closeBtn->setStyleSheet(QStringLiteral(R"(
-        QToolButton { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 2px; }
+    m_closeBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QToolButton { background: transparent; border: 1px solid transparent; border-radius: @radius-control; padding: 2px; }
         QToolButton:hover { background: %1; border-color: %2; }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong()));
+    )")).arg(Theme::hoverOverlay(), Theme::borderStrong()));
     connect(m_closeBtn, &QToolButton::clicked, this, [this]() { emit closeRequested(); });
     hlay->addWidget(m_closeBtn);
     root->addWidget(m_header);
@@ -285,10 +285,10 @@ void AISelectionChat::buildUi()
     if (preview.size() > 220) preview = preview.left(220) + QStringLiteral("…");
     auto* quoteLabel = new QLabel(QStringLiteral("“%1”").arg(preview.toHtmlEscaped()), this);
     quoteLabel->setWordWrap(true);
-    quoteLabel->setStyleSheet(QStringLiteral(
+    quoteLabel->setStyleSheet(Theme::qss(QStringLiteral(
         "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 12px; font-style: italic; "
-        "background: %2; border-left: 3px solid %3; border-radius: 4px; padding: 8px 10px;")
-        .arg(Theme::textMuted(), Theme::inputBackground(), Theme::accentDefault()));
+        "background: %2; border-left: 3px solid %3; border-radius: @radius-control; padding: 8px 10px;")
+        .arg(Theme::textMuted(), Theme::inputBackground(), Theme::accentDefault())));
     root->addWidget(quoteLabel);
 
     // Transcrição — QScrollArea com uma bolha (QFrame) por mensagem, mesmo
@@ -299,9 +299,9 @@ void AISelectionChat::buildUi()
     m_transcriptScroll->setFrameShape(QFrame::NoFrame);
     m_transcriptScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_transcriptScroll->setMinimumHeight(180);
-    m_transcriptScroll->setStyleSheet(QStringLiteral(
-        "QScrollArea { background: %1; border: 1px solid %2; border-radius: 6px; }")
-        .arg(Theme::inputBackground(), Theme::subtleBorder()));
+    m_transcriptScroll->setStyleSheet(Theme::qss(QStringLiteral(
+        "QScrollArea { background: %1; border: 1px solid %2; border-radius: @radius-control; }")
+        .arg(Theme::inputBackground(), Theme::subtleBorder())));
 
     m_transcriptContent = new QWidget(m_transcriptScroll);
     m_transcriptContent->setStyleSheet(QStringLiteral("background: transparent;"));
@@ -324,9 +324,9 @@ void AISelectionChat::buildUi()
 
     // Cartão de sugestão pronta (aparece quando a IA chama propose_edit)
     m_suggestionPanel = new QWidget(this);
-    m_suggestionPanel->setStyleSheet(QStringLiteral(
-        "background: %1; border: 1px solid %2; border-radius: 6px;")
-        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft()));
+    m_suggestionPanel->setStyleSheet(Theme::qss(QStringLiteral(
+        "background: %1; border: 1px solid %2; border-radius: @radius-control;")
+        .arg(Theme::accentInfoSoft(), Theme::accentInfoBorderSoft())));
     auto* suggLay = new QVBoxLayout(m_suggestionPanel);
     suggLay->setContentsMargins(10, 8, 10, 8);
     suggLay->setSpacing(6);
@@ -343,10 +343,10 @@ void AISelectionChat::buildUi()
     m_suggestionText->setMaximumHeight(280);
     m_suggestionText->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_suggestionText->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_suggestionText->setStyleSheet(QStringLiteral(R"(
+    m_suggestionText->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QTextEdit {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 4px; padding: 8px 10px; font-size: 13px;
+            border-radius: @radius-control; padding: 8px 10px; font-size: 13px;
         }
         QScrollBar:vertical {
             background: transparent;
@@ -361,7 +361,7 @@ void AISelectionChat::buildUi()
         QScrollBar::handle:vertical:hover { background: %5; }
         QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0px; }
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(),
+    )")).arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(),
            Theme::textMuted(), Theme::textBright()));
     suggLay->addWidget(m_suggestionText);
     suggLay->addSpacing(4);
@@ -445,13 +445,13 @@ void AISelectionChat::buildUi()
     // contra o QTextEdit { padding: 80px 100px; } global (Theme::globalStyleSheet,
     // escrito pro editor de manuscrito) — mesmo remédio já usado em
     // bubbleTextQss() e no CharacterSheetPanel.
-    m_inputEdit->setStyleSheet(QStringLiteral(R"(
+    m_inputEdit->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QTextEdit#selectionInputEdit {
             background: %1; color: %2; border: 1px solid %3;
-            border-radius: 6px; padding: 6px 10px; font-size: 12px;
+            border-radius: @radius-control; padding: 6px 10px; font-size: 12px;
         }
         QTextEdit#selectionInputEdit:focus { border-color: %4; }
-    )").arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder()));
+    )")).arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder(), Theme::focusBorder()));
     m_inputEdit->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     m_inputEdit->installEventFilter(this);
     connect(m_inputEdit, &QTextEdit::textChanged, this, [this]() { fitInputHeight(); });

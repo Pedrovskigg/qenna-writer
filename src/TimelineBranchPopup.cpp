@@ -46,22 +46,22 @@ void TimelineBranchPopup::buildUi()
 
 void TimelineBranchPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QFrame#timelineBranchPopup {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QLabel#tbpCaption { color: %3; font-size: 10px; }
         QLabel#tbpTitle   { color: %4; font-size: 13px; font-weight: 600; }
         QLabel#tbpHint    { color: %3; font-size: 11px; }
         QPushButton#tbpCandidateBtn {
             background: %5; color: %4;
-            border: 1px solid %2; border-radius: 4px;
+            border: 1px solid %2; border-radius: @radius-control;
             padding: 5px 10px; font-size: 11px; text-align: left;
         }
         QPushButton#tbpCandidateBtn:hover { background: %6; }
-    )").arg(Theme::panelBackground(),
+    )")).arg(Theme::panelBackground(),
             Theme::panelBorder(),
             Theme::textMuted(),
             Theme::textPrimary(),

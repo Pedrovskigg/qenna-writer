@@ -1291,16 +1291,16 @@ void MainWindow::setupEditor()
         auto* toast = new QLabel(tr("Nova cena criada"), editorContainer);
         toast->setObjectName(QStringLiteral("sceneToast"));
         toast->setAlignment(Qt::AlignCenter);
-        toast->setStyleSheet(QStringLiteral(
+        toast->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#sceneToast {"
             "  background: %1;"
             "  color: %2;"
             "  border: 1px solid %3;"
-            "  border-radius: 6px;"
+            "  border-radius: @radius-control;"
             "  padding: 6px 16px;"
             "  font-family: 'Lora','Crimson Text',serif;"
             "  font-size: 12px;"
-            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
         toast->adjustSize();
         const QPoint center = editorContainer->rect().center();
         toast->move(center.x() - toast->width() / 2,
@@ -3676,18 +3676,18 @@ void MainWindow::setupEditor()
         if (!drawer) return;
 
         QMenu menu(this);
-        menu.setStyleSheet(QStringLiteral(R"(
+        menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
             QMenu {
                 background: %1;
                 color: %2;
                 border: 1px solid %3;
-                border-radius: 6px;
+                border-radius: @radius-panel;
                 padding: 4px;
             }
-            QMenu::item { padding: 6px 16px; border-radius: 4px; }
+            QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
             QMenu::item:selected { background: %4; color: %5; }
             QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-        )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+        )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
                Theme::hoverOverlay(), Theme::textBright()));
 
         auto* editAct = menu.addAction(tr("Editar gaveta…"));
@@ -5336,15 +5336,15 @@ void MainWindow::updateDialogueScanToast(int done, int total)
         m_dialogueScanToastBar->setFixedWidth(240);
         lay->addWidget(m_dialogueScanToastBar);
 
-        toast->setStyleSheet(QStringLiteral(
+        toast->setStyleSheet(Theme::qss(QStringLiteral(
             "QFrame#dlgScanToast {"
-            "  background: %1; border: 1px solid %2; border-radius: 10px;"
+            "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
             "}"
             "QLabel#dstLabel { color: %3; font-size: 12px; font-weight: 600; }"
             "QProgressBar#dstBar { background: %2; border: none; border-radius: 3px; }"
             "QProgressBar#dstBar::chunk { background: %4; border-radius: 3px; }"
         ).arg(Theme::panelBackground(), Theme::panelBorder(),
-              Theme::textPrimary(), Theme::accentInfo()));
+              Theme::textPrimary(), Theme::accentInfo())));
 
         m_dialogueScanToast = toast;
     }
@@ -5905,9 +5905,9 @@ void MainWindow::showReminderToast(const QString& title, const QString& body)
     }
 
     // Aplica tema.
-    m_reminderToast->setStyleSheet(QStringLiteral(
+    m_reminderToast->setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#reminderToast {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#rtTitle { color: %3; font-size: 13px; font-weight: 600; }"
         "QLabel#rtBody  { color: %4; font-size: 12px; }"
@@ -5919,7 +5919,7 @@ void MainWindow::showReminderToast(const QString& title, const QString& body)
     ).arg(Theme::panelBackground(),
          Theme::panelBorder(),
          Theme::textPrimary(),
-         Theme::textMuted()));
+         Theme::textMuted())));
 
     m_reminderToastTitle->setText(title);
     m_reminderToastBody->setText(body);
@@ -6066,9 +6066,9 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
         m_updateToast->hide();
     }
 
-    m_updateToast->setStyleSheet(QStringLiteral(
+    m_updateToast->setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#updateToast {"
-        "  background: %1; border: 1px solid %2; border-radius: 10px;"
+        "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
         "}"
         "QLabel#utTitle { color: %3; font-size: 13px; font-weight: 600; }"
         "QScrollArea#utNotesScroll { background: transparent; border: none; }"
@@ -6080,17 +6080,17 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
         "}"
         "QToolButton#utClose:hover { color: %3; }"
         "QToolButton#utAction {"
-        "  background: %5; color: %6; border: none; border-radius: 6px;"
+        "  background: %5; color: %6; border: none; border-radius: @radius-control;"
         "  padding: 6px 10px; font-size: 12px; font-weight: 600;"
         "}"
         "QToolButton#utAction:hover { background: %7; }"
         "QToolButton#utCancel {"
         "  background: transparent; color: %4; border: 1px solid %2;"
-        "  border-radius: 6px; padding: 6px 10px; font-size: 12px;"
+        "  border-radius: @radius-control; padding: 6px 10px; font-size: 12px;"
         "}"
         "QToolButton#utCancel:hover { color: %3; border-color: %3; }"
         "QProgressBar#utProgress {"
-        "  background: %2; border: none; border-radius: 3px;"
+        "  background: %2; border: none; border-radius: @radius-item;"
         "}"
         "QProgressBar#utProgress::chunk { background: %5; border-radius: 3px; }"
     ).arg(Theme::panelBackground(),
@@ -6100,7 +6100,7 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
          Theme::accentInfo(),
          Theme::panelBackground(),
          Theme::accentInfo(),
-         Theme::accentDanger()));
+         Theme::accentDanger())));
 
     if (isCover) {
         // Texto varia: primeira instalação (Cover Creator nunca baixado)
@@ -7394,11 +7394,11 @@ void MainWindow::onExportRequested()
                 auto* toast = new QLabel(tr("Exportado com sucesso"), editorContainer);
                 toast->setObjectName(QStringLiteral("sceneToast"));
                 toast->setAlignment(Qt::AlignCenter);
-                toast->setStyleSheet(QStringLiteral(
+                toast->setStyleSheet(Theme::qss(QStringLiteral(
                     "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
-                    " border-radius: 6px; padding: 6px 16px;"
+                    " border-radius: @radius-control; padding: 6px 16px;"
                     " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
-                    .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+                    .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
                 toast->adjustSize();
                 const QPoint center = editorContainer->rect().center();
                 toast->move(center.x() - toast->width() / 2,
@@ -7425,16 +7425,16 @@ void MainWindow::onThemePanelRequested()
         auto* loadingToast = new QLabel(tr("Carregando área de Temas…"), this);
         loadingToast->setObjectName(QStringLiteral("themesLoadingToast"));
         loadingToast->setAlignment(Qt::AlignCenter);
-        loadingToast->setStyleSheet(QStringLiteral(
+        loadingToast->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#themesLoadingToast {"
             "  background: %1;"
             "  color: %2;"
             "  border: 1px solid %3;"
-            "  border-radius: 6px;"
+            "  border-radius: @radius-control;"
             "  padding: 8px 20px;"
             "  font-family: 'Lora','Crimson Text',serif;"
             "  font-size: 13px;"
-            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
         loadingToast->adjustSize();
         const QPoint center = rect().center();
         loadingToast->move(center.x() - loadingToast->width() / 2,
@@ -7664,11 +7664,11 @@ void MainWindow::showEditorToast(const QString& text, int durationMs)
     auto* toast = new QLabel(text, editorContainer);
     toast->setObjectName(QStringLiteral("sceneToast"));
     toast->setAlignment(Qt::AlignCenter);
-    toast->setStyleSheet(QStringLiteral(
+    toast->setStyleSheet(Theme::qss(QStringLiteral(
         "QLabel#sceneToast { background: %1; color: %2; border: 1px solid %3;"
-        " border-radius: 6px; padding: 6px 16px;"
+        " border-radius: @radius-control; padding: 6px 16px;"
         " font-family: 'Lora','Crimson Text',serif; font-size: 12px; }")
-        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
     toast->adjustSize();
     const QPoint center = editorContainer->rect().center();
     toast->move(center.x() - toast->width() / 2,

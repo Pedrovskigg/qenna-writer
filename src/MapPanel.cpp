@@ -906,23 +906,23 @@ bool MapPanel::eventFilter(QObject* watched, QEvent* event)
 
 void MapPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #mapPanel {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         #mapHeader { border-bottom: 1px solid %2; }
         #mapTitle { color: %3; font-size: 15px; font-weight: 600; }
         #mapClose {
             color: %4; background: transparent; border: none;
-            font-size: 18px; border-radius: 6px;
+            font-size: 18px; border-radius: @radius-control;
         }
         #mapClose:hover { background: %5; color: %3; }
         #mapInfoCard {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #mapInfoTitle { color: %3; font-size: 14px; font-weight: 600; }
         #mapInfoSub { color: %7; font-size: 11px; }
@@ -936,34 +936,34 @@ void MapPanel::applyTheme()
         #mapNavBar { border-bottom: 1px solid %2; }
         #mapNavBtn {
             color: %3; background: %6; border: 1px solid %2;
-            border-radius: 6px; padding: 5px 12px; font-size: 12px;
+            border-radius: @radius-control; padding: 5px 12px; font-size: 12px;
         }
         #mapNavBtn:hover { background: %5; }
         #mapNavBtn:checked { background: %7; color: %3; border-color: %7; }
         #mapSearch {
             color: %3; background: %6; border: 1px solid %2;
-            border-radius: 6px; padding: 5px 10px; font-size: 12px;
+            border-radius: @radius-control; padding: 5px 10px; font-size: 12px;
         }
         #mapSearch:focus { border-color: %7; }
         #mapNavTree {
             background: %1; color: %3; border: 1px solid %2;
-            border-radius: 8px; font-size: 12px; outline: none;
+            border-radius: @radius-panel; font-size: 12px; outline: none;
         }
         #mapNavTree::item { padding: 3px 2px; }
         #mapNavTree::item:hover { background: %5; }
         #mapNavTree::item:selected { background: %7; color: %3; }
         #mapPinPopup {
-            background: %1; border: 1px solid %2; border-radius: 10px;
+            background: %1; border: 1px solid %2; border-radius: @radius-panel;
         }
         #mapPinTitle { color: %3; font-size: 14px; font-weight: 600; }
         #mapPinField {
             color: %3; background: %6; border: 1px solid %2;
-            border-radius: 6px; padding: 6px 8px; font-size: 13px;
+            border-radius: @radius-control; padding: 6px 8px; font-size: 13px;
         }
         #mapPinField:focus { border-color: %7; }
         #mapPinLink {
             color: %3; background: %6; border: 1px solid %2;
-            border-radius: 6px; padding: 5px 8px; font-size: 12px;
+            border-radius: @radius-control; padding: 5px 8px; font-size: 12px;
         }
         #mapPinLink QAbstractItemView {
             background: %1; color: %3; border: 1px solid %2;
@@ -971,22 +971,22 @@ void MapPanel::applyTheme()
         }
         #mapPinSave {
             color: %3; background: %7; border: none;
-            border-radius: 6px; padding: 5px 14px; font-size: 13px; font-weight: 600;
+            border-radius: @radius-control; padding: 5px 14px; font-size: 13px; font-weight: 600;
         }
         #mapPinCancel, #mapPinDelete {
             color: %4; background: transparent; border: none;
-            border-radius: 6px; padding: 5px 10px; font-size: 13px;
+            border-radius: @radius-control; padding: 5px 10px; font-size: 13px;
         }
         #mapPinCancel:hover { color: %3; background: %5; }
         #mapPinDelete:hover { color: %3; background: %5; }
         #mapSuggest {
             background: %1; color: %3; border: 1px solid %2;
-            border-radius: 8px; font-size: 12px; outline: none;
+            border-radius: @radius-panel; font-size: 12px; outline: none;
         }
-        #mapSuggest::item { padding: 4px 9px; border-radius: 5px; }
+        #mapSuggest::item { padding: 4px 9px; border-radius: @radius-item; }
         #mapSuggest::item:hover { background: %5; }
         #mapSuggest::item:selected { background: %7; color: %3; }
-    )")
+    )"))
         .arg(Theme::panelBackground(), Theme::borderStrong(), Theme::textPrimary(),
              Theme::textMuted(), Theme::hoverStrong(), Theme::inputBackground(),
              Theme::accentDefault()));

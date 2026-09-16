@@ -29,23 +29,23 @@ QString hintQss() {
 }
 
 QString fieldQss() {
-    return QStringLiteral(
-        "background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 6px 8px;"
-    ).arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder());
+    return Theme::qss(QStringLiteral(
+        "background: %1; color: %2; border: 1px solid %3; border-radius: @radius-control; padding: 6px 8px;"
+    ).arg(Theme::inputBackground(), Theme::textBright(), Theme::subtleBorder()));
 }
 
 QString chipQss(bool on) {
     if (on) {
-        return QStringLiteral(
+        return Theme::qss(QStringLiteral(
             "QPushButton { background: %1; color: white; border: 1px solid %1; "
-            "border-radius: 999px; padding: 6px 14px; font-size: 11.5px; font-weight: 600; }"
-        ).arg(Theme::accentDefault());
+            "border-radius: @radius-item; padding: 6px 14px; font-size: 11.5px; font-weight: 600; }"
+        ).arg(Theme::accentDefault()));
     }
-    return QStringLiteral(
+    return Theme::qss(QStringLiteral(
         "QPushButton { background: %1; color: %2; border: 1px solid %3; "
-        "border-radius: 999px; padding: 6px 14px; font-size: 11.5px; }"
+        "border-radius: @radius-item; padding: 6px 14px; font-size: 11.5px; }"
         "QPushButton:hover { border-color: %4; }"
-    ).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::accentDefault());
+    ).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::accentDefault()));
 }
 
 // Mesmo remédio já usado no rail do AIChatPanel: sem isso o viewport interno
@@ -58,10 +58,10 @@ QString scrollAreaQss() {
 }
 
 QString closeBtnQss() {
-    return QStringLiteral(
-        "background: %1; color: %2; border: none; border-radius: 6px; "
+    return Theme::qss(QStringLiteral(
+        "background: %1; color: %2; border: none; border-radius: @radius-control; "
         "padding: 8px 16px; font-size: 12px; font-weight: 700;"
-    ).arg(Theme::accentDefault(), Theme::textBright());
+    ).arg(Theme::accentDefault(), Theme::textBright()));
 }
 
 } // namespace

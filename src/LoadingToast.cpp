@@ -27,11 +27,11 @@ LoadingToast::LoadingToast(QWidget* hostWindow, const QString& text)
     m_textLabel->setObjectName(QStringLiteral("loadingToastText"));
     lay->addWidget(m_textLabel);
 
-    setStyleSheet(QStringLiteral(
-        "QWidget#loadingToast { background: %1; border: 1px solid %2; border-radius: 8px; }"
+    setStyleSheet(Theme::qss(QStringLiteral(
+        "QWidget#loadingToast { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"
         "QLabel#loadingToastText { color: %3; background: transparent; border: none;"
         " font-family: 'Lora','Crimson Text',serif; font-size: 13px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textBright()));
+        .arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textBright())));
 
     adjustSize();
     reposition();

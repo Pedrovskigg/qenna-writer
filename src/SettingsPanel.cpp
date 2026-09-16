@@ -1009,7 +1009,7 @@ void SettingsPanel::applyTheme()
     const QString hoverStr   = Theme::hoverStrong();
     const QString accent     = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #settingsPanel {
             background-color: %1;
         }
@@ -1035,7 +1035,7 @@ void SettingsPanel::applyTheme()
         #settingsPanel QGroupBox {
             color: %4;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             margin-top: 14px;
             padding-top: 14px;
             font-size: 12px;
@@ -1067,7 +1067,7 @@ void SettingsPanel::applyTheme()
             background: %3;
             color: %6;
             border: 1px solid %2;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 12px;
             font-weight: normal;
@@ -1080,7 +1080,7 @@ void SettingsPanel::applyTheme()
             background: %3;
             color: %6;
             border: 1px solid %2;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 12px;
             font-weight: normal;
@@ -1101,7 +1101,7 @@ void SettingsPanel::applyTheme()
             color: %4;
             border: none;
             padding: 6px 18px;
-            border-radius: 4px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #settingsPanel QPushButton:hover {
@@ -1112,7 +1112,7 @@ void SettingsPanel::applyTheme()
             background: transparent;
             color: %5;
             border: 1px solid %2;
-            border-radius: 12px;
+            border-radius: @radius-control;
             font-size: 13px;
             padding: 0;
         }
@@ -1146,7 +1146,7 @@ void SettingsPanel::applyTheme()
             font-weight: normal;
             min-width: 56px;
         }
-    )")
+    )"))
         .arg(panelBg,   // 1
              panelBd,   // 2
              inputBg,   // 3

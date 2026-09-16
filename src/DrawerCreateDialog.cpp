@@ -246,14 +246,14 @@ void DrawerCreateDialog::onPickColor() {
 
 void DrawerCreateDialog::updateColorSwatch() {
     // Bordinha sutil pra cores claras não sumirem no fundo claro do botão.
-    m_colorBtn->setStyleSheet(QStringLiteral(
+    m_colorBtn->setStyleSheet(Theme::qss(QStringLiteral(
         "QPushButton {"
         "  background: %1;"
         "  border: 1px solid %2;"
-        "  border-radius: 6px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QPushButton:hover { border-color: %3; }"
-    ).arg(m_color, Theme::panelBorder(), Theme::textPrimary()));
+    ).arg(m_color, Theme::panelBorder(), Theme::textPrimary())));
 }
 
 QString DrawerCreateDialog::title() const {

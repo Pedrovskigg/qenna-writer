@@ -52,7 +52,10 @@ public:
     static constexpr qreal kHeaderH   = 28.0;
     static constexpr qreal kDocHeaderH = 26.0;
     static constexpr qreal kFoldSize  = 20.0;
-    static constexpr qreal kRadius   =  8.0;
+    // Arredondamento do card. Não é constante porque segue o tema: o card é
+    // desenhado por QPainter, então não passa pelo QSS e precisa consultar a
+    // escala na hora de pintar. Ver Theme::panelRadius().
+    static qreal radius();
     static constexpr qreal kShadow   =  6.0;
     static constexpr qreal kTailH    = 12.0;  // comment: altura do rabinho
     static constexpr qreal kMinW     = 120.0;

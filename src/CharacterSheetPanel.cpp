@@ -74,33 +74,33 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
     m_scroll->viewport()->setAutoFillBackground(false);
     outer->addWidget(m_scroll);
 
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "#characterSheetPanel { background: %7; }"
         "#sheetScroll, #sheetOuter { background: transparent; border: none; }"
         "#sheetPage { background: %1; }"
         "QLabel#sheetName  { font-size: 22px; font-weight: 700; color: %2; }"
         "QLabel#sheetAlias { font-size: 13px; font-style: italic; color: %3; }"
-        "QLabel#sheetPhoto { background: %4; border: 1px solid %5; border-radius: 6px; color: %3; }"
+        "QLabel#sheetPhoto { background: %4; border: 1px solid %5; border-radius: @radius-control; color: %3; }"
         "QLineEdit#sheetLabel { border: none; background: transparent; font-weight: 700; "
         "  font-size: 15px; text-decoration: underline; color: %2; padding: 0; }"
         "QLineEdit#sheetData { border: none; background: transparent; color: %2; padding: 1px 0; }"
-        "QLineEdit#sheetData:hover, QLineEdit#sheetData:focus { background: %6; border-radius: 4px; }"
+        "QLineEdit#sheetData:hover, QLineEdit#sheetData:focus { background: %6; border-radius: @radius-control; }"
         "QTextEdit#sheetText { border: none; background: transparent; color: %2; padding: 0; }"
-        "QTextEdit#sheetText:hover, QTextEdit#sheetText:focus { background: %6; border-radius: 4px; }"
+        "QTextEdit#sheetText:hover, QTextEdit#sheetText:focus { background: %6; border-radius: @radius-control; }"
         "QToolButton#sheetFieldBtn { border: none; color: %3; font-size: 13px; padding: 0 3px; }"
         "QToolButton#sheetFieldBtn:hover { color: %2; }"
         "QToolButton#sheetGhostTool { border: none; color: %3; font-size: 12px; padding: 2px 6px; }"
         "QToolButton#sheetGhostTool:hover { color: %2; }"
-        "QPushButton#sheetGhostBtn { border: 1px dashed %5; border-radius: 5px; "
+        "QPushButton#sheetGhostBtn { border: 1px dashed %5; border-radius: @radius-control; "
         "  color: %3; padding: 4px 12px; background: transparent; }"
         "QPushButton#sheetGhostBtn:hover { color: %2; border-color: %2; }"
         "#sheetFindBar { background: %4; border-bottom: 1px solid %5; }"
-        "QLineEdit#sheetFindInput { background: %1; border: 1px solid %5; border-radius: 4px; "
+        "QLineEdit#sheetFindInput { background: %1; border: 1px solid %5; border-radius: @radius-control; "
         "  color: %2; padding: 4px 8px; }"
         "QLabel#sheetFindCount { color: %3; font-size: 12px; }"
     ).arg(Theme::editorBackground(), Theme::editorTextColor(), Theme::textMuted(),
           Theme::inputBackground(), Theme::subtleBorder(), Theme::hoverOverlay(),
-          Theme::appBackground()));
+          Theme::appBackground())));
 }
 
 void CharacterSheetPanel::buildFindBar()

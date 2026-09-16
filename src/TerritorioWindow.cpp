@@ -590,14 +590,14 @@ void TerritorioWindow::applyTheme()
     const QString accentBd  = Theme::accentInfoBorderSoft();
     const QString accentDef = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         TerritorioWindow { background: %1; }
         QWidget#terrLeft { background: %1; }
         QWidget#terrHeader { background: %1; }
         QWidget#terrTopStrip { background: %1; border-bottom: 1px solid %3; }
         QPushButton#terrToggleBtn {
             background: transparent; color: %5; border: 1px solid %3;
-            border-radius: 6px; padding: 4px 10px; font-size: 11px;
+            border-radius: @radius-control; padding: 4px 10px; font-size: 11px;
         }
         QPushButton#terrToggleBtn:hover { background: %7; color: %6; }
         QPushButton#terrToggleBtn:checked { background: %8; color: %6; border-color: %9; }
@@ -611,23 +611,23 @@ void TerritorioWindow::applyTheme()
         QListWidget#terrSelector {
             background: transparent; color: %4; border: none; outline: none;
         }
-        QListWidget#terrSelector::item { border-radius: 8px; padding: 4px; }
+        QListWidget#terrSelector::item { border-radius: @radius-item; padding: 4px; }
         QListWidget#terrSelector::item:hover { background: %7; }
         QListWidget#terrSelector::item:selected { background: %8; color: %6; }
 
         QPushButton#terrNewBtn {
             background: %8; color: %6; border: 1px solid %9;
-            border-radius: 6px; padding: 6px 10px; font-size: 12px; font-weight: 600;
+            border-radius: @radius-control; padding: 6px 10px; font-size: 12px; font-weight: 600;
         }
         QPushButton#terrNewBtn:hover { background: %9; }
         QPushButton#terrAddBtn {
             background: %8; color: %6; border: 1px solid %9;
-            border-radius: 6px; padding: 4px 10px; font-size: 11px;
+            border-radius: @radius-control; padding: 4px 10px; font-size: 11px;
         }
         QPushButton#terrAddBtn:hover { background: %9; }
         QPushButton#terrDeleteBtn {
             background: transparent; color: %5; border: 1px solid %3;
-            border-radius: 6px; font-size: 13px; font-weight: 600;
+            border-radius: @radius-control; font-size: 13px; font-weight: 600;
         }
         QPushButton#terrDeleteBtn:hover { background: %2; color: %10; border-color: %10; }
         QPushButton#terrDeleteBtn:disabled { color: %5; border-color: %3; }
@@ -635,10 +635,10 @@ void TerritorioWindow::applyTheme()
         QTreeWidget#terrTree {
             background: %1; color: %4; border: none; font-size: 13px; outline: none;
         }
-        QTreeWidget#terrTree::item { padding: 4px 6px; border-radius: 4px; }
+        QTreeWidget#terrTree::item { padding: 4px 6px; border-radius: @radius-item; }
         QTreeWidget#terrTree::item:hover { background: %7; color: %6; }
         QTreeWidget#terrTree::item:selected { background: %8; color: %6; }
-    )").arg(panelBg, hover, subtle, txtPrim, txtMuted)   // %1-5
+    )")).arg(panelBg, hover, subtle, txtPrim, txtMuted)   // %1-5
        .arg(txtBright, hover, accentSf, accentBd)         // %6-9
        .arg(Theme::accentDanger()));                      // %10
 }

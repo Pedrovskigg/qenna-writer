@@ -285,7 +285,7 @@ void WordCountPanel::applyThemeStyle()
     const QString txtBright  = Theme::textBright();
     const QString accent     = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#wordCountPanel { background: transparent; }
         QScrollArea#wcpScroll { background: transparent; border: none; }
         QScrollArea#wcpScroll > QWidget > QWidget { background: transparent; }
@@ -304,15 +304,15 @@ void WordCountPanel::applyThemeStyle()
         QFrame#wcpBody, QFrame#wcpFullBody, QFrame#wcpSection {
             background: %1;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-panel;
         }
         QToolButton#wcpToggle {
             background: %1;
             color: %6;
             border: 1px solid %4;
             border-bottom: none;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
+            border-top-left-radius: @radius-control;
+            border-top-right-radius: @radius-control;
             font-size: 10px;
             padding: 0;
         }
@@ -324,7 +324,7 @@ void WordCountPanel::applyThemeStyle()
         QFrame#wcpCard {
             background: %2;
             border: 1px solid %5;
-            border-radius: 4px;
+            border-radius: @radius-control;
         }
         QLabel#wcpCardTitle { color: %7; font-size: 11px; }
         QLabel#wcpCardValue { color: %8; font-size: 15px; font-weight: 600; }
@@ -332,7 +332,7 @@ void WordCountPanel::applyThemeStyle()
             background: %2;
             color: %6;
             border: 1px solid %5;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             text-align: left;
         }
@@ -358,7 +358,7 @@ void WordCountPanel::applyThemeStyle()
             background: %2;
             color: %8;
             border: 1px solid %5;
-            border-radius: 3px;
+            border-radius: @radius-control;
             padding: 3px 6px;
             min-height: 26px;
         }
@@ -375,7 +375,7 @@ void WordCountPanel::applyThemeStyle()
         QFrame#wcpFolgaPanel {
             background: %2;
             border: 1px solid %5;
-            border-radius: 4px;
+            border-radius: @radius-control;
         }
         QToolButton#wcpCalToggleBtn {
             background: transparent;
@@ -390,7 +390,7 @@ void WordCountPanel::applyThemeStyle()
             background: %2;
             color: %6;
             border: 1px solid %5;
-            border-radius: 3px;
+            border-radius: @radius-control;
             font-size: 8px;
             min-width: 20px;
             max-width: 24px;
@@ -409,12 +409,12 @@ void WordCountPanel::applyThemeStyle()
             background: %2;
             color: %6;
             border: 1px solid %5;
-            border-radius: 3px;
+            border-radius: @radius-control;
             padding: 3px 6px;
             min-width: 22px;
         }
         QToolButton#wcpResetBtn:hover { background: %3; color: %8; }
-    )")
+    )"))
         .arg(bgPanel,    // 1
              bgCard,     // 2
              bgHover,    // 3
@@ -1212,19 +1212,19 @@ void WordCountPanel::openGoalResetTimeDialog()
     lay->addSpacing(4);
     lay->addWidget(buttons);
 
-    dlg.setStyleSheet(QStringLiteral(R"(
-        #wcpDayDialog { background: %1; border: 1px solid %6; border-radius: 8px; }
+    dlg.setStyleSheet(Theme::qss(QStringLiteral(R"(
+        #wcpDayDialog { background: %1; border: 1px solid %6; border-radius: @radius-panel; }
         #wcpDayDialog QLabel { color: %2; font-size: 12px; }
         #wcpDayDialog QLabel#wcpDayTitle { color: %3; font-size: 15px; font-weight: bold; }
         #wcpDayDialog QTimeEdit {
-            background: %6; color: %3; border: 1px solid %6; border-radius: 5px;
+            background: %6; color: %3; border: 1px solid %6; border-radius: @radius-control;
             padding: 4px 8px; font-size: 13px;
         }
         #wcpDayDialog QPushButton {
-            background: %4; color: %2; border: none; padding: 6px 16px; border-radius: 5px; font-size: 12px;
+            background: %4; color: %2; border: none; padding: 6px 16px; border-radius: @radius-control; font-size: 12px;
         }
         #wcpDayDialog QPushButton:hover { background: %5; color: %3; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(),
             Theme::hoverOverlay(), Theme::hoverStrong(), Theme::subtleBorder()));
 
     if (dlg.exec() == QDialog::Accepted) {

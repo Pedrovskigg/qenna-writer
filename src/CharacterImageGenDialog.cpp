@@ -40,7 +40,7 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
         : tr("Gerar imagem — %1").arg(characterName));
     setMinimumWidth(420);
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog { background: %1; border: 1px solid %2; }
         QLabel#cigHint, QLabel#cigStatus, QLabel#cigCorrectionLog, QLabel#cigPromptText { color: %3; font-size: 11px; }
         QToolButton#cigPromptToggle {
@@ -52,16 +52,16 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
         QCheckBox#cigRawPromptCheck { color: %4; font-size: 12px; }
         QPlainTextEdit, QComboBox, QLineEdit {
             background: %5; color: %4; border: 1px solid %6;
-            border-radius: 6px; padding: 6px 8px; font-size: 12px;
+            border-radius: @radius-control; padding: 6px 8px; font-size: 12px;
         }
         QPlainTextEdit:focus, QComboBox:focus, QLineEdit:focus { border-color: %7; }
         QLabel#cigPreview {
-            background: %5; border: 1px solid %6; border-radius: 8px; color: %3;
+            background: %5; border: 1px solid %6; border-radius: @radius-panel; color: %3;
         }
         QFrame#cigCorrectionSection { border-top: 1px solid %6; }
         QPushButton {
             background: transparent; color: %4; border: 1px solid %2;
-            border-radius: 6px; padding: 6px 16px; font-size: 12px;
+            border-radius: @radius-control; padding: 6px 16px; font-size: 12px;
         }
         QPushButton:hover { background: %8; }
         QPushButton:disabled { color: %9; border-color: %2; }
@@ -69,7 +69,7 @@ CharacterImageGenDialog::CharacterImageGenDialog(const QString& characterName,
         QPushButton#cigUse { background: %10; color: %11; border-color: %10; }
         QPushButton#cigUse:hover { background: %10; }
         QPushButton#cigCorrectionBtn { padding: 6px 12px; }
-    )").arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textMuted(),
+    )")).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textMuted(),
            Theme::textBright(), Theme::inputBackground(), Theme::subtleBorder(),
            Theme::focusBorder(), Theme::hoverOverlay(), Theme::disabledText(),
            Theme::accentDefault(), Theme::textBright()));

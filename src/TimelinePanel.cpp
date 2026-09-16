@@ -1903,7 +1903,7 @@ void TimelinePanel::applyTheme()
     if (m_scene)
         m_scene->setBackgroundColor(QColor(Theme::appBackground()));
 
-    const QString qss = QStringLiteral(R"(
+    const QString qss = Theme::qss(QStringLiteral(R"(
         QWidget#timelinePanel { background: %1; }
         QWidget#tlToolbar {
             background: %2;
@@ -1919,7 +1919,7 @@ void TimelinePanel::applyTheme()
         QToolButton#tlToolBtn {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             color: %5;
             font-size: 12px;
             padding: 2px 8px;
@@ -1937,6 +1937,8 @@ void TimelinePanel::applyTheme()
             background: %7;
             color: %4;
             border: 1px solid %3;
+            /* Circular por construção: o botão é 36x36, então o raio é metade
+               do lado. Não entra na escala do tema — viraria elipse. */
             border-radius: 18px;
             font-size: 20px;
             font-weight: 600;
@@ -1947,7 +1949,7 @@ void TimelinePanel::applyTheme()
             border-color: %8;
             color: #ffffff;
         }
-    )").arg(Theme::appBackground(),
+    )")).arg(Theme::appBackground(),
             Theme::panelBackground(),
             Theme::subtleBorder(),
             Theme::textPrimary(),

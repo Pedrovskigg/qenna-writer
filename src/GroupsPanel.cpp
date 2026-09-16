@@ -86,17 +86,17 @@ void GroupsPanel::buildUi()
     m_newBtn->setToolTip(tr("Novo grupo"));
     m_newBtn->setCursor(Qt::PointingHandCursor);
     m_newBtn->setFixedSize(26, 26);
-    m_newBtn->setStyleSheet(QStringLiteral(R"(
+    m_newBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 18px;
             font-weight: 300;
         }
         QToolButton:hover { background: %3; color: %4; border-color: %5; }
-    )").arg(Theme::textMuted(), Theme::panelBorder(),
+    )")).arg(Theme::textMuted(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted()));
     hLay->addWidget(m_newBtn);
 
@@ -105,16 +105,16 @@ void GroupsPanel::buildUi()
     m_closeBtn->setToolTip(tr("Fechar"));
     m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setFixedSize(26, 26);
-    m_closeBtn->setStyleSheet(QStringLiteral(R"(
+    m_closeBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             color: %1;
             border: none;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 16px;
         }
         QToolButton:hover { background: %2; color: %3; }
-    )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
+    )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
     hLay->addWidget(m_closeBtn);
     connect(m_closeBtn, &QToolButton::clicked, this, &GroupsPanel::closeRequested);
 
@@ -176,34 +176,34 @@ void GroupsPanel::buildUi()
 
 void GroupsPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QFrame#groupsPanel {
             background: %1;
             border: 1px solid %2;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
-    )").arg(Theme::panelBackground(), Theme::panelBorder()));
+    )")).arg(Theme::panelBackground(), Theme::panelBorder()));
 
     if (m_title)
         m_title->setStyleSheet(QStringLiteral(
             "color: %1; font-family: 'Lora','Crimson Text',serif; font-size: 13px; font-weight: 700;")
             .arg(Theme::textBright()));
     if (m_newBtn)
-        m_newBtn->setStyleSheet(QStringLiteral(R"(
+        m_newBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton {
                 background: transparent; color: %1; border: 1px solid %2;
-                border-radius: 6px; font-size: 18px; font-weight: 300;
+                border-radius: @radius-control; font-size: 18px; font-weight: 300;
             }
             QToolButton:hover { background: %3; color: %4; border-color: %5; }
-        )").arg(Theme::textMuted(), Theme::panelBorder(),
+        )")).arg(Theme::textMuted(), Theme::panelBorder(),
                 Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted()));
     if (m_closeBtn)
-        m_closeBtn->setStyleSheet(QStringLiteral(R"(
+        m_closeBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton {
-                background: transparent; color: %1; border: none; border-radius: 6px; font-size: 16px;
+                background: transparent; color: %1; border: none; border-radius: @radius-control; font-size: 16px;
             }
             QToolButton:hover { background: %2; color: %3; }
-        )").arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
+        )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright()));
 
     rebuildGroupChips();
     rebuildItemList();
@@ -253,19 +253,19 @@ void GroupsPanel::rebuildGroupChips()
         chip->setText(g.title);
 
         const bool active = (g.id == m_selectedGroupId);
-        chip->setStyleSheet(QStringLiteral(R"(
+        chip->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QPushButton {
                 background: %1;
                 color: %2;
                 border: 1px solid %3;
-                border-radius: 12px;
+                border-radius: @radius-control;
                 padding: 3px 10px 3px 6px;
                 font-size: 11px;
                 font-family: 'Lora','Crimson Text',serif;
             }
             QPushButton:hover   { background: %4; color: %5; border-color: %6; }
             QPushButton:checked { background: %7; color: %5; border-color: %8; }
-        )").arg(active ? Theme::pressedOverlay() : QStringLiteral("transparent"),
+        )")).arg(active ? Theme::pressedOverlay() : QStringLiteral("transparent"),
                 active ? Theme::textBright() : Theme::textPrimary(),
                 active ? Theme::accentDefault() : Theme::subtleBorder(),
                 Theme::hoverOverlay(), Theme::textBright(), Theme::borderStrong(),
@@ -328,14 +328,14 @@ void GroupsPanel::rebuildItemList()
             auto* row = new QFrame(m_listHost);
             row->setCursor(Qt::PointingHandCursor);
             row->setAttribute(Qt::WA_StyledBackground, true);
-            row->setStyleSheet(QStringLiteral(R"(
+            row->setStyleSheet(Theme::qss(QStringLiteral(R"(
                 QFrame {
                     background: %1;
                     border: 1px solid %2;
-                    border-radius: 6px;
+                    border-radius: @radius-panel;
                 }
                 QFrame:hover { background: %3; border-color: %4; }
-            )").arg(Theme::pressedOverlay(), Theme::subtleBorder(),
+            )")).arg(Theme::pressedOverlay(), Theme::subtleBorder(),
                     Theme::hoverOverlay(), Theme::borderStrong()));
 
             auto* rowLay = new QHBoxLayout(row);
@@ -346,8 +346,8 @@ void GroupsPanel::rebuildItemList()
             if (grp) {
                 auto* dot = new QLabel(row);
                 dot->setFixedSize(8, 8);
-                dot->setStyleSheet(QStringLiteral(
-                    "background: %1; border-radius: 4px;").arg(grp->color));
+                dot->setStyleSheet(Theme::qss(QStringLiteral(
+                    "background: %1; border-radius: @radius-control;").arg(grp->color)));
                 rowLay->addWidget(dot, 0, Qt::AlignVCenter);
             }
 
@@ -360,14 +360,14 @@ void GroupsPanel::rebuildItemList()
 
             // Chip da gaveta
             auto* drawerChip = new QLabel(drawer.title.isEmpty() ? tr("(gaveta)") : drawer.title, row);
-            drawerChip->setStyleSheet(QStringLiteral(R"(
+            drawerChip->setStyleSheet(Theme::qss(QStringLiteral(R"(
                 color: %1;
                 background: %2;
-                border-radius: 8px;
+                border-radius: @radius-panel;
                 padding: 1px 7px;
                 font-size: 10px;
                 font-family: 'Lora','Crimson Text',serif;
-            )").arg(Theme::textMuted(), Theme::hoverOverlay()));
+            )")).arg(Theme::textMuted(), Theme::hoverOverlay()));
             rowLay->addWidget(drawerChip, 0, Qt::AlignVCenter);
 
             const QString dkey = drawer.key;
@@ -398,11 +398,11 @@ void GroupsPanel::showGroupContextMenu(const QString& groupId, const QPoint& glo
     if (!g) return;
 
     QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: 6px; padding: 4px; }
-        QMenu::item { padding: 6px 16px; border-radius: 4px; }
+    menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+        QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
         QMenu::item:selected { background: %4; color: %5; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright()));
 
     auto* editAct = menu.addAction(tr("Editar grupo…"));
@@ -430,22 +430,22 @@ void GroupsPanel::showEditGroupDialog(const QString& groupId)
     dlg->setModal(true);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setFixedWidth(300);
-    dlg->setStyleSheet(QStringLiteral(R"(
+    dlg->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog { background: %1; color: %2; }
         QLineEdit {
             background: %3; color: %2; border: 1px solid %4;
-            border-radius: 6px; padding: 6px 10px;
+            border-radius: @radius-control; padding: 6px 10px;
         }
         QPushButton#okBtn {
-            background: %5; color: %6; border: none; border-radius: 6px; padding: 6px 14px; font-weight: 600;
+            background: %5; color: %6; border: none; border-radius: @radius-control; padding: 6px 14px; font-weight: 600;
         }
         QPushButton#okBtn:hover { background: %7; }
         QPushButton#cancelBtn {
             background: transparent; color: %8; border: 1px solid %4;
-            border-radius: 6px; padding: 6px 14px;
+            border-radius: @radius-control; padding: 6px 14px;
         }
         QPushButton#cancelBtn:hover { background: %9; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(),
             Theme::inputBackground(), Theme::panelBorder(),
             Theme::accentDefault(), Theme::textBright(),
             Theme::borderStrong(), Theme::textMuted(),
@@ -472,11 +472,13 @@ void GroupsPanel::showEditGroupDialog(const QString& groupId)
         cb->setCheckable(true);
         cb->setChecked(col == chosenColor);
         cb->setProperty("colorValue", col);
-        cb->setStyleSheet(QStringLiteral(
+        cb->setStyleSheet(Theme::qss(QStringLiteral(
+            // Swatch redondo: o botão é 24x24, o raio é metade do lado. Fora da
+            // escala do tema de propósito — com outro raio deixa de ser círculo.
             "QPushButton { background: %1; border-radius: 12px; border: 2px solid transparent; }"
             "QPushButton:checked { border-color: %2; }"
             "QPushButton:hover   { border-color: %3; }")
-            .arg(col, Theme::textBright(), Theme::textMuted()));
+            .arg(col, Theme::textBright(), Theme::textMuted())));
         colorRow->addWidget(cb);
         colorBtns.append(cb);
     }

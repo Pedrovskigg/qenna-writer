@@ -81,23 +81,23 @@ SelectionPopup::SelectionPopup(QTextEdit *editor, QWidget *parent)
 
 void SelectionPopup::applyRootStyle()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#selectionPopup {"
         "  background: %1;"
         "  border: 1px solid %2;"
-        "  border-radius: 8px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QToolButton#selPopupBtn {"
         "  background: transparent;"
         "  border: none;"
-        "  border-radius: 6px;"
+        "  border-radius: @radius-control;"
         "}"
         "QToolButton#selPopupBtn:hover { background: %3; }"
         "QToolButton#selPopupBtn:checked { background: %4; }"
     ).arg(Theme::panelBackground(),
           Theme::panelBorder(),
           Theme::hoverOverlay(),
-          Theme::pressedOverlay()));
+          Theme::pressedOverlay())));
 }
 
 void SelectionPopup::applyTheme()

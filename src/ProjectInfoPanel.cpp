@@ -208,7 +208,7 @@ void ProjectInfoPanel::onSave() {
 }
 
 void ProjectInfoPanel::applyDialogStyle() {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #projectInfoPanel { background: %1; }
         #projectInfoPanel QLabel { color: %2; font-size: 12px; }
         #projectInfoHeading {
@@ -228,7 +228,7 @@ void ProjectInfoPanel::applyDialogStyle() {
             background: %5;
             color: %4;
             border: 1px solid %6;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 11px;
         }
         #projectInfoPanel QLineEdit,
@@ -236,7 +236,7 @@ void ProjectInfoPanel::applyDialogStyle() {
             background: %5;
             color: %3;
             border: 1px solid %6;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 8px;
             selection-background-color: %7;
         }
@@ -249,7 +249,7 @@ void ProjectInfoPanel::applyDialogStyle() {
             color: %2;
             border: 1px solid %6;
             padding: 6px 14px;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
             min-height: 26px;
         }
@@ -260,7 +260,7 @@ void ProjectInfoPanel::applyDialogStyle() {
         QPushButton#projectInfoBtn:default {
             border-color: %9;
         }
-    )").arg(
+    )")).arg(
         Theme::appBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3

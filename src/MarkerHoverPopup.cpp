@@ -110,18 +110,18 @@ void MarkerHoverPopup::buildUi()
 
 void MarkerHoverPopup::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#markerHoverPopup {"
         "  background: %1;"
         "  border: 1px solid %2;"
         "  border-left: 4px solid %3;"
-        "  border-radius: 6px;"
+        "  border-radius: @radius-panel;"
         "}"
         "QLabel { color: %4; font-size: 12px; }"
         "QToolButton {"
         "  background: transparent;"
         "  border: 1px solid %5;"
-        "  border-radius: 4px;"
+        "  border-radius: @radius-control;"
         "  color: %4;"
         "  min-width: 24px; max-width: 24px;"
         "  min-height: 24px; max-height: 24px;"
@@ -132,7 +132,7 @@ void MarkerHoverPopup::applyTheme()
           m_color.isValid() ? m_color.name() : Theme::accentDefault(),
           Theme::textPrimary(),
           Theme::subtleBorder(),
-          Theme::hoverOverlay()));
+          Theme::hoverOverlay())));
 
     // Recolore os ícones SVG (edit/trash) — o tinting é feito no load,
     // então se o tema mudou precisamos recarregar.

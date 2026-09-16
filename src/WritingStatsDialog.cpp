@@ -270,11 +270,11 @@ void WritingStatsDialog::buildUi()
     outer->addWidget(body);
 
     // ── Stylesheet ───────────────────────────────────────────────────────────
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QDialog#writingStatsDialog {
             background: %1;
             border: 1px solid %3;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         QWidget#statsHeader, QWidget#statsBody { background: transparent; }
         QLabel#statsTitle {
@@ -286,7 +286,7 @@ void WritingStatsDialog::buildUi()
             background: transparent;
             color: %4;
             border: none;
-            border-radius: 4px;
+            border-radius: @radius-control;
             font-size: 10px;
         }
         QPushButton#statsClose:hover { background: %2; color: %5; }
@@ -316,7 +316,7 @@ void WritingStatsDialog::buildUi()
             font-size: 11px;
             font-weight: 700;
         }
-    )")
+    )"))
         .arg(Theme::panelBackground(),  // 1
              Theme::hoverOverlay(),     // 2
              Theme::panelBorder(),      // 3

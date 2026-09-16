@@ -28,12 +28,12 @@ constexpr int kPopupMinH = 460;
 constexpr int kHeaderH = 36;
 
 QString tinyBtnQss() {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %3;
             color: %1;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 12px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 12px;
@@ -47,19 +47,19 @@ QString tinyBtnQss() {
             color: %7;
             border-color: %3;
         }
-    )").arg(Theme::textPrimary(), Theme::textBright(),
+    )")).arg(Theme::textPrimary(), Theme::textBright(),
            Theme::hoverOverlay(), Theme::subtleBorder(),
            Theme::hoverStrong(), Theme::borderStrong(),
            Theme::disabledText());
 }
 
 QString pillBtnQss(const QString& accent) {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %1;
             color: %3;
             border: none;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 7px 14px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 12px;
@@ -70,7 +70,7 @@ QString pillBtnQss(const QString& accent) {
             background: %4;
             color: %5;
         }
-    )").arg(accent, accent, Theme::textBright(),
+    )")).arg(accent, accent, Theme::textBright(),
            Theme::subtleBorder(), Theme::disabledText());
 }
 
@@ -80,12 +80,12 @@ QString labelQss() {
 }
 
 QString typeButtonQss(bool empty) {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: %3;
             color: %1;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 8px 12px;
             text-align: left;
             font-family: 'Lora','Crimson Text',serif;
@@ -95,7 +95,7 @@ QString typeButtonQss(bool empty) {
             border-color: %5;
             color: %2;
         }
-    )").arg(empty ? Theme::textMuted() : Theme::textBright(),
+    )")).arg(empty ? Theme::textMuted() : Theme::textBright(),
            Theme::textBright(),
            Theme::inputBackground(),
            Theme::subtleBorder(),
@@ -121,9 +121,9 @@ BondPopup::BondPopup(QWidget* parent,
     setFrameShape(QFrame::NoFrame);
     setFixedWidth(kPopupW);
     setMinimumHeight(kPopupMinH);
-    setStyleSheet(QStringLiteral(
-        "QFrame#bondPopup { background: %1; border: 1px solid %2; border-radius: 8px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#bondPopup { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
 
     buildUi();
 
@@ -165,15 +165,15 @@ void BondPopup::buildUi() {
     m_closeBtn->setToolTip(tr("Fechar"));
     m_closeBtn->setCursor(Qt::PointingHandCursor);
     m_closeBtn->setMinimumSize(24, 24);
-    m_closeBtn->setStyleSheet(QStringLiteral(R"(
+    m_closeBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QToolButton {
             background: transparent;
             border: 1px solid transparent;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 2px;
         }
         QToolButton:hover { background: %1; border-color: %2; }
-    )").arg(Theme::hoverOverlay(), Theme::borderStrong()));
+    )")).arg(Theme::hoverOverlay(), Theme::borderStrong()));
     connect(m_closeBtn, &QToolButton::clicked, this, [this]() { emit closeRequested(); });
     hlay->addWidget(m_closeBtn);
     root->addWidget(m_header);
@@ -208,19 +208,19 @@ void BondPopup::buildUi() {
     m_description->setMinimumHeight(110);
     m_description->setPlaceholderText(tr("Descreva o vínculo, a história por trás dele…"));
     m_description->setAcceptRichText(false);
-    m_description->setStyleSheet(QStringLiteral(R"(
+    m_description->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QTextEdit {
             background: %3;
             color: %1;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 8px 10px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 13px;
             selection-background-color: %2;
         }
         QTextEdit:focus { border-color: %5; }
-    )").arg(Theme::textBright(), Theme::accentDefault(),
+    )")).arg(Theme::textBright(), Theme::accentDefault(),
            Theme::inputBackground(), Theme::subtleBorder(),
            Theme::focusBorder()));
     root->addWidget(m_description);
@@ -251,9 +251,9 @@ void BondPopup::buildUi() {
         btn->setCursor(Qt::PointingHandCursor);
         btn->setFixedSize(22, 22);
         btn->setProperty("colorCode", c);
-        btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background: %1; border: 2px solid transparent; border-radius: 11px; }"
-            "QPushButton:hover { border-color: %2; }").arg(c, Theme::focusBorder()));
+        btn->setStyleSheet(Theme::qss(QStringLiteral(
+            "QPushButton { background: %1; border: 2px solid transparent; border-radius: @radius-control; }"
+            "QPushButton:hover { border-color: %2; }").arg(c, Theme::focusBorder())));
         connect(btn, &QPushButton::clicked, this, [this, c]() { applyColor(c); });
         slay->addWidget(btn);
         m_colorSwatches.append(btn);
@@ -272,18 +272,18 @@ void BondPopup::buildUi() {
 
     m_deleteBtn = new QPushButton(tr("Excluir vínculo"), actionsRow);
     m_deleteBtn->setCursor(Qt::PointingHandCursor);
-    m_deleteBtn->setStyleSheet(QStringLiteral(R"(
+    m_deleteBtn->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QPushButton {
             background: transparent;
             color: %1;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 6px 12px;
             font-family: 'Lora','Crimson Text',serif;
             font-size: 12px;
         }
         QPushButton:hover { background: %3; border-color: %1; }
-    )").arg(Theme::accentDanger(),
+    )")).arg(Theme::accentDanger(),
            Theme::accentDangerBorderSoft(),
            Theme::accentDangerSoft()));
     connect(m_deleteBtn, &QPushButton::clicked, this, [this]() { emit deleteRequested(); });
@@ -317,20 +317,20 @@ QString BondPopup::description() const {
 void BondPopup::applyColor(const QString& c) {
     m_color = c;
     if (m_colorMain) {
-        m_colorMain->setStyleSheet(QStringLiteral(
-            "QPushButton { background: %1; border: 2px solid %2; border-radius: 6px; }"
+        m_colorMain->setStyleSheet(Theme::qss(QStringLiteral(
+            "QPushButton { background: %1; border: 2px solid %2; border-radius: @radius-control; }"
             "QPushButton:hover { border-color: %3; }")
-            .arg(c, Theme::borderStrong(), Theme::focusBorder()));
+            .arg(c, Theme::borderStrong(), Theme::focusBorder())));
     }
     // Update swatches selection ring
     for (auto* btn : m_colorSwatches) {
         const QString cc = btn->property("colorCode").toString();
         const bool sel = cc.compare(c, Qt::CaseInsensitive) == 0;
-        btn->setStyleSheet(QStringLiteral(
-            "QPushButton { background: %1; border: 2px solid %2; border-radius: 11px; }"
+        btn->setStyleSheet(Theme::qss(QStringLiteral(
+            "QPushButton { background: %1; border: 2px solid %2; border-radius: @radius-control; }"
             "QPushButton:hover { border-color: %3; }")
             .arg(cc, sel ? Theme::selectionRing() : QStringLiteral("transparent"),
-                 Theme::focusBorder()));
+                 Theme::focusBorder())));
     }
 }
 
@@ -354,9 +354,9 @@ void BondPopup::openTypePicker() {
     popup->setObjectName(QStringLiteral("bondTypePicker"));
     popup->setAttribute(Qt::WA_DeleteOnClose, true);
     popup->setAttribute(Qt::WA_StyledBackground, true);
-    popup->setStyleSheet(QStringLiteral(
-        "QFrame#bondTypePicker { background: %1; border: 1px solid %2; border-radius: 6px; }")
-        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    popup->setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#bondTypePicker { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
     popup->setFixedWidth(m_typeButton ? m_typeButton->width() : 280);
     popup->setMaximumHeight(360);
 
@@ -377,12 +377,12 @@ void BondPopup::openTypePicker() {
     auto styleGender = [](QPushButton* b, bool active) {
         b->setFixedSize(28, 22);
         b->setCursor(Qt::PointingHandCursor);
-        b->setStyleSheet(QStringLiteral(
+        b->setStyleSheet(Theme::qss(QStringLiteral(
             "QPushButton { background: %1; color: %2; border: 1px solid %3; "
-            "border-radius: 4px; font-size: 11px; font-weight: 700; }")
+            "border-radius: @radius-control; font-size: 11px; font-weight: 700; }")
             .arg(active ? Theme::accentInfoSoft() : QStringLiteral("transparent"),
                  active ? Theme::textBright() : Theme::textMuted(),
-                 active ? Theme::accentInfoBorderSoft() : Theme::borderStrong()));
+                 active ? Theme::accentInfoBorderSoft() : Theme::borderStrong())));
     };
     auto* bM = new QPushButton(QStringLiteral("M"), genderRow);
     auto* bF = new QPushButton(QStringLiteral("F"), genderRow);
@@ -402,7 +402,7 @@ void BondPopup::openTypePicker() {
     auto* list = new QListWidget(popup);
     list->setFrameShape(QFrame::NoFrame);
     list->setCursor(Qt::PointingHandCursor);
-    list->setStyleSheet(QStringLiteral(R"(
+    list->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QListWidget {
             background: transparent;
             color: %1;
@@ -413,12 +413,12 @@ void BondPopup::openTypePicker() {
         }
         QListWidget::item {
             padding: 5px 10px;
-            border-radius: 4px;
+            border-radius: @radius-item;
         }
         QListWidget::item:hover { background: %2; color: %3; }
         QListWidget::item:selected { background: %4; color: %3; }
         QListWidget::item:disabled { color: %5; font-size: 10px; font-weight: 700; letter-spacing: 0.6px; padding-top: 10px; }
-    )").arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(),
+    )")).arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(),
            Theme::pressedOverlay(), Theme::textMuted()));
     lay->addWidget(list, /*stretch=*/1);
 

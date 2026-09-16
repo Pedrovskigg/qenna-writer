@@ -140,11 +140,11 @@ void WordCounterCalendar::applyThemeStyle()
     const QString txtBright  = Theme::textBright();
     const QString accent     = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#wcpCalendar {
             background: %1;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         QLabel#wcpCalMonth {
             color: %8; font-size: 12px; font-weight: 600;
@@ -154,7 +154,7 @@ void WordCounterCalendar::applyThemeStyle()
         }
         QToolButton#wcpCalNav, QToolButton#wcpCalToday {
             background: %2; color: %6;
-            border: 1px solid %5; border-radius: 3px;
+            border: 1px solid %5; border-radius: @radius-control;
             padding: 2px 6px; min-height: 18px;
         }
         QToolButton#wcpCalNav:hover, QToolButton#wcpCalToday:hover {
@@ -163,7 +163,7 @@ void WordCounterCalendar::applyThemeStyle()
         QLabel#wcpCalDay {
             background: %2;
             border: 1px solid %5;
-            border-radius: 3px;
+            border-radius: @radius-item;
             color: %6;
             padding: 2px;
             min-height: 30px;
@@ -182,7 +182,7 @@ void WordCounterCalendar::applyThemeStyle()
         QLabel#wcpCalDay[offType="stolen"] {
             border: 1px dashed %10;
         }
-    )")
+    )"))
         .arg(bgPanel,    // 1
              bgCard,     // 2
              bgHover,    // 3
@@ -544,15 +544,15 @@ void WordCounterCalendar::showDayDetails(const QString& key)
     lay->addSpacing(4);
     lay->addWidget(buttons);
 
-    dlg->setStyleSheet(QStringLiteral(R"(
+    dlg->setStyleSheet(Theme::qss(QStringLiteral(R"(
         #wcpDayDialog { background: %1; }
         #wcpDayDialog QLabel { color: %2; font-size: 12px; }
         #wcpDayDialog QLabel#wcpDayTitle { color: %3; font-size: 15px; font-weight: bold; }
         #wcpDayDialog QPushButton {
-            background: %4; color: %2; border: none; padding: 6px 16px; border-radius: 5px; font-size: 12px;
+            background: %4; color: %2; border: none; padding: 6px 16px; border-radius: @radius-control; font-size: 12px;
         }
         #wcpDayDialog QPushButton:hover { background: %5; color: %3; }
-    )").arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(),
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::textBright(),
             Theme::hoverOverlay(), Theme::hoverStrong()));
 
     dlg->exec();

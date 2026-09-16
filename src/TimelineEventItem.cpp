@@ -1,5 +1,7 @@
 #include "TimelineEventItem.h"
 
+#include "Theme.h"
+
 #include "CrashLogger.h"
 #include <QAction>
 #include <QFont>
@@ -234,8 +236,10 @@ QPainterPath TimelineEventItem::shape() const
 {
     QPainterPath p;
     p.addEllipse(QPointF(0, 0), dotRadius() + 3, dotRadius() + 3);
-    if (m_open)
-        p.addRoundedRect(cardRect(), 10, 10);
+    if (m_open) {
+        const qreal cardR = static_cast<qreal>(Theme::panelRadius());
+        p.addRoundedRect(cardRect(), cardR, cardR);
+    }
     return p;
 }
 

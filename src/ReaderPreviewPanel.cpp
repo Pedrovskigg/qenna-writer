@@ -143,13 +143,13 @@ void ReaderPreviewPanel::updateChromeStyle() {
     m_closeBtn->setIcon(IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/close.svg"), normal, hoverColor, hoverColor, iconSize));
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #readerPreviewPanel QToolButton {
             background: transparent;
             color: %1;
             border: none;
             padding: 6px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #readerPreviewPanel QToolButton:hover {
             color: %2;
@@ -159,7 +159,7 @@ void ReaderPreviewPanel::updateChromeStyle() {
             color: %2;
             background-color: %4;
         }
-    )").arg(Theme::textMuted(), Theme::textBright(), Theme::hoverOverlay(), Theme::hoverStrong()));
+    )")).arg(Theme::textMuted(), Theme::textBright(), Theme::hoverOverlay(), Theme::hoverStrong()));
 }
 
 void ReaderPreviewPanel::loadSettings() {

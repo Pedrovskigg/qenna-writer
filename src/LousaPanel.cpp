@@ -761,10 +761,10 @@ void LousaPanel::buildUi()
             auto* btn = new QPushButton(grid);
             btn->setFixedSize(28, 22);
             btn->setCursor(Qt::PointingHandCursor);
-            btn->setStyleSheet(QStringLiteral(
+            btn->setStyleSheet(Theme::qss(QStringLiteral(
                 "QPushButton { background: %1; border: 1.5px solid rgba(0,0,0,0.25);"
-                " border-radius: 4px; } "
-                "QPushButton:checked { border: 2px solid #fff; }").arg(c.name()));
+                " border-radius: @radius-control; } "
+                "QPushButton:checked { border: 2px solid #fff; }").arg(c.name())));
             btn->setCheckable(true);
             btn->setChecked(c == selectedColor);
             swatches.append(btn);
@@ -2458,22 +2458,22 @@ void LousaPanel::updateColorBtn()
 {
     if (!m_colorBtn || !m_scene) return;
     const QColor c = m_scene->canvasColor();
-    m_colorBtn->setStyleSheet(QStringLiteral(
+    m_colorBtn->setStyleSheet(Theme::qss(QStringLiteral(
         "QToolButton#lousaColorBtn {"
-        "  background: %1; border: 2px solid %2; border-radius: 5px;"
+        "  background: %1; border: 2px solid %2; border-radius: @radius-control;"
         "}"
         "QToolButton#lousaColorBtn:hover { border-color: %3; }"
-    ).arg(c.name(), Theme::panelBorder(), Theme::textPrimary()));
+    ).arg(c.name(), Theme::panelBorder(), Theme::textPrimary())));
 }
 
 void LousaPanel::applyTheme()
 {
-    setStyleSheet(QStringLiteral(
+    setStyleSheet(Theme::qss(QStringLiteral(
         "QWidget#lousaPanel   { background: transparent; }"
         "QWidget#lousaToolbar { background: %1; border-bottom: 1px solid %2; }"
         "QToolButton#lousaToolBtn {"
         "  background: transparent; border: 1px solid transparent;"
-        "  border-radius: 6px; color: %3; padding: 4px 8px; font-size: 11px;"
+        "  border-radius: @radius-control; color: %3; padding: 4px 8px; font-size: 11px;"
         "}"
         "QToolButton#lousaToolBtn:enabled:hover { background: %4; border-color: %5; }"
         "QToolButton#lousaToolBtn:disabled { color: %6; }"
@@ -2495,14 +2495,14 @@ void LousaPanel::applyTheme()
          Theme::hoverOverlay(),       // 4
          Theme::subtleBorder(),       // 5
          Theme::textMuted(),          // 6
-         Theme::accentDanger()));     // 7
+         Theme::accentDanger())));     // 7
 
     if (m_cardPreview) {
-        m_cardPreview->setStyleSheet(QStringLiteral(
+        m_cardPreview->setStyleSheet(Theme::qss(QStringLiteral(
             "QWidget#cardPreview {"
             "  background: %1;"
             "  border: 1px solid %2;"
-            "  border-radius: 10px;"
+            "  border-radius: @radius-panel;"
             "}"
             "QLabel#cardPreviewTitle {"
             "  color: %3;"
@@ -2522,7 +2522,7 @@ void LousaPanel::applyTheme()
             "  selection-background-color: transparent;"
             "}"
         ).arg(Theme::panelBackground(), Theme::panelBorder(),
-              Theme::textBright(),      Theme::textPrimary()));
+              Theme::textBright(),      Theme::textPrimary())));
 
         // Sombra discreta pra dar profundidade ao popup
         auto* shadow = new QGraphicsDropShadowEffect(m_cardPreview);
@@ -2553,23 +2553,23 @@ void LousaPanel::applyTheme()
              Theme::textMuted()));        // 4
     }
 
-    const QString stashBtnQss = QStringLiteral(
+    const QString stashBtnQss = Theme::qss(QStringLiteral(
         "QToolButton#lousaStashBtn { background: %1; border: 1px solid %2;"
-        "  border-radius: 8px; color: %3; font-size: 12px; padding: 4px 12px; }"
+        "  border-radius: @radius-control; color: %3; font-size: 12px; padding: 4px 12px; }"
         "QToolButton#lousaStashBtn:hover { background: %4; border-color: %5; }"
     ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
-         Theme::hoverOverlay(), Theme::subtleBorder());
-    const QString stashPanelQss = QStringLiteral(
+         Theme::hoverOverlay(), Theme::subtleBorder()));
+    const QString stashPanelQss = Theme::qss(QStringLiteral(
         "QWidget#lousaStashPanel { background: %1; border: 1px solid %2;"
-        "  border-radius: 10px; }"
+        "  border-radius: @radius-panel; }"
         "QLabel#lousaStashTitle { color: %4; font-size: 11px; font-weight: 700;"
         "  text-transform: uppercase; letter-spacing: 0.06em; }"
         "QListWidget#lousaStashList { background: %6; border: 1px solid %2;"
-        "  border-radius: 6px; color: %3; font-size: 12px; }"
-        "QPushButton { background: %5; border: 1px solid %2; border-radius: 6px;"
+        "  border-radius: @radius-control; color: %3; font-size: 12px; }"
+        "QPushButton { background: %5; border: 1px solid %2; border-radius: @radius-control;"
         "  color: %3; font-size: 12px; padding: 4px 10px; }"
         "QPushButton:hover { background: %4; }"
-    ).arg(Theme::panelBackground(),  // 1
+    )).arg(Theme::panelBackground(),  // 1
          Theme::panelBorder(),        // 2
          Theme::textPrimary(),        // 3
          Theme::textMuted(),          // 4

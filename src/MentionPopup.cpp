@@ -43,15 +43,15 @@ MentionPopup::MentionPopup(ProjectModel* model, QWidget* ownerWindow, QObject* p
     m_list->setUniformItemSizes(true);
     m_list->setMouseTracking(true);
     m_list->hide();
-    m_list->setStyleSheet(QStringLiteral(
+    m_list->setStyleSheet(Theme::qss(QStringLiteral(
         "QListWidget#mentionPopup {"
         "  background: %1; color: %2;"
-        "  border: 1px solid %3; border-radius: 6px; padding: 4px; outline: none;"
+        "  border: 1px solid %3; border-radius: @radius-panel; padding: 4px; outline: none;"
         "}"
-        "QListWidget#mentionPopup::item { padding: 5px 8px; border-radius: 4px; }"
+        "QListWidget#mentionPopup::item { padding: 5px 8px; border-radius: @radius-item; }"
         "QListWidget#mentionPopup::item:selected { background: %4; color: %5; }"
     ).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::subtleBorder(),
-          Theme::accentDefault(), Theme::textBright()));
+          Theme::accentDefault(), Theme::textBright())));
 
     connect(m_list, &QListWidget::itemClicked, this, [this](QListWidgetItem*) { confirm(); });
 }

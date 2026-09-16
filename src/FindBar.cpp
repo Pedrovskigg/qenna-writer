@@ -104,17 +104,17 @@ void FindBar::closeBar()
 
 void FindBar::applyTheme()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #findBar {
             background: %1;
             border: 1px solid %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
         #findBarInput {
             background: %3;
             color: %4;
             border: 1px solid %2;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             selection-background-color: %5;
         }
@@ -127,11 +127,11 @@ void FindBar::applyTheme()
             border: none;
             background: transparent;
             color: %4;
-            border-radius: 5px;
+            border-radius: @radius-control;
             font-size: 14px;
         }
         QToolButton#findBarBtn:hover { background: %7; }
-    )")
+    )"))
         .arg(Theme::panelBackground())
         .arg(Theme::panelBorder())
         .arg(Theme::inputBackground())

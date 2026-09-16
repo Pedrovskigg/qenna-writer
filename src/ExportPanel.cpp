@@ -534,7 +534,7 @@ void ExportPanel::applyTheme() {
     const QString hoverStr  = Theme::hoverStrong();
     const QString accent    = Theme::accentDefault();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #exportPanel { background-color: %1; }
         #exportPanel QLabel { color: %4; font-size: 13px; }
         #exportPanel QLabel#exportTitle { color: %6; font-size: 16px; font-weight: bold; }
@@ -545,7 +545,7 @@ void ExportPanel::applyTheme() {
         #exportPanel #exportSelBar { border-top: 1px solid %2; border-bottom: 1px solid %2; }
         #exportPanel #exportFooter { border-top: 1px solid %2; }
         #exportPanel QPushButton#exportClose {
-            background: transparent; color: %5; border: none; font-size: 16px; border-radius: 6px;
+            background: transparent; color: %5; border: none; font-size: 16px; border-radius: @radius-control;
         }
         #exportPanel QPushButton#exportClose:hover { background: %8; color: %6; }
         #exportPanel QPushButton#exportLink {
@@ -553,7 +553,7 @@ void ExportPanel::applyTheme() {
         }
         #exportPanel QPushButton#exportLink:hover { color: %6; }
         #exportPanel QPushButton#exportFormat {
-            background: transparent; color: %5; border: 1px solid %2; border-radius: 5px;
+            background: transparent; color: %5; border: 1px solid %2; border-radius: @radius-control;
             padding: 3px 10px; font-size: 11px; font-weight: bold;
         }
         #exportPanel QPushButton#exportFormat:checked {
@@ -561,11 +561,11 @@ void ExportPanel::applyTheme() {
         }
         #exportPanel QPushButton#exportFormat:disabled { color: %7; border-color: %2; }
         #exportPanel QPushButton#exportCancel {
-            background: %8; color: %4; border: none; padding: 7px 16px; border-radius: 6px; font-size: 12px;
+            background: %8; color: %4; border: none; padding: 7px 16px; border-radius: @radius-control; font-size: 12px;
         }
         #exportPanel QPushButton#exportCancel:hover { background: %9; color: %6; }
         #exportPanel QPushButton#exportConfirm {
-            background: %10; color: #ffffff; border: none; padding: 7px 18px; border-radius: 6px;
+            background: %10; color: #ffffff; border: none; padding: 7px 18px; border-radius: @radius-control;
             font-size: 12px; font-weight: bold;
         }
         #exportPanel QPushButton#exportConfirm:hover { background: %10; }
@@ -592,7 +592,7 @@ void ExportPanel::applyTheme() {
         #exportPanel QScrollBar::handle:vertical:hover { background: %9; }
         #exportPanel QScrollBar::add-line:vertical, #exportPanel QScrollBar::sub-line:vertical { height: 0; }
         #exportPanel QScrollBar::add-page:vertical, #exportPanel QScrollBar::sub-page:vertical { background: transparent; }
-    )")
+    )"))
         .arg(panelBg,   // 1
              panelBd,   // 2
              inputBg,   // 3
