@@ -76,6 +76,9 @@
 #include <QStandardPaths>
 
 #include <QDir>
+#ifdef Q_OS_WIN
+#include <windows.h>   // CREATE_NO_WINDOW, ao soltar o instalador de update
+#endif
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QInputDialog>
@@ -6290,16 +6293,34 @@ void MainWindow::startUpdateDownload()
             return;
         }
 
-        // O instalador começa a extrair com este app ainda vivo, segurando o
-        // exe, as DLLs do Qt e as fontes carregadas por addApplicationFont.
-        // Quem resolve isso é o CloseApplications do .iss: o Restart Manager
-        // do Windows fecha o que estiver travando arquivo antes de extrair.
-        // Sem ele, o Inno parava em "arquivo já está sendo usado por outro
-        // processo" e oferecia "Ignorar", que deixa a instalação incompleta.
+        // Lançar o instalador direto daqui não funciona: ele começa a extrair
+        // com este app ainda vivo, segurando o exe, as DLLs do Qt e as fontes
+        // carregadas por addApplicationFont. O Inno então ou falha em
+        // substituir o arquivo ou, com CloseApplications ligado, tenta fechar
+        // o app e não consegue a tempo — porque somos justamente quem o
+        // chamou, ainda no meio do próprio encerramento. Nos dois casos o
+        // usuário recebe um diálogo com "Ignorar", e arquivo ignorado nunca é
+        // escrito: foi assim que atualizações saíram sem as imagens dos temas.
         //
-        // Adiar o lançamento pra depois do quit() não funciona: o event loop
-        // morre junto e o timer nunca dispara.
+        // Adiar com QTimer também não serve — o event loop morre no quit() e
+        // o timer nunca dispara. Então quem espera é um processo de fora:
+        // um cmd que dorme alguns segundos e só depois solta o instalador,
+        // quando este processo já morreu e soltou todos os arquivos.
+#ifdef Q_OS_WIN
+        QProcess launcher;
+        launcher.setProgram(QStringLiteral("cmd.exe"));
+        launcher.setArguments({ QStringLiteral("/c"),
+            QStringLiteral("timeout /t 4 /nobreak >nul & start \"\" \"%1\"")
+                .arg(QDir::toNativeSeparators(destPath)) });
+        // Sem isso, uma janela preta de console pisca na cara do usuário.
+        launcher.setCreateProcessArgumentsModifier(
+            [](QProcess::CreateProcessArguments* args) {
+                args->flags |= CREATE_NO_WINDOW;
+            });
+        launcher.startDetached();
+#else
         QProcess::startDetached(destPath, {});
+#endif
         qApp->quit();
     });
 }
