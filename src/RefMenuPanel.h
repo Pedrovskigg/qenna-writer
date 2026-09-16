@@ -5,6 +5,7 @@
 #include "TerritorioStore.h"
 
 #include <QList>
+#include <QSet>
 #include <QPixmap>
 #include <QPoint>
 #include <QSize>
@@ -18,6 +19,7 @@ class QListWidget;
 class QListWidgetItem;
 class QMenu;
 class QScrollArea;
+class QSplitter;
 class QStackedWidget;
 class QTextBrowser;
 class QToolButton;
@@ -67,6 +69,13 @@ public:
     void openSearch();
     void closeSearch();
 
+    // Documento aberto no editor principal, no formato de chave do
+    // ElementsStore (elementDocKeyForChapter/ForScene). O MainWindow avisa a
+    // cada troca de capítulo/cena; é daqui que sai a seção "Nesta cena" da
+    // tela inicial — os elementos presentes já estão computados no
+    // ElementsStore, não recalculamos nada.
+    void setCurrentDocKey(const QString& docKey);
+
     // Find inline no preview (Alt+F). Abre uma FindBar atrelada ao
     // QTextBrowser do preview, com navegação anterior/próximo e contador.
     void openPreviewFind();
@@ -93,8 +102,6 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
-    void onDrawerPickerClicked();
-    void onManuscriptPickerClicked();
     void onToggleNav();
     void onTogglePin();
     void onCycleFontSize();
@@ -109,15 +116,60 @@ private:
     enum class SourceKind { Manuscript, Drawer, MarkersPlaceholder, TimelinesPlaceholder, WorldExplorer };
     enum class ResizeEdge { None, Left, Right, Top, Bottom, TL, TR, BL, BR };
 
+    // Onde a navegação está. Substitui os dois seletores suspensos que
+    // disputavam o comando (Manuscritos ▾ / Gaveta ▾) e não mostravam estado:
+    //
+    //   Home    tela inicial — Nesta cena, Fixados, Recentes, Percorrer
+    //   Section uma fonte aberta (um manuscrito, uma gaveta, Mundos, Grupos)
+    //   Search  busca ativa; atravessa todas as fontes e ignora a seção
+    //
+    // A trilha no topo mostra o caminho e volta com um clique.
+    enum class NavMode { Home, Section, Search };
+
     void layoutResizeHandles();
 
     void buildUi();
     void applyMainStyleSheet();
-    void rebuildTabs();
     // Filtro por território (M7) — repopula o menu; a aplicação em si
     // (esmaecer cards) acontece dentro de buildDrawerView() a cada rebuild.
     void rebuildTerritorioFilterMenu();
     void rebuildNavBody();
+
+    // --- navegação nova ---
+    void buildHomeView();      // Nesta cena / Fixados / Recentes / Percorrer
+    void rebuildCrumbs();      // trilha no lugar dos seletores suspensos
+    void goHome();
+    void enterSection(SourceKind kind, const QString& key = QString());
+    // Rótulo curto da seção corrente, pro meio da trilha.
+    QString currentSectionLabel() const;
+
+    // Descreve uma chave de seleção ("it:…", "ch:…", "ctr:…", "lug:…") o
+    // bastante pra desenhar uma linha na tela inicial sem abrir o documento.
+    // Devolve false se a chave não existe mais (item apagado) — aí a entrada
+    // é descartada de fixados/recentes em silêncio.
+    struct KeyInfo {
+        QString name;
+        QString meta;      // "Capítulo 3", "12 documentos"…
+        QString role;      // papel do personagem, quando houver
+        QString imagePath; // miniatura, quando houver
+        QString sectionLabel;
+    };
+    bool describeKey(const QString& selectionKey, KeyInfo* out) const;
+    // Chave do documento aberto no editor, deduzida do EditorHost.
+    QString editorDocKey() const;
+
+    // Linha de navegação padrão: miniatura (ou bolinha por tipo) + nome +
+    // meta + estrela de fixar. Usada pelas seções da tela inicial e pela busca.
+    QWidget* makeNavRow(const QString& selectionKey, const KeyInfo& info, bool withPin,
+                        int fontPx = 13);
+
+    // Fixados e recentes — persistidos em QSettings por projeto.
+    void loadPinsAndRecents();
+    void savePinsAndRecents() const;
+    void addRecent(const QString& selectionKey);
+    void togglePin(const QString& selectionKey);
+    bool isPinned(const QString& selectionKey) const;
+
     void buildManuscriptsView();
     void buildDrawerView();
     void buildGroupsView();
@@ -173,6 +225,13 @@ private:
     QString m_projectRoot;
 
     // Estado lógico
+    NavMode m_navMode = NavMode::Home;
+    QStringList m_pinnedKeys;   // fixados pelo usuário, no topo pra sempre
+    QStringList m_recentKeys;   // últimos abertos, mais novo primeiro
+    QString m_currentDocKey;    // doc aberto no editor → "Nesta cena"
+    // Galhos abertos na árvore de PERCORRER ("ms:<id>", "ch x:<id>", "dr:<key>",
+    // "world"). Clicar alterna; navegar não troca mais a tela de lugar.
+    QSet<QString> m_expanded;
     SourceKind m_sourceKind = SourceKind::Manuscript;
     QString m_currentManuscriptId;
     QString m_currentDrawerKey;
@@ -214,13 +273,17 @@ private:
     // m_previewWrap; opera no QTextBrowser m_preview.
     FindBar* m_previewFind = nullptr;
 
-    // tabs row
-    QWidget* m_tabsRow = nullptr;
-    QToolButton* m_msTabBtn = nullptr;
+    // trilha (substituiu a antiga tabs row com os dois seletores suspensos)
+    QWidget* m_crumbsRow = nullptr;
+    QHBoxLayout* m_crumbsLay = nullptr;
+    // O modo visual (cards com foto) e o filtro por território continuam, mas
+    // agora moram na barra da seção, não numa fileira fixa de abas.
     QToolButton* m_viewModeBtn = nullptr;
-    QToolButton* m_drawerPickerBtn = nullptr;
     QToolButton* m_territorioFilterBtn = nullptr;
     QMenu* m_territorioFilterMenu = nullptr;
+
+    // Divisor arrastavel entre a arvore de navegacao e o preview.
+    QSplitter* m_bodySplit = nullptr;
 
     // nav body
     QScrollArea* m_navScroll = nullptr;

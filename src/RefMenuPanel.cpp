@@ -19,6 +19,8 @@
 
 #include <QApplication>
 #include <QBuffer>
+#include <QCryptographicHash>
+#include <QDir>
 #include <QByteArray>
 #include <QEvent>
 #include <functional>
@@ -40,6 +42,7 @@
 #include <QRegularExpression>
 #include <QScreen>
 #include <QScrollArea>
+#include <QSplitter>
 #include <QSettings>
 #include <QShowEvent>
 #include <QSizePolicy>
@@ -67,6 +70,7 @@ constexpr int kCornerSz = 12;   // tamanho dos handles de canto
 constexpr int kHeaderH = 38;
 
 const char* kKeyGeom        = "ui/refMenuPanel/geometry";
+const char* kKeySplit       = "ui/refMenuPanel/bodySplit";
 const char* kKeyNavHidden   = "ui/refMenuPanel/navHidden";
 const char* kKeyVisualMode  = "ui/refMenuPanel/visualMode";
 const char* kKeyPinned      = "ui/refMenuPanel/pinned";
@@ -129,7 +133,15 @@ void RefMenuPanel::applyTheme()
 
 void RefMenuPanel::setProjectRoot(const QString& root)
 {
+    // Fixados e recentes são por projeto: troca de projeto, troca a lista.
+    const bool changed = (m_projectRoot != root);
     m_projectRoot = root;
+    if (changed) {
+        m_pinnedKeys.clear();
+        m_recentKeys.clear();
+        loadPinsAndRecents();
+        m_navMode = NavMode::Home;
+    }
 }
 
 // =========================================================================
@@ -244,64 +256,47 @@ void RefMenuPanel::buildUi()
 
     m_frameLay->addWidget(m_header);
 
-    // ---- Search row (oculto por padrão) ----
+    // ---- Busca (sempre visível) ----
+    // Antes ficava atrás de um botão de lupa. Consultar É a função do painel,
+    // então o campo é a primeira coisa abaixo do cabeçalho — não um recurso
+    // escondido que só quem sabe do atalho encontra.
     m_searchRow = new QWidget(m_frame);
     m_searchRow->setObjectName(QStringLiteral("refSearchRow"));
     m_searchRow->setAttribute(Qt::WA_StyledBackground, true);
     {
         auto* sLay = new QHBoxLayout(m_searchRow);
-        sLay->setContentsMargins(10, 6, 10, 6);
+        sLay->setContentsMargins(10, 8, 10, 6);
         sLay->setSpacing(6);
         m_searchInput = new QLineEdit(m_searchRow);
         m_searchInput->setObjectName(QStringLiteral("refSearchInput"));
-        m_searchInput->setPlaceholderText(tr("Filtrar e destacar..."));
+        m_searchInput->setPlaceholderText(tr("Buscar em tudo…"));
         m_searchInput->setClearButtonEnabled(true);
         connect(m_searchInput, &QLineEdit::textChanged, this, &RefMenuPanel::onSearchQueryChanged);
         sLay->addWidget(m_searchInput, 1);
     }
-    m_searchRow->setVisible(false);
     m_frameLay->addWidget(m_searchRow);
 
-    // ---- Tabs row ----
-    m_tabsRow = new QWidget(m_frame);
-    m_tabsRow->setObjectName(QStringLiteral("refTabsRow"));
-    m_tabsRow->setAttribute(Qt::WA_StyledBackground, true);
-    auto* tabsLay = new QHBoxLayout(m_tabsRow);
-    tabsLay->setContentsMargins(8, 6, 8, 6);
-    tabsLay->setSpacing(6);
+    // ---- Trilha ----
+    // No lugar de "Manuscritos ▾" + "Gaveta ▾", que competiam pelo comando e
+    // não diziam onde você estava. Some na tela inicial (não há caminho a
+    // mostrar) e reaparece ao entrar numa seção ou abrir um documento.
+    m_crumbsRow = new QWidget(m_frame);
+    m_crumbsRow->setObjectName(QStringLiteral("refCrumbsRow"));
+    m_crumbsRow->setAttribute(Qt::WA_StyledBackground, true);
+    m_crumbsLay = new QHBoxLayout(m_crumbsRow);
+    m_crumbsLay->setContentsMargins(10, 2, 8, 8);
+    m_crumbsLay->setSpacing(4);
 
-    m_msTabBtn = new QToolButton(m_tabsRow);
-    m_msTabBtn->setObjectName(QStringLiteral("refTabBtn"));
-    {
-        QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
-            QSize(14, 14));
-        if (!ic.isNull()) m_msTabBtn->setIcon(ic);
-    }
-    m_msTabBtn->setText(tr("Manuscritos ▾"));
-    m_msTabBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_msTabBtn->setCheckable(true);
-    m_msTabBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_msTabBtn, &QToolButton::clicked, this, &RefMenuPanel::onManuscriptPickerClicked);
-    tabsLay->addWidget(m_msTabBtn);
-
-    m_viewModeBtn = new QToolButton(m_tabsRow);
+    // Modo visual e filtro de território seguem existindo, mas agora à direita
+    // da trilha — aparecem só nas seções em que fazem sentido.
+    m_viewModeBtn = new QToolButton(m_crumbsRow);
     m_viewModeBtn->setObjectName(QStringLiteral("refTabBtnSmall"));
     m_viewModeBtn->setText(QStringLiteral("≡"));
     m_viewModeBtn->setToolTip(tr("Alternar modo visual/lista"));
     m_viewModeBtn->setCursor(Qt::PointingHandCursor);
     connect(m_viewModeBtn, &QToolButton::clicked, this, &RefMenuPanel::onToggleVisualMode);
-    tabsLay->addWidget(m_viewModeBtn);
 
-    m_drawerPickerBtn = new QToolButton(m_tabsRow);
-    m_drawerPickerBtn->setObjectName(QStringLiteral("refTabBtn"));
-    m_drawerPickerBtn->setText(tr("Gaveta ▾"));
-    m_drawerPickerBtn->setCheckable(true);
-    m_drawerPickerBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_drawerPickerBtn, &QToolButton::clicked, this, &RefMenuPanel::onDrawerPickerClicked);
-    tabsLay->addWidget(m_drawerPickerBtn);
-
-    m_territorioFilterBtn = new QToolButton(m_tabsRow);
+    m_territorioFilterBtn = new QToolButton(m_crumbsRow);
     m_territorioFilterBtn->setObjectName(QStringLiteral("refTabBtnSmall"));
     m_territorioFilterBtn->setText(tr("Território: Todos"));
     m_territorioFilterBtn->setCursor(Qt::PointingHandCursor);
@@ -309,12 +304,10 @@ void RefMenuPanel::buildUi()
     m_territorioFilterMenu = new QMenu(m_territorioFilterBtn);
     connect(m_territorioFilterMenu, &QMenu::aboutToShow, this, &RefMenuPanel::rebuildTerritorioFilterMenu);
     m_territorioFilterBtn->setMenu(m_territorioFilterMenu);
-    m_territorioFilterBtn->setVisible(false);
-    tabsLay->addWidget(m_territorioFilterBtn);
 
-    tabsLay->addStretch();
+    m_crumbsRow->setVisible(false);
+    m_frameLay->addWidget(m_crumbsRow);
 
-    m_frameLay->addWidget(m_tabsRow);
 
     // ---- Nav body ----
     m_navScroll = new QScrollArea(m_frame);
@@ -331,11 +324,17 @@ void RefMenuPanel::buildUi()
     m_navInnerLay->setSpacing(6);
     m_navInnerLay->addStretch();
     m_navScroll->setWidget(m_navInner);
-    // stretch=0: a navegação ocupa só a altura do conteúdo dela (lista curta =
-    // painel curto, sem sobra de fundo vazio); listas longas continuam com
-    // scroll próprio, limitadas pelo teto abaixo. O preview absorve o resto.
-    m_navScroll->setMaximumHeight(280);
-    m_frameLay->addWidget(m_navScroll, /*stretch=*/0);
+    // Navegação e preview vivem num divisor arrastável: a divisão entre "lista"
+    // e "texto" é preferência do momento (às vezes você quer ver a árvore
+    // inteira, às vezes quer ler). Sem teto fixo de altura — quem decide é a
+    // alça, e a posição fica guardada.
+    m_navScroll->setMinimumHeight(80);
+    m_bodySplit = new QSplitter(Qt::Vertical, m_frame);
+    m_bodySplit->setObjectName(QStringLiteral("refBodySplit"));
+    m_bodySplit->setChildrenCollapsible(false);
+    m_bodySplit->setHandleWidth(7);
+    m_bodySplit->addWidget(m_navScroll);
+    m_frameLay->addWidget(m_bodySplit, /*stretch=*/1);
 
     // ---- Preview ----
     m_previewWrap = new QWidget(m_frame);
@@ -386,7 +385,10 @@ void RefMenuPanel::buildUi()
 
     m_preview->setVisible(false);
 
-    m_frameLay->addWidget(m_previewWrap, /*stretch=*/1);
+    m_bodySplit->addWidget(m_previewWrap);
+    m_bodySplit->setStretchFactor(0, 0);   // a árvore mantém o tamanho pedido
+    m_bodySplit->setStretchFactor(1, 1);   // o texto absorve o resto
+    m_bodySplit->setSizes({ 260, 460 });   // padrão até o usuário arrastar
 
     // FindBar do preview (Alt+F). Não entra no layout — flutua sobre o
     // m_previewWrap, posicionada em positionPreviewFindBar().
@@ -438,23 +440,23 @@ void RefMenuPanel::applyMainStyleSheet()
     const QString accentBd  = Theme::accentInfoBorderSoft();
     const QString disabled  = Theme::disabledText();
 
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#refMenuPanel { background: transparent; }
         QWidget#refFrame {
             background: %1;
             border: 1px solid %3;
-            border-radius: 10px;
+            border-radius: @radius-panel;
         }
         QWidget#refHeader {
             background: %2;
             border-bottom: 1px solid %4;
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
+            border-top-left-radius: @radius-panel;
+            border-top-right-radius: @radius-panel;
         }
         QLabel#refTitle { color: %7; font-size: 13px; font-weight: 600; }
         QToolButton#refTinyBtn {
             background: transparent; color: %6;
-            border: none; border-radius: 4px;
+            border: none; border-radius: @radius-control;
             min-width: 24px; min-height: 24px;
             padding: 0 4px;
             font-size: 13px;
@@ -475,20 +477,31 @@ void RefMenuPanel::applyMainStyleSheet()
             background: %1;
             color: %7;
             border: 1px solid %4;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 8px;
             font-size: 12px;
         }
         QLineEdit#refSearchInput:focus { border-color: %10; }
-        QWidget#refTabsRow {
+        QWidget#refCrumbsRow {
             background: %2;
             border-bottom: 1px solid %4;
         }
+        QToolButton#refCrumbLink {
+            background: transparent;
+            color: %10;
+            border: 0;
+            border-radius: @radius-item;
+            padding: 2px 5px;
+            font-size: 12px;
+        }
+        QToolButton#refCrumbLink:hover { background: %8; }
+        QLabel#refCrumbSep  { color: %5; font-size: 12px; padding: 0 1px; }
+        QLabel#refCrumbHere { color: %7; font-size: 12px; padding: 2px 3px; }
         QToolButton#refTabBtn, QToolButton#refTabBtnSmall {
             background: transparent;
             color: %5;
             border: 1px solid transparent;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 10px;
             font-size: 12px;
         }
@@ -507,6 +520,19 @@ void RefMenuPanel::applyMainStyleSheet()
         }
         QToolButton#refTabBtn:disabled { color: %11; }
         QScrollArea#refNavScroll { background: transparent; border: none; }
+        /* Alca do divisor: uma linha discreta que acende no hover, pra
+           anunciar que da' pra arrastar sem virar um elemento gritante. */
+        QSplitter#refBodySplit::handle:vertical {
+            background: %4;
+            height: 1px;
+            margin: 3px 10px;
+        }
+        QSplitter#refBodySplit::handle:vertical:hover,
+        QSplitter#refBodySplit::handle:vertical:pressed {
+            background: %10;
+            height: 2px;
+            margin: 2px 8px;
+        }
         QWidget#refNavInner { background: transparent; }
         QWidget#refPreviewWrap {
             background: transparent;
@@ -538,7 +564,7 @@ void RefMenuPanel::applyMainStyleSheet()
         QWidget#refHandleBL:hover, QWidget#refHandleBR:hover {
             background: %12;
         }
-    )")
+    )"))
         .arg(panelBg,   // 1
              appBg,     // 2
              border,    // 3
@@ -583,79 +609,160 @@ void RefMenuPanel::layoutResizeHandles()
 
 void RefMenuPanel::refresh()
 {
-    rebuildTabs();
+    rebuildCrumbs();
     rebuildNavBody();
     rebuildPreview();
 }
 
-void RefMenuPanel::rebuildTabs()
+void RefMenuPanel::rebuildCrumbs()
 {
-    if (!m_model || !m_drawerPickerBtn) return;
+    if (!m_crumbsRow || !m_crumbsLay) return;
 
-    const bool inMs = (m_sourceKind == SourceKind::Manuscript);
-    if (m_msTabBtn) {
-        QSignalBlocker block(m_msTabBtn);
-        m_msTabBtn->setChecked(inMs);
-
-        QString msTitle;
-        for (const auto& m : m_model->manuscripts()) {
-            if (m.id == m_currentManuscriptId) { msTitle = m.title; break; }
-        }
-        if (msTitle.isEmpty()) msTitle = tr("Manuscritos");
-        m_msTabBtn->setText(QString::fromUtf8("%1 ▾").arg(msTitle));
+    // Esvazia a trilha sem destruir os dois botoes persistentes (modo visual e
+    // filtro de territorio), que sao membros e voltam ao layout logo abaixo.
+    while (QLayoutItem* it = m_crumbsLay->takeAt(0)) {
+        QWidget* w = it->widget();
+        if (w && w != m_viewModeBtn && w != m_territorioFilterBtn) w->deleteLater();
+        delete it;
     }
-    // Tab da gaveta atual (ou placeholder ativo).
-    QString label;
-    QIcon ic;
-    bool visualDrawer = false;
-    if (m_sourceKind == SourceKind::Drawer) {
-        const Drawer* d = m_model->findDrawer(m_currentDrawerKey);
-        if (d) {
-            label = d->title;
-            visualDrawer = drawerIsVisual(d);
-            const QString iconId = !d->drawerIcon.isEmpty() ? d->drawerIcon : d->drawerElementIcon;
-            if (!iconId.isEmpty()) {
-                ic = IconUtils::loadToolbarIcon(
-                    QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
-                    QColor(d->color.isEmpty() ? Theme::accentDefault() : d->color),
-                    QColor(d->color.isEmpty() ? Theme::accentDefault() : d->color),
-                    QColor(Theme::textBright()),
-                    QSize(14, 14));
-            }
-        } else {
-            label = tr("Gaveta");
-        }
-    } else if (m_sourceKind == SourceKind::MarkersPlaceholder) {
-        label = tr("Grupos");
-    } else if (m_sourceKind == SourceKind::TimelinesPlaceholder) {
-        label = tr("Timelines");
-    } else if (m_sourceKind == SourceKind::WorldExplorer) {
-        label = tr("Explorador de Mundos");
+
+    const bool hasDoc = !m_selectedKey.isEmpty();
+    const bool searching = !m_searchQuery.isEmpty();
+    const bool inSection = (m_navMode == NavMode::Section);
+
+    // Na tela inicial nao ha caminho a mostrar.
+    if (!inSection && !hasDoc && !searching) {
+        m_crumbsRow->setVisible(false);
+        return;
+    }
+    m_crumbsRow->setVisible(!m_navHidden);
+
+    auto addLink = [this](const QString& text, std::function<void()> onClick) {
+        auto* b = new QToolButton(m_crumbsRow);
+        b->setObjectName(QStringLiteral("refCrumbLink"));
+        b->setText(text);
+        b->setCursor(Qt::PointingHandCursor);
+        connect(b, &QToolButton::clicked, this, [onClick]() { onClick(); });
+        m_crumbsLay->addWidget(b);
+    };
+    auto addSep = [this]() {
+        auto* s = new QLabel(QString::fromUtf8("›"), m_crumbsRow);
+        s->setObjectName(QStringLiteral("refCrumbSep"));
+        m_crumbsLay->addWidget(s);
+    };
+    auto addHere = [this](const QString& text) {
+        auto* l = new QLabel(text, m_crumbsRow);
+        l->setObjectName(QStringLiteral("refCrumbHere"));
+        m_crumbsLay->addWidget(l);
+    };
+
+    addLink(tr("Tudo"), [this]() { goHome(); });
+
+    if (searching) {
+        addSep();
+        addHere(tr("Resultados"));
     } else {
-        label = tr("Gaveta");
+        const QString sec = (m_navMode == NavMode::Home) ? QString() : currentSectionLabel();
+        if (!sec.isEmpty()) {
+            addSep();
+            if (hasDoc) {
+                const SourceKind kind = m_sourceKind;
+                const QString key = m_currentDrawerKey;
+                addLink(sec, [this, kind, key]() { enterSection(kind, key); });
+            } else {
+                addHere(sec);
+            }
+        }
+        if (hasDoc) {
+            KeyInfo info;
+            if (describeKey(m_selectedKey, &info)) {
+                addSep();
+                addHere(info.name);
+            }
+        }
     }
 
-    if (!ic.isNull()) m_drawerPickerBtn->setIcon(ic);
-    else m_drawerPickerBtn->setIcon(QIcon());
-    m_drawerPickerBtn->setText(QString::fromUtf8(" %1  ▾").arg(label));
-    {
-        QSignalBlocker block(m_drawerPickerBtn);
-        m_drawerPickerBtn->setChecked(m_sourceKind != SourceKind::Manuscript);
-    }
+    m_crumbsLay->addStretch();
 
-    // Botão de visualMode só visível em drawer visual.
+    // Modo visual: so numa gaveta com cards de foto.
+    bool visualDrawer = false;
+    if (m_sourceKind == SourceKind::Drawer && m_model) {
+        for (const Drawer& d : m_model->drawers()) {
+            if (d.key == m_currentDrawerKey) { visualDrawer = drawerIsVisual(&d); break; }
+        }
+    }
     if (m_viewModeBtn) {
-        m_viewModeBtn->setVisible(m_sourceKind == SourceKind::Drawer && visualDrawer);
+        m_crumbsLay->addWidget(m_viewModeBtn);
+        m_viewModeBtn->setVisible(inSection && m_sourceKind == SourceKind::Drawer && visualDrawer);
         m_viewModeBtn->setText(m_visualMode ? QStringLiteral("≡") : QStringLiteral("⊞"));
         m_viewModeBtn->setToolTip(m_visualMode ? tr("Modo lista") : tr("Modo visual"));
     }
-
-    // Filtro por território (M7) — só faz sentido numa gaveta, e só se
-    // houver território cadastrado no projeto.
     if (m_territorioFilterBtn) {
-        m_territorioFilterBtn->setVisible(m_sourceKind == SourceKind::Drawer
+        m_crumbsLay->addWidget(m_territorioFilterBtn);
+        m_territorioFilterBtn->setVisible(inSection && m_sourceKind == SourceKind::Drawer
             && m_territorioStore && !m_territorioStore->territorios().isEmpty());
     }
+}
+
+QString RefMenuPanel::currentSectionLabel() const
+{
+    switch (m_sourceKind) {
+    case SourceKind::Manuscript: {
+        if (m_model) {
+            for (const auto& ms : m_model->manuscripts()) {
+                if (ms.id == m_currentManuscriptId && !ms.title.isEmpty()) return ms.title;
+            }
+        }
+        return tr("Manuscrito");
+    }
+    case SourceKind::WorldExplorer:        return tr("Mundos");
+    case SourceKind::TimelinesPlaceholder: return tr("Timelines");
+    case SourceKind::MarkersPlaceholder:   return tr("Grupos");
+    case SourceKind::Drawer: {
+        if (m_currentDrawerKey == QStringLiteral("__groups__")) return tr("Grupos");
+        if (m_model) {
+            for (const Drawer& d : m_model->drawers()) {
+                if (d.key == m_currentDrawerKey && !d.title.isEmpty()) return d.title;
+            }
+        }
+        return tr("Gaveta");
+    }
+    }
+    return QString();
+}
+
+void RefMenuPanel::goHome()
+{
+    m_navMode = NavMode::Home;
+    m_currentGroupId.clear();
+    m_currentFolderId.clear();
+    m_currentConstrutorSystemId.clear();
+    m_currentLugarTerritorioId.clear();
+    changeSelectedKey(QString());
+    if (m_searchInput && !m_searchInput->text().isEmpty()) {
+        QSignalBlocker b(m_searchInput);
+        m_searchInput->clear();
+        m_searchQuery.clear();
+    }
+    rebuildNavBody();
+    rebuildPreview();
+    rebuildCrumbs();
+}
+
+void RefMenuPanel::enterSection(SourceKind kind, const QString& key)
+{
+    m_navMode = NavMode::Section;
+    m_sourceKind = kind;
+    if (kind == SourceKind::Drawer) m_currentDrawerKey = key;
+    else if (kind == SourceKind::Manuscript && !key.isEmpty()) m_currentManuscriptId = key;
+    m_currentGroupId.clear();
+    m_currentFolderId.clear();
+    m_currentConstrutorSystemId.clear();
+    m_currentLugarTerritorioId.clear();
+    changeSelectedKey(QString());
+    rebuildNavBody();
+    rebuildPreview();
+    rebuildCrumbs();
 }
 
 void RefMenuPanel::rebuildTerritorioFilterMenu()
@@ -708,6 +815,13 @@ void RefMenuPanel::rebuildNavBody()
         return;
     }
 
+    // Tela inicial: o que você provavelmente quer, antes de qualquer navegação.
+    if (m_navMode == NavMode::Home) {
+        buildHomeView();
+        m_navInnerLay->addStretch();
+        return;
+    }
+
     if (m_sourceKind == SourceKind::Manuscript) {
         buildManuscriptsView();
     } else if (m_sourceKind == SourceKind::Drawer) {
@@ -755,16 +869,16 @@ const TerritorioStore::Node* RefMenuPanel::findTerritorioNode(
 
 static QString refListStyleSheet()
 {
-    return QStringLiteral(R"(
+    return Theme::qss(QStringLiteral(R"(
         QListWidget {
             background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
+            border: 1px solid %3; border-radius: @radius-control;
             outline: none; padding: 4px;
         }
-        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )").arg(Theme::appBackground(),
+    )")).arg(Theme::appBackground(),
            Theme::textPrimary(),
            Theme::panelBorder(),
            Theme::hoverOverlay(),
@@ -935,16 +1049,16 @@ void RefMenuPanel::buildWorldExplorerView()
         card->setCursor(Qt::PointingHandCursor);
         card->setMinimumHeight(58);
         card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        card->setStyleSheet(QStringLiteral(R"(
+        card->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QToolButton#refVisualCard {
                 background: %1;
                 border: 1px solid %2;
-                border-radius: 8px;
+                border-radius: @radius-control;
                 text-align: left;
                 padding: 0;
             }
             QToolButton#refVisualCard:hover { background: %3; border-color: %4; }
-        )").arg(Theme::appBackground(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::borderStrong()));
+        )")).arg(Theme::appBackground(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::borderStrong()));
 
         auto* inner = new QWidget(card);
         inner->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -976,9 +1090,9 @@ void RefMenuPanel::buildWorldExplorerView()
             badgeLay->setSpacing(4);
             for (const auto& b : badges) {
                 auto* pill = new QLabel(QStringLiteral(" 🔗 %1 ").arg(b), badgeRow);
-                pill->setStyleSheet(QStringLiteral(
-                    "background:%1; color:%2; border-radius:8px; padding:1px 6px; font-size:10px; font-weight:600;")
-                    .arg(Theme::hoverOverlay(), Theme::accentDefault()));
+                pill->setStyleSheet(Theme::qss(QStringLiteral(
+                    "background:%1; color:%2; border-radius: @radius-control; padding:1px 6px; font-size:10px; font-weight:600;")
+                    .arg(Theme::hoverOverlay(), Theme::accentDefault())));
                 badgeLay->addWidget(pill);
             }
             badgeLay->addStretch();
@@ -1120,16 +1234,16 @@ void RefMenuPanel::buildGroupsView()
     grpList->setSelectionMode(QAbstractItemView::SingleSelection);
     grpList->setFrameShape(QFrame::NoFrame);
     grpList->setUniformItemSizes(true);
-    grpList->setStyleSheet(QStringLiteral(R"(
+    grpList->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QListWidget {
             background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
+            border: 1px solid %3; border-radius: @radius-control;
             outline: none; padding: 4px;
         }
-        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover    { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )").arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::accentInfoSoft()));
 
     for (const auto& g : groups) {
@@ -1174,16 +1288,16 @@ void RefMenuPanel::buildGroupsView()
     itemList->setObjectName(QStringLiteral("refListGrpItems"));
     itemList->setSelectionMode(QAbstractItemView::SingleSelection);
     itemList->setFrameShape(QFrame::NoFrame);
-    itemList->setStyleSheet(QStringLiteral(R"(
+    itemList->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QListWidget {
             background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
+            border: 1px solid %3; border-radius: @radius-control;
             outline: none; padding: 4px;
         }
-        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover    { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )").arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::accentInfoSoft()));
 
     int shown = 0;
@@ -1220,6 +1334,536 @@ void RefMenuPanel::buildGroupsView()
     }
 }
 
+namespace {
+
+// Carrega miniatura a partir de data URL base64 (Element::image) ou de um
+// caminho local. Devolve pixmap nulo quando não há imagem — a linha então cai
+// na bolinha discreta, mantendo o texto alinhado com as linhas que têm foto.
+QPixmap refThumbFrom(const QString& src)
+{
+    if (src.isEmpty()) return QPixmap();
+    QPixmap pm;
+    const int comma = src.indexOf(QLatin1Char(','));
+    if (src.startsWith(QLatin1String("data:")) && comma > 0) {
+        const QByteArray raw = QByteArray::fromBase64(src.mid(comma + 1).toLatin1());
+        pm.loadFromData(raw);
+    } else {
+        pm.load(src);
+    }
+    return pm;
+}
+
+QString refPinsBase(const QString& projectRoot)
+{
+    return QStringLiteral("ui/refMenuPanel/%1/").arg(QString::fromLatin1(
+        QCryptographicHash::hash(QDir::cleanPath(projectRoot).toUtf8(),
+                                 QCryptographicHash::Sha1).toHex()));
+}
+
+} // namespace
+
+void RefMenuPanel::loadPinsAndRecents()
+{
+    if (m_projectRoot.isEmpty()) return;
+    QSettings s;
+    const QString base = refPinsBase(m_projectRoot);
+    m_pinnedKeys = s.value(base + QStringLiteral("pinned")).toStringList();
+    m_recentKeys = s.value(base + QStringLiteral("recent")).toStringList();
+}
+
+void RefMenuPanel::savePinsAndRecents() const
+{
+    if (m_projectRoot.isEmpty()) return;
+    QSettings s;
+    const QString base = refPinsBase(m_projectRoot);
+    s.setValue(base + QStringLiteral("pinned"), m_pinnedKeys);
+    s.setValue(base + QStringLiteral("recent"), m_recentKeys);
+}
+
+bool RefMenuPanel::isPinned(const QString& key) const
+{
+    return m_pinnedKeys.contains(key);
+}
+
+void RefMenuPanel::togglePin(const QString& key)
+{
+    if (key.isEmpty()) return;
+    if (m_pinnedKeys.removeAll(key) == 0) m_pinnedKeys.prepend(key);
+    savePinsAndRecents();
+    if (m_navMode == NavMode::Home && m_searchQuery.isEmpty()) rebuildNavBody();
+}
+
+void RefMenuPanel::addRecent(const QString& key)
+{
+    if (key.isEmpty()) return;
+    m_recentKeys.removeAll(key);
+    m_recentKeys.prepend(key);
+    // Oito cobre uma sessão de escrita sem virar uma segunda lista de tudo.
+    while (m_recentKeys.size() > 8) m_recentKeys.removeLast();
+    savePinsAndRecents();
+}
+
+void RefMenuPanel::setCurrentDocKey(const QString& docKey)
+{
+    if (m_currentDocKey == docKey) return;
+    m_currentDocKey = docKey;
+    // Só redesenha se "Nesta cena" estiver à vista.
+    if (isVisible() && m_navMode == NavMode::Home && m_searchQuery.isEmpty()) rebuildNavBody();
+}
+
+QString RefMenuPanel::editorDocKey() const
+{
+    // O painel já tem o EditorHost, então descobre sozinho qual documento está
+    // aberto — não depende do MainWindow avisar a cada troca de cena. Mesma
+    // chave que o ElementsStore usa pra guardar quem está presente.
+    if (!m_host || !m_model) return QString();
+    const auto vm = m_host->viewMode();
+    if (vm.type == EditorHost::SceneDoc) {
+        const Chapter* ch = m_model->findChapter(vm.chapterId);
+        if (!ch || vm.sceneIndex < 0 || vm.sceneIndex >= ch->scenes.size()) return QString();
+        return ElementsStore::elementDocKeyForScene(vm.manuscriptId, vm.chapterId,
+                                                    ch->scenes[vm.sceneIndex].id);
+    }
+    if (vm.type == EditorHost::ChapterDoc) {
+        return ElementsStore::elementDocKeyForChapter(vm.manuscriptId, vm.chapterId);
+    }
+    return QString();
+}
+
+bool RefMenuPanel::describeKey(const QString& key, KeyInfo* out) const
+{
+    if (key.isEmpty() || !out || !m_model) return false;
+    const QStringList p = key.split(QLatin1Char(':'));
+
+    if (key.startsWith(QLatin1String("it:")) && p.size() >= 2) {
+        for (const Drawer& d : m_model->drawers()) {
+            for (const DrawerItem& it : d.items) {
+                if (it.id != p.at(1)) continue;
+                out->name = it.title.isEmpty() ? tr("(sem título)") : it.title;
+                out->sectionLabel = d.title;
+                out->meta = d.title;
+                out->role = roleOrLabelForItem(it);
+                out->imagePath = imageForItem(it);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if (key.startsWith(QLatin1String("ch:")) && p.size() >= 3) {
+        for (const Chapter& c : m_model->chapters()) {
+            if (c.id != p.at(2)) continue;
+            out->name = c.title.isEmpty() ? tr("(sem título)") : c.title;
+            out->sectionLabel = tr("Manuscrito");
+            out->meta = tr("capítulo");
+            return true;
+        }
+        return false;
+    }
+
+    if (key.startsWith(QLatin1String("sc:")) && p.size() >= 4) {
+        for (const Chapter& c : m_model->chapters()) {
+            if (c.id != p.at(2)) continue;
+            const int idx = p.at(3).toInt();
+            if (idx < 0 || idx >= c.scenes.size()) return false;
+            const QString st = c.scenes.at(idx).title;
+            out->name = st.isEmpty() ? tr("Cena %1").arg(idx + 1) : st;
+            out->sectionLabel = tr("Manuscrito");
+            out->meta = c.title.isEmpty() ? tr("capítulo") : c.title;
+            return true;
+        }
+        return false;
+    }
+
+    if (key.startsWith(QLatin1String("ctr:")) && m_construtorStore && p.size() >= 2) {
+        for (const auto& sys : m_construtorStore->systems()) {
+            if (sys.id != p.at(1)) continue;
+            if (p.size() >= 3) {
+                const ConstrutorStore::Node* n = findConstrutorNode(&sys, p.at(2));
+                if (!n) return false;
+                out->name = n->name;
+                out->meta = sys.name;
+            } else {
+                out->name = sys.name;
+                out->meta = tr("sistema");
+            }
+            out->sectionLabel = tr("Mundos");
+            return true;
+        }
+        return false;
+    }
+
+    if (key.startsWith(QLatin1String("lug:")) && m_territorioStore && p.size() >= 2) {
+        for (const auto& ter : m_territorioStore->territorios()) {
+            if (ter.id != p.at(1)) continue;
+            if (p.size() >= 3) {
+                const TerritorioStore::Node* n = findTerritorioNode(&ter, p.at(2));
+                if (!n) return false;
+                out->name = n->name;
+                out->meta = ter.name;
+            } else {
+                out->name = ter.name.isEmpty() ? tr("(sem nome)") : ter.name;
+                out->meta = tr("território");
+            }
+            out->sectionLabel = tr("Mundos");
+            return true;
+        }
+        return false;
+    }
+
+    return false;
+}
+
+QWidget* RefMenuPanel::makeNavRow(const QString& key, const KeyInfo& info, bool withPin,
+                                  int fontPx)
+{
+    auto* row = new QWidget(m_navInner);
+    row->setObjectName(QStringLiteral("refNavRow"));
+    row->setAttribute(Qt::WA_StyledBackground, true);
+    row->setCursor(Qt::PointingHandCursor);
+    auto* lay = new QHBoxLayout(row);
+    lay->setContentsMargins(6, 5, 6, 5);
+    lay->setSpacing(9);
+
+    const QPixmap pm = refThumbFrom(info.imagePath);
+    auto* thumb = new QLabel(row);
+    thumb->setFixedSize(26, 26);
+    if (!pm.isNull()) {
+        thumb->setPixmap(pm.scaled(26, 26, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+        thumb->setStyleSheet(Theme::qss(QStringLiteral("border-radius: @radius-item;")));
+    } else {
+        thumb->setAlignment(Qt::AlignCenter);
+        thumb->setText(QStringLiteral("•"));
+        thumb->setStyleSheet(QStringLiteral("color:%1; font-size:16px;").arg(Theme::textMuted()));
+    }
+    lay->addWidget(thumb);
+
+    auto* textCol = new QVBoxLayout();
+    textCol->setContentsMargins(0, 0, 0, 0);
+    textCol->setSpacing(1);
+    auto* name = new QLabel(info.name, row);
+    name->setStyleSheet(QStringLiteral("color:%1; font-size:%2px;")
+        .arg(Theme::textPrimary()).arg(fontPx));
+    textCol->addWidget(name);
+    // O papel (PROTAGONISTA etc.) fica sob o nome, como nos cards da gaveta.
+    const QString sub = !info.role.isEmpty() ? info.role : info.meta;
+    if (!sub.isEmpty()) {
+        auto* lbl = new QLabel(sub, row);
+        if (info.role.isEmpty()) {
+            lbl->setStyleSheet(QStringLiteral("color:%1; font-size:10px;").arg(Theme::textMuted()));
+        } else {
+            lbl->setStyleSheet(QStringLiteral(
+                "color:%1; font-size:10px; font-weight:700; letter-spacing:.5px;")
+                .arg(Theme::accentInfo()));
+        }
+        textCol->addWidget(lbl);
+    }
+    lay->addLayout(textCol, 1);
+
+    if (withPin) {
+        auto* pin = new QToolButton(row);
+        pin->setObjectName(QStringLiteral("refPinBtn"));
+        const bool on = isPinned(key);
+        pin->setText(on ? QStringLiteral("★") : QStringLiteral("☆"));
+        pin->setToolTip(on ? tr("Desafixar") : tr("Fixar no topo"));
+        pin->setCursor(Qt::PointingHandCursor);
+        pin->setStyleSheet(QStringLiteral(
+            "QToolButton{border:0;background:transparent;color:%1;font-size:13px;padding:2px 4px;}")
+            .arg(on ? Theme::accentWarning() : Theme::textMuted()));
+        connect(pin, &QToolButton::clicked, this, [this, key]() { togglePin(key); });
+        lay->addWidget(pin);
+    }
+
+    row->setStyleSheet(Theme::qss(QStringLiteral(
+        "QWidget#refNavRow { border-radius: @radius-item; }"
+        "QWidget#refNavRow:hover { background: %1; }")).arg(Theme::hoverOverlay()));
+
+    row->setProperty("refRowKey", key);
+    row->installEventFilter(this);
+    return row;
+}
+
+void RefMenuPanel::buildHomeView()
+{
+    if (!m_navInner || !m_navInnerLay) return;
+
+    auto sectionTitle = [this](const QString& text) {
+        auto* l = new QLabel(text, m_navInner);
+        l->setStyleSheet(QStringLiteral(
+            "color:%1; font-size:10px; font-weight:700; letter-spacing:1.2px; padding:10px 6px 2px;")
+            .arg(Theme::textMuted()));
+        m_navInnerLay->addWidget(l);
+    };
+
+    // ---- Nesta cena ----
+    // Leitura pura do ElementsStore, que já mantém quem está presente em cada
+    // documento. Nada é recalculado aqui.
+    const QString sceneKey = m_currentDocKey.isEmpty() ? editorDocKey() : m_currentDocKey;
+    if (m_elements && !sceneKey.isEmpty()) {
+        const QStringList ids = m_elements->docElementIds(sceneKey);
+        QList<Element> present;
+        for (const QString& id : ids) {
+            for (const Element& e : m_elements->elements()) {
+                if (e.id == id) { present.append(e); break; }
+            }
+        }
+        if (!present.isEmpty()) {
+            sectionTitle(tr("NESTA CENA"));
+            for (const Element& e : present) {
+                // A ficha do elemento é um item de gaveta que aponta pra ele
+                // (DrawerItem::elementId). Sem ficha, a linha ainda aparece —
+                // saber quem está na cena já vale — só não abre nada.
+                QString key;
+                if (m_model) {
+                    for (const Drawer& d : m_model->drawers()) {
+                        for (const DrawerItem& it : d.items) {
+                            if (it.elementId == e.id) { key = QStringLiteral("it:%1").arg(it.id); break; }
+                        }
+                        if (!key.isEmpty()) break;
+                    }
+                }
+                KeyInfo info;
+                info.name = e.name;
+                info.role = e.role;
+                info.imagePath = e.image;
+                m_navInnerLay->addWidget(makeNavRow(key, info, !key.isEmpty()));
+            }
+        }
+    }
+
+    // ---- Fixados ----
+    if (!m_pinnedKeys.isEmpty()) {
+        QStringList alive;
+        QList<QWidget*> rows;
+        for (const QString& k : m_pinnedKeys) {
+            KeyInfo info;
+            if (!describeKey(k, &info)) continue;   // item apagado: some sem alarde
+            alive << k;
+            rows << makeNavRow(k, info, true);
+        }
+        if (alive.size() != m_pinnedKeys.size()) {
+            m_pinnedKeys = alive;
+            savePinsAndRecents();
+        }
+        if (!rows.isEmpty()) {
+            sectionTitle(tr("FIXADOS"));
+            for (QWidget* w : rows) m_navInnerLay->addWidget(w);
+        }
+    }
+
+    // ---- Recentes ----
+    if (!m_recentKeys.isEmpty()) {
+        QStringList alive;
+        QList<QWidget*> rows;
+        for (const QString& k : m_recentKeys) {
+            KeyInfo info;
+            if (!describeKey(k, &info)) continue;
+            alive << k;
+            if (m_pinnedKeys.contains(k)) continue;     // já apareceu em Fixados
+            if (rows.size() < 4) rows << makeNavRow(k, info, true);
+        }
+        if (alive.size() != m_recentKeys.size()) {
+            m_recentKeys = alive;
+            savePinsAndRecents();
+        }
+        if (!rows.isEmpty()) {
+            sectionTitle(tr("RECENTES"));
+            for (QWidget* w : rows) m_navInnerLay->addWidget(w);
+        }
+    }
+
+    // ---- Percorrer ----
+    // As fontes viram lista visível, com contagem — antes estavam atrás de dois
+    // menus suspensos que não diziam o que havia dentro. Clicar abre a fonte
+    // ali mesmo, para baixo, em vez de trocar a tela inteira: o resto da
+    // navegação (Nesta cena, Fixados, Recentes) continua à vista.
+    sectionTitle(tr("PERCORRER"));
+
+    // Linha de fonte/pasta: mesma estética das outras, mais uma seta que gira.
+    // `depth` recua a linha pra mostrar o aninhamento.
+    // thumbSrc: capa do manuscrito (data URL) ou imagem da gaveta.
+    // iconId: icone do catalogo de gavetas (:/icons/elements/<id>.svg).
+    auto addBranch = [this](const QString& label, const QString& meta,
+                            const QString& expandKey, int depth,
+                            const QString& thumbSrc = QString(),
+                            const QString& iconId = QString(),
+                            const QString& docKey = QString()) {
+        const bool open = m_expanded.contains(expandKey);
+        auto* row = new QWidget(m_navInner);
+        row->setObjectName(QStringLiteral("refNavRow"));
+        row->setAttribute(Qt::WA_StyledBackground, true);
+        row->setCursor(Qt::PointingHandCursor);
+        auto* lay = new QHBoxLayout(row);
+        lay->setContentsMargins(6 + depth * 14, 7, 8, 7);
+        lay->setSpacing(8);
+
+        // Com docKey, a linha tem duas acoes: a seta abre/fecha os filhos e o
+        // resto abre o documento inteiro. Sem isso, um capitulo com cenas so
+        // poderia ser lido cena a cena — nunca do comeco ao fim.
+        if (!docKey.isEmpty()) {
+            auto* chev = new QToolButton(row);
+            chev->setObjectName(QStringLiteral("refChevBtn"));
+            chev->setText(open ? QString::fromUtf8("⌄") : QString::fromUtf8("›"));
+            chev->setCursor(Qt::PointingHandCursor);
+            chev->setToolTip(open ? tr("Recolher cenas") : tr("Mostrar cenas"));
+            chev->setStyleSheet(QStringLiteral(
+                "QToolButton{border:0;background:transparent;color:%1;font-size:13px;"
+                "min-width:14px;padding:0 1px;}").arg(Theme::textMuted()));
+            connect(chev, &QToolButton::clicked, this, [this, expandKey]() {
+                if (m_expanded.contains(expandKey)) m_expanded.remove(expandKey);
+                else m_expanded.insert(expandKey);
+                rebuildNavBody();
+            });
+            lay->addWidget(chev);
+        } else {
+            auto* chev = new QLabel(open ? QString::fromUtf8("⌄") : QString::fromUtf8("›"), row);
+            chev->setFixedWidth(12);
+            chev->setAlignment(Qt::AlignCenter);
+            chev->setStyleSheet(QStringLiteral("color:%1; font-size:13px;").arg(Theme::textMuted()));
+            lay->addWidget(chev);
+        }
+
+        // Miniatura da capa (manuscrito) ou icone (gaveta), quando houver —
+        // e o que separa a linha-mae das folhas de olho, junto com o negrito.
+        const QPixmap tp = refThumbFrom(thumbSrc);
+        if (!tp.isNull()) {
+            auto* th = new QLabel(row);
+            th->setFixedSize(20, 26);
+            th->setPixmap(tp.scaled(20, 26, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+            th->setStyleSheet(Theme::qss(QStringLiteral("border-radius: @radius-item;")));
+            lay->addWidget(th);
+        } else if (!iconId.isEmpty()) {
+            QIcon ic = IconUtils::loadToolbarIcon(
+                QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
+                QColor(Theme::textMuted()), QColor(Theme::textBright()),
+                QColor(Theme::textBright()), QSize(15, 15));
+            if (!ic.isNull()) {
+                auto* th = new QLabel(row);
+                th->setFixedSize(18, 18);
+                th->setPixmap(ic.pixmap(15, 15));
+                th->setAlignment(Qt::AlignCenter);
+                lay->addWidget(th);
+            }
+        }
+
+        auto* name = new QLabel(label, row);
+        name->setStyleSheet(QStringLiteral("color:%1; font-size:13px; font-weight:600;")
+            .arg(open ? Theme::textBright() : Theme::textPrimary()));
+        lay->addWidget(name, 1);
+
+        if (!meta.isEmpty()) {
+            auto* cnt = new QLabel(meta, row);
+            cnt->setStyleSheet(QStringLiteral("color:%1; font-size:11px;").arg(Theme::textMuted()));
+            lay->addWidget(cnt);
+        }
+
+        row->setStyleSheet(Theme::qss(QStringLiteral(
+            "QWidget#refNavRow { border-radius: @radius-item; }"
+            "QWidget#refNavRow:hover { background: %1; }")).arg(Theme::hoverOverlay()));
+        if (docKey.isEmpty()) row->setProperty("refExpandKey", expandKey);
+        else                  row->setProperty("refRowKey", docKey);
+        row->installEventFilter(this);
+        m_navInnerLay->addWidget(row);
+        return open;
+    };
+
+    // Folha da árvore: um documento de verdade, que abre no preview.
+    auto addLeaf = [this](const QString& key, const KeyInfo& info, int depth) {
+        QWidget* w = makeNavRow(key, info, true, 12);   // um degrau abaixo da mae
+        if (auto* lay = qobject_cast<QHBoxLayout*>(w->layout())) {
+            const QMargins m = lay->contentsMargins();
+            lay->setContentsMargins(m.left() + depth * 14, m.top(), m.right(), m.bottom());
+        }
+        m_navInnerLay->addWidget(w);
+    };
+
+    if (m_model) {
+        for (const auto& ms : m_model->manuscripts()) {
+            QList<Chapter> chs;
+            for (const Chapter& c : m_model->chapters())
+                if (c.manuscriptId == ms.id) chs.append(c);
+            std::sort(chs.begin(), chs.end(),
+                      [](const Chapter& a, const Chapter& b) { return a.order < b.order; });
+
+            const bool open = addBranch(ms.title.isEmpty() ? tr("Manuscrito") : ms.title,
+                                        tr("%n capítulo(s)", nullptr, int(chs.size())),
+                                        QStringLiteral("ms:%1").arg(ms.id), 0,
+                                        ms.coverDataUrl);
+            if (!open) continue;
+
+            for (const Chapter& c : chs) {
+                const QString chKey = QStringLiteral("ch:%1:%2").arg(ms.id, c.id);
+                const QString chName = c.title.isEmpty() ? tr("(sem título)") : c.title;
+
+                // Capítulo com mais de uma cena vira galho; com uma só, é folha.
+                if (c.scenes.size() > 1) {
+                    // Passa a chave do capitulo: da' pra ler o capitulo inteiro
+                    // clicando no nome, e abrir as cenas pela seta.
+                    const bool chOpen = addBranch(chName,
+                                                  tr("%n cena(s)", nullptr, int(c.scenes.size())),
+                                                  QStringLiteral("chx:%1").arg(c.id), 1,
+                                                  QString(), QString(), chKey);
+                    if (chOpen) {
+                        for (int i = 0; i < c.scenes.size(); ++i) {
+                            const QString st = c.scenes.at(i).title;
+                            KeyInfo si;
+                            si.name = st.isEmpty() ? tr("Cena %1").arg(i + 1) : st;
+                            addLeaf(QStringLiteral("sc:%1:%2:%3").arg(ms.id, c.id).arg(i), si, 2);
+                        }
+                    }
+                } else {
+                    KeyInfo ci;
+                    ci.name = chName;
+                    addLeaf(chKey, ci, 1);
+                }
+            }
+        }
+
+        for (const Drawer& d : m_model->drawers()) {
+            const QString iconId = !d.drawerIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon;
+            const bool open = addBranch(d.title.isEmpty() ? tr("Gaveta") : d.title,
+                                        tr("%n item(ns)", nullptr, int(d.items.size())),
+                                        QStringLiteral("dr:%1").arg(d.key), 0,
+                                        QString(), iconId);
+            if (!open) continue;
+            for (const DrawerItem& it : d.items) {
+                KeyInfo info;
+                info.name = it.title.isEmpty() ? tr("(sem título)") : it.title;
+                info.role = roleOrLabelForItem(it);
+                info.imagePath = imageForItem(it);
+                addLeaf(QStringLiteral("it:%1").arg(it.id), info, 1);
+            }
+        }
+    }
+
+    // Mundos: territórios e sistemas juntos, como no Explorador.
+    {
+        int worlds = 0;
+        if (m_territorioStore) worlds += int(m_territorioStore->territorios().size());
+        if (m_construtorStore) worlds += int(m_construtorStore->systems().size());
+        const bool open = addBranch(tr("Mundos"), tr("%n item(ns)", nullptr, worlds),
+                                    QStringLiteral("world"), 0);
+        if (open) {
+            if (m_territorioStore) {
+                for (const auto& ter : m_territorioStore->territorios()) {
+                    KeyInfo info;
+                    info.name = ter.name.isEmpty() ? tr("(sem nome)") : ter.name;
+                    info.meta = tr("território");
+                    addLeaf(QStringLiteral("lug:%1").arg(ter.id), info, 1);
+                }
+            }
+            if (m_construtorStore) {
+                for (const auto& sys : m_construtorStore->systems()) {
+                    KeyInfo info;
+                    info.name = sys.name;
+                    info.meta = tr("sistema");
+                    addLeaf(QStringLiteral("ctr:%1").arg(sys.id), info, 1);
+                }
+            }
+        }
+    }
+}
+
 void RefMenuPanel::buildManuscriptsView()
 {
     if (!m_model || !m_navInner || !m_navInnerLay) return;
@@ -1235,16 +1879,16 @@ void RefMenuPanel::buildManuscriptsView()
     chList->setSelectionMode(QAbstractItemView::SingleSelection);
     chList->setFrameShape(QFrame::NoFrame);
     chList->setIconSize(QSize(14, 14));
-    chList->setStyleSheet(QStringLiteral(R"(
+    chList->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QListWidget {
             background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
+            border: 1px solid %3; border-radius: @radius-control;
             outline: none; padding: 4px;
         }
-        QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+        QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )").arg(Theme::appBackground(),
+    )")).arg(Theme::appBackground(),
            Theme::textPrimary(),
            Theme::panelBorder(),
            Theme::hoverOverlay(),
@@ -1385,14 +2029,14 @@ void RefMenuPanel::buildDrawerView()
                 chip->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
             }
             chip->setCursor(Qt::PointingHandCursor);
-            chip->setStyleSheet(QStringLiteral(R"(
+            chip->setStyleSheet(Theme::qss(QStringLiteral(R"(
                 QToolButton {
                     background: %1; color: %2;
-                    border: 1px solid %3; border-radius: 14px;
+                    border: 1px solid %3; border-radius: @radius-control;
                     padding: 4px 10px; font-size: 11px;
                 }
                 QToolButton:hover { background: %4; color: %5; }
-            )").arg(Theme::appBackground(),
+            )")).arg(Theme::appBackground(),
                    Theme::textPrimary(),
                    Theme::panelBorder(),
                    Theme::hoverOverlay(),
@@ -1448,17 +2092,17 @@ void RefMenuPanel::buildDrawerView()
             card->setCursor(Qt::PointingHandCursor);
             card->setMinimumHeight(72);
             card->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            card->setStyleSheet(QStringLiteral(R"(
+            card->setStyleSheet(Theme::qss(QStringLiteral(R"(
                 QToolButton#refVisualCard {
                     background: %2;
                     border: 1px solid %3;
-                    border-radius: 8px;
+                    border-radius: @radius-control;
                     text-align: left;
                     padding: 0;
                 }
                 QToolButton#refVisualCard:hover { background: %4; border-color: %5; }
                 QToolButton#refVisualCard:checked { border-color: %1; background: %6; }
-            )").arg(accent,
+            )")).arg(accent,
                    Theme::appBackground(),
                    Theme::panelBorder(),
                    Theme::hoverOverlay(),
@@ -1474,7 +2118,7 @@ void RefMenuPanel::buildDrawerView()
 
             auto* photo = new QLabel(inner);
             photo->setFixedSize(56, 56);
-            photo->setStyleSheet(QStringLiteral("background:%1; border-radius:6px;").arg(Theme::inputBackground()));
+            photo->setStyleSheet(Theme::qss(QStringLiteral("background:%1; border-radius: @radius-control;")).arg(Theme::inputBackground()));
             photo->setAlignment(Qt::AlignCenter);
             const QString img = imageForItem(it);
             QPixmap pm;
@@ -1496,7 +2140,7 @@ void RefMenuPanel::buildDrawerView()
                 photo->setScaledContents(false);
             } else {
                 photo->setText(QStringLiteral("?"));
-                photo->setStyleSheet(QStringLiteral("background:%1; border-radius:6px; color:%2; font-size:22px; font-weight:700;")
+                photo->setStyleSheet(Theme::qss(QStringLiteral("background:%1; border-radius: @radius-control; color:%2; font-size:22px; font-weight:700;"))
                                          .arg(Theme::inputBackground(), Theme::disabledText()));
             }
             inLay->addWidget(photo);
@@ -1542,16 +2186,16 @@ void RefMenuPanel::buildDrawerView()
         list->setSelectionMode(QAbstractItemView::SingleSelection);
         list->setFrameShape(QFrame::NoFrame);
         list->setIconSize(QSize(14, 14));
-        list->setStyleSheet(QStringLiteral(R"(
+        list->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QListWidget {
                 background: %1; color: %2;
-                border: 1px solid %3; border-radius: 6px;
+                border: 1px solid %3; border-radius: @radius-control;
                 outline: none; padding: 4px;
             }
-            QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+            QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
             QListWidget::item:hover { background: %4; color: %5; }
             QListWidget::item:selected { background: %6; color: %5; }
-        )").arg(Theme::appBackground(),
+        )")).arg(Theme::appBackground(),
                Theme::textPrimary(),
                Theme::panelBorder(),
                Theme::hoverOverlay(),
@@ -1605,16 +2249,16 @@ void RefMenuPanel::buildSearchAllView()
         auto* lw = new QListWidget(m_navInner);
         lw->setFrameShape(QFrame::NoFrame);
         lw->setIconSize(QSize(14, 14));
-        lw->setStyleSheet(QStringLiteral(R"(
+        lw->setStyleSheet(Theme::qss(QStringLiteral(R"(
             QListWidget {
                 background: %1; color: %2;
-                border: 1px solid %3; border-radius: 6px;
+                border: 1px solid %3; border-radius: @radius-control;
                 outline: none; padding: 4px;
             }
-            QListWidget::item { padding: 6px 8px; border-radius: 4px; }
+            QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
             QListWidget::item:hover { background: %4; color: %5; }
             QListWidget::item:selected { background: %6; color: %5; }
-        )").arg(Theme::appBackground(),
+        )")).arg(Theme::appBackground(),
                Theme::textPrimary(),
                Theme::panelBorder(),
                Theme::hoverOverlay(),
@@ -1651,7 +2295,7 @@ void RefMenuPanel::buildSearchAllView()
             // sair do modo de busca pra revelar o manuscrito escolhido
             m_searchQuery.clear();
             if (m_searchInput) m_searchInput->clear();
-            rebuildTabs();
+            rebuildCrumbs();
             rebuildNavBody();
             rebuildPreview();
         });
@@ -1807,7 +2451,7 @@ void RefMenuPanel::buildSearchAllView()
             m_searchQuery.clear();
             if (m_searchInput) m_searchInput->clear();
             setSelected(key); // seta m_selectedKey + preview, antes do rebuild abaixo
-            rebuildTabs();
+            rebuildCrumbs();
             rebuildNavBody(); // já entra com o nó certo destacado na lista
         });
         m_navInnerLay->addWidget(lw);
@@ -1856,7 +2500,7 @@ void RefMenuPanel::buildSearchAllView()
             m_searchQuery.clear();
             if (m_searchInput) m_searchInput->clear();
             setSelected(key); // seta m_selectedKey + preview, antes do rebuild abaixo
-            rebuildTabs();
+            rebuildCrumbs();
             rebuildNavBody(); // já entra com o nó certo destacado na lista
         });
         m_navInnerLay->addWidget(lw);
@@ -1874,13 +2518,13 @@ void RefMenuPanel::buildSearchAllView()
 void RefMenuPanel::buildPlaceholderView(const QString& title, const QString& subtitle)
 {
     auto* card = new QFrame(m_navInner);
-    card->setStyleSheet(QStringLiteral(R"(
+    card->setStyleSheet(Theme::qss(QStringLiteral(R"(
         QFrame {
             background: %1;
             border: 1px dashed %2;
-            border-radius: 8px;
+            border-radius: @radius-panel;
         }
-    )").arg(Theme::appBackground(), Theme::panelBorder()));
+    )")).arg(Theme::appBackground(), Theme::panelBorder()));
     auto* lay = new QVBoxLayout(card);
     lay->setContentsMargins(16, 16, 16, 16);
     lay->setSpacing(6);
@@ -2308,101 +2952,7 @@ QString RefMenuPanel::resolveImageSrc(const QString& src) const
 // Drawer picker menu
 // =========================================================================
 
-void RefMenuPanel::onDrawerPickerClicked()
-{
-    if (!m_model || !m_drawerPickerBtn) return;
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            padding: 4px;
-        }
-        QMenu::item { padding: 6px 24px 6px 28px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(),
-           Theme::textPrimary(),
-           Theme::panelBorder(),
-           Theme::accentInfoSoft(),
-           Theme::textBright()));
 
-    auto addPlaceholder = [&](const QString& svgId, const QString& label, SourceKind kind) {
-        QAction* a = menu.addAction(label);
-        if (!svgId.isEmpty()) {
-            QIcon ic = IconUtils::loadToolbarIcon(
-                QStringLiteral(":/icons/elements/%1.svg").arg(svgId),
-                QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
-                QSize(14, 14));
-            if (!ic.isNull()) a->setIcon(ic);
-        }
-        connect(a, &QAction::triggered, this, [this, kind]() { enterPlaceholderMode(kind); });
-    };
-    addPlaceholder(QStringLiteral("star"),  tr("Grupos"),             SourceKind::MarkersPlaceholder);
-    if (m_construtorStore || m_territorioStore)
-        addPlaceholder(QStringLiteral("map"), tr("Explorador de Mundos"), SourceKind::WorldExplorer);
-    menu.addSeparator();
-
-    for (const auto& d : m_model->drawers()) {
-        QAction* a = menu.addAction(d.title.isEmpty() ? tr("Gaveta") : d.title);
-        const QString iconId = !d.drawerIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon;
-        if (!iconId.isEmpty()) {
-            QIcon ic = IconUtils::loadToolbarIcon(
-                QStringLiteral(":/icons/elements/%1.svg").arg(iconId),
-                QColor(d.color.isEmpty() ? Theme::accentDefault() : d.color),
-                QColor(d.color.isEmpty() ? Theme::accentDefault() : d.color),
-                QColor(Theme::textBright()),
-                QSize(14, 14));
-            if (!ic.isNull()) a->setIcon(ic);
-        }
-        const QString key = d.key;
-        connect(a, &QAction::triggered, this, [this, key]() { enterDrawerMode(key); });
-    }
-
-    QPoint at = m_drawerPickerBtn->mapToGlobal(QPoint(0, m_drawerPickerBtn->height()));
-    menu.exec(at);
-    m_drawerPickerBtn->setChecked(m_sourceKind != SourceKind::Manuscript);
-}
-
-void RefMenuPanel::onManuscriptPickerClicked()
-{
-    if (!m_model || !m_msTabBtn) return;
-    QMenu menu(this);
-    menu.setStyleSheet(QStringLiteral(R"(
-        QMenu {
-            background: %1; color: %2;
-            border: 1px solid %3; border-radius: 6px;
-            padding: 4px;
-        }
-        QMenu::item { padding: 6px 24px 6px 28px; border-radius: 4px; }
-        QMenu::item:selected { background: %4; color: %5; }
-        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
-    )").arg(Theme::panelBackground(),
-           Theme::textPrimary(),
-           Theme::panelBorder(),
-           Theme::accentInfoSoft(),
-           Theme::textBright()));
-
-    QIcon icMs = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/manuscript.svg"),
-        QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()),
-        QSize(14, 14));
-
-    for (const auto& m : m_model->manuscripts()) {
-        const QString title = m.title.isEmpty() ? tr("Manuscrito") : m.title;
-        QAction* a = menu.addAction(title);
-        if (!icMs.isNull()) a->setIcon(icMs);
-        const QString id = m.id;
-        connect(a, &QAction::triggered, this, [this, id]() {
-            if (id == m_currentManuscriptId && m_sourceKind == SourceKind::Manuscript) return;
-            changeSelectedKey(QString());
-            enterManuscriptMode(id);
-        });
-    }
-
-    QPoint at = m_msTabBtn->mapToGlobal(QPoint(0, m_msTabBtn->height()));
-    menu.exec(at);
-    m_msTabBtn->setChecked(m_sourceKind == SourceKind::Manuscript);
-}
 
 // =========================================================================
 // Estado: modos
@@ -2410,19 +2960,26 @@ void RefMenuPanel::onManuscriptPickerClicked()
 
 void RefMenuPanel::enterManuscriptMode(const QString& msId)
 {
+    // Entrar por fora (mencao, Pensario, atalho) tambem cai na arvore: abre o
+    // galho certo em vez de trocar pra outra tela.
+    m_navMode = NavMode::Home;
     m_sourceKind = SourceKind::Manuscript;
     if (!msId.isEmpty()) m_currentManuscriptId = msId;
     if (m_currentManuscriptId.isEmpty() && m_model && !m_model->manuscripts().isEmpty()) {
         m_currentManuscriptId = m_model->manuscripts().first().id;
     }
+    if (!m_currentManuscriptId.isEmpty())
+        m_expanded.insert(QStringLiteral("ms:%1").arg(m_currentManuscriptId));
     m_currentFolderId.clear();
     refresh();
 }
 
 void RefMenuPanel::enterDrawerMode(const QString& drawerKey)
 {
+    m_navMode = NavMode::Home;
     m_sourceKind = SourceKind::Drawer;
     m_currentDrawerKey = drawerKey;
+    if (!drawerKey.isEmpty()) m_expanded.insert(QStringLiteral("dr:%1").arg(drawerKey));
     m_currentFolderId.clear();
     changeSelectedKey(QString());
     refresh();
@@ -2430,6 +2987,8 @@ void RefMenuPanel::enterDrawerMode(const QString& drawerKey)
 
 void RefMenuPanel::enterPlaceholderMode(SourceKind kind)
 {
+    m_navMode = NavMode::Home;
+    if (kind == SourceKind::WorldExplorer) m_expanded.insert(QStringLiteral("world"));
     m_sourceKind = kind;
     m_currentConstrutorSystemId.clear();
     m_currentLugarTerritorioId.clear();
@@ -2697,7 +3256,7 @@ void RefMenuPanel::applyNavVisibility()
         m_toggleNavBtn->setToolTip(m_navHidden ? tr("Mostrar explorador") : tr("Ocultar explorador"));
     }
     // Esconde tabs + nav. O preview ocupa todo o frame.
-    if (m_tabsRow) m_tabsRow->setVisible(!m_navHidden);
+    if (m_crumbsRow) rebuildCrumbs();   // a trilha decide sozinha se aparece
     if (m_navScroll) m_navScroll->setVisible(!m_navHidden);
     if (!m_navHidden) rebuildNavBody();
 }
@@ -2791,7 +3350,7 @@ void RefMenuPanel::onCycleFontSize()
 void RefMenuPanel::onToggleVisualMode()
 {
     m_visualMode = !m_visualMode;
-    rebuildTabs();
+    rebuildCrumbs();
     rebuildNavBody();
     QSettings().setValue(QString::fromLatin1(kKeyVisualMode), m_visualMode);
 }
@@ -2869,6 +3428,40 @@ void RefMenuPanel::showEvent(QShowEvent* event)
 // Event filter: handles de resize (8 widgets) + drag handle ⠿.
 bool RefMenuPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    // Linhas da tela inicial: abrir documento, ou entrar numa fonte.
+    // Ficam marcadas por propriedade em vez de widget dedicado, pra que uma
+    // linha nova em qualquer seção funcione sem fiação extra.
+    if (event->type() == QEvent::MouseButtonRelease) {
+        if (auto* w = qobject_cast<QWidget*>(watched)) {
+            const QVariant rowKey = w->property("refRowKey");
+            if (rowKey.isValid() && !rowKey.toString().isEmpty()) {
+                const QString key = rowKey.toString();
+                // NAO troca de modo: abrir um documento mantem a arvore na
+                // tela, com os galhos como estavam. Trocar pra Section aqui era
+                // o que fazia a navegacao cair na view antiga, de caixa bordada.
+                setSelected(key);
+                addRecent(key);
+                rebuildCrumbs();
+                return true;
+            }
+            // Galho da árvore: abre/fecha ali mesmo, sem trocar de tela.
+            const QVariant expandVar = w->property("refExpandKey");
+            if (expandVar.isValid() && !expandVar.toString().isEmpty()) {
+                const QString ek = expandVar.toString();
+                if (m_expanded.contains(ek)) m_expanded.remove(ek);
+                else m_expanded.insert(ek);
+                rebuildNavBody();
+                return true;
+            }
+            const QVariant kindVar = w->property("refSectionKind");
+            if (kindVar.isValid()) {
+                enterSection(static_cast<SourceKind>(kindVar.toInt()),
+                             w->property("refSectionKey").toString());
+                return true;
+            }
+        }
+    }
+
     // Mapa watched -> ResizeEdge.
     auto edgeOf = [this](QObject* o) -> ResizeEdge {
         if (o == m_hL)  return ResizeEdge::Left;
@@ -3012,6 +3605,10 @@ bool RefMenuPanel::eventFilter(QObject* watched, QEvent* event)
 void RefMenuPanel::loadGeometryFromSettings()
 {
     QSettings s;
+    if (m_bodySplit) {
+        const QByteArray st = s.value(QString::fromLatin1(kKeySplit)).toByteArray();
+        if (!st.isEmpty()) m_bodySplit->restoreState(st);
+    }
     QVariant geomVar = s.value(QString::fromLatin1(kKeyGeom));
     if (geomVar.isValid()) {
         const QByteArray ba = geomVar.toByteArray();
@@ -3035,6 +3632,8 @@ void RefMenuPanel::saveGeometryToSettings()
 {
     QSettings s;
     s.setValue(QString::fromLatin1(kKeyGeom), saveGeometry());
+    // A divisao entre arvore e texto e' preferencia: sobrevive ao fechar.
+    if (m_bodySplit) s.setValue(QString::fromLatin1(kKeySplit), m_bodySplit->saveState());
 }
 
 void RefMenuPanel::scheduleGeometrySave()
