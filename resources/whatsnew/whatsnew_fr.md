@@ -1,39 +1,22 @@
-**HOTFIX - 0.17.1**
+**Qenna Writer Update: 0.17.2**
 
-Quelques ajustements rapides pour polir les angles de la version 0.17.
-Pas de drame. Vous savez comment ça marche.
+Quelques vieux jouets ont été rénovés, plus quelques corrections. Venez voir :
 
-**• Textes invisibles**
-Certains textes ne s'affichaient pas correctement à cause d'un problème de couleurs dans quelques thèmes.
-Parmi eux, les options de type de projet (livre ou scénario) lors de la création d'un nouveau projet, et le nom du chapitre ouvert, en haut de l'éditeur.
-Corrigé.
+## Quoi de neuf ?
 
-**• Plantage du TTS**
-La fonction Text to Speech fermait l'application si vous cliquiez sur arrêter juste au début de la lecture.
-Corrigé.
+Découvrez les nouveautés !
 
-Corrections faites, tout est revenu à la normale.
+**• Refonte du Menu de Référence**
+Le Menu de Référence a reçu une refonte visuelle complète. Plus facile à parcourir, plus intuitif et plus beau. Vous allez adorer.
+Il liste maintenant les documents ouverts récemment, pour ne plus avoir à les chercher à chaque fois, et vous pouvez aussi mettre des documents en favoris, pour un accès encore plus rapide.
 
-## Nouveautés
+**• Custom Radius**
+Désormais terminé, le Radius fonctionne sur n'importe quel panneau de l'application. Applicable via les themes. Panneaux arrondis, carrés ? C'est vous qui décidez.
 
-Pour compenser, cette version apporte aussi une fournée de nouveaux thèmes — et des bons : 60 nouveaux thèmes au total, ce qui porte Qenna à 283.
-Vraiment réussis. Sérieusement, cette fournée contient les meilleurs thèmes jamais faits pour Qenna, sans exagérer.
+## Fixes
 
-**• Thèmes à la une**
-Sérieusement, essayez-les. Ceux-ci sont incroyables :
-• Tokyo Noir
-• Everforest Grove
-• One Dark Skyline
-• Nord Summit
-• Lead Bridge
+**• Où sont les images des Themes ?**
+Corrigé : les nouveaux themes n'affichaient pas leurs images.
 
-Tous ces thèmes se trouvent dans la section À motifs du panneau des thèmes.
-
----
-
-Anyway,
-Le QA aurait dû repérer ces problèmes avant la release.
-Et le QA, c'est moi, et je ne les ai pas repérés. Voilà.
-
-Tout le meilleur, mais seulement de temps en temps pour ne pas vous gâter,
+Portez-vous bien,
 — P.H. Lobato, Gardien des Terres de Qenna

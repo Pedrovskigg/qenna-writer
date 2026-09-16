@@ -1,39 +1,22 @@
-**HOTFIX - 0.17.1**
+**Qenna Writer Update: 0.17.2**
 
-Qualche ritocco veloce per smussare gli spigoli della versione 0.17.
-Niente drammi. Sapete come funziona.
+Alcuni vecchi giocattoli sono stati rinnovati, più qualche correzione. Venite a vedere:
 
-**• Testi invisibili**
-Alcuni testi non si vedevano bene a causa di un problema con i colori in alcuni temi.
-Tra questi, le opzioni del tipo di progetto (libro o sceneggiatura) nella creazione di un nuovo progetto e il nome del capitolo aperto, in cima all'editor.
-Corretto.
+## Cosa c'è di nuovo?
 
-**• Crash del TTS**
-La funzione Text to Speech chiudeva l'app se cliccavi su stop appena iniziava la lettura.
-Corretto.
+Guardate le novità!
 
-Correzioni fatte, tutto torna alla normalità.
+**• Rework del Menu di Riferimento**
+Il Menu di Riferimento ha ricevuto un rework visivo completo. Più facile da navigare, più intuitivo e più bello. Lo adorerete.
+Ora elenca i documenti aperti di recente, così non dovete cercarli ogni volta, e potete anche aggiungere documenti ai preferiti, rendendo l'accesso ancora più rapido.
 
-## Novità
+**• Custom Radius**
+Ora completato, il Radius funziona su qualsiasi pannello dell'app. Applicabile tramite i themes. Pannelli arrotondati, squadrati? Decidete voi.
 
-Per farmi perdonare, questa versione porta anche un nuovo gruppo di temi — e di quelli buoni: 60 temi nuovi in tutto, che portano Qenna a 283 in totale.
-Davvero belli. Sul serio, questo gruppo ha i migliori temi mai fatti per Qenna, senza esagerare.
+## Fixes
 
-**• Temi in evidenza**
-Sul serio, provateli. Questi sono incredibili:
-• Tokyo Noir
-• Everforest Grove
-• One Dark Skyline
-• Nord Summit
-• Lead Bridge
+**• Dove sono le immagini dei Themes?**
+Corretto: i themes nuovi non mostravano le immagini.
 
-Tutti questi temi si trovano nella sezione Con motivi del pannello dei temi.
-
----
-
-Anyway,
-Il QA avrebbe dovuto trovare questi problemi prima della release.
-E il QA sono io, e non li ho trovati. Tutto qui.
-
-Tutto il meglio, ma solo ogni tanto, così non vi abituate male,
-— P.H. Lobato, Custode delle Terre di Qenna
+Un caro saluto,
+— P.H. Lobato, Guardiano delle Terre di Qenna

@@ -1,39 +1,22 @@
-**HOTFIX - 0.17.1**
+**Qenna Writer Update: 0.17.2**
 
-Algunos ajustes rápidos para pulir detalles de la versión 0.17.
-Sin drama. Ya saben cómo funciona.
+Algunos juguetes viejos pasaron por una reforma y unas cuantas correcciones más, vengan a ver:
 
-**• Textos invisibles**
-Algunos textos no se veían bien debido a un problema con los colores en algunos themes.
-Entre ellos, las opciones de tipo de proyecto (libro o guion) al crear un proyecto nuevo y el nombre del capítulo abierto, que aparece arriba del editor.
-Corregido.
+## ¿Qué hay de nuevo?
 
-**• Cierre del TTS**
-La función de Text to Speech cerraba la app si hacías clic en detener justo cuando empezaba la narración.
-Corregido.
+¡Miren las novedades!
 
-Correcciones hechas, todo de vuelta a la normalidad.
+**• Rework del Menú de Referencia**
+El Menú de Referencia pasó por un rework visual completo. Más fácil de navegar, más intuitivo y más bonito. Les va a encantar.
+Ahora lista los documentos abiertos recientemente para que no tengan que buscarlos cada vez, además de la opción de marcar documentos como favoritos, haciendo el acceso aún más rápido.
 
-## Novedades
+**• Custom Radius**
+Ya terminado, el Radius funciona en cualquier panel de la app. Aplicable vía themes. ¿Paneles redondeados, cuadrados? Ustedes deciden.
 
-Para compensar, esta versión también trae una tanda de themes nuevos — y de los buenos: un total de 60 themes nuevos, llevando a Qenna a 283 en total.
-Muy buenos. En serio, esta tanda tiene los mejores Themes jamás hechos en Qenna, sin exagerar.
+## Fixes
 
-**• Themes destacados**
-En serio, pruébenlos. Estos son increíbles:
-• Tokyo Noir
-• Everforest Grove
-• One Dark Skyline
-• Nord Summit
-• Lead Bridge
+**• ¿Dónde están las imágenes de los Themes?**
+Corregido: los themes nuevos no mostraban sus imágenes.
 
-Todos estos Themes están en la sección Estampados del panel de Themes.
-
----
-
-Anyway,
-El QA debería haber detectado estos problemas antes de la release.
-Y yo soy el QA, y no los detecté. Así es.
-
-Todo lo mejor, pero solo de vez en cuando para que no se malacostumbren,
+Que estén bien,
 — P.H. Lobato, Guardián de las Tierras de Qenna

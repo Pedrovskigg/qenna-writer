@@ -6290,6 +6290,15 @@ void MainWindow::startUpdateDownload()
             return;
         }
 
+        // O instalador começa a extrair com este app ainda vivo, segurando o
+        // exe, as DLLs do Qt e as fontes carregadas por addApplicationFont.
+        // Quem resolve isso é o CloseApplications do .iss: o Restart Manager
+        // do Windows fecha o que estiver travando arquivo antes de extrair.
+        // Sem ele, o Inno parava em "arquivo já está sendo usado por outro
+        // processo" e oferecia "Ignorar", que deixa a instalação incompleta.
+        //
+        // Adiar o lançamento pra depois do quit() não funciona: o event loop
+        // morre junto e o timer nunca dispara.
         QProcess::startDetached(destPath, {});
         qApp->quit();
     });
