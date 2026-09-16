@@ -20,6 +20,19 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Core Gui Widgets Svg Multimedia Network TextToSpeech LinguistTools)
 
+# zlib: usada pelo ZipReader pra descompactar deflate cru (o que vive dentro de
+# um .zip). O ZipWriter não precisa dela — comprime via qCompress, do Qt.
+find_package(ZLIB QUIET)
+if(NOT TARGET ZLIB::ZLIB)
+    # O MinGW que acompanha o Qt guarda a zlib no sysroot do toolchain
+    # (x86_64-w64-mingw32/{include,lib}), onde o FindZLIB do CMake não olha —
+    # mas o compilador resolve "-lz" sozinho. Declaramos o alvo na mão em vez
+    # de cravar caminho absoluto, que quebraria em outra máquina.
+    message(STATUS "ZLIB: usando a do toolchain (-lz)")
+    add_library(ZLIB::ZLIB INTERFACE IMPORTED)
+    set_target_properties(ZLIB::ZLIB PROPERTIES INTERFACE_LINK_LIBRARIES z)
+endif()
+
 qt_standard_project_setup()
 
 # Hunspell (corretor ortográfico) — compilado a partir de third_party/hunspell.
@@ -37,6 +50,12 @@ qt_add_executable(qenna-writer
     src/Exporter.h
     src/ZipWriter.cpp
     src/ZipWriter.h
+    src/ZipReader.cpp
+    src/ZipReader.h
+    src/ThemePackage.cpp
+    src/ThemePackage.h
+    src/ThemeExportDialog.cpp
+    src/ThemeExportDialog.h
     src/TopToolbar.cpp
     src/TopToolbar.h
     src/IconUtils.cpp
@@ -357,6 +376,7 @@ target_link_libraries(qenna-writer PRIVATE
     Qt6::Network
     Qt6::TextToSpeech
     hunspell
+    ZLIB::ZLIB
 )
 
 if(WIN32)

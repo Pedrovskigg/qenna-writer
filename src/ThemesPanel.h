@@ -32,6 +32,8 @@ private slots:
     void onDuplicateClicked();
     void onEditClicked();
     void onDeleteClicked();
+    void onExportClicked();
+    void onImportClicked();
     void onTabChanged(int index);
     void onThemeChanged();
     void onCustomThemesChanged();
@@ -74,6 +76,8 @@ private:
     QPushButton* m_duplicateButton;
     QPushButton* m_editButton;
     QPushButton* m_deleteButton;
+    QPushButton* m_exportButton;
+    QPushButton* m_importButton;
     QPushButton* m_closeButton;
 
     QLabel* m_selectionInfo;

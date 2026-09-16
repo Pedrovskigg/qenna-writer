@@ -1,9 +1,18 @@
 #include "ThemesPanel.h"
 
+#include "Theme.h"
+
 #include "ThemeEditorDialog.h"
+#include "ThemeExportDialog.h"
+#include "ThemePackage.h"
 #include "ThemePreviewWidget.h"
 
 #include <QApplication>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QStandardPaths>
+#include <QUuid>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QCoreApplication>
@@ -139,14 +148,14 @@ private:
             ? Theme::accentDefault()
             : (m_inUse ? Theme::accentSuccess() : Theme::panelBorder());
         const int bw = (m_selected || m_inUse) ? 2 : 1;
-        setStyleSheet(QStringLiteral(
-            "#themeCard { background: %1; border: %2px solid %3; border-radius: 8px; }"
+        setStyleSheet(Theme::qss(QStringLiteral(
+            "#themeCard { background: %1; border: %2px solid %3; border-radius: @radius-panel; }"
             "#themeCard:hover { border-color: %4; }"
             "#themeCardName { color: %5; font-size: 12px; font-weight: 500; background: transparent; }"
             "#themeCardBadge { color: %6; font-size: 10px; background: %7; "
-            "  padding: 2px 6px; border-radius: 8px; font-weight: 600; }"
+            "  padding: 2px 6px; border-radius: @radius-item; font-weight: 600; }"
             "#themeCardRoleBadge { color: %4; font-size: 13px; background: transparent; }"
-            "#themeCardFavorite { color: %8; font-size: 15px; background: rgba(0,0,0,0.35); border-radius: 12px; }"
+            "#themeCardFavorite { color: %8; font-size: 15px; background: rgba(0,0,0,0.35); border-radius: @radius-panel; }"
             "#themeCardFavorite:hover { color: %9; }"
         ).arg(
             Theme::panelBackground(),
@@ -158,7 +167,7 @@ private:
             Theme::accentSuccessSoft(),
             m_favorite ? QStringLiteral("#ff5a7a") : QStringLiteral("rgba(255,255,255,0.65)"),
             QStringLiteral("#ff5a7a")
-        ));
+        )));
         m_favoriteBtn->setText(m_favorite ? QStringLiteral("♥") : QStringLiteral("♡"));
     }
 
@@ -347,10 +356,18 @@ void ThemesPanel::buildUi()
     m_editButton->setObjectName(QStringLiteral("themesPanelActionBtn"));
     m_deleteButton = new QPushButton(tr("Excluir"), corner);
     m_deleteButton->setObjectName(QStringLiteral("themesPanelActionBtn"));
+    m_exportButton = new QPushButton(tr("Exportar"), corner);
+    m_exportButton->setObjectName(QStringLiteral("themesPanelActionBtn"));
+    m_exportButton->setToolTip(tr("Salvar este tema num arquivo pra dar a outra pessoa."));
+    m_importButton = new QPushButton(tr("Importar"), corner);
+    m_importButton->setObjectName(QStringLiteral("themesPanelActionBtn"));
+    m_importButton->setToolTip(tr("Abrir um tema que você recebeu de outra pessoa."));
     cornerLayout->addWidget(m_newButton);
     cornerLayout->addWidget(m_duplicateButton);
     cornerLayout->addWidget(m_editButton);
     cornerLayout->addWidget(m_deleteButton);
+    cornerLayout->addWidget(m_exportButton);
+    cornerLayout->addWidget(m_importButton);
     m_tabs->setCornerWidget(corner, Qt::TopRightCorner);
 
     main->addWidget(m_tabs, 1);
@@ -380,6 +397,8 @@ void ThemesPanel::buildUi()
     connect(m_duplicateButton, &QPushButton::clicked, this, &ThemesPanel::onDuplicateClicked);
     connect(m_editButton, &QPushButton::clicked, this, &ThemesPanel::onEditClicked);
     connect(m_deleteButton, &QPushButton::clicked, this, &ThemesPanel::onDeleteClicked);
+    connect(m_exportButton, &QPushButton::clicked, this, &ThemesPanel::onExportClicked);
+    connect(m_importButton, &QPushButton::clicked, this, &ThemesPanel::onImportClicked);
 }
 
 QWidget* ThemesPanel::buildAutoSwitchRow()
@@ -507,6 +526,10 @@ void ThemesPanel::updateButtonsState()
     m_duplicateButton->setEnabled(hasSel);
     m_editButton->setEnabled(isCustom);
     m_deleteButton->setEnabled(isCustom);
+    // Exportar só tema personalizado: mandar um tema padrão pra alguém que já
+    // tem todos os padrões só criaria uma cópia inútil do outro lado. Pra
+    // compartilhar um tema que vem com o app, duplique e exporte a cópia.
+    m_exportButton->setEnabled(isCustom);
 
     // Info textual — inline no footer
     if (hasSel) {
@@ -712,10 +735,10 @@ void ThemesPanel::showThemeIntroToast(const QString& text)
     toast->setAlignment(Qt::AlignCenter);
     toast->setWordWrap(true);
     toast->setFixedWidth(280);
-    toast->setStyleSheet(QStringLiteral(
+    toast->setStyleSheet(Theme::qss(QStringLiteral(
         "QLabel { background: %1; color: %2; border: 1px solid %3; "
-        "border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; }")
-        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder()));
+        "border-radius: @radius-panel; padding: 8px 14px; font-size: 12px; font-weight: 600; }")
+        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
     toast->adjustSize();
 
     const QPoint anchorTopCenter = m_applyButton->mapToGlobal(QPoint(m_applyButton->width() / 2, 0));
@@ -802,6 +825,145 @@ void ThemesPanel::onDeleteClicked()
     Theme::Manager::instance()->removeCustom(m_selectedId);
     m_selectedId.clear();
     rebuildGrids();
+}
+
+void ThemesPanel::onExportClicked()
+{
+    if (!selectedIsCustom()) return;
+    auto* mgr = Theme::Manager::instance();
+    const Theme::MiraTheme* found = nullptr;
+    for (const auto& t : mgr->available()) if (t.id == m_selectedId) { found = &t; break; }
+    if (!found) return;
+
+    ThemeExportDialog meta(*found, this);
+    if (meta.exec() != QDialog::Accepted) return;
+
+    Theme::MiraTheme out = meta.theme();
+
+    // Identidade estável do tema, criada na primeira exportação e mantida pra
+    // sempre — é por ela que uma atualização do mesmo tema é reconhecida como
+    // atualização, e não como um tema novo.
+    if (out.uuid.isEmpty())
+        out.uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+
+    // Cada exportação conta como uma publicação: quem receber duas versões do
+    // mesmo tema precisa saber qual é a mais recente.
+    out.themeVersion = qMax(1, found->themeVersion + 1);
+    out.minAppVersion = QStringLiteral(APP_VERSION);
+
+    const QString startDir = QDir::cleanPath(
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+        + QLatin1Char('/') + ThemePackage::suggestedFileName(out));
+
+    const QString path = QFileDialog::getSaveFileName(
+        this, tr("Exportar tema"), startDir, ThemePackage::fileFilter());
+    if (path.isEmpty()) return;
+
+    QString error;
+    if (!ThemePackage::exportToFile(out, path, &error)) {
+        QMessageBox::warning(this, tr("Exportar tema"), error);
+        return;
+    }
+
+    // Só grava os metadados no tema local depois que o arquivo saiu: se a
+    // escrita falhar, o tema fica como estava e a versão não avança à toa.
+    mgr->upsertCustom(out);
+    rebuildGrids();
+
+    QMessageBox::information(
+        this, tr("Tema exportado"),
+        tr("“%1” foi salvo em:\n%2\n\nEsse arquivo pode ser enviado pra qualquer pessoa que use o Qenna.")
+            .arg(out.name, QDir::toNativeSeparators(path)));
+}
+
+void ThemesPanel::onImportClicked()
+{
+    const QString path = QFileDialog::getOpenFileName(
+        this, tr("Importar tema"),
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+        ThemePackage::fileFilter());
+    if (path.isEmpty()) return;
+
+    QString error;
+    ThemePackage::ImportResult result;
+    if (!ThemePackage::importFromFile(path, &result, &error)) {
+        QMessageBox::warning(this, tr("Importar tema"), error);
+        return;
+    }
+
+    auto* mgr = Theme::Manager::instance();
+
+    // Já temos esse mesmo tema? A comparação é por uuid, não por nome: o nome
+    // pode ter sido mudado dos dois lados e continua sendo o mesmo tema.
+    const QList<Theme::MiraTheme> customs = mgr->customThemes();
+    const Theme::MiraTheme* existing = nullptr;
+    for (const auto& t : customs) {
+        if (!t.uuid.isEmpty() && t.uuid == result.theme.uuid) { existing = &t; break; }
+    }
+
+    // Resumo do que está entrando — é aqui que o crédito de quem fez aparece,
+    // antes de o tema virar mais um card no grid sem dono.
+    QString summary = tr("<b>%1</b>").arg(result.theme.name.toHtmlEscaped());
+    if (!result.theme.author.isEmpty())
+        summary += tr("<br>por %1").arg(result.theme.author.toHtmlEscaped());
+    if (!result.theme.description.isEmpty())
+        summary += QStringLiteral("<br><i>%1</i>").arg(result.theme.description.toHtmlEscaped());
+    if (!result.theme.license.isEmpty()) {
+        summary += QStringLiteral("<br><br>%1").arg(
+            tr("Licença: %1").arg(ThemePackage::licenseDisplayName(result.theme.license).toHtmlEscaped()));
+    }
+    if (!result.theme.authorContact.isEmpty())
+        summary += QStringLiteral("<br>%1").arg(result.theme.authorContact.toHtmlEscaped());
+
+    QMessageBox box(this);
+    box.setWindowTitle(tr("Importar tema"));
+    box.setTextFormat(Qt::RichText);
+    box.setIcon(QMessageBox::NoIcon);
+
+    QPushButton* replaceBtn = nullptr;
+    QPushButton* keepBothBtn = nullptr;
+    if (existing) {
+        box.setText(summary + QStringLiteral("<br><br>") +
+                    tr("Você já tem este tema (versão %1). O arquivo traz a versão %2.")
+                        .arg(existing->themeVersion).arg(result.theme.themeVersion));
+        replaceBtn = box.addButton(tr("Substituir"), QMessageBox::AcceptRole);
+        keepBothBtn = box.addButton(tr("Manter os dois"), QMessageBox::ActionRole);
+        box.addButton(tr("Cancelar"), QMessageBox::RejectRole);
+        box.setDefaultButton(replaceBtn);
+    } else {
+        box.setText(summary);
+        replaceBtn = box.addButton(tr("Importar"), QMessageBox::AcceptRole);
+        box.addButton(tr("Cancelar"), QMessageBox::RejectRole);
+        box.setDefaultButton(replaceBtn);
+    }
+    box.exec();
+
+    const QAbstractButton* clicked = box.clickedButton();
+    if (clicked != replaceBtn && clicked != keepBothBtn) return;
+
+    Theme::MiraTheme incoming = result.theme;
+    if (existing && clicked == replaceBtn) {
+        // Substituição: fica no lugar do que já existia, mantendo o id local
+        // (assim continua sendo o mesmo card, e segue aplicado se estiver em uso).
+        incoming.id = existing->id;
+    } else {
+        incoming.id = mgr->uniqueCustomId();
+        if (existing) {
+            // "Manter os dois" precisa de uuid novo, senão as duas cópias
+            // continuam sendo "o mesmo tema" e uma próxima importação não
+            // saberia qual atualizar.
+            incoming.uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
+            incoming.name = tr("%1 (cópia)").arg(incoming.name);
+        }
+    }
+
+    const QString id = mgr->upsertCustom(incoming);
+    m_tabs->setCurrentIndex(TabCustom);
+    m_selectedId = id;
+    rebuildGrids();
+
+    if (!result.warning.isEmpty())
+        QMessageBox::information(this, tr("Importar tema"), result.warning);
 }
 
 void ThemesPanel::onThemeChanged()
@@ -936,7 +1098,7 @@ void ThemesPanel::refreshAutoSwitchUi()
 
 void ThemesPanel::applyDialogStyle()
 {
-    setStyleSheet(QStringLiteral(R"(
+    setStyleSheet(Theme::qss(QStringLiteral(R"(
         #themesPanel {
             background: %1;
         }
@@ -950,7 +1112,7 @@ void ThemesPanel::applyDialogStyle()
         }
         #themesPanelTabs::pane {
             border: 1px solid %6;
-            border-radius: 8px;
+            border-radius: @radius-panel;
             background: %5;
             top: -1px;
         }
@@ -963,8 +1125,8 @@ void ThemesPanel::applyDialogStyle()
             padding: 8px 18px;
             border: 1px solid transparent;
             border-bottom: none;
-            border-top-left-radius: 6px;
-            border-top-right-radius: 6px;
+            border-top-left-radius: @radius-control;
+            border-top-right-radius: @radius-control;
             font-size: 12px;
             margin-right: 4px;
         }
@@ -988,7 +1150,7 @@ void ThemesPanel::applyDialogStyle()
             color: %2;
             border: 1px solid %6;
             padding: 5px 12px;
-            border-radius: 5px;
+            border-radius: @radius-control;
             font-size: 11px;
         }
         QPushButton#themesPanelActionBtn:hover {
@@ -1006,7 +1168,7 @@ void ThemesPanel::applyDialogStyle()
             color: %2;
             border: 1px solid %6;
             padding: 7px 22px;
-            border-radius: 6px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         QPushButton#themesPanelApplyBtn {
@@ -1032,7 +1194,7 @@ void ThemesPanel::applyDialogStyle()
             color: %4;
             border: 1px solid %6;
             padding: 4px 12px;
-            border-radius: 12px;
+            border-radius: @radius-item;
             font-size: 11px;
         }
         QPushButton#themesFilterChip:hover { color: %3; border-color: %9; }
@@ -1052,7 +1214,7 @@ void ThemesPanel::applyDialogStyle()
             background: %5;
             color: %2;
             border: 1px solid %6;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 2px 6px;
             font-size: 12px;
         }
@@ -1060,12 +1222,12 @@ void ThemesPanel::applyDialogStyle()
             background: %5;
             color: %2;
             border: 1px solid %6;
-            border-radius: 8px;
+            border-radius: @radius-control;
             padding: 6px 10px;
             font-size: 12px;
         }
         QLineEdit#themesSearchEdit:focus { border-color: %9; }
-    )").arg(
+    )")).arg(
         Theme::appBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3

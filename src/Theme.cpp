@@ -9057,9 +9057,72 @@ void Manager::setFavorite(const QString& id, bool favorite)
 
 namespace {
 
+// Toda chave que ESTA versão do app sabe interpretar. O que aparecer num JSON
+// de tema fora dessa lista é propriedade de uma versão mais nova do Qenna:
+// vai pra MiraTheme::extras e volta intacta no export, sem ser aplicada.
+// Ao criar uma variável de tema nova, adicione a chave aqui também — senão
+// ela é tratada como desconhecida e acaba duplicada em extras.
+const QSet<QString>& knownThemeKeys()
+{
+    static const QSet<QString> keys = {
+        QStringLiteral("id"),
+        QStringLiteral("name"),
+        QStringLiteral("appBackground"),
+        QStringLiteral("panelBackground"),
+        QStringLiteral("panelBorder"),
+        QStringLiteral("textPrimary"),
+        QStringLiteral("textMuted"),
+        QStringLiteral("textBright"),
+        QStringLiteral("hoverOverlay"),
+        QStringLiteral("pressedOverlay"),
+        QStringLiteral("subtleBorder"),
+        QStringLiteral("accentDefault"),
+        QStringLiteral("hoverStrong"),
+        QStringLiteral("borderStrong"),
+        QStringLiteral("focusBorder"),
+        QStringLiteral("inputBackground"),
+        QStringLiteral("disabledText"),
+        QStringLiteral("selectionRing"),
+        QStringLiteral("accentSuccess"),
+        QStringLiteral("accentSuccessSoft"),
+        QStringLiteral("accentSuccessBorderSoft"),
+        QStringLiteral("accentDanger"),
+        QStringLiteral("accentDangerSoft"),
+        QStringLiteral("accentDangerBorderSoft"),
+        QStringLiteral("accentWarning"),
+        QStringLiteral("accentInfo"),
+        QStringLiteral("accentInfoSoft"),
+        QStringLiteral("accentInfoBorderSoft"),
+        QStringLiteral("editorBackground"),
+        QStringLiteral("editorTextColor"),
+        QStringLiteral("panelRadius"),
+        QStringLiteral("pageShadowEnabled"),
+        QStringLiteral("pageShadowColor"),
+        QStringLiteral("pageShadowRadius"),
+        QStringLiteral("pageShadowOffset"),
+        QStringLiteral("backgroundImage"),
+        QStringLiteral("backgroundMode"),
+        QStringLiteral("editorOpacity"),
+        // Metadados de compartilhamento
+        QStringLiteral("uuid"),
+        QStringLiteral("author"),
+        QStringLiteral("authorContact"),
+        QStringLiteral("license"),
+        QStringLiteral("description"),
+        QStringLiteral("themeVersion"),
+        QStringLiteral("minAppVersion"),
+    };
+    return keys;
+}
+
+} // namespace
+
 QJsonObject themeToJson(const MiraTheme& t)
 {
-    QJsonObject o;
+    // Extras entram primeiro de propósito: os campos conhecidos são escritos
+    // depois e sobrescrevem qualquer homônimo, então o que o app entende
+    // sempre ganha de um resquício vindo de outra versão.
+    QJsonObject o = t.extras;
     o["id"] = t.id;
     o["name"] = t.name;
     o["appBackground"] = t.appBackground;
@@ -9098,6 +9161,16 @@ QJsonObject themeToJson(const MiraTheme& t)
     o["backgroundImage"] = t.backgroundImage;
     o["backgroundMode"] = t.backgroundMode;
     o["editorOpacity"] = t.editorOpacity;
+
+    // Metadados de compartilhamento. Só escrevemos os que têm valor — um tema
+    // que nunca foi exportado não carrega um punhado de strings vazias.
+    if (!t.uuid.isEmpty())          o["uuid"] = t.uuid;
+    if (!t.author.isEmpty())        o["author"] = t.author;
+    if (!t.authorContact.isEmpty()) o["authorContact"] = t.authorContact;
+    if (!t.license.isEmpty())       o["license"] = t.license;
+    if (!t.description.isEmpty())   o["description"] = t.description;
+    if (!t.minAppVersion.isEmpty()) o["minAppVersion"] = t.minAppVersion;
+    if (t.themeVersion != 1)        o["themeVersion"] = t.themeVersion;
     return o;
 }
 
@@ -9143,10 +9216,24 @@ MiraTheme themeFromJson(const QJsonObject& o)
     t.backgroundImage = o.value("backgroundImage").toString();
     t.backgroundMode = o.value("backgroundMode").toInt(BgZoom);
     t.editorOpacity = o.value("editorOpacity").toInt(100);
+
+    t.uuid = o.value("uuid").toString();
+    t.author = o.value("author").toString();
+    t.authorContact = o.value("authorContact").toString();
+    t.license = o.value("license").toString();
+    t.description = o.value("description").toString();
+    t.minAppVersion = o.value("minAppVersion").toString();
+    t.themeVersion = o.value("themeVersion").toInt(1);
+
+    // Tudo que sobrou é de uma versão mais nova do app: guarda cru pra
+    // devolver igualzinho no próximo export, em vez de silenciosamente perder.
+    const QSet<QString>& known = knownThemeKeys();
+    for (auto it = o.constBegin(); it != o.constEnd(); ++it) {
+        if (!known.contains(it.key()))
+            t.extras.insert(it.key(), it.value());
+    }
     return t;
 }
-
-} // namespace
 
 void Manager::loadCustomThemes()
 {
@@ -9318,6 +9405,38 @@ QString panelBackground()   { return Manager::instance()->current().panelBackgro
 QString panelBorder()       { return Manager::instance()->current().panelBorder; }
 int panelRadius()           { return Manager::instance()->current().panelRadius; }
 QString panelBorderRadius() { return QStringLiteral("%1px").arg(panelRadius()); }
+
+// Derivados do raio de painel — ver o comentário da escala no Theme.h.
+// Proporções escolhidas pra bater com o que já estava cravado no app nos
+// valores default: painel 10 -> controle 6 -> item 4, que são exatamente os
+// três números mais usados hoje no QSS (181x 6px, 103x 4px, 64x 8px).
+int controlRadius()
+{
+    const int p = panelRadius();
+    if (p <= 0) return 0;
+    return qBound(2, (p * 6 + 5) / 10, 10);
+}
+
+int itemRadius()
+{
+    const int p = panelRadius();
+    if (p <= 0) return 0;
+    return qBound(2, (p * 4 + 5) / 10, 6);
+}
+
+QString controlBorderRadius() { return QStringLiteral("%1px").arg(controlRadius()); }
+QString itemBorderRadius()    { return QStringLiteral("%1px").arg(itemRadius()); }
+
+QString qss(const QString& sheet)
+{
+    // Substituição direta, sem regex: são três tokens fixos e esta função roda
+    // a cada reaplicação de tema, em dezenas de folhas.
+    QString out = sheet;
+    out.replace(QLatin1String("@radius-panel"),   panelBorderRadius());
+    out.replace(QLatin1String("@radius-control"), controlBorderRadius());
+    out.replace(QLatin1String("@radius-item"),    itemBorderRadius());
+    return out;
+}
 QString textPrimary()       { return Manager::instance()->current().textPrimary; }
 QString textMuted()         { return Manager::instance()->current().textMuted; }
 QString textBright()        { return Manager::instance()->current().textBright; }
@@ -9383,7 +9502,7 @@ QString globalStyleSheet()
     const QString selBg      = pressedOverlay();
     const QString accentBg   = accentDefault();
 
-    return QStringLiteral(R"(
+    return qss(QStringLiteral(R"(
         QMainWindow {
             background-color: %1;
         }
@@ -9402,7 +9521,7 @@ QString globalStyleSheet()
         #topToolbar {
             background-color: %2;
             border: 1px solid %3;
-            border-radius: 14px;
+            border-radius: @radius-panel;
         }
         #topToolbar QToolButton {
             background: transparent;
@@ -9410,7 +9529,7 @@ QString globalStyleSheet()
             border: none;
             padding: 4px 6px;
             font-size: 12px;
-            border-radius: 6px;
+            border-radius: @radius-control;
         }
         #topToolbar QToolButton:hover {
             color: %6;
@@ -9451,7 +9570,7 @@ QString globalStyleSheet()
             background: %8;
             color: %4;
             border: none;
-            border-radius: 4px;
+            border-radius: @radius-item;
             font-size: 16px;
             font-weight: bold;
         }
@@ -9463,7 +9582,7 @@ QString globalStyleSheet()
             background: %10;
             color: %6;
             border: 1px solid %3;
-            border-radius: 4px;
+            border-radius: @radius-item;
             padding: 2px 0;
             font-size: 15px;
             font-weight: bold;
@@ -9484,7 +9603,7 @@ QString globalStyleSheet()
         QMenu::item:selected {
             background-color: %8;
             color: %6;
-            border-radius: 3px;
+            border-radius: @radius-item;
         }
         QMenu::separator {
             height: 1px;
@@ -9504,7 +9623,7 @@ QString globalStyleSheet()
         }
         #fontPickerList::item {
             padding: 8px 12px;
-            border-radius: 3px;
+            border-radius: @radius-item;
         }
         #fontPickerList::item:hover {
             background-color: %7;
@@ -9524,7 +9643,7 @@ QString globalStyleSheet()
         #imageInsertDialog #imagePreview {
             background-color: %10;
             border: 1px solid %3;
-            border-radius: 4px;
+            border-radius: @radius-item;
             color: %5;
         }
         #imageInsertDialog QRadioButton {
@@ -9559,7 +9678,7 @@ QString globalStyleSheet()
             background: %10;
             color: %6;
             border: 1px solid %3;
-            border-radius: 4px;
+            border-radius: @radius-control;
             padding: 4px 6px;
         }
         #imageInsertDialog QPushButton {
@@ -9567,7 +9686,7 @@ QString globalStyleSheet()
             color: %4;
             border: none;
             padding: 8px 18px;
-            border-radius: 4px;
+            border-radius: @radius-control;
             font-size: 12px;
         }
         #imageInsertDialog QPushButton:hover {
@@ -9584,14 +9703,14 @@ QString globalStyleSheet()
         #imageOverlay {
             background-color: %2;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-panel;
         }
         #imageOverlay QToolButton#imgOverlayBtn {
             background: transparent;
             color: %4;
             border: none;
             padding: 4px 8px;
-            border-radius: 3px;
+            border-radius: @radius-item;
             font-size: 14px;
             min-width: 22px;
         }
@@ -9653,7 +9772,7 @@ QString globalStyleSheet()
             background-color: %2;
             color: %4;
             border: 1px solid %3;
-            border-radius: 6px;
+            border-radius: @radius-control;
             padding: 4px 8px;
         }
     )")
@@ -9669,7 +9788,7 @@ QString globalStyleSheet()
              inputBg)     // %10
         .arg(selBg,       // %11 (não usado; reservado)
              accentBg,    // %12
-             accentBg);   // %13
+             accentBg));  // %13
 }
 
 void applyToolTipPalette()

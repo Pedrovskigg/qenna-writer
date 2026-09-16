@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QJsonObject>
 #include <QList>
 #include <QObject>
 #include <QSet>
@@ -100,7 +101,46 @@ struct MiraTheme {
     // Opacidade da página do editor (0–100). 100 = totalmente opaca (default).
     // Valores menores deixam a imagem de fundo aparecer atrás da página.
     int editorOpacity = 100;
+
+    // --- Metadados de compartilhamento (arquivos .qtheme) ---
+    // Nada disso muda a aparência do tema — é a identidade dele enquanto
+    // arquivo que circula entre pessoas. Um tema criado antes desses campos
+    // existirem tem tudo vazio, e isso é válido: só ganha uuid/autor quando
+    // for exportado pela primeira vez. Ver ThemePackage.h.
+
+    // Identificador global e estável, gerado uma vez (QUuid) e carregado pelo
+    // tema pra sempre. Diferente de `id`, que é local ("custom-3") e colide
+    // entre máquinas — dois temas distintos podem ser "custom-3" em PCs
+    // diferentes, então `id` não serve pra identificar um tema no mundo.
+    QString uuid;
+    // Quem fez. `authorContact` é livre: site, e-mail, @ de rede social.
+    QString author;
+    QString authorContact;
+    // O que o autor permite que façam com o tema. Texto livre, sem validação
+    // — o app não é cartório, só carrega a declaração junto do arquivo.
+    QString license;
+    // Descrição curta opcional, pra quando o nome não basta.
+    QString description;
+    // Versão *do tema*, não do app: o autor corrige uma cor e republica.
+    // Quem recebe consegue saber qual é a mais nova.
+    int themeVersion = 1;
+    // Menor versão do Qenna que entende esse tema. Vazio = qualquer uma.
+    QString minAppVersion;
+
+    // Campos do JSON que ESTA versão do app não conhece — tipicamente um tema
+    // salvo por uma versão futura do Qenna, com propriedades que ainda não
+    // existiam aqui. Guardamos crus e reemitimos no export, então importar num
+    // Qenna antigo e reexportar não apaga o que ele não sabia ler.
+    // Não são aplicados visualmente (o app não saberia o que fazer com eles),
+    // apenas preservados.
+    QJsonObject extras;
 };
+
+// Serialização de um tema. Usadas tanto pra persistir os customs em QSettings
+// quanto pelo ThemePackage (arquivos .qtheme). O round-trip é fiel: campos que
+// esta versão não conhece entram em MiraTheme::extras e voltam intactos.
+QJsonObject themeToJson(const MiraTheme& t);
+MiraTheme themeFromJson(const QJsonObject& o);
 
 // Troca automática de tema por horário (dia/noite). "day"/"night" aqui
 // referem-se aos dois papéis configuráveis, não a categorias de tema —
@@ -189,6 +229,39 @@ QString panelBorder();
 int panelRadius();
 // Mesmo valor formatado "Npx", pronto pra interpolar em QSS.
 QString panelBorderRadius();
+
+// Escala de arredondamento derivada do slider do tema.
+//
+// Aplicar o valor de painel em TUDO deforma a interface nos extremos: um
+// input de 24px de altura com raio 24 vira uma pílula, um checkbox vira
+// círculo. Então o slider governa três níveis proporcionais, e cada widget
+// usa o do seu tamanho:
+//
+//   panelRadius()   superfícies — painéis, diálogos, popups, menus, cards
+//   controlRadius() controles   — botões, inputs, combos, abas
+//   itemRadius()    itens miúdos — tags, chips, swatches, linhas de lista
+//
+// Os dois derivados têm teto próprio: passar de certo ponto não melhora nada
+// e só engorda o controle. Em raio 0 todos vão a 0 (cantos retos de verdade).
+int controlRadius();
+int itemRadius();
+QString controlBorderRadius();
+QString itemBorderRadius();
+
+// Troca os tokens de raio de uma folha QSS pelos valores do tema atual:
+//
+//     @radius-panel    @radius-control    @radius-item
+//
+// Existe porque as folhas do app são QStringLiteral com .arg() posicional —
+// parametrizar o raio como mais um "%N" obrigaria a mexer no .arg() de
+// centenas de strings, com alto risco de trocar a ordem de algum argumento.
+// Os tokens são substituídos ANTES do .arg(), então o uso é:
+//
+//     setStyleSheet(Theme::qss(QStringLiteral(R"( ... )")).arg(cor1, cor2));
+//
+// Escrever um token que não existe não quebra nada: sobra no texto e o Qt
+// ignora a regra inválida.
+QString qss(const QString& sheet);
 QString textPrimary();
 QString textMuted();
 QString textBright();
