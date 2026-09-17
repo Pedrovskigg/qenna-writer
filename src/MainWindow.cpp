@@ -114,6 +114,7 @@
 #include "ImageOverlay.h"
 #include "LeftBar.h"
 #include "ManuscriptPanel.h"
+#include "OutlinePanel.h"
 #include "ProjectInfoHover.h"
 #include "ProjectInfoPanel.h"
 #include "ProjectModel.h"
@@ -3005,6 +3006,18 @@ void MainWindow::setupEditor()
                 timelinePanel->activateWindow();
                 leftBar->setActiveFixedAction(LeftBar::Timeline);
             }
+        } else if (action == LeftBar::Outline) {
+            CrashLogger::log("outlinePanelToggle");
+            ensureOutlinePanel();
+            if (outlinePanel->isVisible()) {
+                outlinePanel->hide();
+                leftBar->clearSelection();
+            } else {
+                outlinePanel->show();
+                outlinePanel->raise();
+                outlinePanel->activateWindow();
+                leftBar->setActiveFixedAction(LeftBar::Outline);
+            }
         } else if (action == LeftBar::Groups) {
             if (!groupsPanel) {
                 groupsPanel = new GroupsPanel(projectModel, this);
@@ -3266,13 +3279,7 @@ void MainWindow::setupEditor()
     });
 
     auto reloadActiveEditorIfMatches = [this](const QString& chapterId) {
-        if (!editorHost) return;
-        const auto vm = editorHost->viewMode();
-        if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) && vm.chapterId == chapterId) {
-            EditorHost::ViewMode tmp; tmp.type = EditorHost::Disabled;
-            editorHost->setViewMode(tmp);
-            editorHost->setViewMode(vm);
-        }
+        reloadEditorIfShowingChapter(chapterId);
     };
 
     connect(manuscriptPanel, &ManuscriptPanel::deleteSceneRequested, this, [this, reloadActiveEditorIfMatches](const QString& chapterId, int sceneIndex) {
@@ -3316,40 +3323,18 @@ void MainWindow::setupEditor()
         projectModel->reorderChapter(chapterId, targetIndex);
     });
 
-    connect(manuscriptPanel, &ManuscriptPanel::reorderSceneRequested, this, [this, reloadActiveEditorIfMatches](const QString& chapterId, int srcIdx, int targetIdx) {
-        const Chapter* ch = projectModel->findChapter(chapterId);
-        if (!ch) return;
+    connect(manuscriptPanel, &ManuscriptPanel::reorderSceneRequested, this,
+            [this](const QString& chapterId, int srcIdx, int targetIdx) {
+        reorderSceneWithinChapter(chapterId, srcIdx, targetIdx);
+    });
 
-        if (editorHost) editorHost->syncEditorToCache();
-
-        const QString key = DocCache::chapterKey(ch->manuscriptId, chapterId);
-        QString html = docCache && docCache->has(key) ? docCache->get(key) : QString();
-        if (html.isEmpty() && !projectRoot.isEmpty()) {
-            bool ok = false;
-            html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+    connect(manuscriptPanel, &ManuscriptPanel::moveSceneToChapterRequested, this,
+            [this](const QString& srcChapterId, int srcIdx,
+                   const QString& dstChapterId, int dstIdx) {
+        if (!moveSceneAcrossChapters(srcChapterId, srcIdx, dstChapterId, dstIdx)) {
+            QMessageBox::information(this, tr("Mover cena"),
+                tr("Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto."));
         }
-        QStringList segments = SceneUtils::splitHtmlIntoScenes(html);
-        if (srcIdx < 0 || srcIdx >= segments.size()) return;
-        if (targetIdx < 0) targetIdx = 0;
-        if (targetIdx > segments.size()) targetIdx = segments.size();
-        if (srcIdx < targetIdx) --targetIdx;
-        if (srcIdx == targetIdx) return;
-        const QString moved = segments.takeAt(srcIdx);
-        segments.insert(targetIdx, moved);
-        const QString newHtml = SceneUtils::joinScenesHtml(segments);
-        if (docCache) docCache->set(key, newHtml, /*markDirty=*/true);
-
-        // Atualiza metadados de cenas (mantém títulos/variations).
-        QList<Scene> scenes = ch->scenes;
-        if (srcIdx < scenes.size()) {
-            Scene movedScene = scenes.takeAt(srcIdx);
-            const int insertAt = qBound(0, targetIdx, scenes.size());
-            scenes.insert(insertAt, movedScene);
-            for (int i = 0; i < scenes.size(); ++i) scenes[i].order = i;
-            projectModel->updateChapterScenes(chapterId, scenes);
-        }
-
-        reloadActiveEditorIfMatches(chapterId);
     });
     connect(leftBar, &LeftBar::newDrawerRequested, this, [this]() {
         DrawerCreateDialog dlg(elementsStore, this);
@@ -8295,6 +8280,188 @@ void MainWindow::positionCharacterSheet()
     const int w = qMax(0, editorContainer->width() - leftInset - rightInset);
     const int h = qMax(0, editorContainer->height() - topInset);
     characterSheetPanel->setGeometry(lx, topInset, w, h);
+}
+
+QString MainWindow::chapterHtmlForEdit(const Chapter* chapter) const
+{
+    if (!chapter) return QString();
+    const QString key = DocCache::chapterKey(chapter->manuscriptId, chapter->id);
+    QString html = docCache && docCache->has(key) ? docCache->get(key) : QString();
+    if (html.isEmpty() && !projectRoot.isEmpty()) {
+        bool ok = false;
+        html = ProjectStorage::readChapter(projectRoot, chapter->file, &ok);
+    }
+    return html;
+}
+
+void MainWindow::reloadEditorIfShowingChapter(const QString& chapterId)
+{
+    if (!editorHost) return;
+    const auto vm = editorHost->viewMode();
+    if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
+        && vm.chapterId == chapterId) {
+        EditorHost::ViewMode tmp; tmp.type = EditorHost::Disabled;
+        editorHost->setViewMode(tmp);
+        editorHost->setViewMode(vm);
+    }
+}
+
+void MainWindow::reorderSceneWithinChapter(const QString& chapterId, int srcIndex, int targetIndex)
+{
+    const Chapter* ch = projectModel->findChapter(chapterId);
+    if (!ch) return;
+
+    if (editorHost) editorHost->syncEditorToCache();
+
+    const QString key = DocCache::chapterKey(ch->manuscriptId, chapterId);
+    QStringList segments = SceneUtils::splitHtmlIntoScenes(chapterHtmlForEdit(ch));
+    if (srcIndex < 0 || srcIndex >= segments.size()) return;
+    if (targetIndex < 0) targetIndex = 0;
+    if (targetIndex > segments.size()) targetIndex = segments.size();
+    // Tirar o item antes de inserir desloca em um tudo que vem depois dele.
+    if (srcIndex < targetIndex) --targetIndex;
+    if (srcIndex == targetIndex) return;
+    const QString moved = segments.takeAt(srcIndex);
+    segments.insert(targetIndex, moved);
+    if (docCache) docCache->set(key, SceneUtils::joinScenesHtml(segments), /*markDirty=*/true);
+
+    // Metadados seguem o texto (mantém títulos/variations).
+    QList<Scene> scenes = ch->scenes;
+    if (srcIndex < scenes.size()) {
+        Scene movedScene = scenes.takeAt(srcIndex);
+        const int insertAt = qBound(0, targetIndex, scenes.size());
+        scenes.insert(insertAt, movedScene);
+        for (int i = 0; i < scenes.size(); ++i) scenes[i].order = i;
+        projectModel->updateChapterScenes(chapterId, scenes);
+    }
+
+    reloadEditorIfShowingChapter(chapterId);
+}
+
+bool MainWindow::moveSceneAcrossChapters(const QString& srcChapterId, int srcIndex,
+                                         const QString& dstChapterId, int dstIndex)
+{
+    if (srcChapterId == dstChapterId) {
+        reorderSceneWithinChapter(srcChapterId, srcIndex, dstIndex);
+        return true;
+    }
+
+    const Chapter* src = projectModel->findChapter(srcChapterId);
+    const Chapter* dst = projectModel->findChapter(dstChapterId);
+    if (!src || !dst) return false;
+
+    // O editor pode estar com alterações não sincronizadas em qualquer um dos
+    // dois capítulos — sincroniza antes de ler o HTML dos dois.
+    if (editorHost) editorHost->syncEditorToCache();
+
+    QStringList srcSegments = SceneUtils::splitHtmlIntoScenes(chapterHtmlForEdit(src));
+    if (srcIndex < 0 || srcIndex >= srcSegments.size()) return false;
+    // Mesma recusa do modelo, checada aqui também: mover o único pedaço
+    // deixaria o capítulo de origem sem texto nenhum.
+    if (srcSegments.size() <= 1) return false;
+
+    QStringList dstSegments = SceneUtils::splitHtmlIntoScenes(chapterHtmlForEdit(dst));
+
+    // Ordem importa: o modelo é quem decide se o movimento é válido e já
+    // normaliza as duas listas de cena (ver moveSceneMetaToChapter). Só depois
+    // que ele aceita é que o texto se mexe — assim uma recusa nunca deixa
+    // metadado e HTML em estados diferentes.
+    if (!projectModel->moveSceneMetaToChapter(srcChapterId, srcIndex, dstChapterId, dstIndex))
+        return false;
+
+    const QString movedHtml = srcSegments.takeAt(srcIndex);
+    const int insertAt = qBound(0, dstIndex, dstSegments.size());
+    dstSegments.insert(insertAt, movedHtml);
+
+    if (docCache) {
+        docCache->set(DocCache::chapterKey(src->manuscriptId, srcChapterId),
+                      SceneUtils::joinScenesHtml(srcSegments), /*markDirty=*/true);
+        docCache->set(DocCache::chapterKey(dst->manuscriptId, dstChapterId),
+                      SceneUtils::joinScenesHtml(dstSegments), /*markDirty=*/true);
+    }
+
+    reloadEditorIfShowingChapter(srcChapterId);
+    reloadEditorIfShowingChapter(dstChapterId);
+    return true;
+}
+
+OutlinePanel* MainWindow::ensureOutlinePanel()
+{
+    if (!outlinePanel) {
+        outlinePanel = new OutlinePanel(projectModel, this);
+        outlinePanel->setWordCounter(wordCounter);
+        outlinePanel->setDialogueStore(dialogueStore);
+        outlinePanel->setElementsStore(elementsStore);
+        outlinePanel->setDocTextResolver([this](const QString& key) {
+            return docTextForLink(key);
+        });
+        outlinePanel->setDocHtmlResolver([this](const QString& key) -> QString {
+            // Mesmas chaves do resolvedor de texto, só que sem converter pra
+            // texto puro: o painel de leitura mostra a formatação de verdade.
+            if (key.startsWith(QStringLiteral("ch:"))) {
+                const Chapter* ch = projectModel->findChapter(key.mid(3));
+                return ch ? chapterHtmlForEdit(ch) : QString();
+            }
+            if (key.startsWith(QStringLiteral("sc:"))) {
+                const QString sceneId = key.mid(3);
+                for (const Chapter& ch : projectModel->chapters()) {
+                    for (int i = 0; i < ch.scenes.size(); ++i) {
+                        if (ch.scenes.at(i).id != sceneId) continue;
+                        return SceneUtils::getSceneHtml(chapterHtmlForEdit(&ch), i);
+                    }
+                }
+            }
+            return QString();
+        });
+        outlinePanel->setProjectRoot(projectRoot);
+
+        connect(outlinePanel, &OutlinePanel::closeRequested, this, [this]() {
+            leftBar->clearSelection();
+        });
+        connect(outlinePanel, &OutlinePanel::openRequested, this,
+                [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex) {
+            EditorHost::ViewMode vm;
+            vm.type = sceneIndex >= 0 ? EditorHost::SceneDoc : EditorHost::ChapterDoc;
+            vm.manuscriptId = manuscriptId;
+            vm.chapterId = chapterId;
+            vm.sceneIndex = sceneIndex;
+            editorHost->setViewMode(vm);
+        });
+
+        connect(outlinePanel, &OutlinePanel::openInRefMenuRequested, this,
+                [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex) {
+            if (!refMenuPanel) return;
+            if (sceneIndex >= 0) refMenuPanel->openForScene(manuscriptId, chapterId, sceneIndex);
+            else refMenuPanel->openForChapter(manuscriptId, chapterId);
+        });
+        connect(outlinePanel, &OutlinePanel::chapterDialoguesRequested, this,
+                [this](const QString&, const QString& chapterId) {
+            // A aba Diálogos do Pensário já acompanha o capítulo corrente —
+            // basta apontar o capítulo e abrir nela, sem tela nova.
+            if (!pensarioPanel) return;
+            pensarioPanel->openDialoguesForChapter(chapterId);
+        });
+
+        // Os mesmos três caminhos que o painel de Manuscritos usa — a regra
+        // mora aqui, não na UI, então os dois painéis chamam o mesmo código.
+        connect(outlinePanel, &OutlinePanel::reorderChapterRequested, this,
+                [this](const QString& chapterId, int targetIndex) {
+            projectModel->reorderChapter(chapterId, targetIndex);
+        });
+        connect(outlinePanel, &OutlinePanel::reorderSceneRequested, this,
+                [this](const QString& chapterId, int srcIdx, int targetIdx) {
+            reorderSceneWithinChapter(chapterId, srcIdx, targetIdx);
+        });
+        connect(outlinePanel, &OutlinePanel::moveSceneToChapterRequested, this,
+                [this](const QString& srcChapterId, int srcIdx,
+                       const QString& dstChapterId, int dstIdx) {
+            if (!moveSceneAcrossChapters(srcChapterId, srcIdx, dstChapterId, dstIdx)) {
+                QMessageBox::information(this, tr("Mover cena"),
+                    tr("Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto."));
+            }
+        });
+    }
+    return outlinePanel;
 }
 
 TimelinePanel* MainWindow::ensureTimelinePanel()

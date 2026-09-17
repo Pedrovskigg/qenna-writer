@@ -1033,11 +1033,10 @@ void ManuscriptPanel::dragMoveEvent(QDragMoveEvent* event) {
 
     const bool isSceneDrag = event->mimeData()->hasFormat(QLatin1String(kSceneMime));
     if (isSceneDrag) {
-        // Cenas: só pode soltar perto de outras cenas do MESMO capítulo (mesma kind+chapterId).
-        QString srcChId; int srcIdx = -1;
-        parseScenePayload(event->mimeData()->data(QLatin1String(kSceneMime)), srcChId, srcIdx);
-        if (nearest->property("kind").toString() != QStringLiteral("scene") ||
-            nearest->property("chapterId").toString() != srcChId) {
+        // Cena pode cair em cima de outra cena (de qualquer capítulo) ou em
+        // cima do próprio capítulo de destino — nesse caso entra no fim dele.
+        const QString targetKind = nearest->property("kind").toString();
+        if (targetKind != QStringLiteral("scene") && targetKind != QStringLiteral("chapter")) {
             clearDropIndicator();
             event->ignore();
             return;
@@ -1089,12 +1088,40 @@ void ManuscriptPanel::dropEvent(QDropEvent* event) {
     if (event->mimeData()->hasFormat(QLatin1String(kSceneMime))) {
         QString srcChId; int srcIdx = -1;
         if (!parseScenePayload(event->mimeData()->data(QLatin1String(kSceneMime)), srcChId, srcIdx)) return;
-        if (nearest->property("kind").toString() != QStringLiteral("scene") ||
-            nearest->property("chapterId").toString() != srcChId) return;
-        int tgtIdx = nearest->property("sceneIndex").toInt();
-        if (!before) tgtIdx += 1;
-        if (tgtIdx == srcIdx || tgtIdx == srcIdx + 1) { event->acceptProposedAction(); return; }
-        emit reorderSceneRequested(srcChId, srcIdx, tgtIdx);
+
+        const QString targetKind = nearest->property("kind").toString();
+        QString dstChId;
+        int tgtIdx = 0;
+
+        if (targetKind == QStringLiteral("scene")) {
+            dstChId = nearest->property("chapterId").toString();
+            tgtIdx = nearest->property("sceneIndex").toInt();
+            if (!before) tgtIdx += 1;
+        } else if (targetKind == QStringLiteral("chapter")) {
+            // Soltar sobre o cabeçalho do capítulo = mandar a cena pro fim
+            // dele. Contar as cenas visíveis é o jeito de saber onde é "o fim"
+            // sem o painel precisar consultar o modelo.
+            dstChId = nearest->property("chapterId").toString();
+            if (dstChId == srcChId) return; // arrastar pro próprio cabeçalho não faz nada
+            int sceneCount = 0;
+            for (int i = 0; i < m_listLayout->count(); ++i) {
+                QLayoutItem* it = m_listLayout->itemAt(i);
+                if (!it || !it->widget()) continue;
+                QWidget* w = it->widget();
+                if (w->property("kind").toString() == QStringLiteral("scene") &&
+                    w->property("chapterId").toString() == dstChId) ++sceneCount;
+            }
+            tgtIdx = sceneCount;
+        } else {
+            return;
+        }
+
+        if (dstChId == srcChId) {
+            if (tgtIdx == srcIdx || tgtIdx == srcIdx + 1) { event->acceptProposedAction(); return; }
+            emit reorderSceneRequested(srcChId, srcIdx, tgtIdx);
+        } else {
+            emit moveSceneToChapterRequested(srcChId, srcIdx, dstChId, tgtIdx);
+        }
         event->acceptProposedAction();
         return;
     }

@@ -86,6 +86,8 @@ class RemindersStore;
 class RemindersPanel;
 class GroupsPanel;
 class LousaPanel;
+struct Chapter;
+class OutlinePanel;
 class TimelinePanel;
 class CharacterSheetPanel;
 class SheetTemplatesStore;
@@ -337,6 +339,7 @@ private:
     // Abre a fonte de um diálogo detectado no editor e seleciona o trecho.
     void openDialogueInEditor(const DialogueStore::Dialogue& dlg);
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
+    OutlinePanel* ensureOutlinePanel();    // idem, pro Outline Mode
     // Cria (lazy) e devolve a janela do Criador de Mundos, já com as duas
     // stores/provider injetados — o Construtor mora embutido nela, não tem
     // mais janela própria.
@@ -352,6 +355,24 @@ private:
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
     QString docTextForLink(const QString& linkKey);
+    // --- Operações de cena compartilhadas entre painéis --------------------
+    // Vivem aqui, e não no ProjectModel, porque mexem no TEXTO da cena, que
+    // fica no DocCache/disco e não no modelo. Tanto o painel de Manuscritos
+    // quanto o Outline chamam estes métodos — a regra nunca mora na UI.
+    //
+    // HTML do capítulo, preferindo o cache e caindo pro disco. Devolve string
+    // vazia se não achar em lugar nenhum.
+    QString chapterHtmlForEdit(const Chapter* chapter) const;
+    // Recarrega o editor se ele estiver mostrando justamente este capítulo
+    // (ou uma cena dele), pra tela não ficar com o texto antigo.
+    void reloadEditorIfShowingChapter(const QString& chapterId);
+    // Reordena cena dentro do MESMO capítulo.
+    void reorderSceneWithinChapter(const QString& chapterId, int srcIndex, int targetIndex);
+    // Move cena de um capítulo pro outro, texto e metadados juntos. Recusa
+    // (retorna false, sem tocar em nada) quando a origem tem uma cena só.
+    bool moveSceneAcrossChapters(const QString& srcChapterId, int srcIndex,
+                                 const QString& dstChapterId, int dstIndex);
+
     void navigateAdjacentChapter(int dir);
     void activateNavZone(int dir, const EditorHost::ViewMode& vm);
     void deactivateNavZone();
@@ -506,6 +527,7 @@ private:
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;
     TimelinePanel *timelinePanel = nullptr;
+    OutlinePanel *outlinePanel = nullptr;
     CharacterSheetPanel *characterSheetPanel = nullptr;
     MentionPopup *mentionPopup = nullptr;
     QFrame  *m_reminderToast      = nullptr;

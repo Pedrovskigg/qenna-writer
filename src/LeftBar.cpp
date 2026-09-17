@@ -178,6 +178,8 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
                     tr("Linha do tempo"), Timeline);
     makeFixedButton(QStringLiteral("manuscriptpanel.svg"), QStringLiteral("T"),
                     tr("Manuscritos"), Manuscripts);
+    makeFixedButton(QStringLiteral("outline.svg"), QStringLiteral("O"),
+                    tr("Outline"), Outline);
     makeFixedButton(QStringLiteral("groups.svg"), QStringLiteral("G"),
                     tr("Grupos"), Groups);
 
@@ -473,6 +475,7 @@ void LeftBar::buildGroups() {
         { QStringLiteral("whiteboard"),  m_fixedButtons.value(Whiteboard) },
         { QStringLiteral("timeline"),    m_fixedButtons.value(Timeline) },
         { QStringLiteral("manuscripts"), m_fixedButtons.value(Manuscripts) },
+        { QStringLiteral("outline"),     m_fixedButtons.value(Outline) },
         { QStringLiteral("groups"),      m_fixedButtons.value(Groups) },
     };
 }
@@ -481,7 +484,8 @@ QHash<QString, QStringList> LeftBar::defaultButtonLayout() const {
     return {
         { QStringLiteral("project"),  { QStringLiteral("info") } },
         { QStringLiteral("planning"), { QStringLiteral("whiteboard"), QStringLiteral("timeline") } },
-        { QStringLiteral("writing"),  { QStringLiteral("manuscripts"), QStringLiteral("groups") } },
+        { QStringLiteral("writing"),  { QStringLiteral("manuscripts"), QStringLiteral("outline"),
+                                        QStringLiteral("groups") } },
     };
 }
 

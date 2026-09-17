@@ -157,6 +157,8 @@ qt_add_executable(qenna-writer
     src/DrawerCreateDialog.h
     src/ManuscriptPanel.cpp
     src/ManuscriptPanel.h
+    src/OutlinePanel.cpp
+    src/OutlinePanel.h
     src/ChapterStatsDialog.cpp
     src/ChapterStatsDialog.h
     src/SceneUtils.cpp

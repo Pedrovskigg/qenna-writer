@@ -50,6 +50,10 @@ public:
     void closePanel();
     bool isPanelOpen() const;
     void openMap();
+    // Abre direto na aba Diálogos, já apontada pro capítulo dado — a aba
+    // sempre acompanhou o capítulo corrente, isto só junta as duas coisas num
+    // ponto de entrada público (Tab e selectTab seguem privados de propósito).
+    void openDialoguesForChapter(const QString& chapterId);
 
     // Altura da TopToolbar flutuante — o painel ancora logo abaixo dela.
     void setTopInset(int px) { m_topInset = px; }

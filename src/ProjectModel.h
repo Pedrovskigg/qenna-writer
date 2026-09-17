@@ -24,6 +24,9 @@ struct Scene {
     // cena não é do narrador / é de outro POV". Só relevante em obras com um
     // Element narrador definido.
     bool povOther = false;
+    // Estágio de produção da cena (WorkStatus::id) — "" = não definido.
+    // Só existe pro Outline Mode; o editor ignora.
+    QString status;
 };
 
 // Tipo de unidade narrativa (Capítulo/Prólogo/Epílogo/Interlúdio). Catálogo
@@ -32,6 +35,17 @@ struct Scene {
 struct ChapterType {
     QString id;    // "chapter" | "prologue" | "epilogue" | "interlude"
     QString label; // rótulo fixo, já traduzido
+};
+
+// Estágio de produção de um capítulo/cena. Catálogo fixo em código (ver
+// ProjectModel::workStatuses()), mesmo padrão idiomático de ChapterType —
+// id+label, sem enum C++. Diferente de ChapterType, aqui "" (não definido) é
+// um valor legítimo e é o padrão: o app não presume estágio nenhum pra texto
+// que o usuário nunca classificou.
+struct WorkStatus {
+    QString id;    // "draft" | "revised" | "final"
+    QString label; // rótulo fixo, já traduzido
+    QString color; // cor da pílula na grade do Outline
 };
 
 struct Chapter {
@@ -46,6 +60,8 @@ struct Chapter {
     bool povOther = false; // mesmo gatilho de POV, no nível de capítulo (sem cenas)
     QString type = QStringLiteral("chapter"); // ChapterType::id, ou "custom"
     QString typeLabel;    // rótulo livre digitado pelo usuário quando type=="custom"
+    // Estágio de produção do capítulo (WorkStatus::id) — "" = não definido.
+    QString status;
 };
 
 struct Manuscript {
@@ -317,11 +333,22 @@ public:
     bool updateChapterSummary(const QString& chapterId, const QString& summary);
     bool updateChapterPovOther(const QString& chapterId, bool value);
     bool updateChapterType(const QString& chapterId, const QString& type, const QString& typeLabel);
+    // "" limpa o estágio. Id fora do catálogo é recusado (retorna false) pra
+    // não gravar lixo que a grade depois não sabe rotular.
+    bool updateChapterStatus(const QString& chapterId, const QString& status);
     bool removeChapter(const QString& chapterId);
 
     // Catálogo fixo de tipos de capítulo (Capítulo/Prólogo/Epílogo/Interlúdio).
     // "custom" não entra aqui — não tem label fixo, usa Chapter::typeLabel.
     static QList<ChapterType> chapterTypes();
+    // Catálogo fixo de estágios de produção (Rascunho/Revisado/Final), usado
+    // pela coluna Status do Outline. "" (sem estágio) não entra aqui — é a
+    // ausência de valor, não um item do catálogo.
+    static QList<WorkStatus> workStatuses();
+    // Label do estágio, ou string vazia pra "" e pra id desconhecido. Mesma
+    // razão de retornar por valor que findChapterTypeLabel (ver lá).
+    static QString findWorkStatusLabel(const QString& id);
+    static QString findWorkStatusColor(const QString& id);
     // Label do tipo, ou string vazia se id desconhecido/"custom". Retorna por
     // valor (não ponteiro) de propósito: chapterTypes() monta uma lista nova
     // a cada chamada (ver comentário no .cpp), então um ponteiro pra dentro
@@ -359,6 +386,15 @@ public:
     bool updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker);
     bool updateSceneSummary(const QString& chapterId, int sceneIndex, const QString& summary);
     bool updateScenePovOther(const QString& chapterId, int sceneIndex, bool value);
+    bool updateSceneStatus(const QString& chapterId, int sceneIndex, const QString& status);
+
+    // Move a CENA (metadados) de um capítulo pro outro. Só mexe no modelo — o
+    // HTML da cena é movido por quem chama (MainWindow::moveSceneAcrossChapters),
+    // porque texto vive no DocCache/disco, não aqui. Chamar este método sozinho
+    // deixa metadado e texto fora de sincronia; não é API pra uso direto da UI.
+    // dstIndex é a posição final desejada dentro do capítulo de destino.
+    bool moveSceneMetaToChapter(const QString& srcChapterId, int srcIndex,
+                                const QString& dstChapterId, int dstIndex);
 
     // Suprime chaptersChanged() enquanto ativo, coalescendo em uma única
     // emissão no fim — usado por edições em lote (ex.: Gerador de Timeline)

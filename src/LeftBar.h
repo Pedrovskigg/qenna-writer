@@ -24,6 +24,7 @@ public:
         Timeline,
         Manuscripts,
         Groups,
+        Outline,
     };
     Q_ENUM(FixedAction)
 

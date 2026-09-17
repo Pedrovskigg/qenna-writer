@@ -63,6 +63,12 @@ signals:
     // Drag&drop reorder
     void reorderChapterRequested(QString chapterId, int targetIndex);
     void reorderSceneRequested(QString chapterId, int srcIndex, int targetIndex);
+    // Cena arrastada pra DENTRO de outro capítulo — soltando sobre uma cena de
+    // lá (entra naquela posição) ou sobre o cabeçalho do capítulo (entra no
+    // fim). Quem executa é MainWindow::moveSceneAcrossChapters, o mesmo método
+    // que o Outline usa.
+    void moveSceneToChapterRequested(QString srcChapterId, int srcIndex,
+                                     QString dstChapterId, int dstIndex);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

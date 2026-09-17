@@ -1,5 +1,8 @@
 #include "ProjectModel.h"
 #include "SceneUtils.h"
+// Só pelas cores das pílulas de status (workStatuses()). O catálogo já carrega
+// rótulo traduzido, que também é apresentação — mesma natureza de ChapterType.
+#include "Theme.h"
 #include "ScreenDefaults.h"
 #include "SpellChecker.h"
 
@@ -56,6 +59,7 @@ QJsonObject sceneToJson(const Scene& s) {
     if (!s.timeMarker.isEmpty()) o.insert(QStringLiteral("timeMarker"), s.timeMarker);
     if (!s.summary.isEmpty()) o.insert(QStringLiteral("summary"), s.summary);
     if (s.povOther) o.insert(QStringLiteral("povOther"), true);
+    if (!s.status.isEmpty()) o.insert(QStringLiteral("status"), s.status);
     return o;
 }
 
@@ -70,7 +74,15 @@ Scene sceneFromJson(const QJsonObject& o) {
     s.timeMarker = jsonString(o.value(QStringLiteral("timeMarker")));
     s.summary = jsonString(o.value(QStringLiteral("summary")));
     s.povOther = o.value(QStringLiteral("povOther")).toBool(false);
+    s.status = jsonString(o.value(QStringLiteral("status")));
     return s;
+}
+
+// Uma cena só "vale" ser gravada quando carrega algo que não dá pra recriar a
+// partir do HTML do capítulo. Ver a condição de gravação em chapterToJson.
+bool sceneHasMeta(const Scene& s) {
+    return !s.title.isEmpty() || !s.timeMarker.isEmpty() || !s.summary.isEmpty()
+        || !s.status.isEmpty() || s.povOther || !s.variations.isEmpty();
 }
 
 QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
@@ -80,7 +92,11 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     o.insert(QStringLiteral("title"), c.title);
     o.insert(QStringLiteral("file"), c.file);
     o.insert(QStringLiteral("order"), c.order > 0 ? c.order : fallbackOrder);
-    if (c.scenes.size() > 1) {
+    // Historicamente só gravava com 2+ cenas: com uma só, a "cena" é o capítulo
+    // inteiro e o registro era redundante. Só que isso silenciosamente jogava
+    // fora título/marcador/resumo/status de quem editasse a cena única — agora
+    // grava também nesse caso, desde que haja o que preservar.
+    if (c.scenes.size() > 1 || (c.scenes.size() == 1 && sceneHasMeta(c.scenes.first()))) {
         QJsonArray arr;
         for (const auto& s : c.scenes) arr.append(sceneToJson(s));
         o.insert(QStringLiteral("scenes"), arr);
@@ -90,6 +106,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     if (c.povOther) o.insert(QStringLiteral("povOther"), true);
     if (c.type != QStringLiteral("chapter")) o.insert(QStringLiteral("type"), c.type);
     if (!c.typeLabel.isEmpty()) o.insert(QStringLiteral("typeLabel"), c.typeLabel);
+    if (!c.status.isEmpty()) o.insert(QStringLiteral("status"), c.status);
     return o;
 }
 
@@ -108,6 +125,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     const QString typeVal = jsonString(o.value(QStringLiteral("type")));
     c.type = typeVal.isEmpty() ? QStringLiteral("chapter") : typeVal;
     c.typeLabel = jsonString(o.value(QStringLiteral("typeLabel")));
+    c.status = jsonString(o.value(QStringLiteral("status")));
     return c;
 }
 
@@ -1474,6 +1492,80 @@ bool ProjectModel::updateScenePovOther(const QString& chapterId, int sceneIndex,
     return false;
 }
 
+bool ProjectModel::updateChapterStatus(const QString& chapterId, const QString& status) {
+    if (!status.isEmpty() && findWorkStatusLabel(status).isEmpty()) return false;
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.status == status) return true;
+        c.status = status;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateSceneStatus(const QString& chapterId, int sceneIndex, const QString& status) {
+    if (!status.isEmpty() && findWorkStatusLabel(status).isEmpty()) return false;
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].status == status) return true;
+        c.scenes[sceneIndex].status = status;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::moveSceneMetaToChapter(const QString& srcChapterId, int srcIndex,
+                                          const QString& dstChapterId, int dstIndex) {
+    if (srcChapterId == dstChapterId) return false; // reorder interno tem caminho próprio
+
+    Chapter* src = nullptr;
+    Chapter* dst = nullptr;
+    for (auto& c : m_chapters) {
+        if (c.id == srcChapterId) src = &c;
+        else if (c.id == dstChapterId) dst = &c;
+    }
+    if (!src || !dst) return false;
+    if (srcIndex < 0 || srcIndex >= src->scenes.size()) return false;
+
+    // Último pedaço do capítulo de origem: mover deixaria o capítulo sem
+    // nenhuma cena, estado que o resto do app não espera (todo capítulo tem ao
+    // menos a cena implícita que é o texto inteiro). Quem chama trata como
+    // recusa e não mexe no HTML.
+    if (src->scenes.size() <= 1) return false;
+
+    Scene moved = src->scenes.takeAt(srcIndex);
+
+    // Convenção do app (ver buildScenesFromHtml): capítulo sem delimitador
+    // "----" tem ZERO cenas, não uma. Se a origem ficou com uma só, o texto
+    // restante volta a ser o capítulo inteiro e a lista tem que esvaziar —
+    // manter uma cena órfã aqui faria a próxima reconstrução a partir do HTML
+    // discordar do modelo. O metadado dessa cena remanescente se perde, igual
+    // ao que já acontece hoje quando o usuário apaga o "----" na mão.
+    if (src->scenes.size() == 1) src->scenes.clear();
+
+    // No destino vale o inverso: um capítulo monolítico (zero cenas) que
+    // recebe uma cena passa a ter DUAS — a que chegou mais o texto que já
+    // estava lá, que deixa de ser implícito e vira cena de verdade.
+    if (dst->scenes.isEmpty()) {
+        Scene existing;
+        existing.id = uid();
+        existing.title = tr("Cena 1");
+        dst->scenes.append(existing);
+    }
+
+    const int insertAt = qBound(0, dstIndex, dst->scenes.size());
+    dst->scenes.insert(insertAt, moved);
+
+    for (int i = 0; i < src->scenes.size(); ++i) src->scenes[i].order = i;
+    for (int i = 0; i < dst->scenes.size(); ++i) dst->scenes[i].order = i;
+
+    notifyChaptersChanged();
+    return true;
+}
+
 void ProjectModel::notifyChaptersChanged() {
     if (m_batching) { m_batchChaptersDirty = true; return; }
     emit chaptersChanged();
@@ -1775,6 +1867,30 @@ QList<ChapterType> ProjectModel::chapterTypes() {
         { QStringLiteral("epilogue"),  tr("Epílogo") },
         { QStringLiteral("interlude"), tr("Interlúdio") },
     };
+}
+
+QList<WorkStatus> ProjectModel::workStatuses() {
+    // Mesma regra de chapterTypes(): nada de static local, senão os tr()
+    // travam no idioma do primeiro chamador do processo.
+    return {
+        { QStringLiteral("draft"),   tr("Rascunho"), Theme::accentWarning() },
+        { QStringLiteral("revised"), tr("Revisado"), Theme::accentInfo() },
+        { QStringLiteral("final"),   tr("Final"),    Theme::accentSuccess() },
+    };
+}
+
+QString ProjectModel::findWorkStatusLabel(const QString& id) {
+    if (id.isEmpty()) return QString();
+    for (const auto& st : workStatuses())
+        if (st.id == id) return st.label;
+    return QString();
+}
+
+QString ProjectModel::findWorkStatusColor(const QString& id) {
+    if (id.isEmpty()) return QString();
+    for (const auto& st : workStatuses())
+        if (st.id == id) return st.color;
+    return QString();
 }
 
 QString ProjectModel::findChapterTypeLabel(const QString& id) {

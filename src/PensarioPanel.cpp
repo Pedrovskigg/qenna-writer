@@ -534,6 +534,14 @@ void PensarioPanel::openNoteCreate()
     m_notePopup->openForCreate();
 }
 
+void PensarioPanel::openDialoguesForChapter(const QString& chapterId)
+{
+    setCurrentChapterId(chapterId);
+    selectTab(Tab::Dialogues);
+    openPanel();
+    raise();
+}
+
 void PensarioPanel::openMap()
 {
     openMapPanel();
