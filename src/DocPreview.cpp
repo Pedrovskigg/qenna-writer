@@ -5,7 +5,14 @@
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 
+#include "MarkerStore.h"
+#include "Theme.h"
+
 #include <QRegularExpression>
+#include <QTextBlock>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QTextFragment>
 
 namespace DocPreview {
 
@@ -55,6 +62,42 @@ QString stripForegroundColors(const QString& html)
     QString out = html;
     out.remove(re);
     return out;
+}
+
+void applyThemeTextColors(QTextDocument* doc)
+{
+    if (!doc) return;
+
+    const QColor textColor(Theme::textPrimary());
+    for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
+        for (auto it = block.begin(); !it.atEnd(); ++it) {
+            const QTextFragment frag = it.fragment();
+            if (!frag.isValid() || frag.length() == 0) continue;
+
+            const QTextCharFormat existing = frag.charFormat();
+            QColor fg = textColor;
+            const QBrush bgBrush = existing.background();
+            if (bgBrush.style() != Qt::NoBrush && bgBrush.color().alpha() > 0)
+                fg = MarkerStore::pickContrastingFg(bgBrush.color());
+
+            QTextCursor c(doc);
+            c.setPosition(frag.position());
+            c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
+            QTextCharFormat fmt;
+            fmt.setForeground(fg);
+            c.mergeCharFormat(fmt);
+        }
+    }
+}
+
+void applyPreviewFontSize(QTextDocument* doc, int pointSize)
+{
+    if (!doc || pointSize <= 0) return;
+    QTextCursor cur(doc);
+    cur.select(QTextCursor::Document);
+    QTextCharFormat fmt;
+    fmt.setFontPointSize(pointSize);
+    cur.mergeCharFormat(fmt);
 }
 
 } // namespace DocPreview

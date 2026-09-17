@@ -1,4 +1,5 @@
 #include "RefMenuPanel.h"
+#include "DocPreview.h"
 
 #include "ConstrutorStore.h"
 #include "TerritorioStore.h"
@@ -2738,28 +2739,7 @@ void RefMenuPanel::rebuildPreview()
     // (charformat embutido pelo toHtml). Sobrescreve com a cor do tema atual
     // pra não ficar branco no tema claro. Onde houver background de marker,
     // foreground vai por contraste WCAG (mesma lógica do editor).
-    {
-        const QColor textColor(Theme::textPrimary());
-        QTextDocument* doc = m_preview->document();
-        for (QTextBlock block = doc->firstBlock(); block.isValid(); block = block.next()) {
-            for (auto it = block.begin(); !it.atEnd(); ++it) {
-                const QTextFragment frag = it.fragment();
-                if (!frag.isValid() || frag.length() == 0) continue;
-                const QTextCharFormat existing = frag.charFormat();
-                QColor fg = textColor;
-                const QBrush bgBrush = existing.background();
-                if (bgBrush.style() != Qt::NoBrush && bgBrush.color().alpha() > 0) {
-                    fg = MarkerStore::pickContrastingFg(bgBrush.color());
-                }
-                QTextCursor c(doc);
-                c.setPosition(frag.position());
-                c.setPosition(frag.position() + frag.length(), QTextCursor::KeepAnchor);
-                QTextCharFormat fmt;
-                fmt.setForeground(fg);
-                c.mergeCharFormat(fmt);
-            }
-        }
-    }
+    DocPreview::applyThemeTextColors(m_preview->document());
 
     // Resolve src de imagens internas remanescentes para QTextBrowser (caso restem inline)
     // Simples: o QTextDocument resolve via setSearchPaths se houver projectRoot.
@@ -2819,11 +2799,7 @@ void RefMenuPanel::applyPreviewFont()
     // QTextDocument embute charformat). Sem isso, setFont é silenciosamente
     // derrotado. mergeCharFormat só toca charFormat — não mexe em indent,
     // line-height nem espaçamento de parágrafo (esses ficam em blockFormat).
-    QTextCursor cur(m_preview->document());
-    cur.select(QTextCursor::Document);
-    QTextCharFormat fmt;
-    fmt.setFontPointSize(m_previewFontPt);
-    cur.mergeCharFormat(fmt);
+    DocPreview::applyPreviewFontSize(m_preview->document(), m_previewFontPt);
 
     // título escala junto
     if (m_previewTitle) {

@@ -2,6 +2,7 @@
 
 #include <QString>
 
+class QTextDocument;
 class ProjectModel;
 class ElementsStore;
 class DocCache;
@@ -34,5 +35,26 @@ QString stripImages(const QString& html);
 // ficar ilegível dependendo da combinação de temas. Preserva background-color
 // (marcador de texto é formatação intencional do autor, não sobra de tema).
 QString stripForegroundColors(const QString& html);
+
+// Reescreve a cor do texto de um documento JÁ CARREGADO pra cor do tema atual.
+// Mesma finalidade de stripForegroundColors, mas do outro lado da fronteira:
+// aquela limpa a cor no HTML antes de carregar, esta corrige no QTextDocument
+// depois — necessário quando o widget mostra o HTML original (com marcadores),
+// não uma versão higienizada dele.
+//
+// Onde o trecho tem fundo de marcador, a cor vai por contraste (mesma regra do
+// editor), pra o marcador continuar legível em vez de sumir no tema.
+// Usado por RefMenuPanel e OutlinePanel.
+void applyThemeTextColors(QTextDocument* doc);
+
+// Força o corpo do texto num tamanho de leitura. O manuscrito costuma estar em
+// tamanho de página (16pt e mais), que num painel lateral quebra a linha a cada
+// punhado de palavras.
+//
+// Tem que ser mergeCharFormat no documento inteiro: o `toHtml()` do editor
+// embute font-size em CADA bloco, então setFont() no widget é silenciosamente
+// derrotado. Margem de bloco NÃO se mexe — o preview do RefMenu nunca precisou,
+// e o texto se adapta à largura sozinho. Usado por RefMenuPanel e OutlinePanel.
+void applyPreviewFontSize(QTextDocument* doc, int pointSize);
 
 } // namespace DocPreview
