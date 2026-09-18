@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Qenna Writer</title>
+<meta name="description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows, sem conta, sem assinatura.">
+<link rel="canonical" href="https://qennawriter.com/pt/">
+<link rel="alternate" hreflang="en" href="https://qennawriter.com/">
+<link rel="alternate" hreflang="pt-BR" href="https://qennawriter.com/pt/">
+<link rel="alternate" hreflang="x-default" href="https://qennawriter.com/">
+<link rel="icon" href="../favicon.ico">
+<meta property="og:title" content="Qenna Writer">
+<meta property="og:description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows, sem conta, sem assinatura.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://qennawriter.com/pt/">
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper:      #f1eee3;
+    --sheet:      #faf8f0;
+    --ink:        #26231d;
+    --ink-soft:   #5f5a4d;
+    --ink-faint:  #9d9686;
+    --rule:       rgba(38,35,29,.16);
+    --rule-firm:  rgba(38,35,29,.30);
+    --blue:       #22415f;
+    --blue-soft:  rgba(34,65,95,.10);
+    --red:        #9c3527;
+    --red-ink:    #ffffff;
+    --bar-bg:     #f1eee3;
+    --shadow:     0 1px 0 rgba(38,35,29,.06), 0 22px 40px -26px rgba(38,35,29,.35);
+    --shadow-img: 0 1px 2px rgba(38,35,29,.14), 0 26px 50px -30px rgba(38,35,29,.55);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0d0c0b;
+      --sheet:      #161514;
+      --ink:        #edebe8;
+      --ink-soft:   #a5a29d;
+      --ink-faint:  #6f6c67;
+      --rule:       rgba(255,255,255,.13);
+      --rule-firm:  rgba(255,255,255,.24);
+      --blue:       #86adda;
+      --blue-soft:  rgba(134,173,218,.14);
+      --red:        #c4614c;
+      --red-ink:    #0d0c0b;
+      --bar-bg:     #0d0c0b;
+      --shadow:     0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+      --shadow-img: 0 1px 2px rgba(0,0,0,.5), 0 26px 54px -28px rgba(0,0,0,.85);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0d0c0b;
+    --sheet:      #161514;
+    --ink:        #edebe8;
+    --ink-soft:   #a5a29d;
+    --ink-faint:  #6f6c67;
+    --rule:       rgba(255,255,255,.13);
+    --rule-firm:  rgba(255,255,255,.24);
+    --blue:       #86adda;
+    --blue-soft:  rgba(134,173,218,.14);
+    --red:        #c4614c;
+    --red-ink:    #0d0c0b;
+    --bar-bg:     #0d0c0b;
+    --shadow:     0 1px 0 rgba(0,0,0,.4), 0 22px 44px -24px rgba(0,0,0,.7);
+    --shadow-img: 0 1px 2px rgba(0,0,0,.5), 0 26px 54px -28px rgba(0,0,0,.85);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Spectral, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .mono { font-family: 'IBM Plex Mono', 'Cascadia Mono', Consolas, monospace; }
+
+  a { color: var(--blue); text-decoration-color: var(--blue-soft); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--blue); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 2px; }
+  img { max-width: 100%; height: auto; display: block; }
+
+  /* ---------- sticky bar ---------- */
+  .bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 40;
+    background: var(--bar-bg);
+    border-bottom: 1px solid transparent;
+    transition: border-color .25s ease;
+  }
+  .bar.stuck { border-bottom-color: var(--rule); }
+  .bar-in {
+    max-width: 1000px; margin: 0 auto;
+    padding-block: 13px; padding-inline: 20px;
+    display: flex; align-items: center; gap: 14px;
+    min-width: 0;
+  }
+  .wordmark {
+    font-family: 'IBM Plex Mono', Consolas, monospace;
+    font-size: 12px; letter-spacing: .13em;
+    color: var(--ink-soft); text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .bar-links { display: flex; gap: 16px; margin-left: auto; align-items: center; flex: none; }
+  .bar-links a {
+    color: var(--ink-soft); text-decoration: none;
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 12px;
+  }
+  .bar-links a:hover { color: var(--ink); text-decoration: underline; }
+  .bar-cta {
+    background: var(--red); color: var(--red-ink) !important;
+    padding: 7px 15px; border-radius: 3px; font-size: 12px !important;
+    opacity: 0; transform: translateY(-4px); pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease; white-space: nowrap;
+  }
+  .bar.stuck .bar-cta { opacity: 1; transform: none; pointer-events: auto; }
+  .bar-cta:hover { text-decoration: none !important; filter: brightness(1.08); }
+  @media (max-width: 860px) { .bar-links .hide-sm { display: none; } }
+  @media (max-width: 420px) { .wordmark { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { padding-block: 40px 0; padding-inline: 20px; text-align: center; }
+  .hero .mark { width: min(745px, 100%); margin: 0 auto 28px; }
+  .thesis {
+    font-size: clamp(25px, 4vw, 37px);
+    font-weight: 600; letter-spacing: -.015em;
+    margin: 0 auto 32px; max-width: 17ch;
+    text-wrap: balance; line-height: 1.1;
+  }
+  .deck {
+    max-width: 50ch; margin: 0 auto 30px;
+    color: var(--ink-soft); font-size: 16.5px;
+  }
+  .cta-row { display: flex; flex-direction: column; align-items: center; gap: 11px; }
+  .cta {
+    display: inline-block; background: var(--red); color: var(--red-ink);
+    text-decoration: none; font-family: 'IBM Plex Mono', Consolas, monospace;
+    font-size: 15px; padding: 15px 34px; border-radius: 3px;
+    box-shadow: 0 10px 22px -14px var(--red);
+    transition: filter .18s ease, transform .18s ease;
+  }
+  .cta:hover { filter: brightness(1.08); transform: translateY(-1px); text-decoration: none; }
+  .cta:active { transform: none; }
+  .meta {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 12px;
+    color: var(--ink-faint); margin: 0; text-wrap: balance; line-height: 1.7;
+  }
+  .meta-alt a { color: var(--ink-soft); }
+
+  .hero-shot { margin: 42px auto 0; padding-inline: 20px; max-width: 1000px; }
+  .hero-shot img {
+    width: 100%; border: 1px solid var(--rule); border-radius: 5px;
+    box-shadow: var(--shadow-img);
+  }
+  .shot-cap {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 11px;
+    color: var(--ink-faint); letter-spacing: .05em; text-align: center; margin: 12px 0 0;
+  }
+
+  /* ---------- introducao ---------- */
+  .intro { max-width: 1000px; margin: 50px auto 0; padding-inline: 20px; }
+  .intro-in { max-width: 60ch; margin: 0 auto; }
+  .intro h2 { font-size: clamp(22px, 3vw, 28px); margin: 0 0 18px; max-width: none; }
+  .intro p { color: var(--ink-soft); margin: 0 0 16px; }
+  .genres {
+    margin: 26px 0; padding-left: 20px;
+    border-left: 2px solid var(--red);
+    display: grid; gap: 8px;
+  }
+  .genres span {
+    font-style: italic; font-size: 18px; color: var(--ink);
+    line-height: 1.35; text-wrap: balance;
+  }
+  .verdict { font-size: 19px; color: var(--ink) !important; font-weight: 500; }
+  .comever {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 11.5px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+    margin: 22px 0 0 !important; display: flex; align-items: center; gap: 12px;
+  }
+  .comever::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+
+  /* ---------- carta ---------- */
+  .letter { max-width: 58ch; margin: 0 auto; }
+  .letter p { font-size: 16.5px; line-height: 1.68; color: var(--ink-soft); margin: 0 0 16px; }
+  .letter p.open { color: var(--ink); }
+  .letter strong { color: var(--ink); font-weight: 500; }
+  .sig {
+    margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--rule);
+    font-style: italic; font-size: 16px; color: var(--ink);
+  }
+  .sig b { display: block; font-style: normal; font-weight: 500; margin-top: 4px; }
+
+  /* ---------- install ---------- */
+  .install { max-width: 1000px; margin: 54px auto 0; padding-inline: 20px; }
+  .install-in {
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding-block: 26px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+  }
+  @media (max-width: 720px) { .install-in { grid-template-columns: 1fr; gap: 22px; } }
+  .step { display: flex; gap: 13px; align-items: flex-start; }
+  .step-n {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 11px; color: var(--red);
+    border: 1px solid var(--rule-firm); border-radius: 50%;
+    width: 24px; height: 24px; display: grid; place-items: center; flex: none; margin-top: 2px;
+  }
+  .step p { margin: 0; font-size: 14.5px; color: var(--ink-soft); line-height: 1.55; }
+  .step strong { color: var(--ink); font-weight: 500; }
+
+  /* ---------- leaves ---------- */
+  .leaf {
+    background: var(--sheet); border: 1px solid var(--rule); border-radius: 3px;
+    box-shadow: var(--shadow); margin: 34px auto; padding: 48px 56px; max-width: 1000px;
+  }
+  @media (max-width: 760px) { .leaf { padding: 34px 22px; margin-inline: 16px; } }
+  .leaf-head {
+    display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 10.5px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+    border-bottom: 1px solid var(--rule); padding-bottom: 13px; margin-bottom: 30px;
+  }
+  .leaf-head .num { color: var(--red); }
+  h2 {
+    font-size: clamp(25px, 3.6vw, 33px); font-weight: 600; letter-spacing: -.01em;
+    margin: 0 0 14px; max-width: 21ch; text-wrap: balance; line-height: 1.16;
+  }
+  .lede { max-width: 62ch; color: var(--ink-soft); margin: 0 0 26px; }
+  .lede strong { color: var(--ink); font-weight: 500; }
+
+  .bleed { margin-inline: -56px; }
+  @media (max-width: 760px) { .bleed { margin-inline: -22px; } }
+  .bleed img { width: 100%; border-block: 1px solid var(--rule); }
+
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+  @media (max-width: 780px) { .cols { grid-template-columns: 1fr; } }
+  .cols img { border: 1px solid var(--rule); border-radius: 4px; box-shadow: var(--shadow-img); }
+
+  ul.ticks { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; max-width: 62ch; }
+  ul.ticks li {
+    padding-left: 22px; position: relative; color: var(--ink-soft);
+    font-size: 15.5px; line-height: 1.5;
+  }
+  ul.ticks li::before { content: "—"; position: absolute; left: 0; color: var(--red); }
+  ul.ticks strong { color: var(--ink); font-weight: 500; }
+
+  figure { margin: 0; }
+  figcaption {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 10.5px;
+    letter-spacing: .05em; color: var(--ink-faint); margin-top: 9px; line-height: 1.5;
+  }
+
+  .covers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: end; }
+  @media (max-width: 720px) { .covers { grid-template-columns: repeat(2, 1fr); gap: 16px; } }
+  .covers img { width: 100%; border-radius: 2px; box-shadow: var(--shadow-img); }
+
+  .idx { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 40px; }
+  @media (max-width: 760px) { .idx { grid-template-columns: 1fr; } }
+  .idx-row {
+    display: flex; gap: 12px; align-items: baseline;
+    padding-block: 12px; border-bottom: 1px solid var(--rule);
+  }
+  .idx-row dt { font-weight: 500; white-space: nowrap; font-size: 15.5px; }
+  .idx-row dd {
+    margin: 0; color: var(--ink-soft); font-size: 14.5px;
+    text-align: right; margin-left: auto; line-height: 1.45;
+  }
+
+  .colo { display: grid; grid-template-columns: 1.15fr 1fr; gap: 40px; }
+  @media (max-width: 780px) { .colo { grid-template-columns: 1fr; gap: 26px; } }
+  h3 {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 10.5px;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+    font-weight: 500; margin: 0 0 12px;
+  }
+  .colo p { margin: 0 0 14px; font-size: 15.5px; color: var(--ink-soft); max-width: 54ch; }
+  .linklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 15px; }
+
+  .quote { text-align: center; padding-block: 54px; padding-inline: 20px; max-width: 720px; margin: 0 auto; }
+  .quote blockquote {
+    margin: 0 auto 14px; max-width: 30ch; font-size: clamp(20px, 3vw, 26px);
+    font-style: italic; line-height: 1.38; text-wrap: balance;
+  }
+  .quote .attrib {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 11px;
+    letter-spacing: .08em; color: var(--ink-faint); text-transform: uppercase;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule); padding-block: 26px 40px;
+    padding-inline: 20px; text-align: center;
+  }
+  footer p {
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 11.5px;
+    color: var(--ink-faint); margin: 0 0 10px; line-height: 1.7;
+  }
+  footer .flinks { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; font-size: 12px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+<header class="bar" id="bar">
+  <div class="bar-in">
+    <span class="wordmark">Qenna Writer</span>
+    <nav class="bar-links">
+      <a class="hide-sm" href="#recursos">Recursos</a>
+      <a class="hide-sm" href="#licenca">Licença</a>
+      <a href="https://github.com/Pedrovskigg/qenna-writer">Código</a>
+      <a href="/">EN</a>
+      <a class="bar-cta mono" href="/pt/obrigado.html">Baixar</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <img class="mark" src="../img/wordmark.webp" alt="Qenna — cada letra do nome desenhada como um mundo diferente: fantasia, thriller, ficção científica, aventura histórica e romance" width="1100" height="412" fetchpriority="high">
+  <p class="thesis">O livro inteiro num programa só.</p>
+  <div class="cta-row">
+    <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
+    <p class="meta"><span id="ver">v0.17.2</span> &middot; Windows 10/11 &middot; ~167 MB &middot; gratuito, sem assinatura</p>
+    <p class="meta meta-alt"><a href="#recursos">Ver antes de baixar</a> &middot; <a href="https://github.com/Pedrovskigg/qenna-writer">Ler o código</a></p>
+  </div>
+</section>
+
+<section class="intro">
+  <div class="intro-in">
+    <h2>O que &eacute; o Qenna Writer?</h2>
+    <p>Um programa para escrever fic&ccedil;&atilde;o longa &mdash; romance e roteiro &mdash; do primeiro rascunho at&eacute; a revis&atilde;o. Cap&iacute;tulos, cenas, personagens, mundo e linha do tempo no mesmo lugar, em vez de espalhados por quatro programas diferentes.</p>
+    <div class="genres">
+      <span>Um thriller com detalhes que n&atilde;o podem ser esquecidos?</span>
+      <span>Uma saga de fantasia de doze livros?</span>
+      <span>Uma &oacute;pera espacial com uma trama pol&iacute;tica bem amarrada?</span>
+    </div>
+    <p class="verdict">N&atilde;o importa qual seja a sua. O Qenna d&aacute; conta &mdash; e d&aacute; bem.</p>
+    <p class="comever">Venha ver</p>
+  </div>
+</section>
+
+<div id="sentinel" aria-hidden="true" style="height:1px"></div>
+
+<div class="hero-shot">
+  <img src="../img/shot-chapters.webp" alt="O Qenna Writer aberto: à esquerda a lista de capítulos com as cenas aninhadas embaixo de cada um, no centro a página do manuscrito" width="1500" height="788">
+  <p class="shot-cap">Solarized Highlands</p>
+</div>
+
+<article class="leaf" id="recursos">
+  <div class="leaf-head"><span><span class="num">I</span> &nbsp;O editor</span><span>Qenna Writer</span></div>
+  <h2>O capítulo de três livros atrás fica a um clique</h2>
+  <p class="lede">O painel de Referência abre ao lado da página: qualquer capítulo, cena ou ficha aberta junto do que você está escrevendo, sem trocar de janela e sem perder a linha. Capítulos se dividem em cenas, e as cenas aparecem na lista lateral como subitens.</p>
+  <div class="bleed">
+    <img src="../img/shot-reference.webp" alt="Capítulo 3 aberto no editor e o Capítulo 1 exibido ao lado no painel de Referência" width="1300" height="680" loading="lazy">
+  </div>
+  <ul class="ticks" style="margin-top:28px">
+    <li><strong>Vários manuscritos num projeto só</strong> — escreva a trilogia inteira sem perder o livro um.</li>
+    <li><strong>Gavetas</strong> para personagens, lugares, objetos e lore, com busca que varre a gaveta inteira.</li>
+    <li><strong>Marcação com @</strong> ligando personagens e termos entre documentos.</li>
+    <li><strong>Modo roteiro</strong> com os elementos de verdade — Cena, Ação, Personagem, Diálogo, Parentético, Transição.</li>
+    <li><strong>Detector de repetições</strong> apontando palavra repetida, excesso de advérbio e parágrafo longo demais.</li>
+  </ul>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span><span class="num">II</span> &nbsp;O manuscrito inteiro de uma vez</span><span>Qenna Writer</span></div>
+  <h2>Cada capítulo vira uma ficha, com os números dentro</h2>
+  <p class="lede">O Modo Outline abre o manuscrito como faixas de card: começo de cada capítulo, contagem de palavras, quantas linhas de diálogo, a proporção entre diálogo e narração, e quem está em cena. <strong>Nada disso é campo para preencher</strong> — é leitura do que você já escreveu.</p>
+  <div class="bleed">
+    <img src="../img/shot-outline.webp" alt="O Modo Outline mostrando cards de capítulo com contagem de palavras, linhas de diálogo e proporção entre diálogo e narração" width="1140" height="677" loading="lazy">
+  </div>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">No alto: 5 capítulos &middot; 15 cenas &middot; 2.873 palavras — somados sozinhos.</p>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span><span class="num">III</span> &nbsp;Quem está em cena</span><span>Qenna Writer</span></div>
+  <h2>Saber quem apareceu, onde, e quem falou o quê</h2>
+  <p class="lede">A gaveta de Personagens guarda ficha, foto e papel de cada um. O Qenna cruza isso com o texto e conta sozinho: em quantas cenas o personagem aparece, quantas falas tem, com quem contracena mais.</p>
+  <div class="bleed">
+    <img src="../img/shot-characters.webp" alt="A gaveta de Personagens aberta ao lado do editor, com fichas ilustradas e o papel de cada personagem" width="1300" height="685" loading="lazy">
+  </div>
+  <ul class="ticks" style="margin-top:28px">
+    <li><strong>Detecção de presença</strong> por capítulo e por cena.</li>
+    <li><strong>Grafo de vínculos</strong> construído a partir de quem realmente aparece junto.</li>
+    <li><strong>Registro de diálogo</strong> pesquisável — toda fala, separada por quem disse.</li>
+    <li><strong>Lembretes</strong> para marcar o que ficou solto e voltar antes de esfriar.</li>
+  </ul>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span><span class="num">IV</span> &nbsp;Antes da primeira frase</span><span>Qenna Writer</span></div>
+  <h2>Um lugar para a parte que ainda não virou prosa</h2>
+  <p class="lede">A Lousa é uma tela em branco: post-its, fichas, imagens e documentos ligados como a trama realmente se liga — não um mapa mental de nós fixos. Qualquer card vira evento na linha do tempo depois.</p>
+  <div class="bleed">
+    <img src="../img/panel-board.webp" alt="A Lousa do Qenna Writer com imagens de referência, post-its coloridos e anotações à mão sobre um ato inteiro da história" width="1300" height="690" loading="lazy">
+  </div>
+  <div class="cols" style="margin-top:30px">
+    <figure>
+      <img src="../img/panel-timeline.webp" alt="A Timeline do Qenna Writer com eventos ligados sobre um fundo escuro" width="1100" height="662" loading="lazy">
+      <figcaption>A linha do tempo se monta a partir da data e do resumo que já estão no capítulo. Quando a história se divide de verdade, um ramo aparece sem ser pedido.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/panel-map.webp" alt="O Mapa-múndi com países reais, alfinetes marcando locais da história e uma régua de distância" width="746" height="583" loading="lazy">
+      <figcaption>O Mapa-múndi mantém a geografia honesta: países reais, régua de distância real e alfinetes que ficam onde você colocou.</figcaption>
+    </figure>
+  </div>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span><span class="num">V</span> &nbsp;Do seu jeito</span><span>Qenna Writer</span></div>
+  <h2>286 temas, ou um feito do zero</h2>
+  <p class="lede">A cor da página e a cor do painel são independentes — dá para ter interface escura em volta de uma página branca, ou o contrário. Dá para definir um tema de dia e um de noite e deixar o Qenna trocar sozinho no horário.</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/shot-neon.webp" alt="O editor sobre um tema de cidade noturna, com página escura" width="1300" height="682" loading="lazy">
+      <figcaption>One Dark Skyline.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/shot-focus.webp" alt="O editor em Modo Foco sobre um tema de montanha nevada, sem nenhuma barra à vista" width="1300" height="682" loading="lazy">
+      <figcaption>Modo Foco: some tudo, fica a página.</figcaption>
+    </figure>
+  </div>
+  <div class="cols" style="margin-top:26px">
+    <figure>
+      <img src="../img/panel-themes.webp" alt="A galeria de temas do Qenna Writer, com busca por nome, filtros por claro, escuro, colorido e estampado, e os botoes de novo, duplicar, editar, exportar e importar" width="799" height="992" loading="lazy">
+      <figcaption>Busca por nome e filtros &mdash; a busca entrou porque rolar a lista parou de ser razo&aacute;vel l&aacute; pelo tema 80.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/panel-patterns.webp" alt="O filtro Estampado da galeria de temas, mostrando temas com fundo fotografico: onda de Kanagawa, neon de Tokyo, geleira, campo nevado" width="798" height="991" loading="lazy">
+      <figcaption>O filtro <strong>Estampado</strong>: os temas com fundo fotogr&aacute;fico, que &eacute; o que d&aacute; ao Qenna a cara que ele tem.</figcaption>
+    </figure>
+  </div>
+  <div class="cols" style="margin-top:26px">
+    <div>
+      <ul class="ticks">
+        <li><strong>Busca e favoritos</strong> na galeria &mdash; o cora&ccedil;&atilde;o marca os que voc&ecirc; usa sempre.</li>
+        <li><strong>Exportar e importar tema</strong>: um tema vira arquivo e vai para outra m&aacute;quina, ou para outra pessoa.</li>
+        <li><strong>Troca autom&aacute;tica por hor&aacute;rio</strong> entre um tema de dia e um de noite.</li>
+        <li><strong>Editor de tema</strong> para duplicar um pronto e mexer, ou construir do zero.</li>
+        <li><strong>Som ambiente</strong> embutido, sem precisar de aba de chuva no navegador.</li>
+        <li><strong>Barras m&oacute;veis</strong> &mdash; a barra de ferramentas vai para onde voc&ecirc; preferir.</li>
+      </ul>
+    </div>
+    <figure>
+      <img src="../img/shot-light.webp" alt="O editor sobre um tema claro, com pagina branca e interface clara" width="1200" height="635" loading="lazy">
+      <figcaption>E claro, se for o seu caso.</figcaption>
+    </figure>
+  </div>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span>Estat&iacute;sticas</span><span>Qenna Writer</span></div>
+  <h2>Os n&uacute;meros do projeto, contados sozinhos</h2>
+  <p class="lede">O painel de Estat&iacute;sticas n&atilde;o pede nada preenchido. Ele l&ecirc; o manuscrito e devolve a participa&ccedil;&atilde;o de cada personagem, o tamanho de cada cap&iacute;tulo e o resumo do projeto inteiro &mdash; <strong>tudo a partir do texto que j&aacute; est&aacute; l&aacute;</strong>. Serve para a pergunta que nenhum editor comum responde: onde este livro est&aacute; desequilibrado?</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/panel-stats.webp" alt="Painel de Estatisticas do projeto, com participacao por personagem em percentual, grafico de palavras por capitulo e resumo do projeto" width="564" height="926" loading="lazy">
+      <figcaption>Participa&ccedil;&atilde;o por personagem em % das cenas, palavras por cap&iacute;tulo em barras, e o resumo: 391.241 palavras no projeto, 21 cap&iacute;tulos, maior e menor cap&iacute;tulo nomeados.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/panel-stats2.webp" alt="Ficha estatistica de um personagem, com presenca em cenas e capitulos, falas detectadas, palavras ditas e a lista de quem mais contracenou" width="554" height="674" loading="lazy">
+      <figcaption>A ficha de um personagem: aparece em 20 das 21 cenas (95%), 3.614 falas detectadas, 92.071 palavras ditas &mdash; e com quem contracenou mais, em cenas, cap&iacute;tulos e falas.</figcaption>
+    </figure>
+  </div>
+  <ul class="ticks" style="margin-top:28px">
+    <li><strong>Presen&ccedil;a por personagem</strong>, em percentual das cenas &mdash; d&aacute; para ver de relance quem sumiu do segundo ato.</li>
+    <li><strong>Palavras por cap&iacute;tulo</strong> em barras, com o maior e o menor nomeados.</li>
+    <li><strong>Qu&iacute;mica</strong>: quem contracena com quem, contado em cenas, cap&iacute;tulos e n&uacute;mero de falas.</li>
+    <li><strong>Falas e palavras ditas</strong> por personagem, separadas da narra&ccedil;&atilde;o.</li>
+    <li>Nenhum desses campos &eacute; preenchido &agrave; m&atilde;o.</li>
+  </ul>
+</article>
+
+<article class="leaf">
+  <div class="leaf-head"><span>Índice</span><span>Qenna Writer</span></div>
+  <h2>O resto, em uma linha cada</h2>
+  <dl class="idx">
+    <div class="idx-row"><dt>Exportação</dt><dd>DOCX, ODT, PDF e EPUB — projeto inteiro, um manuscrito ou um capítulo</dd></div>
+    <div class="idx-row"><dt>Formato de submissão</dt><dd>Manuscrito padrão Shunn, pronto para enviar</dd></div>
+    <div class="idx-row"><dt>Metas e hábito</dt><dd>Meta de palavras ou de tempo, sequências, Pomodoro e calendário</dd></div>
+    <div class="idx-row"><dt>Estatísticas</dt><dd>Palavras totais, tempo total, maior sequência</dd></div>
+    <div class="idx-row"><dt>Ler em voz alta</dt><dd>O texto lido em voz alta, do parágrafo ou da seleção</dd></div>
+    <div class="idx-row"><dt>Corretor e sinônimos</dt><dd>Dicionário e dicionário de sinônimos, no idioma do app</dd></div>
+    <div class="idx-row"><dt>Criador de Capas</dt><dd>Programa separado, incluído, para montar capa com arte livre de direitos</dd></div>
+    <div class="idx-row"><dt>Backup</dt><dd>Projeto inteiro em um zip, com um clique</dd></div>
+    <div class="idx-row"><dt>Lixeira</dt><dd>Nada é excluído em definitivo</dd></div>
+    <div class="idx-row"><dt>Cinco idiomas</dt><dd>Português, inglês, espanhol, italiano e francês</dd></div>
+  </dl>
+</article>
+
+<article class="leaf" id="licenca">
+  <div class="leaf-head"><span>Código e licença</span><span>Qenna Writer</span></div>
+  <div class="colo">
+    <div>
+      <h3>Licença</h3>
+      <p>A Licença Qenna Writer, baseada na GPLv3. Qualquer pessoa pode ler, alterar e redistribuir o código de graça — ninguém pode transformá-lo em produto fechado ou pago.</p>
+      <p>Uma pessoa só constrói e mantém isso nas horas vagas. Bug entra pelo GitHub Issues e costuma ser corrigido em dias, não em trimestres. Não há fila de suporte para esperar.</p>
+      <h3 style="margin-top:26px">Contato</h3>
+      <p>Para relatar bug, sugerir função ou só gritar sobre a sua trama às 3 da manhã: <a href="mailto:qennawriter@gmail.com">qennawriter@gmail.com</a>. Posso levar algumas horas ou dias para responder, mas eu respondo.</p>
+    </div>
+    <div>
+      <h3>Links</h3>
+      <p style="margin-bottom:16px">O Qenna &eacute; feito em C++ e Qt, para priorizar a velocidade e a performance. Voc&ecirc; pode ver o c&oacute;digo-fonte em:</p>
+      <ul class="linklist">
+        <li><a href="/about.html">Como o Qenna Writer surgiu</a> <span style="opacity:.6">(em inglês)</span></li>
+        <li><a href="https://github.com/Pedrovskigg/qenna-writer">Código-fonte — Pedrovskigg/qenna-writer</a></li>
+        <li><a href="https://github.com/Pedrovskigg/qenna-writer#readme">Compilar a partir do código</a></li>
+        <li><a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Versões e instaladores</a></li>
+        <li><a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/LICENSE">Texto da licença</a></li>
+        <li><a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/THIRD-PARTY-NOTICES.md">Avisos de terceiros</a></li>
+        <li><a href="https://github.com/Pedrovskigg/qenna-cover-creator">Criador de Capas (repositório separado)</a></li>
+        <li><a href="https://alternativeto.net/software/qenna-writer/">Página no AlternativeTo</a></li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<section class="quote">
+  <blockquote>"Você não deveria ter que pagar para escrever boas histórias, nem pelas ferramentas que ajudam a escrevê-las. O único pagamento que o Qenna Writer pede é: escreva boas histórias."</blockquote>
+  <p class="attrib">— P.H. Lobato, criador do Qenna Writer</p>
+  <div class="cta-row" style="margin-top:34px">
+    <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
+    <p class="meta"><span id="ver2">v0.17.2</span> &middot; Windows 10/11 &middot; ~167 MB</p>
+  </div>
+</section>
+
+<footer>
+  <p>Qenna Writer &middot; Licença Qenna Writer &middot; Antigo Mira Writing &middot; Feito por uma pessoa só, à vista de todos.</p>
+  <div class="flinks">
+    <a href="https://github.com/Pedrovskigg/qenna-writer">Código</a>
+    <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Versões</a>
+    <a href="https://github.com/Pedrovskigg/qenna-cover-creator">Criador de Capas</a>
+    <a href="/">English</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var bar = document.getElementById('bar');
+    var hero = document.getElementById('sentinel');
+    if (!bar || !hero || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (entries) {
+      bar.classList.toggle('stuck', !entries[0].isIntersecting);
+    }, { rootMargin: '-56px 0px 0px 0px' });
+    io.observe(hero);
+  })();
+
+  (function () {
+    try {
+      fetch('https://api.github.com/repos/Pedrovskigg/Qenna-Writer-releases/releases/latest')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          if (!d || !d.tag_name) return;
+          ['ver', 'ver2'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = String(d.tag_name);
+          });
+        })
+        .catch(function () {});
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>
