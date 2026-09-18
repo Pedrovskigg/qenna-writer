@@ -2438,7 +2438,7 @@ void Manager::loadBundled()
         // Meia-Noite — azul-noturno quase neutro. Profundidade silenciosa.
         MiraTheme t;
         t.id = QStringLiteral("midnight");
-        t.name = QStringLiteral("Midnight");
+        t.name = QStringLiteral("Nightfall");
         t.bundled = true;
         t.appBackground = QStringLiteral("#0a0c14");
         t.panelBackground = QStringLiteral("#11141f");
@@ -3731,7 +3731,7 @@ void Manager::loadBundled()
     };
 
     // Galáxias e cosmos
-    estampado(QStringLiteral("via-lactea"), QStringLiteral("Via Láctea"),
+    estampado(QStringLiteral("via-lactea"), QStringLiteral("Milky Way"),
               QStringLiteral("galaxy-texture.jpg"), true, QStringLiteral("196,204,224"),
               QStringLiteral("#060812"), QStringLiteral("#0c1020"), QStringLiteral("#20283f"),
               QStringLiteral("#c4cce0"), QStringLiteral("#6a7390"), QStringLiteral("#eef2fb"),
@@ -3745,7 +3745,7 @@ void Manager::loadBundled()
               QStringLiteral("#34c0b0"), QStringLiteral("#081418"), QStringLiteral("#d4e8e6"),
               QStringLiteral("rgba(0,0,0,200)"), 32, 7);
 
-    estampado(QStringLiteral("firmamento"), QStringLiteral("Firmamento"),
+    estampado(QStringLiteral("firmamento"), QStringLiteral("Firmament"),
               QStringLiteral("pexels-francian0-12940327.jpg"), true, QStringLiteral("207,196,224"),
               QStringLiteral("#08060f"), QStringLiteral("#0e0b1a"), QStringLiteral("#261d3a"),
               QStringLiteral("#cfc4e0"), QStringLiteral("#746688"), QStringLiteral("#efe8f6"),
@@ -3759,7 +3759,7 @@ void Manager::loadBundled()
               QStringLiteral("#e88a2e"), QStringLiteral("#080b16"), QStringLiteral("#d8deec"),
               QStringLiteral("rgba(0,0,0,215)"), 34, 7);
 
-    estampado(QStringLiteral("abismo"), QStringLiteral("Abismo"),
+    estampado(QStringLiteral("abismo"), QStringLiteral("Abyss"),
               QStringLiteral("pexels-enginakyurt-6138036.jpg"), true, QStringLiteral("192,204,224"),
               QStringLiteral("#050a14"), QStringLiteral("#0a1322"), QStringLiteral("#182640"),
               QStringLiteral("#c0cce0"), QStringLiteral("#6a7690"), QStringLiteral("#e6eefa"),
@@ -3767,56 +3767,56 @@ void Manager::loadBundled()
               QStringLiteral("rgba(0,0,0,215)"), 34, 7);
 
     // Cidades e metrópoles
-    estampado(QStringLiteral("metropole"), QStringLiteral("Metrópole"),
+    estampado(QStringLiteral("metropole"), QStringLiteral("Metropolis"),
               QStringLiteral("pexels-2150015030-31016869.jpg"), true, QStringLiteral("194,210,230"),
               QStringLiteral("#08111e"), QStringLiteral("#0d1a2c"), QStringLiteral("#1e3048"),
               QStringLiteral("#c2d2e6"), QStringLiteral("#6a7c94"), QStringLiteral("#e8f0fa"),
               QStringLiteral("#4aa8e0"), QStringLiteral("#0a1726"), QStringLiteral("#d6e2f0"),
               QStringLiteral("rgba(0,0,0,200)"), 30, 7);
 
-    estampado(QStringLiteral("vertigem"), QStringLiteral("Vertigem"),
+    estampado(QStringLiteral("vertigem"), QStringLiteral("Vertigo"),
               QStringLiteral("pexels-apyfz-30136066.jpg"), true, QStringLiteral("212,200,230"),
               QStringLiteral("#0a0818"), QStringLiteral("#120e24"), QStringLiteral("#2a2046"),
               QStringLiteral("#d4c8e6"), QStringLiteral("#7a6a92"), QStringLiteral("#f0e8fa"),
               QStringLiteral("#d24aa8"), QStringLiteral("#0d0a1c"), QStringLiteral("#e2d8ee"),
               QStringLiteral("rgba(0,0,0,210)"), 32, 7);
 
-    estampado(QStringLiteral("distrito"), QStringLiteral("Distrito"),
+    estampado(QStringLiteral("distrito"), QStringLiteral("District"),
               QStringLiteral("pexels-digital-phase-2150191459-31008030.jpg"), true, QStringLiteral("192,218,218"),
               QStringLiteral("#08161a"), QStringLiteral("#0c2024"), QStringLiteral("#184048"),
               QStringLiteral("#c0dada"), QStringLiteral("#688688"), QStringLiteral("#e6f4f4"),
               QStringLiteral("#e0524a"), QStringLiteral("#0a1c20"), QStringLiteral("#d6e8e6"),
               QStringLiteral("rgba(0,0,0,200)"), 30, 7);
 
-    estampado(QStringLiteral("cidade-baixa"), QStringLiteral("Cidade Baixa"),
+    estampado(QStringLiteral("cidade-baixa"), QStringLiteral("Lower City"),
               QStringLiteral("pexels-einfoto-2130505.jpg"), true, QStringLiteral("214,204,198"),
               QStringLiteral("#0e0c0c"), QStringLiteral("#161212"), QStringLiteral("#2e2622"),
               QStringLiteral("#d6ccc6"), QStringLiteral("#8a7c74"), QStringLiteral("#f2ebe6"),
               QStringLiteral("#c25a44"), QStringLiteral("#14100e"), QStringLiteral("#e4dcd4"),
               QStringLiteral("rgba(0,0,0,210)"), 30, 7);
 
-    estampado(QStringLiteral("babilonia"), QStringLiteral("Babilônia"),
+    estampado(QStringLiteral("babilonia"), QStringLiteral("Babylon"),
               QStringLiteral("pexels-jimmy-liao-3615017-16705982.jpg"), true, QStringLiteral("224,208,192"),
               QStringLiteral("#100a08"), QStringLiteral("#1a120c"), QStringLiteral("#34261a"),
               QStringLiteral("#e0d0c0"), QStringLiteral("#927e6c"), QStringLiteral("#f4e8d8"),
               QStringLiteral("#e07a30"), QStringLiteral("#140d09"), QStringLiteral("#e6d8c8"),
               QStringLiteral("rgba(0,0,0,210)"), 32, 7);
 
-    estampado(QStringLiteral("concreto"), QStringLiteral("Concreto"),
+    estampado(QStringLiteral("concreto"), QStringLiteral("Concrete"),
               QStringLiteral("pexels-water-white-1436785-5132764.jpg"), true, QStringLiteral("205,210,216"),
               QStringLiteral("#14161a"), QStringLiteral("#1c1f24"), QStringLiteral("#32373e"),
               QStringLiteral("#cdd2d8"), QStringLiteral("#828891"), QStringLiteral("#eef1f4"),
               QStringLiteral("#7a8a9a"), QStringLiteral("#1a1d22"), QStringLiteral("#dce0e6"),
               QStringLiteral("rgba(0,0,0,205)"), 30, 7);
 
-    estampado(QStringLiteral("horizonte"), QStringLiteral("Horizonte"),
+    estampado(QStringLiteral("horizonte"), QStringLiteral("Horizon"),
               QStringLiteral("pexels-kaique-lopes-3899395-9304147.jpg"), false, QStringLiteral("30,42,54"),
               QStringLiteral("#dce8f2"), QStringLiteral("#eaf2f8"), QStringLiteral("#c2d4e2"),
               QStringLiteral("#2c3a48"), QStringLiteral("#748494"), QStringLiteral("#16202c"),
               QStringLiteral("#3a8ec8"), QStringLiteral("#f8fbfe"), QStringLiteral("#1e2a36"),
               QStringLiteral("rgba(40,60,80,80)"), 26, 6);
 
-    estampado(QStringLiteral("cidade-clara"), QStringLiteral("Cidade Clara"),
+    estampado(QStringLiteral("cidade-clara"), QStringLiteral("Bright City"),
               QStringLiteral("pexels-wenchengphoto-6650574.jpg"), false, QStringLiteral("40,38,32"),
               QStringLiteral("#e8e6e0"), QStringLiteral("#f4f2ec"), QStringLiteral("#d4d0c6"),
               QStringLiteral("#38362f"), QStringLiteral("#8a8578"), QStringLiteral("#20201a"),
@@ -3824,35 +3824,35 @@ void Manager::loadBundled()
               QStringLiteral("rgba(70,60,40,80)"), 26, 6);
 
     // Natureza — florestas, mar, céu
-    estampado(QStringLiteral("selva"), QStringLiteral("Selva"),
+    estampado(QStringLiteral("selva"), QStringLiteral("Jungle"),
               QStringLiteral("pexels-dongdilac-29556194.jpg"), true, QStringLiteral("196,220,194"),
               QStringLiteral("#0a140c"), QStringLiteral("#102014"), QStringLiteral("#1e3a24"),
               QStringLiteral("#c4dcc2"), QStringLiteral("#6c8a6c"), QStringLiteral("#e8f4e6"),
               QStringLiteral("#5aa84a"), QStringLiteral("#0d1c10"), QStringLiteral("#d6e8d2"),
               QStringLiteral("rgba(0,0,0,200)"), 30, 7);
 
-    estampado(QStringLiteral("clareira"), QStringLiteral("Clareira"),
+    estampado(QStringLiteral("clareira"), QStringLiteral("Clearing"),
               QStringLiteral("pexels-elif-lale-a-1708563292-32445422.jpg"), true, QStringLiteral("202,220,200"),
               QStringLiteral("#0c160e"), QStringLiteral("#122016"), QStringLiteral("#213824"),
               QStringLiteral("#cadcc8"), QStringLiteral("#708c70"), QStringLiteral("#ecf6e8"),
               QStringLiteral("#88c060"), QStringLiteral("#f4faef"), QStringLiteral("#16240f"),
               QStringLiteral("rgba(10,24,12,150)"), 30, 7);
 
-    estampado(QStringLiteral("alvorada"), QStringLiteral("Alvorada"),
+    estampado(QStringLiteral("alvorada"), QStringLiteral("Daybreak"),
               QStringLiteral("pexels-hoang-hai-72150707-8468801.jpg"), true, QStringLiteral("224,210,188"),
               QStringLiteral("#161009"), QStringLiteral("#20180e"), QStringLiteral("#3a2c18"),
               QStringLiteral("#e0d2bc"), QStringLiteral("#94836a"), QStringLiteral("#f4ead6"),
               QStringLiteral("#d89a40"), QStringLiteral("#faf3e6"), QStringLiteral("#2a2014"),
               QStringLiteral("rgba(20,14,6,150)"), 30, 7);
 
-    estampado(QStringLiteral("ressaca"), QStringLiteral("Ressaca"),
+    estampado(QStringLiteral("ressaca"), QStringLiteral("Undertow"),
               QStringLiteral("pexels-aulsh99-2860703.jpg"), true, QStringLiteral("191,216,230"),
               QStringLiteral("#06141f"), QStringLiteral("#0a1e2e"), QStringLiteral("#16384c"),
               QStringLiteral("#bfd8e6"), QStringLiteral("#688398"), QStringLiteral("#e6f2f8"),
               QStringLiteral("#2a9ad8"), QStringLiteral("#f2f9fc"), QStringLiteral("#0a1e2e"),
               QStringLiteral("rgba(6,20,31,160)"), 32, 8);
 
-    estampado(QStringLiteral("estratosfera"), QStringLiteral("Estratosfera"),
+    estampado(QStringLiteral("estratosfera"), QStringLiteral("Stratosphere"),
               QStringLiteral("pexels-kumud-tripathi-434373-10556427.jpg"), false, QStringLiteral("32,44,56"),
               QStringLiteral("#dde8f0"), QStringLiteral("#ecf3f8"), QStringLiteral("#c6d6e2"),
               QStringLiteral("#2e3c48"), QStringLiteral("#76838f"), QStringLiteral("#18222c"),
@@ -3870,28 +3870,28 @@ void Manager::loadBundled()
     // Leva "fotos novas" (2026-08-20) — cidades noturnas, Terra vista do
     // espaço, céu estrelado roxo e Saturno, a partir das fotos que o Pedro
     // adicionou em assets/theme-images.
-    estampado(QStringLiteral("mirante"), QStringLiteral("Mirante"),
+    estampado(QStringLiteral("mirante"), QStringLiteral("Overlook"),
               QStringLiteral("city.jpg"), true, QStringLiteral("200,212,230"),
               QStringLiteral("#070d1a"), QStringLiteral("#0c1526"), QStringLiteral("#1c2c48"),
               QStringLiteral("#c8d4e6"), QStringLiteral("#667490"), QStringLiteral("#e8eefa"),
               QStringLiteral("#e8a030"), QStringLiteral("#0a1220"), QStringLiteral("#d4dce8"),
               QStringLiteral("rgba(0,0,0,205)"), 30, 7);
 
-    estampado(QStringLiteral("miragem"), QStringLiteral("Miragem"),
+    estampado(QStringLiteral("miragem"), QStringLiteral("Mirage"),
               QStringLiteral("city-2.jpg"), true, QStringLiteral("224,204,214"),
               QStringLiteral("#140c14"), QStringLiteral("#1e1220"), QStringLiteral("#3a2438"),
               QStringLiteral("#e4d0dc"), QStringLiteral("#8a7086"), QStringLiteral("#f6ecf2"),
               QStringLiteral("#e07a4a"), QStringLiteral("#170e18"), QStringLiteral("#e4d0dc"),
               QStringLiteral("rgba(0,0,0,210)"), 32, 7);
 
-    estampado(QStringLiteral("escarlate"), QStringLiteral("Escarlate"),
+    estampado(QStringLiteral("escarlate"), QStringLiteral("Scarlet"),
               QStringLiteral("city-3.jpg"), true, QStringLiteral("224,196,200"),
               QStringLiteral("#0e0808"), QStringLiteral("#180c0c"), QStringLiteral("#341616"),
               QStringLiteral("#e4c6c8"), QStringLiteral("#8c5c5e"), QStringLiteral("#f6e2e4"),
               QStringLiteral("#d8283e"), QStringLiteral("#100a0a"), QStringLiteral("#e4c6c8"),
               QStringLiteral("rgba(0,0,0,215)"), 34, 7);
 
-    estampado(QStringLiteral("travessia"), QStringLiteral("Travessia"),
+    estampado(QStringLiteral("travessia"), QStringLiteral("Crossing"),
               QStringLiteral("city-4.jpg"), true, QStringLiteral("224,214,196"),
               QStringLiteral("#0a0e16"), QStringLiteral("#101826"), QStringLiteral("#22344a"),
               QStringLiteral("#e4d8c0"), QStringLiteral("#8c8268"), QStringLiteral("#f6f0e0"),
@@ -3912,28 +3912,28 @@ void Manager::loadBundled()
               QStringLiteral("#3a9ad4"), QStringLiteral("#060c14"), QStringLiteral("#c4d6e0"),
               QStringLiteral("rgba(0,0,0,210)"), 32, 7);
 
-    estampado(QStringLiteral("estacao"), QStringLiteral("Estação"),
+    estampado(QStringLiteral("estacao"), QStringLiteral("Station"),
               QStringLiteral("earth-nasa.jpg"), true, QStringLiteral("200,224,204"),
               QStringLiteral("#050e0a"), QStringLiteral("#0a1810"), QStringLiteral("#1c3424"),
               QStringLiteral("#c6e0cc"), QStringLiteral("#628a70"), QStringLiteral("#e6f8ea"),
               QStringLiteral("#e0a838"), QStringLiteral("#071008"), QStringLiteral("#c6e0cc"),
               QStringLiteral("rgba(0,0,0,210)"), 32, 7);
 
-    estampado(QStringLiteral("zenite"), QStringLiteral("Zênite"),
+    estampado(QStringLiteral("zenite"), QStringLiteral("Zenith"),
               QStringLiteral("purple-stars.jpg"), true, QStringLiteral("224,204,240"),
               QStringLiteral("#0c0616"), QStringLiteral("#140a22"), QStringLiteral("#2c1a44"),
               QStringLiteral("#e0c8f0"), QStringLiteral("#7e5c98"), QStringLiteral("#f4e8fc"),
               QStringLiteral("#a850d8"), QStringLiteral("#0e0818"), QStringLiteral("#e0c8f0"),
               QStringLiteral("rgba(0,0,0,215)"), 34, 7);
 
-    estampado(QStringLiteral("aneis"), QStringLiteral("Anéis"),
+    estampado(QStringLiteral("aneis"), QStringLiteral("Rings"),
               QStringLiteral("saturn.jpg"), true, QStringLiteral("232,216,184"),
               QStringLiteral("#140e08"), QStringLiteral("#201808"), QStringLiteral("#402c10"),
               QStringLiteral("#e8dcb8"), QStringLiteral("#948256"), QStringLiteral("#f8f0d8"),
               QStringLiteral("#d4a030"), QStringLiteral("#16110a"), QStringLiteral("#e8dcb8"),
               QStringLiteral("rgba(0,0,0,205)"), 30, 7);
 
-    estampado(QStringLiteral("titan"), QStringLiteral("Titã"),
+    estampado(QStringLiteral("titan"), QStringLiteral("Titan"),
               QStringLiteral("saturn-2.jpg"), true, QStringLiteral("212,208,196"),
               QStringLiteral("#0e0c08"), QStringLiteral("#16130c"), QStringLiteral("#302a1c"),
               QStringLiteral("#d4d0c4"), QStringLiteral("#847e6c"), QStringLiteral("#f0ede4"),
@@ -4067,52 +4067,11 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
     {
-        // Quartzo — quartzo-rosa suave. Blush delicado, texto vinho-escuro.
-        // Accent rosa-antigo. Feminino sem ser estridnete.
-        MiraTheme t;
-        t.id   = QStringLiteral("quartzo");
-        t.name = QStringLiteral("Quartz");
-        t.bundled = true;
-        t.appBackground    = QStringLiteral("#f0e8ec");
-        t.panelBackground  = QStringLiteral("#faf2f5");
-        t.panelBorder      = QStringLiteral("#d8c8ce");
-        t.textPrimary      = QStringLiteral("#4a3038");
-        t.textMuted        = QStringLiteral("#8a6878");
-        t.textBright       = QStringLiteral("#2a1820");
-        t.hoverOverlay     = QStringLiteral("rgba(74,48,56,0.06)");
-        t.pressedOverlay   = QStringLiteral("rgba(74,48,56,0.04)");
-        t.subtleBorder     = QStringLiteral("rgba(74,48,56,0.12)");
-        t.accentDefault    = QStringLiteral("#c86888");
-        t.hoverStrong      = QStringLiteral("rgba(74,48,56,0.10)");
-        t.borderStrong     = QStringLiteral("rgba(74,48,56,0.22)");
-        t.focusBorder      = QStringLiteral("rgba(74,48,56,0.32)");
-        t.inputBackground  = QStringLiteral("rgba(74,48,56,0.04)");
-        t.disabledText     = QStringLiteral("rgba(74,48,56,0.32)");
-        t.selectionRing    = QStringLiteral("#2a1820");
-        t.accentSuccess           = QStringLiteral("#4e7848");
-        t.accentSuccessSoft       = QStringLiteral("rgba(78,120,72,0.14)");
-        t.accentSuccessBorderSoft = QStringLiteral("rgba(78,120,72,0.50)");
-        t.accentDanger            = QStringLiteral("#a83848");
-        t.accentDangerSoft        = QStringLiteral("rgba(168,56,72,0.10)");
-        t.accentDangerBorderSoft  = QStringLiteral("rgba(168,56,72,0.50)");
-        t.accentWarning           = QStringLiteral("#b06030");
-        t.accentInfo              = QStringLiteral("#5a5898");
-        t.accentInfoSoft          = QStringLiteral("rgba(90,88,152,0.16)");
-        t.accentInfoBorderSoft    = QStringLiteral("rgba(90,88,152,0.55)");
-        t.editorBackground = QStringLiteral("#fff8fa");
-        t.editorTextColor  = QStringLiteral("#2a1820");
-        t.pageShadowEnabled = true;
-        t.pageShadowColor   = QStringLiteral("rgba(74,48,56,80)");
-        t.pageShadowRadius  = 28;
-        t.pageShadowOffset  = 6;
-        m_themes.append(t);
-    }
-    {
         // Bambu — zen claro verde-bege. Respiração, calma, jardim japonês.
         // Accent verde-musgo discreto. O mais vegetal dos claros.
         MiraTheme t;
         t.id   = QStringLiteral("bambu");
-        t.name = QStringLiteral("Bamboo");
+        t.name = QStringLiteral("Bamboo Leaf");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#e8ede0");
         t.panelBackground  = QStringLiteral("#f4f8ec");
@@ -4362,7 +4321,7 @@ void Manager::loadBundled()
         // funcional dos escuros. Accent aço fosco.
         MiraTheme t;
         t.id   = QStringLiteral("carvao");
-        t.name = QStringLiteral("Charcoal");
+        t.name = QStringLiteral("Gunmetal");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1e2024");
         t.panelBackground  = QStringLiteral("#282c30");
@@ -4528,7 +4487,7 @@ void Manager::loadBundled()
         // elétrico. Fantasia, magia, romance gótico moderno.
         MiraTheme t;
         t.id   = QStringLiteral("lavanda");
-        t.name = QStringLiteral("Lavender");
+        t.name = QStringLiteral("Nightshade");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#1e1428");
         t.panelBackground  = QStringLiteral("#281c38");
@@ -4651,7 +4610,7 @@ void Manager::loadBundled()
         // Natureza zen, botânico, escrita introspectiva.
         MiraTheme t;
         t.id   = QStringLiteral("salvia");
-        t.name = QStringLiteral("Sage");
+        t.name = QStringLiteral("Rosemary");
         t.bundled = true;
         t.appBackground    = QStringLiteral("#101c14");
         t.panelBackground  = QStringLiteral("#162018");
@@ -6082,7 +6041,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("sodio");
-        t.name = QStringLiteral("Sódio");
+        t.name = QStringLiteral("Safelight");
         t.bundled = true;
         t.panelRadius = 6;
         t.appBackground = QStringLiteral("#121214");
@@ -6126,7 +6085,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("carmim");
-        t.name = QStringLiteral("Carmim");
+        t.name = QStringLiteral("Carmine");
         t.bundled = true;
         t.panelRadius = 4;
         t.appBackground = QStringLiteral("#0f0e0f");
@@ -6170,7 +6129,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("infravermelho");
-        t.name = QStringLiteral("Infravermelho");
+        t.name = QStringLiteral("Infrared");
         t.bundled = true;
         t.panelRadius = 12;
         t.appBackground = QStringLiteral("#140a10");
@@ -6214,7 +6173,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("negativo");
-        t.name = QStringLiteral("Negativo");
+        t.name = QStringLiteral("Negative");
         t.bundled = true;
         t.panelRadius = 16;
         t.appBackground = QStringLiteral("#efe8d8");
@@ -6258,7 +6217,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("cianotipo");
-        t.name = QStringLiteral("Cianótipo");
+        t.name = QStringLiteral("Cyanotype");
         t.bundled = true;
         t.panelRadius = 2;
         t.appBackground = QStringLiteral("#e6ebee");
@@ -6302,7 +6261,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("arquivo");
-        t.name = QStringLiteral("Arquivo");
+        t.name = QStringLiteral("Archive");
         t.bundled = true;
         t.panelRadius = 8;
         t.appBackground = QStringLiteral("#e9dcc2");
@@ -6346,7 +6305,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("cidade-de-papel");
-        t.name = QStringLiteral("Cidade de Papel");
+        t.name = QStringLiteral("Paper City");
         t.bundled = true;
         t.panelRadius = 0;
         t.appBackground = QStringLiteral("#e8e8e6");
@@ -6390,7 +6349,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("planta-baixa");
-        t.name = QStringLiteral("Planta Baixa");
+        t.name = QStringLiteral("Blueprint");
         t.bundled = true;
         t.panelRadius = 0;
         t.appBackground = QStringLiteral("#0a1a30");
@@ -6478,7 +6437,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("sala-escura");
-        t.name = QStringLiteral("Sala Escura");
+        t.name = QStringLiteral("Darkroom");
         t.bundled = true;
         t.panelRadius = 2;
         t.appBackground = QStringLiteral("#0c0303");
@@ -6522,7 +6481,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("visao-noturna");
-        t.name = QStringLiteral("Visão Noturna");
+        t.name = QStringLiteral("Night Vision");
         t.bundled = true;
         t.panelRadius = 6;
         t.appBackground = QStringLiteral("#040a05");
@@ -6566,7 +6525,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("folha-de-ouro");
-        t.name = QStringLiteral("Folha de Ouro");
+        t.name = QStringLiteral("Gold Leaf");
         t.bundled = true;
         t.panelRadius = 10;
         t.appBackground = QStringLiteral("#0d0b08");
@@ -7798,7 +7757,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("vitral");
-        t.name = QStringLiteral("Vitral");
+        t.name = QStringLiteral("Stained Glass");
         t.bundled = true;
         t.panelRadius = 3;
         t.appBackground = QStringLiteral("#0b0b0f");
@@ -7842,7 +7801,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("duna");
-        t.name = QStringLiteral("Duna");
+        t.name = QStringLiteral("Dune");
         t.bundled = true;
         t.panelRadius = 12;
         t.appBackground = QStringLiteral("#140d08");
@@ -8064,7 +8023,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("mimeografo");
-        t.name = QStringLiteral("Mimeógrafo");
+        t.name = QStringLiteral("Mimeograph");
         t.bundled = true;
         t.panelRadius = 4;
         t.appBackground = QStringLiteral("#e9e6ef");
@@ -8106,7 +8065,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("risografia");
-        t.name = QStringLiteral("Risografia");
+        t.name = QStringLiteral("Risograph");
         t.bundled = true;
         t.panelRadius = 14;
         t.appBackground = QStringLiteral("#f1ede2");
@@ -8192,7 +8151,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("bloco-amarelo");
-        t.name = QStringLiteral("Bloco Amarelo");
+        t.name = QStringLiteral("Legal Pad");
         t.bundled = true;
         t.panelRadius = 6;
         t.appBackground = QStringLiteral("#efe3a8");
@@ -8276,7 +8235,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("formica");
-        t.name = QStringLiteral("Fórmica");
+        t.name = QStringLiteral("Formica");
         t.bundled = true;
         t.panelRadius = 18;
         t.appBackground = QStringLiteral("#c99a2e");
@@ -8318,7 +8277,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("lamparina");
-        t.name = QStringLiteral("Lamparina");
+        t.name = QStringLiteral("Oil Lamp");
         t.bundled = true;
         t.panelRadius = 12;
         t.appBackground = QStringLiteral("#0f0a06");
@@ -8360,7 +8319,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("terra-roxa");
-        t.name = QStringLiteral("Terra Roxa");
+        t.name = QStringLiteral("Red Earth");
         t.bundled = true;
         t.panelRadius = 16;
         t.appBackground = QStringLiteral("#2a1410");
@@ -8404,7 +8363,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("grafite-borracha");
-        t.name = QStringLiteral("Grafite & Borracha");
+        t.name = QStringLiteral("Pencil & Eraser");
         t.bundled = true;
         t.panelRadius = 20;
         t.appBackground = QStringLiteral("#2a2c2f");
@@ -8446,7 +8405,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("patina");
-        t.name = QStringLiteral("Pátina");
+        t.name = QStringLiteral("Patina");
         t.bundled = true;
         t.panelRadius = 8;
         t.appBackground = QStringLiteral("#151b1c");
@@ -8488,7 +8447,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("borra");
-        t.name = QStringLiteral("Borra");
+        t.name = QStringLiteral("Grounds");
         t.bundled = true;
         t.panelRadius = 14;
         t.appBackground = QStringLiteral("#1a1519");
@@ -8530,7 +8489,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("musgo");
-        t.name = QStringLiteral("Musgo");
+        t.name = QStringLiteral("Moss");
         t.bundled = true;
         t.panelRadius = 4;
         t.appBackground = QStringLiteral("#181a15");
@@ -8574,7 +8533,7 @@ void Manager::loadBundled()
     {
         MiraTheme t;
         t.id = QStringLiteral("lousa");
-        t.name = QStringLiteral("Lousa");
+        t.name = QStringLiteral("Blackboard");
         t.bundled = true;
         t.panelRadius = 6;
         t.appBackground = QStringLiteral("#243a2e");
@@ -8734,7 +8693,6 @@ void Manager::loadBundled()
         { QStringLiteral("neve"),                 QStringLiteral("light")     },
         { QStringLiteral("linho"),                QStringLiteral("light")     },
         { QStringLiteral("giz"),                  QStringLiteral("light")     },
-        { QStringLiteral("quartzo"),              QStringLiteral("light")     },
         { QStringLiteral("bambu"),                QStringLiteral("light")     },
         // Amarelados
         { QStringLiteral("mel"),                  QStringLiteral("warm")      },
