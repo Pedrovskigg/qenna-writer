@@ -6345,6 +6345,52 @@ void Manager::loadBundled()
         t.editorOpacity = 100;
         m_themes.append(t);
     }
+    {
+        // Paper City Yellowed — o mesmo jornal do Paper City, quarenta anos depois.
+        // O papel amarela, a tinta não: as sombras da foto ficam neutras e só as
+        // luzes puxam amarelo. Tinta vermelha desbotada como acento.
+        MiraTheme t;
+        t.id = QStringLiteral("paper-city-yellowed");
+        t.name = QStringLiteral("Paper City Yellowed");
+        t.bundled = true;
+        t.panelRadius = 0;
+        t.appBackground = QStringLiteral("#e6e0cd");
+        t.panelBackground = QStringLiteral("#f1ebd6");
+        t.panelBorder = QStringLiteral("#cfc5a6");
+        t.textPrimary = QStringLiteral("#2b251a");
+        t.textMuted = QStringLiteral("#7d7461");
+        t.textBright = QStringLiteral("#14100a");
+        t.hoverOverlay = QStringLiteral("rgba(43,37,26,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(43,37,26,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(43,37,26,0.10)");
+        t.accentDefault = QStringLiteral("#b8402a");
+        t.hoverStrong = QStringLiteral("rgba(43,37,26,0.12)");
+        t.borderStrong = QStringLiteral("rgba(43,37,26,0.22)");
+        t.focusBorder = QStringLiteral("rgba(43,37,26,0.32)");
+        t.inputBackground = QStringLiteral("rgba(43,37,26,0.05)");
+        t.disabledText = QStringLiteral("rgba(43,37,26,0.30)");
+        t.selectionRing = QStringLiteral("#14100a");
+        t.accentSuccess = QStringLiteral("#5b7a3c");
+        t.accentSuccessSoft = QStringLiteral("rgba(91,122,60,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(91,122,60,0.50)");
+        t.accentDanger = QStringLiteral("#9e3320");
+        t.accentDangerSoft = QStringLiteral("rgba(158,51,32,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(158,51,32,0.50)");
+        t.accentWarning = QStringLiteral("#a4711a");
+        t.accentInfo = QStringLiteral("#4a6272");
+        t.accentInfoSoft = QStringLiteral("rgba(74,98,114,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(74,98,114,0.55)");
+        t.editorBackground = QStringLiteral("#f7f0d9");
+        t.editorTextColor = QStringLiteral("#241e14");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,70)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-paper-city-yellowed.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
     // Planta de arquitetura: cidade em azul, bordas em linha de nanquim azul-claro.
     {
         MiraTheme t;
@@ -8823,6 +8869,7 @@ void Manager::loadBundled()
         { QStringLiteral("cianotipo"),                   QStringLiteral("estampados") },
         { QStringLiteral("arquivo"),                     QStringLiteral("estampados") },
         { QStringLiteral("cidade-de-papel"),             QStringLiteral("estampados") },
+        { QStringLiteral("paper-city-yellowed"),         QStringLiteral("estampados") },
         { QStringLiteral("mimeografo"),                  QStringLiteral("light")     },
         { QStringLiteral("risografia"),                  QStringLiteral("light")     },
         { QStringLiteral("grafite-borracha"),            QStringLiteral("dark")      },
