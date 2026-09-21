@@ -7,6 +7,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include "AvatarUtils.h"
 #include "IconUtils.h"
 #include "Theme.h"
 #include "UiScale.h"
@@ -18,6 +19,9 @@ constexpr int kHeightFloor = 40;
 constexpr int kSideMargin = 16;
 constexpr int kVarBtnGap = 4;
 constexpr int kVarBtnBase = 20;
+// Cabe dentro da altura fixa da faixa (54 - 8 de margem) com folga.
+constexpr int kAvatarBase = 38;
+constexpr int kAvatarGap = 10;
 }
 
 DocHeaderBar::DocHeaderBar(QWidget* parent)
@@ -31,15 +35,33 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     outer->setSpacing(0);
     outer->addStretch(1);
 
+    // Avatar e bloco de texto no MESMO container, centralizado como um grupo
+    // só: assim o título de capítulo (que nunca tem foto) continua exatamente
+    // onde sempre esteve, e o de personagem apenas ganha a foto à esquerda —
+    // sem sincronizar posição de nada por fora.
+    auto* centerRow = new QHBoxLayout;
+    centerRow->setContentsMargins(0, 0, 0, 0);
+    centerRow->setSpacing(kAvatarGap);
+
+    m_avatar = new QLabel(this);
+    m_avatar->setObjectName(QStringLiteral("docHeaderAvatar"));
+    m_avatar->setVisible(false);
+    centerRow->addWidget(m_avatar, 0, Qt::AlignVCenter);
+
+    m_textCol = new QVBoxLayout;
+    m_textCol->setContentsMargins(0, 0, 0, 0);
+    m_textCol->setSpacing(0);
+
     m_title = new QLabel(this);
     m_title->setObjectName(QStringLiteral("docHeaderTitle"));
     m_title->setAlignment(Qt::AlignCenter);
-    outer->addWidget(m_title, 0, Qt::AlignHCenter);
+    m_textCol->addWidget(m_title, 0, Qt::AlignHCenter);
 
     // Subtítulo e botão de variação viajam juntos: no bloco da toolbar o botão
     // fica colado à direita do subtítulo, e a linha inteira centraliza como uma
     // coisa só, sem deslocar o título de cima.
-    auto* subRow = new QHBoxLayout;
+    m_subRow = new QHBoxLayout;
+    auto* subRow = m_subRow;
     subRow->setContentsMargins(0, 0, 0, 0);
     subRow->setSpacing(kVarBtnGap);
 
@@ -58,8 +80,12 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     connect(m_varButton, &QToolButton::clicked, this, &DocHeaderBar::sceneVarRequested);
     subRow->addWidget(m_varButton, 0, Qt::AlignVCenter);
 
-    outer->addLayout(subRow);
-    outer->setAlignment(subRow, Qt::AlignHCenter);
+    m_textCol->addLayout(subRow);
+    m_textCol->setAlignment(subRow, Qt::AlignHCenter);
+
+    centerRow->addLayout(m_textCol);
+    outer->addLayout(centerRow);
+    outer->setAlignment(centerRow, Qt::AlignHCenter);
     outer->addStretch(1);
 
     // Self-contained: o MainWindow não precisa lembrar de repassar tema/escala.
@@ -81,6 +107,7 @@ void DocHeaderBar::applyUiScale()
     const int icoPx = qMax(10, qRound(14 * s));
     m_varButton->setIconSize(QSize(icoPx, icoPx));
     applyTheme(); // ícone é re-renderizado no tamanho novo
+    refreshAvatar();
     relayoutText();
 }
 
@@ -149,6 +176,38 @@ void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitl
     relayoutText();
 }
 
+void DocHeaderBar::setDocumentAvatar(const QString& imageDataUrl)
+{
+    if (m_avatarDataUrl == imageDataUrl) return;
+    m_avatarDataUrl = imageDataUrl;
+    refreshAvatar();
+    relayoutText(); // a foto come largura útil da elipse do título
+}
+
+void DocHeaderBar::refreshAvatar()
+{
+    if (!m_avatar) return;
+    if (m_avatarDataUrl.isEmpty()) {
+        m_avatar->clear();
+        m_avatar->setVisible(false);
+        return;
+    }
+
+    const qreal s = UiScale::scale();
+    const int side = qMax(16, qRound(kAvatarBase * s));
+    // Renderiza na resolução física e marca o DPR: em tela HiDPI, gerar no
+    // tamanho lógico deixaria a foto borrada — que é justamente o efeito
+    // "desfalcado" que se quer evitar aqui.
+    const qreal dpr = devicePixelRatioF();
+    QPixmap pm = AvatarUtils::circularAvatar(m_avatarDataUrl, QString(), QString(),
+                                              qRound(side * dpr));
+    pm.setDevicePixelRatio(dpr);
+
+    m_avatar->setFixedSize(side, side);
+    m_avatar->setPixmap(pm);
+    m_avatar->setVisible(true);
+}
+
 void DocHeaderBar::setSceneVarButtonVisible(bool visible)
 {
     m_varWanted = visible;
@@ -159,7 +218,20 @@ void DocHeaderBar::relayoutText()
 {
     if (!m_title || !m_subtitle || !m_varButton) return;
 
-    const int avail = qMax(40, width() - kSideMargin * 2);
+    const bool hasAvatar = m_avatar && m_avatar->isVisible();
+
+    // Com foto, o texto se alinha à esquerda dela (nome e papel empilhados,
+    // como num crachá); sem foto, segue centralizado como sempre foi.
+    if (m_textCol) {
+        const Qt::Alignment ha = hasAvatar ? Qt::AlignLeft : Qt::AlignHCenter;
+        m_textCol->setAlignment(m_title, ha | Qt::AlignVCenter);
+        if (m_subRow) m_textCol->setAlignment(m_subRow, ha);
+        m_title->setAlignment(hasAvatar ? (Qt::AlignLeft | Qt::AlignVCenter) : Qt::AlignCenter);
+        m_subtitle->setAlignment(hasAvatar ? (Qt::AlignLeft | Qt::AlignVCenter) : Qt::AlignCenter);
+    }
+
+    const int avatarW = hasAvatar ? m_avatar->width() + kAvatarGap : 0;
+    const int avail = qMax(40, width() - kSideMargin * 2 - avatarW);
 
     m_title->setVisible(!m_rawTitle.isEmpty());
     m_title->setText(QFontMetrics(m_title->font()).elidedText(m_rawTitle, Qt::ElideRight, avail));

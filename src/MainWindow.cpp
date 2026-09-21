@@ -62,6 +62,7 @@
 #include <QHash>
 #include <QUrl>
 #include <QWidget>
+#include <QBuffer>
 #include <QDateTime>
 #include <QFile>
 #include <QImage>
@@ -76,6 +77,8 @@
 #include <QStandardPaths>
 
 #include <QDir>
+#include <QFileInfo>
+#include <QUuid>
 #ifdef Q_OS_WIN
 #include <windows.h>   // CREATE_NO_WINDOW, ao soltar o instalador de update
 #endif
@@ -104,6 +107,7 @@
 #include "ElementCreateDialog.h"
 #include "ElementsPresentDialog.h"
 #include "ElementsStore.h"
+#include "RoleTiers.h"
 #include "FindBar.h"
 #include "GlobalSearchPanel.h"
 #include "CharacterImageGenDialog.h"
@@ -662,6 +666,37 @@ void applyFloatFrameStyle(QTextFrameFormat &ff, bool isLeft, int w)
     ff.setTopMargin(4);
     ff.setBottomMargin(4);
     ff.setWidth(QTextLength(QTextLength::FixedLength, w));
+}
+
+// Grava no disco a imagem recortada no diálogo de inserção e devolve o caminho
+// do arquivo. Precisa virar arquivo de verdade: o documento guarda a imagem por
+// URL e refreshImageResource relê do disco a cada abertura — data URL em
+// memória não sobreviveria ao primeiro fechamento do projeto.
+// Vai pra dentro do projeto (entra no backup junto com o resto); sem projeto
+// aberto ("Nova Ideia" ainda sem pasta), cai nos dados do app.
+static QString saveCroppedImage(const QImage& img, const QString& sourcePath,
+                                const QString& projectRoot) {
+    const QString baseDir = projectRoot.isEmpty()
+        ? QDir::cleanPath(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+                          + QStringLiteral("/imagens"))
+        : QDir::cleanPath(projectRoot + QStringLiteral("/imagens"));
+
+    // JPEG em foto (arquivo pequeno), PNG quando há transparência a preservar.
+    const bool png = img.hasAlphaChannel();
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    if (!img.save(&buf, png ? "PNG" : "JPEG", png ? -1 : 95)) return QString();
+
+    const QString stem = QFileInfo(sourcePath).completeBaseName();
+    const QString name = QStringLiteral("%1-%2.%3")
+        .arg(stem.isEmpty() ? QStringLiteral("imagem") : stem,
+             QUuid::createUuid().toString(QUuid::WithoutBraces).left(8),
+             png ? QStringLiteral("png") : QStringLiteral("jpg"));
+    const QString fullPath = QDir::cleanPath(baseDir + QStringLiteral("/") + name);
+
+    if (!ProjectStorage::writeBinary(fullPath, bytes)) return QString();
+    return fullPath;
 }
 
 // Recarrega a imagem do disco, redimensiona suavemente para o novo displayWidth e
@@ -1260,6 +1295,7 @@ void MainWindow::setupEditor()
         const auto vm = editorHost->viewMode();
         QString title;
         QString subtitle;
+        QString avatar;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
             // Capítulo inteiro concatenado num editor só (cenas separadas por
@@ -1294,6 +1330,17 @@ void MainWindow::setupEditor()
         case EditorHost::DrawerDoc: {
             if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) {
                 title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
+
+                // Personagem/cenário ganham identidade em vez de só o nome do
+                // doc: o papel vira o subtítulo (em caixa alta, como na gaveta)
+                // e a foto do elemento vira o avatar. Item de gaveta comum não
+                // tem elemento nem papel, então cai no caminho de sempre.
+                QString role = it->role;
+                const Element* el = (elementsStore && !it->elementId.isEmpty())
+                    ? elementsStore->findElement(it->elementId) : nullptr;
+                if (role.isEmpty() && el) role = el->role;
+                if (!role.isEmpty()) subtitle = RoleTiers::roleDisplayName(role).toUpper();
+                if (el) avatar = el->image;
             }
             break;
         }
@@ -1307,6 +1354,7 @@ void MainWindow::setupEditor()
         // fixa acima da folha, nos dois modos de barra — ver DocHeaderBar.
         if (docHeader) {
             docHeader->setDocumentTitle(title, subtitle);
+            docHeader->setDocumentAvatar(avatar);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
         }
     };
@@ -1446,6 +1494,10 @@ void MainWindow::setupEditor()
 
     projectSaver = new ProjectSaver(projectModel, docCache, editorHost, this);
     elementsStore = new ElementsStore(this);
+    // Trocar a foto ou o papel do personagem reflete na faixa do documento sem
+    // precisar fechar e reabrir. Ligado aqui, e não junto dos outros refreshes
+    // lá em cima, porque o store só nasce neste ponto do setupEditor().
+    connect(elementsStore, &ElementsStore::changed, this, refreshDocTitle);
     projectSaver->setElementsStore(elementsStore);
 
     // PresencePopup + detecção de presença idioma-agnóstica (scan incremental no event loop).
@@ -4827,7 +4879,22 @@ void MainWindow::onAddImageRequested()
     ImageInsertDialog dialog(path, this);
     if (dialog.exec() != QDialog::Accepted) return;
 
-    const QString fileUrl = QUrl::fromLocalFile(path).toString();
+    // Sem recorte, o comportamento é o de sempre: aponta pro arquivo original,
+    // sem copiar nada. Com recorte, o arquivo novo é o que vai pro documento.
+    QString imageFile = path;
+    const QImage cropped = dialog.croppedImage();
+    if (!cropped.isNull()) {
+        const QString savedPath = saveCroppedImage(cropped, path, projectRoot);
+        if (savedPath.isEmpty()) {
+            QMessageBox::warning(this, tr("Inserir imagem"),
+                tr("Não foi possível salvar a imagem recortada. "
+                   "A imagem original será inserida sem o recorte."));
+        } else {
+            imageFile = savedPath;
+        }
+    }
+
+    const QString fileUrl = QUrl::fromLocalFile(imageFile).toString();
     const int w = dialog.width();
 
     QTextImageFormat imgFmt;

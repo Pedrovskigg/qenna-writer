@@ -33,8 +33,24 @@ public:
     // de IA no chat), onde não há usuário no loop pra ajustar manualmente.
     static QString autoSquareDataUrl(const QImage& source);
 
+    // Recorte LIVRE (sem trava de proporção) devolvendo a imagem recortada na
+    // resolução original, sem reescalar nem reencodar — para imagem no corpo
+    // do texto, onde quadrado 400x400 destruiria o enquadramento. Mesmo
+    // canvas e mesmos controles do crop de foto; só muda a trava de proporção
+    // e o retângulo inicial (aqui começa na imagem inteira).
+    // Retorna QImage() se o usuário cancelar.
+    static QImage cropRegion(const QImage& source, QWidget* parent,
+                              const QString& dialogTitle = tr("Recortar imagem"));
+
 private:
-    explicit ImageCropDialog(const QImage& original, QWidget* parent);
+    // square = true trava o retângulo em quadrado (foto de personagem);
+    // false libera as duas dimensões (imagem no editor).
+    explicit ImageCropDialog(const QImage& original, QWidget* parent, bool square = true);
+
+    // Retângulo escolhido, já convertido de volta pra coordenadas da imagem
+    // original e recortado aos limites dela. No modo quadrado, reforça o
+    // quadrado; no modo livre, devolve como está.
+    QRect resultRect() const;
 
     // Aplica o retângulo de crop escolhido (convertido de volta pra
     // coordenadas da imagem original) + o pipeline de encode final.
@@ -46,6 +62,7 @@ private:
     static QString cropAndEncode(const QImage& original, const QRect& cropRect);
 
     QImage       m_original;  // resolução plena — só ela é usada no copy() final
+    bool         m_square = true;
     CropCanvas*  m_canvas = nullptr;
     QPushButton* m_okBtn = nullptr;
     QPushButton* m_cancelBtn = nullptr;

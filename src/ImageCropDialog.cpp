@@ -28,20 +28,27 @@ constexpr int kHandleSize = 10;      // px, tamanho visual da alça desenhada
 // ImageCropDialog precisa conhecer essa classe.
 class CropCanvas : public QWidget {
 public:
-    explicit CropCanvas(const QPixmap& displayPixmap, QWidget* parent)
-        : QWidget(parent), m_pixmap(displayPixmap)
+    explicit CropCanvas(const QPixmap& displayPixmap, QWidget* parent, bool square = true)
+        : QWidget(parent), m_pixmap(displayPixmap), m_square(square)
     {
         setFixedSize(m_pixmap.size());
         setMouseTracking(true);
         setCursor(Qt::ArrowCursor);
 
-        // Retângulo inicial: centralizado, lado = menor dimensão da imagem
-        // exibida — matematicamente idêntico ao crop automático de antes
-        // (mesmo cálculo, só que em coords de exibição em vez de originais).
-        const int side = qMin(m_pixmap.width(), m_pixmap.height());
-        const int x = (m_pixmap.width() - side) / 2;
-        const int y = (m_pixmap.height() - side) / 2;
-        m_rect = QRect(x, y, side, side);
+        if (m_square) {
+            // Retângulo inicial: centralizado, lado = menor dimensão da imagem
+            // exibida — matematicamente idêntico ao crop automático de antes
+            // (mesmo cálculo, só que em coords de exibição em vez de originais).
+            const int side = qMin(m_pixmap.width(), m_pixmap.height());
+            const int x = (m_pixmap.width() - side) / 2;
+            const int y = (m_pixmap.height() - side) / 2;
+            m_rect = QRect(x, y, side, side);
+        } else {
+            // Modo livre: começa na imagem inteira. Quem abriu o diálogo pode
+            // não querer recortar nada — o estado inicial tem que ser "como
+            // está", não um corte arbitrário já aplicado.
+            m_rect = QRect(QPoint(0, 0), m_pixmap.size());
+        }
     }
 
     QRect cropRect() const { return m_rect; }
@@ -112,6 +119,31 @@ protected:
         // se prender ao nome do modo) — evita bug de "cruzar" o mouse pro
         // outro lado da âncora.
         const QPoint anchor = anchorFor(m_dragMode, m_dragStartRect);
+
+        if (!m_square) {
+            // Livre: cada eixo anda sozinho. Mesmo princípio da âncora, só
+            // que sem amarrar largura e altura uma na outra.
+            const QPoint cur(qBound(0, event->pos().x(), m_pixmap.width()),
+                             qBound(0, event->pos().y(), m_pixmap.height()));
+            int left = qMin(anchor.x(), cur.x());
+            int right = qMax(anchor.x(), cur.x());
+            int top = qMin(anchor.y(), cur.y());
+            int bottom = qMax(anchor.y(), cur.y());
+            // Mínimo por eixo: cresce pro lado oposto à âncora, sem sair da
+            // imagem (se não couber de um lado, cabe do outro).
+            if (right - left < kMinSide) {
+                if (anchor.x() <= cur.x()) right = qMin(m_pixmap.width(), left + kMinSide);
+                else                       left = qMax(0, right - kMinSide);
+            }
+            if (bottom - top < kMinSide) {
+                if (anchor.y() <= cur.y()) bottom = qMin(m_pixmap.height(), top + kMinSide);
+                else                       top = qMax(0, bottom - kMinSide);
+            }
+            m_rect = QRect(left, top, right - left, bottom - top);
+            update();
+            return;
+        }
+
         const QPoint cur = event->pos();
         const int dx = cur.x() - anchor.x();
         const int dy = cur.y() - anchor.y();
@@ -178,13 +210,14 @@ private:
 
     QPixmap  m_pixmap;
     QRect    m_rect;
+    bool     m_square = true;
     DragMode m_dragMode = DragMode::None;
     QPoint   m_dragStartMouse;
     QRect    m_dragStartRect;
 };
 
-ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent)
-    : QDialog(parent), m_original(original)
+ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent, bool square)
+    : QDialog(parent), m_original(original), m_square(square)
 {
     setModal(true);
     setWindowTitle(tr("Ajustar recorte da foto"));
@@ -214,7 +247,7 @@ ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent)
     hint->setObjectName(QStringLiteral("cropHint"));
     root->addWidget(hint);
 
-    m_canvas = new CropCanvas(displayPixmap, this);
+    m_canvas = new CropCanvas(displayPixmap, this, m_square);
     root->addWidget(m_canvas, 0, Qt::AlignHCenter);
 
     auto* row = new QHBoxLayout();
@@ -246,7 +279,7 @@ QString ImageCropDialog::cropAndEncode(const QImage& original, const QRect& crop
     return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
 }
 
-QString ImageCropDialog::resultDataUrl() const
+QRect ImageCropDialog::resultRect() const
 {
     const qreal scale = qMin(1.0, qreal(kMaxDisplaySide) / qMax(m_original.width(), m_original.height()));
     const QRect dispRect = m_canvas->cropRect();
@@ -255,13 +288,20 @@ QString ImageCropDialog::resultDataUrl() const
         qRound(dispRect.x() / scale), qRound(dispRect.y() / scale),
         qRound(dispRect.width() / scale), qRound(dispRect.height() / scale));
     cropRect = cropRect.intersected(QRect(0, 0, m_original.width(), m_original.height()));
-    // Corrige possível desvio de 1px entre lado calculado e o intersected —
-    // sempre reforça quadrado a partir do menor lado resultante.
-    const int side = qMin(cropRect.width(), cropRect.height());
-    cropRect.setWidth(side);
-    cropRect.setHeight(side);
 
-    return cropAndEncode(m_original, cropRect);
+    if (m_square) {
+        // Corrige possível desvio de 1px entre lado calculado e o intersected —
+        // sempre reforça quadrado a partir do menor lado resultante.
+        const int side = qMin(cropRect.width(), cropRect.height());
+        cropRect.setWidth(side);
+        cropRect.setHeight(side);
+    }
+    return cropRect;
+}
+
+QString ImageCropDialog::resultDataUrl() const
+{
+    return cropAndEncode(m_original, resultRect());
 }
 
 QString ImageCropDialog::pickAndCropImage(QWidget* parent, const QString& fileDialogTitle)
@@ -288,6 +328,23 @@ QString ImageCropDialog::cropImage(const QImage& source, QWidget* parent, const 
     dlg.setWindowTitle(dialogTitle);
     if (dlg.exec() != QDialog::Accepted) return QString();
     return dlg.resultDataUrl();
+}
+
+QImage ImageCropDialog::cropRegion(const QImage& source, QWidget* parent,
+                                    const QString& dialogTitle)
+{
+    if (source.isNull()) return QImage();
+
+    ImageCropDialog dlg(source, parent, /*square=*/false);
+    dlg.setWindowTitle(dialogTitle);
+    if (dlg.exec() != QDialog::Accepted) return QImage();
+
+    const QRect r = dlg.resultRect();
+    if (r.isEmpty()) return QImage();
+    // Sem scaled() e sem reencode: a imagem do editor guarda a resolução que
+    // o usuário escolheu, e a largura de exibição é problema do
+    // ImageInsertDialog.
+    return source.copy(r);
 }
 
 QString ImageCropDialog::autoSquareDataUrl(const QImage& source)

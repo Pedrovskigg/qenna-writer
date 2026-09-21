@@ -1,10 +1,13 @@
 #include "ImageInsertDialog.h"
 
+#include "ImageCropDialog.h"
+
 #include <QButtonGroup>
 #include <QDialogButtonBox>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QImage>
+#include <QImageReader>
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
@@ -22,6 +25,13 @@ ImageInsertDialog::ImageInsertDialog(const QString &imagePath, QWidget *parent)
     setMinimumWidth(380);
     setObjectName(QStringLiteral("imageInsertDialog"));
 
+    // Uma leitura só do disco: a prévia e o diálogo de recorte usam a mesma
+    // QImage. setAutoTransform respeita o EXIF de orientação — sem isso, foto
+    // de celular entra deitada no recorte e no texto.
+    QImageReader reader(path);
+    reader.setAutoTransform(true);
+    source = reader.read();
+
     auto *layout = new QVBoxLayout(this);
     layout->setContentsMargins(20, 20, 20, 16);
     layout->setSpacing(14);
@@ -31,6 +41,22 @@ ImageInsertDialog::ImageInsertDialog(const QString &imagePath, QWidget *parent)
     previewLabel->setAlignment(Qt::AlignCenter);
     previewLabel->setMinimumHeight(180);
     layout->addWidget(previewLabel);
+
+    auto *cropRow = new QHBoxLayout();
+    cropRow->setSpacing(8);
+    cropRow->addStretch(1);
+    resetCropBtn = new QPushButton(tr("Desfazer recorte"), this);
+    resetCropBtn->setCursor(Qt::PointingHandCursor);
+    resetCropBtn->setVisible(false);
+    cropRow->addWidget(resetCropBtn);
+    cropBtn = new QPushButton(tr("Recortar"), this);
+    cropBtn->setCursor(Qt::PointingHandCursor);
+    cropBtn->setEnabled(!source.isNull());
+    cropRow->addWidget(cropBtn);
+    layout->addLayout(cropRow);
+
+    connect(cropBtn, &QPushButton::clicked, this, &ImageInsertDialog::openCropDialog);
+    connect(resetCropBtn, &QPushButton::clicked, this, &ImageInsertDialog::resetCrop);
 
     auto *alignLabel = new QLabel(tr("Alinhamento"), this);
     layout->addWidget(alignLabel);
@@ -97,7 +123,7 @@ int ImageInsertDialog::width() const
 
 void ImageInsertDialog::updatePreview()
 {
-    QImage img(path);
+    const QImage &img = cropped.isNull() ? source : cropped;
     if (img.isNull()) {
         previewLabel->setText(tr("(prévia indisponível)"));
         return;
@@ -105,4 +131,26 @@ void ImageInsertDialog::updatePreview()
     const QPixmap pix = QPixmap::fromImage(img).scaled(
         340, 180, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     previewLabel->setPixmap(pix);
+}
+
+void ImageInsertDialog::openCropDialog()
+{
+    if (source.isNull()) return;
+    // Recorta sempre a partir do ORIGINAL, não do recorte anterior: assim
+    // recortar de novo é reenquadrar, não ir perdendo imagem a cada passada.
+    const QImage result = ImageCropDialog::cropRegion(source, this);
+    if (result.isNull()) return;
+
+    // Recorte que devolve a imagem inteira é o mesmo que não recortar — não
+    // vale gerar arquivo novo pra isso.
+    cropped = (result.size() == source.size()) ? QImage() : result;
+    resetCropBtn->setVisible(!cropped.isNull());
+    updatePreview();
+}
+
+void ImageInsertDialog::resetCrop()
+{
+    cropped = QImage();
+    resetCropBtn->setVisible(false);
+    updatePreview();
 }
