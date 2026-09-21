@@ -97,6 +97,7 @@ class QNetworkAccessManager;
 class QNetworkReply;
 class QProgressBar;
 class AutoNavHint;
+class PageGlow;
 class QToolButton;
 class FindBar;
 class GlobalSearchPanel;
@@ -377,6 +378,7 @@ private:
     void activateNavZone(int dir, const EditorHost::ViewMode& vm);
     void deactivateNavZone();
     void positionExternalScrollBar();
+    void positionPageGlow();
     void positionAutoNavHint();
 
     bool findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const;
@@ -585,6 +587,7 @@ private:
     bool m_sliderHeld = false;
     int m_wheelOverscroll = 0;
     AutoNavHint *m_autoNavHint = nullptr;
+    PageGlow *m_pageGlow = nullptr;
     QTimer *m_autoNavProgressTimer = nullptr;
     int m_autoNavProgressMs = 0;
     QString m_autoNavTargetTitle;

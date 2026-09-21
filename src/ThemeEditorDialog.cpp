@@ -89,6 +89,8 @@ ThemeEditorDialog::ThemeEditorDialog(const Theme::MiraTheme& base, QWidget* pare
     , m_opacityLabel(new QLabel(this))
     , m_panelRadiusSlider(new QSlider(Qt::Horizontal, this))
     , m_panelRadiusLabel(new QLabel(this))
+    , m_panelOpacitySlider(new QSlider(Qt::Horizontal, this))
+    , m_panelOpacityLabel(new QLabel(this))
     , m_preview(new ThemePreviewWidget(this))
 {
     setObjectName(QStringLiteral("themeEditorDialog"));
@@ -226,6 +228,23 @@ void ThemeEditorDialog::buildUi()
         radiusRow->addWidget(m_panelRadiusLabel);
         gl->addLayout(radiusRow);
 
+        // Opacidade das barras: abaixo de 100 a TopToolbar, a LeftBar, o painel
+        // de capítulos e as gavetas deixam ver o fundo do app — a cor, a foto do
+        // tema estampado ou o halo da página. Diálogos e popups não mudam.
+        auto* panelOpacityRow = new QHBoxLayout;
+        panelOpacityRow->setSpacing(8);
+        auto* panelOpacityLbl = new QLabel(tr("Opacidade:"), group);
+        panelOpacityLbl->setObjectName(QStringLiteral("themeEditorFieldLabel"));
+        panelOpacityLbl->setMinimumWidth(120);
+        m_panelOpacitySlider->setRange(20, 100);
+        m_panelOpacitySlider->setValue(qBound(20, m_theme.panelOpacity, 100));
+        m_panelOpacityLabel->setText(QStringLiteral("%1%").arg(m_panelOpacitySlider->value()));
+        m_panelOpacityLabel->setMinimumWidth(40);
+        panelOpacityRow->addWidget(panelOpacityLbl);
+        panelOpacityRow->addWidget(m_panelOpacitySlider, 1);
+        panelOpacityRow->addWidget(m_panelOpacityLabel);
+        gl->addLayout(panelOpacityRow);
+
         leftLayout->addWidget(group);
     }
 
@@ -314,6 +333,7 @@ void ThemeEditorDialog::buildUi()
         m_theme.backgroundMode = m_imageModeCombo->currentData().toInt();
         m_theme.editorOpacity = m_opacitySlider->value();
         m_theme.panelRadius = m_panelRadiusSlider->value();
+        m_theme.panelOpacity = m_panelOpacitySlider->value();
         accept();
     });
     connect(footer, &QDialogButtonBox::rejected, this, &QDialog::reject);
@@ -391,6 +411,11 @@ void ThemeEditorDialog::wireSignals()
     connect(m_panelRadiusSlider, &QSlider::valueChanged, this, [this](int v) {
         m_panelRadiusLabel->setText(tr("%1px").arg(v));
         m_theme.panelRadius = v;
+        refreshPreview();
+    });
+    connect(m_panelOpacitySlider, &QSlider::valueChanged, this, [this](int v) {
+        m_panelOpacityLabel->setText(QStringLiteral("%1%").arg(v));
+        m_theme.panelOpacity = v;
         refreshPreview();
     });
     connect(m_shadowEnabled, &QCheckBox::toggled, this, [this](bool on) {

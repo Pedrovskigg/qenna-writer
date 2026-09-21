@@ -1002,7 +1002,7 @@ void TopToolbar::applyRootStyle()
         }
         %11
     )")).arg(
-        Theme::panelBackground(),    // 1 — fundo
+        Theme::panelBackgroundCss(), // 1 — fundo (já com a opacidade do tema)
         Theme::textPrimary(),        // 2 — texto dos botões em estado normal
         Theme::hoverOverlay(),       // 3 — hover bg
         Theme::subtleBorder(),       // 4 — borda hover / separador

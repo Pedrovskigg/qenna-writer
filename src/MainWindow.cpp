@@ -730,6 +730,108 @@ private:
     QString m_text;
 };
 
+// Halo da página — o brilho que escapa da folha e cai por cima das barras.
+//
+// Por que existe um widget só pra isso: a sombra da página é um
+// QGraphicsDropShadowEffect no editorColumn, que vive DENTRO da QScrollArea.
+// O viewport corta o efeito na borda, então um tema cuja "sombra" é clara
+// (Arc Light, Light Table, Blacklight) só consegue mostrar uma listra fina de
+// luz colada na folha. E, mesmo sem o corte, LeftBar e TopToolbar são filhas
+// da janela — ficam sempre ACIMA do editor.
+//
+// Este overlay é filho da janela, fica acima das barras e pinta só o que
+// vaza para FORA da página (a folha em si é recortada, senão o halo lavaria
+// o texto). O resultado é a luz batendo nas barras, que é o efeito que a
+// sombra sozinha não consegue dar.
+//
+// Liga só onde o tema declara t.pageGlowEnabled — hoje Arc Light, Light Table
+// e Blacklight. Os outros 283 temas não veem diferença nenhuma.
+class PageGlow : public QWidget {
+public:
+    explicit PageGlow(QWidget* parent) : QWidget(parent) {
+        setAttribute(Qt::WA_TransparentForMouseEvents);
+        setAttribute(Qt::WA_TranslucentBackground);
+        setAttribute(Qt::WA_NoSystemBackground);
+        hide();
+    }
+
+    // pageRect em coordenadas DESTE widget já é o suficiente: quem posiciona
+    // (positionPageGlow) passa o retângulo da folha em coordenadas da janela e
+    // a geometria do overlay é esse retângulo inflado pelo raio.
+    void setSource(const QRect& pageRectInWindow, const QColor& color,
+                   int blurRadius, int offsetY, int cornerRadius)
+    {
+        const QRect g = pageRectInWindow.adjusted(-blurRadius, -blurRadius,
+                                                  blurRadius, blurRadius + offsetY);
+        const bool sameShape = (m_page == pageRectInWindow && m_color == color
+                                && m_blur == blurRadius && m_offset == offsetY
+                                && m_corner == cornerRadius);
+        m_page   = pageRectInWindow;
+        m_color  = color;
+        m_blur   = blurRadius;
+        m_offset = offsetY;
+        m_corner = cornerRadius;
+        if (geometry() != g) setGeometry(g);
+        if (!sameShape) { m_cache = QPixmap(); update(); }
+    }
+
+protected:
+    void paintEvent(QPaintEvent*) override {
+        if (m_page.isEmpty() || m_blur <= 0) return;
+        if (m_cache.isNull()) rebuildCache();
+        if (m_cache.isNull()) return;
+        QPainter p(this);
+        // A folha é opaca e se pinta sozinha; o halo só existe do lado de fora.
+        QRegion outside(rect());
+        outside -= QRegion(m_page.translated(-geometry().topLeft()), QRegion::Rectangle);
+        p.setClipRegion(outside);
+        p.drawPixmap(0, 0, m_cache);
+    }
+
+private:
+    // Camadas concêntricas em vez de blur de verdade: o cache é reconstruído só
+    // quando a folha muda de tamanho ou o tema troca, então vale mais um degradê
+    // barato e previsível do que montar uma QGraphicsScene só pra borrar.
+    void rebuildCache() {
+        const QSize sz = size();
+        if (sz.isEmpty()) return;
+        // QImage com alfa explícito, não QPixmap: um QPixmap recém-criado pode
+        // nascer sem canal alfa, e aí fill(Qt::transparent) pinta PRETO OPACO —
+        // que aparecia como uma moldura preta em volta da página e por cima da
+        // barra (invisível nos temas escuros, gritante nos claros).
+        QImage img(sz * devicePixelRatioF(), QImage::Format_ARGB32_Premultiplied);
+        img.setDevicePixelRatio(devicePixelRatioF());
+        img.fill(Qt::transparent);
+
+        QPainter p(&img);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setPen(Qt::NoPen);
+
+        const QRectF core(m_blur, m_blur + m_offset, m_page.width(), m_page.height());
+        const int steps = qBound(8, m_blur, 48);
+        for (int i = steps; i >= 1; --i) {
+            const qreal t = qreal(i) / steps;          // 1 = borda externa
+            const qreal grow = t * m_blur;
+            // Queda quadrática: perto da folha satura, longe some.
+            const qreal falloff = (1.0 - t) * (1.0 - t);
+            QColor c = m_color;
+            c.setAlphaF(qBound(0.0, m_color.alphaF() * falloff * 0.5, 1.0));
+            p.setBrush(c);
+            const qreal r = m_corner + grow * 0.5;
+            p.drawRoundedRect(core.adjusted(-grow, -grow, grow, grow), r, r);
+        }
+        p.end();
+        m_cache = QPixmap::fromImage(img);
+    }
+
+    QRect m_page;
+    QColor m_color;
+    int m_blur = 0;
+    int m_offset = 0;
+    int m_corner = 0;
+    QPixmap m_cache;
+};
+
 MainWindow::~MainWindow() {
     // mainMenuDialog é criado sem parent (pra ter taskbar entry própria),
     // então não morre junto com o MainWindow — temos que deletar à mão.
@@ -6896,6 +6998,8 @@ void MainWindow::positionExternalScrollBar()
     // deles toda vez que o editor rolasse/redimensionasse (ex.: usuário rolando
     // o texto com o painel de Estatísticas aberto por cima). Reafirma esses
     // painéis por cima da scrollbar sempre que ela é reposicionada.
+    // O halo da página segue a folha: mesmo gatilho, mesma conta de geometria.
+    positionPageGlow();
     if (pensarioPanel && pensarioPanel->isVisible()) pensarioPanel->raise();
     if (refMenuPanel && refMenuPanel->isVisible()) refMenuPanel->raise();
     if (statsPanel && statsPanel->isVisible()) statsPanel->raise();
@@ -7615,9 +7719,47 @@ int MainWindow::docHeaderExtent() const
     return (docHeader && !docHeader->isHidden()) ? docHeader->height() : 0;
 }
 
+// Posiciona o halo da página por cima das barras. Ver a classe PageGlow.
+//
+// Só entra em cena nos temas que PEDEM halo (t.pageGlowEnabled). Deduzir isso
+// da cor clara da sombra não funciona: 12 temas antigos — Firefly, Halo, Stage,
+// Terminal, Radioactive, Oil Lamp... — já usavam sombra clara sem querer brilho
+// nenhum, e ganhavam um halo que ninguém pediu. A geometria acompanha a folha
+// pelo mesmo mapTo que positionExternalScrollBar já usa.
+void MainWindow::positionPageGlow()
+{
+    if (!editorScroll || !editorColumn) return;
+
+    const QColor c = parseColor(Theme::pageShadowColor());
+    if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
+        if (m_pageGlow) m_pageGlow->hide();
+        return;
+    }
+
+    if (!m_pageGlow) m_pageGlow = new PageGlow(this);
+
+    QWidget* vp = editorScroll->viewport();
+    // editorColumn = folha + scrollbar externa; o halo sai da FOLHA, então a
+    // faixa da scrollbar não conta (mesma conta de updateEditorLayout).
+    const int scrollExtra = externalScrollBar
+        ? (externalScrollBar->sizeHint().width() + 6 /*spacing*/)
+        : 0;
+    QRect sheet(editorColumn->mapTo(vp, QPoint(0, 0)), editorColumn->size());
+    sheet.setWidth(qMax(0, sheet.width() - scrollExtra));
+    sheet = sheet.intersected(vp->rect());
+    if (sheet.isEmpty()) { m_pageGlow->hide(); return; }
+
+    const QRect sheetInWindow(vp->mapTo(this, sheet.topLeft()), sheet.size());
+    m_pageGlow->setSource(sheetInWindow, c, Theme::pageShadowRadius(),
+                          Theme::pageShadowOffset(), Theme::panelRadius());
+    m_pageGlow->show();
+    m_pageGlow->raise();
+}
+
 void MainWindow::applyPageShadow()
 {
     if (!editorColumn) return;
+    positionPageGlow();
     if (Theme::pageShadowEnabled()) {
         auto* effect = qobject_cast<QGraphicsDropShadowEffect*>(editorColumn->graphicsEffect());
         if (!effect) {
@@ -7657,9 +7799,14 @@ void MainWindow::applyBackgroundFromTheme()
             QStringLiteral("#editorContainer { background: %1; }").arg(Theme::appBackground()));
     }
     if (toolbarHolder) {
+        // Com a barra translúcida o holder também precisa sair da frente: ele
+        // fica entre a TopToolbar e o fundo, e pintaria appBackground opaco
+        // justamente onde a transparência deveria mostrar a foto ou o halo.
+        const bool holderTransparent = hasImage || Theme::panelOpacity() < 100;
         toolbarHolder->setStyleSheet(
             QStringLiteral("#topToolbarHolder { background: %1; }")
-                .arg(hasImage ? QStringLiteral("transparent") : Theme::appBackground()));
+                .arg(holderTransparent ? QStringLiteral("transparent")
+                                       : Theme::appBackground()));
     }
 
 #ifdef Q_OS_WIN
