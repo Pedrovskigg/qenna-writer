@@ -35,6 +35,13 @@ struct MiraTheme {
     // Cores principais (painéis, app)
     QString appBackground;
     QString panelBackground;
+    // Opacidade das barras e painéis fixos da janela (0-100). Abaixo de 100 a
+    // TopToolbar, a LeftBar, o painel de capítulos e as gavetas deixam ver o
+    // fundo do app — cor sólida na maioria dos temas, foto nos estampados, e o
+    // halo da página nos que têm pageGlowEnabled. NÃO vale para diálogos,
+    // popups e toasts: esses continuam opacos, senão viram sopa por cima do
+    // texto. Ver Theme::panelBackgroundCss().
+    int panelOpacity = 100;
     QString panelBorder;
     // Arredondamento dos cantos de painéis/barras (px) — existia no Mira 1
     // como um slider global ("Arredondamento", 0-24px, default 14); aqui é
@@ -86,6 +93,11 @@ struct MiraTheme {
     // Sombra projetada da página (estilo FocusWriter). Quando enabled, o
     // editorColumn ganha QGraphicsDropShadowEffect.
     bool pageShadowEnabled = false;
+    // Halo da página: em vez de projetar sombra, a folha ESPALHA luz por cima
+    // dos painéis (MainWindow::positionPageGlow). Só faz sentido com uma
+    // pageShadowColor clara, mas é uma escolha do tema, não uma dedução da cor:
+    // vários temas antigos usam sombra clara sem querer brilho nenhum.
+    bool pageGlowEnabled = false;
     QString pageShadowColor = QStringLiteral("rgba(0,0,0,140)");
     int pageShadowRadius = 24;
     int pageShadowOffset = 6;
@@ -270,6 +282,11 @@ QString pressedOverlay();
 QString subtleBorder();
 QString accentDefault();
 QString panelQss(const QString& objectName);
+// Fundo de painel já com a opacidade do tema aplicada, pronto pra QSS. Devolve
+// o hex cru quando panelOpacity == 100, senão um rgba(). Use nas barras fixas;
+// para diálogos e popups continue usando panelBackground().
+QString panelBackgroundCss();
+int panelOpacity();
 
 // Hover/focus fortes e inputs.
 QString hoverStrong();
@@ -295,6 +312,7 @@ QString accentInfoBorderSoft();
 QString editorBackground();
 QString editorTextColor();
 bool pageShadowEnabled();
+bool pageGlowEnabled();
 QString pageShadowColor();
 int pageShadowRadius();
 int pageShadowOffset();
