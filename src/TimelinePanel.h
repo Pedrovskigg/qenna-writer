@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PresenceTypes.h"
+#include "TimelineTracksTypes.h"
 #include "TimelineTypes.h"
 
 #include <QHash>
@@ -16,6 +17,13 @@ class ProjectModel;
 class TerritorioStore;
 class ElementsStore;
 class TimelineBranchPopup;
+class TimelineTracksView;
+class TimelineBraidView;
+class TimelineInspector;
+class QStackedWidget;
+class QButtonGroup;
+class QPropertyAnimation;
+class QLineEdit;
 
 class TimelinePanel : public QWidget {
     Q_OBJECT
@@ -46,8 +54,17 @@ public:
     // Abre o popup de novo evento já pré-preenchido (ex.: criado a partir de um
     // trecho selecionado no editor). Usado pelo MainWindow.
     // title vazio = sugere a partir das primeiras palavras da descrição.
+    // origin: "lousa" / "" (ver TimelineEvent::origin). Sem âncora → "Soltos".
     void promptNewEvent(const QString& description, const QString& marker,
-                        const QString& title = QString());
+                        const QString& title = QString(), const QString& origin = QString());
+    // Evento criado a partir de uma seleção no editor: nasce no capítulo/cena
+    // de onde veio (e na linha dele), na ordem do texto.
+    void promptNewEventFromEditor(const QString& description, const QString& marker,
+                                  const QString& chapterId, int sceneIndex,
+                                  int textPos, int paragraph);
+
+    // Capítulo/cena aberto no editor — selo "✎" na régua e manuscrito padrão.
+    void setEditorLocation(const QString& manuscriptId, const QString& chapterId, int sceneIndex);
 
     // Força a resincronização das trilhas automáticas a partir do model,
     // mesmo com o painel escondido (os signals internos só resincronizam
@@ -58,10 +75,17 @@ public:
 signals:
     void closeRequested();
     void exportEventAsDoc(TimelineEvent data);
+    // "Abrir no editor" do painel lateral. textPos >= 0 = posiciona o cursor.
+    void openInEditorRequested(const QString& manuscriptId, const QString& chapterId,
+                               int sceneIndex, int textPos);
+    void generatorRequested(); // menu "⋯" → Gerador de Timeline
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void closeEvent(QCloseEvent* event)   override;
+    void keyPressEvent(QKeyEvent* event)  override;
+    void showEvent(QShowEvent* event)     override;
+    bool eventFilter(QObject* obj, QEvent* ev) override;
 
 private slots:
     void applyTheme();
@@ -69,7 +93,7 @@ private slots:
     void editTimeline(const QString& id);
     void deleteTimeline(const QString& id);
     void createEventAt(const QPointF& scenePos);
-    void commitEvent(TimelineEvent e, const QPointF& scenePos); // cria o evento já resolvido
+    QString commitEvent(TimelineEvent e, const QPointF& scenePos); // cria o evento já resolvido; devolve o id
     void openEditPopup(const QString& eventId);
     void onExportEventAsDoc(const TimelineEvent& event);
 
@@ -136,6 +160,75 @@ private:
     void enqueueBranchAmbiguity(const QString& evId, const QString& evTitle,
                                 const QStringList& candidateIds,
                                 const QStringList& candidateLabels);
+
+    // ── Timeline nova (Trilhos / Trança / painel lateral) ─────────────────────
+    enum class NewMode { Tracks, Braid, Engine };
+    void buildNewUi(QWidget* body);
+    void applyNewTheme();
+    void refreshNewUi();                       // reconstrói os dados e repinta
+    Tracks::Data buildTracksData() const;
+    QString currentManuscriptId() const;
+    void setNewMode(NewMode m);
+    void setLegacyUi(bool legacy);
+    void selectEvent(const QString& id);
+    void setInspectorOpen(bool open);
+    void applyTracksFilter();
+    void rebuildNewMenus();
+    void refreshNewChips();
+    void collapseSearch(bool clear);
+    void onEventDropped(const QString& id, const QString& laneId, int col);
+    void openEventInEditor(const QString& id);
+    void fillMarker(const QString& id, const QString& marker);
+    void undoLaneMove(const QString& id);
+    void editTracksEvent(const QString& id);
+    void createAtColumn(const QString& laneId, int col);
+    void removeManualEvent(const QString& id);
+    void openLaneColor(const QString& laneId, const QPoint& globalPos);
+    void resolveThemeBoundLaneColors(); // linhas presas a uma cor do tema
+    // Evento vivo (cena) por id; nullptr se não existe (ex.: capítulo sem data).
+    const TimelineEvent* liveEvent(const QString& id) const;
+    // Grava a mudança num evento vivo (cena + lista local) e salva.
+    void updateLiveEvent(const TimelineEvent& e);
+
+    bool      m_legacyUi = false;
+    bool      m_staleWhileHidden = false;
+    NewMode   m_newMode  = NewMode::Tracks;
+    QString   m_msId;                          // manuscrito mostrado na Timeline nova
+    QString   m_editorMsId, m_editorChapterId;
+    int       m_editorScene = -1;
+    QString   m_sel;                           // evento selecionado (painel aberto)
+    Tracks::Data   m_tracksData;
+    Tracks::Filter m_tf;
+    // Linha escolhida pelo usuário pra eventos de capítulo/cena (arraste),
+    // por id "story:..." — salva no timeline.json, a detecção não desfaz.
+    QHash<QString, QString> m_laneOverrides;
+    QHash<QString, QString> m_autoLaneOf;      // linha automática antes do override
+    QHash<QString, QStringList> m_presentByEvId; // "story:..." → nomes presentes
+    mutable QHash<QString, QImage> m_avatarCache;
+
+    QWidget*            m_newTop      = nullptr;
+    QWidget*            m_newBottom   = nullptr;
+    QStackedWidget*     m_stack       = nullptr;
+    TimelineTracksView* m_tracks      = nullptr;
+    TimelineBraidView*  m_braid       = nullptr;
+    TimelineInspector*  m_inspector   = nullptr;
+    QWidget*            m_inspHolder  = nullptr;
+    class QVariantAnimation* m_inspAnim = nullptr;
+    class QToolButton*  m_msBtn       = nullptr;
+    class QToolButton*  m_segTracks   = nullptr;
+    class QToolButton*  m_segBraid    = nullptr;
+    QWidget*            m_searchBox   = nullptr;
+    class QToolButton*  m_searchBtn   = nullptr;
+    QLineEdit*          m_searchEdit  = nullptr;
+    QPropertyAnimation* m_searchAnim  = nullptr;
+    class QToolButton*  m_chipChar    = nullptr;
+    class QToolButton*  m_chipPlace   = nullptr;
+    class QToolButton*  m_moreBtn     = nullptr;
+    class QLabel*       m_statsLbl    = nullptr;
+    class QToolButton*  m_noDateBtn   = nullptr;
+    QWidget*            m_densityBox  = nullptr;
+    QButtonGroup*       m_densityGrp  = nullptr;
+    class QToolButton*  m_btnNewUi    = nullptr; // na barra antiga: volta pra UI nova
 
     TimelineScene*  m_scene        = nullptr;
     TimelineView*   m_view         = nullptr;

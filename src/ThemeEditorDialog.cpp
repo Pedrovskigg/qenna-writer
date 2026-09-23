@@ -1,4 +1,5 @@
 #include "ThemeEditorDialog.h"
+#include "ColorPopover.h"
 
 #include "Theme.h"
 
@@ -449,7 +450,7 @@ void ThemeEditorDialog::onPickColor()
     if (!initial.isValid()) initial = QColor(80, 80, 80);
     QColorDialog::ColorDialogOptions opts;
     if (fieldKey == "panelBorder") opts |= QColorDialog::ShowAlphaChannel;
-    QColor chosen = QColorDialog::getColor(initial, this, tr("Escolher cor"), opts);
+    QColor chosen = ColorPopover::getColor(initial, this, tr("Escolher cor"), opts);
     if (!chosen.isValid()) return;
     const QString s = colorToString(chosen);
     setColorIn(fieldKey, s);
@@ -468,7 +469,7 @@ void ThemeEditorDialog::onShadowColorClicked()
 {
     QColor initial = parseAnyColor(m_theme.pageShadowColor);
     if (!initial.isValid()) initial = QColor(0, 0, 0, 140);
-    QColor chosen = QColorDialog::getColor(initial, this, tr("Cor da sombra"),
+    QColor chosen = ColorPopover::getColor(initial, this, tr("Cor da sombra"),
                                            QColorDialog::ShowAlphaChannel);
     if (!chosen.isValid()) return;
     m_theme.pageShadowColor = colorToString(chosen);

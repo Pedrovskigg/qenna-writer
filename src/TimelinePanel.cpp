@@ -1,4 +1,5 @@
 #include "TimelinePanel.h"
+#include "ColorPopover.h"
 
 #include "CrashLogger.h"
 #include "ElementsStore.h"
@@ -9,8 +10,24 @@
 #include "TerritorioStore.h"
 #include "TimelineBranchPopup.h"
 #include "TimelineChrono.h"
+#include "ColorPopover.h"
+#include "TimelineBraidView.h"
+#include "TimelineInspector.h"
+#include "TimelineTracksView.h"
 
 #include <QAction>
+#include <QButtonGroup>
+#include <QEasingCurve>
+#include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPainterPath>
+#include <QPropertyAnimation>
+#include <QShowEvent>
+#include <QStackedWidget>
+#include <QStyle>
+#include <QTimer>
+#include <QVariantAnimation>
+#include <functional>
 #include <QComboBox>
 #include <QHash>
 #include <QMessageBox>
@@ -95,7 +112,8 @@ TimelinePanel::TimelinePanel(QWidget* parent)
     setObjectName(QStringLiteral("timelinePanel"));
     setWindowTitle(tr("Linha do tempo"));
     setMinimumSize(400, 400);
-    resize(620, 620);
+    resize(1180, 720);
+    m_legacyUi = QSettings().value(QStringLiteral("timeline/legacyUi"), false).toBool();
     buildUi();
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -183,6 +201,11 @@ void TimelinePanel::buildUi()
     m_btnLegacyChars->setCheckable(true);
     tl->addWidget(m_btnLegacyChars);
 
+    // Volta pra Timeline nova (esta barra só aparece na "UI Legado").
+    m_btnNewUi = makeBtn(tr("UI nova"), tr("Voltar para a Linha do Tempo nova"), m_toolbar);
+    tl->addWidget(m_btnNewUi);
+    connect(m_btnNewUi, &QToolButton::clicked, this, [this]() { setLegacyUi(false); });
+
     tl->addStretch();
 
     auto* btnClose = makeBtn(QStringLiteral("×"), tr("Fechar"), m_toolbar);
@@ -199,7 +222,15 @@ void TimelinePanel::buildUi()
     // ── Canvas ───────────────────────────────────────────────────────────────
     m_scene = new TimelineScene(this);
     m_view  = new TimelineView(m_scene, this);
-    root->addWidget(m_view, 1);
+
+    // Timeline nova: barra própria + Trilhos/Trança + painel lateral. O
+    // motor antigo (m_view) vive dentro da mesma pilha, pra Ramificações,
+    // Espiral e a "UI Legado".
+    auto* body = new QWidget(this);
+    buildNewUi(body);
+    root->addWidget(m_newTop);
+    root->addWidget(body, 1);
+    root->addWidget(m_newBottom);
 
     // Botão "+" flutuante sobre o canvas (canto superior esquerdo) → novo evento.
     m_btnAdd = new QToolButton(m_view);
@@ -232,6 +263,7 @@ void TimelinePanel::buildUi()
     refreshModeButtons();
     rebuildFocusMenu();
     refreshFocusButtons();
+    setLegacyUi(m_legacyUi);
 }
 
 void TimelinePanel::toggleViewMode()
@@ -514,7 +546,7 @@ bool TimelinePanel::editTimelineDef(TimelineDef& def, bool isNew)
     };
     updateColorBtn();
     connect(colorBtn, &QToolButton::clicked, dlg, [&, dlg]() {
-        const QColor c = QColorDialog::getColor(chosenColor, dlg, tr("Cor da timeline"));
+        const QColor c = ColorPopover::getColor(chosenColor, dlg, tr("Cor da timeline"));
         if (c.isValid()) { chosenColor = c; updateColorBtn(); }
     });
     colorRow->addWidget(new QLabel(tr("Cor:"), dlg));
@@ -535,6 +567,7 @@ bool TimelinePanel::editTimelineDef(TimelineDef& def, bool isNew)
     if (ok) {
         const QString name = nameEdit->text().trimmed();
         if (!name.isEmpty()) def.name = name;          // edição: nome vazio mantém o atual
+        if (chosenColor != def.color) { def.userColor = true; def.colorTheme.clear(); }
         def.color  = chosenColor;
         def.weight = impCombo->currentData().toString();
     }
@@ -559,6 +592,7 @@ void TimelinePanel::createTimeline()
     rebuildFocusMenu();
     refreshFocusButtons();
     save();
+    refreshNewUi();
 }
 
 void TimelinePanel::editTimeline(const QString& id)
@@ -573,6 +607,7 @@ void TimelinePanel::editTimeline(const QString& id)
         rebuildFocusMenu();
         refreshFocusButtons();
         save();
+        refreshNewUi();
         return;
     }
 }
@@ -627,6 +662,7 @@ void TimelinePanel::deleteTimeline(const QString& id)
         rebuildFocusMenu();
         refreshFocusButtons();
         save();
+        refreshNewUi();
         return;
     }
 }
@@ -640,7 +676,7 @@ void TimelinePanel::createEventAt(const QPointF& scenePos)
     commitEvent(dlg.eventData(), scenePos);
 }
 
-void TimelinePanel::commitEvent(TimelineEvent e, const QPointF& scenePos)
+QString TimelinePanel::commitEvent(TimelineEvent e, const QPointF& scenePos)
 {
     if (e.title.isEmpty()) e.title = tr("Novo evento");
     e.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
@@ -670,10 +706,12 @@ void TimelinePanel::commitEvent(TimelineEvent e, const QPointF& scenePos)
 
     m_scene->relayout();
     save();
+    refreshNewUi();
+    return e.id;
 }
 
 void TimelinePanel::promptNewEvent(const QString& description, const QString& marker,
-                                   const QString& title)
+                                   const QString& title, const QString& origin)
 {
     // título sugerido a partir das primeiras palavras do trecho
     auto suggestTitle = [](const QString& text) -> QString {
@@ -701,7 +739,13 @@ void TimelinePanel::promptNewEvent(const QString& description, const QString& ma
 
     const QPointF c = m_view ? m_view->mapToScene(m_view->viewport()->rect().center())
                              : QPointF(0, 0);
-    commitEvent(dlg.eventData(), c);
+    TimelineEvent e = dlg.eventData();
+    e.origin = origin;
+    const QString id = commitEvent(e, c);
+    if (!m_legacyUi) {
+        if (m_newMode == NewMode::Engine) setNewMode(NewMode::Tracks);
+        selectEvent(id);
+    }
 }
 
 void TimelinePanel::openEditPopup(const QString& id)
@@ -725,6 +769,11 @@ void TimelinePanel::openEditPopup(const QString& id)
     updated.narrativeTick = prev.narrativeTick;
     updated.storyOrder    = prev.storyOrder;
     updated.autoEvent     = prev.autoEvent;
+    updated.anchorKey     = prev.anchorKey;
+    updated.anchorPos     = prev.anchorPos;
+    updated.origin        = prev.origin;
+    updated.originWhere   = prev.originWhere;
+    updated.laneFollows   = prev.laneFollows && updated.timelineId == oldTimelineId;
 
     // Se mudou de timeline, reconectar
     if (updated.timelineId != oldTimelineId) {
@@ -762,6 +811,7 @@ void TimelinePanel::openEditPopup(const QString& id)
         if (e.id == id) { e = updated; break; }
     }
     save();
+    refreshNewUi();
 }
 
 void TimelinePanel::setProjectRoot(const QString& root)
@@ -808,7 +858,7 @@ void TimelinePanel::setProjectModel(ProjectModel* model)
         // capítulo, marcador, resumo, data-base...) → resync silencioso das
         // trilhas automáticas, sem esperar reabertura do projeto.
         auto resync = [this]() {
-            if (!isVisible()) return;
+            if (!isVisible()) { m_staleWhileHidden = true; return; }
             syncCharacterTimelines(false);
             syncStoryTimeline();
         };
@@ -1124,6 +1174,7 @@ void TimelinePanel::syncCharacterTimelines(bool askSecondary)
     rebuildFocusMenu();
     refreshFocusButtons();
     save();
+    refreshNewUi();
 }
 
 void TimelinePanel::syncStoryTimeline()
@@ -1189,7 +1240,7 @@ void TimelinePanel::syncStoryTimeline()
 
     // Personagens presentes por evento (exibido no card do evento, "Presentes: ...").
     QHash<QString, QStringList> presentByEvId; // evId -> nomes
-    if (!hits.isEmpty() && m_elementsStore && m_presenceProvider) {
+    if (m_elementsStore && m_presenceProvider) {
         QStringList names;
         for (const Element& e : m_elementsStore->elements())
             if (e.type == QStringLiteral("character")) names << e.name;
@@ -1293,13 +1344,27 @@ void TimelinePanel::syncStoryTimeline()
     // Flashback). Muta events/conns/defs in-place antes do push final.
     syncAutoBranches(mainHits, presentByEvId, events, conns, defs);
 
+    // Linha escolhida pelo usuário (arraste na Timeline nova) vence a
+    // detecção — guarda a automática antes, pro "Desfazer" e pro aviso.
+    m_autoLaneOf.clear();
+    for (auto& e : events) {
+        if (!e.id.startsWith(QStringLiteral("story:"))) continue;
+        m_autoLaneOf.insert(e.id, e.timelineId);
+        const QString want = m_laneOverrides.value(e.id);
+        if (want.isEmpty()) continue;
+        const bool exists = std::any_of(defs.begin(), defs.end(),
+                                        [&](const TimelineDef& d) { return d.id == want; });
+        if (exists) e.timelineId = want;
+    }
+
     // remove eventos auto obsoletos das duas trilhas (capítulo apagado / marcador
     // esvaziado). Identidade "é meu" = prefixo "story:" do id (não dá pra usar
     // autoEvent aqui, ver comentário acima) — evento manual do usuário nessas
     // trilhas sempre tem um QUuid aleatório, nunca colide com esse prefixo.
     events.erase(std::remove_if(events.begin(), events.end(), [&](const TimelineEvent& e) {
+        // qualquer linha: evento de capítulo movido pra ramificação/linha
+        // manual também some quando o capítulo perde o marcador
         return e.id.startsWith(QStringLiteral("story:"))
-            && (e.timelineId == kMainId || e.timelineId == kFlashId)
             && !desiredEvIds.contains(e.id);
     }), events.end());
 
@@ -1333,6 +1398,8 @@ void TimelinePanel::syncStoryTimeline()
     rebuildFocusMenu();
     refreshFocusButtons();
     save();
+    m_presentByEvId = presentByEvId;
+    refreshNewUi();
     CrashLogger::log("tlSyncStory done");
 }
 
@@ -1477,8 +1544,13 @@ void TimelinePanel::syncAutoBranches(const QList<AutoHit>& mainHits,
         if (bestOther) {
             // Empate real entre origem e outra ramificação — resíduo que só
             // o usuário decide (ponto 5). Reabsorve na origem enquanto isso.
-            const QString mainLabel = current->id == kMainId ? tr("Narrativa") : current->id;
-            const QString otherLabel = bestOther->id == kMainId ? tr("Narrativa") : bestOther->id;
+            auto labelOf = [&](const QString& bid) {
+                if (bid == kMainId) return tr("Narrativa");
+                for (const auto& d : defs) if (d.id == bid && !d.name.isEmpty()) return d.name;
+                return tr("outra linha");
+            };
+            const QString mainLabel = labelOf(current->id);
+            const QString otherLabel = labelOf(bestOther->id);
             enqueueBranchAmbiguity(h.evId, h.title,
                 { current->id, bestOther->id },
                 { tr("Continua em: %1").arg(mainLabel), tr("Retoma: %1").arg(otherLabel) });
@@ -1664,6 +1736,8 @@ void TimelinePanel::save() const
         o[QStringLiteral("branchFrom")]    = t.branchFromEventId;
         o[QStringLiteral("characterId")]   = t.characterId;
         o[QStringLiteral("autoGenerated")] = t.autoGenerated;
+        if (t.userColor) o[QStringLiteral("userColor")] = true;
+        if (!t.colorTheme.isEmpty()) o[QStringLiteral("colorTheme")] = t.colorTheme;
         tls.append(o);
     }
     root[QStringLiteral("timelines")] = tls;
@@ -1687,6 +1761,11 @@ void TimelinePanel::save() const
         o[QStringLiteral("conclusion")]    = e.conclusion;
         o[QStringLiteral("placeId")]       = e.placeId;
         o[QStringLiteral("autoEvent")]     = e.autoEvent;
+        if (!e.anchorKey.isEmpty())   o[QStringLiteral("anchorKey")]   = e.anchorKey;
+        if (e.anchorPos >= 0)         o[QStringLiteral("anchorPos")]   = e.anchorPos;
+        if (!e.origin.isEmpty())      o[QStringLiteral("origin")]      = e.origin;
+        if (!e.originWhere.isEmpty()) o[QStringLiteral("originWhere")] = e.originWhere;
+        if (e.laneFollows)            o[QStringLiteral("laneFollows")] = true;
         evs.append(o);
     }
     root[QStringLiteral("events")] = evs;
@@ -1702,6 +1781,21 @@ void TimelinePanel::save() const
         conns.append(o);
     }
     root[QStringLiteral("connections")] = conns;
+
+    QJsonObject ov;
+    for (auto it = m_laneOverrides.constBegin(); it != m_laneOverrides.constEnd(); ++it) ov[it.key()] = it.value();
+    root[QStringLiteral("laneOverrides")] = ov;
+
+    QJsonObject ui;
+    ui[QStringLiteral("mode")] = m_newMode == NewMode::Braid ? QStringLiteral("braid")
+                               : m_newMode == NewMode::Engine ? QStringLiteral("engine")
+                                                              : QStringLiteral("tracks");
+    if (m_tracks) {
+        ui[QStringLiteral("density")] = int(m_tracks->density());
+        ui[QStringLiteral("lanesPaneH")] = m_tracks->lanesPaneHeight();
+    }
+    if (!m_msId.isEmpty()) ui[QStringLiteral("manuscript")] = m_msId;
+    root[QStringLiteral("ui")] = ui;
 
     QSaveFile f(m_projectRoot + QStringLiteral("/timeline.json"));
     if (f.open(QIODevice::WriteOnly)) {
@@ -1751,6 +1845,8 @@ void TimelinePanel::load()
         t.branchFromEventId = o[QStringLiteral("branchFrom")].toString();
         t.characterId       = o[QStringLiteral("characterId")].toString();
         t.autoGenerated     = o[QStringLiteral("autoGenerated")].toBool(false);
+        t.userColor         = o[QStringLiteral("userColor")].toBool(false);
+        t.colorTheme        = o[QStringLiteral("colorTheme")].toString();
         m_timelines.append(t);
         ++idx;
     }
@@ -1781,6 +1877,11 @@ void TimelinePanel::load()
         e.conclusion   = o[QStringLiteral("conclusion")].toString();
         e.placeId      = o[QStringLiteral("placeId")].toString();
         e.autoEvent    = o[QStringLiteral("autoEvent")].toBool(false);
+        e.anchorKey    = o[QStringLiteral("anchorKey")].toString();
+        e.anchorPos    = o[QStringLiteral("anchorPos")].toInt(-1);
+        e.origin       = o[QStringLiteral("origin")].toString();
+        e.originWhere  = o[QStringLiteral("originWhere")].toString();
+        e.laneFollows  = o[QStringLiteral("laneFollows")].toBool(false);
         tickSeq[e.timelineId] = tickSeq.value(e.timelineId, 0) + 1;
         m_events.append(e);
         if (m_scene) m_scene->addEvent(e);
@@ -1797,6 +1898,26 @@ void TimelinePanel::load()
         c.type        = o[QStringLiteral("type")].toString(QStringLiteral("sequence"));
         m_connections.append(c);
         if (m_scene) m_scene->addConnection(c);
+    }
+
+    m_laneOverrides.clear();
+    const QJsonObject ov = root[QStringLiteral("laneOverrides")].toObject();
+    for (auto it = ov.constBegin(); it != ov.constEnd(); ++it) m_laneOverrides.insert(it.key(), it.value().toString());
+
+    {
+        const QJsonObject ui = root[QStringLiteral("ui")].toObject();
+        const QString mode = ui[QStringLiteral("mode")].toString(QStringLiteral("tracks"));
+        m_newMode = mode == QLatin1String("braid") ? NewMode::Braid
+                  : mode == QLatin1String("engine") ? NewMode::Engine : NewMode::Tracks;
+        m_msId = ui[QStringLiteral("manuscript")].toString();
+        m_sel.clear();
+        m_tf = Tracks::Filter();
+        if (m_tracks) {
+            const int den = qBound(0, ui[QStringLiteral("density")].toInt(1), 2);
+            m_tracks->setDensity(TimelineTracksView::Density(den));
+            if (auto* b = m_densityGrp->button(den)) b->setChecked(true);
+            m_tracks->setLanesPaneHeight(ui[QStringLiteral("lanesPaneH")].toInt(-1));
+        }
     }
 
     if (m_scene) m_scene->relayout();
@@ -1816,6 +1937,20 @@ void TimelinePanel::load()
     syncCharacterTimelines(true);
     // Gera as trilhas automáticas "História"/"Flashback" a partir do timeMarker.
     syncStoryTimeline();
+    m_staleWhileHidden = false;
+    setLegacyUi(m_legacyUi);
+}
+
+void TimelinePanel::showEvent(QShowEvent* e)
+{
+    QWidget::showEvent(e);
+    // Mudanças no manuscrito enquanto a janela estava fechada: resync agora.
+    if (m_staleWhileHidden) {
+        m_staleWhileHidden = false;
+        refreshFromModel();
+    } else {
+        refreshNewUi();
+    }
 }
 
 void TimelinePanel::onExportEventAsDoc(const TimelineEvent& event)
@@ -1959,4 +2094,1307 @@ void TimelinePanel::applyTheme()
             Theme::accentDefault());
 
     setStyleSheet(qss);
+    resolveThemeBoundLaneColors();
+    applyNewTheme();
+    refreshNewUi();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Timeline nova — Trilhos, Trança e painel lateral
+// ═════════════════════════════════════════════════════════════════════════════
+
+namespace {
+// Ícones de traço simples (mesmo desenho do protótipo aprovado).
+QPixmap tlIcon(const QString& kind, const QColor& c, int px = 14)
+{
+    const qreal dpr = 2.0;
+    QPixmap pm(QSize(px, px) * dpr);
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.scale(px / 16.0, px / 16.0);
+    p.setPen(QPen(c, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    p.setBrush(Qt::NoBrush);
+    QPainterPath path;
+    if (kind == QLatin1String("chevron")) {
+        path.moveTo(4, 6); path.lineTo(8, 10); path.lineTo(12, 6);
+    } else if (kind == QLatin1String("lanes")) {
+        for (int y : { 4, 8, 12 }) { path.moveTo(2, y); path.lineTo(14, y); }
+    } else if (kind == QLatin1String("braid")) {
+        path.moveTo(3, 2); path.cubicTo(3, 8, 13, 8, 13, 14);
+        path.moveTo(13, 2); path.cubicTo(13, 8, 3, 8, 3, 14);
+    } else if (kind == QLatin1String("search")) {
+        path.addEllipse(QPointF(7, 7), 4.5, 4.5);
+        path.moveTo(10.5, 10.5); path.lineTo(14, 14);
+    } else if (kind == QLatin1String("plus")) {
+        path.moveTo(8, 3); path.lineTo(8, 13); path.moveTo(3, 8); path.lineTo(13, 8);
+    } else if (kind == QLatin1String("dots")) {
+        p.setBrush(c); p.setPen(Qt::NoPen);
+        for (qreal x : { 3.5, 8.0, 12.5 }) p.drawEllipse(QPointF(x, 8), 1.1, 1.1);
+        return pm;
+    } else if (kind == QLatin1String("close")) {
+        path.moveTo(4, 4); path.lineTo(12, 12); path.moveTo(12, 4); path.lineTo(4, 12);
+    }
+    p.drawPath(path);
+    return pm;
+}
+
+// Chip de filtro: com filtro ativo, clicar no "×" da direita limpa sem abrir o menu.
+class FilterChip : public QToolButton {
+public:
+    using QToolButton::QToolButton;
+    std::function<void()> onClear;
+    bool active = false;
+protected:
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        if (active && e->position().x() > width() - 22 && onClear) { onClear(); e->accept(); return; }
+        QToolButton::mousePressEvent(e);
+    }
+};
+
+QString chapterRuler(const ProjectModel* pm, const Chapter& c)
+{
+    QString n = pm->chapterNumberLabel(c);
+    if (n.isEmpty()) {
+        // tipo especial sem número (Prólogo, Epílogo...): abreviação curta
+        const QString lab = pm->chapterDisplayLabel(c).trimmed();
+        n = lab.size() > 5 ? lab.left(4) + QLatin1Char('.') : lab;
+    }
+    return n;
+}
+
+QString unitRuler(const ProjectModel* pm, const Chapter& c, int sceneIndex)
+{
+    const QString n = chapterRuler(pm, c);
+    return sceneIndex >= 0 && c.scenes.size() > 0
+        ? n + QStringLiteral("·") + QString::number(sceneIndex + 1) : n;
+}
+
+QString suggestTitleFrom(const QString& text)
+{
+    QString flat = text;
+    flat.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+    flat = flat.trimmed();
+    const QStringList words = flat.split(QChar(' '), Qt::SkipEmptyParts);
+    QStringList picked; int total = 0;
+    for (const QString& w : words) {
+        if (picked.size() >= 7 || total + w.size() > 44) break;
+        picked.append(w); total += w.size() + 1;
+    }
+    return picked.isEmpty() ? flat.left(44) : picked.join(QChar(' '));
+}
+
+QColor colorForIdNew(const QString& id)
+{
+    uint h = 0;
+    for (const QChar c : id) h = h * 131u + c.unicode();
+    return QColor::fromHsv(int(h % 360), 150, 210);
+}
+} // namespace
+
+void TimelinePanel::buildNewUi(QWidget* body)
+{
+    // ── barra de cima ────────────────────────────────────────────────────────
+    m_newTop = new QWidget(this);
+    m_newTop->setObjectName(QStringLiteral("tlNewTop"));
+    m_newTop->setAttribute(Qt::WA_StyledBackground);
+    m_newTop->setFixedHeight(48);
+    auto* top = new QHBoxLayout(m_newTop);
+    top->setContentsMargins(16, 0, 12, 0);
+    top->setSpacing(8);
+
+    auto* title = new QLabel(tr("Linha do Tempo"), m_newTop);
+    title->setObjectName(QStringLiteral("tlNewTitle"));
+    top->addWidget(title);
+    top->addSpacing(4);
+
+    m_msBtn = new QToolButton(m_newTop);
+    m_msBtn->setObjectName(QStringLiteral("tlMs"));
+    m_msBtn->setPopupMode(QToolButton::InstantPopup);
+    m_msBtn->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_msBtn->setLayoutDirection(Qt::RightToLeft); // chevron à direita
+    m_msBtn->setCursor(Qt::PointingHandCursor);
+    m_msBtn->setMenu(new QMenu(m_msBtn));
+    connect(m_msBtn->menu(), &QMenu::aboutToShow, this, &TimelinePanel::rebuildNewMenus);
+    top->addWidget(m_msBtn);
+
+    auto* seg = new QFrame(m_newTop);
+    seg->setObjectName(QStringLiteral("tlSeg"));
+    auto* segL = new QHBoxLayout(seg);
+    segL->setContentsMargins(2, 2, 2, 2);
+    segL->setSpacing(0);
+    auto makeSeg = [&](const QString& text, QWidget* parent) {
+        auto* b = new QToolButton(parent);
+        b->setObjectName(QStringLiteral("tlSegBtn"));
+        b->setText(text);
+        b->setCheckable(true);
+        b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFixedHeight(24);
+        return b;
+    };
+    m_segTracks = makeSeg(tr("Trilhos"), seg);
+    m_segBraid  = makeSeg(tr("Trança"), seg);
+    segL->addWidget(m_segTracks);
+    segL->addWidget(m_segBraid);
+    seg->setFixedHeight(30);
+    top->addWidget(seg, 0, Qt::AlignVCenter);
+    connect(m_segTracks, &QToolButton::clicked, this, [this]() { setNewMode(NewMode::Tracks); });
+    connect(m_segBraid,  &QToolButton::clicked, this, [this]() { setNewMode(NewMode::Braid); });
+
+    top->addStretch(1);
+
+    m_searchBox = new QFrame(m_newTop);
+    m_searchBox->setObjectName(QStringLiteral("tlSearch"));
+    auto* sl = new QHBoxLayout(m_searchBox);
+    sl->setContentsMargins(0, 0, 0, 0);
+    sl->setSpacing(0);
+    m_searchBtn = new QToolButton(m_searchBox);
+    m_searchBtn->setObjectName(QStringLiteral("tlSearchBtn"));
+    m_searchBtn->setFixedSize(28, 28);
+    m_searchBtn->setCursor(Qt::PointingHandCursor);
+    m_searchBtn->setToolTip(tr("Buscar evento"));
+    m_searchEdit = new QLineEdit(m_searchBox);
+    m_searchEdit->setObjectName(QStringLiteral("tlSearchEdit"));
+    m_searchEdit->setPlaceholderText(tr("Buscar evento"));
+    m_searchEdit->setMaximumWidth(0);
+    m_searchEdit->setFixedWidth(0);
+    m_searchEdit->installEventFilter(this);
+    sl->addWidget(m_searchBtn);
+    sl->addWidget(m_searchEdit);
+    m_searchBox->setFixedHeight(28);
+    top->addWidget(m_searchBox, 0, Qt::AlignVCenter);
+    connect(m_searchBtn, &QToolButton::clicked, this, [this]() {
+        if (m_searchEdit->width() > 0) { m_searchEdit->setFocus(); return; }
+        auto* a = new QVariantAnimation(this);
+        a->setDuration(220);
+        a->setEasingCurve(QEasingCurve::OutCubic);
+        a->setStartValue(0);
+        a->setEndValue(182);
+        connect(a, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            m_searchEdit->setFixedWidth(v.toInt());
+        });
+        a->start(QAbstractAnimation::DeleteWhenStopped);
+        m_searchBox->setProperty("open", true);
+        m_searchBox->style()->unpolish(m_searchBox);
+        m_searchBox->style()->polish(m_searchBox);
+        m_searchEdit->setFocus();
+    });
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [this](const QString& t) {
+        m_tf.query = t.trimmed();
+        applyTracksFilter();
+    });
+
+    auto makeChip = [&](const QString& tip) {
+        auto* c = new FilterChip(m_newTop);
+        c->setObjectName(QStringLiteral("tlChip"));
+        c->setPopupMode(QToolButton::InstantPopup);
+        c->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        c->setLayoutDirection(Qt::RightToLeft);
+        c->setCursor(Qt::PointingHandCursor);
+        c->setToolTip(tip);
+        c->setMenu(new QMenu(c));
+        connect(c->menu(), &QMenu::aboutToShow, this, &TimelinePanel::rebuildNewMenus);
+        return c;
+    };
+    auto* chipChar = makeChip(tr("Filtrar eventos por personagem presente"));
+    chipChar->onClear = [this]() { m_tf.charId.clear(); applyTracksFilter(); };
+    m_chipChar = chipChar;
+    auto* chipPlace = makeChip(tr("Filtrar eventos pelo lugar onde aconteceram"));
+    chipPlace->onClear = [this]() { m_tf.placeId.clear(); applyTracksFilter(); };
+    m_chipPlace = chipPlace;
+    top->addWidget(m_chipChar);
+    top->addWidget(m_chipPlace);
+
+    auto* add = new QPushButton(tr("Evento"), m_newTop);
+    add->setObjectName(QStringLiteral("tlAddBtn"));
+    add->setCursor(Qt::PointingHandCursor);
+    add->setToolTip(tr("Novo evento (vai para \"Soltos\" até você arrastá-lo para uma linha)"));
+    add->setFixedHeight(28);
+    top->addSpacing(4);
+    top->addWidget(add);
+    connect(add, &QPushButton::clicked, this, [this]() {
+        TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
+        dlg.setDocTextResolver(m_docTextResolver);
+        if (dlg.exec() != QDialog::Accepted) return;
+        TimelineEvent e = dlg.eventData();
+        e.origin = QStringLiteral("new");
+        const QString id = commitEvent(e, QPointF());
+        selectEvent(id);
+    });
+
+    m_moreBtn = new QToolButton(m_newTop);
+    m_moreBtn->setObjectName(QStringLiteral("tlIconBtn"));
+    m_moreBtn->setFixedSize(28, 28);
+    m_moreBtn->setPopupMode(QToolButton::InstantPopup);
+    m_moreBtn->setCursor(Qt::PointingHandCursor);
+    m_moreBtn->setToolTip(tr("Mais"));
+    m_moreBtn->setMenu(new QMenu(m_moreBtn));
+    connect(m_moreBtn->menu(), &QMenu::aboutToShow, this, &TimelinePanel::rebuildNewMenus);
+    top->addWidget(m_moreBtn);
+
+    auto* close = new QToolButton(m_newTop);
+    close->setObjectName(QStringLiteral("tlIconBtn"));
+    close->setProperty("iconKind", QStringLiteral("close"));
+    close->setFixedSize(28, 28);
+    close->setCursor(Qt::PointingHandCursor);
+    close->setToolTip(tr("Fechar"));
+    top->addWidget(close);
+    connect(close, &QToolButton::clicked, this, &TimelinePanel::closeRequested);
+
+    // ── corpo: trilhos / trança / motor antigo + painel lateral ─────────────
+    auto* bodyL = new QHBoxLayout(body);
+    bodyL->setContentsMargins(0, 0, 0, 0);
+    bodyL->setSpacing(0);
+    m_stack = new QStackedWidget(body);
+    m_tracks = new TimelineTracksView(m_stack);
+    m_braid  = new TimelineBraidView(m_stack);
+    m_stack->addWidget(m_tracks);
+    m_stack->addWidget(m_braid);
+    m_stack->addWidget(m_view);
+    bodyL->addWidget(m_stack, 1);
+
+    // Painel lateral: o contêiner anima a própria largura (0 ↔ 300) e o painel
+    // fica encostado na borda direita dele — entra deslizando da direita.
+    m_inspHolder = new QWidget(body);
+    m_inspHolder->setFixedWidth(0);
+    m_inspector = new TimelineInspector(m_inspHolder);
+    m_inspHolder->installEventFilter(this);
+    bodyL->addWidget(m_inspHolder);
+    m_inspAnim = new QVariantAnimation(this);
+    m_inspAnim->setDuration(220);
+    m_inspAnim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(m_inspAnim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+        m_inspHolder->setFixedWidth(v.toInt());
+    });
+
+    connect(m_tracks, &TimelineTracksView::eventClicked, this, &TimelinePanel::selectEvent);
+    connect(m_tracks, &TimelineTracksView::backgroundClicked, this, [this]() { selectEvent(QString()); });
+    connect(m_tracks, &TimelineTracksView::laneClicked, this, [this](const QString& id) {
+        m_tf.laneId = m_tf.laneId == id ? QString() : id;
+        applyTracksFilter();
+    });
+    connect(m_tracks, &TimelineTracksView::characterClicked, this, [this](const QString& id) {
+        m_tf.charId = m_tf.charId == id ? QString() : id;
+        applyTracksFilter();
+    });
+    connect(m_tracks, &TimelineTracksView::densityChangeRequested, this, [this](int d) {
+        m_tracks->setDensity(TimelineTracksView::Density(d));
+        if (auto* b = m_densityGrp->button(d)) b->setChecked(true);
+    });
+    connect(m_tracks, &TimelineTracksView::eventDropped, this, &TimelinePanel::onEventDropped);
+    connect(m_tracks, &TimelineTracksView::createAtRequested, this, &TimelinePanel::createAtColumn);
+    connect(m_tracks, &TimelineTracksView::layoutChanged, this, [this]() { save(); });
+    connect(m_tracks, &TimelineTracksView::laneColorRequested, this, &TimelinePanel::openLaneColor);
+    connect(m_tracks, &TimelineTracksView::laneContextMenu, this, [this](const QString& laneId, const QPoint& gp) {
+        const TimelineDef* def = nullptr;
+        for (const auto& t : m_timelines) if (t.id == laneId) def = &t;
+        QMenu menu(this);
+        QAction* color = menu.addAction(tr("Cor da linha…"));
+        QAction* edit = nullptr;
+        QAction* del = nullptr;
+        if (def && !def->autoGenerated) {
+            edit = menu.addAction(tr("Editar linha…"));
+            menu.addSeparator();
+            del = menu.addAction(tr("Excluir linha…"));
+        }
+        QAction* chosen = menu.exec(gp);
+        if (chosen == color) openLaneColor(laneId, gp);
+        else if (edit && chosen == edit) editTimeline(laneId);
+        else if (del && chosen == del) deleteTimeline(laneId);
+    });
+    connect(m_tracks, &TimelineTracksView::eventContextMenu, this,
+            [this](const QString& id, const QPoint& gp) {
+        const Tracks::Event* e = m_tracksData.event(id);
+        if (!e) return;
+        QMenu menu(this);
+        QAction* edit = menu.addAction(tr("Editar evento"));
+        QAction* exp  = menu.addAction(tr("Exportar como documento"));
+        QAction* del  = nullptr;
+        if (e->manual) { menu.addSeparator(); del = menu.addAction(tr("Remover")); }
+        QAction* chosen = menu.exec(gp);
+        if (chosen == edit) editTracksEvent(id);
+        else if (chosen == exp) {
+            if (const TimelineEvent* le = liveEvent(id)) onExportEventAsDoc(*le);
+        } else if (del && chosen == del) removeManualEvent(id);
+    });
+    connect(m_braid, &TimelineBraidView::eventClicked, this, &TimelinePanel::selectEvent);
+    connect(m_braid, &TimelineBraidView::backgroundClicked, this, [this]() { selectEvent(QString()); });
+
+    connect(m_inspector, &TimelineInspector::closeRequested, this, [this]() { selectEvent(QString()); });
+    connect(m_inspector, &TimelineInspector::selectRequested, this, &TimelinePanel::selectEvent);
+    connect(m_inspector, &TimelineInspector::openInEditorRequested, this, &TimelinePanel::openEventInEditor);
+    connect(m_inspector, &TimelineInspector::editRequested, this, &TimelinePanel::editTracksEvent);
+    connect(m_inspector, &TimelineInspector::exportRequested, this, [this](const QString& id) {
+        if (const TimelineEvent* le = liveEvent(id)) { onExportEventAsDoc(*le); return; }
+        if (const Tracks::Event* te = m_tracksData.event(id)) {
+            TimelineEvent tmp; tmp.title = te->title; tmp.description = te->summary;
+            onExportEventAsDoc(tmp);
+        }
+    });
+    connect(m_inspector, &TimelineInspector::fillMarkerRequested, this, &TimelinePanel::fillMarker);
+    connect(m_inspector, &TimelineInspector::undoMoveRequested, this, &TimelinePanel::undoLaneMove);
+    connect(m_inspector, &TimelineInspector::characterClicked, this, [this](const QString& id) {
+        m_tf.charId = m_tf.charId == id ? QString() : id;
+        applyTracksFilter();
+    });
+
+    // ── rodapé ───────────────────────────────────────────────────────────────
+    m_newBottom = new QWidget(this);
+    m_newBottom->setObjectName(QStringLiteral("tlNewBottom"));
+    m_newBottom->setAttribute(Qt::WA_StyledBackground);
+    m_newBottom->setFixedHeight(36);
+    auto* bot = new QHBoxLayout(m_newBottom);
+    bot->setContentsMargins(16, 0, 12, 0);
+    bot->setSpacing(14);
+    m_statsLbl = new QLabel(m_newBottom);
+    m_statsLbl->setObjectName(QStringLiteral("tlStats"));
+    bot->addWidget(m_statsLbl);
+    m_noDateBtn = new QToolButton(m_newBottom);
+    m_noDateBtn->setObjectName(QStringLiteral("tlNoDate"));
+    m_noDateBtn->setCursor(Qt::PointingHandCursor);
+    m_noDateBtn->setToolTip(tr("Mostrar o primeiro capítulo sem marcador de tempo"));
+    bot->addWidget(m_noDateBtn);
+    connect(m_noDateBtn, &QToolButton::clicked, this, [this]() {
+        for (const auto& e : m_tracksData.events)
+            if (e.hollow) {
+                if (m_newMode == NewMode::Tracks) m_tracks->scrollToColumn(e.col);
+                selectEvent(e.id);
+                return;
+            }
+    });
+    bot->addStretch(1);
+    m_densityBox = new QWidget(m_newBottom);
+    auto* dl = new QHBoxLayout(m_densityBox);
+    dl->setContentsMargins(0, 0, 0, 0);
+    dl->setSpacing(6);
+    auto* kbd = new QLabel(QStringLiteral("Ctrl"), m_densityBox);
+    kbd->setObjectName(QStringLiteral("tlKbd"));
+    kbd->setFixedHeight(18);
+    auto* kbdTail = new QLabel(tr("+ roda"), m_densityBox);
+    kbdTail->setObjectName(QStringLiteral("tlStats"));
+    dl->addWidget(kbd, 0, Qt::AlignVCenter);
+    dl->addWidget(kbdTail, 0, Qt::AlignVCenter);
+    dl->addSpacing(8);
+    auto* dseg = new QFrame(m_densityBox);
+    dseg->setObjectName(QStringLiteral("tlSeg"));
+    auto* dsl = new QHBoxLayout(dseg);
+    dsl->setContentsMargins(2, 2, 2, 2);
+    dsl->setSpacing(0);
+    m_densityGrp = new QButtonGroup(this);
+    m_densityGrp->setExclusive(true);
+    const QStringList dn = { tr("Pontos"), tr("Títulos"), tr("Resumos") };
+    for (int i = 0; i < 3; ++i) {
+        auto* b = new QToolButton(dseg);
+        b->setObjectName(QStringLiteral("tlSegBtnSm"));
+        b->setText(dn[i]);
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFixedHeight(20);
+        m_densityGrp->addButton(b, i);
+        dsl->addWidget(b);
+    }
+    m_densityGrp->button(1)->setChecked(true);
+    dseg->setFixedHeight(26);
+    connect(m_densityGrp, &QButtonGroup::idClicked, this, [this](int id) {
+        m_tracks->setDensity(TimelineTracksView::Density(id));
+    });
+    dl->addWidget(dseg, 0, Qt::AlignVCenter);
+    bot->addWidget(m_densityBox);
+}
+
+void TimelinePanel::applyNewTheme()
+{
+    if (!m_newTop) return;
+    const Tracks::Palette pal = Tracks::Palette::current();
+    auto css = [](const QColor& c) { return c.name(QColor::HexArgb); };
+    const QString menuQss = Theme::qss(QStringLiteral(R"(
+        QMenu { background: %1; border: 1px solid %2; border-radius: @radius-control; padding: 4px; }
+        QMenu::item { color: %3; padding: 6px 14px 6px 10px; border-radius: @radius-item; font-size: 12px; }
+        QMenu::item:selected { background: %4; color: %5; }
+        QMenu::item:disabled { color: %6; font-size: 10px; }
+        QMenu::separator { height: 1px; background: %2; margin: 4px 6px; }
+        QMenu::indicator { width: 12px; height: 12px; }
+    )")).arg(pal.panel.name(), pal.border.name(), pal.ink.name(), css(Tracks::alpha(pal.ink, 0.09)),
+             pal.bright.name(), pal.dim.name());
+    for (QToolButton* b : { m_msBtn, m_chipChar, m_chipPlace, m_moreBtn })
+        if (b && b->menu()) b->menu()->setStyleSheet(menuQss);
+
+    m_newTop->setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QWidget#tlNewTop { background: %1; border-bottom: 1px solid %2; }
+        QLabel#tlNewTitle { color: %3; font-size: 14px; font-weight: 600; }
+        QToolButton#tlMs { background: transparent; border: none; color: %3; font-family: '%9';
+                           font-size: 13px; padding: 0 6px; min-height: 28px; }
+        QToolButton#tlMs::menu-indicator, QToolButton#tlChip::menu-indicator,
+        QToolButton#tlIconBtn::menu-indicator { image: none; width: 0; }
+        QFrame#tlSeg { background: %4; border: 1px solid %2; border-radius: @radius-control; }
+        QToolButton#tlSegBtn { background: transparent; border: none; border-radius: 4px; color: %5;
+                               font-size: 12px; padding: 0 12px; }
+        QToolButton#tlSegBtn:checked { background: %1; color: %3; }
+        QFrame#tlSearch { background: transparent; border-radius: @radius-control; }
+        QFrame#tlSearch[open="true"] { background: %6; }
+        QToolButton#tlSearchBtn, QToolButton#tlIconBtn { background: transparent; border: none;
+                                                         border-radius: @radius-control; }
+        QToolButton#tlSearchBtn:hover, QToolButton#tlIconBtn:hover { background: %7; }
+        QLineEdit#tlSearchEdit { background: transparent; border: none; color: %3; font-size: 12px;
+                                 padding-right: 9px; selection-background-color: %8; }
+        QToolButton#tlChip { background: transparent; border: none; border-radius: 14px; color: %10;
+                             font-size: 12px; padding: 0 10px; min-height: 28px; }
+        QToolButton#tlChip:hover { background: %7; }
+        QToolButton#tlChip[active="true"] { background: %11; color: %3; }
+        QPushButton#tlAddBtn { background: %12; color: %13; border: none; border-radius: @radius-control;
+                               font-size: 12px; font-weight: 600; padding: 0 12px; }
+        QPushButton#tlAddBtn:hover { background: %14; }
+    )")).arg(pal.panel.name(),                       // 1
+             pal.border.name(),                      // 2
+             pal.bright.name(),                      // 3
+             css(Tracks::alpha(pal.ink, 0.07)),      // 4
+             pal.dim.name(),                         // 5
+             css(Tracks::alpha(pal.ink, 0.07)),      // 6
+             css(Tracks::alpha(pal.ink, 0.08)),      // 7
+             css(Tracks::alpha(pal.accent, 0.35)),   // 8
+             Tracks::serifFont(13).family(),         // 9
+             pal.ink.name(),                         // 10
+             css(Tracks::alpha(pal.accent, 0.14)),   // 11
+             pal.accent.name(),                      // 12
+             pal.app.name(),                         // 13
+             Tracks::mix(pal.accent, pal.bright, 0.85).name())); // 14
+
+    m_newBottom->setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QWidget#tlNewBottom { background: %1; border-top: 1px solid %2; }
+        QLabel#tlStats { color: %3; font-size: 11.5px; }
+        QToolButton#tlNoDate { background: transparent; border: none; color: %4; font-size: 11.5px; padding: 0; }
+        QToolButton#tlNoDate:hover { text-decoration: underline; }
+        QToolButton#tlNoDate[allDated="true"] { color: %5; }
+        QLabel#tlKbd { color: %6; font-family: '%7'; font-size: 10.5px; border: 1px solid %2;
+                       border-radius: 3px; padding: 0 5px; }
+        QFrame#tlSeg { background: %8; border: 1px solid %2; border-radius: @radius-control; }
+        QToolButton#tlSegBtnSm { background: transparent; border: none; border-radius: 4px; color: %3;
+                                 font-size: 11px; padding: 0 9px; }
+        QToolButton#tlSegBtnSm:checked { background: %1; color: %9; }
+    )")).arg(pal.panel.name(), pal.border.name(), pal.dim.name(), pal.warning.name(),
+             pal.success.name(), pal.ink.name(), Tracks::monoFont(10).family(),
+             css(Tracks::alpha(pal.ink, 0.07)), pal.bright.name()));
+
+    m_segTracks->setIcon(QIcon(tlIcon(QStringLiteral("lanes"), m_segTracks->isChecked() ? pal.bright : pal.dim)));
+    m_segBraid->setIcon(QIcon(tlIcon(QStringLiteral("braid"), m_segBraid->isChecked() ? pal.bright : pal.dim)));
+    m_searchBtn->setIcon(QIcon(tlIcon(QStringLiteral("search"), pal.dim)));
+    m_moreBtn->setIcon(QIcon(tlIcon(QStringLiteral("dots"), pal.dim)));
+    m_msBtn->setIcon(QIcon(tlIcon(QStringLiteral("chevron"), pal.ink)));
+    for (auto* b : m_newTop->findChildren<QToolButton*>(QStringLiteral("tlIconBtn")))
+        if (b->property("iconKind").toString() == QLatin1String("close"))
+            b->setIcon(QIcon(tlIcon(QStringLiteral("close"), pal.dim)));
+    if (auto* add = m_newTop->findChild<QPushButton*>(QStringLiteral("tlAddBtn")))
+        add->setIcon(QIcon(tlIcon(QStringLiteral("plus"), pal.app)));
+    refreshNewChips();
+    if (m_tracks) m_tracks->update();
+    if (m_braid) m_braid->update();
+    if (m_inspector && !m_sel.isEmpty()) m_inspector->showFor(m_tracksData, m_sel);
+}
+
+QString TimelinePanel::currentManuscriptId() const
+{
+    if (!m_projectModel) return {};
+    const auto& mss = m_projectModel->manuscripts();
+    auto exists = [&](const QString& id) {
+        return std::any_of(mss.begin(), mss.end(), [&](const Manuscript& m) { return m.id == id; });
+    };
+    if (!m_msId.isEmpty() && exists(m_msId)) return m_msId;
+    if (!m_editorMsId.isEmpty() && exists(m_editorMsId)) return m_editorMsId;
+    return mss.isEmpty() ? QString() : mss.first().id;
+}
+
+Tracks::Data TimelinePanel::buildTracksData() const
+{
+    Tracks::Data d;
+    if (!m_projectModel || !m_scene) return d;
+    const Tracks::Palette pal = Tracks::Palette::current();
+
+    const QString msId = currentManuscriptId();
+    const auto& mss = m_projectModel->manuscripts();
+    const bool msIsFirst = !mss.isEmpty() && mss.first().id == msId;
+    for (const Manuscript& m : mss)
+        if (m.id == msId) {
+            d.manuscriptTitle = m.title.isEmpty() ? tr("Sem título") : m.title;
+            d.startMarker = m.storyStartMarker;
+            d.startChrono = TimelineChrono::parse(m.storyStartMarker, &d.startOk);
+        }
+
+    // ── colunas: capítulos (ou cenas) do manuscrito, em ordem de leitura ──────
+    QList<Chapter> chs;
+    for (const Chapter& c : m_projectModel->chapters())
+        if (c.manuscriptId == msId || (c.manuscriptId.isEmpty() && (msIsFirst || msId.isEmpty()))) chs << c;
+    std::sort(chs.begin(), chs.end(), [](const Chapter& a, const Chapter& b) { return a.order < b.order; });
+    d.chapterCount = chs.size();
+
+    struct UnitInfo { QString title, marker, summary; };
+    QList<UnitInfo> units;
+    for (const Chapter& c : chs) {
+        const QString chTitle = c.title.isEmpty() ? m_projectModel->chapterDisplayLabel(c) : c.title;
+        const QString chLabel = m_projectModel->chapterDisplayLabel(c);
+        if (c.scenes.isEmpty()) {
+            Tracks::Column col;
+            col.key = c.id + QStringLiteral(":0");
+            col.chapterId = c.id; col.sceneIndex = -1; col.manuscriptId = c.manuscriptId;
+            col.ruler = unitRuler(m_projectModel, c, -1);
+            col.unitLabel = chLabel;
+            d.cols << col;
+            units << UnitInfo{ chTitle, c.timeMarker, c.summary };
+        } else {
+            for (int si = 0; si < c.scenes.size(); ++si) {
+                const Scene& s = c.scenes[si];
+                Tracks::Column col;
+                col.key = c.id + QLatin1Char(':') + QString::number(si);
+                col.chapterId = c.id; col.sceneIndex = si; col.manuscriptId = c.manuscriptId;
+                col.ruler = unitRuler(m_projectModel, c, si);
+                col.unitLabel = tr("%1 · Cena %2").arg(chLabel).arg(si + 1);
+                d.cols << col;
+                units << UnitInfo{ s.title.isEmpty() ? tr("%1 · Cena %2").arg(chTitle).arg(si + 1) : s.title,
+                                   s.timeMarker.isEmpty() ? c.timeMarker : s.timeMarker,
+                                   s.summary.isEmpty() ? c.summary : s.summary };
+            }
+        }
+    }
+    QHash<QString, int> colOfKey;
+    for (int i = 0; i < d.cols.size(); ++i) colOfKey.insert(d.cols[i].key, i);
+
+    // ── personagens (id por nome) ──────────────────────────────────────────────
+    QHash<QString, Element> charByName;
+    if (m_elementsStore)
+        for (const Element& e : m_elementsStore->elements())
+            if (e.type == QStringLiteral("character")) charByName.insert(e.name.toLower(), e);
+
+    auto placeName = [&](const QString& id) -> QString {
+        if (id.isEmpty() || !m_territorioStore) return {};
+        if (const auto* t = m_territorioStore->territorio(id)) return t->name;
+        return {};
+    };
+
+    // ── eventos de capítulo/cena ──────────────────────────────────────────────
+    const QList<TimelineEvent> live = m_scene->allEventData();
+    QHash<QString, const TimelineEvent*> liveById;
+    for (const auto& e : live) liveById.insert(e.id, &e);
+    QHash<QString, int> presence;  // charId → nº de colunas
+    QString prevLane = QStringLiteral("story:main");
+    for (int i = 0; i < d.cols.size(); ++i) {
+        const QString id = QStringLiteral("story:") + d.cols[i].key;
+        Tracks::Event ev;
+        ev.id = id;
+        ev.col = i;
+        const UnitInfo& u = units[i];
+        ev.title = u.title;
+        if (const TimelineEvent* le = liveById.value(id, nullptr)) {
+            ev.laneId = le->timelineId;
+            ev.marker = le->timeMarker;
+            ev.summary = le->description.isEmpty() ? u.summary : le->description;
+            ev.placeId = le->placeId;
+            ev.autoLaneId = m_autoLaneOf.value(id, le->timelineId);
+        } else {
+            ev.hollow = true;
+            ev.summary = u.summary;
+            ev.autoLaneId = prevLane;
+            ev.laneId = m_laneOverrides.value(id, prevLane);
+        }
+        ev.moved = m_laneOverrides.contains(id) && m_laneOverrides.value(id) != ev.autoLaneId;
+        ev.placeName = placeName(ev.placeId);
+        ev.chrono = TimelineChrono::parse(ev.marker, &ev.chronoOk);
+        if (ev.hollow) ev.chronoOk = false;
+        for (const QString& name : m_presentByEvId.value(id)) {
+            const auto it = charByName.constFind(name.toLower());
+            if (it == charByName.constEnd()) continue;
+            if (!ev.castIds.contains(it->id)) { ev.castIds << it->id; presence[it->id] += 1; }
+        }
+        prevLane = ev.laneId;
+        d.events << ev;
+    }
+
+    // ── eventos criados à mão ─────────────────────────────────────────────────
+    for (const auto& le : live) {
+        if (le.id.startsWith(QStringLiteral("story:")) || le.id.startsWith(QStringLiteral("auto:")) || le.autoEvent)
+            continue;
+        QString key = le.anchorKey;
+        if (key.isEmpty() && !le.linkedSceneId.isEmpty()) key = le.linkedSceneId;
+        if (key.isEmpty() && le.linkedDocId.startsWith(QStringLiteral("ch:"))) {
+            const QStringList parts = le.linkedDocId.split(QLatin1Char(':'));
+            if (parts.size() >= 3) key = parts.last() + QStringLiteral(":0");
+        }
+        int col = -1;
+        if (!key.isEmpty()) {
+            col = colOfKey.value(key, -1);
+            if (col < 0) continue; // pertence a outro manuscrito
+        }
+        Tracks::Event ev;
+        ev.id = le.id;
+        ev.manual = true;
+        ev.col = col;
+        ev.order = le.anchorPos;
+        ev.title = le.title.isEmpty() ? tr("Evento") : le.title;
+        ev.marker = le.timeMarker;
+        ev.summary = le.description;
+        ev.placeId = le.placeId;
+        ev.placeName = placeName(le.placeId);
+        ev.chrono = TimelineChrono::parse(le.timeMarker, &ev.chronoOk);
+        ev.origin = le.origin;
+        if (le.origin == QLatin1String("editor"))
+            ev.originWhere = le.originWhere.isEmpty() ? tr("na seleção do editor")
+                                                      : tr("na seleção do editor · %1").arg(le.originWhere);
+        else if (le.origin == QLatin1String("timeline")) ev.originWhere = tr("aqui na Timeline");
+        else if (le.origin == QLatin1String("lousa"))    ev.originWhere = tr("na Lousa");
+        else if (le.origin == QLatin1String("new"))      ev.originWhere = tr("pelo botão + Evento");
+        ev.originShort = le.origin == QLatin1String("editor") ? tr("Editor")
+                       : le.origin == QLatin1String("timeline") ? tr("Timeline")
+                       : le.origin == QLatin1String("lousa") ? tr("Lousa")
+                       : le.origin == QLatin1String("new") ? tr("+ Evento") : tr("Evento");
+        if (col >= 0) {
+            const QString colLane = d.events[col].laneId;
+            ev.laneId = (le.laneFollows || le.timelineId.isEmpty()) ? colLane : le.timelineId;
+        }
+        d.events << ev;
+    }
+
+    // ── linhas ────────────────────────────────────────────────────────────────
+    QSet<QString> used;
+    for (const auto& e : d.events) if (e.col >= 0) used.insert(e.laneId);
+    const QList<QColor> branchPalette = { pal.warning, pal.success, pal.danger };
+    int branchIdx = 0;
+    QList<TimelineDef> defs = m_timelines;
+    std::sort(defs.begin(), defs.end(), [](const TimelineDef& a, const TimelineDef& b) {
+        auto grp = [](const TimelineDef& t) {
+            if (t.kind == QLatin1String(TimelineKind::Main)) return 0;
+            if (t.kind == QLatin1String(TimelineKind::Parallel)) return 1;
+            if (t.kind == QLatin1String(TimelineKind::Backstory)) return 2;
+            return 3;
+        };
+        if (grp(a) != grp(b)) return grp(a) < grp(b);
+        return a.railOrder < b.railOrder;
+    });
+    const QColor defaultColor(QStringLiteral("#6c8ebf"));
+    QSet<QString> have;
+    for (const TimelineDef& t : defs) {
+        if (t.kind == QLatin1String(TimelineKind::Character)) continue;
+        if (t.autoGenerated && !used.contains(t.id)) continue;
+        Tracks::Lane L;
+        L.id = t.id;
+        L.name = t.name.isEmpty() ? tr("Linha") : t.name;
+        L.kind = t.kind;
+        L.parentId = t.parentId;
+        L.dashed = weightIsDashed(t.weight);
+        L.autoGenerated = t.autoGenerated;
+        L.color = t.color.isValid() ? t.color : defaultColor;
+        if (t.userColor) {
+            if (!t.colorTheme.isEmpty()) L.color = ColorPick::themeColor(t.colorTheme);
+            if (t.autoGenerated && t.kind == QLatin1String(TimelineKind::Parallel)) { L.sub = tr("automática"); ++branchIdx; }
+            if (t.id == QLatin1String("story:main")) L.tip = tr("linha principal");
+            else if (!t.autoGenerated) L.tip = tr("linha criada por você");
+        } else if (t.id == QLatin1String("story:main") && L.color == defaultColor) {
+            L.color = pal.accent;
+            L.tip = tr("linha principal");
+        } else if (t.id == QLatin1String("story:flashback") && L.color == defaultColor) {
+            L.color = pal.info;
+            L.tip = d.startMarker.isEmpty() ? tr("antes do início da história")
+                                            : tr("antes de %1").arg(d.startMarker);
+        } else if (t.autoGenerated && t.kind == QLatin1String(TimelineKind::Parallel)) {
+            L.color = branchIdx < branchPalette.size() ? branchPalette[branchIdx] : colorForIdNew(t.id);
+            ++branchIdx;
+            L.sub = tr("automática");
+            const int fromCol = colOfKey.value(t.branchFromEventId.mid(6), -1);
+            L.tip = fromCol >= 0 ? tr("automática · nasceu no Cap %1").arg(d.cols[fromCol].ruler)
+                                 : tr("ramificação automática");
+        } else if (!t.autoGenerated) {
+            L.tip = tr("linha criada por você");
+        }
+        d.lanes << L;
+        have.insert(t.id);
+    }
+    if (!have.contains(QStringLiteral("story:main")) && used.contains(QStringLiteral("story:main"))) {
+        Tracks::Lane L;
+        L.id = QStringLiteral("story:main");
+        L.name = tr("Narrativa");
+        L.kind = QString::fromLatin1(TimelineKind::Main);
+        L.color = pal.accent;
+        L.tip = tr("linha principal");
+        L.autoGenerated = true;
+        d.lanes.prepend(L);
+    }
+    // evento apontando pra linha que não existe mais → cai na Narrativa
+    for (auto& e : d.events)
+        if (e.col >= 0 && d.laneIndex(e.laneId) < 0)
+            e.laneId = d.lanes.isEmpty() ? QString() : d.lanes.first().id;
+
+    // ── elenco (quem aparece, do mais presente ao menos) ──────────────────────
+    QList<Element> cast;
+    for (auto it = presence.constBegin(); it != presence.constEnd(); ++it)
+        for (const Element& e : charByName) if (e.id == it.key()) { cast << e; break; }
+    std::sort(cast.begin(), cast.end(), [&](const Element& a, const Element& b) {
+        const int pa = presence.value(a.id), pb = presence.value(b.id);
+        if (pa != pb) return pa > pb;
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    // Cor com sentido: narrador (ou o mais presente) na cor de destaque,
+    // antagonista na cor de perigo, o resto na paleta do tema pela ordem.
+    const bool hasNarrator = std::any_of(cast.begin(), cast.end(), [](const Element& e) { return e.narrator; });
+    auto isAntagonist = [](const Element& e) { return e.role.contains(QStringLiteral("ANTAG"), Qt::CaseInsensitive); };
+    const bool hasAntagonist = std::any_of(cast.begin(), cast.end(), isAntagonist);
+    QList<QColor> castPalette = { pal.warning, pal.info, pal.success };
+    if (!hasAntagonist) castPalette << pal.danger;
+    int ci = 0;
+    bool accentUsed = false, dangerUsed = false;
+    for (int i = 0; i < cast.size(); ++i) {
+        const Element& e = cast[i];
+        Tracks::Character c;
+        c.id = e.id;
+        c.name = e.name.isEmpty() ? tr("(sem nome)") : e.name;
+        if (!accentUsed && (e.narrator || (!hasNarrator && i == 0))) { c.color = pal.accent; accentUsed = true; }
+        else if (!dangerUsed && isAntagonist(e)) { c.color = pal.danger; dangerUsed = true; }
+        else c.color = ci < castPalette.size() ? castPalette[ci++] : colorForIdNew(e.id);
+        if (!e.image.isEmpty()) {
+            const QString cacheKey = e.id + QLatin1Char(':') + QString::number(e.image.size());
+            auto it = m_avatarCache.constFind(cacheKey);
+            if (it == m_avatarCache.constEnd()) {
+                const int comma = e.image.indexOf(QLatin1Char(','));
+                QImage img = QImage::fromData(QByteArray::fromBase64(e.image.mid(comma + 1).toLatin1()));
+                if (!img.isNull()) img = img.scaled(64, 64, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                it = m_avatarCache.insert(cacheKey, img);
+            }
+            c.avatar = it.value();
+        }
+        d.chars << c;
+    }
+
+    // ── capítulo aberto no editor ─────────────────────────────────────────────
+    if (!m_editorChapterId.isEmpty())
+        for (int i = 0; i < d.cols.size(); ++i) {
+            const auto& col = d.cols[i];
+            if (col.chapterId != m_editorChapterId) continue;
+            if (col.sceneIndex < 0 || m_editorScene < 0 || col.sceneIndex == m_editorScene) { d.editorCol = i; break; }
+        }
+    return d;
+}
+
+void TimelinePanel::refreshNewUi()
+{
+    if (!m_tracks || m_legacyUi) return;
+    m_tracksData = buildTracksData();
+    if (!m_sel.isEmpty() && !m_tracksData.event(m_sel)) m_sel.clear();
+    m_tracks->setData(m_tracksData);
+    m_braid->setData(m_tracksData);
+    applyTracksFilter();
+
+    // rodapé
+    QStringList parts;
+    const int nc = m_tracksData.chapterCount, nl = m_tracksData.lanes.size(), np = m_tracksData.chars.size();
+    parts << (nc == 1 ? tr("1 capítulo") : tr("%1 capítulos").arg(nc));
+    parts << (nl == 1 ? tr("1 linha") : tr("%1 linhas").arg(nl));
+    parts << (np == 1 ? tr("1 personagem") : tr("%1 personagens").arg(np));
+    m_statsLbl->setText(parts.join(QStringLiteral(" · ")));
+    int nd = 0;
+    for (const auto& e : m_tracksData.events) if (e.hollow) ++nd;
+    m_noDateBtn->setText(nd == 0 ? tr("todos os capítulos têm data")
+                       : nd == 1 ? tr("1 capítulo sem data") : tr("%1 capítulos sem data").arg(nd));
+    m_noDateBtn->setEnabled(nd > 0);
+    m_noDateBtn->setVisible(!m_tracksData.cols.isEmpty());
+    m_noDateBtn->setProperty("allDated", nd == 0);
+    m_noDateBtn->style()->unpolish(m_noDateBtn);
+    m_noDateBtn->style()->polish(m_noDateBtn);
+    m_msBtn->setText(m_tracksData.manuscriptTitle);
+    m_msBtn->setVisible(!m_tracksData.manuscriptTitle.isEmpty());
+
+    if (!m_sel.isEmpty() && m_newMode != NewMode::Engine) m_inspector->showFor(m_tracksData, m_sel);
+    else setInspectorOpen(false);
+}
+
+void TimelinePanel::applyTracksFilter()
+{
+    if (!m_tracks) return;
+    if (!m_tf.charId.isEmpty() && !m_tracksData.character(m_tf.charId)) m_tf.charId.clear();
+    if (!m_tf.laneId.isEmpty() && !m_tracksData.lane(m_tf.laneId)) m_tf.laneId.clear();
+    m_tracks->setFilter(m_tf);
+    m_braid->setFilter(m_tf);
+    m_tracks->setSelected(m_sel);
+    m_braid->setSelected(m_sel);
+    refreshNewChips();
+}
+
+void TimelinePanel::refreshNewChips()
+{
+    if (!m_chipChar) return;
+    const Tracks::Palette pal = Tracks::Palette::current();
+    auto set = [&](QToolButton* chip, const QString& label, const QString& value) {
+        auto* fc = static_cast<FilterChip*>(chip);
+        fc->active = !value.isEmpty();
+        chip->setText(value.isEmpty() ? label : QStringLiteral("%1: %2  ×").arg(label, value));
+        chip->setIcon(value.isEmpty() ? QIcon(tlIcon(QStringLiteral("chevron"), pal.ink)) : QIcon());
+        chip->setProperty("active", fc->active);
+        chip->style()->unpolish(chip);
+        chip->style()->polish(chip);
+    };
+    QString cn;
+    if (const auto* c = m_tracksData.character(m_tf.charId)) cn = c->name;
+    QString pn;
+    if (!m_tf.placeId.isEmpty() && m_territorioStore)
+        if (const auto* t = m_territorioStore->territorio(m_tf.placeId)) pn = t->name;
+    set(m_chipChar, tr("Personagem"), cn);
+    set(m_chipPlace, tr("Lugar"), pn);
+}
+
+void TimelinePanel::rebuildNewMenus()
+{
+    const Tracks::Palette pal = Tracks::Palette::current();
+    // manuscritos
+    if (QMenu* m = m_msBtn->menu()) {
+        m->clear();
+        const QString cur = currentManuscriptId();
+        for (const Manuscript& ms : m_projectModel ? m_projectModel->manuscripts() : QList<Manuscript>()) {
+            QAction* a = m->addAction(ms.title.isEmpty() ? tr("Sem título") : ms.title);
+            a->setCheckable(true);
+            a->setChecked(ms.id == cur);
+            const QString id = ms.id;
+            connect(a, &QAction::triggered, this, [this, id]() {
+                m_msId = id;
+                m_sel.clear();
+                refreshNewUi();
+                save();
+            });
+        }
+    }
+    // personagem
+    if (QMenu* m = m_chipChar->menu()) {
+        m->clear();
+        QAction* all = m->addAction(tr("Todos"));
+        all->setCheckable(true);
+        all->setChecked(m_tf.charId.isEmpty());
+        connect(all, &QAction::triggered, this, [this]() { m_tf.charId.clear(); applyTracksFilter(); });
+        for (const auto& c : m_tracksData.chars) {
+            QPixmap px(QSize(15, 15) * 2);
+            px.setDevicePixelRatio(2);
+            px.fill(Qt::transparent);
+            { QPainter p(&px); Tracks::drawAvatar(&p, QRectF(0, 0, 15, 15), c, pal.app); }
+            QAction* a = m->addAction(QIcon(px), c.name);
+            a->setCheckable(true);
+            a->setChecked(c.id == m_tf.charId);
+            const QString id = c.id;
+            connect(a, &QAction::triggered, this, [this, id]() { m_tf.charId = id; applyTracksFilter(); });
+        }
+    }
+    // lugar
+    if (QMenu* m = m_chipPlace->menu()) {
+        m->clear();
+        QAction* all = m->addAction(tr("Todos"));
+        all->setCheckable(true);
+        all->setChecked(m_tf.placeId.isEmpty());
+        connect(all, &QAction::triggered, this, [this]() { m_tf.placeId.clear(); applyTracksFilter(); });
+        QList<QPair<QString, QString>> places;
+        for (const auto& e : m_tracksData.events)
+            if (!e.placeId.isEmpty() && !e.placeName.isEmpty()) {
+                const QPair<QString, QString> pr{ e.placeName, e.placeId };
+                if (!places.contains(pr)) places << pr;
+            }
+        std::sort(places.begin(), places.end(), [](const auto& a, const auto& b) { return a.first.localeAwareCompare(b.first) < 0; });
+        if (places.isEmpty()) {
+            QAction* none = m->addAction(tr("Nenhum evento tem lugar ainda"));
+            none->setEnabled(false);
+        }
+        for (const auto& pr : places) {
+            QAction* a = m->addAction(pr.first);
+            a->setCheckable(true);
+            a->setChecked(pr.second == m_tf.placeId);
+            const QString id = pr.second;
+            connect(a, &QAction::triggered, this, [this, id]() { m_tf.placeId = id; applyTracksFilter(); });
+        }
+    }
+    // "⋯"
+    if (QMenu* m = m_moreBtn->menu()) {
+        m->clear();
+        QAction* cap = m->addAction(tr("Outros modos (motor atual)"));
+        cap->setEnabled(false);
+        const bool engine = m_newMode == NewMode::Engine;
+        QAction* branches = m->addAction(tr("Ramificações"));
+        branches->setCheckable(true);
+        branches->setChecked(engine && m_scene->viewMode() == TimelineScene::ViewMode::Constellation);
+        connect(branches, &QAction::triggered, this, [this]() {
+            m_scene->setViewMode(TimelineScene::ViewMode::Constellation);
+            setNewMode(NewMode::Engine);
+            if (m_view) m_view->fitAll();
+        });
+        QAction* spiral = m->addAction(tr("Espiral"));
+        spiral->setCheckable(true);
+        spiral->setChecked(engine && m_scene->viewMode() == TimelineScene::ViewMode::Spiral);
+        connect(spiral, &QAction::triggered, this, [this]() {
+            m_scene->setViewMode(TimelineScene::ViewMode::Spiral);
+            setNewMode(NewMode::Engine);
+            if (m_view) m_view->fitAll();
+        });
+        m->addSeparator();
+        connect(m->addAction(tr("Gerador de Timeline")), &QAction::triggered, this, &TimelinePanel::generatorRequested);
+        connect(m->addAction(tr("Nova linha manual")), &QAction::triggered, this, &TimelinePanel::createTimeline);
+        m->addSeparator();
+        connect(m->addAction(tr("UI Legado")), &QAction::triggered, this, [this]() { setLegacyUi(true); });
+    }
+    applyNewTheme();
+}
+
+void TimelinePanel::setNewMode(NewMode m)
+{
+    m_newMode = m;
+    if (!m_stack) return;
+    m_stack->setCurrentWidget(m == NewMode::Tracks ? static_cast<QWidget*>(m_tracks)
+                            : m == NewMode::Braid  ? static_cast<QWidget*>(m_braid)
+                                                   : static_cast<QWidget*>(m_view));
+    m_segTracks->setChecked(m == NewMode::Tracks);
+    m_segBraid->setChecked(m == NewMode::Braid);
+    m_densityBox->setVisible(m == NewMode::Tracks);
+    if (m == NewMode::Engine) {
+        setInspectorOpen(false);
+        m_scene->relayout();
+    } else if (!m_sel.isEmpty()) {
+        m_inspector->showFor(m_tracksData, m_sel);
+        setInspectorOpen(true);
+    }
+    applyNewTheme();
+    save();
+}
+
+void TimelinePanel::setLegacyUi(bool legacy)
+{
+    m_legacyUi = legacy;
+    QSettings().setValue(QStringLiteral("timeline/legacyUi"), legacy);
+    if (!m_stack) return;
+    m_toolbar->setVisible(legacy);
+    if (m_btnNewUi) m_btnNewUi->setVisible(legacy);
+    m_newTop->setVisible(!legacy);
+    m_newBottom->setVisible(!legacy);
+    m_inspHolder->setVisible(!legacy);
+    if (m_btnAdd) m_btnAdd->setVisible(legacy);
+    if (legacy) {
+        m_stack->setCurrentWidget(m_view);
+        refreshModeButtons();
+        m_scene->relayout();
+    } else {
+        refreshNewUi();
+        setNewMode(m_newMode);
+    }
+}
+
+void TimelinePanel::selectEvent(const QString& id)
+{
+    m_sel = id;
+    if (!m_tracks) return;
+    m_tracks->setSelected(id);
+    m_braid->setSelected(id);
+    if (id.isEmpty() || m_newMode == NewMode::Engine) { setInspectorOpen(false); return; }
+    m_inspector->showFor(m_tracksData, id);
+    setInspectorOpen(true);
+}
+
+void TimelinePanel::setInspectorOpen(bool open)
+{
+    if (!m_inspHolder) return;
+    const int target = open ? m_inspector->width() : 0;
+    if (m_inspHolder->maximumWidth() == target && m_inspAnim->state() != QAbstractAnimation::Running) return;
+    m_inspAnim->stop();
+    m_inspAnim->setStartValue(m_inspHolder->maximumWidth());
+    m_inspAnim->setEndValue(target);
+    m_inspAnim->start();
+}
+
+void TimelinePanel::collapseSearch(bool clear)
+{
+    if (!m_searchEdit) return;
+    if (clear) m_searchEdit->clear();
+    if (!m_searchEdit->text().isEmpty()) return;
+    m_searchEdit->setFixedWidth(0);
+    m_searchBox->setProperty("open", false);
+    m_searchBox->style()->unpolish(m_searchBox);
+    m_searchBox->style()->polish(m_searchBox);
+    if (m_tracks) m_tracks->setFocus();
+}
+
+bool TimelinePanel::eventFilter(QObject* obj, QEvent* ev)
+{
+    if (obj == m_inspHolder && m_inspector && ev->type() == QEvent::Resize) {
+        m_inspector->setGeometry(m_inspHolder->width() - m_inspector->width(), 0,
+                                 m_inspector->width(), m_inspHolder->height());
+    } else if (obj == m_searchEdit && ev->type() == QEvent::FocusOut) {
+        QTimer::singleShot(120, this, [this]() { collapseSearch(false); });
+    }
+    return QWidget::eventFilter(obj, ev);
+}
+
+void TimelinePanel::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape && !m_legacyUi) {
+        if (m_searchEdit && m_searchEdit->hasFocus()) { collapseSearch(true); return; }
+        if (!m_sel.isEmpty()) { selectEvent(QString()); return; }
+    }
+    QWidget::keyPressEvent(event);
+}
+
+const TimelineEvent* TimelinePanel::liveEvent(const QString& id) const
+{
+    if (!m_scene) return nullptr;
+    if (auto* item = m_scene->findEvent(id)) return &item->eventData();
+    return nullptr;
+}
+
+void TimelinePanel::updateLiveEvent(const TimelineEvent& e)
+{
+    auto* item = m_scene->findEvent(e.id);
+    if (!item) return;
+    item->setEventData(e);
+    item->setTimelineColor(m_scene->timelineColor(e.timelineId));
+    for (auto& le : m_events) if (le.id == e.id) { le = e; break; }
+    m_scene->relayout();
+    save();
+    refreshNewUi();
+}
+
+void TimelinePanel::onEventDropped(const QString& id, const QString& laneId, int col)
+{
+    const Tracks::Event* te = m_tracksData.event(id);
+    if (!te) return;
+    m_sel = id;
+    if (te->manual) {
+        const TimelineEvent* le = liveEvent(id);
+        if (!le) return;
+        TimelineEvent e = *le;
+        if (laneId.isEmpty()) {
+            e.anchorKey.clear();
+        } else {
+            e.anchorKey = m_tracksData.cols.value(col).key;
+            e.timelineId = laneId;
+            e.laneFollows = false;
+        }
+        updateLiveEvent(e);
+        return;
+    }
+    // capítulo/cena: só troca de linha; a escolha vira override persistido
+    if (laneId.isEmpty() || laneId == te->laneId) return;
+    if (laneId == te->autoLaneId) m_laneOverrides.remove(id);
+    else m_laneOverrides.insert(id, laneId);
+    save();
+    syncStoryTimeline(); // reaplica o override e redesenha
+}
+
+void TimelinePanel::undoLaneMove(const QString& id)
+{
+    m_laneOverrides.remove(id);
+    save();
+    syncStoryTimeline();
+}
+
+void TimelinePanel::openEventInEditor(const QString& id)
+{
+    const Tracks::Event* te = m_tracksData.event(id);
+    if (!te || te->col < 0 || te->col >= m_tracksData.cols.size()) return;
+    const Tracks::Column& c = m_tracksData.cols[te->col];
+    int pos = -1;
+    if (te->manual && te->origin == QLatin1String("editor"))
+        if (const TimelineEvent* le = liveEvent(id)) pos = le->anchorPos;
+    emit openInEditorRequested(c.manuscriptId, c.chapterId, c.sceneIndex, pos);
+}
+
+void TimelinePanel::fillMarker(const QString& id, const QString& marker)
+{
+    if (!m_projectModel || !id.startsWith(QStringLiteral("story:"))) return;
+    const QString key = id.mid(6);
+    for (const auto& c : m_tracksData.cols) {
+        if (c.key != key) continue;
+        m_sel = id;
+        if (c.sceneIndex < 0) m_projectModel->updateChapterTimeMarker(c.chapterId, marker);
+        else m_projectModel->updateSceneTimeMarker(c.chapterId, c.sceneIndex, marker);
+        if (!isVisible()) refreshFromModel();
+        return;
+    }
+}
+
+void TimelinePanel::editTracksEvent(const QString& id)
+{
+    const Tracks::Event* te = m_tracksData.event(id);
+    if (!te) return;
+    if (te->manual) { openEditPopup(id); refreshNewUi(); return; }
+
+    // Evento de capítulo/cena: título, marcador e resumo moram no capítulo —
+    // gravar lá, senão a próxima sincronização desfaria a edição.
+    const Tracks::Column c = m_tracksData.cols.value(te->col);
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
+    dlg.setDocTextResolver(m_docTextResolver);
+    TimelineEvent seed;
+    if (const TimelineEvent* le = liveEvent(id)) seed = *le;
+    seed.id = id;
+    seed.title = te->title;
+    seed.timeMarker = te->marker;
+    seed.description = te->summary;
+    seed.timelineId = te->laneId;
+    dlg.setEventData(seed);
+    if (dlg.exec() != QDialog::Accepted) return;
+    const TimelineEvent out = dlg.eventData();
+    m_sel = id;
+    if (!out.timelineId.isEmpty() && out.timelineId != te->laneId) {
+        if (out.timelineId == te->autoLaneId) m_laneOverrides.remove(id);
+        else m_laneOverrides.insert(id, out.timelineId);
+    }
+    if (const TimelineEvent* le = liveEvent(id); le && le->placeId != out.placeId) {
+        TimelineEvent e = *le;
+        e.placeId = out.placeId;
+        auto* item = m_scene->findEvent(id);
+        if (item) item->setEventData(e);
+    }
+    m_projectModel->beginBatchUpdate();
+    if (c.sceneIndex < 0) {
+        if (out.title != te->title && !out.title.isEmpty()) m_projectModel->updateChapterTitle(c.chapterId, out.title);
+        m_projectModel->updateChapterTimeMarker(c.chapterId, out.timeMarker);
+        m_projectModel->updateChapterSummary(c.chapterId, out.description);
+    } else {
+        if (out.title != te->title && !out.title.isEmpty()) m_projectModel->updateSceneTitle(c.chapterId, c.sceneIndex, out.title);
+        m_projectModel->updateSceneTimeMarker(c.chapterId, c.sceneIndex, out.timeMarker);
+        m_projectModel->updateSceneSummary(c.chapterId, c.sceneIndex, out.description);
+    }
+    m_projectModel->endBatchUpdate();
+    save();
+    refreshFromModel();
+}
+
+void TimelinePanel::createAtColumn(const QString& laneId, int col)
+{
+    if (col < 0 || col >= m_tracksData.cols.size()) return;
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
+    dlg.setDocTextResolver(m_docTextResolver);
+    TimelineEvent seed;
+    seed.timelineId = laneId;
+    dlg.setEventData(seed);
+    if (dlg.exec() != QDialog::Accepted) return;
+    TimelineEvent e = dlg.eventData();
+    if (e.timelineId.isEmpty()) e.timelineId = laneId;
+    e.anchorKey = m_tracksData.cols[col].key;
+    e.origin = QStringLiteral("timeline");
+    e.laneFollows = false;
+    const QString id = commitEvent(e, QPointF());
+    selectEvent(id);
+}
+
+void TimelinePanel::removeManualEvent(const QString& id)
+{
+    const TimelineEvent* le = liveEvent(id);
+    if (!le) return;
+    if (QMessageBox::question(this, tr("Remover evento"),
+                              tr("Remover \"%1\" da linha do tempo?").arg(le->title),
+                              QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes)
+        return;
+    m_scene->removeEvent(id);
+    m_events.erase(std::remove_if(m_events.begin(), m_events.end(),
+                                  [&](const TimelineEvent& e) { return e.id == id; }), m_events.end());
+    m_connections.erase(std::remove_if(m_connections.begin(), m_connections.end(),
+        [&](const TimelineConn& c) { return c.fromEventId == id || c.toEventId == id; }), m_connections.end());
+    if (m_sel == id) m_sel.clear();
+    save();
+    refreshNewUi();
+}
+
+void TimelinePanel::setEditorLocation(const QString& manuscriptId, const QString& chapterId, int sceneIndex)
+{
+    if (m_editorMsId == manuscriptId && m_editorChapterId == chapterId && m_editorScene == sceneIndex) return;
+    m_editorMsId = manuscriptId;
+    m_editorChapterId = chapterId;
+    m_editorScene = sceneIndex;
+    if (isVisible()) refreshNewUi();
+}
+
+void TimelinePanel::promptNewEventFromEditor(const QString& description, const QString& marker,
+                                             const QString& chapterId, int sceneIndex,
+                                             int textPos, int paragraph)
+{
+    const Chapter* ch = m_projectModel ? m_projectModel->findChapter(chapterId) : nullptr;
+    if (!ch) { promptNewEvent(description, marker, QString(), QStringLiteral("editor")); return; }
+    const int si = ch->scenes.isEmpty() ? -1 : qMax(0, sceneIndex);
+    const QString key = chapterId + QLatin1Char(':') + QString::number(si < 0 ? 0 : si);
+    const QString storyId = QStringLiteral("story:") + key;
+    QString seedLane = m_laneOverrides.value(storyId);
+    if (seedLane.isEmpty())
+        if (const TimelineEvent* le = liveEvent(storyId)) seedLane = le->timelineId;
+    if (seedLane.isEmpty()) seedLane = QStringLiteral("story:main");
+
+    TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
+    dlg.setDocTextResolver(m_docTextResolver);
+    TimelineEvent seed;
+    seed.title = suggestTitleFrom(description);
+    seed.timeMarker = marker;
+    seed.description = description;
+    seed.timelineId = seedLane;
+    dlg.setEventData(seed);
+    if (dlg.exec() != QDialog::Accepted) return;
+    TimelineEvent e = dlg.eventData();
+    e.anchorKey = key;
+    e.anchorPos = textPos;
+    e.origin = QStringLiteral("editor");
+    e.originWhere = tr("Cap %1, parágrafo %2").arg(unitRuler(m_projectModel, *ch, si)).arg(paragraph);
+    e.laneFollows = e.timelineId.isEmpty() || e.timelineId == seedLane;
+    if (!ch->manuscriptId.isEmpty() && ch->manuscriptId != currentManuscriptId()) m_msId = ch->manuscriptId;
+    const QString id = commitEvent(e, m_view ? m_view->mapToScene(m_view->viewport()->rect().center()) : QPointF());
+    if (!m_legacyUi) {
+        if (m_newMode == NewMode::Engine) setNewMode(NewMode::Tracks);
+        selectEvent(id);
+    }
+}
+
+void TimelinePanel::resolveThemeBoundLaneColors()
+{
+    bool changed = false;
+    for (auto& t : m_timelines) {
+        if (!t.userColor || t.colorTheme.isEmpty()) continue;
+        const QColor c = ColorPick::themeColor(t.colorTheme);
+        if (c.isValid() && c != t.color) { t.color = c; changed = true; }
+    }
+    if (changed && m_scene) m_scene->setTimelines(m_timelines);
+}
+
+void TimelinePanel::openLaneColor(const QString& laneId, const QPoint& globalPos)
+{
+    const Tracks::Lane* L = m_tracksData.lane(laneId);
+    int defIdx = -1;
+    for (int i = 0; i < m_timelines.size(); ++i) if (m_timelines[i].id == laneId) defIdx = i;
+    if (!L) return;
+
+    ColorPick::Choice current{ L->color, QString() };
+    if (defIdx >= 0 && m_timelines[defIdx].userColor) current.themeKey = m_timelines[defIdx].colorTheme;
+    else
+        for (const QString& k : ColorPick::themeKeys())
+            if (ColorPick::themeColor(k) == L->color) { current.themeKey = k; break; }
+
+    ColorPopover::Options opt;
+    opt.title = tr("Cor da linha · %1").arg(L->name);
+    opt.themeBinding = true;
+    opt.resetAvailable = defIdx >= 0 && m_timelines[defIdx].userColor && m_timelines[defIdx].autoGenerated;
+    auto* pop = new ColorPopover(current, opt, this);
+
+    // prévia ao vivo: repinta Trilhos/Trança com a cor em teste, sem salvar
+    connect(pop, &ColorPopover::previewed, this, [this, laneId](const ColorPick::Choice& c) {
+        Tracks::Data d = m_tracksData;
+        for (auto& l : d.lanes) if (l.id == laneId) l.color = c.color;
+        m_tracks->setData(d);
+        m_braid->setData(d);
+    });
+    connect(pop, &ColorPopover::finished, this,
+            [this, laneId, defIdx](const ColorPick::Choice& c, ColorPopover::Result r) {
+        if (r == ColorPopover::Cancelled || defIdx < 0 || defIdx >= m_timelines.size()
+            || m_timelines[defIdx].id != laneId) {
+            refreshNewUi();
+            return;
+        }
+        TimelineDef& t = m_timelines[defIdx];
+        if (r == ColorPopover::Reset) {
+            t.userColor = false;
+            t.colorTheme.clear();
+            t.color = QColor(QStringLiteral("#6c8ebf"));
+        } else {
+            t.userColor = true;
+            t.colorTheme = c.themeKey;
+            t.color = c.color;
+        }
+        m_scene->setTimelines(m_timelines);
+        save();
+        refreshNewUi();
+    });
+    pop->popupAt(globalPos);
 }

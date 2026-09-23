@@ -23,6 +23,9 @@ public:
     explicit TimelineScene(QObject* parent = nullptr);
 
     void setBackgroundColor(const QColor& color);
+    // Cor do fundo do canvas — as bolinhas usam pra "vazar" o miolo do anel e
+    // recortar os fios que passam por trás delas.
+    QColor backgroundColor() const { return m_bgColor; }
 
     void setViewMode(ViewMode m);
     ViewMode viewMode() const { return m_viewMode; }

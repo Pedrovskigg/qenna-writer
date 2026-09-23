@@ -1,4 +1,5 @@
 #include "BondPopup.h"
+#include "ColorPopover.h"
 #include "BondTypes.h"
 #include "IconUtils.h"
 #include "Theme.h"
@@ -489,7 +490,7 @@ void BondPopup::openTypePicker() {
 
 void BondPopup::openColorPicker() {
     QColor initial(m_color);
-    QColor c = QColorDialog::getColor(initial, this, tr("Cor do vínculo"));
+    QColor c = ColorPopover::getColor(initial, this, tr("Cor do vínculo"));
     if (c.isValid()) applyColor(c.name());
 }
 

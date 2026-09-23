@@ -995,11 +995,16 @@ void TimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
         return;
     }
 
-    // ── Ramificações: backbone reto entre nós consecutivos ──────────────────────
+    // ── Ramificações: backbone em curva suave entre nós consecutivos ────────────
+    // Cada trecho é um Catmull-Rom convertido em Bézier (tangente pelos vizinhos
+    // da mesma linha), então a linha inteira sai contínua sem perder o
+    // esmaecimento por trecho do foco.
     if (m_viewMode == ViewMode::Constellation) {
         painter->setRenderHint(QPainter::Antialiasing);
         const bool focusing = !m_focusTimelineId.isEmpty();
         const bool showChars = (m_axisMode == AxisMode::Narrative);
+        QHash<QString, QString> prevOf, nextOf;
+        for (const auto& e : m_seqEdges) { nextOf.insert(e.first, e.second); prevOf.insert(e.second, e.first); }
         for (const auto& e : m_seqEdges) {
             auto* a = m_eventById.value(e.first, nullptr);
             auto* b = m_eventById.value(e.second, nullptr);
@@ -1020,8 +1025,17 @@ void TimelineScene::drawBackground(QPainter* painter, const QRectF& rect)
                 bbPen.setStyle(Qt::CustomDashLine);
                 bbPen.setDashPattern({5.0, 4.0});
             }
+            bbPen.setCapStyle(Qt::RoundCap);
             painter->setPen(bbPen);
-            painter->drawLine(a->pos(), b->pos());
+            painter->setBrush(Qt::NoBrush);
+            auto* pa = m_eventById.value(prevOf.value(e.first), nullptr);
+            auto* nb = m_eventById.value(nextOf.value(e.second), nullptr);
+            const QPointF p1 = a->pos(), p2 = b->pos();
+            const QPointF p0 = pa ? pa->pos() : p1;
+            const QPointF p3 = nb ? nb->pos() : p2;
+            QPainterPath seg(p1);
+            seg.cubicTo(p1 + (p2 - p0) / 6.0, p2 - (p3 - p1) / 6.0, p2);
+            painter->drawPath(seg);
         }
         return;
     }

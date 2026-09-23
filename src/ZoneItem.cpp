@@ -1,4 +1,5 @@
 #include "ZoneItem.h"
+#include "ColorPopover.h"
 
 #include "Theme.h"
 
@@ -214,7 +215,7 @@ void ZoneItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
         e->accept(); return;
     }
     if (isOnColorDot(lp)) {
-        QColor nc = QColorDialog::getColor(m_data.color, nullptr, tr("Cor da área"));
+        QColor nc = ColorPopover::getColor(m_data.color, nullptr, tr("Cor da área"));
         if (nc.isValid()) {
             emit gestureStarted();
             m_data.color = nc;
@@ -326,7 +327,7 @@ void ZoneItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
         if (!name.isNull()) { emit gestureStarted(); m_data.title = name.trimmed(); update(); emitData(); }
     });
     menu.addAction(tr("Cor..."), this, [this]() {
-        QColor nc = QColorDialog::getColor(m_data.color, nullptr, tr("Cor da área"));
+        QColor nc = ColorPopover::getColor(m_data.color, nullptr, tr("Cor da área"));
         if (nc.isValid()) { emit gestureStarted(); m_data.color = nc; update(); emitData(); }
     });
     menu.addSeparator();

@@ -1,4 +1,5 @@
 #include "CardItem.h"
+#include "ColorPopover.h"
 
 #include "Theme.h"
 
@@ -496,7 +497,7 @@ bool CardItem::pickSymbol(QWidget* parent, QString& symbol, QColor& color)
     };
     paintSwatch();
     QObject::connect(swatch, &QToolButton::clicked, &dlg, [&]() {
-        const QColor nc = QColorDialog::getColor(chosen, &dlg, tr("Cor do símbolo"));
+        const QColor nc = ColorPopover::getColor(chosen, &dlg, tr("Cor do símbolo"));
         if (nc.isValid()) { chosen = nc; paintSwatch(); }
     });
     auto* hint = new QLabel(tr("escolha a cor e clique num símbolo"), &dlg);
@@ -622,7 +623,7 @@ bool CardItem::pickText(QWidget* parent, QString& text, QColor& color, QString& 
     customBtn->setToolTip(tr("Cor personalizada"));
     customBtn->setCursor(Qt::PointingHandCursor);
     QObject::connect(customBtn, &QToolButton::clicked, &dlg, [&]() {
-        const QColor nc = QColorDialog::getColor(chosen, &dlg, tr("Cor do texto"));
+        const QColor nc = ColorPopover::getColor(chosen, &dlg, tr("Cor do texto"));
         if (nc.isValid()) { chosen = nc; refresh(); }
     });
     colorRow->addWidget(customBtn);
@@ -1518,7 +1519,7 @@ void CardItem::showColorMenu(const QPoint& screenPos)
     QAction* chosen = menu.exec(screenPos);
     if (!chosen) return;
     QColor nc = (chosen == custom)
-        ? QColorDialog::getColor(m_data.color, nullptr, tr("Cor do card"))
+        ? ColorPopover::getColor(m_data.color, nullptr, tr("Cor do card"))
         : QColor(chosen->data().toString());
     if (!nc.isValid()) return;
     emit gestureStarted();
@@ -1576,7 +1577,7 @@ void CardItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
                 e->accept(); return;
             }
             if (color.contains(e->pos())) {
-                const QColor nc = QColorDialog::getColor(
+                const QColor nc = ColorPopover::getColor(
                     m_data.color, nullptr, tr("Cor"));
                 if (nc.isValid()) {
                     m_data.color = nc;
@@ -1952,7 +1953,7 @@ void CardItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
         if (m_data.type == QStringLiteral("symbol"))
             menu.addAction(tr("Trocar símbolo..."), this, [this]() { openSymbolPicker(); });
         menu.addAction(tr("Cor..."), this, [this]() {
-            const QColor nc = QColorDialog::getColor(m_data.color, nullptr, tr("Cor"));
+            const QColor nc = ColorPopover::getColor(m_data.color, nullptr, tr("Cor"));
             if (nc.isValid()) { m_data.color = nc; applyContentFont(); update(); emit dataChanged(m_data); }
         });
         menu.addSeparator();

@@ -1,4 +1,5 @@
 #include "TimelineEventPopup.h"
+#include "ColorPopover.h"
 
 #include "ProjectModel.h"
 #include "TerritorioStore.h"
@@ -200,7 +201,7 @@ void TimelineEventPopup::buildUi(const QList<TimelineDef>& timelines)
 void TimelineEventPopup::pickColor()
 {
     const QColor init = m_color.isValid() ? m_color : QColor(QStringLiteral("#6c8ebf"));
-    const QColor c = QColorDialog::getColor(init, this, tr("Cor do evento"));
+    const QColor c = ColorPopover::getColor(init, this, tr("Cor do evento"));
     if (c.isValid()) { m_color = c; updateColorBtn(); }
 }
 

@@ -1,6 +1,7 @@
 #include "TimelineEventItem.h"
 
 #include "Theme.h"
+#include "TimelineScene.h"
 
 #include "CrashLogger.h"
 #include <QAction>
@@ -222,8 +223,9 @@ void TimelineEventItem::paintScrollbar(QPainter* p, const QRectF& card) const
 
 QRectF TimelineEventItem::boundingRect() const
 {
-    QRectF r(-dotRadius() - 3, -dotRadius() - 3,
-             dotRadius() * 2 + 6, dotRadius() * 2 + 6);
+    // r + 8 cobre o halo de seleção (r + 7) com folga de antialias
+    QRectF r(-dotRadius() - 8, -dotRadius() - 8,
+             dotRadius() * 2 + 16, dotRadius() * 2 + 16);
     r = r.united(labelRect().adjusted(-2, -2, 2, 2)); // rótulo sempre reservado
     if (m_showMarker && !m_data.timeMarker.isEmpty())
         r = r.united(markerRect().adjusted(-2, -2, 2, 2)); // marcador à direita
@@ -252,30 +254,38 @@ void TimelineEventItem::paint(QPainter* p,
     p->setRenderHint(QPainter::Antialiasing);
 
     const QColor fill = effectiveColor();
-    const qreal  r    = dotRadius();
+    const qreal  r    = dotRadius() * (m_hover ? 1.18 : 1.0); // hover: a bolinha inteira cresce
 
-    // ── Halo de hover / seleção ──────────────────────────────────────────────
-    if (m_hover || isSelected() || m_open) {
-        p->setPen(Qt::NoPen);
-        p->setBrush(QColor(fill.red(), fill.green(), fill.blue(), 60));
-        p->drawEllipse(QPointF(0, 0), r + 6, r + 6);
-    }
+    // ── Bolinha: anel na cor da linha + ponto no meio ─────────────────────────
+    // Vazada (só o anel, na cor de aviso) = capítulo/cena sem marcador de tempo.
+    // Halo = selecionada/aberta. O ponto cresce no hover. Um recorte na cor do
+    // fundo em volta do anel corta os fios que passam por trás.
+    const auto* ts = qobject_cast<TimelineScene*>(scene());
+    const QColor bg = ts ? ts->backgroundColor() : QColor(QStringLiteral("#1c1c1c"));
+    const bool hollow = m_data.id.startsWith(QLatin1String("story:"))
+                        && m_data.timeMarker.trimmed().isEmpty();
+    const QColor ringC = hollow ? QColor(Theme::accentWarning()) : fill;
+    const qreal ringW = m_data.autoEvent ? 1.6 : 2.0;
 
-    // ── Ponto ─────────────────────────────────────────────────────────────────
-    if (m_data.autoEvent) {
-        // evento de presença: anel fino, miolo translúcido
-        p->setBrush(QColor(fill.red(), fill.green(), fill.blue(), 120));
-        p->setPen(QPen(fill, 1.4));
-    } else {
-        p->setBrush(fill);
-        p->setPen(QPen(fill.darker(150), 1.4));
-    }
-    p->drawEllipse(QPointF(0, 0), r, r);
-
-    // brilho interno discreto
     p->setPen(Qt::NoPen);
-    p->setBrush(QColor(255, 255, 255, m_data.autoEvent ? 40 : 70));
-    p->drawEllipse(QPointF(-r * 0.28, -r * 0.28), r * 0.45, r * 0.45);
+    if (isSelected() || m_open) {
+        QColor halo = ringC; halo.setAlphaF(0.38);
+        p->setBrush(halo);
+        p->drawEllipse(QPointF(0, 0), r + 7.0, r + 7.0);
+    }
+    p->setBrush(bg);
+    p->drawEllipse(QPointF(0, 0), r + 3.0, r + 3.0);   // recorte
+
+    p->setPen(QPen(ringC, ringW));
+    p->setBrush(bg);
+    p->drawEllipse(QPointF(0, 0), r - ringW / 2.0, r - ringW / 2.0);
+
+    if (!hollow) {
+        const qreal core = r * (m_hover ? 0.50 : (m_data.autoEvent ? 0.34 : 0.38));
+        p->setPen(Qt::NoPen);
+        p->setBrush(ringC);
+        p->drawEllipse(QPointF(0, 0), core, core);
+    }
 
     // ── Marcador "grudado" à direita (referência de ordem no foco) ─────────────
     if (m_showMarker && !m_data.timeMarker.isEmpty() && !m_open) {

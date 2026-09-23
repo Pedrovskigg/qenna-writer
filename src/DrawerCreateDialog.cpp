@@ -1,4 +1,5 @@
 #include "DrawerCreateDialog.h"
+#include "ColorPopover.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
 #include "Theme.h"
@@ -238,7 +239,7 @@ void DrawerCreateDialog::onNameChanged(const QString& text) {
 
 void DrawerCreateDialog::onPickColor() {
     const QColor initial(m_color);
-    const QColor chosen = QColorDialog::getColor(initial, this, tr("Cor da gaveta"));
+    const QColor chosen = ColorPopover::getColor(initial, this, tr("Cor da gaveta"));
     if (!chosen.isValid()) return;
     m_color = chosen.name(QColor::HexRgb);
     updateColorSwatch();

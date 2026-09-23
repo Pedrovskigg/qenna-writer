@@ -1137,6 +1137,14 @@ void MainWindow::setupEditor()
     // Ignora Disabled (estado transitório durante troca de projeto).
     connect(editorHost, &EditorHost::viewModeChanged, this, &MainWindow::updateDocCachePinnedKeys);
     connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+        if (!timelinePanel) return;
+        const auto vm = editorHost->viewMode();
+        const bool chapterish = vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc;
+        timelinePanel->setEditorLocation(chapterish ? vm.manuscriptId : QString(),
+                                         chapterish ? vm.chapterId : QString(),
+                                         vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
+    });
+    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
         if (projectRoot.isEmpty()) return;
         if (editorHost->viewMode().type == EditorHost::Disabled) return;
         rememberLastDocFor(projectRoot);
@@ -3111,7 +3119,7 @@ void MainWindow::setupEditor()
                     panel->raise();
                     panel->activateWindow();
                     if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
-                    panel->promptNewEvent(description, QString(), title);
+                    panel->promptNewEvent(description, QString(), title, QStringLiteral("lousa"));
                 });
                 lousaPanel->setProjectModel(projectModel);
                 lousaPanel->setElementsStore(elementsStore);
@@ -8692,6 +8700,37 @@ TimelinePanel* MainWindow::ensureTimelinePanel()
         timelinePanel->setDocTextResolver([this](const QString& key) {
             return docTextForLink(key);
         });
+        connect(timelinePanel, &TimelinePanel::openInEditorRequested, this,
+                [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex, int textPos) {
+            if (!editorHost) return;
+            EditorHost::ViewMode vm;
+            vm.type = sceneIndex >= 0 ? EditorHost::SceneDoc : EditorHost::ChapterDoc;
+            vm.manuscriptId = manuscriptId;
+            vm.chapterId = chapterId;
+            vm.sceneIndex = sceneIndex;
+            editorHost->setViewMode(vm);
+            if (textPos >= 0 && editor) {
+                QTextCursor cur(editor->document());
+                cur.setPosition(qBound(0, textPos, editor->document()->characterCount() - 1));
+                editor->setTextCursor(cur);
+                editor->ensureCursorVisible();
+            }
+            raise();
+            activateWindow();
+            if (editor) editor->setFocus();
+        });
+        connect(timelinePanel, &TimelinePanel::generatorRequested, this, [this]() {
+            if (!projectModel) return;
+            TimelineGeneratorDialog dlg(projectModel, timelinePanel);
+            if (dlg.exec() == QDialog::Accepted && timelinePanel)
+                timelinePanel->refreshFromModel();
+        });
+        if (editorHost) {
+            const auto vm = editorHost->viewMode();
+            if (vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc)
+                timelinePanel->setEditorLocation(vm.manuscriptId, vm.chapterId,
+                                                 vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
+        }
         if (!projectRoot.isEmpty())
             timelinePanel->setProjectRoot(projectRoot);
     }
@@ -8833,7 +8872,15 @@ void MainWindow::createTimelineEventFromSelection()
     panel->raise();
     panel->activateWindow();
     if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
-    panel->promptNewEvent(text, marker);
+    if (vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc) {
+        const int start = cur.selectionStart();
+        const int paragraph = editor->document()->findBlock(start).blockNumber() + 1;
+        panel->promptNewEventFromEditor(text, marker, vm.chapterId,
+                                        vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1,
+                                        start, paragraph);
+    } else {
+        panel->promptNewEvent(text, marker, QString(), QStringLiteral("editor"));
+    }
 }
 
 void MainWindow::addSelectionToMemory()

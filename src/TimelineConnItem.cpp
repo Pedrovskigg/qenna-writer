@@ -48,8 +48,9 @@ QPainterPath TimelineConnItem::computePath() const
     const qreal   len = std::sqrt(raw.x() * raw.x() + raw.y() * raw.y());
     if (len < 1.0) { QPainterPath pp; pp.moveTo(a); return pp; }
     const QPointF u  = raw / len;
-    const QPointF a2 = a + u * (from->dotRadius() + 2.0);
-    const QPointF b2 = b - u * (to->dotRadius() + 2.0);
+    // + 3 = recorte na cor do fundo em volta do anel (ver TimelineEventItem::paint)
+    const QPointF a2 = a + u * (from->dotRadius() + 3.0);
+    const QPointF b2 = b - u * (to->dotRadius() + 3.0);
 
     QPainterPath path;
     path.moveTo(a2);
@@ -100,42 +101,15 @@ void TimelineConnItem::paint(QPainter* p,
 
     const bool spiral = m_scene && m_scene->viewMode() == TimelineScene::ViewMode::Spiral;
 
-    if (!spiral) {
-        // sombra suave (no Trilho/Ramificações)
-        QPen shadowPen(QColor(0, 0, 0, 40), m_hovered ? 5.0 : 4.0);
-        shadowPen.setCapStyle(Qt::RoundCap);
-        p->setPen(shadowPen);
-        p->setBrush(Qt::NoBrush);
-        p->translate(1, 1);
-        p->drawPath(m_cachedPath);
-        p->translate(-1, -1);
-    }
-
-    // linha principal — na Espiral, mais fina e translúcida p/ não competir
+    // Fio limpo: sem sombra e sem seta, só a curva. Na Espiral, mais fino e
+    // translúcido p/ não competir com os anéis.
     QColor lineC = m_color;
     if (spiral && !m_hovered) lineC.setAlpha(110);
-    QPen pen(lineC, spiral ? (m_hovered ? 2.0 : 1.3) : (m_hovered ? 3.0 : 2.0));
+    QPen pen(lineC, spiral ? (m_hovered ? 2.0 : 1.3) : (m_hovered ? 3.4 : 2.4));
     pen.setCapStyle(Qt::RoundCap);
     p->setPen(pen);
+    p->setBrush(Qt::NoBrush);
     p->drawPath(m_cachedPath);
-
-    // seta na ponta
-    const QPointF end = m_cachedPath.currentPosition();
-    const QPointF cp  = m_cachedPath.elementAt(m_cachedPath.elementCount() - 2);
-    const QPointF raw = end - cp;
-    const qreal   len = std::sqrt(raw.x()*raw.x() + raw.y()*raw.y());
-    const QPointF dir = len > 0.001 ? raw / len : QPointF(1, 0);
-    const QPointF perp(-dir.y(), dir.x());
-    const qreal aLen = 7.0;
-
-    QPainterPath arrow;
-    arrow.moveTo(end);
-    arrow.lineTo(end - dir * aLen + perp * (aLen * 0.45));
-    arrow.lineTo(end - dir * aLen - perp * (aLen * 0.45));
-    arrow.closeSubpath();
-    p->setBrush(m_color);
-    p->setPen(Qt::NoPen);
-    p->drawPath(arrow);
 }
 
 void TimelineConnItem::hoverEnterEvent(QGraphicsSceneHoverEvent*)

@@ -1,4 +1,5 @@
 #include "MainMenuDialog.h"
+#include "ColorPopover.h"
 
 #include "AboutDialog.h"
 #include "TrashDialog.h"
@@ -1090,7 +1091,7 @@ public:
             m_spineColorBtn->setCursor(Qt::PointingHandCursor);
             QObject::connect(m_spineColorBtn, &QPushButton::clicked, this, [this]() {
                 const QColor seed = m_spineColor.isValid() ? m_spineColor : QColor(QStringLiteral("#7a1e28"));
-                const QColor c = QColorDialog::getColor(seed, this,
+                const QColor c = ColorPopover::getColor(seed, this,
                     QCoreApplication::translate("ProjectEditDialog", "Cor da lombada"));
                 if (c.isValid()) { m_spineColor = c; updateSwatches(); }
             });
@@ -1173,7 +1174,7 @@ public:
             m_fontColorBtn->setCursor(Qt::PointingHandCursor);
             QObject::connect(m_fontColorBtn, &QPushButton::clicked, this, [this]() {
                 const QColor seed = m_fontColor.isValid() ? m_fontColor : QColor(245, 240, 226);
-                const QColor c = QColorDialog::getColor(seed, this,
+                const QColor c = ColorPopover::getColor(seed, this,
                     QCoreApplication::translate("ProjectEditDialog", "Cor do texto"));
                 if (c.isValid()) { m_fontColor = c; updateSwatches(); }
             });

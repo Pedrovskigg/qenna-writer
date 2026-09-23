@@ -21510,6 +21510,234 @@ Would you like to track them with a timeline track?</translation>
         <source>(sem nome)</source>
         <translation>(unnamed)</translation>
     </message>
+    <message>
+        <source>UI nova</source>
+        <translation>New UI</translation>
+    </message>
+    <message>
+        <source>Voltar para a Linha do Tempo nova</source>
+        <translation>Back to the new Timeline</translation>
+    </message>
+    <message>
+        <source>outra linha</source>
+        <translation>another line</translation>
+    </message>
+    <message>
+        <source>Trilhos</source>
+        <translation>Tracks</translation>
+    </message>
+    <message>
+        <source>Trança</source>
+        <translation>Braid</translation>
+    </message>
+    <message>
+        <source>Buscar evento</source>
+        <translation>Search events</translation>
+    </message>
+    <message>
+        <source>Filtrar eventos pelo lugar onde aconteceram</source>
+        <translation>Filter events by where they happened</translation>
+    </message>
+    <message>
+        <source>Evento</source>
+        <translation>Event</translation>
+    </message>
+    <message>
+        <source>Novo evento (vai para &quot;Soltos&quot; até você arrastá-lo para uma linha)</source>
+        <translation>New event (goes to &quot;Loose&quot; until you drag it onto a line)</translation>
+    </message>
+    <message>
+        <source>Mais</source>
+        <translation>More</translation>
+    </message>
+    <message>
+        <source>Editar evento</source>
+        <translation>Edit event</translation>
+    </message>
+    <message>
+        <source>Remover</source>
+        <translation>Remove</translation>
+    </message>
+    <message>
+        <source>Mostrar o primeiro capítulo sem marcador de tempo</source>
+        <translation>Show the first chapter with no time marker</translation>
+    </message>
+    <message>
+        <source>+ roda</source>
+        <translation>+ wheel</translation>
+    </message>
+    <message>
+        <source>Pontos</source>
+        <translation>Dots</translation>
+    </message>
+    <message>
+        <source>Títulos</source>
+        <translation>Titles</translation>
+    </message>
+    <message>
+        <source>Resumos</source>
+        <translation>Summaries</translation>
+    </message>
+    <message>
+        <source>Sem título</source>
+        <translation>Untitled</translation>
+    </message>
+    <message>
+        <source>%1 · Cena %2</source>
+        <translation>%1 · Scene %2</translation>
+    </message>
+    <message>
+        <source>na seleção do editor</source>
+        <translation>from a selection in the editor</translation>
+    </message>
+    <message>
+        <source>na seleção do editor · %1</source>
+        <translation>from a selection in the editor · %1</translation>
+    </message>
+    <message>
+        <source>aqui na Timeline</source>
+        <translation>here in the Timeline</translation>
+    </message>
+    <message>
+        <source>na Lousa</source>
+        <translation>on the Board</translation>
+    </message>
+    <message>
+        <source>pelo botão + Evento</source>
+        <translation>with the + Event button</translation>
+    </message>
+    <message>
+        <source>Editor</source>
+        <translation>Editor</translation>
+    </message>
+    <message>
+        <source>Timeline</source>
+        <translation>Timeline</translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation>Board</translation>
+    </message>
+    <message>
+        <source>+ Evento</source>
+        <translation>+ Event</translation>
+    </message>
+    <message>
+        <source>linha principal</source>
+        <translation>main line</translation>
+    </message>
+    <message>
+        <source>antes do início da história</source>
+        <translation>before the story begins</translation>
+    </message>
+    <message>
+        <source>antes de %1</source>
+        <translation>before %1</translation>
+    </message>
+    <message>
+        <source>automática</source>
+        <translation>automatic</translation>
+    </message>
+    <message>
+        <source>automática · nasceu no Cap %1</source>
+        <translation>automatic · born in Ch %1</translation>
+    </message>
+    <message>
+        <source>ramificação automática</source>
+        <translation>automatic branch</translation>
+    </message>
+    <message>
+        <source>linha criada por você</source>
+        <translation>line you created</translation>
+    </message>
+    <message>
+        <source>1 capítulo</source>
+        <translation>1 chapter</translation>
+    </message>
+    <message>
+        <source>%1 capítulos</source>
+        <translation>%1 chapters</translation>
+    </message>
+    <message>
+        <source>1 linha</source>
+        <translation>1 line</translation>
+    </message>
+    <message>
+        <source>%1 linhas</source>
+        <translation>%1 lines</translation>
+    </message>
+    <message>
+        <source>1 personagem</source>
+        <translation>1 character</translation>
+    </message>
+    <message>
+        <source>%1 personagens</source>
+        <translation>%1 characters</translation>
+    </message>
+    <message>
+        <source>todos os capítulos têm data</source>
+        <translation>every chapter has a date</translation>
+    </message>
+    <message>
+        <source>1 capítulo sem data</source>
+        <translation>1 undated chapter</translation>
+    </message>
+    <message>
+        <source>%1 capítulos sem data</source>
+        <translation>%1 undated chapters</translation>
+    </message>
+    <message>
+        <source>Lugar</source>
+        <translation>Place</translation>
+    </message>
+    <message>
+        <source>Nenhum evento tem lugar ainda</source>
+        <translation>No event has a place yet</translation>
+    </message>
+    <message>
+        <source>Outros modos (motor atual)</source>
+        <translation>Other modes (current engine)</translation>
+    </message>
+    <message>
+        <source>Gerador de Timeline</source>
+        <translation>Timeline Generator</translation>
+    </message>
+    <message>
+        <source>Nova linha manual</source>
+        <translation>New manual line</translation>
+    </message>
+    <message>
+        <source>UI Legado</source>
+        <translation>Legacy UI</translation>
+    </message>
+    <message>
+        <source>Remover evento</source>
+        <translation>Remove event</translation>
+    </message>
+    <message>
+        <source>Remover &quot;%1&quot; da linha do tempo?</source>
+        <translation>Remove &quot;%1&quot; from the timeline?</translation>
+    </message>
+    <message>
+        <source>Cap %1, parágrafo %2</source>
+        <translation>Ch %1, paragraph %2</translation>
+    </message>
+    <message>
+        <source>Cor da linha…</source>
+        <translation>Line color…</translation>
+    </message>
+    <message>
+        <source>Editar linha…</source>
+        <translation>Edit line…</translation>
+    </message>
+    <message>
+        <source>Excluir linha…</source>
+        <translation>Delete line…</translation>
+    </message>
+    <message>
+        <source>Cor da linha · %1</source>
+        <translation>Line color · %1</translation>
+    </message>
 </context>
 <context>
     <name>TimelineScene</name>
@@ -22939,6 +23167,334 @@ following days, it always resets at this new time.</translation>
         <location filename="../src/ZoneItem.cpp" line="335"/>
         <source>Remover área</source>
         <translation>Remove area</translation>
+    </message>
+</context>
+<context>
+    <name>TimelineInspector</name>
+    <message>
+        <source>Fechar (Esc)</source>
+        <translation>Close (Esc)</translation>
+    </message>
+    <message>
+        <source>Soltos</source>
+        <translation>Loose</translation>
+    </message>
+    <message>
+        <source>sem data</source>
+        <translation>no date</translation>
+    </message>
+    <message>
+        <source>Quando se passa?</source>
+        <translation>When does it happen?</translation>
+    </message>
+    <message>
+        <source>ex.: Dia 17</source>
+        <translation>e.g. Day 17</translation>
+    </message>
+    <message>
+        <source>Salvar</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <source>Sem marcador, este capítulo não entra na ordem da história.</source>
+        <translation>Without a marker, this chapter stays out of the story order.</translation>
+    </message>
+    <message>
+        <source>Criado %1</source>
+        <translation>Created %1</translation>
+    </message>
+    <message>
+        <source>Você moveu este capítulo para &lt;b style=&apos;color:%1&apos;&gt;%2&lt;/b&gt;. A detecção automática não mexe mais nele. &lt;a href=&apos;undo&apos; style=&apos;color:%3;text-decoration:none&apos;&gt;Desfazer&lt;/a&gt;</source>
+        <translation>You moved this chapter to &lt;b style=&apos;color:%1&apos;&gt;%2&lt;/b&gt;. Automatic detection won&apos;t touch it anymore. &lt;a href=&apos;undo&apos; style=&apos;color:%3;text-decoration:none&apos;&gt;Undo&lt;/a&gt;</translation>
+    </message>
+    <message>
+        <source>Ainda sem lugar. Arraste o cartão para uma linha, na altura do capítulo.</source>
+        <translation>No place yet. Drag the card onto a line, level with the chapter.</translation>
+    </message>
+    <message>
+        <source>Dentro de %1</source>
+        <translation>Inside %1</translation>
+    </message>
+    <message>
+        <source> · aberto agora</source>
+        <translation> · open now</translation>
+    </message>
+    <message>
+        <source>Abrir o trecho</source>
+        <translation>Open the passage</translation>
+    </message>
+    <message>
+        <source>Abrir no editor</source>
+        <translation>Open in editor</translation>
+    </message>
+    <message>
+        <source>Parte de %1</source>
+        <translation>Part of %1</translation>
+    </message>
+    <message>
+        <source>Cap %1 · %2</source>
+        <translation>Ch %1 · %2</translation>
+    </message>
+    <message>
+        <source>Acontece ao mesmo tempo que %1</source>
+        <translation>Happens at the same time as %1</translation>
+    </message>
+    <message>
+        <source>intervalo desconhecido</source>
+        <translation>unknown gap</translation>
+    </message>
+    <message>
+        <source>mesmo dia</source>
+        <translation>same day</translation>
+    </message>
+    <message>
+        <source>Antes: %1</source>
+        <translation>Before: %1</translation>
+    </message>
+    <message>
+        <source>antes</source>
+        <translation>before</translation>
+    </message>
+    <message>
+        <source>Depois: %1</source>
+        <translation>After: %1</translation>
+    </message>
+    <message>
+        <source>depois</source>
+        <translation>after</translation>
+    </message>
+    <message>
+        <source>Separou de %1 depois do %2</source>
+        <translation>Split from %1 after %2</translation>
+    </message>
+    <message>
+        <source>Cap %1</source>
+        <translation>Ch %1</translation>
+    </message>
+    <message>
+        <source>detectado sozinho</source>
+        <translation>detected automatically</translation>
+    </message>
+    <message>
+        <source>Reencontra %1 no %2</source>
+        <translation>Rejoins %1 at %2</translation>
+    </message>
+    <message>
+        <source>o elenco volta a se cruzar</source>
+        <translation>the cast crosses paths again</translation>
+    </message>
+    <message>
+        <source>Recebe %1 (%2)</source>
+        <translation>Receives %1 (%2)</translation>
+    </message>
+    <message>
+        <source>convergência</source>
+        <translation>convergence</translation>
+    </message>
+    <message>
+        <source>Ligações</source>
+        <translation>Links</translation>
+    </message>
+    <message>
+        <source>Editar evento</source>
+        <translation>Edit event</translation>
+    </message>
+    <message>
+        <source>Exportar como documento</source>
+        <translation>Export as document</translation>
+    </message>
+</context>
+<context>
+    <name>TimelineBraidView</name>
+    <message>
+        <source>ANTES DO INÍCIO</source>
+        <translation>BEFORE THE START</translation>
+    </message>
+    <message>
+        <source>ORDEM DE LEITURA</source>
+        <translation>READING ORDER</translation>
+    </message>
+    <message>
+        <source>ORDEM DA HISTÓRIA</source>
+        <translation>STORY ORDER</translation>
+    </message>
+    <message>
+        <source>como o leitor encontra</source>
+        <translation>as the reader meets it</translation>
+    </message>
+    <message>
+        <source>quando aconteceu</source>
+        <translation>when it happened</translation>
+    </message>
+    <message>
+        <source>no editor</source>
+        <translation>in editor</translation>
+    </message>
+    <message>
+        <source>sem data · %1</source>
+        <translation>no date · %1</translation>
+    </message>
+    <message>
+        <source>Fio que cruza pra trás é flashback. Fios que caem no mesmo ponto acontecem no mesmo dia.</source>
+        <translation>A thread that crosses backward is a flashback. Threads landing on the same point happen on the same day.</translation>
+    </message>
+    <message>
+        <source>Cap %1 · %2 · %3</source>
+        <translation>Ch %1 · %2 · %3</translation>
+    </message>
+    <message>
+        <source>sem data</source>
+        <translation>no date</translation>
+    </message>
+</context>
+<context>
+    <name>TimelineTracks</name>
+    <message>
+        <source>Arraste para dividir o espaço</source>
+        <translation>Drag to split the space</translation>
+    </message>
+    <message>
+        <source>Capítulo aberto no editor</source>
+        <translation>Chapter open in the editor</translation>
+    </message>
+    <message>
+        <source>salto · %1</source>
+        <translation>jump · %1</translation>
+    </message>
+    <message>
+        <source>sem data</source>
+        <translation>no date</translation>
+    </message>
+    <message>
+        <source>arraste para uma linha, na altura do capítulo</source>
+        <translation>drag onto a line, level with the chapter</translation>
+    </message>
+    <message>
+        <source>Soltos · %1</source>
+        <translation>Loose · %1</translation>
+    </message>
+    <message>
+        <source>sem lugar ainda</source>
+        <translation>no place yet</translation>
+    </message>
+    <message>
+        <source>Clique para focar</source>
+        <translation>Click to focus</translation>
+    </message>
+    <message>
+        <source> · clique para focar</source>
+        <translation> · click to focus</translation>
+    </message>
+    <message>
+        <source>Soltos</source>
+        <translation>Loose</translation>
+    </message>
+    <message>
+        <source>capítulo não fica solto</source>
+        <translation>a chapter can’t be loose</translation>
+    </message>
+    <message>
+        <source>ausente · %1 caps</source>
+        <translation>absent · %1 ch.</translation>
+    </message>
+    <message>
+        <source>ELENCO</source>
+        <translation>CAST</translation>
+    </message>
+    <message>
+        <source>%1 capítulos</source>
+        <translation>%1 chapters</translation>
+    </message>
+    <message>
+        <source>+%1 dias</source>
+        <translation>+%1 days</translation>
+    </message>
+    <message>
+        <source>+1 mês</source>
+        <translation>+1 month</translation>
+    </message>
+    <message>
+        <source>+%1 meses</source>
+        <translation>+%1 months</translation>
+    </message>
+    <message>
+        <source>+1 ano</source>
+        <translation>+1 year</translation>
+    </message>
+    <message>
+        <source>+%1 anos</source>
+        <translation>+%1 years</translation>
+    </message>
+    <message>
+        <source>1 dia</source>
+        <translation>1 day</translation>
+    </message>
+    <message>
+        <source>mesmo dia</source>
+        <translation>same day</translation>
+    </message>
+    <message>
+        <source>Cor da linha</source>
+        <translation>Line color</translation>
+    </message>
+</context>
+<context>
+    <name>ColorPopover</name>
+    <message>
+        <source>Cor</source>
+        <translation>Color</translation>
+    </message>
+    <message>
+        <source>Do tema</source>
+        <translation>From the theme</translation>
+    </message>
+    <message>
+        <source>Paleta</source>
+        <translation>Palette</translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation>Recent</translation>
+    </message>
+    <message>
+        <source>Personalizada</source>
+        <translation>Custom</translation>
+    </message>
+    <message>
+        <source>Restaurar padrão</source>
+        <translation>Restore default</translation>
+    </message>
+    <message>
+        <source>desfaz</source>
+        <translation>undo</translation>
+    </message>
+    <message>
+        <source>acompanha o tema</source>
+        <translation>follows the theme</translation>
+    </message>
+    <message>
+        <source>cor do tema · %1</source>
+        <translation>theme color · %1</translation>
+    </message>
+    <message>
+        <source>Destaque</source>
+        <translation>Accent</translation>
+    </message>
+    <message>
+        <source>Aviso</source>
+        <translation>Warning</translation>
+    </message>
+    <message>
+        <source>Informação</source>
+        <translation>Info</translation>
+    </message>
+    <message>
+        <source>Sucesso</source>
+        <translation>Success</translation>
+    </message>
+    <message>
+        <source>Perigo</source>
+        <translation>Danger</translation>
     </message>
 </context>
 </TS>

@@ -1,4 +1,5 @@
 #include "LousaPanel.h"
+#include "ColorPopover.h"
 
 #include "CardItem.h"
 #include "ConnectionItem.h"
@@ -2445,7 +2446,7 @@ void LousaPanel::reloadIcons()
 void LousaPanel::onPickColor()
 {
     if (!m_scene) return;
-    const QColor chosen = QColorDialog::getColor(
+    const QColor chosen = ColorPopover::getColor(
         m_scene->canvasColor(), this, tr("Cor do canvas"),
         QColorDialog::ShowAlphaChannel);
     if (!chosen.isValid()) return;

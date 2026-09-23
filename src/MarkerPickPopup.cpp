@@ -1,4 +1,5 @@
 #include "MarkerPickPopup.h"
+#include "ColorPopover.h"
 
 #include "IconUtils.h"
 #include "Theme.h"
@@ -293,7 +294,7 @@ QString MarkerPickPopup::comment() const
 
 void MarkerPickPopup::openCustomColorDialog()
 {
-    const QColor c = QColorDialog::getColor(m_color, this, tr("Cor do marcador"));
+    const QColor c = ColorPopover::getColor(m_color, this, tr("Cor do marcador"));
     if (c.isValid()) setColor(c);
 }
 

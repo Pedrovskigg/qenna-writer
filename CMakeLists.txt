@@ -330,6 +330,16 @@ qt_add_executable(qenna-writer
     src/TimelineGeneratorDialog.h
     src/TimelineBranchPopup.cpp
     src/TimelineBranchPopup.h
+    src/ColorPopover.cpp
+    src/ColorPopover.h
+    src/TimelineTracksTypes.cpp
+    src/TimelineTracksTypes.h
+    src/TimelineTracksView.cpp
+    src/TimelineTracksView.h
+    src/TimelineBraidView.cpp
+    src/TimelineBraidView.h
+    src/TimelineInspector.cpp
+    src/TimelineInspector.h
     src/CardItem.cpp
     src/CardItem.h
     src/ConnectionItem.cpp
