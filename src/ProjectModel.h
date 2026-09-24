@@ -447,6 +447,9 @@ signals:
     void loaded();
 
 private:
+    // Recria manuscritos que sumiram de data.manuscripts mas ainda têm
+    // capítulos apontando pra eles. Chamado no loadFromJson.
+    void recoverOrphanManuscripts();
     QString m_projectName;
     QString m_projectType = QStringLiteral("book");
     QList<Manuscript> m_manuscripts;

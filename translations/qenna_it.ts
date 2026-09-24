@@ -2114,6 +2114,14 @@ Il progetto andrà nel Cestino (accessibile dall&apos;icona del cestino qui sott
 <context>
     <name>DocHeaderBar</name>
     <message>
+        <source>Clique duas vezes para adicionar uma foto</source>
+        <translation>Fai doppio clic per aggiungere una foto</translation>
+    </message>
+    <message>
+        <source>Clique duas vezes para trocar a foto</source>
+        <translation>Fai doppio clic per cambiare la foto</translation>
+    </message>
+    <message>
         <location filename="../src/DocHeaderBar.cpp" line="78"/>
         <source>Variações desta cena</source>
         <translation>Varianti di questa scena</translation>
@@ -9413,6 +9421,10 @@ Seleziona un passaggio e usa il marcatore con commento perché compaia qui.</tra
 </context>
 <context>
     <name>ProjectModel</name>
+    <message>
+        <source>Manuscrito recuperado</source>
+        <translation>Manoscritto recuperato</translation>
+    </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="657"/>
         <location filename="../src/ProjectModel.cpp" line="670"/>
@@ -22217,6 +22229,150 @@ Aprilo dalla schermata iniziale (&quot;Carica cartella&quot;) se non compare da 
 </context>
 <context>
     <name>WordCountPanel</name>
+    <message>
+        <source>Contar em</source>
+        <translation>Conta in</translation>
+    </message>
+    <message>
+        <source>Tamanho</source>
+        <translation>Dimensione</translation>
+    </message>
+    <message>
+        <source>Pequeno</source>
+        <translation>Piccolo</translation>
+    </message>
+    <message>
+        <source>Médio</source>
+        <translation>Medio</translation>
+    </message>
+    <message>
+        <source>Grande</source>
+        <translation>Grande</translation>
+    </message>
+    <message>
+        <source>Muito grande</source>
+        <translation>Molto grande</translation>
+    </message>
+    <message>
+        <source>Enorme</source>
+        <translation>Enorme</translation>
+    </message>
+    <message>
+        <source>Anelzinho</source>
+        <translation>Anellino</translation>
+    </message>
+    <message>
+        <source>Odômetro</source>
+        <translation>Contachilometri</translation>
+    </message>
+    <message>
+        <source>Tijolinhos mini</source>
+        <translation>Mattoncini mini</translation>
+    </message>
+    <message>
+        <source>Semana mini</source>
+        <translation>Settimana mini</translation>
+    </message>
+    <message>
+        <source>Régua</source>
+        <translation>Righello</translation>
+    </message>
+    <message>
+        <source>Ficha mini</source>
+        <translation>Scheda mini</translation>
+    </message>
+    <message>
+        <source>Coluna</source>
+        <translation>Colonna</translation>
+    </message>
+    <message>
+        <source>Padrão</source>
+        <translation>Standard</translation>
+    </message>
+    <message>
+        <source>Mínimo</source>
+        <translation>Minimo</translation>
+    </message>
+    <message>
+        <source>Anel da meta</source>
+        <translation>Anello dell&apos;obiettivo</translation>
+    </message>
+    <message>
+        <source>Anel de tijolinhos</source>
+        <translation>Anello di mattoncini</translation>
+    </message>
+    <message>
+        <source>Anel + tijolinhos</source>
+        <translation>Anello + mattoncini</translation>
+    </message>
+    <message>
+        <source>Semana</source>
+        <translation>Settimana</translation>
+    </message>
+    <message>
+        <source>Tijolinhos</source>
+        <translation>Mattoncini</translation>
+    </message>
+    <message>
+        <source>Ficha de fichário</source>
+        <translation>Scheda di schedario</translation>
+    </message>
+    <message>
+        <source>da meta</source>
+        <translation>dell&apos;obiettivo</translation>
+    </message>
+    <message>
+        <source>%1 de %2 dias</source>
+        <translation>%1 di %2 giorni</translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation>Stile</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Classico</translation>
+    </message>
+    <message>
+        <source>Linha</source>
+        <translation>Linea</translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation>Due colonne</translation>
+    </message>
+    <message>
+        <source>Anel</source>
+        <translation>Anello</translation>
+    </message>
+    <message>
+        <source>Pílula que enche</source>
+        <translation>Pillola che si riempie</translation>
+    </message>
+    <message>
+        <source>palavras</source>
+        <translation>parole</translation>
+    </message>
+    <message>
+        <source>palavras hoje</source>
+        <translation>parole oggi</translation>
+    </message>
+    <message>
+        <source>caracteres</source>
+        <translation>caratteri</translation>
+    </message>
+    <message>
+        <source>páginas</source>
+        <translation>pagine</translation>
+    </message>
+    <message>
+        <source>páginas hoje</source>
+        <translation>pagine oggi</translation>
+    </message>
+    <message>
+        <source>hoje</source>
+        <translation>oggi</translation>
+    </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="93"/>
         <source>Mostrar/ocultar contagem</source>

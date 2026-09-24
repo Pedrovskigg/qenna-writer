@@ -21,6 +21,10 @@ QString prettyName(const QString& baseName)
 {
     QString s = baseName;
     s.replace(QChar('_'), QChar(' '));
+    s = s.simplified();
+    // " - " separa artista e título ("Ebunny - Into the Wild"); vira
+    // travessão antes que o hífen solto seja trocado por espaço.
+    s.replace(QStringLiteral(" - "), QStringLiteral(" — "));
     s.replace(QChar('-'), QChar(' '));
     s = s.simplified();
     return s;

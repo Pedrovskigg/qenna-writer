@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QColor>
 #include <QString>
 #include <QWidget>
 
@@ -36,6 +37,10 @@ public:
     // um personagem/cenário. Vazio esconde o avatar e a faixa volta a ser só
     // texto — é o mesmo caminho de capítulo/cena, não um estado especial.
     void setDocumentAvatar(const QString& imageDataUrl);
+    // Documento é de um elemento (personagem/cenário): a foto aceita duplo
+    // clique pra trocar. Sem foto, o lugar dela fica reservado e um círculo
+    // tracejado aparece só com o mouse sobre a faixa.
+    void setAvatarEditable(bool editable);
 
     void setSceneVarButtonVisible(bool visible);
     // Para ancorar a VariationBar, como o botão equivalente da toolbar.
@@ -43,9 +48,13 @@ public:
 
 signals:
     void sceneVarRequested();
+    void avatarChangeRequested();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
+    void enterEvent(QEnterEvent* event) override;
+    void leaveEvent(QEvent* event) override;
 
 private:
     void applyTheme();
@@ -70,4 +79,7 @@ private:
     QString m_avatarDataUrl;
     bool m_subtitleWanted = false;
     bool m_varWanted = false;
+    bool m_avatarEditable = false;
+    bool m_hover = false;
+    QColor m_placeholderColor;
 };

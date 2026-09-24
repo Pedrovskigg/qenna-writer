@@ -2095,6 +2095,14 @@ O projeto vai para a Lixeira (acessível pelo ícone de lixeira aqui embaixo), d
 <context>
     <name>DocHeaderBar</name>
     <message>
+        <source>Clique duas vezes para adicionar uma foto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clique duas vezes para trocar a foto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/DocHeaderBar.cpp" line="78"/>
         <source>Variações desta cena</source>
         <translation type="unfinished"></translation>
@@ -9366,6 +9374,10 @@ As estatísticas são estimativas e não garantem precisão absoluta com o conte
 </context>
 <context>
     <name>ProjectModel</name>
+    <message>
+        <source>Manuscrito recuperado</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../src/ProjectModel.cpp" line="657"/>
         <location filename="../src/ProjectModel.cpp" line="670"/>
@@ -21921,6 +21933,150 @@ Abra-o pela tela inicial (&quot;Carregar pasta&quot;) se ele não aparecer sozin
 </context>
 <context>
     <name>WordCountPanel</name>
+    <message>
+        <source>Contar em</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tamanho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pequeno</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Médio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grande</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Muito grande</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enorme</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anelzinho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Odômetro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tijolinhos mini</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Semana mini</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Régua</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ficha mini</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coluna</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Padrão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mínimo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anel da meta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anel de tijolinhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anel + tijolinhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Semana</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tijolinhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ficha de fichário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>da meta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 de %2 dias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Linha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pílula que enche</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>palavras hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>caracteres</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>páginas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>páginas hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
     <message>
         <location filename="../src/WordCountPanel.cpp" line="93"/>
         <source>Mostrar/ocultar contagem</source>

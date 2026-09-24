@@ -132,6 +132,16 @@ protected:
     void changeEvent(QEvent *event) override;
 
 private:
+    // Painéis e popups flutuantes são janelas Tool + StaysOnTop: ficam por
+    // cima de QUALQUER programa, e o fechamento deles só escuta clique dentro
+    // do app. Minimizar ou trocar de programa deixava o painel aberto
+    // flutuando sobre o navegador. Aqui eles são escondidos quando a janela
+    // minimiza ou o app perde o foco, e os mesmos voltam quando o app volta.
+    // Popups de hover (Qt::ToolTip ou propriedade "qennaNoRestore") só somem.
+    void suspendFloatingPopups();
+    void restoreFloatingPopups();
+    QList<QPointer<QWidget>> m_suspendedPopups;
+
     void setupEditor();
     void setupToolbar();
     void updateEditorContainerMargins();

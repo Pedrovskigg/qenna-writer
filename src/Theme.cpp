@@ -9142,6 +9142,7 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
 
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -9991,6 +9992,36 @@ QString hoverOverlay()      { return Manager::instance()->current().hoverOverlay
 QString pressedOverlay()    { return Manager::instance()->current().pressedOverlay; }
 QString subtleBorder()      { return Manager::instance()->current().subtleBorder; }
 QString accentDefault()     { return Manager::instance()->current().accentDefault; }
+
+QColor toColor(const QString& css)
+{
+    const QString s = css.trimmed();
+    if (!s.startsWith(QLatin1String("rgba("))) return QColor(s);
+    QString inner = s.mid(5);
+    if (inner.endsWith(QChar(')'))) inner.chop(1);
+    const QStringList parts = inner.split(QChar(','));
+    if (parts.size() != 4) return QColor(s);
+    int v[3];
+    for (int i = 0; i < 3; ++i) {
+        bool ok = false;
+        v[i] = parts.at(i).trimmed().toInt(&ok);
+        if (!ok) return QColor();
+    }
+    // Alpha nos dois formatos que convivem no Theme.cpp: inteiro 0..255
+    // (MiraTheme) e decimal 0..1 (temas gerados pelo codegen do harness).
+    const QString a = parts.at(3).trimmed();
+    bool ok = false;
+    int alpha = 255;
+    if (a.contains(QLatin1Char('.'))) {
+        const double f = a.toDouble(&ok);
+        if (!ok) return QColor();
+        alpha = qBound(0, qRound(f * 255.0), 255);
+    } else {
+        alpha = a.toInt(&ok);
+        if (!ok) return QColor();
+    }
+    return QColor(v[0], v[1], v[2], alpha);
+}
 
 QString hoverStrong()              { return Manager::instance()->current().hoverStrong; }
 QString borderStrong()             { return Manager::instance()->current().borderStrong; }

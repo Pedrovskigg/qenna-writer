@@ -1,6 +1,9 @@
 #include "DocHeaderBar.h"
 
+#include <QEnterEvent>
+#include <QEvent>
 #include <QFontMetrics>
+#include <QPainter>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QResizeEvent>
@@ -46,6 +49,7 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     m_avatar = new QLabel(this);
     m_avatar->setObjectName(QStringLiteral("docHeaderAvatar"));
     m_avatar->setVisible(false);
+    m_avatar->installEventFilter(this);
     centerRow->addWidget(m_avatar, 0, Qt::AlignVCenter);
 
     m_textCol = new QVBoxLayout;
@@ -135,6 +139,7 @@ void DocHeaderBar::applyTheme()
     };
     const QString titleColor = ink.name();
     const QString subtitleColor = mix(0.45);
+    m_placeholderColor = QColor(mix(0.55));
     const QString hover = QStringLiteral("rgba(%1,%2,%3,0.08)")
         .arg(ink.red()).arg(ink.green()).arg(ink.blue());
 
@@ -166,6 +171,7 @@ void DocHeaderBar::applyTheme()
         QStringLiteral(":/icons/scene-var.svg"),
         QColor(subtitleColor), QColor(mix(0.2)), ink,
         m_varButton->iconSize()));
+    refreshAvatar(); // o círculo vazio usa a cor do tema
 }
 
 void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitle)
@@ -184,17 +190,54 @@ void DocHeaderBar::setDocumentAvatar(const QString& imageDataUrl)
     relayoutText(); // a foto come largura útil da elipse do título
 }
 
+void DocHeaderBar::setAvatarEditable(bool editable)
+{
+    if (m_avatarEditable == editable) return;
+    m_avatarEditable = editable;
+    m_avatar->setCursor(editable ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    refreshAvatar();
+    relayoutText();
+}
+
 void DocHeaderBar::refreshAvatar()
 {
     if (!m_avatar) return;
-    if (m_avatarDataUrl.isEmpty()) {
-        m_avatar->clear();
-        m_avatar->setVisible(false);
-        return;
-    }
-
     const qreal s = UiScale::scale();
     const int side = qMax(16, qRound(kAvatarBase * s));
+
+    if (m_avatarDataUrl.isEmpty()) {
+        m_avatar->clear();
+        if (!m_avatarEditable) {
+            m_avatar->setVisible(false);
+            return;
+        }
+        // Lugar reservado mesmo sem foto: se o círculo entrasse no layout só
+        // no hover, o nome pularia do centro pro lado a cada passada do mouse.
+        m_avatar->setFixedSize(side, side);
+        m_avatar->setToolTip(tr("Clique duas vezes para adicionar uma foto"));
+        if (m_hover) {
+            const qreal dpr = devicePixelRatioF();
+            QPixmap pm(qRound(side * dpr), qRound(side * dpr));
+            pm.setDevicePixelRatio(dpr);
+            pm.fill(Qt::transparent);
+            QPainter p(&pm);
+            p.setRenderHint(QPainter::Antialiasing, true);
+            QPen dash(m_placeholderColor, 1.2, Qt::DashLine);
+            dash.setDashPattern({ 3, 3 });
+            p.setPen(dash);
+            p.drawEllipse(QRectF(1, 1, side - 2, side - 2));
+            const qreal c = side / 2.0, arm = side * 0.16;
+            p.setPen(QPen(m_placeholderColor, 1.4, Qt::SolidLine, Qt::RoundCap));
+            p.drawLine(QPointF(c - arm, c), QPointF(c + arm, c));
+            p.drawLine(QPointF(c, c - arm), QPointF(c, c + arm));
+            p.end();
+            m_avatar->setPixmap(pm);
+        }
+        m_avatar->setVisible(true);
+        return;
+    }
+    m_avatar->setToolTip(m_avatarEditable ? tr("Clique duas vezes para trocar a foto") : QString());
+
     // Renderiza na resolução física e marca o DPR: em tela HiDPI, gerar no
     // tamanho lógico deixaria a foto borrada — que é justamente o efeito
     // "desfalcado" que se quer evitar aqui.
@@ -254,6 +297,29 @@ QRect DocHeaderBar::sceneVarButtonGlobalRect() const
 {
     if (!m_varButton || !m_varButton->isVisible()) return QRect();
     return QRect(m_varButton->mapToGlobal(QPoint(0, 0)), m_varButton->size());
+}
+
+bool DocHeaderBar::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_avatar && m_avatarEditable && event->type() == QEvent::MouseButtonDblClick) {
+        emit avatarChangeRequested();
+        return true;
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void DocHeaderBar::enterEvent(QEnterEvent* event)
+{
+    QWidget::enterEvent(event);
+    m_hover = true;
+    if (m_avatarEditable && m_avatarDataUrl.isEmpty()) refreshAvatar();
+}
+
+void DocHeaderBar::leaveEvent(QEvent* event)
+{
+    QWidget::leaveEvent(event);
+    m_hover = false;
+    if (m_avatarEditable && m_avatarDataUrl.isEmpty()) refreshAvatar();
 }
 
 void DocHeaderBar::resizeEvent(QResizeEvent* event)

@@ -1,6 +1,8 @@
 #include "WordCountPanel.h"
 
 #include "EditorHost.h"
+#include "MiniCounterWidget.h"
+#include "CounterFaceWidget.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 #include "WordCounter.h"
@@ -11,6 +13,7 @@
 #include <QScreen>
 #include <QComboBox>
 #include <QContextMenuEvent>
+#include <QDate>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QEvent>
@@ -61,6 +64,10 @@ WordCountPanel::WordCountPanel(WordCounter* counter, EditorHost* host, ProjectMo
 {
     setAttribute(Qt::WA_StyledBackground, true);
     setObjectName(QStringLiteral("wordCountPanel"));
+    m_compactStyle = QSettings().value(QStringLiteral("wordCounter/compactStyle"),
+                                       QStringLiteral("classic")).toString();
+    m_scalePercent = QSettings().value(QStringLiteral("wordCounter/compactScale"), 100).toInt();
+    if (!QList<int>{ 85, 100, 120, 140, 165 }.contains(m_scalePercent)) m_scalePercent = 100;
     buildUi();
     updateToggleArrow();
     if (m_counter) {
@@ -100,6 +107,12 @@ void WordCountPanel::buildUi()
     toggleRow->addStretch();
     outer->addLayout(toggleRow);
 
+    m_mini = new MiniCounterWidget(this);
+    connect(m_mini, &MiniCounterWidget::clicked, this, [this]() { setFullMode(true); });
+    connect(m_mini, &MiniCounterWidget::contextMenuRequested,
+            this, &WordCountPanel::openCompactContextMenu);
+    outer->addWidget(m_mini, 0, Qt::AlignLeft);
+
     // Cards (compact body) — clicáveis pra abrir/fechar full mode.
     m_body = new QFrame(this);
     m_body->setObjectName(QStringLiteral("wcpBody"));
@@ -108,89 +121,18 @@ void WordCountPanel::buildUi()
     m_body->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     m_body->installEventFilter(this);
     auto* bodyLayout = new QVBoxLayout(m_body);
-    bodyLayout->setContentsMargins(12, 10, 12, 12);
-    bodyLayout->setSpacing(8);
+    bodyLayout->setContentsMargins(0, 0, 0, 0);
+    bodyLayout->setSpacing(0);
 
-    auto* headerRow = new QHBoxLayout();
-    headerRow->setSpacing(4);
-    auto* contadorTitle = new QLabel(tr("Contador"), m_body);
-    contadorTitle->setObjectName(QStringLiteral("wcpSectionTitle"));
-    headerRow->addWidget(contadorTitle);
-    headerRow->addStretch();
-
-    auto* statsBtn = new QToolButton(m_body);
-    statsBtn->setObjectName(QStringLiteral("wcpResetBtn"));
-    statsBtn->setText(tr("Estatísticas"));
-    statsBtn->setCursor(Qt::PointingHandCursor);
-    statsBtn->setAutoRaise(true);
-    connect(statsBtn, &QToolButton::clicked, this, [this, statsBtn]() {
-        auto* dlg = new WritingStatsDialog(m_counter, this);
-        dlg->show(); // show() antes de posicionar para ter a altura real do dialog
-
-        const QRect screen = statsBtn->screen()->availableGeometry();
-        const QPoint btnTopLeft = statsBtn->mapToGlobal(QPoint(0, 0));
-        int x = btnTopLeft.x();
-        int y = btnTopLeft.y() - dlg->height() - 4; // preferência: acima do botão
-        // Se não couber acima (botão colado no topo da tela), abre abaixo do botão.
-        if (y < screen.top() + 4)
-            y = statsBtn->mapToGlobal(QPoint(0, statsBtn->height())).y() + 4;
-        // Garante que o dialog inteiro (incluindo o botão de fechar) fique na tela.
-        x = qBound(screen.left() + 4, x, screen.right()  - dlg->width()  - 4);
-        y = qBound(screen.top()  + 4, y, screen.bottom() - dlg->height() - 4);
-        dlg->move(x, y);
-    });
-    headerRow->addWidget(statsBtn);
-
-    bodyLayout->addLayout(headerRow);
-
-    auto* cards = new QHBoxLayout();
-    cards->setSpacing(8);
-    cards->setContentsMargins(0, 0, 0, 0);
-
-    auto makeCard = [this](const QString& title, QLabel** outValue, QLabel** outTitle) -> QFrame* {
-        auto* card = new QFrame(m_body);
-        card->setObjectName(QStringLiteral("wcpCard"));
-        card->setAttribute(Qt::WA_StyledBackground, true);
-        auto* lay = new QVBoxLayout(card);
-        lay->setContentsMargins(12, 8, 12, 8);
-        lay->setSpacing(2);
-        auto* lblTitle = new QLabel(title, card);
-        lblTitle->setObjectName(QStringLiteral("wcpCardTitle"));
-        lblTitle->setWordWrap(true);
-        auto* lblValue = new QLabel(QStringLiteral("0"), card);
-        lblValue->setObjectName(QStringLiteral("wcpCardValue"));
-        lay->addWidget(lblTitle);
-        lay->addWidget(lblValue);
-        *outValue = lblValue;
-        *outTitle = lblTitle;
-        return card;
-    };
-
-    cards->addWidget(makeCard(tr("Palavras"),   &m_slot1Value, &m_slot1Title));
-    cards->addWidget(makeCard(tr("Caracteres"), &m_slot2Value, &m_slot2Title));
-    bodyLayout->addLayout(cards);
-
-    // Barra de progresso compacta da meta diária
-    m_compactGoalBar = new QProgressBar(m_body);
-    m_compactGoalBar->setObjectName(QStringLiteral("wcpProgress"));
-    m_compactGoalBar->setRange(0, 100);
-    m_compactGoalBar->setValue(0);
-    m_compactGoalBar->setTextVisible(false);
-    m_compactGoalBar->setFixedHeight(5);
-    m_compactGoalBar->setVisible(false);
-    bodyLayout->addWidget(m_compactGoalBar);
-
-    m_compactGoalResetLabel = new QLabel(QString(), m_body);
-    m_compactGoalResetLabel->setObjectName(QStringLiteral("wcpMeta"));
-    m_compactGoalResetLabel->setAlignment(Qt::AlignCenter);
-    m_compactGoalResetLabel->setVisible(false);
-    bodyLayout->addWidget(m_compactGoalResetLabel);
+    // O corpo é todo desenhado (clássico incluso): é o que deixa o contador
+    // escalar sem refazer layout de widgets.
+    m_face = new CounterFaceWidget(m_body);
+    connect(m_face, &CounterFaceWidget::statsClicked, this, [this]() { openStatsDialog(m_face); });
+    bodyLayout->addWidget(m_face);
 
     // Largura fixa do painel (compact e full iguais). Impede que a grade de
     // estatísticas (3 colunas) ou um dia com 5 estrelas estiquem o painel —
     // os stats longos quebram em 2 linhas dentro da coluna, como no Mira 1.
-    const int kPanelWidth = 256;
-    const int kScrollBarW = 8; // gutter reservado para a barra de rolagem
     m_body->setFixedWidth(kPanelWidth);
 
     // Full body — só visível em full mode.
@@ -201,7 +143,6 @@ void WordCountPanel::buildUi()
     auto* fullLayout = new QVBoxLayout(m_fullBody);
     fullLayout->setContentsMargins(0, 8, 0, 0);
     fullLayout->setSpacing(8);
-    fullLayout->addWidget(buildScopeSection());
     fullLayout->addWidget(buildGoalSection());
     fullLayout->addWidget(buildSprintSection());
 
@@ -266,6 +207,7 @@ void WordCountPanel::buildUi()
     outer->addWidget(m_scrollArea);
 
     applyThemeStyle();
+    updateBodyVisibility();
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &WordCountPanel::applyThemeStyle);
@@ -321,27 +263,6 @@ void WordCountPanel::applyThemeStyle()
             color: %8; font-size: 12px; font-weight: 600;
         }
         QLabel#wcpMeta { color: %7; font-size: 11px; }
-        QFrame#wcpCard {
-            background: %2;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-        }
-        QLabel#wcpCardTitle { color: %7; font-size: 11px; }
-        QLabel#wcpCardValue { color: %8; font-size: 15px; font-weight: 600; }
-        QPushButton#wcpScopeBtn {
-            background: %2;
-            color: %6;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-            padding: 6px 10px;
-            text-align: left;
-        }
-        QPushButton#wcpScopeBtn:hover { background: %3; color: %8; }
-        QPushButton#wcpScopeBtn[selected="true"] {
-            background: %3;
-            color: %8;
-            border-color: %9;
-        }
         QProgressBar#wcpProgress {
             background: %2;
             border: 1px solid %5;
@@ -426,43 +347,6 @@ void WordCountPanel::applyThemeStyle()
              accent,     // 9
              Theme::accentWarning()) // 10
     );
-}
-
-QFrame* WordCountPanel::buildScopeSection()
-{
-    auto* section = new QFrame(m_fullBody);
-    section->setObjectName(QStringLiteral("wcpSection"));
-    section->setAttribute(Qt::WA_StyledBackground, true);
-    auto* lay = new QVBoxLayout(section);
-    lay->setContentsMargins(12, 10, 12, 12);
-    lay->setSpacing(6);
-
-    auto* title = new QLabel(tr("Contar palavras"), section);
-    title->setObjectName(QStringLiteral("wcpSectionTitle"));
-    lay->addWidget(title);
-
-    auto makeBtn = [this, section](const QString& text, const QString& scopeKey) {
-        auto* b = new QPushButton(text, section);
-        b->setObjectName(QStringLiteral("wcpScopeBtn"));
-        b->setCursor(Qt::PointingHandCursor);
-        b->setCheckable(false);
-        connect(b, &QPushButton::clicked, this, [this, scopeKey]() {
-            if (m_counter) m_counter->setScope(scopeKey);
-        });
-        return b;
-    };
-
-    m_scopeManuscriptBtn = makeBtn(tr("Apenas nos capítulos"), QStringLiteral("manuscript"));
-    m_scopeActiveBtn     = makeBtn(tr("No documento em edição"), QStringLiteral("active"));
-    m_scopeDrawersBtn    = makeBtn(tr("Documentos das gavetas"), QStringLiteral("drawers"));
-    m_scopeAllBtn        = makeBtn(tr("Todos os documentos do projeto"), QStringLiteral("all"));
-
-    lay->addWidget(m_scopeManuscriptBtn);
-    lay->addWidget(m_scopeActiveBtn);
-    lay->addWidget(m_scopeDrawersBtn);
-    lay->addWidget(m_scopeAllBtn);
-
-    return section;
 }
 
 QFrame* WordCountPanel::buildGoalSection()
@@ -716,9 +600,7 @@ void WordCountPanel::setExpanded(bool expanded)
 {
     if (m_expanded == expanded) return;
     m_expanded = expanded;
-    if (m_scrollArea) m_scrollArea->setVisible(expanded);
-    if (m_body) m_body->setVisible(expanded);
-    if (m_fullBody) m_fullBody->setVisible(expanded && m_fullMode);
+    updateBodyVisibility();
     updateToggleArrow();
     updateScrollSizing();
     adjustSize();
@@ -729,11 +611,92 @@ void WordCountPanel::setFullMode(bool full)
 {
     if (m_fullMode == full) return;
     m_fullMode = full;
-    if (m_fullBody) m_fullBody->setVisible(m_expanded && m_fullMode);
+    updateBodyVisibility();
     updateScrollSizing();
     adjustSize();
     emit geometryChanged();
     if (full && m_calendarVisible) scrollToBottom();
+}
+
+// O mini só existe no compacto: aberto o modo full, volta o cabeçalho
+// clássico (com o botão Estatísticas) em cima das seções.
+void WordCountPanel::updateBodyVisibility()
+{
+    // Os mini são a alternativa de tamanho: só eles trocam o corpo no
+    // compacto. Clássico e os estilos padrão aparecem sempre no tamanho normal.
+    const bool mini = MiniCounterWidget::isMiniStyle(m_compactStyle) && !m_fullMode;
+    if (m_mini) {
+        if (mini) m_mini->setStyleKey(m_compactStyle);
+        m_mini->setVisible(m_expanded && mini);
+    }
+    if (m_scrollArea) m_scrollArea->setVisible(m_expanded && !mini);
+    if (m_body) m_body->setVisible(m_expanded);
+    if (m_fullBody) m_fullBody->setVisible(m_expanded && m_fullMode);
+
+    // No modo full com um mini escolhido, o cabeçalho é o clássico.
+    if (m_face)
+        m_face->setStyleKey(CounterFaceWidget::isFaceStyle(m_compactStyle)
+                            ? m_compactStyle : QStringLiteral("classic"));
+    applyScale();
+}
+
+void WordCountPanel::applyScale()
+{
+    const qreal compact = m_scalePercent / 100.0;
+    const qreal body = m_fullMode ? 1.0 : compact;   // o full é um formulário: fica em 100%
+    const int w = qRound(kPanelWidth * body);
+    if (m_mini) m_mini->setScale(compact);
+    if (m_face) m_face->setScale(body);
+    if (m_body) m_body->setFixedWidth(w);
+    if (m_scrollContent) m_scrollContent->setFixedWidth(w);
+    if (m_scrollArea) m_scrollArea->setFixedWidth(w + kScrollBarW);
+}
+
+void WordCountPanel::setCompactScale(int percent)
+{
+    if (m_scalePercent == percent) return;
+    m_scalePercent = percent;
+    QSettings().setValue(QStringLiteral("wordCounter/compactScale"), percent);
+    applyScale();
+    QMetaObject::invokeMethod(this, [this]() {
+        updateScrollSizing();
+        adjustSize();
+        emit geometryChanged();
+    }, Qt::QueuedConnection);
+}
+
+void WordCountPanel::openStatsDialog(QWidget* anchor)
+{
+    auto* dlg = new WritingStatsDialog(m_counter, this);
+    dlg->show(); // show() antes de posicionar para ter a altura real do dialog
+
+    const QRect screen = anchor->screen()->availableGeometry();
+    const QPoint topLeft = anchor->mapToGlobal(QPoint(0, 0));
+    int x = topLeft.x();
+    int y = topLeft.y() - dlg->height() - 4; // preferência: acima do botão
+    // Se não couber acima (botão colado no topo da tela), abre abaixo.
+    if (y < screen.top() + 4)
+        y = anchor->mapToGlobal(QPoint(0, anchor->height())).y() + 4;
+    // Garante que o dialog inteiro (incluindo o botão de fechar) fique na tela.
+    x = qBound(screen.left() + 4, x, screen.right()  - dlg->width()  - 4);
+    y = qBound(screen.top()  + 4, y, screen.bottom() - dlg->height() - 4);
+    dlg->move(x, y);
+}
+
+void WordCountPanel::setCompactStyle(const QString& style)
+{
+    if (m_compactStyle == style) return;
+    m_compactStyle = style;
+    QSettings().setValue(QStringLiteral("wordCounter/compactStyle"), style);
+    updateBodyVisibility();
+    refresh();
+    // Adia como no calendário: o layout precisa recalcular o sizeHint do
+    // corpo novo antes do scroll e do painel serem redimensionados.
+    QMetaObject::invokeMethod(this, [this]() {
+        updateScrollSizing();
+        adjustSize();
+        emit geometryChanged();
+    }, Qt::QueuedConnection);
 }
 
 void WordCountPanel::setAvailableHeight(int h)
@@ -848,17 +811,6 @@ void WordCountPanel::refreshFromSettings()
     m_updatingFromSettings = true;
     const auto s = m_counter->settings();
 
-    // Scope buttons
-    auto setSel = [](QPushButton* b, bool sel) {
-        if (!b) return;
-        b->setProperty("selected", sel ? "true" : "false");
-        b->style()->unpolish(b);
-        b->style()->polish(b);
-    };
-    setSel(m_scopeManuscriptBtn, s.scope == QStringLiteral("manuscript"));
-    setSel(m_scopeActiveBtn, s.scope == QStringLiteral("active"));
-    setSel(m_scopeDrawersBtn, s.scope == QStringLiteral("drawers"));
-    setSel(m_scopeAllBtn, s.scope == QStringLiteral("all"));
 
     // Goal scope combo
     if (m_goalScopeCombo) {
@@ -917,19 +869,17 @@ void WordCountPanel::refreshFromSettings()
             return tr("Tempo hoje");
         return tr("Palavras");
     };
-    if (m_slot1Title) m_slot1Title->setText(slotLabel(s.compactSlot1, s.compactSlot1Scope));
-    if (m_slot2Title) m_slot2Title->setText(slotLabel(s.compactSlot2, s.compactSlot2Scope));
+    m_slot1Title = slotLabel(s.compactSlot1, s.compactSlot1Scope);
+    m_slot2Title = slotLabel(s.compactSlot2, s.compactSlot2Scope);
 
-    const bool showBar = s.compactShowGoalBar;
-    if (m_compactGoalBar)        m_compactGoalBar->setVisible(showBar);
-    if (m_compactGoalResetLabel) m_compactGoalResetLabel->setVisible(showBar);
+    updateBodyVisibility();
 
     m_updatingFromSettings = false;
 }
 
 void WordCountPanel::refresh()
 {
-    if (!m_counter || !m_slot1Value || !m_slot2Value) return;
+    if (!m_counter) return;
 
     QLocale loc = statsLocale();
     const auto s = m_counter->settings();
@@ -958,30 +908,123 @@ void WordCountPanel::refresh()
         return loc.toString(m_counter->countActiveScopeWords());
     };
 
-    m_slot1Value->setText(slotValue(s.compactSlot1, s.compactSlot1Scope));
-    m_slot2Value->setText(slotValue(s.compactSlot2, s.compactSlot2Scope));
+    const QString v1 = slotValue(s.compactSlot1, s.compactSlot1Scope);
+    const QString v2 = slotValue(s.compactSlot2, s.compactSlot2Scope);
 
-    // Barra de progresso compacta
-    if (m_compactGoalBar && s.compactShowGoalBar) {
+    int goalPct = 0;
+    if (s.goalType == QStringLiteral("time")) {
+        const qint64 tMs = m_counter->progressTimeMs();
+        const int target = qMax(1, s.goalTargetMinutes);
+        goalPct = qMin(100, static_cast<int>((tMs * 100.0) / (target * 60000.0)));
+    } else {
+        const int w = m_counter->progressWords();
+        const int target = qMax(1, s.goalTargetWords);
+        goalPct = qMin(100, static_cast<int>((w * 100.0) / target));
+    }
+    const QString goalLine = m_counter->isGoalMet()
+        ? tr("Meta atingida!")
+        : tr("Reinicia em %1").arg(fmtDuration(m_counter->goalDayRemainingMs()));
+
+
+    // Histórico recente (Semana, Semana mini, Anel + tijolinhos). O dia da
+    // meta (que pode virar fora da meia-noite) é a referência, não o relógio.
+    const bool goalIsTime = s.goalType == QStringLiteral("time");
+    QDate goalDay = QDate::fromString(m_counter->currentGoalDayKey(), QStringLiteral("yyyy-MM-dd"));
+    if (!goalDay.isValid()) goalDay = QDate::currentDate();
+    QVector<int> week;
+    for (int i = 6; i >= 0; --i) {
+        const QJsonObject o = s.progress.value(goalDay.addDays(-i).toString(QStringLiteral("yyyy-MM-dd"))).toObject();
+        week.append(goalIsTime ? static_cast<int>(o.value(QStringLiteral("timeMs")).toDouble(0) / 60000)
+                               : o.value(QStringLiteral("words")).toInt(0));
+    }
+    const int weekGoal = goalIsTime ? s.goalTargetMinutes : s.goalTargetWords;
+
+    if (m_face) {
+        auto shortTitle = [this](const QString& metric) -> QString {
+            if (metric == QStringLiteral("words-session")) return tr("Palavras hoje");
+            if (metric == QStringLiteral("chars"))         return tr("Caracteres");
+            if (metric == QStringLiteral("pages"))         return tr("Páginas");
+            if (metric == QStringLiteral("pages-session")) return tr("Páginas hoje");
+            if (metric == QStringLiteral("time-session"))  return tr("Tempo hoje");
+            return tr("Palavras");
+        };
+        auto unitShort = [this](const QString& metric) -> QString {
+            if (metric == QStringLiteral("words-session")) return tr("palavras hoje");
+            if (metric == QStringLiteral("chars"))         return tr("caracteres");
+            if (metric == QStringLiteral("pages"))         return tr("páginas");
+            if (metric == QStringLiteral("pages-session")) return tr("páginas hoje");
+            if (metric == QStringLiteral("time-session"))  return tr("hoje");
+            return tr("palavras");
+        };
         const bool isTime = s.goalType == QStringLiteral("time");
-        int pct = 0;
-        if (isTime) {
-            const qint64 tMs = m_counter->progressTimeMs();
-            const int target = qMax(1, s.goalTargetMinutes);
-            pct = qMin(100, static_cast<int>((tMs * 100.0) / (target * 60000.0)));
-        } else {
-            const int w = m_counter->progressWords();
-            const int target = qMax(1, s.goalTargetWords);
-            pct = qMin(100, static_cast<int>((w * 100.0) / target));
-        }
-        m_compactGoalBar->setValue(pct);
-        if (m_compactGoalResetLabel) {
-            if (m_counter->isGoalMet()) {
-                m_compactGoalResetLabel->setText(tr("Meta atingida!"));
+        CounterFaceWidget::Data d;
+        d.title = tr("Contador");
+        d.statsText = tr("Estatísticas") + QStringLiteral(" ›");
+        d.label1 = shortTitle(s.compactSlot1);
+        d.label2 = shortTitle(s.compactSlot2);
+        d.value1 = v1;
+        d.value2 = v2;
+        d.fullLabel1 = m_slot1Title;
+        d.fullLabel2 = m_slot2Title;
+        d.showGoal = s.compactShowGoalBar;
+        d.unit1 = unitShort(s.compactSlot1);
+        d.unit2 = unitShort(s.compactSlot2);
+        d.pct = goalPct;
+        d.pctCaption = tr("da meta");
+        d.goalLine = goalLine;
+        d.fraction = isTime
+            ? QStringLiteral("%1 / %2 min").arg(m_counter->progressTimeMs() / 60000).arg(s.goalTargetMinutes)
+            : QStringLiteral("%1 / %2").arg(loc.toString(m_counter->progressWords()), loc.toString(s.goalTargetWords));
+
+        d.week = week;
+        d.weekGoal = weekGoal;
+        for (int i = 6; i >= 0; --i) {
+            if (i == 0) {
+                d.weekDays.append(tr("hoje"));
             } else {
-                m_compactGoalResetLabel->setText(
-                    tr("Reinicia em %1").arg(fmtDuration(m_counter->goalDayRemainingMs())));
+                QString name = loc.dayName(goalDay.addDays(-i).dayOfWeek(), QLocale::ShortFormat).toLower();
+                if (name.endsWith(QLatin1Char('.'))) name.chop(1);
+                d.weekDays.append(name);
             }
+        }
+        int met = 0;
+        for (int i = 19; i >= 0; --i) {
+            const bool ok = m_counter->dayMetGoal(goalDay.addDays(-i).toString(QStringLiteral("yyyy-MM-dd")));
+            d.days.append(ok);
+            if (ok) ++met;
+        }
+        d.daysCaption = tr("%1 de %2 dias").arg(met).arg(20);
+        m_face->setData(d);
+        m_face->setToolTip(QStringLiteral("%1: %2\n%3: %4")
+            .arg(m_slot1Title, v1, m_slot2Title, v2));
+    }
+
+    // Contador mínimo: o rótulo longo (linha/pílula) omite a unidade quando o
+    // valor já se explica ("12min"); o curto (duas colunas) nunca fica vazio.
+    if (m_mini) {
+        auto unitFor = [this](const QString& metric, bool shortLabel) -> QString {
+            if (metric == QStringLiteral("words-session")) return tr("palavras hoje");
+            if (metric == QStringLiteral("chars"))         return tr("caracteres");
+            if (metric == QStringLiteral("pages"))         return tr("páginas");
+            if (metric == QStringLiteral("pages-session")) return tr("páginas hoje");
+            if (metric == QStringLiteral("time-session"))  return shortLabel ? tr("hoje") : QString();
+            return tr("palavras");
+        };
+        const MiniCounterWidget::Slot a{ v1, unitFor(s.compactSlot1, false), unitFor(s.compactSlot1, true) };
+        const MiniCounterWidget::Slot b{ v2, unitFor(s.compactSlot2, false), unitFor(s.compactSlot2, true) };
+        m_mini->setData(a, b, goalPct, s.compactShowGoalBar, week, weekGoal);
+
+        QString tip = QStringLiteral("%1: %2\n%3: %4")
+            .arg(m_slot1Title, v1, m_slot2Title, v2);
+        if (s.compactShowGoalBar)
+            tip += QStringLiteral("\n") + goalLine;
+        m_mini->setToolTip(tip);
+
+        // O painel é posicionado à mão: se o mini mudou de tamanho (o número
+        // ganhou um dígito), redimensiona e avisa quem posiciona.
+        if (m_mini->isVisible() && m_mini->size() != m_mini->sizeHint()) {
+            adjustSize();
+            emit geometryChanged();
         }
     }
 
@@ -1256,13 +1299,85 @@ void WordCountPanel::openCompactContextMenu(const QPoint& globalPos)
 
     QMenu menu(this);
 
-    auto buildSlot = [&](const QString& header, int slot) {
-        auto* hdr = menu.addAction(header);
+    // Estilo mora num submenu: são onze opções, e o menu raiz é dos slots.
+    QMenu* styleMenu = menu.addMenu(tr("Estilo"));
+    auto addStyles = [&](const QString& header, const QList<QPair<QString, QString>>& list) {
+        auto* hdr = styleMenu->addAction(header);
         hdr->setEnabled(false);
+        for (const auto& st : list) {
+            auto* act = styleMenu->addAction(QStringLiteral("   ") + st.second);
+            act->setCheckable(true);
+            act->setChecked(m_compactStyle == st.first);
+            const QString key = st.first;
+            connect(act, &QAction::triggered, this, [this, key]() { setCompactStyle(key); });
+        }
+    };
+    addStyles(tr("Padrão"), {
+        { QStringLiteral("classic"),         tr("Clássico") },
+        { QStringLiteral("face-ring"),       tr("Anel da meta") },
+        { QStringLiteral("face-brickring"),  tr("Anel de tijolinhos") },
+        { QStringLiteral("face-ringbricks"), tr("Anel + tijolinhos") },
+        { QStringLiteral("face-week"),       tr("Semana") },
+        { QStringLiteral("face-bricks"),     tr("Tijolinhos") },
+        { QStringLiteral("face-card"),       tr("Ficha de fichário") },
+    });
+    styleMenu->addSeparator();
+    addStyles(tr("Mínimo"), {
+        { QStringLiteral("line"),    tr("Linha") },
+        { QStringLiteral("columns"), tr("Duas colunas") },
+        { QStringLiteral("ring"),    tr("Anel") },
+        { QStringLiteral("pill"),    tr("Pílula que enche") },
+        { QStringLiteral("ringlet"),     tr("Anelzinho") },
+        { QStringLiteral("odometer"),    tr("Odômetro") },
+        { QStringLiteral("bricks-mini"), tr("Tijolinhos mini") },
+        { QStringLiteral("week-mini"),   tr("Semana mini") },
+        { QStringLiteral("ruler"),       tr("Régua") },
+        { QStringLiteral("card-mini"),   tr("Ficha mini") },
+        { QStringLiteral("tube"),        tr("Coluna") },
+    });
+
+    QMenu* sizeMenu = menu.addMenu(tr("Tamanho"));
+    const QList<QPair<int, QString>> sizes = {
+        { 85,  tr("Pequeno") },
+        { 100, tr("Médio") },
+        { 120, tr("Grande") },
+        { 140, tr("Muito grande") },
+        { 165, tr("Enorme") },
+    };
+    for (const auto& sz : sizes) {
+        auto* act = sizeMenu->addAction(QStringLiteral("%1 (%2%)").arg(sz.second).arg(sz.first));
+        act->setCheckable(true);
+        act->setChecked(m_scalePercent == sz.first);
+        const int pct = sz.first;
+        connect(act, &QAction::triggered, this, [this, pct]() { setCompactScale(pct); });
+    }
+    menu.addSeparator();
+
+    // Onde o contador conta: vale pra Palavras, Caracteres e Páginas dos
+    // slots. Morava numa seção de quatro botões no modo full.
+    QMenu* scopeMenu = menu.addMenu(tr("Contar em"));
+    const QList<QPair<QString, QString>> scopes = {
+        { QStringLiteral("manuscript"), tr("Apenas nos capítulos") },
+        { QStringLiteral("active"),     tr("No documento em edição") },
+        { QStringLiteral("drawers"),    tr("Documentos das gavetas") },
+        { QStringLiteral("all"),        tr("Todos os documentos do projeto") },
+    };
+    for (const auto& sc : scopes) {
+        auto* act = scopeMenu->addAction(sc.second);
+        act->setCheckable(true);
+        act->setChecked(s.scope == sc.first);
+        const QString key = sc.first;
+        connect(act, &QAction::triggered, this, [this, key]() {
+            if (m_counter) m_counter->setScope(key);
+        });
+    }
+
+    auto buildSlot = [&](const QString& header, int slot) {
+        QMenu* slotMenu = menu.addMenu(header);
         const QString curMetric = (slot == 1) ? s.compactSlot1 : s.compactSlot2;
         const QString curScope  = (slot == 1) ? s.compactSlot1Scope : s.compactSlot2Scope;
         for (const auto& def : defs) {
-            auto* act = menu.addAction(QStringLiteral("   ") + def.label);
+            auto* act = slotMenu->addAction(def.label);
             act->setCheckable(true);
             act->setChecked(def.metric == curMetric && def.scope == curScope);
             connect(act, &QAction::triggered, this, [this, slot, def]() {
@@ -1274,13 +1389,15 @@ void WordCountPanel::openCompactContextMenu(const QPoint& globalPos)
     };
 
     buildSlot(tr("Slot 1"), 1);
-    menu.addSeparator();
     buildSlot(tr("Slot 2"), 2);
     menu.addSeparator();
 
     auto* goalBarAct = menu.addAction(tr("Barra de progresso da meta"));
     goalBarAct->setCheckable(true);
     goalBarAct->setChecked(s.compactShowGoalBar);
+    // Nos estilos com anel, semana ou tijolinhos, a meta é o próprio desenho.
+    goalBarAct->setEnabled(m_compactStyle == QLatin1String("classic")
+                           || MiniCounterWidget::isMiniStyle(m_compactStyle));
     connect(goalBarAct, &QAction::triggered, this, [this](bool checked) {
         if (m_counter) m_counter->setCompactShowGoalBar(checked);
     });

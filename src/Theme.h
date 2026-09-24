@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QColor>
 #include <QJsonObject>
 #include <QList>
 #include <QObject>
@@ -282,6 +283,10 @@ QString pressedOverlay();
 QString subtleBorder();
 QString accentDefault();
 QString panelQss(const QString& objectName);
+// Converte uma cor do tema pra QColor, pra quem desenha com QPainter. Aceita
+// hex e "rgba(r,g,b,a)" com alpha inteiro 0..255 ou decimal 0..1 (os dois
+// convivem no Theme.cpp, e o QColor não lê nenhum dos dois sozinho).
+QColor toColor(const QString& css);
 // Fundo de painel já com a opacidade do tema aplicada, pronto pra QSS. Devolve
 // o hex cru quando panelOpacity == 100, senão um rgba(). Use nas barras fixas;
 // para diálogos e popups continue usando panelBackground().

@@ -6,6 +6,8 @@
 #include "ScreenDefaults.h"
 #include "SpellChecker.h"
 
+#include <QDebug>
+#include <QHash>
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QRandomGenerator>
@@ -1784,6 +1786,9 @@ void ProjectModel::loadFromJson(const QJsonObject& root) {
     const QJsonArray manuscripts = data.value(QStringLiteral("manuscripts")).toArray();
     for (const auto& mv : manuscripts) m_manuscripts.append(manuscriptFromJson(mv.toObject()));
     m_activeManuscriptId = jsonStringOrEmpty(data.value(QStringLiteral("activeManuscriptId")));
+    recoverOrphanManuscripts();
+    if (!m_activeManuscriptId.isEmpty() && !findManuscript(m_activeManuscriptId))
+        m_activeManuscriptId.clear();
     if (m_activeManuscriptId.isEmpty() && !m_manuscripts.isEmpty())
         m_activeManuscriptId = m_manuscripts.first().id;
     m_activeChapterId = jsonStringOrEmpty(data.value(QStringLiteral("activeChapterId")));
@@ -1815,6 +1820,41 @@ void ProjectModel::loadFromJson(const QJsonObject& root) {
     emit groupsChanged();
     emit characterBondsChanged();
     emit loaded();
+}
+
+// Capítulo cujo manuscriptId não existe em data.manuscripts fica órfão: o
+// texto está inteiro no disco, mas nenhuma tela lista, e o usuário conclui
+// que perdeu o livro (o projeto Blake ficou assim de abril a setembro). Aqui
+// o manuscrito é recriado com o MESMO id, então os caminhos de arquivo dos
+// capítulos continuam valendo. Se o ativo era um manuscrito sem capítulo
+// (fantasma), o recuperado com mais capítulos assume.
+void ProjectModel::recoverOrphanManuscripts() {
+    QStringList orphanIds;
+    QHash<QString, int> chapterCount;
+    for (const Chapter& c : m_chapters) {
+        if (c.manuscriptId.isEmpty()) continue;
+        ++chapterCount[c.manuscriptId];
+        if (!findManuscript(c.manuscriptId) && !orphanIds.contains(c.manuscriptId))
+            orphanIds.append(c.manuscriptId);
+    }
+    if (orphanIds.isEmpty()) return;
+
+    const bool onlyOne = m_manuscripts.isEmpty() && orphanIds.size() == 1;
+    for (const QString& id : orphanIds) {
+        Manuscript m;
+        m.id = id;
+        m.title = onlyOne ? m_projectName : tr("Manuscrito recuperado");
+        m_manuscripts.append(m);
+        qWarning() << "ProjectModel: manuscrito" << id << "recriado para"
+                   << chapterCount.value(id) << "capítulo(s) órfão(s)";
+    }
+
+    if (chapterCount.value(m_activeManuscriptId) == 0) {
+        QString best = orphanIds.first();
+        for (const QString& id : orphanIds)
+            if (chapterCount.value(id) > chapterCount.value(best)) best = id;
+        m_activeManuscriptId = best;
+    }
 }
 
 void ProjectModel::clear() {

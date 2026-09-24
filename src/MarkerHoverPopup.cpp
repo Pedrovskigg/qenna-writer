@@ -30,6 +30,9 @@ MarkerHoverPopup::MarkerHoverPopup(QWidget* parent)
     setAttribute(Qt::WA_ShowWithoutActivating, true);
     setAttribute(Qt::WA_Hover, true);
     setFocusPolicy(Qt::NoFocus);
+    // Hover: some ao minimizar/trocar de app e não volta sozinho
+    // (MainWindow::restoreFloatingPopups).
+    setProperty("qennaNoRestore", true);
 
     buildUi();
     applyTheme();

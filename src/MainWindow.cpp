@@ -23,6 +23,7 @@
 
 #include <QAction>
 #include <QApplication>
+#include <utility>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDialog>
@@ -916,6 +917,15 @@ MainWindow::MainWindow(QWidget *parent)
     baseWindowTitle = tr("Qenna Writer");
     setWindowTitle(baseWindowTitle);
 
+    connect(qApp, &QGuiApplication::applicationStateChanged, this,
+            [this](Qt::ApplicationState state) {
+        if (state == Qt::ApplicationActive) {
+            if (!isMinimized()) restoreFloatingPopups();
+        } else {
+            suspendFloatingPopups();
+        }
+    });
+
     // Toolbar flutuante: filho direto de this, posicionado sobre o centralWidget.
     // Sem setMenuWidget — o centralWidget ocupa a janela inteira (incluindo atrás
     // da toolbar), permitindo que a página vaze 100% até o topo.
@@ -1304,6 +1314,7 @@ void MainWindow::setupEditor()
         QString title;
         QString subtitle;
         QString avatar;
+        bool avatarEditable = false;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
             // Capítulo inteiro concatenado num editor só (cenas separadas por
@@ -1349,6 +1360,7 @@ void MainWindow::setupEditor()
                 if (role.isEmpty() && el) role = el->role;
                 if (!role.isEmpty()) subtitle = RoleTiers::roleDisplayName(role).toUpper();
                 if (el) avatar = el->image;
+                avatarEditable = el != nullptr;
             }
             break;
         }
@@ -1363,6 +1375,7 @@ void MainWindow::setupEditor()
         if (docHeader) {
             docHeader->setDocumentTitle(title, subtitle);
             docHeader->setDocumentAvatar(avatar);
+            docHeader->setAvatarEditable(avatarEditable);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
         }
     };
@@ -2770,6 +2783,26 @@ void MainWindow::setupEditor()
         // Qt::TopEdge (e nao o lado da barra): a faixa fica no topo do editor,
         // entao o popup tem que crescer pra BAIXO a partir dela.
         variationBar->toggleNear(docHeader->sceneVarButtonGlobalRect(), Qt::TopEdge);
+    });
+    // Duplo clique na foto do personagem/cenário: mesmo fluxo da ficha
+    // (escolher + recortar). O ElementsStore avisa o cabeçalho sozinho via
+    // changed(); a ficha, se estiver aberta, não escuta o store e é
+    // atualizada na mão.
+    connect(docHeader, &DocHeaderBar::avatarChangeRequested, this, [this]() {
+        if (!editorHost || !elementsStore) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type != EditorHost::DrawerDoc) return;
+        const DrawerItem* it = projectModel->findDrawerItem(vm.itemId);
+        if (!it || it->elementId.isEmpty()) return;
+        const QString elementId = it->elementId;
+        const QString dataUrl = ImageCropDialog::pickAndCropImage(this);
+        if (dataUrl.isEmpty()) return;
+        const Element* el = elementsStore->findElement(elementId);
+        if (!el) return;
+        Element copy = *el;
+        copy.image = dataUrl;
+        elementsStore->updateElement(elementId, copy);
+        if (characterSheetPanel) characterSheetPanel->refreshPhoto();
     });
 
     pageStackLayout->addWidget(editor, /*stretch=*/1);
@@ -7164,8 +7197,38 @@ void MainWindow::positionSidePanels()
 void MainWindow::changeEvent(QEvent *event)
 {
     QMainWindow::changeEvent(event);
-    if (event->type() == QEvent::WindowStateChange && toolbar)
-        toolbar->setFullscreenChecked(isFullScreen());
+    if (event->type() == QEvent::WindowStateChange) {
+        if (toolbar)
+            toolbar->setFullscreenChecked(isFullScreen());
+        if (isMinimized())
+            suspendFloatingPopups();
+        else if (qApp->applicationState() == Qt::ApplicationActive)
+            restoreFloatingPopups();
+    }
+}
+
+void MainWindow::suspendFloatingPopups()
+{
+    const QWidgetList tops = QApplication::topLevelWidgets();
+    for (QWidget* w : tops) {
+        if (w == this || !w->isVisible()) continue;
+        const Qt::WindowType type = w->windowType();
+        if (type != Qt::Tool && type != Qt::ToolTip) continue;
+        if (!w->windowFlags().testFlag(Qt::WindowStaysOnTopHint)) continue;
+        w->hide();
+        if (type == Qt::Tool && !w->property("qennaNoRestore").toBool()
+            && !m_suspendedPopups.contains(w))
+            m_suspendedPopups.append(w);
+    }
+}
+
+void MainWindow::restoreFloatingPopups()
+{
+    const QList<QPointer<QWidget>> pending = std::exchange(m_suspendedPopups, {});
+    for (const QPointer<QWidget>& w : pending) {
+        if (w && !w->isVisible())
+            w->show();
+    }
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

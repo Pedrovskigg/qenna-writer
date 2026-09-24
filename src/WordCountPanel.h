@@ -15,6 +15,9 @@ class WordCounter;
 class EditorHost;
 class ProjectModel;
 class WordCounterCalendar;
+class MiniCounterWidget;
+class CounterFaceWidget;
+class QVBoxLayout;
 
 // Painel flutuante no canto inferior esquerdo. Três estados:
 //   collapsed → só o triângulo ▼/▲
@@ -52,13 +55,22 @@ private:
     void updateToggleArrow();
     void updateScrollSizing();   // ajusta a altura do scroll (min(conteúdo, disponível))
     void scrollToBottom();       // rola para o fim (calendário visível por padrão)
-    QFrame* buildScopeSection();
     QFrame* buildGoalSection();
     QFrame* buildSprintSection();
     void startSprint();
     void stopSprint();
     void tickSprint();
     void openCompactContextMenu(const QPoint& globalPos);
+    // Estilo do contador minimizado ("classic" = cards; os outros são o
+    // MiniCounterWidget). Preferência global do app, não do projeto.
+    void setCompactStyle(const QString& style);
+    // Quem aparece: mini (compacto + estilo enxuto) ou o scroll com os cards.
+    void updateBodyVisibility();
+    void openStatsDialog(QWidget* anchor);
+    // Tamanho do contador (85/100/120/140/165%). Vale no compacto, nos
+    // estilos normais e nos mini; o modo full abre sempre em 100%.
+    void setCompactScale(int percent);
+    void applyScale();
     void openGoalResetTimeDialog();
 
     WordCounter* m_counter;
@@ -71,19 +83,17 @@ private:
     int m_maxBodyHeight = 0;               // teto de altura (0 = sem limite)
     QFrame* m_body;          // cards (sempre visível em compact e full)
     QFrame* m_fullBody;      // scope + meta (só visível em full)
-    QLabel* m_metaLine;
-    QLabel* m_slot1Value;
-    QLabel* m_slot1Title;
-    QLabel* m_slot2Value;
-    QLabel* m_slot2Title = nullptr;
-    QProgressBar* m_compactGoalBar = nullptr;
-    QLabel* m_compactGoalResetLabel = nullptr;
+    // Títulos completos dos slots ("Palavras (atual)"): cards do clássico e tooltips.
+    QString m_slot1Title;
+    QString m_slot2Title;
+    MiniCounterWidget* m_mini = nullptr;
+    QString m_compactStyle;
+    int m_scalePercent = 100;
+    // Corpo do contador no tamanho normal, todo desenhado (clássico incluso).
+    CounterFaceWidget* m_face = nullptr;
 
-    // Scope picker
-    QPushButton* m_scopeManuscriptBtn;
-    QPushButton* m_scopeActiveBtn;
-    QPushButton* m_scopeDrawersBtn;
-    QPushButton* m_scopeAllBtn;
+    static constexpr int kPanelWidth = 256;
+    static constexpr int kScrollBarW = 8;   // gutter reservado para a barra de rolagem
 
     // Goal
     QLabel* m_goalStatus;        // "Hoje: 0 / 15 min (0%)"
