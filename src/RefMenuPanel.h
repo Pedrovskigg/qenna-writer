@@ -4,6 +4,7 @@
 #include "MemoriesStore.h"
 #include "TerritorioStore.h"
 
+#include <QHash>
 #include <QList>
 #include <QSet>
 #include <QPixmap>
@@ -12,6 +13,8 @@
 #include <QString>
 #include <QWidget>
 
+class QBoxLayout;
+class QFrame;
 class QHBoxLayout;
 class QLabel;
 class QLineEdit;
@@ -21,6 +24,10 @@ class QMenu;
 class QScrollArea;
 class QSplitter;
 class QStackedWidget;
+class QTabBar;
+class QTimer;
+class RefUsageMap;
+class RefDividers;
 class QTextBrowser;
 class QToolButton;
 class QVBoxLayout;
@@ -40,6 +47,23 @@ class ElementsStore;
 class RefMenuPanel : public QWidget {
     Q_OBJECT
 public:
+    // Estilo de layout do painel — preferência visual GLOBAL (QSettings), como
+    // o estilo do contador. Os dados, a busca, os fixados e os recentes são os
+    // mesmos em todos; muda só onde cada coisa mora.
+    //   Classic  navegação em cima, preview embaixo (o original)
+    //   Columns  navegação numa coluna retrátil ao lado do preview
+    //   Rail     igual Columns, mas recolhido vira um trilho de ícones (PADRÃO)
+    //   Overlay  preview cheio; a navegação desliza por cima quando chamada
+    //   Miller   fontes → itens → documento, em três colunas
+    //   Reader   quase só o documento; navegar é buscar pelo nome
+    //   Dock     o trilho deitado no pé do painel; as listas sobem como folha
+    //   Gallery  o projeto como mural de cartões com foto; o documento sobe
+    //            por cima do mural
+    //   Book     livro aberto: sumário na página da esquerda, documento na direita
+    //   Binder   fichário: as gavetas viram divisórias coloridas na borda
+    // Abas, Comparar e Mapa de Uso não são estilos: valem em todos.
+    enum class Layout { Classic, Columns, Rail, Overlay, Miller, Reader, Dock, Gallery, Book, Binder };
+
     RefMenuPanel(ProjectModel* model, EditorHost* host, DocCache* cache,
                  ElementsStore* elements, QWidget* parent = nullptr);
 
@@ -127,6 +151,97 @@ private:
     enum class NavMode { Home, Section, Search };
 
     void layoutResizeHandles();
+
+    // --- estilos de layout ---
+    // A navegação flutuante (gaveta do Overlay, lista do Trilho, dropdown do
+    // Leitor) é o MESMO m_navPane, reparentado pra dentro de m_floatHost —
+    // uma navegação só, construída pelas mesmas funções em todos os estilos.
+    // Sheet = lista subindo da Doca; DocSheet = o DOCUMENTO (m_previewPane)
+    // subindo por cima do mural da Galeria — o único tipo que flutua o preview
+    // em vez da navegação.
+    // Divider = a lista de uma divisória do Fichário, entrando pela direita.
+    enum class FloatKind { None, Drawer, Flyout, Dropdown, Sheet, DocSheet, Divider };
+    static QString layoutId(Layout l);
+    static Layout layoutFromId(const QString& id);
+    static int defaultWidthFor(Layout l);
+    QString geometryKeyFor(Layout l) const;
+    QString navHiddenKeyFor(Layout l) const;
+    void setLayoutStyle(Layout l);
+    void applyLayout();          // reorganiza os widgets pro estilo atual
+    void applySplitSizes();
+    void rebuildLayoutMenu();
+    void updateToggleNavButton();
+    int navSplitIndex() const;   // posição do m_navPane no splitter
+    bool navPaneShown() const;   // navegação visível (coluna ou flutuante)
+    // Filtro da tela inicial: "" tudo; "home" só Nesta cena/Fixados/Recentes;
+    // "pinned"/"recent" uma seção; "ms:<id>"/"dr:<key>"/"world" uma fonte.
+    QString homeFilter() const;
+    FloatKind floatKindForLayout() const;
+    void showFloat(FloatKind kind, const QString& filter);
+    void hideFloat();
+    void layoutFloat();
+    void rebuildRail();
+    void rebuildMillerSources();
+    void rebuildReaderChips();
+    void clampToScreen();
+    QWidget* floatingWidget() const;   // o que a flutuante carrega agora
+
+    // --- Livro aberto e Fichário ---
+    void buildTocView();
+    void rebuildDividers();
+    QString sourceKeyOf(const QString& selectionKey) const;   // "dr:…", "ms:…", "world"
+
+    // --- Mapa de Uso (global) ---
+    void setUsageMap(bool on);
+    void rebuildUsageMap();
+    QString usageMapManuscript() const;
+
+    // --- Galeria ---
+    void rebuildGalleryBar();
+    void buildGalleryView();
+    QString gallerySource();           // resolve "" pro melhor ponto de partida
+
+    // --- Página de documento ---
+    // A principal é a "viva" (segue a navegação, edita, busca); a lateral do
+    // Comparar é uma segunda instância, só leitura. As duas saem do mesmo
+    // buildDocView/renderDoc.
+    struct DocView {
+        QWidget* wrap = nullptr;
+        QWidget* bar = nullptr;          // faixa do Comparar ("abre aqui")
+        QLabel* barLabel = nullptr;
+        QLabel* title = nullptr;
+        QLabel* role = nullptr;
+        QScrollArea* imgScroll = nullptr;
+        QWidget* imgHost = nullptr;
+        QVBoxLayout* imgLay = nullptr;
+        QList<QPixmap> pix;
+        QList<QLabel*> labels;
+        QTextBrowser* browser = nullptr;
+        QLabel* placeholder = nullptr;
+        QLabel* folio = nullptr;         // "— 3 —" no pé da página (Livro aberto)
+    };
+    void buildDocView(DocView& v, QWidget* parent);
+    void renderDoc(DocView& v, const QString& key);
+    void rescaleDoc(DocView& v);
+    void applyDocFont(DocView& v);
+
+    // --- Abas (globais) ---
+    void syncTabs(const QString& key);  // chamado a cada troca de seleção
+    void rebuildTabBar();
+    void openInNewTab(const QString& key);
+    void closeTab(int index);
+    void pruneTabs();                   // tira abas de documentos apagados
+
+    // --- Comparar (global) ---
+    void setCompare(bool on);
+    void openBeside(const QString& key);
+    void activateSidePane();            // a lateral vira a viva (troca os papéis)
+    void placeCompareViews();
+
+    // Quem está marcado no documento aberto (seção "Nesta cena", trilho e
+    // fileira do Leitor). key = ficha na gaveta, vazia se não houver ficha.
+    struct ScenePerson { QString key; QString id; QString name; QString role; QString image; };
+    QList<ScenePerson> scenePeople() const;
 
     void buildUi();
     void applyMainStyleSheet();
@@ -243,6 +358,33 @@ private:
     bool m_editing = false;
     QString m_editingKey; // chave DocCache do doc em edição (vazio = nenhum)
     bool m_navHidden = false;
+    // Layout
+    Layout m_layout = Layout::Rail;
+    bool m_navRight = false;       // Columns/Trilho: navegação do lado direito
+    bool m_autoCollapsed = false;  // painel estreito demais pra coluna
+    int m_navColW = 250;           // largura da coluna de navegação (horizontal)
+    QString m_gallerySource;       // "scene", "ms:<id>", "dr:<key>", "world"
+    QHash<QString, int> m_wordCache;       // palavras por capítulo (sumário do Livro)
+    int m_bookColW = 320;                  // largura do sumário no Livro aberto
+    // Mapa de Uso
+    bool m_mapOn = false;
+    QString m_mapFilter = QStringLiteral("all");   // "all" | "people" | "things"
+    QString m_mapMsId;                     // manuscrito escolhido ("" = o do editor)
+    QString m_mapRow;                      // linha destacada
+    QHash<QString, QString> m_excerptCache; // trechos dos capítulos na Galeria
+    QTimer* m_galleryRelayout = nullptr;    // refaz o mural quando a largura muda
+    // Abas: cada uma guarda a chave do documento ("" = aba nova, vazia).
+    QStringList m_tabs;
+    int m_tabIdx = 0;
+    bool m_syncingTabs = false;
+    QStringList m_tabBarKeys;      // o que a QTabBar mostra agora
+    // Comparar: a página lateral segura um documento enquanto a viva navega.
+    bool m_compare = false;
+    int m_livePane = 0;            // 0 = viva à esquerda
+    QString m_sideKey;
+    QString m_millerSource = QStringLiteral("home");
+    FloatKind m_floatKind = FloatKind::None;
+    QString m_floatFilter;
     int m_previewFontPt = 13;
     int m_rightInset = 0;
     void nudgeClearOfChrome();
@@ -285,6 +427,53 @@ private:
     // Divisor arrastavel entre a arvore de navegacao e o preview.
     QSplitter* m_bodySplit = nullptr;
 
+    // Containers dos estilos. m_navPane = [busca?] + m_navScroll;
+    // m_previewPane = [trilha?] + m_previewWrap. applyLayout() move a busca e a
+    // trilha entre eles e o m_frameLay conforme o estilo.
+    QWidget* m_body = nullptr;
+    QHBoxLayout* m_bodyLay = nullptr;
+    QWidget* m_navPane = nullptr;
+    QVBoxLayout* m_navPaneLay = nullptr;
+    QWidget* m_previewPane = nullptr;
+    QVBoxLayout* m_previewPaneLay = nullptr;
+    QToolButton* m_layoutBtn = nullptr;
+    QMenu* m_layoutMenu = nullptr;
+    QToolButton* m_edgeBtn = nullptr;       // lingueta da coluna recolhida
+    QScrollArea* m_rail = nullptr;          // trilho de ícones
+    QWidget* m_railInner = nullptr;
+    QBoxLayout* m_railLay = nullptr;       // vertical no Trilho, deitado na Doca
+    QScrollArea* m_millerCol = nullptr;     // 1ª coluna do Miller (fontes)
+    QWidget* m_millerInner = nullptr;
+    QVBoxLayout* m_millerLay = nullptr;
+    QWidget* m_readerBar = nullptr;         // busca + fileira do Leitor
+    QVBoxLayout* m_readerBarLay = nullptr;
+    QScrollArea* m_readerChipsScroll = nullptr; // rola, pra não impor largura mínima
+    QWidget* m_readerChips = nullptr;
+    QHBoxLayout* m_readerChipsLay = nullptr;
+    QScrollArea* m_galleryBar = nullptr;   // filtros do mural (Galeria)
+    QWidget* m_galleryChips = nullptr;
+    QHBoxLayout* m_galleryChipsLay = nullptr;
+    QToolButton* m_backBtn = nullptr;      // "‹ Voltar ao mural" na trilha
+    QWidget* m_tabRow = nullptr;
+    QTabBar* m_tabBar = nullptr;
+    QToolButton* m_tabAddBtn = nullptr;
+    QToolButton* m_compareBtn = nullptr;
+    QSplitter* m_cmpSplit = nullptr;       // [viva, lateral] no Comparar
+    DocView m_main;
+    DocView m_side;
+    QToolButton* m_mapBtn = nullptr;
+    QWidget* m_mapPanel = nullptr;
+    QScrollArea* m_mapScroll = nullptr;
+    RefUsageMap* m_map = nullptr;
+    QToolButton* m_mapMsBtn = nullptr;
+    QHBoxLayout* m_mapBarLay = nullptr;
+    QWidget* m_rings = nullptr;            // argolas do Fichário
+    RefDividers* m_dividers = nullptr;     // divisórias do Fichário
+    QWidget* m_floatBand = nullptr;        // faixa colorida no topo da divisória aberta
+    QFrame* m_floatHost = nullptr;
+    QVBoxLayout* m_floatLay = nullptr;
+    QWidget* m_scrim = nullptr;
+
     // nav body
     QScrollArea* m_navScroll = nullptr;
     QWidget* m_navInner = nullptr;
@@ -297,8 +486,6 @@ private:
     QScrollArea* m_previewImagesScroll = nullptr;
     QWidget* m_previewImagesHost = nullptr;
     QVBoxLayout* m_previewImagesLay = nullptr;
-    QList<QPixmap> m_previewImagePixmaps;
-    QList<QLabel*> m_previewImageLabels;
     QTextBrowser* m_preview = nullptr;
     QLabel* m_previewPlaceholder = nullptr;
 

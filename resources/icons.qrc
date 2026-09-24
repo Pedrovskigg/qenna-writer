@@ -111,6 +111,12 @@
         <file alias="loadproject.svg">../src/assets/icons/loadproject.svg</file>
         <file alias="newproject.svg">../src/assets/icons/newproject.svg</file>
         <file alias="home.svg">../src/assets/icons/home.svg</file>
+        <file alias="panel-left.svg">../src/assets/icons/panel-left.svg</file>
+        <file alias="panel-right.svg">../src/assets/icons/panel-right.svg</file>
+        <file alias="menu.svg">../src/assets/icons/menu.svg</file>
+        <file alias="layout.svg">../src/assets/icons/layout.svg</file>
+        <file alias="compare.svg">../src/assets/icons/compare.svg</file>
+        <file alias="usage-map.svg">../src/assets/icons/usage-map.svg</file>
         <file alias="check.svg">../src/assets/icons/check.svg</file>
         <file alias="stats-streak.svg">../src/assets/icons/stats-streak.svg</file>
         <file alias="stats-clock.svg">../src/assets/icons/stats-clock.svg</file>

@@ -18188,6 +18188,266 @@ Não é algo 100% preciso, mas dá para se ter uma ideia. Caso queira realmente 
 <context>
     <name>RefMenuPanel</name>
     <message>
+        <source>Mapa de Uso: onde cada personagem e lugar aparece no livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MAPA DE USO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pessoas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lugares e objetos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fechar o Mapa de Uso</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ninguém marcado nos capítulos deste manuscrito ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro aberto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sumário na página da esquerda, documento na da direita</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fichário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As gavetas viram divisórias coloridas na borda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolha um capítulo ou apêndice no sumário.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Puxe uma divisória pra escolher um documento.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SUMÁRIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>APÊNDICE %1 · %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova aba (Ctrl+clique num documento também abre em aba nova)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comparar: segura este documento de um lado e abre outro do outro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voltar ao mural</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doca</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Os ícones do Trilho numa barra embaixo; as listas sobem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Galeria</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O projeto como mural de cartões com foto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolha um documento pela barra de baixo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolha um cartão no mural.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir em nova aba</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir ao lado (comparar)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova aba</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(apagado)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fechar aba</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ABRE AQUI</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir aqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O próximo documento abre nesta página</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clique pra esta página receber o próximo documento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Na cena</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada aqui ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capítulo %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(em branco)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo do RefMenu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mostrar navegação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recolher navegação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir navegação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Navegação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gaveta por cima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Três colunas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Navegação em cima, documento embaixo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Navegação numa coluna ao lado do documento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coluna que recolhe pra um trilho de ícones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Documento cheio; a navegação desliza por cima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fontes, itens e documento lado a lado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quase só o documento; navegue buscando pelo nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Navegação à direita</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selecione um documento ao lado pra visualizar aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abra a navegação pelo botão do cabeçalho pra escolher um documento.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Busque um documento pelo nome no campo acima.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada fixado ainda. A estrela ao lado de um documento o prende aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada aberto ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada por aqui ainda. Escolha uma fonte ao lado.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fixados</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Início</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FONTES</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NA CENA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../src/RefMenuPanel.cpp" line="180"/>
         <source>Arrastar (duplo clique pra resetar)</source>
         <translation type="unfinished"></translation>

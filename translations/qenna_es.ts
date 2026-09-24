@@ -18238,6 +18238,266 @@ No es algo 100% preciso, pero te da una buena idea. Si quieres el e-pub real de 
 <context>
     <name>RefMenuPanel</name>
     <message>
+        <source>Mapa de Uso: onde cada personagem e lugar aparece no livro</source>
+        <translation>Mapa de Uso: dónde aparece cada personaje y lugar en el libro</translation>
+    </message>
+    <message>
+        <source>MAPA DE USO</source>
+        <translation>MAPA DE USO</translation>
+    </message>
+    <message>
+        <source>Pessoas</source>
+        <translation>Personas</translation>
+    </message>
+    <message>
+        <source>Lugares e objetos</source>
+        <translation>Lugares y objetos</translation>
+    </message>
+    <message>
+        <source>Fechar o Mapa de Uso</source>
+        <translation>Cerrar el Mapa de Uso</translation>
+    </message>
+    <message>
+        <source>Ninguém marcado nos capítulos deste manuscrito ainda.</source>
+        <translation>Nadie marcado en los capítulos de este manuscrito todavía.</translation>
+    </message>
+    <message>
+        <source>Livro aberto</source>
+        <translation>Libro abierto</translation>
+    </message>
+    <message>
+        <source>Sumário na página da esquerda, documento na da direita</source>
+        <translation>Índice en la página izquierda, documento en la derecha</translation>
+    </message>
+    <message>
+        <source>Fichário</source>
+        <translation>Carpeta</translation>
+    </message>
+    <message>
+        <source>As gavetas viram divisórias coloridas na borda</source>
+        <translation>Los cajones se vuelven separadores de colores en el borde</translation>
+    </message>
+    <message>
+        <source>Escolha um capítulo ou apêndice no sumário.</source>
+        <translation>Elige un capítulo o apéndice en el índice.</translation>
+    </message>
+    <message>
+        <source>Puxe uma divisória pra escolher um documento.</source>
+        <translation>Tira de un separador para elegir un documento.</translation>
+    </message>
+    <message>
+        <source>SUMÁRIO</source>
+        <translation>ÍNDICE</translation>
+    </message>
+    <message>
+        <source>APÊNDICE %1 · %2</source>
+        <translation>APÉNDICE %1 · %2</translation>
+    </message>
+    <message>
+        <source>Nova aba (Ctrl+clique num documento também abre em aba nova)</source>
+        <translation>Nueva pestaña (Ctrl+clic en un documento también abre una pestaña nueva)</translation>
+    </message>
+    <message>
+        <source>Comparar: segura este documento de um lado e abre outro do outro</source>
+        <translation>Comparar: deja este documento a un lado y abre otro al otro lado</translation>
+    </message>
+    <message>
+        <source>Voltar ao mural</source>
+        <translation>Volver al mural</translation>
+    </message>
+    <message>
+        <source>Doca</source>
+        <translation>Dock</translation>
+    </message>
+    <message>
+        <source>Os ícones do Trilho numa barra embaixo; as listas sobem</source>
+        <translation>Los iconos del Riel en una barra abajo; las listas suben</translation>
+    </message>
+    <message>
+        <source>Galeria</source>
+        <translation>Galería</translation>
+    </message>
+    <message>
+        <source>O projeto como mural de cartões com foto</source>
+        <translation>El proyecto como un mural de tarjetas con foto</translation>
+    </message>
+    <message>
+        <source>Escolha um documento pela barra de baixo.</source>
+        <translation>Elige un documento en la barra de abajo.</translation>
+    </message>
+    <message>
+        <source>Escolha um cartão no mural.</source>
+        <translation>Elige una tarjeta del mural.</translation>
+    </message>
+    <message>
+        <source>Abrir em nova aba</source>
+        <translation>Abrir en pestaña nueva</translation>
+    </message>
+    <message>
+        <source>Abrir ao lado (comparar)</source>
+        <translation>Abrir al lado (comparar)</translation>
+    </message>
+    <message>
+        <source>Nova aba</source>
+        <translation>Pestaña nueva</translation>
+    </message>
+    <message>
+        <source>(apagado)</source>
+        <translation>(eliminado)</translation>
+    </message>
+    <message>
+        <source>Fechar aba</source>
+        <translation>Cerrar pestaña</translation>
+    </message>
+    <message>
+        <source>ABRE AQUI</source>
+        <translation>SE ABRE AQUÍ</translation>
+    </message>
+    <message>
+        <source>Abrir aqui</source>
+        <translation>Abrir aquí</translation>
+    </message>
+    <message>
+        <source>O próximo documento abre nesta página</source>
+        <translation>El próximo documento se abre en esta página</translation>
+    </message>
+    <message>
+        <source>Clique pra esta página receber o próximo documento</source>
+        <translation>Haz clic para que esta página reciba el próximo documento</translation>
+    </message>
+    <message>
+        <source>Na cena</source>
+        <translation>En la escena</translation>
+    </message>
+    <message>
+        <source>Nada aqui ainda.</source>
+        <translation>Nada aquí todavía.</translation>
+    </message>
+    <message>
+        <source>Capítulo %1</source>
+        <translation>Capítulo %1</translation>
+    </message>
+    <message>
+        <source>(em branco)</source>
+        <translation>(en blanco)</translation>
+    </message>
+    <message>
+        <source>Estilo do RefMenu</source>
+        <translation>Estilo del RefMenu</translation>
+    </message>
+    <message>
+        <source>Mostrar navegação</source>
+        <translation>Mostrar navegación</translation>
+    </message>
+    <message>
+        <source>Recolher navegação</source>
+        <translation>Contraer navegación</translation>
+    </message>
+    <message>
+        <source>Abrir navegação</source>
+        <translation>Abrir navegación</translation>
+    </message>
+    <message>
+        <source>Navegação</source>
+        <translation>Navegación</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Clásico</translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation>Dos columnas</translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation>Riel</translation>
+    </message>
+    <message>
+        <source>Gaveta por cima</source>
+        <translation>Cajón superpuesto</translation>
+    </message>
+    <message>
+        <source>Três colunas</source>
+        <translation>Tres columnas</translation>
+    </message>
+    <message>
+        <source>Leitor</source>
+        <translation>Lector</translation>
+    </message>
+    <message>
+        <source>Navegação em cima, documento embaixo</source>
+        <translation>Navegación arriba, documento abajo</translation>
+    </message>
+    <message>
+        <source>Navegação numa coluna ao lado do documento</source>
+        <translation>Navegación en una columna junto al documento</translation>
+    </message>
+    <message>
+        <source>Coluna que recolhe pra um trilho de ícones</source>
+        <translation>Columna que se contrae en un riel de iconos</translation>
+    </message>
+    <message>
+        <source>Documento cheio; a navegação desliza por cima</source>
+        <translation>Documento completo; la navegación se desliza por encima</translation>
+    </message>
+    <message>
+        <source>Fontes, itens e documento lado a lado</source>
+        <translation>Fuentes, elementos y documento lado a lado</translation>
+    </message>
+    <message>
+        <source>Quase só o documento; navegue buscando pelo nome</source>
+        <translation>Casi solo el documento; navega buscando por nombre</translation>
+    </message>
+    <message>
+        <source>Navegação à direita</source>
+        <translation>Navegación a la derecha</translation>
+    </message>
+    <message>
+        <source>Selecione um documento ao lado pra visualizar aqui.</source>
+        <translation>Selecciona un documento al lado para verlo aquí.</translation>
+    </message>
+    <message>
+        <source>Abra a navegação pelo botão do cabeçalho pra escolher um documento.</source>
+        <translation>Abre la navegación con el botón del encabezado para elegir un documento.</translation>
+    </message>
+    <message>
+        <source>Busque um documento pelo nome no campo acima.</source>
+        <translation>Busca un documento por su nombre en el campo de arriba.</translation>
+    </message>
+    <message>
+        <source>Nada fixado ainda. A estrela ao lado de um documento o prende aqui.</source>
+        <translation>Nada fijado todavía. La estrella junto a un documento lo deja aquí.</translation>
+    </message>
+    <message>
+        <source>Nada aberto ainda.</source>
+        <translation>Nada abierto todavía.</translation>
+    </message>
+    <message>
+        <source>Nada por aqui ainda. Escolha uma fonte ao lado.</source>
+        <translation>Nada por aquí todavía. Elige una fuente al lado.</translation>
+    </message>
+    <message>
+        <source>Fixados</source>
+        <translation>Fijados</translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation>Recientes</translation>
+    </message>
+    <message>
+        <source>Início</source>
+        <translation>Inicio</translation>
+    </message>
+    <message>
+        <source>FONTES</source>
+        <translation>FUENTES</translation>
+    </message>
+    <message>
+        <source>NA CENA</source>
+        <translation>EN LA ESCENA</translation>
+    </message>
+    <message>
         <location filename="../src/RefMenuPanel.cpp" line="180"/>
         <source>Arrastar (duplo clique pra resetar)</source>
         <translation>Arrastrar (doble clic para restablecer)</translation>

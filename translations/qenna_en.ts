@@ -18238,6 +18238,266 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
 <context>
     <name>RefMenuPanel</name>
     <message>
+        <source>Mapa de Uso: onde cada personagem e lugar aparece no livro</source>
+        <translation>Usage Map: where each character and place appears in the book</translation>
+    </message>
+    <message>
+        <source>MAPA DE USO</source>
+        <translation>USAGE MAP</translation>
+    </message>
+    <message>
+        <source>Pessoas</source>
+        <translation>People</translation>
+    </message>
+    <message>
+        <source>Lugares e objetos</source>
+        <translation>Places and objects</translation>
+    </message>
+    <message>
+        <source>Fechar o Mapa de Uso</source>
+        <translation>Close the Usage Map</translation>
+    </message>
+    <message>
+        <source>Ninguém marcado nos capítulos deste manuscrito ainda.</source>
+        <translation>No one marked in this manuscript's chapters yet.</translation>
+    </message>
+    <message>
+        <source>Livro aberto</source>
+        <translation>Open book</translation>
+    </message>
+    <message>
+        <source>Sumário na página da esquerda, documento na da direita</source>
+        <translation>Contents on the left page, document on the right</translation>
+    </message>
+    <message>
+        <source>Fichário</source>
+        <translation>Binder</translation>
+    </message>
+    <message>
+        <source>As gavetas viram divisórias coloridas na borda</source>
+        <translation>Drawers become colored dividers on the edge</translation>
+    </message>
+    <message>
+        <source>Escolha um capítulo ou apêndice no sumário.</source>
+        <translation>Pick a chapter or appendix in the contents.</translation>
+    </message>
+    <message>
+        <source>Puxe uma divisória pra escolher um documento.</source>
+        <translation>Pull a divider to pick a document.</translation>
+    </message>
+    <message>
+        <source>SUMÁRIO</source>
+        <translation>CONTENTS</translation>
+    </message>
+    <message>
+        <source>APÊNDICE %1 · %2</source>
+        <translation>APPENDIX %1 · %2</translation>
+    </message>
+    <message>
+        <source>Nova aba (Ctrl+clique num documento também abre em aba nova)</source>
+        <translation>New tab (Ctrl+click a document to open it in a new tab too)</translation>
+    </message>
+    <message>
+        <source>Comparar: segura este documento de um lado e abre outro do outro</source>
+        <translation>Compare: keep this document on one side and open another on the other</translation>
+    </message>
+    <message>
+        <source>Voltar ao mural</source>
+        <translation>Back to the board</translation>
+    </message>
+    <message>
+        <source>Doca</source>
+        <translation>Dock</translation>
+    </message>
+    <message>
+        <source>Os ícones do Trilho numa barra embaixo; as listas sobem</source>
+        <translation>The Rail icons in a bar at the bottom; lists slide up</translation>
+    </message>
+    <message>
+        <source>Galeria</source>
+        <translation>Gallery</translation>
+    </message>
+    <message>
+        <source>O projeto como mural de cartões com foto</source>
+        <translation>The project as a board of photo cards</translation>
+    </message>
+    <message>
+        <source>Escolha um documento pela barra de baixo.</source>
+        <translation>Pick a document from the bar below.</translation>
+    </message>
+    <message>
+        <source>Escolha um cartão no mural.</source>
+        <translation>Pick a card on the board.</translation>
+    </message>
+    <message>
+        <source>Abrir em nova aba</source>
+        <translation>Open in new tab</translation>
+    </message>
+    <message>
+        <source>Abrir ao lado (comparar)</source>
+        <translation>Open beside (compare)</translation>
+    </message>
+    <message>
+        <source>Nova aba</source>
+        <translation>New tab</translation>
+    </message>
+    <message>
+        <source>(apagado)</source>
+        <translation>(deleted)</translation>
+    </message>
+    <message>
+        <source>Fechar aba</source>
+        <translation>Close tab</translation>
+    </message>
+    <message>
+        <source>ABRE AQUI</source>
+        <translation>OPENS HERE</translation>
+    </message>
+    <message>
+        <source>Abrir aqui</source>
+        <translation>Open here</translation>
+    </message>
+    <message>
+        <source>O próximo documento abre nesta página</source>
+        <translation>The next document opens on this page</translation>
+    </message>
+    <message>
+        <source>Clique pra esta página receber o próximo documento</source>
+        <translation>Click so this page gets the next document</translation>
+    </message>
+    <message>
+        <source>Na cena</source>
+        <translation>In scene</translation>
+    </message>
+    <message>
+        <source>Nada aqui ainda.</source>
+        <translation>Nothing here yet.</translation>
+    </message>
+    <message>
+        <source>Capítulo %1</source>
+        <translation>Chapter %1</translation>
+    </message>
+    <message>
+        <source>(em branco)</source>
+        <translation>(blank)</translation>
+    </message>
+    <message>
+        <source>Estilo do RefMenu</source>
+        <translation>RefMenu style</translation>
+    </message>
+    <message>
+        <source>Mostrar navegação</source>
+        <translation>Show navigation</translation>
+    </message>
+    <message>
+        <source>Recolher navegação</source>
+        <translation>Collapse navigation</translation>
+    </message>
+    <message>
+        <source>Abrir navegação</source>
+        <translation>Open navigation</translation>
+    </message>
+    <message>
+        <source>Navegação</source>
+        <translation>Navigation</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Classic</translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation>Two columns</translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation>Rail</translation>
+    </message>
+    <message>
+        <source>Gaveta por cima</source>
+        <translation>Slide-over drawer</translation>
+    </message>
+    <message>
+        <source>Três colunas</source>
+        <translation>Three columns</translation>
+    </message>
+    <message>
+        <source>Leitor</source>
+        <translation>Reader</translation>
+    </message>
+    <message>
+        <source>Navegação em cima, documento embaixo</source>
+        <translation>Navigation on top, document below</translation>
+    </message>
+    <message>
+        <source>Navegação numa coluna ao lado do documento</source>
+        <translation>Navigation in a column beside the document</translation>
+    </message>
+    <message>
+        <source>Coluna que recolhe pra um trilho de ícones</source>
+        <translation>A column that collapses into a rail of icons</translation>
+    </message>
+    <message>
+        <source>Documento cheio; a navegação desliza por cima</source>
+        <translation>Full document; navigation slides over it</translation>
+    </message>
+    <message>
+        <source>Fontes, itens e documento lado a lado</source>
+        <translation>Sources, items and document side by side</translation>
+    </message>
+    <message>
+        <source>Quase só o documento; navegue buscando pelo nome</source>
+        <translation>Almost only the document; navigate by searching for a name</translation>
+    </message>
+    <message>
+        <source>Navegação à direita</source>
+        <translation>Navigation on the right</translation>
+    </message>
+    <message>
+        <source>Selecione um documento ao lado pra visualizar aqui.</source>
+        <translation>Select a document on the side to preview it here.</translation>
+    </message>
+    <message>
+        <source>Abra a navegação pelo botão do cabeçalho pra escolher um documento.</source>
+        <translation>Open the navigation from the header button to pick a document.</translation>
+    </message>
+    <message>
+        <source>Busque um documento pelo nome no campo acima.</source>
+        <translation>Search for a document by name in the field above.</translation>
+    </message>
+    <message>
+        <source>Nada fixado ainda. A estrela ao lado de um documento o prende aqui.</source>
+        <translation>Nothing pinned yet. The star next to a document keeps it here.</translation>
+    </message>
+    <message>
+        <source>Nada aberto ainda.</source>
+        <translation>Nothing opened yet.</translation>
+    </message>
+    <message>
+        <source>Nada por aqui ainda. Escolha uma fonte ao lado.</source>
+        <translation>Nothing here yet. Pick a source on the side.</translation>
+    </message>
+    <message>
+        <source>Fixados</source>
+        <translation>Pinned</translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation>Recent</translation>
+    </message>
+    <message>
+        <source>Início</source>
+        <translation>Home</translation>
+    </message>
+    <message>
+        <source>FONTES</source>
+        <translation>SOURCES</translation>
+    </message>
+    <message>
+        <source>NA CENA</source>
+        <translation>IN SCENE</translation>
+    </message>
+    <message>
         <location filename="../src/RefMenuPanel.cpp" line="180"/>
         <source>Arrastar (duplo clique pra resetar)</source>
         <translation>Drag (double-click to reset)</translation>
