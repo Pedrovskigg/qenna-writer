@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include <QEasingCurve>
 #include <QPropertyAnimation>
+#include "PanelMotion.h"
 #include <QGraphicsOpacityEffect>
 
 #include "DocHeaderBar.h"
@@ -998,6 +999,8 @@ MainWindow::MainWindow(QWidget *parent)
     });
 }
 
+static QString resumeGroupFor(const QString& root);
+
 void MainWindow::setupEditor()
 {
     editor->setFrameStyle(0);
@@ -1159,6 +1162,16 @@ void MainWindow::setupEditor()
         if (editorHost->viewMode().type == EditorHost::Disabled) return;
         rememberLastDocFor(projectRoot);
     });
+    // Gaveta de Manuscritos: marca o capítulo/cena aberto.
+    connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
+        if (!manuscriptPanel) return;
+        const auto vm = editorHost->viewMode();
+        const bool chapterish = vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc;
+        manuscriptPanel->setCurrentLocation(chapterish ? vm.chapterId : QString(),
+                                            vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1);
+    });
+    // "Onde parei": cada flush de texto digitado marca o lugar.
+    connect(editorHost, &EditorHost::contentFlushed, this, [this](const QString&) { recordResumePoint(); });
     // A ficha é um DrawerDoc: ao mudar de doc, mostra a ficha se o doc ativo for
     // uma ficha; senão esconde e o editor de texto assume.
     connect(editorHost, &EditorHost::viewModeChanged, this, [this]() {
@@ -2640,6 +2653,10 @@ void MainWindow::setupEditor()
     manuscriptPanel->setParent(container);
     drawerListPanel->hide();
     manuscriptPanel->hide();
+    // Movimento "Gaveta": saem de trás da LeftBar e voltam pra ela.
+    PanelMotion::setBarOnRightProvider([this]() { return leftBar && leftBar->barSide() == Qt::RightEdge; });
+    PanelMotion::installDrawer(drawerListPanel, [this]() { drawerListPanel->playIntro(); });
+    PanelMotion::installDrawer(manuscriptPanel, [this]() { manuscriptPanel->playIntro(); });
 
     // Coluna do editor: [editor | scrollbar externo]. VariationBar é popup
     // flutuante (aberto pelo botão na TopToolbar), não entra nesse layout.
@@ -2887,6 +2904,16 @@ void MainWindow::setupEditor()
     // Pensário — painel auxiliar criativo. Fatia 1: agregador de comentários.
     pensarioPanel = new PensarioPanel(markerStore, projectModel, notesStore, container);
     pensarioPanel->setMapPinsStore(mapPinsStore);
+    // Levar pro texto: nota, memória ou fala entra no cursor do editor.
+    connect(pensarioPanel, &PensarioPanel::insertTextRequested, this, [this](const QString& text) {
+        if (!editorHost || !editor || text.trimmed().isEmpty()) return;
+        const auto t = editorHost->viewMode().type;
+        if (t == EditorHost::Disabled) return;
+        QTextCursor cur = editor->textCursor();
+        cur.insertText(text);
+        editor->setTextCursor(cur);
+        editor->setFocus();
+    });
     pensarioPanel->setElementsStore(elementsStore);
     pensarioPanel->setGlossaryStore(glossaryStore);
     pensarioPanel->setTopInset(chromeInset(Qt::TopEdge));
@@ -3290,6 +3317,33 @@ void MainWindow::setupEditor()
     });
     connect(manuscriptPanel, &ManuscriptPanel::newManuscriptRequested, this, [this]() {
         promptCreateManuscript(this, projectModel);
+    });
+    connect(manuscriptPanel, &ManuscriptPanel::widthChanged, this, [this]() { positionSidePanels(); });
+    connect(manuscriptPanel, &ManuscriptPanel::statsRequested, this, [this](const QString&) {
+        if (statsPanel && !statsPanel->isPanelOpen()) statsPanel->togglePanel();
+    });
+    connect(manuscriptPanel, &ManuscriptPanel::switchVariationRequested, this,
+            [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex, const QString& variationId) {
+        EditorHost::ViewMode vm;
+        vm.type = EditorHost::SceneDoc;
+        vm.manuscriptId = manuscriptId;
+        vm.chapterId = chapterId;
+        vm.sceneIndex = sceneIndex;
+        if (editorHost->viewMode() != vm) editorHost->setViewMode(vm);
+        editorHost->switchVariationForCurrentScene(variationId);
+    });
+    connect(manuscriptPanel, &ManuscriptPanel::resumeRequested, this, &MainWindow::resumeAt);
+    // Leitor: "Começar nova revisão" zera o quanto de cada capítulo já foi visto.
+    connect(manuscriptPanel, &ManuscriptPanel::resetVisitedRequested, this, [this](const QString& manuscriptId) {
+        if (projectRoot.isEmpty() || !projectModel) return;
+        const QString key = resumeGroupFor(projectRoot) + QStringLiteral("/visited");
+        QVariantMap map = QSettings().value(key).toMap();
+        for (const auto& c : projectModel->chapters())
+            if (c.manuscriptId == manuscriptId) map.remove(c.id);
+        QSettings().setValue(key, map);
+        QHash<QString, double> h;
+        for (auto it = map.cbegin(); it != map.cend(); ++it) h.insert(it.key(), it.value().toDouble());
+        manuscriptPanel->setVisitedProgress(h);
     });
     connect(manuscriptPanel, &ManuscriptPanel::newChapterRequested, this, [this](const QString& manuscriptId) {
         QString msId = manuscriptId;
@@ -6000,6 +6054,7 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     rememberLastProject(root);
     restoreLastDocFor(root);
+    loadResumeTrail();
 
     loadingToast->deleteLater();
 
@@ -6765,6 +6820,161 @@ void MainWindow::rememberLastDocFor(const QString& root)
     s.endGroup();
 }
 
+// ---- "Onde parei" (gaveta de Manuscritos) --------------------------------
+
+static QString resumeGroupFor(const QString& root)
+{
+    const QByteArray hash = QCryptographicHash::hash(
+        QDir::cleanPath(root).toUtf8(), QCryptographicHash::Md5).toHex();
+    return QStringLiteral("resume/") + QString::fromLatin1(hash);
+}
+
+static QList<ManuscriptPanel::ResumeEntry> readResumeTrail(const QString& root)
+{
+    QList<ManuscriptPanel::ResumeEntry> out;
+    if (root.isEmpty()) return out;
+    const QVariantList list = QSettings().value(resumeGroupFor(root) + QStringLiteral("/trail")).toList();
+    for (const QVariant& v : list) {
+        const QVariantMap m = v.toMap();
+        ManuscriptPanel::ResumeEntry e;
+        e.manuscriptId = m.value(QStringLiteral("ms")).toString();
+        e.chapterId = m.value(QStringLiteral("ch")).toString();
+        e.sceneIndex = m.value(QStringLiteral("scene"), -1).toInt();
+        e.sentence = m.value(QStringLiteral("sentence")).toString();
+        e.position = m.value(QStringLiteral("pos"), -1).toInt();
+        e.when = m.value(QStringLiteral("when")).toDateTime();
+        if (!e.chapterId.isEmpty()) out.append(e);
+    }
+    return out;
+}
+
+static QHash<QString, double> readVisited(const QString& root)
+{
+    QHash<QString, double> out;
+    if (root.isEmpty()) return out;
+    const QVariantMap map = QSettings().value(resumeGroupFor(root) + QStringLiteral("/visited")).toMap();
+    for (auto it = map.cbegin(); it != map.cend(); ++it) out.insert(it.key(), it.value().toDouble());
+    return out;
+}
+
+void MainWindow::loadResumeTrail()
+{
+    if (!manuscriptPanel) return;
+    manuscriptPanel->setVisitedProgress(readVisited(projectRoot));
+    manuscriptPanel->setResumeTrail(readResumeTrail(projectRoot));
+}
+
+void MainWindow::recordResumePoint()
+{
+    if (!editorHost || !manuscriptPanel || !projectModel || projectRoot.isEmpty()) return;
+    const EditorHost::ViewMode vm = editorHost->viewMode();
+    if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
+    QTextEdit* ed = editorHost->editor();
+    if (!ed) return;
+    const QTextCursor cur = ed->textCursor();
+    int scene = (vm.type == EditorHost::SceneDoc) ? vm.sceneIndex : -1;
+    if (vm.type == EditorHost::ChapterDoc) {
+        const Chapter* c = projectModel->findChapter(vm.chapterId);
+        if (c && c->scenes.size() > 1) scene = SceneUtils::sceneIndexForBlock(ed->document(), cur.blockNumber());
+    }
+    // A última frase antes do cursor (ou do último parágrafo com texto).
+    QString txt = cur.block().text().left(cur.positionInBlock());
+    if (txt.trimmed().isEmpty()) {
+        for (QTextBlock b = cur.block().previous(); b.isValid(); b = b.previous())
+            if (!b.text().trimmed().isEmpty()) { txt = b.text(); break; }
+    }
+    txt = txt.trimmed();
+    static const QRegularExpression reEnd(QStringLiteral("[.!?\u2026][\"\u201d\u00bb')]*\\s+"));
+    int start = 0;
+    for (auto it = reEnd.globalMatch(txt); it.hasNext();) {
+        const auto m = it.next();
+        if (m.capturedEnd() < txt.size()) start = m.capturedEnd();
+    }
+    QString sentence = txt.mid(start).trimmed();
+    if (sentence.size() > 200) sentence = sentence.right(200);
+
+    // Leitor: até onde o cursor já chegou no capítulo (0…1). Numa cena solta,
+    // conta as cenas de antes pelo tamanho delas.
+    {
+        const int chars = std::max(1, ed->document()->characterCount() - 1);
+        const double inDoc = std::clamp(cur.position() / double(chars), 0.0, 1.0);
+        double frac = inDoc;
+        if (vm.type == EditorHost::SceneDoc && wordCounter) {
+            const int total = wordCounter->countChapter(vm.chapterId);
+            int before = 0;
+            for (int k = 0; k < vm.sceneIndex; ++k) before += wordCounter->countScene(vm.chapterId, k);
+            const int sw = wordCounter->countScene(vm.chapterId, vm.sceneIndex);
+            if (total > 0) frac = std::clamp((before + inDoc * sw) / double(total), 0.0, 1.0);
+        }
+        const QString key = resumeGroupFor(projectRoot) + QStringLiteral("/visited");
+        QVariantMap map = QSettings().value(key).toMap();
+        if (frac > map.value(vm.chapterId, 0.0).toDouble() + 0.005) {
+            map.insert(vm.chapterId, frac);
+            QSettings().setValue(key, map);
+            QHash<QString, double> h;
+            for (auto it = map.cbegin(); it != map.cend(); ++it) h.insert(it.key(), it.value().toDouble());
+            manuscriptPanel->setVisitedProgress(h);
+        }
+    }
+
+    QList<ManuscriptPanel::ResumeEntry> trail = readResumeTrail(projectRoot);
+    trail.erase(std::remove_if(trail.begin(), trail.end(), [&](const ManuscriptPanel::ResumeEntry& e) {
+        return e.chapterId == vm.chapterId && e.sceneIndex == scene;
+    }), trail.end());
+    ManuscriptPanel::ResumeEntry e;
+    e.manuscriptId = vm.manuscriptId;
+    e.chapterId = vm.chapterId;
+    e.sceneIndex = scene;
+    e.sentence = sentence;
+    e.position = cur.position();
+    e.when = QDateTime::currentDateTime();
+    trail.prepend(e);
+    while (trail.size() > 3) trail.removeLast();
+    QVariantList list;
+    for (const auto& t : trail) {
+        QVariantMap m;
+        m.insert(QStringLiteral("ms"), t.manuscriptId);
+        m.insert(QStringLiteral("ch"), t.chapterId);
+        m.insert(QStringLiteral("scene"), t.sceneIndex);
+        m.insert(QStringLiteral("sentence"), t.sentence);
+        m.insert(QStringLiteral("pos"), t.position);
+        m.insert(QStringLiteral("when"), t.when);
+        list.append(m);
+    }
+    QSettings().setValue(resumeGroupFor(projectRoot) + QStringLiteral("/trail"), list);
+    manuscriptPanel->setResumeTrail(trail);
+}
+
+void MainWindow::resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,
+                          const QString& sentence, int position)
+{
+    if (!editorHost || !projectModel) return;
+    const Chapter* c = projectModel->findChapter(chapterId);
+    if (!c) return;
+    EditorHost::ViewMode vm;
+    vm.manuscriptId = manuscriptId;
+    vm.chapterId = chapterId;
+    if (sceneIndex >= 0 && c->scenes.size() > 1) {
+        vm.type = EditorHost::SceneDoc;
+        vm.sceneIndex = sceneIndex;
+    } else {
+        vm.type = EditorHost::ChapterDoc;
+    }
+    if (projectModel->activeManuscriptId() != manuscriptId) projectModel->setActiveManuscriptId(manuscriptId);
+    editorHost->setViewMode(vm);
+    QTextEdit* ed = editorHost->editor();
+    if (!ed) return;
+    QTextCursor found;
+    if (!sentence.trimmed().isEmpty()) found = ed->document()->find(sentence.trimmed());
+    QTextCursor place(ed->document());
+    if (!found.isNull()) place.setPosition(found.selectionEnd());
+    else if (position >= 0) place.setPosition(qBound(0, position, ed->document()->characterCount() - 1));
+    else place.movePosition(QTextCursor::End);
+    ed->setTextCursor(place);
+    ed->ensureCursorVisible();
+    ed->setFocus();
+}
+
 void MainWindow::restoreLastDocFor(const QString& root)
 {
     if (!editorHost || root.isEmpty()) return;
@@ -7184,10 +7394,12 @@ void MainWindow::positionSidePanels()
         if (drawerListPanel->isVisible()) drawerListPanel->raise();
     }
 
-    // ManuscriptPanel: continua sempre full-height por enquanto.
+    // ManuscriptPanel: altura toda, a não ser que o usuário tenha arrastado a
+    // borda de baixo (aí respeita, só limitando pra caber).
     if (manuscriptPanel) {
         manuscriptPanel->move(panelX(manuscriptPanel), y);
-        manuscriptPanel->resize(manuscriptPanel->width(), maxH);
+        const int msH = manuscriptPanel->heightIsUserSet() ? qMin(manuscriptPanel->desiredHeight(), maxH) : maxH;
+        manuscriptPanel->resize(manuscriptPanel->width(), msH);
         if (manuscriptPanel->isVisible()) manuscriptPanel->raise();
     }
 
@@ -8011,6 +8223,7 @@ void MainWindow::openMarkerPickerForSelection(bool withComment)
                                          : MarkerPickPopup::ColorOnly);
     markerPickPopup->setColor(seed);
     markerPickPopup->setComment(QString());
+    markerPickPopup->setTask(false);
 
     // Anchor: retângulo da seleção em coords globais.
     QTextCursor a(editor->document()); a.setPosition(markerPendingStart);
@@ -8033,6 +8246,7 @@ void MainWindow::openMarkerPickerForEdit(const QString& markerId)
     markerPickPopup->setMode(MarkerPickPopup::WithComment);
     markerPickPopup->setColor(QColor(e.color));
     markerPickPopup->setComment(e.comment);
+    markerPickPopup->setTask(e.task);
 
     // Anchor no range do marker.
     QTextCursor a(editor->document()); a.setPosition(e.start);
@@ -8057,6 +8271,7 @@ void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comme
         markerStore->updateMarker(key, editor->document(), markerEditId, color, comment);
         appliedId = markerEditId;
         markerEditId.clear();
+        if (markerPickPopup) markerStore->setTask(key, appliedId, markerPickPopup->isTask());
     } else {
         // Usa range capturado em openMarkerPickerForSelection — não confia na
         // seleção atual do editor (popup ativo pode tê-la perdido).
@@ -8081,6 +8296,8 @@ void MainWindow::applyMarkerFromPicker(const QColor& color, const QString& comme
         const int sceneHint = (editorHost->viewMode().type == EditorHost::SceneDoc)
             ? editorHost->viewMode().sceneIndex : -1;
         appliedId = markerStore->applyMarkerToSelection(key, cur, color, comment, sceneHint);
+        if (!appliedId.isEmpty() && markerPickPopup && markerPickPopup->isTask())
+            markerStore->setTask(key, appliedId, true);
         // Colapsa no fim do trecho JÁ com o formato de digitação limpo. Se o
         // cursor voltar pro editor com a seleção marcada, o QTextEdit adota o
         // charFormat do último caractere marcado como formato do que vier a

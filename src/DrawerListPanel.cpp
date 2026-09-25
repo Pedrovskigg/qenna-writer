@@ -1,4 +1,5 @@
 #include "DrawerListPanel.h"
+#include "DrawerViews.h"
 #include "BondsLayer.h"
 #include "ElementsStore.h"
 #include "DocCache.h"
@@ -6,6 +7,7 @@
 #include "ProjectStorage.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
+#include "PanelMotion.h"
 #include "Theme.h"
 
 #include <QAction>
@@ -40,6 +42,7 @@
 #include <QSizePolicy>
 #include <QSettings>
 #include <QStyle>
+#include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -65,7 +68,7 @@ static const CardSizeParams kCardSizes[3] = {
 
 constexpr int kPanelWidth = 300;
 constexpr int kMinPanelWidth = 240;
-constexpr int kMaxPanelWidth = 600;
+constexpr int kMaxPanelWidth = 900;
 constexpr int kMinPanelHeight = 220;
 constexpr int kResizeHandleWidth = 5;
 
@@ -292,6 +295,12 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
 
+    {
+        QSettings qs;
+        m_toolAppears = qs.value(QStringLiteral("ui/drawerPanel/tool/appears"), false).toBool();
+        m_toolHover = qs.value(QStringLiteral("ui/drawerPanel/tool/hover"), true).toBool();
+    }
+
     // ---- Header ----
     auto* header = new QWidget(this);
     header->setObjectName(QStringLiteral("drawerListHeader"));
@@ -326,22 +335,9 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         return b;
     };
 
-    m_pinBtn = makeMiniBtn(QStringLiteral("📌"), tr("Fixar painel"), /*checkable=*/true);
-    m_pinBtn->setFixedWidth(28);
-    connect(m_pinBtn, &QToolButton::toggled, this, [this](bool on) {
-        m_pinned = on;
-    });
-    headerLayout->addWidget(m_pinBtn);
-
-    m_viewBtn = makeMiniBtn(QStringLiteral("⊞"), tr("Alternar exibição"), /*checkable=*/false);
-    m_viewBtn->setFixedWidth(28);
-    connect(m_viewBtn, &QToolButton::clicked, this, [this]() {
-        m_gridView = !m_gridView;
-        updateViewButton();
-        rebuildContents();
-    });
-    headerLayout->addWidget(m_viewBtn);
-
+    // Só lupa, ⋯, fixar e fechar: o título da gaveta tem prioridade (com seis
+    // botões ele saía cortado, "Personage…"). Exibição, tamanho dos cards e
+    // ordem moraram aqui; agora ficam no menu ⋯, junto com estilo e ferramentas.
     m_searchBtn = makeMiniBtn(QString(), tr("Buscar nesta gaveta"), /*checkable=*/true);
     m_searchBtn->setFixedWidth(28);
     m_searchBtn->setIcon(IconUtils::loadToolbarIcon(
@@ -353,55 +349,17 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     connect(m_searchBtn, &QToolButton::toggled, this, &DrawerListPanel::setSearchActive);
     headerLayout->addWidget(m_searchBtn);
 
-    m_sizeBtn = makeMiniBtn(QStringLiteral("M"), tr("Tamanho dos cards"));
-    m_sizeBtn->setFixedWidth(28);
-    m_sizeBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    connect(m_sizeBtn, &QToolButton::clicked, this, [this]() {
-        m_cardSizeIdx = (m_cardSizeIdx + 1) % 3;
-        QSettings qs;
-        qs.setValue(QStringLiteral("ui/cardSizeIdx"), m_cardSizeIdx);
-        updateSizeButton();
-        rebuildContents();
-    });
-    headerLayout->addWidget(m_sizeBtn);
+    m_moreBtn = makeMiniBtn(QStringLiteral("⋯"), tr("Estilo, exibição, ordem e ferramentas"));
+    m_moreBtn->setFixedWidth(28);
+    connect(m_moreBtn, &QToolButton::clicked, this, &DrawerListPanel::showMoreMenu);
+    headerLayout->addWidget(m_moreBtn);
 
-    m_sortBtn = makeMiniBtn(QStringLiteral("⇅ Criação ↑"), tr("Ordem de exibição"));
-    m_sortBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    connect(m_sortBtn, &QToolButton::clicked, this, [this]() {
-        QMenu menu(this);
-        menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
-            QMenu {
-                background: %1;
-                color: %2;
-                border: 1px solid %3;
-                border-radius: @radius-panel;
-                padding: 4px;
-            }
-            QMenu::item { padding: 6px 14px; border-radius: @radius-item; font-size: 12px; }
-            QMenu::item:selected { background: %4; color: %5; }
-        )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
-               Theme::hoverOverlay(), Theme::textBright()));
-
-        auto addOpt = [&](const QString& label, SortMode mode, bool ascending) {
-            QAction* act = menu.addAction(label);
-            act->setCheckable(true);
-            act->setChecked(m_sortMode == mode && m_sortAscending == ascending);
-            connect(act, &QAction::triggered, this, [this, mode, ascending]() {
-                m_sortMode = mode;
-                m_sortAscending = ascending;
-                updateSortButton();
-                rebuildContents();
-            });
-        };
-        addOpt(tr("Criação ↑"), SortCreation, true);
-        addOpt(tr("Criação ↓"), SortCreation, false);
-        addOpt(tr("A → Z"),     SortAlpha,    true);
-        if (currentDrawerIsCharacter()) {
-            addOpt(tr("Por papel"), SortRole, true);
-        }
-        menu.exec(m_sortBtn->mapToGlobal(QPoint(0, m_sortBtn->height() + 2)));
+    m_pinBtn = makeMiniBtn(QStringLiteral("📌"), tr("Fixar painel"), /*checkable=*/true);
+    m_pinBtn->setFixedWidth(28);
+    connect(m_pinBtn, &QToolButton::toggled, this, [this](bool on) {
+        m_pinned = on;
     });
-    headerLayout->addWidget(m_sortBtn);
+    headerLayout->addWidget(m_pinBtn);
 
     auto* btnClose = makeMiniBtn(QStringLiteral("×"), tr("Fechar"));
     btnClose->setFixedWidth(28);
@@ -478,6 +436,25 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     m_scroll->setWidget(m_listHost);
     root->addWidget(m_scroll, /*stretch=*/1);
 
+    m_altHost = new QWidget(this);
+    m_altLayout = new QVBoxLayout(m_altHost);
+    m_altLayout->setContentsMargins(0, 0, 0, 0);
+    m_altLayout->setSpacing(0);
+    m_altHost->hide();
+    root->addWidget(m_altHost, /*stretch=*/1);
+
+    // Ficha no hover
+    m_hoverTimer = new QTimer(this);
+    m_hoverTimer->setSingleShot(true);
+    m_hoverTimer->setInterval(450);
+    connect(m_hoverTimer, &QTimer::timeout, this, &DrawerListPanel::showHoverCard);
+    m_hoverCard = new QLabel(this, Qt::ToolTip | Qt::FramelessWindowHint);
+    m_hoverCard->setAttribute(Qt::WA_ShowWithoutActivating);
+    m_hoverCard->setTextFormat(Qt::RichText);
+    m_hoverCard->setWordWrap(true);
+    m_hoverCard->setFixedWidth(270);
+    m_hoverCard->hide();
+
     // Overlay de vínculos — desenha por cima dos rowWraps (transparente p/ mouse).
     m_bondsLayer = new BondsLayer(m_listHost);
     m_bondsLayer->raise();
@@ -551,6 +528,10 @@ void DrawerListPanel::setElementsStore(ElementsStore* store) {
 }
 
 void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folderId) {
+    // Trocar de gaveta com o painel aberto: o conteúdo velho sai e o novo
+    // entra em cascata (abrindo do zero, quem anima é o PanelMotion no show).
+    const bool switching = isVisible() && drawerKey != m_currentKey;
+    if (switching) PanelMotion::swapOut(motionArea());
     // Trocar de gaveta zera a busca — resultado da gaveta anterior não vale
     // aqui, e deixar o campo preenchido faria a nova abrir "vazia".
     if (drawerKey != m_currentKey) {
@@ -567,6 +548,11 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
         m_currentFolderId.clear();
         // Reset view mode default por gaveta: grid pra element drawer, list pra genérica.
         m_gridView = currentDrawerIsElement();
+        m_style = storedStyleFor(drawerKey);
+        m_dossierSel.clear();
+        m_compareA.clear();
+        m_compareB.clear();
+        applyStyleWidth();
     }
     if (!folderId.isEmpty()) {
         m_currentFolderId = folderId;
@@ -577,9 +563,35 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
     rebuildFolderStrip();
     rebuildContents();
     show();
+    if (switching) playIntro(60);
+}
+
+QWidget* DrawerListPanel::motionArea() const {
+    return (m_altHost && m_altHost->isVisible()) ? m_altHost : m_scroll->viewport();
+}
+
+void DrawerListPanel::playIntro(int delayMs) {
+    QList<QWidget*> rows;
+    auto take = [&](QLayout* lay) {
+        if (!lay) return;
+        for (int i = 0; i < lay->count(); ++i) {
+            QWidget* w = lay->itemAt(i)->widget();
+            if (!w || !w->isVisible()) continue;
+            // Retratos, Polaroid, Crachás e Galeria desenham os próprios itens.
+            if (auto* v = qobject_cast<DwBondDragBase*>(w)) v->startIntro(delayMs);
+            else rows << w;
+        }
+    };
+    if (m_altHost && m_altHost->isVisible()) take(m_altLayout);
+    else take(m_listLayout);
+    // As linhas de vínculo do Clássico entram junto com os cards, não antes.
+    if (m_bondsLayer && m_bondsLayer->isVisible() && !rows.isEmpty())
+        rows.insert(std::min<qsizetype>(rows.size(), 13), m_bondsLayer);
+    PanelMotion::cascade(rows, delayMs);
 }
 
 void DrawerListPanel::closePanel() {
+    disarmHover();
     m_currentKey.clear();
     m_currentFolderId.clear();
     hide();
@@ -913,8 +925,16 @@ QList<DrawerItem> DrawerListPanel::searchHits() const
 void DrawerListPanel::rebuildContents() {
     if (!m_listLayout) return;
 
+    disarmHover();
     m_cardByItemId.clear();
     m_bondHintLabel = nullptr;
+    if (m_altLayout) {
+        while (m_altLayout->count() > 0) {
+            QLayoutItem* item = m_altLayout->takeAt(0);
+            if (auto* w = item->widget()) { w->hide(); w->deleteLater(); }
+            delete item;
+        }
+    }
 
     while (m_listLayout->count() > 1) {
         QLayoutItem* item = m_listLayout->takeAt(0);
@@ -940,10 +960,35 @@ void DrawerListPanel::rebuildContents() {
 
     updateBreadcrumb();
     updateViewButton();
+    if (m_toolAppears && currentDrawerIsElement()) computeAppearances();
+    else { m_appears.clear(); m_chapterLabels.clear(); }
 
     // Em busca, a pasta atual é ignorada de propósito: o valor está em achar o
     // que está numa subpasta que o autor não lembra qual é.
     const bool buscando = !m_searchQuery.isEmpty();
+
+    // Lado a lado, Dossiê e Tabela ocupam o painel todo (sem o scroll da lista).
+    // Resultado de busca sai sempre na lista do Clássico.
+    const bool compare = !m_compareA.isEmpty() && !m_compareB.isEmpty();
+    const bool alt = compare || (!buscando && (m_style == Style::Dossier || m_style == Style::Table));
+    m_scroll->setVisible(!alt);
+    m_altHost->setVisible(alt);
+    if (alt || (!buscando && m_style != Style::Classic)) {
+        if (m_bondsLayer) {
+            m_bondsLayer->setBonds({});
+            m_bondsLayer->setCardPositions({});
+        }
+        bool dummy = false;
+        const QList<DrawerItem> its = visibleItems(&dummy);
+        if (compare) buildCompare();
+        else if (m_style == Style::Dossier) buildDossier(its);
+        else if (m_style == Style::Table) buildTable(its);
+        else if (m_style == Style::Portraits) buildPortraits(its);
+        else if (m_style == Style::Polaroid) buildPolaroid(its);
+        else if (m_style == Style::Badges) buildBadges(its);
+        else if (m_style == Style::Gallery) buildGallery(its);
+        return;
+    }
 
     int row = 0;
     // "Voltar" sai de cena durante a busca — não há pasta corrente pra voltar.
@@ -1009,6 +1054,10 @@ void DrawerListPanel::rebuildContents() {
             const int cmp = QString::localeAwareCompare(ra, rb);
             if (cmp != 0) return cmp < 0;
             return QString::localeAwareCompare(a.title, b.title) < 0;
+        });
+    } else if (mode == SortAppearances) {
+        std::stable_sort(items.begin(), items.end(), [this](const DrawerItem& a, const DrawerItem& b) {
+            return appearsFor(a).count(true) > appearsFor(b).count(true);
         });
     } else if (!asc) {
         std::reverse(items.begin(), items.end());
@@ -1095,7 +1144,7 @@ void DrawerListPanel::rebuildContents() {
     }
 
     // Hint de vínculos no rodapé (só em gavetas de personagem)
-    if (currentDrawerIsCharacter() && displayedCount > 0) {
+    if (currentDrawerIsCharacter() && displayedCount > 0 && gridView) {
         m_bondHintLabel = new QLabel(this);
         m_bondHintLabel->setText(tr("Clique e arraste no nome dos personagens pra criar vínculos entre eles."));
         m_bondHintLabel->setAlignment(Qt::AlignCenter);
@@ -1237,7 +1286,38 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
 
     lay->addStretch();
 
+    // Aparições: tirinha no pé do card (fora do layout, que já está justo).
+    if (m_toolAppears) {
+        if (const DrawerItem* di = m_model->findDrawerItem(itemId)) {
+            const QList<bool> ap = appearsFor(*di);
+            if (!ap.isEmpty()) {
+                auto* strip = new QLabel(card);
+                const int sw = csz.cardW - 20;
+                const qreal dpr = devicePixelRatioF();
+                QPixmap pm(QSize(sw, 5) * dpr);
+                pm.setDevicePixelRatio(dpr);
+                pm.fill(Qt::transparent);
+                QPainter sp(&pm);
+                sp.setRenderHint(QPainter::Antialiasing);
+                const qreal w = (sw - (ap.size() - 1) * 1.5) / ap.size();
+                for (int i = 0; i < ap.size(); ++i) {
+                    QColor c = ap.at(i) ? QColor(currentDrawerColor()) : Theme::toColor(Theme::textPrimary());
+                    if (!ap.at(i)) c.setAlphaF(0.14);
+                    sp.setPen(Qt::NoPen);
+                    sp.setBrush(c);
+                    sp.drawRoundedRect(QRectF(i * (w + 1.5), 0, w, 4), 1, 1);
+                }
+                sp.end();
+                strip->setPixmap(pm);
+                strip->setFixedSize(sw, 5);
+                strip->move(10, csz.cardH - 9);
+                strip->setToolTip(appearsMeta(ap));
+            }
+        }
+    }
+
     const QString drawerKey = m_currentKey;
+    card->setProperty("hoverItemId", itemId);
     card->installEventFilter(this);
     connect(card, &QWidget::customContextMenuRequested, this, [this, card, itemId](const QPoint& pos) {
         showItemContextMenu(itemId, card->mapToGlobal(pos));
@@ -1310,6 +1390,38 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
     )")).arg(Theme::textPrimary(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
     btn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     wrapLay->addWidget(btn);
+    if (!isFolder) {
+        btn->setProperty("hoverItemId", id);
+        btn->installEventFilter(this);
+        // Aparições: tirinha à direita da linha.
+        if (m_toolAppears) {
+            if (const DrawerItem* di = m_model->findDrawerItem(id)) {
+                const QList<bool> ap = appearsFor(*di);
+                if (!ap.isEmpty()) {
+                    auto* strip = new QLabel(wrap);
+                    const qreal dpr = devicePixelRatioF();
+                    QPixmap pm(QSize(64, 8) * dpr);
+                    pm.setDevicePixelRatio(dpr);
+                    pm.fill(Qt::transparent);
+                    QPainter sp(&pm);
+                    sp.setRenderHint(QPainter::Antialiasing);
+                    const qreal w = (64.0 - (ap.size() - 1)) / ap.size();
+                    for (int i = 0; i < ap.size(); ++i) {
+                        QColor c = ap.at(i) ? QColor(currentDrawerColor()) : Theme::toColor(Theme::textPrimary());
+                        if (!ap.at(i)) c.setAlphaF(0.14);
+                        sp.setPen(Qt::NoPen);
+                        sp.setBrush(c);
+                        sp.drawRoundedRect(QRectF(i * (w + 1), 1, w, 6), 1, 1);
+                    }
+                    sp.end();
+                    strip->setPixmap(pm);
+                    strip->setFixedSize(64, 8);
+                    strip->setToolTip(appearsMeta(ap));
+                    wrapLay->addWidget(strip, 0, Qt::AlignVCenter);
+                }
+            }
+        }
+    }
 
     const QString drawerKey = m_currentKey;
     connect(btn, &QToolButton::clicked, this, [this, isFolder, id, drawerKey]() {
@@ -1330,6 +1442,18 @@ QWidget* DrawerListPanel::makeRow(const QString& label, bool isFolder, const QSt
 bool DrawerListPanel::eventFilter(QObject* watched, QEvent* event)
 {
     auto* w = qobject_cast<QWidget*>(watched);
+
+    // Ficha no hover (cards e linhas de item).
+    if (w) {
+        const QVariant hid = w->property("hoverItemId");
+        if (hid.isValid()) {
+            if (event->type() == QEvent::Enter)
+                armHover(hid.toString(), QRect(w->mapToGlobal(QPoint(0, 0)), w->size()));
+            else if (event->type() == QEvent::Leave || event->type() == QEvent::MouseButtonPress)
+                disarmHover();
+        }
+        if (w->property("disarmOnLeave").toBool() && event->type() == QEvent::Leave) disarmHover();
+    }
 
     // ---- listHost OU rowWrap: hover/click em bonds (overlay é click-through) ----
     const bool isBondHitSurface = w && (w == m_listHost
@@ -1693,6 +1817,7 @@ void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
 
 void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& globalPos) {
     if (!m_model) return;
+    disarmHover();
     const Drawer* drawer = m_model->findDrawer(m_currentKey);
     if (!drawer) return;
     const DrawerItem* item = m_model->findDrawerItem(itemId);
@@ -1784,6 +1909,9 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
     connect(refMenuAct, &QAction::triggered, this, [this, drawerKey, itemId]() {
         emit openInRefMenuRequested(drawerKey, itemId);
     });
+    // Vínculo por menu: o caminho que funciona em qualquer estilo.
+    if (currentDrawerIsCharacter()) addBondMenu(&menu, itemId);
+    if (currentDrawerIsElement()) addCompareMenu(&menu, itemId);
 
     menu.addSeparator();
 
@@ -1843,6 +1971,7 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
         emit deleteItemRequested(drawerKey, itemId);
     });
 
+    PanelMotion::animateMenu(&menu);
     menu.exec(globalPos);
 }
 
@@ -1894,6 +2023,7 @@ void DrawerListPanel::showFolderContextMenu(const QString& folderId, const QPoin
             m_model->moveDrawerFolder(m_currentKey, folderId, fid);
         });
     }
+    PanelMotion::animateMenu(&menu);
     menu.exec(globalPos);
 }
 
@@ -1919,7 +2049,7 @@ void DrawerListPanel::resizeEvent(QResizeEvent* event) {
 
 void DrawerListPanel::saveStoredWidth() {
     QSettings settings;
-    settings.setValue(QStringLiteral("ui/drawerListPanelWidth"), width());
+    settings.setValue(widthKeyFor(m_style), width());
 }
 
 int DrawerListPanel::loadStoredWidth() const {

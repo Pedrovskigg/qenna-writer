@@ -22,6 +22,8 @@ class QListWidgetItem;
 class QVBoxLayout;
 class QScrollArea;
 class QStackedWidget;
+class QBoxLayout;
+class QHBoxLayout;
 class ProjectModel;
 class MarkerStore;
 class NotesStore;
@@ -41,6 +43,11 @@ struct Chapter;
 class PensarioPanel : public QWidget {
     Q_OBJECT
 public:
+    // Estilos (arranjo). As ferramentas — Lente, Busca, Cores com nome,
+    // Revisão e Levar pro texto — valem em todos.
+    enum class Style { Classic, Rail, TwoColumns, Mural, Notebook, Deck, Board, WhatsQenna,
+                       Table, Magazine, Dock };
+
     PensarioPanel(MarkerStore* markers, ProjectModel* model, NotesStore* notes,
                   QWidget* parent = nullptr);
     ~PensarioPanel() override;
@@ -89,6 +96,8 @@ signals:
     // Botão de "load" na aba Diálogos: pede pra varrer todos os capítulos
     // do projeto em lote (mesma ideia do rescan de presença por cena).
     void rescanAllDialoguesRequested();
+    // Levar pro texto: inserir nota, memória ou fala no cursor do editor.
+    void insertTextRequested(QString text);
 
 public slots:
     void refresh();
@@ -98,6 +107,7 @@ public slots:
 
 protected:
     void showEvent(QShowEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
@@ -108,6 +118,74 @@ private:
     enum class SortMode { Chapters, Creation };
     enum class NameCategory { Character, Place, Weapon };
     enum class Gender { Female, Male };
+
+    // Item de qualquer seção, do jeito que os estilos novos desenham.
+    struct PnItem {
+        Tab kind = Tab::Comments;
+        QString id;           // marcador / nota / memória / fala
+        QString docKey;       // comentário: onde está
+        int start = 0, end = 0;
+        QString color;
+        QString title;        // comentário / título da nota / da memória / quem fala
+        QString body;         // texto da nota / a fala
+        QString quote;        // trecho marcado / texto da memória
+        QString origin;       // "Capítulo 3 • Cena 2"
+        QString group;        // cabeçalho (capítulo) — "" = sem
+        QString chapterId;
+        QStringList tags;
+        QString speakerId;
+        qint64 created = 0;
+        int rank = 0;
+        bool task = false, done = false;
+    };
+    enum class Nav { Tabs, Rail, Dock, Dividers, None };
+
+    // ---- estilos e ferramentas (PensarioStyles.cpp) ----
+    void loadStyleSettings();
+    void setStyle(Style s);
+    void showStyleMenu();
+    static QString styleId(Style s);
+    static Style styleFromId(const QString& id);
+    int styleWidth() const;
+    Nav navFor(Style s) const;
+    void applyStyleLayout();
+    void rebuildNav();
+    void updateNavChecks();
+    int tabCount(Tab t) const;
+    QString tabName(Tab t) const;
+    QString tabIcon(Tab t) const;
+    QString itemKey(const PnItem& it) const;
+    void renderItems(Tab tab, const QVector<PnItem>& items, QVBoxLayout* lay, QWidget* inner);
+    QWidget* renderClassic(const PnItem& it, QWidget* parent);
+    QWidget* renderPostit(const PnItem& it, QWidget* parent);
+    QWidget* renderNotebookEntry(const PnItem& it, QWidget* parent);
+    QWidget* renderBubble(const PnItem& it, QWidget* parent);
+    QWidget* renderPullQuote(const PnItem& it, bool featured, QWidget* parent);
+    QWidget* renderListRow(const PnItem& it, QWidget* parent);
+    QWidget* renderDeck(Tab tab, const QVector<PnItem>& items, QWidget* parent);
+    QWidget* renderTable(Tab tab, const QVector<PnItem>& items, QWidget* parent);
+    void decorateCard(QWidget* card, const PnItem& it);
+    void wireItem(QWidget* w, const PnItem& it);
+    void activateItem(const PnItem& it, const QPoint& globalPos);
+    void showItemMenu(const PnItem& it, const QPoint& globalPos);
+    QString insertableText(const PnItem& it) const;
+    void updateDetail();
+    // coletores (sem os filtros de página)
+    QVector<PnItem> collectComments(bool applyToolFilters) const;
+    QVector<PnItem> collectNotes(bool applyToolFilters) const;
+    QVector<PnItem> collectMemories() const;
+    QVector<PnItem> collectDialogues(const QString& chapterId, int limit) const;
+    PnItem dialogueItem(const DialogueStore::Dialogue& d) const;
+    // ferramentas
+    QWidget* buildColorLegendBar(Tab tab, const QVector<PnItem>& items, QWidget* parent);
+    QWidget* buildReviewBar(QWidget* parent);
+    QString colorName(const QString& hex) const;
+    void editColorLegend();
+    void rebuildToolsBar();
+    void rebuildSearchPage();
+    void rebuildLensPage();
+    void rebuildBoard();
+    bool alternateViewActive() const;
 
     void buildUi();
     void selectTab(Tab tab);
@@ -202,6 +280,46 @@ private:
     // de um — senão "Capítulo 1" aparece repetido e indistinguível.
     QString chapterLabel(const QString& manuscriptId, const QString& title) const;
     void ancorRight();
+
+    // Estilo e ferramentas
+    Style m_style = Style::Rail;
+    bool m_toolLens = false;
+    bool m_toolSearch = false;
+    bool m_toolColors = false;
+    bool m_toolReview = false;
+    bool m_toolInsert = false;
+    QString m_lensChapter;             // "" = todos
+    bool m_lensView = false;           // mostrando a página da lente
+    QString m_searchQuery;
+    QString m_colorFilter;
+    QString m_taskFilter = QStringLiteral("all");  // all | tasks | comments
+    bool m_hideDone = false;
+    int m_deckIndex[5] = {};
+    QString m_pickKey;                 // Duas colunas: item escolhido
+    QHash<QString, PnItem> m_itemIndex;
+    QToolButton* m_styleBtn = nullptr;
+    QWidget* m_tabsRow = nullptr;
+    QWidget* m_toolsBar = nullptr;
+    QVBoxLayout* m_toolsLay = nullptr;
+    QLineEdit* m_searchEdit = nullptr;
+    QWidget* m_rail = nullptr;
+    QBoxLayout* m_railLay = nullptr;
+    QWidget* m_dock = nullptr;
+    QBoxLayout* m_dockLay = nullptr;
+    QWidget* m_dividers = nullptr;
+    QBoxLayout* m_dividersLay = nullptr;
+    QLabel* m_sectionTitle = nullptr;
+    QWidget* m_sectionRow = nullptr;
+    QWidget* m_detail = nullptr;
+    QVBoxLayout* m_detailLay = nullptr;
+    QScrollArea* m_altScroll = nullptr;      // busca / lente
+    QVBoxLayout* m_altLay = nullptr;
+    QWidget* m_board = nullptr;
+    int m_boardStart = 0;              // Quadro: primeira das duas seções à vista
+    QWidget* m_resizeHandle = nullptr; // alça de largura (borda esquerda)
+    bool m_resizing = false;
+    int m_resizeStartX = 0, m_resizeStartW = 0, m_resizeStartRight = 0;
+    QHBoxLayout* m_boardLay = nullptr;
 
     MarkerStore* m_markers = nullptr;
     ProjectModel* m_model = nullptr;

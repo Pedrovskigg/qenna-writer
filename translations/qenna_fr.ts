@@ -2563,6 +2563,265 @@ Le projet ira dans la Corbeille (accessible via l&apos;icône de corbeille ci-de
         <source>Mover pasta para</source>
         <translation>Déplacer le dossier vers</translation>
     </message>
+    <message>
+        <source>Estilo, exibição, ordem e ferramentas</source>
+        <translation>Style, affichage, ordre et outils</translation>
+    </message>
+    <message>
+        <source>Estilo desta gaveta</source>
+        <translation>Style de ce tiroir</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Classique</translation>
+    </message>
+    <message>
+        <source>Blocos com foto ou lista, como sempre foi</source>
+        <translation>Blocs avec photo ou liste, comme toujours</translation>
+    </message>
+    <message>
+        <source>Retratos</source>
+        <translation>Portraits</translation>
+    </message>
+    <message>
+        <source>Elenco: rosto, nome e uma frase da ficha</source>
+        <translation>Distribution : visage, nom et une phrase de la fiche</translation>
+    </message>
+    <message>
+        <source>Polaroid</source>
+        <translation>Polaroid</translation>
+    </message>
+    <message>
+        <source>Fotos presas num quadro de cortiça</source>
+        <translation>Photos épinglées sur un tableau de liège</translation>
+    </message>
+    <message>
+        <source>Teia</source>
+        <translation>Toile</translation>
+    </message>
+    <message>
+        <source>Os personagens arrumados pelos vínculos</source>
+        <translation>Les personnages disposés selon leurs liens</translation>
+    </message>
+    <message>
+        <source>Dossiê</source>
+        <translation>Dossier</translation>
+    </message>
+    <message>
+        <source>Lista de um lado, a ficha ou o documento inteiro do outro</source>
+        <translation>Une liste d&apos;un côté, la fiche ou le document entier de l&apos;autre</translation>
+    </message>
+    <message>
+        <source>Tabela</source>
+        <translation>Tableau</translation>
+    </message>
+    <message>
+        <source>Uma linha por item, colunas que ordenam</source>
+        <translation>Une ligne par élément, colonnes triables</translation>
+    </message>
+    <message>
+        <source>Exibição</source>
+        <translation>Affichage</translation>
+    </message>
+    <message>
+        <source>Blocos</source>
+        <translation>Blocs</translation>
+    </message>
+    <message>
+        <source>Lista</source>
+        <translation>Liste</translation>
+    </message>
+    <message>
+        <source>Pequeno</source>
+        <translation>Petit</translation>
+    </message>
+    <message>
+        <source>Médio</source>
+        <translation>Moyen</translation>
+    </message>
+    <message>
+        <source>Grande</source>
+        <translation>Grand</translation>
+    </message>
+    <message>
+        <source>Ordem</source>
+        <translation>Ordre</translation>
+    </message>
+    <message>
+        <source>Por aparições</source>
+        <translation>Par apparitions</translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation>Outils</translation>
+    </message>
+    <message>
+        <source>Aparições</source>
+        <translation>Apparitions</translation>
+    </message>
+    <message>
+        <source>Em quais capítulos cada um aparece, e desde quando sumiu</source>
+        <translation>Dans quels chapitres chacun apparaît, et depuis quand il a disparu</translation>
+    </message>
+    <message>
+        <source>Ficha no hover</source>
+        <translation>Fiche au survol</translation>
+    </message>
+    <message>
+        <source>Parando o mouse num item, o essencial dele sem abrir</source>
+        <translation>En posant la souris sur un élément, l&apos;essentiel sans l&apos;ouvrir</translation>
+    </message>
+    <message>
+        <source>Lado a lado: botão direito num item › Comparar com…</source>
+        <translation>Côte à côte : clic droit sur un élément › Comparer avec…</translation>
+    </message>
+    <message>
+        <source>ainda não aparece</source>
+        <translation>n&apos;apparaît pas encore</translation>
+    </message>
+    <message>
+        <source>em %1 de %2 · desde o %3 · última no %4</source>
+        <translation>dans %1 sur %2 · depuis le %3 · dernière au %4</translation>
+    </message>
+    <message>
+        <source>Vínculo</source>
+        <translation>Lien</translation>
+    </message>
+    <message>
+        <source>Sem papel</source>
+        <translation>Sans rôle</translation>
+    </message>
+    <message>
+        <source>Arraste um rosto até outra linha pra criar vínculo.</source>
+        <translation>Faites glisser un visage sur une autre ligne pour créer un lien.</translation>
+    </message>
+    <message>
+        <source>Arraste o alfinete de uma foto até outra pra criar vínculo.</source>
+        <translation>Faites glisser l&apos;épingle d&apos;une photo sur une autre pour créer un lien.</translation>
+    </message>
+    <message>
+        <source>Clique num rosto pra focar · duplo clique abre · arraste um rosto até outro pra criar vínculo</source>
+        <translation>Cliquez sur un visage pour le mettre en avant · double-clic pour ouvrir · faites glisser un visage sur un autre pour créer un lien</translation>
+    </message>
+    <message>
+        <source>vínculo</source>
+        <translation>lien</translation>
+    </message>
+    <message>
+        <source>Vínculos</source>
+        <translation>Liens</translation>
+    </message>
+    <message>
+        <source>Sem texto ainda.</source>
+        <translation>Pas encore de texte.</translation>
+    </message>
+    <message>
+        <source>Editar ficha</source>
+        <translation>Modifier la fiche</translation>
+    </message>
+    <message>
+        <source>Abrir</source>
+        <translation>Ouvrir</translation>
+    </message>
+    <message>
+        <source>Abrir no RefMenu</source>
+        <translation>Ouvrir dans le RefMenu</translation>
+    </message>
+    <message>
+        <source>Gerar imagem</source>
+        <translation>Générer une image</translation>
+    </message>
+    <message>
+        <source>Comparar com…</source>
+        <translation>Comparer avec…</translation>
+    </message>
+    <message>
+        <source>Nome</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <source>Papel</source>
+        <translation>Rôle</translation>
+    </message>
+    <message>
+        <source>Última</source>
+        <translation>Dernière</translation>
+    </message>
+    <message>
+        <source>Palavras</source>
+        <translation>Mots</translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation>chap. %1</translation>
+    </message>
+    <message>
+        <source>Comparando 2 fichas</source>
+        <translation>Comparaison de 2 fiches</translation>
+    </message>
+    <message>
+        <source>só diferenças</source>
+        <translation>différences seulement</translation>
+    </message>
+    <message>
+        <source>Voltar pra gaveta</source>
+        <translation>Retour au tiroir</translation>
+    </message>
+    <message>
+        <source>Entre os dois</source>
+        <translation>Entre les deux</translation>
+    </message>
+    <message>
+        <source>nenhum vínculo</source>
+        <translation>aucun lien</translation>
+    </message>
+    <message>
+        <source>+ criar</source>
+        <translation>+ créer</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulo(s)</source>
+        <translation>
+            <numerusform>%n chapitre</numerusform>
+            <numerusform>%n chapitres</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1 com %2</source>
+        <translation>%1 avec %2</translation>
+    </message>
+    <message>
+        <source>As duas fichas ainda não têm campos preenchidos.</source>
+        <translation>Aucune des deux fiches n&apos;a encore de champs remplis.</translation>
+    </message>
+    <message>
+        <source>Criar vínculo com…</source>
+        <translation>Créer un lien avec…</translation>
+    </message>
+    <message>
+        <source>Crachás</source>
+        <translation>Badges</translation>
+    </message>
+    <message>
+        <source>Uma linha por pessoa, como crachá: foto, papel e dois dados da ficha</source>
+        <translation>Une ligne par personne, comme un badge : photo, rôle et deux données de la fiche</translation>
+    </message>
+    <message>
+        <source>Galeria de rostos</source>
+        <translation>Galerie de visages</translation>
+    </message>
+    <message>
+        <source>O elenco em grade de retratos; o mouse sobre um rosto acende quem tem vínculo com ele</source>
+        <translation>La distribution en grille de portraits ; survoler un visage éclaire ceux qui lui sont liés</translation>
+    </message>
+    <message>
+        <source>Arraste a foto de um crachá até outro pra criar vínculo.</source>
+        <translation>Faites glisser la photo d&apos;un badge sur un autre pour créer un lien.</translation>
+    </message>
+    <message>
+        <source>Passe o mouse num rosto pra ver os vínculos · arraste um rosto até outro pra criar um.</source>
+        <translation>Survolez un visage pour voir ses liens · faites glisser un visage sur un autre pour en créer un.</translation>
+    </message>
 </context>
 <context>
     <name>EditorHost</name>
@@ -7606,6 +7865,736 @@ Le contenu existant pourrait être écrasé.</translation>
         <source>Excluir cena</source>
         <translation>Supprimer la scène</translation>
     </message>
+    <message>
+        <source>hoje, %1</source>
+        <translation>aujourd&apos;hui, %1</translation>
+    </message>
+    <message>
+        <source>ontem, %1</source>
+        <translation>hier, %1</translation>
+    </message>
+    <message>
+        <source>Manuscritos</source>
+        <translation>Manuscrits</translation>
+    </message>
+    <message>
+        <source>Estilo e ferramentas</source>
+        <translation>Style et outils</translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation>Style</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Classique</translation>
+    </message>
+    <message>
+        <source>Lista de capítulos com o seletor de manuscrito em cima</source>
+        <translation>Liste des chapitres avec le sélecteur de manuscrit en haut</translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation>Rail</translation>
+    </message>
+    <message>
+        <source>As capas dos livros num trilho; o aberto sobe pro topo</source>
+        <translation>Les couvertures sur un rail ; le livre ouvert monte en haut</translation>
+    </message>
+    <message>
+        <source>Lombadas</source>
+        <translation>Dos</translation>
+    </message>
+    <message>
+        <source>A saga como livros numa prateleira</source>
+        <translation>La saga comme des livres sur une étagère</translation>
+    </message>
+    <message>
+        <source>Vitrine</source>
+        <translation>Vitrine</translation>
+    </message>
+    <message>
+        <source>A prateleira com as capas de frente</source>
+        <translation>L&apos;étagère avec les couvertures de face</translation>
+    </message>
+    <message>
+        <source>Sumário</source>
+        <translation>Sommaire</translation>
+    </message>
+    <message>
+        <source>Como o sumário de um livro impresso</source>
+        <translation>Comme le sommaire d&apos;un livre imprimé</translation>
+    </message>
+    <message>
+        <source>Espinha</source>
+        <translation>Épine</translation>
+    </message>
+    <message>
+        <source>Capítulos e cenas como estações numa linha</source>
+        <translation>Chapitres et scènes comme des stations sur une ligne</translation>
+    </message>
+    <message>
+        <source>Grade de cenas</source>
+        <translation>Grille des scènes</translation>
+    </message>
+    <message>
+        <source>Uma fileira por capítulo, um bloco por cena</source>
+        <translation>Une ligne par chapitre, un bloc par scène</translation>
+    </message>
+    <message>
+        <source>Mosaico</source>
+        <translation>Mosaïque</translation>
+    </message>
+    <message>
+        <source>Todos os capítulos numa grade numerada, pra livro longo</source>
+        <translation>Tous les chapitres dans une grille numérotée, pour les longs livres</translation>
+    </message>
+    <message>
+        <source>Jornada</source>
+        <translation>Voyage</translation>
+    </message>
+    <message>
+        <source>O livro como um caminho, com as partes como regiões</source>
+        <translation>Le livre comme un chemin, avec les parties comme régions</translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation>Outils</translation>
+    </message>
+    <message>
+        <source>Onde parei</source>
+        <translation>Où je me suis arrêté</translation>
+    </message>
+    <message>
+        <source>O último lugar em que você escreveu, com a última frase</source>
+        <translation>Le dernier endroit où vous avez écrit, avec la dernière phrase</translation>
+    </message>
+    <message>
+        <source>Ficha no hover</source>
+        <translation>Fiche au survol</translation>
+    </message>
+    <message>
+        <source>Resumo, quando, POV, palavras e quem aparece, parando o mouse no capítulo</source>
+        <translation>Résumé, quand, POV, mots et qui apparaît, en posant la souris sur le chapitre</translation>
+    </message>
+    <message>
+        <source>Partes</source>
+        <translation>Parties</translation>
+    </message>
+    <message>
+        <source>Agrupar capítulos em partes ou atos</source>
+        <translation>Regrouper les chapitres en parties ou actes</translation>
+    </message>
+    <message>
+        <source>Variações à vista</source>
+        <translation>Variantes en vue</translation>
+    </message>
+    <message>
+        <source>Mostra quantas versões cada cena tem e deixa trocar a ativa</source>
+        <translation>Montre combien de versions a chaque scène et permet de changer l&apos;active</translation>
+    </message>
+    <message>
+        <source>Ritmo</source>
+        <translation>Rythme</translation>
+    </message>
+    <message>
+        <source>Gráfico do tamanho dos capítulos, com a parte de diálogo</source>
+        <translation>Graphique de la longueur des chapitres, avec la part de dialogue</translation>
+    </message>
+    <message>
+        <source>Ordem da história</source>
+        <translation>Ordre de l&apos;histoire</translation>
+    </message>
+    <message>
+        <source>Alterna entre a ordem de leitura e a ordem em que as coisas acontecem</source>
+        <translation>Alterne entre l&apos;ordre de lecture et l&apos;ordre dans lequel les choses arrivent</translation>
+    </message>
+    <message>
+        <source>POV à vista</source>
+        <translation>POV en vue</translation>
+    </message>
+    <message>
+        <source>O narrador de cada capítulo e a linha de cada um</source>
+        <translation>Le narrateur de chaque chapitre et la ligne de chacun</translation>
+    </message>
+    <message>
+        <source>Status de produção</source>
+        <translation>Statut de production</translation>
+    </message>
+    <message>
+        <source>Rascunho, revisado ou final, com progresso e filtro</source>
+        <translation>Brouillon, révisé ou final, avec progression et filtre</translation>
+    </message>
+    <message>
+        <source>Nova parte</source>
+        <translation>Nouvelle partie</translation>
+    </message>
+    <message>
+        <source>Nome da parte:</source>
+        <translation>Nom de la partie :</translation>
+    </message>
+    <message>
+        <source>Parte %1</source>
+        <translation>Partie %1</translation>
+    </message>
+    <message>
+        <source>Começa no capítulo:</source>
+        <translation>Commence au chapitre :</translation>
+    </message>
+    <message>
+        <source>Livro</source>
+        <translation>Livre</translation>
+    </message>
+    <message>
+        <source>Novo capítulo</source>
+        <translation>Nouveau chapitre</translation>
+    </message>
+    <message>
+        <source>Estatísticas</source>
+        <translation>Statistiques</translation>
+    </message>
+    <message>
+        <source>Capa</source>
+        <translation>Couverture</translation>
+    </message>
+    <message>
+        <source>livro %1 de %2 · %3 capítulos · %4 palavras</source>
+        <translation>livre %1 sur %2 · %3 chapitres · %4 mots</translation>
+    </message>
+    <message>
+        <source>Onde você parou</source>
+        <translation>Où vous vous êtes arrêté</translation>
+    </message>
+    <message>
+        <source>Continuar ›</source>
+        <translation>Continuer ›</translation>
+    </message>
+    <message>
+        <source>antes: %1 (%2)</source>
+        <translation>avant : %1 (%2)</translation>
+    </message>
+    <message>
+        <source>%1 de %2 finais</source>
+        <translation>%1 sur %2 finaux</translation>
+    </message>
+    <message>
+        <source>Sem status</source>
+        <translation>Sans statut</translation>
+    </message>
+    <message>
+        <source>Mostrar só estes</source>
+        <translation>Afficher seulement ceux-ci</translation>
+    </message>
+    <message>
+        <source>Leitura</source>
+        <translation>Lecture</translation>
+    </message>
+    <message>
+        <source>História</source>
+        <translation>Passé</translation>
+    </message>
+    <message>
+        <source>Na ordem em que o leitor lê</source>
+        <translation>Dans l&apos;ordre où le lecteur lit</translation>
+    </message>
+    <message>
+        <source>Na ordem em que as coisas acontecem (pelo &quot;quando se passa&quot;)</source>
+        <translation>Dans l&apos;ordre où les choses arrivent (selon « quand ça se passe »)</translation>
+    </message>
+    <message>
+        <source>Preencha o &quot;quando se passa&quot; dos capítulos (Renomear capítulo) pra ver a ordem da história.</source>
+        <translation>Remplissez le « quand ça se passe » des chapitres (Renommer le chapitre) pour voir l&apos;ordre de l&apos;histoire.</translation>
+    </message>
+    <message>
+        <source>A leitura segue a ordem da história.</source>
+        <translation>La lecture suit l&apos;ordre de l&apos;histoire.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulo(s) fora da ordem da história</source>
+        <translation>
+            <numerusform>%n chapitre hors de l&apos;ordre de l&apos;histoire</numerusform>
+            <numerusform>%n chapitres hors de l&apos;ordre de l&apos;histoire</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Defina o narrador de cada capítulo pelo botão direito (Narrador).</source>
+        <translation>Définissez le narrateur de chaque chapitre par clic droit (Narrateur).</translation>
+    </message>
+    <message>
+        <source>sem narrador</source>
+        <translation>sans narrateur</translation>
+    </message>
+    <message>
+        <source>%1 narradores · &lt;b&gt;%2&lt;/b&gt; narra %3 de %4</source>
+        <translation>%1 narrateurs · &lt;b&gt;%2&lt;/b&gt; raconte %3 sur %4</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;%1&lt;/b&gt; narra %2 de %3: %4</source>
+        <translation>&lt;b&gt;%1&lt;/b&gt; raconte %2 sur %3 : %4</translation>
+    </message>
+    <message numerus="yes">
+        <source>maior intervalo sem %1: %n capítulo(s)</source>
+        <translation>
+            <numerusform>plus long intervalle sans %1 : %n chapitre</numerusform>
+            <numerusform>plus long intervalle sans %1 : %n chapitres</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Ritmo do livro</source>
+        <translation>Rythme du livre</translation>
+    </message>
+    <message>
+        <source>%1 palavras · média %2</source>
+        <translation>%1 mots · moyenne %2</translation>
+    </message>
+    <message>
+        <source>Passe o mouse nas barras. Azul = diálogo.</source>
+        <translation>Survolez les barres. Bleu = dialogue.</translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;%1&lt;/b&gt; · %2 palavras · %3% diálogo</source>
+        <translation>&lt;b&gt;%1&lt;/b&gt; · %2 mots · %3% dialogue</translation>
+    </message>
+    <message>
+        <source>Nenhum capítulo com esse status.</source>
+        <translation>Aucun chapitre avec ce statut.</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cap.</source>
+        <translation>
+            <numerusform>%n chap.</numerusform>
+            <numerusform>%n chap.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Mostrar os capítulos desta parte</source>
+        <translation>Afficher les chapitres de cette partie</translation>
+    </message>
+    <message>
+        <source>Recolher esta parte</source>
+        <translation>Replier cette partie</translation>
+    </message>
+    <message>
+        <source>clique pra trocar</source>
+        <translation>cliquez pour changer</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n versões</source>
+        <translation>
+            <numerusform>%n version</numerusform>
+            <numerusform>%n versions</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Versão ativa: %1</source>
+        <translation>Version active : %1</translation>
+    </message>
+    <message>
+        <source>(sem nome)</source>
+        <translation>(sans nom)</translation>
+    </message>
+    <message>
+        <source>Nova variação</source>
+        <translation>Nouvelle variante</translation>
+    </message>
+    <message>
+        <source>Você parou aqui</source>
+        <translation>Vous vous êtes arrêté ici</translation>
+    </message>
+    <message>
+        <source>Posição na leitura</source>
+        <translation>Position dans la lecture</translation>
+    </message>
+    <message>
+        <source>Narrador: %1</source>
+        <translation>Narrateur : %1</translation>
+    </message>
+    <message>
+        <source>%1 palavras</source>
+        <translation>%1 mots</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulos</source>
+        <translation>
+            <numerusform>%n chapitre</numerusform>
+            <numerusform>%n chapitres</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n finais</source>
+        <translation>
+            <numerusform>%n final</numerusform>
+            <numerusform>%n finaux</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cenas</source>
+        <translation>
+            <numerusform>%n scène</numerusform>
+            <numerusform>%n scènes</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>largura = tamanho da cena</source>
+        <translation>largeur = longueur de la scène</translation>
+    </message>
+    <message>
+        <source>Lendo a linha de %1: &lt;b&gt;%2 de %3&lt;/b&gt;</source>
+        <translation>Lecture de la ligne de %1 : &lt;b&gt;%2 sur %3&lt;/b&gt;</translation>
+    </message>
+    <message numerus="yes">
+        <source>Linha de %1: %n capítulo(s)</source>
+        <translation>
+            <numerusform>Ligne de %1 : %n chapitre</numerusform>
+            <numerusform>Ligne de %1 : %n chapitres</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Ler a linha ›</source>
+        <translation>Lire la ligne ›</translation>
+    </message>
+    <message>
+        <source>Próximo ›</source>
+        <translation>Suivant ›</translation>
+    </message>
+    <message>
+        <source>Recomeçar</source>
+        <translation>Recommencer</translation>
+    </message>
+    <message>
+        <source>Quando: %1</source>
+        <translation>Quand : %1</translation>
+    </message>
+    <message>
+        <source>POV: %1</source>
+        <translation>POV : %1</translation>
+    </message>
+    <message>
+        <source>Sem resumo ainda.</source>
+        <translation>Pas encore de résumé.</translation>
+    </message>
+    <message>
+        <source>Aparecem: %1</source>
+        <translation>Présents : %1</translation>
+    </message>
+    <message>
+        <source>diálogo %1%</source>
+        <translation>dialogue %1%</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Statut</translation>
+    </message>
+    <message>
+        <source>Narrador</source>
+        <translation>Narrateur</translation>
+    </message>
+    <message>
+        <source>%1 (sugerido)</source>
+        <translation>%1 (suggéré)</translation>
+    </message>
+    <message>
+        <source>Nenhum personagem cadastrado</source>
+        <translation>Aucun personnage enregistré</translation>
+    </message>
+    <message>
+        <source>Sem narrador definido</source>
+        <translation>Aucun narrateur défini</translation>
+    </message>
+    <message>
+        <source>Tirar o começo de parte daqui</source>
+        <translation>Retirer le début de partie ici</translation>
+    </message>
+    <message>
+        <source>Começar uma parte aqui…</source>
+        <translation>Commencer une partie ici…</translation>
+    </message>
+    <message>
+        <source>Versão ativa</source>
+        <translation>Version active</translation>
+    </message>
+    <message>
+        <source>Renomear parte…</source>
+        <translation>Renommer la partie…</translation>
+    </message>
+    <message>
+        <source>Renomear parte</source>
+        <translation>Renommer la partie</translation>
+    </message>
+    <message>
+        <source>Cor…</source>
+        <translation>Couleur…</translation>
+    </message>
+    <message>
+        <source>Cor da parte</source>
+        <translation>Couleur de la partie</translation>
+    </message>
+    <message>
+        <source>Desfazer a parte (os capítulos ficam)</source>
+        <translation>Défaire la partie (les chapitres restent)</translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a largura</source>
+        <translation>Faites glisser pour changer la largeur</translation>
+    </message>
+    <message>
+        <source>Cor do livro…</source>
+        <translation>Couleur du livre…</translation>
+    </message>
+    <message>
+        <source>Cor do livro</source>
+        <translation>Couleur du livre</translation>
+    </message>
+    <message>
+        <source>Cor automática</source>
+        <translation>Couleur automatique</translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a altura · duplo clique volta pra altura toda</source>
+        <translation>Faites glisser pour changer la hauteur · double-clic pour revenir à la pleine hauteur</translation>
+    </message>
+    <message>
+        <source>Folha de rosto</source>
+        <translation>Page de titre</translation>
+    </message>
+    <message>
+        <source>A folha de rosto do livro, com o sumário e o número de página</source>
+        <translation>La page de titre du livre, avec la table des matières et les numéros de page</translation>
+    </message>
+    <message>
+        <source>Leitor</source>
+        <translation>Liseuse</translation>
+    </message>
+    <message>
+        <source>Como a biblioteca de um e-reader: quanto de cada capítulo você já revisou</source>
+        <translation>Comme la bibliothèque d&apos;une liseuse : ce que vous avez déjà révisé de chaque chapitre</translation>
+    </message>
+    <message>
+        <source>Índice ilustrado</source>
+        <translation>Table illustrée</translation>
+    </message>
+    <message>
+        <source>Cada capítulo com uma vinheta só dele, que cresce junto com o texto</source>
+        <translation>Chaque chapitre avec sa propre vignette, qui grandit avec le texte</translation>
+    </message>
+    <message>
+        <source>Temporadas</source>
+        <translation>Saisons</translation>
+    </message>
+    <message>
+        <source>O livro como série: cada livro é uma temporada, cada capítulo um episódio</source>
+        <translation>Le livre comme une série : chaque livre est une saison, chaque chapitre un épisode</translation>
+    </message>
+    <message>
+        <source>Página da loja</source>
+        <translation>Page boutique</translation>
+    </message>
+    <message>
+        <source>O livro como na página de uma livraria: capa, números, sinopse e sumário</source>
+        <translation>Le livre comme sur la page d&apos;une librairie : couverture, chiffres, synopsis et table des matières</translation>
+    </message>
+    <message>
+        <source>Box da saga</source>
+        <translation>Coffret de la saga</translation>
+    </message>
+    <message>
+        <source>Os livros da série num estojo; o aberto sai puxado pra fora</source>
+        <translation>Les livres de la série dans un coffret ; celui qui est ouvert dépasse</translation>
+    </message>
+    <message>
+        <source>Começar nova revisão</source>
+        <translation>Commencer une nouvelle révision</translation>
+    </message>
+    <message>
+        <source>Zera o quanto de cada capítulo você já passou</source>
+        <translation>Remet à zéro votre avancée dans chaque chapitre</translation>
+    </message>
+    <message>
+        <source>Trocar desenho…</source>
+        <translation>Changer le dessin…</translation>
+    </message>
+    <message>
+        <source>vazio</source>
+        <translation>vide</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cena(s)</source>
+        <translation>
+            <numerusform>%n scène</numerusform>
+            <numerusform>%n scènes</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>a saga</source>
+        <translation>la saga</translation>
+    </message>
+    <message>
+        <source>LIVRO %1 DE %2</source>
+        <translation>LIVRE %1 SUR %2</translation>
+    </message>
+    <message>
+        <source>SUMÁRIO</source>
+        <translation>SOMMAIRE</translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 palavras · cerca de %n lauda(s)</source>
+        <translation>
+            <numerusform>%1 mots · environ %n feuillet</numerusform>
+            <numerusform>%1 mots · environ %n feuillets</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1 · %2 palavras</source>
+        <translation>%1 · %2 mots</translation>
+    </message>
+    <message>
+        <source>▸ Continuar de onde parou</source>
+        <translation>▸ Reprendre là où vous étiez</translation>
+    </message>
+    <message>
+        <source>Botão direito: começar nova revisão</source>
+        <translation>Clic droit : commencer une nouvelle révision</translation>
+    </message>
+    <message>
+        <source>%1% do livro revisitado</source>
+        <translation>%1% du livre revu</translation>
+    </message>
+    <message>
+        <source>cap. %1 · %2</source>
+        <translation>chap. %1 · %2</translation>
+    </message>
+    <message>
+        <source>Revisado até o fim</source>
+        <translation>Révisé jusqu&apos;au bout</translation>
+    </message>
+    <message>
+        <source>Você foi até %1% deste capítulo</source>
+        <translation>Vous êtes allé à %1% de ce chapitre</translation>
+    </message>
+    <message>
+        <source>Ainda não passou por aqui nesta revisão</source>
+        <translation>Vous n&apos;êtes pas encore passé ici dans cette révision</translation>
+    </message>
+    <message>
+        <source>CAP. %1</source>
+        <translation>CHAP. %1</translation>
+    </message>
+    <message>
+        <source>imagem própria</source>
+        <translation>image personnelle</translation>
+    </message>
+    <message>
+        <source>Livro %1</source>
+        <translation>Livre %1</translation>
+    </message>
+    <message>
+        <source>cena %1 de %2 · onde você parou</source>
+        <translation>scène %1 sur %2 · là où vous étiez</translation>
+    </message>
+    <message>
+        <source>onde você parou</source>
+        <translation>là où vous étiez</translation>
+    </message>
+    <message>
+        <source>CONTINUAR</source>
+        <translation>CONTINUER</translation>
+    </message>
+    <message>
+        <source>Livro %1 de %2</source>
+        <translation>Livre %1 sur %2</translation>
+    </message>
+    <message>
+        <source>Livro %1 da saga %2</source>
+        <translation>Livre %1 de la saga %2</translation>
+    </message>
+    <message>
+        <source>PÁGINAS</source>
+        <translation>PAGES</translation>
+    </message>
+    <message>
+        <source>PALAVRAS</source>
+        <translation>MOTS</translation>
+    </message>
+    <message>
+        <source>CAPÍTULOS</source>
+        <translation>CHAPITRES</translation>
+    </message>
+    <message>
+        <source>Sinopse</source>
+        <translation>Synopsis</translation>
+    </message>
+    <message>
+        <source>Sem sinopse ainda.</source>
+        <translation>Pas encore de synopsis.</translation>
+    </message>
+    <message>
+        <source>escrever</source>
+        <translation>écrire</translation>
+    </message>
+    <message>
+        <source>editar</source>
+        <translation>modifier</translation>
+    </message>
+    <message>
+        <source>Sinopse deste livro:</source>
+        <translation>Synopsis de ce livre :</translation>
+    </message>
+    <message>
+        <source>Da mesma série</source>
+        <translation>De la même série</translation>
+    </message>
+    <message>
+        <source>Trocar desenho</source>
+        <translation>Changer le dessin</translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation>chap. %1</translation>
+    </message>
+    <message>
+        <source>Só este capítulo</source>
+        <translation>Ce chapitre seulement</translation>
+    </message>
+    <message>
+        <source>O livro todo</source>
+        <translation>Tout le livre</translation>
+    </message>
+    <message>
+        <source>Automático</source>
+        <translation>Automatique</translation>
+    </message>
+    <message>
+        <source>o desenho continua crescendo com o capítulo; só muda a fundação</source>
+        <translation>le dessin continue de grandir avec le chapitre ; seule sa base change</translation>
+    </message>
+    <message>
+        <source>Usar imagem minha…</source>
+        <translation>Utiliser mon image…</translation>
+    </message>
+    <message>
+        <source>Trocar imagem…</source>
+        <translation>Changer l&apos;image…</translation>
+    </message>
+    <message>
+        <source>Imagem do capítulo</source>
+        <translation>Image du chapitre</translation>
+    </message>
+    <message>
+        <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
+    </message>
+    <message>
+        <source>Voltar ao desenho</source>
+        <translation>Revenir au dessin</translation>
+    </message>
+    <message>
+        <source>A SAGA</source>
+        <translation>LA SAGA</translation>
+    </message>
+    <message>
+        <source>A SAGA %1</source>
+        <translation>LA SAGA %1</translation>
+    </message>
 </context>
 <context>
     <name>MapPanel</name>
@@ -7895,6 +8884,14 @@ Le contenu existant pourrait être écrasé.</translation>
         <location filename="../src/MarkerPickPopup.cpp" line="296"/>
         <source>Cor do marcador</source>
         <translation>Couleur du marqueur</translation>
+    </message>
+    <message>
+        <source>Tarefa (entra na Revisão do Pensário)</source>
+        <translation>Tâche (entre dans la Révision du Pensarium)</translation>
+    </message>
+    <message>
+        <source>Nem todo comentário é uma tarefa. Marque só os que precisam ser resolvidos.</source>
+        <translation>Tout commentaire n&apos;est pas une tâche. Cochez seulement ceux à résoudre.</translation>
     </message>
 </context>
 <context>
@@ -9020,6 +10017,378 @@ Sélectionnez un passage et utilisez le marqueur avec commentaire pour qu&apos;i
         <location filename="../src/PensarioPanel.cpp" line="2507"/>
         <source>Manuscrito</source>
         <translation>Manuscrit</translation>
+    </message>
+    <message>
+        <source>Estilo e ferramentas do Pensário</source>
+        <translation>Style et outils du Pensarium</translation>
+    </message>
+    <message>
+        <source>Nenhum comentário neste filtro.</source>
+        <translation>Aucun commentaire dans ce filtre.</translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation>Style</translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation>Classique</translation>
+    </message>
+    <message>
+        <source>As abas em cima e os cartões</source>
+        <translation>Les onglets en haut et les cartes</translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation>Rail</translation>
+    </message>
+    <message>
+        <source>As seções num trilho de ícones com contador</source>
+        <translation>Les sections sur un rail d&apos;icônes avec compteur</translation>
+    </message>
+    <message>
+        <source>Doca</source>
+        <translation>Dock</translation>
+    </message>
+    <message>
+        <source>O trilho deitado, embaixo</source>
+        <translation>Le rail couché, en bas</translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation>Deux colonnes</translation>
+    </message>
+    <message>
+        <source>Lista de um lado, o item inteiro do outro</source>
+        <translation>Une liste d&apos;un côté, l&apos;élément entier de l&apos;autre</translation>
+    </message>
+    <message>
+        <source>Mural</source>
+        <translation>Mur</translation>
+    </message>
+    <message>
+        <source>Post-its tingidos pela cor</source>
+        <translation>Post-it teintés par la couleur</translation>
+    </message>
+    <message>
+        <source>Caderno</source>
+        <translation>Cahier</translation>
+    </message>
+    <message>
+        <source>Folha pautada, grifo na cor do marcador, divisórias na borda</source>
+        <translation>Papier ligné, surlignage de la couleur du marqueur, intercalaires sur le bord</translation>
+    </message>
+    <message>
+        <source>Baralho</source>
+        <translation>Paquet</translation>
+    </message>
+    <message>
+        <source>Uma ficha grande por vez</source>
+        <translation>Une grande fiche à la fois</translation>
+    </message>
+    <message>
+        <source>Quadro</source>
+        <translation>Tableau</translation>
+    </message>
+    <message>
+        <source>As quatro seções em colunas, lado a lado</source>
+        <translation>Les quatre sections en colonnes, côte à côte</translation>
+    </message>
+    <message>
+        <source>Os diálogos como conversa; comentários como resposta ao trecho</source>
+        <translation>Les dialogues comme une conversation ; les commentaires comme réponse au passage</translation>
+    </message>
+    <message>
+        <source>Tabela</source>
+        <translation>Tableau</translation>
+    </message>
+    <message>
+        <source>Densa e ordenável</source>
+        <translation>Dense et triable</translation>
+    </message>
+    <message>
+        <source>Revista</source>
+        <translation>Magazine</translation>
+    </message>
+    <message>
+        <source>Citações em duas colunas, como numa revista</source>
+        <translation>Citations sur deux colonnes, comme dans un magazine</translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation>Outils</translation>
+    </message>
+    <message>
+        <source>Busca no Pensário</source>
+        <translation>Recherche dans le Pensarium</translation>
+    </message>
+    <message>
+        <source>Uma busca que atravessa comentários, notas, memórias e diálogos</source>
+        <translation>Une recherche qui traverse commentaires, notes, mémoires et dialogues</translation>
+    </message>
+    <message>
+        <source>Lente de capítulo</source>
+        <translation>Loupe de chapitre</translation>
+    </message>
+    <message>
+        <source>Tudo de um capítulo, de todos os tipos. É filtro: escolha qualquer capítulo ou Todos</source>
+        <translation>Tout d&apos;un chapitre, de tous les types. C&apos;est un filtre : choisissez n&apos;importe quel chapitre ou Tous</translation>
+    </message>
+    <message>
+        <source>Cores com nome</source>
+        <translation>Couleurs nommées</translation>
+    </message>
+    <message>
+        <source>A cor vira categoria, com legenda do projeto e filtro (comentários e notas)</source>
+        <translation>La couleur devient une catégorie, avec une légende du projet et un filtre (commentaires et notes)</translation>
+    </message>
+    <message>
+        <source>Revisão</source>
+        <translation>Révision</translation>
+    </message>
+    <message>
+        <source>Comentários marcados como tarefa ganham caixinha de resolvido e progresso</source>
+        <translation>Les commentaires marqués comme tâche gagnent une case « résolu » et une progression</translation>
+    </message>
+    <message>
+        <source>Levar pro texto</source>
+        <translation>Envoyer au texte</translation>
+    </message>
+    <message>
+        <source>Inserir nota, memória ou fala no cursor do editor</source>
+        <translation>Insérer une note, une mémoire ou une réplique au curseur de l&apos;éditeur</translation>
+    </message>
+    <message>
+        <source>Nomes</source>
+        <translation>Noms</translation>
+    </message>
+    <message>
+        <source>Buscar no Pensário…</source>
+        <translation>Rechercher dans le Pensarium…</translation>
+    </message>
+    <message>
+        <source>Lente</source>
+        <translation>Loupe</translation>
+    </message>
+    <message>
+        <source>No editor</source>
+        <translation>Dans l&apos;éditeur</translation>
+    </message>
+    <message>
+        <source>O capítulo aberto no editor</source>
+        <translation>Le chapitre ouvert dans l&apos;éditeur</translation>
+    </message>
+    <message>
+        <source>Fechar a lente</source>
+        <translation>Fermer la loupe</translation>
+    </message>
+    <message>
+        <source>Notas fixadas</source>
+        <translation>Notes épinglées</translation>
+    </message>
+    <message>
+        <source>MEMÓRIAS</source>
+        <translation>MÉMOIRES</translation>
+    </message>
+    <message>
+        <source>FALAS DA EDIÇÃO</source>
+        <translation>RÉPLIQUES DU NUMÉRO</translation>
+    </message>
+    <message>
+        <source>NOTAS DA REVISÃO</source>
+        <translation>NOTES DE RÉVISION</translation>
+    </message>
+    <message>
+        <source>CADERNO DE IDEIAS</source>
+        <translation>CARNET D&apos;IDÉES</translation>
+    </message>
+    <message>
+        <source>O que ficou guardado</source>
+        <translation>Ce qui a été gardé</translation>
+    </message>
+    <message>
+        <source>Eles disseram</source>
+        <translation>Ils ont dit</translation>
+    </message>
+    <message>
+        <source>O que falta consertar</source>
+        <translation>Ce qu&apos;il reste à corriger</translation>
+    </message>
+    <message>
+        <source>Ideias soltas</source>
+        <translation>Idées en vrac</translation>
+    </message>
+    <message>
+        <source>Reabrir</source>
+        <translation>Rouvrir</translation>
+    </message>
+    <message>
+        <source>Marcar como resolvido</source>
+        <translation>Marquer comme résolu</translation>
+    </message>
+    <message>
+        <source>↳ Levar pro texto</source>
+        <translation>↳ Envoyer au texte</translation>
+    </message>
+    <message>
+        <source>Inserir no cursor do editor</source>
+        <translation>Insérer au curseur de l&apos;éditeur</translation>
+    </message>
+    <message>
+        <source>nota</source>
+        <translation>note</translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation>chap. %1</translation>
+    </message>
+    <message>
+        <source>ficha</source>
+        <translation>fiche</translation>
+    </message>
+    <message>
+        <source>↪ encaminhada de %1</source>
+        <translation>↪ transférée de %1</translation>
+    </message>
+    <message>
+        <source>uma ficha</source>
+        <translation>une fiche</translation>
+    </message>
+    <message>
+        <source>✓ resolvido</source>
+        <translation>✓ résolu</translation>
+    </message>
+    <message>
+        <source>tarefa</source>
+        <translation>tâche</translation>
+    </message>
+    <message>
+        <source>Escolha um item na lista.</source>
+        <translation>Choisissez un élément dans la liste.</translation>
+    </message>
+    <message>
+        <source>Nota sem título</source>
+        <translation>Note sans titre</translation>
+    </message>
+    <message>
+        <source>Tarefa resolvida</source>
+        <translation>Tâche résolue</translation>
+    </message>
+    <message>
+        <source>Tarefa pendente</source>
+        <translation>Tâche en attente</translation>
+    </message>
+    <message>
+        <source>Editar</source>
+        <translation>Modifier</translation>
+    </message>
+    <message>
+        <source>Abrir no RefMenu</source>
+        <translation>Ouvrir dans le RefMenu</translation>
+    </message>
+    <message>
+        <source>Alterar locutor</source>
+        <translation>Changer d&apos;interlocuteur</translation>
+    </message>
+    <message>
+        <source>Resolver</source>
+        <translation>Résoudre</translation>
+    </message>
+    <message>
+        <source>Virar tarefa</source>
+        <translation>En faire une tâche</translation>
+    </message>
+    <message>
+        <source>%1 %2 de %3</source>
+        <translation>%1 %2 sur %3</translation>
+    </message>
+    <message>
+        <source>Nota</source>
+        <translation>Note</translation>
+    </message>
+    <message>
+        <source>TEXTO</source>
+        <translation>TEXTE</translation>
+    </message>
+    <message>
+        <source>CAPÍTULO</source>
+        <translation>CHAPITRE</translation>
+    </message>
+    <message>
+        <source>DATA</source>
+        <translation>DATE</translation>
+    </message>
+    <message>
+        <source>Não é tarefa</source>
+        <translation>Pas une tâche</translation>
+    </message>
+    <message>
+        <source>Marcar como tarefa</source>
+        <translation>Marquer comme tâche</translation>
+    </message>
+    <message>
+        <source>Legenda das cores</source>
+        <translation>Légende des couleurs</translation>
+    </message>
+    <message>
+        <source>Dê um nome pra cada cor. Ele vale pro projeto inteiro.</source>
+        <translation>Donnez un nom à chaque couleur. Il vaut pour tout le projet.</translation>
+    </message>
+    <message>
+        <source>ex.: Conferir, Problema, Ritmo</source>
+        <translation>ex. : Vérifier, Problème, Rythme</translation>
+    </message>
+    <message>
+        <source>Salvar</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <source>sem nome</source>
+        <translation>sans nom</translation>
+    </message>
+    <message>
+        <source>Editar legenda</source>
+        <translation>Modifier la légende</translation>
+    </message>
+    <message>
+        <source>Tarefas</source>
+        <translation>Tâches</translation>
+    </message>
+    <message>
+        <source>esconder resolvidos</source>
+        <translation>masquer les résolus</translation>
+    </message>
+    <message>
+        <source>Nenhuma tarefa ainda. Marque &quot;Tarefa&quot; ao criar um comentário, ou use o botão direito num comentário.</source>
+        <translation>Pas encore de tâches. Cochez « Tâche » en créant un commentaire, ou faites un clic droit sur un commentaire.</translation>
+    </message>
+    <message>
+        <source>Nada encontrado no Pensário.</source>
+        <translation>Rien trouvé dans le Pensarium.</translation>
+    </message>
+    <message>
+        <source>O livro inteiro</source>
+        <translation>Le livre entier</translation>
+    </message>
+    <message>
+        <source>Nada anotado neste capítulo ainda.</source>
+        <translation>Rien de noté dans ce chapitre pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Nada aqui ainda.</source>
+        <translation>Rien ici pour l&apos;instant.</translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a largura</source>
+        <translation>Faites glisser pour changer la largeur</translation>
+    </message>
+    <message>
+        <source>Seções anteriores</source>
+        <translation>Sections précédentes</translation>
+    </message>
+    <message>
+        <source>Próximas seções</source>
+        <translation>Sections suivantes</translation>
     </message>
 </context>
 <context>
@@ -19548,6 +20917,14 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <source>Idioma do app (%1)</source>
         <translation>Langue de l&apos;application (%1)</translation>
     </message>
+    <message>
+        <source>Animações da interface</source>
+        <translation>Animations de l&apos;interface</translation>
+    </message>
+    <message>
+        <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
+        <translation>Les tiroirs et le tiroir des Manuscrits sortent de derrière la barre latérale, avec les lignes qui arrivent en cascade. Désactivé, tout apparaît immédiatement.</translation>
+    </message>
 </context>
 <context>
     <name>ShelfBookItem</name>
@@ -23911,6 +25288,82 @@ horaire. Les jours suivants, il se réinitialise toujours à cette heure.</trans
     <message>
         <source>Perigo</source>
         <translation>Danger</translation>
+    </message>
+</context>
+<context>
+    <name>MsShelf</name>
+    <message>
+        <source>Livro</source>
+        <translation>Livre</translation>
+    </message>
+</context>
+<context>
+    <name>DwBadges</name>
+    <message>
+        <source>sem vínculos</source>
+        <translation>aucun lien</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n vínculo(s)</source>
+        <translation>
+            <numerusform>%n lien</numerusform>
+            <numerusform>%n liens</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>MsVignette</name>
+    <message>
+        <source>Galhos</source>
+        <translation>Branches</translation>
+    </message>
+    <message>
+        <source>Raízes</source>
+        <translation>Racines</translation>
+    </message>
+    <message>
+        <source>Chamas</source>
+        <translation>Flammes</translation>
+    </message>
+    <message>
+        <source>Cidade</source>
+        <translation>Ville</translation>
+    </message>
+    <message>
+        <source>Constelação</source>
+        <translation>Constellation</translation>
+    </message>
+    <message>
+        <source>Montanhas</source>
+        <translation>Montagnes</translation>
+    </message>
+    <message>
+        <source>Coral</source>
+        <translation>Corail</translation>
+    </message>
+    <message>
+        <source>Rachaduras</source>
+        <translation>Fissures</translation>
+    </message>
+    <message>
+        <source>Mandala</source>
+        <translation>Mandala</translation>
+    </message>
+    <message>
+        <source>Relâmpago</source>
+        <translation>Éclair</translation>
+    </message>
+    <message>
+        <source>Ondas</source>
+        <translation>Vagues</translation>
+    </message>
+    <message>
+        <source>Círculos</source>
+        <translation>Cercles</translation>
+    </message>
+    <message>
+        <source>Raios</source>
+        <translation>Rayons</translation>
     </message>
 </context>
 </TS>

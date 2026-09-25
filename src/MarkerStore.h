@@ -33,6 +33,10 @@ public:
         QString text;      // trecho destacado (snippet), pro agregador do Pensário
         int sceneIndex = -1; // cena (0-based) onde o marker cai; -1 = desconhecida
         qint64 createdAt = 0; // epoch ms da criação; 0 = desconhecido (markers antigos)
+        // Revisão (Pensário): só comentário marcado como TAREFA ganha caixinha
+        // de resolvido e conta no progresso. Nem todo comentário é uma tarefa.
+        bool task = false;
+        bool done = false;
     };
 
     explicit MarkerStore(QObject* parent = nullptr);
@@ -95,6 +99,10 @@ public:
     // sem comentário não viram Entry, este map já é "todos os comentários".
     // Consumido pelo agregador de Comentários do Pensário.
     const QHash<QString, QVector<Entry>>& allEntries() const { return m_entries; }
+
+    // Revisão: marcar/desmarcar como tarefa e como resolvida (grava na hora).
+    void setTask(const QString& docKey, const QString& id, bool task);
+    void setDone(const QString& docKey, const QString& id, bool done);
 
 signals:
     void markersChanged(QString docKey);

@@ -20,6 +20,7 @@
 #include <QClipboard>
 #include <QColor>
 #include <QComboBox>
+#include <QContextMenuEvent>
 #include <QEvent>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -37,6 +38,7 @@
 #include <QPushButton>
 #include <QScreen>
 #include <QScrollArea>
+#include <QSettings>
 #include <QShowEvent>
 #include <QSizePolicy>
 #include <QStackedWidget>
@@ -100,6 +102,7 @@ PensarioPanel::PensarioPanel(MarkerStore* markers, ProjectModel* model,
     setObjectName(QStringLiteral("pensarioPanel"));
     setAttribute(Qt::WA_StyledBackground, true);
     m_nameGen = new NameGenerator();
+    loadStyleSettings();
     buildUi();
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -245,6 +248,16 @@ void PensarioPanel::buildUi()
     updateSortText();
     headLay->addWidget(m_sortBtn);
 
+    // Estilo do Pensário e ferramentas.
+    m_styleBtn = new QToolButton(m_header);
+    m_styleBtn->setObjectName(QStringLiteral("pnMapBtn"));
+    m_styleBtn->setCursor(Qt::PointingHandCursor);
+    m_styleBtn->setToolTip(tr("Estilo e ferramentas do Pensário"));
+    m_styleBtn->setFixedSize(28, 28);
+    m_styleBtn->setIconSize(QSize(16, 16));
+    connect(m_styleBtn, &QToolButton::clicked, this, &PensarioPanel::showStyleMenu);
+    headLay->addWidget(m_styleBtn);
+
     // Acesso discreto ao gerador de nomes (ferramenta ocasional, fora das abas).
     m_namesBtn = new QToolButton(m_header);
     m_namesBtn->setObjectName(QStringLiteral("pnNamesBtn"));
@@ -313,6 +326,15 @@ void PensarioPanel::buildUi()
     connect(m_tabDialogues, &QToolButton::clicked, this, [this]() { selectTab(Tab::Dialogues); });
 
     root->addWidget(tabsRow);
+    m_tabsRow = tabsRow;
+
+    // ---------------- Ferramentas (Busca, Lente) ----------------
+    m_toolsBar = new QWidget(this);
+    m_toolsLay = new QVBoxLayout(m_toolsBar);
+    m_toolsLay->setContentsMargins(10, 6, 10, 4);
+    m_toolsLay->setSpacing(6);
+    m_toolsBar->hide();
+    root->addWidget(m_toolsBar);
 
     // ---------------- Corpo (stack) ----------------
     m_stack = new QStackedWidget(this);
@@ -343,10 +365,104 @@ void PensarioPanel::buildUi()
     // Página 4: Diálogos detectados automaticamente (funcional)
     m_stack->addWidget(buildDialoguesPage());
 
-    // Página 5: Glossário do projeto (migrado do antigo GlossaryPanel)
-    root->addWidget(m_stack, 1);
+    // Corpo: [trilho] [coluna: título da seção, páginas, quadro, busca/lente]
+    //        [detalhe (Duas colunas)] [divisórias (Caderno)], e a doca embaixo.
+    auto* body = new QWidget(this);
+    auto* bodyLay = new QHBoxLayout(body);
+    bodyLay->setContentsMargins(0, 0, 0, 0);
+    bodyLay->setSpacing(0);
 
-    selectTab(Tab::Comments);
+    m_rail = new QWidget(body);
+    m_rail->setObjectName(QStringLiteral("pnRail"));
+    m_rail->setAttribute(Qt::WA_StyledBackground, true);
+    m_rail->setFixedWidth(48);
+    m_railLay = new QVBoxLayout(m_rail);
+    m_railLay->setContentsMargins(6, 10, 6, 10);
+    m_railLay->setSpacing(4);
+    bodyLay->addWidget(m_rail);
+
+    auto* col = new QWidget(body);
+    auto* colLay = new QVBoxLayout(col);
+    colLay->setContentsMargins(0, 0, 0, 0);
+    colLay->setSpacing(0);
+    m_sectionRow = new QWidget(col);
+    auto* secLay = new QHBoxLayout(m_sectionRow);
+    secLay->setContentsMargins(14, 10, 12, 0);
+    m_sectionTitle = new QLabel(m_sectionRow);
+    m_sectionTitle->setObjectName(QStringLiteral("pnSection"));
+    secLay->addWidget(m_sectionTitle, 1);
+    colLay->addWidget(m_sectionRow);
+    colLay->addWidget(m_stack, 1);
+
+    m_board = new QWidget(col);
+    m_boardLay = new QHBoxLayout(m_board);
+    m_boardLay->setContentsMargins(10, 10, 10, 10);
+    m_boardLay->setSpacing(10);
+    colLay->addWidget(m_board, 1);
+
+    m_altScroll = new QScrollArea(col);
+    m_altScroll->setWidgetResizable(true);
+    m_altScroll->setFrameShape(QFrame::NoFrame);
+    m_altScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    auto* altInner = new QWidget(m_altScroll);
+    m_altLay = new QVBoxLayout(altInner);
+    m_altLay->setContentsMargins(12, 10, 12, 12);
+    m_altLay->setSpacing(8);
+    m_altScroll->setWidget(altInner);
+    m_altScroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    colLay->addWidget(m_altScroll, 1);
+    bodyLay->addWidget(col, 2);
+
+    auto* detailScroll = new QScrollArea(body);
+    detailScroll->setObjectName(QStringLiteral("pnDetail"));
+    detailScroll->setWidgetResizable(true);
+    detailScroll->setFrameShape(QFrame::NoFrame);
+    detailScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    auto* detailInner = new QWidget(detailScroll);
+    m_detailLay = new QVBoxLayout(detailInner);
+    m_detailLay->setContentsMargins(18, 16, 18, 16);
+    m_detailLay->setSpacing(10);
+    detailScroll->setWidget(detailInner);
+    detailScroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    m_detail = detailScroll;
+    bodyLay->addWidget(m_detail, 3);
+
+    m_dividers = new QWidget(body);
+    m_dividers->setObjectName(QStringLiteral("pnDividers"));
+    m_dividers->setAttribute(Qt::WA_StyledBackground, true);
+    m_dividers->setFixedWidth(36);
+    m_dividersLay = new QVBoxLayout(m_dividers);
+    m_dividersLay->setContentsMargins(0, 18, 0, 18);
+    m_dividersLay->setSpacing(5);
+    bodyLay->addWidget(m_dividers);
+    root->addWidget(body, 1);
+
+    m_dock = new QWidget(this);
+    m_dock->setObjectName(QStringLiteral("pnDock"));
+    m_dock->setAttribute(Qt::WA_StyledBackground, true);
+    m_dockLay = new QHBoxLayout(m_dock);
+    m_dockLay->setContentsMargins(10, 6, 10, 6);
+    m_dockLay->setSpacing(4);
+    root->addWidget(m_dock);
+
+    // Alça de largura na borda esquerda (o painel fica ancorado à direita).
+    m_resizeHandle = new QWidget(this);
+    m_resizeHandle->setObjectName(QStringLiteral("pnResizeHandle"));
+    m_resizeHandle->setCursor(Qt::SizeHorCursor);
+    m_resizeHandle->setAttribute(Qt::WA_StyledBackground, true);
+    m_resizeHandle->setToolTip(tr("Arraste pra mudar a largura"));
+    m_resizeHandle->installEventFilter(this);
+
+    applyStyleLayout();
+}
+
+void PensarioPanel::resizeEvent(QResizeEvent* event)
+{
+    QWidget::resizeEvent(event);
+    if (m_resizeHandle) {
+        m_resizeHandle->setGeometry(0, 0, 5, height());
+        m_resizeHandle->raise();
+    }
 }
 
 QWidget* PensarioPanel::buildPlaceholderPage(const QString& title, const QString& subtitle)
@@ -412,17 +528,11 @@ void PensarioPanel::rebuildNotes()
         delete item;
     }
 
-    int total = 0;
-    if (m_notesStore) {
-        QVector<NotesStore::Note> list = m_notesStore->notes();
-        std::sort(list.begin(), list.end(),
-                  [](const NotesStore::Note& a, const NotesStore::Note& b) {
-                      return a.createdAt > b.createdAt; // mais recentes primeiro
-                  });
-        for (const NotesStore::Note& n : list) {
-            m_notesLay->addWidget(buildNoteCard(n.id, n.color, n.title, n.text));
-            ++total;
-        }
+    const int total = tabCount(Tab::Notes);
+    if (total > 0) {
+        const QVector<PnItem> items = collectNotes(true);   // mais recentes primeiro
+        if (m_toolColors) m_notesLay->addWidget(buildColorLegendBar(Tab::Notes, items, m_notesInner));
+        renderItems(Tab::Notes, items, m_notesLay, m_notesInner);
     }
 
     if (total == 0) {
@@ -924,6 +1034,7 @@ void PensarioPanel::rebuildMemories()
         return;
     }
 
+    QVector<PnItem> items;
     for (const MemoriesStore::Memory& m : list) {
         // Cabeçalho: nome (se houver) senão "Memória do <fonte>". No modo
         // "Todas", anexa o personagem quando a memória é de um.
@@ -934,8 +1045,19 @@ void PensarioPanel::rebuildMemories()
             && m.targetType == QStringLiteral("character") && !m.elementId.isEmpty()) {
             header = tr("[%1]  %2").arg(charName(m.elementId), header);
         }
-        m_memoriesLay->addWidget(buildMemoryCard(m.id, header, m.text, m.tags, m_memoriesInner));
+        PnItem p;
+        p.kind = Tab::Memories;
+        p.id = m.id;
+        p.title = header;
+        p.quote = m.text;
+        p.origin = m.sourceLabel;
+        p.tags = m.tags;
+        p.chapterId = m.chapterId;
+        p.created = m.createdAt;
+        p.color = QStringLiteral("#8fc7a4");
+        items.append(p);
     }
+    renderItems(Tab::Memories, items, m_memoriesLay, m_memoriesInner);
 
     m_memoriesLay->addStretch();
 }
@@ -958,7 +1080,7 @@ void PensarioPanel::rebuildMemTagChips(const QVector<MemoriesStore::Memory>& all
               [](const QString& a, const QString& b) { return a.compare(b, Qt::CaseInsensitive) < 0; });
 
     auto* wrap = new QWidget(m_memoriesInner);
-    const int maxWidth = kPanelWidth - 2 * kMargin - 4;
+    const int maxWidth = qMax(180, (m_memoriesScroll ? m_memoriesScroll->viewport()->width() : kPanelWidth - 2 * kMargin) - 4);
     const int hGap = 5, vGap = 5;
     int x = 0, y = 0, rowH = 0;
     for (const QString& tag : tags) {
@@ -1374,10 +1496,10 @@ void PensarioPanel::rebuildDialogues()
     }
     const int visibleCount = paginate ? m_dialogueVisibleCount : list.size();
 
-    for (int i = 0; i < visibleCount; ++i) {
-        const DialogueStore::Dialogue& d = list.at(i);
-        m_dialoguesLay->addWidget(buildDialogueCard(d, dialogueSpeakerLabel(d.characterId), d.sourceLabel, m_dialoguesInner));
-    }
+    QVector<PnItem> items;
+    items.reserve(visibleCount);
+    for (int i = 0; i < visibleCount; ++i) items.append(dialogueItem(list.at(i)));
+    renderItems(Tab::Dialogues, items, m_dialoguesLay, m_dialoguesInner);
 
     if (paginate && visibleCount < list.size()) {
         auto* loadMore = new QToolButton(m_dialoguesInner);
@@ -2280,7 +2402,9 @@ void PensarioPanel::selectTab(Tab tab)
     if (m_tabDialogues) m_tabDialogues->setChecked(tab == Tab::Dialogues);
     if (m_namesBtn) m_namesBtn->setChecked(tab == Tab::Names);
     m_stack->setCurrentIndex(static_cast<int>(tab));
-    if (m_sortBtn) m_sortBtn->setVisible(tab == Tab::Comments);
+    if (m_sortBtn) m_sortBtn->setVisible(tab == Tab::Comments && m_style != Style::Board && !alternateViewActive());
+    if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive() && tab != Tab::Names);
+    updateNavChecks();
     if (tab == Tab::Comments) rebuildComments();
     else if (tab == Tab::Notes) rebuildNotes();
     else if (tab == Tab::Memories) rebuildMemories();
@@ -2298,55 +2422,18 @@ void PensarioPanel::rebuildComments()
         delete item;
     }
 
-    int total = 0;
-    if (m_markers) {
-        // Achata todos os comentários em (docKey, entry).
-        struct Item { QString docKey; MarkerStore::Entry e; };
-        QVector<Item> items;
-        const auto& all = m_markers->allEntries();
-        for (auto it = all.constBegin(); it != all.constEnd(); ++it)
-            for (const MarkerStore::Entry& e : it.value())
-                items.append({it.key(), e});
-        total = items.size();
-
-        if (m_sortMode == SortMode::Creation) {
-            // Lista cronológica plana (mais recentes primeiro); origem no card.
-            std::sort(items.begin(), items.end(), [](const Item& a, const Item& b) {
-                if (a.e.createdAt != b.e.createdAt) return a.e.createdAt > b.e.createdAt;
-                return a.e.start < b.e.start;
-            });
-            for (const Item& item : items) {
-                m_commentsLay->addWidget(buildCommentCard(
-                    item.docKey, item.e.color, item.e.comment, item.e.text,
-                    item.e.start, item.e.end,
-                    originLabel(item.docKey, item.e.sceneIndex)));
-            }
-        } else {
-            // Por capítulo: grupos na ordem da obra, subdivididos por cena.
-            std::sort(items.begin(), items.end(), [this](const Item& a, const Item& b) {
-                const int ra = rankForKey(a.docKey), rb = rankForKey(b.docKey);
-                if (ra != rb) return ra < rb;
-                if (a.docKey != b.docKey) return a.docKey < b.docKey;
-                if (a.e.sceneIndex != b.e.sceneIndex) return a.e.sceneIndex < b.e.sceneIndex;
-                if (a.e.blockIndex != b.e.blockIndex) return a.e.blockIndex < b.e.blockIndex;
-                return a.e.start < b.e.start;
-            });
-            QString lastHeader;
-            bool first = true;
-            for (const Item& item : items) {
-                const QString header = originLabel(item.docKey, item.e.sceneIndex);
-                if (first || header != lastHeader) {
-                    first = false;
-                    lastHeader = header;
-                    auto* group = new QLabel(header, m_commentsInner);
-                    group->setObjectName(QStringLiteral("pnGroup"));
-                    m_commentsLay->addWidget(group);
-                }
-                m_commentsLay->addWidget(buildCommentCard(
-                    item.docKey, item.e.color, item.e.comment, item.e.text,
-                    item.e.start, item.e.end));
-            }
+    const int total = tabCount(Tab::Comments);
+    if (total > 0) {
+        if (m_toolReview) m_commentsLay->addWidget(buildReviewBar(m_commentsInner));
+        const QVector<PnItem> items = collectComments(true);
+        if (m_toolColors) m_commentsLay->addWidget(buildColorLegendBar(Tab::Comments, items, m_commentsInner));
+        if (items.isEmpty()) {
+            auto* none = new QLabel(tr("Nenhum comentário neste filtro."), m_commentsInner);
+            none->setObjectName(QStringLiteral("pnEmpty"));
+            none->setAlignment(Qt::AlignCenter);
+            m_commentsLay->addWidget(none);
         }
+        renderItems(Tab::Comments, items, m_commentsLay, m_commentsInner);
     }
 
     if (total == 0) {
@@ -2511,6 +2598,12 @@ QString PensarioPanel::docTitleForKey(const QString& docKey) const
 
 void PensarioPanel::refresh()
 {
+    rebuildNav();
+    if (m_style == Style::Board && !alternateViewActive()) { rebuildBoard(); return; }
+    if (alternateViewActive()) {
+        if (!m_searchQuery.trimmed().isEmpty()) rebuildSearchPage(); else rebuildLensPage();
+        return;
+    }
     if (m_tab == Tab::Comments) rebuildComments();
     else if (m_tab == Tab::Notes) rebuildNotes();
     else if (m_tab == Tab::Memories) rebuildMemories();
@@ -2548,7 +2641,7 @@ void PensarioPanel::ancorRight()
     if (!p) return;
     const int top = m_topInset + kMargin; // começa abaixo da TopToolbar flutuante
     const int h = qMax(200, p->height() - top - kMargin);
-    resize(kPanelWidth, h);
+    resize(styleWidth(), h);
     move(p->width() - width() - kMargin - m_rightInset, top);
     m_positioned = true;
 }
@@ -2561,6 +2654,64 @@ void PensarioPanel::showEvent(QShowEvent* event)
 
 bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    if (watched == m_resizeHandle) {
+        auto* me = static_cast<QMouseEvent*>(event);
+        if (event->type() == QEvent::MouseButtonPress && me->button() == Qt::LeftButton) {
+            m_resizing = true;
+            m_resizeStartX = int(me->globalPosition().x());
+            m_resizeStartW = width();
+            m_resizeStartRight = x() + width();
+            return true;
+        }
+        if (event->type() == QEvent::MouseMove && m_resizing) {
+            const int w = qBound(300, m_resizeStartW - (int(me->globalPosition().x()) - m_resizeStartX), 1200);
+            resize(w, height());
+            move(qMax(0, m_resizeStartRight - w), y());
+            return true;
+        }
+        if (event->type() == QEvent::MouseButtonRelease && m_resizing) {
+            m_resizing = false;
+            QSettings().setValue(QStringLiteral("ui/pensario/width-") + styleId(m_style), width());
+            refresh();
+            return true;
+        }
+    }
+    if (auto* w = qobject_cast<QWidget*>(watched)) {
+        // Barrinha de progresso da Revisão: o preenchimento acompanha a largura.
+        const QVariant prog = w->property("pnProgress");
+        if (prog.isValid() && event->type() == QEvent::Resize) {
+            if (auto* fill = w->findChild<QFrame*>())
+                fill->setGeometry(0, 0, int(w->width() * prog.toDouble()), w->height());
+        }
+        const QVariant key = w->property("pnItemKey");
+        if (key.isValid()) {
+            if (event->type() == QEvent::ContextMenu) {
+                showItemMenu(m_itemIndex.value(key.toString()),
+                             static_cast<QContextMenuEvent*>(event)->globalPos());
+                return true;
+            }
+            // Cartões clássicos têm o clique próprio (mais abaixo).
+            const bool classic = w->property("pnDocKey").isValid() || w->property("pnNoteId").isValid()
+                              || w->property("memId").isValid() || w->property("dlgId").isValid();
+            if (!classic && event->type() == QEvent::MouseButtonRelease) {
+                auto* me = static_cast<QMouseEvent*>(event);
+                if (me->button() == Qt::LeftButton && w->rect().contains(me->position().toPoint())) {
+                    if (w->property("pnPickable").toBool()) {
+                        m_pickKey = key.toString();
+                        updateDetail();
+                    } else {
+                        activateItem(m_itemIndex.value(key.toString()), me->globalPosition().toPoint());
+                    }
+                    return true;
+                }
+            }
+            if (!classic && event->type() == QEvent::MouseButtonDblClick && w->property("pnPickable").toBool()) {
+                activateItem(m_itemIndex.value(key.toString()), static_cast<QMouseEvent*>(event)->globalPosition().toPoint());
+                return true;
+            }
+        }
+    }
+
     // Glossário: salva a definição quando o textarea perde o foco (sem
     // flush a cada tecla) — mesmo comportamento do GlossaryPanel original.
     if (watched == m_glsDefEdit && event->type() == QEvent::FocusOut) {
@@ -2974,10 +3125,31 @@ void PensarioPanel::applyTheme()
             border-radius: @radius-control;
         }
         #pnGlossaryBtn:hover { background: %7; color: %3; }
+        #pnTab[look="chips"] { border: 1px solid %9; padding: 4px 8px; font-size: 11.5px; }
+        #pnTab[look="chips"]:checked { border-color: %8; }
+        #pnTab[look="mag"] { font-family: 'Source Serif 4','Lora',Georgia,serif; font-size: 13px; border-radius: 0px;
+                             border-bottom: 2px solid transparent; }
+        #pnTab[look="mag"]:checked { background: transparent; color: %5; border-bottom-color: %8; }
+        #pnSection { color: %4; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
+        #pnDay { color: %4; background: %6; border: 1px solid %9; border-radius: 9px; padding: 2px 10px; font-size: 10.5px; }
+        #pnDetail { border-left: 1px solid %9; }
+        #pnResizeHandle { background: transparent; }
+        #pnResizeHandle:hover { background: %9; }
     )"))
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
 
     applyGlossaryPopupTheme();
+
+    for (QWidget* w : { m_rail, m_dock, m_dividers }) {
+        if (!w) continue;
+        const QString side = (w == m_rail) ? QStringLiteral("right") : (w == m_dock ? QStringLiteral("top") : QStringLiteral("left"));
+        w->setStyleSheet(QStringLiteral("#%1 { background: %2; border-%3: 1px solid %4; }")
+            .arg(w->objectName(), Theme::appBackground(), side, Theme::subtleBorder()));
+    }
+    if (m_styleBtn) {
+        m_styleBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"),
+            QColor(textMut), QColor(textPri), QColor(textBrt), QSize(16, 16)));
+    }
 
     // Ícone SVG do mapa precisa ser re-tintado a cada troca de tema.
     if (m_mapBtn) {

@@ -4,6 +4,7 @@
 #include <QFrame>
 #include <QString>
 
+class QCheckBox;
 class QLineEdit;
 class QTextEdit;
 class QToolButton;
@@ -29,6 +30,9 @@ public:
 
     void setComment(const QString& text);
     QString comment() const;
+    // "Tarefa": o comentário entra na Revisão do Pensário (caixinha de resolvido).
+    void setTask(bool task);
+    bool isTask() const;
 
     // Posiciona o popup acima do retângulo da seleção em coordenadas globais.
     void showAbove(const QRect& anchorGlobal);
@@ -64,6 +68,7 @@ private:
     QHBoxLayout* m_actionsRow = nullptr;
     QWidget* m_commentArea = nullptr;
     QTextEdit* m_commentEdit = nullptr;
+    QCheckBox* m_taskCheck = nullptr;
     QToolButton* m_customBtn = nullptr;
     QToolButton* m_confirmBtn = nullptr;
     QToolButton* m_cancelBtn = nullptr;

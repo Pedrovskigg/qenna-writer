@@ -225,6 +225,11 @@ private:
     void openMainMenu();
     void rememberLastDocFor(const QString& root);
     void restoreLastDocFor(const QString& root);
+    // "Onde parei" da gaveta de Manuscritos (QSettings por projeto).
+    void recordResumePoint();
+    void loadResumeTrail();
+    void resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,
+                  const QString& sentence, int position);
     void applyProjectRoot(const QString& root);
 
     // Pensário: abre o documento de um comentário e salta até o trecho.

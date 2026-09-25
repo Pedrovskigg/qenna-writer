@@ -1,4 +1,5 @@
 #include "SettingsPanel.h"
+#include "PanelMotion.h"
 
 #include "AboutDialog.h"
 #include "EditorLayout.h"
@@ -157,6 +158,18 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         if (m_blockSignals) return;
         emit leftBarSideChanged(m_leftBarSideCombo->itemData(idx).toInt());
     });
+
+    auto* animCheck = new QCheckBox(tr("Animações da interface"), uiGroup);
+    animCheck->setChecked(PanelMotion::enabled());
+    uiLayout->addWidget(animCheck);
+    auto* animHint = new QLabel(
+        tr("As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as "
+           "linhas entrando em cascata. Desligado, tudo aparece na hora."),
+        uiGroup);
+    animHint->setObjectName(QStringLiteral("settingsHint"));
+    animHint->setWordWrap(true);
+    uiLayout->addWidget(animHint);
+    connect(animCheck, &QCheckBox::toggled, this, [](bool on) { PanelMotion::setEnabled(on); });
 
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);

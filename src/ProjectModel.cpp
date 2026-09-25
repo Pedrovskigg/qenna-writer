@@ -109,6 +109,9 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     if (c.type != QStringLiteral("chapter")) o.insert(QStringLiteral("type"), c.type);
     if (!c.typeLabel.isEmpty()) o.insert(QStringLiteral("typeLabel"), c.typeLabel);
     if (!c.status.isEmpty()) o.insert(QStringLiteral("status"), c.status);
+    if (!c.pov.isEmpty()) o.insert(QStringLiteral("pov"), c.pov);
+    if (!c.vignette.isEmpty()) o.insert(QStringLiteral("vignette"), c.vignette);
+    if (!c.vignetteImage.isEmpty()) o.insert(QStringLiteral("vignetteImage"), c.vignetteImage);
     return o;
 }
 
@@ -128,6 +131,9 @@ Chapter chapterFromJson(const QJsonObject& o) {
     c.type = typeVal.isEmpty() ? QStringLiteral("chapter") : typeVal;
     c.typeLabel = jsonString(o.value(QStringLiteral("typeLabel")));
     c.status = jsonString(o.value(QStringLiteral("status")));
+    c.pov = jsonString(o.value(QStringLiteral("pov")));
+    c.vignette = jsonString(o.value(QStringLiteral("vignette")));
+    c.vignetteImage = jsonString(o.value(QStringLiteral("vignetteImage")));
     return c;
 }
 
@@ -142,6 +148,19 @@ QJsonObject manuscriptToJson(const Manuscript& m) {
         o.insert(QStringLiteral("synopsis"), m.synopsis);
     if (!m.coverDataUrl.isEmpty())
         o.insert(QStringLiteral("coverDataUrl"), m.coverDataUrl);
+    if (!m.parts.isEmpty()) {
+        QJsonArray arr;
+        for (const auto& p : m.parts) {
+            QJsonObject po;
+            po.insert(QStringLiteral("id"), p.id);
+            po.insert(QStringLiteral("title"), p.title);
+            po.insert(QStringLiteral("color"), p.color);
+            po.insert(QStringLiteral("startChapterId"), p.startChapterId);
+            arr.append(po);
+        }
+        o.insert(QStringLiteral("parts"), arr);
+    }
+    if (!m.vignette.isEmpty()) o.insert(QStringLiteral("vignette"), m.vignette);
     return o;
 }
 
@@ -153,6 +172,17 @@ Manuscript manuscriptFromJson(const QJsonObject& o) {
     m.storyStartMarker = jsonString(o.value(QStringLiteral("storyStartMarker")));
     m.synopsis = jsonString(o.value(QStringLiteral("synopsis")));
     m.coverDataUrl = jsonString(o.value(QStringLiteral("coverDataUrl")));
+    const QJsonArray parts = o.value(QStringLiteral("parts")).toArray();
+    for (const auto& pv : parts) {
+        const QJsonObject po = pv.toObject();
+        ManuscriptPart p;
+        p.id = jsonString(po.value(QStringLiteral("id")));
+        p.title = jsonString(po.value(QStringLiteral("title")));
+        p.color = jsonString(po.value(QStringLiteral("color")));
+        p.startChapterId = jsonString(po.value(QStringLiteral("startChapterId")));
+        if (!p.id.isEmpty() && !p.startChapterId.isEmpty()) m.parts.append(p);
+    }
+    m.vignette = jsonString(o.value(QStringLiteral("vignette")));
     return m;
 }
 
@@ -1225,6 +1255,27 @@ bool ProjectModel::updateManuscriptSynopsis(const QString& id, const QString& sy
     return false;
 }
 
+bool ProjectModel::setManuscriptParts(const QString& id, const QList<ManuscriptPart>& parts) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        m.parts = parts;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::setManuscriptVignette(const QString& id, const QString& family) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        if (m.vignette == family) return true;
+        m.vignette = family;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
 bool ProjectModel::updateManuscriptCover(const QString& id, const QString& coverDataUrl) {
     for (auto& m : m_manuscripts) {
         if (m.id != id) continue;
@@ -1488,6 +1539,39 @@ bool ProjectModel::updateScenePovOther(const QString& chapterId, int sceneIndex,
         if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
         if (c.scenes[sceneIndex].povOther == value) return true;
         c.scenes[sceneIndex].povOther = value;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterPov(const QString& chapterId, const QString& elementId) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.pov == elementId) return true;
+        c.pov = elementId;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterVignette(const QString& chapterId, const QString& family) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.vignette == family) return true;
+        c.vignette = family;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterVignetteImage(const QString& chapterId, const QString& dataUrl) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.vignetteImage == dataUrl) return true;
+        c.vignetteImage = dataUrl;
         notifyChaptersChanged();
         return true;
     }

@@ -62,6 +62,25 @@ struct Chapter {
     QString typeLabel;    // rótulo livre digitado pelo usuário quando type=="custom"
     // Estágio de produção do capítulo (WorkStatus::id) — "" = não definido.
     QString status;
+    // Narrador do capítulo (Element::id) — definido pelo usuário na gaveta de
+    // Manuscritos (ferramenta "POV à vista"). "" = não definido.
+    QString pov;
+    // Vinheta do capítulo (Índice ilustrado, Temporadas): família escolhida
+    // ("city", "flames"…; "" = a do livro ou automática) e imagem própria
+    // ("data:image/jpeg;base64,…"; vazia = desenho gerado).
+    QString vignette;
+    QString vignetteImage;
+};
+
+// Parte (ou ato) de um manuscrito: começa num capítulo e vai até o começo da
+// próxima parte. Guardar só o INÍCIO mantém a gaveta sempre na ordem de
+// leitura — reordenar capítulos muda quem está em cada parte, sem nunca
+// embaralhar a lista.
+struct ManuscriptPart {
+    QString id;
+    QString title;
+    QString color;          // hex
+    QString startChapterId;
 };
 
 struct Manuscript {
@@ -71,6 +90,8 @@ struct Manuscript {
     QString storyStartMarker; // "quando a história se passa" — data-base da Timeline
     QString synopsis;         // sinopse própria, opcional — vazio cai no fallback do projeto
     QString coverDataUrl;     // capa própria, opcional — "data:image/jpeg;base64,..."
+    QList<ManuscriptPart> parts; // partes/atos (gaveta de Manuscritos), na ordem de leitura
+    QString vignette;         // família de vinheta do livro todo; "" = automática por capítulo
 };
 
 struct Group {
@@ -319,6 +340,8 @@ public:
     bool updateManuscriptStoryStart(const QString& id, const QString& marker);
     bool updateManuscriptSynopsis(const QString& id, const QString& synopsis);
     bool updateManuscriptCover(const QString& id, const QString& coverDataUrl);
+    bool setManuscriptParts(const QString& id, const QList<ManuscriptPart>& parts);
+    bool setManuscriptVignette(const QString& id, const QString& family);
     bool removeManuscript(const QString& id);
     const Manuscript* findManuscript(const QString& id) const;
     void addChapter(const Chapter& chapter);
@@ -336,6 +359,9 @@ public:
     // "" limpa o estágio. Id fora do catálogo é recusado (retorna false) pra
     // não gravar lixo que a grade depois não sabe rotular.
     bool updateChapterStatus(const QString& chapterId, const QString& status);
+    bool updateChapterPov(const QString& chapterId, const QString& elementId);
+    bool updateChapterVignette(const QString& chapterId, const QString& family);
+    bool updateChapterVignetteImage(const QString& chapterId, const QString& dataUrl);
     bool removeChapter(const QString& chapterId);
 
     // Catálogo fixo de tipos de capítulo (Capítulo/Prólogo/Epílogo/Interlúdio).

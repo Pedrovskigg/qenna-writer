@@ -2544,6 +2544,265 @@ O projeto vai para a Lixeira (acessível pelo ícone de lixeira aqui embaixo), d
         <source>Mover pasta para</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Estilo desta gaveta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blocos com foto ou lista, como sempre foi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Retratos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Elenco: rosto, nome e uma frase da ficha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Polaroid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fotos presas num quadro de cortiça</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Teia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Os personagens arrumados pelos vínculos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dossiê</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lista de um lado, a ficha ou o documento inteiro do outro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tabela</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uma linha por item, colunas que ordenam</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exibição</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Blocos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lista</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pequeno</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Médio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grande</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ordem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Por aparições</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aparições</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Em quais capítulos cada um aparece, e desde quando sumiu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ficha no hover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parando o mouse num item, o essencial dele sem abrir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lado a lado: botão direito num item › Comparar com…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ainda não aparece</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>em %1 de %2 · desde o %3 · última no %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem papel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste um rosto até outra linha pra criar vínculo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste o alfinete de uma foto até outra pra criar vínculo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clique num rosto pra focar · duplo clique abre · arraste um rosto até outro pra criar vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vínculos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem texto ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editar ficha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir no RefMenu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gerar imagem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comparar com…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Papel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Última</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comparando 2 fichas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>só diferenças</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voltar pra gaveta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entre os dois</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nenhum vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ criar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulo(s)</source>
+        <translation>
+            <numerusform>%n capítulo</numerusform>
+            <numerusform>%n capítulos</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1 com %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As duas fichas ainda não têm campos preenchidos.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Criar vínculo com…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo, exibição, ordem e ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Crachás</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uma linha por pessoa, como crachá: foto, papel e dois dados da ficha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Galeria de rostos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O elenco em grade de retratos; o mouse sobre um rosto acende quem tem vínculo com ele</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste a foto de um crachá até outro pra criar vínculo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Passe o mouse num rosto pra ver os vínculos · arraste um rosto até outro pra criar um.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>EditorHost</name>
@@ -7565,6 +7824,736 @@ Conteúdo existente pode ser sobrescrito.</source>
         <source>Excluir cena</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>hoje, %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ontem, %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manuscritos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo e ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lista de capítulos com o seletor de manuscrito em cima</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As capas dos livros num trilho; o aberto sobe pro topo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lombadas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A saga como livros numa prateleira</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vitrine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A prateleira com as capas de frente</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sumário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Como o sumário de um livro impresso</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Espinha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capítulos e cenas como estações numa linha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Grade de cenas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uma fileira por capítulo, um bloco por cena</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mosaico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Todos os capítulos numa grade numerada, pra livro longo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Jornada</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O livro como um caminho, com as partes como regiões</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Onde parei</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O último lugar em que você escreveu, com a última frase</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ficha no hover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resumo, quando, POV, palavras e quem aparece, parando o mouse no capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Partes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Agrupar capítulos em partes ou atos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Variações à vista</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mostra quantas versões cada cena tem e deixa trocar a ativa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ritmo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gráfico do tamanho dos capítulos, com a parte de diálogo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ordem da história</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alterna entre a ordem de leitura e a ordem em que as coisas acontecem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>POV à vista</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O narrador de cada capítulo e a linha de cada um</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Status de produção</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rascunho, revisado ou final, com progresso e filtro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova parte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nome da parte:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parte %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Começa no capítulo:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Novo capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estatísticas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>livro %1 de %2 · %3 capítulos · %4 palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Onde você parou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuar ›</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>antes: %1 (%2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 de %2 finais</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mostrar só estes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leitura</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>História</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Na ordem em que o leitor lê</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Na ordem em que as coisas acontecem (pelo &quot;quando se passa&quot;)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Preencha o &quot;quando se passa&quot; dos capítulos (Renomear capítulo) pra ver a ordem da história.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A leitura segue a ordem da história.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulo(s) fora da ordem da história</source>
+        <translation>
+            <numerusform>%n capítulo fora da ordem da história</numerusform>
+            <numerusform>%n capítulos fora da ordem da história</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Defina o narrador de cada capítulo pelo botão direito (Narrador).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sem narrador</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 narradores · &lt;b&gt;%2&lt;/b&gt; narra %3 de %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;%1&lt;/b&gt; narra %2 de %3: %4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>maior intervalo sem %1: %n capítulo(s)</source>
+        <translation>
+            <numerusform>maior intervalo sem %1: %n capítulo</numerusform>
+            <numerusform>maior intervalo sem %1: %n capítulos</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Ritmo do livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 palavras · média %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Passe o mouse nas barras. Azul = diálogo.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&lt;b&gt;%1&lt;/b&gt; · %2 palavras · %3% diálogo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum capítulo com esse status.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cap.</source>
+        <translation>
+            <numerusform>%n cap.</numerusform>
+            <numerusform>%n cap.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Mostrar os capítulos desta parte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recolher esta parte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>clique pra trocar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n versões</source>
+        <translation>
+            <numerusform>%n versão</numerusform>
+            <numerusform>%n versões</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Versão ativa: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(sem nome)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova variação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Você parou aqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Posição na leitura</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Narrador: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n capítulos</source>
+        <translation>
+            <numerusform>%n capítulo</numerusform>
+            <numerusform>%n capítulos</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n finais</source>
+        <translation>
+            <numerusform>%n final</numerusform>
+            <numerusform>%n finais</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cenas</source>
+        <translation>
+            <numerusform>%n cena</numerusform>
+            <numerusform>%n cenas</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>largura = tamanho da cena</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lendo a linha de %1: &lt;b&gt;%2 de %3&lt;/b&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>Linha de %1: %n capítulo(s)</source>
+        <translation>
+            <numerusform>Linha de %1: %n capítulo</numerusform>
+            <numerusform>Linha de %1: %n capítulos</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>Ler a linha ›</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Próximo ›</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recomeçar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quando: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>POV: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem resumo ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Aparecem: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>diálogo %1%</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Narrador</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 (sugerido)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum personagem cadastrado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem narrador definido</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tirar o começo de parte daqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Começar uma parte aqui…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Versão ativa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Renomear parte…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Renomear parte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cor…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cor da parte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Desfazer a parte (os capítulos ficam)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a largura</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cor do livro…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cor do livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cor automática</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a altura · duplo clique volta pra altura toda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folha de rosto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A folha de rosto do livro, com o sumário e o número de página</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leitor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Como a biblioteca de um e-reader: quanto de cada capítulo você já revisou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Índice ilustrado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cada capítulo com uma vinheta só dele, que cresce junto com o texto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Temporadas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O livro como série: cada livro é uma temporada, cada capítulo um episódio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Página da loja</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O livro como na página de uma livraria: capa, números, sinopse e sumário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Box da saga</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Os livros da série num estojo; o aberto sai puxado pra fora</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Começar nova revisão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Zera o quanto de cada capítulo você já passou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trocar desenho…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>vazio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n cena(s)</source>
+        <translation>
+            <numerusform>%n cena</numerusform>
+            <numerusform>%n cenas</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>a saga</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LIVRO %1 DE %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SUMÁRIO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%1 palavras · cerca de %n lauda(s)</source>
+        <translation>
+            <numerusform>%1 palavras · cerca de %n lauda</numerusform>
+            <numerusform>%1 palavras · cerca de %n laudas</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>%1 · %2 palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>▸ Continuar de onde parou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Botão direito: começar nova revisão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1% do livro revisitado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cap. %1 · %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Revisado até o fim</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Você foi até %1% deste capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ainda não passou por aqui nesta revisão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CAP. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>imagem própria</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cena %1 de %2 · onde você parou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>onde você parou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CONTINUAR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro %1 de %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro %1 da saga %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PÁGINAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PALAVRAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CAPÍTULOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sinopse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sem sinopse ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>escrever</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>editar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sinopse deste livro:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Da mesma série</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trocar desenho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Só este capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O livro todo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Automático</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>o desenho continua crescendo com o capítulo; só muda a fundação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Usar imagem minha…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trocar imagem…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imagem do capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voltar ao desenho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A SAGA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A SAGA %1</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MapPanel</name>
@@ -7853,6 +8842,14 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/MarkerPickPopup.cpp" line="296"/>
         <source>Cor do marcador</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tarefa (entra na Revisão do Pensário)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nem todo comentário é uma tarefa. Marque só os que precisam ser resolvidos.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8972,6 +9969,378 @@ As estatísticas são estimativas e não garantem precisão absoluta com o conte
     <message>
         <location filename="../src/PensarioPanel.cpp" line="2507"/>
         <source>Manuscrito</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo e ferramentas do Pensário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum comentário neste filtro.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estilo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clássico</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As abas em cima e os cartões</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trilho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As seções num trilho de ícones com contador</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Doca</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O trilho deitado, embaixo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duas colunas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lista de um lado, o item inteiro do outro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mural</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Post-its tingidos pela cor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Caderno</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folha pautada, grifo na cor do marcador, divisórias na borda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Baralho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uma ficha grande por vez</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quadro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As quatro seções em colunas, lado a lado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Os diálogos como conversa; comentários como resposta ao trecho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tabela</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Densa e ordenável</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Revista</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Citações em duas colunas, como numa revista</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Busca no Pensário</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Uma busca que atravessa comentários, notas, memórias e diálogos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lente de capítulo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tudo de um capítulo, de todos os tipos. É filtro: escolha qualquer capítulo ou Todos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cores com nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A cor vira categoria, com legenda do projeto e filtro (comentários e notas)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Revisão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Comentários marcados como tarefa ganham caixinha de resolvido e progresso</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Levar pro texto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inserir nota, memória ou fala no cursor do editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nomes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Buscar no Pensário…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lente</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O capítulo aberto no editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fechar a lente</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Notas fixadas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MEMÓRIAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FALAS DA EDIÇÃO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>NOTAS DA REVISÃO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CADERNO DE IDEIAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O que ficou guardado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eles disseram</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O que falta consertar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ideias soltas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Reabrir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marcar como resolvido</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>↳ Levar pro texto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inserir no cursor do editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nota</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cap. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ficha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>↪ encaminhada de %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>uma ficha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>✓ resolvido</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>tarefa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolha um item na lista.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nota sem título</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tarefa resolvida</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tarefa pendente</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir no RefMenu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alterar locutor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Resolver</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Virar tarefa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 %2 de %3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nota</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>TEXTO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CAPÍTULO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DATA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Não é tarefa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Marcar como tarefa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Legenda das cores</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dê um nome pra cada cor. Ele vale pro projeto inteiro.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ex.: Conferir, Problema, Ritmo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Salvar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>sem nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editar legenda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tarefas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>esconder resolvidos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhuma tarefa ainda. Marque &quot;Tarefa&quot; ao criar um comentário, ou use o botão direito num comentário.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada encontrado no Pensário.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O livro inteiro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada anotado neste capítulo ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada aqui ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Arraste pra mudar a largura</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seções anteriores</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Próximas seções</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -19495,6 +20864,14 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
         <source>Quando ativado, o app detecta nomes de personagens no texto e sugere marcar a presença deles na cena.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Animações da interface</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ShelfBookItem</name>
@@ -23282,6 +24659,82 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
     <message>
         <location filename="../src/ZoneItem.cpp" line="335"/>
         <source>Remover área</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MsShelf</name>
+    <message>
+        <source>Livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DwBadges</name>
+    <message>
+        <source>sem vínculos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <source>%n vínculo(s)</source>
+        <translation>
+            <numerusform>%n vínculo</numerusform>
+            <numerusform>%n vínculos</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>MsVignette</name>
+    <message>
+        <source>Galhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raízes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chamas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cidade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Constelação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Montanhas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Coral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rachaduras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mandala</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Relâmpago</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ondas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Círculos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Raios</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

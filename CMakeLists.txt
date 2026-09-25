@@ -92,6 +92,7 @@ qt_add_executable(qenna-writer
     src/RefMenuPanel.h
     src/PensarioPanel.cpp
     src/PensarioPanel.h
+    src/PensarioStyles.cpp
     src/NotesStore.cpp
     src/NotesStore.h
     src/NoteEditPopup.cpp
@@ -157,10 +158,19 @@ qt_add_executable(qenna-writer
     src/LeftBar.h
     src/DrawerListPanel.cpp
     src/DrawerListPanel.h
+    src/DrawerListPanelStyles.cpp
+    src/DrawerViews.cpp
+    src/DrawerViews.h
     src/DrawerCreateDialog.cpp
     src/DrawerCreateDialog.h
     src/ManuscriptPanel.cpp
     src/ManuscriptPanel.h
+    src/ManuscriptViews.cpp
+    src/ManuscriptViews.h
+    src/MsVignette.cpp
+    src/MsVignette.h
+    src/PanelMotion.cpp
+    src/PanelMotion.h
     src/OutlinePanel.cpp
     src/OutlinePanel.h
     src/ChapterStatsDialog.cpp

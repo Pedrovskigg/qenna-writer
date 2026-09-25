@@ -95,6 +95,8 @@ bool MarkerStore::load()
             e.text = o.value(QStringLiteral("text")).toString();
             e.sceneIndex = o.value(QStringLiteral("sceneIndex")).toInt(-1);
             e.createdAt = o.value(QStringLiteral("createdAt")).toVariant().toLongLong();
+            e.task = o.value(QStringLiteral("task")).toBool(false);
+            e.done = o.value(QStringLiteral("done")).toBool(false);
             if (e.id.isEmpty()) continue;
             list.append(e);
         }
@@ -122,6 +124,8 @@ bool MarkerStore::save() const
             if (!e.text.isEmpty()) o.insert(QStringLiteral("text"), e.text);
             if (e.sceneIndex >= 0) o.insert(QStringLiteral("sceneIndex"), e.sceneIndex);
             if (e.createdAt > 0) o.insert(QStringLiteral("createdAt"), e.createdAt);
+            if (e.task) o.insert(QStringLiteral("task"), true);
+            if (e.done) o.insert(QStringLiteral("done"), true);
             arr.append(o);
         }
         if (!arr.isEmpty()) root.insert(it.key(), arr);
@@ -207,6 +211,8 @@ void MarkerStore::captureFromDocument(const QString& docKey, QTextDocument* doc)
             // isolada (sem separadores). O valor vem certo da criação.
             e.sceneIndex = prev.sceneIndex;
             e.createdAt = prev.createdAt;
+            e.task = prev.task;
+            e.done = prev.done;
             seenInFresh.insert(id, fresh.size());
             fresh.append(e);
         }
@@ -263,6 +269,35 @@ QString MarkerStore::applyMarkerToSelection(const QString& docKey,
         emit markersChanged(docKey);
     }
     return id;
+}
+
+void MarkerStore::setTask(const QString& docKey, const QString& id, bool task)
+{
+    auto it = m_entries.find(docKey);
+    if (it == m_entries.end()) return;
+    for (Entry& e : *it) {
+        if (e.id != id) continue;
+        if (e.task == task) return;
+        e.task = task;
+        if (!task) e.done = false;
+        save();
+        emit markersChanged(docKey);
+        return;
+    }
+}
+
+void MarkerStore::setDone(const QString& docKey, const QString& id, bool done)
+{
+    auto it = m_entries.find(docKey);
+    if (it == m_entries.end()) return;
+    for (Entry& e : *it) {
+        if (e.id != id) continue;
+        if (e.done == done) return;
+        e.done = done;
+        save();
+        emit markersChanged(docKey);
+        return;
+    }
 }
 
 void MarkerStore::removeMarker(const QString& docKey, QTextDocument* doc, const QString& id)

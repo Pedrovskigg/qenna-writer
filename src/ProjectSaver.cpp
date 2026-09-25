@@ -43,6 +43,14 @@ ProjectSaver::ProjectSaver(ProjectModel* model, DocCache* cache, EditorHost* hos
         connect(m_model, &ProjectModel::settingsChanged, this, &ProjectSaver::onSettingsChanged);
         // projectDetails muda dataExtras → precisa flush no autosave/Ctrl+S.
         connect(m_model, &ProjectModel::projectDetailsChanged, this, &ProjectSaver::onSettingsChanged);
+        // Metadados de capítulo/manuscrito (status, título, partes, narrador…)
+        // moram só no índice. Sem isto, mudar só metadado e fechar o app sem
+        // ter digitado nada perdia a mudança: nada contava como "sujo".
+        connect(m_model, &ProjectModel::chaptersChanged, this, &ProjectSaver::onSettingsChanged);
+        connect(m_model, &ProjectModel::manuscriptsChanged, this, &ProjectSaver::onSettingsChanged);
+        // O load emite chaptersChanged/manuscriptsChanged e termina com
+        // loaded(): o projeto recém-aberto não tem nada novo pra gravar.
+        connect(m_model, &ProjectModel::loaded, this, [this]() { m_settingsDirty = false; });
     }
 }
 

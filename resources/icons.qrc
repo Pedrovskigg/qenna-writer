@@ -115,6 +115,11 @@
         <file alias="panel-right.svg">../src/assets/icons/panel-right.svg</file>
         <file alias="menu.svg">../src/assets/icons/menu.svg</file>
         <file alias="layout.svg">../src/assets/icons/layout.svg</file>
+        <file alias="ereader.svg">../src/assets/icons/ereader.svg</file>
+        <file alias="pn-comment.svg">../src/assets/icons/pn-comment.svg</file>
+        <file alias="pn-note.svg">../src/assets/icons/pn-note.svg</file>
+        <file alias="pn-memory.svg">../src/assets/icons/pn-memory.svg</file>
+        <file alias="pn-dialogue.svg">../src/assets/icons/pn-dialogue.svg</file>
         <file alias="compare.svg">../src/assets/icons/compare.svg</file>
         <file alias="usage-map.svg">../src/assets/icons/usage-map.svg</file>
         <file alias="check.svg">../src/assets/icons/check.svg</file>

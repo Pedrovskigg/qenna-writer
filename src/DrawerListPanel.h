@@ -23,11 +23,22 @@ class ElementsStore;
 class BondsLayer;
 class DocCache;
 class QLineEdit;
+class QMenu;
+class QTimer;
+struct DwBond;
+struct DwEntry;
 
 class DrawerListPanel : public QWidget {
     Q_OBJECT
 public:
-    enum SortMode { SortCreation, SortAlpha, SortRole };
+    enum SortMode { SortCreation, SortAlpha, SortRole, SortAppearances };
+    // Estilos da gaveta — cada gaveta lembra o seu, e o menu só oferece o que
+    // cabe no tipo dela (Retratos, Polaroid, Crachás e Galeria só pra gaveta
+    // de elemento).
+    enum class Style { Classic, Portraits, Polaroid, Badges, Gallery, Dossier, Table };
+
+    // Cascata das linhas (gaveta abrindo, troca de estilo ou de gaveta).
+    void playIntro(int delayMs = 70);
 
     explicit DrawerListPanel(ProjectModel* model, QWidget* parent = nullptr);
 
@@ -76,6 +87,43 @@ private slots:
     void applyTheme();
 
 private:
+    // ---- estilos e ferramentas (DrawerListPanelStyles.cpp) ----
+    Style storedStyleFor(const QString& drawerKey) const;
+    bool styleAllowed(Style s) const;
+    void setStyle(Style s);
+    void showMoreMenu();
+    static QString styleId(Style s);
+    QString widthKeyFor(Style s) const;
+    int defaultWidthFor(Style s) const;
+    void applyStyleWidth();
+    QList<DrawerItem> visibleItems(bool* searching) const;
+    QString effectiveRole(const DrawerItem& it) const;
+    QPixmap itemPhoto(const DrawerItem& it) const;
+    QString itemHtml(const DrawerItem& it) const;
+    QString itemOneLine(const DrawerItem& it) const;
+    QList<QPair<QString, QString>> itemFields(const DrawerItem& it) const;
+    void computeAppearances();
+    QList<bool> appearsFor(const DrawerItem& it) const;
+    QString appearsMeta(const QList<bool>& ap) const;
+    QList<DwBond> dwBonds() const;
+    QList<DwEntry> dwEntries(const QList<DrawerItem>& items) const;
+    void buildPortraits(const QList<DrawerItem>& items);
+    void buildPolaroid(const QList<DrawerItem>& items);
+    void buildBadges(const QList<DrawerItem>& items);
+    QWidget* motionArea() const;
+    void buildGallery(const QList<DrawerItem>& items);
+    void buildDossier(const QList<DrawerItem>& items);
+    void buildTable(const QList<DrawerItem>& items);
+    void buildCompare();
+    void wireView(class DwBondDragBase* v);
+    void openCompare(const QString& a, const QString& b);
+    void closeCompare();
+    void addBondMenu(QMenu* menu, const QString& fromId);
+    void addCompareMenu(QMenu* menu, const QString& itemId);
+    void armHover(const QString& itemId, const QRect& globalRect);
+    void disarmHover();
+    void showHoverCard();
+
     void rebuildContents();
     void rebuildFolderStrip();
     void updateActionBar();
@@ -106,6 +154,7 @@ private:
     QStringList ancestorFolderIds(const QString& folderId) const;
 
     QString createButtonLabel() const;
+    QString menuQss() const;
     QString currentDrawerColor() const;
     bool currentDrawerIsCharacter() const;
     bool currentDrawerIsElement() const;
@@ -140,6 +189,7 @@ private:
     QLabel* m_bondHintLabel = nullptr;
 
     // Header / action bar
+    QToolButton* m_moreBtn = nullptr;   // ⋯: estilo, exibição, tamanho, ordem, ferramentas
     QToolButton* m_pinBtn;
     QToolButton* m_viewBtn;
     QToolButton* m_sortBtn;
@@ -163,6 +213,23 @@ private:
     bool m_gridView = true;
     bool m_pinned = false;
     int m_cardSizeIdx = 2; // 0=S 1=M 2=G
+
+    // Estilos e ferramentas
+    Style m_style = Style::Classic;
+    bool m_toolAppears = false;
+    bool m_toolHover = true;
+    QWidget* m_altHost = nullptr;          // Dossiê, Tabela e Lado a lado ocupam o painel todo
+    class QVBoxLayout* m_altLayout = nullptr;
+    QString m_dossierSel;
+    QString m_compareA, m_compareB;
+    bool m_compareDiff = false;
+    QHash<QString, QList<bool>> m_appears;  // elementId -> presença por capítulo
+    QStringList m_chapterLabels;
+    mutable QHash<QString, QString> m_previewCache;
+    QTimer* m_hoverTimer = nullptr;
+    QLabel* m_hoverCard = nullptr;
+    QString m_hoverItemId;
+    QRect m_hoverRect;
 
     // Drag state (foto -> reorder/mover)
     QPoint m_dragStartPos;

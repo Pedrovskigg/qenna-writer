@@ -1,4 +1,6 @@
 #include "MarkerPickPopup.h"
+
+#include <QCheckBox>
 #include "ColorPopover.h"
 
 #include "IconUtils.h"
@@ -196,6 +198,11 @@ void MarkerPickPopup::buildUi()
     m_commentEdit->setPlaceholderText(tr("Escreva seu comentário..."));
     m_commentEdit->setFixedHeight(kCommentHeight);
     cLayout->addWidget(m_commentEdit);
+    m_taskCheck = new QCheckBox(tr("Tarefa (entra na Revisão do Pensário)"), m_commentArea);
+    m_taskCheck->setToolTip(tr("Nem todo comentário é uma tarefa. Marque só os que precisam ser resolvidos."));
+    m_taskCheck->setCursor(Qt::PointingHandCursor);
+    cLayout->addSpacing(6);
+    cLayout->addWidget(m_taskCheck);
     m_commentArea->setFixedWidth(kCommentWidth);
 
     // Montagem final do root layout — ordem: paleta, área de comentário
@@ -235,6 +242,7 @@ void MarkerPickPopup::applyTheme()
         "  padding: 4px;"
         "  font-size: 12px;"
         "}"
+        "QCheckBox { color: %4; font-size: 11.5px; spacing: 6px; }"
     ).arg(Theme::panelBackground(),
           Theme::panelBorder(),
           Theme::editorBackground(),
@@ -284,6 +292,16 @@ void MarkerPickPopup::setComment(const QString& text)
 {
     m_pendingComment = text;
     if (m_commentEdit) m_commentEdit->setPlainText(text);
+}
+
+void MarkerPickPopup::setTask(bool task)
+{
+    if (m_taskCheck) m_taskCheck->setChecked(task);
+}
+
+bool MarkerPickPopup::isTask() const
+{
+    return m_taskCheck && m_mode == WithComment && m_taskCheck->isChecked();
 }
 
 QString MarkerPickPopup::comment() const
