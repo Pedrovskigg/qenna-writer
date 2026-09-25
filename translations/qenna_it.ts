@@ -5860,6 +5860,30 @@ Non chiudere il programma se smette di rispondere.</translation>
         <source>Nova gaveta</source>
         <translation>Nuovo cassetto</translation>
     </message>
+    <message>
+        <source>Projeto</source>
+        <translation>Progetto</translation>
+    </message>
+    <message>
+        <source>Planejamento</source>
+        <translation>Pianificazione</translation>
+    </message>
+    <message>
+        <source>Escrita</source>
+        <translation>Scrittura</translation>
+    </message>
+    <message>
+        <source>Gavetas</source>
+        <translation>Cassetti</translation>
+    </message>
+    <message>
+        <source>Informações</source>
+        <translation>Informazioni</translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation>Board</translation>
+    </message>
 </context>
 <context>
     <name>LoadingToast</name>
@@ -20924,6 +20948,14 @@ Se non hai una chiave API o semplicemente non vuoi usare l&apos;assistente, ness
     <message>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
         <translation>I cassetti e il cassetto dei Manoscritti escono da dietro la barra laterale, con le righe che entrano a cascata. Disattivato, tutto appare subito.</translation>
+    </message>
+    <message>
+        <source>Nomes na barra lateral</source>
+        <translation>Nomi nella barra laterale</translation>
+    </message>
+    <message>
+        <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
+        <translation>Fermando il mouse sulla barra laterale, mostra il nome di ogni pulsante e quanti elementi ha ogni cassetto. Disattivato, restano solo le icone, con il suggerimento di sempre.</translation>
     </message>
 </context>
 <context>

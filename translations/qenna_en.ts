@@ -5860,6 +5860,30 @@ Don&apos;t close the program if it stops responding.</translation>
         <source>Nova gaveta</source>
         <translation>New drawer</translation>
     </message>
+    <message>
+        <source>Projeto</source>
+        <translation>Project</translation>
+    </message>
+    <message>
+        <source>Planejamento</source>
+        <translation>Planning</translation>
+    </message>
+    <message>
+        <source>Escrita</source>
+        <translation>Writing</translation>
+    </message>
+    <message>
+        <source>Gavetas</source>
+        <translation>Drawers</translation>
+    </message>
+    <message>
+        <source>Informações</source>
+        <translation>Info</translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation>Board</translation>
+    </message>
 </context>
 <context>
     <name>LoadingToast</name>
@@ -20924,6 +20948,14 @@ If you don&apos;t have an API key, or simply don&apos;t want to use the assistan
     <message>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
         <translation>The drawers and the Manuscripts drawer slide out from behind the sidebar, with their rows cascading in. When off, everything appears instantly.</translation>
+    </message>
+    <message>
+        <source>Nomes na barra lateral</source>
+        <translation>Names on the sidebar</translation>
+    </message>
+    <message>
+        <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
+        <translation>Resting the mouse on the sidebar shows each button&apos;s name and how many items each drawer holds. When off, only the icons remain, with the usual tooltip.</translation>
     </message>
 </context>
 <context>

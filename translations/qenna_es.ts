@@ -5860,6 +5860,30 @@ No cierres el programa si deja de responder.</translation>
         <source>Nova gaveta</source>
         <translation>Nuevo cajón</translation>
     </message>
+    <message>
+        <source>Projeto</source>
+        <translation>Proyecto</translation>
+    </message>
+    <message>
+        <source>Planejamento</source>
+        <translation>Planificación</translation>
+    </message>
+    <message>
+        <source>Escrita</source>
+        <translation>Escritura</translation>
+    </message>
+    <message>
+        <source>Gavetas</source>
+        <translation>Cajones</translation>
+    </message>
+    <message>
+        <source>Informações</source>
+        <translation>Información</translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation>Pizarra</translation>
+    </message>
 </context>
 <context>
     <name>LoadingToast</name>
@@ -20924,6 +20948,14 @@ Si no tienes una clave de API o simplemente no quieres usar el asistente, no hay
     <message>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
         <translation>Los cajones y el cajón de Manuscritos salen de detrás de la barra lateral, con las filas entrando en cascada. Desactivado, todo aparece al instante.</translation>
+    </message>
+    <message>
+        <source>Nomes na barra lateral</source>
+        <translation>Nombres en la barra lateral</translation>
+    </message>
+    <message>
+        <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
+        <translation>Al dejar el ratón sobre la barra lateral, muestra el nombre de cada botón y cuántos elementos tiene cada cajón. Desactivado, quedan solo los íconos, con la pista de siempre.</translation>
     </message>
 </context>
 <context>

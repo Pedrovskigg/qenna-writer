@@ -5840,6 +5840,30 @@ Não encerre o programa caso ele pare de responder.</source>
         <source>Nova gaveta</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Planejamento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escrita</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gavetas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Informações</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>LoadingToast</name>
@@ -20870,6 +20894,14 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
     </message>
     <message>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nomes na barra lateral</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

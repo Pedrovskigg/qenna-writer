@@ -8,6 +8,9 @@
 #include <QWidget>
 
 class QFrame;
+class QEnterEvent;
+class QTimer;
+class LeftBarLabels;
 class ToolbarGroupWidget;
 
 class QVBoxLayout;
@@ -61,6 +64,11 @@ public:
     // recuada antes de decidir revelar ou esconder de novo.
     bool chromeHidden() const { return m_chromeHidden; }
 
+    // Etiquetas: com o mouse em cima, uma faixa sai da barra com o nome de
+    // cada botão e a contagem das gavetas. Configurações › Interface liga/desliga.
+    static bool labelsEnabled();
+    static void setLabelsEnabled(bool on);
+
 signals:
     void barSideChanged(Qt::Edge side);
     void fixedActionTriggered(LeftBar::FixedAction action);
@@ -71,6 +79,11 @@ signals:
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
+    void enterEvent(QEnterEvent* event) override;
+    void leaveEvent(QEvent* event) override;
+    void moveEvent(QMoveEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
+    void hideEvent(QHideEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
@@ -84,6 +97,17 @@ private slots:
 private:
     Qt::Edge m_barSide = Qt::LeftEdge;
     bool m_chromeHidden = false;
+
+    // Etiquetas
+    void showLabels();
+    void refreshLabels();
+    void hideLabels(bool animated);
+    void maybeHideLabels();
+    void updateLabelsGeometry();
+    LeftBarLabels* m_labels = nullptr;
+    int m_labelsWidth = 140;
+    int m_labelsHeight = 0;     // 0 = altura da barra
+    QTimer* m_labelsTimer = nullptr;
     int drawerInsertIndexAt(const QPoint& posInBar) const;
     void updateDropIndicator(int targetIndex);
     void clearDropIndicator();

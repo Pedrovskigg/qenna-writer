@@ -5860,6 +5860,30 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
         <source>Nova gaveta</source>
         <translation>Nouveau tiroir</translation>
     </message>
+    <message>
+        <source>Projeto</source>
+        <translation>Projet</translation>
+    </message>
+    <message>
+        <source>Planejamento</source>
+        <translation>Planification</translation>
+    </message>
+    <message>
+        <source>Escrita</source>
+        <translation>Écriture</translation>
+    </message>
+    <message>
+        <source>Gavetas</source>
+        <translation>Tiroirs</translation>
+    </message>
+    <message>
+        <source>Informações</source>
+        <translation>Infos</translation>
+    </message>
+    <message>
+        <source>Lousa</source>
+        <translation>Board</translation>
+    </message>
 </context>
 <context>
     <name>LoadingToast</name>
@@ -20924,6 +20948,14 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
     <message>
         <source>As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as linhas entrando em cascata. Desligado, tudo aparece na hora.</source>
         <translation>Les tiroirs et le tiroir des Manuscrits sortent de derrière la barre latérale, avec les lignes qui arrivent en cascade. Désactivé, tout apparaît immédiatement.</translation>
+    </message>
+    <message>
+        <source>Nomes na barra lateral</source>
+        <translation>Noms dans la barre latérale</translation>
+    </message>
+    <message>
+        <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
+        <translation>En laissant la souris sur la barre latérale, elle affiche le nom de chaque bouton et le nombre d&apos;éléments de chaque tiroir. Désactivé, il ne reste que les icônes, avec l&apos;infobulle habituelle.</translation>
     </message>
 </context>
 <context>

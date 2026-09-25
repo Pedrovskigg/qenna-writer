@@ -1,4 +1,5 @@
 #include "SettingsPanel.h"
+#include "LeftBar.h"
 #include "PanelMotion.h"
 
 #include "AboutDialog.h"
@@ -170,6 +171,18 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     animHint->setWordWrap(true);
     uiLayout->addWidget(animHint);
     connect(animCheck, &QCheckBox::toggled, this, [](bool on) { PanelMotion::setEnabled(on); });
+
+    auto* labelsCheck = new QCheckBox(tr("Nomes na barra lateral"), uiGroup);
+    labelsCheck->setChecked(LeftBar::labelsEnabled());
+    uiLayout->addWidget(labelsCheck);
+    auto* labelsHint = new QLabel(
+        tr("Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos "
+           "itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre."),
+        uiGroup);
+    labelsHint->setObjectName(QStringLiteral("settingsHint"));
+    labelsHint->setWordWrap(true);
+    uiLayout->addWidget(labelsHint);
+    connect(labelsCheck, &QCheckBox::toggled, this, [](bool on) { LeftBar::setLabelsEnabled(on); });
 
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);
