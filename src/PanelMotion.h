@@ -29,10 +29,21 @@ bool barOnRight();
 // Liga o abrir/fechar da gaveta no painel. onOpening roda logo depois que a
 // abertura começa (a cascata das linhas).
 void installDrawer(QWidget* panel, std::function<void()> onOpening);
+// O mesmo movimento saindo de qualquer borda (Pensário e Estatísticas pela
+// direita, RefMenu e Som imersivo pela barra de ferramentas). Serve também
+// pra janela solta (Qt::Tool).
+void installFromEdge(QWidget* panel, std::function<Qt::Edge()> edge, std::function<void()> onOpening);
+// Cascata automática: acha a lista principal do painel (o maior QScrollArea)
+// e faz as linhas dela entrarem a partir de `from`.
+void autoCascade(QWidget* panel, Qt::Edge from, int delayMs = 70);
+// Popover que aparece e some o tempo todo (menu de seleção): entra com fade
+// e um deslize curto a partir de `from`, sem mola; ao sumir, some na hora.
+void installPopover(QWidget* w, Qt::Edge from);
 
 // Cascata: cada linha entra deslizando da barra, 22ms depois da anterior.
 // Só as 14 primeiras animam; o resto já está lá.
 void cascade(const QList<QWidget*>& rows, int delayMs);
+void cascade(const QList<QWidget*>& rows, int delayMs, Qt::Edge from);
 
 // Troca de conteúdo (estilo, gaveta, livro): o conteúdo velho sai deslizando
 // num fantasma por cima de `area`. Chamar ANTES de refazer a lista.
@@ -44,6 +55,12 @@ void popIn(QWidget* window);
 
 // Menu (⋯, botão direito): entra com fade. Chamar antes do exec().
 void animateMenu(QMenu* menu);
+
+// Toda janela que abre no app (diálogos de criar memória, marcador,
+// glossário, evento, Configurações, Temas, menus…) entra com fade e um
+// deslize curto de baixo pra cima. Quem já tem movimento próprio fica de
+// fora (propriedade "qennaMotionHandled" ou a lista em PanelMotion.cpp).
+void installGlobalWindowMotion();
 
 // Tempo e curva da cascata, pra quem desenha os próprios itens (Retratos,
 // Polaroid, Crachás, Galeria): progresso 0…1 do item `order` depois de

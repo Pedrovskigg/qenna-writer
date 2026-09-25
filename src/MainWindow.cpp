@@ -2,6 +2,8 @@
 #include <QEasingCurve>
 #include <QPropertyAnimation>
 #include "PanelMotion.h"
+#include "ProjectDrawerPanel.h"
+#include "SmoothCaret.h"
 #include <QGraphicsOpacityEffect>
 
 #include "DocHeaderBar.h"
@@ -1006,6 +1008,8 @@ void MainWindow::setupEditor()
     editor->setFrameStyle(0);
     editor->setAcceptRichText(false);
     editor->setFixedWidth(EditorLayout::pageWidth());
+    // Cursor que desliza (o feeling do Word) — Configurações › Interface.
+    SmoothCaret::install(editor);
 
     leftBar = new LeftBar(projectModel, this);
     leftBar->installEventFilter(this); // auto-hide no modo focado
@@ -1221,6 +1225,10 @@ void MainWindow::setupEditor()
     // Versão inicial leva apenas as ações de formatação inline; outros features
     // pendurarão suas ações com addAction(...).
     selectionPopup = new SelectionPopup(editor, this);
+    // Sobe da seleção com um fade curto; some na hora (aparece e some a cada
+    // seleção — um fade de saída ia parecer lerdeza).
+    PanelMotion::installPopover(selectionPopup, Qt::BottomEdge);
+    selectionPopup->beginGroup(tr("Formato"));
     selBoldBtn = selectionPopup->addAction(QStringLiteral("bold.svg"), tr("Negrito"),
         [this]() {
             const bool now = editor && editor->currentCharFormat().fontWeight() > QFont::Normal;
@@ -1250,7 +1258,7 @@ void MainWindow::setupEditor()
         });
     selStrikeBtn->setCheckable(true);
 
-    selectionPopup->addSeparator();
+    selectionPopup->beginGroup(tr("Anotar"));
     selectionPopup->addAction(QStringLiteral("marker.svg"), tr("Marcador"),
         [this]() { openMarkerPickerForSelection(/*withComment=*/false); });
     selectionPopup->addAction(QStringLiteral("marker-comment.svg"), tr("Marcador com comentário"),
@@ -1270,10 +1278,9 @@ void MainWindow::setupEditor()
                               + QPoint(0, 6);
             glossaryAddPopup->presentAt(gp, seed);
         });
+    selectionPopup->beginGroup(tr("Criar"));
     selectionPopup->addAction(QStringLiteral("doc-plus.svg"), tr("Criar documento disso..."),
         [this]() { createDocFromSelection(); });
-    selectionPopup->addAction(QStringLiteral("read-aloud.svg"), tr("Ler em voz alta"),
-        [this]() { readAloudSelectionOrFromCursor(); });
     selectionPopup->addAction(QStringLiteral("leftbar/timeline.svg"), tr("Criar evento da linha do tempo..."),
         [this]() { createTimelineEventFromSelection(); });
     selectionPopup->addAction(QStringLiteral("elements/heart.svg"), tr("Adicionar à memória..."),
@@ -1282,12 +1289,15 @@ void MainWindow::setupEditor()
         [this]() { addSelectionToConstrutorMention(); });
     selectionPopup->addAction(QStringLiteral("elements/map.svg"), tr("Salvar como menção ao Território..."),
         [this]() { addSelectionToTerritorioMention(); });
-    selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a %1").arg(miraAssistantName()),
-        [this]() { openAISelectionChat(); });
     selectionPopup->addAction(QStringLiteral("add-image.svg"), tr("Gerar imagem disso..."),
         [this]() { generateImageFromSelection(); });
+    selectionPopup->beginGroup(tr("Ouvir e revisar"));
+    selectionPopup->addAction(QStringLiteral("read-aloud.svg"), tr("Ler em voz alta"),
+        [this]() { readAloudSelectionOrFromCursor(); });
+    selectionPopup->addAction(QStringLiteral("elements/star.svg"), tr("Revisar com a %1").arg(miraAssistantName()),
+        [this]() { openAISelectionChat(); });
 
-    selectionPopup->addSeparator();
+    selectionPopup->beginGroup(tr("Alinhar"));
     selectionPopup->addAction(QStringLiteral("align-left.svg"), tr("Alinhar à esquerda"),
         [this]() {
             if (!editor) return;
@@ -1865,6 +1875,10 @@ void MainWindow::setupEditor()
     // + painel flutuante invocado pelo botão da TopToolbar.
     ambienceManager = new AmbienceManager(this);
     ambiencePanel = new AmbiencePanel(ambienceManager, this);
+    PanelMotion::installFromEdge(ambiencePanel,
+        [this]() { return (toolbar && toolbar->barSide() == Qt::RightEdge) ? Qt::RightEdge : Qt::TopEdge; },
+        [this]() { PanelMotion::autoCascade(ambiencePanel,
+                       (toolbar && toolbar->barSide() == Qt::RightEdge) ? Qt::RightEdge : Qt::TopEdge); });
     connect(toolbar, &TopToolbar::immersiveSoundRequested, this, [this]() {
         if (!ambiencePanel || !toolbar) return;
         if (ambiencePanel->isVisible()) {
@@ -2320,6 +2334,10 @@ void MainWindow::setupEditor()
     // Lembretes: store (sidecar JSON) + painel flutuante + polling de notificações.
     remindersStore = new RemindersStore(this);
     remindersPanel = new RemindersPanel(remindersStore, this);
+    PanelMotion::installFromEdge(remindersPanel,
+        [this]() { return (toolbar && toolbar->barSide() == Qt::RightEdge) ? Qt::RightEdge : Qt::TopEdge; },
+        [this]() { PanelMotion::autoCascade(remindersPanel,
+                       (toolbar && toolbar->barSide() == Qt::RightEdge) ? Qt::RightEdge : Qt::TopEdge); });
 
     connect(toolbar, &TopToolbar::reminderRequested, this, [this]() {
         if (!remindersPanel || !toolbar) return;
@@ -2653,10 +2671,19 @@ void MainWindow::setupEditor()
     manuscriptPanel->setParent(container);
     drawerListPanel->hide();
     manuscriptPanel->hide();
+    // Gaveta do projeto (botão Informações): capa, nome, autor, gêneros,
+    // sinopse, números e os livros — editável no lugar.
+    projectDrawerPanel = new ProjectDrawerPanel(projectModel, container);
+    connect(projectDrawerPanel, &ProjectDrawerPanel::panelClosed, this, [this]() { leftBar->clearSelection(); });
     // Movimento "Gaveta": saem de trás da LeftBar e voltam pra ela.
     PanelMotion::setBarOnRightProvider([this]() { return leftBar && leftBar->barSide() == Qt::RightEdge; });
     PanelMotion::installDrawer(drawerListPanel, [this]() { drawerListPanel->playIntro(); });
     PanelMotion::installDrawer(manuscriptPanel, [this]() { manuscriptPanel->playIntro(); });
+    PanelMotion::installDrawer(projectDrawerPanel, [this]() {
+        PanelMotion::autoCascade(projectDrawerPanel, PanelMotion::barOnRight() ? Qt::RightEdge : Qt::LeftEdge);
+    });
+    // Janelas que abrem ao usar algo (criar memória, marcador, evento…).
+    PanelMotion::installGlobalWindowMotion();
 
     // Coluna do editor: [editor | scrollbar externo]. VariationBar é popup
     // flutuante (aberto pelo botão na TopToolbar), não entra nesse layout.
@@ -2895,6 +2922,9 @@ void MainWindow::setupEditor()
     refMenuPanel->setEditorFontFamily(currentFontFamily);
     refMenuPanel->raise();
     connect(refMenuPanel, &RefMenuPanel::geometryChanged, this, &MainWindow::positionWordCountPanel);
+    // Entra pela borda direita, como o Pensário (fica melhor que cair da barra).
+    PanelMotion::installFromEdge(refMenuPanel, []() { return Qt::RightEdge; },
+        [this]() { PanelMotion::autoCascade(refMenuPanel, Qt::RightEdge); });
     connect(refMenuPanel, &RefMenuPanel::selectedKeyChanged, this, &MainWindow::updateDocCachePinnedKeys);
     connect(toolbar, &TopToolbar::refMenuToggleRequested, this, [this]() {
         updatePanelInsets();
@@ -2919,6 +2949,8 @@ void MainWindow::setupEditor()
     pensarioPanel->setTopInset(chromeInset(Qt::TopEdge));
     pensarioPanel->setRightInset(chromeInset(Qt::RightEdge));
     pensarioPanel->raise();
+    PanelMotion::installFromEdge(pensarioPanel, []() { return Qt::RightEdge; },
+        [this]() { PanelMotion::autoCascade(pensarioPanel, Qt::RightEdge); });
     connect(pensarioPanel, &PensarioPanel::openMarkerRequested,
             this, &MainWindow::openMarkerInEditor);
     connect(pensarioPanel, &PensarioPanel::openMemoryInEditorRequested,
@@ -2945,12 +2977,16 @@ void MainWindow::setupEditor()
     statsPanel->setTopInset(chromeInset(Qt::TopEdge));
     statsPanel->setRightInset(chromeInset(Qt::RightEdge));
     statsPanel->raise();
+    PanelMotion::installFromEdge(statsPanel, []() { return Qt::RightEdge; },
+        [this]() { PanelMotion::autoCascade(statsPanel, Qt::RightEdge); });
     connect(toolbar, &TopToolbar::statisticsRequested, this, [this]() {
         updatePanelInsets();
         if (statsPanel) statsPanel->togglePanel();
     });
 
     aiChatPanel = new AIChatPanel(projectModel, elementsStore, docCache, container);
+    PanelMotion::installFromEdge(aiChatPanel, []() { return Qt::RightEdge; },
+        [this]() { PanelMotion::autoCascade(aiChatPanel, Qt::RightEdge); });
     aiChatPanel->setTopInset(chromeInset(Qt::TopEdge));
     aiChatPanel->setRightInset(chromeInset(Qt::RightEdge));
     aiChatPanel->setMarkerStore(markerStore);
@@ -3125,6 +3161,7 @@ void MainWindow::setupEditor()
 
     connect(leftBar, &LeftBar::drawerSelected, this, [this](const QString& key) {
         manuscriptPanel->closePanel();
+        if (projectDrawerPanel && projectDrawerPanel->isPanelOpen()) projectDrawerPanel->hide();
         if (drawerListPanel->isPanelOpen() && drawerListPanel->currentDrawerKey() == key) {
             drawerListPanel->closePanel();
             leftBar->clearSelection();
@@ -3138,6 +3175,7 @@ void MainWindow::setupEditor()
     connect(leftBar, &LeftBar::fixedActionTriggered, this, [this](LeftBar::FixedAction action) {
         if (action == LeftBar::Manuscripts) {
             drawerListPanel->closePanel();
+            if (projectDrawerPanel && projectDrawerPanel->isPanelOpen()) projectDrawerPanel->hide();
             if (manuscriptPanel->isPanelOpen()) {
                 manuscriptPanel->closePanel();
                 leftBar->clearSelection();
@@ -3148,23 +3186,18 @@ void MainWindow::setupEditor()
                 leftBar->setActiveFixedAction(LeftBar::Manuscripts);
             }
         } else if (action == LeftBar::Info) {
-            if (!projectInfoPanel) {
-                projectInfoPanel = new ProjectInfoPanel(projectModel, this);
-                connect(projectInfoPanel, &QDialog::finished, this, [this](int) {
-                    leftBar->clearSelection();
-                });
-                // Painel fica não-modal e pode ficar aberto enquanto o usuário
-                // troca de manuscrito ativo em outro lugar (ex. ManuscriptPanel)
-                // — recarrega pra refletir o manuscrito certo.
-                connect(projectModel, &ProjectModel::activeManuscriptChanged, this, [this]() {
-                    if (projectInfoPanel && projectInfoPanel->isVisible()) projectInfoPanel->loadFromModel();
-                });
+            // Gaveta do projeto: uma gaveta por vez, como as outras.
+            drawerListPanel->closePanel();
+            manuscriptPanel->closePanel();
+            if (projectDrawerPanel->isPanelOpen()) {
+                projectDrawerPanel->closePanel();
+                leftBar->clearSelection();
+                return;
             }
-            // Esconde o hover preview se estava aberto pra evitar sobreposição.
-            if (projectInfoHover && projectInfoHover->isVisible()) projectInfoHover->hide();
-            projectInfoPanel->show();
-            projectInfoPanel->raise();
-            projectInfoPanel->activateWindow();
+            projectDrawerPanel->setWordCounter(wordCounter);
+            projectDrawerPanel->open();
+            positionSidePanels();
+            projectDrawerPanel->raise();
             leftBar->setActiveFixedAction(LeftBar::Info);
         } else if (action == LeftBar::Whiteboard) {
             if (!lousaPanel) {
@@ -3298,7 +3331,9 @@ void MainWindow::setupEditor()
             if (projectInfoHover) projectInfoHover->hide();
         });
 
-        infoBtn->installEventFilter(this);
+        // Sem hover: o Info agora só responde ao clique (o cartão brigava com
+        // as Etiquetas da LeftBar). O cartão segue criado pra quem o usa em
+        // outros lugares, mas o botão não dispara mais.
     }
     connect(manuscriptPanel, &ManuscriptPanel::chapterActivated, this, [this](const QString& manuscriptId, const QString& chapterId) {
         EditorHost::ViewMode vm;
@@ -4627,6 +4662,7 @@ void MainWindow::setReadMode(bool enabled)
     // Painéis flutuantes que somem no modo focado.
     if (drawerListPanel) drawerListPanel->hide();
     if (manuscriptPanel) manuscriptPanel->hide();
+    if (projectDrawerPanel) projectDrawerPanel->hide();
     if (refMenuPanel && refMenuPanel->isVisible()) refMenuPanel->hide();
     if (leftBar) leftBar->clearSelection();
 
@@ -5098,7 +5134,7 @@ bool MainWindow::chromeBusy() const
     if (QApplication::activePopupWidget()) return true;
 
     const QList<const QWidget*> panels = {
-        drawerListPanel, manuscriptPanel, refMenuPanel, pensarioPanel, statsPanel,
+        drawerListPanel, manuscriptPanel, projectDrawerPanel, refMenuPanel, pensarioPanel, statsPanel,
         aiChatPanel, ambiencePanel, helpPanel, remindersPanel, settingsPanel,
         themesPanel, projectInfoPanel, characterSheetPanel, globalSearchPanel,
         timelinePanel, lousaPanel, groupsPanel, bondViewPanel, readerPreviewPanel,
@@ -7401,6 +7437,11 @@ void MainWindow::positionSidePanels()
         const int msH = manuscriptPanel->heightIsUserSet() ? qMin(manuscriptPanel->desiredHeight(), maxH) : maxH;
         manuscriptPanel->resize(manuscriptPanel->width(), msH);
         if (manuscriptPanel->isVisible()) manuscriptPanel->raise();
+    }
+    if (projectDrawerPanel) {
+        projectDrawerPanel->move(panelX(projectDrawerPanel), y);
+        projectDrawerPanel->resize(projectDrawerPanel->width(), maxH);
+        if (projectDrawerPanel->isVisible()) projectDrawerPanel->raise();
     }
 
     positionExternalScrollBar();

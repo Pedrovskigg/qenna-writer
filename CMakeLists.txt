@@ -171,6 +171,10 @@ qt_add_executable(qenna-writer
     src/MsVignette.h
     src/PanelMotion.cpp
     src/PanelMotion.h
+    src/SmoothCaret.cpp
+    src/SmoothCaret.h
+    src/ProjectDrawerPanel.cpp
+    src/ProjectDrawerPanel.h
     src/OutlinePanel.cpp
     src/OutlinePanel.h
     src/ChapterStatsDialog.cpp

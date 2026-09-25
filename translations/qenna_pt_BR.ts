@@ -7743,6 +7743,22 @@ Conteúdo existente pode ser sobrescrito.</source>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Formato</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anotar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ouvir e revisar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alinhar</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -20904,6 +20920,34 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
         <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Cursor suave</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enquanto você digita, o cursor desliza até a próxima letra em vez de pular, como no Word. Desligado, volta o cursor de sempre.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>desligado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 ms</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Deslize do cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fade da letra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Digite aqui pra testar…</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ShelfBookItem</name>
@@ -24767,6 +24811,113 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
     </message>
     <message>
         <source>Raios</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ProjectDrawerPanel</name>
+    <message>
+        <source>Trocar capa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Fechar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clique pra trocar a capa · botão direito pra remover</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trocar capa…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remover capa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nome do projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Autor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>✓ salvo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sinopse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escreva a sinopse do projeto…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A saga</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(sem nome)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tirar gênero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ gênero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>novo gênero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>LIVROS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PALAVRAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>PERSONAGENS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir este livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(sem título)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>livro %1 · %2 palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum livro ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolher capa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -7784,6 +7784,22 @@ Il contenuto esistente potrebbe essere sovrascritto.</translation>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation>Subito dopo si aprirà la registrazione dell&apos;oggetto (foto).</translation>
     </message>
+    <message>
+        <source>Formato</source>
+        <translation>Formato</translation>
+    </message>
+    <message>
+        <source>Anotar</source>
+        <translation>Annota</translation>
+    </message>
+    <message>
+        <source>Ouvir e revisar</source>
+        <translation>Ascolta e rivedi</translation>
+    </message>
+    <message>
+        <source>Alinhar</source>
+        <translation>Allinea</translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -20957,6 +20973,34 @@ Se non hai una chiave API o semplicemente non vuoi usare l&apos;assistente, ness
         <source>Parando o mouse na barra lateral, ela mostra o nome de cada botão e quantos itens cada gaveta tem. Desligado, fica só o ícone, com a dica de sempre.</source>
         <translation>Fermando il mouse sulla barra laterale, mostra il nome di ogni pulsante e quanti elementi ha ogni cassetto. Disattivato, restano solo le icone, con il suggerimento di sempre.</translation>
     </message>
+    <message>
+        <source>Cursor suave</source>
+        <translation>Cursore fluido</translation>
+    </message>
+    <message>
+        <source>Enquanto você digita, o cursor desliza até a próxima letra em vez de pular, como no Word. Desligado, volta o cursor de sempre.</source>
+        <translation>Mentre scrivi, il cursore scivola fino alla lettera successiva invece di saltare, come in Word. Disattivato, torna il cursore di sempre.</translation>
+    </message>
+    <message>
+        <source>desligado</source>
+        <translation>disattivato</translation>
+    </message>
+    <message>
+        <source>%1 ms</source>
+        <translation>%1 ms</translation>
+    </message>
+    <message>
+        <source>Deslize do cursor</source>
+        <translation>Scorrimento del cursore</translation>
+    </message>
+    <message>
+        <source>Fade da letra</source>
+        <translation>Dissolvenza della lettera</translation>
+    </message>
+    <message>
+        <source>Digite aqui pra testar…</source>
+        <translation>Scrivi qui per provare…</translation>
+    </message>
 </context>
 <context>
     <name>ShelfBookItem</name>
@@ -25396,6 +25440,113 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     <message>
         <source>Raios</source>
         <translation>Raggi</translation>
+    </message>
+</context>
+<context>
+    <name>ProjectDrawerPanel</name>
+    <message>
+        <source>Projeto</source>
+        <translation>Progetto</translation>
+    </message>
+    <message>
+        <source>Fechar</source>
+        <translation>Chiudi</translation>
+    </message>
+    <message>
+        <source>Remover capa</source>
+        <translation>Rimuovi copertina</translation>
+    </message>
+    <message>
+        <source>Nome do projeto</source>
+        <translation>Nome del progetto</translation>
+    </message>
+    <message>
+        <source>Autor</source>
+        <translation>Autore</translation>
+    </message>
+    <message>
+        <source>Sinopse</source>
+        <translation>Sinossi</translation>
+    </message>
+    <message>
+        <source>(sem nome)</source>
+        <translation>(senza nome)</translation>
+    </message>
+    <message>
+        <source>PALAVRAS</source>
+        <translation>PAROLE</translation>
+    </message>
+    <message>
+        <source>PERSONAGENS</source>
+        <translation>PERSONAGGI</translation>
+    </message>
+    <message>
+        <source>Livro</source>
+        <translation>Libro</translation>
+    </message>
+    <message>
+        <source>(sem título)</source>
+        <translation>(senza titolo)</translation>
+    </message>
+    <message>
+        <source>Escolher capa</source>
+        <translation>Scegli copertina</translation>
+    </message>
+    <message>
+        <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation>Immagini (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
+    </message>
+    <message>
+        <source>Trocar capa</source>
+        <translation>Cambia copertina</translation>
+    </message>
+    <message>
+        <source>Clique pra trocar a capa · botão direito pra remover</source>
+        <translation>Clicca per cambiare la copertina · clic destro per rimuoverla</translation>
+    </message>
+    <message>
+        <source>Trocar capa…</source>
+        <translation>Cambia copertina…</translation>
+    </message>
+    <message>
+        <source>✓ salvo</source>
+        <translation>✓ salvato</translation>
+    </message>
+    <message>
+        <source>Escreva a sinopse do projeto…</source>
+        <translation>Scrivi la sinossi del progetto…</translation>
+    </message>
+    <message>
+        <source>A saga</source>
+        <translation>La saga</translation>
+    </message>
+    <message>
+        <source>Tirar gênero</source>
+        <translation>Rimuovi genere</translation>
+    </message>
+    <message>
+        <source>+ gênero</source>
+        <translation>+ genere</translation>
+    </message>
+    <message>
+        <source>novo gênero</source>
+        <translation>nuovo genere</translation>
+    </message>
+    <message>
+        <source>LIVROS</source>
+        <translation>LIBRI</translation>
+    </message>
+    <message>
+        <source>Abrir este livro</source>
+        <translation>Apri questo libro</translation>
+    </message>
+    <message>
+        <source>livro %1 · %2 palavras</source>
+        <translation>libro %1 · %2 parole</translation>
+    </message>
+    <message>
+        <source>Nenhum livro ainda.</source>
+        <translation>Ancora nessun libro.</translation>
     </message>
 </context>
 </TS>

@@ -7,6 +7,8 @@
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QHBoxLayout>
+#include <QLabel>
+#include <QVBoxLayout>
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QTextCursor>
@@ -107,6 +109,7 @@ void SelectionPopup::applyTheme()
     for (QFrame* line : m_separators) {
         if (line) line->setStyleSheet(QStringLiteral("color: %1;").arg(Theme::subtleBorder()));
     }
+    for (QLabel* l : m_groupTitles) if (l) styleGroupTitle(l);
 }
 
 void SelectionPopup::reloadAllIcons()
@@ -138,10 +141,39 @@ QToolButton* SelectionPopup::addAction(const QString &iconAlias,
     if (cb) {
         connect(b, &QToolButton::clicked, this, [cb]() { cb(); });
     }
-    m_layout->addWidget(b);
+    if (m_groupRow) m_groupRow->addWidget(b);
+    else m_layout->addWidget(b);
     m_iconAliasByBtn.insert(b, iconAlias);
     adjustSize();
     return b;
+}
+
+void SelectionPopup::beginGroup(const QString &title)
+{
+    if (m_groupRow) addSeparator();
+    auto *box = new QWidget(this);
+    auto *v = new QVBoxLayout(box);
+    v->setContentsMargins(1, 0, 1, 0);
+    v->setSpacing(0);
+    m_groupRow = new QHBoxLayout;
+    m_groupRow->setSpacing(2);
+    v->addLayout(m_groupRow);
+    auto *l = new QLabel(title.toUpper(), box);
+    l->setAlignment(Qt::AlignHCenter);
+    styleGroupTitle(l);
+    v->addWidget(l);
+    m_groupTitles.append(l);
+    m_layout->addWidget(box);
+}
+
+void SelectionPopup::styleGroupTitle(QLabel *l)
+{
+    QFont f(QStringLiteral("Segoe UI"));
+    f.setPixelSize(8);
+    f.setBold(true);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+    l->setFont(f);
+    l->setStyleSheet(QStringLiteral("color: %1; background: transparent; padding-bottom: 1px;").arg(Theme::textMuted()));
 }
 
 void SelectionPopup::addSeparator()
@@ -150,7 +182,16 @@ void SelectionPopup::addSeparator()
     line->setFrameShape(QFrame::VLine);
     line->setStyleSheet(QStringLiteral("color: %1;").arg(Theme::subtleBorder()));
     line->setFixedSize(1, kButtonSize - 8);
-    m_layout->addWidget(line);
+    if (m_groupRow) {
+        // Entre grupos: o fio fica na altura dos botões, não do título.
+        auto *holder = new QWidget(this);
+        holder->setFixedSize(7, kButtonSize);
+        line->setParent(holder);
+        line->move(3, 4);
+        m_layout->addWidget(holder, 0, Qt::AlignTop);
+    } else {
+        m_layout->addWidget(line);
+    }
     m_separators.append(line);
 }
 

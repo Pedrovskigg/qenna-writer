@@ -38,6 +38,7 @@ class ImageOverlay;
 class LeftBar;
 class DrawerListPanel;
 class ManuscriptPanel;
+class ProjectDrawerPanel;
 class ProjectModel;
 class DocCache;
 class EditorHost;
@@ -437,6 +438,7 @@ private:
     LeftBar *leftBar;
     DrawerListPanel *drawerListPanel;
     ManuscriptPanel *manuscriptPanel;
+    ProjectDrawerPanel *projectDrawerPanel = nullptr;   // botão Informações da LeftBar
     // Análise de presença por capítulo/cena — compartilhada entre o Drawer
     // (consistência) e a Timeline (trilhas automáticas de personagem).
     std::function<void(const QStringList&, QHash<QString, CharPresenceResult>*,

@@ -27,6 +27,9 @@ public:
 
     QToolButton* addAction(const QString &iconAlias, const QString &tooltip, Callback cb);
     void addSeparator();
+    // Abre um grupo: os próximos addAction entram numa ilha com o título
+    // pequeno embaixo (Formato, Anotar, Criar…). Entre grupos, um fio.
+    void beginGroup(const QString &title);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -50,6 +53,9 @@ private:
     // Pra recolorir ícones em themeChanged sem rebuildar os botões.
     QHash<QToolButton*, QString> m_iconAliasByBtn;
     QVector<QFrame*> m_separators;
+    QHBoxLayout *m_groupRow = nullptr;
+    QVector<class QLabel*> m_groupTitles;
+    void styleGroupTitle(class QLabel *l);
 };
 
 #endif

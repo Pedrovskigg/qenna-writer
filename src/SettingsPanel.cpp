@@ -1,6 +1,7 @@
 #include "SettingsPanel.h"
 #include "LeftBar.h"
 #include "PanelMotion.h"
+#include "SmoothCaret.h"
 
 #include "AboutDialog.h"
 #include "EditorLayout.h"
@@ -24,6 +25,9 @@
 #include <QSettings>
 #include <QSignalBlocker>
 #include <QSlider>
+#include <QKeyEvent>
+#include <QTextEdit>
+#include <functional>
 #include <QSpinBox>
 #include <QStandardItemModel>
 #include <QVBoxLayout>
@@ -48,6 +52,20 @@ constexpr AiProviderInfo kAiProviders[] = {
     { "gemini",    "https://generativelanguage.googleapis.com/v1beta/openai", "gemini-2.5-flash" },
     { "xai",       "https://api.x.ai/v1",                                "grok-4" },
     { "custom",    "",                                                   "llama3.2" },
+};
+}
+
+// Caixa de teste do cursor suave: uma linha só (Enter não quebra).
+namespace {
+class SingleLineFilter : public QObject {
+public:
+    using QObject::QObject;
+protected:
+    bool eventFilter(QObject*, QEvent* e) override {
+        if (e->type() != QEvent::KeyPress) return false;
+        const int k = static_cast<QKeyEvent*>(e)->key();
+        return k == Qt::Key_Return || k == Qt::Key_Enter;
+    }
 };
 }
 
@@ -183,6 +201,70 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     labelsHint->setWordWrap(true);
     uiLayout->addWidget(labelsHint);
     connect(labelsCheck, &QCheckBox::toggled, this, [](bool on) { LeftBar::setLabelsEnabled(on); });
+
+    auto* caretCheck = new QCheckBox(tr("Cursor suave"), uiGroup);
+    caretCheck->setChecked(SmoothCaret::enabledSetting());
+    uiLayout->addWidget(caretCheck);
+    auto* caretHint = new QLabel(
+        tr("Enquanto você digita, o cursor desliza até a próxima letra em vez de pular, "
+           "como no Word. Desligado, volta o cursor de sempre."),
+        uiGroup);
+    caretHint->setObjectName(QStringLiteral("settingsHint"));
+    caretHint->setWordWrap(true);
+    uiLayout->addWidget(caretHint);
+    // Tempos do cursor suave + uma linha pra testar com o efeito de verdade.
+    auto* caretBox = new QWidget(uiGroup);
+    auto* caretGrid = new QGridLayout(caretBox);
+    caretGrid->setContentsMargins(0, 2, 0, 0);
+    caretGrid->setHorizontalSpacing(10);
+    caretGrid->setVerticalSpacing(6);
+    auto msRow = [&](int row, const QString& label, int value, int maxMs, std::function<void(int)> apply) {
+        caretGrid->addWidget(new QLabel(label, caretBox), row, 0);
+        auto* sl = new QSlider(Qt::Horizontal, caretBox);
+        sl->setRange(0, maxMs);
+        sl->setSingleStep(5);
+        sl->setPageStep(25);
+        sl->setValue(value);
+        caretGrid->addWidget(sl, row, 1);
+        auto* val = new QLabel(caretBox);
+        val->setObjectName(QStringLiteral("pageValueLabel"));
+        val->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        val->setMinimumWidth(56);
+        auto show = [val](int v) { val->setText(v == 0 ? tr("desligado") : tr("%1 ms").arg(v)); };
+        show(value);
+        caretGrid->addWidget(val, row, 2);
+        connect(sl, &QSlider::valueChanged, this, [show, apply](int v) { show(v); apply(v); });
+    };
+    msRow(0, tr("Deslize do cursor"), SmoothCaret::glideMs(), 200, [](int v) { SmoothCaret::setGlideMs(v); });
+    msRow(1, tr("Fade da letra"), SmoothCaret::fadeMs(), 250, [](int v) { SmoothCaret::setFadeMs(v); });
+    caretGrid->setColumnStretch(1, 1);
+    auto* caretTest = new QTextEdit(caretBox);
+    caretTest->setObjectName(QStringLiteral("caretTestBox"));
+    caretTest->setAcceptRichText(false);
+    caretTest->setLineWrapMode(QTextEdit::NoWrap);
+    caretTest->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    caretTest->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    caretTest->setPlaceholderText(tr("Digite aqui pra testar…"));
+    caretTest->document()->setDocumentMargin(6);
+    QFont tf(QStringLiteral("Lora"));
+    tf.setPixelSize(16);
+    caretTest->setFont(tf);
+    caretTest->setFixedHeight(QFontMetrics(tf).height() + 18);
+    // A cara da página: fundo e cor do editor. padding 0 por causa do
+    // "QTextEdit { padding }" global do tema.
+    caretTest->setStyleSheet(Theme::qss(QStringLiteral(
+        "#caretTestBox { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-control; padding: 0; }"))
+        .arg(Theme::editorBackground(), Theme::editorTextColor(), Theme::subtleBorder()));
+    // Uma linha só: Enter não quebra.
+    caretTest->installEventFilter(new SingleLineFilter(caretTest));
+    caretGrid->addWidget(caretTest, 2, 0, 1, 3);
+    SmoothCaret::attach(caretTest);
+    uiLayout->addWidget(caretBox);
+    caretBox->setEnabled(SmoothCaret::enabledSetting());
+    connect(caretCheck, &QCheckBox::toggled, this, [caretBox](bool on) {
+        SmoothCaret::setEnabledSetting(on);
+        caretBox->setEnabled(on);
+    });
 
     // ---- Seção: Corretor ortográfico ----
     auto* spellGroup = new QGroupBox(tr("Corretor ortográfico"), this);
