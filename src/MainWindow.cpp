@@ -1002,6 +1002,7 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 static QString resumeGroupFor(const QString& root);
+static QList<ManuscriptPanel::ResumeEntry> readResumeTrail(const QString& root);
 
 void MainWindow::setupEditor()
 {
@@ -6692,23 +6693,35 @@ void MainWindow::openMainMenu()
                     }
                     if (mainMenuDialog) mainMenuDialog->accept();
                 });
+        // Abrir um recente; com resume, volta pro último ponto do "Onde parei"
+        // (botão Continuar do menu) depois que o projeto carregou.
+        auto openRecent = [this](const QString& path, bool resume) {
+            if (!confirmDiscardOrSave()) return;
+            QString err;
+            if (!loadProjectFrom(path, &err)) {
+                // Path caiu — remove dos recentes e atualiza a lista.
+                QStringList list = loadRecentProjects();
+                list.removeAll(path);
+                list.removeAll(QDir::cleanPath(path));
+                saveRecentProjects(list);
+                if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
+                QMessageBox::warning(mainMenuDialog, tr("Erro ao abrir"),
+                    tr("Não foi possível abrir o projeto:\n%1").arg(err));
+                return;
+            }
+            if (mainMenuDialog) mainMenuDialog->accept();
+            if (!resume) return;
+            QTimer::singleShot(0, this, [this]() {
+                const QList<ManuscriptPanel::ResumeEntry> trail = readResumeTrail(projectRoot);
+                if (trail.isEmpty()) return;
+                const auto& e = trail.first();
+                resumeAt(e.manuscriptId, e.chapterId, e.sceneIndex, e.sentence, e.position);
+            });
+        };
         connect(mainMenuDialog, &MainMenuDialog::openRecentRequested,
-                this, [this](const QString& path) {
-                    if (!confirmDiscardOrSave()) return;
-                    QString err;
-                    if (!loadProjectFrom(path, &err)) {
-                        // Path caiu — remove dos recentes e atualiza a lista.
-                        QStringList list = loadRecentProjects();
-                        list.removeAll(path);
-                        list.removeAll(QDir::cleanPath(path));
-                        saveRecentProjects(list);
-                        if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
-                        QMessageBox::warning(mainMenuDialog, tr("Erro ao abrir"),
-                            tr("Não foi possível abrir o projeto:\n%1").arg(err));
-                        return;
-                    }
-                    if (mainMenuDialog) mainMenuDialog->accept();
-                });
+                this, [openRecent](const QString& path) { openRecent(path, false); });
+        connect(mainMenuDialog, &MainMenuDialog::resumeRequested,
+                this, [openRecent](const QString& path) { openRecent(path, true); });
 
         // Remover dos recentes — só tira da lista, não toca no disco.
         connect(mainMenuDialog, &MainMenuDialog::removeRecentRequested,
@@ -6718,14 +6731,6 @@ void MainWindow::openMainMenu()
                     list.removeAll(QDir::cleanPath(path));
                     saveRecentProjects(list);
                     if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
-                });
-
-        // Arrastar na Prateleira pra reordenar — persiste a nova ordem. Abrir
-        // qualquer projeto ainda move ele pro topo depois (rememberLastProject),
-        // então essa ordem manual vale até o próximo projeto ser aberto.
-        connect(mainMenuDialog, &MainMenuDialog::recentsReordered,
-                this, [this](const QStringList& newOrder) {
-                    saveRecentProjects(newOrder);
                 });
 
         // Excluir projeto — move a pasta pra Lixeira (ver TrashService) em vez

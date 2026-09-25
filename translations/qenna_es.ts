@@ -6896,6 +6896,38 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <source>Execute &apos;npm run build&apos; no diretório mira-cover para habilitar o criador de capas no modo desenvolvimento.</source>
         <translation>Ejecuta &apos;npm run build&apos; en el directorio mira-cover para habilitar el creador de portadas en modo desarrollo.</translation>
     </message>
+    <message>
+        <source>Continuar</source>
+        <translation>Continuar</translation>
+    </message>
+    <message>
+        <source>Vitrine</source>
+        <translation>Vitrina</translation>
+    </message>
+    <message>
+        <source>Cinema</source>
+        <translation>Cine</translation>
+    </message>
+    <message>
+        <source>Seu dia</source>
+        <translation>Tu día</translation>
+    </message>
+    <message>
+        <source>Capítulo %1</source>
+        <translation>Capítulo %1</translation>
+    </message>
+    <message>
+        <source>cap. %1 · %2</source>
+        <translation>cap. %1 · %2</translation>
+    </message>
+    <message>
+        <source>Abrir</source>
+        <translation>Abrir</translation>
+    </message>
+    <message>
+        <source>Continuar de onde parei</source>
+        <translation>Seguir donde lo dejé</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -19557,6 +19589,14 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <source>Use a função Grupos para reunir documentos de diferentes gavetas e elementos num só lugar, organizando o que se conecta na sua história.</source>
         <translation>Usa la función Grupos para reunir documentos de distintos cajones y elementos en un solo lugar, organizando lo que se conecta en tu historia.</translation>
     </message>
+    <message>
+        <source>No menu principal, a Biblioteca tem seis vistas: Continuar, Vitrine, Cinema, Seu dia, Estante e Pilha.</source>
+        <translation>En el menú principal, la Biblioteca tiene seis vistas: Continuar, Vitrina, Cine, Tu día, Estantería y Pila.</translation>
+    </message>
+    <message>
+        <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
+        <translation>El botón Continuar del menú principal abre el proyecto justo en la última frase que escribiste.</translation>
+    </message>
 </context>
 <context>
     <name>ReadAloudPanel</name>
@@ -25547,6 +25587,245 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     <message>
         <source>Nenhum livro ainda.</source>
         <translation>Aún no hay libros.</translation>
+    </message>
+</context>
+<context>
+    <name>LibraryViews</name>
+    <message>
+        <source>de %1 min</source>
+        <translation>de %1 min</translation>
+    </message>
+    <message>
+        <source>de %1</source>
+        <translation>de %1</translation>
+    </message>
+    <message>
+        <source>Continuar  →</source>
+        <translation>Continuar  →</translation>
+    </message>
+    <message>
+        <source>Detalhes</source>
+        <translation>Detalles</translation>
+    </message>
+    <message>
+        <source>Seus projetos</source>
+        <translation>Tus proyectos</translation>
+    </message>
+    <message>
+        <source>Saga · %1 livros</source>
+        <translation>Saga · %1 libros</translation>
+    </message>
+    <message>
+        <source>Você parou em %1</source>
+        <translation>Te detuviste en %1</translation>
+    </message>
+    <message>
+        <source>agora há pouco</source>
+        <translation>hace un momento</translation>
+    </message>
+    <message>
+        <source>há 1 minuto</source>
+        <translation>hace 1 minuto</translation>
+    </message>
+    <message>
+        <source>há %1 minutos</source>
+        <translation>hace %1 minutos</translation>
+    </message>
+    <message>
+        <source>há 1 hora</source>
+        <translation>hace 1 hora</translation>
+    </message>
+    <message>
+        <source>há %1 horas</source>
+        <translation>hace %1 horas</translation>
+    </message>
+    <message>
+        <source>ontem</source>
+        <translation>ayer</translation>
+    </message>
+    <message>
+        <source>há %1 dias</source>
+        <translation>hace %1 días</translation>
+    </message>
+    <message>
+        <source>há 1 semana</source>
+        <translation>hace 1 semana</translation>
+    </message>
+    <message>
+        <source>há %1 semanas</source>
+        <translation>hace %1 semanas</translation>
+    </message>
+    <message>
+        <source>há 1 mês</source>
+        <translation>hace 1 mes</translation>
+    </message>
+    <message>
+        <source>há %1 meses</source>
+        <translation>hace %1 meses</translation>
+    </message>
+    <message>
+        <source>há 1 ano</source>
+        <translation>hace 1 año</translation>
+    </message>
+    <message>
+        <source>há %1 anos</source>
+        <translation>hace %1 años</translation>
+    </message>
+    <message>
+        <source>1 palavra</source>
+        <translation>1 palabra</translation>
+    </message>
+    <message>
+        <source>%1 palavras</source>
+        <translation>%1 palabras</translation>
+    </message>
+    <message>
+        <source>Último projeto</source>
+        <translation>Último proyecto</translation>
+    </message>
+    <message>
+        <source>Continuar de onde parou</source>
+        <translation>Seguir donde lo dejaste</translation>
+    </message>
+    <message>
+        <source>%1 min hoje</source>
+        <translation>%1 min hoy</translation>
+    </message>
+    <message>
+        <source>%1 palavras hoje</source>
+        <translation>%1 palabras hoy</translation>
+    </message>
+    <message>
+        <source>%1 dia seguido</source>
+        <translation>%1 día seguido</translation>
+    </message>
+    <message>
+        <source>%1 dias seguidos</source>
+        <translation>%1 días seguidos</translation>
+    </message>
+    <message>
+        <source>%1 no livro</source>
+        <translation>%1 en el libro</translation>
+    </message>
+    <message>
+        <source>Meta de hoje batida</source>
+        <translation>Meta de hoy cumplida</translation>
+    </message>
+    <message>
+        <source>%1% da meta de hoje</source>
+        <translation>%1% de la meta de hoy</translation>
+    </message>
+    <message>
+        <source>Abrir projeto</source>
+        <translation>Abrir proyecto</translation>
+    </message>
+    <message>
+        <source>Outros projetos</source>
+        <translation>Otros proyectos</translation>
+    </message>
+    <message>
+        <source>Buscar por nome, autor ou gênero</source>
+        <translation>Buscar por nombre, autor o género</translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation>Recientes</translation>
+    </message>
+    <message>
+        <source>A–Z</source>
+        <translation>A–Z</translation>
+    </message>
+    <message>
+        <source>Mais palavras</source>
+        <translation>Más palabras</translation>
+    </message>
+    <message>
+        <source>Novo projeto</source>
+        <translation>Nuevo proyecto</translation>
+    </message>
+    <message>
+        <source>Seu dia</source>
+        <translation>Tu día</translation>
+    </message>
+    <message>
+        <source>Meta de %1</source>
+        <translation>Meta de %1</translation>
+    </message>
+    <message>
+        <source>Últimos 7 dias</source>
+        <translation>Últimos 7 días</translation>
+    </message>
+    <message>
+        <source>Lembretes de hoje</source>
+        <translation>Recordatorios de hoy</translation>
+    </message>
+    <message>
+        <source>Nada marcado pra hoje.</source>
+        <translation>Nada programado para hoy.</translation>
+    </message>
+    <message>
+        <source>atrasado</source>
+        <translation>atrasado</translation>
+    </message>
+    <message>
+        <source>Na mesa agora</source>
+        <translation>Sobre la mesa ahora</translation>
+    </message>
+    <message>
+        <source>Bem-vindo ao Qenna</source>
+        <translation>Bienvenido a Qenna</translation>
+    </message>
+    <message>
+        <source>Toda história começa em algum lugar.</source>
+        <translation>Toda historia empieza en algún lugar.</translation>
+    </message>
+    <message>
+        <source>Um editor feito pra quem escreve livros: capítulos e cenas, gavetas pro seu mundo, linha do tempo, e tudo no seu computador, sem conta e sem nuvem obrigatória.</source>
+        <translation>Un editor hecho para quien escribe libros: capítulos y escenas, cajones para tu mundo, línea de tiempo, y todo en tu computadora, sin cuenta y sin nube obligatoria.</translation>
+    </message>
+    <message>
+        <source>Começar um livro</source>
+        <translation>Empezar un libro</translation>
+    </message>
+    <message>
+        <source>Um projeto novo, com manuscrito e gavetas prontas.</source>
+        <translation>Un proyecto nuevo, con manuscrito y cajones listos.</translation>
+    </message>
+    <message>
+        <source>Anotar uma ideia</source>
+        <translation>Anotar una idea</translation>
+    </message>
+    <message>
+        <source>Só um documento, sem montar nada. Vira livro depois, se quiser.</source>
+        <translation>Solo un documento, sin montar nada. Se vuelve libro después, si quieres.</translation>
+    </message>
+    <message>
+        <source>Abrir um projeto</source>
+        <translation>Abrir un proyecto</translation>
+    </message>
+    <message>
+        <source>Já tem um projeto do Qenna numa pasta? Abra por aqui.</source>
+        <translation>¿Ya tienes un proyecto de Qenna en una carpeta? Ábrelo aquí.</translation>
+    </message>
+    <message>
+        <source>Idioma</source>
+        <translation>Idioma</translation>
+    </message>
+    <message>
+        <source>Tema</source>
+        <translation>Tema</translation>
+    </message>
+    <message>
+        <source>+ %1 no painel de Temas</source>
+        <translation>+ %1 en el panel de Temas</translation>
+    </message>
+    <message>
+        <source>Para qualquer autor, qualquer história.
+Feito para que toda criação e ideia tome forma e alcance seu potencial máximo.
+Seja bem-vindo à família Qenna! Inicie o seu novo projeto abaixo.</source>
+        <translation>Para cualquier autor, cualquier historia.
+Hecho para que toda creación e idea tome forma y alcance su máximo potencial.
+¡Bienvenido a la familia Qenna! Empieza tu nuevo proyecto abajo.</translation>
     </message>
 </context>
 </TS>

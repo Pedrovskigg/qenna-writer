@@ -4,10 +4,12 @@
 #include "AboutDialog.h"
 #include "TrashDialog.h"
 #include "IconUtils.h"
+#include "LibraryViews.h"
+#include "PanelMotion.h"
+#include "RemindersStore.h"
+#include "WordCounter.h"
 #include "ProjectStorage.h"
 #include "Quotes.h"
-#include "ShelfScene.h"
-#include "ShelfView.h"
 #include "StackView.h"
 #include "Theme.h"
 
@@ -20,6 +22,8 @@
 #include <QContextMenuEvent>
 #include <QAbstractAnimation>
 #include <QCoreApplication>
+#include <QCryptographicHash>
+#include <QRegularExpression>
 #include <QDialogButtonBox>
 #include <QDir>
 #include <QEasingCurve>
@@ -71,101 +75,6 @@
 #include <QWidgetItem>
 
 #include <functional>
-
-// Layout que dispõe os filhos em linha e quebra pra próxima quando estoura a
-// largura — a "parede de capas". Implementação canônica do exemplo de Flow
-// Layout do Qt (sem Q_OBJECT: não tem signals/slots). Vive em escopo global
-// porque o header o referencia como membro de MainMenuDialog.
-class FlowLayout : public QLayout {
-public:
-    explicit FlowLayout(QWidget* parent, int margin = 0, int hSpacing = -1, int vSpacing = -1)
-        : QLayout(parent), m_hSpace(hSpacing), m_vSpace(vSpacing)
-    {
-        setContentsMargins(margin, margin, margin, margin);
-    }
-    ~FlowLayout() override {
-        QLayoutItem* item;
-        while ((item = takeAt(0))) delete item;
-    }
-
-    void addItem(QLayoutItem* item) override { m_items.append(item); }
-    int count() const override { return m_items.size(); }
-    QLayoutItem* itemAt(int index) const override { return m_items.value(index); }
-    QLayoutItem* takeAt(int index) override {
-        return (index >= 0 && index < m_items.size()) ? m_items.takeAt(index) : nullptr;
-    }
-    Qt::Orientations expandingDirections() const override { return {}; }
-    bool hasHeightForWidth() const override { return true; }
-    int heightForWidth(int width) const override { return doLayout(QRect(0, 0, width, 0), true); }
-    void setGeometry(const QRect& rect) override {
-        QLayout::setGeometry(rect);
-        doLayout(rect, false);
-    }
-    QSize sizeHint() const override { return minimumSize(); }
-    QSize minimumSize() const override {
-        QSize size;
-        for (QLayoutItem* item : m_items) size = size.expandedTo(item->minimumSize());
-        const QMargins m = contentsMargins();
-        return size + QSize(m.left() + m.right(), m.top() + m.bottom());
-    }
-
-private:
-    int doLayout(const QRect& rect, bool testOnly) const {
-        int left, top, right, bottom;
-        getContentsMargins(&left, &top, &right, &bottom);
-        const QRect eff = rect.adjusted(left, top, -right, -bottom);
-        int x = eff.x();
-        int y = eff.y();
-        int lineHeight = 0;
-        const int spaceX = m_hSpace >= 0 ? m_hSpace : 16;
-        const int spaceY = m_vSpace >= 0 ? m_vSpace : 16;
-        for (QLayoutItem* item : m_items) {
-            const QSize hint = item->sizeHint();
-            int nextX = x + hint.width() + spaceX;
-            if (nextX - spaceX > eff.right() + 1 && lineHeight > 0) {
-                x = eff.x();
-                y = y + lineHeight + spaceY;
-                nextX = x + hint.width() + spaceX;
-                lineHeight = 0;
-            }
-            if (!testOnly) item->setGeometry(QRect(QPoint(x, y), hint));
-            x = nextX;
-            lineHeight = qMax(lineHeight, hint.height());
-        }
-        return y + lineHeight - rect.y() + bottom;
-    }
-    QList<QLayoutItem*> m_items;
-    int m_hSpace;
-    int m_vSpace;
-};
-
-// QScrollArea que casa com layouts dependentes de largura (FlowLayout, ou um
-// QVBoxLayout de linhas). Em vez de widgetResizable (que ignora
-// heightForWidth e corta o conteúdo), redimensionamos o widget manualmente:
-// largura = viewport, altura = heightForWidth na largura do viewport.
-class FlowScrollArea : public QScrollArea {
-public:
-    explicit FlowScrollArea(QWidget* parent = nullptr) : QScrollArea(parent) {
-        setWidgetResizable(false);
-        setFrameShape(QFrame::NoFrame);
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    }
-    void reflow() {
-        QWidget* w = widget();
-        if (!w) return;
-        const int vw = viewport()->width();
-        QLayout* l = w->layout();
-        const int contentH = (l && l->hasHeightForWidth()) ? l->heightForWidth(vw)
-                                                            : w->sizeHint().height();
-        w->resize(vw, qMax(contentH, viewport()->height()));
-    }
-protected:
-    void resizeEvent(QResizeEvent* e) override {
-        QScrollArea::resizeEvent(e);
-        reflow();
-    }
-};
 
 namespace {
 
@@ -247,8 +156,6 @@ QPixmap crossfadedLogo(const QImage& from, const QImage& to, qreal progress)
 }
 constexpr int kEditCoverW = 260; // capa grande do diálogo Editar projeto
 constexpr int kEditCoverH = 390;
-constexpr int kListThumbW = 62, kListThumbH = 92; // igual ao thumb único de hoje na Lista
-constexpr int kMaxListThumbs = 4; // além disso, mostra badge "+N"
 
 // Padding ao redor da capa pra acomodar sombra projetada + bloco de páginas.
 constexpr int kVitPadL = 2;
@@ -279,6 +186,8 @@ struct RecentInfo {
     int     chapterCount    = 0; // direto de "chapters" no índice — sempre disponível
     int     documentCount   = 0; // soma de "drawers[].items" no índice — sempre disponível
     QList<ManuscriptCoverInfo> manuscripts; // um item por manuscrito, título/capa já efetivos
+    QJsonArray  chapters;     // capítulos crus do índice (título, ordem, status) — Onde parei e progresso
+    QJsonObject wordCounter;  // settings.wordCounter — meta, progresso por dia, folgas
 
     // --- Lombada da Prateleira 3D (persistidos em projectDetails, mesmo
     // esquema de campos do Mira 1) ---
@@ -332,7 +241,10 @@ RecentInfo readRecentInfo(const QString& rootPath)
     // com o WordCounter já ter rodado).
     const QJsonArray msArr = data.value(QStringLiteral("manuscripts")).toArray();
     info.manuscriptCount = msArr.size();
-    info.chapterCount = root.value(QStringLiteral("chapters")).toArray().size();
+    info.chapters = root.value(QStringLiteral("chapters")).toArray();
+    info.chapterCount = info.chapters.size();
+    info.wordCounter = root.value(QStringLiteral("settings")).toObject()
+                           .value(QStringLiteral("wordCounter")).toObject();
     int docCount = 0;
     for (const auto& dv : root.value(QStringLiteral("drawers")).toArray())
         docCount += dv.toObject().value(QStringLiteral("items")).toArray().size();
@@ -517,436 +429,6 @@ QPixmap renderVitrineCover(const QPixmap& coverIn, int w, int h)
     p.setPen(QPen(QColor(255, 255, 255, 28), 1));
     p.drawPath(clip);
     return pm;
-}
-
-// Versão escurecida da capa-vitrine usada no hover. SourceAtop pinta o preto
-// apenas onde o pixmap já tem alpha — ou seja, sobre a capa, o bloco de
-// páginas e a lombada, respeitando o formato exato do livro (o miolo escurece
-// junto, sem vazar um retângulo pra fora da silhueta).
-QPixmap renderVitrineCoverDimmed(const QPixmap& vit, qreal alpha)
-{
-    QPixmap pm = vit;
-    QPainter p(&pm);
-    p.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-    p.fillRect(pm.rect(), QColor(0, 0, 0, qBound(0, int(alpha * 255), 255)));
-    p.end();
-    return pm;
-}
-
-// Blend manual entre 2 pixmaps de mesmo tamanho — mesma técnica de
-// StackView::crossfadeLabel (QPainter::setOpacity num pixmap intermediário),
-// aqui reciclada pro BookCard.
-QPixmap blendPixmap(const QPixmap& from, const QPixmap& to, qreal t)
-{
-    const QSize sz = to.size();
-    QPixmap blended(sz);
-    blended.fill(Qt::transparent);
-    QPainter p(&blended);
-    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    p.setOpacity(1.0 - t);
-    p.drawPixmap(0, 0, from);
-    p.setOpacity(t);
-    p.drawPixmap(0, 0, to);
-    return blended;
-}
-
-// Conjunto de callbacks do card — agrupados pra não inflar a assinatura.
-struct CardCallbacks {
-    std::function<void()> open;            // clique esquerdo → abrir projeto
-    std::function<void(bool)> autoOpen;    // toggle "abrir automaticamente"
-    std::function<void(QWidget*, bool)> hover; // enter/leave → escurecer outros
-    std::function<void()> edit;            // context menu → editar
-    std::function<void()> coverCreate;     // context menu → criar capa
-    std::function<void()> removeRecent;    // context menu → remover dos recentes
-    std::function<void()> del;             // context menu → excluir projeto
-};
-
-// Card de livro do grid de recentes. Sem Q_OBJECT — dispara callbacks. O
-// conteúdo é capa-vitrine + título + toggle. Dois efeitos no hover:
-//   - Escurecer os DEMAIS cards: troca do pixmap por uma versão escurecida
-//     (SourceAtop, inclui miolo/lombada). Não usa QGraphicsOpacityEffect, que
-//     cortaria o repaint dentro do QScrollArea.
-//   - Aumentar ESTE card: a capa vive num "palco" de tamanho fixo (já com a
-//     folga do zoom reservada) e cresce ~10% via animação de geometria. O
-//     crescimento fica contido no palco, então o FlowLayout não reflui.
-class BookCard : public QFrame {
-public:
-    BookCard(const QString& path, const RecentInfo& info, bool autoOpen,
-             CardCallbacks cbs, QWidget* parent = nullptr)
-        : QFrame(parent), m_cbs(std::move(cbs))
-    {
-        setObjectName(QStringLiteral("bookCard"));
-        setCursor(Qt::PointingHandCursor);
-
-        auto* col = new QVBoxLayout(this);
-        col->setContentsMargins(0, 0, 0, 0);
-        col->setSpacing(7);
-        col->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-
-        QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
-        if (cover.isNull()) {
-            cover = renderDefaultCover(info.name, info.author, kCardCoverW, kCardCoverH);
-        }
-        m_vitNormal = renderVitrineCover(cover, kCardCoverW, kCardCoverH);
-        m_vitDimmed = renderVitrineCoverDimmed(m_vitNormal, 0.62);
-
-        // Capas por manuscrito (saga de 2+ livros) — cicla entre elas via
-        // crossfade enquanto ESTE card estiver em hover. info.manuscripts já
-        // vem deduplicado por capa (ver readRecentInfo()), então só existe
-        // aqui quando há variação real a mostrar.
-        if (info.manuscripts.size() > 1) {
-            m_vitManuscripts.reserve(info.manuscripts.size());
-            for (const auto& mi : info.manuscripts) {
-                QPixmap c = decodeCoverDataUrl(mi.coverDataUrl);
-                if (c.isNull()) c = cover;
-                m_vitManuscripts.append(renderVitrineCover(c, kCardCoverW, kCardCoverH));
-            }
-        }
-
-        const QSize baseSz = m_vitNormal.size();
-        const QSize stageSz(int(baseSz.width()  * kHoverScale),
-                            int(baseSz.height() * kHoverScale));
-        m_normalRect = QRect(QPoint((stageSz.width()  - baseSz.width())  / 2,
-                                    (stageSz.height() - baseSz.height()) / 2), baseSz);
-        m_hoverRect  = QRect(QPoint(0, 0), stageSz);
-
-        // Palco fixo: reserva o espaço do zoom pra o footprint do card não
-        // mudar ao crescer (FlowLayout fica quieto).
-        m_stage = new QWidget(this);
-        m_stage->setFixedSize(stageSz);
-        m_stage->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-
-        m_coverLbl = new QLabel(m_stage);
-        m_coverLbl->setScaledContents(true);
-        m_coverLbl->setPixmap(m_vitNormal);
-        m_coverLbl->setGeometry(m_normalRect);
-        m_coverLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        col->addWidget(m_stage, 0, Qt::AlignHCenter);
-
-        m_coverAnim = new QPropertyAnimation(m_coverLbl, "geometry", this);
-        m_coverAnim->setDuration(170);
-        m_coverAnim->setEasingCurve(QEasingCurve::OutCubic);
-
-        auto* nameLbl = new QLabel(info.name.isEmpty()
-                                       ? QFileInfo(path).fileName()
-                                       : info.name,
-                                   this);
-        nameLbl->setObjectName(QStringLiteral("bookCardName"));
-        nameLbl->setAlignment(Qt::AlignHCenter);
-        nameLbl->setWordWrap(true);
-        nameLbl->setFixedWidth(stageSz.width());
-        nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        col->addWidget(nameLbl, 0, Qt::AlignHCenter);
-
-        auto* autoOpenChk = new QCheckBox(QCoreApplication::translate("BookCard", "Abrir automaticamente"), this);
-        autoOpenChk->setObjectName(QStringLiteral("bookCardAutoOpen"));
-        autoOpenChk->setCursor(Qt::PointingHandCursor);
-        autoOpenChk->setChecked(autoOpen);
-        QObject::connect(autoOpenChk, &QCheckBox::toggled, this,
-            [cb = m_cbs.autoOpen](bool checked) { if (cb) cb(checked); });
-        col->addWidget(autoOpenChk, 0, Qt::AlignHCenter);
-
-        setFixedWidth(stageSz.width());
-    }
-
-    void setDimmed(bool dim) {
-        if (!m_coverLbl) return;
-        m_coverLbl->setPixmap(dim ? m_vitDimmed : m_vitNormal);
-    }
-
-protected:
-    void mouseReleaseEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::LeftButton && rect().contains(event->pos())
-            && m_cbs.open) {
-            m_cbs.open();
-        }
-        QFrame::mouseReleaseEvent(event);
-    }
-    void enterEvent(QEnterEvent* event) override {
-        animateCover(m_hoverRect);
-        if (m_cbs.hover) m_cbs.hover(this, true); // pode chamar setDimmed(false) nesta própria carta
-        startCoverCycle();
-        QFrame::enterEvent(event);
-    }
-    void leaveEvent(QEvent* event) override {
-        animateCover(m_normalRect);
-        stopCoverCycle();
-        if (m_cbs.hover) m_cbs.hover(this, false);
-        QFrame::leaveEvent(event);
-    }
-    void contextMenuEvent(QContextMenuEvent* event) override {
-        QMenu menu(this);
-        menu.setObjectName(QStringLiteral("bookCardMenu"));
-        QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookCard", "Editar projeto"));
-        QAction* aCover  = menu.addAction(QCoreApplication::translate("BookCard", "Criar capa"));
-        menu.addSeparator();
-        QAction* aRemove = menu.addAction(QCoreApplication::translate("BookCard", "Remover dos recentes"));
-        menu.addSeparator();
-        QAction* aDelete = menu.addAction(QCoreApplication::translate("BookCard", "Excluir projeto"));
-        QAction* chosen = menu.exec(event->globalPos());
-        if      (chosen == aEdit   && m_cbs.edit)        m_cbs.edit();
-        else if (chosen == aCover  && m_cbs.coverCreate)  m_cbs.coverCreate();
-        else if (chosen == aRemove && m_cbs.removeRecent) m_cbs.removeRecent();
-        else if (chosen == aDelete && m_cbs.del)          m_cbs.del();
-    }
-
-private:
-    void animateCover(const QRect& target) {
-        if (!m_coverAnim) return;
-        m_coverAnim->stop();
-        m_coverAnim->setStartValue(m_coverLbl->geometry());
-        m_coverAnim->setEndValue(target);
-        m_coverAnim->start();
-    }
-
-    // Ciclo de capa entre manuscritos, ativo só durante o hover DESTE card
-    // e só quando há 2+ capas realmente diferentes pra mostrar.
-    void startCoverCycle() {
-        if (m_vitManuscripts.size() < 2) return;
-        if (!m_coverCycleTimer) {
-            m_coverCycleTimer = new QTimer(this);
-            connect(m_coverCycleTimer, &QTimer::timeout, this, [this]() { advanceCoverCycle(); });
-        }
-        m_coverCycleTimer->start(kCoverCycleIntervalMs);
-    }
-    void stopCoverCycle() {
-        if (m_coverCycleTimer) m_coverCycleTimer->stop();
-        if (m_coverFadeAnim) { m_coverFadeAnim->stop(); m_coverFadeAnim->deleteLater(); m_coverFadeAnim = nullptr; }
-        m_coverCycleIdx = -1; // -1 = mostrando m_vitNormal, ciclo ainda não começou
-        if (m_coverLbl) m_coverLbl->setPixmap(m_vitNormal);
-    }
-    void advanceCoverCycle() {
-        const int n = m_vitManuscripts.size();
-        if (n < 2 || !m_coverLbl) return;
-        // m_coverCycleIdx < 0 (repouso, mostrando m_vitNormal) → primeiro
-        // blend parte dele; (-1+1)%n == 0, cai certinho no 1º manuscrito.
-        const QPixmap fromPm = m_coverCycleIdx < 0 ? m_vitNormal : m_vitManuscripts[m_coverCycleIdx];
-        const int to = (m_coverCycleIdx + 1) % n;
-        const QPixmap toPm = m_vitManuscripts[to];
-
-        // Sem DeleteWhenStopped de propósito — mesmo padrão de
-        // ShelfBookItem::animateYawTo/animatePitchTo (já provado nesse
-        // arquivo). Com DeleteWhenStopped o Qt se autodestrói ao terminar
-        // (550ms, bem antes do próximo tick em 3.5s) sem eu saber — e o
-        // ponteiro guardado aqui ficava pendurado, apontando pra memória já
-        // liberada no próximo advanceCoverCycle(). Gerenciando o ciclo de
-        // vida à mão (stop+deleteLater+nullptr sempre juntos) evita isso.
-        if (m_coverFadeAnim) { m_coverFadeAnim->stop(); m_coverFadeAnim->deleteLater(); m_coverFadeAnim = nullptr; }
-        m_coverFadeAnim = new QVariantAnimation(this);
-        m_coverFadeAnim->setStartValue(0.0);
-        m_coverFadeAnim->setEndValue(1.0);
-        m_coverFadeAnim->setDuration(kCoverFadeMs);
-        m_coverFadeAnim->setEasingCurve(QEasingCurve::InOutCubic);
-        connect(m_coverFadeAnim, &QVariantAnimation::valueChanged, this,
-                [this, fromPm, toPm](const QVariant& v) {
-            if (m_coverLbl) m_coverLbl->setPixmap(blendPixmap(fromPm, toPm, v.toReal()));
-        });
-        connect(m_coverFadeAnim, &QVariantAnimation::finished, this,
-                [this, to]() { m_coverCycleIdx = to; });
-        m_coverFadeAnim->start();
-    }
-
-    static constexpr double kHoverScale = 1.10;
-    static constexpr int kCoverCycleIntervalMs = 3500;
-    static constexpr int kCoverFadeMs = 550;
-
-    CardCallbacks m_cbs;
-    QWidget* m_stage = nullptr;
-    QLabel* m_coverLbl = nullptr;
-    QPropertyAnimation* m_coverAnim = nullptr;
-    QPixmap m_vitNormal;
-    QPixmap m_vitDimmed;
-    QVector<QPixmap> m_vitManuscripts; // capas-vitrine por manuscrito (vazio/1 = sem ciclo)
-    QTimer* m_coverCycleTimer = nullptr;
-    QVariantAnimation* m_coverFadeAnim = nullptr;
-    int m_coverCycleIdx = -1; // -1 = repouso (mostrando m_vitNormal)
-    QRect m_normalRect;
-    QRect m_hoverRect;
-};
-
-// Miniatura simples (cantos arredondados, sem o 3D da vitrine) pra usar na
-// visualização em Lista, onde a capa aparece pequena ao lado do texto.
-QPixmap renderThumb(const QPixmap& coverIn, int w, int h)
-{
-    QPixmap pm(w, h);
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.setRenderHint(QPainter::Antialiasing, true);
-    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    QPainterPath clip;
-    clip.addRoundedRect(0, 0, w, h, 3, 3);
-    p.setClipPath(clip);
-    const QPixmap scaled = coverIn.scaled(w, h, Qt::KeepAspectRatioByExpanding,
-                                          Qt::SmoothTransformation);
-    p.drawPixmap(QPointF(-(scaled.width() - w) / 2.0, -(scaled.height() - h) / 2.0),
-                 scaled);
-    p.setClipping(false);
-    p.setPen(QPen(QColor(255, 255, 255, 28), 1));
-    p.drawPath(clip);
-    return pm;
-}
-
-// Linha da visualização em Lista: capa miniatura + nome + metadados (autor /
-// gêneros) + toggle "abrir automaticamente". Compartilha os callbacks e o
-// menu de contexto do BookCard.
-class BookRow : public QFrame {
-public:
-    BookRow(const QString& path, const RecentInfo& info, bool autoOpen,
-            CardCallbacks cbs, QWidget* parent = nullptr)
-        : QFrame(parent), m_cbs(std::move(cbs))
-    {
-        setObjectName(QStringLiteral("bookRow"));
-        setCursor(Qt::PointingHandCursor);
-        setAttribute(Qt::WA_StyledBackground, true);
-
-        auto* row = new QHBoxLayout(this);
-        row->setContentsMargins(12, 9, 16, 9);
-        row->setSpacing(14);
-
-        auto* thumbsHost = new QWidget(this);
-        auto* thumbsRow = new QHBoxLayout(thumbsHost);
-        thumbsRow->setContentsMargins(0, 0, 0, 0);
-        thumbsRow->setSpacing(4);
-        thumbsHost->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-
-        if (info.manuscripts.size() <= 1) {
-            // Caminho idêntico ao de antes — projeto de manuscrito único não muda.
-            QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
-            if (cover.isNull())
-                cover = renderDefaultCover(info.name, info.author, 120, 180);
-            const QPixmap thumb = renderThumb(cover, kListThumbW, kListThumbH);
-            auto* thumbLbl = new QLabel(thumbsHost);
-            thumbLbl->setFixedSize(thumb.size());
-            thumbLbl->setPixmap(thumb);
-            thumbsRow->addWidget(thumbLbl);
-        } else {
-            const int shown = qMin(info.manuscripts.size(), kMaxListThumbs);
-            for (int i = 0; i < shown; ++i) {
-                const auto& mi = info.manuscripts.at(i);
-                QPixmap cover = decodeCoverDataUrl(mi.coverDataUrl);
-                if (cover.isNull())
-                    cover = renderDefaultCover(mi.title, info.author, 120, 180);
-                const QPixmap thumb = renderThumb(cover, kListThumbW, kListThumbH);
-                auto* thumbLbl = new QLabel(thumbsHost);
-                thumbLbl->setFixedSize(thumb.size());
-                thumbLbl->setPixmap(thumb);
-                thumbsRow->addWidget(thumbLbl);
-            }
-            if (info.manuscripts.size() > kMaxListThumbs) {
-                auto* badge = new QLabel(QStringLiteral("+%1").arg(info.manuscripts.size() - kMaxListThumbs), thumbsHost);
-                badge->setObjectName(QStringLiteral("bookRowThumbBadge"));
-                badge->setFixedSize(28, kListThumbH);
-                badge->setAlignment(Qt::AlignCenter);
-                thumbsRow->addWidget(badge);
-            }
-        }
-        row->addWidget(thumbsHost, 0, Qt::AlignVCenter);
-
-        auto* textCol = new QVBoxLayout();
-        textCol->setSpacing(3);
-        textCol->setContentsMargins(0, 0, 0, 0);
-        auto* nameLbl = new QLabel(info.name.isEmpty() ? QFileInfo(path).fileName()
-                                                       : info.name, this);
-        nameLbl->setObjectName(QStringLiteral("bookRowName"));
-        nameLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        QStringList meta;
-        if (!info.author.isEmpty()) meta << info.author;
-        if (!info.genres.isEmpty()) meta << info.genres;
-        auto* metaLbl = new QLabel(meta.join(QStringLiteral("   ·   ")), this);
-        metaLbl->setObjectName(QStringLiteral("bookRowMeta"));
-        metaLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-        metaLbl->setVisible(!meta.isEmpty());
-        textCol->addStretch();
-        textCol->addWidget(nameLbl);
-        textCol->addWidget(metaLbl);
-        textCol->addStretch();
-        row->addLayout(textCol, 1);
-
-        auto* chk = new QCheckBox(QCoreApplication::translate("BookRow", "Abrir automaticamente"), this);
-        chk->setObjectName(QStringLiteral("bookCardAutoOpen"));
-        chk->setCursor(Qt::PointingHandCursor);
-        chk->setChecked(autoOpen);
-        QObject::connect(chk, &QCheckBox::toggled, this,
-            [cb = m_cbs.autoOpen](bool checked) { if (cb) cb(checked); });
-        row->addWidget(chk, 0, Qt::AlignVCenter);
-
-        setFixedHeight(92 + 18);
-    }
-
-protected:
-    void mouseReleaseEvent(QMouseEvent* event) override {
-        if (event->button() == Qt::LeftButton && rect().contains(event->pos())
-            && m_cbs.open) {
-            m_cbs.open();
-        }
-        QFrame::mouseReleaseEvent(event);
-    }
-    void contextMenuEvent(QContextMenuEvent* event) override {
-        QMenu menu(this);
-        menu.setObjectName(QStringLiteral("bookCardMenu"));
-        QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookRow", "Editar projeto"));
-        QAction* aCover  = menu.addAction(QCoreApplication::translate("BookRow", "Criar capa"));
-        menu.addSeparator();
-        QAction* aRemove = menu.addAction(QCoreApplication::translate("BookRow", "Remover dos recentes"));
-        menu.addSeparator();
-        QAction* aDelete = menu.addAction(QCoreApplication::translate("BookRow", "Excluir projeto"));
-        QAction* chosen = menu.exec(event->globalPos());
-        if      (chosen == aEdit   && m_cbs.edit)         m_cbs.edit();
-        else if (chosen == aCover  && m_cbs.coverCreate)   m_cbs.coverCreate();
-        else if (chosen == aRemove && m_cbs.removeRecent)  m_cbs.removeRecent();
-        else if (chosen == aDelete && m_cbs.del)           m_cbs.del();
-    }
-
-private:
-    CardCallbacks m_cbs;
-};
-
-// Cor-padrão da lombada por índice, quando o projeto não tem uma escolhida —
-// mesma paleta/lógica do Mira 1 (getDefaultSpineColor).
-QColor defaultSpineColor(int idx)
-{
-    static const QColor kColors[] = {
-        QColor("#7a1e28"), QColor("#1a3d5c"), QColor("#2b5c35"), QColor("#5c3a0f"),
-        QColor("#3d1e5c"), QColor("#1a4d4d"), QColor("#6b2020"), QColor("#1e3560"),
-        QColor("#5a4200"), QColor("#1e3d30"), QColor("#401a0f"), QColor("#0f1e4d"),
-    };
-    constexpr int n = int(sizeof(kColors) / sizeof(kColors[0]));
-    return kColors[((idx % n) + n) % n];
-}
-
-// Cor de lombada extraída da própria capa — média das cores numa versão bem
-// reduzida (que já funciona como um blur barato), depois com saturação e
-// luminosidade realçadas pra não sair uma cor lavada/acinzentada (a média
-// crua de uma arte cheia de detalhe tende a ficar meio cinza-marrom sem
-// graça). QColor inválido = falha (capa nula/sem pixels), quem chama cai
-// pro palito de cor padrão por índice.
-QColor extractSpineColorFromCover(const QPixmap& cover)
-{
-    if (cover.isNull()) return QColor();
-    const QImage img = cover.scaled(24, 24, Qt::IgnoreAspectRatio, Qt::SmoothTransformation)
-                             .toImage().convertToFormat(QImage::Format_RGB32);
-    if (img.isNull() || img.width() == 0 || img.height() == 0) return QColor();
-
-    qint64 rSum = 0, gSum = 0, bSum = 0;
-    const int total = img.width() * img.height();
-    for (int y = 0; y < img.height(); ++y) {
-        const QRgb* line = reinterpret_cast<const QRgb*>(img.constScanLine(y));
-        for (int x = 0; x < img.width(); ++x) {
-            rSum += qRed(line[x]);
-            gSum += qGreen(line[x]);
-            bSum += qBlue(line[x]);
-        }
-    }
-    const QColor avg(int(rSum / total), int(gSum / total), int(bSum / total));
-
-    float h, s, v;
-    avg.getHsvF(&h, &s, &v);
-    if (h < 0.0f) h = 0.0f; // acromático (cinza puro) — mantém o tom neutro
-    s = qBound(0.45f, s * 1.35f, 0.85f);
-    v = qBound(0.24f, v, 0.5f);
-    QColor result;
-    result.setHsvF(h, s, v);
-    return result;
 }
 
 // Diálogo de edição dos metadados do projeto (nome, autor, gêneros, sinopse,
@@ -1240,7 +722,11 @@ public:
         spineCol->addLayout(widthRow);
 
         spineCol->addStretch(1);
-        tabs->addTab(spinePage, QCoreApplication::translate("ProjectEditDialog", "Lombada"));
+        // A Prateleira 3D saiu do menu: a aba Lombada não tem mais o que
+        // mostrar. Os campos seguem vivos (escondidos) pra que salvar
+        // preserve o que o projeto já tinha gravado.
+        spinePage->hide();
+        tabs->tabBar()->hide();
 
         rightCol->addWidget(tabs, /*stretch=*/1);
 
@@ -1595,16 +1081,24 @@ MainMenuDialog::MainMenuDialog(QWidget* parent)
         // de estado inicial do alternador dentro de buildUi() já lê
         // m_viewMode pra marcar o botão certo e mostrar a view certa.
         QSettings qs;
+        // "estante", "lista" e "prateleira" eram as vistas antigas; quem
+        // estava nelas cai no Continuar, que é o novo padrão.
         const QString saved = qs.value(QStringLiteral("library/viewMode")).toString();
-        if (saved == QStringLiteral("lista"))           m_viewMode = ViewMode::Lista;
-        else if (saved == QStringLiteral("prateleira")) m_viewMode = ViewMode::Prateleira;
-        else if (saved == QStringLiteral("pilha"))      m_viewMode = ViewMode::Pilha;
-        else                                             m_viewMode = ViewMode::Estante;
+        if (saved == QStringLiteral("vitrine"))          m_viewMode = ViewMode::Vitrine;
+        else if (saved == QStringLiteral("cinema"))      m_viewMode = ViewMode::Cinema;
+        else if (saved == QStringLiteral("seudia"))      m_viewMode = ViewMode::SeuDia;
+        else if (saved == QStringLiteral("prateleiras")) m_viewMode = ViewMode::Estante;
+        else if (saved == QStringLiteral("pilha"))       m_viewMode = ViewMode::Pilha;
+        else                                              m_viewMode = ViewMode::Continuar;
     }
     buildUi();
     applyDialogStyle();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &MainMenuDialog::applyDialogStyle);
+    // As vistas pintam com as cores do tema e embutem algumas em rich text:
+    // refazer é mais simples (e barato) do que caçar cada uma.
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
+            this, [this]() { if (isVisible()) refreshRecents(); });
 
     // Rotação de quotes (compat Mira 1): 6s pra quotes curtos, 9s pra longos.
     // Timer single-shot reprogramado por rotateQuote() conforme o tamanho do
@@ -1741,14 +1235,7 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
         m_langCombo->setCurrentIndex(idx >= 0 ? idx : 0);
     }
     connect(m_langCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
-        const QString lang = m_langCombo->itemData(idx).toString();
-        QSettings qs;
-        if (qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString() == lang) return;
-        qs.setValue(QStringLiteral("app/language"), lang);
-        qs.sync();
-        QProcess::startDetached(QCoreApplication::applicationFilePath(),
-                                QCoreApplication::arguments());
-        QCoreApplication::quit();
+        applyLanguage(m_langCombo->itemData(idx).toString());
     });
     langRow->addWidget(langLbl);
     langRow->addWidget(m_langCombo, 1);
@@ -1792,155 +1279,61 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
 
 void MainMenuDialog::buildMainArea(QVBoxLayout* col)
 {
-    // --- Cabeçalho: título + contagem à esquerda, alternador de visão à dir. ---
-    auto* header = new QHBoxLayout();
+    // --- Cabeçalho: título + contagem à esquerda, vistas à direita ---
+    m_header = new QWidget(this);
+    auto* header = new QHBoxLayout(m_header);
+    header->setContentsMargins(0, 0, 0, 0);
     header->setSpacing(10);
     auto* titleCol = new QVBoxLayout();
     titleCol->setSpacing(2);
-    m_headingLabel = new QLabel(tr("Biblioteca"), this);
+    m_headingLabel = new QLabel(tr("Biblioteca"), m_header);
     m_headingLabel->setObjectName(QStringLiteral("menuHeading"));
-    m_countLabel = new QLabel(this);
+    m_countLabel = new QLabel(m_header);
     m_countLabel->setObjectName(QStringLiteral("menuCount"));
     titleCol->addWidget(m_headingLabel);
     titleCol->addWidget(m_countLabel);
     header->addLayout(titleCol);
     header->addStretch(1);
 
-    m_estanteBtn = new QPushButton(tr("Estante"), this);
-    m_estanteBtn->setObjectName(QStringLiteral("menuViewToggle"));
-    m_estanteBtn->setCheckable(true);
-    m_estanteBtn->setCursor(Qt::PointingHandCursor);
-    m_listaBtn = new QPushButton(tr("Lista"), this);
-    m_listaBtn->setObjectName(QStringLiteral("menuViewToggle"));
-    m_listaBtn->setCheckable(true);
-    m_listaBtn->setCursor(Qt::PointingHandCursor);
-    m_prateleiraBtn = new QPushButton(tr("Prateleira"), this);
-    m_prateleiraBtn->setObjectName(QStringLiteral("menuViewToggle"));
-    // Não-checável de propósito: a Prateleira ainda tá em polimento visual,
-    // então o botão fica travado (nunca ativa o modo de verdade) e só
-    // mostra um toast "Em breve" quando clicado.
-    m_prateleiraBtn->setCheckable(false);
-    m_prateleiraBtn->setCursor(Qt::PointingHandCursor);
-    m_pilhaBtn = new QPushButton(tr("Pilha"), this);
-    m_pilhaBtn->setObjectName(QStringLiteral("menuViewToggle"));
-    m_pilhaBtn->setCheckable(true); // ao contrário da Prateleira — pronta pra uso real
-    m_pilhaBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_estanteBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Estante); });
-    connect(m_listaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Lista); });
-    connect(m_prateleiraBtn, &QPushButton::clicked, this, [this]() {
-        showComingSoonToast(m_prateleiraBtn);
-    });
-    connect(m_pilhaBtn, &QPushButton::clicked, this, [this]() { setViewMode(ViewMode::Pilha); });
-
-    m_shelfMaterialBtn = new QPushButton(tr("Material"), this);
-    m_shelfMaterialBtn->setObjectName(QStringLiteral("menuViewToggle"));
-    m_shelfMaterialBtn->setCursor(Qt::PointingHandCursor);
-    m_shelfMaterialBtn->setVisible(false);
-    connect(m_shelfMaterialBtn, &QPushButton::clicked, this, [this]() {
-        showShelfMaterialMenu();
-    });
-
+    // Mesma ordem do enum ViewMode: o índice do botão é o modo.
+    const QStringList names = { tr("Continuar"), tr("Vitrine"), tr("Cinema"),
+                                tr("Seu dia"), tr("Estante"), tr("Pilha") };
     auto* toggleWrap = new QHBoxLayout();
     toggleWrap->setSpacing(6);
-    toggleWrap->addWidget(m_shelfMaterialBtn);
-    toggleWrap->addWidget(m_estanteBtn);
-    toggleWrap->addWidget(m_listaBtn);
-    toggleWrap->addWidget(m_prateleiraBtn);
-    toggleWrap->addWidget(m_pilhaBtn);
-    header->addLayout(toggleWrap);
-    col->addLayout(header);
-
-    // --- Scroll + holder com os dois containers (estante / lista) ---
-    m_recentsScroll = new FlowScrollArea(this);
-    m_recentsScroll->setObjectName(QStringLiteral("menuRecentsScroll"));
-
-    m_holder = new QWidget(m_recentsScroll);
-    m_holder->setObjectName(QStringLiteral("menuRecentsHolder"));
-    auto* holderCol = new QVBoxLayout(m_holder);
-    holderCol->setContentsMargins(0, 2, 6, 8);
-    holderCol->setSpacing(0);
-
-    m_gridContainer = new QWidget(m_holder);
-    m_gridFlow = new FlowLayout(m_gridContainer, 0, 18, 18);
-    holderCol->addWidget(m_gridContainer);
-
-    m_listContainer = new QWidget(m_holder);
-    m_listCol = new QVBoxLayout(m_listContainer);
-    m_listCol->setContentsMargins(0, 0, 0, 0);
-    m_listCol->setSpacing(8);
-    holderCol->addWidget(m_listContainer);
-
-    // Prateleira: QGraphicsView próprio, sem scroll — quando os livros não
-    // cabem na largura disponível, vira uma nova prateleira embaixo (ver
-    // ShelfView::refreshLayout). Quem rola a página toda continua sendo o
-    // m_recentsScroll de fora, igual Estante/Lista.
-    m_shelfScene = new ShelfScene(this);
-    {
-        QSettings settings;
-        const QString savedTexture = settings.value(QStringLiteral("shelf/floorTexture")).toString();
-        if (!savedTexture.isEmpty()) m_shelfScene->setFloorTexture(savedTexture);
+    for (int i = 0; i < names.size(); ++i) {
+        auto* b = new QPushButton(names.at(i), m_header);
+        b->setObjectName(QStringLiteral("menuViewToggle"));
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setChecked(i == int(m_viewMode));
+        const ViewMode mode = ViewMode(i);
+        connect(b, &QPushButton::clicked, this, [this, mode]() { setViewMode(mode); });
+        toggleWrap->addWidget(b);
+        m_viewBtns.append(b);
     }
-    m_shelfView = new ShelfView(m_shelfScene, m_holder);
-    connect(m_shelfScene, &ShelfScene::openRequested,
-            this, &MainMenuDialog::openRecentRequested);
-    connect(m_shelfScene, &ShelfScene::editRequested, this, &MainMenuDialog::editProject);
-    connect(m_shelfScene, &ShelfScene::coverCreateRequested, this, &MainMenuDialog::launchMiraCover);
-    connect(m_shelfScene, &ShelfScene::removeRequested,
-            this, &MainMenuDialog::removeRecentRequested);
-    connect(m_shelfScene, &ShelfScene::deleteRequested,
-            this, &MainMenuDialog::confirmDeleteProject);
-    connect(m_shelfScene, &ShelfScene::orderChanged, this, [this](const QStringList& newOrder) {
-        m_recentPaths = newOrder;
-        emit recentsReordered(newOrder);
-    });
-    holderCol->addWidget(m_shelfView);
+    header->addLayout(toggleWrap);
+    col->addWidget(m_header);
 
-    // Pilha: QWidget simples (sem QGraphicsScene, mais barato que a
-    // Prateleira) com herói em destaque + faixa lateral em peek. Rola dentro
-    // de si mesma (roda do mouse gira o baralho) — o m_recentsScroll de fora
-    // só entra em jogo se o conteúdo não couber verticalmente.
-    m_stackView = new StackView(m_holder);
+    // --- Área da vista ativa: cada vista é montada do zero em
+    // populateActiveView; só a Pilha é um widget fixo (ela guarda estado de
+    // animação e só esconde).
+    m_viewHost = new QWidget(this);
+    m_viewHost->setObjectName(QStringLiteral("menuViewHost"));
+    auto* hostCol = new QVBoxLayout(m_viewHost);
+    hostCol->setContentsMargins(0, 0, 0, 0);
+    hostCol->setSpacing(0);
+
+    m_stackView = new StackView(m_viewHost);
     connect(m_stackView, &StackView::openRequested, this, &MainMenuDialog::openRecentRequested);
     connect(m_stackView, &StackView::autoOpenChanged, this, &MainMenuDialog::autoOpenChanged);
     connect(m_stackView, &StackView::editRequested, this, &MainMenuDialog::editProject);
     connect(m_stackView, &StackView::coverCreateRequested, this, &MainMenuDialog::launchMiraCover);
     connect(m_stackView, &StackView::removeRequested, this, &MainMenuDialog::removeRecentRequested);
     connect(m_stackView, &StackView::deleteRequested, this, &MainMenuDialog::confirmDeleteProject);
-    // Stretch bem alto (não 1): o holderCol também tem um addStretch(1)
-    // no fim (compartilhado por todos os modos) — com stretch igual, metade
-    // do espaço extra escapava pra aquele spacer externo, sempre sobrando
-    // como vão vazio ABAIXO do StackView, fora do controle do layout interno
-    // dele. Com um stretch bem maior aqui, quase todo o espaço extra vai
-    // pro StackView, e o posicionamento vertical interno dele (ver
-    // StackView::StackView) passa a controlar de verdade onde a composição
-    // fica.
-    holderCol->addWidget(m_stackView, 100);
+    m_stackView->hide();
+    hostCol->addWidget(m_stackView, 1);
 
-    m_emptyLabel = new QLabel(
-        tr("Você ainda não tem projetos.\n"
-           "Clique em \"Novo projeto\" pra começar, ou em \"Carregar pasta\" pra abrir uma existente."),
-        m_holder);
-    m_emptyLabel->setObjectName(QStringLiteral("menuEmpty"));
-    m_emptyLabel->setAlignment(Qt::AlignCenter);
-    m_emptyLabel->setWordWrap(true);
-    m_emptyLabel->hide();
-    holderCol->addWidget(m_emptyLabel);
-
-    holderCol->addStretch(1);
-
-    m_recentsScroll->setWidget(m_holder);
-    col->addWidget(m_recentsScroll, 1);
-
-    // Estado inicial do alternador.
-    m_estanteBtn->setChecked(m_viewMode == ViewMode::Estante);
-    m_listaBtn->setChecked(m_viewMode == ViewMode::Lista);
-    m_prateleiraBtn->setChecked(m_viewMode == ViewMode::Prateleira);
-    m_pilhaBtn->setChecked(m_viewMode == ViewMode::Pilha);
-    m_gridContainer->setVisible(m_viewMode == ViewMode::Estante);
-    m_listContainer->setVisible(m_viewMode == ViewMode::Lista);
-    m_shelfView->setVisible(m_viewMode == ViewMode::Prateleira);
-    m_stackView->setVisible(m_viewMode == ViewMode::Pilha);
-    m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
+    col->addWidget(m_viewHost, 1);
 }
 
 void MainMenuDialog::setRecentProjects(const QStringList& paths)
@@ -1955,31 +1348,16 @@ void MainMenuDialog::setAutoOpenPath(const QString& path)
     refreshRecents();
 }
 
-void MainMenuDialog::setHoveredCard(QWidget* hovered)
-{
-    // m_cards guarda apenas BookCard* da Estante (na Lista fica vazio); o
-    // static_cast é seguro e evita Q_OBJECT/qobject_cast no tipo local.
-    for (QWidget* c : m_cards) {
-        if (!c) continue;
-        static_cast<BookCard*>(c)->setDimmed(hovered != nullptr && c != hovered);
-    }
-}
-
 void MainMenuDialog::setViewMode(ViewMode mode)
 {
+    const bool changed = (mode != m_viewMode);
     m_viewMode = mode;
-    if (m_estanteBtn)    m_estanteBtn->setChecked(mode == ViewMode::Estante);
-    if (m_listaBtn)      m_listaBtn->setChecked(mode == ViewMode::Lista);
-    if (m_prateleiraBtn) m_prateleiraBtn->setChecked(mode == ViewMode::Prateleira);
-    if (m_pilhaBtn)      m_pilhaBtn->setChecked(mode == ViewMode::Pilha);
+    for (int i = 0; i < m_viewBtns.size(); ++i) m_viewBtns[i]->setChecked(i == int(mode));
+    if (changed && m_viewHost && m_viewHost->isVisible()) PanelMotion::swapOut(m_viewHost);
     populateActiveView();
 
-    QSettings qs;
-    QString key = QStringLiteral("estante");
-    if (mode == ViewMode::Lista)           key = QStringLiteral("lista");
-    else if (mode == ViewMode::Prateleira) key = QStringLiteral("prateleira");
-    else if (mode == ViewMode::Pilha)      key = QStringLiteral("pilha");
-    qs.setValue(QStringLiteral("library/viewMode"), key);
+    static const char* kKeys[] = { "continuar", "vitrine", "cinema", "seudia", "prateleiras", "pilha" };
+    QSettings().setValue(QStringLiteral("library/viewMode"), QLatin1String(kKeys[int(mode)]));
 }
 
 void MainMenuDialog::refreshRecents()
@@ -1987,111 +1365,222 @@ void MainMenuDialog::refreshRecents()
     populateActiveView();
 }
 
+namespace {
+
+// Mesma chave do MainWindow (resumeGroupFor): QSettings "resume/<md5 do root>".
+QString resumeGroupForRoot(const QString& root)
+{
+    const QByteArray hash = QCryptographicHash::hash(
+        QDir::cleanPath(root).toUtf8(), QCryptographicHash::Md5).toHex();
+    return QStringLiteral("resume/") + QString::fromLatin1(hash);
+}
+
+// "cap. 7 · O que a aranha pediu" a partir do id do capítulo: o número conta
+// só os capítulos (não prólogo/interlúdio) do mesmo manuscrito, em ordem.
+QString chapterLabel(const QJsonArray& chapters, const QString& chapterId)
+{
+    QJsonObject target;
+    for (const auto& v : chapters) {
+        const QJsonObject o = v.toObject();
+        if (o.value(QStringLiteral("id")).toString() == chapterId) { target = o; break; }
+    }
+    if (target.isEmpty()) return QString();
+    const QString title = target.value(QStringLiteral("title")).toString().trimmed();
+    const QString type = target.value(QStringLiteral("type")).toString(QStringLiteral("chapter"));
+    int number = 0;
+    if (type == QStringLiteral("chapter")) {
+        const QString ms = target.value(QStringLiteral("manuscriptId")).toString();
+        QList<QPair<int, QString>> order;
+        for (const auto& v : chapters) {
+            const QJsonObject o = v.toObject();
+            if (o.value(QStringLiteral("manuscriptId")).toString() != ms) continue;
+            if (o.value(QStringLiteral("type")).toString(QStringLiteral("chapter")) != QStringLiteral("chapter")) continue;
+            order.append({ o.value(QStringLiteral("order")).toInt(0), o.value(QStringLiteral("id")).toString() });
+        }
+        std::stable_sort(order.begin(), order.end(),
+                         [](const auto& a, const auto& b) { return a.first < b.first; });
+        for (int i = 0; i < order.size(); ++i)
+            if (order.at(i).second == chapterId) { number = i + 1; break; }
+    }
+    if (title.isEmpty())
+        return number > 0 ? MainMenuDialog::tr("Capítulo %1").arg(number) : QString();
+    static const QRegularExpression numbered(
+        QStringLiteral("^(\\d|cap|chap|capítulo|capitolo|chapitre|chapter)"),
+        QRegularExpression::CaseInsensitiveOption);
+    if (number <= 0 || numbered.match(title).hasMatch()) return title;
+    return MainMenuDialog::tr("cap. %1 · %2").arg(number).arg(title);
+}
+
+LibraryEntry makeEntry(const QString& path, const RecentInfo& info, bool autoOpen)
+{
+    LibraryEntry e;
+    e.path = path;
+    e.name = info.name.isEmpty() ? QFileInfo(path).fileName() : info.name;
+    e.author = info.author;
+    e.genres = info.genres;
+    e.synopsis = info.synopsis;
+    e.totalWords = info.totalWords;
+    e.manuscriptCount = info.manuscriptCount;
+    e.chapterCount = info.chapterCount;
+    e.autoOpen = autoOpen;
+    QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
+    e.hasOwnCover = !cover.isNull();
+    if (cover.isNull()) cover = renderDefaultCover(e.name, e.author, kCardCoverW, kCardCoverH);
+    else if (cover.height() > 720) cover = cover.scaledToHeight(720, Qt::SmoothTransformation);
+    e.cover = cover;
+
+    for (const auto& v : info.chapters) {
+        const QString st = v.toObject().value(QStringLiteral("status")).toString();
+        if (st.isEmpty()) continue;
+        ++e.statusChapters;
+        if (st == QStringLiteral("final")) ++e.finalChapters;
+    }
+
+    QDateTime when;
+    const QVariantList trail = QSettings().value(resumeGroupForRoot(path) + QStringLiteral("/trail")).toList();
+    if (!trail.isEmpty()) {
+        const QVariantMap m = trail.first().toMap();
+        e.resumeWhere = chapterLabel(info.chapters, m.value(QStringLiteral("ch")).toString());
+        if (!e.resumeWhere.isEmpty()) e.resumeSentence = m.value(QStringLiteral("sentence")).toString();
+        when = m.value(QStringLiteral("when")).toDateTime();
+    }
+    const QDateTime saved = QFileInfo(ProjectStorage::indexPath(path)).lastModified();
+    e.lastTouched = (when.isValid() && (!saved.isValid() || when > saved)) ? when : saved;
+    return e;
+}
+
+} // namespace
+
+LibraryHooks MainMenuDialog::makeHooks()
+{
+    // Tudo sai num QTimer 0: quem clicou (uma capa, um card) termina o próprio
+    // evento antes de o menu se refazer por baixo dele — remover dos recentes
+    // ou abrir um projeto pode trocar a vista inteira.
+    auto later = [this](std::function<void()> fn) { QTimer::singleShot(0, this, std::move(fn)); };
+    LibraryHooks h;
+    h.open = [this, later](const QString& p) { later([this, p]() { emit openRecentRequested(p); }); };
+    h.resume = [this, later](const QString& p) { later([this, p]() { emit resumeRequested(p); }); };
+    h.details = [this, later](const QString& p) { later([this, p]() { editProject(p); }); };
+    h.menu = [this](const QString& p, const QPoint& g) { showProjectMenu(p, g); };
+    h.newProject = [this, later]() { later([this]() { emit newProjectRequested(); }); };
+    h.newIdea = [this, later]() { later([this]() { emit newIdeaRequested(); }); };
+    h.loadProject = [this, later]() { later([this]() { emit loadProjectRequested(); }); };
+    h.language = [this](const QString& lang) { applyLanguage(lang); };
+    return h;
+}
+
+void MainMenuDialog::showProjectMenu(const QString& path, const QPoint& globalPos)
+{
+    QMenu menu(this);
+    QAction* aOpen   = menu.addAction(tr("Abrir"));
+    QAction* aResume = menu.addAction(tr("Continuar de onde parei"));
+    menu.addSeparator();
+    QAction* aAuto   = menu.addAction(QCoreApplication::translate("BookCard", "Abrir automaticamente"));
+    aAuto->setCheckable(true);
+    aAuto->setChecked(!m_autoOpenPath.isEmpty() && QDir::cleanPath(path) == m_autoOpenPath);
+    QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookCard", "Editar projeto"));
+    QAction* aCover  = menu.addAction(QCoreApplication::translate("BookCard", "Criar capa"));
+    menu.addSeparator();
+    QAction* aRemove = menu.addAction(QCoreApplication::translate("BookCard", "Remover dos recentes"));
+    QAction* aDelete = menu.addAction(QCoreApplication::translate("BookCard", "Excluir projeto"));
+    PanelMotion::animateMenu(&menu);
+    QAction* chosen = menu.exec(globalPos);
+    if (!chosen) return;
+    // Executa depois de o evento de quem abriu o menu terminar (ver makeHooks).
+    QTimer::singleShot(0, this, [=, this]() {
+        if (chosen == aOpen) emit openRecentRequested(path);
+        else if (chosen == aResume) emit resumeRequested(path);
+        else if (chosen == aAuto) {
+            const bool on = !(!m_autoOpenPath.isEmpty() && QDir::cleanPath(path) == m_autoOpenPath);
+            m_autoOpenPath = on ? QDir::cleanPath(path) : QString();
+            emit autoOpenChanged(path, on);
+        }
+        else if (chosen == aEdit) editProject(path);
+        else if (chosen == aCover) launchMiraCover(path);
+        else if (chosen == aRemove) emit removeRecentRequested(path);
+        else if (chosen == aDelete) confirmDeleteProject(path);
+    });
+}
+
+void MainMenuDialog::applyLanguage(const QString& lang)
+{
+    QSettings qs;
+    if (qs.value(QStringLiteral("app/language"), QStringLiteral("pt_BR")).toString() == lang) return;
+    qs.setValue(QStringLiteral("app/language"), lang);
+    qs.sync();
+    QProcess::startDetached(QCoreApplication::applicationFilePath(),
+                            QCoreApplication::arguments());
+    QCoreApplication::quit();
+}
+
 void MainMenuDialog::populateActiveView()
 {
-    if (!m_gridFlow || !m_listCol) return;
+    if (!m_viewHost) return;
+    if (m_currentView) {
+        m_currentView->hide();
+        m_currentView->deleteLater();
+        m_currentView = nullptr;
+    }
 
-    // Esvazia os containers e o estado de hover, destruindo os widgets
-    // antigos. (Todos são limpos; só o ativo é repovoado.)
-    m_cards.clear();
-    auto clearLayout = [](QLayout* l) {
-        while (QLayoutItem* it = l->takeAt(0)) {
-            if (QWidget* w = it->widget()) w->deleteLater();
-            delete it;
-        }
-    };
-    clearLayout(m_gridFlow);
-    clearLayout(m_listCol);
-    if (m_shelfScene) m_shelfScene->clearBooks();
-
-    // Coleta os projetos válidos (lê o índice uma única vez por projeto).
-    QStringList validPaths;
-    QList<RecentInfo> validInfos;
+    // Lê o índice uma vez por projeto; recentes que sumiram do disco ficam de fora.
+    QStringList paths;
+    QList<RecentInfo> infos;
+    QVector<LibraryEntry> entries;
     for (const QString& path : m_recentPaths) {
         if (path.isEmpty() || !QDir(path).exists()) continue;
         const RecentInfo info = readRecentInfo(path);
         if (!info.valid) continue;
-        validPaths.append(path);
-        validInfos.append(info);
+        const bool autoOpen = !m_autoOpenPath.isEmpty() && QDir::cleanPath(path) == m_autoOpenPath;
+        paths.append(path);
+        infos.append(info);
+        entries.append(makeEntry(path, info, autoOpen));
     }
-
-    const int n = validPaths.size();
+    const int n = entries.size();
     if (m_countLabel) {
-        m_countLabel->setText(n == 0 ? tr("Nenhum projeto ainda")
-                              : n == 1 ? tr("1 projeto")
-                                       : tr("%1 projetos").arg(n));
+        m_countLabel->setText(n == 1 ? tr("1 projeto") : tr("%1 projetos").arg(n));
+    }
+    if (m_header) m_header->setVisible(n > 0);
+
+    auto* hostCol = static_cast<QVBoxLayout*>(m_viewHost->layout());
+    const LibraryHooks hooks = makeHooks();
+
+    if (n == 0) {
+        m_stackView->hide();
+        m_currentView = LibraryViews::welcomeView(hooks, m_viewHost);
+        hostCol->addWidget(m_currentView, 1);
+        return;
     }
 
-    const bool empty = (n == 0);
-    if (m_emptyLabel)     m_emptyLabel->setVisible(empty);
-    if (m_gridContainer)  m_gridContainer->setVisible(!empty && m_viewMode == ViewMode::Estante);
-    if (m_listContainer)  m_listContainer->setVisible(!empty && m_viewMode == ViewMode::Lista);
-    if (m_shelfView)      m_shelfView->setVisible(!empty && m_viewMode == ViewMode::Prateleira);
-    if (m_stackView)      m_stackView->setVisible(!empty && m_viewMode == ViewMode::Pilha);
-    if (m_shelfMaterialBtn) m_shelfMaterialBtn->setVisible(m_viewMode == ViewMode::Prateleira);
-
-    QWidget* parentForCards = (m_viewMode == ViewMode::Estante) ? m_gridContainer
-                                                                : m_listContainer;
-    QVector<StackEntry> stackEntries;
-    for (int i = 0; i < n; ++i) {
-        const QString capturedPath = validPaths.at(i);
-        const RecentInfo& info = validInfos.at(i);
-        const bool isAutoOpen = !m_autoOpenPath.isEmpty()
-            && QDir::cleanPath(capturedPath) == m_autoOpenPath;
-
-        if (m_viewMode == ViewMode::Prateleira) {
-            const QString name = info.name.isEmpty() ? QFileInfo(capturedPath).fileName() : info.name;
-            const QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
-            // Espessura de verdade — pela contagem de palavras do projeto
-            // (cacheada em projectDetails.totalWords a cada save pelo
-            // ProjectSaver), igual o Mira 1. Nome do projeto não tem nada a
-            // ver com o tamanho dele; sem essa cache ainda (projeto não
-            // resalvo desde essa feature), cai num meio-termo neutro até o
-            // próximo save preencher o número de verdade.
-            const qreal autoW = info.totalWords >= 0
-                              ? qBound(30.0, 30.0 + (info.totalWords / 100000.0) * 114.0, 144.0)
-                              : 90.0;
-            const qreal spineW = (info.spineWidthMode == QStringLiteral("manual") && info.spineWidthManual > 0)
-                               ? qBound(10.0, qreal(info.spineWidthManual), 240.0)
-                               : autoW;
-            ShelfSpineStyle style;
-            style.coverBg = decodeCoverDataUrl(info.coverBgDataUrl);
-            // Sem escolha salva (projeto nunca editado na aba Lombada):
-            // padrão é usar a capa como textura, se houver alguma imagem —
-            // fica muito melhor que a cor sólida lisa.
-            const bool hasCoverImage = !style.coverBg.isNull() || !cover.isNull();
-            // Sem cor de lombada escolhida: em vez do palito fixo por
-            // índice, tenta combinar com a própria capa (extrai uma cor a
-            // partir dela) — só cai pro palito quando não há capa nenhuma.
-            const QColor spineColor = !info.spineColor.isEmpty() ? QColor(info.spineColor)
-                : [&]() {
-                      const QColor extracted = extractSpineColorFromCover(
-                          !style.coverBg.isNull() ? style.coverBg : cover);
-                      return extracted.isValid() ? extracted : defaultSpineColor(i);
-                  }();
-            style.imageTexture = info.spineImageTexture.isEmpty()
-                                ? (hasCoverImage ? QStringLiteral("cover") : QString())
-                                : info.spineImageTexture;
-            style.bgPosX = info.spineBgPosX;
-            style.finish = info.spineTexture;
-            style.fontFamily = info.spineFontFamily;
-            style.fontColor = info.spineFontColor.isEmpty() ? QColor() : QColor(info.spineFontColor);
-            style.fontSize = info.spineFontSize;
-            style.textOrientation = info.spineTextOrientation;
-            style.textPosition = info.spineTextPosition;
-            if (m_shelfScene) m_shelfScene->addBook(capturedPath, name, info.author,
-                                                    info.genres, info.synopsis, cover,
-                                                    spineColor, spineW, style);
-            continue;
+    // Meta do dia: a unificada (entre projetos), se estiver ligada; senão a
+    // do projeto em foco. Sem histórico nenhum, o usuário não usa meta — as
+    // vistas então não falam dela.
+    WritingDay day;
+    {
+        QSettings qs;
+        WordCounterSettings wc;
+        QString scope;
+        if (qs.value(QStringLiteral("wordCounter/unifiedGoal"), false).toBool()) {
+            wc = WordCounterSettings::fromJson(QJsonDocument::fromJson(
+                qs.value(QStringLiteral("wordCounter/unifiedData")).toString().toUtf8()).object());
+        } else {
+            wc = WordCounterSettings::fromJson(infos.first().wordCounter);
+            scope = entries.first().name;
         }
+        day = WritingDay::fromSettings(wc, scope);
+        day.valid = !wc.progress.isEmpty();
+    }
 
-        if (m_viewMode == ViewMode::Pilha) {
+    if (m_viewMode == ViewMode::Pilha) {
+        QVector<StackEntry> stackEntries;
+        for (int i = 0; i < n; ++i) {
+            const RecentInfo& info = infos.at(i);
+            const LibraryEntry& le = entries.at(i);
             QPixmap cover = decodeCoverDataUrl(info.coverDataUrl);
             if (cover.isNull())
-                cover = renderDefaultCover(info.name, info.author, kStackHeroCoverW, kStackHeroCoverH);
+                cover = renderDefaultCover(le.name, info.author, kStackHeroCoverW, kStackHeroCoverH);
             StackEntry e;
-            e.path = capturedPath;
-            e.name = info.name.isEmpty() ? QFileInfo(capturedPath).fileName() : info.name;
+            e.path = le.path;
+            e.name = le.name;
             e.author = info.author;
             e.genres = info.genres;
             e.synopsis = info.synopsis;
@@ -2110,38 +1599,49 @@ void MainMenuDialog::populateActiveView()
                     e.manuscriptHeroCovers.append(renderVitrineCover(c, kStackHeroCoverW, kStackHeroCoverH));
                 }
             }
-            e.autoOpen = isAutoOpen;
+            e.autoOpen = le.autoOpen;
             stackEntries.append(std::move(e));
-            continue;
         }
-
-        CardCallbacks cbs;
-        cbs.open = [this, capturedPath]() { emit openRecentRequested(capturedPath); };
-        cbs.autoOpen = [this, capturedPath](bool enabled) {
-            emit autoOpenChanged(capturedPath, enabled);
-        };
-        cbs.hover = [this](QWidget* c, bool entered) {
-            setHoveredCard(entered ? c : nullptr);
-        };
-        cbs.edit = [this, capturedPath]() { editProject(capturedPath); };
-        cbs.coverCreate = [this, capturedPath]() { launchMiraCover(capturedPath); };
-        cbs.removeRecent = [this, capturedPath]() { emit removeRecentRequested(capturedPath); };
-        cbs.del = [this, capturedPath]() { confirmDeleteProject(capturedPath); };
-
-        if (m_viewMode == ViewMode::Estante) {
-            auto* card = new BookCard(capturedPath, info, isAutoOpen, std::move(cbs), parentForCards);
-            m_gridFlow->addWidget(card);
-            m_cards.append(card);
-        } else {
-            auto* roww = new BookRow(capturedPath, info, isAutoOpen, std::move(cbs), parentForCards);
-            m_listCol->addWidget(roww);
-        }
+        m_stackView->setEntries(stackEntries);
+        m_stackView->show();
+        return;
     }
 
-    if (m_viewMode == ViewMode::Pilha && m_stackView) m_stackView->setEntries(stackEntries);
-
-    if (m_shelfView) m_shelfView->refreshLayout();
-    if (m_recentsScroll) m_recentsScroll->reflow();
+    m_stackView->hide();
+    switch (m_viewMode) {
+    case ViewMode::Vitrine:
+        m_currentView = LibraryViews::vitrineView(entries, hooks, m_viewHost);
+        break;
+    case ViewMode::Cinema:
+        m_currentView = LibraryViews::cinemaView(entries, hooks, m_viewHost);
+        break;
+    case ViewMode::SeuDia: {
+        // Lembretes de hoje (e os atrasados) de todos os projetos da lista.
+        QVector<LibraryReminder> reminders;
+        const QDate today = QDate::currentDate();
+        for (int i = 0; i < n; ++i) {
+            RemindersStore store;
+            store.setProjectRoot(paths.at(i));
+            if (!store.load()) continue;
+            for (const Reminder& r : store.active()) {
+                if (r.dueAt <= 0 || QDateTime::fromMSecsSinceEpoch(r.dueAt).date() > today) continue;
+                reminders.append({ r.text, n > 1 ? entries.at(i).name : QString(), r.dueAt });
+            }
+        }
+        std::sort(reminders.begin(), reminders.end(),
+                  [](const LibraryReminder& a, const LibraryReminder& b) { return a.dueAt < b.dueAt; });
+        if (reminders.size() > 6) reminders.resize(6);
+        m_currentView = LibraryViews::dayView(entries, day, reminders, hooks, m_viewHost);
+        break;
+    }
+    case ViewMode::Estante:
+        m_currentView = LibraryViews::shelfView(entries, hooks, m_viewHost);
+        break;
+    default:
+        m_currentView = LibraryViews::continueView(entries, day, hooks, m_viewHost);
+        break;
+    }
+    hostCol->addWidget(m_currentView, 1);
 }
 
 void MainMenuDialog::refreshActionIcons()
@@ -2168,84 +1668,6 @@ void MainMenuDialog::refreshActionIcons()
         m_trashBtn->setIcon(IconUtils::loadToolbarIcon(
             QStringLiteral(":/icons/trash.svg"), c, c, c, QSize(14, 14)));
     }
-}
-
-void MainMenuDialog::showComingSoonToast(QWidget* anchor)
-{
-    if (!anchor) return;
-
-    auto* toast = new QLabel(tr("Em breve"));
-    toast->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
-    toast->setAttribute(Qt::WA_ShowWithoutActivating);
-    toast->setAttribute(Qt::WA_DeleteOnClose);
-    toast->setAlignment(Qt::AlignCenter);
-    toast->setStyleSheet(Theme::qss(QStringLiteral(
-        "QLabel { background: %1; color: %2; border: 1px solid %3; "
-        "border-radius: @radius-panel; padding: 6px 14px; font-size: 12px; font-weight: 600; }")
-        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
-    toast->adjustSize();
-
-    const QPoint anchorTopCenter = anchor->mapToGlobal(QPoint(anchor->width() / 2, 0));
-    toast->move(anchorTopCenter.x() - toast->width() / 2, anchorTopCenter.y() - toast->height() - 10);
-    toast->show();
-
-    auto* opacity = new QGraphicsOpacityEffect(toast);
-    toast->setGraphicsEffect(opacity);
-
-    QTimer::singleShot(1300, toast, [toast, opacity]() {
-        auto* anim = new QPropertyAnimation(opacity, "opacity", toast);
-        anim->setDuration(350);
-        anim->setStartValue(1.0);
-        anim->setEndValue(0.0);
-        QObject::connect(anim, &QPropertyAnimation::finished, toast, &QLabel::close);
-        anim->start(QAbstractAnimation::DeleteWhenStopped);
-    });
-}
-
-void MainMenuDialog::showShelfMaterialMenu()
-{
-    if (!m_shelfScene) return;
-
-    QMenu menu(this);
-    auto* grid = new QWidget(&menu);
-    auto* layout = new QGridLayout(grid);
-    layout->setSpacing(6);
-    layout->setContentsMargins(8, 8, 8, 8);
-
-    const auto choices = ShelfScene::floorTextureChoices();
-    const QString current = m_shelfScene->floorTexture();
-    int col = 0, row = 0;
-    constexpr int kCols = 4;
-    for (const auto& choice : choices) {
-        const QString id = choice.first;
-        const QString label = choice.second;
-        auto* btn = new QToolButton(grid);
-        btn->setToolTip(label);
-        btn->setCheckable(true);
-        btn->setChecked(id == current);
-        btn->setFixedSize(64, 48);
-        btn->setIconSize(QSize(60, 44));
-        btn->setCursor(Qt::PointingHandCursor);
-        if (id == QStringLiteral("none")) {
-            btn->setText(QCoreApplication::translate("MainMenuDialog", "Nenhuma"));
-        } else {
-            const QPixmap thumb(QStringLiteral(":/shelf/thumbs/%1.jpg").arg(id));
-            if (!thumb.isNull()) btn->setIcon(QIcon(thumb));
-        }
-        connect(btn, &QToolButton::clicked, this, [this, id, &menu]() {
-            m_shelfScene->setFloorTexture(id);
-            QSettings settings;
-            settings.setValue(QStringLiteral("shelf/floorTexture"), id);
-            menu.close();
-        });
-        layout->addWidget(btn, row, col);
-        if (++col >= kCols) { col = 0; ++row; }
-    }
-
-    auto* action = new QWidgetAction(&menu);
-    action->setDefaultWidget(grid);
-    menu.addAction(action);
-    menu.exec(m_shelfMaterialBtn->mapToGlobal(QPoint(0, m_shelfMaterialBtn->height())));
 }
 
 void MainMenuDialog::editProject(const QString& path)
@@ -2675,72 +2097,98 @@ void MainMenuDialog::applyDialogStyle()
             font-weight: 600;
         }
 
-        #menuEmpty {
-            color: %4;
-            font-size: 13px;
-            padding: 60px 30px;
+        #libKick { color: %4; }
+        #libTitle { color: %3; }
+        #libText { color: %2; }
+        #libMuted { color: %4; }
+        #libQuote { color: %2; }
+        QFrame#libHero, QFrame#libDayPanel {
+            background: %5;
+            border: 1px solid %8;
+            border-radius: @radius-panel;
         }
-        #menuRecentsScroll { background: transparent; border: none; }
-        #menuRecentsHolder { background: transparent; }
-        #menuRecentsScroll QScrollBar:vertical {
-            background: transparent;
-            width: 10px;
-            margin: 0;
-        }
-        #menuRecentsScroll QScrollBar::handle:vertical {
-            background: %6;
-            border-radius: 5px;
-            min-height: 32px;
-        }
-        #menuRecentsScroll QScrollBar::handle:vertical:hover { background: %9; }
-        #menuRecentsScroll QScrollBar::add-line:vertical,
-        #menuRecentsScroll QScrollBar::sub-line:vertical { height: 0; }
-        #menuRecentsScroll QScrollBar::add-page:vertical,
-        #menuRecentsScroll QScrollBar::sub-page:vertical { background: transparent; }
-
-        QFrame#bookCard { background: transparent; border: none; }
-        #bookCardName {
-            color: %3;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        #bookCardAutoOpen {
-            color: %4;
-            font-size: 10px;
-            spacing: 5px;
-        }
-        #bookCardAutoOpen::indicator {
-            width: 13px;
-            height: 13px;
-            border: 1px solid %6;
-            border-radius: 3px;
-            background: %1;
-        }
-        #bookCardAutoOpen::indicator:hover { border-color: %9; }
-        #bookCardAutoOpen::indicator:checked {
-            background: %9;
-            border-color: %9;
-            image: url(:/icons/check.svg);
-        }
-
-        QFrame#bookRow {
+        QFrame#libCard, QFrame#libAct {
             background: %5;
             border: 1px solid %6;
             border-radius: @radius-panel;
         }
-        QFrame#bookRow:hover { background: %7; border-color: %9; }
-        #bookRowName { color: %3; font-size: 15px; font-weight: 600; }
-        #bookRowMeta { color: %4; font-size: 12px; }
-        #bookRowThumbBadge {
-            background: %5;
-            color: %4;
-            border: 1px solid %6;
-            border-radius: @radius-item;
-            font-size: 11px;
-            font-weight: 600;
+        QFrame#libCard:hover, QFrame#libAct:hover { border-color: %9; background: %7; }
+        QFrame#libTile { background: transparent; border: none; }
+        QPushButton#libGo {
+            background: %9;
+            color: #ffffff;
+            border: 1px solid %9;
+            border-radius: @radius-control;
+            padding: 8px 20px;
+            min-height: 18px;
         }
-
-        #menuShelfView { background: transparent; border: none; }
+        QPushButton#libGo:hover { border-color: rgba(255, 255, 255, 0.6); }
+        QPushButton#libGo:pressed { background: %7; }
+        QPushButton#libGhost {
+            background: transparent;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: @radius-control;
+            padding: 8px 16px;
+            min-height: 18px;
+        }
+        QPushButton#libGhost:hover { color: %3; border-color: %9; background: %7; }
+        #libCineKick { color: rgba(236, 230, 245, 0.78); }
+        #libCineKickSoft { color: rgba(226, 220, 236, 0.72); }
+        #libCineTitle { color: #ffffff; }
+        #libCineText { color: rgba(240, 235, 226, 0.86); }
+        QPushButton#libCineGhost {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f2f0ea;
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            border-radius: @radius-control;
+            padding: 8px 16px;
+            min-height: 18px;
+        }
+        QPushButton#libCineGhost:hover { background: rgba(255, 255, 255, 0.14); }
+        QLineEdit#libSearch {
+            background: %5;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: @radius-control;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        QLineEdit#libSearch:focus { border-color: %9; }
+        QComboBox#libSort {
+            background: %5;
+            color: %2;
+            border: 1px solid %6;
+            border-radius: @radius-control;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        QComboBox#libSort:hover { border-color: %9; }
+        QComboBox#libSort::drop-down { border: none; width: 18px; }
+        QComboBox#libSort QAbstractItemView {
+            background: %5;
+            color: %2;
+            border: 1px solid %6;
+            selection-background-color: %7;
+            selection-color: %3;
+        }
+        #libScroll { background: transparent; border: none; }
+        #libBody { background: transparent; }
+        #libScroll QScrollBar:vertical {
+            background: transparent;
+            width: 10px;
+            margin: 0;
+        }
+        #libScroll QScrollBar::handle:vertical {
+            background: %6;
+            border-radius: 5px;
+            min-height: 32px;
+        }
+        #libScroll QScrollBar::handle:vertical:hover { background: %9; }
+        #libScroll QScrollBar::add-line:vertical,
+        #libScroll QScrollBar::sub-line:vertical { height: 0; }
+        #libScroll QScrollBar::add-page:vertical,
+        #libScroll QScrollBar::sub-page:vertical { background: transparent; }
 
         #menuStackView { background: transparent; border: none; }
         #stackHeroStats {
@@ -2776,7 +2224,10 @@ void MainMenuDialog::applyDialogStyle()
         Theme::panelBackground(),  // 5
         Theme::panelBorder(),      // 6
         Theme::hoverOverlay(),     // 7
-        Theme::subtleBorder(),     // 8 (mantém indexação)
+        // O %8 tem que aparecer na folha: o arg() com vários argumentos
+        // numera pelos marcadores presentes, e um buraco empurrava o
+        // destaque (%9) pro 8º argumento — o "Novo projeto" saía cinza.
+        Theme::subtleBorder(),     // 8
         Theme::accentDefault()     // 9
     );
     setStyleSheet(css);

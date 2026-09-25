@@ -6866,6 +6866,38 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <source>Execute &apos;npm run build&apos; no diretório mira-cover para habilitar o criador de capas no modo desenvolvimento.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Continuar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vitrine</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cinema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seu dia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Capítulo %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>cap. %1 · %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuar de onde parei</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -19509,6 +19541,14 @@ As estatísticas são estimativas e não garantem precisão absoluta com o conte
         <source>Use a função Grupos para reunir documentos de diferentes gavetas e elementos num só lugar, organizando o que se conecta na sua história.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>No menu principal, a Biblioteca tem seis vistas: Continuar, Vitrine, Cinema, Seu dia, Estante e Pilha.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ReadAloudPanel</name>
@@ -24918,6 +24958,243 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
     </message>
     <message>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>LibraryViews</name>
+    <message>
+        <source>de %1 min</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>de %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuar  →</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Detalhes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seus projetos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Saga · %1 livros</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Você parou em %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>agora há pouco</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há 1 minuto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 minutos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há 1 hora</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 horas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ontem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 dias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há 1 semana</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 semanas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há 1 mês</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 meses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há 1 ano</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>há %1 anos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>1 palavra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Último projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Continuar de onde parou</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 min hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 palavras hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 dia seguido</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 dias seguidos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1 no livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Meta de hoje batida</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1% da meta de hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Outros projetos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Buscar por nome, autor ou gênero</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Recentes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A–Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mais palavras</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Novo projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Seu dia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Meta de %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Últimos 7 dias</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lembretes de hoje</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada marcado pra hoje.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>atrasado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Na mesa agora</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bem-vindo ao Qenna</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Toda história começa em algum lugar.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Um editor feito pra quem escreve livros: capítulos e cenas, gavetas pro seu mundo, linha do tempo, e tudo no seu computador, sem conta e sem nuvem obrigatória.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Começar um livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Um projeto novo, com manuscrito e gavetas prontas.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anotar uma ideia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Só um documento, sem montar nada. Vira livro depois, se quiser.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Abrir um projeto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Já tem um projeto do Qenna numa pasta? Abra por aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Idioma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ %1 no painel de Temas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Para qualquer autor, qualquer história.
+Feito para que toda criação e ideia tome forma e alcance seu potencial máximo.
+Seja bem-vindo à família Qenna! Inicie o seu novo projeto abaixo.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -2,6 +2,7 @@
 
 #include <QCoreApplication>
 #include <QRandomGenerator>
+#include <QSet>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
@@ -81,6 +82,16 @@ QString next()
     QSettings settings;
     QStringList cycle = settings.value(QLatin1String(kCycleKey)).toStringList();
     int ptr = settings.value(QLatin1String(kPointerKey), 0).toInt();
+
+    // O ciclo salvo é texto cru de uma versão anterior: dica que saiu do app
+    // (ex.: a da Prateleira) é pulada em vez de aparecer até o ciclo acabar.
+    static const QSet<QString> known = [] {
+        QSet<QString> s;
+        for (int i = 0; i < kQuotesRegular_count; ++i) s.insert(QString::fromUtf8(kQuotesRegular[i]));
+        for (int i = 0; i < kQuotesFeature_count; ++i) s.insert(QString::fromUtf8(kQuotesFeature[i]));
+        return s;
+    }();
+    while (ptr >= 0 && ptr < cycle.size() && !known.contains(cycle.at(ptr))) ++ptr;
 
     if (cycle.isEmpty() || ptr < 0 || ptr >= cycle.size()) {
         cycle = buildWeightedCycle();
