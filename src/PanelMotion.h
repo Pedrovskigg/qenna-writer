@@ -11,6 +11,7 @@
 // lugares que chamam hide() precisa mudar.
 
 #include <QList>
+#include <QPixmap>
 #include <QPointer>
 #include <QWidget>
 #include <functional>
@@ -48,6 +49,24 @@ void cascade(const QList<QWidget*>& rows, int delayMs, Qt::Edge from);
 // Troca de conteúdo (estilo, gaveta, livro): o conteúdo velho sai deslizando
 // num fantasma por cima de `area`. Chamar ANTES de refazer a lista.
 void swapOut(QWidget* area);
+
+// Painel preso ao chão que muda de altura (contador: abrir o completo, voltar
+// pro normal, ocultar). `change` aplica a mudança — e quem posiciona tem que
+// reposicionar o painel ali dentro, na hora. O painel sobe (ou afunda) a
+// partir da borda de baixo; como o topo do estado novo é o estado velho, o
+// movimento começa e termina sem emenda.
+void morph(QWidget* panel, const std::function<void()>& change);
+// O mesmo em duas metades, pra mudança que só chega no giro seguinte do
+// event loop (o calendário do contador): beginMorph fotografa o estado velho
+// antes de mexer em qualquer coisa; endMorph anima quando o tamanho novo já
+// está aplicado.
+struct MorphStart {
+    QPointer<QWidget> panel;
+    QRect before;
+    QPixmap pm;
+};
+MorphStart beginMorph(QWidget* panel);
+void endMorph(const MorphStart& start);
 
 // Janela solta (ficha no hover): entra com fade e deslize curto. Chamar logo
 // depois do show(), só quando ela acabou de aparecer.

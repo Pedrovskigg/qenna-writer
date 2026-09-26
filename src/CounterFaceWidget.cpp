@@ -241,13 +241,17 @@ void CounterFaceWidget::paintEvent(QPaintEvent*)
         textRight(p, valueF, pal.t1, right, midBaseline(valueF, y2), m_d.value2);
     };
 
+    // A meta pode ser rasgada (400% é válido e é pra aparecer escrito), mas o
+    // que é desenhado — arco, barra, tijolinhos — enche até 100% e para.
+    const int fill = qBound(0, m_d.pct, 100);
+
     // Anel liso ou em tijolinhos, com o % e "da meta" dentro.
     auto ring = [&](QPointF c, qreal r, qreal stroke, bool bricks, qreal pctSize) {
         const QRectF box(c.x() - r, c.y() - r, 2 * r, 2 * r);
         p.setBrush(Qt::NoBrush);
         if (bricks) {
             const qreal step = 360.0 / kBricks, gap = 3.2;
-            const int lit = m_d.pct / 5;
+            const int lit = fill / 5;
             for (int i = 0; i < kBricks; ++i) {
                 p.setPen(QPen(i < lit ? pal.acc : pal.track, stroke, Qt::SolidLine, Qt::FlatCap));
                 const qreal start = 90 - (i * step + gap / 2);          // Qt: 0° às 3h, anti-horário
@@ -256,14 +260,19 @@ void CounterFaceWidget::paintEvent(QPaintEvent*)
         } else {
             p.setPen(QPen(pal.track, stroke));
             p.drawEllipse(box);
-            if (m_d.pct > 0) {
+            if (fill > 0) {
                 p.setPen(QPen(pal.acc, stroke, Qt::SolidLine, Qt::RoundCap));
-                p.drawArc(box, 90 * 16, -qRound(360.0 * 16 * m_d.pct / 100.0));
+                p.drawArc(box, 90 * 16, -qRound(360.0 * 16 * fill / 100.0));
             }
         }
-        const QFont pf = px(base, pctSize, QFont::DemiBold);
-        const QFont cf = px(base, 9);
         const QString pct = QString::number(m_d.pct) + QLatin1Char('%');
+        // "1250%" não cabe no miolo no tamanho de "87%": encolhe até caber.
+        const qreal inner = 2 * (r - stroke) - 6;
+        qreal size = pctSize;
+        while (size > 9 && QFontMetricsF(px(base, size, QFont::DemiBold)).horizontalAdvance(pct) > inner)
+            size -= 1;
+        const QFont pf = px(base, size, QFont::DemiBold);
+        const QFont cf = px(base, 9);
         textCenter(p, pf, pal.t1, c.x(), c.y() + 1, pct);
         textCenter(p, cf, pal.t2, c.x(), c.y() + 1 + QFontMetricsF(cf).ascent() + 1, m_d.pctCaption);
     };
@@ -299,10 +308,10 @@ void CounterFaceWidget::paintEvent(QPaintEvent*)
             p.fillPath(bp, pal.inset);
             p.setPen(QPen(pal.insetBorder, 1));
             p.drawPath(bp);
-            if (m_d.pct > 0) {
+            if (fill > 0) {
                 QPainterPath fp;
                 fp.addRoundedRect(QRectF(bar.left() + 1, bar.top() + 1,
-                                         qMax<qreal>(3, (bar.width() - 2) * m_d.pct / 100.0), bar.height() - 2), 2, 2);
+                                         qMax<qreal>(3, (bar.width() - 2) * fill / 100.0), bar.height() - 2), 2, 2);
                 p.fillPath(fp, pal.acc);
             }
             textCenter(p, footF, pal.t2, W / 2.0, bar.bottom() + 8 + QFontMetricsF(footF).ascent(), m_d.goalLine);
@@ -408,7 +417,7 @@ void CounterFaceWidget::paintEvent(QPaintEvent*)
         text(p, labelF, pal.t2, mid + 11, tb, m_d.label2);
         text(p, valueF, pal.t1, mid + 11, vb, m_d.value2);
         const qreal by = box.bottom() + 9;
-        brickRow(p, QRectF(kPad, by, right - kPad, 7), m_d.pct / 5, pal);
+        brickRow(p, QRectF(kPad, by, right - kPad, 7), fill / 5, pal);
         const qreal fb = by + 7 + 6 + QFontMetricsF(footF).ascent();
         text(p, footF, pal.t2, kPad, fb, m_d.goalLine);
         textRight(p, footF, pal.t1, right, fb, m_d.fraction);
@@ -425,7 +434,7 @@ void CounterFaceWidget::paintEvent(QPaintEvent*)
         const qreal my = cardHeaderH + 48 + 8;
         const QRectF meter(cardLeft, my, right - cardLeft, 4);
         p.fillRect(meter, pal.track);
-        p.fillRect(QRectF(meter.left(), meter.top(), meter.width() * m_d.pct / 100.0, 4), pal.acc);
+        p.fillRect(QRectF(meter.left(), meter.top(), meter.width() * fill / 100.0, 4), pal.acc);
         text(p, mono(11, false), pal.t2, cardLeft, my + 4 + 16, m_d.goalLine);
     }
 }

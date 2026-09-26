@@ -3,6 +3,7 @@
 #include "EditorHost.h"
 #include "MiniCounterWidget.h"
 #include "CounterFaceWidget.h"
+#include "PanelMotion.h"
 #include "ProjectModel.h"
 #include "Theme.h"
 #include "WordCounter.h"
@@ -153,16 +154,19 @@ void WordCountPanel::buildUi()
     m_calendarToggleBtn->setCursor(Qt::PointingHandCursor);
     m_calendarToggleBtn->setAutoRaise(true);
     connect(m_calendarToggleBtn, &QToolButton::clicked, this, [this]() {
+        // Fotografa antes de mexer: o tamanho novo só chega no giro seguinte.
+        const PanelMotion::MorphStart motion = PanelMotion::beginMorph(this);
         m_calendarVisible = !m_calendarVisible;
         if (m_calendar) m_calendar->setVisible(m_calendarVisible);
         m_calendarToggleBtn->setText((m_calendarVisible ? QStringLiteral("▾ ") : QStringLiteral("▸ ")) + tr("Exibir calendário"));
         // Adia para o próximo ciclo do event loop: o layout recalcula o sizeHint
         // correto ANTES do adjustSize, evitando que m_body estique para preencher
         // o espaço sobrante do calendário que acabou de ser ocultado.
-        QMetaObject::invokeMethod(this, [this]() {
+        QMetaObject::invokeMethod(this, [this, motion]() {
             updateScrollSizing();
             adjustSize();
             emit geometryChanged();
+            PanelMotion::endMorph(motion);
             if (m_calendarVisible) scrollToBottom(); // calendário visível por padrão
         }, Qt::QueuedConnection);
     });
@@ -599,22 +603,27 @@ void WordCountPanel::updateToggleArrow()
 void WordCountPanel::setExpanded(bool expanded)
 {
     if (m_expanded == expanded) return;
-    m_expanded = expanded;
-    updateBodyVisibility();
-    updateToggleArrow();
-    updateScrollSizing();
-    adjustSize();
-    emit geometryChanged();
+    // O contador sobe do chão ao abrir e afunda nele ao ocultar.
+    PanelMotion::morph(this, [this, expanded]() {
+        m_expanded = expanded;
+        updateBodyVisibility();
+        updateToggleArrow();
+        updateScrollSizing();
+        adjustSize();
+        emit geometryChanged();
+    });
 }
 
 void WordCountPanel::setFullMode(bool full)
 {
     if (m_fullMode == full) return;
-    m_fullMode = full;
-    updateBodyVisibility();
-    updateScrollSizing();
-    adjustSize();
-    emit geometryChanged();
+    PanelMotion::morph(this, [this, full]() {
+        m_fullMode = full;
+        updateBodyVisibility();
+        updateScrollSizing();
+        adjustSize();
+        emit geometryChanged();
+    });
     if (full && m_calendarVisible) scrollToBottom();
 }
 
@@ -915,11 +924,11 @@ void WordCountPanel::refresh()
     if (s.goalType == QStringLiteral("time")) {
         const qint64 tMs = m_counter->progressTimeMs();
         const int target = qMax(1, s.goalTargetMinutes);
-        goalPct = qMin(100, static_cast<int>((tMs * 100.0) / (target * 60000.0)));
+        goalPct = static_cast<int>((tMs * 100.0) / (target * 60000.0));
     } else {
         const int w = m_counter->progressWords();
         const int target = qMax(1, s.goalTargetWords);
-        goalPct = qMin(100, static_cast<int>((w * 100.0) / target));
+        goalPct = static_cast<int>((w * 100.0) / target);
     }
     const QString goalLine = m_counter->isGoalMet()
         ? tr("Meta atingida!")
@@ -1035,17 +1044,17 @@ void WordCountPanel::refresh()
             const qint64 tMs = m_counter->progressTimeMs();
             const int tMin = static_cast<int>(tMs / 60000);
             const int target = qMax(1, s.goalTargetMinutes);
-            const int pct = qMin(100, static_cast<int>((tMs * 100.0) / (target * 60000.0)));
+            const int pct = static_cast<int>((tMs * 100.0) / (target * 60000.0));
             m_goalStatus->setText(tr("Hoje: %1 / %2 minutos (%3%)")
                 .arg(tMin).arg(s.goalTargetMinutes).arg(pct));
-            m_goalProgress->setValue(pct);
+            m_goalProgress->setValue(qMin(100, pct));
         } else {
             const int w = m_counter->progressWords();
             const int target = qMax(1, s.goalTargetWords);
-            const int pct = qMin(100, static_cast<int>((w * 100.0) / target));
+            const int pct = static_cast<int>((w * 100.0) / target);
             m_goalStatus->setText(tr("Hoje: %1 / %2 palavras (%3%)")
                 .arg(loc.toString(w)).arg(loc.toString(s.goalTargetWords)).arg(pct));
-            m_goalProgress->setValue(pct);
+            m_goalProgress->setValue(qMin(100, pct));
         }
     }
     if (m_goalResetLine) {

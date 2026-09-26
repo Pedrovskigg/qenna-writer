@@ -448,6 +448,101 @@ void swapOut(QWidget* area) {
     anim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
+void morph(QWidget* panel, const std::function<void()>& change) {
+    const MorphStart start = beginMorph(panel);
+    change();
+    endMorph(start);
+}
+
+MorphStart beginMorph(QWidget* panel) {
+    MorphStart s;
+    if (!panel) return s;
+    // Uma mudança no meio da outra (duplo clique): a anterior termina na hora.
+    if (auto* running = panel->property("qennaMorphAnim").value<QObject*>())
+        static_cast<QVariantAnimation*>(running)->stop();   // limpeza no stateChanged, na hora
+    if (!enabled() || !panel->parentWidget() || !panel->isVisible() || panel->height() <= 0) return s;
+    s.panel = panel;
+    s.before = panel->geometry();
+    s.pm = panel->grab();
+    return s;
+}
+
+void endMorph(const MorphStart& start) {
+    QWidget* panel = start.panel;
+    QWidget* parent = panel ? panel->parentWidget() : nullptr;
+    if (!panel || !parent || start.pm.isNull() || !panel->isVisible()) return;
+    const QRect before = start.before;
+    const QPixmap& pm = start.pm;
+    const QRect after = panel->geometry();
+    if (after.height() == before.height()) return;
+
+    // A "janela" visível tem a altura h, presa no chão (a base do painel). O
+    // conteúdo mostrado é o TOPO de quem é mais alto — o painel novo quando
+    // cresce, o fantasma do velho quando encolhe —, empurrado pra baixo pelo
+    // que ainda falta. Em h = altura do menor, o topo do maior é o menor.
+    const bool grow = after.height() > before.height();
+    QPointer<Ghost> ghost;
+    if (!grow) {
+        ghost = new Ghost(parent, pm);
+        ghost->edge = Qt::TopEdge;
+        ghost->setGeometry(before);
+        ghost->show();
+        ghost->raise();
+    }
+    QPointer<QWidget> pw(panel);
+    struct State { QPoint home, last; int floor = 0; };
+    auto st = std::make_shared<State>();
+    st->home = after.topLeft();
+    st->last = st->home;
+    st->floor = before.bottom();
+    const int from = before.height(), to = after.height();
+
+    auto apply = [pw, ghost, st, grow, from, to](qreal t) {
+        if (!pw) return;
+        if (grow) {
+            // Alguém reposicionou (o contador ganhou um dígito): segue a casa nova.
+            if (pw->pos() != st->last) st->home = pw->pos();
+            const int full = pw->height();
+            const int h = std::clamp(int(std::round(from + (full - from) * t)), 1, full + 12);
+            const QPoint p = st->home + QPoint(0, full - h);
+            pw->move(p);
+            st->last = p;
+            QRect shown = revealRect(pw->rect(), Qt::TopEdge, std::min(1.0, h / qreal(full)));
+            pw->setMask(QRegion(shown.isEmpty() ? QRect(0, 0, 1, 1) : shown));
+        } else if (ghost) {
+            const int h = std::max(1, int(std::round(from + (to - from) * t)));
+            ghost->move(ghost->x(), st->floor - h + 1);
+            ghost->reveal = h / qreal(from);
+            ghost->update();
+        }
+    };
+
+    if (!grow) panel->setMask(QRegion(0, 0, 1, 1));   // o novo espera o fantasma afundar até ele
+    auto* anim = new QVariantAnimation(panel);
+    anim->setDuration(grow ? kOpenMs : 220);
+    anim->setStartValue(0.0);
+    anim->setEndValue(1.0);
+    QEasingCurve curve(grow ? QEasingCurve::OutBack : QEasingCurve::OutCubic);
+    if (grow) curve.setOvershoot(0.7);
+    anim->setEasingCurve(curve);
+    QObject::connect(anim, &QVariantAnimation::valueChanged, panel, [apply](const QVariant& v) { apply(v.toReal()); });
+    // Terminou ou foi interrompida: o painel volta pra casa, inteiro. Em
+    // stateChanged (síncrono no stop()), não em destroyed — o DeleteWhenStopped
+    // apaga depois, e a limpeza atrasada desfaria a próxima mudança.
+    QObject::connect(anim, &QAbstractAnimation::stateChanged, panel,
+                     [pw, ghost, st, anim](QAbstractAnimation::State now, QAbstractAnimation::State) {
+        if (now != QAbstractAnimation::Stopped) return;
+        if (ghost) ghost->deleteLater();
+        if (!pw) return;
+        if (pw->property("qennaMorphAnim").value<QObject*>() == anim) pw->setProperty("qennaMorphAnim", QVariant());
+        if (!pw->mask().isEmpty()) pw->clearMask();
+        if (pw->pos() == st->last && st->last != st->home) pw->move(st->home);
+    });
+    panel->setProperty("qennaMorphAnim", QVariant::fromValue<QObject*>(anim));
+    apply(0.0);
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
 void popIn(QWidget* window) {
     if (!enabled() || !window) return;
     const QPoint home = window->pos();
