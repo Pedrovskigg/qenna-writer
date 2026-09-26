@@ -473,9 +473,11 @@ void BondPopup::openTypePicker() {
         }
     });
 
-    // M/F: persiste e reabre.
-    auto switchGender = [this, popup, &settings](const QString& g) {
-        settings.setValue(QStringLiteral("bonds/typeGender"), g);
+    // M/F: persiste e reabre. QSettings novo aqui: o `settings` lá de cima é
+    // local desta função, que já retornou quando o botão é clicado — capturar
+    // por referência escrevia num objeto morto e derrubava o app.
+    auto switchGender = [this, popup](const QString& g) {
+        QSettings().setValue(QStringLiteral("bonds/typeGender"), g);
         popup->close();
         openTypePicker();
     };
