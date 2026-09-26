@@ -474,6 +474,8 @@ private:
     AmbienceManager *ambienceManager = nullptr;
     AmbiencePanel *ambiencePanel = nullptr;
     GlossaryStore *glossaryStore = nullptr;
+    class GlossaryIndex *glossaryIndex = nullptr;
+    class GlossaryInText *glossaryInText = nullptr;
     HelpPanel *helpPanel = nullptr;
     GlossaryAddPopup *glossaryAddPopup = nullptr;
     MemoriesStore *memoriesStore = nullptr;

@@ -271,6 +271,11 @@ int main(int argc, char *argv[])
             if (loaded) resolvedLang = QStringLiteral("en");
         }
         if (loaded) QApplication::installTranslator(&translator);
+        // Textos do próprio Qt (Fechar, Cancelar, menu de copiar/colar). O
+        // inglês não tem arquivo e segue o padrão do Qt.
+        static QTranslator qtBaseTranslator;
+        if (!resolvedLang.isEmpty() && qtBaseTranslator.load(QStringLiteral(":/i18n/qtbase_") + resolvedLang))
+            QApplication::installTranslator(&qtBaseTranslator);
         // Primeira execução (sem preferência salva ainda): grava o idioma
         // detectado em app/language, senão o combo do Main Menu e os pontos
         // que leem essa chave direto (fora do QTranslator — GeoData,

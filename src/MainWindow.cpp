@@ -145,6 +145,8 @@
 #include "HelpPanel.h"
 #include "StatsPanel.h"
 #include "GlossaryStore.h"
+#include "GlossaryIndex.h"
+#include "GlossaryInText.h"
 #include "MemoriesStore.h"
 #include "MemoryAddPopup.h"
 #include "LousaPanel.h"
@@ -1893,6 +1895,24 @@ void MainWindow::setupEditor()
     // spell-checker pra nunca virarem erro.
     glossaryStore = new GlossaryStore(this);
     glossaryAddPopup = new GlossaryAddPopup(this);
+    // Onde cada termo aparece no livro (Dicionário, popup e ficha no texto).
+    glossaryIndex = new GlossaryIndex(projectModel, docCache, this);
+    glossaryAddPopup->setIndex(glossaryIndex);
+    glossaryAddPopup->setStore(glossaryStore);
+    connect(glossaryAddPopup, &GlossaryAddPopup::goToFirstUseRequested, this,
+            [this](const QString& docKey, const QString& sentence) { openMarkerInEditor(docKey, 0, 0, sentence); });
+    // Termo no texto: sublinhado pontilhado + ficha no hover (Configurações liga/desliga).
+    glossaryInText = new GlossaryInText(editor, glossaryStore, glossaryIndex,
+        [this](const QList<QTextEdit::ExtraSelection>& sels) {
+            setEditorSelectionsLayer(QStringLiteral("glossaryTerms"), sels);
+        }, this);
+    connect(glossaryInText, &GlossaryInText::goToFirstUseRequested, this,
+            [this](const QString& docKey, const QString& sentence) { openMarkerInEditor(docKey, 0, 0, sentence); });
+    connect(glossaryInText, &GlossaryInText::openInGlossaryRequested, this, [this](const QString& id) {
+        if (!pensarioPanel) return;
+        updatePanelInsets();
+        pensarioPanel->openGlossaryTerm(id);
+    });
 
     connect(editor, &SpellEditor::addToGlossaryRequested, this,
             [this](const QString& word, const QPoint& gp) {
@@ -2235,8 +2255,15 @@ void MainWindow::setupEditor()
         setEditorSelectionsLayer(QStringLiteral("mentionLinks"), sels);
     });
     connect(glossaryAddPopup, &GlossaryAddPopup::confirmed, this,
-            [this](const QString& term, const QString& def) {
-        if (glossaryStore) glossaryStore->add(term, def);
+            [this](const QString& term, const QString& def, const QString& category, const QStringList& aliases) {
+        if (glossaryStore) glossaryStore->add(term, def, category, aliases);
+    });
+    connect(glossaryAddPopup, &GlossaryAddPopup::saved, this,
+            [this](const QString& id, const QString& term, const QString& def, const QString& category, const QStringList& aliases) {
+        if (glossaryStore) glossaryStore->update(id, term, def, category, aliases);
+    });
+    connect(glossaryAddPopup, &GlossaryAddPopup::removeRequested, this, [this](const QString& id) {
+        if (glossaryStore) glossaryStore->remove(id);
     });
     // Persiste sidecar + alimenta spell-checker sempre que o store muda.
     connect(glossaryStore, &GlossaryStore::changed, this, [this]() {
@@ -2403,13 +2430,18 @@ void MainWindow::setupEditor()
             const QString name = projectModel ? projectModel->projectName() : QString();
             showReminderToast(tr("Hora de fazer backup"),
                 tr("Já faz um tempo desde o último backup de \"%1\". Abra "
-                   "Configurações > Backup de projeto para salvar uma cópia.").arg(name));
+                   "Configurações > Backup para salvar uma cópia.").arg(name));
         }
     });
     m_backupPollTimer->start();
 
     drawerListPanel->setElementsStore(elementsStore);
     wordCounter = new WordCounter(projectModel, docCache, editorHost, this);
+    // O texto mudou: a contagem de cada termo do glossário pode ter mudado.
+    connect(wordCounter, &WordCounter::countsChanged, this, [this]() {
+        if (glossaryIndex) glossaryIndex->invalidate();
+        if (pensarioPanel) pensarioPanel->glossaryTextChanged();
+    });
     if (projectSaver) projectSaver->setWordCounter(wordCounter);
     if (manuscriptPanel) {
         manuscriptPanel->setWordCounter(wordCounter);
@@ -2946,6 +2978,8 @@ void MainWindow::setupEditor()
     });
     pensarioPanel->setElementsStore(elementsStore);
     pensarioPanel->setGlossaryStore(glossaryStore);
+    pensarioPanel->setGlossaryIndex(glossaryIndex);
+    pensarioPanel->setGlossaryPopup(glossaryAddPopup);
     pensarioPanel->setTopInset(chromeInset(Qt::TopEdge));
     pensarioPanel->setRightInset(chromeInset(Qt::RightEdge));
     pensarioPanel->raise();
@@ -3442,6 +3476,12 @@ void MainWindow::setupEditor()
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::previewEreaderRequested, this, &MainWindow::openReaderPreview);
+    // Comando: o nome não achou — procura o texto no livro inteiro.
+    connect(manuscriptPanel, &ManuscriptPanel::searchTextRequested, this, [this](const QString& query) {
+        if (!globalSearchPanel) return;
+        positionGlobalSearchPanel();
+        globalSearchPanel->openPanelWith(query);
+    });
 
     connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
         const Chapter* c = projectModel->findChapter(chapterId);
@@ -5397,8 +5437,7 @@ void MainWindow::rescanAllChapterScenesPresence()
             timer->stop();
             timer->deleteLater();
             if (settingsPanel) {
-                settingsPanel->setRescanScenesButtonText(
-                    tr("Detectar presença por cena em todos os capítulos"));
+                settingsPanel->setRescanScenesButtonText(tr("Rodar"));
                 settingsPanel->setRescanScenesButtonEnabled(true);
             }
             return;
@@ -5899,7 +5938,9 @@ void MainWindow::applyProjectRoot(const QString& root)
     if (pensarioPanel) pensarioPanel->refresh();
     if (glossaryStore) {
         glossaryStore->setProjectRoot(root);
+        if (glossaryIndex) glossaryIndex->setProjectRoot(root);
         glossaryStore->load();
+        if (glossaryInText) glossaryInText->scheduleRefresh();
         if (spellChecker) spellChecker->setGlossaryWords(glossaryStore->terms());
     }
     if (memoriesStore) {
@@ -7705,7 +7746,11 @@ void MainWindow::onSettingsRequested()
     if (!settingsPanel) {
         settingsPanel = new SettingsPanel(this);
         settingsPanel->setAvailableSpellLanguages(SpellChecker::availableLanguages());
+        connect(settingsPanel, &SettingsPanel::themesRequested, this, &MainWindow::onThemePanelRequested);
 
+        connect(settingsPanel, &SettingsPanel::glossaryInTextChanged, this, [this](bool on) {
+            if (glossaryInText) glossaryInText->setEnabled(on);
+        });
         connect(settingsPanel, &SettingsPanel::spellEnabledChanged, this, [this](bool enabled) {
             if (!projectModel || !spellChecker) return;
             CrashLogger::log(QStringLiteral("SettingsPanel::spellEnabledChanged enabled=%1").arg(enabled ? "sim" : "nao"));

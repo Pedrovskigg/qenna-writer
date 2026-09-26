@@ -53,6 +53,11 @@ bool GlossaryStore::load()
         e.term = o.value(QStringLiteral("term")).toString().trimmed();
         e.definition = o.value(QStringLiteral("definition")).toString();
         e.addedAt = qint64(o.value(QStringLiteral("addedAt")).toDouble());
+        e.category = o.value(QStringLiteral("category")).toString().trimmed();
+        for (const auto& a : o.value(QStringLiteral("aliases")).toArray()) {
+            const QString t = a.toString().trimmed();
+            if (!t.isEmpty()) e.aliases << t;
+        }
         if (e.id.isEmpty() || e.term.isEmpty()) continue;
         m_entries.append(e);
     }
@@ -73,6 +78,8 @@ bool GlossaryStore::save() const
         o.insert(QStringLiteral("term"), e.term);
         o.insert(QStringLiteral("definition"), e.definition);
         o.insert(QStringLiteral("addedAt"), double(e.addedAt));
+        if (!e.category.isEmpty()) o.insert(QStringLiteral("category"), e.category);
+        if (!e.aliases.isEmpty()) o.insert(QStringLiteral("aliases"), QJsonArray::fromStringList(e.aliases));
         arr.append(o);
     }
 
@@ -82,10 +89,25 @@ bool GlossaryStore::save() const
     return f.commit();
 }
 
+QStringList GlossaryStore::Entry::spellings() const
+{
+    QStringList out;
+    if (!term.trimmed().isEmpty()) out << term.trimmed();
+    for (const QString& a : aliases) if (!a.trimmed().isEmpty() && !out.contains(a.trimmed(), Qt::CaseInsensitive)) out << a.trimmed();
+    return out;
+}
+
 QSet<QString> GlossaryStore::terms() const
 {
+    // O corretor olha palavra por palavra: "Fuerza Plata" precisa entrar
+    // também como "fuerza" e "plata", senão as duas continuam sublinhadas.
     QSet<QString> s;
-    for (const Entry& e : m_entries) s.insert(e.term.toLower());
+    for (const Entry& e : m_entries) {
+        for (const QString& sp : e.spellings()) {
+            s.insert(sp.toLower());
+            for (const QString& w : sp.split(QLatin1Char(' '), Qt::SkipEmptyParts)) s.insert(w.toLower());
+        }
+    }
     return s;
 }
 
@@ -97,14 +119,18 @@ void GlossaryStore::sortEntries()
         });
 }
 
-QString GlossaryStore::add(const QString& term, const QString& definition)
+QString GlossaryStore::add(const QString& term, const QString& definition,
+                           const QString& category, const QStringList& aliases)
 {
     const QString t = term.trimmed();
     if (t.isEmpty()) return QString();
-    // Se o termo já existe (case-insensitive), atualiza a definição em vez de duplicar.
+    // Se o termo já existe (case-insensitive), atualiza em vez de duplicar.
     for (Entry& e : m_entries) {
         if (e.term.compare(t, Qt::CaseInsensitive) == 0) {
             if (!definition.isEmpty()) e.definition = definition;
+            if (!category.trimmed().isEmpty()) e.category = category.trimmed();
+            for (const QString& a : aliases)
+                if (!a.trimmed().isEmpty() && !e.aliases.contains(a.trimmed(), Qt::CaseInsensitive)) e.aliases << a.trimmed();
             emit changed();
             return e.id;
         }
@@ -113,6 +139,8 @@ QString GlossaryStore::add(const QString& term, const QString& definition)
     e.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     e.term = t;
     e.definition = definition;
+    e.category = category.trimmed();
+    for (const QString& a : aliases) if (!a.trimmed().isEmpty()) e.aliases << a.trimmed();
     e.addedAt = QDateTime::currentMSecsSinceEpoch();
     m_entries.append(e);
     sortEntries();
@@ -132,6 +160,25 @@ bool GlossaryStore::update(const QString& id, const QString& term, const QString
             emit changed();
             return true;
         }
+    }
+    return false;
+}
+
+bool GlossaryStore::update(const QString& id, const QString& term, const QString& definition,
+                           const QString& category, const QStringList& aliases)
+{
+    for (Entry& e : m_entries) {
+        if (e.id != id) continue;
+        const QString t = term.trimmed();
+        if (t.isEmpty()) return false;
+        e.term = t;
+        e.definition = definition;
+        e.category = category.trimmed();
+        e.aliases.clear();
+        for (const QString& a : aliases) if (!a.trimmed().isEmpty()) e.aliases << a.trimmed();
+        sortEntries();
+        emit changed();
+        return true;
     }
     return false;
 }

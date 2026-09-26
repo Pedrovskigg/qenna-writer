@@ -53,6 +53,9 @@ public:
                       const QString& projectRoot, QWidget* parent);
 
     void openPanel();
+    // Abre já com um texto na busca (a gaveta de Manuscritos, estilo Comando,
+    // oferece "buscar no texto do livro" quando o nome não acha nada).
+    void openPanelWith(const QString& query);
     void closePanel();
     void setProjectRoot(const QString& root) { m_projectRoot = root; }
     void applyTheme();

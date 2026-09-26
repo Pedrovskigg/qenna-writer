@@ -142,9 +142,10 @@ void PensarioPanel::setGlossaryStore(GlossaryStore* s)
     m_glossary = s;
     if (m_glossary)
         connect(m_glossary, &GlossaryStore::changed, this, [this]() {
-            if (m_glossaryPopup && m_glossaryPopup->isVisible()) rebuildGlossaryList();
+            rebuildNav();   // o contador da aba
+            if (m_tab == Tab::Glossary && isVisible()) rebuildGlossary();
         });
-    if (m_glossaryPopup && m_glossaryPopup->isVisible()) rebuildGlossaryList();
+    if (m_tab == Tab::Glossary && isVisible()) rebuildGlossary();
 }
 
 void PensarioPanel::setCurrentChapterId(const QString& chapterId)
@@ -285,7 +286,12 @@ void PensarioPanel::buildUi()
     m_glossaryBtn->setToolTip(tr("Glossário"));
     m_glossaryBtn->setFixedSize(28, 28);
     m_glossaryBtn->setIconSize(QSize(18, 18));
-    connect(m_glossaryBtn, &QToolButton::clicked, this, &PensarioPanel::toggleGlossaryPopup);
+    m_glossaryBtn->setCheckable(true);
+    // Só aparece no Quadro (que não tem abas): abre e fecha a aba do glossário.
+    connect(m_glossaryBtn, &QToolButton::clicked, this, [this]() {
+        selectTab(m_tab == Tab::Glossary ? Tab::Comments : Tab::Glossary);
+        applyStyleLayout();
+    });
     headLay->addWidget(m_glossaryBtn);
 
     m_closeBtn = new QToolButton(m_header);
@@ -320,10 +326,12 @@ void PensarioPanel::buildUi()
     m_tabNotes     = makeTab(tr("Notas"));
     m_tabMemories  = makeTab(tr("Memórias"));
     m_tabDialogues = makeTab(tr("Diálogos"));
+    m_tabGlossary  = makeTab(tr("Glossário"));
     connect(m_tabComments,  &QToolButton::clicked, this, [this]() { selectTab(Tab::Comments); });
     connect(m_tabNotes,     &QToolButton::clicked, this, [this]() { selectTab(Tab::Notes); });
     connect(m_tabMemories,  &QToolButton::clicked, this, [this]() { selectTab(Tab::Memories); });
     connect(m_tabDialogues, &QToolButton::clicked, this, [this]() { selectTab(Tab::Dialogues); });
+    connect(m_tabGlossary,  &QToolButton::clicked, this, [this]() { selectTab(Tab::Glossary); });
 
     root->addWidget(tabsRow);
     m_tabsRow = tabsRow;
@@ -364,6 +372,9 @@ void PensarioPanel::buildUi()
 
     // Página 4: Diálogos detectados automaticamente (funcional)
     m_stack->addWidget(buildDialoguesPage());
+
+    // Página 5: Glossário (Dicionário)
+    m_stack->addWidget(buildGlossaryPage());
 
     // Corpo: [trilho] [coluna: título da seção, páginas, quadro, busca/lente]
     //        [detalhe (Duas colunas)] [divisórias (Caderno)], e a doca embaixo.
@@ -2086,313 +2097,6 @@ void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& g
     popup->show();
 }
 
-void PensarioPanel::ensureGlossaryPopup()
-{
-    if (m_glossaryPopup) return;
-
-    QWidget* host = parentWidget() ? parentWidget() : this;
-    auto* popup = new QFrame(host);
-    m_glossaryPopup = popup;
-    popup->setObjectName(QStringLiteral("pnGlossaryPopup"));
-    popup->setAttribute(Qt::WA_StyledBackground, true);
-    popup->setFixedSize(540, 420);
-    popup->hide();
-
-    auto* lay = new QVBoxLayout(popup);
-    lay->setContentsMargins(14, 12, 14, 12);
-    lay->setSpacing(8);
-
-    auto* headRow = new QHBoxLayout();
-    auto* title = new QLabel(tr("Glossário"), popup);
-    title->setObjectName(QStringLiteral("pnGlsHeader"));
-    headRow->addWidget(title);
-    headRow->addStretch(1);
-    auto* closeBtn = new QToolButton(popup);
-    closeBtn->setObjectName(QStringLiteral("pnGlsCloseBtn"));
-    closeBtn->setText(QStringLiteral("×"));
-    closeBtn->setCursor(Qt::PointingHandCursor);
-    closeBtn->setFixedSize(22, 22);
-    connect(closeBtn, &QToolButton::clicked, popup, &QWidget::hide);
-    headRow->addWidget(closeBtn);
-    lay->addLayout(headRow);
-
-    auto* topRow = new QHBoxLayout();
-    m_glsAddBtn = new QToolButton(popup);
-    m_glsAddBtn->setObjectName(QStringLiteral("pnGlsAddBtn"));
-    m_glsAddBtn->setText(tr("+ Novo termo"));
-    m_glsAddBtn->setCursor(Qt::PointingHandCursor);
-    m_glsAddBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    connect(m_glsAddBtn, &QToolButton::clicked, this, &PensarioPanel::onGlossaryAddClicked);
-    topRow->addWidget(m_glsAddBtn);
-    lay->addLayout(topRow);
-
-    m_glsSearch = new QLineEdit(popup);
-    m_glsSearch->setObjectName(QStringLiteral("pnGlsSearch"));
-    m_glsSearch->setPlaceholderText(tr("Buscar termo..."));
-    m_glsSearch->setClearButtonEnabled(true);
-    connect(m_glsSearch, &QLineEdit::textChanged, this, &PensarioPanel::onGlossarySearchChanged);
-    lay->addWidget(m_glsSearch);
-
-    auto* split = new QHBoxLayout();
-    split->setSpacing(10);
-
-    m_glsList = new QListWidget(popup);
-    m_glsList->setObjectName(QStringLiteral("pnGlsList"));
-    m_glsList->setFixedWidth(150);
-    m_glsList->setFrameShape(QFrame::NoFrame);
-    m_glsList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-    connect(m_glsList, &QListWidget::currentItemChanged, this,
-            [this](QListWidgetItem* cur, QListWidgetItem*) {
-        if (m_glsSyncing) return;
-        m_glsSelectedId = cur ? cur->data(Qt::UserRole).toString() : QString();
-        updateGlossaryRightPane();
-    });
-    split->addWidget(m_glsList);
-
-    auto* right = new QVBoxLayout();
-    right->setSpacing(6);
-    auto* termLabel = new QLabel(tr("Termo"), popup);
-    termLabel->setObjectName(QStringLiteral("pnGlsFieldLabel"));
-    right->addWidget(termLabel);
-    m_glsTermEdit = new QLineEdit(popup);
-    m_glsTermEdit->setObjectName(QStringLiteral("pnGlsTermEdit"));
-    connect(m_glsTermEdit, &QLineEdit::editingFinished, this, &PensarioPanel::onGlossaryTermEdited);
-    right->addWidget(m_glsTermEdit);
-
-    auto* defLabel = new QLabel(tr("Definição"), popup);
-    defLabel->setObjectName(QStringLiteral("pnGlsFieldLabel"));
-    right->addWidget(defLabel);
-    m_glsDefEdit = new QTextEdit(popup);
-    m_glsDefEdit->setObjectName(QStringLiteral("pnGlsDefEdit"));
-    m_glsDefEdit->setAcceptRichText(false);
-    m_glsDefEdit->setPlaceholderText(tr("Definição opcional..."));
-    m_glsDefEdit->installEventFilter(this); // salva ao perder foco, ver eventFilter()
-    right->addWidget(m_glsDefEdit, 1);
-
-    auto* btnRow = new QHBoxLayout();
-    btnRow->addStretch(1);
-    m_glsRemoveBtn = new QPushButton(tr("Remover"), popup);
-    m_glsRemoveBtn->setObjectName(QStringLiteral("pnGlsRemoveBtn"));
-    m_glsRemoveBtn->setCursor(Qt::PointingHandCursor);
-    connect(m_glsRemoveBtn, &QPushButton::clicked, this, &PensarioPanel::onGlossaryRemoveClicked);
-    btnRow->addWidget(m_glsRemoveBtn);
-    right->addLayout(btnRow);
-
-    split->addLayout(right, 1);
-    lay->addLayout(split, 1);
-
-    auto* shadow = new QGraphicsDropShadowEffect(popup);
-    shadow->setBlurRadius(24);
-    shadow->setColor(QColor(0, 0, 0, 160));
-    shadow->setOffset(0, 4);
-    popup->setGraphicsEffect(shadow);
-
-    applyGlossaryPopupTheme();
-}
-
-void PensarioPanel::applyGlossaryPopupTheme()
-{
-    if (!m_glossaryPopup) return;
-
-    const QString bg      = Theme::panelBackground();
-    const QString border  = Theme::borderStrong();
-    const QString textPri = Theme::textPrimary();
-    const QString textMut = Theme::textMuted();
-    const QString textBrt = Theme::textBright();
-    const QString cardBg  = Theme::inputBackground();
-    const QString cardBd  = Theme::subtleBorder();
-    const QString hover   = Theme::hoverStrong();
-    const QString accent  = Theme::accentDefault();
-
-    m_glossaryPopup->setStyleSheet(Theme::qss(QStringLiteral(R"(
-        #pnGlossaryPopup {
-            background: %1;
-            border: 1px solid %2;
-            border-radius: @radius-panel;
-        }
-        #pnGlsHeader { color: %3; font-size: 14px; font-weight: 600; }
-        #pnGlsCloseBtn {
-            color: %4;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            border-radius: @radius-control;
-        }
-        #pnGlsCloseBtn:hover { background: %7; color: %5; }
-        #pnGlsAddBtn {
-            color: %3;
-            background: %6;
-            border: 1px dashed %9;
-            border-radius: @radius-panel;
-            padding: 9px;
-            font-size: 13px;
-        }
-        #pnGlsAddBtn:hover { background: %7; border-color: %8; }
-        #pnGlsSearch {
-            color: %3;
-            background: %6;
-            border: 1px solid %9;
-            border-radius: @radius-control;
-            padding: 5px 8px;
-            font-size: 12px;
-        }
-        #pnGlsSearch:focus { border-color: %8; }
-        #pnGlsFieldLabel { color: %4; font-size: 11px; }
-        #pnGlsTermEdit, #pnGlsDefEdit {
-            color: %3;
-            background: %6;
-            border: 1px solid %9;
-            border-radius: @radius-control;
-            padding: 5px 8px;
-            font-size: 12px;
-        }
-        #pnGlsTermEdit:focus, #pnGlsDefEdit:focus { border-color: %8; }
-        #pnGlsList {
-            color: %3;
-            background: %6;
-            border: 1px solid %9;
-            border-radius: @radius-control;
-            padding: 4px;
-            outline: 0;
-        }
-        #pnGlsList::item { padding: 6px 8px; border-radius: @radius-item; }
-        #pnGlsList::item:hover { background: %7; }
-        #pnGlsList::item:selected { background: %7; color: %5; }
-        #pnGlsRemoveBtn {
-            color: %4;
-            background: transparent;
-            border: 1px solid %9;
-            border-radius: @radius-control;
-            padding: 4px 10px;
-            font-size: 11px;
-        }
-        #pnGlsRemoveBtn:hover { color: %5; background: %7; border-color: %8; }
-    )"))
-        .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
-}
-
-void PensarioPanel::toggleGlossaryPopup()
-{
-    ensureGlossaryPopup();
-    if (m_glossaryPopup->isVisible()) {
-        m_glossaryPopup->hide();
-        return;
-    }
-    rebuildGlossaryList();
-    const QPoint anchor = m_glossaryBtn->mapToGlobal(QPoint(0, m_glossaryBtn->height() + 4));
-    QPoint pos = m_glossaryPopup->parentWidget()
-        ? m_glossaryPopup->parentWidget()->mapFromGlobal(anchor)
-        : anchor;
-    if (auto* screen = QGuiApplication::screenAt(anchor)) {
-        const QRect avail = screen->availableGeometry();
-        QPoint globalPos = anchor;
-        if (globalPos.x() + m_glossaryPopup->width() > avail.right())
-            globalPos.setX(avail.right() - m_glossaryPopup->width());
-        if (globalPos.y() + m_glossaryPopup->height() > avail.bottom())
-            globalPos.setY(avail.bottom() - m_glossaryPopup->height());
-        pos = m_glossaryPopup->parentWidget()
-            ? m_glossaryPopup->parentWidget()->mapFromGlobal(globalPos)
-            : globalPos;
-    }
-    m_glossaryPopup->move(pos);
-    m_glossaryPopup->show();
-    m_glossaryPopup->raise();
-}
-
-void PensarioPanel::rebuildGlossaryList()
-{
-    if (!m_glsList) return;
-    m_glsSyncing = true;
-    m_glsList->clear();
-
-    const QString needle = m_glsSearch ? m_glsSearch->text().trimmed().toLower() : QString();
-    constexpr int kSearchMinTerms = 3;
-    const bool useFilter = needle.size() >= kSearchMinTerms;
-
-    if (m_glossary) {
-        for (const GlossaryStore::Entry& e : m_glossary->entries()) {
-            if (useFilter && !e.term.toLower().contains(needle)) continue;
-            auto* item = new QListWidgetItem(e.term, m_glsList);
-            item->setData(Qt::UserRole, e.id);
-            if (!e.definition.isEmpty()) item->setToolTip(e.definition);
-        }
-    }
-    selectGlossaryId(m_glsSelectedId);
-    m_glsSyncing = false;
-    if (!m_glsList->currentItem() && m_glsList->count() > 0) m_glsList->setCurrentRow(0);
-    updateGlossaryRightPane();
-}
-
-void PensarioPanel::selectGlossaryId(const QString& id)
-{
-    if (!m_glsList) return;
-    for (int i = 0; i < m_glsList->count(); ++i) {
-        if (m_glsList->item(i)->data(Qt::UserRole).toString() == id) {
-            m_glsList->setCurrentRow(i);
-            return;
-        }
-    }
-}
-
-void PensarioPanel::updateGlossaryRightPane()
-{
-    const bool hasSel = !m_glsSelectedId.isEmpty() && m_glossary;
-    GlossaryStore::Entry e = hasSel ? m_glossary->findById(m_glsSelectedId) : GlossaryStore::Entry{};
-
-    m_glsSyncing = true;
-    if (m_glsTermEdit) m_glsTermEdit->setText(e.term);
-    if (m_glsDefEdit) m_glsDefEdit->setPlainText(e.definition);
-    m_glsSyncing = false;
-
-    if (m_glsTermEdit) m_glsTermEdit->setEnabled(hasSel);
-    if (m_glsDefEdit) m_glsDefEdit->setEnabled(hasSel);
-    if (m_glsRemoveBtn) m_glsRemoveBtn->setEnabled(hasSel);
-}
-
-void PensarioPanel::onGlossarySearchChanged(const QString& /*text*/)
-{
-    rebuildGlossaryList();
-}
-
-void PensarioPanel::onGlossaryTermEdited()
-{
-    if (m_glsSyncing || m_glsSelectedId.isEmpty() || !m_glossary || !m_glsTermEdit) return;
-    const QString next = m_glsTermEdit->text().trimmed();
-    GlossaryStore::Entry e = m_glossary->findById(m_glsSelectedId);
-    if (next.isEmpty() || next == e.term) return;
-    m_glossary->update(m_glsSelectedId, next, e.definition);
-}
-
-void PensarioPanel::onGlossaryDefinitionEdited()
-{
-    if (m_glsSyncing || m_glsSelectedId.isEmpty() || !m_glossary || !m_glsDefEdit) return;
-    GlossaryStore::Entry e = m_glossary->findById(m_glsSelectedId);
-    const QString next = m_glsDefEdit->toPlainText();
-    if (next == e.definition) return;
-    m_glossary->update(m_glsSelectedId, e.term, next);
-}
-
-void PensarioPanel::onGlossaryRemoveClicked()
-{
-    if (m_glsSelectedId.isEmpty() || !m_glossary) return;
-    m_glossary->remove(m_glsSelectedId);
-    m_glsSelectedId.clear();
-}
-
-void PensarioPanel::onGlossaryAddClicked()
-{
-    if (!m_glossary) return;
-    const QString id = m_glossary->add(tr("Novo termo"), QString());
-    m_glsSelectedId = id;
-    rebuildGlossaryList();
-    selectGlossaryId(id);
-    updateGlossaryRightPane();
-    if (m_glsTermEdit) {
-        m_glsTermEdit->setFocus();
-        m_glsTermEdit->selectAll();
-    }
-}
-
 void PensarioPanel::selectTab(Tab tab)
 {
     m_tab = tab;
@@ -2400,15 +2104,19 @@ void PensarioPanel::selectTab(Tab tab)
     m_tabNotes->setChecked(tab == Tab::Notes);
     if (m_tabMemories) m_tabMemories->setChecked(tab == Tab::Memories);
     if (m_tabDialogues) m_tabDialogues->setChecked(tab == Tab::Dialogues);
+    if (m_tabGlossary) m_tabGlossary->setChecked(tab == Tab::Glossary);
     if (m_namesBtn) m_namesBtn->setChecked(tab == Tab::Names);
+    if (m_glossaryBtn) m_glossaryBtn->setChecked(tab == Tab::Glossary);
     m_stack->setCurrentIndex(static_cast<int>(tab));
     if (m_sortBtn) m_sortBtn->setVisible(tab == Tab::Comments && m_style != Style::Board && !alternateViewActive());
-    if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive() && tab != Tab::Names);
+    if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive()
+                                       && tab != Tab::Names && tab != Tab::Glossary);
     updateNavChecks();
     if (tab == Tab::Comments) rebuildComments();
     else if (tab == Tab::Notes) rebuildNotes();
     else if (tab == Tab::Memories) rebuildMemories();
     else if (tab == Tab::Dialogues) rebuildDialogues();
+    else if (tab == Tab::Glossary) rebuildGlossary();
 }
 
 void PensarioPanel::rebuildComments()
@@ -2710,13 +2418,6 @@ bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
                 return true;
             }
         }
-    }
-
-    // Glossário: salva a definição quando o textarea perde o foco (sem
-    // flush a cada tecla) — mesmo comportamento do GlossaryPanel original.
-    if (watched == m_glsDefEdit && event->type() == QEvent::FocusOut) {
-        onGlossaryDefinitionEdited();
-        return false;
     }
 
     // Card de diálogo: clicar abre a cena de origem no editor (sem menu —
@@ -3125,6 +2826,11 @@ void PensarioPanel::applyTheme()
             border-radius: @radius-control;
         }
         #pnGlossaryBtn:hover { background: %7; color: %3; }
+        #pnGlossaryBtn:checked { background: %7; color: %5; }
+        #pnGlsLetter { color: %8; border-bottom: 1px solid %9; }
+        #pnGlsEntry { background: transparent; border-radius: @radius-item; }
+        #pnGlsEntry:hover { background: %7; }
+        #pnGlsEntry[focus="true"] { background: %6; }
         #pnTab[look="chips"] { border: 1px solid %9; padding: 4px 8px; font-size: 11.5px; }
         #pnTab[look="chips"]:checked { border-color: %8; }
         #pnTab[look="mag"] { font-family: 'Source Serif 4','Lora',Georgia,serif; font-size: 13px; border-radius: 0px;
@@ -3138,7 +2844,13 @@ void PensarioPanel::applyTheme()
     )"))
         .arg(bg, border, textPri, textMut, textBrt, cardBg, hover, accent, cardBd));
 
-    applyGlossaryPopupTheme();
+    if (m_glsSearch) {
+        m_glsSearch->setStyleSheet(Theme::qss(QStringLiteral(
+            "QLineEdit { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-control;"
+            " padding: 5px 8px; font-size: 12.5px; } QLineEdit:focus { border-color: %4; }"))
+            .arg(Theme::inputBackground(), Theme::textPrimary(), Theme::subtleBorder(), Theme::accentDefault()));
+    }
+    if (m_glsInner && isVisible() && m_tab == Tab::Glossary) rebuildGlossary();
 
     for (QWidget* w : { m_rail, m_dock, m_dividers }) {
         if (!w) continue;

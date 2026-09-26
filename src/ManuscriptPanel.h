@@ -11,6 +11,7 @@
 
 class QComboBox;
 class QHBoxLayout;
+class QLineEdit;
 class QLabel;
 class QMenu;
 class QVBoxLayout;
@@ -23,6 +24,10 @@ class DialogueStore;
 class WordCounter;
 class ElementsStore;
 class ProjectInfoHover;
+class MsHero;
+class MsCheckpoints;
+class MsDrum;
+struct Manuscript;
 struct Chapter;
 struct ManuscriptPart;
 
@@ -31,7 +36,13 @@ class ManuscriptPanel : public QWidget {
 public:
     // Estilos da gaveta (arranjo). As ferramentas valem em todos.
     enum class Style { Classic, Rail, Spines, Showcase, Toc, Spine, Grid, Mosaic, Journey,
-                       TitlePage, Reader, Illustrated, Seasons, Store, Box };
+                       TitlePage, Reader, Illustrated, Seasons, Store, Box,
+                       // leva 6: temáticos
+                       ChapterSelect, Album, Playbill,
+                       // leva 7: listas limpas
+                       Columns, Drum, Layers, Command, Margin,
+                       // leva 8: a lista limpa com a capa e a saga em volta
+                       Aura, AuraClean, Carousel, Bound, Fan, Window };
     enum Tool { ToolStatus, ToolHover, ToolParts, ToolResume, ToolStory, ToolPov,
                 ToolVariations, ToolRhythm, ToolCount };
 
@@ -80,6 +91,8 @@ signals:
     void renameManuscriptRequested(QString manuscriptId);
     void deleteManuscriptRequested(QString manuscriptId);
     void previewEreaderRequested(QString manuscriptId);
+    // Comando: o nome não achou nada — procurar o texto no livro inteiro.
+    void searchTextRequested(QString query);
     void statsRequested(QString manuscriptId);
     void panelClosed();
     // O estilo mudou a largura da gaveta — o MainWindow reposiciona.
@@ -124,6 +137,11 @@ protected:
     void dropEvent(class QDropEvent* event) override;
     void hideEvent(QHideEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
+    // Aura (capa desfocada) e Janela (capa inteira) pintam o fundo da gaveta.
+    void paintEvent(QPaintEvent* event) override;
+    // Seleção de capítulo: setas escolhem, Enter abre, Tab troca de livro.
+    void keyPressEvent(QKeyEvent* event) override;
+    bool event(QEvent* event) override;
 
 private slots:
     void onManuscriptsChanged();
@@ -179,6 +197,57 @@ private:
     QWidget* makeRhythmBar(const QList<Chapter>& chs);
     QWidget* makeBookBlock(bool withCover);
     void applyStyleWidth();
+
+    // ---- estilos das levas 6 a 8 (ManuscriptPanelStyles2.cpp) ----
+    // Tinta das linhas da lista limpa: o tema, a capa escurecida (Aura) ou o
+    // papel da janela (Janela) pedem cores diferentes pro mesmo desenho.
+    struct RowInk {
+        QColor text, muted, bright, hover, accent, openBg;
+    };
+    RowInk themeInk() const;
+    RowInk auraInk() const;
+    RowInk paperInk() const;
+    QColor bookAccent(const QString& msId, bool onDark) const;
+    bool panelIsDark() const;
+    bool isCaptionHeaderStyle() const;       // cabeçalho só com o rótulo (livro escolhido no estilo)
+    bool isCoverBackgroundStyle() const;     // Aura, Janela: o fundo é a capa
+    bool toolsAllowed() const;
+    int activeBookNumber() const;
+    QPixmap bookCoverPixmap(const Manuscript& m, int number, QSize size) const;
+    QString contextMenuStyle() const;
+    void showBookSwitchMenu(const QPoint& globalPos);
+    QList<ManuscriptPart> partsForDisplay(const QList<Chapter>& reading) const;
+    QString partLabel(const ManuscriptPart& p) const;
+
+    QWidget* makeSimpleChapterRow(const Chapter& c, const RowInk& ink);
+    QWidget* makeSimpleSceneRow(const Chapter& c, int idx, const RowInk& ink);
+    QWidget* makeSimplePartRow(const ManuscriptPart& part, const RowInk& ink);
+    void buildSimpleList(const QList<Chapter>& chs, const RowInk& ink);
+    QWidget* makeCoverBlock(bool large, const RowInk& ink);
+    QWidget* makeDashedNewChapter(const QColor& color);
+
+    void buildChapterSelectTop();
+    void buildChapterSelectView(const QList<Chapter>& chs);
+    void updateChapterSelectHero();
+    void setChapterPreview(const QString& chapterId);
+    void buildAlbumTop();
+    void buildAlbumView(const QList<Chapter>& chs);
+    void buildPlaybillView(const QList<Chapter>& chs);
+    void buildColumnsView(const QList<Chapter>& chs);
+    void rebuildColumnsSide();
+    void buildDrumTop();
+    void buildDrumView();
+    void buildLayersTop();
+    void buildLayersView();
+    void layersGo(const QString& ms, const QString& part, const QString& chapter);
+    void buildCommandTop();
+    void buildCommandView();
+    void commandKey(int key);
+    void buildMarginView(const QList<Chapter>& chs);
+    void buildCarouselHead();
+    void updateCarouselMini();
+    void buildBottomNew();
+    void placeOverlays();
 
     // ---- dados ----
     QString activeManuscriptId() const;
@@ -273,6 +342,41 @@ private:
     QWidget* m_bottom = nullptr;
     QVBoxLayout* m_bottomLayout = nullptr;
     QLabel* m_rhythmTip = nullptr;
+    QVBoxLayout* m_columnLayout = nullptr;
+    // Colunas: a coluna das cenas, à direita da lista
+    QWidget* m_side = nullptr;
+    QVBoxLayout* m_sideLayout = nullptr;
+    QString m_colSel;                 // capítulo escolhido (não aberto) nas Colunas
+    // Seleção de capítulo
+    MsHero* m_hero = nullptr;
+    MsCheckpoints* m_checkpoints = nullptr;
+    QPushButton* m_heroGo = nullptr;
+    QString m_previewChapterId;
+    int m_previewGen = 0;
+    // Tambor
+    MsDrum* m_drum = nullptr;
+    QString m_drumSel;
+    QLabel* m_drumCount = nullptr;
+    // Camadas: onde a gaveta está (vazio = a saga)
+    bool m_layerInit = false;
+    bool m_layerSaga = false;
+    QString m_layerMs, m_layerPart, m_layerChapter;
+    // Comando
+    QLineEdit* m_cmdEdit = nullptr;
+    QString m_cmdQuery;
+    int m_cmdKb = -1;
+    QSet<QString> m_cmdExpanded;
+    QList<QPair<QString, int>> m_cmdVis;   // linhas visíveis (capítulo, cena ou -1), pro teclado
+    // Álbum
+    int m_albumPage = -1;             // -1 = a página do capítulo aberto
+    QString m_albumBook;
+    // Carrossel
+    int m_carouselFrom = -1;
+    QWidget* m_carouselMini = nullptr;
+    // Janela
+    QWidget* m_windowFrame = nullptr;
+    QString m_bgKey;
+    QPixmap m_bgCache;
 
     // Estilo e ferramentas (globais, QSettings)
     Style m_style = Style::Rail;

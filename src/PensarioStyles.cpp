@@ -6,6 +6,7 @@
 
 #include "DocCache.h"
 #include "ElementsStore.h"
+#include "GlossaryStore.h"
 #include "IconUtils.h"
 #include "MarkerStore.h"
 #include "NotesStore.h"
@@ -351,19 +352,23 @@ void PensarioPanel::applyStyleLayout() {
     const bool toolsInHeader = (nav != Nav::Rail && nav != Nav::Dock);
     if (m_namesBtn) m_namesBtn->setVisible(toolsInHeader);
     if (m_mapBtn) m_mapBtn->setVisible(toolsInHeader);
-    if (m_glossaryBtn) m_glossaryBtn->setVisible(toolsInHeader);
+    // O glossário é aba: o botão do cabeçalho só fica no Quadro, que não tem abas.
+    if (m_glossaryBtn) m_glossaryBtn->setVisible(nav == Nav::None);
     if (m_sectionRow) m_sectionRow->setVisible((nav == Nav::Rail || nav == Nav::Dock) && !alternateViewActive());
-    if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive() && m_tab != Tab::Names);
+    if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive()
+                                       && m_tab != Tab::Names && m_tab != Tab::Glossary);
     const bool alt = alternateViewActive();
-    if (m_board) m_board->setVisible(board && !alt);
+    // No Quadro, Nomes e Glossário abrem por cima das colunas (são páginas próprias).
+    const bool page = (m_tab == Tab::Names || m_tab == Tab::Glossary);
+    if (m_board) m_board->setVisible(board && !alt && !page);
     if (m_altScroll) m_altScroll->setVisible(alt);
-    if (m_stack) m_stack->setVisible(!board && !alt);
+    if (m_stack) m_stack->setVisible((!board || page) && !alt);
     if (m_sortBtn) m_sortBtn->setVisible(m_tab == Tab::Comments && !board && !alt);
 
     // Aparência das abas: chips (Mural), revista (Revista) ou abas.
     const QString look = m_style == Style::Mural ? QStringLiteral("chips")
                        : m_style == Style::Magazine ? QStringLiteral("mag") : QString();
-    for (QToolButton* b : { m_tabComments, m_tabNotes, m_tabMemories, m_tabDialogues }) {
+    for (QToolButton* b : { m_tabComments, m_tabNotes, m_tabMemories, m_tabDialogues, m_tabGlossary }) {
         if (!b) continue;
         b->setProperty("look", look);
         b->style()->unpolish(b);
@@ -380,7 +385,7 @@ void PensarioPanel::applyStyleLayout() {
     }
     rebuildNav();
     rebuildToolsBar();
-    if (board && !alt) rebuildBoard();
+    if (board && !alt && !page) rebuildBoard();
     else if (alt) { if (!m_searchQuery.isEmpty()) rebuildSearchPage(); else rebuildLensPage(); }
     else selectTab(m_tab);
 }
@@ -464,6 +469,7 @@ QString PensarioPanel::tabName(Tab t) const {
     case Tab::Memories:  return tr("Memórias");
     case Tab::Dialogues: return tr("Diálogos");
     case Tab::Names:     return tr("Nomes");
+    case Tab::Glossary:  return tr("Glossário");
     }
     return QString();
 }
@@ -474,6 +480,7 @@ QString PensarioPanel::tabIcon(Tab t) const {
     case Tab::Notes:     return QStringLiteral(":/icons/pn-note.svg");
     case Tab::Memories:  return QStringLiteral(":/icons/pn-memory.svg");
     case Tab::Dialogues: return QStringLiteral(":/icons/pn-dialogue.svg");
+    case Tab::Glossary:  return QStringLiteral(":/icons/glossary.svg");
     default:             return QString();
     }
 }
@@ -488,13 +495,14 @@ int PensarioPanel::tabCount(Tab t) const {
     case Tab::Notes:     return m_notesStore ? m_notesStore->notes().size() : 0;
     case Tab::Memories:  return m_memories ? m_memories->memories().size() : 0;
     case Tab::Dialogues: return m_dialogues ? m_dialogues->dialogues().size() : 0;
+    case Tab::Glossary:  return m_glossary ? m_glossary->entries().size() : 0;
     default:             return 0;
     }
 }
 
 void PensarioPanel::rebuildNav() {
     const Nav nav = navFor(m_style);
-    const QList<Tab> tabs = { Tab::Comments, Tab::Notes, Tab::Memories, Tab::Dialogues };
+    const QList<Tab> tabs = { Tab::Comments, Tab::Notes, Tab::Memories, Tab::Dialogues, Tab::Glossary };
     auto clear = [](QBoxLayout* lay) {
         if (!lay) return;
         while (QLayoutItem* it = lay->takeAt(0)) {
@@ -529,14 +537,8 @@ void PensarioPanel::rebuildNav() {
         map->setToolTip(tr("Mapa-múndi"));
         connect(map, &QAbstractButton::clicked, this, &PensarioPanel::openMapPanel);
         lay->addWidget(map, 0, Qt::AlignCenter);
-        auto* gl = new PnRailButton(QStringLiteral(":/icons/glossary.svg"), QString(), 0, host);
-        gl->setCheckable(false);
-        gl->horizontal = (nav == Nav::Dock);
-        gl->setToolTip(tr("Glossário"));
-        connect(gl, &QAbstractButton::clicked, this, &PensarioPanel::toggleGlossaryPopup);
-        lay->addWidget(gl, 0, Qt::AlignCenter);
     } else if (nav == Nav::Dividers) {
-        const QList<QColor> colors = { QColor("#FFD54F"), QColor("#b39ddb"), QColor("#8fc7a4"), QColor("#90caf9") };
+        const QList<QColor> colors = { QColor("#FFD54F"), QColor("#b39ddb"), QColor("#8fc7a4"), QColor("#90caf9"), QColor("#e8a87c") };
         for (int i = 0; i < tabs.size(); ++i) {
             const Tab t = tabs.at(i);
             auto* d = new PnDividerTab(tabName(t), colors.at(i), m_dividers);
@@ -555,6 +557,7 @@ void PensarioPanel::rebuildNav() {
     setTabText(m_tabNotes, Tab::Notes);
     setTabText(m_tabMemories, Tab::Memories);
     setTabText(m_tabDialogues, Tab::Dialogues);
+    setTabText(m_tabGlossary, Tab::Glossary);
     updateNavChecks();
 }
 

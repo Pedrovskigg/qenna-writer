@@ -1747,7 +1747,9 @@ void TerritorioWindow::rebuildMargin()
                 auto* rl = new QHBoxLayout(r);
                 rl->setContentsMargins(12, 8, 12, 8);
                 rl->setSpacing(8);
-                auto* lab = textLabel(label, "encMarginMuted", sans(11.5), r, false);
+                // Quebra em vez de cortar: em inglês/francês os rótulos passam
+                // da coluna ("People from here", "On the Timeline").
+                auto* lab = textLabel(label, "encMarginMuted", sans(11.5), r, true);
                 lab->setFixedWidth(74);
                 lab->setAlignment(Qt::AlignTop | Qt::AlignLeft);
                 rl->addWidget(lab, 0, Qt::AlignTop);

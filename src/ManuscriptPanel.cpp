@@ -3,6 +3,7 @@
 #include "ElementsStore.h"
 #include "IconUtils.h"
 #include "ManuscriptViews.h"
+#include "ManuscriptViews2.h"
 #include "MsVignette.h"
 #include "TimelineChrono.h"
 #include "CoverUtils.h"
@@ -42,6 +43,7 @@
 #include <QEnterEvent>
 #include <QHBoxLayout>
 #include <QIcon>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QMimeData>
@@ -51,6 +53,7 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QScrollBar>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
 #include <QTimer>
@@ -570,6 +573,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     auto* colLay = new QVBoxLayout(column);
     colLay->setContentsMargins(0, 0, 0, 0);
     colLay->setSpacing(0);
+    m_columnLayout = colLay;
 
     m_top = new QWidget(column);
     m_topLayout = new QVBoxLayout(m_top);
@@ -624,7 +628,34 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     colLay->addWidget(m_bottom);
 
     bodyLay->addWidget(column, 1);
+
+    // Colunas: as cenas do capítulo escolhido, à direita. A lista de
+    // capítulos continua sendo a lista de sempre (arrastar segue valendo).
+    m_side = new QWidget(body);
+    m_side->setObjectName(QStringLiteral("msSide"));
+    m_side->setAttribute(Qt::WA_StyledBackground, true);
+    m_sideLayout = new QVBoxLayout(m_side);
+    m_sideLayout->setContentsMargins(0, 6, 0, 6);
+    m_sideLayout->setSpacing(0);
+    m_side->hide();
+    bodyLay->addWidget(m_side);
     root->addWidget(body, 1);
+
+    // Carrossel: quando a lista rola e as capas somem, fica uma faixa com a
+    // capa pequena e o título. Irmã da lista, não filha do viewport (filho de
+    // viewport é empurrado pelo scroll).
+    m_carouselMini = new QWidget(this);
+    m_carouselMini->setObjectName(QStringLiteral("msCarouselMini"));
+    m_carouselMini->setAttribute(Qt::WA_StyledBackground, true);
+    m_carouselMini->hide();
+    // Janela: o recorte da capa (sombra pra dentro), por cima da lista.
+    m_windowFrame = new QWidget(this);
+    m_windowFrame->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_windowFrame->installEventFilter(this);
+    m_windowFrame->hide();
+    connect(m_scroll->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() {
+        if (m_style == Style::Carousel) updateCarouselMini();
+    });
 
     // Ficha no hover ------------------------------------------------------
     m_hoverTimer = new QTimer(this);
@@ -697,6 +728,9 @@ void ManuscriptPanel::resizeEvent(QResizeEvent* event) {
         m_resizeHandleCorner->setGeometry(width() - 12, height() - 12, 12, 12);
         m_resizeHandleCorner->raise();
     }
+    // Janela: a altura do topo acompanha a gaveta (o título da capa em cima).
+    if (m_style == Style::Window && m_top && m_top->isVisible()) m_top->setFixedHeight(qMax(80, int(height() * 0.30)));
+    placeOverlays();
 }
 
 void ManuscriptPanel::loadBookColors() {
@@ -760,9 +794,30 @@ void ManuscriptPanel::hideEvent(QHideEvent* event) {
 }
 
 void ManuscriptPanel::applyHeaderStyles() {
+    // Aura e Janela: o cabeçalho fica por cima da capa, então claro.
+    const bool overCover = isCoverBackgroundStyle();
+    const QString iconColor = overCover ? QStringLiteral("rgba(255,255,255,0.78)") : Theme::textMuted();
+    const QString iconHover = overCover ? QStringLiteral("#ffffff") : Theme::textBright();
+    const QString iconHoverBg = overCover ? QStringLiteral("rgba(255,255,255,0.12)") : Theme::hoverOverlay();
     if (m_header) {
         m_header->setStyleSheet(QStringLiteral(
-            "#manuscriptHeader { border-bottom: 1px solid %1; }").arg(Theme::panelBorder()));
+            "#manuscriptHeader { border-bottom: 1px solid %1; }")
+            .arg(overCover ? QStringLiteral("rgba(255,255,255,0.08)") : Theme::panelBorder()));
+    }
+    if (m_headerTitle) {
+        QFont f = uiFont(9.5, QFont::Bold);
+        f.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+        m_headerTitle->setFont(f);
+        m_headerTitle->setStyleSheet(QStringLiteral("color: %1; background: transparent;")
+            .arg(overCover ? QStringLiteral("rgba(255,255,255,0.62)") : Theme::textMuted()));
+    }
+    if (m_carouselMini) {
+        m_carouselMini->setStyleSheet(QStringLiteral("#msCarouselMini { background: %1; border-bottom: 1px solid %2; }")
+            .arg(Theme::panelBackground(), Theme::subtleBorder()));
+    }
+    if (m_side) {
+        m_side->setStyleSheet(QStringLiteral("#msSide { background: %1; border-left: 1px solid %2; }")
+            .arg(Theme::hoverOverlay(), Theme::subtleBorder()));
     }
     if (m_combo) {
         m_combo->setStyleSheet(Theme::qss(QStringLiteral(R"(
@@ -801,11 +856,12 @@ void ManuscriptPanel::applyHeaderStyles() {
                 color: %3;
                 border-color: %4;
             }
-        )")).arg(Theme::textMuted(), Theme::hoverOverlay(), Theme::textBright(), Theme::subtleBorder()));
+        )")).arg(iconColor, iconHoverBg, iconHover, overCover ? QStringLiteral("transparent") : Theme::subtleBorder()));
     }
     if (m_styleBtn) {
-        m_styleBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"),
-            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()), QSize(16, 16)));
+        const QColor ic = overCover ? QColor(255, 255, 255, 200) : QColor(Theme::textMuted());
+        const QColor ih = overCover ? QColor(Qt::white) : QColor(Theme::textBright());
+        m_styleBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"), ic, ih, ih, QSize(16, 16)));
     }
     if (m_createChapterBtn) {
         m_createChapterBtn->setStyleSheet(createButtonQss(Theme::accentDefault()));
@@ -885,15 +941,27 @@ void ManuscriptPanel::onChaptersChanged() {
 void ManuscriptPanel::onComboChanged(int /*index*/) {
     if (m_model) {
         const QString id = activeManuscriptId();
-        if (m_model->activeManuscriptId() != id) {
+        const QString previous = m_model->activeManuscriptId();
+        // Carrossel: gira a partir de onde estava.
+        m_carouselFrom = -1;
+        const auto& mss = m_model->manuscripts();
+        for (int i = 0; i < mss.size(); ++i) if (mss.at(i).id == previous) m_carouselFrom = i;
+        if (previous != id) {
             m_model->setActiveManuscriptId(id);
         }
+        // O que cada estilo tinha escolhido era do livro anterior.
+        m_colSel.clear();
+        m_drumSel.clear();
+        m_albumPage = -1;
+        if (m_layerMs != id) { m_layerMs = id; m_layerPart.clear(); m_layerChapter.clear(); }
     }
     // Filtros são do livro que estava aberto.
     m_statusFilter.clear();
     m_povFilter.clear();
     m_povReading = 0;
-    const bool animate = isVisible();
+    // O Carrossel tem o próprio giro das capas; o fantasma da lista velha por
+    // cima brigaria com ele.
+    const bool animate = isVisible() && m_style != Style::Carousel;
     if (animate) PanelMotion::swapOut(m_scroll->viewport());
     rebuildList();
     if (animate) playIntro(60);
@@ -918,6 +986,20 @@ QString ManuscriptPanel::styleId(Style s) {
     case Style::Seasons:     return QStringLiteral("seasons");
     case Style::Store:       return QStringLiteral("store");
     case Style::Box:         return QStringLiteral("box");
+    case Style::ChapterSelect: return QStringLiteral("chapterselect");
+    case Style::Album:       return QStringLiteral("album");
+    case Style::Playbill:    return QStringLiteral("playbill");
+    case Style::Columns:     return QStringLiteral("columns");
+    case Style::Drum:        return QStringLiteral("drum");
+    case Style::Layers:      return QStringLiteral("layers");
+    case Style::Command:     return QStringLiteral("command");
+    case Style::Margin:      return QStringLiteral("margin");
+    case Style::Aura:        return QStringLiteral("aura");
+    case Style::AuraClean:   return QStringLiteral("auraclean");
+    case Style::Carousel:    return QStringLiteral("carousel");
+    case Style::Bound:       return QStringLiteral("bound");
+    case Style::Fan:         return QStringLiteral("fan");
+    case Style::Window:      return QStringLiteral("window");
     }
     return QStringLiteral("rail");
 }
@@ -925,7 +1007,10 @@ QString ManuscriptPanel::styleId(Style s) {
 ManuscriptPanel::Style ManuscriptPanel::styleFromId(const QString& id) {
     for (Style s : { Style::Classic, Style::Rail, Style::Spines, Style::Showcase, Style::Toc,
                      Style::Spine, Style::Grid, Style::Mosaic, Style::Journey, Style::TitlePage,
-                     Style::Reader, Style::Illustrated, Style::Seasons, Style::Store, Style::Box })
+                     Style::Reader, Style::Illustrated, Style::Seasons, Style::Store, Style::Box,
+                     Style::ChapterSelect, Style::Album, Style::Playbill, Style::Columns, Style::Drum,
+                     Style::Layers, Style::Command, Style::Margin, Style::Aura, Style::AuraClean,
+                     Style::Carousel, Style::Bound, Style::Fan, Style::Window })
         if (styleId(s) == id) return s;
     return Style::Rail;   // padrão da gaveta
 }
@@ -1009,6 +1094,20 @@ void ManuscriptPanel::applyStyleWidth() {
     case Style::Seasons:     w = 340; break;
     case Style::Store:       w = 320; break;
     case Style::Box:         w = 300; break;
+    case Style::ChapterSelect: w = 360; break;
+    case Style::Album:       w = 340; break;
+    case Style::Playbill:    w = 330; break;
+    case Style::Columns:     w = 420; break;
+    case Style::Drum:        w = 300; break;
+    case Style::Layers:      w = 300; break;
+    case Style::Command:     w = 310; break;
+    case Style::Margin:      w = 300; break;
+    case Style::Aura:        w = 320; break;
+    case Style::AuraClean:   w = 320; break;
+    case Style::Carousel:    w = 310; break;
+    case Style::Bound:       w = 340; break;
+    case Style::Fan:         w = 310; break;
+    case Style::Window:      w = 320; break;
     }
     // Largura arrastada pelo usuário vale por estilo.
     const int stored = QSettings().value(QStringLiteral("ui/manuscriptPanel/width-") + styleId(m_style), 0).toInt();
@@ -1032,11 +1131,24 @@ void ManuscriptPanel::showStyleMenu() {
         f.setLetterSpacing(QFont::AbsoluteSpacing, 1.1);
         a->setFont(f);
     };
-    addHeading(tr("Estilo"));
     auto* group = new QActionGroup(&menu);
     group->setExclusive(true);
     struct Opt { Style s; QString name; QString tip; };
     const QList<Opt> styles = {
+        { Style::Columns,  tr("Colunas"),        tr("Capítulos à esquerda, as cenas do escolhido à direita") },
+        { Style::Drum,     tr("Tambor"),         tr("A lista gira como o seletor de data do celular") },
+        { Style::Layers,   tr("Camadas"),        tr("Um nível por vez: saga, livro, parte, capítulo, cena") },
+        { Style::Command,  tr("Comando"),        tr("Uma lista que dá pra filtrar, com onde você está sempre no topo") },
+        { Style::Margin,   tr("Margem"),         tr("Só os títulos, com os números pendurados na margem") },
+        { Style::Aura,     tr("Aura"),           tr("A capa desfocada vira o fundo da gaveta") },
+        { Style::AuraClean, tr("Aura limpa"),    tr("A capa em destaque no topo, com o fundo do tema") },
+        { Style::Carousel, tr("Carrossel"),      tr("As capas da saga no topo; encolhem quando a lista rola") },
+        { Style::Bound,    tr("Encadernado"),    tr("As lombadas da saga na borda; a lista é a página") },
+        { Style::Fan,      tr("Leque"),          tr("As capas da saga em leque, como cartas na mão") },
+        { Style::Window,   tr("Janela"),         tr("A gaveta é a capa; a lista aparece por um recorte") },
+        { Style::ChapterSelect, tr("Seleção de capítulo"), tr("Como o menu de capítulos de um jogo: a arte do capítulo no topo") },
+        { Style::Album,    tr("Álbum de figurinhas"), tr("Cada parte é uma página do álbum; cada capítulo, uma figurinha") },
+        { Style::Playbill, tr("Programa da peça"), tr("Partes viram atos, o interlúdio vira intervalo, o elenco entra em ordem") },
         { Style::Classic,  tr("Clássico"),       tr("Lista de capítulos com o seletor de manuscrito em cima") },
         { Style::Rail,     tr("Trilho"),         tr("As capas dos livros num trilho; o aberto sobe pro topo") },
         { Style::Spines,   tr("Lombadas"),       tr("A saga como livros numa prateleira") },
@@ -1053,14 +1165,36 @@ void ManuscriptPanel::showStyleMenu() {
         { Style::Store,       tr("Página da loja"),    tr("O livro como na página de uma livraria: capa, números, sinopse e sumário") },
         { Style::Box,         tr("Box da saga"),       tr("Os livros da série num estojo; o aberto sai puxado pra fora") },
     };
-    for (const Opt& o : styles) {
-        QAction* a = menu.addAction(o.name);
-        a->setCheckable(true);
-        a->setChecked(o.s == m_style);
-        a->setToolTip(o.tip);
-        group->addAction(a);
-        const Style s = o.s;
-        connect(a, &QAction::triggered, this, [this, s]() { setStyle(s); });
+    // 29 estilos não cabem numa lista só: três grupos, e o nome do atual no título.
+    QString currentName;
+    for (const Opt& o : styles) if (o.s == m_style) currentName = o.name;
+    addHeading(tr("Estilo") + QStringLiteral(" · ") + currentName);
+    struct Group { QString title; QList<Style> members; };
+    const QList<Group> groups = {
+        { tr("Listas"), { Style::Classic, Style::Rail, Style::Toc, Style::Spine, Style::Margin, Style::Columns,
+                          Style::Drum, Style::Layers, Style::Command, Style::Grid, Style::Mosaic } },
+        { tr("Com a capa"), { Style::Spines, Style::Showcase, Style::TitlePage, Style::Reader, Style::Store, Style::Box,
+                              Style::Aura, Style::AuraClean, Style::Carousel, Style::Bound, Style::Fan, Style::Window } },
+        { tr("Temáticos"), { Style::Journey, Style::Illustrated, Style::Seasons, Style::ChapterSelect,
+                             Style::Album, Style::Playbill } },
+    };
+    for (const Group& g : groups) {
+        bool hasCurrent = false;
+        for (Style s : g.members) hasCurrent = hasCurrent || s == m_style;
+        QMenu* sub = menu.addMenu((hasCurrent ? QStringLiteral("● ") : QStringLiteral("   ")) + g.title);
+        sub->setStyleSheet(contextMenuQss());
+        sub->setToolTipsVisible(true);
+        for (Style s : g.members) {
+            for (const Opt& o : styles) {
+                if (o.s != s) continue;
+                QAction* a = sub->addAction(o.name);
+                a->setCheckable(true);
+                a->setChecked(o.s == m_style);
+                a->setToolTip(o.tip);
+                group->addAction(a);
+                connect(a, &QAction::triggered, this, [this, s]() { setStyle(s); });
+            }
+        }
     }
     menu.addSeparator();
     addHeading(tr("Ferramentas"));
@@ -1377,13 +1511,24 @@ void ManuscriptPanel::rebuildList() {
     rebuildTop();
     rebuildBody();
     rebuildBottom();
+    m_bgKey.clear();   // Aura/Janela: a capa pode ter mudado
+    update();
+    placeOverlays();
+    QTimer::singleShot(0, this, &ManuscriptPanel::placeOverlays);   // depois do layout assentar
 }
 
 void ManuscriptPanel::rebuildHeader() {
     const bool rail = (m_style == Style::Rail);
-    m_headerTitle->setVisible(rail);
-    m_combo->setVisible(!rail);
+    // Estilos que escolhem o livro no próprio desenho (trilho, capas,
+    // lombadas, migalha) não precisam do combo: fica só o rótulo.
+    const bool caption = isCaptionHeaderStyle();
+    m_headerTitle->setVisible(caption);
+    m_headerTitle->setText(m_style == Style::Window ? QString() : tr("Manuscritos").toUpper());
+    m_combo->setVisible(!caption);
     m_addMsBtn->setVisible(!rail);
+    applyHeaderStyles();
+    // Setas e Enter da Seleção de capítulo chegam pela gaveta.
+    setFocusPolicy(m_style == Style::ChapterSelect ? Qt::ClickFocus : Qt::NoFocus);
     const bool bigButton = (m_style == Style::Classic || m_style == Style::Spine
                             || m_style == Style::Illustrated);
     m_actionBar->setVisible(bigButton && m_model && !activeManuscriptId().isEmpty());
@@ -1411,10 +1556,47 @@ QPixmap coverPixmap(ProjectModel* model, const Manuscript& m, int number, QSize 
 }
 }
 
+// Pontes pros estilos novos (ManuscriptPanelStyles2.cpp), que não enxergam o
+// namespace anônimo deste arquivo.
+QPixmap ManuscriptPanel::bookCoverPixmap(const Manuscript& m, int number, QSize size) const {
+    return coverPixmap(m_model, m, number, size, devicePixelRatioF(), tr("Livro"));
+}
+
+QString ManuscriptPanel::contextMenuStyle() const { return contextMenuQss(); }
+
 void ManuscriptPanel::rebuildRail() {
     clearLayout(m_railLayout);
     const bool rail = (m_style == Style::Rail);
-    m_rail->setVisible(rail);
+    const bool bound = (m_style == Style::Bound);
+    m_rail->setVisible((rail || bound) && m_model);
+    if (bound && m_model) {
+        // Encadernado: as lombadas em pé ocupam o trilho inteiro.
+        m_railLayout->setContentsMargins(0, 0, 0, 0);
+        m_rail->setStyleSheet(QStringLiteral("#msRail { background: transparent; border: none; }"));
+        auto* stack = new MsSpineStack(m_rail);
+        QList<MsSpineStack::Spine> spines;
+        const auto& mss = m_model->manuscripts();
+        for (int i = 0; i < mss.size(); ++i) {
+            MsSpineStack::Spine sp;
+            sp.id = mss.at(i).id;
+            sp.title = mss.at(i).title.isEmpty() ? tr("(sem título)") : mss.at(i).title;
+            sp.number = i + 1;
+            sp.color = MsPaint::bookColor(sp.id);
+            spines << sp;
+        }
+        stack->setSpines(spines, activeManuscriptId(), tr("Novo manuscrito"));
+        m_rail->setFixedWidth(stack->preferredWidth());
+        connect(stack, &MsSpineStack::bookClicked, this, [this](const QString& id) { selectManuscript(id); });
+        connect(stack, &MsSpineStack::addClicked, this, &ManuscriptPanel::newManuscriptRequested);
+        connect(stack, &MsSpineStack::bookContextRequested, this, [this](const QString& id, const QPoint& pos) {
+            showManuscriptContextMenu(id, pos);
+        });
+        m_railLayout->addWidget(stack, 1);
+        return;
+    }
+    m_railLayout->setContentsMargins(8, 10, 8, 10);
+    m_rail->setFixedWidth(kRailW);
+    applyHeaderStyles();   // devolve o fio do trilho
     if (!rail || !m_model) return;
 
     const QString btnQss = Theme::qss(QStringLiteral(
@@ -1542,8 +1724,67 @@ QWidget* ManuscriptPanel::makeBookBlock(bool withCover) {
 void ManuscriptPanel::rebuildTop() {
     clearLayout(m_topLayout);
     m_rhythmTip = nullptr;
+    m_hero = nullptr;
+    m_checkpoints = nullptr;
+    m_heroGo = nullptr;
+    m_drum = nullptr;
+    m_cmdEdit = nullptr;
+    m_topLayout->setContentsMargins(12, 10, 12, 4);
+    m_topLayout->setSpacing(10);
+    m_top->setMinimumHeight(0);
+    m_top->setMaximumHeight(QWIDGETSIZE_MAX);
+    // Janela: a lista fica recuada dentro do recorte da capa.
+    if (m_columnLayout) {
+        if (m_style == Style::Window) m_columnLayout->setContentsMargins(18, 0, 18, 0);
+        else m_columnLayout->setContentsMargins(0, 0, 0, 0);
+    }
     if (!m_model) { m_top->hide(); return; }
     const QList<Chapter> chs = readingChapters();
+
+    switch (m_style) {
+    case Style::ChapterSelect: buildChapterSelectTop(); break;
+    case Style::Album:         buildAlbumTop(); break;
+    case Style::Drum:          buildDrumTop(); break;
+    case Style::Layers:        buildLayersTop(); break;
+    case Style::Command:       buildCommandTop(); break;
+    case Style::Aura:
+    case Style::AuraClean:
+        if (QWidget* w = makeCoverBlock(true, m_style == Style::Aura ? auraInk() : themeInk())) m_topLayout->addWidget(w);
+        break;
+    case Style::Bound:
+        if (QWidget* w = makeCoverBlock(false, themeInk())) m_topLayout->addWidget(w);
+        break;
+    case Style::Fan: {
+        const Manuscript* m = m_model->findManuscript(activeManuscriptId());
+        if (!m) break;
+        auto* w = new QWidget(m_top);
+        auto* l = new QVBoxLayout(w);
+        l->setContentsMargins(2, 2, 2, 0);
+        l->setSpacing(3);
+        auto* t = new QLabel(m->title.isEmpty() ? tr("(sem título)") : m->title, w);
+        t->setWordWrap(true);
+        QFont tf(MsFonts::cormorant());
+        tf.setPixelSize(22); tf.setItalic(true); tf.setWeight(QFont::DemiBold);
+        t->setFont(tf);
+        t->setStyleSheet(QStringLiteral("color: %1; background: transparent;").arg(Theme::textBright()));
+        l->addWidget(t);
+        l->addWidget(mutedLabel(tr("livro %1 de %2 · %n capítulo(s)", "", chs.size())
+            .arg(activeBookNumber()).arg(m_model->manuscripts().size())
+            + QStringLiteral(" · ") + tr("%1 palavras").arg(MsPaint::fmtInt(m_wordCounter ? m_wordCounter->countManuscript(m->id) : 0)), w, 11));
+        m_topLayout->addWidget(w);
+        break;
+    }
+    case Style::Window: {
+        // Espaço vazio: é onde aparecem o título e a arte da capa.
+        auto* spacer = new QWidget(m_top);
+        spacer->setAttribute(Qt::WA_TransparentForMouseEvents);
+        m_topLayout->setContentsMargins(0, 0, 0, 0);
+        m_topLayout->addWidget(spacer);
+        m_top->setFixedHeight(qMax(80, int(height() * 0.30)));
+        break;
+    }
+    default: break;
+    }
 
     if (m_style == Style::Rail) {
         if (QWidget* b = makeBookBlock(true)) m_topLayout->addWidget(b);
@@ -1891,14 +2132,21 @@ void ManuscriptPanel::rebuildBody() {
         if (auto* w = item->widget()) { w->hide(); w->deleteLater(); }
         delete item;
     }
+    if (m_side) m_side->setVisible(false);
+    if (m_carouselMini) m_carouselMini->hide();
     if (!m_model) return;
     const QString msId = activeManuscriptId();
     const QList<Chapter> reading = readingChapters();
+    const bool leva = (m_style >= Style::ChapterSelect);   // levas 6 a 8
     const bool newStyle = (m_style == Style::TitlePage || m_style == Style::Reader || m_style == Style::Illustrated
-                           || m_style == Style::Seasons || m_style == Style::Store || m_style == Style::Box);
+                           || m_style == Style::Seasons || m_style == Style::Store || m_style == Style::Box || leva);
+    // Colunas, Tambor, Aura, Encadernado e Janela têm o "novo capítulo" no rodapé.
+    const bool footerAdd = (m_style == Style::Columns || m_style == Style::Drum || m_style == Style::Aura
+                            || m_style == Style::AuraClean || m_style == Style::Bound || m_style == Style::Window
+                            || m_style == Style::Layers);
     const bool compactAdd = (m_style == Style::Spines || m_style == Style::Showcase || m_style == Style::Toc
                              || m_style == Style::Grid || m_style == Style::Mosaic || m_style == Style::Journey
-                             || (newStyle && m_style != Style::Illustrated));
+                             || (newStyle && m_style != Style::Illustrated && !footerAdd));
     auto add = [this](QWidget* w) { m_listLayout->insertWidget(m_listLayout->count() - 1, w); };
 
     // Folha de rosto e Página da loja: a cabeça do livro rola junto com a lista.
@@ -1918,9 +2166,12 @@ void ManuscriptPanel::rebuildBody() {
         return;
     }
 
+    // Carrossel: as capas rolam junto com a lista (e encolhem numa faixa).
+    if (m_style == Style::Carousel) buildCarouselHead();
+
     // Ferramentas no começo da lista: rolam junto com os capítulos, senão com
     // várias ligadas o topo espremeria a lista.
-    {
+    if (toolsAllowed()) {
         auto* tools = new QWidget(this);
         auto* tl = new QVBoxLayout(tools);
         tl->setContentsMargins(4, 2, 4, 10);
@@ -1955,6 +2206,20 @@ void ManuscriptPanel::rebuildBody() {
         case Style::Seasons:     buildSeasonsView(chs); break;
         case Style::Store:       buildStoreView(chs); break;
         case Style::Box:         buildBoxView(chs); break;
+        case Style::ChapterSelect: buildChapterSelectView(chs); break;
+        case Style::Album:       buildAlbumView(chs); break;
+        case Style::Playbill:    buildPlaybillView(chs); break;
+        case Style::Columns:     buildColumnsView(chs); break;
+        case Style::Drum:        buildDrumView(); break;
+        case Style::Layers:      buildLayersView(); break;
+        case Style::Command:     buildCommandView(); break;
+        case Style::Margin:      buildMarginView(chs); break;
+        case Style::Aura:        buildSimpleList(chs, auraInk()); break;
+        case Style::Window:      buildSimpleList(chs, paperInk()); break;
+        case Style::AuraClean:
+        case Style::Carousel:
+        case Style::Bound:
+        case Style::Fan:         buildSimpleList(chs, themeInk()); break;
         }
     }
     if (partsActive() && m_style != Style::Mosaic && m_style != Style::Journey && !newStyle && reading.size() > 1)
@@ -1980,6 +2245,7 @@ QWidget* ManuscriptPanel::makeAddRow(const QString& text, const QString& kind) {
     row->installEventFilter(this);
     connect(row, &QToolButton::clicked, this, [this, kind, row]() {
         if (kind == QStringLiteral("addChapter")) emit newChapterRequested(activeManuscriptId());
+        else if (kind == QStringLiteral("addBook")) emit newManuscriptRequested();
         else askNewPart(row->mapToGlobal(QPoint(0, row->height())));
     });
     return row;
@@ -2834,6 +3100,9 @@ void ManuscriptPanel::rebuildBottom() {
     if (!m_model) { m_bottom->hide(); return; }
     const QList<Chapter> reading = readingChapters();
     const QString msId = activeManuscriptId();
+    m_bottomLayout->setContentsMargins(12, 6, 12, 10);
+    m_drumCount = nullptr;
+    buildBottomNew();   // rodapés das levas 6 a 8 (novo capítulo, teclas, leque, setas)
 
     // Mosaico: o detalhe do capítulo aberto (ou do primeiro).
     if (m_style == Style::Mosaic && !reading.isEmpty()) {
@@ -3025,8 +3294,14 @@ void ManuscriptPanel::showManuscriptContextMenu(const QString& manuscriptId, con
         emit previewEreaderRequested(manuscriptId);
     });
 
-    // Cor da lombada / da capa gerada (Lombadas, Vitrine, Trilho).
-    auto* colorAct = menu.addAction(tr("Cor do livro…"));
+    // Cor da lombada / da capa gerada (Lombadas, Vitrine, Trilho). No
+    // Encadernado é o motivo do clique direito na lombada: vai pro topo.
+    auto* colorAct = menu.addAction(m_style == Style::Bound ? tr("Cor da lombada…") : tr("Cor do livro…"));
+    if (m_style == Style::Bound) {
+        menu.removeAction(colorAct);
+        menu.insertAction(renameAct, colorAct);
+        menu.insertSeparator(renameAct);
+    }
     connect(colorAct, &QAction::triggered, this, [this, manuscriptId]() {
         const QColor c = ColorPopover::getColor(MsPaint::bookColor(manuscriptId), this, tr("Cor do livro"));
         if (!c.isValid() || !m_model) return;
@@ -3311,6 +3586,56 @@ bool ManuscriptPanel::eventFilter(QObject* watched, QEvent* event) {
                 QSettings().setValue(QStringLiteral("ui/manuscriptPanel/height"), m_desiredHeight);
             m_resizeAxes = 0;
             rebuildList();
+            return true;
+        }
+    }
+    // Janela: o recorte na capa — sombra pra dentro nas bordas da lista.
+    if (watched == m_windowFrame && event->type() == QEvent::Paint) {
+        QPainter p(m_windowFrame);
+        p.setRenderHint(QPainter::Antialiasing);
+        const QRectF r = QRectF(m_windowFrame->rect()).adjusted(1, 1, -1, -1);
+        QPainterPath hole;
+        hole.addRoundedRect(r, 16, 16);
+        p.setClipPath(hole);
+        QLinearGradient top(0, r.top(), 0, r.top() + 14);
+        top.setColorAt(0, QColor(0, 0, 0, 90));
+        top.setColorAt(1, QColor(0, 0, 0, 0));
+        p.fillRect(QRectF(r.left(), r.top(), r.width(), 14), top);
+        QLinearGradient left(r.left(), 0, r.left() + 8, 0);
+        left.setColorAt(0, QColor(0, 0, 0, 45));
+        left.setColorAt(1, QColor(0, 0, 0, 0));
+        p.fillRect(QRectF(r.left(), r.top(), 8, r.height()), left);
+        p.setClipping(false);
+        p.setPen(QPen(QColor(0, 0, 0, 70), 1));
+        p.setBrush(Qt::NoBrush);
+        p.drawRoundedRect(r, 16, 16);
+        p.setPen(QPen(QColor(255, 255, 255, 30), 2));
+        p.drawRoundedRect(r.adjusted(-2, -2, 2, 2), 18, 18);
+        return true;
+    }
+    if (auto* pw = qobject_cast<QWidget*>(watched)) {
+        // Seleção de capítulo: passar o mouse num capítulo mostra a arte dele.
+        const QVariant prev = pw->property("previewChapterId");
+        if (prev.isValid()) {
+            if (event->type() == QEvent::Enter) {
+                ++m_previewGen;
+                setChapterPreview(prev.toString());
+            } else if (event->type() == QEvent::Leave) {
+                const int gen = ++m_previewGen;
+                QTimer::singleShot(90, this, [this, gen]() { if (gen == m_previewGen) setChapterPreview(QString()); });
+            }
+        }
+        // Colunas: clique escolhe, duplo clique abre.
+        if (event->type() == QEvent::MouseButtonDblClick && pw->property("dblOpen").toBool()) {
+            emit chapterActivated(activeManuscriptId(), pw->property("chapterId").toString());
+            return true;
+        }
+    }
+    if (watched == m_cmdEdit && event->type() == QEvent::KeyPress) {
+        const int key = static_cast<QKeyEvent*>(event)->key();
+        if (key == Qt::Key_Up || key == Qt::Key_Down || key == Qt::Key_Left || key == Qt::Key_Right
+            || key == Qt::Key_Return || key == Qt::Key_Enter || key == Qt::Key_Escape) {
+            commandKey(key);
             return true;
         }
     }

@@ -167,6 +167,14 @@ qt_add_executable(qenna-writer
     src/ManuscriptPanel.h
     src/ManuscriptViews.cpp
     src/ManuscriptViews.h
+    src/ManuscriptViews2.cpp
+    src/ManuscriptViews2.h
+    src/ManuscriptPanelStyles2.cpp
+    src/GlossaryIndex.cpp
+    src/GlossaryIndex.h
+    src/GlossaryInText.cpp
+    src/GlossaryInText.h
+    src/PensarioGlossary.cpp
     src/MsVignette.cpp
     src/MsVignette.h
     src/PanelMotion.cpp
@@ -389,6 +397,21 @@ qt_add_translations(qenna-writer
         translations/qenna_fr.ts
     SOURCE_TARGETS qenna-writer
 )
+
+# Traduções do próprio Qt (botões padrão como Fechar/Cancelar, menu de
+# copiar/colar dos campos): embutidas no binário, porque o instalador não
+# leva a pasta translations/ do Qt. Sem elas esses textos saem em inglês.
+get_target_property(_qt_qmake_for_tr Qt6::qmake IMPORTED_LOCATION)
+get_filename_component(_qt_tr_dir "${_qt_qmake_for_tr}/../../translations" ABSOLUTE)
+set(_qtbase_qms "")
+foreach(_l pt_BR es it fr)
+    if(EXISTS "${_qt_tr_dir}/qtbase_${_l}.qm")
+        list(APPEND _qtbase_qms "${_qt_tr_dir}/qtbase_${_l}.qm")
+    endif()
+endforeach()
+if(_qtbase_qms)
+    qt_add_resources(qenna-writer "qtbase_i18n" PREFIX "/i18n" BASE "${_qt_tr_dir}" FILES ${_qtbase_qms})
+endif()
 
 target_link_libraries(qenna-writer PRIVATE
     Qt6::Core

@@ -55,11 +55,8 @@
         <file alias="themes/duplicate.png">../src/assets/help/themes/duplicate.png</file>
         <file alias="themes/theme-editor.png">../src/assets/help/themes/theme-editor.png</file>
         <file alias="themes/time-change.png">../src/assets/help/themes/time-change.png</file>
-        <file alias="construtor/system-creator.png">../src/assets/help/construtor/system-creator.png</file>
-        <file alias="construtor/soft-hard.png">../src/assets/help/construtor/soft-hard.png</file>
-        <file alias="construtor/sections-rules.png">../src/assets/help/construtor/sections-rules.png</file>
-        <file alias="construtor/text-editor.png">../src/assets/help/construtor/text-editor.png</file>
-        <file alias="construtor/mention.png">../src/assets/help/construtor/mention.png</file>
+        <file alias="construtor/sistema.png">../src/assets/help/construtor/sistema.png</file>
+        <file alias="construtor/territorio.png">../src/assets/help/construtor/territorio.png</file>
         <file alias="pensario/panel.png">../src/assets/help/pensario/panel.png</file>
         <file alias="pensario/create-note-1.png">../src/assets/help/pensario/create-note-1.png</file>
         <file alias="pensario/create-note-2.png">../src/assets/help/pensario/create-note-2.png</file>
@@ -75,8 +72,9 @@
         <file alias="mapa-mundi/panel.png">../src/assets/help/mapa-mundi/panel.png</file>
         <file alias="mapa-mundi/no-texture.png">../src/assets/help/mapa-mundi/no-texture.png</file>
         <file alias="mapa-mundi/pin.png">../src/assets/help/mapa-mundi/pin.png</file>
-        <file alias="glossario/panel.png">../src/assets/help/glossario/panel.png</file>
-        <file alias="glossario/add.png">../src/assets/help/glossario/add.png</file>
+        <file alias="glossario/aba.png">../src/assets/help/glossario/aba.png</file>
+        <file alias="glossario/adicionar.png">../src/assets/help/glossario/adicionar.png</file>
+        <file alias="glossario/no-texto.png">../src/assets/help/glossario/no-texto.png</file>
         <file alias="estatisticas/topbar-button.png">../src/assets/help/estatisticas/topbar-button.png</file>
         <file alias="estatisticas/panel.png">../src/assets/help/estatisticas/panel.png</file>
         <file alias="estatisticas/char-panel.png">../src/assets/help/estatisticas/char-panel.png</file>

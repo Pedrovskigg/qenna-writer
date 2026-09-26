@@ -129,6 +129,13 @@ void GlobalSearchPanel::openPanel()
     m_input->selectAll();
 }
 
+void GlobalSearchPanel::openPanelWith(const QString& query)
+{
+    openPanel();
+    m_input->setText(query);   // dispara a busca como se tivesse sido digitado
+    m_input->end(false);
+}
+
 void GlobalSearchPanel::closePanel()
 {
     hide();

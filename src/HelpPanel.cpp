@@ -1,5 +1,6 @@
 #include "HelpPanel.h"
 #include "AnchorUtils.h"
+#include "IconUtils.h"
 
 #include "Theme.h"
 
@@ -21,6 +22,18 @@
 #include <QTextObjectInterface>
 #include <QUrl>
 #include <QVBoxLayout>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QScrollBar>
+#include <QSet>
+#include <QSettings>
+#include <QStyle>
+#include <QStyledItemDelegate>
+#include <QTextBlock>
+#include <QTextDocumentFragment>
+#include <QTimer>
+#include <QToolButton>
 
 namespace {
 
@@ -37,7 +50,19 @@ class SmoothImageHandler : public QObject, public QTextObjectInterface {
 public:
     explicit SmoothImageHandler(QObject* parent = nullptr) : QObject(parent) {}
 
-    QSizeF intrinsicSize(QTextDocument* /*doc*/, int /*pos*/, const QTextFormat& format) override {
+    // A largura pedida no <img> é o teto: se a coluna de texto for mais
+    // estreita (o padding global do QTextEdit come 200px), o print encolhe
+    // proporcionalmente em vez de ser cortado na borda direita.
+    QSizeF intrinsicSize(QTextDocument* doc, int pos, const QTextFormat& format) override {
+        QSizeF size = requestedSize(format);
+        const qreal avail = doc ? doc->textWidth() - 2 * doc->documentMargin() - 4 : -1;
+        Q_UNUSED(pos);
+        if (avail > 50 && size.width() > avail)
+            size = QSizeF(avail, size.height() * avail / size.width());
+        return size;
+    }
+
+    QSizeF requestedSize(const QTextFormat& format) {
         const QTextImageFormat fmt = format.toImageFormat();
         const bool hasW = fmt.hasProperty(QTextFormat::ImageWidth);
         const bool hasH = fmt.hasProperty(QTextFormat::ImageHeight);
@@ -92,12 +117,60 @@ public:
 };
 #include "HelpPanel.moc"
 
+
+// Item da lista de tópicos com o selo "NOVO" à direita (tópico que mudou na
+// versão atual e ainda não foi aberto).
+class HelpListDelegate : public QStyledItemDelegate {
+public:
+    static constexpr int NewRole = Qt::UserRole + 2;
+    using QStyledItemDelegate::QStyledItemDelegate;
+    void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override {
+        const bool isNew = idx.data(NewRole).toBool();
+        QStyleOptionViewItem o = opt;
+        if (isNew) o.rect.adjust(0, 0, -44, 0);
+        QStyledItemDelegate::paint(p, o, idx);
+        if (!isNew) return;
+        p->save();
+        p->setRenderHint(QPainter::Antialiasing, true);
+        QFont f = opt.font;
+        f.setPixelSize(9);
+        f.setBold(true);
+        f.setLetterSpacing(QFont::AbsoluteSpacing, 0.6);
+        p->setFont(f);
+        const QString text = QCoreApplication::translate("HelpPanel", "NOVO");
+        const int w = QFontMetrics(f).horizontalAdvance(text) + 12;
+        const QRectF pill(opt.rect.right() - w - 6, opt.rect.center().y() - 8, w, 16);
+        const QColor c = Theme::toColor(Theme::accentSuccess());
+        QColor border = c;
+        border.setAlphaF(0.6);
+        p->setPen(QPen(border, 1));
+        p->setBrush(Qt::NoBrush);
+        p->drawRoundedRect(pill, 8, 8);
+        p->setPen(c);
+        p->drawText(pill, Qt::AlignCenter, text);
+        p->restore();
+    }
+};
+
+// Sem acento e em minúsculas, pra "memoria" achar "Memória".
+QString foldForSearch(const QString& s)
+{
+    const QString d = s.normalized(QString::NormalizationForm_D);
+    QString out;
+    out.reserve(d.size());
+    for (const QChar c : d)
+        if (c.category() != QChar::Mark_NonSpacing) out.append(c.toLower());
+    return out;
+}
+
 constexpr int kPanelWidth = 980;
 constexpr int kPanelHeight = 640;
 constexpr int kMinWidth = 760;
 constexpr int kMinHeight = 480;
 constexpr int kGapBelowAnchor = 6;
-constexpr int kSidebarWidth = 205;
+constexpr int kSidebarWidth = 212;
+constexpr int kRailWidth = 54;
+constexpr int kTocWidth = 190;
 constexpr int kThumbWidth = 480;
 // Larguras de exibição das screenshots — aumentadas propositalmente acima da
 // resolução nativa de várias delas (leve upscale) porque a qualidade das
@@ -150,11 +223,8 @@ constexpr int kMarkerPlainThumbWidth        = 400; // nativo 387
 constexpr int kMemoryCreationMenuThumbWidth = 480; // nativo 446
 constexpr int kMemoryCreationDialogThumbWidth = 380; // nativo 338
 constexpr int kMemoryPensarioTabThumbWidth  = 420; // nativo 395
-constexpr int kBuilderSystemCreatorThumbWidth = 680; // nativo 908
-constexpr int kBuilderSoftHardThumbWidth    = 320; // nativo 251, recorte alto (251x813)
-constexpr int kBuilderSectionsRulesThumbWidth = 420; // nativo 260
-constexpr int kBuilderTextEditorThumbWidth  = 720; // nativo 1357
-constexpr int kBuilderMentionThumbWidth     = 480; // nativo 327
+constexpr int kBuilderSystemThumbWidth    = 720; // nativo 1400
+constexpr int kBuilderTerritoryThumbWidth = 720; // nativo 1400
 constexpr int kPensarioPanelThumbWidth      = 420; // nativo 376
 constexpr int kPensarioCreateNote1ThumbWidth = 420; // nativo 377
 constexpr int kPensarioCreateNote2ThumbWidth = 400; // nativo 352
@@ -166,8 +236,9 @@ constexpr int kBondDisplayThumbWidth  = 380; // nativo 365, recorte alto (365x71
 constexpr int kMapPanelThumbWidth     = 700; // nativo 798
 constexpr int kMapNoTextureThumbWidth = 680; // nativo 710
 constexpr int kMapPinThumbWidth       = 480; // nativo 511
-constexpr int kGlossaryPanelThumbWidth = 520; // nativo 542
-constexpr int kGlossaryAddThumbWidth  = 400; // nativo 430 (agora mostra o botão no header do Pensário)
+constexpr int kGlossaryTabThumbWidth    = 320; // nativo 380, recorte alto (380x560)
+constexpr int kGlossaryAddThumbWidth    = 360; // nativo 372
+constexpr int kGlossaryInTextThumbWidth = 620; // nativo 720 (ficha montada por cima)
 constexpr int kStatsTopbarButtonThumbWidth = 460; // nativo 507
 constexpr int kStatsPanelThumbWidth = 480; // nativo 555, recorte alto (555x937)
 constexpr int kStatsCharPanelThumbWidth = 470; // nativo 546, recorte alto (546x918)
@@ -196,18 +267,22 @@ HelpPanel::HelpPanel(QWidget* parent)
     buildUi();
     applyTheme();
 
-    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
-            this, &HelpPanel::applyTheme);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, [this]() {
+        applyTheme();
+        refreshRailIcons();
+        updateContent();   // as cores do título e dos passos vêm do tema
+    });
 
-    rebuildList();
-    updateContent();
+    // Abre no último tópico lido (ou em "Comece aqui").
+    QString last = QSettings().value(QStringLiteral("help/lastTopic"), QStringLiteral("comece-aqui")).toString();
+    if (groupOf(last) < 0) last = QStringLiteral("comece-aqui");
+    selectTopic(last);
 
     hide();
 }
 
-// Estrutura de tópicos herdada do Help Panel do Mira 1 — os rótulos vêm de
-// lá, o conteúdo (contentFor) ainda não: será reescrito do zero, mais
-// detalhado e com screenshots, nesta versão.
+// Tópicos e grupos. Os rótulos vêm do Mira 1; a ordem dentro dos grupos é a
+// de quem está aprendendo (primeiro o que se usa todo dia).
 void HelpPanel::buildTopics()
 {
     m_topics = {
@@ -225,7 +300,7 @@ void HelpPanel::buildTopics()
         { QStringLiteral("memorias"), tr("Memórias") },
         { QStringLiteral("criar-documentos"), tr("Criar Documentos a partir do texto ou comentários") },
         { QStringLiteral("funcao-temas"), tr("Função de Temas") },
-        { QStringLiteral("construtor"), tr("Construtor") },
+        { QStringLiteral("construtor"), tr("Criador de Mundos") },
         { QStringLiteral("pensario"), tr("Pensário") },
         { QStringLiteral("estatisticas"), tr("Estatísticas") },
         { QStringLiteral("vinculos"), tr("Vínculos") },
@@ -235,6 +310,22 @@ void HelpPanel::buildTopics()
         { QStringLiteral("lembretes"), tr("Lembretes") },
         { QStringLiteral("variacao-cenas"), tr("Variação de cenas") },
     };
+    m_groups = {
+        { tr("Começo"),    QStringLiteral(":/icons/home.svg"),
+          { QStringLiteral("comece-aqui"), QStringLiteral("atalhos-teclado") } },
+        { tr("Escrever"),  QStringLiteral(":/icons/edit.svg"),
+          { QStringLiteral("editor"), QStringLiteral("manuscritos"), QStringLiteral("variacao-cenas"),
+            QStringLiteral("meta-diaria-contador"), QStringLiteral("marcadores"), QStringLiteral("som-imersivo"),
+            QStringLiteral("lembretes") } },
+        { tr("Organizar"), QStringLiteral(":/icons/pensario.svg"),
+          { QStringLiteral("pensario"), QStringLiteral("memorias"), QStringLiteral("glossario"),
+            QStringLiteral("estatisticas"), QStringLiteral("funcao-timeline"), QStringLiteral("criar-documentos") } },
+        { tr("Mundo"),     QStringLiteral(":/icons/worldmap.svg"),
+          { QStringLiteral("gavetas"), QStringLiteral("construtor"), QStringLiteral("vinculos"),
+            QStringLiteral("mapa-mundi"), QStringLiteral("menu-referencia") } },
+        { tr("Publicar"),  QStringLiteral(":/icons/ereader.svg"),
+          { QStringLiteral("exportacao"), QStringLiteral("criar-capas"), QStringLiteral("funcao-temas") } },
+    };
 }
 
 void HelpPanel::buildUi()
@@ -243,36 +334,68 @@ void HelpPanel::buildUi()
     root->setContentsMargins(0, 0, 0, 0);
     root->setSpacing(0);
 
-    auto* sidebar = new QWidget(this);
-    sidebar->setObjectName(QStringLiteral("helpSidebar"));
-    sidebar->setFixedWidth(kSidebarWidth);
-    auto* sideLayout = new QVBoxLayout(sidebar);
-    sideLayout->setContentsMargins(10, 12, 6, 12);
-    sideLayout->setSpacing(6);
+    // Trilho: os grupos e, embaixo, a busca.
+    auto* rail = new QWidget(this);
+    rail->setObjectName(QStringLiteral("helpRail"));
+    rail->setFixedWidth(kRailWidth);
+    auto* railLay = new QVBoxLayout(rail);
+    railLay->setContentsMargins(8, 12, 8, 12);
+    railLay->setSpacing(6);
+    for (int g = 0; g < m_groups.size(); ++g) {
+        auto* b = new QToolButton(rail);
+        b->setObjectName(QStringLiteral("helpRailBtn"));
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setToolTip(m_groups.at(g).label);
+        b->setFixedSize(38, 38);
+        b->setIconSize(QSize(18, 18));
+        connect(b, &QToolButton::clicked, this, [this, g]() { selectGroup(g); });
+        railLay->addWidget(b, 0, Qt::AlignHCenter);
+        m_railButtons << b;
+    }
+    railLay->addStretch(1);
+    m_searchButton = new QToolButton(rail);
+    m_searchButton->setObjectName(QStringLiteral("helpRailBtn"));
+    m_searchButton->setCheckable(true);
+    m_searchButton->setCursor(Qt::PointingHandCursor);
+    m_searchButton->setToolTip(tr("Buscar na Ajuda"));
+    m_searchButton->setFixedSize(38, 38);
+    m_searchButton->setIconSize(QSize(18, 18));
+    connect(m_searchButton, &QToolButton::clicked, this, [this]() { setSearchMode(!m_searchMode); });
+    railLay->addWidget(m_searchButton, 0, Qt::AlignHCenter);
+    refreshRailIcons();
+    root->addWidget(rail);
 
-    m_sidebarTitle = new QLabel(tr("Ajuda"), sidebar);
-    m_sidebarTitle->setObjectName(QStringLiteral("helpSidebarTitle"));
-    sideLayout->addWidget(m_sidebarTitle);
-
-    m_list = new QListWidget(sidebar);
+    // Lista do grupo (ou resultados da busca).
+    auto* side = new QWidget(this);
+    side->setObjectName(QStringLiteral("helpSidebar"));
+    side->setFixedWidth(kSidebarWidth);
+    auto* sideLay = new QVBoxLayout(side);
+    sideLay->setContentsMargins(8, 12, 8, 12);
+    sideLay->setSpacing(6);
+    m_listTitle = new QLabel(side);
+    m_listTitle->setObjectName(QStringLiteral("helpListTitle"));
+    m_listTitle->setContentsMargins(8, 4, 0, 4);
+    sideLay->addWidget(m_listTitle);
+    m_searchEdit = new QLineEdit(side);
+    m_searchEdit->setObjectName(QStringLiteral("helpSearch"));
+    m_searchEdit->setPlaceholderText(tr("O que você quer fazer?"));
+    m_searchEdit->setClearButtonEnabled(true);
+    m_searchEdit->hide();
+    connect(m_searchEdit, &QLineEdit::textChanged, this, [this]() { runSearch(); });
+    sideLay->addWidget(m_searchEdit);
+    m_list = new QListWidget(side);
     m_list->setObjectName(QStringLiteral("helpList"));
     m_list->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     m_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_list->setWordWrap(true);
+    m_list->setItemDelegate(new HelpListDelegate(m_list));
     connect(m_list, &QListWidget::currentItemChanged,
             this, [this](QListWidgetItem*, QListWidgetItem*) { onTopicSelected(); });
-    sideLayout->addWidget(m_list, 1);
+    sideLay->addWidget(m_list, 1);
+    root->addWidget(side);
 
-    root->addWidget(sidebar);
-
-    auto* right = new QVBoxLayout();
-    right->setContentsMargins(12, 10, 10, 10);
-    right->setSpacing(6);
-
-    m_contentTitle = new QLabel(this);
-    m_contentTitle->setObjectName(QStringLiteral("helpContentTitle"));
-    right->addWidget(m_contentTitle);
-
+    // Texto do tópico, numa coluna de leitura.
     m_content = new QTextBrowser(this);
     m_content->setObjectName(QStringLiteral("helpContent"));
     m_content->setOpenExternalLinks(false);
@@ -280,61 +403,220 @@ void HelpPanel::buildUi()
     m_content->setFrameShape(QFrame::NoFrame);
     m_content->setLineWrapMode(QTextEdit::WidgetWidth);
     m_content->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    m_content->document()->setDocumentMargin(30);
     m_content->document()->documentLayout()->registerHandler(
         QTextFormat::ImageObject, new SmoothImageHandler(m_content));
     connect(m_content, &QTextBrowser::anchorClicked, this, &HelpPanel::onAnchorClicked);
-    right->addWidget(m_content, 1);
+    connect(m_content->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() { updateTocHighlight(); });
+    root->addWidget(m_content, 1);
 
-    root->addLayout(right, 1);
+    // "Neste tópico": os passos numerados do tópico, na margem.
+    m_tocPanel = new QWidget(this);
+    m_tocPanel->setObjectName(QStringLiteral("helpToc"));
+    m_tocPanel->setFixedWidth(kTocWidth);
+    m_tocLayout = new QVBoxLayout(m_tocPanel);
+    m_tocLayout->setContentsMargins(4, 30, 16, 16);
+    m_tocLayout->setSpacing(0);
+    root->addWidget(m_tocPanel);
+}
+
+void HelpPanel::refreshRailIcons()
+{
+    const QColor muted = Theme::toColor(Theme::textMuted());
+    const QColor bright = Theme::toColor(Theme::textBright());
+    for (int g = 0; g < m_railButtons.size(); ++g)
+        m_railButtons.at(g)->setIcon(IconUtils::loadToolbarIcon(m_groups.at(g).icon, muted, bright, bright, QSize(18, 18)));
+    if (m_searchButton)
+        m_searchButton->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/search.svg"), muted, bright, bright, QSize(18, 18)));
 }
 
 void HelpPanel::applyTheme()
 {
     setStyleSheet(Theme::qss(QStringLiteral(
-        "QFrame#helpPanel {"
-        "  background: %1;"
-        "}"
-        "QWidget#helpSidebar {"
-        "  background: %6; border-right: 1px solid %2;"
-        "}"
-        "QLabel#helpSidebarTitle { color: %3; font-size: 13px; font-weight: 600; }"
-        "QLabel#helpContentTitle { color: %3; font-size: 16px; font-weight: 600; }"
-        "QListWidget#helpList {"
-        "  background: transparent; color: %4;"
-        "  border: none; outline: 0;"
-        "}"
+        "QFrame#helpPanel { background: %1; }"
+        "QWidget#helpRail { background: %6; border-right: 1px solid %2; }"
+        "QToolButton#helpRailBtn { background: transparent; border: none; border-radius: @radius-item; }"
+        "QToolButton#helpRailBtn:hover { background: %5; }"
+        "QToolButton#helpRailBtn:checked { background: %7; border-left: 3px solid %8; }"
+        "QWidget#helpSidebar { background: %1; border-right: 1px solid %2; }"
+        "QLabel#helpListTitle { color: %4; font-size: 10px; font-weight: bold; letter-spacing: 1px; }"
+        "QLineEdit#helpSearch { background: %9; color: %3; border: 1px solid %2; border-radius: @radius-control; padding: 6px 8px; font-size: 12.5px; }"
+        "QListWidget#helpList { background: transparent; color: %3; border: none; outline: 0; font-size: 13px; }"
         "QListWidget#helpList::item { padding: 7px 8px; border-radius: @radius-item; }"
-        "QListWidget#helpList::item:hover { background: %5; color: %3; }"
+        "QListWidget#helpList::item:hover { background: %5; }"
         "QListWidget#helpList::item:selected { background: %7; color: %3; }"
-        "QTextBrowser#helpContent {"
-        "  background: transparent; color: %3;"
-        "  border: none; font-size: 14.5px;"
-        "}"
-    ).arg(Theme::panelBackground(),
-          Theme::panelBorder(),
-          Theme::textPrimary(),
-          Theme::textMuted(),
-          Theme::hoverOverlay(),
-          Theme::editorBackground(),
-          Theme::pressedOverlay())));
+        // padding 0: o QTextEdit global tem 80/100px de padding (é do editor).
+        "QTextBrowser#helpContent { background: transparent; color: %3; border: none; padding: 0; font-size: 14px; }"
+        "QWidget#helpToc { background: transparent; }"
+        "QLabel#helpTocTitle { color: %4; font-size: 10px; font-weight: bold; letter-spacing: 1px; padding: 0 0 8px 0; }"
+        "QPushButton#helpTocItem { text-align: left; background: transparent; color: %4; border: none;"
+        "  border-left: 2px solid %2; padding: 4px 0 4px 10px; font-size: 12px; }"
+        "QPushButton#helpTocItem:hover { color: %3; }"
+        "QPushButton#helpTocItem[current=\"true\"] { color: %3; border-left: 2px solid %8; }"
+    ).arg(Theme::panelBackground(),   // 1
+          Theme::subtleBorder(),      // 2
+          Theme::textPrimary(),       // 3
+          Theme::textMuted(),         // 4
+          Theme::hoverOverlay(),      // 5
+          Theme::appBackground(),     // 6
+          Theme::accentInfoSoft(),    // 7
+          Theme::accentDefault(),     // 8
+          Theme::inputBackground())));// 9
+}
+
+int HelpPanel::groupOf(const QString& id) const
+{
+    for (int g = 0; g < m_groups.size(); ++g)
+        if (m_groups.at(g).topicIds.contains(id)) return g;
+    return -1;
+}
+
+QString HelpPanel::labelOf(const QString& id) const
+{
+    for (const Topic& t : m_topics)
+        if (t.id == id) return t.label;
+    return QString();
+}
+
+// Tópicos reescritos na versão atual ganham "NOVO" na lista até serem abertos.
+bool HelpPanel::isNew(const QString& id) const
+{
+    static const QHash<QString, QString> changed = {
+        { QStringLiteral("glossario"),  QStringLiteral("0.18.1") },
+        { QStringLiteral("construtor"), QStringLiteral("0.18.1") },
+    };
+    const QString v = changed.value(id);
+    return !v.isEmpty() && QSettings().value(QStringLiteral("help/seen/") + id).toString() != v;
 }
 
 void HelpPanel::rebuildList()
 {
     if (!m_list) return;
+    m_filling = true;
     m_list->clear();
-    for (const Topic& t : m_topics) {
-        auto* item = new QListWidgetItem(t.label, m_list);
-        item->setData(Qt::UserRole, t.id);
+    const Group& g = m_groups.at(m_group);
+    m_listTitle->setText(g.label.toUpper());
+    for (const QString& id : g.topicIds) {
+        auto* item = new QListWidgetItem(labelOf(id), m_list);
+        item->setData(Qt::UserRole, id);
+        item->setData(Qt::UserRole + 1, -1);
+        item->setData(HelpListDelegate::NewRole, isNew(id));
+        if (id == m_selectedId) m_list->setCurrentItem(item);
     }
-    if (m_list->count() > 0) m_list->setCurrentRow(0);
+    m_filling = false;
+}
+
+void HelpPanel::selectGroup(int group)
+{
+    if (group < 0 || group >= m_groups.size()) return;
+    // Trocar de grupo abre o primeiro tópico dele.
+    selectTopic(m_groups.at(group).topicIds.value(0));
+}
+
+void HelpPanel::selectTopic(const QString& id, int step)
+{
+    const int g = groupOf(id);
+    if (g < 0) return;
+    const bool fromSearch = m_searchMode;
+    if (!fromSearch) {
+        m_group = g;
+        for (int i = 0; i < m_railButtons.size(); ++i) m_railButtons.at(i)->setChecked(i == g);
+    }
+    m_selectedId = id;
+    QSettings().setValue(QStringLiteral("help/lastTopic"), id);
+    if (!fromSearch) rebuildList();
+    updateContent();
+    if (isNew(id)) {
+        // Abriu: tira o "NOVO" (grava a versão em que o tópico mudou).
+        QSettings().setValue(QStringLiteral("help/seen/") + id, QStringLiteral("0.18.1"));
+        for (int i = 0; i < m_list->count(); ++i)
+            if (m_list->item(i)->data(Qt::UserRole).toString() == id)
+                m_list->item(i)->setData(HelpListDelegate::NewRole, false);
+    }
+    if (step >= 0) {
+        // O layout do documento só existe depois do setHtml assentar.
+        QTimer::singleShot(0, this, [this, step]() {
+            m_content->scrollToAnchor(QStringLiteral("step-%1").arg(step + 1));
+        });
+    }
 }
 
 void HelpPanel::onTopicSelected()
 {
+    if (m_filling) return;
     auto* item = m_list ? m_list->currentItem() : nullptr;
-    m_selectedId = item ? item->data(Qt::UserRole).toString() : QString();
-    updateContent();
+    if (!item) return;
+    const QString id = item->data(Qt::UserRole).toString();
+    const int step = item->data(Qt::UserRole + 1).toInt();
+    if (id == m_selectedId && step < 0) return;
+    selectTopic(id, step);
+}
+
+void HelpPanel::setSearchMode(bool on)
+{
+    m_searchMode = on;
+    m_searchButton->setChecked(on);
+    m_searchEdit->setVisible(on);
+    for (int i = 0; i < m_railButtons.size(); ++i) m_railButtons.at(i)->setChecked(!on && i == m_group);
+    if (on) {
+        m_listTitle->setText(tr("BUSCAR"));
+        m_searchEdit->setFocus();
+        runSearch();
+    } else {
+        const QSignalBlocker block(m_searchEdit);
+        m_searchEdit->clear();
+        m_group = qMax(0, groupOf(m_selectedId));
+        for (int i = 0; i < m_railButtons.size(); ++i) m_railButtons.at(i)->setChecked(i == m_group);
+        rebuildList();
+    }
+}
+
+// Busca no texto inteiro dos tópicos (não só nos títulos). Cada resultado é
+// um tópico, com o passo em que a palavra aparece primeiro.
+void HelpPanel::runSearch()
+{
+    if (m_searchIndex.isEmpty()) {
+        for (const Topic& t : m_topics) {
+            QStringList steps;
+            const QString html = decorate(t.id, contentFor(t.id), &steps);
+            // Corta o HTML nas âncoras dos passos: antes da primeira é a introdução.
+            static const QRegularExpression anchorRe(QStringLiteral("<a name=\"step-(\\d+)\"></a>"));
+            int last = 0, lastStep = -1;
+            auto push = [&](int end) {
+                const QString plain = QTextDocumentFragment::fromHtml(html.mid(last, end - last)).toPlainText();
+                m_searchIndex.append({ t.id, lastStep, lastStep >= 0 ? steps.value(lastStep) : QString(),
+                                       foldForSearch(t.label + QLatin1Char(' ') + plain) });
+            };
+            auto it = anchorRe.globalMatch(html);
+            while (it.hasNext()) {
+                const auto m = it.next();
+                push(m.capturedStart());
+                last = m.capturedStart();
+                lastStep = m.captured(1).toInt() - 1;
+            }
+            push(html.size());
+        }
+    }
+    m_filling = true;
+    m_list->clear();
+    const QString q = foldForSearch(m_searchEdit->text().trimmed());
+    if (q.size() >= 2) {
+        QSet<QString> seen;
+        for (const SearchChunk& c : std::as_const(m_searchIndex)) {
+            if (seen.contains(c.topicId) || !c.folded.contains(q)) continue;
+            seen.insert(c.topicId);
+            const QString text = c.step >= 0
+                ? QStringLiteral("%1\n%2. %3").arg(labelOf(c.topicId)).arg(c.step + 1).arg(c.stepTitle)
+                : labelOf(c.topicId);
+            auto* item = new QListWidgetItem(text, m_list);
+            item->setData(Qt::UserRole, c.topicId);
+            item->setData(Qt::UserRole + 1, c.step);
+        }
+        m_listTitle->setText(seen.isEmpty() ? tr("NADA ENCONTRADO") : tr("%n TÓPICO(S)", "", int(seen.size())));
+    } else {
+        m_listTitle->setText(tr("BUSCAR"));
+    }
+    m_filling = false;
 }
 
 QString HelpPanel::contentFor(const QString& id) const
@@ -735,7 +1017,7 @@ QString HelpPanel::editorContent() const
         "espaço antes e depois do parágrafo."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "O botão Alinhamento tem um extra: \"Aplicar em\" (só esse doc / todos / manuscrito / "
-        "gavetas). Isso é diferente de Configurações → Página de escrita, que mexe no tamanho "
+        "gavetas). Isso é diferente de Configurações → Escrita, que mexe no tamanho "
         "da folha e margens (visual do app, não do texto)."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
@@ -1507,7 +1789,7 @@ QString HelpPanel::timelineContent() const
         "Se o seu projeto é de antes da Timeline orgânica existir, provavelmente boa parte dos "
         "seus capítulos e cenas não tem marcador nem resumo preenchido — e sem isso, nenhum "
         "evento é gerado. Em vez de abrir capítulo por capítulo só pra preencher esses dois "
-        "campos, vá em Configurações → \"Abrir Gerador de Timeline…\"."));
+        "campos, vá em Configurações → Timeline → Gerador de Timeline."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "Ele lista todos os capítulos e cenas de um manuscrito de uma vez, com um campo de "
         "marcador e um de resumo por linha, e salva tudo em lote ao clicar em \"Salvar tudo\". "
@@ -1687,7 +1969,7 @@ QString HelpPanel::themesContent() const
         "com a aparência que quiser."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra acessar, vá em Configurações e abra a seção de Temas."));
+        "Pra acessar, clique no botão de Temas na barra de ferramentas ou vá em Configurações → Aparência → Tema."));
     html += QStringLiteral(
         "<p align='center'>"
         "<a href='zoom:/help/themes/theme-panel.png' style='text-decoration:none;'>"
@@ -1795,114 +2077,93 @@ QString HelpPanel::themesContent() const
     return html;
 }
 
-// Conteúdo escrito pelo usuário em help-panel/builder/, montado aqui em HTML.
+// Criador de Mundos (a Enciclopédia): espelho em help-panel/builder/.
 QString HelpPanel::builderContent() const
 {
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "As gavetas documentam o seu mundo — personagens, cenários, lore solta. O Construtor é "
-        "diferente: é onde você define as REGRAS que governam esse mundo. Um sistema de magia, "
-        "uma estrutura política, uma religião — não é \"informação sobre\", é a arquitetura "
-        "interna que decide o que pode e o que não pode acontecer na sua história."));
+        "As gavetas documentam o seu mundo: personagens, cenários, lore solta. O Criador de "
+        "Mundos é onde esse mundo vira uma enciclopédia: os lugares da história e os sistemas "
+        "que mandam neles (a magia, a política, a religião), cada um como um verbete que você "
+        "lê e escreve como texto corrido."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra acessar, abra o Pensário e clique no ícone de engrenagem (⚙) no cabeçalho. O "
-        "Construtor abre numa janela própria, separada do resto do app."));
-
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/construtor/system-creator.png' style='text-decoration:none;'>"
-        "<img src=':/help/construtor/system-creator.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kBuilderSystemCreatorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
+        "Pra abrir, clique no botão Construtor na barra superior do editor. A janela abre no "
+        "modo que você usou por último."));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Lugares e Sistemas."),
+             tr("No alto da janela, a chave Lugares | Sistemas troca o que aparece na lista da "
+                "esquerda. Ao lado, a busca encontra lugares, sistemas, regras e documentos de uma "
+                "vez só: clicar num resultado abre o verbete ali mesmo."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/construtor/sistema.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/sistema.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kBuilderSystemThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Criando um sistema."),
-             tr("Clique em \"+ Novo sistema\". O app pede a categoria (Magia, Política, "
-                "Religião, Social, Econômico, Militar, Tecnologia, Cosmologia, Organização/"
-                "Facção, Linhagem, Mitologia ou Outro) e depois o nome. Cada sistema pertence "
-                "a uma categoria só."));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b></p>").arg(tr("O slider de arquétipo."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Cada categoria tem sua própria régua de possibilidades. Por exemplo, em Magia vai de "
-        "\"Soft\" até \"Hard\", passando por \"Branda\", \"Equilibrada\" e \"Estruturada\"; em "
-        "Política vai de \"Anarquia\" até \"Totalitarismo\". Ao posicionar o slider num ponto, "
-        "duas listas aparecem: o que aquele arquétipo FAVORECE (em verde) e o que ele EXIGE "
-        "(em laranja) — pensadas pra te ajudar a decidir com mais consciência das consequências "
-        "narrativas da escolha, não só o nome bonito. Por padrão mostra os 3 principais de cada "
-        "lista; o botão \"?\" expande pra até 10."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/construtor/soft-hard.png' style='text-decoration:none;'>"
-        "<img src=':/help/construtor/soft-hard.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kBuilderSoftHardThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("Nós: Regras e Seções."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Dentro de um sistema, você organiza o conteúdo em nós de dois tipos:"));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Regra (📐) — uma mecânica ou lei do sistema. Ex: \"Regra de Três\"."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Seção (📄) — informação sobre o sistema, mais parecida com texto corrido. Ex: \"A "
-        "Bíblia do Sancrismo\"."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Qualquer nó pode ter nós filhos, de qualquer tipo, em qualquer profundidade — pense "
-        "nas Seções como gavetas que podem conter outras gavetas dentro."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/construtor/sections-rules.png' style='text-decoration:none;'>"
-        "<img src=':/help/construtor/sections-rules.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kBuilderSectionsRulesThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Use os botões \"+ Regra\" e \"+ Seção\" pra criar nós filhos do que estiver "
-        "selecionado (ou raiz do sistema, se nada estiver selecionado). Duplo clique ou F2 "
-        "renomeia. Clique direito abre o menu de adicionar filho ou excluir."));
-
+             tr("Clique em \"+ Novo sistema\" no pé da lista, dê um nome e escolha a categoria "
+                "(Magia, Política, Religião, Social, Econômico, Militar, Tecnologia, Cosmologia, "
+                "Organização/Facção, Linhagem, Mitologia ou Outro). Cada sistema pertence a uma "
+                "categoria só."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("O verbete."),
+             tr("No centro, o sistema se lê como um texto: o título, um resumo e, embaixo, as regras "
+                "e as seções. Regras são as leis do sistema e ganham número (Art. 1, e as regras de "
+                "dentro dela viram 1.1, 1.2); seções (§) guardam informação solta, mais perto de "
+                "texto corrido. Use \"+ Regra\" e \"+ Seção\" no fim da página, e o ⋯ ao lado de cada "
+                "título pra criar uma regra ou seção dentro dela, ou pra excluir. Cada trecho salva "
+                "sozinho enquanto você escreve, e a barra no topo formata o trecho em que o cursor "
+                "está (e liga o Modo foco)."));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
-        .arg(tr("Escrevendo o conteúdo."),
-             tr("Clique num nó pra abrir o editor de texto dele, embaixo da árvore — é rich "
-                "text, com a mesma barra de ferramentas do editor principal (fonte, tamanho, "
-                "alinhamento e indentação valem pro nó inteiro; negrito/itálico/sublinhado/"
-                "tachado valem só pro trecho selecionado). Clicando no sistema sem selecionar "
-                "nenhum nó, você escreve um resumo ou parecer geral daquele sistema — um lugar "
-                "pra introdução antes de entrar nos detalhes."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/construtor/text-editor.png' style='text-decoration:none;'>"
-        "<img src=':/help/construtor/text-editor.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kBuilderTextEditorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
+        .arg(tr("O espectro."),
+             tr("Na margem direita, a barra do Espectro mostra onde o sistema fica na régua da "
+                "categoria: em Magia, de Soft a Hard; em Política, de Anarquia a Totalitarismo. "
+                "Clique num ponto da barra pra mudar. Embaixo aparecem o que aquele ponto FAVORECE e "
+                "o que ele EXIGE da sua história, pra você escolher sabendo das consequências e não "
+                "só pelo nome bonito. \"Ver todos\" abre a lista inteira."));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
-        .arg(tr("Busca."),
-             tr("Um campo de busca no topo encontra sistemas e nós ao mesmo tempo, com um "
-                "caminho tipo \"Sistema ▸ Nó\" — clicar num resultado pula direto pra lá."));
-
-    html += QStringLiteral("<p style='margin-bottom:4px;'><b>6- %1</b></p>").arg(tr("Referenciando de qualquer lugar."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Digitando @ no meio do seu texto (em qualquer capítulo, cena ou documento de gaveta), "
-        "você pode navegar até \"Construtor\" e escolher um sistema, depois um nó dele, pra "
-        "mencionar — Ctrl+clique na menção abre o Construtor direto naquele nó. Você também "
-        "consegue consultar (só leitura) pelo Menu de Referência, escolhendo \"Construtor\" no "
-        "seletor de gaveta."));
+        .arg(tr("Onde o sistema vale."),
+             tr("Um sistema novo é global: vale no mundo inteiro. \"Escolher territórios\", em Vale "
+                "em, prende ele aos lugares que você marcar."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+        .arg(tr("No livro."),
+             tr("Selecione um trecho no editor e use \"Salvar como menção ao sistema...\" no menu de "
+                "seleção; dá pra prender a menção a uma regra ou seção específica. Ela aparece na "
+                "margem, em No livro, com o capítulo e a cena de onde veio. Clicar nela leva de volta "
+                "ao trecho."));
     html += QStringLiteral(
         "<p align='center'>"
-        "<a href='zoom:/help/construtor/mention.png' style='text-decoration:none;'>"
-        "<img src=':/help/construtor/mention.png' width='%1'>"
+        "<a href='zoom:/help/construtor/territorio.png' style='text-decoration:none;'>"
+        "<img src=':/help/construtor/territorio.png' width='%1'>"
         "<br><span style='font-size:11px;color:%2;'>%3</span>"
         "</a>"
         "</p>"
-    ).arg(QString::number(kBuilderMentionThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    ).arg(QString::number(kBuilderTerritoryThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>7- %1</b><br>%2</p>")
+        .arg(tr("Lugares."),
+             tr("Em Lugares, cada território é um verbete com a lore dele e, embaixo, pastas e "
+                "documentos (\"+ Pasta\", \"+ Documento\") pra ruas, prédios, história, o que "
+                "precisar. A margem direita vira uma ficha: a imagem do lugar (clique nela pra "
+                "trocar), os Vizinhos, a Gente daqui (personagens cuja ficha diz que nasceram ou "
+                "moram ali), os sistemas que valem naquele lugar e os eventos da Timeline marcados "
+                "nele. Menções funcionam igual aos sistemas, com \"Salvar como menção ao "
+                "Território...\"."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
+        .arg(tr("Vizinhos."),
+             tr("\"Vincular a…\" liga um território a outro. Cada vínculo tem uma página própria: "
+                "\"Escrever o vínculo\" abre ela pra você contar como os dois lugares se relacionam "
+                "(a estrada, a guerra, o rio no meio). Depois de escrito, o botão vira \"Ler o "
+                "vínculo\". O botão direito num território da lista também tem Trocar imagem…, "
+                "Vincular a… e Excluir território."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
+        .arg(tr("Referenciando de qualquer lugar."),
+             tr("Digitando @ no meio do texto, você pode navegar até \"Construtor\", escolher um "
+                "sistema e uma regra dele pra mencionar; Ctrl+clique na menção abre o Criador de "
+                "Mundos direto ali. O Menu de Referência também mostra territórios e sistemas "
+                "enquanto você escreve."));
 
     return html;
 }
@@ -1989,6 +2250,11 @@ QString HelpPanel::pensarioContent() const
         "</a>"
         "</p>"
     ).arg(QString::number(kPensarioNameGeneratorThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Glossário."),
+             tr("A aba Glossário guarda os termos do seu mundo: siglas, facções, gírias. Ela tem um "
+                "tópico só dela aqui na Ajuda."));
 
     return html;
 }
@@ -2099,42 +2365,70 @@ QString HelpPanel::worldMapContent() const
     return html;
 }
 
-// Conteúdo escrito pelo usuário em help-panel/additional-resources/glossary/, montado aqui em HTML.
+// Glossário (aba do Pensário): espelho em help-panel/additional-resources/glossary/.
 QString HelpPanel::glossaryContent() const
 {
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O botão de Glossário mora dentro do Pensário (F4 pra abrir), no cabeçalho do painel, "
-        "ao lado do gerador de Nomes e do Mapa-múndi. Clique nele e o painelzinho do Glossário "
-        "abre flutuando por cima — clique de novo (ou no × dele) pra fechar."));
+        "O Glossário guarda as palavras que só existem no seu livro: siglas, facções, "
+        "lugares, títulos, gírias. Ele mora numa aba própria do Pensário (F4 pra abrir), e "
+        "alimenta o corretor ortográfico, a Mira e a Bíblia do universo."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Adicionando pelo texto."),
+             tr("Selecione a palavra no editor e use \"Adicionar ao Glossário\" no menu de seleção (o "
+                "mesmo item aparece no botão direito de uma palavra que o corretor sublinhou). O "
+                "popup já mostra a frase em que o termo aparece pela primeira vez no livro, quantas "
+                "vezes ele aparece e em quantos capítulos; \"Ir até a primeira vez\" leva direto pra "
+                "lá."));
     html += QStringLiteral(
         "<p align='center'>"
-        "<a href='zoom:/help/glossario/add.png' style='text-decoration:none;'>"
-        "<img src=':/help/glossario/add.png' width='%1'>"
+        "<a href='zoom:/help/glossario/adicionar.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/adicionar.png' width='%1'>"
         "<br><span style='font-size:11px;color:%2;'>%3</span>"
         "</a>"
         "</p>"
     ).arg(QString::number(kGlossaryAddThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Clique em \"+ Novo termo\" pra criar uma entrada (ela já vem pronta pra você editar o "
-        "nome). Cada termo tem só dois campos: o termo em si e uma definição opcional. Também "
-        "dá pra adicionar um termo direto selecionando um trecho de texto no editor e usando a "
-        "opção correspondente do menu de seleção."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
+        "Escolha um tipo (sigla, grupo, lugar, título, objeto ou gíria) e escreva a "
+        "definição. Se o termo tem outras formas no texto, liste em \"Também escrito como\", "
+        "separadas por vírgula: \"CAL\" e \"Comando Alto Leste\" viram um termo só, e as "
+        "contagens somam. Tudo além do termo é opcional. Selecionando uma palavra que já está "
+        "no glossário (ou uma das outras grafias dela), o popup abre direto na edição."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("A aba Glossário."),
+             tr("Os termos ficam em ordem alfabética, com o alfabeto na borda direita pra pular de "
+                "letra. Cada verbete mostra o tipo, as outras grafias, a definição e a primeira vez "
+                "que o termo aparece. Clique num termo pra editar; o botão direito tem Editar, Ir até "
+                "a primeira vez e Remover termo. A busca no topo procura nos termos, nas outras "
+                "grafias e nas definições, e \"+ Novo termo\" cria um do zero."));
     html += QStringLiteral(
         "<p align='center'>"
-        "<a href='zoom:/help/glossario/panel.png' style='text-decoration:none;'>"
-        "<img src=':/help/glossario/panel.png' width='%1'>"
+        "<a href='zoom:/help/glossario/aba.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/aba.png' width='%1'>"
         "<br><span style='font-size:11px;color:%2;'>%3</span>"
         "</a>"
         "</p>"
-    ).arg(QString::number(kGlossaryPanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
+    ).arg(QString::number(kGlossaryTabThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("Termo no texto."),
+             tr("No editor, os termos do glossário ganham um sublinhado pontilhado discreto. Pare o "
+                "mouse em cima pra ver a ficha: tipo, definição, a primeira vez e quantas vezes "
+                "aparece. \"1ª vez\" leva ao primeiro uso e \"Glossário\" abre o verbete na aba. Se "
+                "preferir o texto limpo, desligue em Configurações › Corretor › Termos do "
+                "glossário no texto."));
+    html += QStringLiteral(
+        "<p align='center'>"
+        "<a href='zoom:/help/glossario/no-texto.png' style='text-decoration:none;'>"
+        "<img src=':/help/glossario/no-texto.png' width='%1'>"
+        "<br><span style='font-size:11px;color:%2;'>%3</span>"
+        "</a>"
+        "</p>"
+    ).arg(QString::number(kGlossaryInTextThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Um detalhe que não é óbvio: termos do Glossário não aparecem destacados no texto, "
-        "mas o corretor ortográfico para de sublinhá-los como erro — então vale a pena "
-        "cadastrar nomes ou termos inventados só por essa vantagem, mesmo que você nunca abra "
-        "o painel de novo."));
+        "Uma sigla toda em maiúsculas só é reconhecida em maiúsculas: ROTA é o termo, e "
+        "\"rota\" continua sendo palavra comum. E o corretor para de marcar como erro cada "
+        "termo e cada grafia dele, então vale cadastrar os nomes inventados nem que seja só "
+        "por isso."));
 
     return html;
 }
@@ -2363,18 +2657,137 @@ QString HelpPanel::sceneVariationContent() const
     return html;
 }
 
+// Os passos que o conteúdo já escreve como "<b>1- Título.</b>" viram âncoras
+// (step-1, step-2…) com o número discreto na frente; a lista dos títulos
+// alimenta o "Neste tópico" e a busca. Em cima entram o grupo e o título.
+QString HelpPanel::decorate(const QString& id, const QString& html, QStringList* steps) const
+{
+    static const QRegularExpression stepRe(QStringLiteral("<b>(\\d+)- ([^<]+)</b>"));
+    QString out;
+    int last = 0;
+    auto it = stepRe.globalMatch(html);
+    while (it.hasNext()) {
+        const auto m = it.next();
+        QString title = m.captured(2).trimmed();
+        if (title.endsWith(QLatin1Char('.'))) title.chop(1);
+        if (steps) steps->append(title);
+        out += html.mid(last, m.capturedStart() - last);
+        out += QStringLiteral("<a name=\"step-%1\"></a><span style=\"color:%2; font-weight:600;\">%1</span>&nbsp;&nbsp;"
+                              "<span style=\"color:%3; font-size:15px; font-weight:600;\">%4</span>")
+                   .arg(m.captured(1), Theme::textMuted(), Theme::textBright(), title);
+        last = m.capturedEnd();
+    }
+    out += html.mid(last);
+
+    const int g = groupOf(id);
+    const QString head = QStringLiteral(
+        "<p style=\"margin:0 0 4px 0; color:%1; font-size:10px; font-weight:bold; letter-spacing:1.4px;\">%2</p>"
+        "<p style=\"margin:0 0 14px 0; color:%3; font-family:'Lora','Georgia',serif; font-size:26px; font-weight:600;\">%4</p>")
+        .arg(Theme::accentDefault(), g >= 0 ? m_groups.at(g).label.toUpper().toHtmlEscaped() : QString(),
+             Theme::textBright(), labelOf(id).toHtmlEscaped());
+    return head + out;
+}
+
 void HelpPanel::updateContent()
 {
-    QString label;
-    for (const Topic& t : m_topics) {
-        if (t.id == m_selectedId) { label = t.label; break; }
+    if (!m_content) return;
+    QStringList steps;
+    QString html = decorate(m_selectedId, contentFor(m_selectedId), &steps);
+
+    // Anterior / próximo, na ordem dos grupos.
+    QStringList order;
+    for (const Group& g : std::as_const(m_groups)) order += g.topicIds;
+    const int i = order.indexOf(m_selectedId);
+    auto link = [&](const QString& id, const QString& kicker, bool right) {
+        if (id.isEmpty()) return QString();
+        return QStringLiteral("<td%1 width=\"50%\"><a href=\"go:%2\" style=\"text-decoration:none;\">"
+                              "<span style=\"color:%3; font-size:10px; letter-spacing:0.8px;\">%4</span><br>"
+                              "<span style=\"color:%5; font-size:13.5px;\">%6</span></a></td>")
+            .arg(right ? QStringLiteral(" align=\"right\"") : QString(), id, Theme::textMuted(),
+                 kicker.toHtmlEscaped(), Theme::textPrimary(), labelOf(id).toHtmlEscaped());
+    };
+    const QString prev = i > 0 ? order.at(i - 1) : QString();
+    const QString next = i >= 0 && i + 1 < order.size() ? order.at(i + 1) : QString();
+    html += QStringLiteral("<hr style=\"margin-top:22px;\"><table width=\"100%\" cellspacing=\"0\" cellpadding=\"6\"><tr>%1%2</tr></table>")
+                .arg(prev.isEmpty() ? QStringLiteral("<td width=\"50%\"></td>") : link(prev, tr("‹ ANTERIOR"), false),
+                     link(next, tr("PRÓXIMO ›"), true));
+
+    m_content->setHtml(html);
+    m_content->verticalScrollBar()->setValue(0);
+    rebuildToc(steps);
+}
+
+void HelpPanel::rebuildToc(const QStringList& steps)
+{
+    qDeleteAll(m_tocButtons);
+    m_tocButtons.clear();
+    while (QLayoutItem* it = m_tocLayout->takeAt(0)) {
+        if (it->widget()) it->widget()->deleteLater();
+        delete it;
     }
-    if (m_contentTitle) m_contentTitle->setText(label);
-    if (m_content) m_content->setHtml(contentFor(m_selectedId));
+    // Tópico sem passos numerados (texto corrido): a margem some e o texto usa a largura.
+    m_tocPanel->setVisible(!steps.isEmpty());
+    if (steps.isEmpty()) return;
+    auto* title = new QLabel(tr("NESTE TÓPICO"), m_tocPanel);
+    title->setObjectName(QStringLiteral("helpTocTitle"));
+    m_tocLayout->addWidget(title);
+    for (int s = 0; s < steps.size(); ++s) {
+        auto* b = new QPushButton(QStringLiteral("%1. %2").arg(s + 1).arg(steps.at(s)), m_tocPanel);
+        b->setObjectName(QStringLiteral("helpTocItem"));
+        b->setCursor(Qt::PointingHandCursor);
+        b->setToolTip(steps.at(s));
+        // Texto longo quebra em vez de alargar a margem.
+        b->setMinimumWidth(0);
+        b->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        const QFontMetrics fm(b->font());
+        b->setText(fm.elidedText(b->text(), Qt::ElideRight, kTocWidth - 34));
+        connect(b, &QPushButton::clicked, this, [this, s]() {
+            m_content->scrollToAnchor(QStringLiteral("step-%1").arg(s + 1));
+        });
+        m_tocLayout->addWidget(b);
+        m_tocButtons << b;
+    }
+    m_tocLayout->addStretch(1);
+    updateTocHighlight();
+}
+
+// Marca na margem o passo que está no topo da leitura.
+void HelpPanel::updateTocHighlight()
+{
+    if (m_tocButtons.isEmpty()) return;
+    QTextDocument* doc = m_content->document();
+    auto* layout = doc->documentLayout();
+    const int y = m_content->verticalScrollBar()->value() + 40;
+    int current = 0;
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        for (auto f = b.begin(); !f.atEnd(); ++f) {
+            const QStringList names = f.fragment().charFormat().anchorNames();
+            for (const QString& n : names) {
+                if (!n.startsWith(QLatin1String("step-"))) continue;
+                if (layout->blockBoundingRect(b).top() <= y) current = n.mid(5).toInt() - 1;
+            }
+        }
+    }
+    // No fim da rolagem, o último passo é o atual mesmo que não chegue ao topo.
+    const QScrollBar* sb = m_content->verticalScrollBar();
+    if (sb->maximum() > 0 && sb->value() >= sb->maximum()) current = m_tocButtons.size() - 1;
+    for (int i = 0; i < m_tocButtons.size(); ++i) {
+        QPushButton* b = m_tocButtons.at(i);
+        const bool cur = i == current;
+        if (b->property("current").toBool() == cur) continue;
+        b->setProperty("current", cur);
+        b->style()->unpolish(b);
+        b->style()->polish(b);
+    }
 }
 
 void HelpPanel::onAnchorClicked(const QUrl& url)
 {
+    if (url.scheme() == QStringLiteral("go")) {
+        if (m_searchMode) setSearchMode(false);
+        selectTopic(url.path());
+        return;
+    }
     if (url.scheme() != QStringLiteral("zoom")) return;
     openImageZoom(QStringLiteral(":") + url.path());
 }

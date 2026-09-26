@@ -4,15 +4,22 @@
 #include <QList>
 #include <QPair>
 #include <QString>
+#include <QVector>
 
 class QCheckBox;
 class QComboBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QScrollArea;
 class QSlider;
 class QSpinBox;
+class QVBoxLayout;
 
+// Configurações em categorias: trilho à esquerda (com busca no topo) e uma
+// categoria por vez à direita, cada opção numa linha — nome, uma frase curta
+// e o controle alinhado à direita. A explicação longa de cada opção vira o
+// tooltip da linha e entra na busca.
 class SettingsPanel : public QDialog {
     Q_OBJECT
 public:
@@ -74,6 +81,7 @@ signals:
     // Botão "Detectar presença por cena em todos os capítulos".
     void rescanAllScenesRequested();
     void spellEnabledChanged(bool enabled);
+    void glossaryInTextChanged(bool on);
     void spellLanguageChanged(const QString& code);
     void detectionEnabledChanged(bool enabled);
     void detectionMarkAllChanged(bool markAll);
@@ -83,8 +91,10 @@ signals:
     void mentionManuscriptsEnabledChanged(bool enabled);
     void showScenePopupOnHrChanged(bool enabled);
     void romanChapterNumbersChanged(bool enabled);
-    // Botão "Abrir Gerador de Timeline…".
+    // Botão "Abrir…" do Gerador de Timeline.
     void timelineGeneratorRequested();
+    // Linha "Tema" em Aparência: abre o painel de Temas.
+    void themesRequested();
 
     // Pediu pra trocar de lado — MainWindow decide se confirma descarte de
     // alterações + reinicia (troca de lado não é ao vivo, ver TopToolbar).
@@ -99,11 +109,46 @@ signals:
     void backupRunNowRequested();
 
 private:
+    enum Category { Appearance, Writing, Spelling, Characters, Timeline, Assistant, Backup, Advanced, CategoryCount };
+
+    struct Row {
+        QWidget* widget = nullptr;
+        QLabel* title = nullptr;
+        QString plainTitle;
+        QString haystack;   // título + frase + explicação longa, pra busca
+        int category = 0;
+        bool sub = false;
+    };
+    struct Section {
+        QWidget* widget = nullptr;
+        QLabel* bigTitle = nullptr;
+        QLabel* subtitle = nullptr;
+        QLabel* smallTitle = nullptr;
+        QVBoxLayout* rows = nullptr;
+    };
+
+    QWidget* addRow(int category, const QString& title, const QString& desc, QWidget* control,
+                    const QString& longHint = QString(), bool sub = false, QLabel* descLabel = nullptr);
+    void buildNav(QWidget* nav);
+    void selectCategory(int category);
+    void applyFilter();
+    void refreshThemeName();
+
     void onCheckToggled(bool checked);
     void onLanguageChanged(int index);
     void syncPageLayoutFromManager();
     QString pageHeightLabelText(int v) const;
     void applyTheme();
+
+    QVector<Row> m_rows;
+    Section m_sections[CategoryCount];
+    QPushButton* m_navItems[CategoryCount] = {};
+    QLabel* m_navCounts[CategoryCount] = {};
+    int m_category = Appearance;
+    QLineEdit* m_search = nullptr;
+    QScrollArea* m_pane = nullptr;
+    QLabel* m_noResults = nullptr;
+    QPushButton* m_themeButton = nullptr;
 
     QSlider* m_uiScaleSlider = nullptr;
     QLabel* m_uiScaleValue = nullptr;
@@ -126,8 +171,6 @@ private:
     QLabel* m_pageHeightValue = nullptr;
     QLabel* m_hMarginValue = nullptr;
     QLabel* m_vMarginValue = nullptr;
-    QLabel* m_spellHint = nullptr;
-    QLabel* m_pageHint = nullptr;
     QComboBox* m_aiProviderCombo = nullptr;
     QLineEdit* m_aiApiKeyEdit  = nullptr;
     QLineEdit* m_aiBaseUrlEdit = nullptr;
@@ -144,7 +187,6 @@ private:
     QComboBox*   m_backupIntervalCombo = nullptr;
     QPushButton* m_backupRunBtn        = nullptr;
     QLabel*      m_backupStatusLabel   = nullptr;
-    QWidget*     m_backupFolderRow     = nullptr;
     QWidget*     m_backupIntervalRow   = nullptr;
     bool m_blockSignals = false;
     bool m_blockLayoutSignals = false;
