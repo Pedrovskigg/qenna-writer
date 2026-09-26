@@ -3,161 +3,161 @@
 #include "ConstrutorStore.h"
 #include "TerritorioStore.h"
 
+#include <QHash>
+#include <QPointer>
 #include <QWidget>
 
 #include <functional>
 
-class ConstrutorWindow;
+class ElementsStore;
+class EncSection;
+class EncFormatBar;
 class ProjectModel;
-class QFrame;
 class QLabel;
+class QLineEdit;
 class QListWidget;
-class QListWidgetItem;
 class QPushButton;
+class QScrollArea;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QVBoxLayout;
-class WorldContentEditor;
 
-// Janela do Criador de Mundos (Fase 1 — fundação, sem mapa visual).
-// Layout: Seletor de Território (círculos-avatar) + Explorador de Território
-// (personagens + árvore de pastas/docs) à esquerda, editor de conteúdo
-// (WorldContentEditor) ao centro. Painel do Construtor (M2) e vínculos entre
-// territórios (M3) chegam em milestones seguintes.
+// Criador de Mundos — a Enciclopédia.
+//
+// Duas metades na mesma janela, trocadas pela chave do topo:
+//   - Lugares: os Territórios (TerritorioStore) — pastas, documentos,
+//     vizinhos (vínculos), quem é de lá, o que aconteceu ali.
+//   - Sistemas: o Construtor (ConstrutorStore) — magia, política, religião…,
+//     com espectro, "Favorece / Exige" e regras/seções.
+//
+// Em qualquer uma, o item aberto é lido como um verbete corrido: o resumo e,
+// em seguida, cada nó da árvore como uma seção (regras numeradas como
+// artigos, "§" nas seções, pastas como capítulos). Cada trecho é editável no
+// lugar (EncSection) e salva sozinho; a barra de formatação do topo age no
+// trecho em foco. À esquerda, o sumário; à direita, a margem (espectro e
+// menções do sistema) ou a ficha do lugar (vizinhos, gente daqui, sistemas,
+// Timeline, menções).
 class TerritorioWindow : public QWidget {
     Q_OBJECT
 public:
+    enum class Mode { Lugares, Sistemas };
+
     explicit TerritorioWindow(TerritorioStore* store, QWidget* parent = nullptr);
 
     void setStore(TerritorioStore* store);
+    void setConstrutorStore(ConstrutorStore* store);
 
-    // Usado só pra limpar referências órfãs (origem/local atual do
-    // personagem) em outras gavetas quando um Território é excluído.
+    // Fichas de personagem com Origem/Local atual apontando pro território
+    // ("Gente daqui") e limpeza dessas referências ao excluir um território.
     void setProjectModel(ProjectModel* model) { m_projectModel = model; }
+    // Foto dos personagens em "Gente daqui". Opcional: sem ela, inicial.
+    void setElementsStore(ElementsStore* store) { m_elementsStore = store; }
 
-    // Quem hospeda (MainWindow) injeta uma função que zera placeId de
-    // eventos da Timeline apontando pro território excluído — mesma
-    // filosofia do PlaceEventsProvider abaixo, sem acoplar este widget a
-    // TimelineTypes/TimelinePanel.
+    // Zera placeId de eventos da Timeline que apontam pro território
+    // excluído — injetado pelo MainWindow, sem acoplar a TimelinePanel.
     using PlaceReferenceCleaner = std::function<void(const QString& territorioId)>;
     void setPlaceReferenceCleaner(PlaceReferenceCleaner fn) { m_placeReferenceCleaner = std::move(fn); }
 
-    // Construtor absorvido — a ConstrutorWindow de verdade (não uma lista
-    // reduzida) embutida como widget filho no painel direito, filtrada pelo
-    // território selecionado (tagueado OU global). "Coexiste" literalmente:
-    // é a mesma ferramenta, morando aqui em vez de numa janela separada.
-    void setConstrutorStore(ConstrutorStore* store);
-
-    // Navega direto pra um sistema/nó do Construtor embutido — usado pelo
-    // Ctrl+clique numa menção @ que aponta pro Construtor. Ignora o filtro
-    // de território corrente (mostra tudo) pra garantir que o alvo apareça
-    // mesmo se pertencer a outro território.
-    void openConstrutorNode(const QString& systemId, const QString& nodeId);
-
-    // "O que aconteceu aqui" — quem hospeda (MainWindow) injeta uma função
-    // que devolve rótulos de eventos da Timeline cujo placeId bate com o
-    // território pedido. Filtro puro sobre dado já existente, sem duplicar
-    // nada e sem acoplar este widget a TimelineTypes/TimelinePanel.
+    // "O que aconteceu aqui": rótulos dos eventos da Timeline marcados neste
+    // território — injetado pelo MainWindow.
     using PlaceEventsProvider = std::function<QStringList(const QString& territorioId)>;
     void setPlaceEventsProvider(PlaceEventsProvider fn) { m_placeEventsProvider = std::move(fn); }
 
-    // Navega direto pra um território/nó — usado pelo Ctrl+clique numa
-    // menção @ que aponta pro Criador de Mundos (ver refActivated em
-    // MainWindow.cpp, a partir do M5). Se nodeId vier vazio, abre só o
-    // resumo do território.
+    Mode mode() const { return m_mode; }
+    void setMode(Mode mode);
+
+    // Navegação externa (Ctrl+clique numa menção @, botão Construtor…).
+    // nodeId vazio = abre o verbete no topo.
+    void openConstrutorNode(const QString& systemId, const QString& nodeId);
     void openNode(const QString& territorioId, const QString& nodeId);
 
 signals:
-    // Repassado do ConstrutorWindow embutido — clique num card de menção do
-    // Construtor pede pra abrir a origem (capítulo/cena/gaveta) no editor
-    // principal. MainWindow escuta este sinal em vez de conectar direto no
-    // ConstrutorWindow interno (que agora é um detalhe de implementação).
+    // Clique numa menção (de sistema ou de território): abrir a origem no
+    // editor principal.
     void openMentionInEditorRequested(const ConstrutorStore::Mention& mention);
+    // Clique numa pessoa em "Gente daqui": consultar a ficha.
+    void openCharacterRequested(const QString& drawerKey, const QString& itemId);
 
 protected:
+    void showEvent(QShowEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
-    void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void applyTheme();
-    void onStoreChanged();
-    void onNewTerritorio();
-    void onTerritorioClicked(QListWidgetItem* item);
-    void onTerritorioItemChanged(QListWidgetItem* item);
-    void onTerritorioContextMenu(const QPoint& pos);
-    void onTreeSelectionChanged();
-    void onTreeItemChanged(QTreeWidgetItem* item, int column);
-    void onTreeContextMenu(const QPoint& pos);
-    void onAddFolder();
-    void onAddDoc();
-    void onDeleteNode();
-    void onEditorContentChanged();
-    void rebuildPlaceEvents();
-    void rebuildMentions();
-    void onToggleLeftPanel();
-    void onToggleConstrutorPanel();
+    void onTerritorioStoreChanged();
+    void onConstrutorStoreChanged();
 
 private:
+    // O que está aberto no meio.
+    enum class Kind { None, Territorio, Link, Sistema };
+
     void buildUi();
-    void rebuildSelector();
-    void rebuildTree();
-    void populateTreeNode(QTreeWidgetItem* parent, const TerritorioStore::Node& node);
-    void loadTerritorio(const QString& id);
-    void showNoTerritorioOpenState();
-    void addChildNode(TerritorioStore::NodeType type);
-    void updateLastEditedLabel(qint64 updatedAt);
-    void saveCurrentContent();
-    void selectTerritorioAndNode(const QString& territorioId, const QString& nodeId);
+    void rebuildSidebar();
+    void rebuildPage();       // verbete inteiro (título, resumo, seções)
+    void rebuildMargin();     // coluna da direita
+    void openTerritorio(const QString& id, const QString& nodeId = QString());
+    void openLink(const QString& linkId);
+    void openSistema(const QString& id, const QString& nodeId = QString());
+    void showEmptyPage();
+    void scrollToSection(const QString& nodeId);
+    void flushAll();          // salva o que estiver pendente em qualquer trecho
+    QString pageSignature() const; // estrutura do verbete aberto (ids, nomes, tipos)
 
-    // ── Vínculo entre Territórios (M3) ───────────────────────────────────────
-    void loadLink(const QString& linkId);
-    void repositionLinksOverlay();
-    // Acha o vínculo cuja linha passa perto de `pos` (coords do viewport do
-    // seletor), com folga de alguns pixels. nullptr se nenhum.
-    const TerritorioStore::TerritorioLink* linkNear(const QPoint& pos, qreal threshold = 8.0) const;
+    // Ações
+    void newTerritorio();
+    void newSistema();
+    void addTerritorioNode(const QString& parentId, TerritorioStore::NodeType type);
+    void addSistemaNode(const QString& parentId, ConstrutorStore::NodeType type);
+    void deleteNode(const QString& nodeId);
+    void territorioMenu(const QString& id, const QPoint& globalPos);
+    void sistemaMenu(const QString& id, const QPoint& globalPos);
+    void nodeMenu(const QString& nodeId, const QPoint& globalPos);
+    void deleteTerritorio(const QString& id);
+    void deleteSistema(const QString& id);
+    void changeTerritorioImage(const QString& id);
+    void runSearch(const QString& text);
 
-    QString selectedTerritorioId() const;
-    QString selectedNodeId() const;
+    // Salvar um trecho do verbete.
+    void saveSection(EncSection* section);
+    void saveTitle(const QString& name);
 
     TerritorioStore* m_store = nullptr;
-
-    QPushButton* m_toggleLeftBtn  = nullptr;
-    QPushButton* m_toggleConstrutorBtn = nullptr;
-    QWidget*     m_leftPanel      = nullptr;
-    QFrame*      m_vsep1          = nullptr;
-    QFrame*      m_vsep2          = nullptr;
-
-    QListWidget* m_selector       = nullptr;
-    QPushButton* m_newTerritorioBtn = nullptr;
-    QWidget*     m_linksOverlay   = nullptr; // pinta as linhas de vínculo entre círculos
-
-    QLabel*      m_charactersLabel = nullptr;
-    QLabel*      m_placeEventsLabel = nullptr; // "O que aconteceu aqui" (eventos da Timeline)
-    QLabel*      m_mentionsLabel    = nullptr; // menções salvas (categoria + trecho)
+    ConstrutorStore* m_construtorStore = nullptr;
+    ProjectModel* m_projectModel = nullptr;
+    ElementsStore* m_elementsStore = nullptr;
     PlaceEventsProvider m_placeEventsProvider;
     PlaceReferenceCleaner m_placeReferenceCleaner;
-    ProjectModel* m_projectModel = nullptr;
-    QPushButton* m_addFolderBtn    = nullptr;
-    QPushButton* m_addDocBtn       = nullptr;
-    QPushButton* m_deleteNodeBtn   = nullptr;
-    QTreeWidget* m_tree            = nullptr;
 
-    WorldContentEditor* m_editor = nullptr;
+    Mode m_mode = Mode::Lugares;
+    Kind m_kind = Kind::None;
+    QString m_currentId;      // território, vínculo ou sistema aberto
+    QString m_lastTerritorioId, m_lastSistemaId; // pra voltar ao trocar de modo
 
-    // ── Construtor absorvido (embutido de verdade, não janela separada) ──────
-    ConstrutorStore* m_construtorStore   = nullptr;
-    QWidget*          m_construtorPanel   = nullptr; // container simples, hospeda m_embeddedConstrutor
-    ConstrutorWindow*  m_embeddedConstrutor = nullptr;
+    // Topo
+    QPushButton* m_lugaresBtn = nullptr;
+    QPushButton* m_sistemasBtn = nullptr;
+    QLineEdit* m_searchEdit = nullptr;
+    QListWidget* m_searchResults = nullptr;
+    EncFormatBar* m_formatBar = nullptr;
 
-    QString m_currentTerritorioId;
-    QString m_currentNodeId;
-    QString m_currentLinkId;
-    QString m_hoveredLinkId; // vínculo sob o mouse no momento — hover visual + cursor
-    bool    m_rebuilding = false;
-    // Território e Construtor compartilham UM único editor (m_editor) — só
-    // um lado por vez "possui" ele. true = Território é quem deve reagir a
-    // WorldContentEditor::contentChanged (o Construtor embutido tem o
-    // espelho disso via ConstrutorWindow::setEditorActive()).
-    bool m_editorActiveHere = true;
+    // Esquerda
+    QTreeWidget* m_sidebar = nullptr;
+    QPushButton* m_newBtn = nullptr;
+
+    // Meio
+    QScrollArea* m_pageScroll = nullptr;
+    QWidget* m_page = nullptr;
+    QVBoxLayout* m_pageLay = nullptr;
+    QLineEdit* m_titleEdit = nullptr;
+    QList<EncSection*> m_sections;
+    QPointer<EncSection> m_focusedSection;
+    QString m_pageSig;
+
+    // Direita
+    QScrollArea* m_marginScroll = nullptr;
+    QWidget* m_margin = nullptr;
+
+    bool m_selfWriting = false;   // a mudança na store veio daqui: não refazer a página
+    bool m_rebuilding = false;
 };

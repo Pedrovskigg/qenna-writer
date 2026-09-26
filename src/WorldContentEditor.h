@@ -16,6 +16,7 @@ class QLabel;
 class QPushButton;
 class QScrollArea;
 class QScrollBar;
+class QTextDocument;
 class QTextEdit;
 class QTimer;
 
@@ -41,6 +42,11 @@ public:
     // o conteúdo do documento (equivalente a ConstrutorWindow::loadContentIntoEditor).
     void setContent(const QString& content);
     QString content() const; // toHtml() do documento atual
+
+    // Desenho de imagem com SmoothPixmapTransform (o padrão do Qt serrilha ao
+    // redimensionar) — o mesmo que este editor usa, pra quem tem QTextEdit próprio
+    // (os trechos da Enciclopédia do Criador de Mundos).
+    static void installImageHandler(QTextDocument* doc, QObject* owner);
 
     void setEditorEnabled(bool enabled);
     void setPlaceholderText(const QString& text);

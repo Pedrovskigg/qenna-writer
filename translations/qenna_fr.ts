@@ -21922,6 +21922,334 @@ Cette action est irréversible.</translation>
         <source>Escreva a história compartilhada entre os dois territórios — guerras, alianças, passado…</source>
         <translation>Rédigez l&apos;histoire commune des deux territoires — guerres, alliances, passé…</translation>
     </message>
+    <message>
+        <source>Excluir nó</source>
+        <translation>Supprimer le nœud</translation>
+    </message>
+    <message>
+        <source>Excluir este nó e todos os seus filhos?
+
+Essa ação não pode ser desfeita.</source>
+        <translation>Supprimer ce nœud et tous ses enfants ?
+
+Cette action est irréversible.</translation>
+    </message>
+    <message>
+        <source>Inserir imagem</source>
+        <translation>Insérer une image</translation>
+    </message>
+    <message>
+        <source>Negrito (Ctrl+B)</source>
+        <translation>Gras (Ctrl+B)</translation>
+    </message>
+    <message>
+        <source>Itálico (Ctrl+I)</source>
+        <translation>Italique (Ctrl+I)</translation>
+    </message>
+    <message>
+        <source>Sublinhado (Ctrl+U)</source>
+        <translation>Souligné (Ctrl+U)</translation>
+    </message>
+    <message>
+        <source>Tachado</source>
+        <translation>Barré</translation>
+    </message>
+    <message>
+        <source>Indentar primeira linha do parágrafo</source>
+        <translation>Retrait de la première ligne du paragraphe</translation>
+    </message>
+    <message>
+        <source>Espaçamento de linhas e parágrafos</source>
+        <translation>Espacement des lignes et des paragraphes</translation>
+    </message>
+    <message>
+        <source>Alinhar à esquerda</source>
+        <translation>Aligner à gauche</translation>
+    </message>
+    <message>
+        <source>Centralizar</source>
+        <translation>Centrer</translation>
+    </message>
+    <message>
+        <source>Alinhar à direita</source>
+        <translation>Aligner à droite</translation>
+    </message>
+    <message>
+        <source>Modo foco</source>
+        <translation>Mode concentration</translation>
+    </message>
+    <message>
+        <source>ENTRE LINHAS</source>
+        <translation>INTERLIGNE</translation>
+    </message>
+    <message>
+        <source>Simples (1.0)</source>
+        <translation>Simple (1.0)</translation>
+    </message>
+    <message>
+        <source>Justo (1.15)</source>
+        <translation>Serré (1.15)</translation>
+    </message>
+    <message>
+        <source>Compacto (1.3)</source>
+        <translation>Compact (1.3)</translation>
+    </message>
+    <message>
+        <source>Confortável (1.5)</source>
+        <translation>Confortable (1.5)</translation>
+    </message>
+    <message>
+        <source>Padrão (1.7)</source>
+        <translation>Par défaut (1.7)</translation>
+    </message>
+    <message>
+        <source>Amplo (1.9)</source>
+        <translation>Large (1.9)</translation>
+    </message>
+    <message>
+        <source>Espaçoso (2.2)</source>
+        <translation>Aéré (2.2)</translation>
+    </message>
+    <message>
+        <source>ANTES DO PARÁGRAFO</source>
+        <translation>AVANT LE PARAGRAPHE</translation>
+    </message>
+    <message>
+        <source>DEPOIS DO PARÁGRAFO</source>
+        <translation>APRÈS LE PARAGRAPHE</translation>
+    </message>
+    <message>
+        <source>Lugares</source>
+        <translation>Lieux</translation>
+    </message>
+    <message>
+        <source>+ Novo sistema</source>
+        <translation>+ Nouveau système</translation>
+    </message>
+    <message>
+        <source>Mais opções</source>
+        <translation>Plus d&apos;options</translation>
+    </message>
+    <message>
+        <source>Escreva um resumo, parecer ou introdução deste sistema…</source>
+        <translation>Rédigez un résumé, une vue d&apos;ensemble ou une introduction pour ce système…</translation>
+    </message>
+    <message>
+        <source>+ Regra</source>
+        <translation>+ Règle</translation>
+    </message>
+    <message>
+        <source>+ Seção</source>
+        <translation>+ Section</translation>
+    </message>
+    <message>
+        <source>Excluir sistema</source>
+        <translation>Supprimer le système</translation>
+    </message>
+    <message>
+        <source>Novo sistema</source>
+        <translation>Nouveau système</translation>
+    </message>
+    <message>
+        <source>Nome do sistema</source>
+        <translation>Nom du système</translation>
+    </message>
+    <message>
+        <source>Categoria:</source>
+        <translation>Catégorie :</translation>
+    </message>
+    <message>
+        <source>Nova regra</source>
+        <translation>Nouvelle règle</translation>
+    </message>
+    <message>
+        <source>Nova seção</source>
+        <translation>Nouvelle section</translation>
+    </message>
+    <message>
+        <source>Adicionar Regra filha</source>
+        <translation>Ajouter une Règle enfant</translation>
+    </message>
+    <message>
+        <source>Adicionar Seção filha</source>
+        <translation>Ajouter une Section enfant</translation>
+    </message>
+    <message>
+        <source>Excluir o sistema &quot;%1&quot; e todos os seus nós?
+
+Essa ação não pode ser desfeita.</source>
+        <translation>Supprimer le système « %1 » et tous ses nœuds ?
+
+Cette action est irréversible.</translation>
+    </message>
+    <message>
+        <source>Território</source>
+        <translation>Territoire</translation>
+    </message>
+    <message>
+        <source>Sistema</source>
+        <translation>Système</translation>
+    </message>
+    <message>
+        <source>Nada encontrado.</source>
+        <translation>Aucun résultat.</translation>
+    </message>
+    <message>
+        <source>Sistemas</source>
+        <translation>Systèmes</translation>
+    </message>
+    <message>
+        <source>Buscar lugar, sistema, regra ou documento</source>
+        <translation>Rechercher un lieu, un système, une règle ou un document</translation>
+    </message>
+    <message>
+        <source>Nenhum território ainda</source>
+        <translation>Aucun territoire pour l’instant</translation>
+    </message>
+    <message>
+        <source>Nenhum sistema ainda</source>
+        <translation>Aucun système pour l’instant</translation>
+    </message>
+    <message>
+        <source>Territórios são os lugares do seu mundo: reinos, cidades, casas. Cada um vira um verbete com documentos, vizinhos e quem é de lá.</source>
+        <translation>Les territoires sont les lieux de votre monde : royaumes, villes, maisons. Chacun devient une entrée avec ses documents, ses voisins et les gens qui en viennent.</translation>
+    </message>
+    <message>
+        <source>Sistemas são as regras do seu mundo: magia, política, religião. Cada um vira um verbete com artigos, espectro e onde vale.</source>
+        <translation>Les systèmes sont les règles de votre monde : magie, politique, religion. Chacun devient une entrée avec ses articles, son spectre et l’endroit où il s’applique.</translation>
+    </message>
+    <message>
+        <source>Território · 1 vizinho</source>
+        <translation>Territoire · 1 voisin</translation>
+    </message>
+    <message>
+        <source>Território · %1 vizinhos</source>
+        <translation>Territoire · %1 voisins</translation>
+    </message>
+    <message>
+        <source>Vínculo entre territórios</source>
+        <translation>Lien entre territoires</translation>
+    </message>
+    <message>
+        <source>Art. %1</source>
+        <translation>Art. %1</translation>
+    </message>
+    <message>
+        <source>Remover menção</source>
+        <translation>Retirer la mention</translation>
+    </message>
+    <message>
+        <source>Espectro</source>
+        <translation>Spectre</translation>
+    </message>
+    <message>
+        <source>Favorece</source>
+        <translation>Favorise</translation>
+    </message>
+    <message>
+        <source>Exige</source>
+        <translation>Exige</translation>
+    </message>
+    <message>
+        <source>Ver menos</source>
+        <translation>Voir moins</translation>
+    </message>
+    <message>
+        <source>Ver todos</source>
+        <translation>Tout voir</translation>
+    </message>
+    <message>
+        <source>Vale em</source>
+        <translation>S’applique à</translation>
+    </message>
+    <message>
+        <source>Global: vale no mundo inteiro.</source>
+        <translation>Global : s’applique au monde entier.</translation>
+    </message>
+    <message>
+        <source>Escolher territórios</source>
+        <translation>Choisir des territoires</translation>
+    </message>
+    <message>
+        <source>No livro</source>
+        <translation>Dans le livre</translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao sistema&quot;.</source>
+        <translation>Aucune mention pour l’instant. Sélectionnez un passage du livre et utilisez « Enregistrer comme mention du système ».</translation>
+    </message>
+    <message>
+        <source>ao lado de uma seção</source>
+        <translation>à côté d’une section</translation>
+    </message>
+    <message>
+        <source>ao lado do Art. %1</source>
+        <translation>à côté de l’art. %1</translation>
+    </message>
+    <message>
+        <source>Trocar imagem</source>
+        <translation>Changer l’image</translation>
+    </message>
+    <message>
+        <source>Escrever o vínculo</source>
+        <translation>Écrire le lien</translation>
+    </message>
+    <message>
+        <source>Ler o vínculo</source>
+        <translation>Lire le lien</translation>
+    </message>
+    <message>
+        <source>Nenhum vínculo ainda.</source>
+        <translation>Aucun lien pour l’instant.</translation>
+    </message>
+    <message>
+        <source>Vizinhos</source>
+        <translation>Voisins</translation>
+    </message>
+    <message>
+        <source>nasceu e mora aqui</source>
+        <translation>né et vit ici</translation>
+    </message>
+    <message>
+        <source>nasceu aqui</source>
+        <translation>né ici</translation>
+    </message>
+    <message>
+        <source>mora aqui</source>
+        <translation>vit ici</translation>
+    </message>
+    <message>
+        <source>Gente daqui</source>
+        <translation>Gens d’ici</translation>
+    </message>
+    <message>
+        <source>Ninguém com origem ou local aqui.</source>
+        <translation>Personne qui en vienne ou y vive.</translation>
+    </message>
+    <message>
+        <source> · global</source>
+        <translation> · global</translation>
+    </message>
+    <message>
+        <source>Nenhum sistema vale aqui.</source>
+        <translation>Aucun système ne s’applique ici.</translation>
+    </message>
+    <message>
+        <source>+ %1 eventos</source>
+        <translation>+ %1 événements</translation>
+    </message>
+    <message>
+        <source>Na Timeline</source>
+        <translation>Sur la Timeline</translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao Território&quot;.</source>
+        <translation>Aucune mention pour l’instant. Sélectionnez un passage du livre et utilisez « Enregistrer comme mention du Territoire ».</translation>
+    </message>
+    <message>
+        <source>Entre</source>
+        <translation>Entre</translation>
+    </message>
 </context>
 <context>
     <name>ThemeCard</name>

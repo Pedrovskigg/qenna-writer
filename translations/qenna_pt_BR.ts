@@ -21865,6 +21865,330 @@ Essa ação não pode ser desfeita.</source>
         <source>Escreva a história compartilhada entre os dois territórios — guerras, alianças, passado…</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Excluir nó</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Excluir este nó e todos os seus filhos?
+
+Essa ação não pode ser desfeita.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Inserir imagem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Negrito (Ctrl+B)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Itálico (Ctrl+I)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sublinhado (Ctrl+U)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tachado</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Indentar primeira linha do parágrafo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Espaçamento de linhas e parágrafos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alinhar à esquerda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Centralizar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Alinhar à direita</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Modo foco</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ENTRE LINHAS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Simples (1.0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Justo (1.15)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Compacto (1.3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Confortável (1.5)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Padrão (1.7)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Amplo (1.9)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Espaçoso (2.2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ANTES DO PARÁGRAFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>DEPOIS DO PARÁGRAFO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Lugares</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sistemas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Buscar lugar, sistema, regra ou documento</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ Novo sistema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mais opções</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum território ainda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum sistema ainda</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Territórios são os lugares do seu mundo: reinos, cidades, casas. Cada um vira um verbete com documentos, vizinhos e quem é de lá.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sistemas são as regras do seu mundo: magia, política, religião. Cada um vira um verbete com artigos, espectro e onde vale.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Território · 1 vizinho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Território · %1 vizinhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vínculo entre territórios</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escreva um resumo, parecer ou introdução deste sistema…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Art. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ Regra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ Seção</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Remover menção</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Espectro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Favorece</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exige</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ver menos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ver todos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vale em</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Global: vale no mundo inteiro.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escolher territórios</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No livro</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao sistema&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ao lado de uma seção</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ao lado do Art. %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Excluir sistema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Trocar imagem</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Escrever o vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ler o vínculo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum vínculo ainda.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vizinhos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nasceu e mora aqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>nasceu aqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mora aqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Gente daqui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Ninguém com origem ou local aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> · global</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhum sistema vale aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>+ %1 eventos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Na Timeline</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao Território&quot;.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entre</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Novo sistema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nome do sistema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Categoria:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova regra</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nova seção</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adicionar Regra filha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Adicionar Seção filha</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Excluir o sistema &quot;%1&quot; e todos os seus nós?
+
+Essa ação não pode ser desfeita.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Território</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Sistema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nada encontrado.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ThemeCard</name>

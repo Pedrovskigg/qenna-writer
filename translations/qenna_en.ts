@@ -21922,6 +21922,334 @@ This action cannot be undone.</translation>
         <source>Escreva a história compartilhada entre os dois territórios — guerras, alianças, passado…</source>
         <translation>Write the shared history between the two territories — wars, alliances, the past…</translation>
     </message>
+    <message>
+        <source>Excluir nó</source>
+        <translation>Delete node</translation>
+    </message>
+    <message>
+        <source>Excluir este nó e todos os seus filhos?
+
+Essa ação não pode ser desfeita.</source>
+        <translation>Delete this node and all its children?
+
+This action cannot be undone.</translation>
+    </message>
+    <message>
+        <source>Inserir imagem</source>
+        <translation>Insert image</translation>
+    </message>
+    <message>
+        <source>Negrito (Ctrl+B)</source>
+        <translation>Bold (Ctrl+B)</translation>
+    </message>
+    <message>
+        <source>Itálico (Ctrl+I)</source>
+        <translation>Italic (Ctrl+I)</translation>
+    </message>
+    <message>
+        <source>Sublinhado (Ctrl+U)</source>
+        <translation>Underline (Ctrl+U)</translation>
+    </message>
+    <message>
+        <source>Tachado</source>
+        <translation>Strikethrough</translation>
+    </message>
+    <message>
+        <source>Indentar primeira linha do parágrafo</source>
+        <translation>Indent first line of paragraph</translation>
+    </message>
+    <message>
+        <source>Espaçamento de linhas e parágrafos</source>
+        <translation>Line and paragraph spacing</translation>
+    </message>
+    <message>
+        <source>Alinhar à esquerda</source>
+        <translation>Align left</translation>
+    </message>
+    <message>
+        <source>Centralizar</source>
+        <translation>Center</translation>
+    </message>
+    <message>
+        <source>Alinhar à direita</source>
+        <translation>Align right</translation>
+    </message>
+    <message>
+        <source>Modo foco</source>
+        <translation>Focus mode</translation>
+    </message>
+    <message>
+        <source>ENTRE LINHAS</source>
+        <translation>LINE SPACING</translation>
+    </message>
+    <message>
+        <source>Simples (1.0)</source>
+        <translation>Single (1.0)</translation>
+    </message>
+    <message>
+        <source>Justo (1.15)</source>
+        <translation>Tight (1.15)</translation>
+    </message>
+    <message>
+        <source>Compacto (1.3)</source>
+        <translation>Compact (1.3)</translation>
+    </message>
+    <message>
+        <source>Confortável (1.5)</source>
+        <translation>Comfortable (1.5)</translation>
+    </message>
+    <message>
+        <source>Padrão (1.7)</source>
+        <translation>Default (1.7)</translation>
+    </message>
+    <message>
+        <source>Amplo (1.9)</source>
+        <translation>Wide (1.9)</translation>
+    </message>
+    <message>
+        <source>Espaçoso (2.2)</source>
+        <translation>Spacious (2.2)</translation>
+    </message>
+    <message>
+        <source>ANTES DO PARÁGRAFO</source>
+        <translation>BEFORE PARAGRAPH</translation>
+    </message>
+    <message>
+        <source>DEPOIS DO PARÁGRAFO</source>
+        <translation>AFTER PARAGRAPH</translation>
+    </message>
+    <message>
+        <source>Lugares</source>
+        <translation>Places</translation>
+    </message>
+    <message>
+        <source>+ Novo sistema</source>
+        <translation>+ New system</translation>
+    </message>
+    <message>
+        <source>Mais opções</source>
+        <translation>More options</translation>
+    </message>
+    <message>
+        <source>Escreva um resumo, parecer ou introdução deste sistema…</source>
+        <translation>Write a summary, overview, or introduction for this system…</translation>
+    </message>
+    <message>
+        <source>+ Regra</source>
+        <translation>+ Rule</translation>
+    </message>
+    <message>
+        <source>+ Seção</source>
+        <translation>+ Section</translation>
+    </message>
+    <message>
+        <source>Excluir sistema</source>
+        <translation>Delete system</translation>
+    </message>
+    <message>
+        <source>Novo sistema</source>
+        <translation>New system</translation>
+    </message>
+    <message>
+        <source>Nome do sistema</source>
+        <translation>System name</translation>
+    </message>
+    <message>
+        <source>Categoria:</source>
+        <translation>Category:</translation>
+    </message>
+    <message>
+        <source>Nova regra</source>
+        <translation>New rule</translation>
+    </message>
+    <message>
+        <source>Nova seção</source>
+        <translation>New section</translation>
+    </message>
+    <message>
+        <source>Adicionar Regra filha</source>
+        <translation>Add child Rule</translation>
+    </message>
+    <message>
+        <source>Adicionar Seção filha</source>
+        <translation>Add child Section</translation>
+    </message>
+    <message>
+        <source>Excluir o sistema &quot;%1&quot; e todos os seus nós?
+
+Essa ação não pode ser desfeita.</source>
+        <translation>Delete the system &quot;%1&quot; and all its nodes?
+
+This action cannot be undone.</translation>
+    </message>
+    <message>
+        <source>Território</source>
+        <translation>Territory</translation>
+    </message>
+    <message>
+        <source>Sistema</source>
+        <translation>System</translation>
+    </message>
+    <message>
+        <source>Nada encontrado.</source>
+        <translation>Nothing found.</translation>
+    </message>
+    <message>
+        <source>Sistemas</source>
+        <translation>Systems</translation>
+    </message>
+    <message>
+        <source>Buscar lugar, sistema, regra ou documento</source>
+        <translation>Search places, systems, rules or documents</translation>
+    </message>
+    <message>
+        <source>Nenhum território ainda</source>
+        <translation>No territories yet</translation>
+    </message>
+    <message>
+        <source>Nenhum sistema ainda</source>
+        <translation>No systems yet</translation>
+    </message>
+    <message>
+        <source>Territórios são os lugares do seu mundo: reinos, cidades, casas. Cada um vira um verbete com documentos, vizinhos e quem é de lá.</source>
+        <translation>Territories are the places in your world: kingdoms, cities, houses. Each one becomes an entry with documents, neighbors and the people from there.</translation>
+    </message>
+    <message>
+        <source>Sistemas são as regras do seu mundo: magia, política, religião. Cada um vira um verbete com artigos, espectro e onde vale.</source>
+        <translation>Systems are the rules of your world: magic, politics, religion. Each one becomes an entry with articles, a spectrum and where it applies.</translation>
+    </message>
+    <message>
+        <source>Território · 1 vizinho</source>
+        <translation>Territory · 1 neighbor</translation>
+    </message>
+    <message>
+        <source>Território · %1 vizinhos</source>
+        <translation>Territory · %1 neighbors</translation>
+    </message>
+    <message>
+        <source>Vínculo entre territórios</source>
+        <translation>Bond between territories</translation>
+    </message>
+    <message>
+        <source>Art. %1</source>
+        <translation>Art. %1</translation>
+    </message>
+    <message>
+        <source>Remover menção</source>
+        <translation>Remove mention</translation>
+    </message>
+    <message>
+        <source>Espectro</source>
+        <translation>Spectrum</translation>
+    </message>
+    <message>
+        <source>Favorece</source>
+        <translation>Favors</translation>
+    </message>
+    <message>
+        <source>Exige</source>
+        <translation>Demands</translation>
+    </message>
+    <message>
+        <source>Ver menos</source>
+        <translation>Show less</translation>
+    </message>
+    <message>
+        <source>Ver todos</source>
+        <translation>Show all</translation>
+    </message>
+    <message>
+        <source>Vale em</source>
+        <translation>Applies in</translation>
+    </message>
+    <message>
+        <source>Global: vale no mundo inteiro.</source>
+        <translation>Global: applies to the whole world.</translation>
+    </message>
+    <message>
+        <source>Escolher territórios</source>
+        <translation>Choose territories</translation>
+    </message>
+    <message>
+        <source>No livro</source>
+        <translation>In the book</translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao sistema&quot;.</source>
+        <translation>No mentions yet. Select a passage in the book and use &quot;Save as system mention&quot;.</translation>
+    </message>
+    <message>
+        <source>ao lado de uma seção</source>
+        <translation>next to a section</translation>
+    </message>
+    <message>
+        <source>ao lado do Art. %1</source>
+        <translation>next to Art. %1</translation>
+    </message>
+    <message>
+        <source>Trocar imagem</source>
+        <translation>Change image</translation>
+    </message>
+    <message>
+        <source>Escrever o vínculo</source>
+        <translation>Write the bond</translation>
+    </message>
+    <message>
+        <source>Ler o vínculo</source>
+        <translation>Read the bond</translation>
+    </message>
+    <message>
+        <source>Nenhum vínculo ainda.</source>
+        <translation>No bonds yet.</translation>
+    </message>
+    <message>
+        <source>Vizinhos</source>
+        <translation>Neighbors</translation>
+    </message>
+    <message>
+        <source>nasceu e mora aqui</source>
+        <translation>born and lives here</translation>
+    </message>
+    <message>
+        <source>nasceu aqui</source>
+        <translation>born here</translation>
+    </message>
+    <message>
+        <source>mora aqui</source>
+        <translation>lives here</translation>
+    </message>
+    <message>
+        <source>Gente daqui</source>
+        <translation>People from here</translation>
+    </message>
+    <message>
+        <source>Ninguém com origem ou local aqui.</source>
+        <translation>No one from here or living here.</translation>
+    </message>
+    <message>
+        <source> · global</source>
+        <translation> · global</translation>
+    </message>
+    <message>
+        <source>Nenhum sistema vale aqui.</source>
+        <translation>No systems apply here.</translation>
+    </message>
+    <message>
+        <source>+ %1 eventos</source>
+        <translation>+ %1 events</translation>
+    </message>
+    <message>
+        <source>Na Timeline</source>
+        <translation>On the Timeline</translation>
+    </message>
+    <message>
+        <source>Nenhuma menção ainda. Selecione um trecho no livro e use &quot;Salvar como menção ao Território&quot;.</source>
+        <translation>No mentions yet. Select a passage in the book and use &quot;Save as a mention of the Territory&quot;.</translation>
+    </message>
+    <message>
+        <source>Entre</source>
+        <translation>Between</translation>
+    </message>
 </context>
 <context>
     <name>ThemeCard</name>

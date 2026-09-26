@@ -139,7 +139,6 @@
 #include "GlossaryAddPopup.h"
 #include "ConstrutorMentionAddPopup.h"
 #include "ConstrutorStore.h"
-#include "ConstrutorWindow.h"
 #include "TerritorioMentionAddPopup.h"
 #include "TerritorioStore.h"
 #include "TerritorioWindow.h"
@@ -3023,11 +3022,8 @@ void MainWindow::setupEditor()
         if (aiChatPanel) aiChatPanel->togglePanel();
     });
 
-    // O Construtor foi absorvido pelo Criador de Mundos — não é mais uma
-    // janela separada, mora embutido no painel direito (ver
-    // ConstrutorWindow standalone=false em TerritorioWindow::setConstrutorStore).
-    // O botão da TopToolbar (ícone/tooltip "construtor.svg" ainda por
-    // herança do nome antigo) agora abre a janela do Criador de Mundos.
+    // O botão Construtor da TopToolbar abre o Criador de Mundos (a
+    // Enciclopédia), no modo em que foi usado por último: Lugares ou Sistemas.
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
         TerritorioWindow* w = ensureTerritorioWindow();
         w->show();
@@ -9069,6 +9065,7 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
         territorioWindow = new TerritorioWindow(territorioStore, this);
         territorioWindow->setConstrutorStore(construtorStore);
         territorioWindow->setProjectModel(projectModel);
+        territorioWindow->setElementsStore(elementsStore);
         territorioWindow->setPlaceEventsProvider([this](const QString& territorioId) {
             QStringList out;
             for (const auto& ev : ensureTimelinePanel()->eventsForPlace(territorioId))
@@ -9080,6 +9077,11 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
         });
         connect(territorioWindow, &TerritorioWindow::openMentionInEditorRequested,
                 this, &MainWindow::openConstrutorMentionInEditor);
+        // "Gente daqui": consultar a ficha no Menu de Referência.
+        connect(territorioWindow, &TerritorioWindow::openCharacterRequested,
+                this, [this](const QString& drawerKey, const QString& itemId) {
+                    if (refMenuPanel) refMenuPanel->openForDrawer(drawerKey, itemId);
+                });
     }
     return territorioWindow;
 }

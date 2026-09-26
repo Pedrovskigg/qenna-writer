@@ -76,7 +76,6 @@ class GlossaryAddPopup;
 class MemoriesStore;
 class MemoryAddPopup;
 class ConstrutorStore;
-class ConstrutorWindow;
 class ConstrutorMentionAddPopup;
 class TerritorioWindow;
 class ReaderPreviewPanel;

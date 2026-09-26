@@ -603,6 +603,11 @@ void WorldContentEditor::setContent(const QString& content)
     updateToolbarState(m_contentEdit->currentCharFormat());
 }
 
+void WorldContentEditor::installImageHandler(QTextDocument* doc, QObject* owner)
+{
+    if (doc) doc->documentLayout()->registerHandler(QTextFormat::ImageObject, new WorldImageHandler(owner));
+}
+
 QString WorldContentEditor::content() const
 {
     return m_contentEdit ? m_contentEdit->toHtml() : QString();

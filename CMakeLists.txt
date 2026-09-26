@@ -257,8 +257,6 @@ qt_add_executable(qenna-writer
     src/GlossaryAddPopup.h
     src/ConstrutorStore.cpp
     src/ConstrutorStore.h
-    src/ConstrutorWindow.cpp
-    src/ConstrutorWindow.h
     src/ConstrutorMentionAddPopup.cpp
     src/ConstrutorMentionAddPopup.h
     src/TerritorioStore.cpp
