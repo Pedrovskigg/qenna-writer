@@ -6590,11 +6590,17 @@ void MainWindow::startUpdateDownload()
         // um cmd que dorme alguns segundos e só depois solta o instalador,
         // quando este processo já morreu e soltou todos os arquivos.
 #ifdef Q_OS_WIN
+        // setNativeArguments, não setArguments: o Qt escapa aspas internas
+        // como \" (convenção do C runtime), que o cmd.exe não entende — o
+        // start recebia "\\" como programa e o Windows dizia "O caminho da
+        // rede não foi encontrado" (v0.18.0). /s /c "..." faz o cmd tirar só
+        // as aspas de fora e rodar o resto como está. ping em vez de timeout
+        // porque o timeout aborta na hora quando não tem console de entrada.
         QProcess launcher;
         launcher.setProgram(QStringLiteral("cmd.exe"));
-        launcher.setArguments({ QStringLiteral("/c"),
-            QStringLiteral("timeout /t 4 /nobreak >nul & start \"\" \"%1\"")
-                .arg(QDir::toNativeSeparators(destPath)) });
+        launcher.setNativeArguments(
+            QStringLiteral("/d /s /c \"ping -n 5 127.0.0.1 >nul & start \"\" \"%1\"\"")
+                .arg(QDir::toNativeSeparators(destPath)));
         // Sem isso, uma janela preta de console pisca na cara do usuário.
         launcher.setCreateProcessArgumentsModifier(
             [](QProcess::CreateProcessArguments* args) {
