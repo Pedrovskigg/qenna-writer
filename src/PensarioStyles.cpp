@@ -53,6 +53,11 @@ QColor mix(const QColor& a, const QColor& b, qreal t) {
     return QColor::fromRgbF(a.redF() * t + b.redF() * (1 - t), a.greenF() * t + b.greenF() * (1 - t),
                             a.blueF() * t + b.blueF() * (1 - t));
 }
+// Várias cores do tema são películas translúcidas (inputBackground é
+// rgba(...,0.05) em todos os temas). mix() e QColor::name() jogam o alfa fora
+// e a película vira cor sólida — marrom-quase-preto num tema claro, branco num
+// escuro, e o texto some. Antes de misturar ou virar CSS, achata sobre o painel.
+QColor flat(const QColor& c) { return mix(c, Theme::toColor(Theme::panelBackground()), c.alphaF()); }
 QString handFamily() { return QStringLiteral("'Caveat','Segoe Print','Comic Sans MS'"); }
 QString serifFamily() { return QStringLiteral("'Source Serif 4','Lora',Georgia,serif"); }
 
@@ -1014,7 +1019,7 @@ QWidget* PensarioPanel::renderPostit(const PnItem& it, QWidget* parent) {
     auto* f = new QFrame(parent);
     f->setObjectName(QStringLiteral("pnPostit"));
     const QColor c(it.kind == Tab::Memories ? tc(Theme::textPrimary()) : QColor(it.color));
-    const QColor bg = mix(c, tc(Theme::inputBackground()), 0.22);
+    const QColor bg = mix(c, flat(tc(Theme::inputBackground())), 0.22);
     QColor bd = c; bd.setAlphaF(0.45);
     f->setStyleSheet(QStringLiteral("QFrame#pnPostit { background: %1; border: 1px solid %2; border-top-left-radius: 4px;"
                                     " border-top-right-radius: 4px; border-bottom-right-radius: 10px; border-bottom-left-radius: 4px; }")
@@ -1127,7 +1132,7 @@ QWidget* PensarioPanel::renderBubble(const PnItem& it, QWidget* parent) {
     auto* bub = new QFrame(row);
     bub->setObjectName(QStringLiteral("pnBubble"));
     const QColor accent = tc(Theme::accentDefault());
-    const QColor card = tc(Theme::inputBackground());
+    const QColor card = flat(tc(Theme::inputBackground()));
     const QColor bg = me ? mix(accent, card, 0.24) : card;
     QColor bd = me ? accent : tc(Theme::subtleBorder());
     const QString bdCss = me ? QStringLiteral("rgba(%1,%2,%3,0.4)").arg(bd.red()).arg(bd.green()).arg(bd.blue()) : Theme::subtleBorder();
