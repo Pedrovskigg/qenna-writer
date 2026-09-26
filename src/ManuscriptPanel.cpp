@@ -454,6 +454,24 @@ QString relativeWhen(const QDateTime& when) {
 }
 }
 
+namespace {
+// Fundo transparente pra lista inteira, MAS com o tooltip de volta. Um
+// "background: transparent" sem seletor cascateia até a etiqueta do tooltip
+// (o QToolTip herda o estilo do widget que o chama): ela fica transparente e
+// o Windows pinta preto por baixo, com o texto do tema (escuro no tema claro).
+QString transparentWithTooltips()
+{
+    // Opaco: em tema com painel translúcido o preto do Windows vazaria de novo.
+    QColor opaqueBg = Theme::toColor(Theme::panelBackground());
+    opaqueBg.setAlpha(255);
+    return Theme::qss(QStringLiteral(
+        "* { background: transparent; }"
+        "QToolTip { background-color: %1; color: %2; border: 1px solid %3;"
+        " border-radius: @radius-control; padding: 4px 8px; }"))
+        .arg(opaqueBg.name(), Theme::textPrimary(), Theme::panelBorder());
+}
+}
+
 ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     : QWidget(parent)
     , m_model(model)
@@ -610,10 +628,10 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     m_scroll->setFrameShape(QFrame::NoFrame);
     m_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_scroll->setStyleSheet(QStringLiteral("#manuscriptScroll { background: transparent; }"));
-    m_scroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    m_scroll->viewport()->setStyleSheet(transparentWithTooltips());
 
     auto* listHost = new QWidget(m_scroll);
-    listHost->setStyleSheet(QStringLiteral("background: transparent;"));
+    listHost->setStyleSheet(transparentWithTooltips());
     m_listLayout = new QVBoxLayout(listHost);
     m_listLayout->setContentsMargins(8, 8, 8, 8);
     m_listLayout->setSpacing(0);
@@ -744,6 +762,10 @@ void ManuscriptPanel::loadBookColors() {
 
 void ManuscriptPanel::applyTheme() {
     setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel")));
+    if (m_scroll) {
+        m_scroll->viewport()->setStyleSheet(transparentWithTooltips());
+        if (m_scroll->widget()) m_scroll->widget()->setStyleSheet(transparentWithTooltips());
+    }
     applyHeaderStyles();
     if (isPanelOpen()) rebuildList();
 }

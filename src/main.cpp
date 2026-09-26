@@ -153,6 +153,31 @@ void migrateSettingsFromQiyva()
     newSettings.setValue(QStringLiteral("migratedFromQiyva"), true);
 }
 
+// Todo tooltip do Qt (QTipLabel, objectName "qtooltip_label") ganha um estilo
+// PRÓPRIO com as cores do tema na hora de aparecer. Sem isso, um painel com
+// "background: transparent" sem seletor (tem dezenas no app) cascateia até a
+// etiqueta do tooltip, que fica transparente: o Windows pinta preto por baixo
+// e o texto sai na cor do tema (ilegível em tema claro). Estilo do próprio
+// widget ganha de qualquer estilo herdado.
+class TooltipThemeFilter : public QObject {
+public:
+    using QObject::QObject;
+protected:
+    bool eventFilter(QObject* o, QEvent* e) override {
+        if (e->type() != QEvent::Show || o->objectName() != QLatin1String("qtooltip_label")) return false;
+        auto* w = qobject_cast<QWidget*>(o);
+        if (!w) return false;
+        QColor bg = Theme::toColor(Theme::panelBackground());
+        bg.setAlpha(255);
+        const QString qss = Theme::qss(QStringLiteral(
+            "* { background-color: %1; color: %2; border: 1px solid %3;"
+            " border-radius: @radius-control; padding: 4px 8px; }"))
+            .arg(bg.name(), Theme::textPrimary(), Theme::panelBorder());
+        if (w->styleSheet() != qss) w->setStyleSheet(qss);
+        return false;
+    }
+};
+
 }
 
 int main(int argc, char *argv[])
@@ -241,6 +266,7 @@ int main(int argc, char *argv[])
     // corrente. MainWindow::onThemeChanged() reaplica em troca de tema.
     app.setStyleSheet(Theme::globalStyleSheet());
     Theme::applyToolTipPalette();
+    app.installEventFilter(new TooltipThemeFilter(&app));
 
     QTranslator translator;
     {
