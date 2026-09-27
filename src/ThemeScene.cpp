@@ -1,5 +1,6 @@
 #include "ThemeScene.h"
 
+#include "BackgroundOverlay.h"
 #include "PanelGlass.h"
 
 #include <QCoreApplication>
@@ -181,9 +182,18 @@ void panelRect(QPainter& p, const QRectF& r, const Pal& c, qreal tl, qreal tr_, 
     panelShape(p, roundedPath(r, tl, tr_, br, bl), c, key);
 }
 
+void drawBackgroundImage(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QPixmap& bg);
+
 void drawBackground(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QColor& app, const QPixmap& bg)
 {
     p.fillRect(r, app);
+    drawBackgroundImage(p, r, t, bg);
+    // O mesmo degradê e grão que o BackgroundWidget pinta no app.
+    BackgroundOverlay::paint(p, r, t);
+}
+
+void drawBackgroundImage(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QPixmap& bg)
+{
     if (bg.isNull()) return;
     p.save();
     p.setClipRect(r);

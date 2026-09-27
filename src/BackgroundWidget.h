@@ -7,9 +7,9 @@
 // Widget transparente que pinta uma imagem de fundo cobrindo toda a sua
 // área, com modos centrar / repetir / esticar / ajustar / preencher.
 // É posto como filho do editorContainer e mantido em lower() pra ficar
-// atrás de todos os outros painéis. Quando não há imagem configurada,
-// pinta apenas a cor de fundo do tema (e o painel fica invisível na
-// prática, já que o container cobre via QSS).
+// atrás de todos os outros painéis. Por cima da imagem (ou só da cor, sem
+// imagem) pinta o overlay do tema — degradê e grão (BackgroundOverlay). Sem
+// imagem nem overlay, o MainWindow o esconde e o container pinta a cor via QSS.
 class BackgroundWidget : public QWidget {
     Q_OBJECT
 public:
@@ -30,6 +30,7 @@ protected:
 
 private:
     void rebuildScaled();
+    void paintImage(QPainter& p);
 
     QString m_path;
     int     m_mode = 3; // BgFit

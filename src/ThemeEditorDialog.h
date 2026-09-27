@@ -61,6 +61,7 @@ private:
     QWidget* swatch(const QString& key, const QString& label = QString());
     QWidget* slider(const QString& label, int min, int max, int value, const QString& unit,
                     const std::function<void(int)>& apply);
+    void addOverlayControls();
     QWidget* link(const QString& text, const std::function<void()>& onClick);
     QWidget* hint(const QString& text, int maxWidth = 380);
     QWidget* contrastBox();

@@ -38,6 +38,7 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QUuid>
+#include <QVariantAnimation>
 #include <QVBoxLayout>
 #include <QtMath>
 #include <climits>
@@ -92,11 +93,20 @@ const QHash<QString, QStringList>& recommended()
         { QStringLiteral("light"),      { QStringLiteral("solarized-light"), QStringLiteral("manuscrito"), QStringLiteral("tokyo-day"),
                                           QStringLiteral("e-ink-gray"), QStringLiteral("brutalismo") } },
         { QStringLiteral("estampados"), { QStringLiteral("paper-city-yellowed"), QStringLiteral("tokyo-noir"), QStringLiteral("one-dark-skyline"),
-                                          QStringLiteral("solarized-highlands"), QStringLiteral("arquivo") } },
+                                          QStringLiteral("solarized-highlands"), QStringLiteral("arquivo"),
+                                          QStringLiteral("desk-mahogany") } },
         { QStringLiteral("warm"),       { QStringLiteral("gruvbox-dark"), QStringLiteral("cafe"), QStringLiteral("lamparina"),
-                                          QStringLiteral("fig-preserve") } },
+                                          QStringLiteral("fig-preserve"), QStringLiteral("acafrao") } },
+        { QStringLiteral("colorful"),   { QStringLiteral("blacklight"), QStringLiteral("rose-pine"), QStringLiteral("outrun"),
+                                          QStringLiteral("ocean"), QStringLiteral("solarized-dark") } },
     };
     return r;
+}
+// Das recomendações acima, as que vieram do Tony (o tester mais antigo) e não
+// do desenvolvedor: mesmo lugar na fila, selo com o nome dele.
+bool isTonyPick(const QString& id)
+{
+    return id == QLatin1String("desk-mahogany");
 }
 bool isRecommended(const QString& id)
 {
@@ -666,6 +676,148 @@ private:
     int m_hover = -1;
 };
 
+// Recado dos temas com lore (Tifu e Tommy) na lateral: clicável, abre a foto.
+class LoreCard : public QLabel {
+public:
+    explicit LoreCard(QWidget* parent) : QLabel(parent)
+    {
+        setObjectName(QStringLiteral("loreCard"));
+        setWordWrap(true);
+        setCursor(Qt::PointingHandCursor);
+        setAttribute(Qt::WA_Hover);
+    }
+    std::function<void()> onClick;
+
+protected:
+    void mousePressEvent(QMouseEvent* e) override { e->accept(); }
+    void mouseReleaseEvent(QMouseEvent* e) override
+    {
+        if (e->button() == Qt::LeftButton && rect().contains(e->position().toPoint()) && onClick) onClick();
+    }
+};
+
+// A foto do gato por cima do painel: fundo escurecido, cartão com a foto e o
+// nome, entra com fade subindo um pouco. Clique em qualquer lugar ou Esc fecha.
+// Filho do próprio painel (não janela nova) — cobre o painel inteiro e
+// acompanha o redimensionamento.
+class CatPhotoOverlay : public QWidget {
+public:
+    CatPhotoOverlay(QWidget* host, const QString& photo, const QString& caption, const QColor& accent)
+        : QWidget(host), m_photo(photo), m_caption(caption), m_accent(accent)
+    {
+        setAttribute(Qt::WA_DeleteOnClose);
+        setFocusPolicy(Qt::StrongFocus);
+        setCursor(Qt::PointingHandCursor);
+        setGeometry(host->rect());
+        host->installEventFilter(this);
+
+        m_fade = new QGraphicsOpacityEffect(this);
+        m_fade->setOpacity(0.0);
+        setGraphicsEffect(m_fade);
+        show();
+        raise();
+        setFocus();
+
+        auto* in = new QVariantAnimation(this);
+        in->setDuration(280);
+        in->setStartValue(0.0);
+        in->setEndValue(1.0);
+        in->setEasingCurve(QEasingCurve::OutCubic);
+        connect(in, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            m_t = v.toReal();
+            m_fade->setOpacity(m_t);
+            update();
+        });
+        in->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+
+    void dismiss()
+    {
+        if (m_closing) return;
+        m_closing = true;
+        auto* out = new QVariantAnimation(this);
+        out->setDuration(200);
+        out->setStartValue(m_t);
+        out->setEndValue(0.0);
+        out->setEasingCurve(QEasingCurve::InCubic);
+        connect(out, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            m_t = v.toReal();
+            m_fade->setOpacity(m_t);
+            update();
+        });
+        connect(out, &QVariantAnimation::finished, this, [this]() { hide(); close(); });
+        out->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* e) override
+    {
+        if (obj == parentWidget() && e->type() == QEvent::Resize) setGeometry(parentWidget()->rect());
+        return QWidget::eventFilter(obj, e);
+    }
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        e->accept();
+        dismiss();
+    }
+    void keyPressEvent(QKeyEvent* e) override
+    {
+        e->accept();
+        if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter
+            || e->key() == Qt::Key_Space)
+            dismiss();
+    }
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        p.fillRect(rect(), QColor(0, 0, 0, 165));
+        if (m_photo.isNull()) return;
+
+        const qreal pad = 10, capH = 46;
+        const qreal ph = qMin(height() * 0.74, 640.0);
+        const qreal pw = ph * m_photo.width() / m_photo.height();
+        const qreal rise = (1.0 - m_t) * 14;
+        const QRectF card((width() - pw - 2 * pad) / 2, (height() - ph - 2 * pad - capH) / 2 + rise,
+                          pw + 2 * pad, ph + 2 * pad + capH);
+
+        p.setPen(QPen(m_accent, 1.5));
+        p.setBrush(Theme::toColor(Theme::panelBackground()));
+        p.drawRoundedRect(card, 14, 14);
+
+        const QSize target = (QSizeF(pw, ph) * devicePixelRatioF()).toSize();
+        if (m_scaled.size() != target) {
+            m_scaled = m_photo.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            m_scaled.setDevicePixelRatio(devicePixelRatioF());
+        }
+        const QRectF photoR(card.left() + pad, card.top() + pad, pw, ph);
+        QPainterPath clip;
+        clip.addRoundedRect(photoR, 9, 9);
+        p.save();
+        p.setClipPath(clip);
+        p.drawPixmap(photoR.topLeft(), m_scaled);
+        p.restore();
+
+        QFont f(QStringLiteral("Lora"));
+        f.setPixelSize(18);
+        f.setWeight(QFont::DemiBold);
+        p.setFont(f);
+        p.setPen(Theme::toColor(Theme::textBright()));
+        p.drawText(QRectF(card.left(), photoR.bottom(), card.width(), capH + pad),
+                   Qt::AlignCenter, m_caption);
+    }
+
+private:
+    QPixmap m_photo;
+    QPixmap m_scaled;
+    QString m_caption;
+    QColor m_accent;
+    QGraphicsOpacityEffect* m_fade = nullptr;
+    qreal m_t = 0.0;
+    bool m_closing = false;
+};
+
 } // namespace ThemesPanelDetail
 
 using namespace ThemesPanelDetail;
@@ -967,11 +1119,15 @@ QWidget* ThemesPanel::buildSide()
     });
     nameRow->addWidget(m_favButton);
     lay->addLayout(nameRow);
-    m_recBadge = new QLabel(QStringLiteral("★  ") + tr("Recomendação do desenvolvedor"), side);
+    m_recBadge = new QLabel(side);
     m_recBadge->setObjectName(QStringLiteral("recBadge"));
     m_recBadge->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     m_recBadge->hide();
     lay->addWidget(m_recBadge);
+    m_loreCard = new LoreCard(side);
+    m_loreCard->onClick = [this]() { showCatPhoto(shownId()); };
+    m_loreCard->hide();
+    lay->addWidget(m_loreCard);
 
     // Contraste
     auto* cf = new QVBoxLayout;
@@ -1030,6 +1186,19 @@ QWidget* ThemesPanel::buildSide()
     m_applyButton->setObjectName(QStringLiteral("applyBtn"));
     m_applyButton->setCursor(Qt::PointingHandCursor);
     connect(m_applyButton, &QPushButton::clicked, this, &ThemesPanel::onApplyClicked);
+    // Personalizar: nos temas do app abre o Criador numa cópia (o original
+    // fica intacto, a cópia vai pra Meus temas); nos do usuário vira "Editar".
+    m_customizeButton = new QPushButton(tr("Personalizar"), side);
+    m_customizeButton->setObjectName(QStringLiteral("customizeBtn"));
+    m_customizeButton->setCursor(Qt::PointingHandCursor);
+    connect(m_customizeButton, &QPushButton::clicked, this, [this]() {
+        const QString id = shownId();
+        if (id.isEmpty()) return;
+        m_selectedId = id;
+        m_hoverId.clear();
+        if (Theme::Manager::instance()->isCustom(id)) onEditClicked();
+        else onDuplicateClicked();
+    });
     m_moreButton = new QToolButton(side);
     m_moreButton->setObjectName(QStringLiteral("moreBtn"));
     m_moreButton->setText(QStringLiteral("⋯"));
@@ -1037,6 +1206,8 @@ QWidget* ThemesPanel::buildSide()
     m_moreButton->setToolTip(tr("Mais ações"));
     connect(m_moreButton, &QToolButton::clicked, this, &ThemesPanel::showMoreMenu);
     acts->addWidget(m_applyButton);
+    acts->addSpacing(4);
+    acts->addWidget(m_customizeButton);
     acts->addWidget(m_moreButton);
     acts->addStretch(1);
     lay->addLayout(acts);
@@ -1201,7 +1372,18 @@ void ThemesPanel::refreshSide()
                              .arg(cur.name.toHtmlEscaped(), shown->name.toHtmlEscaped(), Theme::subtleBorder()));
 
     m_nameLabel->setText(shown->name);
+    m_recBadge->setText(QStringLiteral("★  ") + (isTonyPick(shown->id) ? tr("Escolha do Tony")
+                                                                        : tr("Recomendação do desenvolvedor")));
     m_recBadge->setVisible(isRecommended(shown->id));
+    // Temas com lore própria — recado de bastidores, clicável (abre a foto).
+    if (shown->id == QLatin1String("tifu")) {
+        m_loreCard->setText(tr("🐈‍⬛ Esse theme foi feito inspirado no gato preto e "
+                               "calmo como a noite — Tifu, O Sábio."));
+    } else if (shown->id == QLatin1String("tommy")) {
+        m_loreCard->setText(tr("🐈 Esse theme foi feito inspirado na hiperatividade e "
+                               "inquietação do melhor gato laranja — Tommy, O Temível."));
+    }
+    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy"));
     const bool fav = mgr->isFavorite(shown->id);
     m_favButton->setStyleSheet(QStringLiteral("QToolButton#favBtn { color: %1; }")
                                    .arg(fav ? kFav.name() : Theme::textMuted()));
@@ -1233,6 +1415,7 @@ void ThemesPanel::refreshSide()
 
     m_applyButton->setEnabled(!isCur);
     m_applyButton->setText(isCur ? tr("Em uso") : tr("Aplicar"));
+    m_customizeButton->setText(mgr->isCustom(shown->id) ? tr("Editar") : tr("Personalizar"));
 }
 
 void ThemesPanel::refreshFooter()
@@ -1327,9 +1510,6 @@ void ThemesPanel::showMoreMenu()
     menu->setAttribute(Qt::WA_DeleteOnClose);
     menu->setToolTipsVisible(true);
     auto select = [this, id]() { m_selectedId = id; m_hoverId.clear(); };
-    if (custom) {
-        connect(menu->addAction(tr("Editar")), &QAction::triggered, this, [this, select]() { select(); onEditClicked(); });
-    }
     connect(menu->addAction(tr("Editar uma cópia")), &QAction::triggered, this, [this, select]() { select(); onDuplicateClicked(); });
     QAction* exp = menu->addAction(tr("Exportar"));
     // Exportar só tema personalizado: quem recebe já tem todos os padrões.
@@ -1353,49 +1533,23 @@ void ThemesPanel::onApplyClicked()
     m_selectedId = id;
     m_hoverId.clear();
     Theme::Manager::instance()->setCurrent(id);
-
-    // Temas com "lore" própria — mensagem de bastidores a cada aplicação.
-    if (id == QStringLiteral("tifu")) {
-        showThemeIntroToast(tr("🐈‍⬛ Esse theme foi feito inspirado no gato preto e "
-                               "calmo como a noite — Tifu, O Sábio."));
-    } else if (id == QStringLiteral("tommy")) {
-        showThemeIntroToast(tr("🐈 Esse theme foi feito inspirado na hiperatividade e "
-                               "inquietação do melhor gato laranja — Tommy, O Temível."));
-    }
 }
 
-void ThemesPanel::showThemeIntroToast(const QString& text)
+void ThemesPanel::showCatPhoto(const QString& id)
 {
-    if (!m_applyButton) return;
-
-    auto* toast = new QLabel(text);
-    toast->setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
-    toast->setAttribute(Qt::WA_ShowWithoutActivating);
-    toast->setAttribute(Qt::WA_DeleteOnClose);
-    toast->setAlignment(Qt::AlignCenter);
-    toast->setWordWrap(true);
-    toast->setFixedWidth(280);
-    toast->setStyleSheet(Theme::qss(QStringLiteral(
-        "QLabel { background: %1; color: %2; border: 1px solid %3; "
-        "border-radius: @radius-panel; padding: 8px 14px; font-size: 12px; font-weight: 600; }")
-        .arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
-    toast->adjustSize();
-
-    const QPoint anchorTopCenter = m_applyButton->mapToGlobal(QPoint(m_applyButton->width() / 2, 0));
-    toast->move(anchorTopCenter.x() - toast->width() / 2, anchorTopCenter.y() - toast->height() - 10);
-    toast->show();
-
-    auto* opacity = new QGraphicsOpacityEffect(toast);
-    toast->setGraphicsEffect(opacity);
-
-    QTimer::singleShot(3200, toast, [toast, opacity]() {
-        auto* anim = new QPropertyAnimation(opacity, "opacity", toast);
-        anim->setDuration(350);
-        anim->setStartValue(1.0);
-        anim->setEndValue(0.0);
-        QObject::connect(anim, &QPropertyAnimation::finished, toast, &QLabel::close);
-        anim->start(QAbstractAnimation::DeleteWhenStopped);
-    });
+    const bool tifu = id == QLatin1String("tifu");
+    if (!tifu && id != QLatin1String("tommy")) return;
+    const Theme::MiraTheme* t = themeById(id);
+    // Duas fotos de cada: o primeiro clique mostra sempre a principal (Tifu
+    // contemplativo, Tommy de olhar "Temível"), depois alterna com a segunda.
+    // Contagem só da sessão.
+    static int clicks[2] = { 0, 0 };
+    const bool first = clicks[tifu ? 0 : 1]++ % 2 == 0;
+    const QString base = tifu ? QStringLiteral(":/app/cat-tifu") : QStringLiteral(":/app/cat-tommy");
+    new CatPhotoOverlay(this,
+                        base + (first ? QStringLiteral(".jpg") : QStringLiteral("-2.jpg")),
+                        tifu ? tr("Tifu, O Sábio") : tr("Tommy, O Temível"),
+                        Theme::toColor(t ? t->accentDefault : Theme::accentDefault()));
 }
 
 void ThemesPanel::onNewClicked()
@@ -1775,6 +1929,11 @@ void ThemesPanel::applyStyle()
             color: %9; background: %12; border: 1px solid %13;
             border-radius: @radius-control; padding: 3px 9px; font-size: 11px; font-weight: 600;
         }
+        QLabel#loreCard {
+            color: %2; background: transparent; border: 1px solid %8;
+            border-radius: @radius-control; padding: 8px 10px; font-size: 12px;
+        }
+        QLabel#loreCard:hover { color: %3; background: %12; border-color: %13; }
         QLabel#cfKey { color: %4; font-size: 12px; }
         QLabel#cfVal { color: %3; font-size: 12px; }
         QLabel#cfUsing { color: %4; font-size: 11px; }
@@ -1783,6 +1942,11 @@ void ThemesPanel::applyStyle()
             padding: 6px 14px; font-size: 13px; font-weight: 600;
         }
         QPushButton#applyBtn:disabled { background: transparent; color: %4; border-color: %6; }
+        QPushButton#customizeBtn {
+            background: transparent; color: %3; border: 1px solid %6; border-radius: @radius-control;
+            padding: 6px 14px; font-size: 13px; font-weight: 600;
+        }
+        QPushButton#customizeBtn:hover { background: %7; border-color: %9; }
         QToolButton#moreBtn {
             border: none; background: transparent; color: %4; font-size: 17px;
             padding: 2px 10px; border-radius: @radius-control;

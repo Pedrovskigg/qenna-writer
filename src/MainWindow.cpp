@@ -186,6 +186,7 @@
 #include "ThemesPanel.h"
 #include "TrashService.h"
 #include "LoadingToast.h"
+#include "BackgroundOverlay.h"
 #include "BackgroundWidget.h"
 #include "PanelGlass.h"
 #include "WordCountPanel.h"
@@ -8226,18 +8227,22 @@ void MainWindow::applyBackgroundFromTheme()
     const QString img = Theme::backgroundImage();
     const int mode = Theme::backgroundMode();
     const bool hasImage = !img.isEmpty();
+    // Degradê ou grão na mesa também precisam do fundo pintado por baixo de
+    // tudo, mesmo sem foto: tratam-se como a imagem daqui pra baixo.
+    const bool painted = hasImage || BackgroundOverlay::active(Theme::Manager::instance()->current());
 
     if (backgroundWidget) {
         backgroundWidget->setBackground(hasImage ? img : QString(), mode);
         backgroundWidget->setFillColor(QColor(Theme::appBackground()));
         backgroundWidget->setGeometry(rect());
-        backgroundWidget->setVisible(hasImage);
+        backgroundWidget->setVisible(painted);
         backgroundWidget->lower();
+        backgroundWidget->update();
     }
 
-    // Quando há imagem: deixa o container transparente pra a imagem aparecer.
-    // Sem imagem: cor sólida normal (comportamento antigo).
-    if (hasImage) {
+    // Quando há imagem ou overlay: deixa o container transparente pro fundo
+    // aparecer. Sem nenhum dos dois: cor sólida normal (comportamento antigo).
+    if (painted) {
         editorContainer->setStyleSheet(
             QStringLiteral("#editorContainer { background: transparent; }"));
     } else {
@@ -8248,7 +8253,7 @@ void MainWindow::applyBackgroundFromTheme()
         // Com a barra translúcida o holder também precisa sair da frente: ele
         // fica entre a TopToolbar e o fundo, e pintaria appBackground opaco
         // justamente onde a transparência deveria mostrar a foto ou o halo.
-        const bool holderTransparent = hasImage || Theme::panelOpacity() < 100;
+        const bool holderTransparent = painted || Theme::panelOpacity() < 100;
         toolbarHolder->setStyleSheet(
             QStringLiteral("#topToolbarHolder { background: %1; }")
                 .arg(holderTransparent ? QStringLiteral("transparent")

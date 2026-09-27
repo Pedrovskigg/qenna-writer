@@ -1,5 +1,6 @@
 #include "BackgroundWidget.h"
 
+#include "BackgroundOverlay.h"
 #include "Theme.h"
 
 #include <QImageReader>
@@ -91,6 +92,13 @@ void BackgroundWidget::paintEvent(QPaintEvent* /*event*/)
         p.fillRect(rect(), m_fill);
     }
     // 2) Imagem em cima.
+    paintImage(p);
+    // 3) Degradê e grão do tema por cima da mesa (cor ou foto).
+    BackgroundOverlay::paint(p, QRectF(rect()), Theme::Manager::instance()->current());
+}
+
+void BackgroundWidget::paintImage(QPainter& p)
+{
     if (m_source.isNull()) return;
     rebuildScaled();
     if (m_scaled.isNull()) return;

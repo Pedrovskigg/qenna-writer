@@ -708,6 +708,7 @@ QString ThemeEditorDialog::colorOf(const QString& key) const
     if (key == QLatin1String("pageShadowColor"))  return t.pageShadowColor;
     if (key == QLatin1String("iconColor"))        return t.iconColor.isEmpty() ? t.textMuted : t.iconColor;
     if (key == QLatin1String("docHeaderColor"))   return t.docHeaderColor.isEmpty() ? t.editorTextColor : t.docHeaderColor;
+    if (key == QLatin1String("bgOverlayColor"))   return t.bgOverlayColor;
     if (key.startsWith(QLatin1String("panel:"))) {
         const QStringList parts = key.split(QLatin1Char(':'));
         const auto pc = t.panelColors.value(parts.value(1));
@@ -731,6 +732,7 @@ void ThemeEditorDialog::setColor(const QString& key, const QString& v)
     else if (key == QLatin1String("pageShadowColor"))  t.pageShadowColor = v;
     else if (key == QLatin1String("iconColor"))        t.iconColor = v;
     else if (key == QLatin1String("docHeaderColor"))   t.docHeaderColor = v;
+    else if (key == QLatin1String("bgOverlayColor"))   t.bgOverlayColor = v;
     else if (key.startsWith(QLatin1String("panel:"))) {
         const QStringList parts = key.split(QLatin1Char(':'));
         auto& pc = t.panelColors[parts.value(1)];
@@ -751,6 +753,7 @@ QString ThemeEditorDialog::colorLabel(const QString& key) const
     if (key == QLatin1String("pageShadowColor"))  return tr("Sombra");
     if (key == QLatin1String("iconColor"))        return tr("Ícones");
     if (key == QLatin1String("docHeaderColor"))   return tr("Cor do título");
+    if (key == QLatin1String("bgOverlayColor"))   return tr("Cor do degradê");
     if (key.endsWith(QLatin1String(":bg")))       return tr("Cor");
     if (key.endsWith(QLatin1String(":bd")))       return tr("Borda");
     return key;
@@ -842,6 +845,70 @@ QWidget* ThemeEditorDialog::slider(const QString& label, int min, int max, int v
         refreshPreview();
     });
     return w;
+}
+
+// Overlay da mesa (do Mira Cover): o tipo de degradê em pílulas, e — só com um
+// degradê escolhido — a cor e os knobs de opacidade/tamanho empilhados, pra
+// caber na faixa ao lado da foto. O grão vale com ou sem degradê.
+void ThemeEditorDialog::addOverlayControls()
+{
+    auto& t = m_theme;
+    auto* box = new QWidget(m_controls);
+    auto* bl = new QVBoxLayout(box);
+    bl->setContentsMargins(0, 0, 0, 0);
+    bl->setSpacing(6);
+    auto* lab = new QLabel(tr("Degradê"), box);
+    lab->setObjectName(QStringLiteral("ctlLabel"));
+    bl->addWidget(lab);
+    auto* grid = new QGridLayout;
+    grid->setContentsMargins(0, 0, 0, 0);
+    grid->setHorizontalSpacing(2);
+    grid->setVerticalSpacing(2);
+    const QList<QPair<int, QString>> types = {
+        { Theme::OverlayNone, tr("Nenhum") }, { Theme::OverlayBottom, tr("Embaixo") }, { Theme::OverlayTop, tr("Em cima") },
+        { Theme::OverlayBoth, tr("Os dois") }, { Theme::OverlayVignette, tr("Vinheta") },
+    };
+    for (int i = 0; i < types.size(); ++i) {
+        auto* b = new QPushButton(types.at(i).second, box);
+        b->setObjectName(QStringLiteral("pill"));
+        b->setCheckable(true);
+        b->setChecked(t.bgOverlayType == types.at(i).first);
+        b->setCursor(Qt::PointingHandCursor);
+        const int type = types.at(i).first;
+        connect(b, &QPushButton::clicked, this, [this, type]() {
+            if (m_theme.bgOverlayType == type) { rebuildControls(); return; }
+            pushUndo();
+            m_theme.bgOverlayType = type;
+            refreshPreview();
+            rebuildControls();
+        });
+        grid->addWidget(b, i / 3, i % 3);
+    }
+    bl->addLayout(grid);
+    bl->addStretch(1);
+    box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    m_controlsLay->addWidget(box, 0, Qt::AlignVCenter);
+
+    if (t.bgOverlayType != Theme::OverlayNone) {
+        m_controlsLay->addWidget(swatch(QStringLiteral("bgOverlayColor")), 0, Qt::AlignVCenter);
+        auto* knobs = new QWidget(m_controls);
+        auto* kl = new QVBoxLayout(knobs);
+        kl->setContentsMargins(0, 0, 0, 0);
+        kl->setSpacing(8);
+        kl->addWidget(slider(tr("Opacidade"), 0, 100, t.bgOverlayOpacity, QStringLiteral("%"),
+                             [this](int v) { m_theme.bgOverlayOpacity = v; }));
+        kl->addWidget(slider(tr("Tamanho"), 5, 100, t.bgOverlaySize, QStringLiteral("%"),
+                             [this](int v) { m_theme.bgOverlaySize = v; }));
+        m_controlsLay->addWidget(knobs, 0, Qt::AlignVCenter);
+    }
+    auto* grain = new QWidget(m_controls);
+    auto* gl = new QVBoxLayout(grain);
+    gl->setContentsMargins(0, 0, 0, 0);
+    gl->setSpacing(8);
+    gl->addWidget(slider(tr("Grão"), 0, 100, t.bgGrain, QString(), [this](int v) { m_theme.bgGrain = v; }));
+    gl->addWidget(slider(tr("Tamanho do grão"), 1, 12, t.bgGrainSize, QStringLiteral("×"),
+                         [this](int v) { m_theme.bgGrainSize = v; }));
+    m_controlsLay->addWidget(grain, 0, Qt::AlignVCenter);
 }
 
 QWidget* ThemeEditorDialog::link(const QString& text, const std::function<void()>& onClick)
@@ -999,6 +1066,7 @@ void ThemeEditorDialog::rebuildControls()
             add(box);
             add(photoPalette());
         }
+        addOverlayControls();
         break;
     }
     case Panels: {

@@ -23,6 +23,16 @@ enum BackgroundMode {
     BgZoom    = 4, // amplia mantendo proporção (KeepAspectRatioByExpanding)
 };
 
+// Degradê por cima da mesa (MiraTheme::bgOverlayType). Os números vão pro
+// JSON dos temas: não reordenar.
+enum BackgroundOverlayType {
+    OverlayNone     = 0,
+    OverlayBottom   = 1, // escurece (ou clareia) de baixo pra cima
+    OverlayTop      = 2, // de cima pra baixo
+    OverlayBoth     = 3, // em cima e embaixo
+    OverlayVignette = 4, // elipse em volta, centro limpo
+};
+
 // Bundle de propriedades visuais de um tema. Cores em #rrggbb ou rgba(...).
 // Layout da página (largura/margens) NÃO é responsabilidade do tema — fica
 // em EditorLayout.
@@ -135,6 +145,18 @@ struct MiraTheme {
     // barrinhas) usa a cor da própria gaveta — a do projeto, padrão — ou o
     // destaque do tema. O ícone da gaveta na LeftBar sempre fica com a dela.
     bool drawerAccentFromTheme = false;
+    // Overlay da mesa (do Mira Cover, 2026-09-27): degradê por cima da cor ou
+    // da foto do fundo, e grão de filme. Só pinta a mesa — painéis e página
+    // ficam por cima. Opacidade, tamanho e grão em 0..100; tipo em
+    // BackgroundOverlayType. Tudo no padrão = o fundo como sempre foi.
+    int bgOverlayType = OverlayNone;
+    QString bgOverlayColor = QStringLiteral("#000000");
+    int bgOverlayOpacity = 70;
+    int bgOverlaySize = 45;
+    int bgGrain = 0;
+    // Tamanho do grão: 1 = fino, de película; valores maiores ampliam o ruído
+    // com suavização até virar mancha (perolado, feltro, pedra). 1..12.
+    int bgGrainSize = 1;
 
     // --- Metadados de compartilhamento (arquivos .qtheme) ---
     // Nada disso muda a aparência do tema — é a identidade dele enquanto

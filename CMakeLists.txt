@@ -225,6 +225,7 @@ qt_add_executable(qenna-writer
     src/ThemesPanel.h
     src/LoadingToast.cpp
     src/LoadingToast.h
+    src/BackgroundOverlay.cpp
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp

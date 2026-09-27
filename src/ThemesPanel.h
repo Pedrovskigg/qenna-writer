@@ -27,6 +27,7 @@ class ThemeGridView;
 class ComparePreview;
 class SimilarStrip;
 class Dot;
+class LoreCard;
 }
 
 // Painel de Temas ("Silenciosa", 2026-09-26). Três colunas:
@@ -85,7 +86,7 @@ private:
     void selectId(const QString& id);
     void onGridHover(const QString& id);
     void showMoreMenu();
-    void showThemeIntroToast(const QString& text);
+    void showCatPhoto(const QString& id);
 
     QString shownId() const;
     const Theme::MiraTheme* themeById(const QString& id) const;
@@ -116,6 +117,7 @@ private:
     QLabel* m_nameLabel = nullptr;
     QToolButton* m_favButton = nullptr;
     QLabel* m_recBadge = nullptr;
+    ThemesPanelDetail::LoreCard* m_loreCard = nullptr;
     ThemesPanelDetail::Dot* m_dotText = nullptr;
     ThemesPanelDetail::Dot* m_dotMuted = nullptr;
     QLabel* m_contrastText = nullptr;
@@ -124,6 +126,7 @@ private:
     QLabel* m_contrastMutedUsing = nullptr;
     ThemesPanelDetail::SimilarStrip* m_similar = nullptr;
     QPushButton* m_applyButton = nullptr;
+    QPushButton* m_customizeButton = nullptr;
     QToolButton* m_moreButton = nullptr;
 
     // Rodapé
