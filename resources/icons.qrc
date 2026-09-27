@@ -6,6 +6,8 @@
         <file alias="cat-tifu-2.jpg">../src/assets/Tifu-Tommy/Tifu-2.jpeg</file>
         <file alias="cat-tommy.jpg">../src/assets/Tifu-Tommy/Tommy-3.jpeg</file>
         <file alias="cat-tommy-2.jpg">../src/assets/Tifu-Tommy/Tommy-2.jpeg</file>
+        <!-- Easter egg pra quem cavucar os recursos do app: não é usada em lugar nenhum. -->
+        <file alias="cat-tommy-violao.jpg">../src/assets/Tifu-Tommy/Tommy.jpeg</file>
         <file alias="splash.png">../src/assets/logo/splash.png</file>
         <file alias="splash-2.png">../src/assets/logo/splash-2-app.png</file>
         <file alias="splash-3.png">../src/assets/logo/splash-3-app.png</file>
