@@ -39,7 +39,7 @@ namespace {
 
 // Cores dos ícones vêm do tema; reavaliadas em cada loadIcon, pra que reload
 // após troca de tema reflita as cores atuais (e nunca fiquem invisíveis).
-QString iconNormalColor()   { return Theme::textMuted(); }
+QString iconNormalColor()   { return Theme::iconColor(); }
 QString iconHoverColor()    { return Theme::textPrimary(); }
 QString iconSelectedColor() { return Theme::textBright(); }
 
@@ -69,6 +69,19 @@ QToolButton *makeIconButton(QWidget *parent)
     b->setFixedSize(kIconButtonSize, kIconButtonSize);
     b->setIconSize(QSize(kIconSize, kIconSize));
     return b;
+}
+
+// Botões de MODO (Modo Foco, Editor Focado): o "ligado" é a luzinha no canto
+// (positionModeBadges), não o ícone — então o ícone marcado fica na mesma cor
+// do solto, que é a cor dos ícones do tema.
+QIcon loadModeIcon(const QString &name, int px = kIconSize)
+{
+    return IconUtils::loadToolbarIcon(
+        QStringLiteral(":/icons/%1").arg(name),
+        QColor(iconNormalColor()),
+        QColor(iconHoverColor()),
+        QColor(iconNormalColor()),
+        QSize(px, px));
 }
 
 QIcon loadIcon(const QString &name, int px = kIconSize)
@@ -168,10 +181,10 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     focusModeBadge  = makeBadge(QStringLiteral("modeBadge"));
     indentBadge     = makeBadge(QStringLiteral("modeBadge"));
 
-    focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"));
-    focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"));
-    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"));
-    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"));
+    focusOffIcon = loadModeIcon(QStringLiteral("focusmode-off.svg"));
+    focusOnIcon  = loadModeIcon(QStringLiteral("focusmode-on.svg"));
+    readModeOffIcon = loadModeIcon(QStringLiteral("focusededitor-off.svg"));
+    readModeOnIcon  = loadModeIcon(QStringLiteral("focusededitor-on.svg"));
 
     auto bindIcon = [this](QToolButton* b, const QString& name) {
         b->setIcon(loadIcon(name));
@@ -1002,16 +1015,17 @@ void TopToolbar::applyRootStyle()
         }
         %11
     )")).arg(
-        Theme::panelBackgroundCss(), // 1 — fundo (já com a opacidade do tema)
-        Theme::textPrimary(),        // 2 — texto dos botões em estado normal
+        Theme::panelBackgroundCssFor(Theme::PanelKey::TopToolbar), // 1 — fundo (com a opacidade e a cor própria da barra)
+        // 2 — texto dos botões (fonte etc.): segue a cor dos ícones quando o tema define uma
+        Theme::hasIconColor() ? Theme::iconColor() : Theme::textPrimary(),
         Theme::hoverOverlay(),       // 3 — hover bg
         Theme::subtleBorder(),       // 4 — borda hover / separador
         Theme::textBright(),         // 5 — texto hover/checked
         Theme::pressedOverlay(),     // 6 — checked bg
-        Theme::panelBorder(),        // 7 — borda do corpo da barra
+        Theme::panelBorderFor(Theme::PanelKey::TopToolbar), // 7 — borda do corpo da barra
         Theme::panelBorderRadius(),  // 8 — raio configurável (Editor de Temas)
         QString::number(isVertical() ? 10 : 11), // 9 — texto do tamanho/espaçamento
-        Theme::textMuted(),          // 10 — cor discreta desse mesmo texto
+        Theme::iconColor(),          // 10 — cor discreta desse mesmo texto (= textMuted sem cor de ícone)
         verticalGeometryReset()      // 11 — anula min-width do QSS global (ver abaixo)
     ));
 
@@ -1044,13 +1058,13 @@ void TopToolbar::applyRootStyle()
 void TopToolbar::reloadIcons()
 {
     const int px = currentIconPx();
-    focusOffIcon = loadIcon(QStringLiteral("focusmode-off.svg"), px);
-    focusOnIcon  = loadIcon(QStringLiteral("focusmode-on.svg"), px);
+    focusOffIcon = loadModeIcon(QStringLiteral("focusmode-off.svg"), px);
+    focusOnIcon  = loadModeIcon(QStringLiteral("focusmode-on.svg"), px);
     if (focusButton) {
         focusButton->setIcon(focusCheckedCache ? focusOnIcon : focusOffIcon);
     }
-    readModeOffIcon = loadIcon(QStringLiteral("focusededitor-off.svg"), px);
-    readModeOnIcon  = loadIcon(QStringLiteral("focusededitor-on.svg"), px);
+    readModeOffIcon = loadModeIcon(QStringLiteral("focusededitor-off.svg"), px);
+    readModeOnIcon  = loadModeIcon(QStringLiteral("focusededitor-on.svg"), px);
     if (readModeButton) {
         readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
     }

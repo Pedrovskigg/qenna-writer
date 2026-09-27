@@ -137,8 +137,19 @@ void DocHeaderBar::applyTheme()
                                 ink.greenF() * (1 - t) + paper.greenF() * t,
                                 ink.blueF()  * (1 - t) + paper.blueF()  * t).name();
     };
-    const QString titleColor = ink.name();
-    const QString subtitleColor = mix(0.45);
+    // O tema pode dar ao título cor e fonte próprias (Criador de Temas). O
+    // subtítulo acompanha a cor do título, só mais apagado.
+    const QColor head = Theme::toColor(Theme::docHeaderColor());
+    const QString titleColor = head.isValid() ? head.name() : ink.name();
+    const QString subtitleColor = Theme::hasDocHeaderColor() && head.isValid()
+        ? QColor::fromRgbF(head.redF() * 0.55 + paper.redF() * 0.45,
+                           head.greenF() * 0.55 + paper.greenF() * 0.45,
+                           head.blueF() * 0.55 + paper.blueF() * 0.45).name()
+        : mix(0.45);
+    const QString family = Theme::docHeaderFont();
+    const QString fontStack = family == QLatin1String("Lora")
+        ? QStringLiteral("'Lora','Crimson Text',serif")
+        : QStringLiteral("'%1','Lora',serif").arg(family);
     m_placeholderColor = QColor(mix(0.55));
     const QString hover = QStringLiteral("rgba(%1,%2,%3,0.08)")
         .arg(ink.red()).arg(ink.green()).arg(ink.blue());
@@ -148,14 +159,14 @@ void DocHeaderBar::applyTheme()
         QLabel#docHeaderTitle {
             color: %2;
             background: transparent;
-            font-family: 'Lora','Crimson Text',serif;
+            font-family: %5;
             font-size: 15px;
             font-weight: 700;
         }
         QLabel#docHeaderSubtitle {
             color: %3;
             background: transparent;
-            font-family: 'Lora','Crimson Text',serif;
+            font-family: %5;
             font-size: 11px;
             font-weight: 500;
         }
@@ -165,13 +176,14 @@ void DocHeaderBar::applyTheme()
             border-radius: @radius-control;
         }
         QToolButton#docHeaderVar:hover { background: %4; }
-    )")).arg(bgCss, titleColor, subtitleColor, hover));
+    )")).arg(bgCss, titleColor, subtitleColor, hover, fontStack));
 
     m_varButton->setIcon(IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/scene-var.svg"),
         QColor(subtitleColor), QColor(mix(0.2)), ink,
         m_varButton->iconSize()));
     refreshAvatar(); // o círculo vazio usa a cor do tema
+    relayoutText();  // a fonte do título pode ter mudado de largura
 }
 
 void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitle)

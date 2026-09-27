@@ -482,7 +482,7 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     setObjectName(QStringLiteral("manuscriptPanel"));
     setAttribute(Qt::WA_StyledBackground, true);
     setFixedWidth(kPanelWidth);
-    setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel"), Theme::PanelKey::Drawers));
     setAcceptDrops(true);
     loadSettings();
 
@@ -562,7 +562,8 @@ ManuscriptPanel::ManuscriptPanel(ProjectModel* model, QWidget* parent)
     connect(m_styleBtn, &QToolButton::clicked, this, &ManuscriptPanel::showStyleMenu);
     headerLayout->addWidget(m_styleBtn);
 
-    m_addMsBtn = makeIconBtn(QStringLiteral("✦"), tr("Novo manuscrito"));
+    m_addMsBtn = makeIconBtn(QString(), tr("Novo manuscrito"));
+    m_addMsBtn->setIconSize(QSize(16, 16));
     connect(m_addMsBtn, &QToolButton::clicked, this, &ManuscriptPanel::newManuscriptRequested);
     headerLayout->addWidget(m_addMsBtn);
 
@@ -761,7 +762,7 @@ void ManuscriptPanel::loadBookColors() {
 }
 
 void ManuscriptPanel::applyTheme() {
-    setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("manuscriptPanel"), Theme::PanelKey::Drawers));
     if (m_scroll) {
         m_scroll->viewport()->setStyleSheet(transparentWithTooltips());
         if (m_scroll->widget()) m_scroll->widget()->setStyleSheet(transparentWithTooltips());
@@ -818,7 +819,8 @@ void ManuscriptPanel::hideEvent(QHideEvent* event) {
 void ManuscriptPanel::applyHeaderStyles() {
     // Aura e Janela: o cabeçalho fica por cima da capa, então claro.
     const bool overCover = isCoverBackgroundStyle();
-    const QString iconColor = overCover ? QStringLiteral("rgba(255,255,255,0.78)") : Theme::textMuted();
+    // Glifos do cabeçalho (×) seguem a cor dos ícones do tema; sobre a capa, branco.
+    const QString iconColor = overCover ? QStringLiteral("rgba(255,255,255,0.78)") : Theme::iconColor();
     const QString iconHover = overCover ? QStringLiteral("#ffffff") : Theme::textBright();
     const QString iconHoverBg = overCover ? QStringLiteral("rgba(255,255,255,0.12)") : Theme::hoverOverlay();
     if (m_header) {
@@ -884,6 +886,12 @@ void ManuscriptPanel::applyHeaderStyles() {
         const QColor ic = overCover ? QColor(255, 255, 255, 200) : QColor(Theme::textMuted());
         const QColor ih = overCover ? QColor(Qt::white) : QColor(Theme::textBright());
         m_styleBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"), ic, ih, ih, QSize(16, 16)));
+    }
+    if (m_addMsBtn) {
+        // Era um "✦" de texto: não seguia a cor dos ícones e não dizia o que faz.
+        const QColor ic = overCover ? QColor(255, 255, 255, 200) : QColor(Theme::textMuted());
+        const QColor ih = overCover ? QColor(Qt::white) : QColor(Theme::textBright());
+        m_addMsBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/newmanuscript.svg"), ic, ih, ih, QSize(16, 16)));
     }
     if (m_createChapterBtn) {
         m_createChapterBtn->setStyleSheet(createButtonQss(Theme::accentDefault()));
@@ -1637,9 +1645,14 @@ void ManuscriptPanel::rebuildRail() {
         return b;
     };
 
-    // ✦ no topo, em cima das capas.
-    connect(railBtn(QStringLiteral("✦"), tr("Novo manuscrito")), &QToolButton::clicked,
-            this, &ManuscriptPanel::newManuscriptRequested);
+    // Novo manuscrito no topo, em cima das capas.
+    {
+        auto* add = railBtn(QString(), tr("Novo manuscrito"));
+        add->setIconSize(QSize(18, 18));
+        add->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/newmanuscript.svg"),
+            QColor(Theme::textMuted()), QColor(Theme::textBright()), QColor(Theme::textBright()), QSize(18, 18)));
+        connect(add, &QToolButton::clicked, this, &ManuscriptPanel::newManuscriptRequested);
+    }
 
     // Picker real: o livro aberto SAI do trilho (sobe pro topo da coluna); os
     // outros ficam na ordem da saga, cada um com o seu número.

@@ -289,7 +289,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         QSettings qs;
         m_cardSizeIdx = qBound(0, qs.value(QStringLiteral("ui/cardSizeIdx"), 1).toInt(), 2);
     }
-    setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel"), Theme::PanelKey::Drawers));
 
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
@@ -510,7 +510,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
 }
 
 void DrawerListPanel::applyTheme() {
-    setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel"), Theme::PanelKey::Drawers));
     // Os elementos internos (header, cards, chips, action bar) são reconstruídos
     // ao reabrir o painel — basta reaplicar a base do painel pro background/border
     // novo aparecerem imediatamente.
@@ -671,6 +671,8 @@ QString DrawerListPanel::createButtonLabel() const {
 }
 
 QString DrawerListPanel::currentDrawerColor() const {
+    // O tema pode pedir o destaque dele aqui dentro, no lugar da cor da gaveta.
+    if (Theme::drawerAccentFromTheme()) return Theme::accentDefault();
     if (!m_model || m_currentKey.isEmpty()) return Theme::accentDefault();
     const Drawer* d = m_model->findDrawer(m_currentKey);
     if (!d || d->color.isEmpty()) return Theme::accentDefault();

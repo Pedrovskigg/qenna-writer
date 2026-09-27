@@ -2524,7 +2524,7 @@ bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 
 void PensarioPanel::applyTheme()
 {
-    const QString bg       = Theme::panelBackground();
+    const QString bg       = Theme::withPanelOpacity(Theme::panelBackground());
     const QString border   = Theme::borderStrong();
     const QString textPri  = Theme::textPrimary();
     const QString textMut  = Theme::textMuted();

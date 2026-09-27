@@ -3,6 +3,7 @@
 #include <QColor>
 #include <QJsonObject>
 #include <QList>
+#include <QMap>
 #include <QObject>
 #include <QSet>
 #include <QString>
@@ -114,6 +115,26 @@ struct MiraTheme {
     // Opacidade da página do editor (0–100). 100 = totalmente opaca (default).
     // Valores menores deixam a imagem de fundo aparecer atrás da página.
     int editorOpacity = 100;
+
+    // --- Criador de Temas (2026-09). Tudo vazio/zero = o app como sempre foi. ---
+    // Cor dos ícones da TopToolbar, da LeftBar e dos botões dos painéis — e dos
+    // botões de texto da TopToolbar (fonte, tamanho, entrelinha). As gavetas
+    // ficam de fora: a cor delas é do projeto. Vazio = textMuted.
+    QString iconColor;
+    // Vidro: desfoque (px) do fundo e da folha atrás dos painéis translúcidos.
+    // Só aparece com panelOpacity < 100. 0 = sem vidro.
+    int panelBlur = 0;
+    // Título no alto da folha (DocHeaderBar). Vazios = cor do texto e Lora.
+    QString docHeaderColor;
+    QString docHeaderFont;
+    // "Só este painel": cor e borda próprias por painel, por cima das globais.
+    // Chaves em Theme::PanelKey. Campo vazio = usa a global.
+    struct PanelColors { QString background; QString border; };
+    QMap<QString, PanelColors> panelColors;
+    // Cores das gavetas: dentro de cada gaveta (botão de criar, etiquetas,
+    // barrinhas) usa a cor da própria gaveta — a do projeto, padrão — ou o
+    // destaque do tema. O ícone da gaveta na LeftBar sempre fica com a dela.
+    bool drawerAccentFromTheme = false;
 
     // --- Metadados de compartilhamento (arquivos .qtheme) ---
     // Nada disso muda a aparência do tema — é a identidade dele enquanto
@@ -283,6 +304,42 @@ QString pressedOverlay();
 QString subtleBorder();
 QString accentDefault();
 QString panelQss(const QString& objectName);
+
+// Painéis que aceitam cor própria ("só este painel" no Criador de Temas).
+namespace PanelKey {
+inline const QString TopToolbar = QStringLiteral("toptoolbar");
+inline const QString LeftBar    = QStringLiteral("leftbar");
+inline const QString RefMenu    = QStringLiteral("refmenu");
+inline const QString Counter    = QStringLiteral("counter");
+inline const QString Drawers    = QStringLiteral("drawers");
+}
+// Cor/borda do painel `key`, caindo na global quando o tema não tem override.
+QString panelBackgroundFor(const QString& key);
+QString panelBorderFor(const QString& key);
+// Qualquer cor com a opacidade dos painéis aplicada (rgba pra QSS). Pra
+// faixas internas de um painel que usam outra cor (cabeçalho em appBackground
+// etc.) e precisam ficar tão translúcidas quanto o painel.
+QString withPanelOpacity(const QString& css);
+// Fundo do painel `key` com a opacidade do tema, pronto pra QSS.
+QString panelBackgroundCssFor(const QString& key);
+// panelQss() com a cor própria do painel `key`.
+QString panelQss(const QString& objectName, const QString& key);
+
+// Cor dos ícones (TopToolbar, LeftBar, botões dos painéis). Sempre válida:
+// sem cor própria no tema, é textMuted.
+QString iconColor();
+// true quando o tema define a cor dos ícones — os botões de TEXTO da
+// TopToolbar só trocam de cor nesse caso (sem ela ficam como sempre foram).
+bool hasIconColor();
+// Desfoque do vidro, em px (0 = sem vidro).
+int panelBlur();
+// Título do DocHeader: cor e família da fonte, já com o padrão resolvido.
+QString docHeaderColor();
+bool hasDocHeaderColor();
+QString docHeaderFont();
+// true quando o tema pede o destaque dele dentro das gavetas, no lugar da cor
+// de cada gaveta (ver MiraTheme::drawerAccentFromTheme).
+bool drawerAccentFromTheme();
 // Converte uma cor do tema pra QColor, pra quem desenha com QPainter. Aceita
 // hex e "rgba(r,g,b,a)" com alpha inteiro 0..255 ou decimal 0..1 (os dois
 // convivem no Theme.cpp, e o QColor não lê nenhum dos dois sozinho).

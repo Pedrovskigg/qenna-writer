@@ -221,10 +221,11 @@ void WordCountPanel::applyThemeStyle()
 {
     // Stylesheet inteira derivada do Theme::, com fallback semântico em vermelho
     // pra "lazyass" (warning) que não muda por tema.
-    const QString bgPanel    = Theme::panelBackground();
+    // Cor própria do contador (Criador de Temas) e a opacidade dos painéis.
+    const QString bgPanel    = Theme::panelBackgroundCssFor(Theme::PanelKey::Counter);
     const QString bgCard     = Theme::appBackground();
     const QString bgHover    = Theme::hoverOverlay();
-    const QString border     = Theme::panelBorder();
+    const QString border     = Theme::panelBorderFor(Theme::PanelKey::Counter);
     const QString borderSub  = Theme::subtleBorder();
     const QString txtPrimary = Theme::textPrimary();
     const QString txtMuted   = Theme::textMuted();

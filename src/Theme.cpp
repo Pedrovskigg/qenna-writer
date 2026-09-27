@@ -10089,6 +10089,12 @@ const QSet<QString>& knownThemeKeys()
         QStringLiteral("backgroundImage"),
         QStringLiteral("backgroundMode"),
         QStringLiteral("editorOpacity"),
+        QStringLiteral("iconColor"),
+        QStringLiteral("panelBlur"),
+        QStringLiteral("docHeaderColor"),
+        QStringLiteral("docHeaderFont"),
+        QStringLiteral("panelColors"),
+        QStringLiteral("drawerAccentFromTheme"),
         // Metadados de compartilhamento
         QStringLiteral("uuid"),
         QStringLiteral("author"),
@@ -10150,6 +10156,24 @@ QJsonObject themeToJson(const MiraTheme& t)
     o["backgroundMode"] = t.backgroundMode;
     o["editorOpacity"] = t.editorOpacity;
 
+    // Campos do Criador de Temas: só saem quando usados, pra um tema antigo
+    // reexportado continuar idêntico ao de antes.
+    if (!t.iconColor.isEmpty())      o["iconColor"] = t.iconColor;
+    if (t.panelBlur > 0)             o["panelBlur"] = t.panelBlur;
+    if (!t.docHeaderColor.isEmpty()) o["docHeaderColor"] = t.docHeaderColor;
+    if (!t.docHeaderFont.isEmpty())  o["docHeaderFont"] = t.docHeaderFont;
+    if (t.drawerAccentFromTheme)     o["drawerAccentFromTheme"] = true;
+    if (!t.panelColors.isEmpty()) {
+        QJsonObject pc;
+        for (auto it = t.panelColors.constBegin(); it != t.panelColors.constEnd(); ++it) {
+            QJsonObject one;
+            if (!it.value().background.isEmpty()) one["background"] = it.value().background;
+            if (!it.value().border.isEmpty())     one["border"] = it.value().border;
+            if (!one.isEmpty()) pc[it.key()] = one;
+        }
+        if (!pc.isEmpty()) o["panelColors"] = pc;
+    }
+
     // Metadados de compartilhamento. Só escrevemos os que têm valor — um tema
     // que nunca foi exportado não carrega um punhado de strings vazias.
     if (!t.uuid.isEmpty())          o["uuid"] = t.uuid;
@@ -10206,6 +10230,17 @@ MiraTheme themeFromJson(const QJsonObject& o)
     t.backgroundImage = o.value("backgroundImage").toString();
     t.backgroundMode = o.value("backgroundMode").toInt(BgZoom);
     t.editorOpacity = o.value("editorOpacity").toInt(100);
+    t.iconColor = o.value("iconColor").toString();
+    t.panelBlur = qBound(0, o.value("panelBlur").toInt(0), 60);
+    t.docHeaderColor = o.value("docHeaderColor").toString();
+    t.docHeaderFont = o.value("docHeaderFont").toString();
+    t.drawerAccentFromTheme = o.value("drawerAccentFromTheme").toBool(false);
+    const QJsonObject pc = o.value("panelColors").toObject();
+    for (auto it = pc.constBegin(); it != pc.constEnd(); ++it) {
+        const QJsonObject one = it.value().toObject();
+        MiraTheme::PanelColors c{ one.value("background").toString(), one.value("border").toString() };
+        if (!c.background.isEmpty() || !c.border.isEmpty()) t.panelColors.insert(it.key(), c);
+    }
 
     t.uuid = o.value("uuid").toString();
     t.author = o.value("author").toString();
@@ -10494,6 +10529,67 @@ QString panelBackgroundCss()
     return QStringLiteral("rgba(%1,%2,%3,%4)")
         .arg(c.red()).arg(c.green()).arg(c.blue())
         .arg(QString::number(op / 100.0, 'f', 3));
+}
+
+QString panelBackgroundFor(const QString& key)
+{
+    const auto& pc = Manager::instance()->current().panelColors;
+    const auto it = pc.constFind(key);
+    return (it != pc.constEnd() && !it->background.isEmpty()) ? it->background : panelBackground();
+}
+
+QString panelBorderFor(const QString& key)
+{
+    const auto& pc = Manager::instance()->current().panelColors;
+    const auto it = pc.constFind(key);
+    return (it != pc.constEnd() && !it->border.isEmpty()) ? it->border : panelBorder();
+}
+
+QString withPanelOpacity(const QString& css)
+{
+    const int op = panelOpacity();
+    if (op >= 100) return css;
+    const QColor c = toColor(css);
+    if (!c.isValid()) return css;
+    return QStringLiteral("rgba(%1,%2,%3,%4)")
+        .arg(c.red()).arg(c.green()).arg(c.blue())
+        .arg(QString::number(c.alphaF() * op / 100.0, 'f', 3));
+}
+
+QString panelBackgroundCssFor(const QString& key)
+{
+    return withPanelOpacity(panelBackgroundFor(key));
+}
+
+QString panelQss(const QString& objectName, const QString& key)
+{
+    return QStringLiteral(R"(
+        #%1 {
+            background: %2;
+            border: 1px solid %3;
+            border-radius: %4;
+        }
+    )").arg(objectName, panelBackgroundCssFor(key), panelBorderFor(key), panelBorderRadius());
+}
+
+QString iconColor()
+{
+    const QString c = Manager::instance()->current().iconColor;
+    return c.isEmpty() ? textMuted() : c;
+}
+bool hasIconColor() { return !Manager::instance()->current().iconColor.isEmpty(); }
+int panelBlur() { return qBound(0, Manager::instance()->current().panelBlur, 60); }
+QString docHeaderColor()
+{
+    const QString c = Manager::instance()->current().docHeaderColor;
+    return c.isEmpty() ? editorTextColor() : c;
+}
+bool drawerAccentFromTheme() { return Manager::instance()->current().drawerAccentFromTheme; }
+bool hasDocHeaderColor() { return !Manager::instance()->current().docHeaderColor.isEmpty(); }
+QString docHeaderFont()
+{
+    const QString f = Manager::instance()->current().docHeaderFont;
+    return f.isEmpty() ? QStringLiteral("Lora") : f;
 }
 
 QString panelQss(const QString& objectName)

@@ -230,6 +230,10 @@ qt_add_executable(qenna-writer
     src/ThemeEditorDialog.cpp
     src/ThemeEditorDialog.h
     src/ThemePreviewWidget.cpp
+    src/ThemeScene.cpp
+    src/ThemeScene.h
+    src/PanelGlass.cpp
+    src/PanelGlass.h
     src/ThemePreviewWidget.h
     src/ProjectInfoPanel.cpp
     src/ProjectInfoPanel.h

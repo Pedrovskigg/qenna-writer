@@ -33,7 +33,7 @@ Palette themePalette()
     Palette p;
     p.t1 = Theme::toColor(Theme::textBright());
     p.t2 = Theme::toColor(Theme::textMuted());
-    p.border = Theme::toColor(Theme::panelBorder());
+    p.border = Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::Counter));
     p.inset = Theme::toColor(Theme::appBackground());
     p.inset.setAlpha(150);
     p.insetBorder = Theme::toColor(Theme::subtleBorder());

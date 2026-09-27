@@ -1113,9 +1113,12 @@ void RefMenuPanel::buildDocView(DocView& v, QWidget* parent)
 
 void RefMenuPanel::applyMainStyleSheet()
 {
-    const QString panelBg   = Theme::panelBackground();
-    const QString appBg     = Theme::appBackground();
-    const QString border    = Theme::panelBorder();
+    // Cor própria da Referência (Criador de Temas) e a opacidade dos painéis:
+    // as faixas internas em appBackground ficam tão translúcidas quanto o
+    // corpo, senão o vidro aparecia só nas bordas.
+    const QString panelBg   = Theme::panelBackgroundCssFor(Theme::PanelKey::RefMenu);
+    const QString appBg     = Theme::withPanelOpacity(Theme::appBackground());
+    const QString border    = Theme::panelBorderFor(Theme::PanelKey::RefMenu);
     const QString subtle    = Theme::subtleBorder();
     const QString txtPrim   = Theme::textPrimary();
     const QString txtMuted  = Theme::textMuted();

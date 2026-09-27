@@ -187,6 +187,7 @@
 #include "TrashService.h"
 #include "LoadingToast.h"
 #include "BackgroundWidget.h"
+#include "PanelGlass.h"
 #include "WordCountPanel.h"
 #include "WordCounter.h"
 #include "Theme.h"
@@ -2691,6 +2692,8 @@ void MainWindow::setupEditor()
     backgroundWidget->setGeometry(rect());
     backgroundWidget->lower();
     backgroundWidget->hide(); // só ativa quando o tema atual tem imagem
+    // Vidro dos painéis: o desfoque parte deste fundo (ver PanelGlass.h).
+    PanelGlass::setWindow(this, backgroundWidget);
 
     auto *layout = new QHBoxLayout(container);
     layout->setContentsMargins(10, 10, 10, 10);
@@ -2965,6 +2968,18 @@ void MainWindow::setupEditor()
 
     // Pensário — painel auxiliar criativo. Fatia 1: agregador de comentários.
     pensarioPanel = new PensarioPanel(markerStore, projectModel, notesStore, container);
+    // Vidro: cada painel ganha a placa desfocada atrás da forma VISÍVEL dele —
+    // na Referência e no contador a raiz é transparente (alças, aba), então a
+    // placa vai na moldura/corpo, senão o vidro vazaria pelas margens.
+    for (QWidget* w : std::initializer_list<QWidget*>{ toolbar, leftBar, drawerListPanel, manuscriptPanel,
+                                                        projectDrawerPanel, pensarioPanel })
+        PanelGlass::attach(w);
+    if (auto* frame = refMenuPanel->findChild<QWidget*>(QStringLiteral("refFrame"))) PanelGlass::attach(frame);
+    for (QWidget* w : wordCountPanel->findChildren<QWidget*>()) {
+        if (w->objectName() == QLatin1String("wcpBody") || w->objectName() == QLatin1String("wcpFullBody")
+            || w->inherits("MiniCounterWidget"))
+            PanelGlass::attach(w);
+    }
     pensarioPanel->setMapPinsStore(mapPinsStore);
     // Levar pro texto: nota, memória ou fala entra no cursor do editor.
     connect(pensarioPanel, &PensarioPanel::insertTextRequested, this, [this](const QString& text) {
@@ -7535,6 +7550,7 @@ void MainWindow::restoreFloatingPopups()
 void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
+    PanelGlass::invalidate();
     if (backgroundWidget) {
         backgroundWidget->setGeometry(rect());
         backgroundWidget->lower();
@@ -7979,35 +7995,9 @@ void MainWindow::onExportRequested()
 
 void MainWindow::onThemePanelRequested()
 {
-    if (!themesPanel) {
-        // A construção monta um preview por tema (tem muito tema) e trava a
-        // thread por 2-4s — mostra um toast antes, força o repaint na unha
-        // (processEvents) já que o próprio construtor bloqueante impede o
-        // Qt de pintar sozinho, e só então constrói o painel de verdade.
-        auto* loadingToast = new QLabel(tr("Carregando área de Temas…"), this);
-        loadingToast->setObjectName(QStringLiteral("themesLoadingToast"));
-        loadingToast->setAlignment(Qt::AlignCenter);
-        loadingToast->setStyleSheet(Theme::qss(QStringLiteral(
-            "QLabel#themesLoadingToast {"
-            "  background: %1;"
-            "  color: %2;"
-            "  border: 1px solid %3;"
-            "  border-radius: @radius-control;"
-            "  padding: 8px 20px;"
-            "  font-family: 'Lora','Crimson Text',serif;"
-            "  font-size: 13px;"
-            "}").arg(Theme::panelBackground(), Theme::textBright(), Theme::panelBorder())));
-        loadingToast->adjustSize();
-        const QPoint center = rect().center();
-        loadingToast->move(center.x() - loadingToast->width() / 2,
-                            center.y() - loadingToast->height() / 2);
-        loadingToast->show();
-        loadingToast->raise();
-        QApplication::processEvents();
-
-        themesPanel = new ThemesPanel(this);
-        loadingToast->deleteLater();
-    }
+    // O painel pinta as miniaturas numa widget só (sem um preview por tema),
+    // então abre na hora — não precisa mais do toast de "Carregando…".
+    if (!themesPanel) themesPanel = new ThemesPanel(this);
     themesPanel->show();
     themesPanel->raise();
     themesPanel->activateWindow();
@@ -8172,6 +8162,19 @@ int MainWindow::docHeaderExtent() const
 void MainWindow::positionPageGlow()
 {
     if (!editorScroll || !editorColumn) return;
+
+    // O vidro dos painéis desfoca a folha junto com o fundo: manda o lugar e a
+    // cor dela (mesma conta do halo, logo abaixo) a cada mudança de layout.
+    {
+        QWidget* vp = editorScroll->viewport();
+        const int extra = externalScrollBar ? (externalScrollBar->sizeHint().width() + 6) : 0;
+        QRect sheet(editorColumn->mapTo(vp, QPoint(0, 0)), editorColumn->size());
+        sheet.setWidth(qMax(0, sheet.width() - extra));
+        sheet = sheet.intersected(vp->rect());
+        QColor fill = parseColor(Theme::editorBackground());
+        fill.setAlpha(qBound(0, Theme::editorOpacity(), 100) * 255 / 100);
+        PanelGlass::setPage(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()), fill);
+    }
 
     const QColor c = parseColor(Theme::pageShadowColor());
     if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
@@ -8984,6 +8987,7 @@ OutlinePanel* MainWindow::ensureOutlinePanel()
 {
     if (!outlinePanel) {
         outlinePanel = new OutlinePanel(projectModel, this);
+        PanelGlass::attach(outlinePanel);
         outlinePanel->setWordCounter(wordCounter);
         outlinePanel->setDialogueStore(dialogueStore);
         outlinePanel->setElementsStore(elementsStore);

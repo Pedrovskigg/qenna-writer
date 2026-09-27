@@ -296,7 +296,7 @@ void ProjectDrawerPanel::buildUi() {
 }
 
 void ProjectDrawerPanel::applyTheme() {
-    setStyleSheet(Theme::panelQss(QStringLiteral("projectDrawerPanel")) + Theme::qss(QStringLiteral(R"(
+    setStyleSheet(Theme::panelQss(QStringLiteral("projectDrawerPanel"), Theme::PanelKey::Drawers) + Theme::qss(QStringLiteral(R"(
         QToolButton#pdClose { background: transparent; border: none; color: %1; font-size: 17px; padding: 0 6px; }
         QToolButton#pdClose:hover { color: %2; }
         QLineEdit#pdName, QLineEdit#pdAuthor {

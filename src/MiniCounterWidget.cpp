@@ -235,8 +235,10 @@ void MiniCounterWidget::paintEvent(QPaintEvent*)
     const qreal W = width() / m_scale;
     const qreal H = height() / m_scale;
 
-    const QColor bg     = Theme::toColor(Theme::panelBackground());
-    const QColor border = Theme::toColor(Theme::panelBorder());
+    // Cor própria do contador (Criador de Temas) e a opacidade dos painéis.
+    QColor bg           = Theme::toColor(Theme::panelBackgroundFor(Theme::PanelKey::Counter));
+    bg.setAlphaF(bg.alphaF() * Theme::panelOpacity() / 100.0);
+    const QColor border = Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::Counter));
     const QColor t1     = Theme::toColor(Theme::textBright());
     const QColor t2     = Theme::toColor(Theme::textMuted());
     const QColor acc    = Theme::toColor(Theme::accentDefault());

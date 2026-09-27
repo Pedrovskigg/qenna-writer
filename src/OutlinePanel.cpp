@@ -1278,7 +1278,7 @@ void OutlinePanel::promptSummary(const QString& chapterId, int sceneIndex)
 
 void OutlinePanel::applyTheme()
 {
-    setStyleSheet(Theme::panelQss(QStringLiteral("outlinePanel")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("outlinePanel"), Theme::PanelKey::Drawers));
 
     if (m_header) {
         m_header->setStyleSheet(QStringLiteral(

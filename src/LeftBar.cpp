@@ -367,7 +367,7 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     setObjectName(QStringLiteral("leftBar"));
     setAttribute(Qt::WA_StyledBackground, true);
     setFixedWidth(barWidthPx());
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
     setAcceptDrops(true);
 
     m_rootLayout = new QVBoxLayout(this);
@@ -454,7 +454,7 @@ void LeftBar::applyUiScale() {
 }
 
 void LeftBar::applyTheme() {
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
     for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it) {
         if (auto* btn = it.value()) {
             btn->setStyleSheet(fixedButtonQss());
@@ -506,7 +506,7 @@ void LeftBar::setChromeHidden(bool hidden) {
     if (hidden)
         setStyleSheet(QStringLiteral("#leftBar { background: transparent; }"));
     else
-        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
 }
 
 void LeftBar::setMirrored(bool mirrored) {
@@ -518,7 +518,7 @@ void LeftBar::setMirrored(bool mirrored) {
 void LeftBar::applyMirrorStyle() {
     // O lado físico (esquerda/direita) na janela é decidido pelo MainWindow.
     // Aqui o painel tem borda completa (radius); por ora nada muda visualmente.
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar")));
+    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
 }
 
 void LeftBar::setActiveFixedAction(FixedAction action) {
