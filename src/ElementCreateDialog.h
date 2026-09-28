@@ -1,27 +1,33 @@
 #pragma once
 
-#include <QDialog>
+#include "SheetDialog.h"
+
 #include <QString>
 #include <QStringList>
 #include <QVector>
 
 #include "SheetTemplatesStore.h"   // SheetTemplate (por valor)
 
+class CharacterPoster;
+class QButtonGroup;
 class QCheckBox;
-class QLineEdit;
-class QComboBox;
 class QLabel;
-class QPushButton;
+class QLineEdit;
 class QToolButton;
+class QPushButton;
 
-// Diálogo de criação/edição de elemento narrativo (personagem, cenário, objeto).
-// Campos exibidos variam conforme o tipo do drawer.
-class ElementCreateDialog : public QDialog {
+// Folha de criação/edição de elemento narrativo (personagem, cenário, objeto)
+// ou de documento de gaveta (tipo vazio). Ver SheetDialog: sem moldura do
+// sistema, na cor da página. Personagem abre com o "pôster em pé" (faixa com
+// silhueta; com foto, a foto de ponta a ponta e o nome por cima), e embaixo
+// apelidos, papel, narrador, trilha na Timeline e tipo de página; cenário e
+// objeto, só foto + nome; documento, só o nome.
+class ElementCreateDialog : public SheetDialog {
     Q_OBJECT
 public:
     // elementType: "character" | "setting" | "object" | "" (vazio = item comum)
-    // sheetTemplates: modelos de ficha salvos, oferecidos no combo quando o tipo
-    // de página escolhido for "Ficha" (só relevante pra elementType=="character").
+    // sheetTemplates: modelos de ficha salvos, oferecidos quando o tipo de
+    // página escolhido for "Ficha" (só personagem).
     ElementCreateDialog(const QString& elementType, QWidget* parent = nullptr,
                         const QVector<SheetTemplate>& sheetTemplates = {});
 
@@ -34,51 +40,47 @@ public:
     QString role() const;
     // true = criar a página do personagem como Ficha estruturada (só personagem).
     bool createAsSheet() const;
-    // Modelo de ficha escolhido no combo (vazio = "Vazio (padrão)", sem modelo).
+    // Modelo de ficha escolhido (vazio = "Vazio (padrão)", sem modelo).
     QString selectedTemplateId() const;
     QString imageDataUrl() const { return m_imageDataUrl; }
     bool narrator() const;
     QString trackMode() const;  // "" auto | "on" | "off" (trilha na linha do tempo)
     QStringList aliases() const; // apelidos do personagem (para o detector de presença)
 
-private slots:
-    void pickImage();
-    void clearImage();
+protected:
+    void showEvent(QShowEvent* e) override;
 
 private:
     void buildUi();
     void updatePreview();
+    void updatePageTypeUi();
+    void pickImage();
+
     QString m_elementType;
     QString m_imageDataUrl;
     QVector<SheetTemplate> m_sheetTemplates;
+    bool m_editMode = false;
 
-    // Pickers inline (botão + painel de opções que expande dentro do próprio
-    // diálogo) no lugar de QComboBox/QMenu: qualquer popup que abre como
-    // janela top-level própria nesse diálogo específico sai com fundo
-    // translúcido no Windows (bug de composição do Qt/DWM) — um painel que só
-    // expande dentro do layout existente não cria janela nenhuma, então não
-    // tem como sofrer desse bug. Mesmo conceito do "?" de prós/contras do
-    // Construtor (ConstrutorWindow), adaptado pra escolher uma opção em vez
-    // de só revelar mais texto.
-    void updatePageTypeUi();  // mostra/esconde o picker de modelo conforme o tipo de página
-
-    QLineEdit* m_titleEdit;
-    QLineEdit* m_aliasesEdit = nullptr;
-    QComboBox* m_roleCombo;
-    QToolButton* m_trackBtn = nullptr;
-    QWidget* m_trackOptions = nullptr;
-    QString m_trackValue;             // "" auto | "on" | "off"
-    QToolButton* m_pageTypeBtn = nullptr;
-    QWidget* m_pageTypeOptions = nullptr;
-    QString m_pageTypeValue = QStringLiteral("free");  // "free" | "sheet"
-    QLabel* m_templateLabel = nullptr;
-    QToolButton* m_templateBtn = nullptr;
-    QWidget* m_templateOptions = nullptr;
-    QString m_templateValue;          // id do modelo escolhido, vazio = nenhum
-    QCheckBox* m_narratorCheck;
-    QLabel* m_imagePreview;
-    QPushButton* m_pickImageBtn;
-    QPushButton* m_clearImageBtn;
-    QPushButton* m_okBtn;
-    QPushButton* m_cancelBtn;
+    QLineEdit*    m_titleEdit = nullptr;
+    QLineEdit*    m_aliasesEdit = nullptr;
+    QToolButton*  m_photoBtn = nullptr;
+    QToolButton*  m_removePhoto = nullptr;
+    // Papel: uma linha ("Coadjuvante · apoia os principais ▾") que abre, na
+    // própria folha, a lista dos papéis com a explicação de cada um. Nada de
+    // menu suspenso: janela suspensa sai com fundo transparente no Windows
+    // sobre esta folha translúcida.
+    QString       m_roleValue;              // "PROTAGONISTA"…, "OUTRO" ou vazio
+    QPushButton*  m_rolePick = nullptr;
+    QLabel*       m_rolePickText = nullptr;
+    QWidget*      m_roleList = nullptr;
+    QLineEdit*    m_roleCustom = nullptr;
+    void setRole(const QString& id);
+    void refreshRoleTag();
+    QLabel*       m_roleTag = nullptr;      // o papel escrito em cima do nome, no pôster
+    CharacterPoster* m_poster = nullptr;    // topo da folha de personagem (faixa ou foto)
+    QCheckBox*    m_narratorCheck = nullptr;
+    QButtonGroup* m_trackGroup = nullptr;
+    QButtonGroup* m_pageGroup = nullptr;
+    QWidget*      m_templateBox = nullptr;
+    QButtonGroup* m_templateGroup = nullptr;
 };

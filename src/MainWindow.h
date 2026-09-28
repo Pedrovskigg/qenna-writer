@@ -11,6 +11,7 @@
 #include "MemoriesStore.h"
 #include "PresenceTypes.h"
 #include "RepetitionDetector.h"
+#include "SceneBreaks.h"
 #include "TopToolbar.h"
 
 #include <QColor>
@@ -292,6 +293,9 @@ private:
 
     QTimer* m_toolbarHideTimer = nullptr;
     QTimer* m_leftBarHideTimer = nullptr;
+    // Folha de personagem/cenário/objeto aberta ao lado da gaveta (sem modal):
+    // uma de cada vez, e fecha ao trocar de projeto.
+    QPointer<QDialog> m_elementSheet;
     QPointer<QPropertyAnimation> m_toolbarFade;
     QPointer<QPropertyAnimation> m_leftBarFade;
     // Reage a LeftBar trocar de lado (ordem no layout, hotzone do modo focado,
@@ -370,7 +374,11 @@ private:
     void openReaderPreview(const QString& manuscriptId);
     // Texto puro de um doc do projeto p/ a descrição de um evento da timeline.
     // linkKey: "ch:<id>" | "sc:<id>" | "doc:<id>". Trunca em ~600 palavras + aviso.
-    QString docTextForLink(const QString& linkKey);
+    // maxWords <= 0 = texto inteiro (o resumo pela IA no Preencher da Timeline)
+    QString docTextForLink(const QString& linkKey, int maxWords = 600);
+    // A cena que começa depois da quebra de número breakIndex no editor (título,
+    // tempo, Flashback) — pro desenho da quebra (SceneBreaks).
+    SceneBreaks::Info sceneBreakInfo(int breakIndex) const;
     // --- Operações de cena compartilhadas entre painéis --------------------
     // Vivem aqui, e não no ProjectModel, porque mexem no TEXTO da cena, que
     // fica no DocCache/disco e não no modelo. Tanto o painel de Manuscritos

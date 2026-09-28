@@ -1,4 +1,6 @@
 #include "SpellEditor.h"
+#include <QPaintEvent>
+#include <QToolTip>
 
 #include "ScreenplayFormat.h"
 #include "SpellChecker.h"
@@ -287,8 +289,21 @@ void SpellEditor::mousePressEvent(QMouseEvent* event)
     QTextEdit::mousePressEvent(event);
 }
 
+void SpellEditor::paintEvent(QPaintEvent* event)
+{
+    if (m_beforePaint) m_beforePaint();
+    QTextEdit::paintEvent(event);
+    if (!m_overlay) return;
+    QPainter p(viewport());
+    m_overlayTips = m_overlay(p, event->rect());
+}
+
 void SpellEditor::mouseMoveEvent(QMouseEvent* event)
 {
+    // Tooltip das quebras de cena ("Cena 2 · A carta · Dia 4, noite").
+    for (const auto& t : std::as_const(m_overlayTips))
+        if (t.first.contains(event->pos())) { QToolTip::showText(event->globalPosition().toPoint(), t.second, viewport(), t.first); break; }
+
     // Com Ctrl segurado, mostra a mãozinha sobre links de referência.
     if (event->modifiers() & Qt::ControlModifier) {
         const QString href = anchorAt(event->pos());

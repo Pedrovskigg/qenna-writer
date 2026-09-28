@@ -1,4 +1,5 @@
 #include "ZoneItem.h"
+#include "SheetDialogs.h"
 #include "ColorPopover.h"
 
 #include "Theme.h"
@@ -290,10 +291,10 @@ void ZoneItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
 void ZoneItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
 {
     // Double-click no título → editar nome
-    const QString name = QInputDialog::getText(
-        nullptr, tr("Nome da área"), tr("Nome:"),
-        QLineEdit::Normal, m_data.title);
-    if (!name.isNull()) {
+    bool okName = false;
+    const QString name = Sheets::askText(nullptr, tr("Nome da área"), tr("Nome da área"),
+        m_data.title, &okName, QString(), false, /*allowEmpty=*/true);
+    if (okName) {
         emit gestureStarted();
         m_data.title = name.trimmed();
         update();
@@ -321,10 +322,10 @@ void ZoneItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
 {
     QMenu menu;
     menu.addAction(tr("Renomear área"), this, [this]() {
-        const QString name = QInputDialog::getText(
-            nullptr, tr("Nome da área"), tr("Nome:"),
-            QLineEdit::Normal, m_data.title);
-        if (!name.isNull()) { emit gestureStarted(); m_data.title = name.trimmed(); update(); emitData(); }
+        bool okName = false;
+        const QString name = Sheets::askText(nullptr, tr("Nome da área"), tr("Nome da área"),
+            m_data.title, &okName, QString(), false, /*allowEmpty=*/true);
+        if (okName) { emit gestureStarted(); m_data.title = name.trimmed(); update(); emitData(); }
     });
     menu.addAction(tr("Cor..."), this, [this]() {
         QColor nc = ColorPopover::getColor(m_data.color, nullptr, tr("Cor da área"));

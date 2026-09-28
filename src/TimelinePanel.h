@@ -68,8 +68,7 @@ public:
 
     // Força a resincronização das trilhas automáticas a partir do model,
     // mesmo com o painel escondido (os signals internos só resincronizam
-    // se isVisible()). Usado depois de edições em lote feitas fora daqui
-    // (ex.: Gerador de Timeline em Configurações).
+    // se isVisible()). Usado depois de edições feitas fora daqui.
     void refreshFromModel();
 
 signals:
@@ -78,7 +77,6 @@ signals:
     // "Abrir no editor" do painel lateral. textPos >= 0 = posiciona o cursor.
     void openInEditorRequested(const QString& manuscriptId, const QString& chapterId,
                                int sceneIndex, int textPos);
-    void generatorRequested(); // menu "⋯" → Gerador de Timeline
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -179,6 +177,13 @@ private:
     void onEventDropped(const QString& id, const QString& laneId, int col);
     void openEventInEditor(const QString& id);
     void fillMarker(const QString& id, const QString& marker);
+    // Painel "Preencher" (o antigo Gerador de Timeline): um capítulo por vez,
+    // no lugar do painel lateral. chapterId vazio = primeiro da fila.
+    void openFill(const QString& chapterId);
+    void setFillOpen(bool open);
+    bool fillOpen() const;
+    void applyFill(const QString& colKey, bool chapterLevel, bool summary, const QString& text);
+    void refreshNoDateButton();
     void undoLaneMove(const QString& id);
     void editTracksEvent(const QString& id);
     void createAtColumn(const QString& laneId, int col);
@@ -226,6 +231,11 @@ private:
     class QToolButton*  m_moreBtn     = nullptr;
     class QLabel*       m_statsLbl    = nullptr;
     class QToolButton*  m_noDateBtn   = nullptr;
+    class QLabel*       m_savedLbl    = nullptr;   // "✓ salvo" do painel Preencher
+    class TimelineFillPanel* m_fill   = nullptr;
+    QWidget*            m_fillHolder  = nullptr;
+    class QVariantAnimation* m_fillAnim = nullptr;
+    class QTimer*       m_savedTimer  = nullptr;
     QWidget*            m_densityBox  = nullptr;
     QButtonGroup*       m_densityGrp  = nullptr;
     class QToolButton*  m_btnNewUi    = nullptr; // na barra antiga: volta pra UI nova

@@ -91,8 +91,6 @@ signals:
     void mentionManuscriptsEnabledChanged(bool enabled);
     void showScenePopupOnHrChanged(bool enabled);
     void romanChapterNumbersChanged(bool enabled);
-    // Botão "Abrir…" do Gerador de Timeline.
-    void timelineGeneratorRequested();
     // Linha "Tema" em Aparência: abre o painel de Temas.
     void themesRequested();
 

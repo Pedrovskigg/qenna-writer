@@ -44,6 +44,11 @@ public:
 
     // Rola até a coluna (usado pra abrir no capítulo do editor).
     void scrollToColumn(int col);
+    // Rola o mínimo pra as colunas [col, col+span) ficarem à vista.
+    void ensureColumnVisible(int col, int span = 1);
+    // Capítulo em preenchimento (painel "Preencher"): colunas tingidas e
+    // número realçado na régua. col < 0 = nenhum.
+    void setFillHighlight(int col, int span);
 
 signals:
     void eventClicked(const QString& id);
@@ -95,6 +100,8 @@ private:
     QString        m_sel;
     Density        m_density = Titles;
     int            m_hoverCol = -1;
+    int            m_fillCol = -1;             // capítulo em preenchimento (primeira coluna)
+    int            m_fillSpan = 1;             // quantas colunas ele cobre
     QString        m_hoverCastChar;
     int            m_scrolledForDensity = -1;
     int            m_scrolledForEditorCol = -2;

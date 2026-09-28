@@ -1,6 +1,9 @@
 #pragma once
 
+#include <QList>
+#include <QPair>
 #include <QTextEdit>
+#include <functional>
 
 class SpellChecker;
 class QContextMenuEvent;
@@ -33,6 +36,14 @@ public:
     void setScreenplayMode(bool on) { m_screenplayMode = on; }
     bool isScreenplayMode() const { return m_screenplayMode; }
 
+    // Desenho por cima do texto, depois da pintura normal (a quebra de cena,
+    // ver SceneBreaks). Devolve as áreas desenhadas com o texto do tooltip.
+    using OverlayPainter = std::function<QList<QPair<QRect, QString>>(QPainter&, const QRect&)>;
+    void setOverlayPainter(OverlayPainter fn) { m_overlay = std::move(fn); }
+    // Roda logo antes da pintura normal (ex.: garantir a paleta que esconde o
+    // traço do <hr> do Qt, que troca de tema e folha de estilo podem desfazer).
+    void setBeforePaint(std::function<void()> fn) { m_beforePaint = std::move(fn); }
+
 signals:
     // Disparado quando o usuário escolhe "Adicionar ao Glossário..." no menu de
     // contexto. word = texto selecionado (ou WordUnderCursor), pos = global.
@@ -58,6 +69,7 @@ signals:
     void refHighlightRequested(bool on);
 
 protected:
+    void paintEvent(QPaintEvent* event) override;
     void contextMenuEvent(QContextMenuEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
@@ -69,4 +81,7 @@ private:
     SpellChecker* m_checker = nullptr;
     SynonymProvider m_synProvider;
     bool m_screenplayMode = false;
+    OverlayPainter m_overlay;
+    std::function<void()> m_beforePaint;
+    QList<QPair<QRect, QString>> m_overlayTips;
 };

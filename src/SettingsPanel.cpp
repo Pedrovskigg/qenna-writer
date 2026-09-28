@@ -1,4 +1,5 @@
 #include "SettingsPanel.h"
+#include "SceneBreaks.h"
 #include "GlossaryInText.h"
 #include "IconUtils.h"
 #include "LeftBar.h"
@@ -400,6 +401,21 @@ SettingsPanel::SettingsPanel(QWidget* parent)
            sliderBox(m_vMarginSlider, m_vMarginValue, this), pageHint);
     syncPageLayoutFromManager();
 
+    // Desenho da quebra de cena no editor (ver SceneBreaks)
+    auto* breakCombo = new QComboBox(this);
+    breakCombo->addItem(tr("Nó da Timeline"), int(SceneBreaks::Knot));
+    breakCombo->addItem(tr("Nome da cena"), int(SceneBreaks::Name));
+    breakCombo->setCurrentIndex(SceneBreaks::style() == SceneBreaks::Name ? 1 : 0);
+    addRow(Writing, tr("Quebra de cena"), tr("Como a divisão entre cenas aparece no texto."),
+           new Segmented(breakCombo, this),
+           tr("Nó da Timeline: a bolinha da Timeline entre dois fios, na cor da linha da cena "
+              "(Flashback na cor dele, vazada quando a cena não tem data). Nome da cena: "
+              "\"CENA 2\" com o título e o \"quando se passa\" embaixo. Só muda o desenho na tela; "
+              "o arquivo e a exportação não mudam."));
+    connect(breakCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [breakCombo](int idx) {
+        SceneBreaks::setStyle(SceneBreaks::Style(breakCombo->itemData(idx).toInt()));
+    });
+
     auto* caretCheck = new ToggleSwitch(this);
     caretCheck->setChecked(SmoothCaret::enabledSetting());
     const QString caretHint = tr("Enquanto você digita, o cursor desliza até a próxima letra em vez de pular, "
@@ -515,12 +531,6 @@ SettingsPanel::SettingsPanel(QWidget* parent)
               "o resumo que alimentam a linha do tempo. Se desligado, defina isso "
               "manualmente pelo clique direito na cena."));
     connect(m_scenePopupCheck, &QCheckBox::toggled, this, [this](bool checked) { emit showScenePopupOnHrChanged(checked); });
-    auto* timelineGenBtn = new QPushButton(tr("Abrir…"), this);
-    addRow(Timeline, tr("Gerador de Timeline"), tr("Preenche tempo e resumo de vários capítulos de uma vez."), timelineGenBtn,
-           tr("Preenche marcador temporal e resumo de vários capítulos/cenas de uma vez — "
-              "útil pra colocar um manuscrito antigo (de antes da Timeline orgânica) em dia "
-              "de uma tacada só, em vez de editar capítulo por capítulo."));
-    connect(timelineGenBtn, &QPushButton::clicked, this, [this]() { emit timelineGeneratorRequested(); });
 
     // ================= Assistente de IA =================
     // Personalidade (nome/tom/dureza/descrição livre) mora só no

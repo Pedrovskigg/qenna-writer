@@ -1,4 +1,5 @@
 #include "CharacterSheetPanel.h"
+#include "SheetDialogs.h"
 
 #include "AvatarUtils.h"
 #include "CharacterImageGenDialog.h"
@@ -315,8 +316,8 @@ void CharacterSheetPanel::saveAsTemplate()
 {
     if (!m_templates) return;
     bool ok = false;
-    const QString name = QInputDialog::getText(this, tr("Salvar como modelo"),
-        tr("Nome do modelo:"), QLineEdit::Normal, QString(), &ok);
+    const QString name = Sheets::askText(this, tr("Salvar como modelo"), tr("Nome do modelo"),
+        QString(), &ok);
     if (!ok || name.trimmed().isEmpty()) return;
     m_templates->add(name, m_sheet);
 }

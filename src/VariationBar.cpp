@@ -1,4 +1,5 @@
 #include "VariationBar.h"
+#include "SheetDialogs.h"
 #include "AnchorUtils.h"
 #include "EditorHost.h"
 #include "ProjectModel.h"
@@ -114,8 +115,8 @@ VariationBar::VariationBar(ProjectModel* model, EditorHost* host, QWidget* paren
     connect(m_newBtn, &QToolButton::clicked, this, [this]() {
         if (!m_host) return;
         bool ok = false;
-        const QString label = QInputDialog::getText(this, tr("Nova variação"),
-            tr("Nome da variação:"), QLineEdit::Normal, QString(), &ok).trimmed();
+        const QString label = Sheets::askText(this, tr("Nova variação"), tr("Nome da variação (opcional)"),
+            QString(), &ok, tr("Criar"), false, /*allowEmpty=*/true).trimmed();
         if (!ok) return;
         m_host->createVariationForCurrentScene(label);
     });

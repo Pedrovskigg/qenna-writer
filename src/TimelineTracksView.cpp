@@ -186,13 +186,17 @@ protected:
             p.fillRect(QRectF(TimelineTracksView::kPadL + ec * cw, 0, cw, height()), alpha(pal.accent, 0.045));
         if (v->m_hoverCol >= 0)
             p.fillRect(QRectF(TimelineTracksView::kPadL + v->m_hoverCol * cw, 0, cw, height()), alpha(pal.ink, 0.05));
+        if (v->m_fillCol >= 0)
+            p.fillRect(QRectF(TimelineTracksView::kPadL + v->m_fillCol * cw, 0, cw * v->m_fillSpan, height()), alpha(pal.accent, 0.07));
         const QFont f = monoFont(11);
-        p.setFont(f);
+        const QFont fHi = monoFont(11, QFont::Medium);
         const QFontMetricsF fm(f);
         for (int c = 0; c < v->m_data.cols.size(); ++c) {
             if (c == ec) continue;
             const QString t = v->m_data.cols[c].ruler;
-            p.setPen(pal.dim);
+            const bool hi = v->m_fillCol >= 0 && c >= v->m_fillCol && c < v->m_fillCol + v->m_fillSpan;
+            p.setFont(hi ? fHi : f);
+            p.setPen(hi ? pal.bright : pal.dim);
             p.drawText(QPointF(v->xCol(c) - fm.horizontalAdvance(t) / 2.0, 22), t);
         }
         if (ec >= 0) {
@@ -264,6 +268,8 @@ protected:
             p.fillRect(QRectF(TimelineTracksView::kPadL + ec * cw, 0, cw, height()), alpha(pal.accent, 0.045));
         if (v->m_hoverCol >= 0)
             p.fillRect(QRectF(TimelineTracksView::kPadL + v->m_hoverCol * cw, 0, cw, height()), alpha(pal.ink, 0.05));
+        if (v->m_fillCol >= 0)
+            p.fillRect(QRectF(TimelineTracksView::kPadL + v->m_fillCol * cw, 0, cw * v->m_fillSpan, height()), alpha(pal.accent, 0.07));
     }
     void paintGutterBg(QPainter& p, const Palette& pal) const
     {
@@ -1257,6 +1263,23 @@ void TimelineTracksView::scrollToColumn(int col)
 {
     const int viewW = qMax(1, width() - kGutter);
     m_hbar->setValue(qMax(0, int(xCol(col) - viewW * 0.62)));
+}
+
+void TimelineTracksView::ensureColumnVisible(int col, int span)
+{
+    if (col < 0 || col >= m_data.cols.size()) return;
+    const int viewW = qMax(1, width() - kGutter);
+    const qreal l = kPadL + col * colW(), r = l + qMax(1, span) * colW();
+    if (l < sx()) m_hbar->setValue(qMax(0, int(std::floor(l - kPadL))));
+    else if (r > sx() + viewW) m_hbar->setValue(int(std::ceil(qMin(r - viewW + kPadL, l - kPadL))));
+}
+
+void TimelineTracksView::setFillHighlight(int col, int span)
+{
+    if (col == m_fillCol && span == m_fillSpan) return;
+    m_fillCol = col;
+    m_fillSpan = qMax(1, span);
+    repaintAll();
 }
 
 void TimelineTracksView::refreshScroll()

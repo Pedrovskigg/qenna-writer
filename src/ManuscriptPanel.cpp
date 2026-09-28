@@ -1,4 +1,5 @@
 #include "ManuscriptPanel.h"
+#include "SheetDialogs.h"
 #include "ColorPopover.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -1385,8 +1386,8 @@ void ManuscriptPanel::startPartAt(const QString& chapterId) {
     QList<ManuscriptPart> parts = m->parts;
     for (const auto& p : parts) if (p.startChapterId == chapterId) return;
     bool ok = false;
-    const QString title = QInputDialog::getText(this, tr("Nova parte"), tr("Nome da parte:"),
-        QLineEdit::Normal, tr("Parte %1").arg(ProjectModel::toRomanNumeral(parts.size() + 1)), &ok).trimmed();
+    const QString title = Sheets::askText(this, tr("Nova parte"), tr("Nome da parte"),
+        tr("Parte %1").arg(ProjectModel::toRomanNumeral(parts.size() + 1)), &ok, tr("Criar")).trimmed();
     if (!ok || title.isEmpty()) return;
     ManuscriptPart p;
     p.id = ProjectModel::uid();
@@ -3545,8 +3546,8 @@ void ManuscriptPanel::showPartContextMenu(const QString& partId, const QPoint& g
         for (auto& p : parts) {
             if (p.id != partId) continue;
             bool ok = false;
-            const QString t = QInputDialog::getText(this, tr("Renomear parte"), tr("Nome da parte:"),
-                                                    QLineEdit::Normal, p.title, &ok).trimmed();
+            const QString t = Sheets::askText(this, tr("Renomear parte"), tr("Nome da parte"),
+                                              p.title, &ok).trimmed();
             if (!ok || t.isEmpty()) return;
             p.title = t;
         }
@@ -4926,7 +4927,8 @@ QWidget* ManuscriptPanel::makeStoreHead() {
         if (!mm) return;
         bool ok = false;
         const QString cur = mm->synopsis.isEmpty() ? m_model->manuscriptEffectiveSynopsis(msId) : mm->synopsis;
-        const QString t = QInputDialog::getMultiLineText(this, tr("Sinopse"), tr("Sinopse deste livro:"), cur, &ok);
+        const QString t = Sheets::askText(this, tr("Sinopse deste livro"), tr("Sinopse deste livro…"), cur, &ok,
+                                          QString(), /*multiline=*/true, /*allowEmpty=*/true);
         if (ok) m_model->updateManuscriptSynopsis(msId, t.trimmed());
     });
     v->addWidget(edit, 0, Qt::AlignLeft);

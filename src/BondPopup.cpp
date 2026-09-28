@@ -1,4 +1,5 @@
 #include "BondPopup.h"
+#include "SheetDialogs.h"
 #include "ColorPopover.h"
 #include "BondTypes.h"
 #include "IconUtils.h"
@@ -457,8 +458,8 @@ void BondPopup::openTypePicker() {
         if (role == QLatin1String("__custom__")) {
             popup->close();
             bool ok = false;
-            const QString v = QInputDialog::getText(this, tr("Tipo de vínculo"),
-                tr("Descreva o vínculo:"), QLineEdit::Normal, m_type, &ok).trimmed();
+            const QString v = Sheets::askText(this, tr("Tipo de vínculo"), tr("Descreva o vínculo"),
+                m_type, &ok).trimmed();
             if (ok && !v.isEmpty()) applyType(v);
             return;
         }

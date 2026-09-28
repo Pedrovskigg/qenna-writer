@@ -270,7 +270,11 @@ ImageCropDialog::ImageCropDialog(const QImage& original, QWidget* parent, bool s
 QString ImageCropDialog::cropAndEncode(const QImage& original, const QRect& cropRect)
 {
     const QImage cropped = original.copy(cropRect);
-    const QImage scaled = cropped.scaled(400, 400, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    // 640: o pôster do personagem mostra a foto com ~400 de largura, e com o
+    // zoom do Windows em 125-150% isso vira 500-600 pixels de verdade. Com 400
+    // a foto esticava e borrava. Foto menor que isso não é ampliada aqui.
+    const int side = qMin(640, qMax(cropped.width(), cropped.height()));
+    const QImage scaled = cropped.scaled(side, side, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     QByteArray bytes;
     QBuffer buf(&bytes);

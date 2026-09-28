@@ -13,6 +13,7 @@
 #include "ColorPopover.h"
 #include "TimelineBraidView.h"
 #include "TimelineInspector.h"
+#include "TimelineFillPanel.h"
 #include "TimelineTracksView.h"
 
 #include <QAction>
@@ -2370,6 +2371,28 @@ void TimelinePanel::buildNewUi(QWidget* body)
         m_inspHolder->setFixedWidth(v.toInt());
     });
 
+    // Painel "Preencher": mesmo movimento do inspetor, no mesmo lugar.
+    m_fillHolder = new QWidget(body);
+    m_fillHolder->setFixedWidth(0);
+    m_fill = new TimelineFillPanel(m_fillHolder);
+    m_fillHolder->installEventFilter(this);
+    bodyL->addWidget(m_fillHolder);
+    m_fillAnim = new QVariantAnimation(this);
+    m_fillAnim->setDuration(220);
+    m_fillAnim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(m_fillAnim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+        m_fillHolder->setFixedWidth(v.toInt());
+    });
+    m_fill->setDocTextResolver([this](const QString& key) {
+        return m_docTextResolver ? m_docTextResolver(key) : QString();
+    });
+    connect(m_fill, &TimelineFillPanel::edited, this, &TimelinePanel::applyFill);
+    connect(m_fill, &TimelineFillPanel::closeRequested, this, [this]() { setFillOpen(false); });
+    connect(m_fill, &TimelineFillPanel::currentChanged, this, [this](int col, int span) {
+        m_tracks->setFillHighlight(col, span);
+        if (col >= 0 && m_newMode == NewMode::Tracks) m_tracks->ensureColumnVisible(col, span);
+    });
+
     connect(m_tracks, &TimelineTracksView::eventClicked, this, &TimelinePanel::selectEvent);
     connect(m_tracks, &TimelineTracksView::backgroundClicked, this, [this]() { selectEvent(QString()); });
     connect(m_tracks, &TimelineTracksView::laneClicked, this, [this](const QString& id) {
@@ -2455,17 +2478,27 @@ void TimelinePanel::buildNewUi(QWidget* body)
     m_noDateBtn = new QToolButton(m_newBottom);
     m_noDateBtn->setObjectName(QStringLiteral("tlNoDate"));
     m_noDateBtn->setCursor(Qt::PointingHandCursor);
-    m_noDateBtn->setToolTip(tr("Mostrar o primeiro capítulo sem marcador de tempo"));
+    m_noDateBtn->setToolTip(tr("Preencher um capítulo por vez, começando pelo primeiro sem data"));
     bot->addWidget(m_noDateBtn);
     connect(m_noDateBtn, &QToolButton::clicked, this, [this]() {
+        QString first;
         for (const auto& e : m_tracksData.events)
-            if (e.hollow) {
-                if (m_newMode == NewMode::Tracks) m_tracks->scrollToColumn(e.col);
-                selectEvent(e.id);
-                return;
+            if (!e.manual && e.hollow && e.col >= 0 && e.col < m_tracksData.cols.size()) {
+                first = m_tracksData.cols[e.col].chapterId;
+                break;
             }
+        openFill(first);
     });
     bot->addStretch(1);
+    m_savedLbl = new QLabel(m_newBottom);
+    m_savedLbl->setObjectName(QStringLiteral("tlSaved"));
+    m_savedLbl->setText(QStringLiteral("✓ ") + tr("salvo"));
+    m_savedLbl->hide();
+    bot->addWidget(m_savedLbl);
+    m_savedTimer = new QTimer(this);
+    m_savedTimer->setSingleShot(true);
+    m_savedTimer->setInterval(1400);
+    connect(m_savedTimer, &QTimer::timeout, m_savedLbl, &QLabel::hide);
     m_densityBox = new QWidget(m_newBottom);
     auto* dl = new QHBoxLayout(m_densityBox);
     dl->setContentsMargins(0, 0, 0, 0);
@@ -2568,6 +2601,8 @@ void TimelinePanel::applyNewTheme()
         QToolButton#tlNoDate { background: transparent; border: none; color: %4; font-size: 11.5px; padding: 0; }
         QToolButton#tlNoDate:hover { text-decoration: underline; }
         QToolButton#tlNoDate[allDated="true"] { color: %5; }
+        QToolButton#tlNoDate[fillOpen="true"] { color: %3; }
+        QLabel#tlSaved { color: %5; font-size: 11.5px; }
         QLabel#tlKbd { color: %6; font-family: '%7'; font-size: 10.5px; border: 1px solid %2;
                        border-radius: 3px; padding: 0 5px; }
         QFrame#tlSeg { background: %8; border: 1px solid %2; border-radius: @radius-control; }
@@ -2640,6 +2675,8 @@ Tracks::Data TimelinePanel::buildTracksData() const
             col.chapterId = c.id; col.sceneIndex = -1; col.manuscriptId = c.manuscriptId;
             col.ruler = unitRuler(m_projectModel, c, -1);
             col.unitLabel = chLabel;
+            col.chMarker = c.timeMarker; col.chSummary = c.summary;
+            col.chTitle = chTitle;
             d.cols << col;
             units << UnitInfo{ chTitle, c.timeMarker, c.summary };
         } else {
@@ -2650,6 +2687,10 @@ Tracks::Data TimelinePanel::buildTracksData() const
                 col.chapterId = c.id; col.sceneIndex = si; col.manuscriptId = c.manuscriptId;
                 col.ruler = unitRuler(m_projectModel, c, si);
                 col.unitLabel = tr("%1 · Cena %2").arg(chLabel).arg(si + 1);
+                col.sceneId = s.id;
+                col.chMarker = c.timeMarker; col.chSummary = c.summary;
+                col.scMarker = s.timeMarker; col.scSummary = s.summary;
+                col.chTitle = chTitle;
                 d.cols << col;
                 units << UnitInfo{ s.title.isEmpty() ? tr("%1 · Cena %2").arg(chTitle).arg(si + 1) : s.title,
                                    s.timeMarker.isEmpty() ? c.timeMarker : s.timeMarker,
@@ -2889,20 +2930,89 @@ void TimelinePanel::refreshNewUi()
     parts << (nl == 1 ? tr("1 linha") : tr("%1 linhas").arg(nl));
     parts << (np == 1 ? tr("1 personagem") : tr("%1 personagens").arg(np));
     m_statsLbl->setText(parts.join(QStringLiteral(" · ")));
-    int nd = 0;
-    for (const auto& e : m_tracksData.events) if (e.hollow) ++nd;
-    m_noDateBtn->setText(nd == 0 ? tr("todos os capítulos têm data")
-                       : nd == 1 ? tr("1 capítulo sem data") : tr("%1 capítulos sem data").arg(nd));
-    m_noDateBtn->setEnabled(nd > 0);
-    m_noDateBtn->setVisible(!m_tracksData.cols.isEmpty());
-    m_noDateBtn->setProperty("allDated", nd == 0);
-    m_noDateBtn->style()->unpolish(m_noDateBtn);
-    m_noDateBtn->style()->polish(m_noDateBtn);
+    refreshNoDateButton();
     m_msBtn->setText(m_tracksData.manuscriptTitle);
     m_msBtn->setVisible(!m_tracksData.manuscriptTitle.isEmpty());
 
     if (!m_sel.isEmpty() && m_newMode != NewMode::Engine) m_inspector->showFor(m_tracksData, m_sel);
     else setInspectorOpen(false);
+    if (fillOpen()) m_fill->setData(m_tracksData);
+}
+
+void TimelinePanel::refreshNoDateButton()
+{
+    if (!m_noDateBtn) return;
+    // por capítulo: um capítulo de 4 cenas sem data é UM capítulo sem data
+    QSet<QString> undated;
+    for (const auto& e : m_tracksData.events)
+        if (!e.manual && e.hollow && e.col >= 0 && e.col < m_tracksData.cols.size())
+            undated.insert(m_tracksData.cols[e.col].chapterId);
+    const int nd = undated.size();
+    const int ncols = m_tracksData.chapterCount;
+    const bool open = fillOpen();
+    QString t;
+    if (nd == 0) t = tr("todos os capítulos têm data");
+    else if (nd == ncols) t = tr("Nenhum capítulo tem data ainda · Preencher agora");
+    else t = (nd == 1 ? tr("1 capítulo sem data") : tr("%1 capítulos sem data").arg(nd))
+             + QStringLiteral(" · ") + tr("Preencher");
+    if (open && nd > 0) t = nd == 1 ? tr("1 capítulo sem data") : tr("%1 capítulos sem data").arg(nd);
+    m_noDateBtn->setText(t);
+    m_noDateBtn->setEnabled(nd > 0 && !open);
+    m_noDateBtn->setVisible(ncols > 0);
+    m_noDateBtn->setProperty("allDated", nd == 0);
+    m_noDateBtn->setProperty("fillOpen", open && nd > 0);
+    m_noDateBtn->style()->unpolish(m_noDateBtn);
+    m_noDateBtn->style()->polish(m_noDateBtn);
+}
+
+bool TimelinePanel::fillOpen() const
+{
+    // aberto = a última animação foi (ou está indo) pra largura cheia
+    return m_fillAnim && m_fillAnim->endValue().toInt() > 0;
+}
+
+void TimelinePanel::openFill(const QString& chapterId)
+{
+    if (!m_fill) return;
+    if (m_newMode == NewMode::Engine) setNewMode(NewMode::Tracks);
+    selectEvent(QString()); // o inspetor fecha: o Preencher mora no mesmo lugar
+    m_fill->setData(m_tracksData);
+    m_fill->start(chapterId);
+    setFillOpen(true);
+}
+
+void TimelinePanel::setFillOpen(bool open)
+{
+    if (!m_fillHolder) return;
+    if (!open) {
+        m_fill->commitPending();
+        m_tracks->setFillHighlight(-1, 1);
+    }
+    const int target = open ? TimelineFillPanel::kWidth : 0;
+    m_fillAnim->stop();
+    m_fillAnim->setStartValue(m_fillHolder->width());
+    m_fillAnim->setEndValue(target);
+    m_fillAnim->start();
+    refreshNoDateButton();
+}
+
+void TimelinePanel::applyFill(const QString& colKey, bool chapterLevel, bool summary, const QString& text)
+{
+    if (!m_projectModel) return;
+    for (const auto& c : m_tracksData.cols) {
+        if (c.key != colKey) continue;
+        const bool chapter = chapterLevel || c.sceneIndex < 0;
+        if (summary) {
+            if (chapter) m_projectModel->updateChapterSummary(c.chapterId, text);
+            else m_projectModel->updateSceneSummary(c.chapterId, c.sceneIndex, text);
+        } else {
+            if (chapter) m_projectModel->updateChapterTimeMarker(c.chapterId, text);
+            else m_projectModel->updateSceneTimeMarker(c.chapterId, c.sceneIndex, text);
+        }
+        if (!isVisible()) refreshFromModel();
+        if (m_savedLbl) { m_savedLbl->show(); m_savedTimer->start(); }
+        return;
+    }
 }
 
 void TimelinePanel::applyTracksFilter()
@@ -3027,7 +3137,13 @@ void TimelinePanel::rebuildNewMenus()
             if (m_view) m_view->fitAll();
         });
         m->addSeparator();
-        connect(m->addAction(tr("Gerador de Timeline")), &QAction::triggered, this, &TimelinePanel::generatorRequested);
+        QAction* fill = m->addAction(tr("Preencher datas e resumos"));
+        fill->setCheckable(true);
+        fill->setChecked(fillOpen());
+        connect(fill, &QAction::triggered, this, [this](bool on) {
+            if (on) openFill(QString());
+            else setFillOpen(false);
+        });
         connect(m->addAction(tr("Nova linha manual")), &QAction::triggered, this, &TimelinePanel::createTimeline);
         m->addSeparator();
         connect(m->addAction(tr("UI Legado")), &QAction::triggered, this, [this]() { setLegacyUi(true); });
@@ -3045,8 +3161,10 @@ void TimelinePanel::setNewMode(NewMode m)
     m_segTracks->setChecked(m == NewMode::Tracks);
     m_segBraid->setChecked(m == NewMode::Braid);
     m_densityBox->setVisible(m == NewMode::Tracks);
+    refreshNoDateButton();
     if (m == NewMode::Engine) {
         setInspectorOpen(false);
+        if (fillOpen()) setFillOpen(false);
         m_scene->relayout();
     } else if (!m_sel.isEmpty()) {
         m_inspector->showFor(m_tracksData, m_sel);
@@ -3079,6 +3197,12 @@ void TimelinePanel::setLegacyUi(bool legacy)
 
 void TimelinePanel::selectEvent(const QString& id)
 {
+    if (fillOpen() && !id.isEmpty()) {
+        // com o Preencher aberto, clicar num capítulo leva a fila até ele
+        if (const Tracks::Event* e = m_tracksData.event(id); e && !e->manual && e->col >= 0)
+            m_fill->jumpTo(m_tracksData.cols[e->col].chapterId);
+        return;
+    }
     m_sel = id;
     if (!m_tracks) return;
     m_tracks->setSelected(id);
@@ -3116,6 +3240,9 @@ bool TimelinePanel::eventFilter(QObject* obj, QEvent* ev)
     if (obj == m_inspHolder && m_inspector && ev->type() == QEvent::Resize) {
         m_inspector->setGeometry(m_inspHolder->width() - m_inspector->width(), 0,
                                  m_inspector->width(), m_inspHolder->height());
+    } else if (obj == m_fillHolder && m_fill && ev->type() == QEvent::Resize) {
+        m_fill->setGeometry(m_fillHolder->width() - m_fill->width(), 0,
+                            m_fill->width(), m_fillHolder->height());
     } else if (obj == m_searchEdit && ev->type() == QEvent::FocusOut) {
         QTimer::singleShot(120, this, [this]() { collapseSearch(false); });
     }
@@ -3127,6 +3254,7 @@ void TimelinePanel::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Escape && !m_legacyUi) {
         if (m_searchEdit && m_searchEdit->hasFocus()) { collapseSearch(true); return; }
         if (!m_sel.isEmpty()) { selectEvent(QString()); return; }
+        if (fillOpen()) { setFillOpen(false); return; }
     }
     QWidget::keyPressEvent(event);
 }

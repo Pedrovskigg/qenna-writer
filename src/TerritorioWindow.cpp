@@ -1,4 +1,5 @@
 #include "TerritorioWindow.h"
+#include "SheetDialogs.h"
 #include "AvatarUtils.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -2028,7 +2029,7 @@ void TerritorioWindow::newTerritorio()
 {
     if (!m_store) return;
     bool ok = false;
-    const QString name = QInputDialog::getText(this, tr("Novo território"), tr("Nome:"), QLineEdit::Normal, QString(), &ok);
+    const QString name = Sheets::askText(this, tr("Novo território"), tr("Nome do território"), QString(), &ok, tr("Criar"));
     if (!ok || name.trimmed().isEmpty()) return;
     const QString id = m_store->addTerritorio(name.trimmed());
     if (m_mode != Mode::Lugares) setMode(Mode::Lugares);

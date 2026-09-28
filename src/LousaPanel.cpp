@@ -1,4 +1,5 @@
 #include "LousaPanel.h"
+#include "SheetDialogs.h"
 #include "ColorPopover.h"
 
 #include "CardItem.h"
@@ -1027,9 +1028,8 @@ void LousaPanel::switchToBoard(const QString& boardId)
 void LousaPanel::createNewBoard()
 {
     bool ok = false;
-    const QString name = QInputDialog::getText(
-        this, tr("Nova lousa"), tr("Nome da lousa:"), QLineEdit::Normal,
-        tr("Lousa %1").arg(m_boards.size() + 1), &ok).trimmed();
+    const QString name = Sheets::askText(this, tr("Nova lousa"), tr("Nome da lousa"),
+        tr("Lousa %1").arg(m_boards.size() + 1), &ok, tr("Criar")).trimmed();
     if (!ok || name.isEmpty()) return;
 
     save();   // persiste a lousa atual antes de trocar
@@ -1054,8 +1054,7 @@ void LousaPanel::renameBoard(const QString& boardId)
     const int idx = boardIndexOf(boardId);
     if (idx < 0) return;
     bool ok = false;
-    const QString newName = QInputDialog::getText(
-        this, tr("Renomear lousa"), tr("Nome da lousa:"), QLineEdit::Normal,
+    const QString newName = Sheets::askText(this, tr("Renomear lousa"), tr("Nome da lousa"),
         m_boards[idx].name, &ok).trimmed();
     if (!ok || newName.isEmpty()) return;
     m_boards[idx].name = newName;

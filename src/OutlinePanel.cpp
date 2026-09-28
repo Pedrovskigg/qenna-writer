@@ -1,4 +1,5 @@
 #include "OutlinePanel.h"
+#include "SheetDialogs.h"
 #include "DialogueStore.h"
 #include "DocPreview.h"
 #include "ElementsStore.h"
@@ -1247,10 +1248,9 @@ void OutlinePanel::promptRename(const QString& chapterId, int sceneIndex)
 
     const QString current = isScene ? ch->scenes.at(sceneIndex).title : ch->title;
     bool ok = false;
-    const QString value = QInputDialog::getText(
-        this,
+    const QString value = Sheets::askText(this,
         isScene ? tr("Renomear cena") : tr("Renomear capítulo"),
-        tr("Título:"), QLineEdit::Normal, current, &ok);
+        tr("Título"), current, &ok, QString(), false, /*allowEmpty=*/true);
     if (!ok) return;
 
     if (isScene) m_model->updateSceneTitle(chapterId, sceneIndex, value.trimmed());
@@ -1266,10 +1266,9 @@ void OutlinePanel::promptSummary(const QString& chapterId, int sceneIndex)
 
     const QString current = isScene ? ch->scenes.at(sceneIndex).summary : ch->summary;
     bool ok = false;
-    const QString value = QInputDialog::getMultiLineText(
-        this, tr("Alterar descrição"),
-        tr("Esta descrição é a mesma que aparece na Timeline."),
-        current, &ok);
+    const QString value = Sheets::askText(this, tr("Alterar descrição"), tr("Uma ou duas frases…"),
+        current, &ok, QString(), /*multiline=*/true, /*allowEmpty=*/true,
+        tr("Esta descrição é a mesma que aparece na Timeline."));
     if (!ok) return;
 
     if (isScene) m_model->updateSceneSummary(chapterId, sceneIndex, value.trimmed());

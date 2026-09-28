@@ -3,12 +3,12 @@
 #include "ElementsStore.h"
 #include "IconUtils.h"
 #include "Theme.h"
+#include "TimelineTracksTypes.h"
 
 #include <QColor>
-#include <QColorDialog>
-#include <QComboBox>
-#include <QDialogButtonBox>
-#include <QFormLayout>
+#include <QButtonGroup>
+#include <QPainter>
+#include <QToolButton>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
@@ -55,14 +55,6 @@ const QList<IconEntry>& drawerIconCatalogRaw() {
         { "chapter",    QT_TRANSLATE_NOOP("DrawerCreateDialog", "Capítulo") },
     };
     return kCatalog;
-}
-
-QIcon loadElementIcon(const QString& id) {
-    const QColor c(Theme::textPrimary());
-    return IconUtils::loadToolbarIcon(
-        QStringLiteral(":/icons/elements/%1.svg").arg(id),
-        c, c, c,
-        QSize(kIconRenderSize, kIconRenderSize));
 }
 
 bool matchesAny(const QString& text, std::initializer_list<const char*> keywords) {
@@ -129,132 +121,212 @@ QString DrawerCreateDialog::autoIconFromTitle(const QString& title) {
     return QStringLiteral("drawer");
 }
 
+namespace {
+// Cores prontas da gaveta (a primeira é o padrão de sempre).
+const char* kPresetColors[] = { "#2b79ff", "#0f9d8a", "#46a758", "#c9a227", "#f76b15",
+                                "#e5484d", "#d6409f", "#8e4ec6", "#6e7ea3", "#8d8d8d" };
+} // namespace
+
 DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
-    : QDialog(parent)
+    : SheetDialog(parent, 440)
     , m_store(store)
-    , m_nameEdit(new QLineEdit(this))
-    , m_iconCombo(new QComboBox(this))
-    , m_colorBtn(new QPushButton(this))
-    , m_typeCombo(new QComboBox(this))
-    , m_buttons(nullptr)
-    , m_color(QStringLiteral("#2b79ff"))
 {
-    setWindowTitle(tr("Nova gaveta"));
-    setModal(true);
+    setEyebrow(tr("Nova gaveta"));
+    QWidget* c = card();
+    const Tracks::Palette pal = Tracks::Palette::current();
 
-    auto* form = new QFormLayout();
-    form->setContentsMargins(0, 0, 0, 0);
-    form->setSpacing(10);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    // selo do ícone na cor da gaveta + nome grande
+    auto* top = new QHBoxLayout;
+    top->setSpacing(14);
+    m_badge = new QLabel(c);
+    m_badge->setFixedSize(48, 48);
+    top->addWidget(m_badge, 0, Qt::AlignVCenter);
+    m_nameEdit = titleEdit(c, false, 24);
+    m_nameEdit->setPlaceholderText(tr("Nome da gaveta"));
+    confirmOnEnter(m_nameEdit);
+    top->addWidget(m_nameEdit, 1);
+    body()->addLayout(top);
 
-    // ---- Ícone + Cor (na mesma linha) ----
-    populateIcons();
-    m_iconCombo->setIconSize(QSize(kIconRenderSize, kIconRenderSize));
-    m_iconCombo->setMinimumHeight(32);
-
-    m_colorBtn->setFixedSize(40, 32);
-    m_colorBtn->setCursor(Qt::PointingHandCursor);
-    m_colorBtn->setToolTip(tr("Escolher cor"));
-    updateColorSwatch();
-
-    auto* iconColorRow = new QHBoxLayout();
-    iconColorRow->setContentsMargins(0, 0, 0, 0);
-    iconColorRow->setSpacing(8);
-    iconColorRow->addWidget(m_iconCombo, /*stretch=*/1);
-    iconColorRow->addWidget(m_colorBtn);
-
-    auto* iconColorContainer = new QWidget(this);
-    iconColorContainer->setLayout(iconColorRow);
-    form->addRow(tr("Ícone / Cor"), iconColorContainer);
-
-    // ---- Nome ----
-    m_nameEdit->setPlaceholderText(tr("Digite o nome da gaveta"));
-    m_nameEdit->setMinimumHeight(32);
-    form->addRow(tr("Nome"), m_nameEdit);
-
-    // ---- Tipo de elemento ----
-    populateElementTypes();
-    m_typeCombo->setMinimumHeight(32);
-    form->addRow(tr("Elemento"), m_typeCombo);
-
-    // ---- Botões OK/Cancelar ----
-    m_buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
-    m_buttons->button(QDialogButtonBox::Ok)->setText(tr("Criar"));
-    m_buttons->button(QDialogButtonBox::Cancel)->setText(tr("Cancelar"));
-    connect(m_buttons, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(m_buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
-
-    auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setContentsMargins(20, 20, 20, 16);
-    mainLayout->setSpacing(16);
-    mainLayout->addLayout(form);
-    mainLayout->addWidget(m_buttons);
-
-    setMinimumWidth(420);
-
-    // Eventos
-    connect(m_nameEdit, &QLineEdit::textChanged, this, &DrawerCreateDialog::onNameChanged);
-    connect(m_colorBtn, &QPushButton::clicked, this, &DrawerCreateDialog::onPickColor);
-    connect(m_iconCombo, QOverload<int>::of(&QComboBox::activated), this, [this](int) {
-        // Clique manual no dropdown desativa o auto-segue por nome.
-        m_iconManual = true;
-    });
-
-    m_nameEdit->setFocus();
-}
-
-void DrawerCreateDialog::populateIcons() {
-    m_iconCombo->clear();
-    for (const auto& e : drawerIconCatalogRaw()) {
-        const QString id = QString::fromLatin1(e.id);
-        const QString label = DrawerCreateDialog::tr(e.label);
-        QIcon icon = loadElementIcon(id);
-        m_iconCombo->addItem(icon, label, id);
-    }
-    // Padrão: "drawer" (ícone genérico).
-    const int idx = m_iconCombo->findData(QStringLiteral("drawer"));
-    if (idx >= 0) m_iconCombo->setCurrentIndex(idx);
-}
-
-void DrawerCreateDialog::populateElementTypes() {
-    m_typeCombo->clear();
-    m_typeCombo->addItem(tr("Automático"), QString());
-    if (m_store) {
-        for (const auto& t : m_store->elementTypes()) {
-            m_typeCombo->addItem(t.label, t.id);
+    // ícones em grade
+    {
+        auto* g = new QVBoxLayout;
+        g->setSpacing(7);
+        g->addWidget(sectionLabel(tr("Ícone"), c));
+        m_iconGroup = new QButtonGroup(this);
+        m_iconGroup->setExclusive(true);
+        const auto& cat = drawerIconCatalogRaw();
+        QHBoxLayout* row = nullptr;
+        for (int i = 0; i < cat.size(); ++i) {
+            if (i % 11 == 0) { row = new QHBoxLayout; row->setSpacing(4); g->addLayout(row); }
+            const QString id = QString::fromLatin1(cat[i].id);
+            auto* b = new QToolButton(c);
+            b->setObjectName(QStringLiteral("sheetIcon"));
+            b->setCheckable(true);
+            b->setFixedSize(30, 30);
+            b->setCursor(Qt::PointingHandCursor);
+            b->setFocusPolicy(Qt::NoFocus);
+            b->setToolTip(DrawerCreateDialog::tr(cat[i].label));
+            b->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/%1.svg").arg(id),
+                                                  pal.ink, pal.ink, pal.ink, QSize(kIconRenderSize, kIconRenderSize)));
+            b->setIconSize(QSize(kIconRenderSize, kIconRenderSize));
+            b->setProperty("iconId", id);
+            m_iconGroup->addButton(b, i);
+            row->addWidget(b);
         }
+        if (row) row->addStretch(1);
+        connect(m_iconGroup, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* b) {
+            m_iconManual = true;   // escolha manual: para de seguir o nome
+            m_icon = b->property("iconId").toString();
+            refreshBadge();
+        });
+        body()->addLayout(g);
     }
+
+    // cores prontas + "outra…"
+    {
+        auto* g = new QVBoxLayout;
+        g->setSpacing(7);
+        g->addWidget(sectionLabel(tr("Cor"), c));
+        auto* row = new QHBoxLayout;
+        row->setSpacing(6);
+        m_colorGroup = new QButtonGroup(this);
+        m_colorGroup->setExclusive(true);
+        for (int i = 0; i < int(sizeof(kPresetColors) / sizeof(kPresetColors[0])); ++i) {
+            const QString hex = QString::fromLatin1(kPresetColors[i]);
+            auto* b = new QToolButton(c);
+            b->setCheckable(true);
+            b->setFixedSize(24, 24);
+            b->setCursor(Qt::PointingHandCursor);
+            b->setFocusPolicy(Qt::NoFocus);
+            b->setProperty("hex", hex);
+            b->setStyleSheet(QStringLiteral(
+                "QToolButton { background: %1; border: 2px solid %2; border-radius: 12px; }"
+                "QToolButton:hover { border-color: %3; }"
+                "QToolButton:checked { border: 2px solid %4; }")
+                .arg(hex, pal.page.name(), Tracks::alpha(pal.ink, 0.35).name(QColor::HexArgb), pal.bright.name()));
+            m_colorGroup->addButton(b, i);
+            row->addWidget(b);
+        }
+        auto* other = new QToolButton(c);
+        other->setObjectName(QStringLiteral("sheetLink"));
+        other->setText(tr("outra…"));
+        other->setCursor(Qt::PointingHandCursor);
+        other->setFocusPolicy(Qt::NoFocus);
+        connect(other, &QToolButton::clicked, this, &DrawerCreateDialog::onPickColor);
+        row->addSpacing(4);
+        row->addWidget(other);
+        row->addStretch(1);
+        connect(m_colorGroup, &QButtonGroup::buttonClicked, this, [this](QAbstractButton* b) {
+            m_color = b->property("hex").toString();
+            refreshBadge();
+        });
+        g->addLayout(row);
+        body()->addLayout(g);
+    }
+
+    // tipo de elemento
+    {
+        auto* g = new QVBoxLayout;
+        g->setSpacing(7);
+        g->addWidget(sectionLabel(tr("Elemento"), c));
+        m_typeGroup = new QButtonGroup(this);
+        m_typeGroup->setExclusive(true);
+        QStringList labels = { tr("Automático") };
+        m_typeIds = QStringList{ QString() };
+        if (m_store)
+            for (const auto& t : m_store->elementTypes()) { labels << t.label; m_typeIds << t.id; }
+        QHBoxLayout* row = nullptr;
+        for (int i = 0; i < labels.size(); ++i) {
+            if (i % 4 == 0) { row = new QHBoxLayout; row->setSpacing(5); g->addLayout(row); }
+            auto* b = pill(labels[i], c);
+            m_typeGroup->addButton(b, i);
+            row->addWidget(b);
+        }
+        if (row) row->addStretch(1);
+        m_typeGroup->button(0)->setChecked(true);
+        auto* hint = new QLabel(tr("Automático deixa o Qenna decidir pelo nome da gaveta."), c);
+        hint->setObjectName(QStringLiteral("sheetDim"));
+        hint->setFont(Tracks::uiFont(11));
+        g->addWidget(hint);
+        body()->addLayout(g);
+    }
+
+    QPushButton* ok = addFooter(tr("Criar"), tr("cria"));
+    auto sync = [this, ok]() { ok->setEnabled(!m_nameEdit->text().trimmed().isEmpty()); };
+    connect(m_nameEdit, &QLineEdit::textChanged, this, sync);
+    connect(m_nameEdit, &QLineEdit::textChanged, this, &DrawerCreateDialog::onNameChanged);
+    sync();
+
+    applySheetTheme(QStringLiteral(
+        "QToolButton#sheetIcon { background: transparent; border: 1px solid transparent; border-radius: 6px; }"
+        "QToolButton#sheetIcon:hover { background: %1; }"
+        "QToolButton#sheetIcon:checked { border-color: %2; background: %3; }")
+        .arg(Tracks::alpha(pal.ink, 0.08).name(QColor::HexArgb), Tracks::alpha(pal.accent, 0.65).name(QColor::HexArgb),
+             Tracks::alpha(pal.accent, 0.15).name(QColor::HexArgb)));
+    setIcon(m_icon);
+    setColor(m_color);
+}
+
+void DrawerCreateDialog::showEvent(QShowEvent* e)
+{
+    SheetDialog::showEvent(e);
+    m_nameEdit->setFocus();
+    if (!m_nameEdit->text().isEmpty()) m_nameEdit->selectAll();
+}
+
+void DrawerCreateDialog::setIcon(const QString& id)
+{
+    m_icon = id;
+    for (QAbstractButton* b : m_iconGroup->buttons())
+        if (b->property("iconId").toString() == id) { b->setChecked(true); break; }
+    refreshBadge();
+}
+
+void DrawerCreateDialog::setColor(const QString& hex)
+{
+    m_color = hex;
+    bool preset = false;
+    for (QAbstractButton* b : m_colorGroup->buttons())
+        if (b->property("hex").toString().compare(hex, Qt::CaseInsensitive) == 0) { b->setChecked(true); preset = true; break; }
+    if (!preset) {
+        // cor escolhida no seletor: nenhuma pronta fica marcada
+        m_colorGroup->setExclusive(false);
+        for (QAbstractButton* b : m_colorGroup->buttons()) b->setChecked(false);
+        m_colorGroup->setExclusive(true);
+    }
+    refreshBadge();
+}
+
+void DrawerCreateDialog::refreshBadge()
+{
+    const QColor col(m_color);
+    const qreal dpr = devicePixelRatioF();
+    QPixmap pm(QSize(48, 48) * dpr);
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    QColor bg = col; bg.setAlphaF(0.18f);
+    QColor bd = col; bd.setAlphaF(0.55f);
+    p.setPen(QPen(bd, 1));
+    p.setBrush(bg);
+    p.drawRoundedRect(QRectF(0.5, 0.5, 47, 47), 10, 10);
+    const QIcon ic = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/%1.svg").arg(m_icon),
+                                                col, col, col, QSize(24, 24));
+    ic.paint(&p, QRect(12, 12, 24, 24));
+    p.end();
+    m_badge->setPixmap(pm);
 }
 
 void DrawerCreateDialog::onNameChanged(const QString& text) {
     if (m_iconManual) return;
-    const QString autoId = autoIconFromTitle(text);
-    const int idx = m_iconCombo->findData(autoId);
-    if (idx >= 0 && idx != m_iconCombo->currentIndex()) {
-        // bloquear o sinal activated pra não setar m_iconManual = true
-        QSignalBlocker block(m_iconCombo);
-        m_iconCombo->setCurrentIndex(idx);
-    }
+    setIcon(autoIconFromTitle(text));
 }
 
 void DrawerCreateDialog::onPickColor() {
-    const QColor initial(m_color);
-    const QColor chosen = ColorPopover::getColor(initial, this, tr("Cor da gaveta"));
+    const QColor chosen = ColorPopover::getColor(QColor(m_color), this, tr("Cor da gaveta"));
     if (!chosen.isValid()) return;
-    m_color = chosen.name(QColor::HexRgb);
-    updateColorSwatch();
-}
-
-void DrawerCreateDialog::updateColorSwatch() {
-    // Bordinha sutil pra cores claras não sumirem no fundo claro do botão.
-    m_colorBtn->setStyleSheet(Theme::qss(QStringLiteral(
-        "QPushButton {"
-        "  background: %1;"
-        "  border: 1px solid %2;"
-        "  border-radius: @radius-panel;"
-        "}"
-        "QPushButton:hover { border-color: %3; }"
-    ).arg(m_color, Theme::panelBorder(), Theme::textPrimary())));
+    setColor(chosen.name(QColor::HexRgb));
 }
 
 QString DrawerCreateDialog::title() const {
@@ -262,7 +334,7 @@ QString DrawerCreateDialog::title() const {
 }
 
 QString DrawerCreateDialog::iconId() const {
-    return m_iconCombo->currentData().toString();
+    return m_icon;
 }
 
 QString DrawerCreateDialog::color() const {
@@ -270,39 +342,29 @@ QString DrawerCreateDialog::color() const {
 }
 
 QString DrawerCreateDialog::elementTypeId() const {
-    return m_typeCombo->currentData().toString();
+    const int i = m_typeGroup->checkedId();
+    return i >= 0 && i < m_typeIds.size() ? m_typeIds[i] : QString();
 }
 
 void DrawerCreateDialog::configureForEdit(const QString& title,
                                           const QString& iconId,
                                           const QString& color,
                                           const QString& elementTypeId) {
-    setWindowTitle(tr("Editar gaveta"));
-    if (m_buttons) m_buttons->button(QDialogButtonBox::Ok)->setText(tr("Salvar"));
+    setEyebrow(tr("Editar gaveta"));
+    if (m_okBtn) m_okBtn->setText(tr("Salvar"));
+    setEnterHint(tr("salva"));
 
     // Bloqueia auto-segue de ícone por nome — o usuário já escolheu antes.
     m_iconManual = true;
-
     {
         QSignalBlocker block(m_nameEdit);
         m_nameEdit->setText(title);
     }
-
-    if (!iconId.isEmpty()) {
-        const int idx = m_iconCombo->findData(iconId);
-        if (idx >= 0) {
-            QSignalBlocker block(m_iconCombo);
-            m_iconCombo->setCurrentIndex(idx);
-        }
-    }
-
-    if (!color.isEmpty()) {
-        m_color = color;
-        updateColorSwatch();
-    }
-
+    if (m_okBtn) m_okBtn->setEnabled(!title.trimmed().isEmpty());
+    if (!iconId.isEmpty()) setIcon(iconId);
+    if (!color.isEmpty()) setColor(color);
     if (!elementTypeId.isNull()) {
-        const int idx = m_typeCombo->findData(elementTypeId);
-        if (idx >= 0) m_typeCombo->setCurrentIndex(idx);
+        const int i = m_typeIds.indexOf(elementTypeId);
+        if (i >= 0) m_typeGroup->button(i)->setChecked(true);
     }
 }

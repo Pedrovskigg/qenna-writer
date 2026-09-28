@@ -23,6 +23,12 @@ struct Column {
     QString manuscriptId;
     QString ruler;           // rótulo curto da régua: "5", "5·2", "Pról."
     QString unitLabel;       // "Capítulo 5" / "Capítulo 5 · Cena 2" (painel)
+    // Campos crus, pra Mesa de preenchimento (o evento traz o efetivo, com a
+    // cena herdando do capítulo; a Mesa precisa saber de quem é cada um).
+    QString sceneId;         // Scene::id (vazio no capítulo sem cenas)
+    QString chTitle;         // título do capítulo (nas cenas, o evento traz o da cena)
+    QString chMarker, chSummary;
+    QString scMarker, scSummary;
 };
 
 struct Lane {

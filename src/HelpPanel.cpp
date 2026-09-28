@@ -1784,17 +1784,23 @@ QString HelpPanel::timelineContent() const
     ).arg(QString::number(kTimelineLineFocusThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     html += QStringLiteral("<p style='margin-bottom:4px;margin-top:12px;'><b>10- %1</b></p>")
-        .arg(tr("Gerador de Timeline: colocando projetos antigos em dia."));
+        .arg(tr("Preencher: colocando projetos antigos em dia."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Se o seu projeto é de antes da Timeline orgânica existir, provavelmente boa parte dos "
-        "seus capítulos e cenas não tem marcador nem resumo preenchido — e sem isso, nenhum "
-        "evento é gerado. Em vez de abrir capítulo por capítulo só pra preencher esses dois "
-        "campos, vá em Configurações → Timeline → Gerador de Timeline."));
+        "seus capítulos e cenas não tem marcador nem resumo preenchido, e sem isso a bolinha "
+        "fica vazada. Em vez de abrir capítulo por capítulo, clique em \"capítulos sem data · "
+        "Preencher\" no rodapé da Timeline, ou em ⋯ → Preencher datas e resumos."));
+    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
+        "O painel abre na direita, um capítulo por vez, mostrando como ele começa pra você "
+        "lembrar quando acontece. Embaixo do marcador aparece o que o Qenna entendeu "
+        "(\"→ dia 9\", \"→ 20 anos antes · Flashback\"); em laranja, ele não reconheceu o "
+        "marcador, e o capítulo segue a ordem de leitura. Cada campo grava sozinho quando você "
+        "sai dele, e \"Salvar e próximo\" (Ctrl+Enter) anda a fila."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Ele lista todos os capítulos e cenas de um manuscrito de uma vez, com um campo de "
-        "marcador e um de resumo por linha, e salva tudo em lote ao clicar em \"Salvar tudo\". "
-        "Mesmos campos, mesmo efeito na Timeline — só mais rápido pra preencher um manuscrito "
-        "inteiro."));
+        "Quando a primeira frase do capítulo já diz o tempo (\"cinco dias depois\", \"naquela "
+        "mesma noite\"), aparece uma sugestão pronta; um clique aceita. \"igual\" copia o marcador "
+        "do capítulo anterior (Ctrl+D) e \"+1 dia\" soma um dia a ele (Alt+↓). Capítulo com cenas "
+        "é preenchido inteiro, e as cenas herdam; \"separar cenas\" dá um campo pra cada uma."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
         "Por último: se você preferir o jeito antigo de acompanhar personagem por personagem "
