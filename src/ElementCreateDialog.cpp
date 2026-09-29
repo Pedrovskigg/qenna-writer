@@ -63,20 +63,6 @@ const RoleOpt kRoles[] = {
 };
 constexpr int kRoleCount = 8;   // os papéis de verdade (antes de "Outro…" e "Sem papel")
 
-QIcon chevronIcon(const QColor& c)
-{
-    QPixmap pm(28, 28);
-    pm.setDevicePixelRatio(2.0);
-    pm.fill(Qt::transparent);
-    QPainter p(&pm);
-    p.setRenderHint(QPainter::Antialiasing);
-    p.setPen(QPen(c, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-    QPainterPath path;
-    path.moveTo(3.5, 5.5); path.lineTo(7, 9); path.lineTo(10.5, 5.5);
-    p.drawPath(path);
-    return QIcon(pm);
-}
-
 QIcon crossIcon(const QColor& c)
 {
     QPixmap pm(28, 28);
@@ -595,16 +581,11 @@ void ElementCreateDialog::buildUi()
         gm->setContentsMargins(0, 0, 0, 0);
         gm->setSpacing(5);
         gm->addWidget(sectionLabel(tr("Modelo de ficha"), m_templateBox));
-        m_templateGroup = new QButtonGroup(this);
-        QHBoxLayout* mr = nullptr;
-        for (int i = 0; i <= m_sheetTemplates.size(); ++i) {
-            if (i % 2 == 0) { mr = new QHBoxLayout; mr->setSpacing(5); gm->addLayout(mr); }
-            auto* b = pill(i == 0 ? tr("Vazio (padrão)") : m_sheetTemplates[i - 1].name, m_templateBox);
-            m_templateGroup->addButton(b, i);
-            mr->addWidget(b);
-        }
-        if (mr) mr->addStretch(1);
-        m_templateGroup->button(0)->setChecked(true);
+        QStringList names = { tr("Vazio (padrão)") };
+        for (const SheetTemplate& t : m_sheetTemplates) names << t.name;
+        m_templateChoice = new SheetChoice(names, m_templateBox, Qt::AlignLeft, 300 - 32);
+        m_templateChoice->setCurrentIndex(0);
+        gm->addWidget(m_templateChoice);
         fields->addWidget(m_templateBox);
         updatePageTypeUi();
     }
@@ -705,6 +686,12 @@ void ElementCreateDialog::setInitial(const QString& title, const QString& role, 
                : m_elementType == QStringLiteral("object") ? tr("Editar objeto") : tr("Editar documento"));
     if (m_poster) m_poster->setEyebrow(tr("Editar personagem"));
     adjustSize();
+}
+
+void ElementCreateDialog::presetTitle(const QString& title)
+{
+    m_titleEdit->setText(title);
+    m_titleEdit->selectAll();
 }
 
 void ElementCreateDialog::updatePreview()
@@ -815,8 +802,8 @@ bool ElementCreateDialog::createAsSheet() const
 
 QString ElementCreateDialog::selectedTemplateId() const
 {
-    if (!createAsSheet() || !m_templateGroup) return QString();
-    const int i = m_templateGroup->checkedId();
+    if (!createAsSheet() || !m_templateChoice) return QString();
+    const int i = m_templateChoice->currentIndex();
     return i > 0 && i <= m_sheetTemplates.size() ? m_sheetTemplates[i - 1].id : QString();
 }
 

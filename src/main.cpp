@@ -21,6 +21,8 @@
 
 #include "CrashLogger.h"
 #include "MainWindow.h"
+#include "QuickCover.h"
+#include "WindowChrome.h"
 #include "Theme.h"
 
 namespace {
@@ -326,6 +328,9 @@ int main(int argc, char *argv[])
 
     MainWindow window;
     window.setAvailableFontFamilies(allFontFamilies);
+    QuickCover::setBundledFamilies(customFontFamilies);
+    // toda janela com barra do sistema (Lousa, Timeline, avisos…) no tema, não só o editor
+    WindowChrome::install();
 
     // Segura o splash até o tempo mínimo. Não é atraso fixo: se o carregamento
     // já passou disso — projeto grande, disco lento — não espera nada.

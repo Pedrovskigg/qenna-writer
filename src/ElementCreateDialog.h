@@ -36,6 +36,10 @@ public:
                     bool narrator = false, const QString& trackMode = QString(),
                     const QStringList& aliases = QStringList());
 
+    // Só o nome, sem virar modo de edição (criar a partir de um trecho
+    // selecionado ou de um card da Lousa: o nome vem sugerido, mas é novo).
+    void presetTitle(const QString& title);
+
     QString title() const;
     QString role() const;
     // true = criar a página do personagem como Ficha estruturada (só personagem).
@@ -82,5 +86,5 @@ private:
     QButtonGroup* m_trackGroup = nullptr;
     QButtonGroup* m_pageGroup = nullptr;
     QWidget*      m_templateBox = nullptr;
-    QButtonGroup* m_templateGroup = nullptr;
+    class SheetChoice* m_templateChoice = nullptr;
 };

@@ -9,54 +9,9 @@ class QPlainTextEdit;
 class QPushButton;
 class QRadioButton;
 
-// Fluxo de criação de projeto, dividido em 3 etapas modais (compat Mira 1):
-//   1. NewProjectTemplateDialog — escolhe blank/basic/advanced.
-//   2. NewProjectDetailsDialog  — preenche nome/autor/gêneros/sinopse.
-//   3. NewProjectFolderDialog   — escolhe pasta-pai; o app cria a sub-pasta
-//      <parent>/<nome> automaticamente.
-
-class NewProjectTemplateDialog : public QDialog {
-    Q_OBJECT
-public:
-    explicit NewProjectTemplateDialog(QWidget* parent = nullptr);
-    QString templateId() const { return m_templateId; }
-
-private:
-    void applyDialogStyle();
-    QString m_templateId = QStringLiteral("blank");
-    QLabel* m_hintLabel = nullptr;
-};
-
-
-class NewProjectDetailsDialog : public QDialog {
-    Q_OBJECT
-public:
-    explicit NewProjectDetailsDialog(QWidget* parent = nullptr);
-
-    QString projectName() const;
-    QString author() const;
-    QString genres() const;
-    QString synopsis() const;
-    QString coverDataUrl() const { return m_coverDataUrl; }
-    QString projectType() const;   // "book" ou "screenplay"
-
-private:
-    void applyDialogStyle();
-    void onPickCover();
-    void onClearCover();
-    void updateCoverPreview();
-
-    QLineEdit* m_nameEdit = nullptr;
-    QLineEdit* m_authorEdit = nullptr;
-    QLineEdit* m_genresEdit = nullptr;
-    QPlainTextEdit* m_synopsisEdit = nullptr;
-    QPushButton* m_continueBtn = nullptr;
-    QLabel* m_coverPreview = nullptr;
-    QString m_coverDataUrl;
-    QRadioButton* m_bookRadio       = nullptr;
-    QRadioButton* m_screenplayRadio = nullptr;
-};
-
+// "Nova ideia" virando projeto: o nome (NewIdeaNameDialog) e a pasta-pai
+// (NewProjectFolderDialog; o app cria <parent>/<nome>). O Novo projeto normal
+// é uma folha só: ver NewProjectSheet.
 
 // Wizard enxuto usado por "Nova Ideia" ao formalizar um rascunho em projeto:
 // só pede o nome (autor/gêneros/sinopse/capa ficam pra editar depois, se o

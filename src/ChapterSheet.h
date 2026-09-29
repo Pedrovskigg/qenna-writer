@@ -61,7 +61,7 @@ private:
     QString currentType() const;
 
     ChapterSheetSpec& s;
-    QToolButton* m_types[5] = {};
+    class SheetChoice* m_typeChoice = nullptr;   // capítulo, prólogo, interlúdio…
     QLineEdit*   m_custom = nullptr;
     QLineEdit*   m_title = nullptr;
     QLabel*      m_preview = nullptr;

@@ -63,6 +63,19 @@ public:
                                   const QString& chapterId, int sceneIndex,
                                   int textPos, int paragraph);
 
+    // ── Evento rápido pela seleção (sem janela e sem mostrar a Timeline) ──────
+    struct QuickLane { QString id; QString name; QColor color; };
+    // As linhas na ordem da Timeline. sceneLane = a linha onde a cena já está
+    // (o evento nasce nela se ninguém escolher outra).
+    QVector<QuickLane> quickEventLanes(const QString& chapterId, int sceneIndex, QString* sceneLane);
+    // Cria o evento no capítulo/cena de onde veio o trecho, na linha escolhida.
+    // chapterId vazio (trecho de gaveta) = evento solto. Devolve o id.
+    QString addEventFromEditor(const QString& title, const QString& description, const QString& marker,
+                               const QString& chapterId, int sceneIndex, int textPos, int paragraph,
+                               const QString& laneId);
+    // Seleciona o evento (quem chama mostra o painel).
+    void revealEvent(const QString& id);
+
     // Capítulo/cena aberto no editor — selo "✎" na régua e manuscrito padrão.
     void setEditorLocation(const QString& manuscriptId, const QString& chapterId, int sceneIndex);
 
@@ -192,6 +205,7 @@ private:
     void resolveThemeBoundLaneColors(); // linhas presas a uma cor do tema
     // Evento vivo (cena) por id; nullptr se não existe (ex.: capítulo sem data).
     const TimelineEvent* liveEvent(const QString& id) const;
+    QString sceneLaneFor(const QString& chapterId, int sceneIndex) const;
     // Grava a mudança num evento vivo (cena + lista local) e salva.
     void updateLiveEvent(const TimelineEvent& e);
 

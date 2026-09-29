@@ -4,16 +4,20 @@
 #include "TimelineTracksTypes.h"
 
 #include <QApplication>
+#include <QButtonGroup>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPointer>
 #include <QPushButton>
 #include <QScreen>
+#include <QStyle>
 #include <QTextEdit>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -155,6 +159,20 @@ QToolButton* SheetDialog::pill(const QString& text, QWidget* parent)
     return b;
 }
 
+QIcon SheetDialog::chevronIcon(const QColor& c)
+{
+    QPixmap pm(28, 28);
+    pm.setDevicePixelRatio(2.0);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(QPen(c, 1.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    QPainterPath path;
+    path.moveTo(3.5, 5.5); path.lineTo(7, 9); path.lineTo(10.5, 5.5);
+    p.drawPath(path);
+    return QIcon(pm);
+}
+
 QPushButton* SheetDialog::addFooter(const QString& okText, const QString& enterHint)
 {
     auto* sep = new QFrame(m_card);
@@ -192,6 +210,7 @@ QPushButton* SheetDialog::addFooter(const QString& okText, const QString& enterH
     foot->addWidget(cancel);
     foot->addWidget(m_okBtn);
     m_root->addLayout(foot);
+    m_foot = foot;
     return m_okBtn;
 }
 
@@ -258,6 +277,21 @@ void SheetDialog::openBeside(QWidget* anchor)
     show();
 }
 
+void SheetDialog::openInside(QWidget* area)
+{
+    setModal(false);
+    setAttribute(Qt::WA_ShowWithoutActivating);
+    fitToContent();
+    if (area && area->isVisible()) {
+        const QPoint tl = area->mapToGlobal(QPoint(0, 0));
+        move(tl.x() + 12 - kShadow, tl.y() + 12 - kShadow);
+    } else if (QWidget* win = parentWidget() ? parentWidget()->window() : nullptr) {
+        move(win->geometry().center() - QPoint(width() / 2, height() / 2));
+    }
+    keepOnScreen();
+    show();
+}
+
 void SheetDialog::fitToContent()
 {
     // Recalcula o tamanho ANTES de posicionar: quem mudou de altura antes de
@@ -281,6 +315,9 @@ void SheetDialog::keepOnScreen()
     // a sombra pode sair da tela; a folha, não
     if (g.bottom() - kShadow > avail.bottom() - 8) g.moveBottom(avail.bottom() - 8 + kShadow);
     if (g.top() + kShadow < avail.top() + 8) g.moveTop(avail.top() + 8 - kShadow);
+    // ao lado de um painel encostado na direita da tela, não sai pela borda
+    if (g.right() - kShadow > avail.right() - 8) g.moveRight(avail.right() - 8 + kShadow);
+    if (g.left() + kShadow < avail.left() + 8) g.moveLeft(avail.left() + 8 - kShadow);
     if (g.topLeft() != frameGeometry().topLeft()) move(g.topLeft());
 }
 
@@ -347,6 +384,14 @@ void SheetDialog::applySheetTheme(const QString& extraQss)
                                color: %18; font-size: 12.5px; font-weight: 600; padding: 0 16px; }
         QPushButton#sheetPri:hover { background: %19; }
         QPushButton#sheetPri:disabled { background: %7; color: %1; }
+        QPushButton#sheetPick { background: %11; border: 1px solid %2; border-radius: 6px; text-align: left; }
+        QPushButton#sheetPick:hover { border-color: %7; }
+        QLabel#sheetPickText { background: transparent; color: %6; }
+        QFrame#sheetChoiceList { background: %11; border: 1px solid %2; border-radius: 8px; }
+        QPushButton#sheetChoiceCell { background: transparent; border: 1px solid transparent; border-radius: 6px;
+                                      color: %13; text-align: left; padding: 0 8px; font-size: 12.5px; }
+        QPushButton#sheetChoiceCell:hover { background: %5; color: %6; }
+        QPushButton#sheetChoiceCell[sel="true"] { background: %9; border-color: %8; color: %6; }
     )")).arg(pal.page.name(),                              // 1
              pal.border.name(),                            // 2
              pal.dim.name(),                               // 3
@@ -368,4 +413,142 @@ void SheetDialog::applySheetTheme(const QString& extraQss)
               mix(pal.accent, pal.bright, 0.85).name())    // 19
         + extraQss);
     setPlaceholderColors();
+}
+
+// ── SheetChoice ──────────────────────────────────────────────────────────────
+
+SheetChoice::SheetChoice(const QStringList& labels, QWidget* parent, Qt::Alignment pillsAlign, int availWidth)
+    : QWidget(parent), m_labels(labels)
+{
+    auto* v = new QVBoxLayout(this);
+    v->setContentsMargins(0, 0, 0, 0);
+    v->setSpacing(6);
+
+    if (labels.size() <= kMaxPills) {
+        m_group = new QButtonGroup(this);
+        m_group->setExclusive(true);
+        QHBoxLayout* row = nullptr;
+        int used = 0;
+        auto closeRow = [&]() {
+            if (row && (pillsAlign & (Qt::AlignRight | Qt::AlignHCenter))) row->insertStretch(0, 1);
+            if (row && !(pillsAlign & Qt::AlignRight)) row->addStretch(1);
+        };
+        for (int i = 0; i < labels.size(); ++i) {
+            QToolButton* b = SheetDialog::pill(labels[i], this);
+            const int w = b->fontMetrics().horizontalAdvance(labels[i]) + 30;   // padding 9+9, borda e a folga do estilo
+            if (!row || (availWidth > 0 && used + w > availWidth)) {
+                closeRow();
+                row = new QHBoxLayout;
+                row->setSpacing(5);
+                v->addLayout(row);
+                used = 0;
+            }
+            row->addWidget(b);
+            used += w + 5;
+            m_group->addButton(b, i);
+        }
+        closeRow();
+        connect(m_group, &QButtonGroup::idClicked, this, [this](int id) {
+            m_index = id;
+            emit activated(id);
+        });
+        return;
+    }
+
+    // a linha: o escolhido + a setinha
+    m_line = new QPushButton(this);
+    m_line->setObjectName(QStringLiteral("sheetPick"));
+    m_line->setCursor(Qt::PointingHandCursor);
+    m_line->setFixedHeight(30);
+    m_line->setAutoDefault(false);
+    m_line->setFocusPolicy(Qt::NoFocus);
+    {
+        auto* h = new QHBoxLayout(m_line);
+        h->setContentsMargins(10, 0, 8, 0);
+        m_lineText = new QLabel(m_line);
+        m_lineText->setObjectName(QStringLiteral("sheetPickText"));
+        m_lineText->setFont(Tracks::uiFont(12.5));
+        m_lineText->setAttribute(Qt::WA_TransparentForMouseEvents);
+        h->addWidget(m_lineText, 1);
+        auto* chev = new QLabel(m_line);
+        chev->setPixmap(SheetDialog::chevronIcon(Tracks::Palette::current().dim).pixmap(12, 12));
+        chev->setAttribute(Qt::WA_TransparentForMouseEvents);
+        h->addWidget(chev);
+    }
+    v->addWidget(m_line);
+    connect(m_line, &QPushButton::clicked, this, [this]() { toggleList(!m_list->isVisible()); });
+
+    // a lista, na própria folha: duas colunas
+    m_list = new QFrame(this);
+    m_list->setObjectName(QStringLiteral("sheetChoiceList"));
+    auto* grid = new QGridLayout(m_list);
+    grid->setContentsMargins(3, 3, 3, 3);
+    grid->setSpacing(2);
+    const int rows = (int(labels.size()) + 1) / 2;
+    for (int i = 0; i < labels.size(); ++i) {
+        auto* cell = new QPushButton(m_list);
+        cell->setObjectName(QStringLiteral("sheetChoiceCell"));
+        cell->setCursor(Qt::PointingHandCursor);
+        cell->setAutoDefault(false);
+        cell->setFocusPolicy(Qt::NoFocus);
+        cell->setFixedHeight(28);
+        cell->setMinimumWidth(0);
+        cell->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+        cell->setText(labels[i]);
+        cell->setToolTip(labels[i]);
+        // coluna por coluna (de cima pra baixo), como se lê uma lista
+        grid->addWidget(cell, i % rows, i / rows);
+        m_cells << cell;
+        connect(cell, &QPushButton::clicked, this, [this, i]() {
+            m_index = i;
+            refresh();
+            toggleList(false);
+            emit activated(i);
+        });
+    }
+    grid->setColumnStretch(0, 1);
+    grid->setColumnStretch(1, 1);
+    m_list->hide();
+    v->addWidget(m_list);
+    refresh();
+}
+
+void SheetChoice::setCurrentIndex(int i)
+{
+    if (i < 0 || i >= m_labels.size()) return;
+    m_index = i;
+    if (m_group) {
+        if (QAbstractButton* b = m_group->button(i)) b->setChecked(true);
+        return;
+    }
+    refresh();
+}
+
+void SheetChoice::setAlwaysOpen()
+{
+    if (!m_line) return;
+    m_line->hide();
+    m_list->show();
+}
+
+void SheetChoice::refresh()
+{
+    if (!m_line) return;
+    m_lineText->setText(m_index >= 0 ? m_labels[m_index] : QString());
+    for (int i = 0; i < m_cells.size(); ++i) {
+        QPushButton* cell = m_cells[i];
+        const bool on = i == m_index;
+        if (cell->property("sel").toBool() == on) continue;
+        cell->setProperty("sel", on);
+        cell->style()->unpolish(cell);
+        cell->style()->polish(cell);
+    }
+}
+
+void SheetChoice::toggleList(bool open)
+{
+    if (!m_list || !m_line->isVisible()) return;
+    m_list->setVisible(open);
+    // a folha acompanha (SetFixedSize no layout de fora); adjustSize garante
+    if (QWidget* w = window()) w->adjustSize();
 }

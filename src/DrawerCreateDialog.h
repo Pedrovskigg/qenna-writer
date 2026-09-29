@@ -32,6 +32,7 @@ public:
     static QString autoIconFromTitle(const QString& title);
     static QStringList drawerIconCatalog();
     static QString iconLabel(const QString& iconId);
+    static QStringList presetColors();   // as cores prontas das gavetas
 
 protected:
     void showEvent(QShowEvent* e) override;
@@ -48,8 +49,8 @@ private:
     QLabel*       m_badge = nullptr;
     QButtonGroup* m_iconGroup = nullptr;
     QButtonGroup* m_colorGroup = nullptr;
-    QButtonGroup* m_typeGroup = nullptr;
-    QStringList   m_typeIds;              // id por botão do m_typeGroup
+    class SheetChoice* m_typeChoice = nullptr;
+    QStringList   m_typeIds;              // id por opção do m_typeChoice
 
     QString m_icon = QStringLiteral("drawer");
     QString m_color = QStringLiteral("#2b79ff");

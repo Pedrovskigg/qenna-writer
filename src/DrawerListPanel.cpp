@@ -1,4 +1,5 @@
 #include "DrawerListPanel.h"
+#include "SheetDialogs.h"
 #include "DrawerViews.h"
 #include "BondsLayer.h"
 #include "ElementsStore.h"
@@ -12,7 +13,6 @@
 
 #include <QAction>
 #include <QApplication>
-#include <QDialog>
 #include <QByteArray>
 #include <QColor>
 #include <QDrag>
@@ -1706,115 +1706,22 @@ QStringList DrawerListPanel::ancestorFolderIds(const QString& folderId) const {
 void DrawerListPanel::showNewGroupDialog(const QString& assignItemId) {
     if (!m_model) return;
 
-    static const QStringList kDefaultColors = {
-        QStringLiteral("#E57373"), QStringLiteral("#FFB74D"), QStringLiteral("#FFF176"),
-        QStringLiteral("#81C784"), QStringLiteral("#4FC3F7"), QStringLiteral("#CE93D8"),
-        QStringLiteral("#F06292"), QStringLiteral("#80CBC4"), QStringLiteral("#A1887F"),
+    static const QList<QColor> kDefaultColors = {
+        QColor(QStringLiteral("#E57373")), QColor(QStringLiteral("#FFB74D")), QColor(QStringLiteral("#FFF176")),
+        QColor(QStringLiteral("#81C784")), QColor(QStringLiteral("#4FC3F7")), QColor(QStringLiteral("#CE93D8")),
+        QColor(QStringLiteral("#F06292")), QColor(QStringLiteral("#80CBC4")), QColor(QStringLiteral("#A1887F")),
     };
 
-    auto* dlg = new QDialog(this);
-    dlg->setWindowTitle(tr("Novo grupo"));
-    dlg->setModal(true);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
-    dlg->setFixedWidth(300);
-
-    dlg->setStyleSheet(Theme::qss(QStringLiteral(R"(
-        QDialog {
-            background: %1;
-            color: %2;
-        }
-        QLineEdit {
-            background: %3;
-            color: %2;
-            border: 1px solid %4;
-            border-radius: @radius-control;
-            padding: 6px 10px;
-        }
-        QPushButton#okBtn {
-            background: %5;
-            color: %6;
-            border: none;
-            border-radius: @radius-control;
-            padding: 6px 14px;
-            font-weight: 600;
-        }
-        QPushButton#okBtn:hover { background: %7; }
-        QPushButton#cancelBtn {
-            background: transparent;
-            color: %8;
-            border: 1px solid %4;
-            border-radius: @radius-control;
-            padding: 6px 14px;
-        }
-        QPushButton#cancelBtn:hover { background: %9; }
-    )")).arg(Theme::panelBackground(), Theme::textPrimary(),
-            Theme::inputBackground(), Theme::panelBorder(),
-            Theme::accentDefault(), Theme::textBright(),
-            Theme::borderStrong(), Theme::textMuted(),
-            Theme::hoverOverlay()));
-
-    auto* lay = new QVBoxLayout(dlg);
-    lay->setContentsMargins(16, 16, 16, 16);
-    lay->setSpacing(12);
-
-    auto* nameEdit = new QLineEdit(dlg);
-    nameEdit->setPlaceholderText(tr("Nome do grupo"));
-    lay->addWidget(nameEdit);
-
-    // Seletor de cor: chips pré-definidos
-    QString chosenColor = kDefaultColors.first();
-    auto* colorRow = new QHBoxLayout();
-    colorRow->setSpacing(6);
-    QList<QPushButton*> colorBtns;
-    for (const QString& col : kDefaultColors) {
-        auto* cb = new QPushButton(dlg);
-        cb->setFixedSize(24, 24);
-        cb->setCheckable(true);
-        if (col == chosenColor) cb->setChecked(true);
-        cb->setStyleSheet(Theme::qss(QStringLiteral(
-            // Swatch redondo: o botão é 24x24, o raio é metade do lado. Fora da
-            // escala do tema de propósito — com outro raio deixa de ser círculo.
-            "QPushButton { background: %1; border-radius: 12px; border: 2px solid transparent; }"
-            "QPushButton:checked { border-color: %2; }"
-            "QPushButton:hover   { border-color: %3; }")
-            .arg(col, Theme::textBright(), Theme::textMuted())));
-        colorRow->addWidget(cb);
-        colorBtns.append(cb);
-    }
-    colorRow->addStretch();
-    lay->addLayout(colorRow);
-
-    for (auto* cb : colorBtns) {
-        const QString col = cb->styleSheet().section(QStringLiteral("background: "), 1, 1).section(QStringLiteral(";"), 0, 0).trimmed();
-        connect(cb, &QPushButton::clicked, dlg, [cb, &chosenColor, col, &colorBtns](bool) {
-            chosenColor = col;
-            for (auto* b : colorBtns) b->setChecked(b == cb);
-        });
-    }
-
-    auto* btnRow = new QHBoxLayout();
-    btnRow->setSpacing(8);
-    auto* cancelBtn = new QPushButton(tr("Cancelar"), dlg);
-    cancelBtn->setObjectName(QStringLiteral("cancelBtn"));
-    auto* okBtn = new QPushButton(tr("Criar"), dlg);
-    okBtn->setObjectName(QStringLiteral("okBtn"));
-    okBtn->setDefault(true);
-    btnRow->addStretch();
-    btnRow->addWidget(cancelBtn);
-    btnRow->addWidget(okBtn);
-    lay->addLayout(btnRow);
-
-    connect(cancelBtn, &QPushButton::clicked, dlg, &QDialog::reject);
-    connect(okBtn, &QPushButton::clicked, dlg, [dlg, nameEdit, &chosenColor, this, assignItemId]() {
-        const QString name = nameEdit->text().trimmed();
-        if (name.isEmpty()) { nameEdit->setFocus(); return; }
-        const QString id = m_model->addGroup(name, chosenColor);
-        if (!assignItemId.isEmpty())
-            m_model->setDrawerItemGroup(assignItemId, id);
-        dlg->accept();
-    });
-
-    dlg->exec();
+    bool ok = false;
+    QColor color = kDefaultColors.first();
+    const QString name = Sheets::askTextWithColor(this, tr("Novo grupo"), tr("Nome do grupo"),
+                                                  kDefaultColors, &color, &ok, tr("Criar")).trimmed();
+    if (!ok || name.isEmpty()) return;
+    // o cartão pode ter sumido enquanto a folha estava aberta
+    if (!assignItemId.isEmpty() && !m_model->findDrawerItem(assignItemId)) return;
+    const QString id = m_model->addGroup(name, color.name().toUpper());
+    if (!assignItemId.isEmpty())
+        m_model->setDrawerItemGroup(assignItemId, id);
 }
 
 void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& globalPos) {

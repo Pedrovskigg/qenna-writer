@@ -282,6 +282,18 @@ qt_add_executable(qenna-writer
     src/TerritorioMentionAddPopup.h
     src/MemoriesStore.cpp
     src/MemoriesStore.h
+    src/DrawerQuickPopup.cpp
+    src/DrawerQuickPopup.h
+    src/NewProjectSheet.cpp
+    src/NewProjectSheet.h
+    src/QuickCover.cpp
+    src/QuickCover.h
+    src/QuickCoverWidgets.cpp
+    src/QuickCoverWidgets.h
+    src/QuickSavePopup.cpp
+    src/WindowChrome.cpp
+    src/WindowChrome.h
+    src/QuickSavePopup.h
     src/MemoryAddPopup.cpp
     src/MemoryAddPopup.h
     src/SystemFolderGuard.cpp

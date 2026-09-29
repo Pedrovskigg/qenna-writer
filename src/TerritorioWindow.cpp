@@ -17,16 +17,12 @@
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDateTime>
-#include <QDialog>
-#include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QFocusEvent>
 #include <QFontComboBox>
-#include <QFormLayout>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QImage>
-#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
@@ -2040,28 +2036,15 @@ void TerritorioWindow::newTerritorio()
 void TerritorioWindow::newSistema()
 {
     if (!m_construtorStore) return;
-    QDialog dlg(this);
-    dlg.setWindowTitle(tr("Novo sistema"));
-    auto* form = new QFormLayout;
-    auto* nameEdit = new QLineEdit(&dlg);
-    nameEdit->setPlaceholderText(tr("Nome do sistema"));
-    form->addRow(tr("Nome:"), nameEdit);
-    auto* catCombo = new QComboBox(&dlg);
-    for (const auto& c : ConstrutorStore::categories()) catCombo->addItem(c.displayName, c.id);
-    form->addRow(tr("Categoria:"), catCombo);
-    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
-    QPushButton* okBtn = buttons->button(QDialogButtonBox::Ok);
-    okBtn->setEnabled(false);
-    connect(nameEdit, &QLineEdit::textChanged, &dlg, [okBtn](const QString& t) { okBtn->setEnabled(!t.trimmed().isEmpty()); });
-    connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-    auto* lay = new QVBoxLayout(&dlg);
-    lay->addLayout(form);
-    lay->addWidget(buttons);
-    if (dlg.exec() != QDialog::Accepted) return;
-    const QString name = nameEdit->text().trimmed();
-    if (name.isEmpty()) return;
-    const QString id = m_construtorStore->addSystem(name, catCombo->currentData().toString(), 0);
+    QStringList labels;
+    QStringList ids;
+    for (const auto& c : ConstrutorStore::categories()) { labels << c.displayName; ids << c.id; }
+    bool ok = false;
+    int cat = 0;
+    const QString name = Sheets::askTextWithChoice(this, tr("Novo sistema"), tr("Nome do sistema"), QString(),
+                                                   tr("Categoria"), labels, &cat, &ok, tr("Criar")).trimmed();
+    if (!ok || name.isEmpty() || cat < 0 || cat >= ids.size()) return;
+    const QString id = m_construtorStore->addSystem(name, ids[cat], 0);
     if (m_mode != Mode::Sistemas) setMode(Mode::Sistemas);
     m_kind = Kind::None;
     openSistema(id);

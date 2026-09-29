@@ -49,8 +49,8 @@ ChapterSheet::ChapterSheet(ChapterSheetSpec& spec, QWidget* parent)
 QString ChapterSheet::currentType() const
 {
     static const char* ids[5] = { "chapter", "prologue", "interlude", "epilogue", "custom" };
-    for (int i = 0; i < 5; ++i)
-        if (m_types[i] && m_types[i]->isChecked()) return QString::fromLatin1(ids[i]);
+    if (m_typeChoice && m_typeChoice->currentIndex() >= 0)
+        return QString::fromLatin1(ids[m_typeChoice->currentIndex()]);
     return s.type;
 }
 
@@ -66,23 +66,14 @@ void ChapterSheet::build()
 
     // ── tipo (só capítulo) ──
     if (chapter) {
-        auto* row = new QHBoxLayout;
-        row->setSpacing(5);
-        row->addStretch(1);
-        const QString names[5] = { tr("Capítulo"), tr("Prólogo"), tr("Interlúdio"), tr("Epílogo"), tr("Outro…") };
+        const QStringList names = { tr("Capítulo"), tr("Prólogo"), tr("Interlúdio"), tr("Epílogo"), tr("Outro…") };
         static const char* ids[5] = { "chapter", "prologue", "interlude", "epilogue", "custom" };
-        auto* grp = new QButtonGroup(this);
-        grp->setExclusive(true);
-        for (int i = 0; i < 5; ++i) {
-            auto* b = pill(names[i], card);
-            b->setChecked(s.type == QLatin1String(ids[i]));
-            grp->addButton(b, i);
-            row->addWidget(b);
-            m_types[i] = b;
-        }
-        if (!grp->checkedButton()) m_types[0]->setChecked(true);
-        row->addStretch(1);
-        body->addLayout(row);
+        m_typeChoice = new SheetChoice(names, card, Qt::AlignHCenter);
+        int cur = 0;
+        for (int i = 0; i < 5; ++i)
+            if (s.type == QLatin1String(ids[i])) cur = i;
+        m_typeChoice->setCurrentIndex(cur);
+        body->addWidget(m_typeChoice);
         m_custom = new QLineEdit(s.typeLabel, card);
         m_custom->setObjectName(QStringLiteral("sheetFld"));
         m_custom->setFont(uiFont(12.5));
@@ -91,7 +82,7 @@ void ChapterSheet::build()
         m_custom->setVisible(currentType() == QLatin1String("custom"));
         m_custom->installEventFilter(this);
         body->addWidget(m_custom);
-        connect(grp, &QButtonGroup::idClicked, this, [this]() {
+        connect(m_typeChoice, &SheetChoice::activated, this, [this]() {
             m_custom->setVisible(currentType() == QLatin1String("custom"));
             if (m_custom->isVisible()) m_custom->setFocus(); else m_title->setFocus();
             refreshTitle();

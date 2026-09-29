@@ -270,6 +270,11 @@ public:
     void setProjectDetails(const QString& name, const QString& author,
                            const QString& genres, const QString& synopsis,
                            const QString& coverDataUrl);
+    // Capa rápida (QuickCover): a versão sem texto (coverBg, a textura do menu
+    // principal) e os ajustes pra reabrir. Chamar DEPOIS de setProjectDetails,
+    // que apaga os dois quando a capa muda por outro caminho.
+    void setProjectCoverExtras(const QString& coverBgDataUrl, const QJsonObject& quickCover);
+    QJsonObject projectQuickCover() const;
 
     // Título/sinopse/capa "em vigor" de um manuscrito: o próprio dado do
     // manuscrito se preenchido, senão o do projeto. manuscriptId vazio ou

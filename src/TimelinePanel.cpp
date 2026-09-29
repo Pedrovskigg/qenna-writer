@@ -3437,11 +3437,7 @@ void TimelinePanel::promptNewEventFromEditor(const QString& description, const Q
     if (!ch) { promptNewEvent(description, marker, QString(), QStringLiteral("editor")); return; }
     const int si = ch->scenes.isEmpty() ? -1 : qMax(0, sceneIndex);
     const QString key = chapterId + QLatin1Char(':') + QString::number(si < 0 ? 0 : si);
-    const QString storyId = QStringLiteral("story:") + key;
-    QString seedLane = m_laneOverrides.value(storyId);
-    if (seedLane.isEmpty())
-        if (const TimelineEvent* le = liveEvent(storyId)) seedLane = le->timelineId;
-    if (seedLane.isEmpty()) seedLane = QStringLiteral("story:main");
+    const QString seedLane = sceneLaneFor(chapterId, sceneIndex);
 
     TimelineEventPopup dlg(m_timelines, m_projectModel, m_territorioStore, this);
     dlg.setDocTextResolver(m_docTextResolver);
@@ -3464,6 +3460,66 @@ void TimelinePanel::promptNewEventFromEditor(const QString& description, const Q
         if (m_newMode == NewMode::Engine) setNewMode(NewMode::Tracks);
         selectEvent(id);
     }
+}
+
+QString TimelinePanel::sceneLaneFor(const QString& chapterId, int sceneIndex) const
+{
+    const Chapter* ch = m_projectModel ? m_projectModel->findChapter(chapterId) : nullptr;
+    if (!ch) return QStringLiteral("story:main");
+    const int si = ch->scenes.isEmpty() ? -1 : qMax(0, sceneIndex);
+    const QString storyId = QStringLiteral("story:") + chapterId + QLatin1Char(':') + QString::number(si < 0 ? 0 : si);
+    QString lane = m_laneOverrides.value(storyId);
+    if (lane.isEmpty())
+        if (const TimelineEvent* le = liveEvent(storyId)) lane = le->timelineId;
+    return lane.isEmpty() ? QStringLiteral("story:main") : lane;
+}
+
+QVector<TimelinePanel::QuickLane> TimelinePanel::quickEventLanes(const QString& chapterId, int sceneIndex,
+                                                                  QString* sceneLane)
+{
+    // com o painel escondido os dados podem estar velhos: sincroniza antes
+    refreshFromModel();
+    const Tracks::Data d = buildTracksData();
+    QVector<QuickLane> out;
+    for (const Tracks::Lane& L : d.lanes) out.append({ L.id, L.name, L.color });
+    const QString seed = chapterId.isEmpty() ? QString() : sceneLaneFor(chapterId, sceneIndex);
+    if (sceneLane) *sceneLane = seed;
+    // a linha da cena pode não aparecer (automática ainda vazia): entra no topo
+    if (!seed.isEmpty() && std::none_of(out.cbegin(), out.cend(), [&](const QuickLane& q) { return q.id == seed; })) {
+        for (const TimelineDef& t : m_timelines)
+            if (t.id == seed) { out.prepend({ t.id, t.name.isEmpty() ? tr("Linha") : t.name, t.color }); break; }
+    }
+    return out;
+}
+
+QString TimelinePanel::addEventFromEditor(const QString& title, const QString& description, const QString& marker,
+                                          const QString& chapterId, int sceneIndex, int textPos, int paragraph,
+                                          const QString& laneId)
+{
+    TimelineEvent e;
+    e.title = title.trimmed().isEmpty() ? suggestTitleFrom(description) : title.trimmed();
+    e.timeMarker = marker;
+    e.description = description;
+    e.timelineId = laneId;
+    e.origin = QStringLiteral("editor");
+    const QPointF center = m_view ? m_view->mapToScene(m_view->viewport()->rect().center()) : QPointF();
+    const Chapter* ch = m_projectModel ? m_projectModel->findChapter(chapterId) : nullptr;
+    if (!ch) return commitEvent(e, center);   // trecho de gaveta: vai pros "Soltos"
+    const int si = ch->scenes.isEmpty() ? -1 : qMax(0, sceneIndex);
+    const QString seedLane = sceneLaneFor(chapterId, sceneIndex);
+    e.anchorKey = chapterId + QLatin1Char(':') + QString::number(si < 0 ? 0 : si);
+    e.anchorPos = textPos;
+    e.originWhere = tr("Cap %1, parágrafo %2").arg(unitRuler(m_projectModel, *ch, si)).arg(paragraph);
+    e.laneFollows = e.timelineId.isEmpty() || e.timelineId == seedLane;
+    if (!ch->manuscriptId.isEmpty() && ch->manuscriptId != currentManuscriptId()) m_msId = ch->manuscriptId;
+    return commitEvent(e, center);
+}
+
+void TimelinePanel::revealEvent(const QString& id)
+{
+    if (!m_legacyUi && m_newMode == NewMode::Engine) setNewMode(NewMode::Tracks);
+    refreshNewUi();
+    selectEvent(id);
 }
 
 void TimelinePanel::resolveThemeBoundLaneColors()

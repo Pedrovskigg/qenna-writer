@@ -21,6 +21,7 @@ class ProjectModel;
 class LeftBar : public QWidget {
     Q_OBJECT
 public:
+    QToolButton* newDrawerButton() const { return m_newDrawerBtn; }   // onde a Nova gaveta brota
     enum FixedAction {
         Info,
         Whiteboard,

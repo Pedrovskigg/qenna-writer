@@ -209,7 +209,7 @@ private:
     void showCharacterSheet(const QString& itemId);
     void hideCharacterSheet();
     void positionCharacterSheet();
-    bool confirmDiscardOrSave();
+    bool confirmDiscardOrSave(bool* discarded = nullptr);
     // "Nova Ideia": formaliza o rascunho solto (sem projeto) num projeto de
     // verdade — roda o wizard enxuto (nome + pasta) e migra o capítulo
     // solto pro manuscrito recém-criado. No-op se não houver rascunho ativo.
@@ -332,6 +332,9 @@ private:
                            const QPoint& spawnGlobal);
     void createDocFromBond(const QString& drawerKey, const QString& bondId);
     void createDocFromSelection();
+    void saveSelectionDocTo(const QString& drawerKey);
+    void saveSelectionEventTo(const QString& laneId);
+    class QuickSavePopup* ensureQuickSavePopup();
     void generateImageFromSelection();
     void createTimelineEventFromSelection();
     // Abre o popup de "Adicionar à memória…" a partir da seleção atual.
@@ -527,6 +530,30 @@ private:
     QString rankCorpusCache;
     QString manuscriptCorpusForRanking();
     MemoryAddPopup *memoryAddPopup = nullptr;
+    // Jogo rápido pela seleção (documento numa gaveta, evento numa linha):
+    // o trecho fica aqui esperando o clique na lista.
+    class QuickSavePopup *quickSavePopup = nullptr;
+    // Ir pro menu principal esconde o editor (uma janela só na barra de
+    // tarefas); fechar o menu sem escolher nada traz ele de volta como estava.
+    bool m_editorHiddenForMenu = false;
+    bool m_editorWasMaximized = false;
+    // Descartou as alterações pra ir pro menu: o projeto em memória ainda tem
+    // elas. Voltando pra ele, relê do disco; indo pra outro, não pergunta de novo.
+    bool m_discardedForMenu = false;
+    void restoreEditorAfterMenu();
+    // Nova gaveta / Editar gaveta: o cartão rápido (sem modal); key vazia = criando
+    class DrawerQuickPopup *drawerQuickPopup = nullptr;
+    QString m_drawerQuickKey;
+    class DrawerQuickPopup* ensureDrawerQuickPopup();
+    enum class QuickKind { Doc, Event };
+    QuickKind m_quickKind = QuickKind::Doc;
+    QString m_quickSaveHtml;
+    struct QuickEvent {
+        QString description, marker, chapterId;
+        int sceneIndex = -1, textPos = 0, paragraph = 0;
+        QHash<QString, QString> laneNames;   // id → nome, pro "✓ Na Timeline · Klara"
+    };
+    QuickEvent m_quickEvent;
     DialogueStore *dialogueStore = nullptr;
     ConstrutorStore *construtorStore = nullptr;
     ConstrutorMentionAddPopup *construtorMentionAddPopup = nullptr;

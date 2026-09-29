@@ -127,6 +127,13 @@ const char* kPresetColors[] = { "#2b79ff", "#0f9d8a", "#46a758", "#c9a227", "#f7
                                 "#e5484d", "#d6409f", "#8e4ec6", "#6e7ea3", "#8d8d8d" };
 } // namespace
 
+QStringList DrawerCreateDialog::presetColors()
+{
+    QStringList out;
+    for (const char* c : kPresetColors) out << QString::fromLatin1(c);
+    return out;
+}
+
 DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
     : SheetDialog(parent, 440)
     , m_store(store)
@@ -229,21 +236,13 @@ DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
         auto* g = new QVBoxLayout;
         g->setSpacing(7);
         g->addWidget(sectionLabel(tr("Elemento"), c));
-        m_typeGroup = new QButtonGroup(this);
-        m_typeGroup->setExclusive(true);
         QStringList labels = { tr("Automático") };
         m_typeIds = QStringList{ QString() };
         if (m_store)
             for (const auto& t : m_store->elementTypes()) { labels << t.label; m_typeIds << t.id; }
-        QHBoxLayout* row = nullptr;
-        for (int i = 0; i < labels.size(); ++i) {
-            if (i % 4 == 0) { row = new QHBoxLayout; row->setSpacing(5); g->addLayout(row); }
-            auto* b = pill(labels[i], c);
-            m_typeGroup->addButton(b, i);
-            row->addWidget(b);
-        }
-        if (row) row->addStretch(1);
-        m_typeGroup->button(0)->setChecked(true);
+        m_typeChoice = new SheetChoice(labels, c);
+        m_typeChoice->setCurrentIndex(0);
+        g->addWidget(m_typeChoice);
         auto* hint = new QLabel(tr("Automático deixa o Qenna decidir pelo nome da gaveta."), c);
         hint->setObjectName(QStringLiteral("sheetDim"));
         hint->setFont(Tracks::uiFont(11));
@@ -342,7 +341,7 @@ QString DrawerCreateDialog::color() const {
 }
 
 QString DrawerCreateDialog::elementTypeId() const {
-    const int i = m_typeGroup->checkedId();
+    const int i = m_typeChoice->currentIndex();
     return i >= 0 && i < m_typeIds.size() ? m_typeIds[i] : QString();
 }
 
@@ -365,6 +364,6 @@ void DrawerCreateDialog::configureForEdit(const QString& title,
     if (!color.isEmpty()) setColor(color);
     if (!elementTypeId.isNull()) {
         const int i = m_typeIds.indexOf(elementTypeId);
-        if (i >= 0) m_typeGroup->button(i)->setChecked(true);
+        if (i >= 0) m_typeChoice->setCurrentIndex(i);
     }
 }

@@ -643,6 +643,13 @@ void ProjectModel::setProjectDetails(const QString& name, const QString& author,
     setStr(QStringLiteral("genres"), genres);
     setStr(QStringLiteral("synopsis"), synopsis);
     // Compat Mira 1: gravamos em ambas as chaves (cover e coverFull).
+    // Capa trocada por outro caminho (imagem escolhida, removida): a textura
+    // sem texto e os ajustes da capa rápida eram da capa velha.
+    if (pd.value(QStringLiteral("coverFull")).toString() != coverDataUrl) {
+        if (pd.contains(QStringLiteral("coverBg")) || pd.contains(QStringLiteral("quickCover"))) changed = true;
+        pd.remove(QStringLiteral("coverBg"));
+        pd.remove(QStringLiteral("quickCover"));
+    }
     setStr(QStringLiteral("cover"), coverDataUrl);
     setStr(QStringLiteral("coverFull"), coverDataUrl);
 
@@ -650,6 +657,21 @@ void ProjectModel::setProjectDetails(const QString& name, const QString& author,
     else m_dataExtras.remove(QStringLiteral("projectDetails"));
 
     if (changed) emit projectDetailsChanged();
+}
+
+void ProjectModel::setProjectCoverExtras(const QString& coverBgDataUrl, const QJsonObject& quickCover) {
+    QJsonObject pd = m_dataExtras.value(QStringLiteral("projectDetails")).toObject();
+    if (coverBgDataUrl.isEmpty()) pd.remove(QStringLiteral("coverBg"));
+    else pd.insert(QStringLiteral("coverBg"), coverBgDataUrl);
+    if (quickCover.isEmpty()) pd.remove(QStringLiteral("quickCover"));
+    else pd.insert(QStringLiteral("quickCover"), quickCover);
+    if (!pd.isEmpty()) m_dataExtras.insert(QStringLiteral("projectDetails"), pd);
+    emit projectDetailsChanged();
+}
+
+QJsonObject ProjectModel::projectQuickCover() const {
+    return m_dataExtras.value(QStringLiteral("projectDetails")).toObject()
+        .value(QStringLiteral("quickCover")).toObject();
 }
 
 void ProjectModel::addDrawer(const Drawer& drawer) {

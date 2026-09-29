@@ -4,6 +4,7 @@
 
 #include "CardItem.h"
 #include "ConnectionItem.h"
+#include "CoverUtils.h"
 #include "ElementCreateDialog.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -14,14 +15,11 @@
 
 #include <QBuffer>
 #include <QCloseEvent>
-#include <QInputDialog>
 #include <QMessageBox>
 #include <QTimer>
 #include <QColorDialog>
-#include <QComboBox>
 #include <QCursor>
 #include <QDialog>
-#include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QRegularExpression>
@@ -43,6 +41,7 @@
 #include <QTextEdit>
 #include <QResizeEvent>
 #include <QSaveFile>
+#include <QSet>
 #include <QScrollArea>
 #include <QToolButton>
 #include <QUuid>
@@ -379,38 +378,9 @@ void LousaPanel::buildUi()
                 entries.append({d.key, d.title, it.id, it.title, it.html});
         if (entries.isEmpty()) return;
 
-        QDialog dlg(this);
-        dlg.setWindowTitle(tr("Vincular documento"));
-        dlg.resize(400, 340);
-        auto* vl = new QVBoxLayout(&dlg);
-        auto* search = new QLineEdit(&dlg);
-        search->setPlaceholderText(tr("Buscar..."));
-        vl->addWidget(search);
-        auto* list = new QListWidget(&dlg);
-        list->setAlternatingRowColors(true);
-        auto populate = [&](const QString& q) {
-            list->clear();
-            const QString needle = q.trimmed().toLower();
-            for (const Entry& e : entries) {
-                if (!needle.isEmpty() && !e.title.toLower().contains(needle)
-                    && !e.drawerName.toLower().contains(needle)) continue;
-                auto* item = new QListWidgetItem(
-                    QStringLiteral("%1 — %2").arg(e.title.isEmpty() ? tr("(sem título)") : e.title, e.drawerName));
-                item->setData(Qt::UserRole, QVariant::fromValue<int>(int(&e - entries.data())));
-                list->addItem(item);
-            }
-        };
-        populate(QString());
-        connect(search, &QLineEdit::textChanged, list, [&](const QString& t) { populate(t); });
-        connect(list, &QListWidget::itemDoubleClicked, &dlg, &QDialog::accept);
-        vl->addWidget(list, 1);
-        auto* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
-        connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-        connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-        vl->addWidget(bb);
-        if (dlg.exec() != QDialog::Accepted || !list->currentItem()) return;
-
-        const int idx = list->currentItem()->data(Qt::UserRole).toInt();
+        QVector<Sheets::PickItem> items;
+        for (const Entry& e : entries) items.append({e.title, e.drawerName, QPixmap()});
+        const int idx = Sheets::askPick(this, tr("Vincular documento"), tr("Buscar..."), items, tr("Vincular"));
         if (idx < 0 || idx >= entries.size()) return;
         const Entry& e = entries[idx];
         pushUndo();
@@ -437,100 +407,20 @@ void LousaPanel::buildUi()
             }
         }
 
-        QDialog dlg(this);
-        dlg.setWindowTitle(tr("Personagem na lousa"));
-        dlg.resize(400, 360);
-        auto* vl = new QVBoxLayout(&dlg);
-        vl->setSpacing(8);
-
-        auto* search = new QLineEdit(&dlg);
-        search->setPlaceholderText(tr("Buscar personagem..."));
-        vl->addWidget(search);
-
-        auto* list = new QListWidget(&dlg);
-        auto populate = [&](const QString& q) {
-            list->clear();
-            const QString needle = q.trimmed().toLower();
-            for (const CEntry& e : entries) {
-                if (!needle.isEmpty() && !e.title.toLower().contains(needle)) continue;
-                auto* item = new QListWidgetItem(e.title.isEmpty() ? tr("(sem nome)") : e.title);
-                item->setData(Qt::UserRole, QVariant::fromValue<int>(int(&e - entries.data())));
-                list->addItem(item);
-            }
-        };
-        populate(QString());
-        connect(search, &QLineEdit::textChanged, this, [&](const QString& t) { populate(t); });
-        connect(list, &QListWidget::itemDoubleClicked, &dlg, &QDialog::accept);
-        vl->addWidget(list, 1);
-
-        // Botão "Novo personagem" + Ok/Cancel
-        auto* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dlg);
-        auto* newCharBtn = new QPushButton(tr("+ Novo personagem"), &dlg);
-        newCharBtn->setCursor(Qt::PointingHandCursor);
-        bb->addButton(newCharBtn, QDialogButtonBox::ResetRole);
-
-        connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-        connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-
-        // "Novo personagem" — abre o ElementCreateDialog completo (role, foto, narrador)
-        connect(newCharBtn, &QPushButton::clicked, this, [&]() {
-            // Encontra o primeiro drawer de personagens
-            QString targetDrawerKey;
-            for (const Drawer& d : m_projectModel->drawers()) {
-                if (d.drawerElementType == QStringLiteral("character")) {
-                    targetDrawerKey = d.key; break;
-                }
-            }
-            if (targetDrawerKey.isEmpty()) {
-                QMessageBox::information(&dlg, tr("Sem gaveta de personagens"),
-                    tr("Crie primeiro uma gaveta de personagens no projeto."));
-                return;
-            }
-
-            // Abre o dialog completo com foto, papel, narrador
-            ElementCreateDialog edlg(QStringLiteral("character"), &dlg);
-            if (edlg.exec() != QDialog::Accepted || edlg.title().trimmed().isEmpty()) return;
-
-            // Cria elemento no ElementsStore
-            Element elem;
-            elem.name     = edlg.title().trimmed();
-            elem.type     = QStringLiteral("character");
-            elem.icon     = QStringLiteral("user");
-            elem.role     = edlg.role();
-            elem.image    = edlg.imageDataUrl();
-            elem.narrator = edlg.narrator();
-            elem.aliases  = edlg.aliases();
-            const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
-
-            // Cria DrawerItem vinculado ao elemento
-            DrawerItem newItem;
-            newItem.id           = ProjectModel::uid();
-            newItem.title        = elem.name;
-            newItem.hasInlineHtml = true;
-            newItem.html         = QStringLiteral("<p></p>");
-            newItem.elementType  = QStringLiteral("character");
-            newItem.elementId    = elementId;
-            newItem.role         = elem.role;
-            m_projectModel->addDrawerItem(targetDrawerKey, newItem);
-
-            // Cria e adiciona o card direto na lousa
-            pushUndo();
-            CanvasCard c = nextCardData(QStringLiteral("character"));
-            c.title           = elem.name;
-            c.linkedDrawerKey = targetDrawerKey;
-            c.linkedItemId    = newItem.id;
-            c.photoDataUrl    = elem.image;
-            m_scene->addCard(c);
-            refreshEmptyState();
-
-            // Fecha o picker — card já está na lousa
-            dlg.accept();
-        });
-
-        vl->addWidget(bb);
-        if (dlg.exec() != QDialog::Accepted || !list->currentItem()) return;
-
-        const int idx = list->currentItem()->data(Qt::UserRole).toInt();
+        // a gaveta só aparece quando os personagens vêm de mais de uma
+        QSet<QString> drawerKeys;
+        for (const CEntry& e : entries) drawerKeys.insert(e.drawerKey);
+        QVector<Sheets::PickItem> items;
+        for (const CEntry& e : entries) {
+            QPixmap photo;
+            if (m_elementsStore && !e.elementId.isEmpty())
+                if (const Element* el = m_elementsStore->findElement(e.elementId))
+                    photo = CoverUtils::pixmapFromDataUrl(el->image);
+            items.append({e.title, drawerKeys.size() > 1 ? e.drawerName : QString(), photo});
+        }
+        const int idx = Sheets::askPick(this, tr("Personagem na lousa"), tr("Buscar personagem..."), items,
+                                        tr("Pôr na lousa"), tr("+ Novo personagem"), tr("Nenhum personagem ainda."));
+        if (idx == Sheets::kPickExtra) { newCharacterOnBoard(); return; }
         if (idx < 0 || idx >= entries.size()) return;
         const CEntry& e = entries[idx];
 
@@ -741,52 +631,10 @@ void LousaPanel::buildUi()
             QColor(QStringLiteral("#a78bfa")), QColor(QStringLiteral("#f87171")),
         };
 
-        // Popup de cor da conexão — QDialog centrado na janela
-        QDialog dlg(this);
-        dlg.setWindowTitle(tr("Nova conexão"));
-        dlg.setFixedWidth(280);
-        auto* vl = new QVBoxLayout(&dlg);
-        vl->setContentsMargins(14, 12, 14, 12);
-        vl->setSpacing(10);
-
-        auto* title = new QLabel(tr("Cor da conexão"), &dlg);
-        title->setStyleSheet(QStringLiteral("font-size: 11px; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.06em;"));
-        vl->addWidget(title);
-
-        // Grid 4×2 de cores
-        auto* grid = new QWidget(&dlg);
-        auto* gl   = new QHBoxLayout(grid);
-        gl->setSpacing(6); gl->setContentsMargins(0,0,0,0);
+        const QList<QColor> palette(std::begin(kConnPalette), std::end(kConnPalette));
         QColor selectedColor = kConnPalette[0];
-        QList<QPushButton*> swatches;
-        for (const QColor& c : kConnPalette) {
-            auto* btn = new QPushButton(grid);
-            btn->setFixedSize(28, 22);
-            btn->setCursor(Qt::PointingHandCursor);
-            btn->setStyleSheet(Theme::qss(QStringLiteral(
-                "QPushButton { background: %1; border: 1.5px solid rgba(0,0,0,0.25);"
-                " border-radius: @radius-control; } "
-                "QPushButton:checked { border: 2px solid #fff; }").arg(c.name())));
-            btn->setCheckable(true);
-            btn->setChecked(c == selectedColor);
-            swatches.append(btn);
-            connect(btn, &QPushButton::clicked, &dlg, [btn, c, &selectedColor, &swatches]() {
-                selectedColor = c;
-                for (auto* s : swatches) s->setChecked(false);
-                btn->setChecked(true);
-            });
-            gl->addWidget(btn);
-        }
-        vl->addWidget(grid);
-
-        auto* bb = new QDialogButtonBox(QDialogButtonBox::Cancel, &dlg);
-        auto* createBtn = bb->addButton(tr("Criar"), QDialogButtonBox::AcceptRole);
-        createBtn->setDefault(true);
-        connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-        connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-        vl->addWidget(bb);
-
-        if (dlg.exec() != QDialog::Accepted) return;
+        if (!Sheets::askColor(this, tr("Nova conexão"), tr("Cor da conexão"), palette, &selectedColor, tr("Criar")))
+            return;
 
         // Cria a conexão
         pushUndo();
@@ -1253,36 +1101,14 @@ void LousaPanel::exportZones(const QList<CanvasZone>& zones)
     }
 
     // Confirmação. Cada área vira uma gaveta própria, com o nome da área.
-    QDialog dlg(this);
-    dlg.setWindowTitle(tr("Exportar áreas"));
-    dlg.setMinimumWidth(340);
-    auto* vl = new QVBoxLayout(&dlg);
-    vl->setSpacing(10);
-
-    auto* info = new QLabel(
-        zonesWithContent == 1
-            ? tr("A área será exportada para uma gaveta nova, com o nome da área.")
-            : tr("Cada área vira uma gaveta nova, com o nome da área "
-                 "(%1 áreas → %1 gavetas).").arg(zonesWithContent),
-        &dlg);
-    info->setWordWrap(true);
-    vl->addWidget(info);
-
-    if (hasUntitled) {
-        auto* warn = new QLabel(tr("Os post-its sem título serão nomeados com as "
-                                   "primeiras palavras do conteúdo."), &dlg);
-        warn->setWordWrap(true);
-        warn->setStyleSheet(QStringLiteral("color:%1;font-size:11px;").arg(Theme::accentWarning()));
-        vl->addWidget(warn);
-    }
-
-    auto* bb = new QDialogButtonBox(QDialogButtonBox::Cancel, &dlg);
-    bb->addButton(tr("Exportar"), QDialogButtonBox::AcceptRole);
-    connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-    connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-    vl->addWidget(bb);
-
-    if (dlg.exec() != QDialog::Accepted) return;
+    const QString text = zonesWithContent == 1
+        ? tr("A área será exportada para uma gaveta nova, com o nome da área.")
+        : tr("Cada área vira uma gaveta nova, com o nome da área "
+             "(%1 áreas → %1 gavetas).").arg(zonesWithContent);
+    const QString warn = hasUntitled
+        ? tr("Os post-its sem título serão nomeados com as primeiras palavras do conteúdo.")
+        : QString();
+    if (!Sheets::confirm(this, tr("Exportar áreas"), text, warn, tr("Exportar"))) return;
 
     // Uma gaveta por área (com conteúdo).
     int createdDrawers = 0, totalDocs = 0;
@@ -1454,51 +1280,22 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
         if (suggested.isEmpty()) suggested = tr("Documento");
     }
 
-    QDialog dlg(this);
-    dlg.setWindowTitle(tr("Criar documento"));
-    dlg.setMinimumWidth(360);
-    auto* root = new QVBoxLayout(&dlg);
-    root->setContentsMargins(16, 16, 16, 12);
-    root->setSpacing(10);
-
-    root->addWidget(new QLabel(tr("Nome do documento:"), &dlg));
-    auto* nameEdit = new QLineEdit(suggested, &dlg);
-    nameEdit->selectAll();
-    root->addWidget(nameEdit);
-
-    root->addWidget(new QLabel(tr("Gaveta de destino:"), &dlg));
-    auto* combo = new QComboBox(&dlg);
-    for (const Drawer& d : m_projectModel->drawers())
-        combo->addItem(d.title.isEmpty() ? tr("(sem nome)") : d.title, d.key);
-    root->addWidget(combo);
-
-    auto* hint = new QLabel(&dlg);
-    hint->setWordWrap(true);
-    hint->setStyleSheet(QStringLiteral("color:%1;font-size:11px;").arg(Theme::textMuted()));
-    root->addWidget(hint);
-    auto refreshHint = [this, combo, hint]() {
-        const Drawer* d = m_projectModel->findDrawer(combo->currentData().toString());
-        const QString et = d ? d->drawerElementType : QString();
-        if (et == QStringLiteral("character"))    hint->setText(tr("Vai abrir o cadastro de personagem em seguida (foto e papel)."));
-        else if (et == QStringLiteral("setting")) hint->setText(tr("Vai abrir o cadastro de cenário em seguida (foto)."));
-        else if (et == QStringLiteral("object"))  hint->setText(tr("Vai abrir o cadastro de objeto em seguida (foto)."));
-        else hint->clear();
-    };
-    refreshHint();
-    connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), &dlg,
-            [refreshHint](int) { refreshHint(); });
-
-    auto* bb = new QDialogButtonBox(QDialogButtonBox::Cancel, &dlg);
-    bb->addButton(tr("Criar"), QDialogButtonBox::AcceptRole);
-    connect(bb, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
-    connect(bb, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
-    root->addWidget(bb);
-
-    if (dlg.exec() != QDialog::Accepted) return;
-    const QString title = nameEdit->text().trimmed();
-    if (title.isEmpty()) return;
-    const QString destKey = combo->currentData().toString();
-    if (destKey.isEmpty()) return;
+    QStringList labels, keys, hints;
+    for (const Drawer& d : m_projectModel->drawers()) {
+        labels << (d.title.isEmpty() ? tr("(sem nome)") : d.title);
+        keys << d.key;
+        const QString et = d.drawerElementType;
+        hints << (et == QStringLiteral("character") ? tr("Vai abrir o cadastro de personagem em seguida (foto e papel).")
+                : et == QStringLiteral("setting")   ? tr("Vai abrir o cadastro de cenário em seguida (foto).")
+                : et == QStringLiteral("object")    ? tr("Vai abrir o cadastro de objeto em seguida (foto).")
+                : QString());
+    }
+    bool ok = false;
+    int pick = 0;
+    const QString title = Sheets::askTextWithChoice(this, tr("Criar documento"), tr("Nome do documento"), suggested,
+                                                    tr("Gaveta de destino"), labels, &pick, &ok, tr("Criar"), hints).trimmed();
+    if (!ok || title.isEmpty() || pick < 0 || pick >= keys.size()) return;
+    const QString destKey = keys[pick];
 
     const Drawer* destDrawer = m_projectModel->findDrawer(destKey);
     const QString et = destDrawer ? destDrawer->drawerElementType : QString();
@@ -1507,30 +1304,32 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
                        || et == QStringLiteral("object");
 
     if (isVisual) {
-        ElementCreateDialog edlg(et, this);
-        edlg.setInitial(title, QString(), QString());
-        if (edlg.exec() != QDialog::Accepted) return;
-        const QString finalTitle = edlg.title().trimmed();
-        if (finalTitle.isEmpty()) return;
-        Element elem;
-        elem.name  = finalTitle;
-        elem.type  = et;
-        elem.icon  = (et == QStringLiteral("character")) ? QStringLiteral("user")
-                   : (et == QStringLiteral("setting"))   ? QStringLiteral("map")
-                                                         : QStringLiteral("cube");
-        elem.role  = edlg.role();
-        elem.image = edlg.imageDataUrl();
-        elem.aliases = edlg.aliases();
-        const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
-        DrawerItem it;
-        it.id            = ProjectModel::uid();
-        it.title         = finalTitle;
-        it.hasInlineHtml = true;
-        it.html          = bodyHtml;
-        it.elementType   = et;
-        it.elementId     = elementId;
-        it.role          = edlg.role();
-        m_projectModel->addDrawerItem(destKey, it);
+        openElementSheet(et, title, [this, destKey, et, bodyHtml](ElementCreateDialog* dlg) {
+            if (!m_projectModel || !m_projectModel->findDrawer(destKey)) return;   // a gaveta sumiu enquanto a folha estava aberta
+            const QString finalTitle = dlg->title().trimmed();
+            if (finalTitle.isEmpty()) return;
+            Element elem;
+            elem.name  = finalTitle;
+            elem.type  = et;
+            elem.icon  = (et == QStringLiteral("character")) ? QStringLiteral("user")
+                       : (et == QStringLiteral("setting"))   ? QStringLiteral("map")
+                                                             : QStringLiteral("cube");
+            elem.role  = dlg->role();
+            elem.image = dlg->imageDataUrl();
+            elem.narrator = dlg->narrator();
+            elem.trackMode = dlg->trackMode();
+            elem.aliases = dlg->aliases();
+            const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
+            DrawerItem it;
+            it.id            = ProjectModel::uid();
+            it.title         = finalTitle;
+            it.hasInlineHtml = true;
+            it.html          = bodyHtml;
+            it.elementType   = et;
+            it.elementId     = elementId;
+            it.role          = elem.role;
+            m_projectModel->addDrawerItem(destKey, it);
+        });
     } else {
         DrawerItem it;
         it.id            = ProjectModel::uid();
@@ -1539,6 +1338,78 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
         it.html          = bodyHtml;
         m_projectModel->addDrawerItem(destKey, it);
     }
+}
+
+// ── Pôster do personagem (e cenário/objeto) ──────────────────────────────────
+// Flutuando no canto do quadro, sem modal: dá pra olhar a lousa (e mexer nela)
+// enquanto preenche. Uma de cada vez; o resto acontece quando ela é confirmada.
+
+void LousaPanel::openElementSheet(const QString& type, const QString& title,
+                                  const std::function<void(ElementCreateDialog*)>& onAccept)
+{
+    if (m_elementSheet) m_elementSheet->reject();
+    auto* dlg = new ElementCreateDialog(type, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    if (!title.isEmpty()) dlg->presetTitle(title);
+    m_elementSheet = dlg;
+    connect(dlg, &QDialog::accepted, this, [dlg, onAccept]() { onAccept(dlg); });
+    dlg->openInside(m_view);
+}
+
+void LousaPanel::newCharacterOnBoard()
+{
+    if (!m_projectModel) return;
+    // vai pra primeira gaveta de personagens
+    QString targetDrawerKey;
+    for (const Drawer& d : m_projectModel->drawers()) {
+        if (d.drawerElementType == QStringLiteral("character")) {
+            targetDrawerKey = d.key;
+            break;
+        }
+    }
+    if (targetDrawerKey.isEmpty()) {
+        QMessageBox::information(this, tr("Sem gaveta de personagens"),
+            tr("Crie primeiro uma gaveta de personagens no projeto."));
+        return;
+    }
+    openElementSheet(QStringLiteral("character"), QString(), [this, targetDrawerKey](ElementCreateDialog* dlg) {
+        if (!m_scene || !m_projectModel || !m_projectModel->findDrawer(targetDrawerKey)) return;
+        const QString name = dlg->title().trimmed();
+        if (name.isEmpty()) return;
+
+        // Cria elemento no ElementsStore
+        Element elem;
+        elem.name      = name;
+        elem.type      = QStringLiteral("character");
+        elem.icon      = QStringLiteral("user");
+        elem.role      = dlg->role();
+        elem.image     = dlg->imageDataUrl();
+        elem.narrator  = dlg->narrator();
+        elem.trackMode = dlg->trackMode();
+        elem.aliases   = dlg->aliases();
+        const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
+
+        // Cria DrawerItem vinculado ao elemento
+        DrawerItem newItem;
+        newItem.id            = ProjectModel::uid();
+        newItem.title         = elem.name;
+        newItem.hasInlineHtml = true;
+        newItem.html          = QStringLiteral("<p></p>");
+        newItem.elementType   = QStringLiteral("character");
+        newItem.elementId     = elementId;
+        newItem.role          = elem.role;
+        m_projectModel->addDrawerItem(targetDrawerKey, newItem);
+
+        // E o card direto na lousa
+        pushUndo();
+        CanvasCard c = nextCardData(QStringLiteral("character"));
+        c.title           = elem.name;
+        c.linkedDrawerKey = targetDrawerKey;
+        c.linkedItemId    = newItem.id;
+        c.photoDataUrl    = elem.image;
+        m_scene->addCard(c);
+        refreshEmptyState();
+    });
 }
 
 // ── Stash de cards ───────────────────────────────────────────────────────────
@@ -2022,7 +1893,11 @@ void LousaPanel::keyReleaseEvent(QKeyEvent* event)
     QWidget::keyReleaseEvent(event);
 }
 
-void LousaPanel::setProjectModel(ProjectModel* model) { m_projectModel = model; }
+void LousaPanel::setProjectModel(ProjectModel* model)
+{
+    if (m_elementSheet) m_elementSheet->reject();
+    m_projectModel = model;
+}
 void LousaPanel::setElementsStore(ElementsStore* store) { m_elementsStore = store; }
 
 void LousaPanel::refreshDocCards()
@@ -2051,6 +1926,8 @@ void LousaPanel::refreshDocCards()
 void LousaPanel::setProjectRoot(const QString& root)
 {
     if (m_projectRoot == root) return;
+    // pôster aberto no quadro é do projeto anterior
+    if (m_elementSheet) m_elementSheet->reject();
     m_projectRoot = root;
     loadBoardsManifest();
     load();

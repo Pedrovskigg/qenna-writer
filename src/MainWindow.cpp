@@ -15,18 +15,9 @@
 #include "CrashLogger.h"
 #include "MainMenuDialog.h"
 #include "NewProjectFlow.h"
+#include "NewProjectSheet.h"
 #include "UpdateChecker.h"
 #include "WhatsNewDialog.h"
-
-#ifdef Q_OS_WIN
-#include <dwmapi.h>
-#ifndef DWMWA_CAPTION_COLOR
-#define DWMWA_CAPTION_COLOR 35
-#endif
-#ifndef DWMWA_BORDER_COLOR
-#define DWMWA_BORDER_COLOR 34
-#endif
-#endif
 
 #include <QAction>
 #include <QApplication>
@@ -108,6 +99,8 @@
 #include "DialogueDetector.h"
 #include "DocCache.h"
 #include "DrawerCreateDialog.h"
+#include "DrawerQuickPopup.h"
+#include "WindowChrome.h"
 #include "DrawerListPanel.h"
 #include "EditorHost.h"
 #include "EditorLayout.h"
@@ -153,6 +146,7 @@
 #include "GlossaryInText.h"
 #include "MemoriesStore.h"
 #include "MemoryAddPopup.h"
+#include "QuickSavePopup.h"
 #include "LousaPanel.h"
 #include "TimelinePanel.h"
 #include "CharacterSheetPanel.h"
@@ -3513,23 +3507,16 @@ void MainWindow::setupEditor()
                 tr("Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto."));
         }
     });
+    // Nova gaveta: o cartão rápido brota ao lado do "+", sem modal
     connect(leftBar, &LeftBar::newDrawerRequested, this, [this]() {
-        DrawerCreateDialog dlg(elementsStore, this);
-        if (dlg.exec() != QDialog::Accepted) return;
-        if (dlg.title().isEmpty()) return;
-        Drawer d;
-        d.key = ProjectModel::uid();
-        d.title = dlg.title();
-        d.color = dlg.color();
-        d.drawerElementType = dlg.elementTypeId();
-        d.drawerIcon = dlg.iconId();
-        // Se há tipo de elemento, herda o ícone canônico do tipo (compat Mira 1).
-        if (!d.drawerElementType.isEmpty() && elementsStore) {
-            if (const ElementType* t = elementsStore->findType(d.drawerElementType)) {
-                d.drawerElementIcon = t->icon;
-            }
-        }
-        projectModel->addDrawer(d);
+        m_drawerQuickKey.clear();
+        const QStringList colors = DrawerCreateDialog::presetColors();
+        // a cor vai girando pela paleta: gaveta nova não nasce igual à anterior
+        const QString color = colors.value(int(projectModel->drawers().size()) % int(colors.size()));
+        QWidget* plus = leftBar->newDrawerButton();
+        const QRect anchor = plus ? QRect(plus->mapToGlobal(QPoint(0, 0)), plus->size())
+                                  : QRect(QCursor::pos(), QSize(1, 1));
+        ensureDrawerQuickPopup()->openCreate(anchor, color);
     });
     connect(drawerListPanel, &DrawerListPanel::newItemRequested, this, [this](const QString& drawerKey, const QString& folderId) {
         const Drawer* drawer = projectModel->findDrawer(drawerKey);
@@ -3876,21 +3863,13 @@ void MainWindow::setupEditor()
                Theme::hoverOverlay(), Theme::textBright()));
 
         auto* editAct = menu.addAction(tr("Editar gaveta…"));
-        connect(editAct, &QAction::triggered, this, [this, drawerKey]() {
+        connect(editAct, &QAction::triggered, this, [this, drawerKey, globalPos]() {
             const Drawer* d = projectModel->findDrawer(drawerKey);
             if (!d) return;
-            DrawerCreateDialog dlg(elementsStore, this);
-            dlg.configureForEdit(d->title, d->drawerIcon, d->color, d->drawerElementType);
-            if (dlg.exec() != QDialog::Accepted) return;
-            QString newElementIcon;
-            const QString newElemType = dlg.elementTypeId();
-            if (!newElemType.isEmpty() && elementsStore) {
-                if (const ElementType* t = elementsStore->findType(newElemType)) {
-                    newElementIcon = t->icon;
-                }
-            }
-            projectModel->updateDrawer(drawerKey, dlg.title(), dlg.color(),
-                                       dlg.iconId(), newElemType, newElementIcon);
+            // o mesmo cartão rápido, brotando de onde foi o clique direito
+            m_drawerQuickKey = drawerKey;
+            ensureDrawerQuickPopup()->openEdit(QRect(globalPos, QSize(1, 1)), d->title, d->drawerIcon,
+                                               d->color, d->drawerElementType);
         });
 
         menu.addSeparator();
@@ -5817,8 +5796,11 @@ void MainWindow::changeSelectedImageAlignment(int alignment)
 
 void MainWindow::applyProjectRoot(const QString& root)
 {
+    m_discardedForMenu = false;
     // folha de personagem aberta ao lado da gaveta é do projeto anterior
     if (m_elementSheet) m_elementSheet->reject();
+    if (quickSavePopup) quickSavePopup->hide();
+    if (drawerQuickPopup) drawerQuickPopup->hide();
     projectRoot = root;
     QString err;
     ProjectStorage::ensureProjectDirs(root, &err);
@@ -5925,20 +5907,24 @@ void MainWindow::applyProjectRoot(const QString& root)
     setWindowTitle(baseWindowTitle);
 }
 
-bool MainWindow::confirmDiscardOrSave()
+bool MainWindow::confirmDiscardOrSave(bool* discarded)
 {
+    if (discarded) *discarded = false;
     if (!projectSaver) return true;
+    if (m_discardedForMenu) return true;   // já respondeu "Descartar" ao ir pro menu
     if (editorHost) editorHost->syncEditorToCache();
     if (!projectSaver->hasDirtyContent()) return true;
 
     const bool isDraft = m_ideaDraftActive && projectRoot.isEmpty();
-    const auto choice = QMessageBox::question(this, tr("Alterações não salvas"),
+    // a folha aparece em cima de quem está na tela (editor ou menu principal)
+    QWidget* host = (mainMenuDialog && mainMenuDialog->isVisible()) ? static_cast<QWidget*>(mainMenuDialog)
+                                                                    : static_cast<QWidget*>(this);
+    const Sheets::SaveChoice choice = Sheets::askSaveChanges(host,
         isDraft ? tr("Você tem uma ideia não salva. Salvar antes de continuar?")
-                : tr("Há alterações no projeto atual. Salvar antes de continuar?"),
-        QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
-        QMessageBox::Save);
-    if (choice == QMessageBox::Cancel) return false;
-    if (choice == QMessageBox::Save) {
+                : tr("Há alterações no projeto atual. Salvar antes de continuar?"));
+    if (choice == Sheets::SaveChoice::Cancel) return false;
+    if (discarded) *discarded = choice == Sheets::SaveChoice::Discard;
+    if (choice == Sheets::SaveChoice::Save) {
         // No modo rascunho não há projeto ainda pra salvar — formaliza
         // primeiro (wizard enxuto). Se o usuário cancelar o wizard, trata
         // como cancelamento da ação original também (não segue descartando).
@@ -6597,6 +6583,12 @@ void MainWindow::requestCoverCreatorInstall(bool silent)
 
 void MainWindow::openMainMenu()
 {
+    // Salvar ou descartar ANTES de sair do editor (cancelar = fica nele)
+    if (hasProjectLoaded() && isVisible()) {
+        bool discarded = false;
+        if (!confirmDiscardOrSave(&discarded)) return;
+        m_discardedForMenu = discarded;
+    }
     if (!mainMenuDialog) {
         // Sem parent: garante que vire uma janela top-level real do Windows
         // (item de taskbar próprio, minimizar/restaurar nativos). Quando o
@@ -6604,6 +6596,8 @@ void MainWindow::openMainMenu()
         // aparece na taskbar do dono — o que falha se o MainWindow estiver
         // hidden, deixando o menu impossível de recuperar após minimizar.
         mainMenuDialog = new MainMenuDialog(nullptr);
+
+        connect(mainMenuDialog, &QDialog::finished, this, [this]() { restoreEditorAfterMenu(); });
 
         connect(mainMenuDialog, &MainMenuDialog::autoOpenChanged,
                 this, [this](const QString& path, bool enabled) {
@@ -6652,6 +6646,20 @@ void MainWindow::openMainMenu()
         // Abrir um recente; com resume, volta pro último ponto do "Onde parei"
         // (botão Continuar do menu) depois que o projeto carregou.
         auto openRecent = [this](const QString& path, bool resume) {
+            if (!m_discardedForMenu && !projectRoot.isEmpty()
+                && QDir::cleanPath(path) == QDir::cleanPath(projectRoot)) {
+                // é o projeto que já está aberto (escondido atrás do menu): só volta
+                if (mainMenuDialog) mainMenuDialog->accept();
+                restoreEditorAfterMenu();
+                if (!resume) return;
+                QTimer::singleShot(0, this, [this]() {
+                    const QList<ManuscriptPanel::ResumeEntry> trail = readResumeTrail(projectRoot);
+                    if (trail.isEmpty()) return;
+                    const auto& e = trail.first();
+                    resumeAt(e.manuscriptId, e.chapterId, e.sceneIndex, e.sentence, e.position);
+                });
+                return;
+            }
             if (!confirmDiscardOrSave()) return;
             QString err;
             if (!loadProjectFrom(path, &err)) {
@@ -6791,9 +6799,33 @@ void MainWindow::openMainMenu()
     mainMenuDialog->setRecentProjects(loadRecentProjects());
     mainMenuDialog->setAutoOpenPath(
         QSettings().value(QStringLiteral("autoOpenProject")).toString());
+    // Uma janela de cada vez: o editor sai de cena enquanto o menu está aberto
+    // (o projeto continua carregado). O finished do menu traz ele de volta.
+    if (isVisible()) {
+        m_editorWasMaximized = isMaximized();
+        m_editorHiddenForMenu = true;
+        hide();
+    }
     mainMenuDialog->showMaximized();
     mainMenuDialog->raise();
     mainMenuDialog->activateWindow();
+}
+
+void MainWindow::restoreEditorAfterMenu()
+{
+    // sem projeto não há editor pra mostrar (fechar o menu fecha o app)
+    if (!hasProjectLoaded() || isVisible()) { m_editorHiddenForMenu = false; return; }
+    if (m_discardedForMenu) {
+        // as alterações foram descartadas: o projeto volta como está no disco
+        QString err;
+        if (!loadProjectFrom(projectRoot, &err))
+            qWarning("Falha ao reler o projeto: %s", qUtf8Printable(err));
+    }
+    if (m_editorHiddenForMenu && !m_editorWasMaximized) show();
+    else showMaximized();
+    m_editorHiddenForMenu = false;
+    raise();
+    activateWindow();
 }
 
 static QString lastDocGroupFor(const QString& root)
@@ -7000,19 +7032,11 @@ void MainWindow::onNewProjectRequested()
 {
     if (!confirmDiscardOrSave()) return;
 
-    // Etapa 1 — template.
-    NewProjectTemplateDialog tplDlg(this);
-    if (tplDlg.exec() != QDialog::Accepted) return;
-    const QString templateId = tplDlg.templateId();
-
-    // Etapa 2 — detalhes da obra.
-    NewProjectDetailsDialog detailsDlg(this);
+    // Uma folha só: capa (e capa rápida), detalhes, template e pasta.
+    NewProjectSheet detailsDlg(QuickCover::bundledFamilies(), this);
     if (detailsDlg.exec() != QDialog::Accepted) return;
-
-    // Etapa 3 — pasta-pai.
-    NewProjectFolderDialog folderDlg(detailsDlg.projectName(), this);
-    if (folderDlg.exec() != QDialog::Accepted) return;
-    const QString fullPath = folderDlg.fullPath();
+    const QString templateId = detailsDlg.templateId();
+    const QString fullPath = detailsDlg.fullPath();
 
     if (QDir(fullPath).exists() && !QDir(fullPath).isEmpty()) {
         const auto answer = QMessageBox::question(this, tr("Pasta já existe"),
@@ -7045,6 +7069,8 @@ void MainWindow::onNewProjectRequested()
         detailsDlg.genres(),
         detailsDlg.synopsis(),
         detailsDlg.coverDataUrl());
+    // a capa rápida: a versão sem texto (textura do menu principal) e os ajustes
+    projectModel->setProjectCoverExtras(detailsDlg.coverBgDataUrl(), detailsDlg.quickCoverJson());
     applyProjectRoot(fullPath);
     applyProjectTypeDefaults();
     // Projeto novo não passa pelo loaded(): sem isto, o corretor ficaria no
@@ -8150,15 +8176,8 @@ void MainWindow::applyBackgroundFromTheme()
                                        : Theme::appBackground()));
     }
 
-#ifdef Q_OS_WIN
-    {
-        const QColor bg(Theme::appBackground());
-        const COLORREF cr = RGB(bg.red(), bg.green(), bg.blue());
-        HWND hwnd = reinterpret_cast<HWND>(winId());
-        DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &cr, sizeof(cr));
-        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &cr, sizeof(cr));
-    }
-#endif
+    // a barra de título no tema (a mesma função pinta todas as janelas do app)
+    WindowChrome::apply(this);
 }
 
 void MainWindow::showEditorToast(const QString& text, int durationMs)
@@ -9115,6 +9134,8 @@ QString MainWindow::docTextForLink(const QString& linkKey, int maxWords)
                .arg(kMaxWords).arg(QString::number(words.size() / 1000.0, 'f', 1));
 }
 
+static QString suggestNameFromText(const QString& text);
+
 void MainWindow::createTimelineEventFromSelection()
 {
     if (!editor || !projectModel || !editorHost) return;
@@ -9141,21 +9162,60 @@ void MainWindow::createTimelineEventFromSelection()
             marker = ch->timeMarker;
     }
 
-    // Revela a linha do tempo (mostra o evento aterrissando) e abre o popup.
-    auto* panel = ensureTimelinePanel();
-    panel->show();
-    panel->raise();
-    panel->activateWindow();
-    if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
-    if (vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc) {
-        const int start = cur.selectionStart();
-        const int paragraph = editor->document()->findBlock(start).blockNumber() + 1;
-        panel->promptNewEventFromEditor(text, marker, vm.chapterId,
-                                        vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1,
-                                        start, paragraph);
-    } else {
-        panel->promptNewEvent(text, marker, QString(), QStringLiteral("editor"));
+    // Jogo rápido: a lista das linhas embaixo do trecho, sem abrir a Timeline e
+    // sem tirar o foco do texto. Um clique salva (ver QuickSavePopup).
+    auto* panel = ensureTimelinePanel();   // cria escondido, se ainda não existe
+    const bool fromText = vm.type == EditorHost::SceneDoc || vm.type == EditorHost::ChapterDoc;
+    m_quickKind = QuickKind::Event;
+    m_quickEvent = QuickEvent{};
+    m_quickEvent.description = text;
+    m_quickEvent.marker = marker;
+    if (fromText) {
+        m_quickEvent.chapterId = vm.chapterId;
+        m_quickEvent.sceneIndex = vm.type == EditorHost::SceneDoc ? vm.sceneIndex : -1;
+        m_quickEvent.textPos = cur.selectionStart();
+        m_quickEvent.paragraph = editor->document()->findBlock(cur.selectionStart()).blockNumber() + 1;
     }
+    QString sceneLane;
+    const auto lanes = panel->quickEventLanes(m_quickEvent.chapterId, m_quickEvent.sceneIndex, &sceneLane);
+    QVector<QuickSavePopup::Target> targets;
+    m_quickEvent.laneNames.clear();
+    for (const auto& L : lanes) {
+        targets.append({ L.id, L.name, L.color.name(), QString(), L.id == sceneLane ? tr("da cena") : QString() });
+        m_quickEvent.laneNames.insert(L.id, L.name);
+    }
+    if (targets.isEmpty()) {
+        targets.append({ QStringLiteral("story:main"), tr("Narrativa"), QString(), QString(), QString() });
+        m_quickEvent.laneNames.insert(QStringLiteral("story:main"), tr("Narrativa"));
+    }
+    QString footer;
+    if (!fromText) footer = tr("sem capítulo: vai pros Soltos");
+    else if (marker.isEmpty()) footer = tr("sem data: fica onde a cena está");
+    else footer = tr("quando: <b>%1</b> · %2").arg(marker.toHtmlEscaped(),
+                     vm.type == EditorHost::SceneDoc ? tr("da cena") : tr("do capítulo"));
+    QTextCursor end(editor->document());
+    end.setPosition(cur.selectionEnd());
+    const QPoint gp = editor->viewport()->mapToGlobal(editor->cursorRect(end).bottomLeft()) + QPoint(0, 6);
+    ensureQuickSavePopup()->presentAt(gp, tr("Evento “%1” na linha"), suggestNameFromText(text), targets, footer);
+}
+
+void MainWindow::saveSelectionEventTo(const QString& laneId)
+{
+    if (!timelinePanel) { quickSavePopup->hide(); return; }
+    const QuickEvent q = m_quickEvent;
+    const QString id = timelinePanel->addEventFromEditor(quickSavePopup->name(), q.description, q.marker,
+                                                         q.chapterId, q.sceneIndex, q.textPos, q.paragraph, laneId);
+    const QString lane = q.laneNames.value(laneId, tr("Narrativa"));
+    const QString msg = q.marker.isEmpty() ? tr("✓ Na Timeline · %1").arg(lane)
+                                           : tr("✓ Na Timeline · %1, %2").arg(lane, q.marker);
+    quickSavePopup->flash(msg, tr("ver"), [this, id]() {
+        auto* panel = ensureTimelinePanel();
+        panel->show();
+        panel->raise();
+        panel->activateWindow();
+        if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
+        panel->revealEvent(id);
+    });
 }
 
 void MainWindow::addSelectionToMemory()
@@ -9636,6 +9696,65 @@ void MainWindow::generateImageFromSelection()
     dlg.resultImage().save(path, "PNG");
 }
 
+// Nome a partir das primeiras palavras de um trecho (limite ~48 chars, máx 8 palavras).
+static QString suggestNameFromText(const QString& text)
+{
+    QString flat = text;
+    flat.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+    flat = flat.trimmed();
+    const QStringList words = flat.split(QChar(' '), Qt::SkipEmptyParts);
+    QStringList picked;
+    int total = 0;
+    for (const QString& w : words) {
+        if (picked.size() >= 8) break;
+        if (total + w.size() + (picked.isEmpty() ? 0 : 1) > 48) break;
+        picked.append(w);
+        total += w.size() + (picked.isEmpty() ? 0 : 1);
+    }
+    QString s = picked.join(QChar(' '));
+    if (s.isEmpty()) s = flat.left(48);
+    return s;
+}
+
+DrawerQuickPopup* MainWindow::ensureDrawerQuickPopup()
+{
+    if (!drawerQuickPopup) {
+        drawerQuickPopup = new DrawerQuickPopup(elementsStore, this);
+        connect(drawerQuickPopup, &DrawerQuickPopup::confirmed, this,
+                [this](const QString& title, const QString& icon, const QString& color, const QString& type) {
+            // com tipo de elemento, herda o ícone canônico do tipo (compat Mira 1)
+            QString elementIcon;
+            if (!type.isEmpty() && elementsStore)
+                if (const ElementType* t = elementsStore->findType(type)) elementIcon = t->icon;
+            if (m_drawerQuickKey.isEmpty()) {
+                Drawer d;
+                d.key = ProjectModel::uid();
+                d.title = title;
+                d.color = color;
+                d.drawerElementType = type;
+                d.drawerIcon = icon;
+                d.drawerElementIcon = elementIcon;
+                projectModel->addDrawer(d);
+            } else if (projectModel->findDrawer(m_drawerQuickKey)) {
+                projectModel->updateDrawer(m_drawerQuickKey, title, color, icon, type, elementIcon);
+            }
+        });
+    }
+    return drawerQuickPopup;
+}
+
+QuickSavePopup* MainWindow::ensureQuickSavePopup()
+{
+    if (!quickSavePopup) {
+        quickSavePopup = new QuickSavePopup(editor, this);
+        connect(quickSavePopup, &QuickSavePopup::chosen, this, [this](const QString& key) {
+            if (m_quickKind == QuickKind::Event) saveSelectionEventTo(key);
+            else saveSelectionDocTo(key);
+        });
+    }
+    return quickSavePopup;
+}
+
 void MainWindow::createDocFromSelection()
 {
     if (!editor || !projectModel) return;
@@ -9654,146 +9773,95 @@ void MainWindow::createDocFromSelection()
         return;
     }
 
-    // Sugere nome a partir das primeiras palavras (limite ~48 chars, máx 8 palavras).
-    auto suggestNameFrom = [](const QString& text) -> QString {
-        QString flat = text;
-        flat.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
-        flat = flat.trimmed();
-        const QStringList words = flat.split(QChar(' '), Qt::SkipEmptyParts);
-        QStringList picked;
-        int total = 0;
-        for (const QString& w : words) {
-            if (picked.size() >= 8) break;
-            if (total + w.size() + (picked.isEmpty() ? 0 : 1) > 48) break;
-            picked.append(w);
-            total += w.size() + (picked.isEmpty() ? 0 : 1);
-        }
-        QString s = picked.join(QChar(' '));
-        if (s.isEmpty()) s = flat.left(48);
-        return s;
-    };
-    const QString suggested = suggestNameFrom(trimmed);
+    const QString suggested = suggestNameFromText(trimmed);
 
-    QDialog dlg(this);
-    dlg.setWindowTitle(tr("Criar documento"));
-    dlg.setModal(true);
-    dlg.setMinimumWidth(380);
-
-    auto* root = new QVBoxLayout(&dlg);
-    root->setContentsMargins(16, 16, 16, 12);
-    root->setSpacing(10);
-
-    auto* nameLab = new QLabel(tr("Nome do documento:"), &dlg);
-    root->addWidget(nameLab);
-    auto* nameEdit = new QLineEdit(suggested, &dlg);
-    nameEdit->selectAll();
-    root->addWidget(nameEdit);
-
-    auto* drawerLab = new QLabel(tr("Gaveta de destino:"), &dlg);
-    root->addWidget(drawerLab);
-    auto* drawerCombo = new QComboBox(&dlg);
-    for (const auto& d : projectModel->drawers()) {
-        const QString label = d.title.isEmpty() ? tr("(sem nome)") : d.title;
-        drawerCombo->addItem(label, d.key);
-    }
-    drawerCombo->setCurrentIndex(0);
-    root->addWidget(drawerCombo);
-
-    // Hint dinâmico pra gavetas visuais (personagem/cenário/objeto).
-    auto* hint = new QLabel(&dlg);
-    hint->setWordWrap(true);
-    hint->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;").arg(Theme::textMuted()));
-    root->addWidget(hint);
-    auto refreshHint = [this, drawerCombo, hint]() {
-        const QString key = drawerCombo->currentData().toString();
-        const Drawer* d = projectModel->findDrawer(key);
-        const QString et = d ? d->drawerElementType : QString();
-        if (et == QStringLiteral("character"))      hint->setText(tr("Vai abrir o cadastro de personagem em seguida (foto e papel)."));
-        else if (et == QStringLiteral("setting"))   hint->setText(tr("Vai abrir o cadastro de cenário em seguida (foto)."));
-        else if (et == QStringLiteral("object"))    hint->setText(tr("Vai abrir o cadastro de objeto em seguida (foto)."));
-        else hint->clear();
-    };
-    refreshHint();
-    connect(drawerCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), &dlg,
-            [refreshHint](int) { refreshHint(); });
-
-    root->addStretch();
-
-    auto* btnRow = new QHBoxLayout();
-    btnRow->addStretch();
-    auto* cancel = new QPushButton(tr("Cancelar"), &dlg);
-    auto* ok = new QPushButton(tr("Criar"), &dlg);
-    ok->setDefault(true);
-    btnRow->addWidget(cancel);
-    btnRow->addWidget(ok);
-    root->addLayout(btnRow);
-
-    connect(cancel, &QPushButton::clicked, &dlg, &QDialog::reject);
-    connect(ok, &QPushButton::clicked, &dlg, &QDialog::accept);
-
-    if (dlg.exec() != QDialog::Accepted) return;
-    const QString title = nameEdit->text().trimmed();
-    if (title.isEmpty()) return;
-    const QString destKey = drawerCombo->currentData().toString();
-    if (destKey.isEmpty()) return;
-
-    // Constrói o HTML a partir do texto selecionado: parágrafos separados por
-    // linhas em branco, quebras simples viram <br>.
-    auto buildHtmlFromText = [](const QString& text) -> QString {
-        const QString normalized = QString(text).replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
+    // HTML a partir do texto selecionado: parágrafos separados por linhas em
+    // branco, quebras simples viram <br>.
+    QString html;
+    {
+        const QString normalized = QString(raw).replace(QStringLiteral("\r\n"), QStringLiteral("\n"));
         const QStringList paras = normalized.split(QRegularExpression(QStringLiteral("\n{2,}")),
                                                    Qt::SkipEmptyParts);
-        QString out;
         for (const QString& p : paras) {
             QString chunk = p.trimmed();
             if (chunk.isEmpty()) continue;
             chunk = chunk.toHtmlEscaped();
             chunk.replace(QChar('\n'), QStringLiteral("<br/>"));
-            out += QStringLiteral("<p>%1</p>").arg(chunk);
+            html += QStringLiteral("<p>%1</p>").arg(chunk);
         }
-        if (out.isEmpty()) out = QStringLiteral("<p></p>");
-        return out;
-    };
+        if (html.isEmpty()) html = QStringLiteral("<p></p>");
+    }
+    m_quickKind = QuickKind::Doc;
+    m_quickSaveHtml = html;
 
-    const Drawer* destDrawer = projectModel->findDrawer(destKey);
-    const QString elemType = destDrawer ? destDrawer->drawerElementType : QString();
+    // Sem folha e sem tirar o foco do texto: uma listinha das gavetas embaixo
+    // da seleção. Um clique salva e a pessoa segue escrevendo.
+    QVector<QuickSavePopup::Target> targets;
+    for (const auto& d : projectModel->drawers())
+        targets.append({ d.key, d.title, d.color, !d.drawerIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon, QString() });
+    QTextCursor end(editor->document());
+    end.setPosition(cur.selectionEnd());
+    const QPoint gp = editor->viewport()->mapToGlobal(editor->cursorRect(end).bottomLeft()) + QPoint(0, 6);
+    ensureQuickSavePopup()->presentAt(gp, tr("Salvar “%1” em"), suggested, targets);
+}
+
+void MainWindow::saveSelectionDocTo(const QString& destKey)
+{
+    const Drawer* destDrawer = projectModel ? projectModel->findDrawer(destKey) : nullptr;
+    if (!destDrawer) {
+        quickSavePopup->hide();
+        return;
+    }
+    const QString drawerTitle = destDrawer->title;
+    const QString elemType = destDrawer->drawerElementType;
+    const QString title = quickSavePopup->name();
+    const QString html = m_quickSaveHtml;
     const bool isVisual = elemType == QStringLiteral("character")
         || elemType == QStringLiteral("setting")
         || elemType == QStringLiteral("object");
 
-    QString role;
-    QString imageDataUrl;
     if (isVisual) {
-        ElementCreateDialog edlg(elemType, this);
-        edlg.setInitial(title, QString(), QString());
-        if (edlg.exec() != QDialog::Accepted) return;
-        const QString finalTitle = edlg.title().trimmed();
-        if (finalTitle.isEmpty()) return;
-        if (!confirmNoDuplicateElementName(this, elementsStore, elemType, finalTitle)) return;
-        role = edlg.role();
-        imageDataUrl = edlg.imageDataUrl();
+        quickSavePopup->hide();
+        // O pôster abre ao lado da gaveta (ou da LeftBar, com a gaveta fechada),
+        // sem modal e sem tirar o foco do editor — igual ao "+" da gaveta.
+        if (m_elementSheet) m_elementSheet->reject();
+        auto* dlg = new ElementCreateDialog(elemType, this);
+        dlg->setAttribute(Qt::WA_DeleteOnClose);
+        dlg->presetTitle(title);
+        m_elementSheet = dlg;
+        connect(dlg, &QDialog::accepted, this, [this, dlg, destKey, elemType, html]() {
+            if (!projectModel->findDrawer(destKey)) return;   // a gaveta sumiu enquanto a folha estava aberta
+            const QString finalTitle = dlg->title().trimmed();
+            if (finalTitle.isEmpty()) return;
+            if (!confirmNoDuplicateElementName(this, elementsStore, elemType, finalTitle)) return;
+            Element elem;
+            elem.name = finalTitle;
+            elem.type = elemType;
+            elem.icon = elemType == QStringLiteral("character") ? QStringLiteral("user")
+                      : elemType == QStringLiteral("setting")   ? QStringLiteral("map")
+                      : QStringLiteral("cube");
+            elem.role = dlg->role();
+            elem.image = dlg->imageDataUrl();
+            elem.narrator = dlg->narrator();
+            elem.trackMode = dlg->trackMode();
+            elem.aliases = dlg->aliases();
+            const QString elementId = elementsStore->addElement(elem);
 
-        Element elem;
-        elem.name = finalTitle;
-        elem.type = elemType;
-        elem.icon = elemType == QStringLiteral("character") ? QStringLiteral("user")
-                  : elemType == QStringLiteral("setting")   ? QStringLiteral("map")
-                  : QStringLiteral("cube");
-        elem.role = role;
-        elem.image = imageDataUrl;
-        elem.aliases = edlg.aliases();
-        const QString elementId = elementsStore->addElement(elem);
-
-        DrawerItem it;
-        it.id = ProjectModel::uid();
-        it.title = finalTitle;
-        it.folderId = QString();
-        it.hasInlineHtml = true;
-        it.html = buildHtmlFromText(raw);
-        it.elementType = elemType;
-        it.elementId = elementId;
-        it.role = role;
-        projectModel->addDrawerItem(destKey, it);
+            DrawerItem it;
+            it.id = ProjectModel::uid();
+            it.title = finalTitle;
+            it.folderId = QString();
+            it.hasInlineHtml = true;
+            it.html = html;
+            it.elementType = elemType;
+            it.elementId = elementId;
+            it.role = elem.role;
+            projectModel->addDrawerItem(destKey, it);
+        });
+        QWidget* anchor = (drawerListPanel && drawerListPanel->isVisible()) ? static_cast<QWidget*>(drawerListPanel)
+                        : (leftBar && leftBar->isVisible())                 ? static_cast<QWidget*>(leftBar)
+                        : nullptr;
+        dlg->openBeside(anchor);
         return;
     }
 
@@ -9802,6 +9870,7 @@ void MainWindow::createDocFromSelection()
     it.title = title;
     it.folderId = QString();
     it.hasInlineHtml = true;
-    it.html = buildHtmlFromText(raw);
+    it.html = html;
     projectModel->addDrawerItem(destKey, it);
+    quickSavePopup->flash(tr("✓ Salvo em %1").arg(drawerTitle.isEmpty() ? tr("(sem nome)") : drawerTitle));
 }

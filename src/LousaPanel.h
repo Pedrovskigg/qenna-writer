@@ -2,12 +2,16 @@
 
 #include "LousaTypes.h"
 
+#include <QDialog>
 #include <QHash>
 #include <QList>
 #include <QPair>
+#include <QPointer>
 #include <QString>
 #include <QVector>
 #include <QWidget>
+
+#include <functional>
 
 class LousaScene;
 class LousaView;
@@ -126,6 +130,11 @@ private:
 
     // Criar documento a partir de um card (post-it/comentário/imagem)
     void createDocFromCard(const CanvasCard& c);
+    // Pôster de personagem/cenário/objeto flutuando no quadro (sem modal).
+    void openElementSheet(const QString& type, const QString& title,
+                          const std::function<void(class ElementCreateDialog*)>& onAccept);
+    void newCharacterOnBoard();
+    QPointer<QDialog> m_elementSheet;
 
     QList<QPair<QToolButton*, QString>> m_iconBindings;
 

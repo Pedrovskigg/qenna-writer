@@ -1,4 +1,5 @@
 #include "MainMenuDialog.h"
+#include "NewProjectSheet.h"
 #include "ColorPopover.h"
 
 #include "AboutDialog.h"
@@ -1687,18 +1688,21 @@ void MainMenuDialog::editProject(const QString& path)
 
     const RecentInfo info = readRecentInfo(path);
 
-    ProjectEditDialog dlg(this);
-    dlg.setValues(name.isEmpty() ? QFileInfo(path).fileName() : name,
-                  info.author, info.genres, info.synopsis, info.coverDataUrl);
-    dlg.setSpineValues(info);
-    const int dlgResult = dlg.exec();
-    if (dlg.coverCreateRequested()) {
-        launchMiraCover(path);
-        return;
-    }
-    if (dlgResult != QDialog::Accepted) return;
+    // A mesma folha do Novo projeto. (A ProjectEditDialog, com a aba da
+    // lombada da Prateleira 3D antiga, ficou no código sem uso.)
+    NewProjectSheet dlg(QuickCover::bundledFamilies(), this);
+    NewProjectSheet::Existing ex;
+    ex.name = name.isEmpty() ? QFileInfo(path).fileName() : name;
+    ex.author = info.author;
+    ex.genres = info.genres;
+    ex.synopsis = info.synopsis;
+    ex.cover = info.coverDataUrl;
+    ex.coverBg = info.coverBgDataUrl;
+    ex.quickCover = pd.value(QStringLiteral("quickCover")).toObject();
+    dlg.setExisting(ex);
+    if (dlg.exec() != QDialog::Accepted) return;
 
-    const QString newName = dlg.name().isEmpty() ? name : dlg.name();
+    const QString newName = dlg.projectName().isEmpty() ? name : dlg.projectName();
     // Grava nas duas chaves de nome (compat Mira 1 + leitura do card).
     idx.insert(QStringLiteral("projectName"), newName);
     idx.insert(QStringLiteral("name"), newName);
@@ -1707,30 +1711,17 @@ void MainMenuDialog::editProject(const QString& path)
         if (value.isEmpty()) o.remove(key);
         else o.insert(key, value);
     };
-    auto setOrRemoveInt = [](QJsonObject& o, const QString& key, int value, int sentinel) {
-        if (value == sentinel) o.remove(key);
-        else o.insert(key, value);
-    };
     setOrRemove(pd, QStringLiteral("author"), dlg.author());
     setOrRemove(pd, QStringLiteral("genres"), dlg.genres());
     setOrRemove(pd, QStringLiteral("synopsis"), dlg.synopsis());
-    const QString newCover = dlg.coverDataUrl();
-    setOrRemove(pd, QStringLiteral("cover"), newCover);
-    setOrRemove(pd, QStringLiteral("coverFull"), newCover);
-
-    // Lombada (Prateleira 3D)
-    setOrRemove(pd, QStringLiteral("spineColor"), dlg.spineColor());
-    setOrRemove(pd, QStringLiteral("spineImageTexture"), dlg.spineImageTexture());
-    setOrRemoveInt(pd, QStringLiteral("spineBgPosX"),
-                   dlg.spineImageTexture() == QStringLiteral("cover") ? dlg.spineBgPosX() : 0, 0);
-    setOrRemove(pd, QStringLiteral("spineTexture"), dlg.spineTexture());
-    setOrRemove(pd, QStringLiteral("spineFontFamily"), dlg.spineFontFamily());
-    setOrRemove(pd, QStringLiteral("spineFontColor"), dlg.spineFontColor());
-    setOrRemoveInt(pd, QStringLiteral("spineFontSize"), dlg.spineFontSize(), 0);
-    setOrRemove(pd, QStringLiteral("spineTextOrientation"), dlg.spineTextOrientation());
-    setOrRemove(pd, QStringLiteral("spineTextPosition"), dlg.spineTextPosition());
-    setOrRemove(pd, QStringLiteral("spineWidthMode"), dlg.spineWidthMode());
-    setOrRemoveInt(pd, QStringLiteral("spineWidthManual"), dlg.spineWidthManual(), 0);
+    if (!dlg.keepsOriginalCover()) {
+        const QString newCover = dlg.coverDataUrl();
+        setOrRemove(pd, QStringLiteral("cover"), newCover);
+        setOrRemove(pd, QStringLiteral("coverFull"), newCover);
+        setOrRemove(pd, QStringLiteral("coverBg"), dlg.coverBgDataUrl());
+        pd.insert(QStringLiteral("quickCover"), dlg.quickCoverJson());
+    }
+    // (os campos da lombada ficam como estavam)
 
     if (pd.isEmpty()) data.remove(QStringLiteral("projectDetails"));
     else data.insert(QStringLiteral("projectDetails"), pd);
