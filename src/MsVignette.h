@@ -17,7 +17,21 @@
 namespace MsVignette {
 
 enum Family { Branches, Roots, Flames, City, Stars, Mountains, Coral, Cracks,
-              Mandala, Lightning, Waves, Circles, Rays, FamilyCount };
+              Mandala, Lightning, Waves, Circles, Rays,
+              // 2026-09-29: natureza e céu…
+              Forest, Garden, Flock, Rain, River, Galaxy, Crystals, Aurora, Dunes, Web,
+              // …e lugares
+              Ruins, Lighthouse, Castle, Cyberpunk, Medieval, Steampunk, FeudalJapan, Orient,
+              Blizzard, FamilyCount };
+
+// O automático sorteia só entre as 13 primeiras: com mais famílias no sorteio,
+// o desenho de todo capítulo que já existe mudaria (a família sai do hash do
+// id módulo a contagem). As novas entram pelo "Trocar desenho".
+constexpr int kAutoFamilyCount = 13;
+
+// Grupos do menu "Trocar desenho", na ordem em que aparecem.
+struct FamilyGroup { QString title; QList<int> families; };
+QList<FamilyGroup> familyGroups();
 
 // Ids gravados no projeto ("branches", "city"…) e nomes na tela.
 QString familyId(int family);

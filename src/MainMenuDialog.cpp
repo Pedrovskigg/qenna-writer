@@ -1,4 +1,5 @@
 #include "MainMenuDialog.h"
+#include "UpdateBanner.h"
 #include "NewProjectSheet.h"
 #include "ColorPopover.h"
 
@@ -1280,6 +1281,10 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
 
 void MainMenuDialog::buildMainArea(QVBoxLayout* col)
 {
+    // --- Versão nova: faixa larga acima de tudo (escondida até ter o que dizer)
+    m_updateBanner = new UpdateBanner(this);
+    col->addWidget(m_updateBanner);
+
     // --- Cabeçalho: título + contagem à esquerda, vistas à direita ---
     m_header = new QWidget(this);
     auto* header = new QHBoxLayout(m_header);

@@ -16,6 +16,7 @@
 #include "MainMenuDialog.h"
 #include "NewProjectFlow.h"
 #include "NewProjectSheet.h"
+#include "UpdateBanner.h"
 #include "UpdateChecker.h"
 #include "WhatsNewDialog.h"
 
@@ -780,14 +781,15 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    // Checagem de atualização: silenciosa, em background, alguns segundos
-    // após o startup pra não competir com o carregamento do projeto.
+    // Checagem de atualização: silenciosa, em background, logo depois do
+    // startup — é assíncrona, e o aviso tem que chegar enquanto o menu
+    // principal ainda está na tela (é lá que ele aparece grande).
     m_updateChecker = new UpdateChecker(this);
     connect(m_updateChecker, &UpdateChecker::updateAvailable, this,
             [this](const QString& version, const QString& downloadUrl, const QString&, const QString& releaseNotes) {
                 showUpdateToast(version, downloadUrl, releaseNotes);
             });
-    QTimer::singleShot(3000, this, [this]() {
+    QTimer::singleShot(1200, this, [this]() {
         if (m_updateChecker) m_updateChecker->check();
     });
 }
@@ -6203,6 +6205,13 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
     m_updateVersion = version;
     m_updateDownloadUrl = downloadUrl;
     m_updateIsCover = isCover;
+    if (!isCover && !downloadUrl.isEmpty() && version != m_appUpdateVersion) {
+        m_appUpdateVersion = version;
+        m_appUpdateUrl = downloadUrl;
+        m_appUpdateNotes = formatUpdateNotes(releaseNotes);
+        m_appUpdateDismissed = false;
+        syncMenuUpdateBanner();
+    }
 
     if (!m_updateToast) {
         m_updateToast = new QFrame(this);
@@ -6375,6 +6384,19 @@ void MainWindow::positionUpdateToast()
         bottom - m_updateToast->height());
 }
 
+UpdateBanner* MainWindow::menuUpdateBanner() const
+{
+    return mainMenuDialog ? mainMenuDialog->updateBanner() : nullptr;
+}
+
+void MainWindow::syncMenuUpdateBanner()
+{
+    UpdateBanner* b = menuUpdateBanner();
+    if (!b || m_appUpdateVersion.isEmpty() || m_appUpdateDismissed) return;
+    b->showAvailable(m_appUpdateVersion, m_appUpdateNotes);
+    if (m_updateReply && !m_updateIsCover) b->setDownloading(m_updateToastProgress ? m_updateToastProgress->value() : 0);
+}
+
 void MainWindow::resetUpdateToastIdle()
 {
     if (m_updateToastBtn) {
@@ -6391,6 +6413,8 @@ void MainWindow::resetUpdateToastIdle()
         m_updateToast->adjustSize();
         positionUpdateToast();
     }
+    if (!m_updateIsCover)
+        if (UpdateBanner* b = menuUpdateBanner()) b->resetIdle();
 }
 
 void MainWindow::showUpdateDownloadError(const QString& message)
@@ -6405,6 +6429,8 @@ void MainWindow::showUpdateDownloadError(const QString& message)
         m_updateToastError->setText(message);
         m_updateToastError->show();
     }
+    if (!m_updateIsCover)
+        if (UpdateBanner* b = menuUpdateBanner()) b->showError(message);
     if (m_updateToast) {
         m_updateToast->adjustSize();
         positionUpdateToast();
@@ -6430,6 +6456,8 @@ void MainWindow::startUpdateDownload()
     m_updateToastProgress->show();
     m_updateToast->adjustSize();
     positionUpdateToast();
+    if (!m_updateIsCover)
+        if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(0);
 
     if (!m_updateNam) m_updateNam = new QNetworkAccessManager(this);
 
@@ -6470,7 +6498,10 @@ void MainWindow::startUpdateDownload()
     connect(reply, &QNetworkReply::downloadProgress, this,
             [this](qint64 received, qint64 total) {
                 if (total <= 0 || !m_updateToastProgress) return;
-                m_updateToastProgress->setValue(static_cast<int>(received * 100 / total));
+                const int pct = static_cast<int>(received * 100 / total);
+                m_updateToastProgress->setValue(pct);
+                if (!m_updateIsCover)
+                    if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(pct);
             });
     connect(reply, &QNetworkReply::finished, this, [this, reply, file, destPath]() {
         file->write(reply->readAll());
@@ -6598,6 +6629,22 @@ void MainWindow::openMainMenu()
         mainMenuDialog = new MainMenuDialog(nullptr);
 
         connect(mainMenuDialog, &QDialog::finished, this, [this]() { restoreEditorAfterMenu(); });
+
+        // Faixa de versão nova: baixa a versão do APP (os campos do toast
+        // podem estar com um aviso do Cover Creator por cima).
+        UpdateBanner* banner = mainMenuDialog->updateBanner();
+        connect(banner, &UpdateBanner::downloadRequested, this, [this]() {
+            if (m_updateReply || m_appUpdateUrl.isEmpty()) return;
+            if (m_updateIsCover || m_updateVersion != m_appUpdateVersion)
+                showUpdateToast(m_appUpdateVersion, m_appUpdateUrl, QString());
+            startUpdateDownload();
+        });
+        connect(banner, &UpdateBanner::cancelRequested, this, &MainWindow::cancelUpdateDownload);
+        connect(banner, &UpdateBanner::dismissed, this, [this]() {
+            // "Depois" vale pro editor também: o toast não reaparece lá.
+            if (!m_appUpdateVersion.isEmpty()) m_appUpdateDismissed = true;
+            if (m_updateToast && !m_updateIsCover && !m_updateReply) m_updateToast->hide();
+        });
 
         connect(mainMenuDialog, &MainMenuDialog::autoOpenChanged,
                 this, [this](const QString& path, bool enabled) {
@@ -6738,16 +6785,26 @@ void MainWindow::openMainMenu()
 
                     auto onDone = [this, pending, hadUpdate]() {
                         if (--(*pending) > 0) return;
-                        if (!*hadUpdate)
-                            showUpdateToast(tr("Tudo atualizado"), QString(),
-                                tr("O Qenna Writer e o Cover Creator estão na versão mais recente."));
+                        if (!*hadUpdate) {
+                            // Quem pede é o menu: a resposta aparece nele (o
+                            // toast mora no editor, escondido atrás do menu).
+                            const QString title = tr("Tudo atualizado");
+                            const QString body = tr("O Qenna Writer e o Cover Creator estão na versão mais recente.");
+                            UpdateBanner* b = menuUpdateBanner();
+                            if (b && mainMenuDialog->isVisible()) b->showInfo(title, body);
+                            else showReminderToast(title, body);
+                        }
                         delete pending;
                         delete hadUpdate;
                     };
 
                     connect(m_updateChecker, &UpdateChecker::updateAvailable,
-                            this, [hadUpdate](const QString&,const QString&,const QString&,const QString&) {
+                            this, [this, hadUpdate](const QString&,const QString&,const QString&,const QString&) {
                                 *hadUpdate = true;
+                                // Pediu pra verificar: mostra de novo mesmo
+                                // se antes tinha clicado em "Depois".
+                                m_appUpdateDismissed = false;
+                                syncMenuUpdateBanner();
                             }, Qt::SingleShotConnection);
                     connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
                             this, [hadUpdate](const QString&,const QString&,const QString&) {
@@ -6806,6 +6863,7 @@ void MainWindow::openMainMenu()
         m_editorHiddenForMenu = true;
         hide();
     }
+    syncMenuUpdateBanner();
     mainMenuDialog->showMaximized();
     mainMenuDialog->raise();
     mainMenuDialog->activateWindow();

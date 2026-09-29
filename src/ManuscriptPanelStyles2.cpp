@@ -20,6 +20,7 @@
 #include <QActionGroup>
 #include <QApplication>
 #include <QCache>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
@@ -2223,4 +2224,292 @@ bool ManuscriptPanel::event(QEvent* event) {
         }
     }
     return QWidget::event(event);
+}
+
+// ============================================================ Tarô, Rolo de filme, Quadros
+// Concept "Gavetas ilustradas" (leva 2, 2026-09-28): a vinheta do capítulo,
+// na cor da Parte, como arte principal.
+
+namespace {
+QString romanNumeral(int n) {
+    if (n <= 0 || n >= 4000) return QString::number(n);
+    static const int vals[] = { 1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1 };
+    static const char* const syms[] = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I" };
+    QString out;
+    for (int i = 0; i < 13; ++i) while (n >= vals[i]) { out += QLatin1String(syms[i]); n -= vals[i]; }
+    return out;
+}
+// A cor da Parte puxada pro branco: rótulos em cima do fundo escuro.
+QColor partInk(const QColor& c) {
+    return QColor::fromRgbF(c.redF() * .7f + .3f, c.greenF() * .7f + .3f, c.blueF() * .7f + .3f);
+}
+QColor mixColor(const QColor& a, const QColor& b, qreal t) {
+    return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t, a.greenF() + (b.greenF() - a.greenF()) * t,
+                            a.blueF() + (b.blueF() - a.blueF()) * t, a.alphaF() + (b.alphaF() - a.alphaF()) * t);
+}
+}
+
+void ManuscriptPanel::wireChapterCard(MsRow* row, const Chapter& c) {
+    row->setContextMenuPolicy(Qt::CustomContextMenu);
+    const QString chapterId = c.id, manuscriptId = c.manuscriptId;
+    connect(row, &QToolButton::clicked, this, [this, manuscriptId, chapterId]() { emit chapterActivated(manuscriptId, chapterId); });
+    connect(row, &QToolButton::customContextMenuRequested, this, [this, row, manuscriptId, chapterId](const QPoint& pos) {
+        showChapterContextMenu(manuscriptId, chapterId, row->mapToGlobal(pos));
+    });
+    wireRow(row, QStringLiteral("chapter"), chapterId);
+}
+
+void ManuscriptPanel::buildTarotView(const QList<Chapter>& chs) {
+    auto add = [this](QWidget* w) { m_listLayout->insertWidget(m_listLayout->count() - 1, w); };
+    const QHash<QString, int> fams = vignetteFamilies();
+    const int avail = std::max(220, width() - 16 - 8);
+    const int gap = 12;
+    const int cardW = (avail - 12 - gap) / 2;
+    const int artW = cardW - 12, artH = int(std::round(artW * 4.0 / 3.0));
+    const int cardH = 3 + 6 + 18 + 4 + artH + 5 + 32 + 6;
+
+    auto* grid = new QWidget(this);
+    auto* gl = new QGridLayout(grid);
+    gl->setContentsMargins(6, 10, 6, 10);
+    gl->setHorizontalSpacing(gap);
+    gl->setVerticalSpacing(gap);
+    int pos = 0;
+    for (const auto& c : chs) {
+        const bool special = c.type != QStringLiteral("chapter");
+        const QString num = m_model->chapterNumberLabel(c);
+        bool isInt = false;
+        const int n = num.toInt(&isInt);
+        const QString numeral = special ? m_model->chapterTypeName(c).toUpper() : (isInt ? romanNumeral(n) : num);
+        const QString title = chapterTitleOnly(c);
+        const QColor pc = vignetteColor(c.id);
+        const QPixmap art = chapterVignette(c, fams.value(c.id, MsVignette::autoFamily(c.id)), QSize(artW, artH), false);
+        const bool cur = isCurrent(c.id, -1);
+        const bool dim = !m_povFilter.isEmpty() && povOf(c) != m_povFilter;
+        const int words = chapterWords(c.id);
+        auto* card = new MsRow(grid);
+        card->setRowHeight(cardH);
+        card->setFixedWidth(cardW);
+        card->setToolTip(words > 0 ? tr("%1 palavras").arg(MsPaint::fmtInt(words)) : QString());
+        card->setPainter([=](QPainter& p, const QRect& r, const MsRow* self) {
+            if (dim) p.setOpacity(0.4);
+            p.setRenderHint(QPainter::Antialiasing);
+            // O atual sobe um pouco, com sombra e o contorno do destaque.
+            const QRectF box = cur ? QRectF(r).adjusted(1, 1, -1, -3) : QRectF(r).adjusted(1, 3, -1, -1);
+            if (cur) {
+                p.setPen(Qt::NoPen);
+                p.setBrush(QColor(0, 0, 0, 60));
+                p.drawRoundedRect(box.translated(0, 3), 8, 8);
+            }
+            const QColor bg = tcol(Theme::panelBackground());
+            QColor page = mixColor(bg, QColor(255, 255, 255), bg.lightnessF() < .5 ? .05 : .5);
+            if (self->isHovered()) page = mixColor(page, tcol(Theme::textPrimary()), .06);
+            p.setBrush(page);
+            p.setPen(cur ? QPen(tcol(Theme::accentDefault()), 2)
+                         : QPen(mixColor(tcol(Theme::subtleBorder()), pc, .55), 1));
+            p.drawRoundedRect(box, 8, 8);
+            QFont nf = fontOf(MsFonts::cormorant(), numeral.size() > 5 ? 10.5 : 13, QFont::DemiBold);
+            nf.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+            p.setFont(nf);
+            p.setPen(partInk(pc));
+            p.drawText(QRectF(box.left() + 6, box.top() + 6, box.width() - 12, 18), Qt::AlignCenter, numeral);
+            p.drawPixmap(QPointF(box.left() + 6, box.top() + 6 + 18 + 4), art);
+            QFont tf = fontOf(MsFonts::cormorant(), 13, QFont::DemiBold);
+            tf.setLetterSpacing(QFont::AbsoluteSpacing, 0.4);
+            p.setFont(tf);
+            p.setPen(tcol(Theme::textBright()));
+            const QRect tr = QRectF(box.left() + 6, box.top() + 6 + 18 + 4 + artH + 5, box.width() - 12, 32).toRect();
+            const QFontMetrics fm(tf);
+            // Até duas linhas; o que passar disso ganha reticências na segunda.
+            QString t = title;
+            auto fits = [&](const QString& s) {
+                return fm.boundingRect(tr, Qt::AlignHCenter | Qt::TextWordWrap, s).height() <= tr.height() + 1;
+            };
+            if (!fits(t)) {
+                while (t.size() > 1 && !fits(t + QStringLiteral("…"))) t.chop(1);
+                t = t.trimmed() + QStringLiteral("…");
+            }
+            p.drawText(tr, Qt::AlignHCenter | Qt::AlignTop | Qt::TextWordWrap, t);
+        });
+        wireChapterCard(card, c);
+        gl->addWidget(card, pos / 2, pos % 2, Qt::AlignTop);
+        ++pos;
+    }
+    gl->setColumnStretch(2, 1);
+    add(grid);
+}
+
+void ManuscriptPanel::buildFilmView(const QList<Chapter>& chs) {
+    auto add = [this](QWidget* w) { m_listLayout->insertWidget(m_listLayout->count() - 1, w); };
+    const QHash<QString, int> fams = vignetteFamilies();
+    const QList<Chapter> reading = readingChapters();
+    const QList<ManuscriptPart> parts = validParts(reading);
+    const QHash<QString, int> pidx = partIndexByChapter(reading, parts);
+    // Uma tira só: as linhas coladas, sem espaço entre elas, e a altura
+    // múltipla do passo dos furos pra película não "pular" de uma pra outra.
+    constexpr int kRowH = 84, kHole = 14, kStripW = 118;
+    auto* film = new QWidget(this);
+    auto* fl = new QVBoxLayout(film);
+    fl->setContentsMargins(6, 10, 6, 10);
+    fl->setSpacing(0);
+    for (int i = 0; i < chs.size(); ++i) {
+        const Chapter& c = chs.at(i);
+        const bool first = i == 0, last = i == chs.size() - 1;
+        const QString num = m_model->chapterNumberLabel(c);
+        const QString code = (c.type == QStringLiteral("chapter") && !num.isEmpty())
+            ? num.rightJustified(2, QLatin1Char('0')) + QStringLiteral("A") : QStringLiteral("00");
+        const QString title = chapterTitleOnly(c);
+        const int words = chapterWords(c.id);
+        const int pi = pidx.value(c.id, -1);
+        QString part = pi >= 0 ? parts.at(pi).title.section(QStringLiteral(" · "), 0, 0).trimmed() : QString();
+        if (c.type != QStringLiteral("chapter")) part = m_model->chapterTypeName(c);
+        const QString meta = (part.isEmpty() ? QString() : part + kSep())
+            + (words > 0 ? tr("%1 palavras").arg(shortK(words)) : tr("em branco"));
+        const QPixmap art = chapterVignette(c, fams.value(c.id, MsVignette::autoFamily(c.id)), QSize(90, 62), false);
+        const bool cur = isCurrent(c.id, -1);
+        const bool dim = !m_povFilter.isEmpty() && povOf(c) != m_povFilter;
+        auto* row = new MsRow(film);
+        row->setRowHeight(kRowH);
+        row->setPainter([=](QPainter& p, const QRect& r, const MsRow* self) {
+            if (dim) p.setOpacity(0.4);
+            p.setRenderHint(QPainter::Antialiasing);
+            const QRectF strip(r.left(), r.top(), kStripW, r.height());
+            // Película: preta, com as pontas arredondadas só no começo e no fim.
+            QPainterPath sp;
+            sp.addRoundedRect(strip.adjusted(0, first ? 0 : -6, 0, last ? 0 : 6), 4, 4);
+            p.save();
+            p.setClipRect(strip);
+            p.fillPath(sp, QColor(0x0b, 0x0b, 0x0c));
+            p.restore();
+            p.setPen(Qt::NoPen);
+            p.setBrush(QColor(0x3a, 0x3a, 0x3c));
+            for (int y = 0; y < r.height(); y += kHole) {
+                p.drawRoundedRect(QRectF(strip.left() + 3, r.top() + y + 5, 8, 5), 1.2, 1.2);
+                p.drawRoundedRect(QRectF(strip.right() - 11, r.top() + y + 5, 8, 5), 1.2, 1.2);
+            }
+            const QPointF at(strip.left() + 18, r.top() + (r.height() - 62) / 2.0);
+            p.drawPixmap(at, art);
+            if (cur) {
+                p.setPen(QPen(tcol(Theme::accentDefault()), 2));
+                p.setBrush(Qt::NoBrush);
+                p.drawRoundedRect(QRectF(at.x() - 2, at.y() - 2, 94, 66), 3, 3);
+            }
+            // O número na borda da película, de pé, como nos rolos de verdade.
+            p.save();
+            p.translate(strip.left() + 17, at.y() + 1);
+            p.rotate(90);
+            p.setFont(mono(7));
+            p.setPen(QColor(0xc9, 0xa3, 0x4a));
+            p.drawText(QRectF(0, 0, 40, 5), Qt::AlignLeft | Qt::AlignVCenter, code);
+            p.restore();
+            // Legenda ao lado.
+            const QRectF cap(strip.right() + 10, r.top(), r.right() - strip.right() - 10, r.height());
+            if (self->isHovered()) p.fillRect(cap, tcol(Theme::hoverOverlay()));
+            p.setPen(QPen(tcol(Theme::subtleBorder()), 1, Qt::DashLine));
+            p.drawLine(QPointF(cap.left(), cap.bottom() - .5), QPointF(cap.right(), cap.bottom() - .5));
+            const int tw = int(cap.width()) - 8;
+            p.setFont(ui(12.5, QFont::DemiBold));
+            p.setPen(cur ? tcol(Theme::accentDefault()) : tcol(Theme::textBright()));
+            p.drawText(QRectF(cap.left() + 4, cap.center().y() - 20, tw, 20), Qt::AlignLeft | Qt::AlignBottom,
+                       p.fontMetrics().elidedText(title, Qt::ElideRight, tw));
+            p.setFont(ui(11));
+            p.setPen(tcol(Theme::textMuted()));
+            p.drawText(QRectF(cap.left() + 4, cap.center().y() + 1, tw, 16), Qt::AlignLeft | Qt::AlignTop,
+                       p.fontMetrics().elidedText(meta, Qt::ElideRight, tw));
+        });
+        wireChapterCard(row, c);
+        fl->addWidget(row);
+    }
+    add(film);
+}
+
+void ManuscriptPanel::buildFramesView(const QList<Chapter>& chs) {
+    auto add = [this](QWidget* w) { m_listLayout->insertWidget(m_listLayout->count() - 1, w); };
+    const QHash<QString, int> fams = vignetteFamilies();
+    const QList<Chapter> reading = readingChapters();
+    const QList<ManuscriptPart> parts = validParts(reading);
+    const QHash<QString, int> pidx = partIndexByChapter(reading, parts);
+    constexpr int kArt = 104;
+    int lastPart = -2;
+    for (const auto& c : chs) {
+        const int pi = pidx.value(c.id, -1);
+        const QColor pc = vignetteColor(c.id);
+        // As Partes separam os blocos, com a cor delas.
+        if (!parts.isEmpty() && pi != lastPart) {
+            lastPart = pi;
+            if (pi >= 0) {
+                const QString name = parts.at(pi).title.toUpper();
+                auto* head = new MsRow(this);
+                head->setRowHeight(30);
+                head->setAttribute(Qt::WA_TransparentForMouseEvents);
+                head->setPainter([=](QPainter& p, const QRect& r, const MsRow*) {
+                    paintCapsRow(p, r, name, partInk(pc), 16, true);
+                });
+                add(head);
+            }
+        }
+        const bool special = c.type != QStringLiteral("chapter");
+        const QString num = m_model->chapterNumberLabel(c);
+        const QString kicker = (special || num.isEmpty()) ? m_model->chapterTypeName(c).toUpper()
+                                                        : tr("Capítulo %1").arg(num).toUpper();
+        const QString title = chapterTitleOnly(c);
+        const int words = chapterWords(c.id);
+        const QString meta = words > 0
+            ? tr("%1 palavras").arg(shortK(words)) + kSep() + tr("%n cena(s)", "", std::max<int>(1, c.scenes.size()))
+            : tr("ainda vazio");
+        const QPixmap art = chapterVignette(c, fams.value(c.id, MsVignette::autoFamily(c.id)), QSize(kArt, kArt), false);
+        const bool cur = isCurrent(c.id, -1);
+        const bool dim = !m_povFilter.isEmpty() && povOf(c) != m_povFilter;
+        auto* row = new MsRow(this);
+        row->setRowHeight(kArt + 28);
+        row->setToolTip(c.summary.trimmed());
+        row->setPainter([=](QPainter& p, const QRect& r, const MsRow* self) {
+            if (dim) p.setOpacity(0.4);
+            p.setRenderHint(QPainter::Antialiasing);
+            if (cur) {
+                p.fillRect(r, alpha(tcol(Theme::accentDefault()), 0.09));
+                p.fillRect(QRect(r.left(), r.top(), 3, r.height()), tcol(Theme::accentDefault()));
+            } else if (self->isHovered()) {
+                p.fillRect(r, tcol(Theme::hoverOverlay()));
+            }
+            p.fillRect(QRect(r.left(), r.bottom(), r.width(), 1), alpha(tcol(Theme::textPrimary()), 0.07));
+            // Sombra macia embaixo do quadro.
+            const QRectF artBox(r.left() + 16, r.top() + (r.height() - kArt) / 2.0, kArt, kArt);
+            p.setPen(Qt::NoPen);
+            for (int k = 3; k >= 1; --k) {
+                p.setBrush(QColor(0, 0, 0, 22));
+                p.drawRoundedRect(artBox.adjusted(-k * .5, k * 1.2, k * .5, k * 1.6), 7 + k, 7 + k);
+            }
+            p.drawPixmap(artBox.topLeft(), art);
+            const int x = int(artBox.right()) + 16;
+            const int tw = r.right() - 12 - x;
+            const QFont tf = serif(17, QFont::DemiBold);
+            const QFontMetrics tfm(tf);
+            const QRect tb = tfm.boundingRect(QRect(0, 0, tw, 1000), Qt::TextWordWrap, title);
+            const int titleH = std::min(tb.height(), tfm.lineSpacing() * 2);
+            const int blockH = 14 + 4 + titleH + 4 + 16 + (cur ? 16 : 0);
+            int y = r.top() + (r.height() - blockH) / 2;
+            p.setFont(caps(9.5, 1.4));
+            p.setPen(partInk(pc));
+            p.drawText(QRect(x, y, tw, 14), Qt::AlignLeft | Qt::AlignVCenter, p.fontMetrics().elidedText(kicker, Qt::ElideRight, tw));
+            y += 18;
+            p.setFont(tf);
+            p.setPen(tcol(Theme::textBright()));
+            p.save();
+            p.setClipRect(QRect(x, y, tw, titleH));
+            p.drawText(QRect(x, y, tw, titleH + tfm.lineSpacing()), Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, title);
+            p.restore();
+            y += titleH + 4;
+            p.setFont(ui(11.5));
+            p.setPen(tcol(Theme::textMuted()));
+            p.drawText(QRect(x, y, tw, 16), Qt::AlignLeft | Qt::AlignVCenter, p.fontMetrics().elidedText(meta, Qt::ElideRight, tw));
+            if (cur) {
+                y += 16;
+                p.setFont(ui(11));
+                p.setPen(tcol(Theme::accentDefault()));
+                p.drawText(QRect(x, y, tw, 16), Qt::AlignLeft | Qt::AlignVCenter, tr("você está aqui"));
+            }
+        });
+        wireChapterCard(row, c);
+        add(row);
+    }
 }

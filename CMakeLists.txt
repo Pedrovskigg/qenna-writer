@@ -294,6 +294,8 @@ qt_add_executable(qenna-writer
     src/WindowChrome.cpp
     src/WindowChrome.h
     src/QuickSavePopup.h
+    src/UpdateBanner.cpp
+    src/UpdateBanner.h
     src/MemoryAddPopup.cpp
     src/MemoryAddPopup.h
     src/SystemFolderGuard.cpp

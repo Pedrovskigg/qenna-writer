@@ -40,6 +40,8 @@ struct LibraryHooks;
 //
 // Aparece automaticamente no startup quando não há projeto carregado, e
 // é invocado também quando o usuário pede "Carregar projeto" pela barra.
+class UpdateBanner;
+
 class MainMenuDialog : public QDialog {
     Q_OBJECT
 public:
@@ -47,6 +49,9 @@ public:
 
     void setRecentProjects(const QStringList& paths);
     void setAutoOpenPath(const QString& path);
+    // Faixa de versão nova no topo da área principal (quem manda nela é o
+    // MainWindow, que é quem baixa).
+    UpdateBanner* updateBanner() const { return m_updateBanner; }
 
 signals:
     void newProjectRequested();
@@ -143,6 +148,7 @@ private:
     // --- Área principal ---
     QLabel* m_headingLabel = nullptr;
     QLabel* m_countLabel = nullptr;
+    UpdateBanner* m_updateBanner = nullptr;
     QWidget* m_header = nullptr;          // título + botões das vistas (some sem projeto)
     QList<QPushButton*> m_viewBtns;       // índice = ViewMode
     QWidget* m_viewHost = nullptr;        // onde a vista ativa mora

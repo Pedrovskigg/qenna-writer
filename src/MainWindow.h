@@ -82,6 +82,7 @@ class TerritorioWindow;
 class ReaderPreviewPanel;
 class TerritorioMentionAddPopup;
 class MainMenuDialog;
+class UpdateBanner;
 class BackgroundWidget;
 class RemindersStore;
 class RemindersPanel;
@@ -312,6 +313,10 @@ private:
     void cancelUpdateDownload();
     void showUpdateDownloadError(const QString& message);
     void resetUpdateToastIdle();
+    // Faixa grande do menu principal: mostra a versão nova do app (não a do
+    // Cover Creator) se o menu estiver aí e o usuário não disse "Depois".
+    void syncMenuUpdateBanner();
+    UpdateBanner* menuUpdateBanner() const;
 
     // Cover Creator via download (sem bundle no instalador do Qenna desde
     // 2026-07-19): checa a release mais recente no GitHub e, se aceito,
@@ -605,6 +610,12 @@ private:
     bool m_updateIsCover = false; // true = o toast/download atual é do Cover Creator, não auto-update do Qenna
     QString m_updateDownloadUrl;
     QString m_updateVersion;
+    // A versão nova do APP guardada à parte: um aviso do Cover Creator
+    // reaproveita os campos acima e não pode apagar o que a faixa do menu baixa.
+    QString m_appUpdateVersion;
+    QString m_appUpdateUrl;
+    QString m_appUpdateNotes;
+    bool m_appUpdateDismissed = false;
     MainMenuDialog *mainMenuDialog = nullptr;
     BackgroundWidget *backgroundWidget = nullptr;
     FindBar *findBar = nullptr;

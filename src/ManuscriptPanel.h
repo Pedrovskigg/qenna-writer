@@ -30,6 +30,7 @@ class MsDrum;
 struct Manuscript;
 struct Chapter;
 struct ManuscriptPart;
+class MsRow;
 
 class ManuscriptPanel : public QWidget {
     Q_OBJECT
@@ -42,7 +43,9 @@ public:
                        // leva 7: listas limpas
                        Columns, Drum, Layers, Command, Margin,
                        // leva 8: a lista limpa com a capa e a saga em volta
-                       Aura, AuraClean, Carousel, Bound, Fan, Window };
+                       Aura, AuraClean, Carousel, Bound, Fan, Window,
+                       // leva 9: ilustradas (a vinheta como arte)
+                       Tarot, Film, Frames };
     enum Tool { ToolStatus, ToolHover, ToolParts, ToolResume, ToolStory, ToolPov,
                 ToolVariations, ToolRhythm, ToolCount };
 
@@ -244,6 +247,11 @@ private:
     void buildCommandView();
     void commandKey(int key);
     void buildMarginView(const QList<Chapter>& chs);
+    void buildTarotView(const QList<Chapter>& chs);
+    void buildFilmView(const QList<Chapter>& chs);
+    void buildFramesView(const QList<Chapter>& chs);
+    // Clique, menu e "hover" de um cartão de capítulo (os estilos ilustrados).
+    void wireChapterCard(MsRow* row, const Chapter& c);
     void buildCarouselHead();
     void updateCarouselMini();
     void buildBottomNew();

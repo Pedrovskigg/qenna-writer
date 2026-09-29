@@ -159,8 +159,12 @@ void SmoothCaret::watchDocument() {
     if (!m_doc || !m_doc->documentLayout()) return;
     // Mudança de layout sem o cursor andar (fonte, largura da página, cena
     // carregada): o destino se ajusta; se não está deslizando, vai direto.
+    // Durante uma tecla, NÃO: o Qt avisa do layout ANTES do cursorPositionChanged,
+    // e o retarget(false) daqui teletransportava o cursor pro destino — o
+    // deslize que vinha logo depois achava distância zero e não saía. Era o
+    // "o cursor suave às vezes para": só deslizava quando o aviso chegava tarde.
     connect(m_doc->documentLayout(), &QAbstractTextDocumentLayout::update, this, [this](const QRectF&) {
-        if (!m_active) return;
+        if (!m_active || m_keyMove) return;
         if (m_anim->state() == QAbstractAnimation::Running) m_to = caretRect();
         else retarget(false);
     });

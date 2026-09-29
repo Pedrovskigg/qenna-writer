@@ -56,7 +56,10 @@ WhatsNewDialog::WhatsNewDialog(QWidget* parent)
     m_body->setObjectName(QStringLiteral("whatsNewBody"));
     m_body->setOpenExternalLinks(true);
     m_body->setFrameShape(QFrame::NoFrame);
-    m_body->document()->setDocumentMargin(4);
+    // O QSS global dá "padding: 80px 100px" a todo QTextEdit (é a folha do
+    // editor); aqui o padding volta a zero no applyTheme e o respiro vem só
+    // da margem do documento — senão o texto fica espremido no meio.
+    m_body->document()->setDocumentMargin(8);
     m_body->setMarkdown(loadNotes());
     root->addWidget(m_body, 1);
     root->addSpacing(14);
@@ -143,6 +146,7 @@ void WhatsNewDialog::applyTheme()
         }
         QTextBrowser#whatsNewBody {
             background: transparent;
+            padding: 0px;
             color: %2;
             font-size: 13px;
             selection-background-color: %6;

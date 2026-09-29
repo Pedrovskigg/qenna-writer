@@ -1031,6 +1031,9 @@ QString ManuscriptPanel::styleId(Style s) {
     case Style::Bound:       return QStringLiteral("bound");
     case Style::Fan:         return QStringLiteral("fan");
     case Style::Window:      return QStringLiteral("window");
+    case Style::Tarot:       return QStringLiteral("tarot");
+    case Style::Film:        return QStringLiteral("film");
+    case Style::Frames:      return QStringLiteral("frames");
     }
     return QStringLiteral("rail");
 }
@@ -1041,7 +1044,8 @@ ManuscriptPanel::Style ManuscriptPanel::styleFromId(const QString& id) {
                      Style::Reader, Style::Illustrated, Style::Seasons, Style::Store, Style::Box,
                      Style::ChapterSelect, Style::Album, Style::Playbill, Style::Columns, Style::Drum,
                      Style::Layers, Style::Command, Style::Margin, Style::Aura, Style::AuraClean,
-                     Style::Carousel, Style::Bound, Style::Fan, Style::Window })
+                     Style::Carousel, Style::Bound, Style::Fan, Style::Window,
+                     Style::Tarot, Style::Film, Style::Frames })
         if (styleId(s) == id) return s;
     return Style::Rail;   // padrão da gaveta
 }
@@ -1139,6 +1143,9 @@ void ManuscriptPanel::applyStyleWidth() {
     case Style::Bound:       w = 340; break;
     case Style::Fan:         w = 310; break;
     case Style::Window:      w = 320; break;
+    case Style::Tarot:       w = 340; break;
+    case Style::Film:        w = 330; break;
+    case Style::Frames:      w = 360; break;
     }
     // Largura arrastada pelo usuário vale por estilo.
     const int stored = QSettings().value(QStringLiteral("ui/manuscriptPanel/width-") + styleId(m_style), 0).toInt();
@@ -1195,8 +1202,11 @@ void ManuscriptPanel::showStyleMenu() {
         { Style::Seasons,     tr("Temporadas"),        tr("O livro como série: cada livro é uma temporada, cada capítulo um episódio") },
         { Style::Store,       tr("Página da loja"),    tr("O livro como na página de uma livraria: capa, números, sinopse e sumário") },
         { Style::Box,         tr("Box da saga"),       tr("Os livros da série num estojo; o aberto sai puxado pra fora") },
+        { Style::Tarot,       tr("Tarô"),              tr("Cada capítulo é uma carta: a vinheta como arte, o número romano em cima e o título embaixo") },
+        { Style::Film,        tr("Rolo de filme"),     tr("Uma tira de filme descendo pela gaveta; cada quadro é a vinheta do capítulo") },
+        { Style::Frames,      tr("Quadros"),           tr("A vinheta grande e quadrada, com o capítulo do lado e espaço pra respirar") },
     };
-    // 29 estilos não cabem numa lista só: três grupos, e o nome do atual no título.
+    // 32 estilos não cabem numa lista só: três grupos, e o nome do atual no título.
     QString currentName;
     for (const Opt& o : styles) if (o.s == m_style) currentName = o.name;
     addHeading(tr("Estilo") + QStringLiteral(" · ") + currentName);
@@ -1206,8 +1216,8 @@ void ManuscriptPanel::showStyleMenu() {
                           Style::Drum, Style::Layers, Style::Command, Style::Grid, Style::Mosaic } },
         { tr("Com a capa"), { Style::Spines, Style::Showcase, Style::TitlePage, Style::Reader, Style::Store, Style::Box,
                               Style::Aura, Style::AuraClean, Style::Carousel, Style::Bound, Style::Fan, Style::Window } },
-        { tr("Temáticos"), { Style::Journey, Style::Illustrated, Style::Seasons, Style::ChapterSelect,
-                             Style::Album, Style::Playbill } },
+        { tr("Temáticos"), { Style::Journey, Style::Illustrated, Style::Seasons, Style::Tarot, Style::Film,
+                             Style::Frames, Style::ChapterSelect, Style::Album, Style::Playbill } },
     };
     for (const Group& g : groups) {
         bool hasCurrent = false;
@@ -2250,6 +2260,9 @@ void ManuscriptPanel::rebuildBody() {
         case Style::Layers:      buildLayersView(); break;
         case Style::Command:     buildCommandView(); break;
         case Style::Margin:      buildMarginView(chs); break;
+        case Style::Tarot:       buildTarotView(chs); break;
+        case Style::Film:        buildFilmView(chs); break;
+        case Style::Frames:      buildFramesView(chs); break;
         case Style::Aura:        buildSimpleList(chs, auraInk()); break;
         case Style::Window:      buildSimpleList(chs, paperInk()); break;
         case Style::AuraClean:
@@ -3381,7 +3394,8 @@ void ManuscriptPanel::showChapterContextMenu(const QString& manuscriptId, const 
     menu.setStyleSheet(contextMenuQss());
     const Chapter* ch = m_model ? m_model->findChapter(chapterId) : nullptr;
 
-    if (ch && (m_style == Style::Illustrated || m_style == Style::Seasons)) {
+    if (ch && (m_style == Style::Illustrated || m_style == Style::Seasons || m_style == Style::Tarot
+               || m_style == Style::Film || m_style == Style::Frames)) {
         auto* vigAct = menu.addAction(tr("Trocar desenho…"));
         connect(vigAct, &QAction::triggered, this, [this, chapterId, globalPos]() {
             showVignettePicker(chapterId, globalPos);
@@ -5072,9 +5086,28 @@ void ManuscriptPanel::showVignettePicker(const QString& chapterId, const QPoint&
     segBtn(tr("O livro todo"), bookMode, true);
     v->addWidget(seg);
 
-    auto* grid = new QGridLayout;
-    grid->setHorizontalSpacing(6);
-    grid->setVerticalSpacing(6);
+    // 33 desenhos (Automático + 32 famílias): em grupos, numa área que rola.
+    auto* scroll = new QScrollArea(pop);
+    scroll->setFrameShape(QFrame::NoFrame);
+    scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scroll->setWidgetResizable(true);
+    scroll->setStyleSheet(QStringLiteral("QScrollArea { background: transparent; border: none; }"));
+    scroll->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+    auto* body = new QWidget(scroll);
+    body->setStyleSheet(QStringLiteral("background: transparent;"));
+    auto* bodyCol = new QVBoxLayout(body);
+    bodyCol->setContentsMargins(0, 0, 4, 0);
+    bodyCol->setSpacing(6);
+    const int cols = circle ? 5 : 4;
+    auto newGrid = [&]() {
+        auto* gr = new QGridLayout;
+        gr->setHorizontalSpacing(6);
+        gr->setVerticalSpacing(6);
+        gr->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+        bodyCol->addLayout(gr);
+        return gr;
+    };
+    QGridLayout* grid = newGrid();
     const QString itemQss = QStringLiteral(
         "QToolButton { color: %1; background: transparent; border: 1px solid transparent; border-radius: 6px;"
         " padding: 3px 2px 2px 2px; font-size: 10.5px; font-weight: %3; }"
@@ -5119,7 +5152,7 @@ void ManuscriptPanel::showVignettePicker(const QString& chapterId, const QPoint&
             p.end();
             pm = padded;
         }
-        auto* b = new QToolButton(pop);
+        auto* b = new QToolButton(body);
         b->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
         b->setIcon(QIcon(pm));
         b->setIconSize(QSize(thumb.width() + 6, thumb.height() + 6));
@@ -5131,13 +5164,23 @@ void ManuscriptPanel::showVignettePicker(const QString& chapterId, const QPoint&
             pop->close();
             apply(fam);
         });
-        const int cols = circle ? 4 : 3;
         grid->addWidget(b, pos / cols, pos % cols);
     };
     item(-1, tr("Automático"), isAuto, 0);
-    for (int f = 0; f < MsVignette::FamilyCount; ++f)
-        item(f, MsVignette::familyName(f), !isAuto && pick == f, f + 1);
-    v->addLayout(grid);
+    for (const MsVignette::FamilyGroup& grp : MsVignette::familyGroups()) {
+        auto* gh = mutedLabel(grp.title.toUpper(), body, 10);
+        gh->setContentsMargins(2, 6, 0, 0);
+        bodyCol->addWidget(gh);
+        grid = newGrid();
+        int pos = 0;
+        for (int f : grp.families) item(f, MsVignette::familyName(f), !isAuto && pick == f, pos++);
+    }
+    scroll->setWidget(body);
+    // Altura do que cabe, até um teto: dali pra baixo, rola.
+    body->adjustSize();
+    scroll->setFixedWidth(body->sizeHint().width() + 10);
+    scroll->setFixedHeight(std::min(body->sizeHint().height(), circle ? 400 : 380));
+    v->addWidget(scroll);
 
     auto* foot = new QLabel(tr("o desenho continua crescendo com o capítulo; só muda a fundação"), pop);
     foot->setWordWrap(true);
