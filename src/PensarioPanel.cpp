@@ -64,12 +64,16 @@ constexpr int kDialoguePageSize = 60;
 // mesmo QSet<QString> dos chips reais, sem duplicar a lógica de filtro.
 // Nunca colide com um Element::id de verdade (que são QUuid).
 const QString kUnattributedDialogueId = QStringLiteral("__unattributed__");
+// Mesmo esquema pro chip "Figurantes": falas com locutor fora do elenco
+// ("o porteiro", "Éder") — já dizem quem fala, não são "sem atribuição".
+const QString kExtrasDialogueId = QStringLiteral("__extras__");
 
-// Chave de filtro de um diálogo: o characterId de verdade, ou o sentinela
-// acima se estiver sem locutor atribuído.
-QString dialogueFilterKey(const QString& characterId)
+// Chave de filtro de um diálogo: o characterId de verdade, ou um dos
+// sentinelas acima.
+QString dialogueFilterKey(const DialogueStore::Dialogue& d)
 {
-    return characterId.isEmpty() ? kUnattributedDialogueId : characterId;
+    if (!d.characterId.isEmpty()) return d.characterId;
+    return d.isExtra() ? kExtrasDialogueId : kUnattributedDialogueId;
 }
 
 // Esvazia um layout de verdade, incluindo widgets escondidos dentro de
@@ -1315,13 +1319,13 @@ void PensarioPanel::rebuildDialogues()
                 .arg(Theme::panelBackground(), Theme::panelBorder())));
 
             auto* label = new QLabel(
-                tr("O detector de diálogos lê e interpreta padrões de texto para "
-                   "definir o que é um diálogo e quem o disse.\n"
-                   "É uma ferramenta sólida, mas pode cometer erros.\n"
-                   "Caso um diálogo detectado esteja vinculado ao personagem "
-                   "errado, você pode corrigir através do clique direito.\n"
-                   "As estatísticas são estimativas e não garantem precisão "
-                   "absoluta com o conteúdo dos capítulos."),
+                tr("O detector lê a cena como uma conversa: quem a tag nomeia, quem "
+                   "falou antes, quem foi chamado pelo nome.\n"
+                   "Nome escrito na tag: a fala é daquele personagem.\n"
+                   "\"provável\": deduzida pela conversa. Confirme ou corrija pelo "
+                   "clique direito; o que você corrige nunca é desfeito.\n"
+                   "\"figurante\": quem fala não está no elenco.\n"
+                   "O × tira uma linha que não é fala, e ela não volta."),
                 popup);
             label->setWordWrap(true);
             label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;")
@@ -1462,7 +1466,7 @@ void PensarioPanel::rebuildDialogues()
                 bool present = false;
                 for (const DialogueStore::Dialogue& other : all) {
                     if (other.chapterId == d.chapterId && other.sceneIndex == d.sceneIndex
-                        && dialogueFilterKey(other.characterId) == reqId) { present = true; break; }
+                        && dialogueFilterKey(other) == reqId) { present = true; break; }
                 }
                 if (!present) { ok = false; break; }
             }
@@ -1473,7 +1477,7 @@ void PensarioPanel::rebuildDialogues()
             // dele, projeto inteiro se o filtro de capítulo for "Todos");
             // com 2+, mostra só a conversa entre eles, sem misturar falas de
             // quem só está de passagem na mesma cena (narrador incluso).
-            if (!m_dialoguePresenceFilter.contains(dialogueFilterKey(d.characterId))) continue;
+            if (!m_dialoguePresenceFilter.contains(dialogueFilterKey(d))) continue;
         }
         list.append(d);
     }
@@ -1554,7 +1558,7 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
     // pseudo-chip "Diálogos sem atribuição" nunca é podado aqui, independente
     // de canPickPresence/speakerIds (ver bloco próprio logo abaixo).
     for (auto it = m_dialoguePresenceFilter.begin(); it != m_dialoguePresenceFilter.end();) {
-        if (*it != kUnattributedDialogueId && !speakerIds.contains(*it))
+        if (*it != kUnattributedDialogueId && *it != kExtrasDialogueId && !speakerIds.contains(*it))
             it = m_dialoguePresenceFilter.erase(it);
         else
             ++it;
@@ -1572,8 +1576,12 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
     // senão o badge reagiria ao próprio filtro que ele contém.
     int unattributedCount = 0;
     for (const DialogueStore::Dialogue& d : all) {
-        if (d.characterId.isEmpty() && dialogueMatchesOriginFilter(d)) ++unattributedCount;
+        if (d.characterId.isEmpty() && !d.isExtra() && dialogueMatchesOriginFilter(d)) ++unattributedCount;
     }
+    int extrasCount = 0;
+    for (const DialogueStore::Dialogue& d : all)
+        if (d.isExtra() && dialogueMatchesOriginFilter(d)) ++extrasCount;
+    const bool extrasActive = m_dialoguePresenceFilter.contains(kExtrasDialogueId);
     const bool unattributedActive = m_dialoguePresenceFilter.contains(kUnattributedDialogueId);
     if (unattributedCount > 0 || unattributedActive) {
         auto* unattrBtn = new QToolButton(wrap);
@@ -1598,7 +1606,34 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
             rebuildDialogues();
         });
         wrapLay->addWidget(unattrBtn);
-
+    }
+    if (extrasCount > 0 || extrasActive) {
+        auto* extrasBtn = new QToolButton(wrap);
+        extrasBtn->setObjectName(QStringLiteral("pnDlgUnattributedChip"));
+        extrasBtn->setCheckable(true);
+        extrasBtn->setChecked(extrasActive);
+        extrasBtn->setCursor(Qt::PointingHandCursor);
+        extrasBtn->setToolButtonStyle(Qt::ToolButtonTextOnly);
+        extrasBtn->setText(tr("Figurantes (%1)").arg(extrasCount));
+        extrasBtn->setToolTip(tr("Falas de quem não está no elenco: \"o porteiro\", \"a moça\"… "
+                                 "Atribuir uma delas a um personagem pode transformar a tag em apelido."));
+        extrasBtn->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        extrasBtn->setStyleSheet(Theme::qss(QStringLiteral(
+            "QToolButton#pnDlgUnattributedChip { border: 1px dashed %1; border-radius: @radius-item; "
+            "padding: 4px 8px; color: %2; }"
+            "QToolButton#pnDlgUnattributedChip:checked { background: %3; color: %4; border-style: solid; }")
+            .arg(Theme::panelBorder(), Theme::textMuted(), Theme::accentInfoSoft(), Theme::textBright())));
+        connect(extrasBtn, &QToolButton::clicked, this, [this]() {
+            if (m_dialoguePresenceFilter.contains(kExtrasDialogueId))
+                m_dialoguePresenceFilter.remove(kExtrasDialogueId);
+            else
+                m_dialoguePresenceFilter.insert(kExtrasDialogueId);
+            m_dialogueVisibleCount = kDialoguePageSize;
+            rebuildDialogues();
+        });
+        wrapLay->addWidget(extrasBtn);
+    }
+    if (unattributedCount > 0 || unattributedActive || extrasCount > 0 || extrasActive) {
         auto* unattrSep = new QFrame(wrap);
         unattrSep->setFrameShape(QFrame::HLine);
         unattrSep->setStyleSheet(QStringLiteral(
@@ -1615,6 +1650,7 @@ void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Di
     if (canPickPresence) {
         picked = QStringList(m_dialoguePresenceFilter.begin(), m_dialoguePresenceFilter.end());
         picked.removeAll(kUnattributedDialogueId);
+        picked.removeAll(kExtrasDialogueId);
         if (!picked.isEmpty()) {
             auto* label = new QLabel(tr("Também falam na cena com:"), wrap);
             label->setObjectName(QStringLiteral("pnDlgPresenceLabel"));
@@ -1890,6 +1926,18 @@ QString PensarioPanel::dialogueSpeakerLabel(const QString& characterId) const
     return tr("Personagem");
 }
 
+QString PensarioPanel::dialogueSpeakerLabel(const DialogueStore::Dialogue& d) const
+{
+    if (d.characterId.isEmpty()) {
+        if (!d.isExtra() || d.extraLabel.isEmpty()) return tr("Sem locutor");
+        QString label = d.extraLabel;
+        label[0] = label.at(0).toUpper();
+        return tr("%1 · figurante").arg(label);
+    }
+    const QString name = dialogueSpeakerLabel(d.characterId);
+    return d.isProbable() ? tr("%1 · provável").arg(name) : name;
+}
+
 bool PensarioPanel::dialogueMatchesOriginFilter(const DialogueStore::Dialogue& d) const
 {
     if (m_dialogueOriginFilter.isEmpty()) return true;
@@ -1911,7 +1959,11 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
     card->setContextMenuPolicy(Qt::CustomContextMenu);
     const QString dlgIdForMenu = dlg.id;
     const bool unattributed = dlg.characterId.isEmpty();
-    connect(card, &QWidget::customContextMenuRequested, this, [this, card, dlgIdForMenu, unattributed](const QPoint& pos) {
+    const bool probable = dlg.isProbable();
+    const QString probableName = probable ? dialogueSpeakerLabel(dlg.characterId) : QString();
+    const QString probableId = dlg.characterId;
+    connect(card, &QWidget::customContextMenuRequested, this,
+            [this, card, dlgIdForMenu, unattributed, probable, probableName, probableId](const QPoint& pos) {
         QMenu menu(card);
         menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
             QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
@@ -1919,9 +1971,11 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
             QMenu::item:selected { background: %4; color: %5; }
         )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(),
                 Theme::accentInfoSoft(), Theme::textBright()));
+        QAction* confirmSpeaker = probable ? menu.addAction(tr("Confirmar: é %1").arg(probableName)) : nullptr;
         QAction* changeSpeaker = menu.addAction(
             unattributed ? tr("Atribuir ao personagem…") : tr("Alterar locutor…"));
         QAction* chosen = menu.exec(card->mapToGlobal(pos));
+        if (chosen && chosen == confirmSpeaker && m_dialogues) m_dialogues->setCharacter(dlgIdForMenu, probableId);
         if (chosen == changeSpeaker) showChangeSpeakerPopup(dlgIdForMenu, card->mapToGlobal(pos));
     });
 
@@ -1954,7 +2008,7 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
     delBtn->setObjectName(QStringLiteral("pnMemDelete"));
     delBtn->setText(QStringLiteral("×"));
     delBtn->setCursor(Qt::PointingHandCursor);
-    delBtn->setToolTip(tr("Excluir diálogo"));
+    delBtn->setToolTip(tr("Não é fala (some e não volta)"));
     delBtn->setFixedSize(20, 20);
     const QString dlgId = dlg.id;
     connect(delBtn, &QToolButton::clicked, this, [this, dlgId]() {
@@ -2073,10 +2127,12 @@ void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& g
     plist->setFixedHeight(kRowH * qMin(kMaxVisibleRows, qMax(1, plist->count())));
     popup->setFixedWidth(popupWidth);
 
-    connect(plist, &QListWidget::itemClicked, this, [this, popup, dlgId, chapterKey, sceneKey](QListWidgetItem* it) {
+    const QString extraLabel = dlg->isExtra() ? dlg->extraLabel : QString();
+    connect(plist, &QListWidget::itemClicked, this, [this, popup, dlgId, chapterKey, sceneKey, extraLabel](QListWidgetItem* it) {
         const QString newId = it->data(Qt::UserRole).toString();
         popup->close();
         if (m_dialogues) m_dialogues->setCharacter(dlgId, newId);
+        if (!extraLabel.isEmpty()) emit extraSpeakerAssigned(extraLabel, newId);
         // Diálogo antes sem locutor: atribuir também marca presença
         // confirmada do personagem escolhido (idempotente — addDocElement já
         // não faz nada se ele já estiver presente).

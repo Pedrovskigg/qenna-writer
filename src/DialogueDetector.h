@@ -1,57 +1,94 @@
 #pragma once
 
+#include "DialogueLang.h"
 #include "ElementsStore.h"
 
+#include <QHash>
+#include <QPair>
 #include <QRegularExpression>
+#include <QSet>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
-// Regex de atribuição (nome aparece no texto após o travessão/aspas de
-// fechamento) e de proximidade (verbo de fala perto do nome, sem tag
-// explícita) para um personagem — uma linha bate em no máximo um desses
-// modos por vez, dependendo se a fala tem atribuição textual ou não.
-struct DialogueScannerToken {
-    QString elementId;
-    QRegularExpression attrRe;
-    QRegularExpression proximityRe;
-};
+class QTextDocument;
 
-// Uma fala detectada. characterId vazio = parece diálogo (travessão/aspas)
-// mas sem locutor confiante (0 ou >1 personagem bateu) — "sem atribuição".
+// Quanto o motor confia no locutor de uma fala.
+//  Certain  — o nome está na tag ("— Não. — Klara disse.") ou no bloco de
+//             personagem do roteiro. Na auditoria: 64 de 64 certas.
+//  Probable — deduzido pela conversa (alternância, quem foi citado, pronome
+//             + gênero). ~70% de acerto: a tela pede confirmação.
+//  Extra    — tem locutor, mas fora do elenco ("O porteiro chamou",
+//             "Éder atropelou"). extraLabel guarda como o texto o chama.
+//  None     — sem pista nenhuma.
+enum class DialogueConfidence { None, Certain, Probable, Extra };
+
 struct DetectedDialogueLine {
-    QString text;
-    QString characterId;
+    QString text;          // parágrafo inteiro (é o que o editor procura pra abrir)
+    QString speech;        // só a fala, sem a tag — base de diálogo x narração
+    QString characterId;   // vazio = sem locutor do elenco
+    DialogueConfidence confidence = DialogueConfidence::None;
+    QString extraLabel;    // figurante: "o porteiro", "Éder"
 };
 
-// Motor de atribuição de diálogo — porta scanDialogAttribution/
-// buildScannerTokens do Mira 1 (src/App.jsx, src/dialogVerbs.js) para C++.
-// Funções estáticas, sem estado, mesmo molde de CharacterDetector.
+// Motor de atribuição de falas. Lê a CENA inteira, não uma linha solta:
+//  1. corta cada parágrafo em trechos de fala e de narração (travessão,
+//     meia-risca, hífen, aspas retas/curvas, « », ‘ ’, fala depois de ":");
+//  2. procura o sujeito da tag (nome no começo da primeira oração, sem
+//     preposição antes; pronome; figurante; 1ª pessoa do narrador);
+//  3. sem sujeito nomeado, deduz pela conversa: quem falou antes, quem foi
+//     citado, quem foi chamado pelo nome DENTRO da fala (esse não é quem fala).
+// Protótipo e banco de testes: C:\mira-writing\concepts\harness\dialogos.
 class DialogueDetector {
 public:
-    // Um token por personagem: nome completo + primeiro nome (só se único
-    // entre os personagens) + cada apelido/alias, todos como frase exata
-    // (ao contrário de CharacterDetector::buildTokens, que quebra em
-    // palavras — aqui precisamos do nome inteiro pra montar as regexes de
-    // atribuição/proximidade).
-    static QVector<DialogueScannerToken> buildScannerTokens(const QList<Element>& characters);
+    struct Token {
+        QRegularExpression re;
+        QString id;
+    };
+    struct Cast {
+        QVector<Token> tokens;
+        QSet<QString> ids;
+        QHash<QString, QString> nameById;
+        // Nome/apelido em minúsculas → id (só os sem ambiguidade): deixa do roteiro.
+        QHash<QString, QString> idByLowerName;
+        bool isEmpty() const { return ids.isEmpty(); }
+    };
+    // Voto de gênero por personagem: (feminino, masculino).
+    using GenderVotes = QHash<QString, QPair<double, double>>;
 
-    // Varre plainText (parágrafos separados por '\n', como
-    // QTextEdit::toPlainText() do documento inteiro produz — diferente de
-    // QTextCursor::selectedText(), que usa U+2029) e retorna toda linha que
-    // parece diálogo (começa com travessão/aspas). Parágrafos ambíguos (0 ou
-    // >1 personagem bateu) são retidos com characterId vazio — quem chama
-    // decide o que fazer com a incerteza (hoje: Pensário mostra como "sem
-    // atribuição", permitindo atribuição manual depois).
-    // narrator pode ser nullptr (projeto sem narrador marcado).
-    static QVector<DetectedDialogueLine> scanConfidentDialogues(
-        const QString& plainText,
-        const QVector<DialogueScannerToken>& tokens,
-        const Element* narrator);
+    // Elenco: nome completo, primeiro nome (só se único) e apelidos. Nome
+    // que começa com maiúscula só bate com maiúscula ("Rosa" não é "rosa").
+    static Cast buildCast(const QList<Element>& elements);
 
-private:
-    // Tenta atribuir uma única linha; retorna elementId ou QString() se
-    // ambíguo/sem casamento. Espelha scanDialogAttribution do Mira 1.
-    static QString attributeLine(const QString& text,
-                                  const QVector<DialogueScannerToken>& tokens,
-                                  const Element* narrator);
+    // Uma cena (ou capítulo sem cenas), parágrafos em ordem. A memória da
+    // conversa zera entre chamadas — cena nova, conversa nova.
+    // narratorId: POV do capítulo ou narrador global; vazio = sem narrador.
+    // gender: 'f'/'m' por personagem (ver genderFromVotes).
+    static QVector<DetectedDialogueLine> scanScene(const QStringList& paragraphs,
+                                                   const Cast& cast,
+                                                   const DialogueLang& lang,
+                                                   const QString& narratorId,
+                                                   const QHash<QString, QChar>& gender);
+
+    // Roteiro: o locutor é o bloco Personagem acima do bloco Diálogo.
+    static QVector<DetectedDialogueLine> scanScreenplay(const QTextDocument& doc, const Cast& cast);
+
+    // Gênero pelo texto: artigo antes do nome ("a Klara") e pronome logo
+    // depois. Soma em `votes`; genderFromVotes decide com folga de 1,5x.
+    static void addGenderVotes(const QString& text, const Cast& cast, const DialogueLang& lang,
+                               GenderVotes& votes);
+    static QHash<QString, QChar> genderFromVotes(const GenderVotes& votes);
+
+    // Parágrafos de um texto puro (QTextDocument::toPlainText separa blocos
+    // com '\n').
+    static QStringList paragraphsOf(const QString& plainText);
+
+    // Migração do dialogs.json antigo: o que o motor ANTERIOR (até a 0.18)
+    // responderia pra essa linha — nomes no "texto de atribuição" (tudo
+    // depois do 2º travessão, ou depois da aspa de fechamento), sem
+    // distinção de maiúscula, e um só personagem = dele. A busca por
+    // proximidade daquele motor estava morta (regex grande demais), então
+    // não entra. Se a atribuição salva bate com isso, ela foi automática;
+    // se não bate, foi corrigida à mão.
+    static QString legacyAttribution(const QString& text, const Cast& cast);
 };

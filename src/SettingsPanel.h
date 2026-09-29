@@ -84,6 +84,7 @@ signals:
     void glossaryInTextChanged(bool on);
     void spellLanguageChanged(const QString& code);
     void detectionEnabledChanged(bool enabled);
+    void dialogueDetectionEnabledChanged(bool enabled);
     void detectionMarkAllChanged(bool markAll);
     void autoNavEnabledChanged(bool enabled);
     void unifiedGoalEnabledChanged(bool enabled);

@@ -25,6 +25,9 @@ struct Element {
     QString role;             // PROTAGONISTA, COADJUVANTE, etc. (Mira 2 extension)
     QString trackMode;        // "" = auto por role | "on" = sempre | "off" = nunca (trilha da linha do tempo)
     bool narrator = false;
+    // Forma de tratamento: "m" (masculino) | "f" (feminino) | "" (não marcado —
+    // o detector de diálogos deduz pelo texto). Resolve "ele disse"/"ela disse".
+    QString gender;
     QString textConcordance;  // letra única usada na detecção (compat Mira 1)
     QStringList aliases;
 };

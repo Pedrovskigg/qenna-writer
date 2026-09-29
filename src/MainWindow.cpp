@@ -54,6 +54,7 @@
 #include <QTextDocument>
 #include <QTextEdit>
 #include <QToolButton>
+#include <QTextBrowser>
 #include <QTextFragment>
 #include <QTextFrame>
 #include <QTextFrameFormat>
@@ -282,7 +283,7 @@ QFont sizedFont(const QString& family, qreal pt)
 
 // Avisa (não bloqueia) quando já existe um Element do mesmo tipo com nome
 // idêntico (case-insensitive) — nome duplicado quebra o atalho de "primeiro
-// nome" do detector de diálogos (DialogueDetector::buildScannerTokens só
+// nome" do detector de diálogos (DialogueDetector::buildCast só
 // reconhece o primeiro nome sozinho quando é único entre os personagens), e
 // além disso um Element cujo item de gaveta foi excluído mas nunca teve o
 // próprio Element removido também soma pra essa contagem — daí a importância
@@ -755,6 +756,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Lê preferências globais no startup — não depender de o painel de settings ser aberto.
     m_autoNavEnabled  = QSettings().value(QStringLiteral("editor/autoNavEnabled"),  true).toBool();
     detectionEnabled  = QSettings().value(QStringLiteral("editor/detectionEnabled"), true).toBool();
+    m_dialogueDetectionEnabled = QSettings().value(QStringLiteral("editor/dialogueDetectionEnabled"), true).toBool();
 
     setupEditor();
     setupToolbar();
@@ -1544,7 +1546,7 @@ void MainWindow::setupEditor()
     });
 
     // Diálogos: motor de atribuição roda no mesmo debounce da presença, mas
-    // como timer irmão independente — scanConfidentDialogues já é uma
+    // como timer irmão independente — DialogueDetector::scanScene já é uma
     // passada única e barata, não precisa do lote incremental acima.
     dialogueStore = new DialogueStore(this);
 
@@ -1553,7 +1555,7 @@ void MainWindow::setupEditor()
     dialogueDetectionTimer->setInterval(3000);
 
     connect(dialogueDetectionTimer, &QTimer::timeout, this, [this]() {
-        if (!detectionEnabled || !dialogueStore || !elementsStore || !editorHost
+        if (!m_dialogueDetectionEnabled || !dialogueStore || !elementsStore || !editorHost
             || !editor || !projectModel) return;
         const EditorHost::ViewMode vm = editorHost->viewMode();
         if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
@@ -1563,67 +1565,27 @@ void MainWindow::setupEditor()
 
         CrashLogger::log(QStringLiteral("detectDialogue chapterId=%1 scenes=%2")
                           .arg(vm.chapterId).arg(ch->scenes.size()));
-        const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
-
-        const QList<Element> allElements = elementsStore->elements();
-        const Element* narrator = nullptr;
-        for (const Element& e : allElements) {
-            if (e.narrator) { narrator = &e; break; }
-        }
-        // Reaproveita os tokens/regex compilados entre disparos do timer (ver
-        // m_dialogueTokensCache) — só recompila quando o elenco muda de
-        // verdade, não a cada pausa de digitação.
-        if (!m_dialogueTokensCacheValid) {
-            m_dialogueTokensCache = DialogueDetector::buildScannerTokens(allElements);
-            m_dialogueTokensCacheValid = true;
-        }
-        const QVector<DialogueScannerToken>& tokens = m_dialogueTokensCache;
-        if (tokens.isEmpty()) return;
-
-        struct Segment { QString plainText; int sceneIndex; QString sourceLabel; };
-        QVector<Segment> segments;
 
         if (vm.type == EditorHost::SceneDoc) {
-            // Já sabemos exatamente qual cena — não precisa reconstituir por <hr>.
+            // Só a cena aberta foi lida: o store não mexe nas outras cenas
+            // (antes, a fala nova sobrescrevia uma fala de outra cena).
             const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
+            const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
             const QString scTitle = (sc && !sc->title.isEmpty())
                 ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
-            segments.append({ editor->toPlainText(), vm.sceneIndex, tr("%1 — %2").arg(chTitle, scTitle) });
-        } else if (!ch->scenes.isEmpty()) {
-            // ChapterDoc com o capítulo inteiro visível: separa por cena via <hr>,
-            // igual ao GlobalSearchPanel::runSearch.
-            const QString html = editor->toHtml();
-            for (int si = 0; si < ch->scenes.size(); ++si) {
-                const QString scHtml = SceneUtils::getSceneHtml(html, si);
-                if (scHtml.isEmpty()) continue;
-                QTextDocument segDoc;
-                segDoc.setHtml(scHtml);
-                const QString plain = segDoc.toPlainText();
-                if (plain.trimmed().isEmpty()) continue;
-                const Scene& sc = ch->scenes.at(si);
-                const QString scTitle = !sc.title.isEmpty() ? sc.title : tr("Cena %1").arg(si + 1);
-                segments.append({ plain, si, tr("%1 — %2").arg(chTitle, scTitle) });
-            }
+            runDialogueScan(*ch, { { editor->toHtml(), vm.sceneIndex, tr("%1 — %2").arg(chTitle, scTitle) } },
+                            vm.sceneIndex);
         } else {
-            segments.append({ editor->toPlainText(), -1, chTitle });
+            runDialogueScan(*ch, dialogueScenesFromChapterHtml(*ch, editor->toHtml()),
+                            DialogueStore::kWholeChapter);
         }
-
-        QVector<DialogueStore::ScannedLine> allFound;
-        for (const Segment& seg : segments) {
-            const QVector<DetectedDialogueLine> found =
-                DialogueDetector::scanConfidentDialogues(seg.plainText, tokens, narrator);
-            for (const DetectedDialogueLine& f : found) {
-                allFound.append({ f.text, f.characterId, seg.sceneIndex, seg.sourceLabel });
-            }
-        }
-        dialogueStore->upsertScanResults(vm.manuscriptId, vm.chapterId, allFound);
     });
 
     connect(editor, &QTextEdit::textChanged, this, [this]() {
-        if (detectionEnabled) dialogueDetectionTimer->start();
+        if (m_dialogueDetectionEnabled) dialogueDetectionTimer->start();
     });
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
-        if (detectionEnabled) dialogueDetectionTimer->start();
+        if (m_dialogueDetectionEnabled) dialogueDetectionTimer->start();
     });
     // Independente do detectionEnabled: avisa o Pensário qual capítulo está
     // aberto, pra aba Diálogos poder filtrar por ele por padrão em vez de
@@ -2840,6 +2802,11 @@ void MainWindow::setupEditor()
             this, &MainWindow::openDialogueInEditor);
     connect(pensarioPanel, &PensarioPanel::rescanAllDialoguesRequested,
             this, &MainWindow::rescanAllChapterDialogues);
+    connect(pensarioPanel, &PensarioPanel::extraSpeakerAssigned, this,
+            [this](const QString& extraLabel, const QString& characterId) {
+        // Depois do clique, fora do popup que acabou de fechar.
+        QTimer::singleShot(0, this, [this, extraLabel, characterId]() { offerExtraAsAlias(extraLabel, characterId); });
+    });
     connect(toolbar, &TopToolbar::pensarioToggleRequested, this, [this]() {
         updatePanelInsets();
         if (pensarioPanel) pensarioPanel->togglePanel();
@@ -3419,6 +3386,7 @@ void MainWindow::setupEditor()
             }
         }
         projectModel->removeChapter(chapterId);
+        if (dialogueStore) dialogueStore->removeChapter(chapterId);
     });
 
     connect(manuscriptPanel, &ManuscriptPanel::renameSceneRequested, this, [this](const QString& chapterId, int sceneIndex) {
@@ -3553,6 +3521,7 @@ void MainWindow::setupEditor()
             elem.role = dlg->role();
             elem.image = dlg->imageDataUrl();
             elem.narrator = dlg->narrator();
+            elem.gender = dlg->gender();
             elem.trackMode = dlg->trackMode();
             elem.aliases = dlg->aliases();
             const QString elementId = elementsStore->addElement(elem);
@@ -3634,6 +3603,7 @@ void MainWindow::setupEditor()
         bool narratorVal = false;
         QString trackModeVal;
         QStringList aliasesVal;
+        QString genderVal;
         if (!item->elementId.isEmpty() && elementsStore) {
             if (const Element* e = elementsStore->findElement(item->elementId)) {
                 imageDataUrl = e->image;
@@ -3641,9 +3611,10 @@ void MainWindow::setupEditor()
                 narratorVal = e->narrator;
                 trackModeVal = e->trackMode;
                 aliasesVal = e->aliases;
+                genderVal = e->gender;
             }
         }
-        dlg->setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal, aliasesVal);
+        dlg->setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal, aliasesVal, genderVal);
         connect(dlg, &QDialog::accepted, this, [this, dlg, itemId, elemType]() {
         // o item pode ter mudado (ou sumido) enquanto a folha estava aberta
         const DrawerItem* item = projectModel->findDrawerItem(itemId);
@@ -3654,6 +3625,7 @@ void MainWindow::setupEditor()
         const bool newNarrator = dlg->narrator();
         const QString newTrack = dlg->trackMode();
         const QStringList newAliases = dlg->aliases();
+        const QString newGender = dlg->gender();
 
         // Guardados antes de qualquer escrita: updateDrawerItemMeta já grava o
         // nome novo, e a propagação precisa saber o que procurar.
@@ -3670,6 +3642,7 @@ void MainWindow::setupEditor()
                 copy.role = newRole;
                 copy.image = newImage;
                 copy.narrator = newNarrator;
+                copy.gender = newGender;
                 copy.trackMode = newTrack;
                 copy.aliases = newAliases;
                 elementsStore->updateElement(copy.id, copy);
@@ -3686,6 +3659,7 @@ void MainWindow::setupEditor()
             elem.role = newRole;
             elem.image = newImage;
             elem.narrator = newNarrator;
+            elem.gender = newGender;
             elem.trackMode = newTrack;
             elem.aliases = newAliases;
             const QString newElementId = elementsStore->addElement(elem);
@@ -5436,55 +5410,203 @@ void MainWindow::scanChapterDialogues(const QString& chapterId)
     const Chapter* ch = projectModel->findChapter(chapterId);
     if (!ch) return;
 
-    const QString chapterKey = DocCache::chapterKey(ch->manuscriptId, chapterId);
+    // Capítulo aberto no editor: o texto vivo manda (o cache pode estar
+    // atrás do que acabou de ser digitado, e o scan do capítulo inteiro
+    // apaga do arquivo o que não encontra).
     QString html;
+    int liveScene = -2;
+    QString liveSceneHtml;
+    if (editorHost && editor) {
+        const EditorHost::ViewMode vm = editorHost->viewMode();
+        if (vm.type == EditorHost::ChapterDoc && vm.chapterId == chapterId) html = editor->toHtml();
+        if (vm.type == EditorHost::SceneDoc && vm.chapterId == chapterId) {
+            liveScene = vm.sceneIndex;
+            liveSceneHtml = editor->toHtml();
+        }
+    }
+    if (html.isEmpty()) {
+        const QString chapterKey = DocCache::chapterKey(ch->manuscriptId, chapterId);
+        if (docCache && docCache->has(chapterKey)) {
+            html = docCache->get(chapterKey);
+        } else {
+            bool ok = false;
+            html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+            if (!ok) return; // sem ler o capítulo, não dá pra dizer o que saiu dele
+        }
+    }
+
+    QVector<DialogueSceneInput> scenes = dialogueScenesFromChapterHtml(*ch, html);
+    if (liveScene >= 0)
+        for (DialogueSceneInput& in : scenes)
+            if (in.sceneIndex == liveScene) in.html = liveSceneHtml;
+    runDialogueScan(*ch, scenes, DialogueStore::kWholeChapter);
+}
+
+void MainWindow::learnDialogueGender(const QString& chapterId)
+{
+    if (!projectModel || !elementsStore || !dialogueStore || projectModel->isScreenplay()) return;
+    const Chapter* ch = projectModel->findChapter(chapterId);
+    if (!ch) return;
+    if (!m_dialogueTokensCacheValid) {
+        m_dialogueCastCache = DialogueDetector::buildCast(elementsStore->elements());
+        m_dialogueTokensCacheValid = true;
+    }
+    if (m_dialogueCastCache.isEmpty()) return;
+
+    QString html;
+    const QString chapterKey = DocCache::chapterKey(ch->manuscriptId, chapterId);
     if (docCache && docCache->has(chapterKey)) {
         html = docCache->get(chapterKey);
     } else {
         bool ok = false;
         html = ProjectStorage::readChapter(projectRoot, ch->file, &ok);
+        if (!ok) return;
     }
-    if (html.isEmpty()) return;
+    QTextDocument doc;
+    doc.setHtml(html);
+    const QString text = doc.toPlainText();
+    DialogueDetector::GenderVotes votes;
+    DialogueDetector::addGenderVotes(text, m_dialogueCastCache,
+                                     DialogueLang::detect(text, projectModel->spellLanguage()), votes);
+    dialogueStore->setChapterGenderVotes(chapterId, votes);
+}
 
-    const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
-
-    const QList<Element> allElements = elementsStore->elements();
-    const Element* narrator = nullptr;
-    for (const Element& e : allElements) {
-        if (e.narrator) { narrator = &e; break; }
+QVector<MainWindow::DialogueSceneInput> MainWindow::dialogueScenesFromChapterHtml(const Chapter& ch,
+                                                                                  const QString& html) const
+{
+    QVector<DialogueSceneInput> out;
+    const QString chTitle = !ch.title.isEmpty() ? ch.title
+                          : (projectModel ? projectModel->chapterDisplayLabel(ch) : QString());
+    if (ch.scenes.isEmpty()) {
+        out.append({ html, -1, chTitle });
+        return out;
     }
-    const QVector<DialogueScannerToken> tokens = DialogueDetector::buildScannerTokens(allElements);
-    if (tokens.isEmpty()) return;
+    const QStringList sceneHtmls = SceneUtils::splitHtmlIntoScenes(html);
+    for (int si = 0; si < sceneHtmls.size() && si < ch.scenes.size(); ++si) {
+        const Scene& sc = ch.scenes.at(si);
+        const QString scTitle = !sc.title.isEmpty() ? sc.title : tr("Cena %1").arg(si + 1);
+        out.append({ sceneHtmls.at(si), si, tr("%1 — %2").arg(chTitle, scTitle) });
+    }
+    return out;
+}
 
-    struct Segment { QString plainText; int sceneIndex; QString sourceLabel; };
-    QVector<Segment> segments;
+void MainWindow::runDialogueScan(const Chapter& ch, const QVector<DialogueSceneInput>& scenes, int sceneScope)
+{
+    if (!projectModel || !elementsStore || !dialogueStore) return;
 
-    if (!ch->scenes.isEmpty()) {
-        const QStringList sceneHtmls = SceneUtils::splitHtmlIntoScenes(html);
-        for (int si = 0; si < sceneHtmls.size() && si < ch->scenes.size(); ++si) {
-            QTextDocument segDoc;
-            segDoc.setHtml(sceneHtmls.at(si));
-            const QString plain = segDoc.toPlainText();
-            if (plain.trimmed().isEmpty()) continue;
-            const Scene& sc = ch->scenes.at(si);
-            const QString scTitle = !sc.title.isEmpty() ? sc.title : tr("Cena %1").arg(si + 1);
-            segments.append({ plain, si, tr("%1 — %2").arg(chTitle, scTitle) });
-        }
-    } else {
+    // Elenco compilado uma vez e reaproveitado até ElementsStore::changed.
+    if (!m_dialogueTokensCacheValid) {
+        m_dialogueCastCache = DialogueDetector::buildCast(elementsStore->elements());
+        m_dialogueTokensCacheValid = true;
+    }
+    const DialogueDetector::Cast& cast = m_dialogueCastCache;
+    // Sem elenco não há a quem atribuir — e um elenco vazio por falha de
+    // leitura não pode apagar as atribuições salvas.
+    if (cast.isEmpty()) return;
+
+    const bool screenplay = projectModel->isScreenplay();
+
+    // Narrador: o POV do capítulo (gaveta de Manuscritos); sem ele, o
+    // personagem marcado como narrador do projeto.
+    QString narratorId = cast.ids.contains(ch.pov) ? ch.pov : QString();
+    if (narratorId.isEmpty()) {
+        for (const Element& e : elementsStore->elements())
+            if (e.narrator && cast.ids.contains(e.id)) { narratorId = e.id; break; }
+    }
+
+    struct Read { QStringList paragraphs; QVector<DetectedDialogueLine> screenplayLines; };
+    QVector<Read> reads;
+    reads.reserve(scenes.size());
+    for (const DialogueSceneInput& in : scenes) {
         QTextDocument doc;
-        doc.setHtml(html);
-        segments.append({ doc.toPlainText(), -1, chTitle });
+        doc.setHtml(in.html);
+        Read r;
+        if (screenplay) r.screenplayLines = DialogueDetector::scanScreenplay(doc, cast);
+        else r.paragraphs = DialogueDetector::paragraphsOf(doc.toPlainText());
+        reads.append(r);
     }
 
-    QVector<DialogueStore::ScannedLine> allFound;
-    for (const Segment& seg : segments) {
-        const QVector<DetectedDialogueLine> found =
-            DialogueDetector::scanConfidentDialogues(seg.plainText, tokens, narrator);
-        for (const DetectedDialogueLine& f : found) {
-            allFound.append({ f.text, f.characterId, seg.sceneIndex, seg.sourceLabel });
+    // Idioma pelo texto do próprio capítulo; o do corretor do projeto só
+    // desempata (projeto sem idioma marcado segue o idioma do app).
+    QString sample;
+    for (const Read& r : reads) sample += r.paragraphs.join(QLatin1Char('\n')) + QLatin1Char('\n');
+    const DialogueLang& lang = DialogueLang::detect(sample, projectModel->spellLanguage());
+
+    // Gênero aprendido pelo texto — só com o capítulo inteiro em mãos, senão
+    // o voto do capítulo encolheria pra uma cena.
+    bool votesChanged = false;
+    if (!screenplay && sceneScope == DialogueStore::kWholeChapter) {
+        DialogueDetector::GenderVotes votes;
+        for (const Read& r : reads)
+            DialogueDetector::addGenderVotes(r.paragraphs.join(QLatin1Char('\n')), cast, lang, votes);
+        votesChanged = dialogueStore->setChapterGenderVotes(ch.id, votes);
+    }
+    QHash<QString, QChar> gender = DialogueDetector::genderFromVotes(dialogueStore->genderVotes());
+    // Forma de tratamento marcada na folha do personagem vale mais que a
+    // dedução pelo texto.
+    for (const Element& e : elementsStore->elements()) {
+        if (e.gender == QLatin1String("m")) gender.insert(e.id, QLatin1Char('m'));
+        else if (e.gender == QLatin1String("f")) gender.insert(e.id, QLatin1Char('f'));
+    }
+
+    QVector<DialogueStore::ScannedLine> found;
+    for (int i = 0; i < scenes.size(); ++i) {
+        const QVector<DetectedDialogueLine> lines = screenplay
+            ? reads.at(i).screenplayLines
+            : DialogueDetector::scanScene(reads.at(i).paragraphs, cast, lang, narratorId, gender);
+        for (const DetectedDialogueLine& l : lines) {
+            DialogueStore::ScannedLine s;
+            s.text = l.text;
+            s.speech = l.speech;
+            s.characterId = l.characterId;
+            s.confidence = l.confidence;
+            s.extraLabel = l.extraLabel;
+            s.sceneIndex = scenes.at(i).sceneIndex;
+            s.sourceLabel = scenes.at(i).label;
+            found.append(s);
         }
     }
-    dialogueStore->upsertScanResults(ch->manuscriptId, chapterId, allFound);
+
+    bool storeChanged = false;
+    const auto conn = connect(dialogueStore, &DialogueStore::changed, this, [&storeChanged]() { storeChanged = true; });
+    QString legacyNarratorId;
+    for (const Element& e : elementsStore->elements())
+        if (e.narrator && cast.ids.contains(e.id)) { legacyNarratorId = e.id; break; }
+    dialogueStore->applyChapterScan(ch.manuscriptId, ch.id, found, sceneScope, cast, legacyNarratorId);
+    disconnect(conn);
+    // applyChapterScan só avisa (e grava) quando as falas mudam; voto de
+    // gênero novo sozinho precisa de gravação própria.
+    if (votesChanged && !storeChanged) dialogueStore->save();
+}
+
+void MainWindow::offerExtraAsAlias(const QString& extraLabel, const QString& characterId)
+{
+    if (!elementsStore || !dialogueStore || extraLabel.trimmed().isEmpty()) return;
+    const Element* el = elementsStore->findElement(characterId);
+    if (!el) return;
+    const QString label = extraLabel.trimmed();
+    for (const QString& a : el->aliases)
+        if (a.compare(label, Qt::CaseInsensitive) == 0) return;
+    if (el->name.compare(label, Qt::CaseInsensitive) == 0) return;
+
+    if (!Sheets::confirm(this, tr("Figurante"),
+            tr("Sempre que o texto disser \"%1\", quem fala é %2?").arg(label, el->name),
+            tr("\"%1\" vira apelido de %2, e as outras falas com essa tag se resolvem sozinhas.")
+                .arg(label, el->name),
+            tr("Sim, é %1").arg(el->name)))
+        return;
+
+    // Capítulos com fala desse figurante — reescaneados depois do apelido.
+    QStringList chapters;
+    for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+        if (d.extraLabel.compare(label, Qt::CaseInsensitive) == 0 && !chapters.contains(d.chapterId))
+            chapters.append(d.chapterId);
+
+    Element updated = *el;
+    updated.aliases.append(label);
+    elementsStore->updateElement(updated.id, updated);
+    elementsStore->save();
+    for (const QString& chId : chapters) scanChapterDialogues(chId);
 }
 
 // Botão no Pensário > Diálogos: mesmo padrão de rescanAllChapterScenesPresence
@@ -5502,22 +5624,56 @@ void MainWindow::rescanAllChapterDialogues()
     dialogueScanRunning = true;
     const int total = chapterIds.size();
     if (pensarioPanel) pensarioPanel->setDialogueScanState(true, 0, total);
+    hideDialogueScanToast();
+    m_dialogueScanNew = m_dialogueScanChanged = m_dialogueScanRemoved = 0;
     updateDialogueScanToast(0, total);
 
     auto ids = std::make_shared<QStringList>(chapterIds);
     auto idx = std::make_shared<int>(0);
+    // 1ª passada: aprende o gênero lendo TODOS os capítulos, um por tick.
+    // Sem ela, o gênero era aprendido durante a leitura, e os primeiros
+    // capítulos eram atribuídos sabendo só deles mesmos ("ele perguntou"
+    // descartava o Bram porque um voto ruidoso o deu como mulher).
+    auto learned = std::make_shared<int>(0);
     auto* timer = new QTimer(this);
     timer->setInterval(0);
-    connect(timer, &QTimer::timeout, this, [this, ids, idx, timer, total]() {
+    connect(timer, &QTimer::timeout, this, [this, ids, idx, learned, timer, total]() {
+        if (*learned < ids->size()) {
+            learnDialogueGender(ids->at(*learned));
+            ++(*learned);
+            if (m_dialogueScanToastLabel)
+                m_dialogueScanToastLabel->setText(tr("Conhecendo o elenco… (%1/%2 capítulos)").arg(*learned).arg(total));
+            if (*learned == ids->size() && dialogueStore) dialogueStore->save();
+            return;
+        }
         if (*idx >= ids->size()) {
             timer->stop();
             timer->deleteLater();
             dialogueScanRunning = false;
+            if (dialogueStore && projectModel) {
+                QSet<QString> valid;
+                for (const Chapter& c : projectModel->chapters()) valid.insert(c.id);
+                QHash<QString, DialogueStore::Dialogue> orphans;
+                for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+                    if (!valid.contains(d.chapterId)) orphans.insert(d.id, d);
+                dialogueStore->pruneChapters(valid);
+                for (const DialogueStore::Dialogue& d : orphans) {
+                    ++m_dialogueScanRemoved;
+                    appendDialogueScanEntry(QStringLiteral("gone"), d,
+                                            tr("%1 · capítulo que não existe mais").arg(dialogueScanSpeaker(d)));
+                }
+            }
             if (pensarioPanel) pensarioPanel->setDialogueScanState(false, total, total);
-            hideDialogueScanToast();
+            finishDialogueScanToast(total);
             return;
         }
-        scanChapterDialogues(ids->at(*idx));
+        const QString chapterId = ids->at(*idx);
+        QHash<QString, DialogueStore::Dialogue> before;
+        if (dialogueStore)
+            for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+                if (d.chapterId == chapterId) before.insert(d.id, d);
+        scanChapterDialogues(chapterId);
+        logDialogueScanDiff(before, chapterId);
         ++(*idx);
         updateDialogueScanToast(*idx, total);
         if (pensarioPanel) pensarioPanel->setDialogueScanState(true, *idx, total);
@@ -5540,27 +5696,63 @@ void MainWindow::updateDialogueScanToast(int done, int total)
         lay->setContentsMargins(16, 12, 16, 12);
         lay->setSpacing(7);
 
+        auto* head = new QHBoxLayout();
+        head->setContentsMargins(0, 0, 0, 0);
         m_dialogueScanToastLabel = new QLabel(toast);
         m_dialogueScanToastLabel->setObjectName(QStringLiteral("dstLabel"));
-        m_dialogueScanToastLabel->setAlignment(Qt::AlignCenter);
-        lay->addWidget(m_dialogueScanToastLabel);
+        head->addWidget(m_dialogueScanToastLabel, 1);
+        m_dialogueScanClose = new QToolButton(toast);
+        m_dialogueScanClose->setObjectName(QStringLiteral("dstClose"));
+        m_dialogueScanClose->setText(QStringLiteral("×"));
+        m_dialogueScanClose->setCursor(Qt::PointingHandCursor);
+        m_dialogueScanClose->setToolTip(tr("Fechar"));
+        m_dialogueScanClose->hide(); // só no fim: fechar no meio não para o scan
+        connect(m_dialogueScanClose, &QToolButton::clicked, this, [this]() { hideDialogueScanToast(); });
+        head->addWidget(m_dialogueScanClose, 0, Qt::AlignTop);
+        lay->addLayout(head);
+
+        m_dialogueScanCounts = new QLabel(toast);
+        m_dialogueScanCounts->setObjectName(QStringLiteral("dstCounts"));
+        m_dialogueScanCounts->setTextFormat(Qt::RichText);
+        lay->addWidget(m_dialogueScanCounts);
 
         m_dialogueScanToastBar = new QProgressBar(toast);
         m_dialogueScanToastBar->setObjectName(QStringLiteral("dstBar"));
         m_dialogueScanToastBar->setTextVisible(false);
         m_dialogueScanToastBar->setFixedHeight(6);
-        m_dialogueScanToastBar->setFixedWidth(240);
         lay->addWidget(m_dialogueScanToastBar);
 
+        m_dialogueScanLog = new QTextBrowser(toast);
+        m_dialogueScanLog->setObjectName(QStringLiteral("dstLog"));
+        m_dialogueScanLog->setOpenLinks(false);
+        m_dialogueScanLog->setFrameShape(QFrame::NoFrame);
+        m_dialogueScanLog->setFixedHeight(280);
+        m_dialogueScanLog->document()->setDocumentMargin(2);
+        m_dialogueScanLog->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
+        m_dialogueScanLog->hide(); // aparece com a primeira mudança
+        connect(m_dialogueScanLog, &QTextBrowser::anchorClicked, this, [this](const QUrl& url) {
+            if (url.scheme() != QLatin1String("dlg") || !dialogueStore) return;
+            const QString id = url.path();
+            for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+                if (d.id == id) { openDialogueInEditor(d); break; }
+        });
+        lay->addWidget(m_dialogueScanLog);
+
+        // O padding global do QTextEdit (80px 100px, papel do editor) vaza
+        // em qualquer QTextBrowser: zerado aqui.
         toast->setStyleSheet(Theme::qss(QStringLiteral(
             "QFrame#dlgScanToast {"
             "  background: %1; border: 1px solid %2; border-radius: @radius-panel;"
             "}"
             "QLabel#dstLabel { color: %3; font-size: 12px; font-weight: 600; }"
+            "QLabel#dstCounts { color: %5; font-size: 11px; }"
+            "QToolButton#dstClose { color: %5; background: transparent; border: none; font-size: 15px; padding: 0 4px; }"
+            "QToolButton#dstClose:hover { color: %3; }"
             "QProgressBar#dstBar { background: %2; border: none; border-radius: 3px; }"
             "QProgressBar#dstBar::chunk { background: %4; border-radius: 3px; }"
+            "QTextBrowser#dstLog { background: transparent; border: none; padding: 0; margin: 0; color: %3; font-size: 12px; }"
         ).arg(Theme::panelBackground(), Theme::panelBorder(),
-              Theme::textPrimary(), Theme::accentInfo())));
+              Theme::textPrimary(), Theme::accentInfo(), Theme::textMuted())));
 
         m_dialogueScanToast = toast;
     }
@@ -5569,7 +5761,14 @@ void MainWindow::updateDialogueScanToast(int done, int total)
         tr("Escaneando diálogos… (%1/%2 capítulos)").arg(done).arg(total));
     m_dialogueScanToastBar->setRange(0, qMax(1, total));
     m_dialogueScanToastBar->setValue(done);
+    m_dialogueScanCounts->setText(
+        tr("<span style='color:%1'>+%2 novas</span> · <span style='color:%3'>%4 trocaram de locutor</span> · "
+           "<span style='color:%5'>−%6 saíram</span>")
+            .arg(Theme::accentSuccess()).arg(m_dialogueScanNew)
+            .arg(Theme::accentWarning()).arg(m_dialogueScanChanged)
+            .arg(Theme::accentDanger()).arg(m_dialogueScanRemoved));
 
+    m_dialogueScanToast->setFixedWidth(qMin(520, width() - 40));
     m_dialogueScanToast->adjustSize();
     const QRect r = rect();
     const int margin = 28;
@@ -5587,6 +5786,110 @@ void MainWindow::hideDialogueScanToast()
     m_dialogueScanToast = nullptr;
     m_dialogueScanToastLabel = nullptr;
     m_dialogueScanToastBar = nullptr;
+    m_dialogueScanCounts = nullptr;
+    m_dialogueScanLog = nullptr;
+    m_dialogueScanClose = nullptr;
+}
+
+QString MainWindow::dialogueScanSpeaker(const DialogueStore::Dialogue& d) const
+{
+    if (!d.characterId.isEmpty()) {
+        const Element* el = elementsStore ? elementsStore->findElement(d.characterId) : nullptr;
+        const QString name = (el && !el->name.isEmpty()) ? el->name : tr("Personagem");
+        return d.isProbable() ? tr("%1 (provável)").arg(name) : name;
+    }
+    if (d.isExtra() && !d.extraLabel.isEmpty()) return tr("%1 (figurante)").arg(d.extraLabel);
+    return tr("sem locutor");
+}
+
+void MainWindow::appendDialogueScanEntry(const QString& kind, const DialogueStore::Dialogue& d, const QString& who)
+{
+    if (!m_dialogueScanLog) return;
+    QString mark, color;
+    if (kind == QLatin1String("new"))          { mark = QStringLiteral("+"); color = Theme::accentSuccess(); }
+    else if (kind == QLatin1String("changed")) { mark = QStringLiteral("↻"); color = Theme::accentWarning(); }
+    else                                       { mark = QStringLiteral("−"); color = Theme::accentDanger(); }
+
+    QString quote = d.spokenText().simplified();
+    if (quote.size() > 120) quote = quote.left(117) + QStringLiteral("…");
+    // Fala que saiu não existe mais no texto: sem link.
+    const QString quoteHtml = kind == QLatin1String("gone")
+        ? QStringLiteral("<span style='color:%1'>“%2”</span>").arg(Theme::textMuted(), quote.toHtmlEscaped())
+        : QStringLiteral("<a href='dlg:%1' style='color:%2; text-decoration:none;'>“%3”</a>")
+              .arg(d.id, Theme::textPrimary(), quote.toHtmlEscaped());
+
+    m_dialogueScanLog->append(QStringLiteral(
+        "<p style='margin:0 0 6px 0;'><span style='color:%1; font-weight:700;'>%2</span> "
+        "<b>%3</b> <span style='color:%4'>· %5</span><br>%6</p>")
+        .arg(color, mark, who.toHtmlEscaped(), Theme::textMuted(),
+             d.sourceLabel.toHtmlEscaped(), quoteHtml));
+    if (m_dialogueScanLog->isHidden()) {
+        m_dialogueScanLog->show();
+        if (m_dialogueScanToast) {
+            m_dialogueScanToast->adjustSize();
+            const QRect r = rect();
+            m_dialogueScanToast->move(r.center().x() - m_dialogueScanToast->width() / 2,
+                                      r.bottom() - m_dialogueScanToast->height() - 28);
+        }
+    }
+}
+
+void MainWindow::logDialogueScanDiff(const QHash<QString, DialogueStore::Dialogue>& before,
+                                     const QString& chapterId)
+{
+    if (!dialogueStore) return;
+    QSet<QString> seen;
+    for (const DialogueStore::Dialogue& d : dialogueStore->dialogues()) {
+        if (d.chapterId != chapterId) continue;
+        seen.insert(d.id);
+        const auto it = before.constFind(d.id);
+        if (it == before.constEnd()) {
+            ++m_dialogueScanNew;
+            appendDialogueScanEntry(QStringLiteral("new"), d, dialogueScanSpeaker(d));
+            continue;
+        }
+        const DialogueStore::Dialogue& old = it.value();
+        const QString was = dialogueScanSpeaker(old);
+        const QString now = dialogueScanSpeaker(d);
+        if (old.characterId != d.characterId || old.extraLabel != d.extraLabel || was != now) {
+            ++m_dialogueScanChanged;
+            appendDialogueScanEntry(QStringLiteral("changed"), d, tr("%1 → %2").arg(was, now));
+        }
+    }
+    for (const DialogueStore::Dialogue& old : before) {
+        if (seen.contains(old.id)) continue;
+        ++m_dialogueScanRemoved;
+        // Versão antiga de uma fala editada (a atual continua salva) ou fala
+        // que saiu do texto de verdade?
+        bool edited = false;
+        for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+            if (d.chapterId == chapterId && DialogueStore::textSimilarity(old.text, d.text) >= 0.6) {
+                edited = true;
+                break;
+            }
+        appendDialogueScanEntry(QStringLiteral("gone"), old,
+            edited ? tr("%1 · versão antiga de uma fala editada").arg(dialogueScanSpeaker(old))
+                   : tr("%1 · saiu do texto").arg(dialogueScanSpeaker(old)));
+    }
+}
+
+void MainWindow::finishDialogueScanToast(int total)
+{
+    updateDialogueScanToast(total, total);
+    if (!m_dialogueScanToast) return;
+    m_dialogueScanToastLabel->setText(tr("Pronto: %1 de %1 capítulos lidos").arg(total));
+    if (m_dialogueScanNew + m_dialogueScanChanged + m_dialogueScanRemoved == 0) {
+        // Nada pra ler: some sozinho, como antes.
+        m_dialogueScanCounts->setText(tr("Nada mudou: as falas salvas já batiam com o texto."));
+        QPointer<QWidget> shown = m_dialogueScanToast;
+        QTimer::singleShot(3500, this, [this, shown]() { if (shown && shown == m_dialogueScanToast) hideDialogueScanToast(); });
+    } else {
+        m_dialogueScanClose->show();
+    }
+    m_dialogueScanToast->adjustSize();
+    const QRect r = rect();
+    m_dialogueScanToast->move(r.center().x() - m_dialogueScanToast->width() / 2,
+                              r.bottom() - m_dialogueScanToast->height() - 28);
 }
 
 bool MainWindow::findImageAt(const QPoint &viewportPos, QTextCursor &imageCursor) const
@@ -7771,6 +8074,10 @@ void MainWindow::onSettingsRequested()
             projectModel->setSpellLanguage(code);
             spellChecker->setLanguage(SpellChecker::resolveLanguage(code));
         });
+        connect(settingsPanel, &SettingsPanel::dialogueDetectionEnabledChanged, this, [this](bool enabled) {
+            m_dialogueDetectionEnabled = enabled;
+            if (!enabled && dialogueDetectionTimer) dialogueDetectionTimer->stop();
+        });
         connect(settingsPanel, &SettingsPanel::detectionEnabledChanged, this, [this](bool enabled) {
             detectionEnabled = enabled;
             QSettings().setValue(QStringLiteral("editor/detectionEnabled"), enabled);
@@ -9901,6 +10208,7 @@ void MainWindow::saveSelectionDocTo(const QString& destKey)
             elem.role = dlg->role();
             elem.image = dlg->imageDataUrl();
             elem.narrator = dlg->narrator();
+            elem.gender = dlg->gender();
             elem.trackMode = dlg->trackMode();
             elem.aliases = dlg->aliases();
             const QString elementId = elementsStore->addElement(elem);

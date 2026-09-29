@@ -518,6 +518,19 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     connect(m_detectionAllCheck, &QCheckBox::toggled, this, [this](bool checked) { emit detectionMarkAllChanged(checked); });
     connect(m_rescanScenesBtn, &QPushButton::clicked, this, [this]() { emit rescanAllScenesRequested(); });
 
+    // Separado da presença: antes, desligar "Detectar personagens" desligava
+    // o detector de diálogos junto, sem avisar.
+    auto* dlgCheck = new ToggleSwitch(this);
+    dlgCheck->setChecked(QSettings().value(QStringLiteral("editor/dialogueDetectionEnabled"), true).toBool());
+    addRow(Characters, tr("Detectar diálogos automaticamente"), tr("Quem fala cada fala, no Pensário."), dlgCheck,
+           tr("Lê as falas do capítulo aberto alguns segundos depois que você para de digitar e "
+              "descobre quem fala cada uma. Aparecem no Pensário, na aba Diálogos, e alimentam as "
+              "Estatísticas."));
+    connect(dlgCheck, &QCheckBox::toggled, this, [this](bool on) {
+        QSettings().setValue(QStringLiteral("editor/dialogueDetectionEnabled"), on);
+        emit dialogueDetectionEnabledChanged(on);
+    });
+
     m_mentionManuscriptsCheck = new ToggleSwitch(this);
     addRow(Characters, tr("Menções (@) a capítulos e cenas"), tr("Por padrão o @ só sugere as gavetas."), m_mentionManuscriptsCheck,
            tr("Por padrão, @ só sugere documentos das gavetas (personagens, locais etc.). "

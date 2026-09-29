@@ -1317,6 +1317,7 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
             elem.role  = dlg->role();
             elem.image = dlg->imageDataUrl();
             elem.narrator = dlg->narrator();
+            elem.gender = dlg->gender();
             elem.trackMode = dlg->trackMode();
             elem.aliases = dlg->aliases();
             const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();
@@ -1385,6 +1386,7 @@ void LousaPanel::newCharacterOnBoard()
         elem.role      = dlg->role();
         elem.image     = dlg->imageDataUrl();
         elem.narrator  = dlg->narrator();
+        elem.gender    = dlg->gender();
         elem.trackMode = dlg->trackMode();
         elem.aliases   = dlg->aliases();
         const QString elementId = m_elementsStore ? m_elementsStore->addElement(elem) : QString();

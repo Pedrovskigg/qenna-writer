@@ -534,6 +534,31 @@ void ElementCreateDialog::buildUi()
         m_narratorCheck->setObjectName(QStringLiteral("sheetChk"));
         fields->addWidget(m_narratorCheck);
 
+        // forma de tratamento: resolve "ele disse"/"ela disse" no detector de
+        // diálogos. Nenhuma marcada = o detector deduz pelo texto; clicar na
+        // marcada desmarca.
+        auto* gg = new QVBoxLayout;
+        gg->setSpacing(5);
+        gg->addWidget(sectionLabel(tr("Forma de tratamento"), c));
+        auto* grow = new QHBoxLayout;
+        grow->setSpacing(5);
+        m_genderGroup = new QButtonGroup(this);
+        m_genderGroup->setExclusive(false);
+        const QString glabels[2] = { tr("Masculino"), tr("Feminino") };
+        for (int i = 0; i < 2; ++i) {
+            auto* b = pill(glabels[i], c);
+            b->setToolTip(tr("O detector de diálogos usa isso pra saber de quem é o \"ele disse\" e o \"ela disse\"."));
+            m_genderGroup->addButton(b, i);
+            grow->addWidget(b);
+        }
+        grow->addStretch(1);
+        connect(m_genderGroup, &QButtonGroup::idClicked, this, [this](int id) {
+            QAbstractButton* other = m_genderGroup->button(1 - id);
+            if (m_genderGroup->button(id)->isChecked() && other) other->setChecked(false);
+        });
+        gg->addLayout(grow);
+        fields->addLayout(gg);
+
         // trilha na Timeline
         auto* gt = new QVBoxLayout;
         gt->setSpacing(5);
@@ -654,7 +679,8 @@ void ElementCreateDialog::showEvent(QShowEvent* e)
 }
 
 void ElementCreateDialog::setInitial(const QString& title, const QString& role, const QString& imageDataUrl,
-                                     bool narrator, const QString& trackMode, const QStringList& aliases)
+                                     bool narrator, const QString& trackMode, const QStringList& aliases,
+                                     const QString& gender)
 {
     m_editMode = true;
     m_titleEdit->setText(title);
@@ -672,6 +698,10 @@ void ElementCreateDialog::setInitial(const QString& title, const QString& role, 
         }
     }
     if (m_narratorCheck) m_narratorCheck->setChecked(narrator);
+    if (m_genderGroup) {
+        m_genderGroup->button(0)->setChecked(gender == QLatin1String("m"));
+        m_genderGroup->button(1)->setChecked(gender == QLatin1String("f"));
+    }
     if (m_trackGroup) {
         const int t = trackMode == QLatin1String("on") ? 1 : trackMode == QLatin1String("off") ? 2 : 0;
         m_trackGroup->button(t)->setChecked(true);
@@ -822,6 +852,14 @@ QString ElementCreateDialog::role() const
 bool ElementCreateDialog::narrator() const
 {
     return m_narratorCheck ? m_narratorCheck->isChecked() : false;
+}
+
+QString ElementCreateDialog::gender() const
+{
+    if (!m_genderGroup) return QString();
+    if (m_genderGroup->button(0)->isChecked()) return QStringLiteral("m");
+    if (m_genderGroup->button(1)->isChecked()) return QStringLiteral("f");
+    return QString();
 }
 
 QString ElementCreateDialog::trackMode() const

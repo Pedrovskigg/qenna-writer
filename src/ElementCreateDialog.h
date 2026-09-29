@@ -34,7 +34,7 @@ public:
     // Pré-preencher pra modo de edição.
     void setInitial(const QString& title, const QString& role, const QString& imageDataUrl,
                     bool narrator = false, const QString& trackMode = QString(),
-                    const QStringList& aliases = QStringList());
+                    const QStringList& aliases = QStringList(), const QString& gender = QString());
 
     // Só o nome, sem virar modo de edição (criar a partir de um trecho
     // selecionado ou de um card da Lousa: o nome vem sugerido, mas é novo).
@@ -50,6 +50,7 @@ public:
     bool narrator() const;
     QString trackMode() const;  // "" auto | "on" | "off" (trilha na linha do tempo)
     QStringList aliases() const; // apelidos do personagem (para o detector de presença)
+    QString gender() const;      // "m" | "f" | "" (forma de tratamento, só personagem)
 
 protected:
     void showEvent(QShowEvent* e) override;
@@ -83,6 +84,7 @@ private:
     QLabel*       m_roleTag = nullptr;      // o papel escrito em cima do nome, no pôster
     CharacterPoster* m_poster = nullptr;    // topo da folha de personagem (faixa ou foto)
     QCheckBox*    m_narratorCheck = nullptr;
+    QButtonGroup* m_genderGroup = nullptr;  // 0 = Masculino, 1 = Feminino; nenhum = não marcado
     QButtonGroup* m_trackGroup = nullptr;
     QButtonGroup* m_pageGroup = nullptr;
     QWidget*      m_templateBox = nullptr;

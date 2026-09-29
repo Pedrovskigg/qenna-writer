@@ -98,6 +98,7 @@ class UpdateChecker;
 class QNetworkAccessManager;
 class QNetworkReply;
 class QProgressBar;
+class QTextBrowser;
 class AutoNavHint;
 class PageGlow;
 class QToolButton;
@@ -432,6 +433,19 @@ private:
     // "ao vivo" (dialogueDetectionTimer) continua separado, dedicado ao
     // capítulo aberto no editor.
     void scanChapterDialogues(const QString& chapterId);
+    // Só os votos de gênero de um capítulo (sem atribuir falas) — 1ª passada
+    // do scan em lote, pra todo capítulo ser lido já sabendo quem é quem.
+    void learnDialogueGender(const QString& chapterId);
+    // Motor de diálogos (DialogueDetector) sobre um capítulo já cortado em
+    // cenas, com o resultado aplicado no DialogueStore. sceneScope =
+    // DialogueStore::kWholeChapter quando `scenes` é o capítulo inteiro, ou
+    // o índice da cena quando só ela foi lida (cena aberta sozinha).
+    struct DialogueSceneInput { QString html; int sceneIndex = -1; QString label; };
+    QVector<DialogueSceneInput> dialogueScenesFromChapterHtml(const Chapter& ch, const QString& html) const;
+    void runDialogueScan(const Chapter& ch, const QVector<DialogueSceneInput>& scenes, int sceneScope);
+    // Pensário: fala de figurante ("o delegado") atribuída à mão — pergunta se
+    // a tag vira apelido do personagem e reescaneia os capítulos com ela.
+    void offerExtraAsAlias(const QString& extraLabel, const QString& characterId);
     // Botão no Pensário > Diálogos: mesmo padrão incremental de
     // rescanAllChapterScenesPresence, mas pro motor de diálogos — evita ter
     // que abrir capítulo por capítulo em projetos grandes.
@@ -442,6 +456,14 @@ private:
     // de ver o app "travar" (na real, só sem feedback) num projeto grande.
     void updateDialogueScanToast(int done, int total);
     void hideDialogueScanToast();
+    // Diagnóstico do scan em lote: compara as falas de um capítulo antes e
+    // depois do scan e lista no toast cada fala nova, cada troca de locutor e
+    // cada fala que saiu — onde está e quem disse. Clicar numa fala abre ela
+    // no editor. O toast fica aberto no fim até ser fechado.
+    void logDialogueScanDiff(const QHash<QString, DialogueStore::Dialogue>& before, const QString& chapterId);
+    void appendDialogueScanEntry(const QString& kind, const DialogueStore::Dialogue& d, const QString& who);
+    QString dialogueScanSpeaker(const DialogueStore::Dialogue& d) const;
+    void finishDialogueScanToast(int total);
     // Persiste markAll/neverIds/rejectedKeys em QSettings, por projeto (mesma
     // chave/grupo já usados pro markAll) — chamar sempre que qualquer um dos
     // três mudar, pra decisão do usuário nunca precisar ser repetida.
@@ -666,6 +688,12 @@ private:
     QWidget *m_dialogueScanToast = nullptr;
     QLabel *m_dialogueScanToastLabel = nullptr;
     QProgressBar *m_dialogueScanToastBar = nullptr;
+    QLabel *m_dialogueScanCounts = nullptr;
+    QTextBrowser *m_dialogueScanLog = nullptr;
+    QToolButton *m_dialogueScanClose = nullptr;
+    int m_dialogueScanNew = 0;
+    int m_dialogueScanChanged = 0;
+    int m_dialogueScanRemoved = 0;
     class PresencePopup *presencePopup = nullptr;
     bool detectionEnabled = true;
     bool detectionMarkAll = false;
@@ -695,8 +723,11 @@ private:
     // ElementsStore::changed dispara de verdade (personagem criado/editado/
     // removido), não a cada tecla.
     QHash<QString, QVector<QRegularExpression>> m_presenceRegexCache; // elementId -> regexes de nome/alias
-    QVector<DialogueScannerToken> m_dialogueTokensCache;
+    DialogueDetector::Cast m_dialogueCastCache;
     bool m_dialogueTokensCacheValid = false;
+    // Detector de diálogos ligado (Configurações). Separado da detecção de
+    // presença: antes, desligar "Detectar personagens" desligava as falas junto.
+    bool m_dialogueDetectionEnabled = true;
     QStringList availableFontFamilies;
     QString currentFontFamily;
     qreal currentFontSize;

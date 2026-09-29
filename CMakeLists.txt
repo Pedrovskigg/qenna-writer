@@ -141,9 +141,7 @@ qt_add_executable(qenna-writer
     src/ElementsStore.h
     src/CharacterDetector.cpp
     src/CharacterDetector.h
-    src/DialogueVerbs.h
-    src/DialogueVerbsEN.h
-    src/DialogueVerbsES.h
+    src/DialogueLang.h
     src/DialogueDetector.cpp
     src/DialogueDetector.h
     src/DialogueStore.cpp

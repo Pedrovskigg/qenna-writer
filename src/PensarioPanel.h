@@ -107,6 +107,8 @@ signals:
     // Botão de "load" na aba Diálogos: pede pra varrer todos os capítulos
     // do projeto em lote (mesma ideia do rescan de presença por cena).
     void rescanAllDialoguesRequested();
+    // Fala de figurante atribuída à mão: MainWindow oferece virar apelido.
+    void extraSpeakerAssigned(const QString& extraLabel, const QString& characterId);
     // Levar pro texto: inserir nota, memória ou fala no cursor do editor.
     void insertTextRequested(QString text);
 
@@ -245,6 +247,9 @@ private:
     // personagem, ou "Sem locutor" se characterId vazio. Ponto único pra não
     // duplicar essa checagem em vários lugares (card, "Diálogo mais longo").
     QString dialogueSpeakerLabel(const QString& characterId) const;
+    // Rótulo do card: nome; "Nome · provável" (deduzido pela conversa, falta
+    // confirmar); "O porteiro · figurante"; "Sem locutor".
+    QString dialogueSpeakerLabel(const DialogueStore::Dialogue& d) const;
     // Diálogo bate no filtro de origem (capítulo/cena) atual? Extraído do
     // corpo de rebuildDialogues pra ser reaproveitado no cálculo do badge de
     // "Diálogos sem atribuição" em rebuildDialoguePresenceChips.

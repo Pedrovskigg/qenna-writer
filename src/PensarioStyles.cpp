@@ -759,7 +759,7 @@ PensarioPanel::PnItem PensarioPanel::dialogueItem(const DialogueStore::Dialogue&
     PnItem p;
     p.kind = Tab::Dialogues;
     p.id = d.id;
-    p.title = dialogueSpeakerLabel(d.characterId);
+    p.title = dialogueSpeakerLabel(d);
     p.body = d.text;
     p.origin = d.sourceLabel;
     p.group = d.sourceLabel.section(QStringLiteral(" — "), 0, 0);

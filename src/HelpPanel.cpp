@@ -2223,15 +2223,18 @@ QString HelpPanel::pensarioContent() const
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>3- %1</b></p>").arg(tr("Diálogos."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Toda fala que você escreve com travessão (—) ou com aspas (\"\") é detectada "
-        "automaticamente depois de alguns segundos parado de digitar, e atribuída ao "
-        "personagem certo. Essa aba lista tudo que já foi detectado, com um filtro \"Fala: "
-        "Todos ▾\" pra ver só as falas de um personagem específico, e chips que deixam filtrar "
-        "por quem mais está presente na mesma cena."));
+        "Toda fala que você escreve com travessão, hífen, aspas ou « » é detectada alguns "
+        "segundos depois que você para de digitar. O detector lê a cena como uma conversa: "
+        "quando a tag diz o nome (\"— Não. — Klara disse.\"), a fala é daquele personagem; "
+        "quando não diz, ele deduz por quem falou antes e por quem foi chamado pelo nome, e "
+        "marca a fala como \"provável\". Essa aba lista tudo, com um filtro \"Fala: Todos ▾\" "
+        "e chips que deixam filtrar por quem mais fala na mesma cena."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "O app salva uma quantidade massiva de diálogos do seu projeto, mas alguns podem "
-        "passar — especialmente diálogos isolados sem informações diretas sobre quem disse, "
-        "\"como esse.\" Porém, a parte majoritária é salva."));
+        "Fala provável pode estar errada, principalmente em cena com três pessoas conversando. "
+        "Clique direito no card pra confirmar ou trocar o locutor: o que você corrige nunca é "
+        "desfeito. Fala de quem não está no elenco (\"o porteiro\") fica em Figurantes; "
+        "atribuir uma delas a um personagem pode transformar a tag em apelido dele. E o × tira "
+        "uma linha que não é fala, sem ela voltar depois."));
     html += QStringLiteral(
         "<p align='center'>"
         "<a href='zoom:/help/pensario/dialogue.png' style='text-decoration:none;'>"
