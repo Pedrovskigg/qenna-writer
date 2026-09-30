@@ -147,12 +147,15 @@ UpdateBanner::UpdateBanner(QWidget* parent)
     hide();
 }
 
-void UpdateBanner::showAvailable(const QString& version, const QString& notes)
+void UpdateBanner::showAvailable(const QString& version, const QString& notes, bool incomplete, bool ready)
 {
     m_info = false;
+    m_incomplete = incomplete;
+    m_ready = ready;
     applyTheme();
-    m_title->setText(tr("Tem versão nova do Qenna Writer: %1").arg(version));
-    m_sub->setText(idleText());
+    m_title->setText(incomplete ? tr("A atualização pra %1 não terminou").arg(version)
+                                : tr("Tem versão nova do Qenna Writer: %1").arg(version));
+    m_sub->setText(modeText());
     m_notes->setText(notes);
     m_notesBtn->setVisible(!notes.trimmed().isEmpty());
     setNotesOpen(false);
@@ -214,13 +217,24 @@ void UpdateBanner::resetIdle()
     m_sub->setProperty("error", false);
     m_sub->style()->unpolish(m_sub);
     m_sub->style()->polish(m_sub);
-    m_sub->setText(idleText());
+    m_sub->setText(modeText());
     m_progress->setValue(0);
     m_progress->hide();
     m_cancel->hide();
     m_later->show();
-    m_action->setText(tr("Baixar e instalar"));
+    m_action->setText(m_incomplete ? (m_ready ? tr("Concluir instalação") : tr("Baixar e concluir"))
+                                   : (m_ready ? tr("Instalar") : tr("Baixar e instalar")));
     m_action->setEnabled(true);
+}
+
+QString UpdateBanner::modeText() const
+{
+    if (m_incomplete)
+        return tr("A instalação parou no meio e o Qenna ficou com uma parte dos arquivos da versão nova. "
+                  "Conclua pra ter a versão inteira; seus projetos ficam onde estão.");
+    if (m_ready)
+        return tr("O instalador já está baixado. O Qenna fecha pra instalar; seus projetos ficam onde estão.");
+    return idleText();
 }
 
 void UpdateBanner::setNotesOpen(bool open)

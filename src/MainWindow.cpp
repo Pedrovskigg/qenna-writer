@@ -789,6 +789,28 @@ MainWindow::MainWindow(QWidget *parent)
     // startup — é assíncrona, e o aviso tem que chegar enquanto o menu
     // principal ainda está na tela (é lá que ele aparece grande).
     m_updateChecker = new UpdateChecker(this);
+    // O instalador grava "started X" antes de copiar e "done X" no fim. Se
+    // ficou em "started", a atualização parou no meio — e como o exe já é o
+    // da versão nova, a checagem normal nunca mais ofereceria nada.
+    {
+        QFile st(QCoreApplication::applicationDirPath() + QStringLiteral("/install-state.txt"));
+        if (st.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            const QStringList parts = QString::fromUtf8(st.readAll()).trimmed().split(QLatin1Char(' '));
+            if (parts.size() == 2 && parts.at(0) == QLatin1String("started"))
+                m_installIncompleteVersion = parts.at(1);
+        }
+        if (!m_installIncompleteVersion.isEmpty()) m_updateChecker->setOfferSameVersion(true);
+        // Atualizou de verdade: o instalador guardado (~250 MB) já não serve.
+        QSettings qs;
+        const QString cachedVer = qs.value(QStringLiteral("update/setupVersion")).toString();
+        if (!cachedVer.isEmpty() && m_installIncompleteVersion.isEmpty()
+            && UpdateChecker::compareVersions(cachedVer, QStringLiteral(APP_VERSION)) <= 0) {
+            QFile::remove(qs.value(QStringLiteral("update/setupPath")).toString());
+            qs.remove(QStringLiteral("update/setupVersion"));
+            qs.remove(QStringLiteral("update/setupPath"));
+            qs.remove(QStringLiteral("update/setupSize"));
+        }
+    }
     connect(m_updateChecker, &UpdateChecker::updateAvailable, this,
             [this](const QString& version, const QString& downloadUrl, const QString&, const QString& releaseNotes) {
                 showUpdateToast(version, downloadUrl, releaseNotes);
@@ -6515,6 +6537,12 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
         m_appUpdateUrl = downloadUrl;
         m_appUpdateNotes = formatUpdateNotes(releaseNotes);
         m_appUpdateDismissed = false;
+    }
+    if (!isCover) {
+        // Parou no meio = a versão oferecida é a mesma que o exe já diz ser.
+        m_appUpdateIncomplete = !m_installIncompleteVersion.isEmpty()
+            && UpdateChecker::compareVersions(version, QStringLiteral(APP_VERSION)) == 0;
+        m_appUpdateReady = !cachedUpdateSetup(version).isEmpty();
         syncMenuUpdateBanner();
     }
 
@@ -6651,7 +6679,9 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
             ? tr("Nova versão do Cover Creator disponível: %1").arg(version)
             : tr("Instalar o Cover Creator (%1)?").arg(version));
     } else {
-        m_updateToastLabel->setText(tr("Nova versão disponível: %1").arg(version));
+        m_updateToastLabel->setText(m_appUpdateIncomplete
+            ? tr("A atualização pra %1 não terminou").arg(version)
+            : tr("Nova versão disponível: %1").arg(version));
     }
 
     const QString notes = formatUpdateNotes(releaseNotes);
@@ -6663,7 +6693,7 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
     }
 
     m_updateToastError->hide();
-    m_updateToastBtn->setText(tr("Baixar e instalar"));
+    m_updateToastBtn->setText(updateActionText());
     m_updateToastBtn->setEnabled(true);
     if (m_updateToastCancelBtn) m_updateToastCancelBtn->hide();
     m_updateToastProgress->setValue(0);
@@ -6689,6 +6719,13 @@ void MainWindow::positionUpdateToast()
         bottom - m_updateToast->height());
 }
 
+QString MainWindow::updateActionText() const
+{
+    if (m_updateIsCover) return tr("Baixar e instalar");
+    if (m_appUpdateIncomplete) return m_appUpdateReady ? tr("Concluir instalação") : tr("Baixar e concluir");
+    return m_appUpdateReady ? tr("Instalar") : tr("Baixar e instalar");
+}
+
 UpdateBanner* MainWindow::menuUpdateBanner() const
 {
     return mainMenuDialog ? mainMenuDialog->updateBanner() : nullptr;
@@ -6698,7 +6735,7 @@ void MainWindow::syncMenuUpdateBanner()
 {
     UpdateBanner* b = menuUpdateBanner();
     if (!b || m_appUpdateVersion.isEmpty() || m_appUpdateDismissed) return;
-    b->showAvailable(m_appUpdateVersion, m_appUpdateNotes);
+    b->showAvailable(m_appUpdateVersion, m_appUpdateNotes, m_appUpdateIncomplete, m_appUpdateReady);
     if (m_updateReply && !m_updateIsCover) b->setDownloading(m_updateToastProgress ? m_updateToastProgress->value() : 0);
 }
 
@@ -6706,7 +6743,7 @@ void MainWindow::resetUpdateToastIdle()
 {
     if (m_updateToastBtn) {
         m_updateToastBtn->setEnabled(true);
-        m_updateToastBtn->setText(tr("Baixar e instalar"));
+        m_updateToastBtn->setText(updateActionText());
     }
     if (m_updateToastCancelBtn) m_updateToastCancelBtn->hide();
     if (m_updateToastProgress) {
@@ -6751,6 +6788,10 @@ void MainWindow::cancelUpdateDownload()
 
 void MainWindow::startUpdateDownload()
 {
+    if (!m_updateIsCover) {
+        const QString cached = cachedUpdateSetup(m_updateVersion);
+        if (!cached.isEmpty()) { launchDownloadedInstaller(cached); return; }
+    }
     if (m_updateDownloadUrl.isEmpty() || !m_updateToastBtn || !m_updateToastProgress) return;
 
     if (m_updateToastError) m_updateToastError->hide();
@@ -6852,65 +6893,90 @@ void MainWindow::startUpdateDownload()
             return;
         }
 
-        // O quit() lá embaixo NÃO passa pelo closeEvent — sem isto, o que o
-        // autosave ainda não tinha gravado se perdia no update. Mesmo salvamento
-        // do fechamento normal; se falhar, não fecha o app.
-        if (projectSaver) {
-            if (editorHost) editorHost->syncEditorToCache();
-            if ((projectSaver->hasDirtyContent() || projectSaver->isSaving())
-                && !projectSaver->saveProject()) {
-                showUpdateDownloadError(tr("Não consegui salvar o projeto antes de atualizar: %1")
-                                            .arg(projectSaver->lastError()));
-                return;
-            }
+        // Guarda o instalador baixado: se a instalação falhar, o próximo
+        // "Instalar" não baixa 250 MB de novo.
+        {
+            QSettings qs;
+            qs.setValue(QStringLiteral("update/setupVersion"), m_updateVersion);
+            qs.setValue(QStringLiteral("update/setupPath"), destPath);
+            qs.setValue(QStringLiteral("update/setupSize"), actual);
         }
-
-        // Lançar o instalador direto daqui não funciona: ele começa a extrair
-        // com este app ainda vivo, segurando o exe, as DLLs do Qt e as fontes
-        // carregadas por addApplicationFont. O Inno então ou falha em
-        // substituir o arquivo ou, com CloseApplications ligado, tenta fechar
-        // o app e não consegue a tempo — porque somos justamente quem o
-        // chamou, ainda no meio do próprio encerramento. Nos dois casos o
-        // usuário recebe um diálogo com "Ignorar", e arquivo ignorado nunca é
-        // escrito: foi assim que atualizações saíram sem as imagens dos temas.
-        //
-        // Adiar com QTimer também não serve — o event loop morre no quit() e
-        // o timer nunca dispara. Então quem espera é um processo de fora:
-        // um cmd que dorme alguns segundos e só depois solta o instalador,
-        // quando este processo já morreu e soltou todos os arquivos.
-#ifdef Q_OS_WIN
-        // setNativeArguments, não setArguments: o Qt escapa aspas internas
-        // como \" (convenção do C runtime), que o cmd.exe não entende — o
-        // start recebia "\\" como programa e o Windows dizia "O caminho da
-        // rede não foi encontrado" (v0.18.0). /s /c "..." faz o cmd tirar só
-        // as aspas de fora e rodar o resto como está. ping em vez de timeout
-        // porque o timeout aborta na hora quando não tem console de entrada.
-        QProcess launcher;
-        launcher.setProgram(QStringLiteral("cmd.exe"));
-        launcher.setNativeArguments(
-            QStringLiteral("/d /s /c \"ping -n 5 127.0.0.1 >nul & start \"\" \"%1\"\"")
-                .arg(QDir::toNativeSeparators(destPath)));
-        // Sem isso, uma janela preta de console pisca na cara do usuário.
-        launcher.setCreateProcessArgumentsModifier(
-            [](QProcess::CreateProcessArguments* args) {
-                args->flags |= CREATE_NO_WINDOW;
-            });
-        launcher.startDetached();
-        // Cão de guarda (1.4.3): num note lento o Qenna às vezes não terminava
-        // de sair depois do quit() — a janela sumia e o processo ficava, sem
-        // janela, segurando exe, DLLs e fontes, e o instalador batia em "arquivo
-        // em uso". O projeto já foi salvo acima; se em 5 s ainda estivermos
-        // vivos, o processo se encerra. Saindo normal antes disso, a thread
-        // morre junto.
-        std::thread([]() {
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-            ::TerminateProcess(::GetCurrentProcess(), 0);
-        }).detach();
-#else
-        QProcess::startDetached(destPath, {});
-#endif
-        qApp->quit();
+        launchDownloadedInstaller(destPath);
     });
+}
+
+// Fecha o Qenna e solta o instalador já baixado (download novo ou guardado).
+void MainWindow::launchDownloadedInstaller(const QString& destPath)
+{
+    // O quit() lá embaixo NÃO passa pelo closeEvent — sem isto, o que o
+    // autosave ainda não tinha gravado se perdia no update. Mesmo salvamento
+    // do fechamento normal; se falhar, não fecha o app.
+    if (projectSaver) {
+        if (editorHost) editorHost->syncEditorToCache();
+        if ((projectSaver->hasDirtyContent() || projectSaver->isSaving())
+            && !projectSaver->saveProject()) {
+            showUpdateDownloadError(tr("Não consegui salvar o projeto antes de atualizar: %1")
+                                        .arg(projectSaver->lastError()));
+            return;
+        }
+    }
+
+    // Lançar o instalador direto daqui não funciona: ele começa a extrair
+    // com este app ainda vivo, segurando o exe, as DLLs do Qt e as fontes
+    // carregadas por addApplicationFont. O Inno então ou falha em
+    // substituir o arquivo ou, com CloseApplications ligado, tenta fechar
+    // o app e não consegue a tempo — porque somos justamente quem o
+    // chamou, ainda no meio do próprio encerramento. Nos dois casos o
+    // usuário recebe um diálogo com "Ignorar", e arquivo ignorado nunca é
+    // escrito: foi assim que atualizações saíram sem as imagens dos temas.
+    //
+    // Adiar com QTimer também não serve — o event loop morre no quit() e
+    // o timer nunca dispara. Então quem espera é um processo de fora:
+    // um cmd que dorme alguns segundos e só depois solta o instalador,
+    // quando este processo já morreu e soltou todos os arquivos.
+#ifdef Q_OS_WIN
+    // setNativeArguments, não setArguments: o Qt escapa aspas internas
+    // como \" (convenção do C runtime), que o cmd.exe não entende — o
+    // start recebia "\\" como programa e o Windows dizia "O caminho da
+    // rede não foi encontrado" (v0.18.0). /s /c "..." faz o cmd tirar só
+    // as aspas de fora e rodar o resto como está. ping em vez de timeout
+    // porque o timeout aborta na hora quando não tem console de entrada.
+    QProcess launcher;
+    launcher.setProgram(QStringLiteral("cmd.exe"));
+    launcher.setNativeArguments(
+        QStringLiteral("/d /s /c \"ping -n 5 127.0.0.1 >nul & start \"\" \"%1\"\"")
+            .arg(QDir::toNativeSeparators(destPath)));
+    // Sem isso, uma janela preta de console pisca na cara do usuário.
+    launcher.setCreateProcessArgumentsModifier(
+        [](QProcess::CreateProcessArguments* args) {
+            args->flags |= CREATE_NO_WINDOW;
+        });
+    launcher.startDetached();
+    // Cão de guarda (1.4.3): num note lento o Qenna às vezes não terminava
+    // de sair depois do quit() — a janela sumia e o processo ficava, sem
+    // janela, segurando exe, DLLs e fontes, e o instalador batia em "arquivo
+    // em uso". O projeto já foi salvo acima; se em 5 s ainda estivermos
+    // vivos, o processo se encerra. Saindo normal antes disso, a thread
+    // morre junto.
+    std::thread([]() {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+        ::TerminateProcess(::GetCurrentProcess(), 0);
+    }).detach();
+#else
+    QProcess::startDetached(destPath, {});
+#endif
+    qApp->quit();
+}
+
+// O instalador dessa versão já foi baixado inteiro numa tentativa anterior?
+QString MainWindow::cachedUpdateSetup(const QString& version) const
+{
+    QSettings qs;
+    if (qs.value(QStringLiteral("update/setupVersion")).toString() != version) return QString();
+    const QString path = qs.value(QStringLiteral("update/setupPath")).toString();
+    const qint64 size = qs.value(QStringLiteral("update/setupSize")).toLongLong();
+    const QFileInfo fi(path);
+    return (fi.exists() && size > 0 && fi.size() == size) ? path : QString();
 }
 
 void MainWindow::requestCoverCreatorInstall(bool silent)

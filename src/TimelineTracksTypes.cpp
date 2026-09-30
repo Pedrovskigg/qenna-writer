@@ -49,6 +49,51 @@ Palette Palette::current()
     return p;
 }
 
+namespace {
+// Contraste WCAG entre duas cores (1 a 21).
+double contrastRatio(const QColor& a, const QColor& b)
+{
+    auto lum = [](const QColor& c) {
+        auto ch = [](double v) { return v <= 0.03928 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
+        return 0.2126 * ch(c.redF()) + 0.7152 * ch(c.greenF()) + 0.0722 * ch(c.blueF());
+    };
+    double la = lum(a), lb = lum(b);
+    if (la < lb) std::swap(la, lb);
+    return (la + 0.05) / (lb + 0.05);
+}
+} // namespace
+
+Palette Palette::onPage()
+{
+    Palette p = current();
+    constexpr double kReadable = 3.0;
+    if (contrastRatio(p.ink, p.page) >= kReadable) return p;
+    const QColor pageInk(Theme::editorTextColor());
+    if (!pageInk.isValid() || contrastRatio(pageInk, p.page) <= contrastRatio(p.ink, p.page)) return p;
+
+    const QColor extreme = p.page.lightnessF() > 0.5 ? QColor(Qt::black) : QColor(Qt::white);
+    p.ink    = pageInk;
+    p.bright = mix(pageInk, extreme, 0.70);
+    p.muted  = mix(pageInk, p.page, 0.62);
+    p.dim    = mix(pageInk, p.page, 0.64);
+    p.faint  = alpha(pageInk, 0.14);
+    // Campos misturam app com página (55/45): com o app do lado oposto da
+    // página davam um cinza no meio do papel. Aqui o "app" vira a página
+    // puxada pro lado da tinta, e o campo fica um tom da própria folha.
+    p.app    = mix(pageInk, p.page, 0.16);
+    return p;
+}
+
+Palette Palette::onPanels()
+{
+    Palette p = current();
+    if (contrastRatio(p.ink, p.page) >= 3.0) return p;
+    // o app costuma ser um degrau diferente do painel: a coluna da esquerda
+    // continua se destacando das trilhas
+    p.page = contrastRatio(p.ink, p.app) >= 3.0 ? p.app : p.panel;
+    return p;
+}
+
 BranchSpan branchSpan(const Data& d, int li)
 {
     BranchSpan b;

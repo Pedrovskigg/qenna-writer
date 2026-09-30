@@ -27,7 +27,7 @@ void TimelineBraidView::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
     p.fillRect(rect(), pal.page);
     m_paths.clear();
 

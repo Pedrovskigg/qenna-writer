@@ -331,7 +331,7 @@ void SheetDialog::resizeEvent(QResizeEvent* e)
 
 void SheetDialog::setPlaceholderColors()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     const QColor ph = mix(pal.ink, pal.page, 0.42);
     for (QWidget* w : findChildren<QWidget*>()) {
         if (!qobject_cast<QLineEdit*>(w) && !qobject_cast<QTextEdit*>(w)) continue;
@@ -343,7 +343,7 @@ void SheetDialog::setPlaceholderColors()
 
 void SheetDialog::applySheetTheme(const QString& extraQss)
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     const QColor fieldBg = mix(pal.app, pal.page, 0.55);
     m_close->setIcon(closeIcon(pal.dim));
     setStyleSheet(Theme::qss(QStringLiteral(R"(
@@ -376,6 +376,9 @@ void SheetDialog::applySheetTheme(const QString& extraQss)
         QToolButton#sheetLink { background: transparent; border: none; color: %3; font-size: 11.5px; padding: 0; }
         QToolButton#sheetLink:hover { color: %6; text-decoration: underline; }
         QCheckBox#sheetChk { color: %13; font-size: 12.5px; spacing: 8px; background: transparent; }
+        QCheckBox#sheetChk::indicator { width: 13px; height: 13px; border: 1px solid %7; border-radius: 3px; background: %11; }
+        QCheckBox#sheetChk::indicator:hover { border-color: %12; }
+        QCheckBox#sheetChk::indicator:checked { background: %12; border: 2px solid %12; }
         QLabel#sheetKbd { color: %13; background: transparent; border: 1px solid %2; border-radius: 3px; padding: 0 5px; }
         QPushButton#sheetBtn { background: transparent; border: 1px solid %2; border-radius: @radius-control;
                                color: %13; font-size: 12.5px; padding: 0 13px; }
@@ -471,7 +474,7 @@ SheetChoice::SheetChoice(const QStringList& labels, QWidget* parent, Qt::Alignme
         m_lineText->setAttribute(Qt::WA_TransparentForMouseEvents);
         h->addWidget(m_lineText, 1);
         auto* chev = new QLabel(m_line);
-        chev->setPixmap(SheetDialog::chevronIcon(Tracks::Palette::current().dim).pixmap(12, 12));
+        chev->setPixmap(SheetDialog::chevronIcon(Tracks::Palette::onPage().dim).pixmap(12, 12));
         chev->setAttribute(Qt::WA_TransparentForMouseEvents);
         h->addWidget(chev);
     }

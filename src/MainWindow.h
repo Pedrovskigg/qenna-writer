@@ -317,6 +317,9 @@ private:
     // Faixa grande do menu principal: mostra a versão nova do app (não a do
     // Cover Creator) se o menu estiver aí e o usuário não disse "Depois".
     void syncMenuUpdateBanner();
+    void launchDownloadedInstaller(const QString& destPath);
+    QString cachedUpdateSetup(const QString& version) const;
+    QString updateActionText() const;
     UpdateBanner* menuUpdateBanner() const;
 
     // Cover Creator via download (sem bundle no instalador do Qenna desde
@@ -638,6 +641,9 @@ private:
     QString m_appUpdateUrl;
     QString m_appUpdateNotes;
     bool m_appUpdateDismissed = false;
+    bool m_appUpdateIncomplete = false;   // a instalação dessa versão parou no meio
+    bool m_appUpdateReady = false;        // instalador dessa versão já baixado
+    QString m_installIncompleteVersion;   // do install-state.txt que o instalador grava
     MainMenuDialog *mainMenuDialog = nullptr;
     BackgroundWidget *backgroundWidget = nullptr;
     FindBar *findBar = nullptr;

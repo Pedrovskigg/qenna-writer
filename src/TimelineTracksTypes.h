@@ -132,6 +132,16 @@ struct Palette {
     QColor dim;    // texto secundário (ink 64% sobre o painel)
     QColor faint;  // divisórias quase invisíveis
     static Palette current();
+    // A mesma paleta pra quem desenha EM CIMA DA PÁGINA (folhas, popups de
+    // criação). Nos temas de app escuro com página clara (ou o contrário) a
+    // tinta dos painéis some na página — 39 dos 318 temas em 2026-09-30, o
+    // Redemption entre eles. Aí a tinta vira a cor do texto da página, e a base
+    // dos campos (app) vira um tom da própria página.
+    static Palette onPage();
+    // Pra Timeline, que desenha a coluna em cima do painel e as trilhas em
+    // cima da "página" com a MESMA tinta: quando a tinta não lê na página, as
+    // trilhas passam a usar o fundo do app (lado dos painéis) em vez dela.
+    static Palette onPanels();
 };
 
 inline QColor mix(const QColor& a, const QColor& b, qreal wa)

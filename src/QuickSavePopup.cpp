@@ -127,7 +127,7 @@ QuickSavePopup::QuickSavePopup(QTextEdit* editor, QWidget* parent)
 
 void QuickSavePopup::applyTheme()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     setStyleSheet(Theme::qss(QStringLiteral(
         "QFrame#quickSavePopup { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"
         "QLabel#qsHeader, QLabel#qsFooter { color: %3; background: transparent; }"
@@ -187,7 +187,7 @@ void QuickSavePopup::presentAt(const QPoint& globalAnchor, const QString& header
         b->setAutoDefault(false);
         b->setFixedHeight(kRowH);
         b->setText(t.title.isEmpty() ? tr("(sem nome)") : t.title);
-        const QColor c(t.color.isEmpty() ? Palette::current().dim : QColor(t.color));
+        const QColor c(t.color.isEmpty() ? Palette::onPage().dim : QColor(t.color));
         QIcon icon;
         if (!t.iconId.isEmpty())
             icon = IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/%1.svg").arg(t.iconId), c, c, c, QSize(15, 15));

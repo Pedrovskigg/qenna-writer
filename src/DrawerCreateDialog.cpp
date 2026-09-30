@@ -140,7 +140,7 @@ DrawerCreateDialog::DrawerCreateDialog(ElementsStore* store, QWidget* parent)
 {
     setEyebrow(tr("Nova gaveta"));
     QWidget* c = card();
-    const Tracks::Palette pal = Tracks::Palette::current();
+    const Tracks::Palette pal = Tracks::Palette::onPage();
 
     // selo do ícone na cor da gaveta + nome grande
     auto* top = new QHBoxLayout;

@@ -56,7 +56,8 @@ void UpdateChecker::onReplyFinished(QNetworkReply* reply)
     if (tag.startsWith(QLatin1Char('v')) || tag.startsWith(QLatin1Char('V'))) tag = tag.mid(1);
 
     const QString current = QApplication::applicationVersion();
-    if (compareVersions(tag, current) <= 0) { done(); return; }
+    const int cmp = compareVersions(tag, current);
+    if (cmp < 0 || (cmp == 0 && !m_offerSameVersion)) { done(); return; }
 
     QString downloadUrl;
     for (const QJsonValue& av : obj.value(QStringLiteral("assets")).toArray()) {

@@ -14,6 +14,7 @@
 #include "Quotes.h"
 #include "StackView.h"
 #include "Theme.h"
+#include "WhatsNewDialog.h"
 
 #include <QAction>
 #include <QBuffer>
@@ -1166,7 +1167,26 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
             m_logoLabel->setText(QStringLiteral("Qenna Writer"));
         }
     }
-    col->addSpacing(6);
+    // --- "Ver atualizações": o patch note da versão instalada, a qualquer
+    // hora (antes só aparecia uma vez, logo depois do update) ---
+    {
+        auto* row = new QHBoxLayout();
+        row->setContentsMargins(0, 0, 0, 0);
+        row->addStretch(1);
+        auto* whatsNewBtn = new QPushButton(tr("Ver atualizações"), this);
+        whatsNewBtn->setObjectName(QStringLiteral("menuWhatsNewBtn"));
+        whatsNewBtn->setCursor(Qt::PointingHandCursor);
+        whatsNewBtn->setFocusPolicy(Qt::NoFocus);
+        whatsNewBtn->setFixedHeight(24);
+        whatsNewBtn->setToolTip(tr("O que mudou na versão %1").arg(QStringLiteral(APP_VERSION)));
+        connect(whatsNewBtn, &QPushButton::clicked, this, [this]() {
+            auto* dlg = new WhatsNewDialog(this);
+            dlg->setAttribute(Qt::WA_DeleteOnClose);
+            dlg->open();
+        });
+        row->addWidget(whatsNewBtn);
+        col->addLayout(row);
+    }
     col->addWidget(m_logoLabel, 0, Qt::AlignHCenter);
 
     // --- Quote literário rotativo ---
@@ -2046,6 +2066,14 @@ void MainMenuDialog::applyDialogStyle()
             font-size: 13px;
             padding: 0;
         }
+        QPushButton#menuWhatsNewBtn {
+            background: transparent;
+            color: %4;
+            border: none;
+            font-size: 11.5px;
+            padding: 0 2px;
+        }
+        QPushButton#menuWhatsNewBtn:hover { color: %3; text-decoration: underline; }
         QPushButton#menuInfoBtn:hover {
             color: %3;
             border-color: %9;

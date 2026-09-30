@@ -108,7 +108,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const QFont f = uiFont(12.5);
         const QFontMetricsF fm(f);
         for (const auto& it : layoutItems(width()).first) {
@@ -158,7 +158,7 @@ public:
         g->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
         g->setStyleSheet(QStringLiteral("color:%1;background:transparent;").arg(glyphColor.name()));
         h->addWidget(g, 0, Qt::AlignTop);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         auto* t = new QLabel(this);
         t->setTextFormat(Qt::RichText);
         t->setWordWrap(true);
@@ -226,7 +226,7 @@ TimelineInspector::TimelineInspector(QWidget* parent)
 
 void TimelineInspector::applyTheme()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
     m_close->setIcon(QIcon(iconPx(Icon::Close, pal.dim, 14)));
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#tlInspector { background: %1; }
@@ -273,7 +273,7 @@ void TimelineInspector::paintEvent(QPaintEvent* e)
 {
     QWidget::paintEvent(e);
     QPainter p(this);
-    p.fillRect(QRect(0, 0, 1, height()), Palette::current().border);
+    p.fillRect(QRect(0, 0, 1, height()), Palette::onPanels().border);
 }
 
 void TimelineInspector::resizeEvent(QResizeEvent* e)
@@ -294,7 +294,7 @@ void TimelineInspector::showFor(const Data& d, const QString& id)
     clear();
     const Event* e = d.event(id);
     if (!e) return;
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
 
     m_body = new QWidget;
     m_lay = new QVBoxLayout(m_body);

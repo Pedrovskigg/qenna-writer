@@ -160,7 +160,7 @@ DrawerQuickPopup::DrawerQuickPopup(ElementsStore* store, QWidget* window)
 
 void DrawerQuickPopup::applyTheme()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     for (QToolButton* b : std::as_const(m_iconBtns)) {
         const QString id = b->property("iconId").toString();
         b->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/elements/%1.svg").arg(id),

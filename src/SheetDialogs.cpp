@@ -208,7 +208,7 @@ public:
         connect(m_title, &QLineEdit::textChanged, this, sync);
         connect(m_start, &QLineEdit::textChanged, this, [this]() { refreshReading(); });
         sync();
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         applySheetTheme(QStringLiteral(
             "QToolButton#sheetCover { background: %1; border: 1px dashed %2; border-radius: 6px; color: %3;"
             " font-size: 11.5px; padding: 8px; }"
@@ -369,7 +369,7 @@ public:
             body()->addSpacing(4);
         }
         if (!label.isEmpty()) body()->addWidget(sectionLabel(label, card()));
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         m_group = new QButtonGroup(this);
         m_group->setExclusive(true);
         auto* row = new QHBoxLayout;
@@ -442,7 +442,7 @@ public:
     }
     void paint(QPainter* p, const QStyleOptionViewItem& opt, const QModelIndex& idx) const override
     {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         p->save();
         p->setRenderHint(QPainter::Antialiasing);
         p->setRenderHint(QPainter::SmoothPixmapTransform);
@@ -558,7 +558,7 @@ public:
         filter(QString());
         ok->setEnabled(current() >= 0);
 
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         applySheetTheme(QStringLiteral(
             "QListWidget#sheetList { background: transparent; border: none; outline: none; }"
             "QListWidget#sheetList::item { border: none; }"
@@ -653,7 +653,7 @@ public:
         addFooter(okText, QCoreApplication::translate("Sheets", "confirma"));
         m_okBtn->setDefault(true);
         applySheetTheme(QStringLiteral("QLabel#sheetBody { color: %1; background: transparent; }")
-                        .arg(Palette::current().ink.name()));
+                        .arg(Palette::onPage().ink.name()));
     }
 protected:
     void showEvent(QShowEvent* e) override
@@ -687,7 +687,7 @@ public:
         footer()->insertWidget(0, discard);
         footer()->insertStretch(1, 1);
         applySheetTheme(QStringLiteral("QLabel#sheetBody { color: %1; background: transparent; }")
-                        .arg(Palette::current().ink.name()));
+                        .arg(Palette::onPage().ink.name()));
     }
     bool discarded() const { return m_discard; }
 protected:

@@ -98,7 +98,7 @@ protected:
 
     void paintEvent(QPaintEvent*) override
     {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         const qreal h = m_hover;
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
@@ -256,7 +256,7 @@ public:
     // Cores de quem fica por cima: branco sobre a foto, as da folha na faixa.
     void applyLook()
     {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         const bool on = !m_photo.isNull();
         m_close->setIcon(crossIcon(on ? QColor(255, 255, 255) : pal.dim));
         m_eyebrow->setStyleSheet(on ? QStringLiteral("color: rgba(255,255,255,0.85); background: transparent;") : QString());
@@ -303,7 +303,7 @@ protected:
 
     void paintEvent(QPaintEvent*) override
     {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPage();
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
         p.setRenderHint(QPainter::SmoothPixmapTransform);
@@ -473,7 +473,7 @@ void ElementCreateDialog::buildUi()
             m_rolePickText->setAttribute(Qt::WA_TransparentForMouseEvents);
             h->addWidget(m_rolePickText, 1);
             auto* chev = new QLabel(m_rolePick);
-            chev->setPixmap(chevronIcon(Palette::current().dim).pixmap(12, 12));
+            chev->setPixmap(chevronIcon(Palette::onPage().dim).pixmap(12, 12));
             chev->setAttribute(Qt::WA_TransparentForMouseEvents);
             h->addWidget(chev);
         }
@@ -645,7 +645,7 @@ void ElementCreateDialog::buildUi()
         }
     }
 
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     applySheetTheme(QStringLiteral(
         "QToolButton#sheetPhoto { background: %1; border: 1px dashed %2; border-radius: 10px; color: %3; font-size: 12.5px; }"
         "QToolButton#sheetPhoto:hover { border-color: %4; color: %5; }"
@@ -798,7 +798,7 @@ void ElementCreateDialog::refreshRoleTag()
 void ElementCreateDialog::setRole(const QString& id)
 {
     m_roleValue = id;
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     QString html;
     if (id.isEmpty()) {
         html = QStringLiteral("<span style='color:%1'>%2</span>").arg(pal.dim.name(), tr("Escolher papel (opcional)"));

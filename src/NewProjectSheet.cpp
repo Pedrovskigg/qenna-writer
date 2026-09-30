@@ -133,7 +133,7 @@ NewProjectSheet::NewProjectSheet(const QStringList& fontFamilies, QWidget* paren
     : SheetDialog(parent, kSheetW)
 {
     setEyebrow(tr("Novo projeto"));
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     QSettings st;
     m_rememberedAuthor = st.value(QLatin1String(kLastAuthorKey)).toString();
     m_parentDir = st.value(QLatin1String(kLastParentKey)).toString();
@@ -340,7 +340,7 @@ void NewProjectSheet::refreshPath()
     const QString shownName = fm.elidedText(name, Qt::ElideRight, room / 2);
     const QString shownTail = fm.elidedText(tail, Qt::ElideLeft, qMax(40, room - fm.horizontalAdvance(shownName) - 20));
     m_path->setText(QStringLiteral("%1 › <b style='color:%2;font-weight:500'>%3</b>")
-                        .arg(shownTail.toHtmlEscaped(), Palette::current().bright.name(), shownName.toHtmlEscaped()));
+                        .arg(shownTail.toHtmlEscaped(), Palette::onPage().bright.name(), shownName.toHtmlEscaped()));
     m_path->setToolTip(QDir::toNativeSeparators(fullPath()));
 }
 

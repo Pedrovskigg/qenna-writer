@@ -53,7 +53,7 @@ protected:
     void paintEvent(QPaintEvent*) override
     {
         QPainter p(this);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         p.fillRect(rect(), pal.page);
         p.fillRect(QRect(0, 0, 180, height()), pal.panel);
         p.fillRect(QRect(179, 0, 1, height()), pal.border);
@@ -85,7 +85,7 @@ protected:
     void paintEvent(QPaintEvent*) override
     {
         QPainter p(this);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         p.fillRect(rect(), pal.page);
         p.fillRect(QRect(0, 0, 180, height()), pal.panel);
         p.fillRect(QRect(179, 0, 1, height()), pal.border);
@@ -121,7 +121,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const qreal t = m_clock.isValid() ? m_clock.elapsed() / 1000.0 : 0.0;
         const qreal wave = (std::sin(t * 2.0 * M_PI * 1.4) + 1.0) / 2.0; // 0..1, ~1,4 Hz
         const QPointF c(kKnotBox / 2.0, height() / 2.0);
@@ -174,7 +174,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         p.fillRect(rect(), pal.page);
         const int G = TimelineTracksView::kGutter;
         p.save();
@@ -362,7 +362,7 @@ protected:
 
     void paintMotion(QPainter& p)
     {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const int G = TimelineTracksView::kGutter;
         const qreal t = m_clock.elapsed() / 1000.0;
         p.save();
@@ -453,7 +453,7 @@ protected:
     void renderStatic(QPainter& p)
     {
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const Data& d = v->m_data;
         const Filter& flt = v->m_filter;
         const qreal cw = v->colW();
@@ -958,9 +958,9 @@ protected:
     }
     QColor dragColor(const Event& ev) const
     {
-        if (ev.hollow) return Palette::current().warning;
+        if (ev.hollow) return Palette::onPanels().warning;
         if (const Lane* L = v->m_data.lane(ev.laneId)) return L->color;
-        return Palette::current().accent;
+        return Palette::onPanels().accent;
     }
 
 private:
@@ -997,7 +997,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const Data& d = v->m_data;
         const int G = TimelineTracksView::kGutter;
         p.fillRect(rect(), pal.page);
@@ -1168,7 +1168,7 @@ TimelineTracksView::TimelineTracksView(QWidget* parent)
     connect(m_hbar, &QScrollBar::valueChanged, this, [this]() { repaintAll(); });
 
     auto applyTheme = [this]() {
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         setStyleSheet(QStringLiteral(R"(
             QScrollBar#tlTracksHbar:horizontal { background: transparent; height: 8px; margin: 2px 0; }
             QScrollBar#tlTracksHbar::handle:horizontal { background: %1; border-radius: 3px; min-width: 40px; }

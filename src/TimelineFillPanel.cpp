@@ -96,7 +96,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing);
-        const Palette pal = Palette::current();
+        const Palette pal = Palette::onPanels();
         const int n = m->m_queue.size();
         if (n == 0) return;
         auto done = [&](int i) {
@@ -442,7 +442,7 @@ QString TimelineFillPanel::signature() const
 
 void TimelineFillPanel::showCurrent()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
     m_progress->refresh();
     for (int i = 0; i < 3; ++i) m_segBtn[i]->setChecked(i == int(m_filter));
 
@@ -776,7 +776,7 @@ void TimelineFillPanel::refreshReading(Fields& f)
 void TimelineFillPanel::refreshDerived()
 {
     if (m_fields.isEmpty() || m_idx >= m_queue.size()) { m_progress->refresh(); return; }
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
     for (Fields& f : m_fields) {
         // o que foi gravado por fora (inspetor, editor) aparece; o campo em edição não é tocado
         const Column& cc = m_data.cols[f.col];
@@ -943,12 +943,12 @@ void TimelineFillPanel::paintEvent(QPaintEvent* e)
 {
     QWidget::paintEvent(e);
     QPainter p(this);
-    p.fillRect(QRect(0, 0, 1, height()), Palette::current().border);
+    p.fillRect(QRect(0, 0, 1, height()), Palette::onPanels().border);
 }
 
 void TimelineFillPanel::applyTheme()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPanels();
     const QColor fieldBg = mix(pal.app, pal.page, 0.55);
     m_closeBtn->setIcon(strokeIcon(QStringLiteral("close"), pal.dim));
     setStyleSheet(Theme::qss(QStringLiteral(R"(

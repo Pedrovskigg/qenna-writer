@@ -248,7 +248,7 @@ void ChapterSheet::refreshTitle()
     if (ph.isEmpty()) ph = chapter ? tr("Título do capítulo") : (s.titlePlaceholder.isEmpty() ? tr("Título da cena") : s.titlePlaceholder);
     m_title->setPlaceholderText(ph);
     if (!m_preview) return;
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     const QString shown = m_title->text().trimmed().isEmpty() ? ph : m_title->text().trimmed();
     QString line = tr("na gaveta: %1")
         .arg(QStringLiteral("<span style=\"font-family:'%1';color:%2\">%3</span>")

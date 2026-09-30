@@ -2541,7 +2541,7 @@ void TimelinePanel::buildNewUi(QWidget* body)
 void TimelinePanel::applyNewTheme()
 {
     if (!m_newTop) return;
-    const Tracks::Palette pal = Tracks::Palette::current();
+    const Tracks::Palette pal = Tracks::Palette::onPanels();
     auto css = [](const QColor& c) { return c.name(QColor::HexArgb); };
     const QString menuQss = Theme::qss(QStringLiteral(R"(
         QMenu { background: %1; border: 1px solid %2; border-radius: @radius-control; padding: 4px; }
@@ -2645,7 +2645,7 @@ Tracks::Data TimelinePanel::buildTracksData() const
 {
     Tracks::Data d;
     if (!m_projectModel || !m_scene) return d;
-    const Tracks::Palette pal = Tracks::Palette::current();
+    const Tracks::Palette pal = Tracks::Palette::onPanels();
 
     const QString msId = currentManuscriptId();
     const auto& mss = m_projectModel->manuscripts();
@@ -3030,7 +3030,7 @@ void TimelinePanel::applyTracksFilter()
 void TimelinePanel::refreshNewChips()
 {
     if (!m_chipChar) return;
-    const Tracks::Palette pal = Tracks::Palette::current();
+    const Tracks::Palette pal = Tracks::Palette::onPanels();
     auto set = [&](QToolButton* chip, const QString& label, const QString& value) {
         auto* fc = static_cast<FilterChip*>(chip);
         fc->active = !value.isEmpty();
@@ -3051,7 +3051,7 @@ void TimelinePanel::refreshNewChips()
 
 void TimelinePanel::rebuildNewMenus()
 {
-    const Tracks::Palette pal = Tracks::Palette::current();
+    const Tracks::Palette pal = Tracks::Palette::onPanels();
     // manuscritos
     if (QMenu* m = m_msBtn->menu()) {
         m->clear();

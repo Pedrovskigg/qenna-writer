@@ -17,6 +17,9 @@ public:
     explicit UpdateChecker(QObject* parent = nullptr);
 
     void check();
+    // Atualização que parou no meio (o exe já é o novo): oferece a release
+    // mesmo com a versão igual à instalada, pra dar pra concluir.
+    void setOfferSameVersion(bool on) { m_offerSameVersion = on; }
     // Checa atualizações do Cover Creator.
     // coverDir = pasta onde está Mira Cover.exe (lê cover-version.txt de lá).
     void checkCover(const QString& coverDir);
@@ -38,5 +41,6 @@ private:
 
     QNetworkAccessManager* m_nam;
     bool m_pending = false;
+    bool m_offerSameVersion = false;
     bool m_coverPending = false;
 };

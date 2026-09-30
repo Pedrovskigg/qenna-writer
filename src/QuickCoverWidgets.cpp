@@ -116,7 +116,7 @@ void ColorWheelButton::paintEvent(QPaintEvent*)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     const QRectF r = QRectF(rect()).adjusted(3, 3, -3, -3);
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     if (m_marked) {
         p.setPen(QPen(pal.bright, 1.6));
         p.setBrush(Qt::NoBrush);
@@ -213,7 +213,7 @@ void QuickCoverCanvas::paintEvent(QPaintEvent*)
     spine.setColorAt(1, QColor(0, 0, 0, 0));
     p.fillRect(QRectF(0, 0, 7, height()), spine);
 
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     if (m_editing) {
         // a moldura tracejada do texto escolhido; a linha do meio no arrasto
         if (m_sel >= 0 && m_sel < m_hits.size()) {
@@ -321,7 +321,7 @@ QuickCoverPanel::QuickCoverPanel(QuickCover::Spec* spec, QuickCoverCanvas* canva
         kept << fam;
     }
     m_families = kept;
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     auto* v = new QVBoxLayout(this);
     v->setContentsMargins(0, 0, 0, 0);
     v->setSpacing(10);
@@ -409,7 +409,7 @@ void QuickCoverPanel::showText(int index)
 // ── Foto ──
 QWidget* QuickCoverPanel::buildFoto()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     auto* w = new QWidget(this);
     auto* v = new QVBoxLayout(w);
     v->setContentsMargins(0, 0, 0, 0);
@@ -516,7 +516,7 @@ void QuickCoverPanel::refreshThumbMarks()
 // ── Degradê ──
 QWidget* QuickCoverPanel::buildFade()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     auto* w = new QWidget(this);
     auto* v = new QVBoxLayout(w);
     v->setContentsMargins(0, 0, 0, 0);
@@ -850,7 +850,7 @@ void QuickCoverPanel::refreshTextPane()
     if (m_fontBtns.isEmpty()) rebuildFontList();
     QuickCover::Text* t = current();
     if (!t) return;
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     const QString which = t->role == QLatin1String("title") ? tr("título")
                         : t->role == QLatin1String("author") ? tr("autor") : tr("texto seu");
     m_editingLbl->setText(tr("Editando: <b style='color:%1'>%2</b>").arg(pal.bright.name(), which));
@@ -885,7 +885,7 @@ void QuickCoverPanel::syncFromSpec()
 
 void QuickCoverPanel::applyTheme()
 {
-    const Palette pal = Palette::current();
+    const Palette pal = Palette::onPage();
     setStyleSheet(Theme::qss(QStringLiteral(
         "QToolButton#qcTab { background: transparent; border: none; border-radius: @radius-control; color: %1; padding: 0 6px; }"
         "QToolButton#qcTab:hover { color: %2; }"
