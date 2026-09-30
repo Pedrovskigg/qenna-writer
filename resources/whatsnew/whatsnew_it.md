@@ -1,186 +1,262 @@
-**Qenna Writer**
-**Arriva un HUGE Update: la 0.18.0!**
+**Qenna Writer - BIG UPDATE 1.4**
 
-Surprise, fellas!
+La seconda ondata.
+Rework di tutto ciò che era rimasto fuori dall'ultima versione e qualche altro fix.
+In questo momento siamo concentrati su una revisione completa di Qenna nel suo insieme. Modernizzazione di pannelli, strumenti e altro. Portando l'app su una nuova strada, con un'interfaccia più amichevole, funzionale e bella.
 
-Quando meno te lo aspetti, eccolo lì, di soppiatto, in silenzio...
-UN NUOVO **AGGIORNAMENTO** DI QENNA WRITER!
-Proprio lui! L'app incredibile e meravigliosa che ho creato per scrivere e che è diventata la mia valvola di sfogo per procrastinare **non** scrivere!
+"Davvero, un altro update così presto?"
+PROPRIO COSÌ! QUI NON SI RIPOSA MAI.
 
-E in questo aggiornamento, we are back to the basics e portiamo nuovi strumenti e tante nuove opzioni, personalizzazioni e fix.
-Abbiamo un'evoluzione surreale della UI e del feeling dell'app nel suo insieme. Tantissimi nuovi strumenti, opzioni, funzioni e personalizzazione!
-Credo che questo sia il patch note più lungo che abbia mai scritto nella storia di quest'app. E non è perché parlo troppo, eh? È perché c'è davvero un sacco di roba.
+Sì, passiamo alla 1.4 e con questo...
+È UFFICIALE!
+QENNA HA FINALMENTE **COMPLETATO** LA SUA FASE BETA.
 
-Venite a vedere da vicino:
+Qenna si è lasciato alle spalle da tempo quella fase di "test" della versione 0.x.x. L'app è stabile, funzionale e a un livello in cui quella numerazione non ha più senso.
+Quindi sì:
+
+Siamo arrivati alla 1.0! E che ne vengano tante altre!
+
+Andiamo!
 
 ## Novità
 
-Abbiamo dei giocattoli nuovi molto belli nel parco giochi, guardate:
+**INTRODUCING!**
 
-**• Modalità Outline**
-Un nuovo pannello gestibile.
-Attraverso di esso, leggete, trascinate e organizzate le scene e i capitoli del vostro manoscritto in card interattive.
-Seguite dove compaiono i personaggi, riorganizzate scene e ordine della storia liberamente.
+*THE NEEEW DIALOGUE DETECTOR ENGINE HEAVYWEIGHT CHAMPION!*
 
-**• Rework della Timeline**
-Terza volta e probabilmente quella definitiva.
-La Timeline aveva un solo problema, e ammetto che era persino egoistico:
-*Piaceva il design solo a me... sì. Lo so.*
-Visivamente era brutta, confusa, strana da usare. E questo *allontanava* dallo strumento, facendolo sembrare più complesso di quanto non sia davvero.
-Quindi, fatto.
-La Timeline ha avuto un rework **COMPLETO**.
-Ora è visivamente bella, semplice da capire, interattiva come sempre, personalizzabile e, ovviamente, completamente automatizzata e funzionale come è sempre stata.
-Fidatevi, la adorerete.
-Ma per i nostalgici di turno... tranquilli. La Timeline legacy resta disponibile nel pannello.
+**• NUOVO MOTORE DEL RILEVATORE DI DIALOGHI**
+Vi presento: **Granna**.
+Granna è il nuovo motore di rilevamento dei dialoghi, scritto da zero assoluto per le nuove versioni di Qenna.
+Il vecchio motore di testo era... problematico. Troppe regole, troppi errori. Sbagliava troppo spesso, si lasciava sfuggire dialoghi ovvi e non capiva chi avesse detto la maggior parte delle battute.
 
-Questa funzione della Timeline, però, ha aperto una crepa che non mi aspettavo. È diventata così bella che... ha fatto sembrare il resto dell'app un po' datato.
-E questo mi ha infastidito al punto che è successo tutto quello che trovate qui sotto.
-È una nuova era per la personalizzazione di Qenna e, credetemi, è davvero bella. Guardate:
+Così, per togliere di mezzo i problemi, abbiamo fatto pulizia e l'abbiamo ricostruito.
+Il nuovo motore arriva fino a 3x più riconoscimenti e rilevamenti rispetto al vecchio.
+E no, non sto esagerando.
 
-**• Nuovo strumento di selezione colore**
-Ogni funzione di Qenna che richiedeva di cambiare un colore — che fosse un semplice marcatore o la creazione di un theme — apriva una finestra ENORME e ORRIBILE che sembrava una tavolozza colori di Paint di Windows XP. Era brutta, scollegata dalla UI dell'app e pessima.
-Ora Qenna ha un nuovo strumento colori. Viene richiamato da qualsiasi funzione dell'app che necessiti di una tavolozza. Intuitivo, facile da usare e non occupa il 40% dello schermo.
+Alla fine di questo patch note lascio più dettagli sul nuovo motore. Come funziona, percentuali di riconoscimento e tutto il resto, se siete curiosi. Vale davvero la pena leggerlo. È bello sapere come funziona.
 
-**• Doc Header - Cassetti**
-Nella versione scorsa avevamo introdotto il nuovo Doc Header (la fascia in cima alla pagina che mostra il nome del documento in modifica).
-Ora si espande più in profondità nei cassetti. Mostrando anche il ruolo e la foto dei personaggi, per esempio.
-E potete anche fare doppio clic sulla foto nel Doc Header per cambiarla velocemente. Ancora senza foto? Passate il mouse lì e appare il punto dove mettere la prima.
-Nota: ho usato i personaggi come esempio, ma questo funziona con qualsiasi documento che abbia un elemento narrativo (ambientazioni, oggetti).
+**• Rework: scheda Dialoghi del Pensarium**
+Insieme a Granna, la scheda Dialoghi del Pensarium ha un nuovo aspetto: il cast in alto (clicca su un volto per vedere solo le sue battute), le battute in blocchi con il colore di ogni personaggio e un pulsante per cambiare manoscritto. Le battute probabili appaiono tratteggiate; un clic destro le conferma o le corregge.
 
-**• Ritaglio immagine**
-Inserire un'immagine nel testo ora ha l'opzione di ritagliarla prima. Ritaglio sbagliato? Annullate il ritaglio e ricominciate, sempre a partire dall'immagine originale.
+**• Rework delle Impostazioni**
+La scheda delle impostazioni era un po'... datata. L'app aveva già tante impostazioni diverse, ma il pannello non aveva nessuna struttura o interfaccia vera per separare il grano dal loglio.
+Il pannello delle impostazioni ha avuto un rework completo. Ora ogni cosa è al suo posto.
 
-**• Barra dei documenti**
-La barra dei documenti (left bar per gli amici) ha ricevuto un bell'aggiornamento visivo. Ora con animazioni, sia durante l'interazione sia all'apertura dei cassetti. I cassetti escono da dietro la barra, e il contenuto entra a cascata.
-E ha anche i nomi ora: fermate il mouse sulla barra e mostra il nome di ogni pulsante e quanti elementi ci sono in ogni cassetto. Basta indovinare quale icona è quale cassetto. Lo so che c'è chi preferisce la barra pulita. Si può disattivare nelle impostazioni.
+**• Rework del pannello e del creatore di Temi**
+Sì, ci abbiamo messo mano. Il pannello dei Temi ha avuto un rework completo, sia visivo che funzionale.
+La nuova anteprima dei Temi è **INCREDIBILE**, con confronto tra temi in tempo reale, navigazione più fluida, suggerimenti di temi simili, filtri per novità e usati di recente, e molto altro.
+Inoltre, anche il **Creatore di temi** ha un volto nuovo. Un'interfaccia molto più facile da capire, anteprime più precise e molta più libertà per creare il tema che rispecchia il tuo progetto.
+Le nuove opzioni includono: colore delle icone, pannelli di vetro e il colore dei pulsanti dentro i cassetti (prima erano fissi in base al colore del cassetto; ora possono prendere il colore d'accento del tema).
+Altri punti forti: colore e font del DocHeader (il titolo del documento in modifica, in alto) e colore e bordo propri per ogni pannello.
+Mi sono anche preso la libertà di segnare alcuni temi come consigliati. Temi che considero i migliori che abbiamo fatto. Ricevono un badge e compaiono in cima alla loro categoria.
+Il rework ha portato anche un'ottimizzazione incredibile al pannello dei Temi. Prima ci metteva da 2 a 4 secondi ad aprirsi; ora si apre in meno di 1 secondo.
+Ora c'è anche l'indicazione dei Temi simili, il sistema Giorno e notte ha avuto ritocchi visivi e molto altro.
 
-**• Cassetto del progetto**
-Il pulsante Informazioni (la "i" in cima alla barra) non è più quella finestrella a modulo. Ora apre un cassetto del progetto: copertina, nome, autore, generi, sinossi, i numeri del progetto (libri, parole, personaggi) e i libri della saga.
-Tutto modificabile lì stesso. Cliccate sul nome, scrivete. Cliccate sulla copertina, la cambiate. E si salva da solo, senza pulsante OK.
+**• Creatore di temi: sfumatura e grana nello sfondo**
+Questa idea l'abbiamo presa in prestito da Qenna Cover, il nostro creatore di copertine.
+Finora lo sfondo di un tema senza foto era un solo colore piatto su tutto lo schermo. Nei temi scuri nessuno se ne accorge, tanto è tutto scuro. Ma nei chiari lo sfondo risalta dietro la pagina, e un colore pieno lì... non brilla.
+Ora lo sfondo può avere una sfumatura (in basso, in alto, entrambe o vignettatura), con colore, opacità e dimensione. E grana. Anche la grana ha una dimensione: fine, come pellicola cinematografica, o grande, che diventa pietra, feltro o madreperla. Funziona anche sopra la foto nei temi con motivi.
+È tutto nel Creatore di temi, nella parte Sfondo.
 
-**• Menu di selezione**
-Anche il menu di selezione ha avuto lo stesso tipo di ritocco della left bar. Ora ha anche animazioni ed è passato per un rework visivo, con gli strumenti organizzati meglio per categoria.
+**• Nuovi Temi:**
+Questa infornata si è concentrata sui temi chiari. E non a caso: il problema dei chiari di Qenna non è mai stata la quantità, era la varietà. Si somigliavano troppo.
+Quindi, questa volta, ogni tema usa tutto quello che ha il Creatore: colore per pannello, icone, titolo, cassetti, sfumatura e grana. E ognuno è qualcosa che riconosci al volo.
 
-**• Scrivere come su Word**
-Questo è il mio preferito di tutto l'aggiornamento, seriamente.
-Sapete quando scrivete su Word e sembra che le lettere non compaiano di scatto sullo schermo, ma *scivolino*? Non ho mai saputo spiegare il perché. Fino ad ora: è il cursore. Non salta da una lettera all'altra, scivola. E la nuova lettera appare con una dissolvenza veloce, invece di comparire e basta.
-Ebbene, ora Qenna fa questo. E la differenza nella sensazione di scrivere è assurda.
-E dato che ognuno ha i suoi gusti: nelle impostazioni potete scegliere la velocità dello scivolamento del cursore e della dissolvenza della lettera, e c'è anche una riga lì per testare prima di tornare al testo. Non vi piace? Disattivatelo e torna il cursore di sempre.
+**Chiari|** World 1-1, DMG-01, Solitaire, Ballpoint, Deep End, Clay Court, Alpenglow, Fluorescent, Luciana
 
-**• Animazioni, animazioni everywhere**
-Qenna era un'app asciutta. Cliccavi su un cassetto e... blink. Appariva e basta.
-Non più. Il Pensarium, le Statistiche, il Menu di Riferimento, Mira, il Suono Immersivo e i Promemoria entrano ed escono con animazione, ciascuno arrivando da dove ha senso. E anche ogni finestra che si apre quando usate qualcosa (creare un ricordo, un marcatore, un evento, le impostazioni...).
-Per chi preferisce tutto fermo: c'è il pulsante per disattivare le animazioni nelle impostazioni. Senza giudizi. Ok, forse un po'.
+I miei preferiti: World 1-1 (il primo livello di Mario, con il blocco ? nel contatore) e DMG-01 (il Game Boy originale, la scocca e la cornice dello schermo).
+E Luciana è speciale. È ispirata alla mia chitarra, una custom che ho montato pezzo per pezzo: battipenna azzurro perlato, corpo crema, meccaniche dorate. È venuta come si merita.
 
-**• Nuovo menu principale**
-Abbiamo messo mano alla UI di tutto... tranne la cosa più importante: la prima schermata che vedete dopo aver aperto l'app. Già. Finora, chi apriva Qenna per la prima volta si trovava davanti una schermata vuota con due righe grigie. E chi aveva già progetti vedeva copertine giganti e generiche senza nessuna informazione. Né quando ci avete lavorato, né dove eravate rimasti, niente.
-Finita. La Biblioteca ora ha viste nuove:
-**Continua** (quella predefinita): il vostro ultimo progetto in primo piano, con il capitolo e l'ultima frase di dove eravate rimasti, l'obiettivo del giorno e la striscia di giorni consecutivi. Il pulsante Continua apre il progetto proprio sull'ultima frase che avete scritto. È aprire l'app e tornare a scrivere.
-**Vetrina**: le vostre copertine in griglia, con genere, parole e ultima modifica. Con ricerca e ordinamento.
-**Cinema**: la copertina del progetto ingrandita, sfocata sullo sfondo dietro sé stessa. Come la home di un servizio streaming.
-**La tua giornata**: i vostri progetti da un lato, e dall'altro l'obiettivo di oggi, la striscia, la settimana e i promemoria di oggi.
-**Scaffale**: scaffali veri, con il libro attuale tirato in avanti sulla scrivania.
-E la **Pila** resta lì, per valore sentimentale. Il vecchio Scaffale e la Lista sono andati in pensione. "Apri automaticamente" si è spostato da sotto le copertine al tasto destro, insieme al resto delle opzioni del progetto.
-Prima volta su Qenna? Ora c'è un vero benvenuto, con i percorsi per iniziare, la lingua e alcuni theme veloci da scegliere lì stesso.
+Ma non di soli temi chiari vive l'uomo.
+Abbiamo anche una nuova infornata di temi con motivi, dedicati all'estetica rossa.
 
-**• Personalizzazione: nuovi contatori**
-Il Contatore Parole e Obiettivo Giornaliero ha ricevuto un bell'aggiornamento: ora è personalizzabile.
-Potete cambiarne dimensione e stile. Ce ne sono quasi 20 diversi tra cui scegliere. Da opzioni mini (molto più piccole del solito) ad altre con più dettagli sui vostri progressi e obiettivi raggiunti. Come Settimana, che mostra sul contatore i giorni in cui avete scritto di più nella settimana.
-È divertente, ottimo da abbinare ai theme per rendere Qenna ancora più come lo volete voi.
+**Con motivi|** Scarlet Ridge, Red Alps, Mars Range, Redemption
 
-**• Personalizzazione: Menu di Riferimento**
-Seguendo l'idea portata dai nuovi contatori, anche il Menu di Riferimento si è sciolto. Ora ci sono diversi layout per lui. Galleria, Raccoglitore, Binario, Dock, Libro aperto. Scegliete quello che preferite! Il Binario è diventato il predefinito, ma potete cambiarlo quando volete.
-Inoltre: i doc ora possono essere aperti in tab, così ne avete più di uno aperto contemporaneamente. Ora potete anche aprire più documenti fianco a fianco.
-E c'è la Mappa d'Uso: una tabella con personaggi e luoghi da un lato e i capitoli dall'altro, che mostra chi compare dove. Cliccate, si apre il capitolo o la scheda. Ottima per trovare quel personaggio sparito dal libro al capitolo 4 senza che nessuno se ne accorgesse.
+Tra questi, la mia scelta: **Redemption**.
+*for those who stay unshaken amidst a crash of worlds*
 
-**• Personalizzazione: Cassetto Manoscritto**
-Nello spirito del Menu di Riferimento. Anche il cassetto del manoscritto ora ha diversi modelli intercambiabili. Di vari tipi. Con più o meno informazioni, illustrati, essenziali, indici. Tutto.
-Un punto forte speciale è l'**Indice Illustrato**, che genera una piccola illustrazione casuale e intercambiabile. Questa illustrazione **evolve** man mano che il capitolo procede, diventando sempre più profonda e dettagliata. È bellissimo.
-Ogni capitolo ha la sua, e non ce ne sono due uguali. Non vi piace il disegno? Tasto destro e cambiatelo: rami, fiamme, città, costellazione, montagne... Sono 13 tipi, per un singolo capitolo o per tutto il libro. E se volete, potete mettere una vostra immagine al posto suo.
-Altri punti forti: la modalità **Stagioni**, che tratta il vostro libro come una serie streaming (ogni libro è una stagione, ogni capitolo un episodio, con lo stesso disegno in miniatura dell'Indice Illustrato), e le modalità Binario e Vetrina. Ma c'è molto altro: Frontespizio, Pagina del negozio, Cofanetto della saga, Lettore... Scegliete il vostro.
+Questo ha portato anche un ritocco. Diversi Temi hanno cambiato categoria. Alcuni erano troppo colorati per essere considerati scuri, altri troppo chiari per essere giallastri o colorati, ecc. La modifica ha toccato tutte le categorie (tranne i temi con motivi). Quindi, se non trovi un tema che ti piaceva e che non avevi messo nei preferiti, usa la ricerca o esplora!
 
-**• Ancora in Manoscritto: nuovi strumenti**
-Grafici di ritmo: analisi del testo tra dialogo e narrazione e lunghezza dei capitoli, per farsi un'idea dell'oscillazione del ritmo del libro.
-Stato di produzione: segnate i capitoli come bozza, revisionato o finale, e seguite quanto del libro è pronto.
-Dove mi ero fermato: il cassetto ricorda l'ultimo punto in cui avete scritto, con l'ultima frase. Un clic e siete di nuovo lì.
-Parti: raggruppate i capitoli in parti o atti, ognuno con nome e colore.
-POV: segnate il narratore di ogni capitolo e vedete la linea di ciascuno lungo il libro.
-Ordine della storia: alternate tra l'ordine in cui il libro si legge e l'ordine in cui le cose accadono davvero. Per chi ama un bel flashback.
-Revisione: in modalità Lettore, il cassetto tiene traccia di quanto avete già passato in ogni capitolo. Avete iniziato a revisionare il libro? Azzerate e seguite la revisione dall'inizio alla fine.
+**• Rework dell'Help Panel**
+Sulla scia delle impostazioni, anche l'Help Panel è stato rifatto. Le sezioni vecchie sono state aggiornate con le nuove funzioni.
 
-**• Personalizzazione: Cassetti**
-Anche i cassetti ora hanno diverse forme di visualizzazione. In evidenza le immagini, in evidenza il contenuto, in evidenza le informazioni. Ci sono vari design tra cui scegliere, tutti funzionali e belli da vedere.
-Ora i cassetti dei personaggi hanno anche strumenti per l'analisi della presenza dei personaggi.
-E non solo: fermate il mouse su un elemento e vedete l'essenziale della scheda senza doverla aprire. Confrontate due schede fianco a fianco (tasto destro, Confronta con). E per creare un legame tra due personaggi, basta trascinare il volto di uno sull'altro.
+**• Nuovi design del cassetto dei manoscritti**
+Sono arrivati anche loro! Il cassetto dei manoscritti ha ricevuto qualche nuovo design di UI. Intercambiabili, come i precedenti. Inoltre, il pulsante per il nuovo manoscritto ha una nuova icona.
+Alcuni sono pensati per lo strumento nuovo che abbiamo portato nella versione precedente: le illustrazioni.
+A proposito:
+**Nuove illustrazioni dei capitoli arrivano con questo aggiornamento!**
+Cyberpunk, Giappone feudale, Bufera di neve, Steampunk, Medievale e altre.
+Abbiamo anche sistemato i colori, perché riflettano meglio i colori delle parti dentro il manoscritto. Bello, elegante.
 
-**• Personalizzazione: Pensarium**
-Sulla scia dei precedenti, anche il Pensarium ha ricevuto questo aggiornamento visivo. Con nuovi modelli di visualizzazione/UI, intercambiabili.
+**• Rework: Nuovo cassetto**
+Nuovo creatore di cassetti, più pulito, bello e veloce. Gli stessi cassetti, più facili da creare.
 
-**• Creatore di Mondi: ora è un'Enciclopedia**
-Anche questa l'ho adorata.
-Il Creatore di Mondi (i Territori e i Sistemi del Construtor) viveva schiacciato in un binario di 280px accanto all'editor. Ci stavano lista, spettro, Favorisce/Richiede e l'albero delle regole, tutto lì, stretto stretto. Funzionava, ma faceva male agli occhi.
-Ora è una finestra vera. Un interruttore in alto alterna tra Luoghi e Sistemi, e ogni territorio o sistema diventa una voce continua: titolo, riassunto e ogni regola o documento come una sezione propria (le regole numerate tipo Art. 1, 1.1, proprio come una legge). Cliccate su qualsiasi passaggio e scrivete lì, senza dover aprire un nodo alla volta.
-In più, ogni territorio ha guadagnato una scheda a lato: i vicini (con il legame tra loro), chi è nato o vive lì (preso direttamente dalle schede dei personaggi), quali sistemi valgono in quel luogo e cosa è già successo lì nella Timeline.
-Se usate il Creatore di Mondi per una serie fantasy epica, questo vi semplificherà (e di molto) la vita.
+**• Rework: Glossario**
+Nemmeno lui si è salvato. Anche il glossario ha avuto un rework completo. Sia il suo pannello che l'accesso dal menu di selezione. E ora può anche evidenziare nel testo le parole salvate al suo interno.
+Ha ricevuto anche una scheda tutta sua nel Pensarium, con i termini che ottengono tipi e grafie alternative.
 
-**• Creazione di attività**
-Creando commenti, ora potete contrassegnarli come attività, consultandole dal Pensarium.
+**• Rework: Crea documento dal testo**
+Scheda rifatta, più veloce e dinamica.
 
-**Nuovi Theme**
-Come sempre. Adoro creare Theme. È praticamente un hobby dentro questo progetto.
-L'ultima ondata si è concentrata parecchio su Theme stampati e particolarmente scuri.
-E per bilanciare, questa ondata si è concentrata anche sui theme chiari. Portandone alcuni davvero interessanti.
-Tutti i Theme nuovi e le loro categorie:
+**• Rework: finestre**
+Addio alle finestre di Windows. Tutto ciò che apriva ancora una finestra di sistema ora è un foglio di Qenna. Almeno, tutte quelle che conosco. Se ne trovi qualcuna sperduta, fammelo sapere!
+Questo riguarda tutto: Creatore di Mondi e Sistemi, Board, Gruppi, Timeline, ecc.
 
-**Chiari|** Grace, Grey Card, Unstyled, E-ink (con una variante grigia), Cellophane, Desktop 95, Platinum, Luna, 1-bit, Green ink
-**Giallastri|** Tungsten, Sodium, Onionskin, Light Table, Burnt Sugar, Red Lacquer, Jacaranda
-**Scuri|** Arc Light, Flight Deck, Grace Dark
-**Vivaci|** Blacklight
-**Stampati|** Paper City Yellowed (lo stesso giornale di Paper City, quarant'anni dopo)
+**• Rework di Nuovo capitolo/Nuova scena**
+Nuovo popup per nuovo capitolo e nuova scena. Più bello, per stare al passo con gli aggiornamenti della UI.
+Questo include anche una cosa che vi dovevo da tempo: un separatore di scene decente. Ora l'app ha due opzioni di separatore, da scegliere nelle impostazioni. Entrambi molto più belli della linea dritta e storta che avevamo.
 
-**• Theme: opacità e luminosità**
-Due nuove opzioni nell'Editor dei Theme.
-Opacità: barre e pannelli possono diventare semitrasparenti, lasciando intravedere l'immagine di sfondo del theme.
-Luminosità della pagina: invece di proiettare un'ombra, la pagina può diffondere luce intorno a sé. Light Table e Arc Light usano questo, dateci un'occhiata.
+**• Rework di Nuovo personaggio/Modifica personaggio**
+Sì, nemmeno lui si è salvato. Quando crei nuovi personaggi, ora hai un pannello molto più bello per lasciar scorrere la creatività.
 
-**• Theme con nome in inglese**
-48 theme avevano ancora il nome in portoghese. Per chi usa l'app in un'altra lingua, era impossibile trovarli nella ricerca. Ora hanno il nome in inglese. (E sì, Pátina, Borra e Musgo che conoscevate ora sono Patina, Grounds e Moss. Stessi theme, nomi nuovi.)
-Se ne usavate qualcuno, tranquilli: il theme e i vostri preferiti sono ancora lì.
+**• Rework: aggiungere un evento alla Timeline**
+Il vecchio apriva letteralmente la Timeline per farti creare l'evento lì, strappandoti dal tuo testo con una certa brutalità. Non più.
+
+**• Rework: Nuovo progetto**
+Nemmeno la finestra del nuovo progetto si è salvata: più bella e facile da compilare. Ora è tutto in un solo foglio, senza i 3 passaggi di prima.
+
+*E ora...*
+*Ragazzi... fate un bel respiro...*
+**HE'S BACK**
+**• Creatore di copertine!**
+Beh, almeno una sua versione più piccola e tranquilla, ma è tornato. Il creatore di copertine nativo, come avevamo nel defunto Mira Writing.
+Funziona bene, ottimo per creare copertine veloci e non avere scuse per restare con un quadrato nero con il nome del libro nel Main Menu.
+Mi sono assicurato che avesse parecchie opzioni utili e necessarie per creare almeno copertine decenti.
+
+Il nuovo creatore di copertine non è approfondito quanto Qenna Cover (il nostro altro progetto), e non ci prova nemmeno. Il suo unico obiettivo è rendere il tuo progetto più bello nel Menu senza che tu debba scaricare un altro programma.
+Ma Qenna Cover è ancora disponibile... mezzo morto, sì. Ma è ancora vivo e ho in programma di aggiornarlo presto. Quindi restate sintonizzati.
+
+Comunque, il nostro Cover-Mini è onesto e ti darà risultati soddisfacenti. Vi piacerà.
+E sinceramente? Non è approfondito quanto Qenna Cover, ma non è nemmeno così lontano.
+
+E ovviamente, il classico: puoi esportare le tue copertine e usarle altrove, come negli EPUB o sui siti.
+
+**• Funzione: Eventi della Timeline**
+L'opzione delle impostazioni per creare più eventi della Timeline in una volta è stata spostata dentro il pannello della Timeline, e ha avuto anche un rework visivo completo.
+
+**• Avviso di aggiornamento nel menu**
+È uscita una nuova versione? Ora l'avviso compare in grande, in cima al menu principale, con le novità e l'avanzamento del download.
+
+*E ora, prima di passare ai fix e ai ritocchi, torniamo al nostro nuovo rilevatore di dialoghi, Granna.*
+
+**• Granna: come funziona?**
+
+Prima dobbiamo parlare del vecchio rilevatore, così si capisce la differenza.
+Il vecchio rilevatore funzionava così:
+Prendeva ogni battuta da sola e cercava il nome di un personaggio dopo il trattino (o dopo le virgolette).
+
+○ Trovava un nome: la battuta era di quel personaggio.
+○ Non ne trovava nessuno: si arrendeva. "Senza attribuzione."
+○ Ne trovava due: si arrendeva lo stesso. E succedeva spesso, perché confondeva il seguito della battuta con l'inciso:
+
+Tipo così:
+
+«Lui no» ammise Maria. «Ma Samantha sì.»
+
+○ Vedeva "Maria" e "Samantha" e gettava la spugna.
+
+«Non vengo» disse lei. Nessun nome, nessun parlante.
+«Fuori?» Battuta senza inciso, nessun parlante.
+
+Se il progetto aveva un narratore, qualsiasi battuta con "io", "disse" o "come" finiva al narratore, anche se era di qualcun altro.
+
+Capiva solo trattini e virgolette doppie. Le virgolette « », comuni in italiano e francese, non le vedeva nemmeno.
+
+*E ora, amici... allacciate le cinture.*
+
+**ECCO COME LAVORA GRANNA:**
+
+Legge la scena dall'alto in basso, ricordando la conversazione:
+
+**○ Separa il parlato dalla narrazione.**
+"ammise Maria" è l'inciso; "Ma Samantha sì" è parlato.
+**○ Capisce chi è il soggetto.**
+In "disse Clara", a parlare è Clara. In "guardò Clara", no.
+**○ Segue i turni.**
+Se Clara e João stanno parlando, «Fuori?» arriva subito dopo Clara, quindi è di João.
+**○ Si accorge di chi è stato chiamato.**
+In «Grazie, Maria.», a parlare non è Maria: è chi sta parlando con lei.
+**○ Capisce "disse lui" e "disse lei"**
+dal genere di ogni personaggio. **Lo segni nella nuova Forma di trattamento quando crei/modifichi i personaggi**, oppure lo deduce dal testo.
+**○ Riconosce le comparse.**
+«Aula 9» disse il ragazzo. Il parlante c'è, ma non è nessuno del tuo cast, quindi non dà la battuta al personaggio sbagliato.
+**○ Capisce la prima persona**
+dal narratore segnato nel capitolo: «No» risposi.
+**○ Capisce il gesto prima della battuta**
+Nei libri con le virgolette: Oda alzò le spalle. «La giustizia non c'entra niente.»
+**○ Scopre da solo la lingua di ogni capitolo**
+E usa le regole di quella lingua: trattino, virgolette, « », la raya spagnola e l'inciso francese ("— Je pars, dit Marie.").
+**○ Nelle sceneggiature**
+Legge il parlante direttamente dal blocco del personaggio.
+
+**○ E ti dice quando sta tirando a indovinare**
+Con il nome scritto nell'inciso, la battuta è segnata come certa. Quando la deduce dalla conversazione, appare come "probabile", e un clic destro la conferma o la corregge. Quello che correggi non viene mai annullato.
+
+**○ Dietro le quinte, anche le battute salvate sono diventate affidabili**
+
+Hai modificato una battuta? La versione vecchia non resta più dimenticata nel file, contando nelle statistiche.
+Due battute uguali («Sì.») nello stesso capitolo restano due.
+"Non è una battuta" toglie per sempre una riga che non è dialogo; prima tornava da sola.
+Scansiona tutto mostra, nella barra, ogni battuta nuova, ogni cambio di parlante e ogni battuta rimossa, con dove si trova e chi l'ha detta.
+
+**PERCENTUALI DI RICONOSCIMENTO:**
+Su capitoli di prova nelle cinque lingue:
+vecchio motore 25% | Granna 93%, fino al 97% con la forma di trattamento segnata nei personaggi.
+Per lingua (Granna): IT 100% · PT-BR 100% · ES 92% · FR 91% · EN 81% (100% con la forma di trattamento)
+
+Il risultato migliore del vecchio motore era il 54%, in ES.
+L'italiano non lo rilevava proprio.
+9% in FR.
+25% in EN.
+
+Non serve dilungarsi. È un salto di potenza assurdo.
+
+*E ora, proseguiamo il viaggio...*
 
 ## Fix
+Qualche fix veloce per smussare alcuni spigoli dell'ultima versione.
+È stato un update grande, quindi era prevedibile che qualcosa scappasse. Niente drammi, ecco cosa è stato sistemato.
 
-Riparazioni per tenere tutto funzionante.
+**• Errore nell'aggiornamento automatico**
+*\\ percorso non specificato.*
+Questo errore era Qt che faceva l'escape di alcune virgolette. Il cmd non interpreta il carattere, quindi l'avvio dell'update falliva.
+È stato corretto in un re-release della 0.18.0. Ho modificato quella release con un setup che aveva già la correzione. Quindi, se l'hai scaricata dopo, probabilmente il bug non ti capiterà.
+Corretto.
 
-**• Manoscritto fantasma**
-Poteva succedere. L'app perdeva l'id del manoscritto. Così i capitoli restavano orfani e sparivano dall'app. Non erano davvero persi, esistevano ancora nella cartella del progetto, ma l'app non li trovava.
-Ora l'app verifica e confronta l'id dei capitoli con quello dei manoscritti. Se qualcosa non torna, lo corregge.
+**• La percentuale dell'obiettivo giornaliero si bloccava al 100%, anche se continuavi**
+Sì. I nuovi contatori sono bellissimi, ma avevano un problema di visualizzazione nella percentuale dell'obiettivo, che si bloccava una volta raggiunto e smetteva di crescere.
+Corretto.
 
-**• Pannelli persistenti**
-Corretto un bug per cui, minimizzando l'app con alcuni pannelli specifici aperti, il pannello poteva restare a schermo anche con l'app ridotta a icona.
+**• Colore dei Temi x Nuovi stili di visualizzazione**
+Il colore di alcuni temi poteva rendere illeggibili alcuni contenuti nei nuovi stili di visualizzazione del Pensarium. Corretto.
 
-**• Installer di aggiornamento**
-Conoscete quel messaggio "L'installer non è riuscito a chiudere automaticamente tutte le applicazioni", con un "Ignora" a fianco, che a volte compariva durante l'aggiornamento? Era Qenna che stava ancora finendo di chiudersi mentre l'installer voleva già mettersi al lavoro.
-Ora l'installer aspetta che Qenna sia davvero chiuso prima di iniziare. Nessun messaggio, nessun file dimenticato. Corretto.
+**• Colore dei tooltip dell'app**
+Il tooltip del cassetto dei manoscritti e molti altri potevano diventare completamente neri, senza contenuto leggibile. Corretto.
 
-**• Dati che sparivano**
-Due situazioni in cui Qenna dimenticava cose che avevate compilato:
-Un capitolo con una sola scena perdeva il titolo, il marcatore temporale e il riassunto della scena.
-E le modifiche fatte solo ai dati di un capitolo o manoscritto (senza toccare il testo) potevano non salvarsi alla chiusura dell'app.
-Entrambe corrette.
+**• Ritocco al contatore**
+Ora si anima quando cambia dimensione.
 
-**• Timeline: nome della linea**
-L'avviso di ramificazione della Timeline mostrava un codice strano al posto del nome della linea. Corretto.
+**• Crash cambiando il genere (M/F) dei legami**
+Creando un legame, se provavi a cambiare il genere delle opzioni, il programma crashava di colpo.
+Corretto.
 
-**• Icone dei cassetti nel Menu di Riferimento**
-In alcuni theme colorati, l'icona del cassetto spariva semplicemente nel Menu di Riferimento. Ora ogni cassetto mostra la sua icona nel suo colore.
+**• Menu principale a due finestre**
+Prima, andando al menu principale, Qenna si divideva in due finestre, una con l'editor e l'altra con il menu.
+Ora è una sola.
 
-**• Pulsante Nuovo progetto senza colore**
-Il pulsante Nuovo progetto nel menu principale doveva sempre avere il colore d'accento del theme. Un bug lo lasciava grigio (portandosi via anche il colore d'accento di altre parti del menu). Corretto. Ora ha il colore del vostro theme, come doveva essere.
+**• Altri fix**
+Chiudi, Annulla e il menu copia/incolla ora compaiono nella lingua dell'app.
+Sono state corrette le etichette tagliate nella scheda del territorio (in inglese) e nel chip del glossario.
+
+**• Colori delle finestre**
+Prendevano il colore di Windows. Fixed. Ora le finestre di Qenna prendono il colore del Tema.
+
+**• Finestra del Patch Note**
+Aaah, finalmente ho sistemato il margine della finestra del patch note. Questa volta dovrebbe vedersi bene.
 
 ---
+È tutto, miei cari. Divertitevi.
+Qenna è davvero SOLIDO, al suo massimo. Bello, fluido, funzionale e un piacere da usare.
 
-Questo è tutto, amori miei, Qenna dopo questo aggiornamento è più vivo che mai.
-È un aggiornamento grande, con tanto da scoprire. Quindi ho intenzione di darvi il tempo di godervelo, a meno che non trovi qualche bug urgente.
-
-*Con pigrizia,*
+*Pentendomi di darlo gratis, ma non torno indietro,*
 P.H. Lobato — Guardiano delle Terre di Qenna
