@@ -82,6 +82,8 @@
 #include <QUuid>
 #ifdef Q_OS_WIN
 #include <windows.h>   // CREATE_NO_WINDOW, ao soltar o instalador de update
+#include <chrono>
+#include <thread>      // cão de guarda do update
 #endif
 #include <QDialogButtonBox>
 #include <QFormLayout>
@@ -6850,6 +6852,19 @@ void MainWindow::startUpdateDownload()
             return;
         }
 
+        // O quit() lá embaixo NÃO passa pelo closeEvent — sem isto, o que o
+        // autosave ainda não tinha gravado se perdia no update. Mesmo salvamento
+        // do fechamento normal; se falhar, não fecha o app.
+        if (projectSaver) {
+            if (editorHost) editorHost->syncEditorToCache();
+            if ((projectSaver->hasDirtyContent() || projectSaver->isSaving())
+                && !projectSaver->saveProject()) {
+                showUpdateDownloadError(tr("Não consegui salvar o projeto antes de atualizar: %1")
+                                            .arg(projectSaver->lastError()));
+                return;
+            }
+        }
+
         // Lançar o instalador direto daqui não funciona: ele começa a extrair
         // com este app ainda vivo, segurando o exe, as DLLs do Qt e as fontes
         // carregadas por addApplicationFont. O Inno então ou falha em
@@ -6881,6 +6896,16 @@ void MainWindow::startUpdateDownload()
                 args->flags |= CREATE_NO_WINDOW;
             });
         launcher.startDetached();
+        // Cão de guarda (1.4.3): num note lento o Qenna às vezes não terminava
+        // de sair depois do quit() — a janela sumia e o processo ficava, sem
+        // janela, segurando exe, DLLs e fontes, e o instalador batia em "arquivo
+        // em uso". O projeto já foi salvo acima; se em 5 s ainda estivermos
+        // vivos, o processo se encerra. Saindo normal antes disso, a thread
+        // morre junto.
+        std::thread([]() {
+            std::this_thread::sleep_for(std::chrono::seconds(5));
+            ::TerminateProcess(::GetCurrentProcess(), 0);
+        }).detach();
 #else
         QProcess::startDetached(destPath, {});
 #endif

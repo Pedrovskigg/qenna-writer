@@ -1,5 +1,5 @@
-**Qenna Writer 1.4.2**
-Encore un ajustement de l'installateur, pensé pour les PC plus lents : désormais, seul l'installateur ferme Qenna s'il est encore ouvert (en demandant d'abord). Windows n'intervient plus, et le message « n'a pas pu fermer automatiquement toutes les applications » n'apparaîtra plus.
+**Qenna Writer 1.4.3**
+D'autres corrections de l'installateur, pensées pour les PC plus lents : désormais, seul l'installateur ferme Qenna s'il est encore ouvert ou s'est bloqué en se fermant (en demandant d'abord), et il repère maintenant Qenna même quand il continue de tourner en arrière-plan. Fini les « n'a pas pu fermer automatiquement toutes les applications » et « le fichier est utilisé par un autre processus ». Et Qenna enregistre maintenant votre projet avant de se fermer pour la mise à jour, et ne reste plus bloqué en arrière-plan ensuite.
 
 **Qenna Writer 1.4.1**
 Une petite correction de l'installateur. Si Qenna continuait de tourner en arrière-plan après avoir lancé la mise à jour, l'installation restait bloquée sur « Le programme d'installation n'a pas pu fermer automatiquement toutes les applications ». Maintenant, l'installateur attend que Qenna ait fini de se fermer et, s'il est bloqué, vous demande et le ferme pour vous.

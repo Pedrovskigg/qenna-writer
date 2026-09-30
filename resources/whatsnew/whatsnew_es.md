@@ -1,5 +1,5 @@
-**Qenna Writer 1.4.2**
-Un ajuste más en el instalador, pensando en PCs más lentas: ahora solo el propio instalador cierra Qenna si sigue abierto (preguntando antes). Windows ya no interviene, y el mensaje de "no pudo cerrar automáticamente todas las aplicaciones" ya no aparece.
+**Qenna Writer 1.4.3**
+Más ajustes en el instalador, pensando en PCs más lentas: ahora solo el propio instalador cierra Qenna si sigue abierto o se quedó colgado al cerrarse (preguntando antes), y ahora detecta a Qenna incluso cuando se queda ejecutándose en segundo plano. Se acabó el "no pudo cerrar automáticamente todas las aplicaciones" y el "el archivo está siendo usado por otro proceso". Y Qenna ahora guarda el proyecto antes de cerrarse para actualizar, y ya no se queda ejecutándose en segundo plano después.
 
 **Qenna Writer 1.4.1**
 Un ajuste rápido en el instalador. Si Qenna seguía ejecutándose en segundo plano después de pedirle que se actualizara, la instalación se quedaba trabada en "El instalador no pudo cerrar automáticamente todas las aplicaciones". Ahora el instalador espera a que Qenna termine de cerrarse y, si se quedó colgado, pregunta y lo cierra por ti.
