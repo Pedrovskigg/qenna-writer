@@ -1,4 +1,4 @@
-**Qenna Writer 1.4.3**
+**Qenna Writer 1.4.4**
 Altre sistemate all'installer, pensando ai PC più lenti: ora è solo l'installer a chiudere Qenna se è ancora aperto o si è bloccato mentre si chiudeva (chiedendo prima), e ora riesce a vedere Qenna anche quando resta in esecuzione in background. Niente più "non è riuscito a chiudere automaticamente tutte le applicazioni" né "il file è in uso da un altro processo". E Qenna ora salva il progetto prima di chiudersi per aggiornarsi, e non resta più in esecuzione in background dopo.
 
 **Qenna Writer 1.4.1**

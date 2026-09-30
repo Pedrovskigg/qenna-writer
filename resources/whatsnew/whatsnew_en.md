@@ -1,4 +1,4 @@
-**Qenna Writer 1.4.3**
+**Qenna Writer 1.4.4**
 More installer fixes, with slower PCs in mind: now only the installer itself closes Qenna if it's still open or got stuck while closing (asking first), and it can now see Qenna even when it keeps running in the background. No more "unable to automatically close all applications" or "file is being used by another process". And Qenna now saves your project before closing to update, and no longer gets stuck running in the background afterwards.
 
 **Qenna Writer 1.4.1**
