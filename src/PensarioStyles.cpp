@@ -354,7 +354,7 @@ void PensarioPanel::applyStyleLayout() {
     if (m_mapBtn) m_mapBtn->setVisible(toolsInHeader);
     // O glossário é aba: o botão do cabeçalho só fica no Quadro, que não tem abas.
     if (m_glossaryBtn) m_glossaryBtn->setVisible(nav == Nav::None);
-    if (m_sectionRow) m_sectionRow->setVisible((nav == Nav::Rail || nav == Nav::Dock) && !alternateViewActive());
+    updateSectionRow();
     if (m_detail) m_detail->setVisible(m_style == Style::TwoColumns && !alternateViewActive()
                                        && m_tab != Tab::Names && m_tab != Tab::Glossary);
     const bool alt = alternateViewActive();
@@ -573,6 +573,16 @@ void PensarioPanel::updateNavChecks() {
         m_sectionTitle->setText(m_tab == Tab::Names ? tabName(Tab::Names).toUpper()
             : QStringLiteral("%1 · %2").arg(tabName(m_tab).toUpper()).arg(tabCount(m_tab)));
     }
+    updateSectionRow();
+}
+
+// A aba Diálogos no desenho novo traz o próprio título (com contagem e
+// Escanear); a linha "DIÁLOGOS · N" do trilho/doca ficaria repetida.
+void PensarioPanel::updateSectionRow() {
+    if (!m_sectionRow) return;
+    const Nav nav = navFor(m_style);
+    m_sectionRow->setVisible((nav == Nav::Rail || nav == Nav::Dock) && !alternateViewActive()
+                             && !(m_tab == Tab::Dialogues && dialogueScriptLayout()));
 }
 
 bool PensarioPanel::alternateViewActive() const {

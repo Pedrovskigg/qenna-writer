@@ -93,6 +93,7 @@ qt_add_executable(qenna-writer
     src/PensarioPanel.cpp
     src/PensarioPanel.h
     src/PensarioStyles.cpp
+    src/PensarioDialogues.cpp
     src/NotesStore.cpp
     src/NotesStore.h
     src/NoteEditPopup.cpp

@@ -164,6 +164,7 @@ private:
     void applyStyleLayout();
     void rebuildNav();
     void updateNavChecks();
+    void updateSectionRow();
     int tabCount(Tab t) const;
     QString tabName(Tab t) const;
     QString tabIcon(Tab t) const;
@@ -250,6 +251,15 @@ private:
     // Rótulo do card: nome; "Nome · provável" (deduzido pela conversa, falta
     // confirmar); "O porteiro · figurante"; "Sem locutor".
     QString dialogueSpeakerLabel(const DialogueStore::Dialogue& d) const;
+    // Aba Diálogos no desenho "Elenco na frente" (PensarioDialogues.cpp), só
+    // nos estilos de cartão padrão (Clássico, Trilho, Doca).
+    bool dialogueScriptLayout() const;
+    void rebuildDialoguesScript(const QVector<DialogueStore::Dialogue>& all);
+    QString dialogueManuscriptId() const;
+    void showDialogueHelp(QWidget* anchor);
+    void showDialogueManuscriptMenu(QWidget* anchor);
+    void showDialogueChapterMenu(QWidget* anchor);
+    void showDialogueLineMenu(const QString& dlgId, const QPoint& globalPos);
     // Diálogo bate no filtro de origem (capítulo/cena) atual? Extraído do
     // corpo de rebuildDialogues pra ser reaproveitado no cálculo do badge de
     // "Diálogos sem atribuição" em rebuildDialoguePresenceChips.
@@ -401,6 +411,12 @@ private:
     // TAMBÉM têm fala salva (proxy de presença — mais barato que reescanear
     // o texto da cena, e os dados já estão no DialogueStore).
     QSet<QString> m_dialoguePresenceFilter;
+    // Desenho "Elenco na frente": manuscrito escolhido no livro ("" = o do
+    // capítulo aberto), vista Todas/Conferir/Figurantes ("" | "probable" |
+    // "extras") e rostos marcados na faixa ("__extras__" = figurantes).
+    QString m_dialogueManuscriptId;
+    QString m_dialogueView;
+    QSet<QString> m_dialogueSpeakerFilter;
     // Card de estatísticas (quem mais fala, capítulo com mais diálogo,
     // diálogo mais longo) — recolhido por padrão, atrás de um botão, pra
     // não poluir a aba com algo sempre visível.

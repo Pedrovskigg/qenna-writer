@@ -3483,12 +3483,12 @@ El proyecto irá a la Papelera (accesible por el ícono de papelera aquí abajo)
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="547"/>
         <source>Masculino</source>
-        <translation type="unfinished">Masculino</translation>
+        <translation>Masculino</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="547"/>
         <source>Feminino</source>
-        <translation type="unfinished">Femenino</translation>
+        <translation>Femenino</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="550"/>
@@ -9142,7 +9142,7 @@ El contenido existente puede sobrescribirse.</translation>
     <message>
         <location filename="../src/MainWindow.cpp" line="5592"/>
         <source>Figurante</source>
-        <translation type="unfinished">Figurante</translation>
+        <translation>Figurante</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5593"/>
@@ -9172,7 +9172,7 @@ El contenido existente puede sobrescribirse.</translation>
     <message>
         <location filename="../src/MainWindow.cpp" line="5708"/>
         <source>Fechar</source>
-        <translation type="unfinished">Cerrar</translation>
+        <translation>Cerrar</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5765"/>
@@ -9182,7 +9182,7 @@ El contenido existente puede sobrescribirse.</translation>
     <message>
         <location filename="../src/MainWindow.cpp" line="5798"/>
         <source>Personagem</source>
-        <translation type="unfinished">Personaje</translation>
+        <translation>Personaje</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="5799"/>
@@ -12444,258 +12444,259 @@ El contenido existente puede sobrescribirse.</translation>
 <context>
     <name>PensarioPanel</name>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="220"/>
+        <location filename="../src/PensarioPanel.cpp" line="223"/>
         <source>Pensário</source>
         <translation>Pensario</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="233"/>
+        <location filename="../src/PensarioPanel.cpp" line="236"/>
         <source>Por capítulo</source>
         <translation>Por capítulo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="234"/>
+        <location filename="../src/PensarioPanel.cpp" line="237"/>
         <source>Por criação</source>
         <translation>Por creación</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="244"/>
+        <location filename="../src/PensarioPanel.cpp" line="247"/>
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="244"/>
+        <location filename="../src/PensarioPanel.cpp" line="247"/>
         <source>Criação</source>
         <translation>Creación</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="272"/>
+        <location filename="../src/PensarioPanel.cpp" line="275"/>
         <location filename="../src/PensarioStyles.cpp" line="530"/>
         <source>Gerador de nomes</source>
         <translation>Generador de nombres</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="281"/>
+        <location filename="../src/PensarioPanel.cpp" line="284"/>
         <location filename="../src/PensarioStyles.cpp" line="537"/>
         <source>Mapa-múndi</source>
         <translation>Mapamundi</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="290"/>
-        <location filename="../src/PensarioPanel.cpp" line="333"/>
+        <location filename="../src/PensarioPanel.cpp" line="293"/>
+        <location filename="../src/PensarioPanel.cpp" line="336"/>
         <location filename="../src/PensarioStyles.cpp" line="472"/>
         <source>Glossário</source>
         <translation>Glosario</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="305"/>
+        <location filename="../src/PensarioPanel.cpp" line="308"/>
         <source>Fechar</source>
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="329"/>
+        <location filename="../src/PensarioPanel.cpp" line="332"/>
         <location filename="../src/PensarioStyles.cpp" line="467"/>
-        <location filename="../src/PensarioStyles.cpp" line="1774"/>
+        <location filename="../src/PensarioStyles.cpp" line="1784"/>
         <source>Comentários</source>
         <translation>Comentarios</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="330"/>
+        <location filename="../src/PensarioPanel.cpp" line="333"/>
         <location filename="../src/PensarioStyles.cpp" line="468"/>
         <source>Notas</source>
         <translation>Notas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="331"/>
+        <location filename="../src/PensarioPanel.cpp" line="334"/>
         <location filename="../src/PensarioStyles.cpp" line="469"/>
         <source>Memórias</source>
         <translation>Memorias</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="332"/>
+        <location filename="../src/PensarioPanel.cpp" line="335"/>
         <location filename="../src/PensarioStyles.cpp" line="470"/>
+        <location filename="../src/PensarioDialogues.cpp" line="168"/>
         <source>Diálogos</source>
         <translation>Diálogos</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="514"/>
-        <location filename="../src/PensarioStyles.cpp" line="1962"/>
+        <location filename="../src/PensarioPanel.cpp" line="517"/>
+        <location filename="../src/PensarioStyles.cpp" line="1972"/>
         <source>+ Nova nota</source>
         <translation>+ Nueva nota</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="555"/>
+        <location filename="../src/PensarioPanel.cpp" line="558"/>
         <source>Nenhuma nota ainda.
 Clique em “+ Nova nota” para criar a primeira.</source>
         <translation>Aún no hay notas.
 Haz clic en “+ Nueva nota” para crear la primera.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="610"/>
-        <location filename="../src/PensarioStyles.cpp" line="1633"/>
+        <location filename="../src/PensarioPanel.cpp" line="613"/>
+        <location filename="../src/PensarioStyles.cpp" line="1643"/>
         <source>Excluir nota</source>
         <translation>Eliminar nota</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="720"/>
+        <location filename="../src/PensarioPanel.cpp" line="723"/>
         <source>Personagens</source>
         <translation>Personajes</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="721"/>
+        <location filename="../src/PensarioPanel.cpp" line="724"/>
         <source>Lugares</source>
         <translation>Lugares</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="722"/>
+        <location filename="../src/PensarioPanel.cpp" line="725"/>
         <source>Armas</source>
         <translation>Armas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="741"/>
+        <location filename="../src/PensarioPanel.cpp" line="744"/>
         <source>Gerar</source>
         <translation>Generar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="754"/>
+        <location filename="../src/PensarioPanel.cpp" line="757"/>
         <source>Feminino</source>
         <translation>Femenino</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="761"/>
+        <location filename="../src/PensarioPanel.cpp" line="764"/>
         <source>Masculino</source>
         <translation>Masculino</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="785"/>
+        <location filename="../src/PensarioPanel.cpp" line="788"/>
         <source>Começa com…</source>
         <translation>Empieza con…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="789"/>
+        <location filename="../src/PensarioPanel.cpp" line="792"/>
         <source>Termina com…</source>
         <translation>Termina con…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="810"/>
+        <location filename="../src/PensarioPanel.cpp" line="813"/>
         <source>Escolha uma categoria e clique em Gerar.</source>
         <translation>Elige una categoría y haz clic en Generar.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="888"/>
+        <location filename="../src/PensarioPanel.cpp" line="891"/>
         <source>Clique para copiar</source>
         <translation>Haz clic para copiar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="894"/>
+        <location filename="../src/PensarioPanel.cpp" line="897"/>
         <source>Nenhum nome com esse começo/fim neste estilo.
 Tente outro estilo ou um afixo mais comum.</source>
         <translation>Ningún nombre con ese inicio/final en este estilo.
 Prueba otro estilo o un afijo más común.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="896"/>
+        <location filename="../src/PensarioPanel.cpp" line="899"/>
         <source>Nada gerado. Tente de novo.</source>
         <translation>Nada generado. Inténtalo de nuevo.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="910"/>
+        <location filename="../src/PensarioPanel.cpp" line="913"/>
         <source>« %1 » copiado</source>
         <translation>« %1 » copiado</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="959"/>
-        <location filename="../src/PensarioPanel.cpp" line="1257"/>
-        <location filename="../src/PensarioPanel.cpp" line="1543"/>
-        <location filename="../src/PensarioPanel.cpp" line="1926"/>
+        <location filename="../src/PensarioPanel.cpp" line="962"/>
+        <location filename="../src/PensarioPanel.cpp" line="1265"/>
+        <location filename="../src/PensarioPanel.cpp" line="1554"/>
+        <location filename="../src/PensarioPanel.cpp" line="1937"/>
         <source>Personagem</source>
         <translation>Personaje</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="963"/>
+        <location filename="../src/PensarioPanel.cpp" line="966"/>
         <source>Todas</source>
         <translation>Todas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="964"/>
+        <location filename="../src/PensarioPanel.cpp" line="967"/>
         <source>Do projeto</source>
         <translation>Del proyecto</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="972"/>
+        <location filename="../src/PensarioPanel.cpp" line="975"/>
         <source>Filtro: %1  ▾</source>
         <translation>Filtro: %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="993"/>
+        <location filename="../src/PensarioPanel.cpp" line="996"/>
         <source>Todas as memórias</source>
         <translation>Todas las memorias</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="994"/>
+        <location filename="../src/PensarioPanel.cpp" line="997"/>
         <source>Memórias do projeto</source>
         <translation>Memorias del proyecto</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1006"/>
+        <location filename="../src/PensarioPanel.cpp" line="1009"/>
         <source>Memórias de %1</source>
         <translation>Memorias de %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1040"/>
+        <location filename="../src/PensarioPanel.cpp" line="1043"/>
         <source>Nenhuma memória ainda. Selecione um trecho no editor e escolha “Adicionar à memória…” na barra de seleção.</source>
         <translation>Aún no hay memorias. Selecciona un fragmento en el editor y elige “Añadir a la memoria…” en la barra de selección.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1042"/>
+        <location filename="../src/PensarioPanel.cpp" line="1045"/>
         <source>Nenhuma memória neste filtro.</source>
         <translation>No hay memorias en este filtro.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1057"/>
-        <location filename="../src/PensarioStyles.cpp" line="746"/>
+        <location filename="../src/PensarioPanel.cpp" line="1060"/>
+        <location filename="../src/PensarioStyles.cpp" line="756"/>
         <source>Memória</source>
         <translation>Memoria</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1057"/>
-        <location filename="../src/PensarioStyles.cpp" line="746"/>
+        <location filename="../src/PensarioPanel.cpp" line="1060"/>
+        <location filename="../src/PensarioStyles.cpp" line="756"/>
         <source>Memória do %1</source>
         <translation>Memoria de %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1058"/>
+        <location filename="../src/PensarioPanel.cpp" line="1061"/>
         <source>%1  ·  %2</source>
         <translation>%1  ·  %2</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1061"/>
+        <location filename="../src/PensarioPanel.cpp" line="1064"/>
         <source>[%1]  %2</source>
         <translation>[%1]  %2</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1159"/>
-        <location filename="../src/PensarioStyles.cpp" line="1646"/>
+        <location filename="../src/PensarioPanel.cpp" line="1162"/>
+        <location filename="../src/PensarioStyles.cpp" line="1656"/>
         <source>Excluir memória</source>
         <translation>Eliminar memoria</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1209"/>
-        <location filename="../src/PensarioStyles.cpp" line="1371"/>
-        <location filename="../src/PensarioStyles.cpp" line="1618"/>
-        <location filename="../src/PensarioStyles.cpp" line="1636"/>
-        <location filename="../src/PensarioStyles.cpp" line="1649"/>
+        <location filename="../src/PensarioPanel.cpp" line="1212"/>
+        <location filename="../src/PensarioStyles.cpp" line="1381"/>
+        <location filename="../src/PensarioStyles.cpp" line="1628"/>
+        <location filename="../src/PensarioStyles.cpp" line="1646"/>
+        <location filename="../src/PensarioStyles.cpp" line="1659"/>
         <source>Abrir no editor</source>
         <translation>Abrir en el editor</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1210"/>
-        <location filename="../src/PensarioStyles.cpp" line="1640"/>
+        <location filename="../src/PensarioPanel.cpp" line="1213"/>
+        <location filename="../src/PensarioStyles.cpp" line="1650"/>
         <source>Abrir no menu de referência</source>
         <translation>Abrir en el menú de referencia</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1322"/>
+        <location filename="../src/PensarioPanel.cpp" line="1509"/>
         <source>O detector lê a cena como uma conversa: quem a tag nomeia, quem falou antes, quem foi chamado pelo nome.
 Nome escrito na tag: a fala é daquele personagem.
 &quot;provável&quot;: deduzida pela conversa. Confirme ou corrija pelo clique direito; o que você corrige nunca é desfeito.
@@ -12708,54 +12709,54 @@ Nombre escrito en la acotación: la línea es de ese personaje.
 La × quita una línea que no es diálogo, y no vuelve.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1416"/>
+        <location filename="../src/PensarioPanel.cpp" line="1381"/>
         <source>Quem mais fala</source>
         <translation>Quién más habla</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1417"/>
-        <location filename="../src/PensarioPanel.cpp" line="1420"/>
+        <location filename="../src/PensarioPanel.cpp" line="1382"/>
+        <location filename="../src/PensarioPanel.cpp" line="1385"/>
         <source>%1 · %2 diálogos · %3 palavras</source>
         <translation>%1 · %2 diálogos · %3 palabras</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1419"/>
+        <location filename="../src/PensarioPanel.cpp" line="1384"/>
         <source>Capítulo com mais diálogo</source>
         <translation>Capítulo con más diálogo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1422"/>
+        <location filename="../src/PensarioPanel.cpp" line="1387"/>
         <source>Diálogo mais longo</source>
         <translation>Diálogo más largo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1422"/>
+        <location filename="../src/PensarioPanel.cpp" line="1387"/>
         <source>%1 · %2 palavras</source>
         <translation>%1 · %2 palabras</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1617"/>
+        <location filename="../src/PensarioPanel.cpp" line="1628"/>
         <source>Figurantes (%1)</source>
         <translation>Figurantes (%1)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1618"/>
+        <location filename="../src/PensarioPanel.cpp" line="1629"/>
         <source>Falas de quem não está no elenco: &quot;o porteiro&quot;, &quot;a moça&quot;… Atribuir uma delas a um personagem pode transformar a tag em apelido.</source>
         <translation>Líneas de quien no está en el reparto: &quot;el portero&quot;, &quot;la chica&quot;… Asignar una a un personaje puede convertir la acotación en alias.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1715"/>
-        <location filename="../src/PensarioStyles.cpp" line="1775"/>
+        <location filename="../src/PensarioPanel.cpp" line="1726"/>
+        <location filename="../src/PensarioStyles.cpp" line="1785"/>
         <source>Todos</source>
         <translation>Todos</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1493"/>
+        <location filename="../src/PensarioPanel.cpp" line="1458"/>
         <source>Nenhum diálogo detectado ainda. Escreva falas com travessão (“— Não vou, disse Maria.”) e espere alguns segundos.</source>
         <translation>Aún no se detectó ningún diálogo. Escribe líneas con raya (“— No voy, dijo Maria.”) y espera unos segundos.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1495"/>
+        <location filename="../src/PensarioPanel.cpp" line="1460"/>
         <source>Nenhum diálogo neste filtro.</source>
         <translation>No hay diálogos en este filtro.</translation>
     </message>
@@ -12764,42 +12765,47 @@ La × quita una línea que no es diálogo, y no vuelve.</translation>
         <translation type="vanished">Eliminar diálogo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2205"/>
+        <location filename="../src/PensarioPanel.cpp" line="2216"/>
         <source>Nenhum comentário ainda.
 Selecione um trecho e use o marcador com comentário para que ele apareça aqui.</source>
         <translation>Aún no hay comentarios.
 Selecciona un fragmento y usa el marcador con comentario para que aparezca aquí.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1788"/>
-        <location filename="../src/PensarioPanel.cpp" line="2302"/>
+        <location filename="../src/PensarioPanel.cpp" line="1799"/>
+        <location filename="../src/PensarioPanel.cpp" line="2313"/>
+        <location filename="../src/PensarioDialogues.cpp" line="243"/>
+        <location filename="../src/PensarioDialogues.cpp" line="440"/>
+        <location filename="../src/PensarioDialogues.cpp" line="601"/>
         <source>Cena %1</source>
         <translation>Escena %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="198"/>
-        <location filename="../src/PensarioPanel.cpp" line="1301"/>
+        <location filename="../src/PensarioPanel.cpp" line="201"/>
+        <location filename="../src/PensarioPanel.cpp" line="1309"/>
         <source>Escaneando… (%1/%2)</source>
         <translation>Escaneando… (%1/%2)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="199"/>
-        <location filename="../src/PensarioPanel.cpp" line="1302"/>
+        <location filename="../src/PensarioPanel.cpp" line="202"/>
+        <location filename="../src/PensarioPanel.cpp" line="1310"/>
+        <location filename="../src/PensarioDialogues.cpp" line="185"/>
         <source>Escanear diálogos em todos os capítulos</source>
         <translation>Escanear diálogos en todos los capítulos</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1275"/>
+        <location filename="../src/PensarioPanel.cpp" line="1283"/>
         <source>▴  Estatísticas</source>
         <translation>▴  Estadísticas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1275"/>
+        <location filename="../src/PensarioPanel.cpp" line="1283"/>
         <source>▾  Estatísticas</source>
         <translation>▾  Estadísticas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1312"/>
+        <location filename="../src/PensarioPanel.cpp" line="1320"/>
+        <location filename="../src/PensarioDialogues.cpp" line="201"/>
         <source>Como o detector de diálogos funciona</source>
         <translation>Cómo funciona el detector de diálogos</translation>
     </message>
@@ -12814,91 +12820,97 @@ Si un diálogo detectado está vinculado al personaje equivocado, puedes corregi
 Las estadísticas son estimaciones y no garantizan precisión absoluta con el contenido de los capítulos.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1523"/>
+        <location filename="../src/PensarioPanel.cpp" line="1488"/>
+        <location filename="../src/PensarioDialogues.cpp" line="499"/>
         <source>Carregar mais (%1 restantes)</source>
         <translation>Cargar más (%1 restantes)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1593"/>
+        <location filename="../src/PensarioPanel.cpp" line="1604"/>
         <source>Diálogos sem atribuição (%1)</source>
         <translation>Diálogos sin atribución (%1)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1655"/>
+        <location filename="../src/PensarioPanel.cpp" line="1666"/>
         <source>Também falam na cena com:</source>
         <translation>También hablan en la escena con:</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1670"/>
+        <location filename="../src/PensarioPanel.cpp" line="1681"/>
         <source>Clique para remover</source>
         <translation>Clic para quitar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1740"/>
+        <location filename="../src/PensarioPanel.cpp" line="1751"/>
         <source>Cap.: %1  ▾</source>
         <translation>Cap.: %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1782"/>
-        <location filename="../src/PensarioStyles.cpp" line="619"/>
+        <location filename="../src/PensarioPanel.cpp" line="1793"/>
+        <location filename="../src/PensarioStyles.cpp" line="629"/>
+        <location filename="../src/PensarioDialogues.cpp" line="234"/>
+        <location filename="../src/PensarioDialogues.cpp" line="596"/>
         <source>Todos os capítulos</source>
         <translation>Todos los capítulos</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1846"/>
+        <location filename="../src/PensarioPanel.cpp" line="1857"/>
         <source>+  Personagem</source>
         <translation>+  Personaje</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1921"/>
         <location filename="../src/PensarioPanel.cpp" line="1932"/>
+        <location filename="../src/PensarioPanel.cpp" line="1943"/>
         <source>Sem locutor</source>
         <translation>Sin hablante</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1935"/>
+        <location filename="../src/PensarioPanel.cpp" line="1946"/>
         <source>%1 · figurante</source>
         <translation>%1 · figurante</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1938"/>
+        <location filename="../src/PensarioPanel.cpp" line="1949"/>
         <source>%1 · provável</source>
         <translation>%1 · probable</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1974"/>
+        <location filename="../src/PensarioPanel.cpp" line="1985"/>
+        <location filename="../src/PensarioDialogues.cpp" line="646"/>
         <source>Confirmar: é %1</source>
         <translation>Confirmar: es %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1976"/>
-        <location filename="../src/PensarioStyles.cpp" line="1650"/>
+        <location filename="../src/PensarioPanel.cpp" line="1987"/>
+        <location filename="../src/PensarioStyles.cpp" line="1660"/>
         <source>Alterar locutor…</source>
         <translation>Cambiar hablante…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1976"/>
-        <location filename="../src/PensarioStyles.cpp" line="1650"/>
+        <location filename="../src/PensarioPanel.cpp" line="1987"/>
+        <location filename="../src/PensarioStyles.cpp" line="1660"/>
+        <location filename="../src/PensarioDialogues.cpp" line="647"/>
         <source>Atribuir ao personagem…</source>
         <translation>Asignar al personaje…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2011"/>
+        <location filename="../src/PensarioPanel.cpp" line="2022"/>
+        <location filename="../src/PensarioDialogues.cpp" line="651"/>
         <source>Não é fala (some e não volta)</source>
         <translation>No es diálogo (se quita y no vuelve)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2104"/>
+        <location filename="../src/PensarioPanel.cpp" line="2115"/>
         <source>(sem nome)</source>
         <translation>(sin nombre)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2328"/>
+        <location filename="../src/PensarioPanel.cpp" line="2339"/>
         <source>Capítulo sem título</source>
         <translation>Capítulo sin título</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2114"/>
+        <location filename="../src/PensarioPanel.cpp" line="2125"/>
         <source>Presente nesta cena/capítulo</source>
         <translation>Presente en esta escena/capítulo</translation>
     </message>
@@ -12995,22 +13007,22 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <translation>Quitar término</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2349"/>
+        <location filename="../src/PensarioPanel.cpp" line="2360"/>
         <source>Item sem título</source>
         <translation>Elemento sin título</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2358"/>
+        <location filename="../src/PensarioPanel.cpp" line="2369"/>
         <source>Manuscrito</source>
         <translation>Manuscrito</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="260"/>
+        <location filename="../src/PensarioPanel.cpp" line="263"/>
         <source>Estilo e ferramentas do Pensário</source>
         <translation>Estilo y herramientas del Pensario</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2195"/>
+        <location filename="../src/PensarioPanel.cpp" line="2206"/>
         <source>Nenhum comentário neste filtro.</source>
         <translation>Ningún comentario en este filtro.</translation>
     </message>
@@ -13171,10 +13183,10 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
     </message>
     <message>
         <location filename="../src/PensarioStyles.cpp" line="439"/>
-        <location filename="../src/PensarioStyles.cpp" line="1382"/>
-        <location filename="../src/PensarioStyles.cpp" line="1631"/>
-        <location filename="../src/PensarioStyles.cpp" line="1644"/>
-        <location filename="../src/PensarioStyles.cpp" line="1652"/>
+        <location filename="../src/PensarioStyles.cpp" line="1392"/>
+        <location filename="../src/PensarioStyles.cpp" line="1641"/>
+        <location filename="../src/PensarioStyles.cpp" line="1654"/>
+        <location filename="../src/PensarioStyles.cpp" line="1662"/>
         <source>Levar pro texto</source>
         <translation>Llevar al texto</translation>
     </message>
@@ -13189,295 +13201,386 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <translation>Nombres</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="595"/>
+        <location filename="../src/PensarioStyles.cpp" line="605"/>
         <source>Buscar no Pensário…</source>
         <translation>Buscar en el Pensario…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="617"/>
+        <location filename="../src/PensarioStyles.cpp" line="627"/>
         <source>Lente</source>
         <translation>Lente</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="637"/>
+        <location filename="../src/PensarioStyles.cpp" line="647"/>
         <source>No editor</source>
         <translation>En el editor</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="638"/>
+        <location filename="../src/PensarioStyles.cpp" line="648"/>
         <source>O capítulo aberto no editor</source>
         <translation>El capítulo abierto en el editor</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="651"/>
+        <location filename="../src/PensarioStyles.cpp" line="661"/>
         <source>Fechar a lente</source>
         <translation>Cerrar la lente</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="873"/>
+        <location filename="../src/PensarioStyles.cpp" line="883"/>
         <source>Notas fixadas</source>
         <translation>Notas fijadas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="893"/>
+        <location filename="../src/PensarioStyles.cpp" line="903"/>
         <source>MEMÓRIAS</source>
         <translation>MEMORIAS</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="893"/>
+        <location filename="../src/PensarioStyles.cpp" line="903"/>
         <source>FALAS DA EDIÇÃO</source>
         <translation>FRASES DE LA EDICIÓN</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="894"/>
+        <location filename="../src/PensarioStyles.cpp" line="904"/>
         <source>NOTAS DA REVISÃO</source>
         <translation>NOTAS DE LA REVISIÓN</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="894"/>
+        <location filename="../src/PensarioStyles.cpp" line="904"/>
         <source>CADERNO DE IDEIAS</source>
         <translation>CUADERNO DE IDEAS</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="902"/>
+        <location filename="../src/PensarioStyles.cpp" line="912"/>
         <source>O que ficou guardado</source>
         <translation>Lo que quedó guardado</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="902"/>
+        <location filename="../src/PensarioStyles.cpp" line="912"/>
         <source>Eles disseram</source>
         <translation>Ellos dijeron</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="903"/>
+        <location filename="../src/PensarioStyles.cpp" line="913"/>
         <source>O que falta consertar</source>
         <translation>Lo que falta arreglar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="903"/>
+        <location filename="../src/PensarioStyles.cpp" line="913"/>
         <source>Ideias soltas</source>
         <translation>Ideas sueltas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="971"/>
-        <location filename="../src/PensarioStyles.cpp" line="1385"/>
-        <location filename="../src/PensarioStyles.cpp" line="1622"/>
+        <location filename="../src/PensarioStyles.cpp" line="981"/>
+        <location filename="../src/PensarioStyles.cpp" line="1395"/>
+        <location filename="../src/PensarioStyles.cpp" line="1632"/>
         <source>Reabrir</source>
         <translation>Reabrir</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="971"/>
-        <location filename="../src/PensarioStyles.cpp" line="1622"/>
+        <location filename="../src/PensarioStyles.cpp" line="981"/>
+        <location filename="../src/PensarioStyles.cpp" line="1632"/>
         <source>Marcar como resolvido</source>
         <translation>Marcar como resuelto</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="992"/>
-        <location filename="../src/PensarioStyles.cpp" line="1070"/>
+        <location filename="../src/PensarioStyles.cpp" line="1002"/>
+        <location filename="../src/PensarioStyles.cpp" line="1080"/>
         <source>↳ Levar pro texto</source>
         <translation>↳ Llevar al texto</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="994"/>
+        <location filename="../src/PensarioStyles.cpp" line="1004"/>
         <source>Inserir no cursor do editor</source>
         <translation>Insertar en el cursor del editor</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1086"/>
+        <location filename="../src/PensarioStyles.cpp" line="1096"/>
         <source>nota</source>
         <translation>nota</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1090"/>
-        <location filename="../src/PensarioStyles.cpp" line="1555"/>
+        <location filename="../src/PensarioStyles.cpp" line="1100"/>
+        <location filename="../src/PensarioStyles.cpp" line="1565"/>
         <source>cap. %1</source>
         <translation>cap. %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1092"/>
+        <location filename="../src/PensarioStyles.cpp" line="1102"/>
         <source>ficha</source>
         <translation>ficha</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1175"/>
+        <location filename="../src/PensarioStyles.cpp" line="1185"/>
         <source>↪ encaminhada de %1</source>
         <translation>↪ reenviada de %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1175"/>
+        <location filename="../src/PensarioStyles.cpp" line="1185"/>
         <source>uma ficha</source>
         <translation>una ficha</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1183"/>
+        <location filename="../src/PensarioStyles.cpp" line="1193"/>
         <source>✓ resolvido</source>
         <translation>✓ resuelto</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1183"/>
+        <location filename="../src/PensarioStyles.cpp" line="1193"/>
         <source>tarefa</source>
         <translation>tarea</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1312"/>
+        <location filename="../src/PensarioStyles.cpp" line="1322"/>
         <source>Escolha um item na lista.</source>
         <translation>Elige un elemento de la lista.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1341"/>
+        <location filename="../src/PensarioStyles.cpp" line="1351"/>
         <source>Nota sem título</source>
         <translation>Nota sin título</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1352"/>
+        <location filename="../src/PensarioStyles.cpp" line="1362"/>
         <source>Tarefa resolvida</source>
         <translation>Tarea resuelta</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1352"/>
+        <location filename="../src/PensarioStyles.cpp" line="1362"/>
         <source>Tarefa pendente</source>
         <translation>Tarea pendiente</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1371"/>
-        <location filename="../src/PensarioStyles.cpp" line="1630"/>
+        <location filename="../src/PensarioStyles.cpp" line="1381"/>
+        <location filename="../src/PensarioStyles.cpp" line="1640"/>
         <source>Editar</source>
         <translation>Editar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1374"/>
+        <location filename="../src/PensarioStyles.cpp" line="1384"/>
         <source>Abrir no RefMenu</source>
         <translation>Abrir en el RefMenu</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1380"/>
+        <location filename="../src/PensarioStyles.cpp" line="1390"/>
         <source>Alterar locutor</source>
         <translation>Cambiar hablante</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1385"/>
+        <location filename="../src/PensarioStyles.cpp" line="1395"/>
         <source>Resolver</source>
         <translation>Resolver</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1388"/>
+        <location filename="../src/PensarioStyles.cpp" line="1398"/>
         <source>Virar tarefa</source>
         <translation>Convertir en tarea</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1419"/>
+        <location filename="../src/PensarioStyles.cpp" line="1429"/>
         <source>%1 %2 de %3</source>
         <translation>%1 %2 de %3</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1448"/>
+        <location filename="../src/PensarioStyles.cpp" line="1458"/>
         <source>Nota</source>
         <translation>Nota</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1496"/>
+        <location filename="../src/PensarioStyles.cpp" line="1506"/>
         <source>TEXTO</source>
         <translation>TEXTO</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1496"/>
+        <location filename="../src/PensarioStyles.cpp" line="1506"/>
         <source>CAPÍTULO</source>
         <translation>CAPÍTULO</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1496"/>
+        <location filename="../src/PensarioStyles.cpp" line="1506"/>
         <source>DATA</source>
         <translation>FECHA</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1623"/>
+        <location filename="../src/PensarioStyles.cpp" line="1633"/>
         <source>Não é tarefa</source>
         <translation>No es tarea</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1625"/>
+        <location filename="../src/PensarioStyles.cpp" line="1635"/>
         <source>Marcar como tarefa</source>
         <translation>Marcar como tarea</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1673"/>
+        <location filename="../src/PensarioStyles.cpp" line="1683"/>
         <source>Legenda das cores</source>
         <translation>Leyenda de colores</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1680"/>
+        <location filename="../src/PensarioStyles.cpp" line="1690"/>
         <source>Dê um nome pra cada cor. Ele vale pro projeto inteiro.</source>
         <translation>Da un nombre a cada color. Vale para todo el proyecto.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1694"/>
+        <location filename="../src/PensarioStyles.cpp" line="1704"/>
         <source>ex.: Conferir, Problema, Ritmo</source>
         <translation>ej.: Revisar, Problema, Ritmo</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1699"/>
+        <location filename="../src/PensarioStyles.cpp" line="1709"/>
         <source>Salvar</source>
         <translation>Guardar</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1729"/>
+        <location filename="../src/PensarioStyles.cpp" line="1739"/>
         <source>sem nome</source>
         <translation>sin nombre</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1754"/>
+        <location filename="../src/PensarioStyles.cpp" line="1764"/>
         <source>Editar legenda</source>
         <translation>Editar leyenda</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1773"/>
+        <location filename="../src/PensarioStyles.cpp" line="1783"/>
         <source>Tarefas</source>
         <translation>Tareas</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1803"/>
+        <location filename="../src/PensarioStyles.cpp" line="1813"/>
         <source>esconder resolvidos</source>
         <translation>ocultar resueltos</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1810"/>
+        <location filename="../src/PensarioStyles.cpp" line="1820"/>
         <source>Nenhuma tarefa ainda. Marque &quot;Tarefa&quot; ao criar um comentário, ou use o botão direito num comentário.</source>
         <translation>Aún no hay tareas. Marca &quot;Tarea&quot; al crear un comentario, o usa el clic derecho en un comentario.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1850"/>
+        <location filename="../src/PensarioStyles.cpp" line="1860"/>
         <source>Nada encontrado no Pensário.</source>
         <translation>Nada encontrado en el Pensario.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1865"/>
+        <location filename="../src/PensarioStyles.cpp" line="1875"/>
         <source>O livro inteiro</source>
         <translation>El libro entero</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1890"/>
+        <location filename="../src/PensarioStyles.cpp" line="1900"/>
         <source>Nada anotado neste capítulo ainda.</source>
         <translation>Aún no hay nada anotado en este capítulo.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1969"/>
+        <location filename="../src/PensarioStyles.cpp" line="1979"/>
         <source>Nada aqui ainda.</source>
         <translation>Nada aquí todavía.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="468"/>
+        <location filename="../src/PensarioPanel.cpp" line="471"/>
         <source>Arraste pra mudar a largura</source>
         <translation>Arrastra para cambiar el ancho</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1916"/>
+        <location filename="../src/PensarioStyles.cpp" line="1926"/>
         <source>Seções anteriores</source>
         <translation>Secciones anteriores</translation>
     </message>
     <message>
-        <location filename="../src/PensarioStyles.cpp" line="1916"/>
+        <location filename="../src/PensarioStyles.cpp" line="1926"/>
         <source>Próximas seções</source>
         <translation>Siguientes secciones</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="170"/>
+        <location filename="../src/PensarioDialogues.cpp" line="539"/>
+        <source>%1 falas</source>
+        <translation>%1 líneas</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="182"/>
+        <source>Escaneando… %1/%2</source>
+        <translation>Escaneando… %1/%2</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="183"/>
+        <source>↻ Escanear</source>
+        <translation>↻ Escanear</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="229"/>
+        <source>Manuscrito: %1</source>
+        <translation>Manuscrito: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="296"/>
+        <source>Todas %1</source>
+        <translation>Todas %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="297"/>
+        <source>Conferir %1</source>
+        <translation>Revisar %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="298"/>
+        <source>Figurantes %1</source>
+        <translation>Figurantes %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="347"/>
+        <source>Mostrar todos</source>
+        <translation>Mostrar todos</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="347"/>
+        <source>Só as falas de %1</source>
+        <translation>Solo las líneas de %1</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="370"/>
+        <source>figurantes</source>
+        <translation>figurantes</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="396"/>
+        <source>Nenhum diálogo detectado aqui ainda. Escreva falas com travessão (“— Não vou — disse Maria.”) e espere alguns segundos, ou use Escanear.</source>
+        <translation>Todavía no se detectó ningún diálogo aquí. Escribe líneas con raya (“—No voy —dijo María.”) y espera unos segundos, o usa Escanear.</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="398"/>
+        <source>Nenhuma fala neste filtro.</source>
+        <translation>Ninguna línea en este filtro.</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="455"/>
+        <source>sem locutor</source>
+        <translation>sin hablante</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="463"/>
+        <source>Clique pra abrir no texto · botão direito pra conferir ou trocar</source>
+        <translation>Clic para abrir en el texto · clic derecho para confirmar o cambiar</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="521"/>
+        <source>MANUSCRITO</source>
+        <translation>MANUSCRITO</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="538"/>
+        <source>(sem título)</source>
+        <translation>(sin título)</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="648"/>
+        <source>Trocar quem disse…</source>
+        <translation>Cambiar quién lo dijo…</translation>
+    </message>
+    <message>
+        <location filename="../src/PensarioDialogues.cpp" line="649"/>
+        <source>Abrir no texto</source>
+        <translation>Abrir en el texto</translation>
     </message>
 </context>
 <context>

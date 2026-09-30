@@ -95,6 +95,7 @@
     <qresource prefix="/icons">
         <file alias="add-image.svg">../src/assets/icons/add-image.svg</file>
         <file alias="newmanuscript.svg">../src/assets/icons/newmanuscript.svg</file>
+        <file alias="manuscriptbook.svg">../src/assets/icons/manuscriptbook.svg</file>
         <file alias="align-left.svg">../src/assets/icons/align-left.svg</file>
         <file alias="align-center.svg">../src/assets/icons/align-center.svg</file>
         <file alias="align-right.svg">../src/assets/icons/align-right.svg</file>

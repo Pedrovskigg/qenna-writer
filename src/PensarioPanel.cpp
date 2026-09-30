@@ -168,6 +168,9 @@ void PensarioPanel::resetDialogueFilterState()
     m_dialogueOriginFilter.clear();
     m_dialogueOriginFilterUserSet = false;
     m_dialoguePresenceFilter.clear();
+    m_dialogueManuscriptId.clear();
+    m_dialogueView.clear();
+    m_dialogueSpeakerFilter.clear();
     m_dialogueVisibleCount = 0;
 }
 
@@ -1249,6 +1252,11 @@ void PensarioPanel::rebuildDialogues()
     const QVector<DialogueStore::Dialogue> all =
         m_dialogues ? m_dialogues->dialogues() : QVector<DialogueStore::Dialogue>();
 
+    if (dialogueScriptLayout()) {
+        rebuildDialoguesScript(all);
+        return;
+    }
+
     auto charName = [this](const QString& elId) -> QString {
         if (m_elements) {
             if (const Element* el = m_elements->findElement(elId))
@@ -1310,50 +1318,7 @@ void PensarioPanel::rebuildDialogues()
         helpBtn->setCursor(Qt::PointingHandCursor);
         helpBtn->setText(QStringLiteral("?"));
         helpBtn->setToolTip(tr("Como o detector de diálogos funciona"));
-        connect(helpBtn, &QToolButton::clicked, this, [this, helpBtn]() {
-            auto* popup = new QFrame(nullptr);
-            popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
-            popup->setAttribute(Qt::WA_DeleteOnClose);
-            popup->setStyleSheet(Theme::qss(QStringLiteral(
-                "QFrame { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
-                .arg(Theme::panelBackground(), Theme::panelBorder())));
-
-            auto* label = new QLabel(
-                tr("O detector lê a cena como uma conversa: quem a tag nomeia, quem "
-                   "falou antes, quem foi chamado pelo nome.\n"
-                   "Nome escrito na tag: a fala é daquele personagem.\n"
-                   "\"provável\": deduzida pela conversa. Confirme ou corrija pelo "
-                   "clique direito; o que você corrige nunca é desfeito.\n"
-                   "\"figurante\": quem fala não está no elenco.\n"
-                   "O × tira uma linha que não é fala, e ela não volta."),
-                popup);
-            label->setWordWrap(true);
-            label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;")
-                .arg(Theme::textPrimary()));
-
-            auto* lay = new QVBoxLayout(popup);
-            lay->setContentsMargins(12, 10, 12, 10);
-            lay->addWidget(label);
-
-            const int popupWidth = qMin(280, kPanelWidth - 2 * kMargin);
-            // A largura do label precisa estar fixada ANTES do adjustSize()
-            // do popup — senão o QVBoxLayout calcula a altura em cima do
-            // sizeHint "largo" (sem quebra) do QLabel, e o texto quebrado de
-            // verdade transborda pra fora da caixa desenhada.
-            label->setFixedWidth(popupWidth - 24); // 12+12 de margem horizontal
-            popup->setFixedWidth(popupWidth);
-            popup->adjustSize();
-
-            QPoint pos = helpBtn->mapToGlobal(QPoint(helpBtn->width() - popupWidth, helpBtn->height() + 4));
-            if (auto* screen = helpBtn->screen()) {
-                const QRect avail = screen->availableGeometry();
-                if (pos.x() < avail.left()) pos.setX(avail.left());
-                if (pos.y() + popup->height() > avail.bottom())
-                    pos.setY(helpBtn->mapToGlobal(QPoint(0, 0)).y() - popup->height() - 4);
-            }
-            popup->move(pos);
-            popup->show();
-        });
+        connect(helpBtn, &QToolButton::clicked, this, [this, helpBtn]() { showDialogueHelp(helpBtn); });
         topRow->addWidget(helpBtn, 0, Qt::AlignRight);
 
         m_dialoguesLay->addLayout(topRow);
@@ -1529,6 +1494,52 @@ void PensarioPanel::rebuildDialogues()
     }
 
     m_dialoguesLay->addStretch();
+}
+
+void PensarioPanel::showDialogueHelp(QWidget* helpBtn)
+{
+    auto* popup = new QFrame(nullptr);
+    popup->setWindowFlags(Qt::Popup | Qt::FramelessWindowHint);
+    popup->setAttribute(Qt::WA_DeleteOnClose);
+    popup->setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame { background: %1; border: 1px solid %2; border-radius: @radius-panel; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder())));
+
+    auto* label = new QLabel(
+        tr("O detector lê a cena como uma conversa: quem a tag nomeia, quem "
+           "falou antes, quem foi chamado pelo nome.\n"
+           "Nome escrito na tag: a fala é daquele personagem.\n"
+           "\"provável\": deduzida pela conversa. Confirme ou corrija pelo "
+           "clique direito; o que você corrige nunca é desfeito.\n"
+           "\"figurante\": quem fala não está no elenco.\n"
+           "O × tira uma linha que não é fala, e ela não volta."),
+        popup);
+    label->setWordWrap(true);
+    label->setStyleSheet(QStringLiteral("color: %1; font-size: 12px;")
+        .arg(Theme::textPrimary()));
+
+    auto* lay = new QVBoxLayout(popup);
+    lay->setContentsMargins(12, 10, 12, 10);
+    lay->addWidget(label);
+
+    const int popupWidth = qMin(280, kPanelWidth - 2 * kMargin);
+    // A largura do label precisa estar fixada ANTES do adjustSize()
+    // do popup — senão o QVBoxLayout calcula a altura em cima do
+    // sizeHint "largo" (sem quebra) do QLabel, e o texto quebrado de
+    // verdade transborda pra fora da caixa desenhada.
+    label->setFixedWidth(popupWidth - 24); // 12+12 de margem horizontal
+    popup->setFixedWidth(popupWidth);
+    popup->adjustSize();
+
+    QPoint pos = helpBtn->mapToGlobal(QPoint(helpBtn->width() - popupWidth, helpBtn->height() + 4));
+    if (auto* screen = helpBtn->screen()) {
+        const QRect avail = screen->availableGeometry();
+        if (pos.x() < avail.left()) pos.setX(avail.left());
+        if (pos.y() + popup->height() > avail.bottom())
+            pos.setY(helpBtn->mapToGlobal(QPoint(0, 0)).y() - popup->height() - 4);
+    }
+    popup->move(pos);
+    popup->show();
 }
 
 void PensarioPanel::rebuildDialoguePresenceChips(const QVector<DialogueStore::Dialogue>& all)
