@@ -1,3 +1,6 @@
+**Qenna Writer 1.4.2**
+Un'altra sistemata all'installer, pensando ai PC più lenti: ora è solo l'installer a chiudere Qenna se è ancora aperto (chiedendo prima). Windows non interviene più, e il messaggio "non è riuscito a chiudere automaticamente tutte le applicazioni" non comparirà più.
+
 **Qenna Writer 1.4.1**
 Una sistemata veloce all'installer. Se Qenna restava in esecuzione in background dopo aver chiesto l'aggiornamento, l'installazione si bloccava su "Il programma di installazione non è riuscito a chiudere automaticamente tutte le applicazioni". Ora l'installer aspetta che Qenna finisca di chiudersi e, se si è bloccato, chiede e lo chiude al posto tuo.
 Arrivi direttamente dalla 0.18? Le novità della 1.4 sono qui sotto.

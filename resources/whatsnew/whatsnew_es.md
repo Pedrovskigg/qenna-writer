@@ -1,3 +1,6 @@
+**Qenna Writer 1.4.2**
+Un ajuste más en el instalador, pensando en PCs más lentas: ahora solo el propio instalador cierra Qenna si sigue abierto (preguntando antes). Windows ya no interviene, y el mensaje de "no pudo cerrar automáticamente todas las aplicaciones" ya no aparece.
+
 **Qenna Writer 1.4.1**
 Un ajuste rápido en el instalador. Si Qenna seguía ejecutándose en segundo plano después de pedirle que se actualizara, la instalación se quedaba trabada en "El instalador no pudo cerrar automáticamente todas las aplicaciones". Ahora el instalador espera a que Qenna termine de cerrarse y, si se quedó colgado, pregunta y lo cierra por ti.
 ¿Vienes directo de la 0.18? Las novedades de la 1.4 están justo debajo.

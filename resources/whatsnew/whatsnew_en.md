@@ -1,3 +1,6 @@
+**Qenna Writer 1.4.2**
+One more installer tweak, with slower PCs in mind: now only the installer itself closes Qenna if it's still open (asking first). Windows no longer steps in, so the "Setup was unable to automatically close all applications" message won't show up anymore.
+
 **Qenna Writer 1.4.1**
 A quick installer fix. If Qenna kept running in the background after you asked it to update, the installation got stuck on "Setup was unable to automatically close all applications". Now the installer waits for Qenna to finish closing and, if it got stuck, asks and closes it for you.
 Coming straight from 0.18? The 1.4 news is right below.
