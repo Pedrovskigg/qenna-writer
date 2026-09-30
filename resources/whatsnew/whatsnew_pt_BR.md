@@ -1,12 +1,3 @@
-**Qenna Writer 1.4.4**
-Mais ajustes no instalador, pensando em PC mais lento: agora é só o próprio instalador que fecha o Qenna se ele ainda estiver aberto ou tiver travado ao fechar (perguntando antes), e ele passou a enxergar o Qenna mesmo quando ele fica rodando escondido. Nada de "incapaz de fechar automaticamente todos os aplicativos" nem de "arquivo já está sendo usado por outro processo". E o Qenna agora salva o projeto antes de fechar pra atualizar e não fica mais preso rodando escondido depois disso.
-
-**Qenna Writer 1.4.1**
-Um ajuste rápido no instalador. Se o Qenna ficasse rodando escondido depois de mandar atualizar, a instalação travava em "O instalador foi incapaz de fechar automaticamente todos os aplicativos". Agora o instalador espera o Qenna terminar de fechar e, se ele tiver travado, pergunta e fecha por você.
-Veio direto da 0.18? As novidades da 1.4 estão logo abaixo.
-
----
-
 **Qenna Writer - BIG UPDATE 1.4**
 
 A segunda onda.
@@ -259,6 +250,10 @@ Rótulos cortados na ficha do território (em inglês) e no chip do glossário f
 
 **• Cores das janelas**
 Herdavam a cor do Windows. Fixed. Agora, as janelas do Qenna herdam a cor do Theme mesmo.
+
+**• Instalação pelo update**
+Em PC mais lento, atualizar pelo app podia travar a instalação com "incapaz de fechar automaticamente todos os aplicativos" ou "arquivo já está sendo usado por outro processo". Agora quem fecha o Qenna é só o próprio instalador (perguntando antes), ele não briga mais com arquivo que não mudou, e o Qenna salva o projeto antes de fechar pra atualizar.
+Corrigido.
 
 **• Janela de Patch Note**
 Aaah, agora corrigi a margem da janela de patch note. Deve ser exibida corretamente dessa vez.
