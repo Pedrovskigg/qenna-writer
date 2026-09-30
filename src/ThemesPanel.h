@@ -68,6 +68,7 @@ private slots:
 private:
     QWidget* buildRail();
     QWidget* buildGridPage();
+    void setFilter(const QString& key);
     QWidget* buildDayNightPage();
     QWidget* buildSide();
     QWidget* buildFooter();
@@ -104,6 +105,10 @@ private:
     QAction* m_searchIcon = nullptr;
     bool m_scrolledToCurrent = false;
     QHash<QString, ThemesPanelDetail::RailItem*> m_railItems;
+    // Filtro em cima da grade ("" = tudo, "added" = novidades, "used" = últimos
+    // usados); vale dentro da categoria do trilho.
+    QString m_filter;
+    QHash<QString, QPushButton*> m_filterChips;
 
     // Meio
     QStackedWidget* m_middle = nullptr;

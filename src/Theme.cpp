@@ -51,6 +51,10 @@ Manager::Manager()
     loadFromSettings();
     loadAutoSwitchSettings();
     loadFavorites();
+    m_recentlyUsed = QSettings().value(QStringLiteral("theme/recentlyUsed")).toStringList();
+    // Primeira vez com o histórico: começa pelo tema que já está em uso.
+    if (m_recentlyUsed.isEmpty() && m_currentIndex >= 0 && m_currentIndex < m_themes.size())
+        noteUsed(m_themes.at(m_currentIndex).id);
 
     m_autoSwitchTimer = new QTimer(this);
     m_autoSwitchTimer->setInterval(60000);
@@ -10053,6 +10057,199 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
 
+    // ---- Leva de 2026-09-29: montanhas em vermelho ----
+    // Céu vermelho, montanha preta: fotos do Pe passadas pelo mesmo gradient map
+    // (preto, vinho, vermelho, vermelho-laranja). Borda = destaque, a receita do
+    // Nord Summit. Paletas em theme-preview/palettes.py (leva 8).
+    // Scarlet Ridge: a crista de montanha recortada contra um céu todo vermelho,
+    // silhueta de pôster. Painéis na cor da montanha, borda no vermelho do céu; o
+    // danger foge pro magenta pra não sumir no meio de tanto vermelho.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("scarlet-ridge");
+        t.name = QStringLiteral("Scarlet Ridge");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#0b0203");
+        t.panelBackground = QStringLiteral("#150506");
+        t.panelBorder = QStringLiteral("#ff4a36");
+        t.textPrimary = QStringLiteral("#e8d2cc");
+        t.textMuted = QStringLiteral("#8e6660");
+        t.textBright = QStringLiteral("#fff3ee");
+        t.hoverOverlay = QStringLiteral("rgba(232,210,204,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(232,210,204,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(232,210,204,0.10)");
+        t.accentDefault = QStringLiteral("#ff4a36");
+        t.hoverStrong = QStringLiteral("rgba(232,210,204,0.12)");
+        t.borderStrong = QStringLiteral("rgba(232,210,204,0.22)");
+        t.focusBorder = QStringLiteral("rgba(232,210,204,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(232,210,204,0.30)");
+        t.selectionRing = QStringLiteral("#fff3ee");
+        t.accentSuccess = QStringLiteral("#86b86a");
+        t.accentSuccessSoft = QStringLiteral("rgba(134,184,106,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(134,184,106,0.50)");
+        t.accentDanger = QStringLiteral("#ff4f8b");
+        t.accentDangerSoft = QStringLiteral("rgba(255,79,139,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,79,139,0.50)");
+        t.accentWarning = QStringLiteral("#ffb347");
+        t.accentInfo = QStringLiteral("#8fb4e6");
+        t.accentInfoSoft = QStringLiteral("rgba(143,180,230,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(143,180,230,0.55)");
+        t.editorBackground = QStringLiteral("#110405");
+        t.editorTextColor = QStringLiteral("#f0dcd5");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,209)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-scarlet-ridge.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Red Alps: os Alpes com céu vermelho e a neve virando brasa. O destaque é o
+    // coral da neve iluminada, mais claro e rosado que o do Scarlet Ridge.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("red-alps");
+        t.name = QStringLiteral("Red Alps");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#100406");
+        t.panelBackground = QStringLiteral("#1b0709");
+        t.panelBorder = QStringLiteral("#ff8466");
+        t.textPrimary = QStringLiteral("#ecd6d0");
+        t.textMuted = QStringLiteral("#93706a");
+        t.textBright = QStringLiteral("#fff6f2");
+        t.hoverOverlay = QStringLiteral("rgba(236,214,208,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(236,214,208,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(236,214,208,0.10)");
+        t.accentDefault = QStringLiteral("#ff8466");
+        t.hoverStrong = QStringLiteral("rgba(236,214,208,0.12)");
+        t.borderStrong = QStringLiteral("rgba(236,214,208,0.22)");
+        t.focusBorder = QStringLiteral("rgba(236,214,208,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(236,214,208,0.30)");
+        t.selectionRing = QStringLiteral("#fff6f2");
+        t.accentSuccess = QStringLiteral("#8cc27a");
+        t.accentSuccessSoft = QStringLiteral("rgba(140,194,122,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(140,194,122,0.50)");
+        t.accentDanger = QStringLiteral("#ff5577");
+        t.accentDangerSoft = QStringLiteral("rgba(255,85,119,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,85,119,0.50)");
+        t.accentWarning = QStringLiteral("#f5b85a");
+        t.accentInfo = QStringLiteral("#9bbbe8");
+        t.accentInfoSoft = QStringLiteral("rgba(155,187,232,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(155,187,232,0.55)");
+        t.editorBackground = QStringLiteral("#16060a");
+        t.editorTextColor = QStringLiteral("#f3e0da");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,209)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-red-alps.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Mars Range: a cordilheira vista do avião, que com o filtro vira a superfície
+    // de Marte. Destaque laranja de poeira marciana e texto cor de areia.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("mars-range");
+        t.name = QStringLiteral("Mars Range");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#0e0403");
+        t.panelBackground = QStringLiteral("#1a0705");
+        t.panelBorder = QStringLiteral("#ff7a2e");
+        t.textPrimary = QStringLiteral("#f0d8c8");
+        t.textMuted = QStringLiteral("#94705c");
+        t.textBright = QStringLiteral("#fff2e6");
+        t.hoverOverlay = QStringLiteral("rgba(240,216,200,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(240,216,200,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(240,216,200,0.10)");
+        t.accentDefault = QStringLiteral("#ff7a2e");
+        t.hoverStrong = QStringLiteral("rgba(240,216,200,0.12)");
+        t.borderStrong = QStringLiteral("rgba(240,216,200,0.22)");
+        t.focusBorder = QStringLiteral("rgba(240,216,200,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(240,216,200,0.30)");
+        t.selectionRing = QStringLiteral("#fff2e6");
+        t.accentSuccess = QStringLiteral("#9fbd62");
+        t.accentSuccessSoft = QStringLiteral("rgba(159,189,98,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(159,189,98,0.50)");
+        t.accentDanger = QStringLiteral("#ff4d5e");
+        t.accentDangerSoft = QStringLiteral("rgba(255,77,94,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,77,94,0.50)");
+        t.accentWarning = QStringLiteral("#ffc04d");
+        t.accentInfo = QStringLiteral("#86b0d8");
+        t.accentInfoSoft = QStringLiteral("rgba(134,176,216,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(134,176,216,0.55)");
+        t.editorBackground = QStringLiteral("#150604");
+        t.editorTextColor = QStringLiteral("#f2dccb");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,209)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-mars-range.jpg"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        m_themes.append(t);
+    }
+    // Redemption: a estética das artes do Red Dead Redemption. Pinheiros pretos no
+    // céu vermelho, página de pergaminho (o diário do Arthur) com tinta quase preta
+    // e o título do capítulo em vermelho na slab de cartaz de procurado.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("redemption");
+        t.name = QStringLiteral("Redemption");
+        t.bundled = true;
+        t.panelRadius = 8;
+        t.appBackground = QStringLiteral("#0a0203");
+        t.panelBackground = QStringLiteral("#140405");
+        t.panelBorder = QStringLiteral("#e3261c");
+        t.textPrimary = QStringLiteral("#efd9d2");
+        t.textMuted = QStringLiteral("#8c615b");
+        t.textBright = QStringLiteral("#fff2ec");
+        t.hoverOverlay = QStringLiteral("rgba(239,217,210,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(239,217,210,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(239,217,210,0.10)");
+        t.accentDefault = QStringLiteral("#e3261c");
+        t.hoverStrong = QStringLiteral("rgba(239,217,210,0.12)");
+        t.borderStrong = QStringLiteral("rgba(239,217,210,0.22)");
+        t.focusBorder = QStringLiteral("rgba(239,217,210,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.30)");
+        t.disabledText = QStringLiteral("rgba(239,217,210,0.30)");
+        t.selectionRing = QStringLiteral("#fff2ec");
+        t.accentSuccess = QStringLiteral("#7fb25e");
+        t.accentSuccessSoft = QStringLiteral("rgba(127,178,94,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(127,178,94,0.50)");
+        t.accentDanger = QStringLiteral("#ff5a8a");
+        t.accentDangerSoft = QStringLiteral("rgba(255,90,138,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,90,138,0.50)");
+        t.accentWarning = QStringLiteral("#ffae42");
+        t.accentInfo = QStringLiteral("#8cb0e0");
+        t.accentInfoSoft = QStringLiteral("rgba(140,176,224,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(140,176,224,0.55)");
+        t.editorBackground = QStringLiteral("#ecdfc5");
+        t.editorTextColor = QStringLiteral("#1e1410");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,217)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 7;
+        t.backgroundImage = bundledImagePath(QStringLiteral("derived-redemption.png"));
+        t.backgroundMode = BgZoom;
+        t.editorOpacity = 100;
+        t.docHeaderColor = QStringLiteral("#b3140f");
+        t.docHeaderFont = QStringLiteral("Alfa Slab One");
+        // Grão de pôster impresso: a ilustração só existe em 1920 px e a
+        // borda das folhas serrilha; a textura disfarça.
+        t.bgGrain = 20;
+        t.bgGrainSize = 2;
+        m_themes.append(t);
+    }
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -10330,6 +10527,10 @@ void Manager::loadBundled()
         { QStringLiteral("palenight-nebula"),            QStringLiteral("estampados") },
         { QStringLiteral("one-dark-skyline"),            QStringLiteral("estampados") },
         { QStringLiteral("nord-summit"),                 QStringLiteral("estampados") },
+        { QStringLiteral("scarlet-ridge"),               QStringLiteral("estampados") },
+        { QStringLiteral("red-alps"),                    QStringLiteral("estampados") },
+        { QStringLiteral("mars-range"),                  QStringLiteral("estampados") },
+        { QStringLiteral("redemption"),                  QStringLiteral("estampados") },
         { QStringLiteral("india-ink-clouds"),            QStringLiteral("estampados") },
         { QStringLiteral("lead-bridge"),                 QStringLiteral("estampados") },
         { QStringLiteral("dracula-nightlife"),           QStringLiteral("estampados") },
@@ -10499,6 +10700,41 @@ void Manager::loadFavorites()
                           .arg(hadKey ? QStringLiteral("yes") : QStringLiteral("no"))
                           .arg(ids.size())
                           .arg(ids.join(QStringLiteral(","))));
+}
+
+void Manager::noteUsed(const QString& id)
+{
+    constexpr int kMaxRecentlyUsed = 24;
+    m_recentlyUsed.removeAll(id);
+    m_recentlyUsed.prepend(id);
+    while (m_recentlyUsed.size() > kMaxRecentlyUsed) m_recentlyUsed.removeLast();
+    QSettings().setValue(QStringLiteral("theme/recentlyUsed"), m_recentlyUsed);
+}
+
+QStringList Manager::recentlyUsed() const
+{
+    QStringList out;
+    for (const QString& id : m_recentlyUsed)
+        for (const MiraTheme& t : m_themes)
+            if (t.id == id) { out.append(id); break; }
+    return out;
+}
+
+QStringList Manager::recentlyAdded() const
+{
+    const auto& history = releaseHistory();
+    QSet<QString> released;
+    for (const auto& g : history) for (const QString& id : g.second) released.insert(id);
+    const QStringList lastRelease = history.isEmpty() ? QStringList() : history.first().second;
+
+    // Theme.cpp cresce no fim a cada leva: de trás pra frente = mais novo primeiro.
+    QStringList unreleased, latest;
+    for (int i = m_bundledCount - 1; i >= 0; --i) {
+        const QString& id = m_themes.at(i).id;
+        if (!released.contains(id)) unreleased.append(id);
+        else if (lastRelease.contains(id)) latest.append(id);
+    }
+    return unreleased + latest;
 }
 
 void Manager::saveFavorites() const
@@ -10916,6 +11152,7 @@ void Manager::setCurrent(const QString& id)
             if (i == m_currentIndex) return;
             m_currentIndex = i;
             saveToSettings();
+            if (!m_applyingAutoSwitch) noteUsed(id);
             // Escolha manual (fora do tick do timer) enquanto a troca automática
             // está ligada é uma decisão consciente do usuário — desliga o auto
             // switch em vez de deixar o próximo tick sobrescrever a escolha.

@@ -11818,7 +11818,7 @@ Conteúdo existente pode ser sobrescrito.</source>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="335"/>
         <location filename="../src/PensarioStyles.cpp" line="470"/>
-        <location filename="../src/PensarioDialogues.cpp" line="168"/>
+        <location filename="../src/PensarioDialogues.cpp" line="216"/>
         <source>Diálogos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12034,7 +12034,7 @@ O × tira uma linha que não é fala, e ela não volta.</source>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1488"/>
-        <location filename="../src/PensarioDialogues.cpp" line="499"/>
+        <location filename="../src/PensarioDialogues.cpp" line="561"/>
         <source>Carregar mais (%1 restantes)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12151,9 +12151,9 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1799"/>
         <location filename="../src/PensarioPanel.cpp" line="2313"/>
-        <location filename="../src/PensarioDialogues.cpp" line="243"/>
-        <location filename="../src/PensarioDialogues.cpp" line="440"/>
-        <location filename="../src/PensarioDialogues.cpp" line="601"/>
+        <location filename="../src/PensarioDialogues.cpp" line="291"/>
+        <location filename="../src/PensarioDialogues.cpp" line="502"/>
+        <location filename="../src/PensarioDialogues.cpp" line="663"/>
         <source>Cena %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12166,7 +12166,7 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/PensarioPanel.cpp" line="202"/>
         <location filename="../src/PensarioPanel.cpp" line="1310"/>
-        <location filename="../src/PensarioDialogues.cpp" line="185"/>
+        <location filename="../src/PensarioDialogues.cpp" line="233"/>
         <source>Escanear diálogos em todos os capítulos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12182,7 +12182,7 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1320"/>
-        <location filename="../src/PensarioDialogues.cpp" line="201"/>
+        <location filename="../src/PensarioDialogues.cpp" line="249"/>
         <source>Como o detector de diálogos funciona</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12204,8 +12204,8 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1793"/>
         <location filename="../src/PensarioStyles.cpp" line="629"/>
-        <location filename="../src/PensarioDialogues.cpp" line="234"/>
-        <location filename="../src/PensarioDialogues.cpp" line="596"/>
+        <location filename="../src/PensarioDialogues.cpp" line="282"/>
+        <location filename="../src/PensarioDialogues.cpp" line="658"/>
         <source>Todos os capítulos</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12232,7 +12232,7 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1985"/>
-        <location filename="../src/PensarioDialogues.cpp" line="646"/>
+        <location filename="../src/PensarioDialogues.cpp" line="708"/>
         <source>Confirmar: é %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12245,13 +12245,13 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
     <message>
         <location filename="../src/PensarioPanel.cpp" line="1987"/>
         <location filename="../src/PensarioStyles.cpp" line="1660"/>
-        <location filename="../src/PensarioDialogues.cpp" line="647"/>
+        <location filename="../src/PensarioDialogues.cpp" line="709"/>
         <source>Atribuir ao personagem…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/PensarioPanel.cpp" line="2022"/>
-        <location filename="../src/PensarioDialogues.cpp" line="651"/>
+        <location filename="../src/PensarioDialogues.cpp" line="713"/>
         <source>Não é fala (some e não volta)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12751,93 +12751,93 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="170"/>
-        <location filename="../src/PensarioDialogues.cpp" line="539"/>
+        <location filename="../src/PensarioDialogues.cpp" line="218"/>
+        <location filename="../src/PensarioDialogues.cpp" line="601"/>
         <source>%1 falas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="182"/>
+        <location filename="../src/PensarioDialogues.cpp" line="230"/>
         <source>Escaneando… %1/%2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="183"/>
+        <location filename="../src/PensarioDialogues.cpp" line="231"/>
         <source>↻ Escanear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="229"/>
+        <location filename="../src/PensarioDialogues.cpp" line="277"/>
         <source>Manuscrito: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="296"/>
+        <location filename="../src/PensarioDialogues.cpp" line="344"/>
         <source>Todas %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="297"/>
+        <location filename="../src/PensarioDialogues.cpp" line="345"/>
         <source>Conferir %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="298"/>
+        <location filename="../src/PensarioDialogues.cpp" line="346"/>
         <source>Figurantes %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="347"/>
+        <location filename="../src/PensarioDialogues.cpp" line="396"/>
         <source>Mostrar todos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="347"/>
+        <location filename="../src/PensarioDialogues.cpp" line="396"/>
         <source>Só as falas de %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="370"/>
+        <location filename="../src/PensarioDialogues.cpp" line="432"/>
         <source>figurantes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="396"/>
+        <location filename="../src/PensarioDialogues.cpp" line="458"/>
         <source>Nenhum diálogo detectado aqui ainda. Escreva falas com travessão (“— Não vou — disse Maria.”) e espere alguns segundos, ou use Escanear.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="398"/>
+        <location filename="../src/PensarioDialogues.cpp" line="460"/>
         <source>Nenhuma fala neste filtro.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="455"/>
+        <location filename="../src/PensarioDialogues.cpp" line="517"/>
         <source>sem locutor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="463"/>
+        <location filename="../src/PensarioDialogues.cpp" line="525"/>
         <source>Clique pra abrir no texto · botão direito pra conferir ou trocar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="521"/>
+        <location filename="../src/PensarioDialogues.cpp" line="583"/>
         <source>MANUSCRITO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="538"/>
+        <location filename="../src/PensarioDialogues.cpp" line="600"/>
         <source>(sem título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="648"/>
+        <location filename="../src/PensarioDialogues.cpp" line="710"/>
         <source>Trocar quem disse…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="649"/>
+        <location filename="../src/PensarioDialogues.cpp" line="711"/>
         <source>Abrir no texto</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25996,131 +25996,131 @@ Essa ação não pode ser desfeita.</source>
 <context>
     <name>ThemesPanel</name>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1418"/>
+        <location filename="../src/ThemesPanel.cpp" line="1492"/>
         <source>Editar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1522"/>
+        <location filename="../src/ThemesPanel.cpp" line="1596"/>
         <source>Excluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1514"/>
+        <location filename="../src/ThemesPanel.cpp" line="1588"/>
         <source>Exportar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1723"/>
+        <location filename="../src/ThemesPanel.cpp" line="1797"/>
         <source>Importar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1231"/>
+        <location filename="../src/ThemesPanel.cpp" line="1277"/>
         <source>Abrir um tema que você recebeu de outra pessoa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1185"/>
-        <location filename="../src/ThemesPanel.cpp" line="1417"/>
+        <location filename="../src/ThemesPanel.cpp" line="1231"/>
+        <location filename="../src/ThemesPanel.cpp" line="1491"/>
         <source>Aplicar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1001"/>
+        <location filename="../src/ThemesPanel.cpp" line="1047"/>
         <source>Troca automática por horário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="995"/>
-        <location filename="../src/ThemesPanel.cpp" line="1004"/>
+        <location filename="../src/ThemesPanel.cpp" line="1041"/>
+        <location filename="../src/ThemesPanel.cpp" line="1050"/>
         <source>Alterna sozinho entre um tema diurno e um noturno, nos horários que você definir.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1013"/>
+        <location filename="../src/ThemesPanel.cpp" line="1059"/>
         <source>Diurno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1020"/>
+        <location filename="../src/ThemesPanel.cpp" line="1066"/>
         <source>Noturno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1033"/>
+        <location filename="../src/ThemesPanel.cpp" line="1079"/>
         <source>Trocar pro diurno às</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1040"/>
+        <location filename="../src/ThemesPanel.cpp" line="1086"/>
         <source>Trocar pro noturno às</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1417"/>
+        <location filename="../src/ThemesPanel.cpp" line="1491"/>
         <source>Em uso</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="928"/>
+        <location filename="../src/ThemesPanel.cpp" line="929"/>
         <source>Todos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="930"/>
+        <location filename="../src/ThemesPanel.cpp" line="931"/>
         <source>Claros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="931"/>
+        <location filename="../src/ThemesPanel.cpp" line="932"/>
         <source>Amarelados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="932"/>
+        <location filename="../src/ThemesPanel.cpp" line="933"/>
         <source>Escuros</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="933"/>
+        <location filename="../src/ThemesPanel.cpp" line="934"/>
         <source>Coloridos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="934"/>
+        <location filename="../src/ThemesPanel.cpp" line="935"/>
         <source>Estampados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1335"/>
+        <location filename="../src/ThemesPanel.cpp" line="1403"/>
         <source>Nenhum tema encontrado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1319"/>
+        <location filename="../src/ThemesPanel.cpp" line="1365"/>
         <source>Nenhum favorito ainda.
 Clique no coração de um tema pra marcá-lo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1314"/>
+        <location filename="../src/ThemesPanel.cpp" line="1360"/>
         <source>Nenhum tema nessa categoria.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1380"/>
+        <location filename="../src/ThemesPanel.cpp" line="1448"/>
         <source>🐈‍⬛ Esse theme foi feito inspirado no gato preto e calmo como a noite — Tifu, O Sábio.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1383"/>
+        <location filename="../src/ThemesPanel.cpp" line="1451"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="275"/>
-        <location filename="../src/ThemesPanel.cpp" line="1562"/>
+        <location filename="../src/ThemesPanel.cpp" line="276"/>
+        <location filename="../src/ThemesPanel.cpp" line="1636"/>
         <source>Novo tema</source>
         <translation type="unfinished"></translation>
     </message>
@@ -26149,166 +26149,212 @@ Clique no coração de um tema pra marcá-lo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="323"/>
-        <location filename="../src/ThemesPanel.cpp" line="499"/>
+        <location filename="../src/ThemesPanel.cpp" line="324"/>
+        <location filename="../src/ThemesPanel.cpp" line="500"/>
         <source>EM USO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="919"/>
+        <location filename="../src/ThemesPanel.cpp" line="920"/>
         <source>Buscar tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="929"/>
+        <location filename="../src/ThemesPanel.cpp" line="930"/>
         <source>Favoritos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="955"/>
+        <location filename="../src/ThemesPanel.cpp" line="958"/>
         <source>Meus temas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="956"/>
-        <location filename="../src/ThemesPanel.cpp" line="992"/>
+        <location filename="../src/ThemesPanel.cpp" line="959"/>
+        <location filename="../src/ThemesPanel.cpp" line="1038"/>
         <source>Dia e noite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1081"/>
-        <location filename="../src/ThemesPanel.cpp" line="1251"/>
+        <location filename="../src/ThemesPanel.cpp" line="996"/>
+        <source>Tudo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="997"/>
+        <source>✦  Novidades</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="998"/>
+        <source>↺  Últimos usados</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1127"/>
+        <location filename="../src/ThemesPanel.cpp" line="1297"/>
         <source>Escrita</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1081"/>
-        <location filename="../src/ThemesPanel.cpp" line="1251"/>
+        <location filename="../src/ThemesPanel.cpp" line="1127"/>
+        <location filename="../src/ThemesPanel.cpp" line="1297"/>
         <source>Gavetas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1081"/>
-        <location filename="../src/ThemesPanel.cpp" line="1251"/>
+        <location filename="../src/ThemesPanel.cpp" line="1127"/>
+        <location filename="../src/ThemesPanel.cpp" line="1297"/>
         <source>Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1114"/>
+        <location filename="../src/ThemesPanel.cpp" line="1160"/>
         <source>Favoritar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1376"/>
+        <location filename="../src/ThemesPanel.cpp" line="1386"/>
+        <source>✦  Novidades  %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1387"/>
+        <source>↺  Últimos usados  %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1395"/>
+        <source>Nenhum tema novo aqui.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1396"/>
+        <source>Nenhum tema usado aqui ainda.
+Os que você aplicar aparecem nesta lista, o último primeiro.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1444"/>
         <source>Recomendação do desenvolvedor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1375"/>
+        <location filename="../src/ThemesPanel.cpp" line="1443"/>
         <source>Escolha do Tony</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1191"/>
-        <location filename="../src/ThemesPanel.cpp" line="1418"/>
+        <location filename="../src/ThemesPanel.cpp" line="1237"/>
+        <location filename="../src/ThemesPanel.cpp" line="1492"/>
         <source>Personalizar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1551"/>
+        <location filename="../src/ThemesPanel.cpp" line="1625"/>
         <source>Tifu, O Sábio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1551"/>
+        <location filename="../src/ThemesPanel.cpp" line="1625"/>
         <source>Tommy, O Temível</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1135"/>
+        <location filename="../src/ThemesPanel.cpp" line="1181"/>
         <source>Contraste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1146"/>
+        <location filename="../src/ThemesPanel.cpp" line="997"/>
+        <source>Temas adicionados recentemente: os desta versão e os da anterior</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="998"/>
+        <source>Os temas que você aplicou por último</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1192"/>
         <source>Texto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1148"/>
+        <location filename="../src/ThemesPanel.cpp" line="1194"/>
         <source>Texto apagado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1175"/>
+        <location filename="../src/ThemesPanel.cpp" line="1221"/>
         <source>Parecidos com este</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1206"/>
+        <location filename="../src/ThemesPanel.cpp" line="1252"/>
         <source>Mais ações</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1229"/>
+        <location filename="../src/ThemesPanel.cpp" line="1275"/>
         <source>Importar…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1266"/>
+        <location filename="../src/ThemesPanel.cpp" line="1312"/>
         <source>Fechar ✕</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1403"/>
-        <location filename="../src/ThemesPanel.cpp" line="1404"/>
+        <location filename="../src/ThemesPanel.cpp" line="1477"/>
+        <location filename="../src/ThemesPanel.cpp" line="1478"/>
         <source>em uso %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1424"/>
+        <location filename="../src/ThemesPanel.cpp" line="1498"/>
         <source>Em uso:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1513"/>
+        <location filename="../src/ThemesPanel.cpp" line="1587"/>
         <source>Editar uma cópia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1518"/>
+        <location filename="../src/ThemesPanel.cpp" line="1592"/>
         <source>Só temas seus. Pra compartilhar este, edite uma cópia e exporte a cópia.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1580"/>
-        <location filename="../src/ThemesPanel.cpp" line="1744"/>
+        <location filename="../src/ThemesPanel.cpp" line="1654"/>
+        <location filename="../src/ThemesPanel.cpp" line="1818"/>
         <source>%1 (cópia)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1609"/>
+        <location filename="../src/ThemesPanel.cpp" line="1683"/>
         <source>Excluir tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1610"/>
+        <location filename="../src/ThemesPanel.cpp" line="1684"/>
         <source>Excluir este tema personalizado? Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1647"/>
-        <location filename="../src/ThemesPanel.cpp" line="1652"/>
+        <location filename="../src/ThemesPanel.cpp" line="1721"/>
+        <location filename="../src/ThemesPanel.cpp" line="1726"/>
         <source>Exportar tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1662"/>
+        <location filename="../src/ThemesPanel.cpp" line="1736"/>
         <source>Tema exportado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1663"/>
+        <location filename="../src/ThemesPanel.cpp" line="1737"/>
         <source>“%1” foi salvo em:
 %2
 
@@ -26316,74 +26362,74 @@ Esse arquivo pode ser enviado pra qualquer pessoa que use o Qenna.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1670"/>
-        <location filename="../src/ThemesPanel.cpp" line="1678"/>
-        <location filename="../src/ThemesPanel.cpp" line="1707"/>
+        <location filename="../src/ThemesPanel.cpp" line="1744"/>
         <location filename="../src/ThemesPanel.cpp" line="1752"/>
+        <location filename="../src/ThemesPanel.cpp" line="1781"/>
+        <location filename="../src/ThemesPanel.cpp" line="1826"/>
         <source>Importar tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1694"/>
+        <location filename="../src/ThemesPanel.cpp" line="1768"/>
         <source>&lt;b&gt;%1&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1696"/>
+        <location filename="../src/ThemesPanel.cpp" line="1770"/>
         <source>&lt;br&gt;por %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1701"/>
+        <location filename="../src/ThemesPanel.cpp" line="1775"/>
         <source>Licença: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1715"/>
+        <location filename="../src/ThemesPanel.cpp" line="1789"/>
         <source>Você já tem este tema (versão %1). O arquivo traz a versão %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1717"/>
+        <location filename="../src/ThemesPanel.cpp" line="1791"/>
         <source>Substituir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1718"/>
+        <location filename="../src/ThemesPanel.cpp" line="1792"/>
         <source>Manter os dois</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1719"/>
-        <location filename="../src/ThemesPanel.cpp" line="1724"/>
+        <location filename="../src/ThemesPanel.cpp" line="1793"/>
+        <location filename="../src/ThemesPanel.cpp" line="1798"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1885"/>
-        <location filename="../src/ThemesPanel.cpp" line="1888"/>
+        <location filename="../src/ThemesPanel.cpp" line="1959"/>
+        <location filename="../src/ThemesPanel.cpp" line="1962"/>
         <source>— %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1886"/>
-        <location filename="../src/ThemesPanel.cpp" line="1889"/>
+        <location filename="../src/ThemesPanel.cpp" line="1960"/>
+        <location filename="../src/ThemesPanel.cpp" line="1963"/>
         <source>— nenhum tema definido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1891"/>
+        <location filename="../src/ThemesPanel.cpp" line="1965"/>
         <source>Diurno e Noturno valem pro tema selecionado, o da prévia à direita (agora: %1). Pra escolher outro, clique nele em Todos ou numa categoria e volte aqui.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="831"/>
-        <location filename="../src/ThemesPanel.cpp" line="909"/>
+        <location filename="../src/ThemesPanel.cpp" line="832"/>
+        <location filename="../src/ThemesPanel.cpp" line="910"/>
         <source>Temas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="1232"/>
+        <location filename="../src/ThemesPanel.cpp" line="1278"/>
         <source>Fechar</source>
         <translation type="unfinished"></translation>
     </message>

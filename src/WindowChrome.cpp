@@ -2,6 +2,7 @@
 
 #include "Theme.h"
 
+#include <QAbstractNativeEventFilter>
 #include <QApplication>
 #include <QColor>
 #include <QEvent>
@@ -46,13 +47,43 @@ public:
 protected:
     bool eventFilter(QObject* o, QEvent* e) override
     {
-        if (e->type() == QEvent::Show || e->type() == QEvent::WinIdChange) {
+        // Ganhar foco também repinta: o Windows zera a cor da barra quando troca
+        // a cor de destaque (inclusive a automática, que segue o papel de parede),
+        // e a janela voltava pra barra padrão do sistema.
+        if (e->type() == QEvent::Show || e->type() == QEvent::WinIdChange
+            || e->type() == QEvent::WindowActivate) {
             auto* w = qobject_cast<QWidget*>(o);
             if (w && hasSystemFrame(w)) apply(w);
         }
         return false;
     }
 };
+
+void applyAll();
+
+#ifdef Q_OS_WIN
+// Cor de destaque ou tema do Windows mudou: repinta todas as barras abertas.
+class SystemColorFilter : public QAbstractNativeEventFilter {
+public:
+    bool nativeEventFilter(const QByteArray& type, void* message, qintptr*) override
+    {
+        if (type != "windows_generic_MSG") return false;
+        const MSG* msg = static_cast<const MSG*>(message);
+        if (msg->message == WM_DWMCOLORIZATIONCOLORCHANGED || msg->message == WM_SETTINGCHANGE
+            || msg->message == WM_THEMECHANGED) {
+            // Depois do Windows terminar de repintar a moldura dele.
+            QMetaObject::invokeMethod(qApp, []() { applyAll(); }, Qt::QueuedConnection);
+        }
+        return false;
+    }
+};
+#endif
+
+void applyAll()
+{
+    for (QWidget* w : QApplication::topLevelWidgets())
+        if (w->isVisible() && hasSystemFrame(w)) apply(w);
+}
 
 } // namespace
 
@@ -87,10 +118,11 @@ void install()
     watcher = new Watcher(qApp);
     qApp->installEventFilter(watcher);
     // tema trocado: repinta as janelas abertas
-    QObject::connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, watcher, []() {
-        for (QWidget* w : QApplication::topLevelWidgets())
-            if (w->isVisible() && hasSystemFrame(w)) apply(w);
-    });
+    QObject::connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, watcher, []() { applyAll(); });
+#ifdef Q_OS_WIN
+    static SystemColorFilter systemColors;
+    qApp->installNativeEventFilter(&systemColors);
+#endif
 }
 
 } // namespace WindowChrome

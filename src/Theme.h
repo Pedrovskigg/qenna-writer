@@ -195,6 +195,10 @@ struct MiraTheme {
 // Serialização de um tema. Usadas tanto pra persistir os customs em QSettings
 // quanto pelo ThemePackage (arquivos .qtheme). O round-trip é fiel: campos que
 // esta versão não conhece entram em MiraTheme::extras e voltam intactos.
+// Em que versão lançada cada tema bundled entrou, da mais nova pra mais antiga
+// (ThemeHistory.cpp, gerado a partir das tags do git a cada release).
+const QList<QPair<QString, QStringList>>& releaseHistory();
+
 QJsonObject themeToJson(const MiraTheme& t);
 MiraTheme themeFromJson(const QJsonObject& o);
 
@@ -245,6 +249,13 @@ public:
     bool isFavorite(const QString& id) const;
     void setFavorite(const QString& id, bool favorite);
 
+    // Temas aplicados à mão, do último pro mais antigo (a troca automática de
+    // dia/noite não conta). Ids que não existem mais ficam de fora.
+    QStringList recentlyUsed() const;
+    // Novidades: os bundled que ainda não saíram em release e os da última
+    // versão lançada, os mais novos primeiro.
+    QStringList recentlyAdded() const;
+
 signals:
     void themeChanged();
     void customThemesChanged();
@@ -274,6 +285,8 @@ private:
     bool m_applyingAutoSwitch = false; // true durante tickAutoSwitch(), evita autodesligar
 
     QSet<QString> m_favorites;
+    QStringList m_recentlyUsed;
+    void noteUsed(const QString& id);
 };
 
 // API legada — chamadas existentes (`Theme::appBackground()` etc.) seguem

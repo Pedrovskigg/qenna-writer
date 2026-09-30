@@ -213,6 +213,7 @@ qt_add_executable(qenna-writer
     src/MarkerHoverPopup.cpp
     src/MarkerHoverPopup.h
     src/Theme.cpp
+    src/ThemeHistory.cpp
     src/Theme.h
     src/EditorLayout.cpp
     src/EditorLayout.h

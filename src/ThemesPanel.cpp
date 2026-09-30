@@ -92,7 +92,7 @@ const QHash<QString, QStringList>& recommended()
                                           QStringLiteral("one-dark"), QStringLiteral("basalt") } },
         { QStringLiteral("light"),      { QStringLiteral("solarized-light"), QStringLiteral("manuscrito"), QStringLiteral("tokyo-day"),
                                           QStringLiteral("e-ink-gray"), QStringLiteral("brutalismo") } },
-        { QStringLiteral("estampados"), { QStringLiteral("paper-city-yellowed"), QStringLiteral("tokyo-noir"), QStringLiteral("one-dark-skyline"),
+        { QStringLiteral("estampados"), { QStringLiteral("redemption"), QStringLiteral("paper-city-yellowed"), QStringLiteral("tokyo-noir"), QStringLiteral("one-dark-skyline"),
                                           QStringLiteral("solarized-highlands"), QStringLiteral("arquivo"),
                                           QStringLiteral("desk-mahogany") } },
         { QStringLiteral("warm"),       { QStringLiteral("gruvbox-dark"), QStringLiteral("cafe"), QStringLiteral("lamparina"),
@@ -180,7 +180,8 @@ protected:
         }
         p.setPen(ink);
         p.setFont(px(13));
-        p.drawText(QRectF(x, 0, r.right() - x - 30, height()), Qt::AlignVCenter | Qt::AlignLeft, text());
+        // Sem contagem, o rótulo pode ir até a borda.
+        p.drawText(QRectF(x, 0, r.right() - x - (m_count >= 0 ? 30 : 8), height()), Qt::AlignVCenter | Qt::AlignLeft, text());
         if (m_count >= 0) {
             p.setPen(c(Theme::textMuted()));
             p.setFont(px(11));
@@ -941,7 +942,9 @@ QWidget* ThemesPanel::buildRail()
         m_railItems.insert(key, b);
         lay->addWidget(b);
     };
+
     for (const Item& it : cats) add(it);
+
 
     auto* sepWrap = new QWidget(rail);
     auto* sepLay = new QHBoxLayout(sepWrap);
@@ -977,7 +980,50 @@ QWidget* ThemesPanel::buildGridPage()
         mgr->setFavorite(id, !mgr->isFavorite(id));
     };
     m_grid->onNew = [this]() { onNewClicked(); };
-    return m_gridScroll;
+
+    // Barra de filtros em cima da grade: vale dentro da categoria aberta.
+    auto* page = new QWidget(this);
+    auto* pl = new QVBoxLayout(page);
+    pl->setContentsMargins(0, 0, 0, 0);
+    pl->setSpacing(0);
+    auto* bar = new QWidget(page);
+    bar->setObjectName(QStringLiteral("themeFilterBar"));
+    bar->setAttribute(Qt::WA_StyledBackground, true);
+    auto* bl = new QHBoxLayout(bar);
+    bl->setContentsMargins(14, 12, 14, 4);
+    bl->setSpacing(6);
+    const struct { const char* key; QString label; QString tip; } chips[] = {
+        { "",      tr("Tudo"), QString() },
+        { "added", tr("✦  Novidades"), tr("Temas adicionados recentemente: os desta versão e os da anterior") },
+        { "used",  tr("↺  Últimos usados"), tr("Os temas que você aplicou por último") },
+    };
+    for (const auto& c : chips) {
+        auto* b = new QPushButton(c.label, bar);
+        b->setObjectName(QStringLiteral("themeFilterChip"));
+        b->setCheckable(true);
+        b->setChecked(m_filter == QLatin1String(c.key));
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFocusPolicy(Qt::NoFocus);
+        if (!c.tip.isEmpty()) b->setToolTip(c.tip);
+        const QString key = QString::fromLatin1(c.key);
+        connect(b, &QPushButton::clicked, this, [this, key]() { setFilter(key); });
+        m_filterChips.insert(key, b);
+        bl->addWidget(b);
+    }
+    bl->addStretch(1);
+    pl->addWidget(bar);
+    pl->addWidget(m_gridScroll, 1);
+    return page;
+}
+
+void ThemesPanel::setFilter(const QString& key)
+{
+    m_filter = key;
+    for (auto it = m_filterChips.constBegin(); it != m_filterChips.constEnd(); ++it)
+        it.value()->setChecked(it.key() == key);
+    m_hoverId.clear();
+    rebuildGrid();
+    m_gridScroll->verticalScrollBar()->setValue(0);
 }
 
 QWidget* ThemesPanel::buildDayNightPage()
@@ -1328,6 +1374,28 @@ void ThemesPanel::rebuildGrid()
             return (ia < 0 ? INT_MAX : ia) < (ib < 0 ? INT_MAX : ib);
         });
     }
+    // Filtros de cima da grade: valem dentro da categoria aberta e ordenam pela
+    // própria lista (o mais novo / o último usado primeiro).
+    {
+        const QStringList added = mgr->recentlyAdded(), used = mgr->recentlyUsed();
+        int nAdded = 0, nUsed = 0;
+        for (const auto& t : list) {
+            if (added.contains(t.id)) ++nAdded;
+            if (used.contains(t.id)) ++nUsed;
+        }
+        if (auto* b = m_filterChips.value(QStringLiteral("added"))) b->setText(tr("✦  Novidades  %1").arg(nAdded));
+        if (auto* b = m_filterChips.value(QStringLiteral("used"))) b->setText(tr("↺  Últimos usados  %1").arg(nUsed));
+        if (!m_filter.isEmpty()) {
+            const QStringList& order = m_filter == QLatin1String("added") ? added : used;
+            QList<Theme::MiraTheme> kept;
+            for (const QString& id : order)
+                for (const auto& t : list) if (t.id == id) { kept.append(t); break; }
+            list = kept;
+            empty = m_filter == QLatin1String("added")
+                ? tr("Nenhum tema novo aqui.")
+                : tr("Nenhum tema usado aqui ainda.\nOs que você aplicar aparecem nesta lista, o último primeiro.");
+        }
+    }
     if (!m_searchText.isEmpty()) {
         QList<Theme::MiraTheme> filtered;
         for (const auto& t : list) if (t.name.toLower().contains(m_searchText)) filtered.append(t);
@@ -1383,7 +1451,13 @@ void ThemesPanel::refreshSide()
         m_loreCard->setText(tr("🐈 Esse theme foi feito inspirado na hiperatividade e "
                                "inquietação do melhor gato laranja — Tommy, O Temível."));
     }
-    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy"));
+    // Redemption: a frase é referência ao Red Dead e só faz sentido em inglês —
+    // de propósito fora do tr(), igual em todos os idiomas. Não abre foto.
+    const bool redemption = shown->id == QLatin1String("redemption");
+    if (redemption)
+        m_loreCard->setText(QStringLiteral("<i>for those who stay unshaken amidst a crash of worlds</i>"));
+    m_loreCard->setCursor(redemption ? Qt::ArrowCursor : Qt::PointingHandCursor);
+    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy") || redemption);
     const bool fav = mgr->isFavorite(shown->id);
     m_favButton->setStyleSheet(QStringLiteral("QToolButton#favBtn { color: %1; }")
                                    .arg(fav ? kFav.name() : Theme::textMuted()));
@@ -1916,6 +1990,13 @@ void ThemesPanel::applyStyle()
         QLineEdit#themesSearch:focus { border-color: %11; }
         QFrame#railSep { background: %8; border: none; }
         QScrollArea#themesGridScroll { background: %5; border: none; }
+        #themeFilterBar { background: %5; }
+        QPushButton#themeFilterChip {
+            background: transparent; color: %4; border: 1px solid %8;
+            border-radius: 12px; padding: 4px 12px; font-size: 12px;
+        }
+        QPushButton#themeFilterChip:hover { color: %3; border-color: %6; }
+        QPushButton#themeFilterChip:checked { color: %9; background: %12; border-color: %13; font-weight: 600; }
         QPushButton#sceneTab {
             background: transparent; border: none; border-bottom: 2px solid transparent;
             color: %4; font-size: 12px; padding: 2px 0px 6px 0px;
