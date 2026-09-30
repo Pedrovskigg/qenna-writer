@@ -1,3 +1,9 @@
+**Qenna Writer 1.4.1**
+Um ajuste rápido no instalador. Se o Qenna ficasse rodando escondido depois de mandar atualizar, a instalação travava em "O instalador foi incapaz de fechar automaticamente todos os aplicativos". Agora o instalador espera o Qenna terminar de fechar e, se ele tiver travado, pergunta e fecha por você.
+Veio direto da 0.18? As novidades da 1.4 estão logo abaixo.
+
+---
+
 **Qenna Writer - BIG UPDATE 1.4**
 
 A segunda onda.
