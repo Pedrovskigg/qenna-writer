@@ -9,6 +9,12 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("1.4.0"), {
+            QStringLiteral("fluorescent"), QStringLiteral("alpenglow"), QStringLiteral("solitaire"), QStringLiteral("world-1-1"),
+            QStringLiteral("ballpoint"), QStringLiteral("clay-court"), QStringLiteral("dmg-01"), QStringLiteral("deep-end"),
+            QStringLiteral("luciana"), QStringLiteral("scarlet-ridge"), QStringLiteral("red-alps"), QStringLiteral("mars-range"),
+            QStringLiteral("redemption"),
+        } },
         { QStringLiteral("0.18.0"), {
             QStringLiteral("paper-city-yellowed"), QStringLiteral("tungsten"), QStringLiteral("sodium"), QStringLiteral("onionskin"),
             QStringLiteral("light-table"), QStringLiteral("burnt-sugar"), QStringLiteral("red-lacquer"), QStringLiteral("jacaranda"),
