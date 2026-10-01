@@ -4,6 +4,8 @@
 #include <QString>
 #include <QWidget>
 
+#include "ScreenplayFormat.h"
+
 class QHBoxLayout;
 class QLabel;
 class QToolButton;
@@ -43,6 +45,13 @@ public:
     void setAvatarEditable(bool editable);
 
     void setSceneVarButtonVisible(bool visible);
+
+    // Roteiro: guia no canto direito — em que elemento está a linha do cursor
+    // e pra onde o Enter, o Tab e o Shift+Tab levam. Fora do roteiro, some.
+    // Fica fora do layout (posição fixa no canto) pra não tirar o título do centro.
+    void setScreenplayGuide(bool visible,
+                            ScreenplayElement element = ScreenplayElement::Action,
+                            bool emptyLine = false);
     // Para ancorar a VariationBar, como o botão equivalente da toolbar.
     QRect sceneVarButtonGlobalRect() const;
 
@@ -61,11 +70,19 @@ private:
     void applyUiScale();
     void relayoutText();
     void refreshAvatar();
+    void refreshGuide();
+    int guideReserve() const;
 
     QLabel* m_avatar = nullptr;
     QLabel* m_title = nullptr;
     QLabel* m_subtitle = nullptr;
     QToolButton* m_varButton = nullptr;
+    QWidget* m_guide = nullptr;
+    QLabel* m_guideElement = nullptr;
+    QLabel* m_guideKeys = nullptr;
+    bool m_guideWanted = false;
+    ScreenplayElement m_guideEl = ScreenplayElement::Action;
+    bool m_guideEmpty = false;
     // Coluna do texto e linha do subtítulo: guardadas porque o alinhamento
     // delas muda conforme o avatar aparece (centralizado sem foto, à esquerda
     // da foto com ela).

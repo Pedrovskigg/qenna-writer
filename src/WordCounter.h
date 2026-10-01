@@ -138,7 +138,8 @@ public:
     // Estatísticas
     int currentStreak() const;
     int longestStreak() const;
-    int estimatedPages() const;   // palavras do escopo ativo / 250
+    int estimatedPages() const;   // palavras do escopo ativo / 250; roteiro: páginas de verdade
+    bool isScreenplay() const;
     void writingAverages(int& activeDays, int& wordsPerDay, int& minutesPerDay) const;
 
     // Palavras escritas hoje por escopo fixo (independente de goalScope)
@@ -158,6 +159,20 @@ signals:
     void countsChanged();
     void settingsChanged();
     void progressChanged();
+
+private:
+    // Páginas do roteiro: paginar o texto inteiro custa caro, então guarda o
+    // resultado até o texto (ou o escopo) mudar.
+    int screenplayPages() const;
+    void recountScreenplayPages();
+    QString screenplayPagesKey(QStringList* htmls) const;
+    // Páginas do roteiro: o último valor contado fica na tela; quando o texto
+    // muda, a recontagem espera a pessoa parar de digitar (paginar 100 páginas
+    // leva ~0,1 s — no meio da digitação seria um tranco a cada palavra).
+    int m_screenplayPages = -1;
+    bool m_screenplayPagesDirty = true;
+    QString m_screenplayPagesKey;
+    QTimer* m_screenplayPagesTimer = nullptr;
 
 private slots:
     void onCacheContentChanged(const QString& key);

@@ -18,6 +18,8 @@
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QResizeEvent>
+#include <QScrollBar>
 #include <QPixmap>
 #include <QTextBlock>
 #include <QTextCursor>
@@ -26,6 +28,7 @@
 #include <QTextFrame>
 #include <QTextImageFormat>
 #include <QTextObjectInterface>
+#include <qmath.h>
 
 namespace {
 bool isRefHref(const QString& href) {
@@ -112,6 +115,44 @@ SpellEditor::SpellEditor(QWidget* parent)
     // O padrão não seta SmoothPixmapTransform, causando escala com baixa qualidade.
     document()->documentLayout()->registerHandler(
         QTextFormat::ImageObject, new SmoothImageHandler(this));
+    connect(this, &QTextEdit::cursorPositionChanged, this, &SpellEditor::onScreenplayCursorMoved);
+}
+
+void SpellEditor::setPageMargins(int left, int top, int right, int bottom)
+{
+    m_pageMargins = QMargins(left, top, right, bottom);
+    updateScreenplayColumn();
+}
+
+void SpellEditor::setScreenplayMode(bool on)
+{
+    // Documento trocado (applyEditorStyle roda a cada abertura): a linha
+    // digitada era do documento anterior.
+    m_typedBlock = QTextCursor();
+    if (m_screenplayMode == on) return;
+    m_screenplayMode = on;
+    updateScreenplayColumn();
+}
+
+void SpellEditor::resizeEvent(QResizeEvent* event)
+{
+    QTextEdit::resizeEvent(event);
+    updateScreenplayColumn();
+}
+
+void SpellEditor::updateScreenplayColumn()
+{
+    QMargins m = m_pageMargins;
+    if (m_screenplayMode) {
+        // Largura que o texto teria só com a margem da página.
+        const QMargins cur = viewportMargins();
+        const int baseWidth = viewport()->width() + cur.left() + cur.right() - m.left() - m.right();
+        const int column = qCeil(ScreenplayFormat::columnWidthPx() + 2 * document()->documentMargin());
+        const int extra = qMax(0, baseWidth - column);
+        m.setLeft(m.left() + extra / 2);
+        m.setRight(m.right() + extra - extra / 2);
+    }
+    if (m != viewportMargins()) setViewportMargins(m);
 }
 
 void SpellEditor::setSpellChecker(SpellChecker* checker)
@@ -314,15 +355,11 @@ void SpellEditor::mouseMoveEvent(QMouseEvent* event)
 
 namespace {
 // Maiusculiza o texto do bloco ao sair dele (Cena/Personagem/Transição são
-// sempre em caixa alta na convenção de roteiro) — só no momento de avançar
-// pro próximo elemento via Enter, não a cada tecla.
-void uppercaseBlockIfNeeded(const QTextCursor& cursor, ScreenplayElement element)
+// sempre em caixa alta na convenção de roteiro) — no momento de sair da linha,
+// não a cada tecla.
+void uppercaseBlockIfNeeded(const QTextBlock& block, ScreenplayElement element)
 {
-    if (element != ScreenplayElement::Scene && element != ScreenplayElement::Character
-        && element != ScreenplayElement::Transition) {
-        return;
-    }
-    const QTextBlock block = cursor.block();
+    if (!block.isValid() || !ScreenplayFormat::isUppercaseElement(element)) return;
     const QString text = block.text();
     const QString upper = text.toUpper();
     if (text.isEmpty() || text == upper) return;
@@ -333,30 +370,101 @@ void uppercaseBlockIfNeeded(const QTextCursor& cursor, ScreenplayElement element
 }
 }
 
+QSet<QString> SpellEditor::screenplayCuesWithDocument() const
+{
+    QSet<QString> cues = m_screenplayCues;
+    for (QTextBlock b = document()->begin(); b.isValid(); b = b.next()) {
+        if (ScreenplayFormat::detect(b.blockFormat(), b.text()) == ScreenplayElement::Character) {
+            const QString cue = ScreenplayFormat::cueName(b.text()).toUpper();
+            if (!cue.isEmpty()) cues.insert(cue);
+        }
+    }
+    return cues;
+}
+
+void SpellEditor::onScreenplayCursorMoved()
+{
+    if (!m_screenplayMode || m_uppercasing || m_typedBlock.isNull()) return;
+    if (m_typedBlock.document() != document()) { m_typedBlock = QTextCursor(); return; }
+    const QTextBlock typed = m_typedBlock.block();
+    if (typed == textCursor().block()) return;
+    m_typedBlock = QTextCursor();
+    m_uppercasing = true;
+    const ScreenplayElement el = ScreenplayFormat::detect(typed.blockFormat(), typed.text());
+    const ScreenplayElement finished = ScreenplayFormat::refineOnEnter(
+        el, typed.text(), el == ScreenplayElement::Action ? screenplayCuesWithDocument() : QSet<QString>());
+    if (finished != el) {
+        QTextCursor tc(typed);
+        ScreenplayFormat::applyBlockFormat(tc, finished);
+    }
+    uppercaseBlockIfNeeded(typed, finished);
+    m_uppercasing = false;
+    emit screenplayLineFinished();
+}
+
+bool SpellEditor::screenplayKeyPress(QKeyEvent* event)
+{
+    if (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier)) return false;
+    QTextCursor cur = textCursor();
+    const ScreenplayElement current = ScreenplayFormat::detect(cur.blockFormat(), cur.block().text());
+
+    if (event->key() == Qt::Key_Tab || event->key() == Qt::Key_Backtab) {
+        const bool back = event->key() == Qt::Key_Backtab || (event->modifiers() & Qt::ShiftModifier);
+        ScreenplayFormat::applyBlockFormat(cur, ScreenplayFormat::cycleElement(current, back));
+        setTextCursor(cur);
+        emit screenplayElementChanged();
+        return true;
+    }
+
+    if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
+        && !(event->modifiers() & Qt::ShiftModifier)) {
+        // Enter numa linha vazia que não é Ação só troca a linha pra Ação — é
+        // a saída quando o Enter anterior abriu um elemento que você não quer.
+        if (!cur.hasSelection() && cur.block().text().trimmed().isEmpty()
+            && current != ScreenplayElement::Action) {
+            ScreenplayFormat::applyBlockFormat(cur, ScreenplayElement::Action);
+            setTextCursor(cur);
+            emit screenplayElementChanged();
+            return true;
+        }
+        ScreenplayElement finished = ScreenplayFormat::refineOnEnter(
+            current, cur.block().text(),
+            current == ScreenplayElement::Action ? screenplayCuesWithDocument() : QSet<QString>());
+        if (finished != current) ScreenplayFormat::applyBlockFormat(cur, finished);
+        m_uppercasing = true;
+        uppercaseBlockIfNeeded(cur.block(), finished);
+        m_uppercasing = false;
+        m_typedBlock = QTextCursor();
+        QTextEdit::keyPressEvent(event); // insere a quebra de bloco
+        QTextCursor after = textCursor();
+        ScreenplayFormat::applyBlockFormat(after, ScreenplayFormat::nextElement(finished));
+        setTextCursor(after);
+        emit screenplayElementChanged();
+        if (finished == ScreenplayElement::Scene) emit screenplayLineFinished();
+        return true;
+    }
+
+    // "(" no começo de uma fala vazia abre os Parênteses, como nos programas de roteiro.
+    if (event->text() == QLatin1String("(") && current == ScreenplayElement::Dialogue
+        && cur.block().text().isEmpty()) {
+        ScreenplayFormat::applyBlockFormat(cur, ScreenplayElement::Parenthetical);
+        setTextCursor(cur);
+        emit screenplayElementChanged();
+    }
+    return false;
+}
+
 void SpellEditor::keyPressEvent(QKeyEvent* event)
 {
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
         emit refHighlightRequested(true);   // "modo ver os links"
 
-    if (m_screenplayMode && !(event->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) {
-        if (event->key() == Qt::Key_Tab) {
-            QTextCursor cur = textCursor();
-            const ScreenplayElement current = ScreenplayFormat::detect(cur.blockFormat(), cur.block().text());
-            ScreenplayFormat::applyBlockFormat(cur, ScreenplayFormat::cycleElement(current));
-            setTextCursor(cur);
-            return;
-        }
-        if ((event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter)
-            && !(event->modifiers() & Qt::ShiftModifier)) {
-            QTextCursor before = textCursor();
-            const ScreenplayElement current = ScreenplayFormat::detect(before.blockFormat(), before.block().text());
-            uppercaseBlockIfNeeded(before, current);
-            QTextEdit::keyPressEvent(event); // insere a quebra de bloco
-            QTextCursor after = textCursor();
-            ScreenplayFormat::applyBlockFormat(after, ScreenplayFormat::nextElement(current));
-            setTextCursor(after);
-            return;
-        }
+    if (m_screenplayMode) {
+        if (screenplayKeyPress(event)) return;
+        QTextEdit::keyPressEvent(event);
+        if (!event->text().isEmpty() && event->text().at(0).isPrint())
+            m_typedBlock = QTextCursor(textCursor().block());
+        return;
     }
 
     QTextEdit::keyPressEvent(event);

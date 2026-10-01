@@ -3,6 +3,8 @@
 #include "ProjectModel.h"
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
+#include "ScreenplayFormat.h"
+#include "Fountain.h"
 #include "ZipWriter.h"
 #include "WordCounter.h"
 #include "GlossaryStore.h"
@@ -26,6 +28,8 @@
 #include <QImage>
 #include <QLocale>
 #include <QMarginsF>
+#include <QAbstractTextDocumentLayout>
+#include <QFontMetricsF>
 #include <QPainter>
 #include <QPageLayout>
 #include <QPageSize>
@@ -41,7 +45,9 @@
 #include <QTextDocument>
 #include <QTextDocumentWriter>
 #include <QTextFrame>
+#include <QTextLayout>
 #include <algorithm>
+#include <cmath>
 #include <functional>
 
 namespace {
@@ -306,6 +312,7 @@ QString Exporter::formatExt(Format fmt) {
         case Format::Pdf:  return QStringLiteral("pdf");
         case Format::Epub: return QStringLiteral("epub");
         case Format::Docx: return QStringLiteral("docx");
+        case Format::Fountain: return QStringLiteral("fountain");
         default:           return QStringLiteral("odt");
     }
 }
@@ -353,15 +360,18 @@ QByteArray Exporter::writeDoc(QTextDocument& doc, Format fmt, const QString& doc
     return bytes;
 }
 
-QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& runningHeader) const {
+QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& runningHeader,
+                                      const DocxPage* pageIn) const {
+    const DocxPage page = pageIn ? *pageIn : DocxPage();
+    const bool hasHeader = !runningHeader.isEmpty() || page.pageNumberOnly;
     // EMU (English Metric Units): unidade de tamanho do DrawingML. 1 px (96dpi) =
     // 9525 EMU. Twips (1/20 pt): unidade de medida do WordprocessingML; 1 px = 15.
     constexpr qint64 kEmuPerPx  = 9525;
     constexpr int    kTwipsPerPx = 15;
-    // Largura útil da página A4 (11906 twips) com margem de 1 polegada dos
-    // dois lados: 11906 - 2×1440 = 9026 twips → EMU. Tem que andar junto com
-    // o pgMar lá embaixo: imagem calibrada pra margem antiga vaza pra fora.
-    constexpr qint64 kMaxImgCx  = 9026LL * 635;
+    // Largura útil da página (A4 com margem de 1 polegada dos dois lados:
+    // 11906 - 2×1440 = 9026 twips) → EMU. Tem que andar junto com o pgMar lá
+    // embaixo: imagem calibrada pra margem antiga vaza pra fora.
+    const qint64 kMaxImgCx = qint64(page.widthTw - page.leftTw - page.rightTw) * 635;
 
     struct Img { QString path; QByteArray bytes; QString rId; };
     QList<Img> images;
@@ -416,14 +426,24 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
     };
 
     // ── Corpo: um <w:p> por bloco, um <w:r> por fragmento ──
+    const QString pgSzMar = QStringLiteral(
+        "<w:pgSz w:w=\"%1\" w:h=\"%2\"/>"
+        "<w:pgMar w:top=\"%3\" w:right=\"%4\" w:bottom=\"%5\" "
+        "w:left=\"%6\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/>")
+        .arg(page.widthTw).arg(page.heightTw).arg(page.topTw).arg(page.rightTw)
+        .arg(page.bottomTw).arg(page.leftTw);
+
     QString body;
+    bool afterSectionBreak = false;
     for (QTextBlock blk = doc.begin(); blk.isValid(); blk = blk.next()) {
         const QTextBlockFormat bf = blk.blockFormat();
 
-        // Ordem fixa do schema OOXML (CT_PPr): pageBreakBefore → spacing → ind → jc.
+        // Ordem fixa do schema OOXML (CT_PPr): pageBreakBefore → spacing → ind → jc → sectPr.
         QString pPr;
-        if (bf.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore)
+        // A quebra de seção da página de rosto já começa página nova.
+        if ((bf.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore) && !afterSectionBreak)
             pPr += QStringLiteral("<w:pageBreakBefore/>");
+        afterSectionBreak = false;
 
         QString spacing;
         if (bf.topMargin() > 0)
@@ -433,15 +453,34 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
         if (bf.lineHeightType() == QTextBlockFormat::ProportionalHeight && bf.lineHeight() > 0)
             spacing += QStringLiteral(" w:line=\"%1\" w:lineRule=\"auto\"")
                            .arg(qRound(bf.lineHeight() * 240.0 / 100.0));
+        else if (bf.lineHeightType() == QTextBlockFormat::FixedHeight && bf.lineHeight() > 0)
+            spacing += QStringLiteral(" w:line=\"%1\" w:lineRule=\"exact\"")
+                           .arg(qRound(bf.lineHeight() * kTwipsPerPx));
         if (!spacing.isEmpty())
             pPr += QStringLiteral("<w:spacing%1/>").arg(spacing);
+        QString ind;
+        if (bf.leftMargin() > 0)
+            ind += QStringLiteral(" w:left=\"%1\"").arg(qRound(bf.leftMargin() * kTwipsPerPx));
+        if (bf.rightMargin() > 0)
+            ind += QStringLiteral(" w:right=\"%1\"").arg(qRound(bf.rightMargin() * kTwipsPerPx));
         if (bf.textIndent() > 0)
-            pPr += QStringLiteral("<w:ind w:firstLine=\"%1\"/>").arg(qRound(bf.textIndent() * kTwipsPerPx));
+            ind += QStringLiteral(" w:firstLine=\"%1\"").arg(qRound(bf.textIndent() * kTwipsPerPx));
+        else if (bf.textIndent() < 0)   // número da cena pendurado na margem
+            ind += QStringLiteral(" w:hanging=\"%1\"").arg(qRound(-bf.textIndent() * kTwipsPerPx));
+        if (!ind.isEmpty())
+            pPr += QStringLiteral("<w:ind%1/>").arg(ind);
 
         const Qt::Alignment al = bf.alignment();
         if (al & Qt::AlignRight)        pPr += QStringLiteral("<w:jc w:val=\"right\"/>");
         else if (al & Qt::AlignHCenter) pPr += QStringLiteral("<w:jc w:val=\"center\"/>");
         else if (al & Qt::AlignJustify) pPr += QStringLiteral("<w:jc w:val=\"both\"/>");
+
+        // Fim da página de rosto: a seção dela não tem cabeçalho, e a seguinte
+        // recomeça a contagem — a primeira página do roteiro é a 1.
+        if (page.titleEndState >= 0 && blk.userState() == page.titleEndState) {
+            pPr += QStringLiteral("<w:sectPr>") + pgSzMar + QStringLiteral("</w:sectPr>");
+            afterSectionBreak = true;
+        }
 
         if (!pPr.isEmpty())
             pPr = QStringLiteral("<w:pPr>") + pPr + QStringLiteral("</w:pPr>");
@@ -497,8 +536,14 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
                 for (int li = 0; li < lines.size(); ++li) {
                     runs += QStringLiteral("<w:r>") + rp;
                     if (li > 0) runs += QStringLiteral("<w:br/>");
-                    runs += QStringLiteral("<w:t xml:space=\"preserve\">")
-                            + escXml(lines.at(li)) + QStringLiteral("</w:t></w:r>");
+                    // Tabulação vira <w:tab/>: dentro de <w:t> o Word não garante.
+                    const QStringList cells = lines.at(li).split(QLatin1Char('\t'));
+                    for (int ci = 0; ci < cells.size(); ++ci) {
+                        if (ci > 0) runs += QStringLiteral("<w:tab/>");
+                        runs += QStringLiteral("<w:t xml:space=\"preserve\">")
+                                + escXml(cells.at(ci)) + QStringLiteral("</w:t>");
+                    }
+                    runs += QStringLiteral("</w:r>");
                 }
             }
         }
@@ -527,23 +572,22 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
         "xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" "
         "xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\">"
         "<w:body>") + body + QStringLiteral(
-        "<w:sectPr>") + (runningHeader.isEmpty() ? QString() : QStringLiteral(
+        "<w:sectPr>") + (!hasHeader ? QString() : QStringLiteral(
         // titlePg impede o Word de repetir o cabeçalho na primeira página,
         // que é a capa e já traz nome e título.
         "<w:headerReference w:type=\"default\" r:id=\"rIdHdr\"/>"))
-        + QStringLiteral("<w:pgSz w:w=\"11906\" w:h=\"16838\"/>")
         // Margem de 1 polegada (1440 twips) nos quatro lados, cabeçalho a meia
         // polegada (720) do topo. Nasceu como exigência do formato de
         // submissão e virou o padrão de toda exportação: é a margem que o
         // olho espera num documento de texto, e dá espaço pra quem imprime
         // anotar na lateral.
-        + QStringLiteral("<w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" "
-                         "w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/>")
+        + pgSzMar
+        + (page.titleEndState >= 0 ? QStringLiteral("<w:pgNumType w:start=\"1\"/>") : QString())
         // titlePg (não repetir o cabeçalho na primeira página, que é a capa)
         // vem DEPOIS de pgMar: a ordem dos filhos de CT_SectPr é fixada pelo
         // schema, e fora de ordem o Word tolera mas LibreOffice recusa o
         // arquivo inteiro — mesma armadilha já anotada no <w:rPr> acima.
-        + (runningHeader.isEmpty() ? QString() : QStringLiteral("<w:titlePg/>"))
+        + (!hasHeader ? QString() : QStringLiteral("<w:titlePg/>"))
         + QStringLiteral("</w:sectPr>"
         "</w:body></w:document>\n");
 
@@ -558,7 +602,7 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
         rels += QStringLiteral("<Relationship Id=\"%1\" "
             "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" "
             "Target=\"%2\"/>").arg(im.rId, im.path);
-    if (!runningHeader.isEmpty())
+    if (hasHeader)
         rels += QStringLiteral("<Relationship Id=\"rIdHdr\" "
             "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header\" "
             "Target=\"header1.xml\"/>");
@@ -581,7 +625,7 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
         "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml\"/>")
         // Parte não declarada aqui faz o Word recusar o arquivo inteiro,
         // não só ignorar o cabeçalho.
-        + (runningHeader.isEmpty() ? QString() : QStringLiteral(
+        + (!hasHeader ? QString() : QStringLiteral(
             "<Override PartName=\"/word/header1.xml\" "
             "ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml\"/>"))
         + QStringLiteral("</Types>\n")).toUtf8());
@@ -591,7 +635,7 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
         "<Relationship Id=\"rId1\" "
         "Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" "
         "Target=\"word/document.xml\"/></Relationships>\n"));
-    if (!runningHeader.isEmpty()) {
+    if (hasHeader) {
         // "Sobrenome / Título / 3": o número é um campo PAGE, então o Word
         // renumera sozinho quando o texto cresce. instrText leva
         // xml:space=preserve porque os espaços em volta de PAGE fazem parte
@@ -605,11 +649,17 @@ QByteArray Exporter::docxFromDocument(QTextDocument& doc, const QString& running
             "<w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr></w:pPr>"
             "<w:r><w:rPr><w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\"/>"
             "<w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr>"
-            "<w:t xml:space=\"preserve\">%1 / </w:t></w:r>"
+            "<w:t xml:space=\"preserve\">%1</w:t></w:r>"
             "<w:r><w:fldChar w:fldCharType=\"begin\"/></w:r>"
             "<w:r><w:instrText xml:space=\"preserve\"> PAGE </w:instrText></w:r>"
             "<w:r><w:fldChar w:fldCharType=\"end\"/></w:r>"
-            "</w:p></w:hdr>\n").arg(runningHeader.toHtmlEscaped());
+            "<w:r><w:rPr><w:rFonts w:ascii=\"Courier New\" w:hAnsi=\"Courier New\"/>"
+            "<w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr>"
+            "<w:t>%2</w:t></w:r>"
+            "</w:p></w:hdr>\n")
+            // Roteiro: só "2." no canto. Submissão: "Sobrenome / Título / 2".
+            .arg(page.pageNumberOnly ? QString() : runningHeader.toHtmlEscaped() + QStringLiteral(" / "),
+                 page.pageNumberOnly ? QStringLiteral(".") : QString());
         zip.addFile(QStringLiteral("word/header1.xml"), hdr.toUtf8());
     }
     zip.addFile(QStringLiteral("word/document.xml"), document.toUtf8());
@@ -1214,7 +1264,8 @@ QByteArray Exporter::submissionPdf(QTextDocument& doc, const QString& runningHea
         painter.scale(scale, scale);
 
         QFont headerFont(QStringLiteral("Courier New"));
-        headerFont.setPointSizeF(kSubFontPt);
+        // Em pixel: o painter já está na régua de 96 dpi (ponto sairia ~3x maior).
+        headerFont.setPixelSize(qRound(kSubFontPt * 96.0 / 72.0));
 
         const int pages = doc.pageCount();
         for (int i = 0; i < pages; ++i) {
@@ -1287,6 +1338,442 @@ QByteArray Exporter::exportSubmission(const QList<const Chapter*>& chapters,
     return writeDoc(doc, fmt, manuscriptTitle);
 }
 
+// ─────────────────────────────── Roteiro ───────────────────────────────
+// O formato da indústria: Carta (8,5 × 11 pol.), Courier 12, 1,5 polegada à
+// esquerda (a lombada da encadernação) e 1 nos outros lados, coluna de 60
+// caracteres, 6 linhas por polegada — é isso que faz 1 página valer ~1 minuto
+// de tela. Número de página no canto ("2."), nunca na primeira.
+
+namespace {
+
+constexpr int kScrPageWPx   = 816;   // 8,5 pol. a 96 dpi
+constexpr int kScrPageHPx   = 1056;  // 11 pol.
+constexpr int kScrLeftPx    = 144;   // 1,5 pol.
+constexpr int kScrRightPx   = 96;
+constexpr int kScrTopPx     = 96;
+constexpr int kScrBottomPx  = 96;
+constexpr int kScrNumberTop = 48;    // número a meia polegada do topo
+constexpr int kScrNumberHang = 48;   // número da cena: meia polegada pra fora do texto
+constexpr int kScrContentW  = kScrPageWPx - kScrLeftPx - kScrRightPx;   // 576 = 60 caracteres
+constexpr int kScrContentH  = kScrPageHPx - kScrTopPx - kScrBottomPx;   // 864 = 54 linhas
+
+// userState dos blocos: página de rosto, o bloco que a fecha, e o corpo
+// (kScrBody + elemento).
+enum ScrBlockKind { ScrTitle = 1, ScrTitleEnd = 2, ScrBody = 10 };
+
+ScreenplayElement scrElementOf(const QTextBlock& b)
+{
+    return static_cast<ScreenplayElement>(b.userState() - ScrBody);
+}
+
+int scrPageOfLine(QAbstractTextDocumentLayout* lay, const QTextBlock& b, bool last)
+{
+    const QRectF r = lay->blockBoundingRect(b);
+    const QTextLayout* tl = b.layout();
+    if (!tl || tl->lineCount() == 0) return int(r.top() / kScrContentH);
+    const QTextLine line = tl->lineAt(last ? tl->lineCount() - 1 : 0);
+    return int((r.top() + line.y() + line.height() / 2) / kScrContentH);
+}
+
+}
+
+namespace {
+QTextCharFormat scrPlainChar()
+{
+    QTextCharFormat plain;
+    plain.setFontFamilies({ QStringLiteral("Courier New") });
+    plain.setFontPointSize(12.0);
+    plain.setForeground(Qt::black);
+    return plain;
+}
+
+void scrPrepareDocument(QTextDocument& doc)
+{
+    QFont base(QStringLiteral("Courier New"));
+    base.setPointSizeF(12.0);
+    doc.setDefaultFont(base);
+    doc.setDocumentMargin(0);   // a margem da página é nossa, não do documento
+}
+}
+
+void Exporter::appendScreenplayBody(QTextDocument& doc, QTextCursor& cur, bool& firstBlock,
+                                    const QStringList& chapterHtmls, bool includeMarkers,
+                                    bool breakBefore, bool inlineSceneNumbers, int firstSceneNumber)
+{
+    int sceneNumber = firstSceneNumber;
+    Q_UNUSED(doc);
+    const QTextCharFormat plain = scrPlainChar();
+    // Bloco a bloco, com o elemento lido da geometria do editor e reescrito em
+    // medida de papel. Linha vazia sai (o espaço é do elemento) e a quebra de
+    // cena do Qenna (<hr>) não existe em roteiro.
+    bool firstBody = true;
+    for (const QString& html : chapterHtmls) {
+        for (const QString& seg : SceneUtils::splitHtmlIntoScenes(html)) {
+            QTextDocument src;
+            src.setHtml(seg);
+            for (QTextBlock b = src.begin(); b.isValid(); b = b.next()) {
+                if (b.text().trimmed().isEmpty() || ScreenplayFormat::isSceneBreak(b)) continue;
+                const ScreenplayElement el = ScreenplayFormat::detect(b.blockFormat(), b.text());
+                if (firstBlock) cur.setBlockFormat(QTextBlockFormat());
+                else            cur.insertBlock(QTextBlockFormat(), plain);
+                firstBlock = false;
+                cur.block().setUserState(ScrBody + int(el));
+                ScreenplayFormat::applyPageFormat(cur, el);
+                if (firstBody) {
+                    QTextBlockFormat bf = cur.blockFormat();
+                    bf.setTopMargin(0);
+                    if (breakBefore) bf.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
+                    cur.setBlockFormat(bf);
+                    firstBody = false;
+                }
+                const bool upper = ScreenplayFormat::isUppercaseElement(el);
+                if (el == ScreenplayElement::Scene && ScreenplayFormat::isSceneHeading(b.text())) {
+                    // Número da cena pendurado na margem esquerda: "12<tab>INT. ...".
+                    if (inlineSceneNumbers) {
+                        QTextBlockFormat bf = cur.blockFormat();
+                        bf.setTextIndent(-kScrNumberHang);
+                        cur.setBlockFormat(bf);
+                        cur.insertText(QString::number(sceneNumber) + QLatin1Char('\t'), plain);
+                    }
+                    ++sceneNumber;
+                }
+                for (auto it = b.begin(); !it.atEnd(); ++it) {
+                    const QTextFragment frag = it.fragment();
+                    if (!frag.isValid() || frag.charFormat().isImageFormat()) continue;
+                    QTextCharFormat cf = plain;
+                    const QTextCharFormat from = frag.charFormat();
+                    if (from.fontWeight() >= QFont::DemiBold) cf.setFontWeight(QFont::Bold);
+                    cf.setFontItalic(from.fontItalic());
+                    cf.setFontUnderline(from.fontUnderline());
+                    cf.setFontStrikeOut(from.fontStrikeOut());
+                    if (includeMarkers && from.background().style() != Qt::NoBrush)
+                        cf.setBackground(from.background());
+                    const QString text = frag.text().replace(QChar(0x2028), QLatin1Char(' '));
+                    cur.insertText(upper ? text.toUpper() : text, cf);
+                }
+            }
+        }
+    }
+}
+
+int Exporter::paginateScreenplay(QTextDocument& doc, bool applyBreaks)
+{
+    // Nome de personagem não fica sozinho no pé da página, nem cabeçalho de
+    // cena sem a primeira linha embaixo. Fala curta que não cabe vai inteira
+    // pra próxima; fala longa pode quebrar (sem o "(MAIS)").
+    //
+    // A paginação é SIMULADA aqui, com as linhas de cada bloco medidas uma vez
+    // só (a quantidade de linhas não depende da página). Decidir quebra por
+    // quebra em cima do layout do Qt não serve: depois de mudar o formato de
+    // um bloco já paginado, o Qt refaz só um pedaço e o resto fica com a
+    // posição velha (um roteiro de 26 páginas "media" 14), e forçar o layout
+    // inteiro a cada quebra custava ~1 s em 100 páginas — o contador roda isso
+    // enquanto a pessoa escreve.
+    doc.setPageSize(QSizeF(kScrContentW, kScrContentH));
+    QAbstractTextDocumentLayout* lay = doc.documentLayout();
+
+    struct Blk {
+        QTextBlock block;
+        int lines = 1;
+        qreal lineH = ScreenplayFormat::kPageLinePx;
+        qreal top = 0;
+        bool breakBefore = false;
+        int state = -1;
+    };
+    QVector<Blk> blks;
+    blks.reserve(doc.blockCount());
+    for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
+        lay->blockBoundingRect(b);   // garante o layout do bloco
+        const QTextBlockFormat bf = b.blockFormat();
+        Blk k;
+        k.block = b;
+        k.lines = qMax(1, b.layout() ? b.layout()->lineCount() : 1);
+        if (bf.lineHeightType() == QTextBlockFormat::FixedHeight) k.lineH = bf.lineHeight();
+        k.top = bf.topMargin();
+        k.breakBefore = bf.pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore;
+        k.state = b.userState();
+        blks.append(k);
+    }
+
+    constexpr qreal H = kScrContentH;
+    auto pageOf = [](qreal y) { return int(std::floor(y / H + 1e-9)); };
+    // Coloca o bloco i a partir de y; devolve a página da 1ª e da última linha.
+    auto place = [&](const Blk& k, qreal& y, int* firstPage, int* lastPage) {
+        if (k.breakBefore && y > 0 && std::fmod(y, H) > 1e-6) y = std::ceil(y / H) * H;
+        y += k.top;
+        for (int l = 0; l < k.lines; ++l) {
+            if (pageOf(y) != pageOf(y + k.lineH - 0.01)) y = std::ceil(y / H) * H;
+            if (l == 0 && firstPage) *firstPage = pageOf(y);
+            y += k.lineH;
+        }
+        if (lastPage) *lastPage = pageOf(y - 0.01);
+    };
+
+    qreal y = 0;
+    for (int i = 0; i < blks.size(); ++i) {
+        Blk& k = blks[i];
+        if (k.state >= ScrBody && !k.breakBefore && i + 1 < blks.size()) {
+            const auto el = static_cast<ScreenplayElement>(k.state - ScrBody);
+            if (el == ScreenplayElement::Scene || el == ScreenplayElement::Character) {
+                int last = i + 1;
+                if (el == ScreenplayElement::Character) {
+                    for (int n = i + 2; n < blks.size() && blks[n].state >= ScrBody; ++n) {
+                        const auto ne = static_cast<ScreenplayElement>(blks[n].state - ScrBody);
+                        if (ne != ScreenplayElement::Dialogue && ne != ScreenplayElement::Parenthetical) break;
+                        last = n;
+                    }
+                }
+                qreal t = y;
+                int p0 = 0, pNext = 0, pLast = 0;
+                place(k, t, &p0, nullptr);
+                const qreal groupTop = t;
+                place(blks[i + 1], t, &pNext, &pLast);
+                for (int n = i + 2; n <= last; ++n) place(blks[n], t, nullptr, &pLast);
+                const bool orphan = pNext != p0;
+                const bool split = pLast != p0;
+                if (orphan || (split && el == ScreenplayElement::Character && t - groupTop < H * 0.4))
+                    k.breakBefore = true;
+            }
+        }
+        place(k, y, nullptr, nullptr);
+    }
+
+    if (applyBreaks) {
+        for (const Blk& k : blks) {
+            if (!k.breakBefore || (k.block.blockFormat().pageBreakPolicy() & QTextFormat::PageBreak_AlwaysBefore))
+                continue;
+            QTextCursor c(k.block);
+            QTextBlockFormat bf = k.block.blockFormat();
+            bf.setPageBreakPolicy(QTextFormat::PageBreak_AlwaysBefore);
+            c.setBlockFormat(bf);
+        }
+        // Layout inteiro de novo, de uma vez (ver a armadilha acima).
+        doc.markContentsDirty(0, doc.characterCount());
+    }
+    return qMax(1, int(std::ceil(y / H - 1e-9)));
+}
+
+int Exporter::screenplayPageCount(const QStringList& chapterHtmls)
+{
+    QTextDocument doc;
+    scrPrepareDocument(doc);
+    QTextCursor cur(&doc);
+    bool firstBlock = true;
+    appendScreenplayBody(doc, cur, firstBlock, chapterHtmls, false, false);
+    if (firstBlock) return 0;   // nada escrito
+    return paginateScreenplay(doc, false);
+}
+
+QVector<qreal> Exporter::screenplaySceneLengths(const QStringList& chapterHtmls)
+{
+    QVector<qreal> out;
+    QTextDocument doc;
+    scrPrepareDocument(doc);
+    QTextCursor cur(&doc);
+    bool firstBlock = true;
+    appendScreenplayBody(doc, cur, firstBlock, chapterHtmls, false, false);
+    if (firstBlock) return out;
+    paginateScreenplay(doc, true);
+    QAbstractTextDocumentLayout* lay = doc.documentLayout();
+    QVector<qreal> starts;
+    for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
+        if (b.userState() != ScrBody + int(ScreenplayElement::Scene)) continue;
+        if (!ScreenplayFormat::isSceneHeading(b.text())) continue;
+        const QRectF r = lay->blockBoundingRect(b);
+        const QTextLayout* tl = b.layout();
+        starts << r.top() + (tl && tl->lineCount() ? tl->lineAt(0).y() : 0);
+    }
+    const qreal end = lay->blockBoundingRect(doc.lastBlock()).bottom();
+    for (int i = 0; i < starts.size(); ++i) {
+        const qreal next = i + 1 < starts.size() ? starts.at(i + 1) : end;
+        out << qMax<qreal>(0, next - starts.at(i)) / kScrContentH;
+    }
+    return out;
+}
+
+void Exporter::buildScreenplayDocument(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                                       const QString& title, const SubmissionInfo& info,
+                                       bool titlePage, bool includeMarkers,
+                                       bool inlineSceneNumbers, int firstSceneNumber) const
+{
+    scrPrepareDocument(doc);
+    const QFont base = doc.defaultFont();
+    QTextCursor cur(&doc);
+    const QTextCharFormat plain = scrPlainChar();
+
+    QTextBlockFormat line;
+    line.setLineHeight(ScreenplayFormat::kPageLinePx, QTextBlockFormat::FixedHeight);
+    line.setAlignment(Qt::AlignHCenter);
+
+    bool firstBlock = true;
+    auto addLine = [&](const QString& text, const QTextBlockFormat& bf, int state) {
+        if (firstBlock) cur.setBlockFormat(bf);
+        else            cur.insertBlock(bf, plain);
+        firstBlock = false;
+        cur.block().setUserState(state);
+        if (!text.isEmpty()) cur.insertText(text, plain);
+    };
+
+    if (titlePage) {
+        // Título a ~1/3 da página, "Escrito por" e o nome; o contato no pé, à
+        // esquerda. Tudo empurrado por margem, em linhas de 16 px, pra a conta
+        // fechar igual no PDF e no DOCX.
+        const QString byline = info.byline.trimmed().isEmpty()
+            ? (m_model ? m_model->projectAuthor().trimmed() : QString()) : info.byline.trimmed();
+        const int titleLines = qMax(1, int(std::ceil(QFontMetricsF(base).horizontalAdvance(title.toUpper())
+                                                     / kScrContentW)));
+        // O Qt ignora a margem de cima do primeiro bloco do documento: quem
+        // empurra o título é uma linha vazia de altura fixa.
+        QTextBlockFormat drop = line;
+        drop.setLineHeight(288, QTextBlockFormat::FixedHeight);
+        addLine(QString(), drop, ScrTitle);
+        int used = 288;
+        addLine(title.toUpper(), line, ScrTitle);
+        used += titleLines * 16;
+        if (!byline.isEmpty()) {
+            QTextBlockFormat by = line;
+            by.setTopMargin(32);
+            addLine(subTr(QT_TRANSLATE_NOOP("Exporter", "Escrito por")), by, ScrTitle);
+            QTextBlockFormat nm = line;
+            nm.setTopMargin(16);
+            addLine(byline, nm, ScrTitle);
+            used += 32 + 16 + 16 + 16;
+        }
+        QStringList contact;
+        if (!info.legalName.trimmed().isEmpty()) contact << info.legalName.trimmed();
+        for (const QString& a : info.address.split(QLatin1Char('\n'), Qt::SkipEmptyParts)) contact << a.trimmed();
+        for (const QString& c : info.contact.split(QLatin1Char('\n'), Qt::SkipEmptyParts)) contact << c.trimmed();
+        for (int i = 0; i < contact.size(); ++i) {
+            QTextBlockFormat c = line;
+            c.setAlignment(Qt::AlignLeft);
+            if (i == 0) c.setTopMargin(qMax(16, kScrContentH - used - int(contact.size()) * 16 - 16));
+            addLine(contact.at(i), c, ScrTitle);
+        }
+        cur.block().setUserState(ScrTitleEnd);
+    }
+
+    QStringList htmls;
+    for (const Chapter* ch : chapters) htmls << chapterHtmlPrimary(*ch);
+    appendScreenplayBody(doc, cur, firstBlock, htmls, includeMarkers, titlePage,
+                         inlineSceneNumbers, firstSceneNumber);
+    paginateScreenplay(doc, true);
+}
+
+QByteArray Exporter::screenplayPdf(QTextDocument& doc, bool hasTitlePage, const QString& docTitle,
+                                   bool sceneNumbers, int firstSceneNumber) const
+{
+    // Onde cada cabeçalho de cena cai (página, altura), pro número nas margens.
+    struct SceneMark { int page; qreal y; int number; };
+    QList<SceneMark> marks;
+    if (sceneNumbers) {
+        doc.setPageSize(QSizeF(kScrContentW, kScrContentH));
+        QAbstractTextDocumentLayout* lay = doc.documentLayout();
+        int n = firstSceneNumber;
+        for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
+            if (b.userState() != ScrBody + int(ScreenplayElement::Scene)) continue;
+            if (!ScreenplayFormat::isSceneHeading(b.text())) continue;
+            const QRectF r = lay->blockBoundingRect(b);
+            const QTextLayout* tl = b.layout();
+            const qreal top = r.top() + (tl && tl->lineCount() ? tl->lineAt(0).y() : 0);
+            // Pelo meio da linha: a primeira linha de uma página começa
+            // exatamente na emenda, e fração de pixel jogava ela na anterior.
+            const int page = int((top + ScreenplayFormat::kPageLinePx / 2) / kScrContentH);
+            marks.append({ page, top - page * kScrContentH, n++ });
+        }
+    }
+    QByteArray bytes;
+    QBuffer buf(&bytes);
+    buf.open(QIODevice::WriteOnly);
+    {
+        QPdfWriter writer(&buf);
+        writer.setResolution(300);
+        writer.setPageSize(QPageSize(QPageSize::Letter));
+        writer.setPageMargins(QMarginsF(0, 0, 0, 0), QPageLayout::Millimeter);
+        writer.setTitle(docTitle.trimmed().isEmpty()
+            ? (m_model ? m_model->projectName() : QString()) : docTitle);
+        doc.setPageSize(QSizeF(kScrContentW, kScrContentH));
+
+        QPainter painter(&writer);
+        painter.scale(writer.resolution() / 96.0, writer.resolution() / 96.0);
+        // Em pixel, não em ponto: o painter já está na régua de 96 dpi, e ponto
+        // seria convertido de novo pelos 300 dpi do PDF (sairia ~3x maior).
+        QFont numberFont(QStringLiteral("Courier New"));
+        numberFont.setPixelSize(16);
+
+        const int pages = doc.pageCount();
+        for (int i = 0; i < pages; ++i) {
+            if (i > 0) writer.newPage();
+            const int number = hasTitlePage ? i : i + 1;   // a página de rosto não conta
+            if (number >= 2) {
+                painter.save();
+                painter.setFont(numberFont);
+                painter.setPen(Qt::black);
+                painter.drawText(QRect(kScrLeftPx, kScrNumberTop, kScrContentW, 24),
+                                 Qt::AlignRight | Qt::AlignVCenter, QStringLiteral("%1.").arg(number));
+                painter.restore();
+            }
+            for (const SceneMark& m : std::as_const(marks)) {
+                if (m.page != i) continue;
+                painter.save();
+                painter.setFont(numberFont);
+                painter.setPen(Qt::black);
+                const QString t = QString::number(m.number);
+                const qreal y = kScrTopPx + m.y;
+                painter.drawText(QRectF(kScrLeftPx - kScrNumberHang - 60, y, 60, 16),
+                                 Qt::AlignRight | Qt::AlignVCenter, t);
+                painter.drawText(QRectF(kScrLeftPx + kScrContentW + 18, y, 60, 16),
+                                 Qt::AlignLeft | Qt::AlignVCenter, t);
+                painter.restore();
+            }
+            painter.save();
+            painter.translate(kScrLeftPx, kScrTopPx);
+            painter.setClipRect(QRectF(0, 0, kScrContentW, kScrContentH));
+            painter.translate(0, -double(i) * kScrContentH);
+            doc.drawContents(&painter, QRectF(0, double(i) * kScrContentH, kScrContentW, kScrContentH));
+            painter.restore();
+        }
+    }
+    buf.close();
+    return bytes;
+}
+
+QByteArray Exporter::exportScreenplay(const QList<const Chapter*>& chapters, const QString& title,
+                                      const SubmissionInfo& info, bool titlePage,
+                                      bool includeMarkers, Format fmt, bool sceneNumbers,
+                                      int firstSceneNumber) const
+{
+    if (fmt == Format::Fountain) {
+        QList<Fountain::ChapterSource> src;
+        for (const Chapter* ch : chapters) src.append({ ch->title, chapterHtmlPrimary(*ch) });
+        const QString byline = info.byline.trimmed().isEmpty()
+            ? (m_model ? m_model->projectAuthor().trimmed() : QString()) : info.byline.trimmed();
+        QStringList contact;
+        if (!info.legalName.trimmed().isEmpty()) contact << info.legalName.trimmed();
+        contact << info.address.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+        contact << info.contact.split(QLatin1Char('\n'), Qt::SkipEmptyParts);
+        return Fountain::write(src, titlePage ? title : QString(), titlePage ? byline : QString(),
+                               titlePage ? contact.join(QLatin1Char('\n')) : QString(), sceneNumbers).toUtf8();
+    }
+    QTextDocument doc;
+    // No PDF os números são desenhados por fora (as duas margens); no DOCX e
+    // no ODT vão no texto, pendurados na margem esquerda.
+    buildScreenplayDocument(doc, chapters, title, info, titlePage, includeMarkers,
+                            sceneNumbers && fmt != Format::Pdf, firstSceneNumber);
+    if (fmt == Format::Pdf) return screenplayPdf(doc, titlePage, title, sceneNumbers, firstSceneNumber);
+    if (fmt == Format::Docx) {
+        DocxPage page;
+        page.widthTw = 12240;  page.heightTw = 15840;            // Carta
+        page.leftTw = kScrLeftPx * 15;  page.rightTw = kScrRightPx * 15;
+        page.topTw = kScrTopPx * 15;    page.bottomTw = kScrBottomPx * 15;
+        page.pageNumberOnly = true;
+        page.titleEndState = titlePage ? int(ScrTitleEnd) : -1;
+        return docxFromDocument(doc, QString(), &page);
+    }
+    // ODT: o writer do Qt não leva tamanho de página nem número; as colunas
+    // e o espaçamento dos elementos vão.
+    return writeDoc(doc, fmt, title);
+}
+
 QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
     QList<OutFile> files;
     if (!m_model) return files;
@@ -1317,6 +1804,30 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
         const QString msTitle = safeName(effectiveTitle.isEmpty() ? subTr(QT_TRANSLATE_NOOP("Exporter", "Manuscrito")) : effectiveTitle);
         const QString ext = formatExt(sel.format);
 
+        if (m_model->isScreenplay()) {
+            // Roteiro tem formato próprio (o de submissão em prosa não se aplica).
+            if (sel.manuscriptMode == ManuscriptMode::SingleDocument) {
+                files.append({ QStringLiteral("Manuscritos/%1.%2").arg(msTitle, ext),
+                               exportScreenplay(selected, effectiveTitle, sel.submission, true,
+                                                sel.includeMarkers, sel.format, sel.sceneNumbers) });
+            } else {
+                int nextScene = 1;   // a numeração das cenas continua de um arquivo pro outro
+                for (int i = 0; i < selected.size(); ++i) {
+                    const Chapter* ch = selected.at(i);
+                    const QString chTitle = safeName(ch->title.isEmpty()
+                        ? m_model->chapterDisplayLabel(*ch) : ch->title);
+                    files.append({ QStringLiteral("Manuscritos/%1/%2 - %3.%4")
+                                       .arg(msTitle, QString::number(i + 1).rightJustified(2, QLatin1Char('0')), chTitle, ext),
+                                   exportScreenplay({ ch }, effectiveTitle, sel.submission, false,
+                                                    sel.includeMarkers, sel.format, sel.sceneNumbers,
+                                                    nextScene) });
+                    for (const QString& seg : SceneUtils::splitHtmlIntoScenes(chapterHtmlPrimary(*ch)))
+                        if (!ScreenplayFormat::firstSceneHeading(seg).isEmpty()) ++nextScene;
+                }
+            }
+            continue;
+        }
+
         if (sel.manuscriptMode == ManuscriptMode::SingleDocument) {
             const QByteArray bytes = submissionApplies(sel)
                 ? exportSubmission(selected, effectiveTitle, sel.submission,
@@ -1336,6 +1847,8 @@ QList<Exporter::OutFile> Exporter::buildFiles(const Selection& sel) const {
     }
 
     // ── Gavetas (sempre arquivos separados, preservando pastas) ──
+    // Fountain é só o roteiro: gaveta não tem como virar Fountain.
+    if (sel.format == Format::Fountain) return files;
     for (const Drawer& d : m_model->drawers()) {
         const QString drawerTitle = safeName(d.title);
 
@@ -1733,6 +2246,9 @@ bool Exporter::run(const Selection& sel, QWidget* dialogParent,
             case Format::Docx:
                 filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Documento Word (*.docx)"));
                 dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como DOCX")); break;
+            case Format::Fountain:
+                filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Roteiro Fountain (*.fountain)"));
+                dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como Fountain")); break;
             default:
                 filter = subTr(QT_TRANSLATE_NOOP("Exporter", "Documento ODF (*.odt)"));
                 dlgTitle = subTr(QT_TRANSLATE_NOOP("Exporter", "Exportar como ODT")); break;

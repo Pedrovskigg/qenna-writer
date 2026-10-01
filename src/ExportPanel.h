@@ -56,6 +56,7 @@ private:
     QRadioButton* m_markersIncludeRadio = nullptr;
     QRadioButton* m_markersRemoveRadio = nullptr;
     QCheckBox* m_submissionCheck = nullptr;
+    QCheckBox* m_sceneNumbersCheck = nullptr;   // roteiro: número da cena nas margens
     QPushButton* m_submissionDataBtn = nullptr;
     QLabel* m_submissionHint = nullptr;
     Exporter::SubmissionInfo m_submission;

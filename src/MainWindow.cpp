@@ -156,6 +156,8 @@
 #include "CharacterSheetPanel.h"
 #include "ChapterStatsDialog.h"
 #include "MentionPopup.h"
+#include "ScreenplayCompleter.h"
+#include "Fountain.h"
 #include "RemindersPanel.h"
 #include "RemindersStore.h"
 #include "SheetTemplatesStore.h"
@@ -1364,7 +1366,22 @@ void MainWindow::setupEditor()
         if (!SceneBreaks::qtRulerHidden(editor)) SceneBreaks::hideQtRuler(editor);
     });
     editor->setOverlayPainter([this](QPainter& p, const QRect& clip) {
+        // Roteiro: o cabeçalho de cena já é a quebra — nada de traço por cima.
+        if (editor->isScreenplayMode()) return QList<QPair<QRect, QString>>();
         return SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
+    });
+    // Roteiro: cada INT./EXT. vira cena do Qenna assim que a pessoa sai da linha.
+    connect(editor, &SpellEditor::screenplayLineFinished, this, [this]() {
+        if (!editor || !editor->isScreenplayMode() || !editorHost) return;
+        const int added = ScreenplayFormat::ensureSceneBreaks(editor->document(), true);
+        ScreenplayFormat::compactSceneBreaks(editor->document(), true);
+        if (added <= 0) return;
+        // Mesmo caminho do "----", sem o aviso de "Nova cena" (no roteiro ele
+        // apareceria a cada cabeçalho).
+        editorHost->syncEditorToCache();
+        sceneDetectTimer->stop();
+        sceneDetectKey = editorHost->activeKey();
+        detectScenesForPending();
     });
     {
         // quebra nova (o "----") ganha o espaço dela no mesmo passo do desfazer
@@ -1374,12 +1391,15 @@ void MainWindow::setupEditor()
             *pending = true;
             QTimer::singleShot(0, this, [this, pending]() {
                 *pending = false;
-                if (editor) SceneBreaks::applySpacing(editor->document(), true);
+                if (!editor) return;
+                if (editor->isScreenplayMode()) ScreenplayFormat::compactSceneBreaks(editor->document(), true);
+                else SceneBreaks::applySpacing(editor->document(), true);
             });
         });
         connect(SceneBreaks::notifier(), &SceneBreaks::Notifier::styleChanged, this, [this]() {
             if (!editor) return;
-            SceneBreaks::applySpacing(editor->document(), false);
+            if (editor->isScreenplayMode()) ScreenplayFormat::compactSceneBreaks(editor->document(), false);
+            else SceneBreaks::applySpacing(editor->document(), false);
             editor->viewport()->update();
         });
     }
@@ -1960,6 +1980,9 @@ void MainWindow::setupEditor()
     mentionPopup->setIncludeManuscripts(
         QSettings().value(QStringLiteral("mention/includeManuscripts"), false).toBool());
     mentionPopup->attach(editor);
+    // Roteiro: nome do personagem, local e hora da cena.
+    screenplayCompleter = new ScreenplayCompleter(this, this);
+    screenplayCompleter->attach(editor);
     // O texto digitado após uma menção herda o formato NoBrush dela (sem foreground
     // explícito), e a seleção de foco não cobre texto sem foreground. Ao tocar o doc,
     // re-grava o foreground (applyTextColor) — o trecho novo passa a ser coberto pelo
@@ -2671,6 +2694,9 @@ void MainWindow::setupEditor()
     // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
+    // Guia do roteiro (elemento da linha + pra onde as teclas levam).
+    connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateScreenplayGuide);
+    connect(editor, &SpellEditor::screenplayElementChanged, this, &MainWindow::updateScreenplayGuide);
     connect(docHeader, &DocHeaderBar::sceneVarRequested, this, [this]() {
         if (!docHeader || !variationBar) return;
         // Qt::TopEdge (e nao o lado da barra): a faixa fica no topo do editor,
@@ -2842,6 +2868,15 @@ void MainWindow::setupEditor()
     statsPanel->setTerritorioStore(territorioStore);
     statsPanel->setWordCounter(wordCounter);
     statsPanel->setPresenceProvider(m_presenceProvider);
+    connect(statsPanel, &StatsPanel::sceneOpenRequested, this,
+            [this](const QString& manuscriptId, const QString& chapterId, int sceneIndex, bool chapterHasScenes) {
+        EditorHost::ViewMode vm;
+        vm.type = chapterHasScenes ? EditorHost::SceneDoc : EditorHost::ChapterDoc;
+        vm.manuscriptId = manuscriptId;
+        vm.chapterId = chapterId;
+        if (chapterHasScenes) vm.sceneIndex = sceneIndex;
+        editorHost->setViewMode(vm);
+    });
     statsPanel->setTopInset(chromeInset(Qt::TopEdge));
     statsPanel->setRightInset(chromeInset(Qt::RightEdge));
     statsPanel->raise();
@@ -4137,7 +4172,8 @@ void MainWindow::applyEditorStyle()
     // Alinhamento padrão do documento: novos parágrafos herdam esse valor naturalmente.
     // Isso faz o Enter criar blocos já com o alinhamento correto, sem lambdas extras.
     {
-        const int defAlign = projectModel
+        // Roteiro: o alinhamento é de cada elemento (a Transição vai à direita).
+        const int defAlign = (projectModel && !msScreenplay)
             ? (isManuscriptDoc ? projectModel->defaultManuscriptAlignment()
                                : projectModel->defaultDrawerAlignment())
             : 0;
@@ -4189,10 +4225,14 @@ void MainWindow::applyEditorStyle()
     // Roteiro nunca usa recuo de primeira linha (convenção de prosa) — ignora
     // a preferência global nesse caso, mesmo que o usuário tenha ligado.
     blockFormat.setTextIndent((firstLineIndentEnabled && !msScreenplay) ? 30 : 0);
-    blockFormat.setTopMargin(paragraphSpacingBefore);
-    blockFormat.setBottomMargin(paragraphSpacingAfter);
+    // Roteiro: o espaço entre linhas é do elemento (Personagem colado na fala,
+    // linha em branco antes da ação) — ScreenplayFormat cuida, logo abaixo.
+    if (!msScreenplay) {
+        blockFormat.setTopMargin(paragraphSpacingBefore);
+        blockFormat.setBottomMargin(paragraphSpacingAfter);
+    }
     // Aplica alinhamento default do projeto (0 = não definido = não sobrescreve).
-    if (projectModel) {
+    if (projectModel && !msScreenplay) {
         const int defAlign = isManuscriptDoc
             ? projectModel->defaultManuscriptAlignment()
             : projectModel->defaultDrawerAlignment();
@@ -4201,8 +4241,10 @@ void MainWindow::applyEditorStyle()
     }
     cursor.mergeBlockFormat(blockFormat);
     // O bloco da quebra de cena ganha espaço próprio e perde o recuo (senão o
-    // desenho sai torto). Margem do <hr> não vai pro arquivo.
-    SceneBreaks::applySpacing(editor->document(), false);
+    // desenho sai torto). Margem do <hr> não vai pro arquivo. No roteiro a
+    // quebra é invisível: o cabeçalho de cena já separa.
+    if (msScreenplay) ScreenplayFormat::compactSceneBreaks(editor->document(), false);
+    else SceneBreaks::applySpacing(editor->document(), false);
 
     // Aplica a cor de texto do tema em todo o documento (charFormat foreground
     // sobrepõe palette nos blocos já existentes; sem isso, texto fica preso na
@@ -4214,11 +4256,39 @@ void MainWindow::applyEditorStyle()
     applyEditorFont();
 
     // Documento vazio de roteiro: já entra formatado como Cena, pronto pro
-    // usuário digitar "INT. ..." sem precisar dar Tab antes.
-    if (msScreenplay && editor->document()->isEmpty()) {
-        QTextCursor c(editor->document());
-        ScreenplayFormat::applyBlockFormat(c, ScreenplayElement::Scene);
+    // usuário digitar "INT. ..." sem precisar dar Tab antes. Com texto, cada
+    // linha recebe a geometria do seu elemento.
+    if (msScreenplay) {
+        const bool wasModified = editor->document()->isModified();
+        if (editor->document()->isEmpty()) {
+            QTextCursor c(editor->document());
+            ScreenplayFormat::applyBlockFormat(c, ScreenplayElement::Scene);
+        } else {
+            ScreenplayFormat::normalizeDocument(editor->document());
+        }
+        editor->document()->setModified(wasModified);
+        // Roteiro aberto pela primeira vez (ou escrito antes desta versão): os
+        // cabeçalhos viram cenas do Qenna. Depois do carregamento terminar —
+        // aqui ainda pode ser o meio da troca de documento.
+        QTimer::singleShot(0, this, [this]() {
+            if (!editor || !editor->isScreenplayMode() || !editorHost) return;
+            if (ScreenplayFormat::ensureSceneBreaks(editor->document(), false) <= 0) return;
+            ScreenplayFormat::compactSceneBreaks(editor->document(), true);
+            editorHost->syncEditorToCache();
+            sceneDetectTimer->stop();
+            sceneDetectKey = editorHost->activeKey();
+            detectScenesForPending();
+        });
+        const QHash<QString, QString> cast = screenplayCastCues();
+        QSet<QString> cues;
+        for (auto it = cast.cbegin(); it != cast.cend(); ++it) cues.insert(it.key());
+        editor->setScreenplayCues(cues);
+        if (screenplayCompleter) {
+            screenplayCompleter->setCast(cast);
+            screenplayCompleter->setLocations(screenplayLocations());
+        }
     }
+    updateScreenplayGuide();
 
     if (spellHighlighter) spellHighlighter->resume();
 }
@@ -4295,6 +4365,134 @@ void MainWindow::applyEditorFont()
     doc->setModified(wasModified);
 }
 
+void MainWindow::importFountainIntoProject(const QString& path)
+{
+    // Projeto de roteiro recém-criado + um .fountain: cada seção (#) vira uma
+    // sequência (capítulo), cada cabeçalho vira cena, e quem tem 2 falas ou
+    // mais entra no elenco (figurante de uma fala só continua figurante).
+    QFile f(path);
+    if (!projectModel || !f.open(QIODevice::ReadOnly)) return;
+    const Fountain::Document doc = Fountain::parse(QString::fromUtf8(f.readAll()));
+    if (doc.chapters.isEmpty()) return;
+
+    Manuscript ms;
+    ms.id = ProjectModel::uid();
+    ms.title = projectModel->projectName();
+    ms.html = QStringLiteral("<p></p>");
+    projectModel->addManuscript(ms);
+    projectModel->setActiveManuscriptId(ms.id);
+    ProjectStorage::ensureManuscriptDirs(projectRoot, ms.id);
+
+    QString firstChapter;
+    for (int i = 0; i < doc.chapters.size(); ++i) {
+        const Fountain::Chapter& fc = doc.chapters.at(i);
+        Chapter c;
+        c.id = ProjectModel::uid();
+        c.manuscriptId = ms.id;
+        c.title = fc.title.isEmpty() ? tr("Sequência %1").arg(i + 1) : fc.title;
+        c.order = i;
+        c.file = ProjectModel::chapterDefaultFile(ms.id, c.id);
+        const QString html = Fountain::chapterHtml(fc.lines);
+        c.scenes = ProjectModel::buildScenesFromHtml(html, {});
+        const QStringList segs = SceneUtils::splitHtmlIntoScenes(html);
+        for (int k = 0; k < c.scenes.size() && k < segs.size(); ++k) {
+            const QString heading = ScreenplayFormat::firstSceneHeading(segs.at(k));
+            if (!heading.isEmpty()) c.scenes[k].title = heading;
+        }
+        projectModel->addChapter(c);
+        ProjectStorage::writeChapter(projectRoot, c.file, html);
+        if (firstChapter.isEmpty()) firstChapter = c.id;
+    }
+    projectModel->setActiveChapterId(firstChapter);
+
+    if (!elementsStore) return;
+    QString charDrawer;
+    for (const Drawer& d : projectModel->drawers())
+        if (d.drawerElementType == QLatin1String("character")) { charDrawer = d.key; break; }
+    if (charDrawer.isEmpty()) return;   // modelo em branco: sem gaveta de personagens
+    for (const auto& cue : doc.characters()) {
+        if (cue.second < 2) continue;
+        // "DONA CIDA" → "Dona Cida"
+        QStringList words = cue.first.toLower().split(QLatin1Char(' '), Qt::SkipEmptyParts);
+        for (QString& w : words) w[0] = w.at(0).toUpper();
+        Element e;
+        e.name = words.join(QLatin1Char(' '));
+        e.type = QStringLiteral("character");
+        e.icon = QStringLiteral("user");
+        const QString id = elementsStore->addElement(e);
+        DrawerItem it;
+        it.id = ProjectModel::uid();
+        it.title = e.name;
+        it.elementType = e.type;
+        it.elementId = id;
+        it.hasInlineHtml = true;
+        it.html = QStringLiteral("<p></p>");
+        projectModel->addDrawerItem(charDrawer, it);
+    }
+    elementsStore->save();
+}
+
+void MainWindow::updateScreenplayGuide()
+{
+    if (!docHeader) return;
+    if (!editor || !editor->isScreenplayMode()) {
+        docHeader->setScreenplayGuide(false);
+        return;
+    }
+    const QTextCursor c = editor->textCursor();
+    const QString text = c.block().text();
+    docHeader->setScreenplayGuide(true, ScreenplayFormat::detect(c.blockFormat(), text),
+                                  text.trimmed().isEmpty());
+}
+
+QHash<QString, QString> MainWindow::screenplayCastCues() const
+{
+    // Nome completo, primeiro nome e apelidos do elenco, em caixa alta, cada um
+    // apontando pro nome do personagem: é o que faz "CIDA" numa linha de ação
+    // virar Personagem no Enter, e o que o autocompletar mostra do lado.
+    QHash<QString, QString> cues;
+    if (!elementsStore) return cues;
+    for (const Element& e : elementsStore->elements()) {
+        if (e.type != QLatin1String("character")) continue;
+        const QString name = e.name.simplified();
+        const QString full = name.toUpper();
+        if (full.isEmpty()) continue;
+        cues.insert(full, QString());
+        const QString first = full.section(QLatin1Char(' '), 0, 0);
+        if (first != full && !cues.contains(first)) cues.insert(first, name);
+        for (const QString& a : e.aliases) {
+            const QString alias = a.simplified().toUpper();
+            if (!alias.isEmpty() && alias != full) cues.insert(alias, name);
+        }
+    }
+    return cues;
+}
+
+QMap<QString, int> MainWindow::screenplayLocations() const
+{
+    // Locais de todos os cabeçalhos de cena do roteiro, com quantas cenas cada
+    // um tem. O documento aberto fica de fora: o autocompletar lê ele ao vivo.
+    QMap<QString, int> locs;
+    if (!projectModel || !projectModel->isScreenplay()) return locs;
+    const auto vm = editorHost ? editorHost->viewMode() : EditorHost::ViewMode();
+    for (const Chapter& ch : projectModel->chapters()) {
+        if (ch.id == vm.chapterId) continue;
+        const QString key = DocCache::chapterKey(ch.manuscriptId, ch.id);
+        QString html;
+        if (docCache && docCache->has(key)) html = docCache->get(key);
+        else if (!ch.file.isEmpty()) html = ProjectStorage::readChapter(projectRoot, ch.file);
+        if (html.isEmpty()) continue;
+        QTextDocument doc;
+        doc.setHtml(html);
+        for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
+            if (ScreenplayFormat::detect(b.blockFormat(), b.text()) != ScreenplayElement::Scene) continue;
+            const QString loc = ScreenplayFormat::sceneLocation(b.text());
+            if (!loc.isEmpty()) locs[loc] += 1;
+        }
+    }
+    return locs;
+}
+
 void MainWindow::applyProjectTypeDefaults()
 {
     if (!projectModel) return;
@@ -4310,7 +4508,9 @@ void MainWindow::onAlignmentRequested(Qt::Alignment alignment, TopToolbar::Align
     if (!editor || !projectModel) return;
 
     // Aplica ao documento inteiro (seleção existente é preservada depois).
+    // Roteiro fica de fora: cada elemento tem o seu alinhamento.
     auto applyToCurrentDoc = [this, alignment]() {
+        if (editor->isScreenplayMode()) return;
         const QTextCursor saved = editor->textCursor();
         QTextCursor cur(editor->document());
         cur.select(QTextCursor::Document);
@@ -5299,7 +5499,15 @@ void MainWindow::detectScenesForPending()
     const Chapter* ch = projectModel->findChapter(chId);
     if (!ch) return;
     const QString html = docCache->get(sceneDetectKey);
-    const QList<Scene> scenes = ProjectModel::buildScenesFromHtml(html, ch->scenes);
+    QList<Scene> scenes = ProjectModel::buildScenesFromHtml(html, ch->scenes);
+    // Roteiro: o nome da cena é o cabeçalho dela ("INT. LANCHONETE - NOITE").
+    if (projectModel->isScreenplay()) {
+        const QStringList segs = SceneUtils::splitHtmlIntoScenes(html);
+        for (int i = 0; i < scenes.size() && i < segs.size(); ++i) {
+            const QString heading = ScreenplayFormat::firstSceneHeading(segs.at(i));
+            if (!heading.isEmpty()) scenes[i].title = heading;
+        }
+    }
     projectModel->updateChapterScenes(chId, scenes);
 }
 
@@ -7524,6 +7732,8 @@ void MainWindow::onNewProjectRequested()
     // a capa rápida: a versão sem texto (textura do menu principal) e os ajustes
     projectModel->setProjectCoverExtras(detailsDlg.coverBgDataUrl(), detailsDlg.quickCoverJson());
     applyProjectRoot(fullPath);
+    if (detailsDlg.projectType() == QLatin1String("screenplay") && !detailsDlg.importPath().isEmpty())
+        importFountainIntoProject(detailsDlg.importPath());
     applyProjectTypeDefaults();
     // Projeto novo não passa pelo loaded(): sem isto, o corretor ficaria no
     // idioma do projeto que estava aberto antes.

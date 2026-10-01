@@ -972,6 +972,12 @@ void WordCountPanel::refresh()
         d.statsText = tr("Estatísticas") + QStringLiteral(" ›");
         d.label1 = shortTitle(s.compactSlot1);
         d.label2 = shortTitle(s.compactSlot2);
+        // Roteiro: 1 página no formato padrão ≈ 1 minuto de tela.
+        if (m_counter->isScreenplay()) {
+            const QString withMin = tr("Páginas · ~%1 min").arg(m_counter->estimatedPages());
+            if (s.compactSlot1 == QStringLiteral("pages")) d.label1 = withMin;
+            if (s.compactSlot2 == QStringLiteral("pages")) d.label2 = withMin;
+        }
         d.value1 = v1;
         d.value2 = v2;
         d.fullLabel1 = m_slot1Title;

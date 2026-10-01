@@ -43,6 +43,8 @@ public:
     QString synopsis() const;
     QString projectType() const;   // "book" | "screenplay"
     QString templateId() const;    // "blank" | "basic" | "advanced"
+    // Roteiro que já existe (.fountain) pra trazer pro projeto; vazio = começa em branco.
+    QString importPath() const { return m_importPath; }
     QString fullPath() const;      // <pasta escolhida>/<nome do projeto>
     // A capa pronta (com texto), a mesma sem texto (textura do menu principal)
     // e os ajustes da capa rápida, pra reabrir de onde parou.
@@ -70,6 +72,9 @@ private:
     Existing m_existing;
     QWidget* m_typeBox = nullptr;
     QWidget* m_templateBox = nullptr;
+    QWidget* m_importBox = nullptr;
+    QLabel* m_importLabel = nullptr;
+    QString m_importPath;
     QWidget* m_pathRow = nullptr;
     QuickCoverCanvas* m_canvas = nullptr;
     QuickCoverPanel* m_panel = nullptr;

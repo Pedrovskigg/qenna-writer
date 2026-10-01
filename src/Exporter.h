@@ -2,6 +2,8 @@
 
 #include <QSet>
 #include <QString>
+#include <QVector>
+#include <QStringList>
 
 class ProjectModel;
 class QWidget;
@@ -22,7 +24,7 @@ struct Manuscript;
 // chamar, garantindo que o disco reflita as edições atuais.
 class Exporter {
 public:
-    enum class Format { Odt, Pdf, Epub, Docx };
+    enum class Format { Odt, Pdf, Epub, Docx, Fountain };   // Fountain: só roteiro
     enum class ManuscriptMode { SingleDocument, SeparateChapters };
 
     // Estilo de parágrafo do projeto — não fica no HTML salvo, o editor aplica em
@@ -64,6 +66,7 @@ public:
         // de cena. Só faz sentido no manuscrito em documento único — ver
         // submissionApplies().
         bool submissionFormat = false;
+        bool sceneNumbers = false;    // roteiro: número da cena nas margens
         SubmissionInfo submission;
     };
 
@@ -105,6 +108,14 @@ public:
     // (dessatura capa, imagens de corpo e fundo de marca-texto). Retorna
     // nullptr se o manuscrito não existir ou não tiver capítulos. docParent
     // recebe a posse do QTextDocument (é um QObject).
+    // Páginas do roteiro no formato padrão (Carta, Courier 12, 6 linhas por
+    // polegada) — a mesma paginação da exportação. Cada item é o HTML de um
+    // capítulo; 1 página ≈ 1 minuto de tela.
+    static int screenplayPageCount(const QStringList& chapterHtmls);
+    // Tamanho de cada cena (na ordem dos cabeçalhos), em páginas do formato
+    // padrão, medido na mesma paginação: é dele que saem os oitavos.
+    static QVector<qreal> screenplaySceneLengths(const QStringList& chapterHtmls);
+
     QTextDocument* buildPreviewDocument(const QString& manuscriptId,
                                          bool includeMarkers,
                                          const QColor& textColor,
@@ -164,8 +175,41 @@ private:
     // runningHeader não-vazio adiciona cabeçalho corrido (canto superior
     // direito, com número de página via campo PAGE do Word) a partir da
     // segunda página — exigência do formato de submissão.
+    // Página do DOCX em twips. O padrão é A4 com 1 polegada em volta; o
+    // roteiro troca por Carta, 1,5 polegada à esquerda e cabeçalho só com o
+    // número ("2."), com a página de rosto numa seção própria.
+    struct DocxPage {
+        int widthTw = 11906, heightTw = 16838;
+        int topTw = 1440, rightTw = 1440, bottomTw = 1440, leftTw = 1440;
+        bool pageNumberOnly = false;
+        int titleEndState = -1;   // userState do bloco que fecha a página de rosto
+    };
     QByteArray docxFromDocument(QTextDocument& doc,
-                                const QString& runningHeader = QString()) const;
+                                const QString& runningHeader = QString(),
+                                const DocxPage* page = nullptr) const;
+
+    // ── Roteiro ──
+    // Projeto tipo roteiro sai no formato da indústria: Carta, Courier 12,
+    // margem de 1,5 polegada à esquerda, elementos nas colunas de praxe,
+    // página de rosto e número no canto a partir da segunda página.
+    // sceneNumbers: o PDF desenha o número nas duas margens; DOCX e ODT levam
+    // o número na margem esquerda (recuo deslocado + tabulação).
+    QByteArray exportScreenplay(const QList<const Chapter*>& chapters, const QString& title,
+                                const SubmissionInfo& info, bool titlePage,
+                                bool includeMarkers, Format fmt, bool sceneNumbers = false,
+                                int firstSceneNumber = 1) const;
+    void buildScreenplayDocument(QTextDocument& doc, const QList<const Chapter*>& chapters,
+                                 const QString& title, const SubmissionInfo& info,
+                                 bool titlePage, bool includeMarkers,
+                                 bool inlineSceneNumbers = false, int firstSceneNumber = 1) const;
+    QByteArray screenplayPdf(QTextDocument& doc, bool hasTitlePage, const QString& docTitle,
+                             bool sceneNumbers = false, int firstSceneNumber = 1) const;
+    static void appendScreenplayBody(QTextDocument& doc, QTextCursor& cur, bool& firstBlock,
+                                     const QStringList& chapterHtmls, bool includeMarkers,
+                                     bool breakBefore, bool inlineSceneNumbers = false,
+                                     int firstSceneNumber = 1);
+    // Decide as quebras de página (e aplica, se pedido); devolve o total de páginas.
+    static int paginateScreenplay(QTextDocument& doc, bool applyBreaks);
 
     QList<OutFile> buildFiles(const Selection& sel) const;
 

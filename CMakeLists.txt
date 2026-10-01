@@ -196,6 +196,12 @@ qt_add_executable(qenna-writer
     src/SpellHighlighter.h
     src/SpellEditor.cpp
     src/SpellEditor.h
+    src/Fountain.cpp
+    src/Fountain.h
+    src/ScreenplayBreakdown.cpp
+    src/ScreenplayBreakdown.h
+    src/ScreenplayCompleter.cpp
+    src/ScreenplayCompleter.h
     src/ScreenplayFormat.cpp
     src/ScreenplayFormat.h
     src/SettingsPanel.cpp

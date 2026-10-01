@@ -10,6 +10,8 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+#include <cmath>
+
 #include "AvatarUtils.h"
 #include "IconUtils.h"
 #include "Theme.h"
@@ -25,6 +27,21 @@ constexpr int kVarBtnBase = 20;
 // Cabe dentro da altura fixa da faixa (54 - 8 de margem) com folga.
 constexpr int kAvatarBase = 38;
 constexpr int kAvatarGap = 10;
+// Abaixo disso o guia do roteiro mostra só o elemento, sem as teclas.
+constexpr int kGuideKeysMinWidth = 700;
+constexpr int kGuideGap = 12;
+
+qreal luminance(const QColor& c)
+{
+    auto ch = [](qreal v) { return v <= 0.03928 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * ch(c.redF()) + 0.7152 * ch(c.greenF()) + 0.0722 * ch(c.blueF());
+}
+
+qreal contrast(const QColor& a, const QColor& b)
+{
+    const qreal la = luminance(a), lb = luminance(b);
+    return (qMax(la, lb) + 0.05) / (qMin(la, lb) + 0.05);
+}
 }
 
 DocHeaderBar::DocHeaderBar(QWidget* parent)
@@ -92,6 +109,23 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     outer->setAlignment(centerRow, Qt::AlignHCenter);
     outer->addStretch(1);
 
+    m_guide = new QWidget(this);
+    m_guide->setObjectName(QStringLiteral("docHeaderGuide"));
+    m_guide->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    m_guide->setToolTip(tr("Elemento do roteiro na linha do cursor. Tab e Shift+Tab trocam o elemento."));
+    auto* guideCol = new QVBoxLayout(m_guide);
+    guideCol->setContentsMargins(0, 0, 0, 0);
+    guideCol->setSpacing(1);
+    m_guideElement = new QLabel(m_guide);
+    m_guideElement->setObjectName(QStringLiteral("docHeaderGuideElement"));
+    m_guideElement->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_guideKeys = new QLabel(m_guide);
+    m_guideKeys->setObjectName(QStringLiteral("docHeaderGuideKeys"));
+    m_guideKeys->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    guideCol->addWidget(m_guideElement, 0, Qt::AlignRight);
+    guideCol->addWidget(m_guideKeys, 0, Qt::AlignRight);
+    m_guide->setVisible(false);
+
     // Self-contained: o MainWindow não precisa lembrar de repassar tema/escala.
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &DocHeaderBar::applyTheme);
@@ -153,6 +187,11 @@ void DocHeaderBar::applyTheme()
     m_placeholderColor = QColor(mix(0.55));
     const QString hover = QStringLiteral("rgba(%1,%2,%3,0.08)")
         .arg(ink.red()).arg(ink.green()).arg(ink.blue());
+    // O elemento do roteiro acende na cor de destaque do tema, se ela tiver
+    // contraste com o papel; senão fica na cor do título.
+    const QColor accent(Theme::accentDefault());
+    const QString guideColor = (accent.isValid() && contrast(accent, paper) >= 3.0)
+        ? accent.name() : titleColor;
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#docHeaderBar { background: %1; }
@@ -176,14 +215,72 @@ void DocHeaderBar::applyTheme()
             border-radius: @radius-control;
         }
         QToolButton#docHeaderVar:hover { background: %4; }
-    )")).arg(bgCss, titleColor, subtitleColor, hover, fontStack));
+        QWidget#docHeaderGuide { background: transparent; }
+        QLabel#docHeaderGuideElement {
+            color: %6;
+            background: transparent;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        QLabel#docHeaderGuideKeys {
+            color: %3;
+            background: transparent;
+            font-size: 10px;
+        }
+    )")).arg(bgCss, titleColor, subtitleColor, hover, fontStack, guideColor));
 
     m_varButton->setIcon(IconUtils::loadToolbarIcon(
         QStringLiteral(":/icons/scene-var.svg"),
         QColor(subtitleColor), QColor(mix(0.2)), ink,
         m_varButton->iconSize()));
     refreshAvatar(); // o círculo vazio usa a cor do tema
+    refreshGuide();
     relayoutText();  // a fonte do título pode ter mudado de largura
+}
+
+void DocHeaderBar::setScreenplayGuide(bool visible, ScreenplayElement element, bool emptyLine)
+{
+    if (visible == m_guideWanted && element == m_guideEl && emptyLine == m_guideEmpty) return;
+    const bool reserveChanged = visible != m_guideWanted;
+    m_guideWanted = visible;
+    m_guideEl = element;
+    m_guideEmpty = emptyLine;
+    refreshGuide();
+    if (reserveChanged) relayoutText();
+}
+
+void DocHeaderBar::refreshGuide()
+{
+    if (!m_guide) return;
+    if (!m_guideWanted) { m_guide->setVisible(false); return; }
+
+    m_guideElement->setText(ScreenplayFormat::label(m_guideEl).toUpper());
+    // Pra onde cada tecla leva (mesmas regras do SpellEditor). Enter numa
+    // linha vazia que não é Ação só troca a linha pra Ação.
+    const ScreenplayElement onEnter = (m_guideEmpty && m_guideEl != ScreenplayElement::Action)
+        ? ScreenplayElement::Action : ScreenplayFormat::nextElement(m_guideEl);
+    const QString enterTo = ScreenplayFormat::label(onEnter);
+    const QString tabTo = ScreenplayFormat::label(ScreenplayFormat::cycleElement(m_guideEl));
+    const QString backTo = ScreenplayFormat::label(ScreenplayFormat::cycleElement(m_guideEl, true));
+    const QString arrow = QStringLiteral(" \u2192 ");
+    const QString dot = QStringLiteral("   \u00b7   ");
+    QString keys = enterTo == tabTo
+        ? QStringLiteral("Enter / Tab") + arrow + enterTo
+        : QStringLiteral("Enter") + arrow + enterTo + dot + QStringLiteral("Tab") + arrow + tabTo;
+    keys += dot + QStringLiteral("Shift+Tab") + arrow + backTo;
+    m_guideKeys->setText(keys);
+    m_guideKeys->setVisible(width() >= kGuideKeysMinWidth);
+    m_guide->adjustSize();
+    m_guide->move(width() - kSideMargin - m_guide->width(), (height() - m_guide->height()) / 2);
+    m_guide->setVisible(true);
+    m_guide->raise();
+}
+
+int DocHeaderBar::guideReserve() const
+{
+    if (!m_guideWanted || !m_guide) return 0;
+    return m_guide->sizeHint().width() + kGuideGap;
 }
 
 void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitle)
@@ -286,7 +383,9 @@ void DocHeaderBar::relayoutText()
     }
 
     const int avatarW = hasAvatar ? m_avatar->width() + kAvatarGap : 0;
-    const int avail = qMax(40, width() - kSideMargin * 2 - avatarW);
+    // O guia do roteiro mora no canto direito; o título continua centralizado,
+    // então a folga sai dos dois lados.
+    const int avail = qMax(40, width() - kSideMargin * 2 - avatarW - guideReserve() * 2);
 
     m_title->setVisible(!m_rawTitle.isEmpty());
     m_title->setText(QFontMetrics(m_title->font()).elidedText(m_rawTitle, Qt::ElideRight, avail));
@@ -337,5 +436,6 @@ void DocHeaderBar::leaveEvent(QEvent* event)
 void DocHeaderBar::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    refreshGuide();  // canto direito e teclas dependem da largura
     relayoutText(); // a elipse depende da largura disponível
 }

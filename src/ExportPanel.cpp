@@ -1,6 +1,8 @@
 #include "ExportPanel.h"
 
 #include "ProjectModel.h"
+
+#include <QMenu>
 #include "Theme.h"
 
 #include <QCheckBox>
@@ -108,24 +110,54 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     auto* fmtLabel = new QLabel(tr("Formato:"), footer);
     fmtLabel->setObjectName(QStringLiteral("exportFieldLabel"));
     fmtRow->addWidget(fmtLabel);
-    const QStringList formats = { QStringLiteral("odt"), QStringLiteral("pdf"),
-                                  QStringLiteral("epub"), QStringLiteral("docx") };
+    // Roteiro: PDF, DOCX e Fountain na frente; ODT e EPUB no "Mais ▾" (no
+    // máximo 4 pílulas por linha). Livro segue com os quatro de sempre.
+    const bool screenplay = m_model && m_model->isScreenplay();
+    if (screenplay) m_format = QStringLiteral("pdf");
+    const QStringList formats = screenplay
+        ? QStringList{ QStringLiteral("pdf"), QStringLiteral("docx"), QStringLiteral("fountain") }
+        : QStringList{ QStringLiteral("odt"), QStringLiteral("pdf"), QStringLiteral("epub"), QStringLiteral("docx") };
+    auto selectFormat = [this](const QString& f) {
+        m_format = f;
+        for (QPushButton* btn : m_formatBtns) {
+            const QString bf = btn->property("fmt").toString();
+            if (bf == QLatin1String("more")) {
+                const bool inMore = (f == QLatin1String("odt") || f == QLatin1String("epub"));
+                btn->setChecked(inMore);
+                btn->setText((inMore ? f.toUpper() : tr("Mais")) + QStringLiteral(" \u25BE"));
+            } else {
+                btn->setChecked(bf == f);
+            }
+        }
+        refreshSubmissionAvailability();
+    };
     for (const QString& f : formats) {
-        auto* b = new QPushButton(f.toUpper(), footer);
+        auto* b = new QPushButton(f == QLatin1String("fountain") ? QStringLiteral("Fountain") : f.toUpper(), footer);
         b->setObjectName(QStringLiteral("exportFormat"));
         b->setCheckable(true);
         b->setCursor(Qt::PointingHandCursor);
         b->setProperty("fmt", f);
         b->setEnabled(true);
         b->setChecked(f == m_format);
-        connect(b, &QPushButton::clicked, this, [this, f]() {
-            m_format = f;
-            for (QPushButton* btn : m_formatBtns)
-                btn->setChecked(btn->property("fmt").toString() == f);
-            refreshSubmissionAvailability();
-        });
+        connect(b, &QPushButton::clicked, this, [selectFormat, f]() { selectFormat(f); });
         m_formatBtns.append(b);
         fmtRow->addWidget(b);
+    }
+    if (screenplay) {
+        auto* more = new QPushButton(tr("Mais") + QStringLiteral(" \u25BE"), footer);
+        more->setObjectName(QStringLiteral("exportFormat"));
+        more->setCheckable(true);
+        more->setCursor(Qt::PointingHandCursor);
+        more->setProperty("fmt", QStringLiteral("more"));
+        auto* menu = new QMenu(more);
+        for (const QString& f : { QStringLiteral("odt"), QStringLiteral("epub") })
+            menu->addAction(f.toUpper(), this, [selectFormat, f]() { selectFormat(f); });
+        connect(more, &QPushButton::clicked, this, [this, more, menu]() {
+            more->setChecked(m_format == QLatin1String("odt") || m_format == QLatin1String("epub"));
+            menu->popup(more->mapToGlobal(QPoint(0, more->height())));
+        });
+        m_formatBtns.append(more);
+        fmtRow->addWidget(more);
     }
     fmtRow->addStretch();
     fl->addLayout(fmtRow);
@@ -183,6 +215,12 @@ ExportPanel::ExportPanel(ProjectModel* model, QWidget* parent)
     m_submissionHint->setObjectName(QStringLiteral("exportFieldLabel"));
     m_submissionHint->setWordWrap(true);
     subRow->addWidget(m_submissionCheck);
+    m_sceneNumbersCheck = new QCheckBox(tr("Numerar as cenas"), footer);
+    m_sceneNumbersCheck->setToolTip(tr(
+        "Número de cada cena nas margens, como no roteiro de filmagem. "
+        "A numeração segue a ordem do roteiro inteiro."));
+    m_sceneNumbersCheck->setVisible(false);
+    subRow->addWidget(m_sceneNumbersCheck);
     subRow->addWidget(m_submissionDataBtn);
     subRow->addWidget(m_submissionHint, 1);
     fl->addLayout(subRow);
@@ -247,15 +285,17 @@ Exporter::Format ExportPanel::currentFormat() const {
     if (m_format == QStringLiteral("pdf"))  return Exporter::Format::Pdf;
     if (m_format == QStringLiteral("epub")) return Exporter::Format::Epub;
     if (m_format == QStringLiteral("docx")) return Exporter::Format::Docx;
+    if (m_format == QStringLiteral("fountain")) return Exporter::Format::Fountain;
     return Exporter::Format::Odt;
 }
 
 void ExportPanel::refreshSubmissionAvailability() {
     const bool paged = (m_format != QStringLiteral("epub"));
+    const bool fountain = (m_format == QStringLiteral("fountain"));
     // A bíblia sai só em formato de página (o writer de EPUB é construído em
     // torno de capítulos do manuscrito). Mesma regra de disponibilidade.
     if (m_bibleBtn) {
-        m_bibleBtn->setEnabled(paged);
+        m_bibleBtn->setEnabled(paged && !fountain);
         m_bibleBtn->setToolTip(paged
             ? tr("Um documento só com gavetas, fichas, vínculos, glossário, territórios, "
                  "sistemas do mundo e locais do mapa — para quem precisa consultar o "
@@ -263,6 +303,24 @@ void ExportPanel::refreshSubmissionAvailability() {
             : tr("A bíblia do universo sai em PDF, DOCX ou ODT."));
     }
     if (!m_submissionCheck) return;
+    // Roteiro sai sempre no formato de roteiro; o Shunn é de prosa. Os dados do
+    // autor continuam valendo: são o contato da página de rosto.
+    if (m_model && m_model->isScreenplay()) {
+        m_submissionCheck->setChecked(false);
+        m_submissionCheck->setVisible(false);
+        if (m_sceneNumbersCheck) m_sceneNumbersCheck->setVisible(paged);
+        if (m_submissionDataBtn) m_submissionDataBtn->setVisible(paged);
+        if (m_submissionHint)
+            m_submissionHint->setText(fountain
+                ? tr("Fountain é o roteiro em texto puro, que abre em outros programas "
+                     "de roteiro. Leva só o manuscrito; as gavetas ficam de fora.")
+                : paged
+                ? tr("Roteiro sai no formato da indústria: Courier 12, página Carta, "
+                     "página de rosto e número de página. O contato da página de "
+                     "rosto vem dos dados do autor.")
+                : QString());
+        return;
+    }
     const bool single = !m_separateRadio || !m_separateRadio->isChecked();
     const bool usable = paged && single;
 
@@ -497,6 +555,7 @@ void ExportPanel::onExportClicked() {
     sel.format = (m_format == QStringLiteral("pdf")) ? Exporter::Format::Pdf
                : (m_format == QStringLiteral("epub")) ? Exporter::Format::Epub
                : (m_format == QStringLiteral("docx")) ? Exporter::Format::Docx
+               : (m_format == QStringLiteral("fountain")) ? Exporter::Format::Fountain
                : Exporter::Format::Odt;
     sel.manuscriptMode = (m_singleRadio && m_singleRadio->isChecked())
         ? Exporter::ManuscriptMode::SingleDocument
@@ -505,6 +564,8 @@ void ExportPanel::onExportClicked() {
     sel.submissionFormat = m_submissionCheck && m_submissionCheck->isChecked()
                            && m_submissionCheck->isEnabled();
     sel.submission = m_submission;
+    sel.sceneNumbers = m_sceneNumbersCheck && m_sceneNumbersCheck->isVisible()
+                       && m_sceneNumbersCheck->isChecked();
 
     QTreeWidgetItemIterator it(m_tree);
     while (*it) {

@@ -1,4 +1,8 @@
 #include "NewProjectSheet.h"
+#include "Fountain.h"
+
+#include <QFile>
+#include <QFileInfo>
 
 #include "CoverUtils.h"
 #include "QuickCoverWidgets.h"
@@ -216,6 +220,53 @@ NewProjectSheet::NewProjectSheet(const QStringList& fontFamilies, QWidget* paren
         m_type = new SheetChoice({ tr("Livro"), tr("Roteiro") }, m_typeBox);
         m_type->setCurrentIndex(0);
         g->addWidget(m_type);
+
+        // Roteiro: dá pra trazer um que já existe (.fountain).
+        m_importBox = new QWidget(m_typeBox);
+        auto* ih = new QHBoxLayout(m_importBox);
+        ih->setContentsMargins(0, 2, 0, 0);
+        ih->setSpacing(6);
+        m_importLabel = new QLabel(m_importBox);
+        m_importLabel->setObjectName(QStringLiteral("sheetDim"));
+        m_importLabel->setFont(uiFont(11));
+        m_importLabel->setWordWrap(true);
+        ih->addWidget(m_importLabel, 1);
+        auto* pick = new QToolButton(m_importBox);
+        pick->setStyleSheet(QStringLiteral(
+            "QToolButton { background: transparent; border: none; color: %1; font-size: 11.5px; padding: 0; }"
+            "QToolButton:hover { text-decoration: underline; }").arg(pal.accent.name()));
+        pick->setCursor(Qt::PointingHandCursor);
+        pick->setFocusPolicy(Qt::NoFocus);
+        ih->addWidget(pick, 0, Qt::AlignTop);
+        auto refreshImport = [this, pick]() {
+            if (m_importPath.isEmpty()) {
+                m_importLabel->setText(tr("Já tem o roteiro em outro programa? Traga o arquivo Fountain."));
+                pick->setText(tr("escolher arquivo"));
+            } else {
+                QFile f(m_importPath);
+                const Fountain::Document d = f.open(QIODevice::ReadOnly)
+                    ? Fountain::parse(QString::fromUtf8(f.readAll())) : Fountain::Document();
+                m_importLabel->setText(tr("%1 · %2 cenas · %3 personagens")
+                    .arg(QFileInfo(m_importPath).fileName()).arg(d.sceneCount()).arg(d.characters().size()));
+                pick->setText(tr("tirar"));
+            }
+        };
+        connect(pick, &QToolButton::clicked, this, [this, refreshImport]() {
+            if (!m_importPath.isEmpty()) { m_importPath.clear(); refreshImport(); return; }
+            const QString path = QFileDialog::getOpenFileName(this, tr("Trazer roteiro"), QString(),
+                tr("Roteiro Fountain (*.fountain *.spmd *.txt)"));
+            if (path.isEmpty()) return;
+            m_importPath = path;
+            refreshImport();
+        });
+        refreshImport();
+        m_importBox->setVisible(false);
+        g->addWidget(m_importBox);
+        connect(m_type, &SheetChoice::activated, this, [this]() {
+            const bool sp = m_type->currentIndex() == 1;
+            m_importBox->setVisible(sp);
+            if (!sp) m_importPath.clear();
+        });
     }
     fv->addWidget(m_typeBox);
     m_templateBox = new QWidget(fields);

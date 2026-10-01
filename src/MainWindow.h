@@ -45,6 +45,7 @@ class DocCache;
 class EditorHost;
 class VariationBar;
 class DocHeaderBar;
+class ScreenplayCompleter;
 class ProjectSaver;
 class WordCounter;
 class WordCountPanel;
@@ -165,6 +166,10 @@ private:
     void setFontSize(qreal pt);
     void setLineHeight(int percent);
     void applyProjectTypeDefaults();
+    QHash<QString, QString> screenplayCastCues() const;
+    QMap<QString, int> screenplayLocations() const;
+    void updateScreenplayGuide();
+    void importFountainIntoProject(const QString& path);
     void onAlignmentRequested(Qt::Alignment alignment, TopToolbar::AlignScope scope);
     void setFirstLineIndent(bool enabled);
     void setParagraphSpacingBefore(int px);
@@ -615,6 +620,7 @@ private:
     OutlinePanel *outlinePanel = nullptr;
     CharacterSheetPanel *characterSheetPanel = nullptr;
     MentionPopup *mentionPopup = nullptr;
+    ScreenplayCompleter* screenplayCompleter = nullptr;
     QFrame  *m_reminderToast      = nullptr;
     QLabel  *m_reminderToastTitle = nullptr;
     QLabel  *m_reminderToastBody  = nullptr;

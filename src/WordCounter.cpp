@@ -1,4 +1,5 @@
 #include "WordCounter.h"
+#include "Exporter.h"
 
 #include "CrashLogger.h"
 #include "DocCache.h"
@@ -155,6 +156,13 @@ WordCounter::WordCounter(ProjectModel* model, DocCache* cache, EditorHost* host,
 {
     m_emitDebounce->setSingleShot(true);
     m_emitDebounce->setInterval(250);
+
+    m_screenplayPagesTimer = new QTimer(this);
+    m_screenplayPagesTimer->setSingleShot(true);
+    m_screenplayPagesTimer->setInterval(1500);
+    connect(m_screenplayPagesTimer, &QTimer::timeout, this, [this]() {
+        if (m_screenplayPagesDirty) recountScreenplayPages();
+    });
     connect(m_emitDebounce, &QTimer::timeout, this, &WordCounter::emitChange);
 
     m_globalRefreshTimer->setInterval(kGlobalRefreshMs);
@@ -182,6 +190,7 @@ WordCounter::WordCounter(ProjectModel* model, DocCache* cache, EditorHost* host,
 
 void WordCounter::setProjectRoot(const QString& root) {
     m_root = root;
+    m_screenplayPages = -1;
     m_chapterCounts.clear();
     m_itemCounts.clear();
     m_chapterCharCounts.clear();
@@ -192,6 +201,8 @@ void WordCounter::setProjectRoot(const QString& root) {
 
 void WordCounter::onCacheContentChanged(const QString& key) {
     if (key.startsWith(QStringLiteral("ch:"))) {
+        m_screenplayPagesDirty = true;
+        if (m_screenplayPagesTimer->isActive()) m_screenplayPagesTimer->start();
         const int secondColon = key.indexOf(QLatin1Char(':'), 3);
         if (secondColon > 0) {
             const QString chId = key.mid(secondColon + 1);
@@ -207,6 +218,7 @@ void WordCounter::onCacheContentChanged(const QString& key) {
 }
 
 void WordCounter::onChaptersChanged() {
+    m_screenplayPagesDirty = true;
     scheduleEmit();
 }
 
@@ -230,6 +242,7 @@ void WordCounter::onDrawersChanged() {
 }
 
 void WordCounter::onProjectLoaded() {
+    m_screenplayPages = -1;
     m_chapterCounts.clear();
     m_itemCounts.clear();
     m_chapterCharCounts.clear();
@@ -470,6 +483,12 @@ void WordCounter::loadSettingsFromModel() {
     const QJsonObject all = m_model->settings();
     const QJsonObject wc = all.value(QStringLiteral("wordCounter")).toObject();
     m_settings = WordCounterSettings::fromJson(wc);
+    // Roteiro se mede em página: quem nunca mexeu nos espaços do contador vê
+    // páginas na frente e palavras do lado.
+    if (m_model->isScreenplay() && !wc.contains(QStringLiteral("compactSlot1"))) {
+        m_settings.compactSlot1 = QStringLiteral("pages");
+        m_settings.compactSlot2 = QStringLiteral("words");
+    }
     // Semeia offDayEveryChangedAt com hoje (lock começa a partir de agora pra projetos antigos)
     if (m_settings.offDayEveryChangedAt.isEmpty()) {
         m_settings.offDayEveryChangedAt = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd"));
@@ -911,7 +930,56 @@ int WordCounter::longestStreak() const {
     return best;
 }
 
+bool WordCounter::isScreenplay() const {
+    return m_model && m_model->isScreenplay();
+}
+
+QString WordCounter::screenplayPagesKey(QStringList* htmls) const {
+    // Escopo: o mesmo das palavras. A chave diz qual texto foi contado.
+    QString key = m_settings.scope;
+    if (m_settings.scope == QStringLiteral("active") && m_host) {
+        const auto vm = m_host->viewMode();
+        if (vm.type == EditorHost::SceneDoc) {
+            key += QStringLiteral(":%1:%2").arg(vm.chapterId).arg(vm.sceneIndex);
+            if (htmls) *htmls << SceneUtils::getSceneHtml(chapterHtml(vm.chapterId), vm.sceneIndex);
+        } else if (vm.type == EditorHost::ChapterDoc) {
+            key += QStringLiteral(":") + vm.chapterId;
+            if (htmls) *htmls << chapterHtml(vm.chapterId);
+        }
+    } else if (htmls) {
+        for (const Manuscript& ms : m_model->manuscripts())
+            for (const Chapter* ch : m_model->orderedChaptersForManuscript(ms.id))
+                *htmls << chapterHtml(ch->id);
+    }
+    return key;
+}
+
+void WordCounter::recountScreenplayPages() {
+    QStringList htmls;
+    m_screenplayPagesKey = screenplayPagesKey(&htmls);
+    m_screenplayPages = Exporter::screenplayPageCount(htmls);
+    m_screenplayPagesDirty = false;
+    scheduleEmit();
+}
+
+int WordCounter::screenplayPages() const {
+    const bool sameText = !m_screenplayPagesDirty && m_screenplayPages >= 0;
+    const bool sameScope = screenplayPagesKey(nullptr) == m_screenplayPagesKey;
+    if (sameText && sameScope) return m_screenplayPages;
+    // Primeira contagem, ou trocou o que se conta: na hora. Texto mudou: depois
+    // que a digitação parar.
+    if (m_screenplayPages < 0 || !sameScope) {
+        const_cast<WordCounter*>(this)->recountScreenplayPages();
+        return m_screenplayPages;
+    }
+    if (!m_screenplayPagesTimer->isActive()) m_screenplayPagesTimer->start();
+    return m_screenplayPages;
+}
+
 int WordCounter::estimatedPages() const {
+    if (isScreenplay() && m_activeSheetItem.isEmpty() && m_settings.scope != QStringLiteral("drawers")
+        && m_settings.scope != QStringLiteral("all"))
+        return screenplayPages();
     const int w = countActiveScopeWords();
     if (w <= 0) return 0;
     return qMax(1, (w + 249) / 250);

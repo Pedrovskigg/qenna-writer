@@ -32,6 +32,8 @@ struct Chapter;
 // container, ancorado à direita, tema reativo). Substitui aos poucos o
 // antigo Modo Consistência do DrawerListPanel — ver plano em
 // stats-panel-feature (memória do projeto).
+class ScreenplayBreakdown;
+
 class StatsPanel : public QWidget {
     Q_OBJECT
 public:
@@ -63,6 +65,10 @@ public:
         int* /*totalChapters*/)>;
     void setPresenceProvider(PresenceProvider fn) { m_presenceProvider = std::move(fn); }
 
+signals:
+    // Breakdown do roteiro: clicou numa cena da tira de produção.
+    void sceneOpenRequested(QString manuscriptId, QString chapterId, int sceneIndex, bool chapterHasScenes);
+
 public slots:
     void refresh();
 
@@ -78,6 +84,7 @@ private:
     QWidget* buildOverviewPage();
     QWidget* buildCharacterPage();
     void rebuildOverview();
+    void rebuildBreakdown();
     // Filtro por território (M7) — repopula o menu e reaplica o esmaecimento
     // sem refazer os cards inteiros (mais barato que rebuildOverview()).
     void rebuildTerritorioFilterMenu();
@@ -123,6 +130,9 @@ private:
     int m_topInset = 0;
     int m_rightInset = 0;
     bool m_positioned = false;
+
+    QLabel* m_breakdownLabel = nullptr;
+    ScreenplayBreakdown* m_breakdown = nullptr;
 
     QWidget* m_header = nullptr;
     QLabel* m_title = nullptr;

@@ -1,4 +1,6 @@
 #include "StatsPanel.h"
+#include "ScreenplayBreakdown.h"
+#include "ProjectStorage.h"
 
 #include "AvatarUtils.h"
 #include "BondTypes.h"
@@ -171,6 +173,17 @@ QWidget* StatsPanel::buildOverviewPage()
     auto* lay = new QVBoxLayout(inner);
     lay->setContentsMargins(14, 12, 14, 14);
     lay->setSpacing(6);
+
+    // Roteiro: o breakdown vem antes de tudo (só em projeto de roteiro).
+    m_breakdownLabel = new QLabel(tr("Roteiro"), inner);
+    m_breakdownLabel->setObjectName(QStringLiteral("stSectionLabel"));
+    lay->addWidget(m_breakdownLabel);
+    m_breakdown = new ScreenplayBreakdown(inner);
+    connect(m_breakdown, &ScreenplayBreakdown::sceneActivated, this, &StatsPanel::sceneOpenRequested);
+    lay->addWidget(m_breakdown);
+    lay->addSpacing(8);
+    m_breakdownLabel->setVisible(false);
+    m_breakdown->setVisible(false);
 
     auto* charRow = new QHBoxLayout();
     auto* charLabel = new QLabel(tr("Personagens"), inner);
@@ -469,10 +482,31 @@ QWidget* StatsPanel::buildCharacterPage()
 void StatsPanel::refresh()
 {
     refreshPresenceCache();
+    rebuildBreakdown();
     rebuildOverview();
     rebuildChapterBars();
     rebuildOverviewStats();
     if (m_stack && m_stack->currentIndex() == 1) rebuildCharacterPage();
+}
+
+void StatsPanel::rebuildBreakdown()
+{
+    if (!m_breakdown) return;
+    const bool on = m_model && m_model->isScreenplay();
+    m_breakdownLabel->setVisible(on);
+    m_breakdown->setVisible(on);
+    if (!on) return;
+    QList<ScreenplayBreakdownData::ChapterInput> in;
+    for (const Chapter& ch : scopedChapters()) {
+        ScreenplayBreakdownData::ChapterInput c;
+        c.manuscriptId = ch.manuscriptId;
+        c.chapterId = ch.id;
+        const QString key = DocCache::chapterKey(ch.manuscriptId, ch.id);
+        if (m_cache && m_cache->has(key)) c.html = m_cache->get(key);
+        else if (!ch.file.isEmpty() && !m_projectRoot.isEmpty()) c.html = ProjectStorage::readChapter(m_projectRoot, ch.file);
+        in << c;
+    }
+    m_breakdown->setData(ScreenplayBreakdownData::compute(in, m_elements ? m_elements->elements() : QList<Element>()));
 }
 
 QList<Element> StatsPanel::projectCharacters() const
@@ -1632,6 +1666,8 @@ void StatsPanel::applyTheme()
             font-size: 11px;
         }
         #stChemSortBtn:hover { background: %7; color: %3; }
+        #stChemSortBtn:checked { color: %3; border-color: %3; }
+        #stBreakdownSummary { color: %4; font-size: 11px; }
         #stChemSortBtn::menu-indicator { image: none; width: 0; }
         #stChemRow {
             color: %3;

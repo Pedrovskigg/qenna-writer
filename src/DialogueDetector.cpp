@@ -541,13 +541,12 @@ QVector<DetectedDialogueLine> DialogueDetector::scanScreenplay(const QTextDocume
     // Nome, primeiro nome e apelidos valem como deixa ("KLARA", "CAPITÃ").
     const QHash<QString, QString>& idByName = cast.idByLowerName;
 
-    static const QRegularExpression ext(QStringLiteral("\\(.*?\\)|\\bCONT['’]?D\\b"));
     QString cue;
     for (QTextBlock b = doc.begin(); b.isValid(); b = b.next()) {
         const QString text = b.text().trimmed();
         const ScreenplayElement el = ScreenplayFormat::detect(b.blockFormat(), text);
         if (el == ScreenplayElement::Character) {
-            cue = QString(text).remove(ext).trimmed();
+            cue = ScreenplayFormat::cueName(text);
             continue;
         }
         if (el == ScreenplayElement::Parenthetical) continue;
