@@ -70,6 +70,8 @@ struct Chapter {
     // ("data:image/jpeg;base64,…"; vazia = desenho gerado).
     QString vignette;
     QString vignetteImage;
+    // Cor do desenho (hex); "" = a da Parte ou a do livro.
+    QString vignetteColor;
 };
 
 // Parte (ou ato) de um manuscrito: começa num capítulo e vai até o começo da
@@ -367,6 +369,7 @@ public:
     bool updateChapterPov(const QString& chapterId, const QString& elementId);
     bool updateChapterVignette(const QString& chapterId, const QString& family);
     bool updateChapterVignetteImage(const QString& chapterId, const QString& dataUrl);
+    bool updateChapterVignetteColor(const QString& chapterId, const QString& color);
     bool removeChapter(const QString& chapterId);
 
     // Catálogo fixo de tipos de capítulo (Capítulo/Prólogo/Epílogo/Interlúdio).

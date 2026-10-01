@@ -405,6 +405,16 @@ void ManuscriptPanel::buildChapterSelectTop() {
     m_topLayout->setSpacing(0);
     m_hero = new MsHero(m_top);
     connect(m_hero, &MsHero::bookChipClicked, this, &ManuscriptPanel::showBookSwitchMenu);
+    // Botão direito na arte: o menu do capítulo que ela mostra (Trocar desenho…).
+    m_hero->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_hero, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos) {
+        const QString ch = m_previewChapterId.isEmpty() ? m_curChapterId : m_previewChapterId;
+        const QList<Chapter> reading = readingChapters();
+        QString id = ch;
+        if (std::none_of(reading.begin(), reading.end(), [&](const Chapter& c) { return c.id == id; }))
+            id = reading.isEmpty() ? QString() : reading.first().id;
+        if (!id.isEmpty()) showChapterContextMenu(activeManuscriptId(), id, m_hero->mapToGlobal(pos));
+    });
     m_topLayout->addWidget(m_hero);
 
     auto* under = new QWidget(m_top);
@@ -416,6 +426,12 @@ void ManuscriptPanel::buildChapterSelectTop() {
         const QString ch = m_previewChapterId.isEmpty() ? m_curChapterId : m_previewChapterId;
         if (!ch.isEmpty()) emit sceneActivated(activeManuscriptId(), ch, i);
     });
+    // Capítulo de uma cena só esconde a fileira, mas o lugar fica: se ela
+    // sumisse, a lista pularia 48 px debaixo do mouse, a prévia trocaria de
+    // capítulo e a fileira voltaria — pisca-pisca entre dois capítulos.
+    QSizePolicy cpPolicy = m_checkpoints->sizePolicy();
+    cpPolicy.setRetainSizeWhenHidden(true);
+    m_checkpoints->setSizePolicy(cpPolicy);
     ul->addWidget(m_checkpoints);
     m_heroGo = new QPushButton(under);
     m_heroGo->setCursor(Qt::PointingHandCursor);
@@ -481,14 +497,17 @@ void ManuscriptPanel::updateChapterSelectHero() {
 
     const QList<ManuscriptPart> parts = partsForDisplay(reading);
     const int pi = parts.isEmpty() ? -1 : partIndexByChapter(reading, parts).value(c->id, -1);
-    const QColor tint = pi >= 0 && QColor(parts.at(pi).color).isValid() ? QColor(parts.at(pi).color) : MsPaint::bookColor(activeManuscriptId());
+    const QColor tint = !c->vignetteColor.isEmpty() && QColor(c->vignetteColor).isValid() ? QColor(c->vignetteColor)
+        : pi >= 0 && QColor(parts.at(pi).color).isValid() ? QColor(parts.at(pi).color) : MsPaint::bookColor(activeManuscriptId());
     const Manuscript* m = m_model->findManuscript(activeManuscriptId());
 
     MsHero::Data d;
     static QCache<QString, QPixmap> artCache(48);
     const int w = std::max(240, width());
     const int words = chapterWords(c->id);
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5").arg(c->id).arg(words).arg(w).arg(tint.name(), c->vignette + c->vignetteImage.left(40));
+    // A imagem entra pelo hash inteiro: o começo do data URL é igual em todo JPEG.
+    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(c->id).arg(words).arg(w)
+        .arg(vignetteColor(c->id).name(), c->vignette, QString::number(qHash(c->vignetteImage)));
     if (QPixmap* hit = artCache.object(key)) d.art = *hit;
     else {
         const QHash<QString, int> fams = vignetteFamilies();

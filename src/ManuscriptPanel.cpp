@@ -8,6 +8,7 @@
 #include "MsVignette.h"
 #include "TimelineChrono.h"
 #include "CoverUtils.h"
+#include "ImageCropDialog.h"
 #include "DialogueStore.h"
 #include "ProjectInfoHover.h"
 #include "ProjectModel.h"
@@ -33,6 +34,7 @@
 #include <QApplication>
 #include <QBuffer>
 #include <QColor>
+#include <QImageReader>
 #include <QCoreApplication>
 #include <QComboBox>
 #include <QCursor>
@@ -3394,8 +3396,10 @@ void ManuscriptPanel::showChapterContextMenu(const QString& manuscriptId, const 
     menu.setStyleSheet(contextMenuQss());
     const Chapter* ch = m_model ? m_model->findChapter(chapterId) : nullptr;
 
+    // Todo estilo que mostra o desenho do capítulo deixa trocar (e pintar) o desenho.
     if (ch && (m_style == Style::Illustrated || m_style == Style::Seasons || m_style == Style::Tarot
-               || m_style == Style::Film || m_style == Style::Frames)) {
+               || m_style == Style::Film || m_style == Style::Frames || m_style == Style::ChapterSelect
+               || m_style == Style::Album)) {
         auto* vigAct = menu.addAction(tr("Trocar desenho…"));
         connect(vigAct, &QAction::triggered, this, [this, chapterId, globalPos]() {
             showVignettePicker(chapterId, globalPos);
@@ -4091,7 +4095,7 @@ QString dataUrlFromImage(const QImage& src, int maxSide) {
     QByteArray bytes;
     QBuffer buf(&bytes);
     buf.open(QIODevice::WriteOnly);
-    img.convertToFormat(QImage::Format_RGB32).save(&buf, "JPEG", 86);
+    img.convertToFormat(QImage::Format_RGB32).save(&buf, "JPEG", 88);
     return QStringLiteral("data:image/jpeg;base64,") + QString::fromLatin1(bytes.toBase64());
 }
 
@@ -4140,7 +4144,11 @@ QHash<QString, int> ManuscriptPanel::vignetteFamilies() const {
 }
 
 QColor ManuscriptPanel::vignetteColor(const QString& chapterId) const {
-    // Cor da Parte; sem partes, a cor do livro.
+    // A cor escolhida pro capítulo; senão a da Parte; sem partes, a do livro.
+    if (const Chapter* own = m_model->findChapter(chapterId)) {
+        const QColor c(own->vignetteColor);
+        if (!own->vignetteColor.isEmpty() && c.isValid()) return c;
+    }
     const QList<Chapter> reading = readingChapters();
     const QList<ManuscriptPart> parts = validParts(reading);
     if (!parts.isEmpty()) {
@@ -4153,8 +4161,22 @@ QColor ManuscriptPanel::vignetteColor(const QString& chapterId) const {
 QPixmap ManuscriptPanel::chapterVignette(const Chapter& c, int family, QSize size, bool circle) const {
     const QColor col = vignetteColor(c.id);
     if (!c.vignetteImage.isEmpty()) {
+        // Guardada pronta, como o desenho gerado: a gaveta se refaz a cada
+        // contagem de palavras, e decodificar a foto toda vez pesava.
+        static QHash<QString, QPixmap> cache;
+        const qreal dpr = devicePixelRatioF();
+        const QString key = QString::number(qHash(c.vignetteImage)) + QLatin1Char('|') + col.name() + QLatin1Char('|')
+            + QString::number(size.width()) + QLatin1Char('x') + QString::number(size.height()) + QLatin1Char('|')
+            + QString::number(dpr) + (circle ? QStringLiteral("|c") : QStringLiteral("|r"));
+        const auto it = cache.constFind(key);
+        if (it != cache.constEnd()) return it.value();
         const QPixmap img = CoverUtils::pixmapFromDataUrl(c.vignetteImage);
-        if (!img.isNull()) return MsVignette::renderImage(img, col, size, devicePixelRatioF(), circle);
+        if (!img.isNull()) {
+            const QPixmap pm = MsVignette::renderImage(img, col, size, dpr, circle);
+            if (cache.size() > 200) cache.clear();
+            cache.insert(key, pm);
+            return pm;
+        }
     }
     return MsVignette::render(c.id, chapterWords(c.id), col, family, size, devicePixelRatioF(), circle);
 }
@@ -5189,6 +5211,63 @@ void ManuscriptPanel::showVignettePicker(const QString& chapterId, const QPoint&
     foot->setStyleSheet(QStringLiteral("color: %1; background: transparent;").arg(Theme::textMuted()));
     v->addWidget(foot);
 
+    // Cor do desenho: cada capítulo pode ter a sua (ou o livro todo, uma só).
+    auto* colorRow = new QHBoxLayout;
+    colorRow->setSpacing(8);
+    const QColor shownColor = vignetteColor(chapterId);
+    QStringList bookIds;
+    bool anyOwnColor = false;
+    for (const auto& rc : m_model->chapters()) {
+        if (rc.manuscriptId != msId) continue;
+        bookIds << rc.id;
+        if (!rc.vignetteColor.isEmpty()) anyOwnColor = true;
+    }
+    const bool hasOwnColor = bookMode ? anyOwnColor : !c.vignetteColor.isEmpty();
+    auto* swatch = new QToolButton(pop);
+    swatch->setCursor(Qt::PointingHandCursor);
+    swatch->setFixedSize(22, 22);
+    swatch->setToolTip(tr("Cor do desenho"));
+    swatch->setStyleSheet(QStringLiteral(
+        "QToolButton { background: %1; border: 1px solid %2; border-radius: 11px; }"
+        "QToolButton:hover { border: 2px solid %3; }")
+        .arg(shownColor.name(), Theme::borderStrong(), Theme::textBright()));
+    auto pickColor = [this, pop, chapterId, bookIds, bookMode, shownColor, hasOwnColor, globalPos]() {
+        pop->close();
+        ColorPopover::Options opt;
+        opt.title = bookMode ? tr("Cor dos desenhos do livro") : tr("Cor do desenho");
+        opt.resetAvailable = hasOwnColor;
+        auto* cp = new ColorPopover(ColorPick::Choice{ shownColor, QString() }, opt, this);
+        connect(cp, &ColorPopover::finished, this,
+                [this, chapterId, bookIds, bookMode](const ColorPick::Choice& ch, ColorPopover::Result r) {
+            if (r == ColorPopover::Cancelled) return;
+            const QString value = (r == ColorPopover::Reset || !ch.color.isValid()) ? QString() : ch.color.name();
+            const QStringList targets = bookMode ? bookIds : QStringList{ chapterId };
+            m_model->beginBatchUpdate();
+            for (const QString& id : targets) m_model->updateChapterVignetteColor(id, value);
+            m_model->endBatchUpdate();
+        });
+        cp->popupAt(globalPos);
+    };
+    connect(swatch, &QToolButton::clicked, this, pickColor);
+    colorRow->addWidget(swatch);
+    auto* colorLink = linkButton(bookMode ? tr("Cor dos desenhos do livro…") : tr("Cor do desenho…"),
+                                 pop, Theme::accentDefault(), 11.5);
+    connect(colorLink, &QToolButton::clicked, this, pickColor);
+    colorRow->addWidget(colorLink);
+    colorRow->addStretch(1);
+    if (hasOwnColor) {
+        auto* backColor = linkButton(tr("Voltar à cor da parte"), pop, Theme::textMuted(), 11.5);
+        connect(backColor, &QToolButton::clicked, this, [this, pop, chapterId, bookIds, bookMode]() {
+            pop->close();
+            const QStringList targets = bookMode ? bookIds : QStringList{ chapterId };
+            m_model->beginBatchUpdate();
+            for (const QString& id : targets) m_model->updateChapterVignetteColor(id, QString());
+            m_model->endBatchUpdate();
+        });
+        colorRow->addWidget(backColor);
+    }
+    v->addLayout(colorRow);
+
     // A porta: uma ilustração de verdade no lugar do desenho.
     auto* imgRow = new QHBoxLayout;
     auto* useImg = linkButton(c.vignetteImage.isEmpty() ? tr("Usar imagem minha…") : tr("Trocar imagem…"),
@@ -5198,11 +5277,34 @@ void ManuscriptPanel::showVignettePicker(const QString& chapterId, const QPoint&
         const QString path = QFileDialog::getOpenFileName(this, tr("Imagem do capítulo"), QString(),
             tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
         if (path.isEmpty()) return;
-        const QImage img(path);
+        // Mesmo padrão da capa do livro: a arte grande da Seleção de capítulo
+        // passa de 700 px em tela com zoom, e 480 deixava a foto esticada.
+        QImageReader reader(path);
+        reader.setAutoTransform(true);   // foto de celular em pé
+        const QImage img = reader.read();
         if (img.isNull()) return;
-        m_model->updateChapterVignetteImage(chapterId, dataUrlFromImage(img, 480));
+        // Recorte livre: a mesma foto vira medalhão, faixa larga ou quadrado
+        // conforme o estilo, então a proporção fica por conta de quem escolhe.
+        const QImage cut = ImageCropDialog::cropRegion(img, this, tr("Recortar imagem do capítulo"));
+        if (cut.isNull()) return;
+        m_model->updateChapterVignetteImage(chapterId, dataUrlFromImage(cut, 1200));
     });
     imgRow->addWidget(useImg);
+    if (!c.vignetteImage.isEmpty()) {
+        // Reenquadrar a que já está, sem ir atrás do arquivo de novo.
+        auto* recrop = linkButton(tr("Recortar…"), pop, Theme::accentDefault(), 11.5);
+        connect(recrop, &QToolButton::clicked, this, [this, pop, chapterId]() {
+            pop->close();
+            const Chapter* ch = m_model->findChapter(chapterId);
+            if (!ch) return;
+            const QImage img = CoverUtils::pixmapFromDataUrl(ch->vignetteImage).toImage();
+            if (img.isNull()) return;
+            const QImage cut = ImageCropDialog::cropRegion(img, this, tr("Recortar imagem do capítulo"));
+            if (cut.isNull() || cut.size() == img.size()) return;
+            m_model->updateChapterVignetteImage(chapterId, dataUrlFromImage(cut, 1200));
+        });
+        imgRow->addWidget(recrop);
+    }
     imgRow->addStretch(1);
     if (!c.vignetteImage.isEmpty()) {
         auto* back = linkButton(tr("Voltar ao desenho"), pop, Theme::textMuted(), 11.5);

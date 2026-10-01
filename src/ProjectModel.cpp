@@ -112,6 +112,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     if (!c.pov.isEmpty()) o.insert(QStringLiteral("pov"), c.pov);
     if (!c.vignette.isEmpty()) o.insert(QStringLiteral("vignette"), c.vignette);
     if (!c.vignetteImage.isEmpty()) o.insert(QStringLiteral("vignetteImage"), c.vignetteImage);
+    if (!c.vignetteColor.isEmpty()) o.insert(QStringLiteral("vignetteColor"), c.vignetteColor);
     return o;
 }
 
@@ -134,6 +135,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     c.pov = jsonString(o.value(QStringLiteral("pov")));
     c.vignette = jsonString(o.value(QStringLiteral("vignette")));
     c.vignetteImage = jsonString(o.value(QStringLiteral("vignetteImage")));
+    c.vignetteColor = jsonString(o.value(QStringLiteral("vignetteColor")));
     return c;
 }
 
@@ -1594,6 +1596,17 @@ bool ProjectModel::updateChapterVignetteImage(const QString& chapterId, const QS
         if (c.id != chapterId) continue;
         if (c.vignetteImage == dataUrl) return true;
         c.vignetteImage = dataUrl;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateChapterVignetteColor(const QString& chapterId, const QString& color) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.vignetteColor == color) return true;
+        c.vignetteColor = color;
         notifyChaptersChanged();
         return true;
     }
