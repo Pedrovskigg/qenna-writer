@@ -91,7 +91,13 @@ void apply(QWidget* window)
 {
 #ifdef Q_OS_WIN
     if (!hasSystemFrame(window)) return;
-    HWND hwnd = reinterpret_cast<HWND>(window->winId());
+    // internalWinId, nunca winId(): o winId() marca a janela como nativa e,
+    // quando o pai dela é um painel (o recorte da imagem do capítulo nasce
+    // da gaveta de Manuscritos), o Qt torna nativos todos os filhos e vizinhos
+    // desse painel. O editor virava janela do Windows por cima da gaveta e
+    // roubava os cliques dela. Sem janela ainda, o WinIdChange chama de novo.
+    HWND hwnd = reinterpret_cast<HWND>(window->internalWinId());
+    if (!hwnd) return;
     const QColor bg(Theme::appBackground());
     const QColor text(Theme::textPrimary());
     // a principal emenda no fundo; as outras se destacam com a borda dos painéis
