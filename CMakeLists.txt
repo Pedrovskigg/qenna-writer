@@ -328,6 +328,12 @@ qt_add_executable(qenna-writer
     src/AnchorUtils.h
     src/ToolbarGroupWidget.cpp
     src/ToolbarGroupWidget.h
+    src/DialogueVoices.cpp
+    src/DialogueVoices.h
+    src/GrannaNotifier.cpp
+    src/GrannaNotifier.h
+    src/GrannaPickPopup.cpp
+    src/GrannaPickPopup.h
     src/DocHeaderBar.cpp
     src/DocHeaderBar.h
     src/TrashService.cpp

@@ -384,7 +384,8 @@ void DialogueStore::applyChapterScan(const QString& manuscriptId, const QString&
         if (d.isManual() && speakerGone) d.origin = QStringLiteral("auto");
 
         if (d.isManual()) {
-            d.confidence = QStringLiteral("certain");
+            // Manual sem locutor = figurante marcado à mão (setExtra).
+            d.confidence = d.characterId.isEmpty() ? QStringLiteral("extra") : QStringLiteral("certain");
             d.extraLabel = f.extraLabel;
         } else {
             d.characterId = f.characterId;
@@ -571,6 +572,20 @@ bool DialogueStore::setCharacter(const QString& id, const QString& newCharacterI
         d.characterId = newCharacterId;
         d.origin = QStringLiteral("manual");
         d.confidence = QStringLiteral("certain");
+        emit changed();
+        return true;
+    }
+    return false;
+}
+
+bool DialogueStore::setExtra(const QString& id)
+{
+    for (Dialogue& d : m_dialogues) {
+        if (d.id != id) continue;
+        if (d.isManual() && d.characterId.isEmpty()) return false;
+        d.characterId.clear();
+        d.origin = QStringLiteral("manual");
+        d.confidence = QStringLiteral("extra");
         emit changed();
         return true;
     }

@@ -6,6 +6,7 @@
 
 #include "ScreenplayFormat.h"
 
+class GrannaBadge;
 class QHBoxLayout;
 class QLabel;
 class QToolButton;
@@ -55,9 +56,30 @@ public:
     // Para ancorar a VariationBar, como o botão equivalente da toolbar.
     QRect sceneVarButtonGlobalRect() const;
 
+    // Aviso do Granna: quem disse a fala que acabou de ser escrita. Aparece no
+    // lugar da foto do doc de personagem (à esquerda do título), por cima do
+    // layout — o título não se mexe — e some sozinho:
+    //  Certain  = foto, desliza de trás do título e volta (650 ms);
+    //  Probable = foto com contorno tracejado na cor da voz, mesmo gesto (1 s);
+    //  Unknown  = (?) com um anel se desenhando em volta (1,5 s).
+    // Mouse em cima segura o aviso; clicar emite grannaMarkClicked().
+    // sticky: em vez de sumir, faz só a entrada e FICA (cursor parado numa fala
+    // que já existe) até releaseGrannaMark(), que faz a saída.
+    enum class GrannaMark { Certain, Probable, Unknown };
+    void showGrannaMark(GrannaMark mark, const QString& imageDataUrl, const QString& name,
+                        const QColor& voice, const QString& toolTip, bool sticky = false);
+    void releaseGrannaMark();
+    void hideGrannaMark();
+    // Popup "Quem disse?" aberto: o aviso fica parado e inteiro até soltar.
+    void holdGrannaMark(bool hold);
+    QRect grannaMarkGlobalRect() const;
+
 signals:
     void sceneVarRequested();
     void avatarChangeRequested();
+    void grannaMarkClicked();
+    // Um aviso que some sozinho (não o fixo) terminou de sumir.
+    void grannaAnnounceEnded();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -72,6 +94,9 @@ private:
     void refreshAvatar();
     void refreshGuide();
     int guideReserve() const;
+    void placeGrannaMark();
+    int grannaPad() const;
+    int grannaSlide() const;
 
     QLabel* m_avatar = nullptr;
     QLabel* m_title = nullptr;
@@ -99,4 +124,6 @@ private:
     bool m_avatarEditable = false;
     bool m_hover = false;
     QColor m_placeholderColor;
+    QColor m_grannaAccent;
+    GrannaBadge* m_granna = nullptr;
 };

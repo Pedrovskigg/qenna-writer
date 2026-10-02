@@ -44,7 +44,7 @@ public:
 
         bool isManual() const { return origin == QLatin1String("manual"); }
         bool isProbable() const { return confidence == QLatin1String("probable") && !isManual(); }
-        bool isExtra() const { return characterId.isEmpty() && confidence == QLatin1String("extra"); }
+        bool isExtra() const { return characterId.isEmpty() && (confidence == QLatin1String("extra") || isManual()); }
         // Palavras de fala de verdade (sem a tag), com fallback pro texto.
         const QString& spokenText() const { return speech.isEmpty() ? text : speech; }
     };
@@ -116,6 +116,9 @@ public:
     // Correção/confirmação manual de locutor. O mesmo id confirma uma fala
     // provável. Manual nunca é sobrescrita por scan.
     bool setCharacter(const QString& id, const QString& newCharacterId);
+    // "Figurante" escolhido à mão: sem locutor do elenco, e o scan não volta
+    // a atribuir (manual com characterId vazio = figurante).
+    bool setExtra(const QString& id);
 
 signals:
     void changed();

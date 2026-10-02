@@ -1940,7 +1940,8 @@ QString PensarioPanel::dialogueSpeakerLabel(const QString& characterId) const
 QString PensarioPanel::dialogueSpeakerLabel(const DialogueStore::Dialogue& d) const
 {
     if (d.characterId.isEmpty()) {
-        if (!d.isExtra() || d.extraLabel.isEmpty()) return tr("Sem locutor");
+        if (!d.isExtra()) return tr("Sem locutor");
+        if (d.extraLabel.isEmpty()) return tr("Figurante");
         QString label = d.extraLabel;
         label[0] = label.at(0).toUpper();
         return tr("%1 · figurante").arg(label);

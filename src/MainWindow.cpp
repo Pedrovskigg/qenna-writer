@@ -138,6 +138,7 @@
 #include "AmbienceManager.h"
 #include "AmbiencePanel.h"
 #include "GlossaryAddPopup.h"
+#include "GrannaNotifier.h"
 #include "ConstrutorMentionAddPopup.h"
 #include "ConstrutorStore.h"
 #include "TerritorioMentionAddPopup.h"
@@ -1598,32 +1599,7 @@ void MainWindow::setupEditor()
     dialogueDetectionTimer->setSingleShot(true);
     dialogueDetectionTimer->setInterval(3000);
 
-    connect(dialogueDetectionTimer, &QTimer::timeout, this, [this]() {
-        if (!m_dialogueDetectionEnabled || !dialogueStore || !elementsStore || !editorHost
-            || !editor || !projectModel) return;
-        const EditorHost::ViewMode vm = editorHost->viewMode();
-        if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
-
-        const Chapter* ch = projectModel->findChapter(vm.chapterId);
-        if (!ch) return;
-
-        CrashLogger::log(QStringLiteral("detectDialogue chapterId=%1 scenes=%2")
-                          .arg(vm.chapterId).arg(ch->scenes.size()));
-
-        if (vm.type == EditorHost::SceneDoc) {
-            // Só a cena aberta foi lida: o store não mexe nas outras cenas
-            // (antes, a fala nova sobrescrevia uma fala de outra cena).
-            const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
-            const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
-            const QString scTitle = (sc && !sc->title.isEmpty())
-                ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
-            runDialogueScan(*ch, { { editor->toHtml(), vm.sceneIndex, tr("%1 — %2").arg(chTitle, scTitle) } },
-                            vm.sceneIndex);
-        } else {
-            runDialogueScan(*ch, dialogueScenesFromChapterHtml(*ch, editor->toHtml()),
-                            DialogueStore::kWholeChapter);
-        }
-    });
+    connect(dialogueDetectionTimer, &QTimer::timeout, this, &MainWindow::detectDialoguesInEditor);
 
     connect(editor, &QTextEdit::textChanged, this, [this]() {
         if (m_dialogueDetectionEnabled) dialogueDetectionTimer->start();
@@ -2723,6 +2699,25 @@ void MainWindow::setupEditor()
         elementsStore->updateElement(elementId, copy);
         if (characterSheetPanel) characterSheetPanel->refreshPhoto();
     });
+    // Aviso do Granna no cabeçalho: quem disse a fala que acabou de terminar,
+    // e "Quem disse?" no clique (ver GrannaNotifier).
+    {
+        GrannaNotifier::Deps deps;
+        deps.editor = editor;
+        deps.host = editorHost;
+        deps.model = projectModel;
+        deps.elements = elementsStore;
+        deps.dialogues = dialogueStore;
+        deps.header = docHeader;
+        deps.enabled = [this]() { return m_dialogueDetectionEnabled; };
+        deps.scanNow = [this]() {
+            if (dialogueDetectionTimer) dialogueDetectionTimer->stop();
+            detectDialoguesInEditor();
+        };
+        grannaNotifier = new GrannaNotifier(deps, this);
+        connect(editorHost, &EditorHost::viewModeChanged, grannaNotifier, &GrannaNotifier::reset);
+        connect(editorHost, &EditorHost::contentLoaded, grannaNotifier, &GrannaNotifier::reset);
+    }
 
     pageStackLayout->addWidget(editor, /*stretch=*/1);
     editorRowLayout->addWidget(pageStack, /*stretch=*/1);
@@ -5634,6 +5629,34 @@ void MainWindow::syncScenePresenceForChapter(const QString& chapterId)
     }
     for (auto it = byScene.cbegin(); it != byScene.cend(); ++it)
         elementsStore->addManyDocElements(it.key(), it.value());
+}
+
+void MainWindow::detectDialoguesInEditor()
+{
+    if (!m_dialogueDetectionEnabled || !dialogueStore || !elementsStore || !editorHost
+        || !editor || !projectModel) return;
+    const EditorHost::ViewMode vm = editorHost->viewMode();
+    if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
+
+    const Chapter* ch = projectModel->findChapter(vm.chapterId);
+    if (!ch) return;
+
+    CrashLogger::log(QStringLiteral("detectDialogue chapterId=%1 scenes=%2")
+                      .arg(vm.chapterId).arg(ch->scenes.size()));
+
+    if (vm.type == EditorHost::SceneDoc) {
+        // Só a cena aberta foi lida: o store não mexe nas outras cenas
+        // (antes, a fala nova sobrescrevia uma fala de outra cena).
+        const Scene* sc = projectModel->findScene(vm.chapterId, vm.sceneIndex);
+        const QString chTitle = !ch->title.isEmpty() ? ch->title : projectModel->chapterDisplayLabel(*ch);
+        const QString scTitle = (sc && !sc->title.isEmpty())
+            ? sc->title : tr("Cena %1").arg(vm.sceneIndex + 1);
+        runDialogueScan(*ch, { { editor->toHtml(), vm.sceneIndex, tr("%1 — %2").arg(chTitle, scTitle) } },
+                        vm.sceneIndex);
+    } else {
+        runDialogueScan(*ch, dialogueScenesFromChapterHtml(*ch, editor->toHtml()),
+                        DialogueStore::kWholeChapter);
+    }
 }
 
 void MainWindow::scanChapterDialogues(const QString& chapterId)

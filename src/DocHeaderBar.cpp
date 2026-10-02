@@ -3,16 +3,22 @@
 #include <QEnterEvent>
 #include <QEvent>
 #include <QFontMetrics>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QLayout>
 #include <QResizeEvent>
 #include <QToolButton>
+#include <QVariantAnimation>
 #include <QVBoxLayout>
 
+#include <climits>
 #include <cmath>
+#include <functional>
 
 #include "AvatarUtils.h"
+#include "DialogueVoices.h"
 #include "IconUtils.h"
 #include "Theme.h"
 #include "UiScale.h"
@@ -43,6 +49,225 @@ qreal contrast(const QColor& a, const QColor& b)
     return (qMax(la, lb) + 0.05) / (qMin(la, lb) + 0.05);
 }
 }
+
+// Aviso do Granna (ver DocHeaderBar::showGrannaMark). Fora do layout, por cima
+// da faixa: um único progresso 0..1 desenha o gesto inteiro, e o tempo de cada
+// estado vem de quanto o Granna tem certeza.
+class GrannaBadge : public QWidget
+{
+public:
+    using Mark = DocHeaderBar::GrannaMark;
+
+    explicit GrannaBadge(QWidget* parent) : QWidget(parent)
+    {
+        setCursor(Qt::PointingHandCursor);
+        m_anim = new QVariantAnimation(this);
+        m_anim->setStartValue(0.0);
+        m_anim->setEndValue(1.0);
+        QObject::connect(m_anim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            m_t = v.toReal();
+            update();
+        });
+        QObject::connect(m_anim, &QVariantAnimation::finished, this, [this]() {
+            // Fixo: estacionou no meio do gesto (inteiro) e espera release().
+            if (m_sticky || m_hold) return;
+            finishHide();
+        });
+        hide();
+    }
+
+    std::function<void()> onClick;
+    std::function<void()> onAnnounceEnded; // aviso que some sozinho acabou
+
+    void configure(Mark mark, const QPixmap& face, const QColor& voice, const QColor& accent,
+                   int side, int pad, int slide)
+    {
+        m_mark = mark;
+        m_face = face;
+        m_voice = voice;
+        m_accent = accent;
+        m_side = side;
+        m_pad = pad;
+        m_slide = slide;
+    }
+    void setClipRight(int x) { m_clipRight = x; update(); }
+
+    // sticky = fica: faz só a entrada e estaciona no meio do gesto (t = 0,5),
+    // até release(). Senão faz o gesto inteiro e some (aviso).
+    void start(bool sticky)
+    {
+        m_anim->stop();
+        m_sticky = sticky;
+        m_announce = !sticky;
+        m_hold = false;
+        m_t = 0.0;
+        m_anim->setStartValue(0.0);
+        m_anim->setEndValue(sticky ? 0.5 : 1.0);
+        m_anim->setDuration(sticky ? fullDuration() / 2 : fullDuration());
+        show();
+        raise();
+        m_anim->start();
+    }
+    // Fixo: faz a saída a partir de onde está.
+    void release()
+    {
+        if (isHidden() || !m_sticky || m_hold) return;
+        continueOut();
+    }
+    void stopNow()
+    {
+        m_anim->stop();
+        m_hold = false;
+        m_sticky = false;
+        m_announce = false;
+        hide();
+    }
+    // Popup aberto: o aviso fica inteiro e parado até soltar.
+    void setHold(bool hold)
+    {
+        if (hold == m_hold) return;
+        m_hold = hold;
+        if (hold) {
+            m_anim->stop();
+            m_t = 0.5;
+            show();
+            update();
+            return;
+        }
+        if (!m_sticky && isVisible()) continueOut();
+    }
+
+protected:
+    void enterEvent(QEnterEvent* event) override
+    {
+        QWidget::enterEvent(event);
+        // Mouse em cima segura o aviso que ia sumir, pra dar tempo de clicar.
+        if (!m_sticky && m_anim->state() == QAbstractAnimation::Running) m_anim->pause();
+    }
+    void leaveEvent(QEvent* event) override
+    {
+        QWidget::leaveEvent(event);
+        if (!m_hold && m_anim->state() == QAbstractAnimation::Paused) m_anim->resume();
+    }
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (event->button() == Qt::LeftButton && onClick) onClick();
+        event->accept();
+    }
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing, true);
+        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+        // Nasce "de trás" do título: nada passa da borda esquerda do texto.
+        p.setClipRect(QRect(0, 0, qMax(0, m_clipRight), height()));
+        const qreal t = m_t;
+        const qreal cy = height() / 2.0;
+        const qreal s = m_side / 38.0;
+
+        if (m_mark == Mark::Unknown) {
+            // Anel: o (?) acende, pulsa duas vezes enquanto o anel se fecha
+            // em volta, e apaga.
+            const qreal op = t < 0.18 ? t / 0.18 : (t > 0.8 ? (1.0 - t) / 0.2 : 1.0);
+            const qreal cx = m_pad + m_side / 2.0;
+            const QRectF disc(cx - m_side / 2.0, cy - m_side / 2.0, m_side, m_side);
+            QColor soft = m_accent;
+            soft.setAlphaF(0.16);
+            p.setOpacity(op);
+            p.setPen(QPen(m_accent, 1.5 * s));
+            p.setBrush(soft);
+            p.drawEllipse(disc.adjusted(0.75 * s, 0.75 * s, -0.75 * s, -0.75 * s));
+
+            qreal pulse = 1.0;
+            if (t > 0.18 && t < 0.78) {
+                const qreal w = std::sin((t - 0.18) / 0.6 * 2.0 * M_PI);
+                pulse = 1.0 - 0.6 * w * w;
+            }
+            p.setOpacity(op * pulse);
+            QFont f = font();
+            f.setBold(true);
+            f.setPixelSize(qMax(9, qRound(m_side * 0.5)));
+            p.setFont(f);
+            p.setPen(m_accent);
+            p.drawText(disc, Qt::AlignCenter, QStringLiteral("?"));
+
+            p.setOpacity(op);
+            const qreal ring = qMin(1.0, t / 0.48);
+            QPen pen(m_accent, 2.0 * s);
+            pen.setCapStyle(Qt::RoundCap);
+            p.setPen(pen);
+            p.setBrush(Qt::NoBrush);
+            const qreal gap = 4.0 * s;
+            p.drawArc(disc.adjusted(-gap, -gap, gap, gap), 90 * 16, -qRound(ring * 360 * 16));
+            return;
+        }
+
+        // Deslizar: sai de trás do título pro lado, segura, e volta.
+        qreal off = 0.0, op = 1.0;
+        if (t < 0.28) {
+            const qreal u = 1.0 - t / 0.28;
+            const qreal e = 1.0 - u * u * u;
+            off = m_slide * (1.0 - e);
+            op = e;
+        } else if (t > 0.72) {
+            const qreal u = (t - 0.72) / 0.28;
+            const qreal e = u * u * u;
+            off = m_slide * e;
+            op = 1.0 - e;
+        }
+        p.setOpacity(op);
+        const qreal cx = m_pad + m_side / 2.0 + off;
+        const QSizeF fs = m_face.deviceIndependentSize();
+        p.drawPixmap(QPointF(cx - fs.width() / 2.0, cy - fs.height() / 2.0), m_face);
+        if (m_mark == Mark::Probable) {
+            QPen pen(m_voice, 1.6 * s);
+            pen.setDashPattern({ 2.4, 1.7 });
+            p.setPen(pen);
+            p.setBrush(Qt::NoBrush);
+            const qreal r = m_side / 2.0 + 0.5 * s;
+            p.drawEllipse(QPointF(cx, cy), r, r);
+        }
+    }
+
+private:
+    QVariantAnimation* m_anim = nullptr;
+    Mark m_mark = Mark::Certain;
+    QPixmap m_face;
+    QColor m_voice;
+    QColor m_accent;
+    int m_side = 38;
+    int m_pad = 6;
+    int m_slide = 18;
+    int m_clipRight = INT_MAX;
+    qreal m_t = 0.0;
+    bool m_hold = false;
+    bool m_sticky = false;
+    bool m_announce = false;
+
+    int fullDuration() const
+    {
+        return m_mark == Mark::Certain ? 650 : m_mark == Mark::Probable ? 1000 : 1500;
+    }
+    void continueOut()
+    {
+        m_anim->stop();
+        m_sticky = false;
+        m_anim->setStartValue(m_t);
+        // Ainda entrando (cursor passou rápido pela fala): volta pelo mesmo
+        // caminho em vez de fazer o gesto inteiro.
+        const bool back = m_t < 0.5;
+        m_anim->setEndValue(back ? 0.0 : 1.0);
+        m_anim->setDuration(qMax(60, qRound(fullDuration() * (back ? m_t : 1.0 - m_t))));
+        m_anim->start();
+    }
+    void finishHide()
+    {
+        hide();
+        const bool wasAnnounce = m_announce;
+        m_announce = false;
+        if (wasAnnounce && onAnnounceEnded) onAnnounceEnded();
+    }
+};
 
 DocHeaderBar::DocHeaderBar(QWidget* parent)
     : QWidget(parent)
@@ -192,6 +417,7 @@ void DocHeaderBar::applyTheme()
     const QColor accent(Theme::accentDefault());
     const QString guideColor = (accent.isValid() && contrast(accent, paper) >= 3.0)
         ? accent.name() : titleColor;
+    m_grannaAccent = QColor(guideColor);
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#docHeaderBar { background: %1; }
@@ -402,6 +628,7 @@ void DocHeaderBar::relayoutText()
     } else {
         m_subtitle->clear();
     }
+    placeGrannaMark(); // o aviso encosta no texto, que acabou de mudar
 }
 
 QRect DocHeaderBar::sceneVarButtonGlobalRect() const
@@ -438,4 +665,71 @@ void DocHeaderBar::resizeEvent(QResizeEvent* event)
     QWidget::resizeEvent(event);
     refreshGuide();  // canto direito e teclas dependem da largura
     relayoutText(); // a elipse depende da largura disponível
+}
+
+void DocHeaderBar::showGrannaMark(GrannaMark mark, const QString& imageDataUrl, const QString& name,
+                                  const QColor& voice, const QString& toolTip, bool sticky)
+{
+    if (!m_granna) {
+        m_granna = new GrannaBadge(this);
+        m_granna->onClick = [this]() { emit grannaMarkClicked(); };
+        m_granna->onAnnounceEnded = [this]() { emit grannaAnnounceEnded(); };
+    }
+    const qreal s = UiScale::scale();
+    const int side = qMax(16, qRound(kAvatarBase * s));
+    QPixmap face;
+    if (mark == GrannaMark::Certain) face = DialogueVoices::face(imageDataUrl, name, voice, side);
+    else if (mark == GrannaMark::Probable)
+        face = DialogueVoices::face(imageDataUrl, name, voice, side - qRound(6 * s));
+    m_granna->configure(mark, face, voice, m_grannaAccent.isValid() ? m_grannaAccent : voice,
+                        side, grannaPad(), grannaSlide());
+    m_granna->setToolTip(toolTip);
+    placeGrannaMark();
+    m_granna->start(sticky);
+}
+
+void DocHeaderBar::releaseGrannaMark()
+{
+    if (m_granna) m_granna->release();
+}
+
+void DocHeaderBar::hideGrannaMark()
+{
+    if (m_granna) m_granna->stopNow();
+}
+
+void DocHeaderBar::holdGrannaMark(bool hold)
+{
+    if (m_granna) m_granna->setHold(hold);
+}
+
+QRect DocHeaderBar::grannaMarkGlobalRect() const
+{
+    if (!m_granna || m_granna->isHidden())
+        return QRect(mapToGlobal(QPoint(width() / 2, height())), QSize(1, 1));
+    return QRect(m_granna->mapToGlobal(QPoint(0, 0)), m_granna->size());
+}
+
+int DocHeaderBar::grannaPad() const { return qMax(4, qRound(6 * UiScale::scale())); }
+int DocHeaderBar::grannaSlide() const { return qMax(8, qRound(18 * UiScale::scale())); }
+
+void DocHeaderBar::placeGrannaMark()
+{
+    if (!m_granna) return;
+    if (layout()) layout()->activate();
+    // Borda esquerda do TEXTO (o QLabel pode ser mais largo que ele).
+    int left = INT_MAX;
+    for (QLabel* l : { m_title, m_subtitle }) {
+        if (!l || l->isHidden() || l->text().isEmpty()) continue;
+        const int w = qMin(l->width(), QFontMetrics(l->font()).horizontalAdvance(l->text()));
+        left = qMin(left, l->geometry().center().x() - w / 2);
+    }
+    if (left == INT_MAX) left = width() / 2;
+    const int side = qMax(16, qRound(kAvatarBase * UiScale::scale()));
+    const int pad = grannaPad();
+    const int w = pad * 2 + side + grannaSlide();
+    const int h = side + pad * 2;
+    const int x = left - qRound(kAvatarGap * UiScale::scale()) - side - pad;
+    m_granna->setGeometry(x, (height() - h) / 2, w, h);
+    m_granna->setClipRight(left - 2 - x);
 }

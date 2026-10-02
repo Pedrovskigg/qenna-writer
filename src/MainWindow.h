@@ -45,6 +45,7 @@ class DocCache;
 class EditorHost;
 class VariationBar;
 class DocHeaderBar;
+class GrannaNotifier;
 class ScreenplayCompleter;
 class ProjectSaver;
 class WordCounter;
@@ -441,6 +442,8 @@ private:
     // "ao vivo" (dialogueDetectionTimer) continua separado, dedicado ao
     // capítulo aberto no editor.
     void scanChapterDialogues(const QString& chapterId);
+    // Scan do documento aberto no editor (capítulo inteiro ou só a cena).
+    void detectDialoguesInEditor();
     // Só os votos de gênero de um capítulo (sem atribuir falas) — 1ª passada
     // do scan em lote, pra todo capítulo ser lido já sabendo quem é quem.
     void learnDialogueGender(const QString& chapterId);
@@ -663,6 +666,7 @@ private:
     // Faixa de titulo no topo da folha; so existe com a TopToolbar na lateral,
     // onde a barra nao tem mais onde mostrar o documento em edicao.
     DocHeaderBar *docHeader = nullptr;
+    GrannaNotifier *grannaNotifier = nullptr;
     QScrollArea *editorScroll = nullptr;
     QScrollBar *externalScrollBar = nullptr;
     QWidget *toolbarHolder;

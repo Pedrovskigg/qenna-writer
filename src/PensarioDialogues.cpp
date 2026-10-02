@@ -14,6 +14,7 @@
 
 #include "PensarioPanel.h"
 
+#include "DialogueVoices.h"
 #include "DocCache.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -44,29 +45,9 @@ namespace {
 const QString kExtrasKey = QStringLiteral("__extras__");
 constexpr int kDialoguePageSize = 60; // mesma paginação do PensarioPanel.cpp
 
-bool themeIsDark()
-{
-    return QColor(Theme::panelBackground()).lightnessF() < 0.5;
-}
-
-// Cor de cada voz por POSIÇÃO numa paleta de famílias bem separadas (laranja,
-// azul, rosa, verde, roxo, amarelo, vermelho, turquesa): matiz por hash deixava
-// dois verdes lado a lado. Quem mais fala no manuscrito pega as primeiras, e a
-// ordem não muda ao trocar de capítulo. Da 9ª voz em diante a paleta repete
-// num tom mais claro/escuro.
-QColor voiceColor(int index)
-{
-    static const char* dark[]  = { "#F0A35A", "#6FB3F2", "#F07FB0", "#7CCB7A",
-                                   "#B48CF2", "#E8D36A", "#F07A6E", "#5FCFC4" };
-    static const char* light[] = { "#B8621A", "#1F6FB8", "#B8337A", "#2E8A3A",
-                                   "#6A3FB8", "#8A7400", "#B8342A", "#13807A" };
-    constexpr int n = 8;
-    if (index < 0) return QColor(Theme::textMuted());
-    const bool isDark = themeIsDark();
-    QColor c(isDark ? dark[index % n] : light[index % n]);
-    if ((index / n) % 2 == 1) c = isDark ? c.lighter(125) : c.darker(130);
-    return c;
-}
+// Quem mais fala no manuscrito pega as primeiras cores, e a ordem não muda ao
+// trocar de capítulo (paleta em DialogueVoices, a mesma do aviso do Granna).
+QColor voiceColor(int index) { return DialogueVoices::color(index); }
 
 QFont serif(qreal px)
 {
@@ -513,7 +494,7 @@ void PensarioPanel::rebuildDialoguesScript(const QVector<DialogueStore::Dialogue
         const bool none = d.characterId.isEmpty() && !fig;
         const QColor c = (fig || none) ? QColor(Theme::panelBorder()) : colorOf(d.characterId);
         QString nameText;
-        if (fig) nameText = capitalized(d.extraLabel);
+        if (fig) nameText = d.extraLabel.isEmpty() ? tr("figurante") : capitalized(d.extraLabel);
         else if (none) nameText = tr("sem locutor");
         else nameText = dialogueSpeakerLabel(d.characterId).toUpper();
 
