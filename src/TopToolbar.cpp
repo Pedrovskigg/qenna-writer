@@ -1038,13 +1038,16 @@ void TopToolbar::applyRootStyle()
 
     for (QLabel *badge : { readModeBadge, focusModeBadge, indentBadge }) {
         if (!badge) continue;
+        // Keep the theme's square corners, but cap the radius for this tiny badge.
+        const int radius = qMin(Theme::controlRadius(), badge->width() / 2);
         // Ponto aceso com halo: o halo e o que faz parecer luz e nao sujeira.
         badge->setStyleSheet(Theme::qss(QStringLiteral(
             "QLabel#modeBadge {"
             "  background: %1;"
             "  border: 1px solid %2;"
-            "  border-radius: @radius-control;"
-            "}").arg(Theme::accentDefault(), Theme::panelBackground())));
+            "  border-radius: %3px;"
+            "}").arg(Theme::accentDefault(), Theme::panelBackground())
+                 .arg(radius)));
     }
 
     if (pensarioBadge) {
