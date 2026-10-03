@@ -12,75 +12,22 @@
 #include <cmath>
 #include <functional>
 
+#include "MsVignetteCore.h"
+#include "MsVignetteLeva3.h"
+
 namespace {
 
-// Mesmo sorteio do concept (FNV-1a + mulberry32), pra o desenho de cada
-// capítulo ser o que o autor viu na prévia.
-quint32 hashStr(const QString& s) {
-    quint32 h = 2166136261u;
-    for (const QChar c : s) { h ^= c.unicode(); h *= 16777619u; }
-    return h;
-}
-
-struct Rng {
-    quint32 a;
-    double next() {
-        a += 0x6D2B79F5u;
-        quint32 t = (a ^ (a >> 15)) * (1u | a);
-        t = (t + ((t ^ (t >> 7)) * (61u | t))) ^ t;
-        return double(t ^ (t >> 14)) / 4294967296.0;
-    }
-    double operator()() { return next(); }
-    double R(double lo, double hi) { return lo + next() * (hi - lo); }
-};
-
-int jsRound(double v) { return int(std::floor(v + 0.5)); }
-
-QColor hsl(double h, double s, double l, double a = 1.0) {
-    h = std::fmod(h, 360.0);
-    if (h < 0) h += 360.0;
-    return QColor::fromHslF(float(h / 360.0), float(s), float(l), float(a));
-}
-
-// Paleta "Viva" (concept vinhetas-leva1, aprovada 2026-09-28): usa a cor da
-// Parte de verdade — matiz E saturação. A antiga fixava a saturação em ~.30 e
-// tudo saía lavado. Cor apagada continua apagada; viva continua viva.
-struct Pal {
-    double h = 0, S = 0;
-    bool gray = false;
-    QColor bg0, bg1, ink, ink2, faint, ring;
-    QColor shade(double l, double a = 1.0) const { return hsl(h, S * .75, std::min(1.0, l + .04), a); }
-    // O "s" pedido pelo desenho é ignorado de propósito (como no concept): a
-    // saturação vem da cor da Parte.
-    QColor glow(double dh, double /*s*/, double l, double a) const {
-        return hsl(h + dh * .8, gray ? S : std::clamp(S + .1, 0.0, 1.0), l, a);
-    }
-};
-
-Pal paletteFor(const QColor& base) {
-    Pal P;
-    const QColor c = base.isValid() ? base.toHsl() : QColor(Qt::gray).toHsl();
-    const double hue = c.hslHueF();
-    P.h = hue < 0 ? 0.0 : hue * 360.0;
-    const double s = std::max(0.0, double(c.hslSaturationF()));
-    P.gray = s < .12;
-    P.S = P.gray ? s : std::clamp(s, .45, 1.0);
-    const double h = P.h, S = P.S;
-    P.bg0 = hsl(h, S * .85, .30);
-    P.bg1 = hsl(h + 14, S * .8, .11);
-    P.ink = hsl(h, P.gray ? S : std::max(S, .6), .72);
-    P.ink2 = hsl(h + 28, P.gray ? S : std::clamp(S + .15, 0.0, 1.0), .78);
-    P.faint = hsl(h, S * .8, .6, .5);
-    P.ring = hsl(h, S, .62, .8);
-    return P;
-}
+using namespace MsVignetteDetail;
 
 const char* const kIds[MsVignette::FamilyCount] = {
     "branches", "roots", "flames", "city", "stars", "mountains", "coral",
     "cracks", "mandala", "lightning", "waves", "circles", "rays",
     "forest", "garden", "flock", "rain", "river", "galaxy", "crystals", "aurora", "dunes", "web",
     "ruins", "lighthouse", "castle", "cyberpunk", "medieval", "steampunk", "feudal-japan", "orient",
-    "blizzard" };
+    "blizzard",
+    "candle", "hourglass", "key", "compass", "pocket-watch", "inkwell", "cup", "books", "lantern", "guitar",
+    "road", "noir", "mansion", "planet", "fleet", "sailboat", "wings", "ferris-wheel", "hill", "train",
+    "azulejo", "maze", "cordel", "origami", "treasure-map", "chess", "blades", "firearms" };
 
 // Elipse girada do canvas (ellipse(x, y, rx, ry, rot)).
 QPainterPath ellipsePath(double x, double y, double rx, double ry, double rot) {
@@ -1236,7 +1183,35 @@ QString familyName(int family) {
         QT_TRANSLATE_NOOP("MsVignette", "Steampunk"),
         QT_TRANSLATE_NOOP("MsVignette", "Japão feudal"),
         QT_TRANSLATE_NOOP("MsVignette", "Oriente"),
-        QT_TRANSLATE_NOOP("MsVignette", "Nevasca") };
+        QT_TRANSLATE_NOOP("MsVignette", "Nevasca"),
+        QT_TRANSLATE_NOOP("MsVignette", "Vela"),
+        QT_TRANSLATE_NOOP("MsVignette", "Ampulheta"),
+        QT_TRANSLATE_NOOP("MsVignette", "Chave"),
+        QT_TRANSLATE_NOOP("MsVignette", "Bússola"),
+        QT_TRANSLATE_NOOP("MsVignette", "Relógio de bolso"),
+        QT_TRANSLATE_NOOP("MsVignette", "Pena e tinteiro"),
+        QT_TRANSLATE_NOOP("MsVignette", "Xícara"),
+        QT_TRANSLATE_NOOP("MsVignette", "Pilha de livros"),
+        QT_TRANSLATE_NOOP("MsVignette", "Lampião"),
+        QT_TRANSLATE_NOOP("MsVignette", "Guitarra"),
+        QT_TRANSLATE_NOOP("MsVignette", "Estrada"),
+        QT_TRANSLATE_NOOP("MsVignette", "Noir"),
+        QT_TRANSLATE_NOOP("MsVignette", "Mansão"),
+        QT_TRANSLATE_NOOP("MsVignette", "Planeta"),
+        QT_TRANSLATE_NOOP("MsVignette", "Frota"),
+        QT_TRANSLATE_NOOP("MsVignette", "Veleiro"),
+        QT_TRANSLATE_NOOP("MsVignette", "Asas"),
+        QT_TRANSLATE_NOOP("MsVignette", "Roda-gigante"),
+        QT_TRANSLATE_NOOP("MsVignette", "Morro"),
+        QT_TRANSLATE_NOOP("MsVignette", "Trem"),
+        QT_TRANSLATE_NOOP("MsVignette", "Azulejo"),
+        QT_TRANSLATE_NOOP("MsVignette", "Labirinto"),
+        QT_TRANSLATE_NOOP("MsVignette", "Cordel"),
+        QT_TRANSLATE_NOOP("MsVignette", "Origami"),
+        QT_TRANSLATE_NOOP("MsVignette", "Mapa do tesouro"),
+        QT_TRANSLATE_NOOP("MsVignette", "Xadrez"),
+        QT_TRANSLATE_NOOP("MsVignette", "Lâminas"),
+        QT_TRANSLATE_NOOP("MsVignette", "Armas de fogo") };
     if (family < 0 || family >= FamilyCount) return QString();
     return QCoreApplication::translate("MsVignette", names[family]);
 }
@@ -1244,13 +1219,28 @@ QString familyName(int family) {
 QList<FamilyGroup> familyGroups() {
     QList<int> classic;
     for (int f = 0; f < kAutoFamilyCount; ++f) classic << f;
-    return {
+    QList<FamilyGroup> groups = {
         { QCoreApplication::translate("MsVignette", "Clássicos"), classic },
         { QCoreApplication::translate("MsVignette", "Natureza e céu"),
           { Forest, Garden, Flock, Rain, River, Galaxy, Crystals, Aurora, Dunes, Web, Blizzard } },
         { QCoreApplication::translate("MsVignette", "Lugares"),
           { Ruins, Lighthouse, Castle, Cyberpunk, Medieval, Steampunk, FeudalJapan, Orient } },
+        { QCoreApplication::translate("MsVignette", "Objetos"),
+          { Candle, Hourglass, Key, Compass, PocketWatch, Inkwell, Cup, Books, Lantern, Guitar } },
+        { QCoreApplication::translate("MsVignette", "Cenas"),
+          { Road, Noir, Mansion, Planet, Fleet, Sailboat, Wings, FerrisWheel, Hill, Train } },
+        { QCoreApplication::translate("MsVignette", "Feitos à mão"),
+          { Azulejo, Maze, Cordel, Origami, TreasureMap, Chess } },
+        { QCoreApplication::translate("MsVignette", "Arsenal"), { Blades, Firearms } },
     };
+    // as famílias da leva 3 entram uma leva por vez: grupo sem nada portado não aparece
+    QList<FamilyGroup> out;
+    for (FamilyGroup g : groups) {
+        QList<int> keep;
+        for (int f : g.families) if (f < kFirstLeva3Family || MsVignetteLeva3::isPorted(f)) keep << f;
+        if (!keep.isEmpty()) { g.families = keep; out << g; }
+    }
+    return out;
 }
 
 int autoFamily(const QString& chapterId) {
@@ -1296,6 +1286,17 @@ QPixmap render(const QString& seedId, int words, const QColor& base, int family,
     pm.fill(Qt::transparent);
     QPainter p(&pm);
     p.setRenderHint(QPainter::Antialiasing);
+    const int fam = family < 0 ? autoFamily(seedId) : family;
+    if (fam >= kFirstLeva3Family) {
+        // leva 3: port linha a linha do concept, desenhado pelo MsCanvas (MsVignetteLeva3.cpp)
+        if (MsVignetteLeva3::render(p, size, seedId, words, base, fam, !circle)) {
+            p.end();
+            if (cache.size() > 400) cache.clear();
+            cache.insert(key, pm);
+            return pm;
+        }
+        family = autoFamily(seedId);   // família ainda não portada (projeto aberto numa versão mais nova): cai no automático
+    }
     const Pal P = paletteFor(base);
     p.setClipPath(shapePath(size, circle));
     const double W = size.width(), H = size.height();

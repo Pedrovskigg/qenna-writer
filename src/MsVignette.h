@@ -22,7 +22,18 @@ enum Family { Branches, Roots, Flames, City, Stars, Mountains, Coral, Cracks,
               Forest, Garden, Flock, Rain, River, Galaxy, Crystals, Aurora, Dunes, Web,
               // …e lugares
               Ruins, Lighthouse, Castle, Cyberpunk, Medieval, Steampunk, FeudalJapan, Orient,
-              Blizzard, FamilyCount };
+              Blizzard,
+              // 2026-10-02, leva 3 (MsVignetteLeva3.cpp; entram no menu uma leva por vez): objetos…
+              Candle, Hourglass, Key, Compass, PocketWatch, Inkwell, Cup, Books, Lantern, Guitar,
+              // …cenas…
+              Road, Noir, Mansion, Planet, Fleet, Sailboat, Wings, FerrisWheel, Hill, Train,
+              // …feitos à mão…
+              Azulejo, Maze, Cordel, Origami, TreasureMap, Chess,
+              // …e o Arsenal (cada faixa de palavras destrava uma arma, como a Guitarra destrava instrumentos)
+              Blades, Firearms,
+              FamilyCount };
+// Da primeira família da leva 3 em diante, o desenho é o port do concept em MsVignetteLeva3.cpp.
+constexpr int kFirstLeva3Family = 32;
 
 // O automático sorteia só entre as 13 primeiras: com mais famílias no sorteio,
 // o desenho de todo capítulo que já existe mudaria (a família sai do hash do

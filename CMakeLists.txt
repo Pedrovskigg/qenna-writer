@@ -176,6 +176,11 @@ qt_add_executable(qenna-writer
     src/PensarioGlossary.cpp
     src/MsVignette.cpp
     src/MsVignette.h
+    src/MsVignetteCore.h
+    src/MsVignetteLeva3.cpp
+    src/MsVignetteLeva3.h
+    src/MsCanvas.cpp
+    src/MsCanvas.h
     src/PanelMotion.cpp
     src/PanelMotion.h
     src/SmoothCaret.cpp

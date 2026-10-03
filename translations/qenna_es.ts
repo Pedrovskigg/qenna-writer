@@ -12008,6 +12008,166 @@ El contenido existente puede sobrescribirse.</translation>
         <source>Lugares</source>
         <translation>Lugares</translation>
     </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Vela</source>
+        <translation>Vela</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Ampulheta</source>
+        <translation>Reloj de arena</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Chave</source>
+        <translation>Llave</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Bússola</source>
+        <translation>Brújula</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Relógio de bolso</source>
+        <translation>Reloj de bolsillo</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Pena e tinteiro</source>
+        <translation>Pluma y tintero</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Xícara</source>
+        <translation>Taza</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Pilha de livros</source>
+        <translation>Pila de libros</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Lampião</source>
+        <translation>Quinqué</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Guitarra</source>
+        <translation>Guitarra</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Estrada</source>
+        <translation>Carretera</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Noir</source>
+        <translation>Noir</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Mansão</source>
+        <translation>Mansión</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Planeta</source>
+        <translation>Planeta</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Frota</source>
+        <translation>Flota</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Veleiro</source>
+        <translation>Velero</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Asas</source>
+        <translation>Alas</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Roda-gigante</source>
+        <translation>Noria</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Morro</source>
+        <translation>Cerro</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Trem</source>
+        <translation>Tren</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Azulejo</source>
+        <translation>Azulejo</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Labirinto</source>
+        <translation>Laberinto</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Cordel</source>
+        <translation>Cordel</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Origami</source>
+        <translation>Origami</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Mapa do tesouro</source>
+        <translation>Mapa del tesoro</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Xadrez</source>
+        <translation>Ajedrez</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Lâminas</source>
+        <translation>Hojas</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Armas de fogo</source>
+        <translation>Armas de fuego</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Objetos</source>
+        <translation>Objetos</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Cenas</source>
+        <translation>Escenas</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Feitos à mão</source>
+        <translation>Hecho a mano</translation>
+    </message>
+    <message>
+        <location filename="../src/MsVignette.cpp" line="0"/>
+        <source>Arsenal</source>
+        <translation>Arsenal</translation>
+    </message>
 </context>
 <context>
     <name>NameGenerator</name>
