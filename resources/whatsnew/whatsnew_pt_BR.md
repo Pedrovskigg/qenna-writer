@@ -1,266 +1,91 @@
-**Qenna Writer - BIG UPDATE 1.4**
+**Qenna Writer - UPDATE: 1.4.5**
 
-A segunda onda.
-Reworks em tudo que ficou de fora da última versão e mais alguns fixes.
-Estamos focando atualmente em um reajuste completo do Qenna no geral. Modernização de painéis, ferramentas e outras coisas. Colocando o app em um novo caminho, tornando a interface mais amigável, funcional e bonita.
+Olá meus lindos, nova atualização do Qenna chegoooou! Bora, bora.
 
-"Nossa, outro update tão cedo?"
-ISSO MESMO! AQUI NÃO TEM DESCANSO.
-
-Sim, vamos de 1.4 e com isso...
-É OFICIAL!
-O QENNA FINALMENTE **COMPLETOU** SUA FASE BETA.
-
-O Qenna já deixou faz tempo essa fase de "teste" de versão 0.x.x. O app está estável, funcional e num nível em que aquele versionamento já não faz sentido.
-Então sim:
-
-Chegamos na casa da 1.0! E que venham muitas outras!
-
-Vamos lá!
+Dessa vez, o foco da atualização foi algo que admito, chegamos a deixar meio de lado.
+Sempre funcionou bem, mas podia ser muito mais: o modo de projeto **roteiro**. 
 
 ## Novidades
 
-**INTRODUCING!**
-
-*THE NEEEW DIALOGUE DETECTOR ENGINE HEAVYWEIGHT CHAMPION!*
-
-**• NOVO MOTOR DO DETECTOR DE DIÁLOGOS**
-Introduzindo: O **Granna**.
-O Granna é o novo motor de detecção de diálogos, escrito do absoluto zero para as novas versões do Qenna.
-O motor de texto antigo era... problemático. Muitas regras, muitos erros. Ele falhava demais, deixava diálogos óbvios passarem e não percebia quem tinha dito a maioria deles.
-
-Então, para evitar os problemas, limpamos a casa e reconstruímos.
-O novo motor chega a até 3x mais acertos e detecções do que o motor antigo.
-E não, não estou exagerando.
-
-Vou deixar, no final deste patch note, mais detalhes sobre o novo motor. Como ele funciona, porcentagens de acerto e tudo mais, caso tenha curiosidade. Vale a pena ler, de verdade. É bom saber como funciona.
-
-**• Rework: aba Diálogos do Pensário**
-Junto com o Granna, a aba de Diálogos do Pensário ganhou cara nova: o elenco em cima (clique num rosto pra ver só as falas dele), as falas em blocos com a cor de cada personagem e um botão pra trocar de manuscrito. As falas prováveis aparecem tracejadas; um clique direito confirma ou corrige.
-
-**• Rework Configurações**
-A aba de configurações já estava meio... defasada. O app já contava com muitas configurações diferentes, mas o painel ainda não contava com nenhum suporte ou interface real para separar o joio do trigo.
-O painel de configurações passou por um rework completo. Agora, cada coisa está em seu devido lugar.
-
-**• Rework do painel e criador de Themes**
-Sim, tocamos nele. O painel de Themes passou por um rework completo, tanto visual quanto funcional.
-O novo preview de Themes é **INCRÍVEL**, com comparação entre themes em tempo real, navegação mais fluida, sugestão de similares, filtros de novidades e de usados recentemente e muito mais.
-Além disso, o **Criador de Themes** também está de cara nova. Uma interface muito mais fácil de entender, com previews mais precisos e muito mais liberdade para criar o theme que seja a cara do seu projeto.
-Novas opções incluem: cor dos ícones, painéis de vidro e também ajuste da cor dos botões dentro das gavetas (antes, eram fixos com base na cor da própria gaveta, agora eles podem receber a cor de destaque do theme).
-Outros pontos de destaque: cor e fonte do DocHeader (o título do doc em edição que aparece no topo) e cor e borda próprias para cada painel.
-Além disso, tomei a liberdade de marcar alguns themes como recomendados. Themes que considero os melhores que fizemos. Eles ganham um selo e aparecem no topo da categoria.
-O rework também forneceu uma otimização incrível no painel de Themes. Antes, ele levava de 2 a 4 segundos para abrir; agora, abre em menos de 1 segundo.
-Agora, também há indicação de Themes parecidos, o sistema de Dia e Noite também passou por ajustes visuais e muito mais.
-
-**• Criador de Themes: degradê e grão no fundo**
-Essa ideia veio emprestada do Qenna Cover, o nosso criador de capas.
-Até agora, o fundo de um theme sem foto era uma cor só, chapada, na tela inteira. Nos themes escuros ninguém nota, é tudo escuro mesmo. Mas nos claros o fundo fica em destaque atrás da página, e uma cor sólida ali... não brilha.
-Agora o fundo pode ganhar um degradê (embaixo, em cima, os dois ou vinheta), com cor, opacidade e tamanho. E grão. O grão também tem tamanho: fino, tipo película de cinema, ou grande, virando mancha de pedra, feltro, perolado. Funciona por cima da foto nos estampados também.
-Tá tudo no Criador de Themes, na parte do Fundo.
-
-**• Novos Themes:**
-Essa leva foi focada em themes claros. E não foi à toa: o problema dos claros do Qenna nunca foi quantidade, era variedade. Eles eram parecidos demais.
-Então, dessa vez, cada theme usa tudo que o Criador tem: cor por painel, ícones, título, gavetas, degradê e grão. E cada um é uma coisa que você reconhece de cara.
-
-**Claros|** World 1-1, DMG-01, Solitaire, Ballpoint, Deep End, Clay Court, Alpenglow, Fluorescent, Luciana
-
-Meus destaques: o World 1-1 (a primeira fase do Mario, com o bloco de ? no contador) e o DMG-01 (o Game Boy original, a carcaça e a moldura da tela).
-E a Luciana é especial. É inspirada na minha guitarra, uma custom que eu montei peça por peça: escudo azul perolado, corpo creme, ferragem dourada. Ficou do jeito que ela merece.
-
-Mas não é só de Themes claros que o homem vive.
-Também temos uma nova leva de estampados, focados na estética vermelha.
-
-**Estampados|** Scarlet Ridge, Red Alps, Mars Range, Redemption
-
-Entre eles, o meu pick: **Redemption**.
-*for those who stay unshaken amidst a crash of worlds*
-
-Isso também incluiu um ajuste. Diversos Themes trocaram de categoria. Alguns eram coloridos demais para serem considerados escuros, outros claros demais para serem amarelados ou coloridos etc. A mudança teve impacto em todas as categorias (exceto os estampados). Então, caso não encontre um theme de que gostava e que não tinha favoritado, use a busca ou explore!
-
-**• Rework Help Panel**
-Seguindo a deixa das configurações, o Help Panel também foi refeito. As seções antigas também foram atualizadas com as novas funções.
-
-**• Novos designs de gaveta de manuscrito**
-Chegaram também! A gaveta de manuscrito recebeu mais alguns designs de UI. Alternáveis, iguais aos anteriores. Além disso, o botão de novo manuscrito recebeu um novo ícone.
-Alguns deles são focados na nova ferramenta que trouxemos na versão passada: ilustrações.
-Inclusive:
-**Novas ilustrações de capítulos chegam nessa atualização!**
-Cyberpunk, Japão Feudal, Nevasca, Steampunk, Medieval e outras.
-Também fizemos um ajuste de cores, para que elas reflitam mais as cores das partes dentro do manuscrito. Tá bonito, tá elegante.
-
-**• Rework: Função de Nova Gaveta**
-Novo criador de gavetas, mais limpo, bonito e rápido. As mesmas gavetas, mais fáceis de criar.
-
-**• Rework: Glossário**
-Nem ele escapou. O glossário passou também por um rework completo. Tanto do seu painel quanto do seu acesso via menu de seleção. E agora ele também pode grifar no texto as palavras que foram salvas nele.
-Também recebeu uma aba própria no Pensário, com termos ganhando tipos e outras grafias.
-
-**• Rework: Criar documento a partir do texto**
-Aba retrabalhada, mais rápida e dinâmica.
-
-**• Rework: janelas**
-Adeus às janelas do Windows. Tudo que ainda abria caixa do sistema virou folha do Qenna. Ao menos, todas de que eu saiba. Se achar alguma perdida por aí, me notifique!
-Isso atinge tudo: Criador de Mundos e Sistemas, Lousa, Grupos, Timeline etc.
-
-**• Rework de Novo Capítulo/Nova Cena**
-Novo popup para novo capítulo e nova cena. Mais bonito para encaixar com as atualizações de UI.
-Isso também inclui um ajuste que eu devia há tempos: um separador de cenas decente. Agora, o app tem duas opções de separador, alternável nas configurações. Ambos bem mais bonitos que a linha reta e torta que tínhamos.
-
-**• Rework de Novo Personagem/Editar personagem**
-Sim, nem ele escapou. Ao criar novos personagens, agora você tem um painel bem mais bonito para deixar a criatividade fluir.
-
-**• Rework: adicionar evento à Timeline**
-O antigo literalmente abria a timeline para você criar o evento dela, te arrancando do seu texto com certa brutalidade. Não mais.
-
-**• Rework: Novo projeto**
-A janela de novo projeto também não escapou: mais bonita e fácil de preencher. Agora tudo é numa folha só, sem 3 etapas como antes.
-
-*E agora...*
-*Guys... respirem fundo...*
-**HE'S BACK**
-**• Criador de Capas!**
-Bom, ao menos uma versão menor e mais pacata dele, mas voltou. O criador de capas nativo, como tínhamos no finado Mira Writing.
-Funciona bem, ótimo para criar capas rápidas e não ter desculpa para ficar com um quadrado preto com o nome do seu livro no Main Menu.
-Cuidei para que tivesse várias opções úteis e necessárias para criar ao menos capas decentes.
-
-O novo criador de capas não é tão aprofundado quanto o Qenna Cover (o nosso outro projeto) e também não tenta ser. O objetivo dele é só deixar o seu projeto mais bonito no Menu sem que você precise baixar outro programa para isso.
-Mas o Qenna Cover ainda está disponível... meio morto, sim. Mas ainda vive e pretendo atualizá-lo em breve. Então fiquem atentos.
-
-De qualquer forma, o nosso Cover-Mini é justo e vai te entregar resultados satisfatórios. Vocês vão gostar.
-E honestamente? Ele não é tão aprofundado quanto o Qenna Cover mesmo, mas também não fica tão longe.
-
-E claro, como o clássico: você pode exportar suas capas e usar em outros lugares, como EPUBs ou sites.
-
-**• Função: Eventos de Timeline**
-A opção das configurações de criar vários eventos da Timeline de uma vez foi movida para dentro do painel de Timeline, tendo passado também por um rework visual completo.
-
-**• Aviso de atualização no menu**
-Saiu versão nova? Agora o aviso aparece grande, no topo do menu principal, com as novidades e o andamento do download.
-
-*E agora, antes de partirmos para os fixes e ajustes, vamos voltar pro nosso novo detector de diálogos, o Granna.*
-
-**• Granna: Como funciona?**
-
-Temos que falar antes do detector antigo, para que seja possível entender a diferença.
-O detector antigo funcionava da seguinte maneira:
-Ele pegava cada fala isolada e procurava um nome de personagem depois do travessão (ou depois das aspas).
-
-○ Achou um nome, a fala era daquele personagem.
-○ Não achou nenhum, desistia: "sem atribuição".
-○ Achou dois, também desistia. E isso acontecia muito, porque ele confundia a continuação da fala com a tag:
-
-Tipo assim:
-
-— Dele não. — Maria admitiu. — Mas da Samantha sim.
-
-○ Ele via "Maria" e "Samantha" e jogava a toalha.
-
-"— Não vou — disse ela." Sem nome, sem locutor.
-"— Por fora?" Fala sem tag nenhuma, sem locutor.
-
-Se o projeto tinha narrador, qualquer fala com "eu", "disse" ou "como" ia pro narrador, mesmo sendo de outra pessoa.
-
-Só entendia travessão e aspas duplas. Aspas « », comuns em italiano e francês, ele nem enxergava.
-
-*E agora, amigos... coloquem o cinto de segurança.*
-
-**É ASSIM QUE O GRANNA TRABALHA:**
-
-Ele lê a cena de cima a baixo, lembrando da conversa:
-
-**○ Separa o que é fala do que é narração.**
-"Maria admitiu" é a tag; "Mas da Samantha sim" é fala.
-**○ Entende quem é o sujeito.**
-Em "Clara disse", quem fala é a Clara. Em "olhou para a Clara", não.
-**○ Acompanha a troca.**
-Se Clara e João estão conversando, "— Por fora?" vem logo depois da Clara, então é do João.
-**○ Percebe quem foi chamado.**
-Em "— Valeu, Maria.", quem fala não é a Maria: é quem está falando com ela.
-**○ Entende "ele disse" e "ela disse"**
-pelo gênero de cada personagem. **Você marca na nova Forma de tratamento na Criação/Edição de personagens**, ou ele deduz pelo texto.
-**○ Reconhece figurantes.**
-"— Sala 9 — o rapaz disse." Tem locutor, mas não é ninguém do seu elenco, então ele não entrega a fala pro personagem errado.
-**○ Entende primeira pessoa**
-pelo narrador marcado no capítulo: "— Não — respondi."
-**○ Entende gesto antes da fala**
-Em livros com aspas: "Oda shrugged. “Fair has nothing to do with it.”"
-**○ Descobre sozinho o idioma de cada capítulo**
-E usa as regras daquela língua: travessão, aspas, « », a raya do espanhol e a incisa do francês ("— Je pars, dit Marie.").
-**○ Em roteiro**
-Lê o locutor direto do bloco de personagem.
-
-**○ E ele diz quando está chutando**
-Com o nome escrito na tag, a fala é marcada como certa. Quando ele deduz pela conversa, ela aparece como "provável", e um clique direito confirma ou corrige. O que você corrige nunca é desfeito.
-
-**○ Por trás, as falas salvas também ficaram confiáveis**
-
-Editou uma fala? A versão velha não fica mais esquecida no arquivo contando nas estatísticas.
-Duas falas iguais ("— Sim.") no mesmo capítulo continuam sendo duas.
-"Não é fala" tira de vez uma linha que não é diálogo; antes ela voltava sozinha.
-Escanear tudo mostra, na barra, cada fala nova, cada troca de locutor e cada fala que saiu, com onde está e quem disse.
-
-**TAXAS DE ACERTO:**
-Em capítulos de teste nos cinco idiomas:
-motor antigo 25% | Granna 93% - chegando a 97% com a forma de tratamento marcada nos personagens.
-Por idioma (Granna): IT 100% · PT-BR 100% · ES 92% · FR 91% · EN 81% (100% com forma de tratamento)
-
-O índice mais alto do motor antigo era de 54% em ES.
-Italiano ele nem detectava.
-9% em FR.
-25% em EN.
-
-Nem precisa delongar. É um salto absurdo de potência.
-
-*E agora seguindo com a viagem...*
-
-## Fixes
-Alguns fixes rápidos para resolvermos umas arestas da última versão.
-Foi um update grande, então era esperado que algo escorregasse. Sem crise, vamos ao que foi arrumado.
-
-**• Erro no autoupdate**
-*\\ o caminho não foi especificado.*
-Esse erro era o Qt escapando umas aspas. O cmd não interpreta o caractere, então o run do update dava ruim.
-Foi corrigido num re-release da 0.18.0. Eu editei aquele release com um setup onde isso estava corrigido. Então se você baixou ela depois, é provável que o bug não aconteça.
-Corrigido.
-
-**• Porcentagem da meta diária trava no 100%, mesmo continuando**
-Sim. Os novos contadores são lindos, mas estavam com um problema de exibição na porcentagem da meta, que travava quando ela era alcançada e parava de crescer.
-Corrigido.
-
-**• Cor dos Themes x Novos modelos de exibição**
-A cor de alguns themes podia deixar alguns conteúdos ilegíveis nos novos modelos de exibição do Pensário. Corrigido.
-
-**• Cor dos tooltips do app**
-O tooltip da gaveta de manuscrito e muitos outros podiam ficar todos pretos, sem conteúdo legível. Corrigido.
-
-**• Ajuste no contador**
-Agora ele anima ao mudar de tamanho.
-
-**• Crash ao mudar o gênero (M/F) dos vínculos**
-Ao criar um vínculo, se você tentasse alternar o gênero das opções, o programa crashava seco.
-Corrigido.
-
-**• Menu principal de duas janelas**
-Antes, ao ir para o menu principal, o Qenna se dividia em duas janelas, uma com o editor e outra com o menu.
-Agora é uma só.
-
-**• Demais fixes**
-Fechar, Cancelar e o menu de copiar/colar agora aparecem no idioma do app.
-Rótulos cortados na ficha do território (em inglês) e no chip do glossário foram corrigidos.
-
-**• Cores das janelas**
-Herdavam a cor do Windows. Fixed. Agora, as janelas do Qenna herdam a cor do Theme mesmo.
-
-**• Instalação pelo update**
-Em PC mais lento, atualizar pelo app podia travar a instalação com "incapaz de fechar automaticamente todos os aplicativos" ou "arquivo já está sendo usado por outro processo". Agora quem fecha o Qenna é só o próprio instalador (perguntando antes), ele não briga mais com arquivo que não mudou, e o Qenna salva o projeto antes de fechar pra atualizar.
-Corrigido.
-
-**• Janela de Patch Note**
-Aaah, agora corrigi a margem da janela de patch note. Deve ser exibida corretamente dessa vez.
+**• O roteiro agora te guia**
+Até aqui, escrever roteiro no Qenna funcionava, mas você precisava já saber o que você estava fazendo. Agora não precisa mais, ao menos não tanto.
+No canto direito do DocHeader (o título no topo da página), aparece em qual elemento do roteiro você está: Cena, Ação, Personagem, Diálogo, Parênteses ou Transição. E, logo embaixo, pra onde o Enter, o Tab e o Shift+Tab vão te levar. Nada de decorar atalho, o próprio app te diz.
+
+**• Escrever roteiro ficou natural**
+O editor agora se comporta como os programas de roteiro de verdade. A página ganhou a coluna certinha do formato e cada elemento tem o seu espaçamento: o nome do personagem colado na fala, uma linha antes da ação, duas antes de uma cena nova.
+Algumas coisinhas que fazem diferença no dia a dia:
+- Shift+Tab volta pro elemento anterior.
+- Digitou "(" no começo de uma fala? Abre os Parênteses.
+- Enter numa linha vazia te devolve pra Ação.
+- O nome do personagem e o cabeçalho da cena viram CAIXA ALTA sozinhos quando você sai da linha.
+E o melhor: dá pra escrever sem apertar Tab nenhuma vez. Uma linha curta toda em caixa alta vira Personagem, e um "CORTA PARA:" vira Transição. O Qenna entende sozinho.
+
+**• Autocompletar**
+Começou a digitar o nome de um personagem? O Qenna sugere: tanto quem está no seu elenco quanto quem já falou no roteiro.
+Nas cenas é a mesma coisa. Ele sugere INT. e EXT., os lugares que você já usou no roteiro (com quantas cenas cada um tem) e, depois do traço, a hora do dia: DIA, NOITE, MADRUGADA, AMANHECER e por aí vai.
+
+**• Cada cena do roteiro é uma cena do Qenna**
+Todo cabeçalho de cena (INT. / EXT.) agora vira uma cena de verdade dentro do capítulo, com o próprio cabeçalho como nome. Sem separador aparecendo no meio do texto: o roteiro continua limpo, mas a cena tá lá, pra navegar, organizar e usar em tudo que o Qenna já faz com cenas.
+
+**• Páginas e minutos**
+No roteiro, o que importa são as páginas: cada página dá mais ou menos um minuto de tela. Então o contador do roteiro agora mostra páginas na frente e o tempo estimado do lado. E não é chute: a conta usa exatamente a mesma paginação do PDF exportado. Se o contador diz 30 páginas, o PDF sai com 30.
+
+**• Breakdown no painel de Estatísticas**
+Pra quem quer levar o roteiro pra frente, o painel de Estatísticas ganhou uma seção só de roteiro:
+- **Elenco**: quem aparece em quais cenas. Clique numa pessoa e as cenas dela acendem.
+- **Cenas**: a tira de produção, com o tamanho de cada cena em oitavos de página (o jeito que se mede em set) e as cores de praxe. Clique numa cena e ela abre.
+- **Locais**: todos os lugares do roteiro, num lugar só.
+
+**• Exportação no padrão da indústria**
+PDF e DOCX agora saem do jeito que um roteiro tem que sair: papel Carta, fonte Courier 12, margens do formato, página de rosto com "Escrito por" e o seu contato (puxado dos Dados do autor) e o número da página no canto. E nada de nome de personagem ou cabeçalho de cena sozinho no pé da página, longe do que vem depois.
+Tem também a opção "Numerar as cenas", pra quem precisa.
+
+**• Fountain**
+O Fountain é o formato de texto que praticamente todo programa de roteiro lê. Agora o Qenna exporta pra ele e também importa: em Novo Projeto, escolha Roteiro e aponte o arquivo .fountain. As cenas viram cenas, as seções do arquivo viram capítulos, e quem fala mais de uma vez já entra como personagem.
+
+**• Correções**
+- Transição virava Ação quando o documento era reaberto. Corrigido.
+- O elemento Cena não era alcançável pelo Tab. Agora é.
+- O alinhamento e o espaçamento do projeto passavam por cima do formato do roteiro. Não passam mais.
+- O cabeçalho do PDF no formato de submissão (Shunn) saía gigante. Corrigido.
+
+Mas não foi só de roteiro que vivemos nessa versão.
+
+**• O Granna agora te conta quem falou**
+Lembra do Granna, o nosso detector de diálogos? Até agora ele trabalhava calado. Pra saber quem ele achou que disse cada fala, ou pra corrigir, você tinha que abrir o Pensário, ir em Diálogos, achar a fala e clicar com o direito. Muito caminho pra uma coisa tão simples.
+Agora ele fala com você ali mesmo, no DocHeader (o título no topo da página):
+- Terminou uma fala e deu Enter? A foto de quem disse desliza de trás do título e volta. É o Granna dizendo "peguei, salvei".
+- Se ele deduziu pela conversa, sem nome na fala, a foto vem com um contorno pontilhado: ele tem uma suspeita, mas ainda não bateu o martelo.
+- Se ele não faz ideia, aparece um (?) com um anel se fechando em volta.
+- Clicou numa fala que já existia? A foto de quem disse fica ali enquanto o cursor estiver no parágrafo.
+(Personagem sem foto aparece com a inicial, na cor dele.)
+Em qualquer um desses casos, é só clicar na foto (ou no ?) pra abrir o "Quem disse?": quem está na cena aparece primeiro, o resto do elenco embaixo. Um clique e está atribuído, sem sair do texto. Dá pra marcar como figurante ou "Não é fala" ali mesmo também.
+E ele não se mete enquanto você escreve: só avisa quando você termina o parágrafo. Fala de figurante não mostra nada.
+
+**• Ilustrações de capítulo: cor, recorte e mais**
+As ilustrações da gaveta de manuscrito ganharam um carinho.
+- O "Trocar desenho" (clique direito no capítulo) agora funciona em todos os modos que mostram a ilustração, incluindo a Seleção de capítulo (dá pra clicar direto na arte grande lá em cima) e o Álbum.
+- **Cada capítulo pode ter a sua cor.** Dentro do "Trocar desenho", escolha a cor da ilustração daquele capítulo. Ou do livro todo de uma vez, se preferir. E se arrepender, "Voltar à cor da parte" desfaz.
+- **Imagem própria em qualidade de verdade.** A imagem carregada do PC ficava em baixa resolução e esticava nos modos com arte grande. Agora ela entra no mesmo padrão das capas. Foto de celular tirada em pé também não aparece mais deitada.
+- **Recorte.** Ao carregar uma imagem, você escolhe o enquadramento antes de usar. E se quiser reenquadrar depois, tem o "Recortar…".
+(Se você já tinha carregado uma imagem antes dessa versão, carregue de novo pra ganhar a qualidade nova.)
+
+**• Ilustrações novas: Objetos e Cenas**
+O "Trocar desenho" ganhou dois grupos novos. Como sempre, cada capítulo tem o seu desenho e ele cresce junto com as palavras.
+- **Objetos**: Vela, Ampulheta (a areia desce conforme você escreve), Chave, Bússola, Relógio de bolso, Pena e tinteiro (a folha vai se enchendo de linhas), Xícara, Pilha de livros e Lampião.
+- **Cenas**: Estrada, Noir, Mansão, Planeta, Frota, Veleiro, Asas, Roda-gigante, Morro (as casinhas sobem o morro) e Trem.
+Os capítulos que você já tem não mudam de desenho sozinhos: as novas estão no "Trocar desenho", pra você escolher.
+
+**• Atualização que parou no meio**
+Sabe quando a atualização é interrompida no meio (fechou o instalador, o PC desligou, a internet caiu)? Antes, o Qenna achava que já estava atualizado e não te avisava de nada. Agora ele percebe e oferece "Concluir instalação". E o instalador que já tinha sido baixado fica guardado, então ele não baixa tudo de novo.
+Também tem um botão novo no menu principal: "Ver atualizações". Abre o patch note da versão que você tem instalada, quando quiser.
+
+**• Outras correções**
+- Em 39 themes, o texto de algumas folhas e popups sumia no fundo da página, porque o painel e a página tinham cores opostas. Corrigido.
+- Na Seleção de capítulo, com o mouse exatamente na divisa entre dois capítulos, a gaveta ficava piscando sem parar entre os dois. Corrigido.
+- Depois de recortar a imagem de um capítulo, a gaveta de manuscrito congelava: dava pra ver, mas nenhum clique funcionava até você fechar e abrir de novo. Corrigido. E a causa podia afetar outros painéis também, então se algum já congelou do nada pra você, é bem possível que esteja resolvido.
 
 ---
 É isso, meus lindos. Se divirtam.
-O Qenna realmente está SÓLIDO, em seu prime. Bonito, liso, funcional e gostoso de usar.
 
-*Me arrependendo de estar dando isso de graça, mas não vou voltar atrás,*
 P.H. Lobato — Guardião das Terras de Qenna
