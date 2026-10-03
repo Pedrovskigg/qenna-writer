@@ -316,6 +316,7 @@ private:
     void showPartContextMenu(const QString& partId, const QPoint& globalPos);
     void startChapterDrag(QWidget* sourceBtn, const QString& chapterId);
     void startSceneDrag(QWidget* sourceBtn, const QString& chapterId, int sceneIndex);
+    void runDrag(class QDrag* drag);
     void clearDropIndicator();
     void showDropIndicatorAt(QWidget* target, bool before);
     void wireRow(QWidget* w, const QString& kind, const QString& chapterId, int sceneIdx = -1);
@@ -423,4 +424,8 @@ private:
     QString m_pressedChapterId;   // se != "" e sceneIdx == -1 → drag de capítulo
     int m_pressedSceneIndex = -1; // se >= 0 → drag de cena (em m_pressedChapterId)
     QWidget* m_dropIndicator = nullptr;
+    // Durante o arrasto a lista não se refaz (apagaria a linha que está sendo
+    // arrastada); o pedido fica guardado e roda quando o arrasto termina.
+    bool m_dragActive = false;
+    bool m_rebuildPending = false;
 };

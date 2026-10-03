@@ -1546,6 +1546,7 @@ void ManuscriptPanel::clearLayout(QLayout* lay) {
 
 void ManuscriptPanel::rebuildList() {
     if (!m_listLayout) return;
+    if (m_dragActive) { m_rebuildPending = true; return; }
     disarmHover();
     clearDropIndicator();
     loadBookColors();
@@ -2175,6 +2176,7 @@ QWidget* ManuscriptPanel::wrapInPart(QWidget* row, const QColor& partColor) {
 }
 
 void ManuscriptPanel::rebuildBody() {
+    if (m_dragActive) { m_rebuildPending = true; return; }
     while (m_listLayout->count() > 1) {
         QLayoutItem* item = m_listLayout->takeAt(0);
         if (auto* w = item->widget()) { w->hide(); w->deleteLater(); }
@@ -3797,20 +3799,23 @@ bool ManuscriptPanel::eventFilter(QObject* watched, QEvent* event) {
     return QWidget::eventFilter(watched, event);
 }
 
+// O QDrag é filho do painel, não da linha: a lista pode se refazer enquanto o
+// Windows ainda roda o arrasto (no roteiro, a troca de cena e a contagem chegam
+// bem nessa hora), e a linha apagada levava o QDrag junto. O DoDragDrop pedia o
+// cursor a um objeto morto e o app caía.
 void ManuscriptPanel::startChapterDrag(QWidget* source, const QString& chapterId) {
-    QDrag* drag = new QDrag(source);
+    QDrag* drag = new QDrag(this);
     auto* mime = new QMimeData();
     mime->setData(QLatin1String(kChapterMime), chapterId.toUtf8());
     drag->setMimeData(mime);
     const QPixmap pm = source->grab();
     drag->setPixmap(pm);
     drag->setHotSpot(QPoint(pm.width() / 2, pm.height() / 2));
-    drag->exec(Qt::MoveAction);
-    clearDropIndicator();
+    runDrag(drag);
 }
 
 void ManuscriptPanel::startSceneDrag(QWidget* source, const QString& chapterId, int sceneIndex) {
-    QDrag* drag = new QDrag(source);
+    QDrag* drag = new QDrag(this);
     auto* mime = new QMimeData();
     // Payload: "chapterId|sceneIndex"
     const QByteArray payload = (chapterId + QLatin1Char('|') + QString::number(sceneIndex)).toUtf8();
@@ -3819,8 +3824,20 @@ void ManuscriptPanel::startSceneDrag(QWidget* source, const QString& chapterId, 
     const QPixmap pm = source->grab();
     drag->setPixmap(pm);
     drag->setHotSpot(QPoint(pm.width() / 2, pm.height() / 2));
+    runDrag(drag);
+}
+
+void ManuscriptPanel::runDrag(QDrag* drag) {
+    // Daqui em diante a linha de origem pode não existir mais: nada de tocar nela.
+    m_dragActive = true;
+    m_rebuildPending = false;
     drag->exec(Qt::MoveAction);
+    m_dragActive = false;
     clearDropIndicator();
+    if (m_rebuildPending) {
+        m_rebuildPending = false;
+        rebuildList();
+    }
 }
 
 void ManuscriptPanel::clearDropIndicator() {
