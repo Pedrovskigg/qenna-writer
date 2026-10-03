@@ -1,3 +1,9 @@
+**Qenna Writer - HOTFIX: 1.4.6**
+
+Dragging a chapter (or a scene) in the manuscript drawer could close Qenna on the spot, especially in screenplay projects. Fixed.
+
+---
+
 **Qenna Writer - UPDATE: 1.4.5**
 
 Hello my lovelies, a new Qenna update has arriiived! Let's go, let's go.

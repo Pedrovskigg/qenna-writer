@@ -1,3 +1,9 @@
+**Qenna Writer - HOTFIX: 1.4.6**
+
+Arrastar um capítulo (ou uma cena) na gaveta de manuscrito podia fechar o Qenna na hora, principalmente em projetos de roteiro. Corrigido.
+
+---
+
 **Qenna Writer - UPDATE: 1.4.5**
 
 Olá meus lindos, nova atualização do Qenna chegoooou! Bora, bora.

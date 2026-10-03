@@ -1,3 +1,9 @@
+**Qenna Writer - HOTFIX: 1.4.6**
+
+Faire glisser un chapitre (ou une scène) dans le tiroir des manuscrits pouvait fermer Qenna sur-le-champ, surtout dans les projets de scénario. Corrigé.
+
+---
+
 **Qenna Writer - UPDATE: 1.4.5**
 
 Salut mes chéris, une nouvelle mise à jour de Qenna est arrivéeee ! Allez, allez.

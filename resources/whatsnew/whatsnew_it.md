@@ -1,3 +1,9 @@
+**Qenna Writer - HOTFIX: 1.4.6**
+
+Trascinare un capitolo (o una scena) nel cassetto dei manoscritti poteva chiudere Qenna all'istante, soprattutto nei progetti di sceneggiatura. Corretto.
+
+---
+
 **Qenna Writer - UPDATE: 1.4.5**
 
 Ciao miei cari, è arrivato un nuovo aggiornamento di Qennaaa! Andiamo, andiamo.

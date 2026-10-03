@@ -1,3 +1,9 @@
+**Qenna Writer - HOTFIX: 1.4.6**
+
+Arrastrar un capítulo (o una escena) en el cajón de manuscritos podía cerrar Qenna al instante, sobre todo en proyectos de guion. Corregido.
+
+---
+
 **Qenna Writer - UPDATE: 1.4.5**
 
 ¡Hola, mis queridos, llegó una nueva actualización de Qennaaa! Vamos, vamos.
