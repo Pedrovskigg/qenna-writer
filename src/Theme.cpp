@@ -10250,6 +10250,110 @@ void Manager::loadBundled()
         m_themes.append(t);
     }
 
+    // Patch Bay: analog console, colored modules and matte finish.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("patch-bay");
+        t.name = QStringLiteral("Patch Bay");
+        t.bundled = true;
+        t.panelRadius = 2;
+        t.appBackground = QStringLiteral("#171916");
+        t.panelBackground = QStringLiteral("#262A29");
+        t.panelBorder = QStringLiteral("#626862");
+        t.textPrimary = QStringLiteral("#E1E5D8");
+        t.textMuted = QStringLiteral("#AEB8A8");
+        t.textBright = QStringLiteral("#FAF9DB");
+        t.hoverOverlay = QStringLiteral("rgba(225,229,216,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(225,229,216,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(225,229,216,0.10)");
+        t.accentDefault = QStringLiteral("#D8E871");
+        t.hoverStrong = QStringLiteral("rgba(225,229,216,0.12)");
+        t.borderStrong = QStringLiteral("rgba(225,229,216,0.22)");
+        t.focusBorder = QStringLiteral("rgba(225,229,216,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.28)");
+        t.disabledText = QStringLiteral("rgba(225,229,216,0.30)");
+        t.selectionRing = QStringLiteral("#FAF9DB");
+        t.accentSuccess = QStringLiteral("#A7D48A");
+        t.accentSuccessSoft = QStringLiteral("rgba(167,212,138,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(167,212,138,0.50)");
+        t.accentDanger = QStringLiteral("#EE8C7B");
+        t.accentDangerSoft = QStringLiteral("rgba(238,140,123,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(238,140,123,0.50)");
+        t.accentWarning = QStringLiteral("#E8CA79");
+        t.accentInfo = QStringLiteral("#8DBDD1");
+        t.accentInfoSoft = QStringLiteral("rgba(141,189,209,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(141,189,209,0.55)");
+        t.editorBackground = QStringLiteral("#191D1B");
+        t.editorTextColor = QStringLiteral("#E6E6CB");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,166)");
+        t.pageShadowRadius = 6;
+        t.pageShadowOffset = 3;
+        t.editorOpacity = 100;
+        t.iconColor = QStringLiteral("#D8E871");
+        t.docHeaderColor = QStringLiteral("#D8E871");
+        t.docHeaderFont = QStringLiteral("Special Elite");
+        t.panelColors.insert(PanelKey::TopToolbar, { QStringLiteral("#263E4B"), QStringLiteral("#72909B") });
+        t.panelColors.insert(PanelKey::LeftBar, { QStringLiteral("#292D27"), QStringLiteral("#8F9775") });
+        t.panelColors.insert(PanelKey::RefMenu, { QStringLiteral("#253F35"), QStringLiteral("#709F89") });
+        t.panelColors.insert(PanelKey::Counter, { QStringLiteral("#4C2929"), QStringLiteral("#C2786A") });
+        t.panelColors.insert(PanelKey::Drawers, { QStringLiteral("#303333"), QStringLiteral("#848D89") });
+        t.bgGrain = 14;
+        t.bgGrainSize = 2;
+        m_themes.append(t);
+    }
+    // Silver Halide: silver print, black frame and page glow.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("silver-halide");
+        t.name = QStringLiteral("Silver Halide");
+        t.bundled = true;
+        t.panelRadius = 0;
+        t.appBackground = QStringLiteral("#090A0B");
+        t.panelBackground = QStringLiteral("#151719");
+        t.panelBorder = QStringLiteral("#686D70");
+        t.textPrimary = QStringLiteral("#DDE1DE");
+        t.textMuted = QStringLiteral("#A7AEAA");
+        t.textBright = QStringLiteral("#FAFCF7");
+        t.hoverOverlay = QStringLiteral("rgba(221,225,222,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(221,225,222,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(221,225,222,0.10)");
+        t.accentDefault = QStringLiteral("#F1887E");
+        t.hoverStrong = QStringLiteral("rgba(221,225,222,0.12)");
+        t.borderStrong = QStringLiteral("rgba(221,225,222,0.22)");
+        t.focusBorder = QStringLiteral("rgba(221,225,222,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.28)");
+        t.disabledText = QStringLiteral("rgba(221,225,222,0.30)");
+        t.selectionRing = QStringLiteral("#FAFCF7");
+        t.accentSuccess = QStringLiteral("#AEC5AD");
+        t.accentSuccessSoft = QStringLiteral("rgba(174,197,173,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(174,197,173,0.50)");
+        t.accentDanger = QStringLiteral("#F1887E");
+        t.accentDangerSoft = QStringLiteral("rgba(241,136,126,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(241,136,126,0.50)");
+        t.accentWarning = QStringLiteral("#D7C39C");
+        t.accentInfo = QStringLiteral("#B0C4CF");
+        t.accentInfoSoft = QStringLiteral("rgba(176,196,207,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(176,196,207,0.55)");
+        t.editorBackground = QStringLiteral("#24272A");
+        t.editorTextColor = QStringLiteral("#E5E7E4");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(192,207,210,46)");
+        t.pageShadowRadius = 30;
+        t.pageShadowOffset = 0;
+        t.editorOpacity = 100;
+        t.iconColor = QStringLiteral("#DDE3DF");
+        t.docHeaderColor = QStringLiteral("#F0F4EC");
+        t.docHeaderFont = QStringLiteral("Bebas Neue");
+        t.pageGlowEnabled = true;
+        t.panelColors.insert(PanelKey::TopToolbar, { QStringLiteral("#101113"), QStringLiteral("#995D59") });
+        t.panelColors.insert(PanelKey::LeftBar, { QStringLiteral("#0E1011"), QStringLiteral("#656D70") });
+        t.panelColors.insert(PanelKey::RefMenu, { QStringLiteral("#25292B"), QStringLiteral("#8B9699") });
+        t.panelColors.insert(PanelKey::Counter, { QStringLiteral("#111214"), QStringLiteral("#995D59") });
+        t.panelColors.insert(PanelKey::Drawers, { QStringLiteral("#1D2123"), QStringLiteral("#737E82") });
+        m_themes.append(t);
+    }
+
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
     // dark = escuros neutros | colorful = paletas vibrantes (azul/verde/roxo…)
@@ -10579,6 +10683,8 @@ void Manager::loadBundled()
         { QStringLiteral("luna"),            QStringLiteral("light") },
         { QStringLiteral("one-bit"),         QStringLiteral("light") },
         { QStringLiteral("green-ink"),       QStringLiteral("light") },
+        { QStringLiteral("patch-bay"),       QStringLiteral("dark") },
+        { QStringLiteral("silver-halide"),   QStringLiteral("dark") },
         { QStringLiteral("fluorescent"),     QStringLiteral("light") },
         { QStringLiteral("alpenglow"),       QStringLiteral("light") },
         { QStringLiteral("solitaire"),       QStringLiteral("light") },
