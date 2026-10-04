@@ -44,6 +44,8 @@ public:
     void disable() { setViewMode(ViewMode{}); }
 
     void syncEditorToCache();
+    // Recarrega uma alteração externa já sincronizada, sem gravar o texto antigo. — Mira
+    void reloadFromCache();
 
     void setFlushDebounceMs(int ms);
 

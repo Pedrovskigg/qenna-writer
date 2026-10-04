@@ -503,7 +503,7 @@ void PensarioPanel::rebuildDialoguesScript(const QVector<DialogueStore::Dialogue
         block->setProperty("dlgId", d.id);
         block->installEventFilter(this);
         block->setContextMenuPolicy(Qt::CustomContextMenu);
-        block->setToolTip(tr("Clique pra abrir no texto · botão direito pra conferir ou trocar"));
+        block->setToolTip(tr("Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar"));
         const QString dlgId = d.id;
         connect(block, &QWidget::customContextMenuRequested, this, [this, block, dlgId](const QPoint& pos) {
             showDialogueLineMenu(dlgId, block->mapToGlobal(pos));
@@ -521,16 +521,32 @@ void PensarioPanel::rebuildDialoguesScript(const QVector<DialogueStore::Dialogue
                  (fig || none) ? QStringLiteral("600") : QStringLiteral("700"),
                  (fig || none) ? QStringLiteral("0") : QStringLiteral("0.8"),
                  (fig || none) ? QStringLiteral("italic") : QStringLiteral("normal")));
-        bl->addWidget(name);
+        auto* speakerRow = new QHBoxLayout;
+        speakerRow->setContentsMargins(0, 0, 0, 0);
+        speakerRow->setSpacing(4);
+        speakerRow->addWidget(name, 1);
+        auto* editBtn = new QToolButton(block);
+        editBtn->setObjectName(QStringLiteral("pnDlgEdit"));
+        editBtn->setText(QStringLiteral("✎"));
+        editBtn->setToolTip(tr("Editar esta fala"));
+        editBtn->setCursor(Qt::PointingHandCursor);
+        editBtn->setFixedSize(24, 22);
+        speakerRow->addWidget(editBtn, 0, Qt::AlignTop);
+        bl->addLayout(speakerRow);
 
         auto* speech = new QLabel(d.spokenText().trimmed(), block);
+        speech->setObjectName(QStringLiteral("pnDlgScriptSpeech"));
         speech->setWordWrap(true);
+        speech->setAttribute(Qt::WA_TransparentForMouseEvents, true);
         speech->setFont(serif(14));
         speech->setStyleSheet(QStringLiteral("color: %1; border: none; border-left: 2px %2 %3; padding-left: 8px;")
             .arg((fig || none) ? Theme::textMuted() : Theme::textBright(),
                  (pv || none) ? QStringLiteral("dashed") : QStringLiteral("solid"),
                  c.name()));
         bl->addWidget(speech);
+        connect(editBtn, &QToolButton::clicked, this, [this, d, speech, bl]() {
+            beginDialogueInlineEdit(d, speech, bl);
+        });
         m_dialoguesLay->addWidget(block);
     }
 

@@ -376,6 +376,9 @@ private:
                                const QString& itemId, const QString& searchText);
     // Abre a fonte de um diálogo detectado no editor e seleciona o trecho.
     void openDialogueInEditor(const DialogueStore::Dialogue& dlg);
+    // Edição vinda do Pensário: altera o HTML autoritativo, nunca apenas a
+    // cópia em DialogueStore, e então reanalisa o capítulo afetado. — Mira
+    void editDialogueFromPensario(const DialogueStore::Dialogue& dialogue, const QString& replacement);
     TimelinePanel* ensureTimelinePanel();  // cria o painel (lazy) e devolve
     OutlinePanel* ensureOutlinePanel();    // idem, pro Outline Mode
     // Cria (lazy) e devolve a janela do Criador de Mundos, já com as duas

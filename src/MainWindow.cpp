@@ -2845,6 +2845,17 @@ void MainWindow::setupEditor()
     });
     connect(pensarioPanel, &PensarioPanel::openDialogueInEditorRequested,
             this, &MainWindow::openDialogueInEditor);
+    connect(pensarioPanel, &PensarioPanel::editDialogueRequested, this,
+            [this](DialogueStore::Dialogue dialogue, QString replacement) {
+        // O campo inline ainda está terminando o FocusOut/tecla que confirmou
+        // a edição. A escrita reescaneia e reconstrói o Pensário, portanto só
+        // começa depois que esse evento acabou e seus widgets podem morrer com
+        // segurança. — Mira
+        QTimer::singleShot(0, this, [this, dialogue = std::move(dialogue),
+                                     replacement = std::move(replacement)]() {
+            editDialogueFromPensario(dialogue, replacement);
+        });
+    });
     connect(pensarioPanel, &PensarioPanel::rescanAllDialoguesRequested,
             this, &MainWindow::rescanAllChapterDialogues);
     connect(pensarioPanel, &PensarioPanel::extraSpeakerAssigned, this,
@@ -9501,9 +9512,7 @@ void MainWindow::reloadEditorIfShowingChapter(const QString& chapterId)
     const auto vm = editorHost->viewMode();
     if ((vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc)
         && vm.chapterId == chapterId) {
-        EditorHost::ViewMode tmp; tmp.type = EditorHost::Disabled;
-        editorHost->setViewMode(tmp);
-        editorHost->setViewMode(vm);
+        editorHost->reloadFromCache();
     }
 }
 
@@ -10168,6 +10177,92 @@ void MainWindow::openDialogueInEditor(const DialogueStore::Dialogue& dlg)
             editor->ensureCursorVisible();
         editor->setFocus();
     });
+}
+
+void MainWindow::editDialogueFromPensario(const DialogueStore::Dialogue& requested,
+                                          const QString& replacement)
+{
+    if (!editorHost || !docCache || !projectModel || !dialogueStore
+        || requested.id.isEmpty() || requested.chapterId.isEmpty()) return;
+    const QString newText = replacement.trimmed();
+    if (newText.isEmpty()) return;
+
+    // A fala no Pensário pode ter sido mostrada antes de alguém editar o
+    // capítulo. Primeiro leva o editor vivo ao cache e reanalisa: o id é
+    // preservado pelo casamento texto/semelhança do DialogueStore; se não
+    // sobreviveu, recusamos a escrita em vez de trocar uma ocorrência errada. — Mira
+    editorHost->syncEditorToCache();
+    scanChapterDialogues(requested.chapterId);
+
+    const DialogueStore::Dialogue* current = nullptr;
+    for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+        if (d.id == requested.id) { current = &d; break; }
+    if (!current) {
+        QMessageBox::information(this, tr("Editar fala"),
+            tr("Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. "
+               "Atualize a lista e tente de novo."));
+        return;
+    }
+    const DialogueStore::Dialogue dialogue = *current;
+    const Chapter* chapter = projectModel->findChapter(dialogue.chapterId);
+    if (!chapter) return;
+
+    const QString fullHtml = chapterHtmlForEdit(chapter);
+    if (fullHtml.isEmpty()) {
+        QMessageBox::warning(this, tr("Editar fala"),
+            tr("Não foi possível abrir o texto de origem desta fala. Nada foi alterado."));
+        return;
+    }
+
+    QString scopeHtml = fullHtml;
+    if (dialogue.sceneIndex >= 0)
+        scopeHtml = SceneUtils::getSceneHtml(fullHtml, dialogue.sceneIndex);
+    QTextDocument source;
+    source.setHtml(scopeHtml);
+
+    // Não há offsets persistidos no Store (eles ficam inválidos assim que se
+    // escreve). A identidade do scan é cena + texto + ordem entre repetidos;
+    // repetimos exatamente essa regra e só escrevemos quando a origem tem a
+    // mesma quantidade de candidatos — texto duplicado em narração é ambíguo. — Mira
+    int dialogueOccurrence = 0;
+    int storedCopies = 0;
+    bool reached = false;
+    for (const DialogueStore::Dialogue& d : dialogueStore->dialogues()) {
+        if (d.chapterId != dialogue.chapterId || d.sceneIndex != dialogue.sceneIndex
+            || d.text != dialogue.text) continue;
+        ++storedCopies;
+        if (d.id == dialogue.id) reached = true;
+        else if (!reached) ++dialogueOccurrence;
+    }
+    if (!reached) return;
+
+    QVector<QTextBlock> candidates;
+    for (QTextBlock block = source.begin(); block.isValid(); block = block.next())
+        if (block.text().trimmed() == dialogue.text) candidates.append(block);
+    if (candidates.size() != storedCopies || dialogueOccurrence >= candidates.size()) {
+        QMessageBox::information(this, tr("Editar fala"),
+            tr("Não foi possível localizar esta fala com segurança no texto de origem. "
+               "Ela não foi alterada; abra o texto para conferir a ocorrência."));
+        return;
+    }
+
+    QTextBlock target = candidates.at(dialogueOccurrence);
+    QTextCursor cursor(&source);
+    cursor.setPosition(target.position());
+    cursor.setPosition(target.position() + target.text().size(), QTextCursor::KeepAnchor);
+    cursor.insertText(newText);
+
+    QString newHtml = source.toHtml();
+    if (dialogue.sceneIndex >= 0)
+        newHtml = SceneUtils::replaceSceneHtml(fullHtml, dialogue.sceneIndex, newHtml);
+    const QString key = DocCache::chapterKey(chapter->manuscriptId, chapter->id);
+    docCache->set(key, newHtml, /*markDirty=*/true);
+
+    // A tela não fica esperando o debounce do editor: recarrega o capítulo ou
+    // a cena aberta já com a alteração, então texto e Pensário atualizam na
+    // mesma ação. O cache foi sincronizado antes, preservando o resto do doc. — Mira
+    reloadEditorIfShowingChapter(chapter->id);
+    scanChapterDialogues(chapter->id);
 }
 
 EditorHost::ViewMode MainWindow::viewModeForDocKey(const QString& docKey) const

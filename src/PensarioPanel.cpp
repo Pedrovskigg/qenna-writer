@@ -29,6 +29,7 @@
 #include <QHash>
 #include <QIcon>
 #include <QLabel>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QMenu>
@@ -2016,6 +2017,14 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
     titleLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     topRow->addWidget(titleLbl, 1);
 
+    auto* editBtn = new QToolButton(card);
+    editBtn->setObjectName(QStringLiteral("pnDlgEdit"));
+    editBtn->setText(QStringLiteral("✎"));
+    editBtn->setCursor(Qt::PointingHandCursor);
+    editBtn->setToolTip(tr("Editar no texto de origem"));
+    editBtn->setFixedSize(24, 22);
+    topRow->addWidget(editBtn, 0, Qt::AlignTop);
+
     auto* delBtn = new QToolButton(card);
     delBtn->setObjectName(QStringLiteral("pnMemDelete"));
     delBtn->setText(QStringLiteral("×"));
@@ -2039,9 +2048,70 @@ QWidget* PensarioPanel::buildDialogueCard(const DialogueStore::Dialogue& dlg, co
     textLbl->setWordWrap(true);
     textLbl->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     col->addWidget(textLbl);
+    connect(editBtn, &QToolButton::clicked, this, [this, dlg, textLbl, col]() {
+        beginDialogueInlineEdit(dlg, textLbl, col);
+    });
 
     outer->addLayout(col, 1);
     return card;
+}
+
+void PensarioPanel::beginDialogueInlineEdit(const DialogueStore::Dialogue& dialogue,
+                                            QLabel* label, QVBoxLayout* layout)
+{
+    if (!label || !layout) return;
+    if (m_inlineDialogueEdit) {
+        if (m_inlineDialogue.id == dialogue.id) return;
+        cancelDialogueInlineEdit();
+    }
+    const int index = layout->indexOf(label);
+    if (index < 0) return;
+
+    auto* edit = new QTextEdit(label->parentWidget());
+    edit->setObjectName(QStringLiteral("pnDlgInlineEdit"));
+    edit->setAcceptRichText(false);
+    edit->setPlainText(dialogue.text);
+    edit->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    edit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    edit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    edit->setFixedHeight(qMax(28, label->height() + 6));
+    edit->setStyleSheet(Theme::qss(QStringLiteral(
+        "QTextEdit#pnDlgInlineEdit { background: transparent; color: %1; border: none; "
+        "border-bottom: 1px solid %2; padding: 1px 0; font-family: 'Lora'; font-size: 14px; }")
+        .arg(Theme::textBright(), Theme::accentDefault())));
+    layout->insertWidget(index, edit);
+    label->hide();
+    m_inlineDialogue = dialogue;
+    m_inlineDialogueEdit = edit;
+    m_inlineDialogueLabel = label;
+    m_inlineDialogueLayout = layout;
+    edit->installEventFilter(this);
+    edit->setFocus();
+    edit->selectAll();
+}
+
+void PensarioPanel::commitDialogueInlineEdit()
+{
+    if (!m_inlineDialogueEdit) return;
+    const DialogueStore::Dialogue dialogue = m_inlineDialogue;
+    const QString replacement = m_inlineDialogueEdit->toPlainText().trimmed();
+    cancelDialogueInlineEdit();
+    if (replacement.isEmpty() || replacement == dialogue.text.trimmed()) return;
+    emit editDialogueRequested(dialogue, replacement);
+}
+
+void PensarioPanel::cancelDialogueInlineEdit()
+{
+    if (m_inlineDialogueEdit) {
+        m_inlineDialogueEdit->removeEventFilter(this);
+        if (m_inlineDialogueLayout) m_inlineDialogueLayout->removeWidget(m_inlineDialogueEdit);
+        m_inlineDialogueEdit->deleteLater();
+    }
+    if (m_inlineDialogueLabel) m_inlineDialogueLabel->show();
+    m_inlineDialogue = {};
+    m_inlineDialogueEdit = nullptr;
+    m_inlineDialogueLabel = nullptr;
+    m_inlineDialogueLayout = nullptr;
 }
 
 void PensarioPanel::showChangeSpeakerPopup(const QString& dlgId, const QPoint& globalPos)
@@ -2430,6 +2500,24 @@ void PensarioPanel::showEvent(QShowEvent* event)
 
 bool PensarioPanel::eventFilter(QObject* watched, QEvent* event)
 {
+    if (watched == m_inlineDialogueEdit && event->type() == QEvent::KeyPress) {
+        const auto* key = static_cast<QKeyEvent*>(event);
+        if (key->key() == Qt::Key_Return || key->key() == Qt::Key_Enter) {
+            commitDialogueInlineEdit();
+            return true;
+        }
+        if (key->key() == Qt::Key_Escape) {
+            cancelDialogueInlineEdit();
+            return true;
+        }
+    }
+    if (watched == m_inlineDialogueEdit && event->type() == QEvent::FocusOut) {
+        const QPointer<QTextEdit> edit = m_inlineDialogueEdit;
+        QTimer::singleShot(0, this, [this, edit]() {
+            if (edit && m_inlineDialogueEdit == edit && !edit->hasFocus())
+                commitDialogueInlineEdit();
+        });
+    }
     if (watched == m_resizeHandle) {
         auto* me = static_cast<QMouseEvent*>(event);
         if (event->type() == QEvent::MouseButtonPress && me->button() == Qt::LeftButton) {
@@ -2869,6 +2957,15 @@ void PensarioPanel::applyTheme()
         #pnDlgCardName { color: %5; font-size: 12px; font-weight: 700; }
         #pnDlgCardOrigin { color: %4; font-size: 10px; }
         #pnDlgCardQuote { color: %3; font-size: 12px; }
+        #pnDlgEdit {
+            color: %4;
+            background: transparent;
+            border: none;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        #pnDlgEdit:hover { color: %5; background: transparent; }
+        #pnDlgEdit:pressed { color: %9; background: transparent; }
         #pnMemDelete {
             color: %4;
             background: transparent;

@@ -365,6 +365,17 @@ QString EditorHost::hydrateFromModel(const ViewMode& vm) const {
     return QString();
 }
 
+void EditorHost::reloadFromCache() {
+    if (!m_editor || !m_cache || m_viewMode.type == Disabled) return;
+    const QString key = activeKey();
+    if (key.isEmpty() || !m_cache->has(key)) return;
+    m_flushTimer->stop();
+    QString html = m_cache->get(key);
+    if (m_viewMode.type == SceneDoc && m_viewMode.sceneIndex >= 0)
+        html = SceneUtils::getSceneHtml(html, m_viewMode.sceneIndex);
+    loadIntoEditor(html);
+}
+
 void EditorHost::syncEditorToCache() {
     if (!m_editor || !m_cache) return;
     if (m_viewMode.type == Disabled) return;

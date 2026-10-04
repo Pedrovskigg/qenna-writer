@@ -4,6 +4,7 @@
 #include "MemoriesStore.h"
 
 #include <QHash>
+#include <QPointer>
 #include <QPixmap>
 #include <QPoint>
 #include <QSet>
@@ -104,6 +105,9 @@ signals:
     void openMemoryInRefRequested(MemoriesStore::Memory mem);
     // Pedido pra abrir a fonte de um diálogo detectado no editor.
     void openDialogueInEditorRequested(DialogueStore::Dialogue dlg);
+    // Edição feita no card do Pensário. O MainWindow é quem aplica a troca
+    // no documento-fonte, pois ele é o dono do editor vivo e do cache. — Mira
+    void editDialogueRequested(DialogueStore::Dialogue dlg, QString replacement);
     // Botão de "load" na aba Diálogos: pede pra varrer todos os capítulos
     // do projeto em lote (mesma ideia do rescan de presença por cena).
     void rescanAllDialoguesRequested();
@@ -260,6 +264,9 @@ private:
     void showDialogueManuscriptMenu(QWidget* anchor);
     void showDialogueChapterMenu(QWidget* anchor);
     void showDialogueLineMenu(const QString& dlgId, const QPoint& globalPos);
+    void beginDialogueInlineEdit(const DialogueStore::Dialogue& dialogue, QLabel* label, QVBoxLayout* layout);
+    void commitDialogueInlineEdit();
+    void cancelDialogueInlineEdit();
     // Diálogo bate no filtro de origem (capítulo/cena) atual? Extraído do
     // corpo de rebuildDialogues pra ser reaproveitado no cálculo do badge de
     // "Diálogos sem atribuição" em rebuildDialoguePresenceChips.
@@ -339,6 +346,10 @@ private:
     NotesStore* m_notesStore = nullptr;
     MemoriesStore* m_memories = nullptr;
     DialogueStore* m_dialogues = nullptr;
+    DialogueStore::Dialogue m_inlineDialogue;
+    QPointer<QTextEdit> m_inlineDialogueEdit;
+    QPointer<QLabel> m_inlineDialogueLabel;
+    QPointer<QVBoxLayout> m_inlineDialogueLayout;
     ElementsStore* m_elements = nullptr;
     Tab m_tab = Tab::Comments;
     SortMode m_sortMode = SortMode::Chapters;
