@@ -12,6 +12,12 @@
         <file alias="splash-2.png">../src/assets/logo/splash-2-app.png</file>
         <file alias="splash-3.png">../src/assets/logo/splash-3-app.png</file>
         <file alias="splash-4.png">../src/assets/logo/splash-4-app.png</file>
+        <!-- Splash animada: letras do logo novo em 2x, montadas em main.cpp. -->
+        <file alias="splash-letters/q.png">../src/assets/logo/splash-letters/q.png</file>
+        <file alias="splash-letters/e.png">../src/assets/logo/splash-letters/e.png</file>
+        <file alias="splash-letters/n1.png">../src/assets/logo/splash-letters/n1.png</file>
+        <file alias="splash-letters/n2.png">../src/assets/logo/splash-letters/n2.png</file>
+        <file alias="splash-letters/a.png">../src/assets/logo/splash-letters/a.png</file>
     </qresource>
     <qresource prefix="/help">
         <file alias="start-here/numbered-ui.png">../src/assets/help/start-here/numbered-ui.png</file>
