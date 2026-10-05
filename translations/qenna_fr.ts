@@ -9535,6 +9535,22 @@ Le contenu existant pourrait être écrasé.</translation>
         <source>Alinhar</source>
         <translation>Aligner</translation>
     </message>
+    <message>
+        <source>Editar fala</source>
+        <translation>Modifier la réplique</translation>
+    </message>
+    <message>
+        <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
+        <translation>Cette réplique a changé ou a quitté le texte depuis l&apos;ouverture du Pensarium. Actualisez la liste et réessayez.</translation>
+    </message>
+    <message>
+        <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
+        <translation>Impossible d&apos;ouvrir le texte d&apos;origine de cette réplique. Rien n&apos;a été modifié.</translation>
+    </message>
+    <message>
+        <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
+        <translation>Impossible de localiser cette réplique avec certitude dans le texte d&apos;origine. Elle n&apos;a pas été modifiée ; ouvrez le texte pour vérifier l&apos;occurrence.</translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -13987,6 +14003,18 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <location filename="../src/PensarioDialogues.cpp" line="692"/>
         <source>Abrir no texto</source>
         <translation>Ouvrir dans le texte</translation>
+    </message>
+    <message>
+        <source>Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar</source>
+        <translation>Cliquez pour ouvrir dans le texte · crayon pour modifier · clic droit pour confirmer ou changer</translation>
+    </message>
+    <message>
+        <source>Editar esta fala</source>
+        <translation>Modifier cette réplique</translation>
+    </message>
+    <message>
+        <source>Editar no texto de origem</source>
+        <translation>Modifier dans le texte d&apos;origine</translation>
     </message>
 </context>
 <context>
@@ -23450,6 +23478,10 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <location filename="../src/_quotes_data.inc" line="232"/>
         <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
         <translation>Le bouton Continuer du menu principal ouvre le projet directement sur la dernière phrase que vous avez écrite.</translation>
+    </message>
+    <message>
+        <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
+        <translation>Le saviez-vous ? Le personnage du logo qui apparaît dans différentes histoires et différents univers est Qenna elle-même.</translation>
     </message>
 </context>
 <context>

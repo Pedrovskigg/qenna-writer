@@ -9535,6 +9535,22 @@ Existing content may be overwritten.</translation>
         <source>Alinhar</source>
         <translation>Align</translation>
     </message>
+    <message>
+        <source>Editar fala</source>
+        <translation>Edit line</translation>
+    </message>
+    <message>
+        <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
+        <translation>This line changed or left the text since the Pensarium was opened. Refresh the list and try again.</translation>
+    </message>
+    <message>
+        <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
+        <translation>Couldn&apos;t open the source text of this line. Nothing was changed.</translation>
+    </message>
+    <message>
+        <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
+        <translation>Couldn&apos;t safely find this line in the source text. It wasn&apos;t changed; open the text to check which occurrence it is.</translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -13987,6 +14003,18 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
         <location filename="../src/PensarioDialogues.cpp" line="692"/>
         <source>Abrir no texto</source>
         <translation>Open in the text</translation>
+    </message>
+    <message>
+        <source>Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar</source>
+        <translation>Click to open in the text · pencil to edit · right-click to confirm or change</translation>
+    </message>
+    <message>
+        <source>Editar esta fala</source>
+        <translation>Edit this line</translation>
+    </message>
+    <message>
+        <source>Editar no texto de origem</source>
+        <translation>Edit in the source text</translation>
     </message>
 </context>
 <context>
@@ -23450,6 +23478,10 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
         <location filename="../src/_quotes_data.inc" line="232"/>
         <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
         <translation>The Continue button in the main menu opens the project right at the last sentence you wrote.</translation>
+    </message>
+    <message>
+        <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
+        <translation>Fun fact: the character in the logo who shows up in different stories and universes is Qenna herself.</translation>
     </message>
 </context>
 <context>

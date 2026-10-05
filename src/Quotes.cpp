@@ -93,7 +93,12 @@ QString next()
     }();
     while (ptr >= 0 && ptr < cycle.size() && !known.contains(cycle.at(ptr))) ++ptr;
 
-    if (cycle.isEmpty() || ptr < 0 || ptr >= cycle.size()) {
+    // Quote novo numa versão nova: o ciclo salvo não conhece ele e só o
+    // incluiria quando acabasse, centenas de quotes depois. Tamanho diferente
+    // do que o ciclo atual teria = recomeça já com ele.
+    const int expectedSize = kQuotesFeature_count > 0
+        ? kQuotesRegular_count + 2 * kQuotesFeature_count : kQuotesRegular_count;
+    if (cycle.isEmpty() || ptr < 0 || ptr >= cycle.size() || cycle.size() != expectedSize) {
         cycle = buildWeightedCycle();
         ptr = 0;
         settings.setValue(QLatin1String(kCycleKey), cycle);

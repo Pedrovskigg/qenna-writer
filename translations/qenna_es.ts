@@ -9535,6 +9535,22 @@ El contenido existente puede sobrescribirse.</translation>
         <source>Alinhar</source>
         <translation>Alinear</translation>
     </message>
+    <message>
+        <source>Editar fala</source>
+        <translation>Editar línea</translation>
+    </message>
+    <message>
+        <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
+        <translation>Esta línea cambió o salió del texto desde que se abrió el Pensario. Actualiza la lista e inténtalo de nuevo.</translation>
+    </message>
+    <message>
+        <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
+        <translation>No se pudo abrir el texto de origen de esta línea. No se cambió nada.</translation>
+    </message>
+    <message>
+        <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
+        <translation>No se pudo localizar esta línea con seguridad en el texto de origen. No se modificó; abre el texto para comprobar cuál es la aparición.</translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -13987,6 +14003,18 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <location filename="../src/PensarioDialogues.cpp" line="692"/>
         <source>Abrir no texto</source>
         <translation>Abrir en el texto</translation>
+    </message>
+    <message>
+        <source>Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar</source>
+        <translation>Clic para abrir en el texto · lápiz para editar · clic derecho para confirmar o cambiar</translation>
+    </message>
+    <message>
+        <source>Editar esta fala</source>
+        <translation>Editar esta línea</translation>
+    </message>
+    <message>
+        <source>Editar no texto de origem</source>
+        <translation>Editar en el texto de origen</translation>
     </message>
 </context>
 <context>
@@ -23450,6 +23478,10 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <location filename="../src/_quotes_data.inc" line="232"/>
         <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
         <translation>El botón Continuar del menú principal abre el proyecto justo en la última frase que escribiste.</translation>
+    </message>
+    <message>
+        <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
+        <translation>Curiosidad: el personaje del logo que aparece en distintas historias y universos es la propia Qenna.</translation>
     </message>
 </context>
 <context>

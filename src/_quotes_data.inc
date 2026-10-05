@@ -286,5 +286,6 @@ static const char* const kQuotesFeature[] = {
     QT_TRANSLATE_NOOP("Quotes", u8"Você pode criar eventos da linha do tempo a partir do editor ou da lousa."),
     QT_TRANSLATE_NOOP("Quotes", u8"Use a função de lembretes para se lembrar do que precisa fazer em seu projeto."),
     QT_TRANSLATE_NOOP("Quotes", u8"Use a função Grupos para reunir documentos de diferentes gavetas e elementos num só lugar, organizando o que se conecta na sua história."),
+    QT_TRANSLATE_NOOP("Quotes", u8"Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna."),
 };
-static constexpr int kQuotesFeature_count = 90;
+static constexpr int kQuotesFeature_count = 91;

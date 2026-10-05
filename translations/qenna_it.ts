@@ -9535,6 +9535,22 @@ Il contenuto esistente potrebbe essere sovrascritto.</translation>
         <source>Alinhar</source>
         <translation>Allinea</translation>
     </message>
+    <message>
+        <source>Editar fala</source>
+        <translation>Modifica battuta</translation>
+    </message>
+    <message>
+        <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
+        <translation>Questa battuta è cambiata o è uscita dal testo da quando è stato aperto il Pensarium. Aggiorna l&apos;elenco e riprova.</translation>
+    </message>
+    <message>
+        <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
+        <translation>Impossibile aprire il testo di origine di questa battuta. Non è stato modificato nulla.</translation>
+    </message>
+    <message>
+        <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
+        <translation>Impossibile trovare con certezza questa battuta nel testo di origine. Non è stata modificata; apri il testo per controllare l&apos;occorrenza.</translation>
+    </message>
 </context>
 <context>
     <name>ManuscriptPanel</name>
@@ -13987,6 +14003,18 @@ La × toglie una riga che non è una battuta, e non torna più.</translation>
         <location filename="../src/PensarioDialogues.cpp" line="692"/>
         <source>Abrir no texto</source>
         <translation>Apri nel testo</translation>
+    </message>
+    <message>
+        <source>Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar</source>
+        <translation>Clic per aprire nel testo · matita per modificare · clic destro per confermare o cambiare</translation>
+    </message>
+    <message>
+        <source>Editar esta fala</source>
+        <translation>Modifica questa battuta</translation>
+    </message>
+    <message>
+        <source>Editar no texto de origem</source>
+        <translation>Modifica nel testo di origine</translation>
     </message>
 </context>
 <context>
@@ -23450,6 +23478,10 @@ La × toglie una riga che non è una battuta, e non torna più.</translation>
         <location filename="../src/_quotes_data.inc" line="232"/>
         <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
         <translation>Il pulsante Continua del menu principale apre il progetto proprio sull&apos;ultima frase che hai scritto.</translation>
+    </message>
+    <message>
+        <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
+        <translation>Curiosità: il personaggio nel logo che compare in storie e universi diversi è proprio Qenna.</translation>
     </message>
 </context>
 <context>
