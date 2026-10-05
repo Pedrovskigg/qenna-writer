@@ -15,6 +15,7 @@
 #include "Theme.h"
 #include "WordCounter.h"
 
+#include <QAbstractTextDocumentLayout>
 #include <QAction>
 #include <QActionGroup>
 #include <QClipboard>
@@ -47,6 +48,7 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QtMath>
 
 #include <algorithm>
 #include <limits>
@@ -2074,7 +2076,13 @@ void PensarioPanel::beginDialogueInlineEdit(const DialogueStore::Dialogue& dialo
     edit->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
     edit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     edit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    // A caixa cresce com o texto: no roteiro o card mostra só a fala, mas a
+    // edição abre o parágrafo inteiro (com a narração), que costuma ser maior.
     edit->setFixedHeight(qMax(28, label->height() + 6));
+    connect(edit->document()->documentLayout(), &QAbstractTextDocumentLayout::documentSizeChanged,
+            edit, [edit](const QSizeF& size) {
+        edit->setFixedHeight(qMax(28, qCeil(size.height()) + 4));
+    });
     edit->setStyleSheet(Theme::qss(QStringLiteral(
         "QTextEdit#pnDlgInlineEdit { background: transparent; color: %1; border: none; "
         "border-bottom: 1px solid %2; padding: 1px 0; font-family: 'Lora'; font-size: 14px; }")

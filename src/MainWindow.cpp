@@ -10148,6 +10148,92 @@ void MainWindow::openConstrutorMentionInEditor(const ConstrutorStore::Mention& m
                           mention.manuscriptId, mention.itemId, mention.text);
 }
 
+namespace {
+
+// Espaço duro vira espaço comum, como no toPlainText() que alimenta o scan.
+QString dialogueComparable(QString text)
+{
+    text.replace(QChar::Nbsp, QLatin1Char(' '));
+    return text.trimmed();
+}
+
+// Acha no documento o trecho exato de uma fala do DialogueStore. O Store não
+// guarda posição (ela muda a cada tecla): a identidade da fala é texto + cena
+// + ordem entre falas repetidas, e a régua de "parágrafo" é a mesma do
+// DialogueDetector::paragraphsOf (quebra também em Shift+Enter, texto aparado).
+// Só devolve o trecho quando o documento tem exatamente as cópias que o Store
+// conhece: se a mesma frase aparece também como narração, a ordem fica ambígua
+// e é melhor não apontar nada. wholeChapter = o documento é o capítulo inteiro,
+// então as cópias das outras cenas também contam.
+bool locateDialogueRange(const QTextDocument* doc, const DialogueStore::Dialogue& dlg,
+                         const QVector<DialogueStore::Dialogue>& all, bool wholeChapter,
+                         int* pos, int* len)
+{
+    const QString wanted = dialogueComparable(dlg.text);
+    if (!doc || wanted.isEmpty()) return false;
+
+    int copies = 0, occurrence = 0;
+    bool reached = false;
+    for (const DialogueStore::Dialogue& d : all) {
+        if (d.chapterId != dlg.chapterId || dialogueComparable(d.text) != wanted) continue;
+        const bool sameScene = d.sceneIndex == dlg.sceneIndex;
+        if (!wholeChapter && !sameScene) continue;
+        ++copies;
+        if (d.id == dlg.id) { reached = true; continue; }
+        if (sameScene ? !reached : d.sceneIndex < dlg.sceneIndex) ++occurrence;
+    }
+    if (!reached) return false;
+
+    static const QRegularExpression lineBreak(QStringLiteral("[\\n\\x{2028}]"));
+    QVector<QPair<int, int>> found;
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        const QString text = b.text();
+        int start = 0;
+        while (start <= text.size()) {
+            int end = text.indexOf(lineBreak, start);
+            if (end < 0) end = text.size();
+            int a = start, z = end;
+            while (a < z && text.at(a).isSpace()) ++a;
+            while (z > a && text.at(z - 1).isSpace()) --z;
+            if (z > a && dialogueComparable(text.mid(a, z - a)) == wanted)
+                found.append({ b.position() + a, z - a });
+            start = end + 1;
+        }
+    }
+    if (found.size() != copies || occurrence >= found.size()) return false;
+    *pos = found.at(occurrence).first;
+    *len = found.at(occurrence).second;
+    return true;
+}
+
+// Troca só o miolo que mudou: o começo e o fim iguais ficam intactos, com o
+// itálico e o negrito que tiverem. O texto novo herda o formato do caractere
+// vizinho, igual a digitar no editor. Um só passo de desfazer.
+void replaceKeepingFormat(QTextDocument* doc, int pos, int len, const QString& newText)
+{
+    QTextCursor cursor(doc);
+    cursor.setPosition(pos);
+    cursor.setPosition(pos + len, QTextCursor::KeepAnchor);
+    const QString oldText = cursor.selectedText();
+    if (oldText == newText) return;
+
+    const int shorter = qMin(oldText.size(), newText.size());
+    int prefix = 0;
+    while (prefix < shorter && oldText.at(prefix) == newText.at(prefix)) ++prefix;
+    int suffix = 0;
+    while (suffix < shorter - prefix
+           && oldText.at(oldText.size() - 1 - suffix) == newText.at(newText.size() - 1 - suffix))
+        ++suffix;
+
+    cursor.beginEditBlock();
+    cursor.setPosition(pos + prefix);
+    cursor.setPosition(pos + len - suffix, QTextCursor::KeepAnchor);
+    cursor.insertText(newText.mid(prefix, newText.size() - prefix - suffix));
+    cursor.endEditBlock();
+}
+
+} // namespace
+
 void MainWindow::openDialogueInEditor(const DialogueStore::Dialogue& dlg)
 {
     if (!editorHost || !editor || dlg.chapterId.isEmpty()) return;
@@ -10163,18 +10249,42 @@ void MainWindow::openDialogueInEditor(const DialogueStore::Dialogue& dlg)
     }
     editorHost->setViewMode(vm);
 
-    // "Ctrl+F" automático: mesma lógica de openMemoryInEditor.
+    // Reserva: "Ctrl+F" pelo começo da fala, mesma lógica de openMemoryInEditor.
     QString query = dlg.text;
     query.replace(QChar(0x2029), QChar('\n'));
     const QStringList lines = query.split(QChar('\n'), Qt::SkipEmptyParts);
     query = lines.isEmpty() ? query.trimmed() : lines.first().trimmed();
     if (query.size() > 60) query = query.left(60);
 
-    QTimer::singleShot(140, this, [this, query]() {
-        if (!editor || query.isEmpty()) return;
-        editor->moveCursor(QTextCursor::Start);
-        if (editor->find(query))
+    QTimer::singleShot(140, this, [this, dlg, query]() {
+        if (!editor || !editorHost) return;
+        // Seleciona a fala inteira, e a ocorrência certa quando a frase se
+        // repete no capítulo. Usa o registro atual do Store (a cópia do card
+        // pode ser de antes da última edição). Se a fala não bate mais com o
+        // texto, cai na busca pelo começo dela.
+        DialogueStore::Dialogue current = dlg;
+        if (dialogueStore)
+            for (const DialogueStore::Dialogue& d : dialogueStore->dialogues())
+                if (d.id == dlg.id) { current = d; break; }
+        const EditorHost::ViewMode shown = editorHost->viewMode();
+        int pos = 0, len = 0;
+        const bool sameScope = shown.chapterId == current.chapterId
+            && (shown.type == EditorHost::ChapterDoc || shown.sceneIndex == current.sceneIndex);
+        if (dialogueStore && sameScope
+            && locateDialogueRange(editor->document(), current, dialogueStore->dialogues(),
+                                   shown.type == EditorHost::ChapterDoc, &pos, &len)) {
+            // Cursor no começo da fala: numa fala longa, é o começo que tem
+            // que aparecer na tela.
+            QTextCursor cursor(editor->document());
+            cursor.setPosition(pos + len);
+            cursor.setPosition(pos, QTextCursor::KeepAnchor);
+            editor->setTextCursor(cursor);
             editor->ensureCursorVisible();
+        } else if (!query.isEmpty()) {
+            editor->moveCursor(QTextCursor::Start);
+            if (editor->find(query))
+                editor->ensureCursorVisible();
+        }
         editor->setFocus();
     });
 }
@@ -10184,7 +10294,11 @@ void MainWindow::editDialogueFromPensario(const DialogueStore::Dialogue& request
 {
     if (!editorHost || !docCache || !projectModel || !dialogueStore
         || requested.id.isEmpty() || requested.chapterId.isEmpty()) return;
-    const QString newText = replacement.trimmed();
+    // A fala é um parágrafo: quebra de linha colada na caixa vira espaço.
+    QString newText = replacement;
+    newText.replace(QRegularExpression(QStringLiteral("[\\r\\n\\x{2028}\\x{2029}]+")),
+                    QStringLiteral(" "));
+    newText = newText.trimmed();
     if (newText.isEmpty()) return;
 
     // A fala no Pensário pode ter sido mostrada antes de alguém editar o
@@ -10207,6 +10321,35 @@ void MainWindow::editDialogueFromPensario(const DialogueStore::Dialogue& request
     const Chapter* chapter = projectModel->findChapter(dialogue.chapterId);
     if (!chapter) return;
 
+    auto refuseAmbiguous = [this]() {
+        QMessageBox::information(this, tr("Editar fala"),
+            tr("Não foi possível localizar esta fala com segurança no texto de origem. "
+               "Ela não foi alterada; abra o texto para conferir a ocorrência."));
+    };
+
+    // Capítulo (ou essa mesma cena) aberto no editor: a troca acontece no
+    // documento vivo. Entra no Ctrl+Z como uma edição qualquer, e nada é
+    // recarregado — cursor, rolagem e histórico de desfazer ficam onde estavam.
+    const EditorHost::ViewMode vm = editorHost->viewMode();
+    const bool liveChapter = vm.type == EditorHost::ChapterDoc && vm.chapterId == chapter->id;
+    const bool liveScene = vm.type == EditorHost::SceneDoc && vm.chapterId == chapter->id
+                        && vm.sceneIndex == dialogue.sceneIndex;
+    if (editor && (liveChapter || liveScene)) {
+        int pos = 0, len = 0;
+        if (!locateDialogueRange(editor->document(), dialogue, dialogueStore->dialogues(),
+                                 liveChapter, &pos, &len)) {
+            refuseAmbiguous();
+            return;
+        }
+        replaceKeepingFormat(editor->document(), pos, len, newText);
+        editorHost->syncEditorToCache();
+        scanChapterDialogues(chapter->id);
+        return;
+    }
+
+    // Fora do editor: a troca vai direto no HTML do cache. Se outra cena desse
+    // capítulo está aberta, ela não precisa recarregar — o sync dela regrava só
+    // a própria cena por cima do cache já alterado.
     const QString fullHtml = chapterHtmlForEdit(chapter);
     if (fullHtml.isEmpty()) {
         QMessageBox::warning(this, tr("Editar fala"),
@@ -10218,50 +10361,24 @@ void MainWindow::editDialogueFromPensario(const DialogueStore::Dialogue& request
     if (dialogue.sceneIndex >= 0)
         scopeHtml = SceneUtils::getSceneHtml(fullHtml, dialogue.sceneIndex);
     QTextDocument source;
+    // Mesma fonte-padrão do editor: o HTML sai igual ao que o editor gravaria,
+    // sem a fonte da interface entrar no <body> do capítulo.
+    if (editor) source.setDefaultFont(editor->document()->defaultFont());
     source.setHtml(scopeHtml);
 
-    // Não há offsets persistidos no Store (eles ficam inválidos assim que se
-    // escreve). A identidade do scan é cena + texto + ordem entre repetidos;
-    // repetimos exatamente essa regra e só escrevemos quando a origem tem a
-    // mesma quantidade de candidatos — texto duplicado em narração é ambíguo. — Mira
-    int dialogueOccurrence = 0;
-    int storedCopies = 0;
-    bool reached = false;
-    for (const DialogueStore::Dialogue& d : dialogueStore->dialogues()) {
-        if (d.chapterId != dialogue.chapterId || d.sceneIndex != dialogue.sceneIndex
-            || d.text != dialogue.text) continue;
-        ++storedCopies;
-        if (d.id == dialogue.id) reached = true;
-        else if (!reached) ++dialogueOccurrence;
-    }
-    if (!reached) return;
-
-    QVector<QTextBlock> candidates;
-    for (QTextBlock block = source.begin(); block.isValid(); block = block.next())
-        if (block.text().trimmed() == dialogue.text) candidates.append(block);
-    if (candidates.size() != storedCopies || dialogueOccurrence >= candidates.size()) {
-        QMessageBox::information(this, tr("Editar fala"),
-            tr("Não foi possível localizar esta fala com segurança no texto de origem. "
-               "Ela não foi alterada; abra o texto para conferir a ocorrência."));
+    int pos = 0, len = 0;
+    if (!locateDialogueRange(&source, dialogue, dialogueStore->dialogues(),
+                             /*wholeChapter=*/false, &pos, &len)) {
+        refuseAmbiguous();
         return;
     }
-
-    QTextBlock target = candidates.at(dialogueOccurrence);
-    QTextCursor cursor(&source);
-    cursor.setPosition(target.position());
-    cursor.setPosition(target.position() + target.text().size(), QTextCursor::KeepAnchor);
-    cursor.insertText(newText);
+    replaceKeepingFormat(&source, pos, len, newText);
 
     QString newHtml = source.toHtml();
     if (dialogue.sceneIndex >= 0)
         newHtml = SceneUtils::replaceSceneHtml(fullHtml, dialogue.sceneIndex, newHtml);
     const QString key = DocCache::chapterKey(chapter->manuscriptId, chapter->id);
     docCache->set(key, newHtml, /*markDirty=*/true);
-
-    // A tela não fica esperando o debounce do editor: recarrega o capítulo ou
-    // a cena aberta já com a alteração, então texto e Pensário atualizam na
-    // mesma ação. O cache foi sincronizado antes, preservando o resto do doc. — Mira
-    reloadEditorIfShowingChapter(chapter->id);
     scanChapterDialogues(chapter->id);
 }
 
