@@ -75,6 +75,7 @@ signals:
 protected:
     void showEvent(QShowEvent* event) override;
     void hideEvent(QHideEvent* event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private slots:
     void applyDialogStyle();
@@ -111,6 +112,9 @@ private:
     QImage logoVariant(int index);
     // Faz o crossfade da arte atual pra próxima e reagenda o timer.
     void rotateLogo();
+    // Atalho secreto: duplo clique no Q passa um brilho e prende a arte atual
+    // (gravado em mainMenu/pinnedLogo); outro duplo clique solta a rotação.
+    void toggleLogoPin();
     // Abre o diálogo de edição do projeto (nome/autor/gêneros/sinopse/capa)
     // e grava as alterações direto no índice. Atualiza o grid no fim.
     void editProject(const QString& path);
@@ -139,6 +143,8 @@ private:
     int m_logoIndex = -1;
     QTimer* m_logoTimer = nullptr;
     QVariantAnimation* m_logoAnim = nullptr;
+    QVariantAnimation* m_logoShine = nullptr;
+    bool m_logoPinned = false;
     QPushButton* m_newBtn = nullptr;
     QPushButton* m_newIdeaBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;

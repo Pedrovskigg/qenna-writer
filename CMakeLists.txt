@@ -499,6 +499,14 @@ set_target_properties(qenna-writer PROPERTIES
 # nome anterior. copy_directory_if_different não recopia o que está igual, então
 # rodar sempre é barato.
 add_custom_target(sync-runtime-assets ALL)
+# As artes do Q do Main Menu são lidas da pasta em runtime: imagem nova na pasta
+# vira arte nova no app. copy_directory só acrescenta, então uma arte apagada da
+# fonte continuaria rodando na build (e indo pro instalador). Zera a pasta antes
+# pra ela espelhar a fonte nos dois sentidos.
+add_custom_command(TARGET sync-runtime-assets POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:qenna-writer>/logo/main-menu-Q"
+    COMMENT "Espelhando as artes do Q do Main Menu"
+    VERBATIM)
 foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
     add_custom_command(TARGET sync-runtime-assets POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different

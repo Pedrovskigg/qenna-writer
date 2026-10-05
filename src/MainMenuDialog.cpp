@@ -88,7 +88,10 @@ constexpr int kStackHeroCoverH = 510;
 constexpr int kDialogW = 1320;
 constexpr int kDialogH = 1000;
 constexpr int kSidebarW = 410;   // largura da barra lateral
-constexpr int kLogoSize = 330;   // caixa do logo — cabe na largura interna (410 - margens) com folga
+constexpr int kLogoSize = 330;   // largura da caixa do logo (e do quote) — cabe na largura interna (410 - margens) com folga
+// Altura da caixa do logo. O Q é mais alto que largo, então a caixa é em pé:
+// a letra cresce na altura sem estourar a largura da barra lateral.
+constexpr int kLogoHeight = 429;
 constexpr int kLogoHoldMs = 5000;   // tempo de cada arte do Q parada na tela
 constexpr int kLogoFadeMs = 900;    // duração do crossfade entre duas artes
 
@@ -117,7 +120,7 @@ QRect opaqueBounds(const QImage& img)
 // artes saem daqui com o mesmo tamanho de quadro e a letra na mesma posição,
 // que é o que o crossfade precisa pra não tremer. Imagem sem canal alpha cai
 // no caminho de baixo e é usada inteira.
-QImage normalizedLogo(const QString& path, int box)
+QImage normalizedLogo(const QString& path, const QSize& box)
 {
     QImage img(path);
     if (img.isNull()) return {};
@@ -125,11 +128,11 @@ QImage normalizedLogo(const QString& path, int box)
     const QRect bounds = opaqueBounds(img);
     if (bounds.isValid()) img = img.copy(bounds);
 
-    const QImage scaled = img.scaled(box, box, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    QImage frame(box, box, QImage::Format_ARGB32_Premultiplied);
+    const QImage scaled = img.scaled(box, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QImage frame(box, QImage::Format_ARGB32_Premultiplied);
     frame.fill(Qt::transparent);
     QPainter painter(&frame);
-    painter.drawImage((box - scaled.width()) / 2, (box - scaled.height()) / 2, scaled);
+    painter.drawImage((box.width() - scaled.width()) / 2, (box.height() - scaled.height()) / 2, scaled);
     return frame;
 }
 
@@ -155,6 +158,28 @@ QPixmap crossfadedLogo(const QImage& from, const QImage& to, qreal progress)
                        (qBlue(a[i])  * (256 - w) + qBlue(b[i])  * w) >> 8,
                        (qAlpha(a[i]) * (256 - w) + qAlpha(b[i]) * w) >> 8);
     }
+    return QPixmap::fromImage(out);
+}
+
+// Atalho secreto (duplo clique no Q): um reflexo de luz inclinado atravessa a
+// letra, igual ao fim do splash. SourceAtop pinta só onde já tem arte, sem
+// tocar na transparência em volta.
+constexpr int kLogoShineMs = 600;
+QPixmap shinedLogo(const QImage& art, qreal progress)
+{
+    QImage out = art.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    const qreal band = out.width() * 0.32;
+    const qreal cx = -band + (out.width() + 2 * band) * progress;
+    const QPointF center(cx, out.height() / 2.0);
+    const QPointF along = QPointF(1, 0.36) * (band / qSqrt(1 + 0.36 * 0.36));
+    QLinearGradient light(center - along, center + along);
+    light.setColorAt(0, QColor(255, 248, 230, 0));
+    light.setColorAt(0.5, QColor(255, 248, 230, 150));
+    light.setColorAt(1, QColor(255, 248, 230, 0));
+    QPainter painter(&out);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+    painter.fillRect(out.rect(), light);
+    painter.end();
     return QPixmap::fromImage(out);
 }
 constexpr int kEditCoverW = 260; // capa grande do diálogo Editar projeto
@@ -1143,15 +1168,27 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
     // --- Logo no topo (bom tamanho), centralizado ---
     m_logoLabel = new QLabel(this);
     m_logoLabel->setObjectName(QStringLiteral("menuLogo"));
-    m_logoLabel->setFixedSize(kLogoSize, kLogoSize);
+    m_logoLabel->setFixedSize(kLogoSize, kLogoHeight);
     m_logoLabel->setAlignment(Qt::AlignCenter);
 
     loadLogoVariants();
     if (!m_logoPaths.isEmpty()) {
+        // Arte fixada no duplo clique (vale entre sessões). Se o arquivo saiu
+        // da pasta, a fixação cai e a rotação volta.
+        QSettings settings;
+        const QString pinned = settings.value(QStringLiteral("mainMenu/pinnedLogo")).toString();
+        if (!pinned.isEmpty()) {
+            for (int i = 0; i < m_logoPaths.size(); ++i)
+                if (QFileInfo(m_logoPaths.at(i)).fileName() == pinned) { m_logoIndex = i; break; }
+            m_logoPinned = m_logoIndex >= 0;
+            if (!m_logoPinned) settings.remove(QStringLiteral("mainMenu/pinnedLogo"));
+        }
         // Começa num ponto aleatório da lista: abrir o menu várias vezes no
         // mesmo dia não deve mostrar sempre o mesmo mundo primeiro.
-        m_logoIndex = QRandomGenerator::global()->bounded(m_logoPaths.size());
+        if (!m_logoPinned)
+            m_logoIndex = QRandomGenerator::global()->bounded(m_logoPaths.size());
         m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+        m_logoLabel->installEventFilter(this);
 
         m_logoTimer = new QTimer(this);
         m_logoTimer->setSingleShot(true);
@@ -1160,7 +1197,7 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
         // Pasta ausente ou vazia: cai no logo fixo de sempre.
         QPixmap logoPm(QStringLiteral(":/app/logo.png"));
         if (!logoPm.isNull()) {
-            m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoSize,
+            m_logoLabel->setPixmap(logoPm.scaled(kLogoSize, kLogoHeight,
                                                  Qt::KeepAspectRatio,
                                                  Qt::SmoothTransformation));
         } else {
@@ -1954,14 +1991,14 @@ QImage MainMenuDialog::logoVariant(int index)
     auto it = m_logoFrames.constFind(index);
     if (it != m_logoFrames.constEnd()) return it.value();
 
-    const QImage frame = normalizedLogo(m_logoPaths.at(index), kLogoSize);
+    const QImage frame = normalizedLogo(m_logoPaths.at(index), QSize(kLogoSize, kLogoHeight));
     m_logoFrames.insert(index, frame);
     return frame;
 }
 
 void MainMenuDialog::rotateLogo()
 {
-    if (!m_logoLabel || m_logoPaths.size() < 2) return;
+    if (!m_logoLabel || m_logoPaths.size() < 2 || m_logoPinned) return;
     if (m_logoAnim) return;   // transição já em curso
 
     const int nextIndex = (m_logoIndex + 1) % m_logoPaths.size();
@@ -1995,11 +2032,69 @@ void MainMenuDialog::rotateLogo()
     m_logoAnim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
+void MainMenuDialog::toggleLogoPin()
+{
+    if (!m_logoLabel || m_logoPaths.isEmpty()) return;
+    if (m_logoShine) {
+        m_logoShine->stop();   // DeleteWhenStopped destrói; finished não dispara
+        m_logoShine = nullptr;
+    }
+
+    QSettings settings;
+    if (m_logoPinned) {
+        // Solta: a próxima arte entra na hora, e é isso que avisa que a
+        // rotação voltou.
+        m_logoPinned = false;
+        settings.remove(QStringLiteral("mainMenu/pinnedLogo"));
+        m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+        rotateLogo();
+        return;
+    }
+
+    // Prende a arte que está na tela. No meio de um crossfade, fica com a que
+    // já domina a imagem.
+    if (m_logoTimer) m_logoTimer->stop();
+    if (m_logoAnim) {
+        const bool pastHalf = m_logoAnim->currentValue().toReal() >= 0.5;
+        m_logoAnim->stop();
+        m_logoAnim = nullptr;
+        if (pastHalf) m_logoIndex = (m_logoIndex + 1) % m_logoPaths.size();
+    }
+    m_logoPinned = true;
+    settings.setValue(QStringLiteral("mainMenu/pinnedLogo"),
+                      QFileInfo(m_logoPaths.at(m_logoIndex)).fileName());
+
+    const QImage art = logoVariant(m_logoIndex);
+    m_logoShine = new QVariantAnimation(this);
+    m_logoShine->setDuration(kLogoShineMs);
+    m_logoShine->setStartValue(0.0);
+    m_logoShine->setEndValue(1.0);
+    m_logoShine->setEasingCurve(QEasingCurve::InOutSine);
+    connect(m_logoShine, &QVariantAnimation::valueChanged, this, [this, art](const QVariant& v) {
+        m_logoLabel->setPixmap(shinedLogo(art, v.toReal()));
+    });
+    connect(m_logoShine, &QVariantAnimation::finished, this, [this, art]() {
+        m_logoLabel->setPixmap(QPixmap::fromImage(art));
+        m_logoShine = nullptr;
+    });
+    m_logoShine->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+bool MainMenuDialog::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_logoLabel && event->type() == QEvent::MouseButtonDblClick
+        && static_cast<QMouseEvent*>(event)->button() == Qt::LeftButton) {
+        toggleLogoPin();
+        return true;
+    }
+    return QDialog::eventFilter(watched, event);
+}
+
 void MainMenuDialog::showEvent(QShowEvent* event)
 {
     rotateQuote();
     refreshRecents();
-    if (m_logoTimer && !m_logoTimer->isActive() && !m_logoAnim) {
+    if (m_logoTimer && !m_logoTimer->isActive() && !m_logoAnim && !m_logoPinned) {
         m_logoTimer->start(kLogoHoldMs);
     }
     QDialog::showEvent(event);
@@ -2011,9 +2106,12 @@ void MainMenuDialog::hideEvent(QHideEvent* event)
     // em andamento, senão o app segue compondo pixmap a 60fps sem ninguém
     // olhando.
     if (m_logoTimer) m_logoTimer->stop();
-    if (m_logoAnim) {
-        m_logoAnim->stop();   // DeleteWhenStopped destrói; finished não dispara
+    if (m_logoAnim || m_logoShine) {
+        // DeleteWhenStopped destrói; finished não dispara
+        if (m_logoAnim) m_logoAnim->stop();
+        if (m_logoShine) m_logoShine->stop();
         m_logoAnim = nullptr;
+        m_logoShine = nullptr;
         m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
     }
     QDialog::hideEvent(event);
