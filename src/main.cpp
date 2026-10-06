@@ -39,7 +39,10 @@ const QRegularExpression kOpticalSizeRe(QStringLiteral("\\d+pt"));
 
 // Splash animada: o Q surge sozinho no centro, desliza pro lugar dele e as
 // outras letras saem de trás dele, uma depois da outra, até formar QENNA; no
-// fim, um reflexo de luz atravessa o logo. kSplashMinMs é o tempo mínimo total na tela: o
+// fim, um reflexo de luz atravessa o logo. No caminho, cada letra vai trocando
+// de mundo em cortes secos (os mundos do Q do menu), como a vinheta da Marvel,
+// até assentar na arte dela; e o logo, que nasce em preto e branco, vai
+// ganhando cor. kSplashMinMs é o tempo mínimo total na tela: o
 // Qenna carrega rápido, e sem ele o logo montado apareceria por um piscar
 // antes da janela assumir.
 constexpr int kSplashQFadeMs = 285;      // Q aparecendo sozinho
@@ -50,31 +53,90 @@ constexpr int kSplashSlideMs = 780;      // viagem de cada letra
 constexpr int kSplashStaggerMs = 65;     // atraso entre uma letra e a próxima
 constexpr int kSplashShineGapMs = 60;    // respiro entre a última letra e o brilho
 constexpr int kSplashShineMs = 450;      // reflexo de luz atravessando o logo
+constexpr int kSplashColorEndMs = 1850;  // cor cheia um pouco antes do logo terminar de montar
+constexpr int kSplashSettleMs = 1640;    // o Q para de piscar e assenta na arte dele...
+constexpr int kSplashSettleStepMs = 95;  // ...e cada letra seguinte um pouco depois, em onda
 constexpr int kSplashMinMs = 2675;
 constexpr int kSplashFrameMs = 16;
 constexpr qreal kSplashLetterDpr = 2.0;  // as letras vêm em 2x: nítidas em tela com zoom
 constexpr qreal kSplashGap = 5.5;        // espaço entre letras, em px lógicos
 
-struct SplashLetters {
-    QVector<QPixmap> pixmaps; // Q, E, N, N, A
-    QVector<qreal> finalX;
-    QSizeF size;              // logo montado, em px lógicos
+struct SplashLetter {
+    QPixmap color;           // arte da letra, 2x
+    QPixmap gray;
+    QSizeF size;             // px lógicos
+    QStringList worlds;      // mundos que piscam, já na ordem de exibição
+    QVector<qreal> cuts;     // instante de cada corte
+    int settleMs = 0;
+    int cachedWorld = -1;    // só o mundo da vez fica decodificado
+    QPixmap worldColor;
+    QPixmap worldGray;
 };
+
+struct SplashLetters {
+    QVector<SplashLetter> letters; // Q, E, N, N, A
+    QVector<qreal> finalX;
+    QSizeF size;                   // logo montado, em px lógicos
+};
+
+// Preto e branco preservando o alpha (as letras são recortadas). Os pesos são
+// os do saturate() do CSS: a prévia aprovada foi feita no navegador.
+QPixmap grayscaled(const QImage &source)
+{
+    QImage img = source.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    for (int y = 0; y < img.height(); ++y) {
+        QRgb *line = reinterpret_cast<QRgb *>(img.scanLine(y));
+        for (int x = 0; x < img.width(); ++x) {
+            const QRgb p = line[x];
+            const int g = (54 * qRed(p) + 183 * qGreen(p) + 19 * qBlue(p)) >> 8;
+            line[x] = qRgba(g, g, g, qAlpha(p));
+        }
+    }
+    return QPixmap::fromImage(img);
+}
+
+// Cortes secos que vão desacelerando: rápidos no começo, cada mundo durando
+// mais conforme a letra chega perto de assentar.
+QVector<qreal> splashCuts(int startMs, int settleMs)
+{
+    QVector<qreal> cuts;
+    for (qreal t = startMs; t < settleMs;) {
+        cuts.append(t);
+        const qreal p = (t - startMs) / qreal(settleMs - startMs);
+        t += 55 + 150 * p * p;
+    }
+    return cuts;
+}
 
 SplashLetters loadSplashLetters()
 {
     SplashLetters s;
     qreal x = 0;
     qreal h = 0;
+    int i = 0;
     for (const char *name : {"q", "e", "n1", "n2", "a"}) {
-        QPixmap pm(QStringLiteral(":/app/splash-letters/%1.png").arg(QLatin1String(name)));
-        pm.setDevicePixelRatio(kSplashLetterDpr);
-        const QSizeF logical = pm.deviceIndependentSize();
-        if (!s.pixmaps.isEmpty()) x += kSplashGap;
-        s.pixmaps.append(pm);
+        SplashLetter l;
+        const QImage art(QStringLiteral(":/app/splash-letters/%1.png").arg(QLatin1String(name)));
+        l.color = QPixmap::fromImage(art);
+        l.color.setDevicePixelRatio(kSplashLetterDpr);
+        l.gray = grayscaled(art);
+        l.gray.setDevicePixelRatio(kSplashLetterDpr);
+        l.size = l.color.deviceIndependentSize();
+
+        const QString worldsDir = QStringLiteral(":/app/splash-worlds/%1/").arg(QLatin1String(name));
+        for (const QString &file : QDir(worldsDir).entryList(QDir::Files, QDir::Name))
+            l.worlds.append(worldsDir + file);
+        // O Q já nasce piscando; as outras começam assim que saem de trás dele.
+        const int startMs = i == 0 ? 0 : kSplashSlideStartMs + kSplashStaggerMs * (i - 1);
+        l.settleMs = kSplashSettleMs + kSplashSettleStepMs * i;
+        l.cuts = splashCuts(startMs, l.settleMs);
+
+        if (!s.letters.isEmpty()) x += kSplashGap;
         s.finalX.append(x);
-        x += logical.width();
-        h = qMax(h, logical.height());
+        x += l.size.width();
+        h = qMax(h, l.size.height());
+        s.letters.append(l);
+        ++i;
     }
     s.size = QSizeF(x, h);
     return s;
@@ -83,7 +145,7 @@ SplashLetters loadSplashLetters()
 int splashLettersDoneMs(const SplashLetters &s)
 {
     return qMax(kSplashSlideStartMs + kSplashQSlideMs,
-                kSplashSlideStartMs + kSplashStaggerMs * int(s.pixmaps.size() - 2) + kSplashSlideMs);
+                kSplashSlideStartMs + kSplashStaggerMs * int(s.letters.size() - 2) + kSplashSlideMs);
 }
 
 int splashAnimationMs(const SplashLetters &s)
@@ -91,20 +153,72 @@ int splashAnimationMs(const SplashLetters &s)
     return splashLettersDoneMs(s) + kSplashShineGapMs + kSplashShineMs;
 }
 
-QPixmap splashFrame(const SplashLetters &s, int elapsedMs, qreal dpr)
+// Pinta a letra no instante: um mundo enquanto pisca, a arte dela depois de
+// assentar, misturando a versão cinza com a colorida na proporção da cor (a
+// mesma conta do saturate() do CSS). A mistura é feita num pixmap à parte pra
+// que a opacidade de entrada da letra caia sobre o resultado: compondo direto
+// no quadro, as bordas anti-aliased somariam opacidade e ganhariam halo.
+// Cada mundo só é decodificado quando o corte dele chega: aparece por ~100 ms,
+// e carregar os 76 antes atrasaria a abertura no PC fraco.
+void paintSplashLetter(QPainter &painter, SplashLetter &l, int index, int elapsedMs,
+                       const QPointF &pos, qreal color, qreal dpr)
+{
+    const QPixmap *colorArt = &l.color;
+    const QPixmap *grayArt = &l.gray;
+    if (!l.worlds.isEmpty() && !l.cuts.isEmpty()
+        && elapsedMs >= l.cuts.first() && elapsedMs < l.settleMs) {
+        int n = 0;
+        while (n + 1 < l.cuts.size() && l.cuts.at(n + 1) <= elapsedMs) ++n;
+        const int world = (n + index * 3) % int(l.worlds.size());
+        if (world != l.cachedWorld) {
+            l.worldColor = QPixmap(l.worlds.at(world));
+            l.worldGray = QPixmap();
+            l.cachedWorld = world;
+        }
+        if (color < 1 && l.worldGray.isNull())
+            l.worldGray = grayscaled(l.worldColor.toImage());
+        colorArt = &l.worldColor;
+        grayArt = &l.worldGray;
+    }
+
+    const QRectF target(pos, l.size);
+    if (color >= 1 || color <= 0) {
+        const QPixmap &art = color >= 1 ? *colorArt : *grayArt;
+        painter.drawPixmap(target, art, QRectF(art.rect()));
+        return;
+    }
+    QPixmap mixed(qCeil(l.size.width() * dpr), qCeil(l.size.height() * dpr));
+    mixed.setDevicePixelRatio(dpr);
+    mixed.fill(Qt::transparent);
+    {
+        QPainter p(&mixed);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        const QRectF local(QPointF(0, 0), l.size);
+        p.drawPixmap(local, *grayArt, QRectF(grayArt->rect()));
+        p.setCompositionMode(QPainter::CompositionMode_SourceAtop);
+        p.setOpacity(color);
+        p.drawPixmap(local, *colorArt, QRectF(colorArt->rect()));
+    }
+    painter.drawPixmap(QRectF(pos, mixed.deviceIndependentSize()), mixed, QRectF(mixed.rect()));
+}
+
+QPixmap splashFrame(SplashLetters &s, int elapsedMs, qreal dpr)
 {
     QPixmap frame(qCeil(s.size.width() * dpr), qCeil(s.size.height() * dpr));
     frame.setDevicePixelRatio(dpr);
     frame.fill(Qt::transparent);
-    if (s.pixmaps.isEmpty()) return frame;
+    if (s.letters.isEmpty()) return frame;
 
     const QEasingCurve slide(QEasingCurve::OutCubic);
     auto progress = [elapsedMs](int startMs, int durationMs) {
         return qBound(qreal(0), (elapsedMs - startMs) / qreal(durationMs), qreal(1));
     };
+    // A cor começa a entrar assim que o Q termina de surgir e chega mais
+    // depressa no começo: o cinza é só a largada.
+    const qreal color = qSin(M_PI / 2 * progress(kSplashQFadeMs, kSplashColorEndMs - kSplashQFadeMs));
 
     // Q: parte do centro do logo e termina na ponta esquerda.
-    const QSizeF qSize = s.pixmaps.first().deviceIndependentSize();
+    const QSizeF qSize = s.letters.first().size;
     const qreal qStartX = (s.size.width() - qSize.width()) / 2;
     auto qXAt = [&](int ms) {
         const qreal p = qBound(qreal(0), (ms - kSplashSlideStartMs) / qreal(kSplashQSlideMs), qreal(1));
@@ -115,22 +229,22 @@ QPixmap splashFrame(const SplashLetters &s, int elapsedMs, qreal dpr)
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
     // De trás pra frente: o A é a camada mais funda e o Q fica por cima de
     // todas, então cada letra sai literalmente de trás das anteriores.
-    for (int i = int(s.pixmaps.size()) - 1; i >= 1; --i) {
+    for (int i = int(s.letters.size()) - 1; i >= 1; --i) {
         const int startMs = kSplashSlideStartMs + kSplashStaggerMs * (i - 1);
         const qreal p = progress(startMs, kSplashSlideMs);
         if (p <= 0) continue;
-        const qreal width = s.pixmaps.at(i).deviceIndependentSize().width();
+        const qreal width = s.letters.at(i).size.width();
         // Nasce escondida atrás de onde o Q está no instante em que sai.
         const qreal fromX = qXAt(startMs) + (qSize.width() - width) / 2;
         const qreal x = fromX + (s.finalX.at(i) - fromX) * slide.valueForProgress(p);
         // Acende no começo da viagem: atrás do Q ela ainda espiaria pelos
         // cantos arredondados e pelo miolo dele.
         painter.setOpacity(QEasingCurve(QEasingCurve::InOutQuad).valueForProgress(qMin(qreal(1), p / qreal(0.3))));
-        painter.drawPixmap(QPointF(x, 0), s.pixmaps.at(i));
+        paintSplashLetter(painter, s.letters[i], i, elapsedMs, QPointF(x, 0), color, dpr);
     }
 
     painter.setOpacity(QEasingCurve(QEasingCurve::OutQuad).valueForProgress(progress(0, kSplashQFadeMs)));
-    painter.drawPixmap(QPointF(qXAt(elapsedMs), 0), s.pixmaps.first());
+    paintSplashLetter(painter, s.letters[0], 0, elapsedMs, QPointF(qXAt(elapsedMs), 0), color, dpr);
 
     // Logo montado: um reflexo de luz inclinado atravessa da esquerda pra
     // direita, como num letreiro. SourceAtop pinta só onde já tem letra, sem
@@ -316,23 +430,25 @@ int main(int argc, char *argv[])
 
     CrashLogger::install();
 
-    const SplashLetters splashLetters = loadSplashLetters();
     const qreal splashDpr = QGuiApplication::primaryScreen()
         ? QGuiApplication::primaryScreen()->devicePixelRatio() : qreal(1);
 
-    QSplashScreen splash(splashFrame(splashLetters, 0, splashDpr));
+    QSplashScreen splash;
     splash.setAttribute(Qt::WA_TranslucentBackground);
     splash.setWindowFlag(Qt::FramelessWindowHint);
-    splash.show();
-    app.processEvents();
-
     QElapsedTimer splashClock;
-    splashClock.start();
 
     // As letras se montam aqui, antes do carregamento, porque daqui até
     // splash.finish() tudo é síncrono: não há event loop, então um QTimer
-    // nunca dispararia.
+    // nunca dispararia. As artes só vivem durante a animação: depois o splash
+    // fica com o último quadro e a memória volta.
     {
+        SplashLetters splashLetters = loadSplashLetters();
+        splash.setPixmap(splashFrame(splashLetters, 0, splashDpr));
+        splash.show();
+        app.processEvents();
+        splashClock.start();
+
         const int totalMs = splashAnimationMs(splashLetters);
         forever {
             const int elapsed = int(qMin<qint64>(splashClock.elapsed(), totalMs));
