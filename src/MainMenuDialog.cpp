@@ -165,6 +165,19 @@ QPixmap crossfadedLogo(const QImage& from, const QImage& to, qreal progress)
 // letra, igual ao fim do splash. SourceAtop pinta só onde já tem arte, sem
 // tocar na transparência em volta.
 constexpr int kLogoShineMs = 600;
+
+// Opção do menu de contexto: o Q sem arte, pintado na cor de destaque do
+// tema. Usa a silhueta da própria arte (mesmo contorno de todas), então a
+// troca entre arte e cor sólida é um crossfade comum.
+QImage solidLogo(const QImage& shape, const QColor& color)
+{
+    QImage out = shape.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&out);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+    painter.fillRect(out.rect(), color);
+    painter.end();
+    return out;
+}
 QPixmap shinedLogo(const QImage& art, qreal progress)
 {
     QImage out = art.convertToFormat(QImage::Format_ARGB32_Premultiplied);
@@ -1187,8 +1200,14 @@ void MainMenuDialog::buildSidebar(QVBoxLayout* col)
         // mesmo dia não deve mostrar sempre o mesmo mundo primeiro.
         if (!m_logoPinned)
             m_logoIndex = QRandomGenerator::global()->bounded(m_logoPaths.size());
-        m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+        m_logoSolid = settings.value(QStringLiteral("mainMenu/logoSolid"), false).toBool();
+        m_logoLabel->setPixmap(QPixmap::fromImage(currentLogoImage()));
         m_logoLabel->installEventFilter(this);
+        // Cor sólida acompanha a cor de destaque quando o tema muda.
+        connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, [this]() {
+            if (m_logoSolid && !m_logoAnim)
+                m_logoLabel->setPixmap(QPixmap::fromImage(currentLogoImage()));
+        });
 
         m_logoTimer = new QTimer(this);
         m_logoTimer->setSingleShot(true);
@@ -1996,9 +2015,57 @@ QImage MainMenuDialog::logoVariant(int index)
     return frame;
 }
 
+QImage MainMenuDialog::currentLogoImage()
+{
+    const QImage art = logoVariant(m_logoIndex);
+    if (!m_logoSolid || art.isNull()) return art;
+    return solidLogo(art, QColor(Theme::accentDefault()));
+}
+
+void MainMenuDialog::setLogoSolid(bool solid)
+{
+    if (!m_logoLabel || m_logoPaths.isEmpty() || solid == m_logoSolid) return;
+    if (m_logoTimer) m_logoTimer->stop();
+    if (m_logoShine) { m_logoShine->stop(); m_logoShine = nullptr; }
+    if (m_logoAnim) { m_logoAnim->stop(); m_logoAnim = nullptr; }
+
+    const QImage from = currentLogoImage();
+    m_logoSolid = solid;
+    QSettings().setValue(QStringLiteral("mainMenu/logoSolid"), solid);
+    const QImage to = currentLogoImage();
+
+    m_logoAnim = new QVariantAnimation(this);
+    m_logoAnim->setDuration(kLogoFadeMs);
+    m_logoAnim->setStartValue(0.0);
+    m_logoAnim->setEndValue(1.0);
+    m_logoAnim->setEasingCurve(QEasingCurve::InOutQuad);
+    connect(m_logoAnim, &QVariantAnimation::valueChanged, this,
+            [this, from, to](const QVariant& v) {
+                m_logoLabel->setPixmap(crossfadedLogo(from, to, v.toReal()));
+            });
+    connect(m_logoAnim, &QVariantAnimation::finished, this, [this]() {
+        m_logoAnim = nullptr;   // DeleteWhenStopped se destrói sozinha
+        m_logoLabel->setPixmap(QPixmap::fromImage(currentLogoImage()));
+        // Voltando pras artes, a rotação recomeça (a não ser que esteja fixada).
+        if (!m_logoSolid && !m_logoPinned && m_logoTimer) m_logoTimer->start(kLogoHoldMs);
+    });
+    m_logoAnim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void MainMenuDialog::showLogoMenu(const QPoint& globalPos)
+{
+    QMenu menu(this);
+    QAction* aSolid = menu.addAction(tr("Cor sólida do tema"));
+    aSolid->setCheckable(true);
+    aSolid->setChecked(m_logoSolid);
+    PanelMotion::animateMenu(&menu);
+    if (menu.exec(globalPos) != aSolid) return;
+    QTimer::singleShot(0, this, [this]() { setLogoSolid(!m_logoSolid); });
+}
+
 void MainMenuDialog::rotateLogo()
 {
-    if (!m_logoLabel || m_logoPaths.size() < 2 || m_logoPinned) return;
+    if (!m_logoLabel || m_logoPaths.size() < 2 || m_logoPinned || m_logoSolid) return;
     if (m_logoAnim) return;   // transição já em curso
 
     const int nextIndex = (m_logoIndex + 1) % m_logoPaths.size();
@@ -2034,7 +2101,8 @@ void MainMenuDialog::rotateLogo()
 
 void MainMenuDialog::toggleLogoPin()
 {
-    if (!m_logoLabel || m_logoPaths.isEmpty()) return;
+    // Em cor sólida não há arte pra fixar.
+    if (!m_logoLabel || m_logoPaths.isEmpty() || m_logoSolid) return;
     if (m_logoShine) {
         m_logoShine->stop();   // DeleteWhenStopped destrói; finished não dispara
         m_logoShine = nullptr;
@@ -2087,6 +2155,10 @@ bool MainMenuDialog::eventFilter(QObject* watched, QEvent* event)
         toggleLogoPin();
         return true;
     }
+    if (watched == m_logoLabel && event->type() == QEvent::ContextMenu) {
+        showLogoMenu(static_cast<QContextMenuEvent*>(event)->globalPos());
+        return true;
+    }
     return QDialog::eventFilter(watched, event);
 }
 
@@ -2094,7 +2166,7 @@ void MainMenuDialog::showEvent(QShowEvent* event)
 {
     rotateQuote();
     refreshRecents();
-    if (m_logoTimer && !m_logoTimer->isActive() && !m_logoAnim && !m_logoPinned) {
+    if (m_logoTimer && !m_logoTimer->isActive() && !m_logoAnim && !m_logoPinned && !m_logoSolid) {
         m_logoTimer->start(kLogoHoldMs);
     }
     QDialog::showEvent(event);
@@ -2112,7 +2184,7 @@ void MainMenuDialog::hideEvent(QHideEvent* event)
         if (m_logoShine) m_logoShine->stop();
         m_logoAnim = nullptr;
         m_logoShine = nullptr;
-        m_logoLabel->setPixmap(QPixmap::fromImage(logoVariant(m_logoIndex)));
+        m_logoLabel->setPixmap(QPixmap::fromImage(currentLogoImage()));
     }
     QDialog::hideEvent(event);
 }

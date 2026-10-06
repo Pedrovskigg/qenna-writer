@@ -115,6 +115,12 @@ private:
     // Atalho secreto: duplo clique no Q passa um brilho e prende a arte atual
     // (gravado em mainMenu/pinnedLogo); outro duplo clique solta a rotação.
     void toggleLogoPin();
+    // Menu de contexto do Q: "Cor sólida do tema" troca a arte pela silhueta
+    // na cor de destaque (mainMenu/logoSolid), pausando a rotação.
+    void showLogoMenu(const QPoint& globalPos);
+    void setLogoSolid(bool solid);
+    // Arte atual, ou a silhueta na cor de destaque em modo cor sólida.
+    QImage currentLogoImage();
     // Abre o diálogo de edição do projeto (nome/autor/gêneros/sinopse/capa)
     // e grava as alterações direto no índice. Atualiza o grid no fim.
     void editProject(const QString& path);
@@ -145,6 +151,7 @@ private:
     QVariantAnimation* m_logoAnim = nullptr;
     QVariantAnimation* m_logoShine = nullptr;
     bool m_logoPinned = false;
+    bool m_logoSolid = false;
     QPushButton* m_newBtn = nullptr;
     QPushButton* m_newIdeaBtn = nullptr;
     QPushButton* m_loadBtn = nullptr;
