@@ -10353,6 +10353,61 @@ void Manager::loadBundled()
         t.panelColors.insert(PanelKey::Drawers, { QStringLiteral("#1D2123"), QStringLiteral("#737E82") });
         m_themes.append(t);
     }
+    // Dracula's Tomb: o Dracula fechado na cripta, montado à mão pelo Pe no
+    // Criador de Temas. Painéis com borda roxa, mesa com degradê em cima e
+    // embaixo e um pouco de grão, títulos em Cinzel.
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("draculas-tomb");
+        t.name = QStringLiteral("Dracula's Tomb");
+        t.bundled = true;
+        t.panelRadius = 10;
+        t.appBackground = QStringLiteral("#21222c");
+        t.panelBackground = QStringLiteral("#343746");
+        t.panelBorder = QStringLiteral("rgba(189,147,249,0.375)");
+        t.textPrimary = QStringLiteral("#f8f8f2");
+        t.textMuted = QStringLiteral("#6272a4");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(248,248,242,0.06)");
+        t.pressedOverlay = QStringLiteral("rgba(248,248,242,0.04)");
+        t.subtleBorder = QStringLiteral("rgba(248,248,242,0.10)");
+        t.accentDefault = QStringLiteral("#bd93f9");
+        t.hoverStrong = QStringLiteral("rgba(248,248,242,0.12)");
+        t.borderStrong = QStringLiteral("rgba(248,248,242,0.22)");
+        t.focusBorder = QStringLiteral("rgba(248,248,242,0.32)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.25)");
+        t.disabledText = QStringLiteral("rgba(248,248,242,0.30)");
+        t.selectionRing = QStringLiteral("#ffffff");
+        t.accentSuccess = QStringLiteral("#50fa7b");
+        t.accentSuccessSoft = QStringLiteral("rgba(80,250,123,0.18)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(80,250,123,0.55)");
+        t.accentDanger = QStringLiteral("#ff5555");
+        t.accentDangerSoft = QStringLiteral("rgba(255,85,85,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,85,85,0.50)");
+        t.accentWarning = QStringLiteral("#ffb86c");
+        t.accentInfo = QStringLiteral("#8be9fd");
+        t.accentInfoSoft = QStringLiteral("rgba(139,233,253,0.22)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(139,233,253,0.55)");
+        t.editorBackground = QStringLiteral("#282a36");
+        t.editorTextColor = QStringLiteral("#cbcbc2");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,170)");
+        t.pageShadowRadius = 24;
+        t.pageShadowOffset = 5;
+        t.pageGlowEnabled = false;
+        t.iconColor = QStringLiteral("#d3b4ff");
+        t.docHeaderColor = QStringLiteral("#bd93f9");
+        t.docHeaderFont = QStringLiteral("Cinzel");
+        t.backgroundMode = BgZoom;
+        t.bgOverlayType = OverlayBoth;
+        t.bgOverlayColor = QStringLiteral("#181920");
+        t.bgOverlayOpacity = 70;
+        t.bgOverlaySize = 28;
+        t.bgGrain = 25;
+        m_themes.append(t);
+    }
 
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |
@@ -10685,6 +10740,7 @@ void Manager::loadBundled()
         { QStringLiteral("green-ink"),       QStringLiteral("light") },
         { QStringLiteral("patch-bay"),       QStringLiteral("dark") },
         { QStringLiteral("silver-halide"),   QStringLiteral("dark") },
+        { QStringLiteral("draculas-tomb"),   QStringLiteral("dark") },
         { QStringLiteral("fluorescent"),     QStringLiteral("light") },
         { QStringLiteral("alpenglow"),       QStringLiteral("light") },
         { QStringLiteral("solitaire"),       QStringLiteral("light") },
