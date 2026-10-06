@@ -91,7 +91,7 @@ constexpr int kSidebarW = 410;   // largura da barra lateral
 constexpr int kLogoSize = 330;   // largura da caixa do logo (e do quote) — cabe na largura interna (410 - margens) com folga
 // Altura da caixa do logo. O Q é mais alto que largo, então a caixa é em pé:
 // a letra cresce na altura sem estourar a largura da barra lateral.
-constexpr int kLogoHeight = 429;
+constexpr int kLogoHeight = 350;
 constexpr int kLogoHoldMs = 5000;   // tempo de cada arte do Q parada na tela
 constexpr int kLogoFadeMs = 900;    // duração do crossfade entre duas artes
 
