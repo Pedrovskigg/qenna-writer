@@ -8433,6 +8433,10 @@ Do you want to install it now? (quick, no internet required)</translation>
         <source>Continuar de onde parei</source>
         <translation>Continue where I left off</translation>
     </message>
+    <message>
+        <source>Cor sólida do tema</source>
+        <translation>Solid theme color</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -23482,6 +23486,106 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
     <message>
         <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
         <translation>Fun fact: the character in the logo who shows up in different stories and universes is Qenna herself.</translation>
+    </message>
+    <message>
+        <source>Navessa Allen é uma autora de romance conhecida por &apos;Lights Out&apos;, um dos grandes fenômenos recentes do dark romance.</source>
+        <translation>Navessa Allen is a romance author known for &apos;Lights Out&apos;, one of the biggest recent dark romance phenomena.</translation>
+    </message>
+    <message>
+        <source>Arraste um personagem e solte em cima de outro, na gaveta, para criar um vínculo entre eles.</source>
+        <translation>Drag a character and drop it onto another one, in the drawer, to create a bond between them.</translation>
+    </message>
+    <message>
+        <source>O nome da guerreira que ficava no logo do Mira Writing (um dos nomes antigos do Qenna Writer, que por um dia também se chamou Qiyva Writer) era... Mira.</source>
+        <translation>The name of the warrior who used to be in the Mira Writing logo (one of Qenna Writer&apos;s old names, which for a single day was also called Qiyva Writer) was... Mira.</translation>
+    </message>
+    <message>
+        <source>O seu projeto é salvo automaticamente a cada 4 minutos. Pode escrever sem medo.</source>
+        <translation>Your project is saved automatically every 4 minutes. Write without fear.</translation>
+    </message>
+    <message>
+        <source>Ao criar um novo projeto, você escolhe como ele começa: em branco, com gavetas básicas ou completo, com gavetas e documentos de planejamento prontos. Se você é um arquiteto ambicioso, vá de completo.</source>
+        <translation>When you create a new project, you choose how it starts: blank, with basic drawers, or complete, with drawers and planning documents ready to go. If you&apos;re an ambitious architect, go with complete.</translation>
+    </message>
+    <message>
+        <source>Use o painel de Estatísticas para acompanhar seus personagens: presença, falas, status e local de cada um.</source>
+        <translation>Use the Statistics panel to keep track of your characters: presence, lines, status and location of each one.</translation>
+    </message>
+    <message>
+        <source>O editor detecta a presença dos personagens nos capítulos e cenas automaticamente quando eles são citados três vezes ou mais.</source>
+        <translation>The editor automatically detects characters&apos; presence in chapters and scenes when they are mentioned three times or more.</translation>
+    </message>
+    <message>
+        <source>Marque o status dos seus personagens no painel de Estatísticas. Se um personagem morto ou desaparecido voltar a aparecer numa cena, o app te avisa. Ressurreição, só se for de propósito.</source>
+        <translation>Set your characters&apos; status in the Statistics panel. If a dead or missing character shows up in a scene again, the app warns you. Resurrections only on purpose.</translation>
+    </message>
+    <message>
+        <source>Caso não goste da detecção automática de presença dos personagens nas cenas, ela pode ser desligada nas configurações.</source>
+        <translation>If you don&apos;t like the automatic detection of characters&apos; presence in scenes, you can turn it off in the settings.</translation>
+    </message>
+    <message>
+        <source>Caso queira registrar algum comentário sobre um trecho do seu projeto, selecione-o e clique em &apos;Marcador com comentário&apos;.</source>
+        <translation>If you want to leave a comment on a passage of your project, select it and click &apos;Marker with comment&apos;.</translation>
+    </message>
+    <message>
+        <source>O Qenna Writer pode zipar a pasta inteira do seu projeto de tempos em tempos. Ative em Configurações → Backup e escolha uma pasta fora do projeto, de preferência em outro disco ou na nuvem.</source>
+        <translation>Qenna Writer can zip your whole project folder from time to time. Turn it on in Settings → Backup and choose a folder outside the project, ideally on another drive or in the cloud.</translation>
+    </message>
+    <message>
+        <source>A função de Som ambiente toca sons e músicas de fundo enquanto você escreve, criando uma atmosfera mais envolvente para a sua escrita!</source>
+        <translation>The Ambient sound feature plays background sounds and music while you write, creating a more immersive atmosphere for your writing!</translation>
+    </message>
+    <message>
+        <source>Toda vez que um capítulo é salvo, a versão anterior dele fica guardada na pasta &apos;bak&apos;, dentro da pasta do seu projeto. Se algo der errado, ela está lá.</source>
+        <translation>Every time a chapter is saved, its previous version is kept in the &apos;bak&apos; folder, inside your project folder. If something goes wrong, it&apos;s there.</translation>
+    </message>
+    <message>
+        <source>É possível usar suas próprias músicas no Som ambiente: coloque arquivos .mp3 ou .ogg na pasta &apos;ambience-sounds&apos;, dentro da pasta onde o app está instalado.</source>
+        <translation>You can use your own music in Ambient sound: put .mp3 or .ogg files in the &apos;ambience-sounds&apos; folder, inside the folder where the app is installed.</translation>
+    </message>
+    <message>
+        <source>Divida os seus capítulos em cenas a qualquer momento: digite &apos;----&apos; numa linha vazia e aperte Enter.</source>
+        <translation>Split your chapters into scenes at any time: type &apos;----&apos; on an empty line and press Enter.</translation>
+    </message>
+    <message>
+        <source>Os temas padrão do editor foram feitos no próprio criador de temas dele. Eles ficam sempre disponíveis; já os temas que você cria podem ser excluídos quando quiser.</source>
+        <translation>The editor&apos;s default themes were made in its own theme creator. They&apos;re always available; the themes you create can be deleted whenever you like.</translation>
+    </message>
+    <message>
+        <source>Você pode excluir memórias salvas no Pensário.</source>
+        <translation>You can delete saved memories in the Pensarium.</translation>
+    </message>
+    <message>
+        <source>A lousa não serve só pra planejar: clique com o botão direito num post-it e escolha &apos;Criar documento&apos; para levá-lo a uma gaveta, como personagem, cenário ou objeto.</source>
+        <translation>The board isn&apos;t just for planning: right-click a post-it and choose &apos;Create document&apos; to turn it into a document in a drawer, as a character, a setting or an object.</translation>
+    </message>
+    <message>
+        <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultá-lo a qualquer momento na aba Glossário do Pensário.</source>
+        <translation>The glossary is for saving words and terms created for your project. Just select the word and click &apos;Add to Glossary&apos;. You can look it up anytime in the Glossary tab of the Pensarium.</translation>
+    </message>
+    <message>
+        <source>O glossário vai junto quando você exporta a Bíblia do universo.</source>
+        <translation>The glossary is included when you export the Story bible.</translation>
+    </message>
+    <message>
+        <source>Arraste personagens até o chip de uma pasta para colocá-los lá. Para criar uma pasta, use o botão &apos;+ Pasta&apos;.</source>
+        <translation>Drag characters onto a folder chip to put them in it. To create a folder, use the &apos;+ Folder&apos; button.</translation>
+    </message>
+    <message>
+        <source>Filtre a Linha do Tempo por personagem para ver só os eventos em que ele aparece.</source>
+        <translation>Filter the Timeline by character to see only the events they appear in.</translation>
+    </message>
+    <message>
+        <source>Há três tipos diferentes de exibição da linha do tempo: Trilho, Espiral e Ramificações. O Trilho é o menos confuso, mas as Ramificações e a Espiral se tornam fáceis de ler com o tempo.</source>
+        <translation>There are three different ways to view the timeline: Rail, Spiral and Branches. Rail is the least confusing, but Branches and Spiral become easy to read over time.</translation>
+    </message>
+    <message>
+        <source>Temas são necessários. Por isso o app tem centenas deles. E caso queira modificar algo em algum, ele pode servir de base para um tema personalizado. Basta escolher a opção &apos;Editar uma cópia&apos;.</source>
+        <translation>Themes are essential. That&apos;s why the app has hundreds of them. And if you want to change something in one, it can be the base for a custom theme. Just choose &apos;Edit a copy&apos;.</translation>
+    </message>
+    <message>
+        <source>Existem 277 quotes que aparecem aqui no app, qual o seu favorito?</source>
+        <translation>There are 277 quotes that show up here in the app. Which one is your favorite?</translation>
     </message>
 </context>
 <context>

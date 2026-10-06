@@ -8433,6 +8433,10 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <source>Continuar de onde parei</source>
         <translation>Reprendre là où j&apos;en étais</translation>
     </message>
+    <message>
+        <source>Cor sólida do tema</source>
+        <translation>Couleur unie du thème</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
@@ -23482,6 +23486,106 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
     <message>
         <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
         <translation>Le saviez-vous ? Le personnage du logo qui apparaît dans différentes histoires et différents univers est Qenna elle-même.</translation>
+    </message>
+    <message>
+        <source>Navessa Allen é uma autora de romance conhecida por &apos;Lights Out&apos;, um dos grandes fenômenos recentes do dark romance.</source>
+        <translation>Navessa Allen est une autrice de romance connue pour « Lights Out », l&apos;un des grands phénomènes récents de la dark romance.</translation>
+    </message>
+    <message>
+        <source>Arraste um personagem e solte em cima de outro, na gaveta, para criar um vínculo entre eles.</source>
+        <translation>Faites glisser un personnage et déposez-le sur un autre, dans le tiroir, pour créer un lien entre eux.</translation>
+    </message>
+    <message>
+        <source>O nome da guerreira que ficava no logo do Mira Writing (um dos nomes antigos do Qenna Writer, que por um dia também se chamou Qiyva Writer) era... Mira.</source>
+        <translation>Le nom de la guerrière qui figurait sur le logo de Mira Writing (l&apos;un des anciens noms de Qenna Writer, qui s&apos;est aussi appelé Qiyva Writer pendant une journée) était... Mira.</translation>
+    </message>
+    <message>
+        <source>O seu projeto é salvo automaticamente a cada 4 minutos. Pode escrever sem medo.</source>
+        <translation>Votre projet est enregistré automatiquement toutes les 4 minutes. Écrivez sans crainte.</translation>
+    </message>
+    <message>
+        <source>Ao criar um novo projeto, você escolhe como ele começa: em branco, com gavetas básicas ou completo, com gavetas e documentos de planejamento prontos. Se você é um arquiteto ambicioso, vá de completo.</source>
+        <translation>En créant un nouveau projet, vous choisissez comment il commence : vierge, avec les tiroirs de base ou complet, avec des tiroirs et des documents de planification prêts. Si vous êtes un architecte ambitieux, choisissez complet.</translation>
+    </message>
+    <message>
+        <source>Use o painel de Estatísticas para acompanhar seus personagens: presença, falas, status e local de cada um.</source>
+        <translation>Utilisez le panneau Statistiques pour suivre vos personnages : présence, répliques, statut et lieu de chacun.</translation>
+    </message>
+    <message>
+        <source>O editor detecta a presença dos personagens nos capítulos e cenas automaticamente quando eles são citados três vezes ou mais.</source>
+        <translation>L&apos;éditeur détecte automatiquement la présence des personnages dans les chapitres et les scènes lorsqu&apos;ils sont cités trois fois ou plus.</translation>
+    </message>
+    <message>
+        <source>Marque o status dos seus personagens no painel de Estatísticas. Se um personagem morto ou desaparecido voltar a aparecer numa cena, o app te avisa. Ressurreição, só se for de propósito.</source>
+        <translation>Indiquez le statut de vos personnages dans le panneau Statistiques. Si un personnage mort ou disparu réapparaît dans une scène, l&apos;app vous prévient. Les résurrections, seulement exprès.</translation>
+    </message>
+    <message>
+        <source>Caso não goste da detecção automática de presença dos personagens nas cenas, ela pode ser desligada nas configurações.</source>
+        <translation>Si vous n&apos;aimez pas la détection automatique de la présence des personnages dans les scènes, vous pouvez la désactiver dans les paramètres.</translation>
+    </message>
+    <message>
+        <source>Caso queira registrar algum comentário sobre um trecho do seu projeto, selecione-o e clique em &apos;Marcador com comentário&apos;.</source>
+        <translation>Si vous voulez laisser un commentaire sur un passage de votre projet, sélectionnez-le et cliquez sur « Marqueur avec commentaire ».</translation>
+    </message>
+    <message>
+        <source>O Qenna Writer pode zipar a pasta inteira do seu projeto de tempos em tempos. Ative em Configurações → Backup e escolha uma pasta fora do projeto, de preferência em outro disco ou na nuvem.</source>
+        <translation>Qenna Writer peut compresser en zip tout le dossier de votre projet de temps en temps. Activez-le dans Paramètres → Sauvegarde et choisissez un dossier en dehors du projet, de préférence sur un autre disque ou dans le cloud.</translation>
+    </message>
+    <message>
+        <source>A função de Som ambiente toca sons e músicas de fundo enquanto você escreve, criando uma atmosfera mais envolvente para a sua escrita!</source>
+        <translation>La fonction Son d&apos;ambiance joue des sons et de la musique de fond pendant que vous écrivez, pour une atmosphère plus immersive !</translation>
+    </message>
+    <message>
+        <source>Toda vez que um capítulo é salvo, a versão anterior dele fica guardada na pasta &apos;bak&apos;, dentro da pasta do seu projeto. Se algo der errado, ela está lá.</source>
+        <translation>Chaque fois qu&apos;un chapitre est enregistré, sa version précédente est conservée dans le dossier « bak », à l&apos;intérieur du dossier de votre projet. Si quelque chose tourne mal, elle est là.</translation>
+    </message>
+    <message>
+        <source>É possível usar suas próprias músicas no Som ambiente: coloque arquivos .mp3 ou .ogg na pasta &apos;ambience-sounds&apos;, dentro da pasta onde o app está instalado.</source>
+        <translation>Vous pouvez utiliser votre propre musique dans le Son d&apos;ambiance : placez des fichiers .mp3 ou .ogg dans le dossier « ambience-sounds », dans le dossier où l&apos;app est installée.</translation>
+    </message>
+    <message>
+        <source>Divida os seus capítulos em cenas a qualquer momento: digite &apos;----&apos; numa linha vazia e aperte Enter.</source>
+        <translation>Divisez vos chapitres en scènes à tout moment : tapez « ---- » sur une ligne vide et appuyez sur Entrée.</translation>
+    </message>
+    <message>
+        <source>Os temas padrão do editor foram feitos no próprio criador de temas dele. Eles ficam sempre disponíveis; já os temas que você cria podem ser excluídos quando quiser.</source>
+        <translation>Les thèmes par défaut de l&apos;éditeur ont été créés avec son propre créateur de thèmes. Ils restent toujours disponibles ; les thèmes que vous créez peuvent être supprimés quand vous voulez.</translation>
+    </message>
+    <message>
+        <source>Você pode excluir memórias salvas no Pensário.</source>
+        <translation>Vous pouvez supprimer les mémoires enregistrées dans le Pensarium.</translation>
+    </message>
+    <message>
+        <source>A lousa não serve só pra planejar: clique com o botão direito num post-it e escolha &apos;Criar documento&apos; para levá-lo a uma gaveta, como personagem, cenário ou objeto.</source>
+        <translation>Le board ne sert pas qu&apos;à planifier : faites un clic droit sur un post-it et choisissez « Créer un document » pour l&apos;envoyer dans un tiroir, comme personnage, décor ou objet.</translation>
+    </message>
+    <message>
+        <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultá-lo a qualquer momento na aba Glossário do Pensário.</source>
+        <translation>Le glossaire sert à enregistrer les mots et termes créés pour votre projet. Il suffit de sélectionner le mot et de cliquer sur « Ajouter au Glossaire ». Vous pouvez le consulter à tout moment dans l&apos;onglet Glossaire du Pensarium.</translation>
+    </message>
+    <message>
+        <source>O glossário vai junto quando você exporta a Bíblia do universo.</source>
+        <translation>Le glossaire est inclus quand vous exportez la Bible de l&apos;univers.</translation>
+    </message>
+    <message>
+        <source>Arraste personagens até o chip de uma pasta para colocá-los lá. Para criar uma pasta, use o botão &apos;+ Pasta&apos;.</source>
+        <translation>Faites glisser des personnages sur la puce d&apos;un dossier pour les y ranger. Pour créer un dossier, utilisez le bouton « + Dossier ».</translation>
+    </message>
+    <message>
+        <source>Filtre a Linha do Tempo por personagem para ver só os eventos em que ele aparece.</source>
+        <translation>Filtrez la Chronologie par personnage pour ne voir que les événements où il apparaît.</translation>
+    </message>
+    <message>
+        <source>Há três tipos diferentes de exibição da linha do tempo: Trilho, Espiral e Ramificações. O Trilho é o menos confuso, mas as Ramificações e a Espiral se tornam fáceis de ler com o tempo.</source>
+        <translation>Il y a trois façons d&apos;afficher la chronologie : Rail, Spirale et Branches. Le Rail est le moins déroutant, mais les Branches et la Spirale deviennent faciles à lire avec le temps.</translation>
+    </message>
+    <message>
+        <source>Temas são necessários. Por isso o app tem centenas deles. E caso queira modificar algo em algum, ele pode servir de base para um tema personalizado. Basta escolher a opção &apos;Editar uma cópia&apos;.</source>
+        <translation>Les thèmes sont indispensables. C&apos;est pourquoi l&apos;app en propose des centaines. Et si vous voulez modifier quelque chose dans l&apos;un d&apos;eux, il peut servir de base à un thème personnalisé. Il suffit de choisir « Modifier une copie ».</translation>
+    </message>
+    <message>
+        <source>Existem 277 quotes que aparecem aqui no app, qual o seu favorito?</source>
+        <translation>Il y a 277 citations qui apparaissent ici dans l&apos;app, laquelle est votre préférée ?</translation>
     </message>
 </context>
 <context>
