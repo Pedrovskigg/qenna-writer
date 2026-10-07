@@ -87,8 +87,8 @@ constexpr int kStackHeroCoverW = 340; // capa herói da Pilha — mesma proporç
 constexpr int kStackHeroCoverH = 510;
 constexpr int kDialogW = 1320;
 constexpr int kDialogH = 1000;
-constexpr int kSidebarW = 410;   // largura da barra lateral
-constexpr int kLogoSize = 330;   // largura da caixa do logo (e do quote) — cabe na largura interna (410 - margens) com folga
+constexpr int kSidebarW = 340;   // largura da barra lateral
+constexpr int kLogoSize = 280;   // largura da caixa do logo (e do quote) — cabe na largura interna (340 - margens); o Q, em pé, é limitado pela altura
 // Altura da caixa do logo. O Q é mais alto que largo, então a caixa é em pé:
 // a letra cresce na altura sem estourar a largura da barra lateral.
 constexpr int kLogoHeight = 350;
