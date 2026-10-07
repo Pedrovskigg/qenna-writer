@@ -268,6 +268,47 @@ QPixmap splashFrame(SplashLetters &s, int elapsedMs, qreal dpr)
     return frame;
 }
 
+// Tarja preta atrás do logo, do Q ao A. Não existe no começo: nasce como uma
+// linha fina no centro, se estica até as pontas e depois abre pra cima e pra
+// baixo, devagar, inteira no último quadro da animação. O logo é
+// montado no pixmap dele e só depois vai pra cima da tarja: o reflexo usa
+// SourceAtop e, pintado direto sobre o preto, cobriria a tarja inteira.
+constexpr qreal kSplashBandPadX = 24;  // folga da tarja além do Q e do A
+constexpr qreal kSplashBandPadY = 48;  // folga da tarja acima e abaixo do logo
+constexpr qreal kSplashBandLine = 2;   // espessura da linha em que ela nasce
+constexpr qreal kSplashBandSpread = 0.4; // fração do tempo da linha se esticando
+constexpr int kSplashBandInMs = 1300;  // a linha aparece aqui
+// Tamanho da splash na tela. Tudo acima é medido no tamanho cheio das letras;
+// a escala só entra aqui, com o logo já desenhado na resolução final.
+constexpr qreal kSplashScale = 0.65;
+
+QPixmap splashCanvasFrame(SplashLetters &s, int elapsedMs, qreal dpr)
+{
+    const QSizeF canvas(s.size.width() + 2 * kSplashBandPadX, s.size.height() + 2 * kSplashBandPadY);
+    QPixmap frame(qCeil(canvas.width() * kSplashScale * dpr), qCeil(canvas.height() * kSplashScale * dpr));
+    frame.setDevicePixelRatio(dpr);
+    frame.fill(Qt::transparent);
+
+    const QPixmap logo = splashFrame(s, elapsedMs, dpr * kSplashScale);
+    QPainter painter(&frame);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.scale(kSplashScale, kSplashScale);
+    const int endMs = splashAnimationMs(s);
+    const qreal band = qBound(qreal(0), (elapsedMs - kSplashBandInMs) / qreal(endMs - kSplashBandInMs), qreal(1));
+    if (band > 0) {
+        const qreal wide = QEasingCurve(QEasingCurve::InOutSine)
+            .valueForProgress(qMin(qreal(1), band / kSplashBandSpread));
+        const qreal tall = QEasingCurve(QEasingCurve::InOutSine)
+            .valueForProgress(qMax(qreal(0), (band - kSplashBandSpread) / (1 - kSplashBandSpread)));
+        const qreal w = canvas.width() * wide;
+        const qreal h = kSplashBandLine + (canvas.height() - kSplashBandLine) * tall;
+        painter.fillRect(QRectF((canvas.width() - w) / 2, (canvas.height() - h) / 2, w, h), Qt::black);
+    }
+    const QPointF at(kSplashBandPadX, kSplashBandPadY);
+    painter.drawPixmap(QRectF(at, logo.deviceIndependentSize()), logo, QRectF(logo.rect()));
+    return frame;
+}
+
 QStringList registerCustomFonts()
 {
     QString fontsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/fonts");
@@ -444,7 +485,7 @@ int main(int argc, char *argv[])
     // fica com o último quadro e a memória volta.
     {
         SplashLetters splashLetters = loadSplashLetters();
-        splash.setPixmap(splashFrame(splashLetters, 0, splashDpr));
+        splash.setPixmap(splashCanvasFrame(splashLetters, 0, splashDpr));
         splash.show();
         app.processEvents();
         splashClock.start();
@@ -452,7 +493,7 @@ int main(int argc, char *argv[])
         const int totalMs = splashAnimationMs(splashLetters);
         forever {
             const int elapsed = int(qMin<qint64>(splashClock.elapsed(), totalMs));
-            splash.setPixmap(splashFrame(splashLetters, elapsed, splashDpr));
+            splash.setPixmap(splashCanvasFrame(splashLetters, elapsed, splashDpr));
             QApplication::processEvents();
             if (elapsed >= totalMs)
                 break;
