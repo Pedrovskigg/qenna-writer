@@ -4,7 +4,10 @@
 #include "ConnectionItem.h"
 #include "ZoneItem.h"
 
+#include "Theme.h"
+
 #include <QGraphicsLineItem>
+#include <QGraphicsView>
 #include <QGraphicsSceneMouseEvent>
 #include <QGuiApplication>
 #include <QPainter>
@@ -34,7 +37,7 @@ static QPointF projectOnSegment(const QPointF& p, const QPointF& a, const QPoint
 
 static QPointF cardTopCenter(const CardItem* c)
 {
-    return c->pos() + QPointF(c->cardData().width / 2.0, 0.0);
+    return c->pinScenePos();
 }
 
 // ─── Constructor ───────────────────────────────────────────────────────────
@@ -54,25 +57,140 @@ LousaScene::LousaScene(QObject* parent)
 
 void LousaScene::setCanvasColor(const QColor& color)
 {
-    if (m_color == color) return;
+    if (m_color == color && m_color.isValid() == color.isValid()) return;
     m_color = color;
+    refreshBoardLook();
+}
+
+QColor LousaScene::effectiveCanvasColor() const
+{
+    if (m_style == QStringLiteral("cork"))       return QColor(0x9c, 0x74, 0x4c);
+    if (m_style == QStringLiteral("whiteboard")) return QColor(0xf4, 0xf3, 0xee);
+    if (m_color.isValid()) return m_color;
+    const QColor themed(Theme::appBackground());
+    return themed.isValid() ? themed : QColor(0x1a, 0x1a, 0x19);
+}
+
+void LousaScene::setBoardStyle(const QString& style)
+{
+    static const QStringList kStyles = { QStringLiteral("dots"), QStringLiteral("grid"),
+        QStringLiteral("lines"), QStringLiteral("plain"), QStringLiteral("cork"),
+        QStringLiteral("whiteboard") };
+    const QString st = kStyles.contains(style) ? style : QStringLiteral("dots");
+    if (st == m_style) return;
+    m_style = st;
+    refreshBoardLook();
+}
+
+void LousaScene::refreshBoardLook()
+{
+    const QColor eff = effectiveCanvasColor();
+    CardItem::setBoardIsLight(eff.lightness() > 150);
+    CardItem::setBoardColor(eff);
+    ZoneItem::setBoardColor(eff);
+    for (CardItem* c : m_cards) c->onBoardChanged();
+    for (QGraphicsView* v : views()) v->resetCachedContent();
+    for (ConnectionItem* c : m_connections) c->update();
     update();
+    emit boardLookChanged();
+}
+
+void LousaScene::setTiltEnabled(bool on)
+{
+    if (CardItem::tiltEnabled() == on) return;
+    CardItem::setTiltEnabled(on);
+    for (CardItem* c : m_cards) c->refreshTilt();
+    for (ConnectionItem* c : m_connections) c->invalidateGeometry();
+}
+
+void LousaScene::setViewZoom(qreal zoom)
+{
+    ZoneItem::setViewZoom(m_zones, zoom);
+}
+
+QRectF LousaScene::contentBounds() const
+{
+    QRectF r;
+    for (const CardItem* c : m_cards)       r = r.united(c->sceneBoundingRect());
+    for (const ZoneItem* z : m_zones)       r = r.united(z->sceneBoundingRect());
+    for (const ConnectionItem* c : m_connections) r = r.united(c->boundingRect());
+    return r;
 }
 
 void LousaScene::drawBackground(QPainter* painter, const QRectF& rect)
 {
-    painter->fillRect(rect, m_color);
-    constexpr qreal kSpacing = 32.0;
-    const int r = m_color.red()   + (255 - m_color.red())   / 6;
-    const int g = m_color.green() + (255 - m_color.green()) / 6;
-    const int b = m_color.blue()  + (255 - m_color.blue())  / 6;
+    if (m_skipBackground) return;
+    const QColor base = effectiveCanvasColor();
+    const bool light = base.lightness() > 150;
+
+    if (m_style == QStringLiteral("cork")) {
+        if (m_corkTile.isNull()) {
+            // Cortiça: grãos claros e escuros espalhados, sempre o mesmo desenho.
+            QImage img(160, 160, QImage::Format_RGB32);
+            img.fill(base);
+            QPainter tp(&img);
+            tp.setRenderHint(QPainter::Antialiasing);
+            tp.setPen(Qt::NoPen);
+            quint32 seed = 0x9e3779b9u;
+            auto rnd = [&seed]() { seed = seed * 1664525u + 1013904223u; return (seed >> 8) / 16777216.0; };
+            for (int i = 0; i < 900; ++i) {
+                const qreal x = rnd() * 160, y = rnd() * 160, r = 0.5 + rnd() * 1.5;
+                const bool dark = rnd() < 0.6;
+                tp.setBrush(dark ? QColor(60, 34, 14, 40 + int(rnd() * 60))
+                                 : QColor(255, 228, 190, 25 + int(rnd() * 45)));
+                tp.drawEllipse(QPointF(x, y), r, r * (0.6 + rnd() * 0.6));
+            }
+            tp.end();
+            m_corkTile = QPixmap::fromImage(img);
+        }
+        const qreal ox = std::fmod(std::fmod(rect.left(), 160.0) + 160.0, 160.0);
+        const qreal oy = std::fmod(std::fmod(rect.top(), 160.0) + 160.0, 160.0);
+        painter->drawTiledPixmap(rect, m_corkTile, QPointF(ox, oy));
+        return;
+    }
+
+    painter->fillRect(rect, base);
+    if (m_style == QStringLiteral("plain")) return;
+
+    // Com o zoom longe, os pontos/linhas a cada 32 px viram manchas (moiré):
+    // o espaçamento dobra até ficar com pelo menos 14 px na tela, e o ponto
+    // mantém o mesmo tamanho na tela em qualquer zoom.
+    const qreal scale = qMax(0.01, painter->worldTransform().m11());
+    qreal kSpacing = 32.0;
+    while (kSpacing * scale < 14.0) kSpacing *= 2.0;
+    const QColor ink = light ? QColor(0, 0, 0) : QColor(255, 255, 255);
+    if (m_style == QStringLiteral("grid")) {
+        QPen gp(QColor(ink.red(), ink.green(), ink.blue(), light ? 22 : 16), 1.0);
+        gp.setCosmetic(true);
+        painter->setPen(gp);
+        const qreal x0 = std::floor(rect.left() / kSpacing) * kSpacing;
+        const qreal y0 = std::floor(rect.top() / kSpacing) * kSpacing;
+        for (qreal x = x0; x <= rect.right(); x += kSpacing)
+            painter->drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
+        for (qreal y = y0; y <= rect.bottom(); y += kSpacing)
+            painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
+        return;
+    }
+    if (m_style == QStringLiteral("lines")) {
+        // Caderno: pauta azul
+        QPen lp(light ? QColor(80, 120, 190, 70) : QColor(130, 165, 220, 46), 1.0);
+        lp.setCosmetic(true);
+        painter->setPen(lp);
+        const qreal y0 = std::floor(rect.top() / kSpacing) * kSpacing;
+        for (qreal y = y0; y <= rect.bottom(); y += kSpacing)
+            painter->drawLine(QPointF(rect.left(), y), QPointF(rect.right(), y));
+        return;
+    }
+    // dots (e a lousa branca, com pontos bem fracos)
+    const int alpha = (m_style == QStringLiteral("whiteboard")) ? 22 : (light ? 40 : 36);
+    const qreal dotR = 1.25 / scale;
     painter->setPen(Qt::NoPen);
-    painter->setBrush(QColor(r, g, b));
+    painter->setBrush(QColor(ink.red(), ink.green(), ink.blue(), alpha));
     const qreal x0 = std::floor(rect.left()  / kSpacing) * kSpacing;
     const qreal y0 = std::floor(rect.top()   / kSpacing) * kSpacing;
     for (qreal x = x0; x <= rect.right();  x += kSpacing)
         for (qreal y = y0; y <= rect.bottom(); y += kSpacing)
-            painter->drawEllipse(QPointF(x, y), 1.2, 1.2);
+            painter->drawEllipse(QPointF(x, y), dotR, dotR);
 }
 
 // ─── Cards ──────────────────────────────────────────────────────────────────
@@ -113,6 +231,21 @@ CardItem* LousaScene::addCard(const CanvasCard& data)
     connect(item, &CardItem::draggedBy,   this, &LousaScene::onCardDraggedBy);
     connect(item, &CardItem::hoverPreviewRequested, this, &LousaScene::cardHoverPreview);
     connect(item, &CardItem::hoverPreviewDismissed, this, &LousaScene::cardHoverDismissed);
+    connect(item, &CardItem::selectionFlagChanged, this, &LousaScene::scheduleSelectionSignal);
+    connect(item, &CardItem::openRequested, this, [this](const QString& id) {
+        if (CardItem* c = findCard(id)) emit cardOpenRequested(c->cardData());
+    });
+    connect(item, &CardItem::gestureFinished, this, [this]() {
+        refreshZoneCounts();
+        emit gestureFinished();
+    });
+    // Texto livre que terminou vazio some sozinho. Na fila: o sinal sai de
+    // dentro do próprio texto, que não pode ser apagado no meio do evento.
+    connect(item, &CardItem::emptyTextFinished, this, [this](const QString& id) {
+        removeCard(id);
+        refreshZoneCounts();
+    }, Qt::QueuedConnection);
+    refreshZoneCounts();
     return item;
 }
 
@@ -151,6 +284,12 @@ QList<CardItem*> LousaScene::selectedCardItems() const
 // clique num card já selecionado = mantém a seleção (permite arrastar o grupo).
 void LousaScene::onCardPressedSelect(CardItem* item)
 {
+    selectConnection(QString());
+    // Clicar num card da área marcada com tudo dentro mantém o grupo (pra
+    // arrastar tudo junto); qualquer outro clique desfaz.
+    const bool keepGroup = !m_zoneWithContents.isEmpty() && item->isCardSelected()
+                        && !(QGuiApplication::keyboardModifiers() & Qt::ShiftModifier);
+    if (!keepGroup) clearZoneSelection();
     if (QGuiApplication::keyboardModifiers() & Qt::ShiftModifier)
         toggleCardSelection(item);
     else if (!item->isCardSelected())
@@ -161,18 +300,27 @@ void LousaScene::onCardDragStarted(const QString& id)
 {
     m_groupOrigins.clear();
     m_groupLeader.clear();
+    m_groupZoneId.clear();
     CardItem* leader = findCard(id);
     if (!leader || !leader->isCardSelected()) return;  // arrastando card avulso
     const QList<CardItem*> sel = selectedCardItems();
-    if (sel.size() < 2) return;                         // sem grupo
+    const bool withZone = !m_zoneWithContents.isEmpty();
+    if (sel.size() < 2 && !withZone) return;            // sem grupo
     m_groupLeader = id;
     for (CardItem* c : sel)
         m_groupOrigins.insert(c->cardData().id, c->pos());
+    // Área marcada com tudo dentro: ela vai junto.
+    if (withZone)
+        for (ZoneItem* z : m_zones)
+            if (z->zoneData().id == m_zoneWithContents) { m_groupZoneId = z->zoneData().id; m_groupZoneOrigin = z->pos(); }
 }
 
 void LousaScene::onCardDraggedBy(const QString& id, const QPointF& delta)
 {
     if (id != m_groupLeader || m_groupOrigins.isEmpty()) return;
+    if (!m_groupZoneId.isEmpty())
+        for (ZoneItem* z : m_zones)
+            if (z->zoneData().id == m_groupZoneId) z->setPos(m_groupZoneOrigin + delta);
     for (auto it = m_groupOrigins.constBegin(); it != m_groupOrigins.constEnd(); ++it) {
         if (it.key() == id) continue;  // o líder já se moveu sozinho
         if (CardItem* c = findCard(it.key()))
@@ -198,10 +346,13 @@ void LousaScene::removeCard(const QString& id)
 
     for (int i = 0; i < m_cards.size(); ++i) {
         if (m_cards[i]->cardData().id == id) {
-            removeItem(m_cards[i]);
-            delete m_cards[i];
-            m_cards.removeAt(i);
+            CardItem* dead = m_cards.takeAt(i);
+            removeItem(dead);
+            const bool wasSelected = dead->isCardSelected();
+            dead->deleteLater();
+            refreshZoneCounts();
             emit cardDataChanged();
+            if (wasSelected) scheduleSelectionSignal();
             return;
         }
     }
@@ -209,6 +360,7 @@ void LousaScene::removeCard(const QString& id)
 
 void LousaScene::clearCards()
 {
+    cancelSnap();
     for (auto* c : m_cards) { removeItem(c); delete c; }
     m_cards.clear();
 }
@@ -236,6 +388,13 @@ ConnectionItem* LousaScene::addConnection(const CanvasConnection& data)
     connect(item, &ConnectionItem::removeRequested, this, [this](const QString& id) {
         removeConnection(id);
     });
+    connect(item, &ConnectionItem::clicked, this, [this](const QString& id) {
+        clearCardSelection();
+        clearZoneSelection();
+        selectConnection(id);
+    });
+    connect(item, &ConnectionItem::labelEditRequested, this, &LousaScene::connectionLabelEditRequested);
+    connect(item, &ConnectionItem::menuRequested, this, &LousaScene::connectionMenuRequested);
     emit connectionDataChanged();
     return item;
 }
@@ -252,6 +411,10 @@ void LousaScene::removeConnection(const QString& id)
             c->setSnapping(false);
         }
     }
+    if (m_selectedConnId == id) {
+        m_selectedConnId.clear();
+        scheduleSelectionSignal();
+    }
     for (int i = 0; i < m_connections.size(); ++i) {
         if (m_connections[i]->connData().id == id) {
             removeItem(m_connections[i]);
@@ -267,6 +430,34 @@ void LousaScene::clearConnections()
 {
     for (auto* c : m_connections) { removeItem(c); delete c; }
     m_connections.clear();
+    m_selectedConnId.clear();
+}
+
+void LousaScene::selectConnection(const QString& id)
+{
+    if (m_selectedConnId == id) return;
+    m_selectedConnId = id;
+    for (ConnectionItem* c : m_connections)
+        c->setLineSelected(!id.isEmpty() && c->connData().id == id);
+    scheduleSelectionSignal();
+}
+
+void LousaScene::clearAllSelection()
+{
+    clearCardSelection();
+    clearZoneSelection();
+    selectConnection(QString());
+}
+
+void LousaScene::scheduleSelectionSignal()
+{
+    // Junta várias mudanças (desmarcar 10 cards, marcar 1) num aviso só.
+    if (m_selectionSignalPending) return;
+    m_selectionSignalPending = true;
+    QTimer::singleShot(0, this, [this]() {
+        m_selectionSignalPending = false;
+        emit selectionChanged();
+    });
 }
 
 QList<CanvasConnection> LousaScene::allConnectionData() const
@@ -304,20 +495,69 @@ ZoneItem* LousaScene::addZone(const CanvasZone& data)
     connect(item, &ZoneItem::exportRequested, this, &LousaScene::zoneExportRequested);
     connect(item, &ZoneItem::dragStartedWithContents, this, &LousaScene::onZoneDragStartedWithContents);
     connect(item, &ZoneItem::draggedBy, this, &LousaScene::onZoneDraggedBy);
+    connect(item, &ZoneItem::contentsSelectRequested, this, &LousaScene::selectZoneWithContents);
+    refreshZoneCounts();
     return item;
+}
+
+void LousaScene::resetZoneContents()
+{
+    if (m_zoneWithContents.isEmpty()) return;
+    for (ZoneItem* z : m_zones)
+        if (z->zoneData().id == m_zoneWithContents) z->setContentsSelected(false);
+    m_zoneWithContents.clear();
+}
+
+void LousaScene::selectZoneWithContents(const QString& id)
+{
+    ZoneItem* zone = nullptr;
+    for (ZoneItem* z : m_zones) if (z->zoneData().id == id) zone = z;
+    if (!zone) return;
+    onZoneClicked(id);
+    const QRectF zr(zone->pos(), QSizeF(zone->zoneData().width, zone->zoneData().height));
+    for (CardItem* c : m_cards) {
+        const CanvasCard d = c->cardData();
+        if (zr.contains(QPointF(d.x + d.width / 2.0, d.y + d.height / 2.0))) c->setCardSelected(true);
+    }
+    m_zoneWithContents = id;
+    zone->setContentsSelected(true);
+    scheduleSelectionSignal();
 }
 
 void LousaScene::clearZoneSelection()
 {
+    resetZoneContents();
+    if (m_selectedZoneId.isEmpty()) return;
     m_selectedZoneId.clear();
     for (ZoneItem* z : m_zones) z->setSelected(false);
+    scheduleSelectionSignal();
 }
 
 void LousaScene::onZoneClicked(const QString& id)
 {
+    // Já marcada com tudo dentro: um clique simples mantém o grupo (o
+    // arrasto leva tudo); só um clique noutro lugar desfaz.
+    if (!m_zoneWithContents.isEmpty() && id == m_zoneWithContents) return;
+    resetZoneContents();
+    clearCardSelection();
+    selectConnection(QString());
     m_selectedZoneId = id;
     for (ZoneItem* z : m_zones)
         z->setSelected(z->zoneData().id == id);
+    scheduleSelectionSignal();
+}
+
+void LousaScene::refreshZoneCounts()
+{
+    for (ZoneItem* z : m_zones) {
+        const QRectF zr(z->pos(), QSizeF(z->zoneData().width, z->zoneData().height));
+        int n = 0;
+        for (const CardItem* c : m_cards) {
+            const CanvasCard d = c->cardData();
+            if (zr.contains(QPointF(d.x + d.width / 2.0, d.y + d.height / 2.0))) ++n;
+        }
+        z->setCardCount(n);
+    }
 }
 
 void LousaScene::onZoneDragStartedWithContents(const QString& id, bool withContents)
@@ -335,8 +575,7 @@ void LousaScene::onZoneDragStartedWithContents(const QString& id, bool withConte
     m_zoneDragLeader = id;
     for (CardItem* c : m_cards) {
         const CanvasCard d = c->cardData();
-        const QRectF cr(d.x, d.y, d.width, d.height);
-        if (zr.contains(cr))
+        if (zr.contains(QPointF(d.x + d.width / 2.0, d.y + d.height / 2.0)))
             m_zoneContentOrigins.insert(d.id, c->pos());
     }
 }
@@ -353,6 +592,10 @@ void LousaScene::removeZone(const QString& id)
 {
     for (int i = 0; i < m_zones.size(); ++i) {
         if (m_zones[i]->zoneData().id == id) {
+            if (m_zones[i]->zoneData().id == m_selectedZoneId) {
+                m_selectedZoneId.clear();
+                scheduleSelectionSignal();
+            }
             removeItem(m_zones[i]);
             delete m_zones[i];
             m_zones.removeAt(i);
@@ -366,6 +609,7 @@ void LousaScene::clearZones()
 {
     for (auto* z : m_zones) { removeItem(z); delete z; }
     m_zones.clear();
+    m_selectedZoneId.clear();
 }
 
 QList<CanvasZone> LousaScene::allZoneData() const
@@ -390,9 +634,11 @@ void LousaScene::onCardPositionChanged(const QString& cardId)
             ci->invalidateGeometry();
         }
     }
-    // Verifica snap para cards arrastáveis (note/comment sem linkedToConn)
+    // Verifica snap para cards arrastáveis (note/comment sem linkedToConn).
+    // Só quando é a mão do autor arrastando: alinhar, desfazer ou colar
+    // também mexem no card, e não podem grudar ele numa linha sozinhos.
     const CardItem* card = findCard(cardId);
-    if (card) {
+    if (card && mouseGrabberItem() == card) {
         const CanvasCard& cd = card->cardData();
         if ((cd.type == QStringLiteral("note") || cd.type == QStringLiteral("comment"))
             && cd.linkedToConn.isEmpty()) {

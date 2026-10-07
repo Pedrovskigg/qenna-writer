@@ -6,6 +6,7 @@
 
 #include <QColorDialog>
 #include <QInputDialog>
+#include <QFontMetricsF>
 #include <QGraphicsSceneContextMenuEvent>
 #include <QGraphicsSceneHoverEvent>
 #include <QGraphicsSceneMouseEvent>
@@ -30,14 +31,38 @@ constexpr HandleDef kHandles[8] = {
     {0.5, 1,   Qt::SizeVerCursor,   false, true,  false, false}, // S
     {1,   1,   Qt::SizeFDiagCursor, false, true,  false, true }, // SE
 };
-constexpr qreal kHandleR  = 7.0;   // raio do círculo de handle
-constexpr qreal kHandleHit = 14.0; // raio de hit-test
-constexpr qreal kCtrlH    = 50.0;  // altura da faixa de controles no topo
+constexpr qreal kHandleR  = 6.0;   // raio do círculo de handle
+constexpr qreal kHandleHit = 13.0; // raio de hit-test
+constexpr qreal kBandH    = 26.0;  // faixa de cima, de onde se arrasta a área
+constexpr qreal kTagH     = 26.0;  // altura da etiqueta
 constexpr qreal kMinSize  = 80.0;
-// Segue o arredondamento do tema: a zona e pintada por QPainter,
-// entao nao passa pelo QSS.
-inline qreal kRadiusFn() { return static_cast<qreal>(Theme::panelRadius()); }
+constexpr qreal kRadius   = 12.0;
+
+QFont tagFont(qreal k)
+{
+    QFont f(QStringLiteral("Segoe UI"));
+    f.setPixelSize(qMax(1, qRound(11 * k)));
+    f.setWeight(QFont::Bold);
+    f.setStyleStrategy(QFont::NoSubpixelAntialias);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, 0.9 * k);
+    return f;
+}
+
+bool isTopMiddle(const HandleDef& hd) { return hd.ry == 0 && hd.rx > 0 && hd.rx < 1; }
 } // namespace
+
+QColor ZoneItem::s_boardColor = QColor(0x1a, 0x1a, 0x19);
+qreal  ZoneItem::s_labelScale = 1.0;
+
+void ZoneItem::setViewZoom(const QList<ZoneItem*>& zones, qreal zoom)
+{
+    // Com o zoom longe a etiqueta cresce, até 4×, pra continuar legível.
+    const qreal k = qBound(1.0, 1.0 / qMax(0.01, zoom), 4.0);
+    if (qFuzzyCompare(k, s_labelScale)) return;
+    for (ZoneItem* z : zones) z->prepareGeometryChange();
+    s_labelScale = k;
+    for (ZoneItem* z : zones) z->update();
+}
 
 // ─── Constructor ────────────────────────────────────────────────────────────
 
@@ -67,23 +92,69 @@ void ZoneItem::setSelected(bool on)
     update();
 }
 
+void ZoneItem::setCardCount(int n)
+{
+    if (m_count == n) return;
+    prepareGeometryChange();   // a etiqueta muda de largura
+    m_count = n;
+    update();
+}
+
 // ─── Geometria ───────────────────────────────────────────────────────────────
+
+qreal ZoneItem::labelScale() const
+{
+    // Cresce com o zoom longe, mas só até o nome inteiro caber na área.
+    if (s_labelScale <= 1.0) return 1.0;
+    const QFontMetricsF fm(tagFont(1.0));
+    const QString name = (m_data.title.isEmpty() ? tr("Área") : m_data.title).toUpper();
+    qreal natural = 28 + fm.horizontalAdvance(name) + 14;
+    if (m_count > 0) natural += 8 + fm.horizontalAdvance(QString::number(m_count));
+    const qreal fit = (m_data.width - 32) / qMax(1.0, natural + 66);   // cabe junto com cor/×
+    return qBound(1.0, qMin(s_labelScale, fit), 4.0);
+}
+
+QRectF ZoneItem::tagRect() const
+{
+    const qreal k = labelScale();
+    const QFontMetricsF fm(tagFont(k));
+    const QString name = (m_data.title.isEmpty() ? tr("Área") : m_data.title).toUpper();
+    qreal w = 28 * k + fm.horizontalAdvance(name) + 14 * k;
+    if (m_count > 0) w += 8 * k + fm.horizontalAdvance(QString::number(m_count));
+    w = qMin(w, qMax(80.0 * k, m_data.width - 32 - 66 * k));
+    w = qMin(w, qMax(40.0, m_data.width - 32));       // nunca passa da largura da área
+    const qreal h = kTagH * k;
+    return QRectF(16, -h / 2.0, w, h);
+}
+
+QRectF ZoneItem::controlsRect() const
+{
+    const qreal k = labelScale();
+    return QRectF(m_data.width - 16 - 58 * k, -kTagH * k / 2.0, 58 * k, kTagH * k);
+}
 
 QRectF ZoneItem::boundingRect() const
 {
-    return QRectF(-kHandleR, -kHandleR,
-                  m_data.width  + kHandleR * 2,
-                  m_data.height + kHandleR * 2);
+    const qreal half = kTagH * labelScale() / 2.0;
+    return QRectF(-kHandleR - 4, -half - 2,
+                  m_data.width  + kHandleR * 2 + 8,
+                  m_data.height + half + kHandleR + 6);
 }
 
 QPainterPath ZoneItem::shape() const
 {
-    // Mira 1: zona tem pointerEvents:none no corpo, só controles e handles recebem eventos.
+    // O corpo da área deixa o clique passar pro quadro (arrastar o fundo).
+    // Recebem eventos: a etiqueta, os controles, a faixa de cima e as alças.
     const qreal w = m_data.width, h = m_data.height;
     QPainterPath p;
-    p.addRect(QRectF(0, 0, w, kCtrlH));  // faixa de controles no topo
-    for (const HandleDef& hd : kHandles)
+    p.addRect(QRectF(0, 0, w, kBandH));
+    const QRectF tag = tagRect();
+    p.addRoundedRect(tag, tag.height() / 2.0, tag.height() / 2.0);
+    p.addRoundedRect(controlsRect(), tag.height() / 2.0, tag.height() / 2.0);
+    for (const HandleDef& hd : kHandles) {
+        if (isTopMiddle(hd)) continue;
         p.addEllipse(QPointF(hd.rx * w, hd.ry * h), kHandleHit, kHandleHit);
+    }
     return p;
 }
 
@@ -93,76 +164,75 @@ void ZoneItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
 {
     const qreal w  = m_data.width;
     const qreal h  = m_data.height;
-    const QColor& clr = m_data.color;
+    const QColor clr = m_data.color.isValid() ? m_data.color : QColor(0x6e, 0xa8, 0xfe);
+    const bool boardLight = s_boardColor.lightness() > 150;
     p->setRenderHint(QPainter::Antialiasing);
+    p->setRenderHint(QPainter::TextAntialiasing);
 
-    // Fundo: transparente ao passar o mouse, leve tint fora
-    if (!m_hovered) {
-        p->setPen(Qt::NoPen);
-        p->setBrush(QColor(clr.red(), clr.green(), clr.blue(), 10));
-        p->drawRoundedRect(QRectF(0, 0, w, h), kRadiusFn(), kRadiusFn());
-    }
+    // Fundo tingido e borda contínua
+    p->setPen(QPen(QColor(clr.red(), clr.green(), clr.blue(), boardLight ? 150 : 118), 1.5));
+    p->setBrush(QColor(clr.red(), clr.green(), clr.blue(), boardLight ? 22 : 16));
+    p->drawRoundedRect(QRectF(0, 0, w, h), kRadius, kRadius);
 
-    // Borda dashed
-    QPen dashedPen(clr, 2, Qt::DashLine);
-    dashedPen.setDashPattern({6, 4});
-    p->setPen(dashedPen);
-    p->setBrush(Qt::NoBrush);
-    p->drawRoundedRect(QRectF(0, 0, w, h), kRadiusFn(), kRadiusFn());
-
-    // Realce de seleção (para exportar): contorno sólido azul.
     if (m_selected) {
-        p->setPen(QPen(QColor(QStringLiteral("#6ea8fe")), 2.5));
+        const QColor a(Theme::accentDefault());
+        p->setPen(QPen(a, 2.2));
         p->setBrush(Qt::NoBrush);
-        p->drawRoundedRect(QRectF(-2, -2, w + 4, h + 4), kRadiusFn() + 2, kRadiusFn() + 2);
+        p->drawRoundedRect(QRectF(-3, -3, w + 6, h + 6), kRadius + 3, kRadius + 3);
     }
 
-    // ── Título centralizado (grande, 45% opacity) ──────────────────────────
-    if (!m_data.title.isEmpty()) {
-        const qreal fontSize = qBound(14.0, h * 0.18, 52.0);
-        p->setFont(QFont(QStringLiteral("Segoe UI"), qRound(fontSize), QFont::Bold));
-        const QColor lblColor(clr.red(), clr.green(), clr.blue(), 115); // ~45%
-        p->setPen(lblColor);
-        p->drawText(QRectF(12, kCtrlH, w - 24, h - kCtrlH - 8),
-                    Qt::AlignCenter | Qt::TextWordWrap,
-                    m_data.title.toUpper());
-    }
-
-    // ── Controles no topo-direito ─────────────────────────────────────────
-    const QColor ctrlClr(clr.red(), clr.green(), clr.blue(), 179); // ~70%
-    const QColor mutedClr(clr.red(), clr.green(), clr.blue(), 100);
-
-    // Grip (3×3 pontos)
+    // Etiqueta: bolinha, NOME e quantos cards tem dentro
+    const qreal k = labelScale();
+    const QRectF tag = tagRect();
+    const qreal tr2 = tag.height() / 2.0;
+    const QColor border(clr.red(), clr.green(), clr.blue(), boardLight ? 170 : 128);
+    p->setPen(QPen(border, 1.5 * k));
+    p->setBrush(s_boardColor);
+    p->drawRoundedRect(tag, tr2, tr2);
     p->setPen(Qt::NoPen);
-    p->setBrush(mutedClr);
-    const qreal gx = w - 90, gy = 14.0;
-    for (int row = 0; row < 3; ++row)
-        for (int col = 0; col < 3; ++col)
-            p->drawEllipse(QPointF(gx + col * 5, gy + row * 5), 1.5, 1.5);
-
-    // Nome da zona (à esquerda do color dot)
-    p->setFont(QFont(QStringLiteral("Segoe UI"), 12, QFont::DemiBold));
-    p->setPen(ctrlClr);
-    p->drawText(QRectF(w - 195, 4, 100, kCtrlH - 4),
-                Qt::AlignVCenter | Qt::AlignRight,
-                m_data.title.isEmpty() ? tr("Área") : m_data.title);
-
-    // Color dot
-    p->setPen(QPen(QColor(255,255,255,76), 1.5));
     p->setBrush(clr);
-    p->drawEllipse(QPointF(w - 34, kCtrlH / 2.0), 9, 9);
+    p->drawEllipse(QPointF(tag.left() + 16 * k, tag.center().y()), 4 * k, 4 * k);
 
-    // × button
-    p->setPen(QPen(mutedClr, 1.4, Qt::SolidLine, Qt::RoundCap));
-    const qreal xx = w - 14, xy = kCtrlH / 2.0;
-    p->drawLine(QPointF(xx-4, xy-4), QPointF(xx+4, xy+4));
-    p->drawLine(QPointF(xx+4, xy-4), QPointF(xx-4, xy+4));
+    const QColor txt = boardLight ? clr.darker(165) : clr.lighter(130);
+    const QFont f = tagFont(k);
+    p->setFont(f);
+    const QFontMetricsF fm(f);
+    const QString count = m_count > 0 ? QString::number(m_count) : QString();
+    const qreal countW = count.isEmpty() ? 0.0 : fm.horizontalAdvance(count) + 8 * k;
+    const qreal nameX = tag.left() + 28 * k;
+    const qreal nameW = tag.right() - 14 * k - countW - nameX;
+    const QString name = (m_data.title.isEmpty() ? tr("Área") : m_data.title).toUpper();
+    p->setPen(txt);
+    p->drawText(QRectF(nameX, tag.top(), nameW, tag.height()), Qt::AlignVCenter | Qt::AlignLeft,
+                fm.elidedText(name, Qt::ElideRight, nameW));
+    if (!count.isEmpty()) {
+        p->setPen(QColor(txt.red(), txt.green(), txt.blue(), 150));
+        p->drawText(QRectF(tag.right() - 14 * k - countW + 8 * k, tag.top(), countW, tag.height()),
+                    Qt::AlignVCenter | Qt::AlignLeft, count);
+    }
 
-    // ── 8 handles de resize (visíveis no hover) ────────────────────────────
+    // Cor e × aparecem com o mouse em cima (ou com a área marcada)
+    if (m_hovered || m_selected) {
+        const QRectF cr = controlsRect();
+        p->setPen(QPen(border, 1.5 * k));
+        p->setBrush(s_boardColor);
+        p->drawRoundedRect(cr, tr2, tr2);
+        p->setPen(QPen(QColor(255, 255, 255, 120), 1.2 * k));
+        p->setBrush(clr);
+        p->drawEllipse(QPointF(cr.left() + 18 * k, cr.center().y()), 6 * k, 6 * k);
+        p->setPen(QPen(txt, 1.4 * k, Qt::SolidLine, Qt::RoundCap));
+        const QPointF xc(cr.right() - 18 * k, cr.center().y());
+        const qreal xs = 4 * k;
+        p->drawLine(xc + QPointF(-xs, -xs), xc + QPointF(xs, xs));
+        p->drawLine(xc + QPointF(xs, -xs), xc + QPointF(-xs, xs));
+    }
+
+    // Alças de tamanho (com o mouse em cima)
     if (m_hovered) {
         for (const HandleDef& hd : kHandles) {
+            if (isTopMiddle(hd)) continue;   // ficaria atrás da etiqueta
             const QPointF hpt(hd.rx * w, hd.ry * h);
-            p->setPen(QPen(QColor(255,255,255,204), 2));
+            p->setPen(QPen(s_boardColor, 2));
             p->setBrush(clr);
             p->drawEllipse(hpt, kHandleR, kHandleR);
         }
@@ -171,22 +241,23 @@ void ZoneItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
 
 // ─── Hit-test helpers ────────────────────────────────────────────────────────
 
-bool ZoneItem::isOnGrip(const QPointF& p) const
-{
-    return QRectF(m_data.width - 100, 0, 30, kCtrlH).contains(p);
-}
 bool ZoneItem::isOnDelete(const QPointF& p) const
 {
-    return QRectF(m_data.width - 22, 0, 22, kCtrlH).contains(p);
+    if (!m_hovered && !m_selected) return false;
+    const QRectF cr = controlsRect();
+    return QRectF(cr.right() - 30 * labelScale(), cr.top(), 30 * labelScale(), cr.height()).contains(p);
 }
 bool ZoneItem::isOnColorDot(const QPointF& p) const
 {
-    return QLineF(p, QPointF(m_data.width - 34, kCtrlH / 2.0)).length() <= 14;
+    if (!m_hovered && !m_selected) return false;
+    const QRectF cr = controlsRect();
+    return QRectF(cr.left(), cr.top(), 30 * labelScale(), cr.height()).contains(p);
 }
 int ZoneItem::handleAt(const QPointF& p) const
 {
     const qreal w = m_data.width, h = m_data.height;
     for (int i = 0; i < 8; ++i) {
+        if (isTopMiddle(kHandles[i])) continue;
         const QPointF hpt(kHandles[i].rx * w, kHandles[i].ry * h);
         if (QLineF(p, hpt).length() <= kHandleHit) return i;
     }
@@ -236,10 +307,13 @@ void ZoneItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
         setCursor(kHandles[hi].cursor);
         e->accept(); return;
     }
-    if (isOnGrip(lp) || lp.y() < kCtrlH) {
+    if (tagRect().contains(lp) || lp.y() < kBandH) {
         emit gestureStarted();
-        m_moveContents = (e->modifiers() & Qt::ControlModifier)
-                      && (e->modifiers() & Qt::ShiftModifier);
+        // Shift ou Ctrl + clique: marca a área com tudo o que tem dentro, e o
+        // arrasto leva junto. (Ctrl+Shift continua valendo.)
+        const bool withAll = (e->modifiers() & (Qt::ControlModifier | Qt::ShiftModifier));
+        if (withAll) emit contentsSelectRequested(m_data.id);
+        m_moveContents = withAll || m_contentsSelected;
         m_dragging     = true;
         m_pressScene   = e->scenePos();
         m_pressOrigin  = pos();

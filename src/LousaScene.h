@@ -7,6 +7,7 @@
 #include <QHash>
 #include <QList>
 #include <QPointF>
+#include <QPixmap>
 #include <QString>
 
 class CardItem;
@@ -21,8 +22,20 @@ class LousaScene : public QGraphicsScene
 public:
     explicit LousaScene(QObject* parent = nullptr);
 
+    // Fundo: cor própria da lousa (inválida = a cor da mesa do tema) e o
+    // desenho ("dots", "grid", "lines", "plain", "cork", "whiteboard").
     void setCanvasColor(const QColor& color);
-    QColor canvasColor() const { return m_color; }
+    QColor canvasColor() const { return m_color; }          // inválida = do tema
+    QColor effectiveCanvasColor() const;                    // a que aparece de fato
+    QColor canvasColorForLabels() const { return effectiveCanvasColor(); }
+    void setBoardStyle(const QString& style);
+    QString boardStyle() const { return m_style; }
+    void refreshBoardLook();           // tema mudou: recalcula a cor e repinta
+    void setTiltEnabled(bool on);      // cards meio tortos
+    void setSkipBackground(bool skip) { m_skipBackground = skip; }   // exportar sem fundo
+    void setViewZoom(qreal zoom);      // etiqueta das áreas cresce com zoom longe
+    // Tudo o que tem no quadro (cards, áreas, linhas), sem as sobras da cena.
+    QRectF contentBounds() const;
 
     // ── Cards ────────────────────────────────────────────────────────────────
     CardItem* addCard(const CanvasCard& data);
@@ -44,6 +57,11 @@ public:
     QList<CanvasConnection> allConnectionData() const;
     ConnectionItem* findConnection(const QString& id) const;
 
+    // ── Linha selecionada ────────────────────────────────────────────────────
+    QString selectedConnectionId() const { return m_selectedConnId; }
+    void      selectConnection(const QString& id);   // "" = nenhuma
+    void      clearAllSelection();
+
     // ── Zonas ────────────────────────────────────────────────────────────────
     ZoneItem* addZone(const CanvasZone& data);
     void      removeZone(const QString& id);
@@ -51,6 +69,11 @@ public:
     QList<CanvasZone> allZoneData() const;
     void      clearZoneSelection();
     QString   selectedZoneId() const { return m_selectedZoneId; }
+    void      refreshZoneCounts();
+    void      selectZone(const QString& id) { onZoneClicked(id); }
+    // Shift/Ctrl+clique na área: ela e tudo o que tem dentro, pra mover junto.
+    void      selectZoneWithContents(const QString& id);
+    const QList<ZoneItem*>& zoneItems() const { return m_zones; }
 
     // ── Pin drag (chamado por CardItem) ──────────────────────────────────────
     void startPinDrag(const QString& fromCardId, const QPointF& fromScene);
@@ -72,6 +95,12 @@ signals:
     void cardCreateDocRequested(const CanvasCard& card); // criar doc a partir do card
     void cardCreateTimelineEventRequested(const CanvasCard& card); // criar evento na Timeline
     void zoneExportRequested(const QString& id);     // exportar zona (context menu)
+    void selectionChanged();                         // cards, linha ou área marcados mudaram
+    void cardOpenRequested(const CanvasCard& card);  // doc/capítulo: abrir no editor
+    void gestureFinished();                          // fim de arrasto/redimensão
+    void connectionLabelEditRequested(const QString& id);
+    void connectionMenuRequested(const QString& id, const QPoint& screenPos);
+    void boardLookChanged();
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -91,7 +120,17 @@ private slots:
 private:
     void cancelSnap();
 
-    QColor m_color{QStringLiteral("#1a1a2e")};
+    QColor  m_color;                 // inválida = cor da mesa do tema
+    QString m_style = QStringLiteral("dots");
+    QPixmap m_corkTile;
+    QString m_selectedConnId;
+    bool    m_selectionSignalPending = false;
+    bool    m_skipBackground = false;
+    QString m_zoneWithContents;      // área marcada com tudo dentro
+    QString m_groupZoneId;           // ...que vai junto no arrasto do grupo
+    QPointF m_groupZoneOrigin;
+    void    resetZoneContents();
+    void    scheduleSelectionSignal();
     QList<CardItem*>       m_cards;
     QList<ConnectionItem*> m_connections;
     QList<ZoneItem*>       m_zones;

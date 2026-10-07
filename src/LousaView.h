@@ -18,6 +18,12 @@ public:
 
     void applyZoomAndPan(qreal zoom, qreal panX, qreal panY);
     void fitSceneRect(const QRectF& r);   // ajusta zoom+pan para enquadrar um retângulo
+    void zoomBy(qreal factor);            // botões −/+: zoom em torno do centro da tela
+    void centerOnAnimated(const QPointF& scenePos);  // busca: leva a tela até o card
+
+    // Ligar: clica num card e depois noutro pra criar a linha.
+    void setConnectMode(bool on);
+    bool isConnectMode() const { return m_connectMode; }
 
     // Plan mode: cursor crosshair, arrastar no canvas cria uma zona.
     void setPlanMode(bool on);
@@ -30,9 +36,20 @@ public:
 signals:
     void zoomChanged(qreal zoom);
     void zoneDrawn(const QRectF& sceneRect); // emitido ao soltar o mouse no plan mode
+    void viewportMoved();                    // rolou ou deu zoom (barra de ações, minimapa)
+    void backgroundDoubleClicked(const QPointF& scenePos);
+    void itemDropped(const QString& payload, const QPointF& scenePos);  // veio da bandeja
+    void connectPicked(const QString& fromId, const QString& toId);
+    void connectModeChanged(bool on);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
+    void mouseDoubleClickEvent(QMouseEvent* event) override;
+    void scrollContentsBy(int dx, int dy) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
+    void keyPressEvent(QKeyEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
@@ -50,4 +67,8 @@ private:
 
     // Brush select
     bool               m_brushMode  = false;
+
+    // Ligar
+    bool               m_connectMode = false;
+    QString            m_connectFrom;
 };

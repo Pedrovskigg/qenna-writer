@@ -2,7 +2,12 @@
 #include "LousaScene.h"
 #include "CardItem.h"
 
+#include <QDragEnterEvent>
+#include <QDropEvent>
 #include <QGraphicsRectItem>
+#include <QKeyEvent>
+#include <QMimeData>
+#include <QVariantAnimation>
 #include <QMouseEvent>
 #include <QPen>
 #include <QScrollBar>
@@ -23,6 +28,102 @@ LousaView::LousaView(LousaScene* scene, QWidget* parent)
     setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     setInteractive(true);
     setMouseTracking(true);
+    setAcceptDrops(true);
+}
+
+// Tipo do que se arrasta pro quadro ("character:<itemId>", "doc:<itemId>",
+// "chapter:<msId>:<chId>", "stash:<índice>", "new:<tipo>").
+static const char* kLousaMime = "application/x-qenna-lousa-item";
+
+void LousaView::zoomBy(qreal factor)
+{
+    const QPointF center = mapToScene(viewport()->rect().center());
+    m_zoom = qBound(0.15, m_zoom * factor, 4.0);
+    QTransform t;
+    t.scale(m_zoom, m_zoom);
+    setTransform(t);
+    centerOn(center);
+    emit zoomChanged(m_zoom);
+    emit viewportMoved();
+}
+
+void LousaView::centerOnAnimated(const QPointF& scenePos)
+{
+    const QPointF from = mapToScene(viewport()->rect().center());
+    auto* anim = new QVariantAnimation(this);
+    anim->setDuration(260);
+    anim->setStartValue(from);
+    anim->setEndValue(scenePos);
+    anim->setEasingCurve(QEasingCurve::OutCubic);
+    connect(anim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+        centerOn(v.toPointF());
+    });
+    anim->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void LousaView::setConnectMode(bool on)
+{
+    if (m_connectMode == on) return;
+    m_connectMode = on;
+    m_connectFrom.clear();
+    setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+    if (auto* sc = qobject_cast<LousaScene*>(scene())) sc->clearCardSelection();
+    emit connectModeChanged(on);
+}
+
+void LousaView::scrollContentsBy(int dx, int dy)
+{
+    QGraphicsView::scrollContentsBy(dx, dy);
+    emit viewportMoved();
+}
+
+void LousaView::mouseDoubleClickEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton && !itemAt(event->pos()) && !m_planMode) {
+        emit backgroundDoubleClicked(mapToScene(event->pos()));
+        event->accept();
+        return;
+    }
+    QGraphicsView::mouseDoubleClickEvent(event);
+}
+
+void LousaView::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
+        event->acceptProposedAction();
+        return;
+    }
+    QGraphicsView::dragEnterEvent(event);
+}
+
+void LousaView::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
+        event->acceptProposedAction();
+        return;
+    }
+    QGraphicsView::dragMoveEvent(event);
+}
+
+void LousaView::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
+        const QString payload = QString::fromUtf8(event->mimeData()->data(QString::fromLatin1(kLousaMime)));
+        emit itemDropped(payload, mapToScene(event->position().toPoint()));
+        event->acceptProposedAction();
+        return;
+    }
+    QGraphicsView::dropEvent(event);
+}
+
+void LousaView::keyPressEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Escape && m_connectMode) {
+        setConnectMode(false);
+        event->accept();
+        return;
+    }
+    QGraphicsView::keyPressEvent(event);
 }
 
 QPointF LousaView::scrollPos() const
@@ -54,6 +155,7 @@ void LousaView::fitSceneRect(const QRectF& r)
     setTransform(t);
     centerOn(r.center());
     emit zoomChanged(m_zoom);
+    emit viewportMoved();
 }
 
 void LousaView::wheelEvent(QWheelEvent* event)
@@ -84,6 +186,7 @@ void LousaView::wheelEvent(QWheelEvent* event)
     verticalScrollBar()->setValue(verticalScrollBar()->value()   - qRound(delta.y()));
 
     emit zoomChanged(m_zoom);
+    emit viewportMoved();
     event->accept();
 }
 
@@ -119,14 +222,31 @@ void LousaView::mousePressEvent(QMouseEvent* event)
         return;
     }
 
+    // Ligar: primeiro card, depois o segundo
+    if (m_connectMode && event->button() == Qt::LeftButton) {
+        CardItem* card = nullptr;
+        for (QGraphicsItem* it = itemAt(event->pos()); it; it = it->parentItem())
+            if ((card = dynamic_cast<CardItem*>(it))) break;
+        if (!card) { setConnectMode(false); event->accept(); return; }
+        auto* sc = qobject_cast<LousaScene*>(scene());
+        if (m_connectFrom.isEmpty()) {
+            m_connectFrom = card->cardData().id;
+            if (sc) sc->selectOnlyCard(card);
+        } else if (card->cardData().id != m_connectFrom) {
+            const QString from = m_connectFrom;
+            setConnectMode(false);
+            emit connectPicked(from, card->cardData().id);
+        }
+        event->accept();
+        return;
+    }
+
     // Pan com botão do meio, ou arrastar o fundo vazio com botão esquerdo.
     const bool isMiddle = (event->button() == Qt::MiddleButton);
     const bool isBgLeft = (event->button() == Qt::LeftButton) && !itemAt(event->pos());
     if (isBgLeft) {
-        if (auto* sc = qobject_cast<LousaScene*>(scene())) {
-            sc->clearCardSelection();  // clicar no vazio desseleciona text/symbol
-            sc->clearZoneSelection();  // e desseleciona a zona
-        }
+        if (auto* sc = qobject_cast<LousaScene*>(scene()))
+            sc->clearAllSelection();   // clicar no vazio desmarca tudo
     }
     if (isMiddle || isBgLeft) {
         m_panning = true;

@@ -3120,6 +3120,25 @@ void MainWindow::setupEditor()
                     if (leftBar) leftBar->setActiveFixedAction(LeftBar::Timeline);
                     panel->promptNewEvent(description, QString(), title, QStringLiteral("lousa"));
                 });
+                connect(lousaPanel, &LousaPanel::openDocKeyRequested, this, [this](const QString& key) {
+                    // O card "abrir" leva o documento/capítulo pro editor e
+                    // traz a janela principal pra frente.
+                    openDocKeyInEditor(key);
+                    raise();
+                    activateWindow();
+                });
+                lousaPanel->setHtmlProvider([this](const QString& key) -> QString {
+                    if (docCache && docCache->has(key)) return docCache->get(key);
+                    if (!projectModel) return QString();
+                    if (key.startsWith(QStringLiteral("ch:"))) {
+                        const Chapter* ch = projectModel->findChapter(key.section(QLatin1Char(':'), -1));
+                        return ch ? chapterHtmlForEdit(ch) : QString();
+                    }
+                    if (key.startsWith(QStringLiteral("it:")))
+                        if (const DrawerItem* it = projectModel->findDrawerItem(key.mid(3)))
+                            return it->html;
+                    return QString();
+                });
                 lousaPanel->setProjectModel(projectModel);
                 lousaPanel->setElementsStore(elementsStore);
                 if (!projectRoot.isEmpty())
@@ -3137,20 +3156,15 @@ void MainWindow::setupEditor()
                 };
                 const QVector<LousaBoardMeta> boards = lousaPanel->boardList();
                 if (boards.size() > 1) {
-                    // Mais de uma lousa no projeto: pergunta qual abrir em
-                    // vez de ir direto pra última usada.
-                    QMenu menu(this);
-                    const QString activeId = lousaPanel->activeBoardId();
-                    for (const LousaBoardMeta& b : boards) {
-                        QAction* act = menu.addAction(b.name);
-                        act->setCheckable(true);
-                        act->setChecked(b.id == activeId);
-                        connect(act, &QAction::triggered, this, [this, id = b.id, showLousa]() {
-                            lousaPanel->switchToBoard(id);
-                            showLousa();
-                        });
+                    // Mais de uma lousa no projeto: escolhe pela miniatura
+                    // em vez de ir direto pra última usada.
+                    const QString id = lousaPanel->pickBoard(this, QCursor::pos());
+                    if (id.isEmpty()) {
+                        leftBar->clearSelection();
+                    } else {
+                        lousaPanel->switchToBoard(id);
+                        showLousa();
                     }
-                    menu.exec(QCursor::pos());
                 } else {
                     showLousa();
                 }

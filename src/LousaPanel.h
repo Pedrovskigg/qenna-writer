@@ -7,6 +7,7 @@
 #include <QList>
 #include <QPair>
 #include <QPointer>
+#include <QPointF>
 #include <QString>
 #include <QVector>
 #include <QWidget>
@@ -15,10 +16,18 @@
 
 class LousaScene;
 class LousaView;
+class LousaDock;
+class LousaActionBar;
+class LousaMinimap;
+class LousaCheatSheet;
+class LousaSearchBar;
+class CardItem;
 class QKeyEvent;
 class QLabel;
 class QListWidget;
 class QPushButton;
+class QScrollArea;
+class QTimer;
 class QToolButton;
 
 // Metadados de uma lousa (board) do projeto — os dados visuais (cards/
@@ -38,6 +47,9 @@ public:
     void setProjectRoot(const QString& root);
     void setProjectModel(class ProjectModel* model);
     void setElementsStore(class ElementsStore* store);
+    // Quem lê o HTML de um documento/capítulo (o editor pode ter mudanças
+    // ainda não gravadas). Chave = DocCache::itemKey / chapterKey.
+    void setHtmlProvider(std::function<QString(const QString& docKey)> provider);
     void refreshDocCards();
     void refreshEmptyState();
 
@@ -46,32 +58,50 @@ public:
     QVector<LousaBoardMeta> boardList() const { return m_boards; }
     QString activeBoardId() const { return m_activeBoardId; }
     void switchToBoard(const QString& boardId);
+    // Seletor com miniatura de cada lousa. Devolve o id ("" = cancelou).
+    QString pickBoard(QWidget* parent, const QPoint& globalPos) const;
 
 signals:
     void closeRequested();
     // Pedido para criar um evento na Timeline a partir de um card de texto.
     void createTimelineEventRequested(const QString& title, const QString& description);
+    // Abrir um documento/capítulo no editor (DocCache::itemKey / chapterKey).
+    void openDocKeyRequested(const QString& docKey);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
+    bool eventFilter(QObject* o, QEvent* e) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
-    void onPickColor();
     void applyTheme();
 
 private:
     void buildUi();
-    void buildHelpPanel();
-    void positionHelpPanel();
-    void toggleHelp();
+    void buildChrome();
+    void showBoardMenu();
+    void toggleStash();
+    void refreshStashUi();
     void reloadIcons();
     void save() const;
     void load();
-    void updateColorBtn();
     CanvasCard nextCardData(const QString& type) const;
+    CanvasCard cardAt(const QString& type, const QPointF& center) const;
+    QPointF viewCenter() const;
+
+    // Criar coisas no quadro
+    void createFromTool(const QString& kind);
+    void createText(const QPointF& at);
+    void createSymbol(const QPointF* at = nullptr);
+    void createImage();
+    void pickDocForBoard();
+    void pickCharacterForBoard();
+    void placeFromPayload(const QString& payload, const QPointF* at);
+    CardItem* placeCard(const CanvasCard& c);   // pushUndo já feito por quem chama
+    QColor boardInk() const;                    // cor de texto que aparece no fundo atual
 
     // Múltiplas lousas — manifesto (lousas.json) + arquivo de dados por board.
     QString boardsManifestPath() const;
@@ -82,11 +112,7 @@ private:
     void    createNewBoard();
     void    renameBoard(const QString& boardId);
     void    deleteBoard(const QString& boardId);
-    void    buildBoardsPanel();
-    void    positionBoardsPanel();
-    void    toggleBoardsPanel();
-    void    refreshBoardsList();
-    void    refreshBoardsBtn();
+    void    rebuildTabs();
 
     // Undo/redo
     struct BoardState {
@@ -99,30 +125,49 @@ private:
     void       pushUndo();
     void       undo();
     void       redo();
+    void       refreshUndoButtons();
 
-    // Stash
-    void buildStashPanel();
-    void positionStashPanel();
-    void toggleStash();
-    void refreshStashList();
-    void refreshStashBtn();
-    void restoreFromStash(int index);
+    // Gaveta da lousa (cards guardados) — mora na bandeja, aba Guardados
+    void restoreFromStash(int index, const QPointF* at = nullptr);
     void stashSelectedCards();
     void deleteSelectedCards();   // remoção permanente (com confirmação)
 
+    // Bandeja
+    void scheduleTrayRefresh();
+    void refreshTray();
+
+    // Barra de ações
+    void scheduleActionBar();
+    void refreshActionBar();
+    void positionActionBar();
+    void onAction(const QString& id, const QPoint& globalPos);
+    void alignSelection(const QString& how);
+
+    // Linhas
+    void editConnectionLabel(const QString& id);
+    void showConnectionMenu(const QString& id, const QPoint& screenPos);
+    void updateConnection(const QString& id, const std::function<void(CanvasConnection&)>& change);
+    QList<QColor> connectionPalette() const;
+    void askNewConnection(const QString& fromId, const QString& toId);
+
     // Mapa de áreas (tecla F)
     void buildMapPanel();
-    void positionMapPanel();
+    void positionOverlays();
     void toggleMap();
     void refreshMapList();
 
     // Exportação de áreas para gavetas
     void exportZones(const QList<CanvasZone>& zones);
-    void exportSelectedZone();   // botão da toolbar: exporta a área selecionada
+    void exportSelectedZone();   // exporta a área selecionada
+    void exportBoardAsImage();   // H: escolhe o pedaço e vê antes
 
-    // Exportar a Lousa inteira como imagem PNG (diferente de exportZones —
-    // aqui é renderização visual do board, não conversão pra documento).
-    void exportBoardAsImage();
+    // Fundo e cards (A)
+    void showBoardLook();
+    void applyLookPrefs();
+
+    // Busca (J)
+    void runSearch(const QString& text);
+    void stepSearch(int delta);
 
     // Templates de layout inicial (só oferecidos com a lousa vazia)
     void showTemplatePicker();
@@ -130,63 +175,78 @@ private:
 
     // Criar documento a partir de um card (post-it/comentário/imagem)
     void createDocFromCard(const CanvasCard& c);
+    void openCard(const CanvasCard& c);
     // Pôster de personagem/cenário/objeto flutuando no quadro (sem modal).
     void openElementSheet(const QString& type, const QString& title,
                           const std::function<void(class ElementCreateDialog*)>& onAccept);
-    void newCharacterOnBoard();
+    void newCharacterOnBoard(const QPointF* at = nullptr);
     QPointer<QDialog> m_elementSheet;
 
-    QList<QPair<QToolButton*, QString>> m_iconBindings;
+    QString htmlFor(const QString& docKey) const;
+    void scheduleProjectRefresh();   // projeto mudou: atualiza agora ou ao abrir
+    bool m_projectDirty = false;
 
     LousaScene*  m_scene        = nullptr;
     LousaView*   m_view         = nullptr;
-    QWidget*     m_toolbar      = nullptr;
-    QToolButton* m_colorBtn     = nullptr;
+    class QFrame* m_leftBar     = nullptr;   // canto de cima à esquerda (lousa, desfazer)
+    class QFrame* m_rightBar    = nullptr;   // canto de cima à direita (zoom, fundo…)
+    QToolButton* m_boardPill    = nullptr;
+    QToolButton* m_stashChip    = nullptr;
+    QToolButton* m_areasChip    = nullptr;
+    QWidget*     m_stashPanel   = nullptr;
+    QListWidget* m_stashList    = nullptr;
+    bool         m_stashOpen    = false;
+    QToolButton* m_undoBtn      = nullptr;
+    QToolButton* m_redoBtn      = nullptr;
+    QToolButton* m_zoomOutBtn   = nullptr;
+    QToolButton* m_zoomLabel    = nullptr;
+    QToolButton* m_zoomInBtn    = nullptr;
+    QToolButton* m_fitBtn       = nullptr;
+    QToolButton* m_lookBtn      = nullptr;
+    QToolButton* m_exportBtn    = nullptr;
+    QToolButton* m_helpBtn      = nullptr;
+    QToolButton* m_closeBtn     = nullptr;
+    QList<QPair<QToolButton*, QString>> m_iconBindings;
+
+    LousaDock*       m_dock      = nullptr;
+    LousaActionBar*  m_actionBar = nullptr;
+    LousaMinimap*    m_minimap   = nullptr;
+    LousaCheatSheet* m_cheat     = nullptr;
+    LousaSearchBar*  m_search    = nullptr;
+    QTimer*          m_trayTimer = nullptr;
+    QTimer*          m_barTimer  = nullptr;
+
     QWidget*     m_emptyStateBox   = nullptr;
     QLabel*      m_emptyLabel      = nullptr;
     QPushButton* m_useTemplateBtn  = nullptr;
-    QLabel*      m_zoomLabel    = nullptr;
-    QWidget*     m_helpPanel    = nullptr;
-    bool         m_helpOpen     = false;
-
-    // Botões de criação (acessados pelos atalhos de teclado)
-    QToolButton* m_btnNote = nullptr;
-    QToolButton* m_btnCmt  = nullptr;
-    QToolButton* m_btnImg  = nullptr;
-    QToolButton* m_btnDoc  = nullptr;
-    QToolButton* m_btnChar = nullptr;
-    QToolButton* m_btnText = nullptr;
-    QToolButton* m_btnZone = nullptr;
 
     QString             m_projectRoot;
     class ProjectModel* m_projectModel  = nullptr;
     class ElementsStore* m_elementsStore = nullptr;
+    std::function<QString(const QString&)> m_htmlProvider;
 
     QList<BoardState>      m_undo;
     QList<BoardState>      m_redo;
     QHash<QString, QString> m_contentStore;  // image content fora dos snapshots
     bool                   m_loading = false;
 
-    // Stash
     QList<CanvasCard> m_stash;
-    QWidget*     m_stashPanel = nullptr;
-    QListWidget* m_stashList  = nullptr;
-    QToolButton* m_stashBtn   = nullptr;
-    bool         m_stashOpen  = false;
 
     // Mapa de áreas
     QWidget*     m_mapPanel = nullptr;
     QListWidget* m_mapList  = nullptr;
-    QToolButton* m_mapBtn   = nullptr;
     bool         m_mapOpen  = false;
 
     // Múltiplas lousas
     QVector<LousaBoardMeta> m_boards;
     QString      m_activeBoardId;
-    QWidget*     m_boardsPanel = nullptr;
-    QListWidget* m_boardsList  = nullptr;
-    QToolButton* m_boardsBtn   = nullptr;
-    bool         m_boardsOpen  = false;
+
+    // Fundo, inclinação, minimapa
+    bool m_minimapOn = true;
+
+    // Busca
+    QList<QPair<int, QString>> m_searchHits;   // (0 = card, 1 = área), id
+    int m_searchIndex = -1;
 
     QString m_cutCardId;   // card recortado (Ctrl+X), aguardando colar
 
@@ -198,9 +258,6 @@ private:
     void buildCardPreview();
     void showCardPreview(const CanvasCard& data, const QPoint& screenPos);
     void hideCardPreview();
-    // Tipo/fontSize do card previsto atualmente (ou do último solicitado) —
-    // guardado pra reavaliar se o preview deve continuar visível quando o
-    // zoom muda no meio do hover (ver shouldShowCardPreview em LousaPanel.cpp).
     QString m_previewCardType;
     int     m_previewCardFontSize = 0;
 };

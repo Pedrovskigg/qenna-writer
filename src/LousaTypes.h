@@ -1,12 +1,13 @@
 #pragma once
 
 #include <QString>
+#include <QStringList>
 #include <QColor>
 
 // Estrutura de dados de um card na lousa. Compat com canvas.json do Mira 1.
 struct CanvasCard {
     QString id;
-    QString type;            // "note" | "comment" | "image" | "doc" | "character" | "text" | "symbol"
+    QString type;            // "note" | "comment" | "image" | "doc" | "character" | "chapter" | "text" | "symbol"
     qreal   x       = 0;
     qreal   y       = 0;
     qreal   width   = 200;
@@ -17,14 +18,17 @@ struct CanvasCard {
     QString linkedToConn;    // waypoint: ID da conexão à qual está ancorado ("" = livre)
     QString description;     // image: legenda/descrição
     QString photoDataUrl;    // character
-    QString linkedItemId;    // doc, character
-    QString linkedDrawerKey; // doc, character
+    QString linkedItemId;    // doc, character; chapter: id do capítulo
+    QString linkedDrawerKey; // doc, character; chapter: id do manuscrito
     // text / symbol
     int     fontSize = 0;    // 0 = default por tipo (text 18, symbol 60)
     bool    bold     = false;
     bool    italic   = false;
     qreal   rotation = 0;    // graus
     QString fontFamily;      // text: família da fonte ("" = Segoe UI)
+    // text: largura em que o texto quebra a linha sozinho. 0 = sem quebra
+    // (texto livre de antes do rework: cresce pro lado e só quebra no Enter).
+    qreal   wrapWidth = 0;
 };
 
 struct CanvasConnection {
@@ -33,6 +37,9 @@ struct CanvasConnection {
     QString toId;
     QColor  color = QColor(QStringLiteral("#888888"));
     QStringList waypointCardIds;
+    QString label;           // nome da ligação ("irmãos", "trai"…); "" = sem nome
+    bool    arrow  = true;   // seta na ponta final
+    bool    curved = false;  // padrão é reta, de pin a pin (quadro de investigação)
 };
 
 struct CanvasZone {

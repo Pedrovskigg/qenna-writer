@@ -1290,27 +1290,27 @@ Profitez-en.</translation>
 <context>
     <name>BookCard</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1504"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1560"/>
         <source>Abrir automaticamente</source>
         <translation>Ouvrir automatiquement</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1507"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1563"/>
         <source>Editar projeto</source>
         <translation>Modifier le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1508"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1564"/>
         <source>Criar capa</source>
         <translation>Créer une couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1510"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1566"/>
         <source>Remover dos recentes</source>
         <translation>Retirer des récents</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1511"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1567"/>
         <source>Excluir projeto</source>
         <translation>Supprimer le projet</translation>
     </message>
@@ -1341,127 +1341,264 @@ Profitez-en.</translation>
 <context>
     <name>CardItem</name>
     <message>
-        <location filename="../src/CardItem.cpp" line="479"/>
         <source>Escolher símbolo</source>
-        <translation>Choisir un symbole</translation>
+        <translation type="vanished">Choisir un symbole</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="489"/>
-        <location filename="../src/CardItem.cpp" line="584"/>
         <source>Cor:</source>
-        <translation>Couleur&#xa0;:</translation>
+        <translation type="vanished">Couleur&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="500"/>
         <source>Cor do símbolo</source>
-        <translation>Couleur du symbole</translation>
+        <translation type="vanished">Couleur du symbole</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="503"/>
         <source>escolha a cor e clique num símbolo</source>
-        <translation>choisissez la couleur et cliquez sur un symbole</translation>
+        <translation type="vanished">choisissez la couleur et cliquez sur un symbole</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="550"/>
         <source>Texto livre</source>
-        <translation>Texte libre</translation>
+        <translation type="vanished">Texte libre</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="562"/>
-        <location filename="../src/CardItem.cpp" line="1421"/>
         <source>Escreva aqui...</source>
-        <translation>Écrivez ici...</translation>
+        <translation type="vanished">Écrivez ici...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="569"/>
         <source>Fonte:</source>
-        <translation>Police&#xa0;:</translation>
+        <translation type="vanished">Police&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="623"/>
         <source>Cor personalizada</source>
-        <translation>Couleur personnalisée</translation>
+        <translation type="vanished">Couleur personnalisée</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="626"/>
         <source>Cor do texto</source>
-        <translation>Couleur du texte</translation>
+        <translation type="vanished">Couleur du texte</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="827"/>
+        <location filename="../src/CardItem.cpp" line="198"/>
+        <source>Estrelas</source>
+        <translation>Étoiles</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="200"/>
+        <source>Formas</source>
+        <translation>Formes</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="202"/>
+        <source>Marcas</source>
+        <translation>Marques</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="204"/>
+        <source>Setas</source>
+        <translation>Flèches</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="206"/>
+        <source>Natureza e céu</source>
+        <translation>Nature et ciel</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="209"/>
+        <source>Objetos</source>
+        <translation>Objets</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="211"/>
+        <source>Letras e sinais</source>
+        <translation>Lettres et signes</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="476"/>
+        <location filename="../src/CardItem.cpp" line="1164"/>
+        <location filename="../src/CardItem.cpp" line="1404"/>
+        <source>Escreva aqui…</source>
+        <translation>Écrivez ici…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="708"/>
         <source>Escolher imagem</source>
         <translation>Choisir une image</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="828"/>
+        <location filename="../src/CardItem.cpp" line="709"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1044"/>
-        <source>Clique direito → Escolher imagem</source>
-        <translation>Clic droit → Choisir une image</translation>
+        <location filename="../src/CardItem.cpp" line="742"/>
+        <source>SÍMBOLO</source>
+        <translation>SYMBOLE</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1121"/>
+        <location filename="../src/CardItem.cpp" line="1132"/>
+        <source>Clique com o botão direito para escolher a imagem</source>
+        <translation>Clic droit pour choisir l&apos;image</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1213"/>
+        <source>Legenda (duplo clique)</source>
+        <translation>Légende (double-clic)</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1237"/>
+        <source>Capítulo</source>
+        <translation>Chapitre</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1250"/>
+        <source>Capítulo sem título</source>
+        <translation>Chapitre sans titre</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1250"/>
+        <source>Documento sem título</source>
+        <translation>Document sans titre</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1269"/>
+        <source>Sem resumo ainda.</source>
+        <translation>Pas encore de résumé.</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1269"/>
+        <source>Documento vazio.</source>
+        <translation>Document vide.</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1279"/>
+        <source>abrir →</source>
+        <translation>ouvrir →</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1312"/>
+        <source>FICHA · DUPLO CLIQUE VOLTA</source>
+        <translation>FICHE · DOUBLE-CLIC POUR REVENIR</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1331"/>
+        <source>A ficha deste personagem ainda está vazia.</source>
+        <translation>La fiche de ce personnage est encore vide.</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1805"/>
+        <source>Cor…</source>
+        <translation>Couleur…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1811"/>
+        <source>Escolher imagem…</source>
+        <translation>Choisir une image…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1812"/>
+        <source>Escrever a legenda</source>
+        <translation>Écrire la légende</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1815"/>
+        <source>Trocar símbolo…</source>
+        <translation>Changer le symbole…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1821"/>
+        <source>Escrever</source>
+        <translation>Écrire</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1824"/>
+        <source>Ver a foto</source>
+        <translation>Voir la photo</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1824"/>
+        <source>Ver a ficha</source>
+        <translation>Voir la fiche</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1827"/>
+        <source>Abrir</source>
+        <translation>Ouvrir</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1829"/>
+        <source>Editar o título</source>
+        <translation>Modifier le titre</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1832"/>
+        <source>Virar evento na Timeline</source>
+        <translation>Transformer en événement de la Chronologie</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1836"/>
+        <source>Guardar na gaveta da lousa</source>
+        <translation>Mettre de côté dans le plateau du Board</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1837"/>
+        <source>Apagar de vez</source>
+        <translation>Supprimer définitivement</translation>
+    </message>
+    <message>
+        <source>Clique direito → Escolher imagem</source>
+        <translation type="vanished">Clic droit → Choisir une image</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="1237"/>
         <source>Documento</source>
         <translation>Document</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1149"/>
         <source>documento vazio</source>
-        <translation>document vide</translation>
+        <translation type="vanished">document vide</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1344"/>
+        <location filename="../src/CardItem.cpp" line="1388"/>
         <source>Sem título</source>
         <translation>Sans titre</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1517"/>
         <source>Personalizada...</source>
-        <translation>Personnalisée...</translation>
+        <translation type="vanished">Personnalisée...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1522"/>
         <source>Cor do card</source>
-        <translation>Couleur de la carte</translation>
+        <translation type="vanished">Couleur de la carte</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1581"/>
-        <location filename="../src/CardItem.cpp" line="1956"/>
+        <location filename="../src/CardItem.cpp" line="1806"/>
         <source>Cor</source>
         <translation>Couleur</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1940"/>
         <source>Escolher imagem...</source>
-        <translation>Choisir une image...</translation>
+        <translation type="vanished">Choisir une image...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1941"/>
+        <location filename="../src/CardItem.cpp" line="1813"/>
+        <location filename="../src/CardItem.cpp" line="1831"/>
         <source>Criar documento</source>
         <translation>Créer un document</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1945"/>
         <source>Remover card</source>
-        <translation>Retirer la carte</translation>
+        <translation type="vanished">Retirer la carte</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1954"/>
         <source>Trocar símbolo...</source>
-        <translation>Changer de symbole...</translation>
+        <translation type="vanished">Changer de symbole...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1955"/>
         <source>Cor...</source>
-        <translation>Couleur...</translation>
+        <translation type="vanished">Couleur...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1960"/>
         <source>Remover</source>
-        <translation>Retirer</translation>
+        <translation type="vanished">Retirer</translation>
     </message>
 </context>
 <context>
@@ -2299,12 +2436,12 @@ Cette action est irréversible.</translation>
 <context>
     <name>DeleteConfirmDialog</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1012"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1050"/>
         <source>Excluir projeto</source>
         <translation>Supprimer le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1022"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1060"/>
         <source>Tem certeza que deseja excluir &quot;%1&quot;?
 
 Pasta: %2
@@ -2317,19 +2454,19 @@ Dossier&#xa0;: %2
 Le projet ira dans la Corbeille (accessible via l&apos;icône de corbeille ci-dessous), d&apos;où il pourra être restauré plus tard.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1033"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1071"/>
         <source>Cancelar</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1034"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1052"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1072"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1090"/>
         <source>Excluir</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1045"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1054"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1083"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1092"/>
         <source>Excluir (%1)</source>
         <translation>Supprimer (%1)</translation>
     </message>
@@ -2345,22 +2482,22 @@ Le projet ira dans la Corbeille (accessible via l&apos;icône de corbeille ci-de
 <context>
     <name>DocHeaderBar</name>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="307"/>
+        <location filename="../src/DocHeaderBar.cpp" line="340"/>
         <source>Elemento do roteiro na linha do cursor. Tab e Shift+Tab trocam o elemento.</source>
         <translation>Élément du scénario sur la ligne du curseur. Tab et Maj+Tab changent l&apos;élément.</translation>
     </message>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="519"/>
+        <location filename="../src/DocHeaderBar.cpp" line="552"/>
         <source>Clique duas vezes para adicionar uma foto</source>
         <translation>Double-cliquez pour ajouter une photo</translation>
     </message>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="541"/>
+        <location filename="../src/DocHeaderBar.cpp" line="574"/>
         <source>Clique duas vezes para trocar a foto</source>
         <translation>Double-cliquez pour changer la photo</translation>
     </message>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="291"/>
+        <location filename="../src/DocHeaderBar.cpp" line="324"/>
         <source>Variações desta cena</source>
         <translation>Variantes de cette scène</translation>
     </message>
@@ -3289,36 +3426,43 @@ Le projet ira dans la Corbeille (accessible via l&apos;icône de corbeille ci-de
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="53"/>
+        <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
         <translation>Protagoniste</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="54"/>
+        <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
         <translation>Deutéragoniste</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="56"/>
+        <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
         <translation>Personnage secondaire</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="55"/>
+        <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
         <translation>Antagoniste</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="58"/>
+        <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
         <translation>Faire-valoir</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="59"/>
+        <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
         <translation>Trickster</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="57"/>
+        <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
@@ -3334,6 +3478,7 @@ Le projet ira dans la Corbeille (accessible via l&apos;icône de corbeille ci-de
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="60"/>
+        <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
         <translation>Figurant</translation>
     </message>
@@ -4378,33 +4523,32 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
 <context>
     <name>GrannaNotifier</name>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="160"/>
+        <location filename="../src/GrannaNotifier.cpp" line="167"/>
         <source>Fala sem dono. Clique para dizer quem falou.</source>
         <translation>Réplique sans locuteur. Cliquez pour dire qui l&apos;a dite.</translation>
     </message>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="163"/>
+        <location filename="../src/GrannaNotifier.cpp" line="170"/>
         <source>Provavelmente %1. Clique para confirmar ou trocar.</source>
         <translation>Probablement %1. Cliquez pour confirmer ou changer.</translation>
     </message>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="165"/>
-        <location filename="../src/GrannaNotifier.cpp" line="248"/>
+        <location filename="../src/GrannaNotifier.cpp" line="172"/>
         <source>Fala de %1. Clique para trocar.</source>
         <translation>Dite par %1. Cliquez pour changer.</translation>
     </message>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="212"/>
+        <location filename="../src/GrannaNotifier.cpp" line="297"/>
         <source>(sem nome)</source>
         <translation>(sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="222"/>
+        <location filename="../src/GrannaNotifier.cpp" line="307"/>
         <source>O Granna acha que é %1.</source>
         <translation>Granna pense que c&apos;est %1.</translation>
     </message>
     <message>
-        <location filename="../src/GrannaNotifier.cpp" line="223"/>
+        <location filename="../src/GrannaNotifier.cpp" line="308"/>
         <source>Salva como %1. Escolha outra pessoa para corrigir.</source>
         <translation>Enregistrée comme %1. Choisissez une autre personne pour corriger.</translation>
     </message>
@@ -4412,47 +4556,47 @@ Ne fermez pas le programme s&apos;il cesse de répondre.</translation>
 <context>
     <name>GrannaPickPopup</name>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="143"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="157"/>
         <source>Quem disse?</source>
         <translation>Qui l&apos;a dit&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="191"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="205"/>
         <source>Nesta cena</source>
         <translation>Dans cette scène</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="199"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="213"/>
         <source>Personagens</source>
         <translation>Personnages</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="199"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="213"/>
         <source>Outros personagens</source>
         <translation>Autres personnages</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="240"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="254"/>
         <source>Figurante</source>
         <translation>Figurant</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="241"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="255"/>
         <source>Quem fala não é do elenco</source>
         <translation>La personne qui parle n&apos;est pas dans la distribution</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="242"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="256"/>
         <source>Não é fala</source>
         <translation>Pas une réplique</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="243"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="257"/>
         <source>Some da lista de diálogos e não volta</source>
         <translation>Retirée de la liste des répliques pour de bon</translation>
     </message>
     <message>
-        <location filename="../src/GrannaPickPopup.cpp" line="244"/>
+        <location filename="../src/GrannaPickPopup.cpp" line="258"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
@@ -7362,68 +7506,718 @@ Bienvenue dans la famille Qenna ! Commencez votre nouveau projet ci-dessous.</tr
     </message>
 </context>
 <context>
-    <name>LousaPanel</name>
+    <name>LousaBoardLook</name>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="259"/>
-        <source>Lousa</source>
-        <translation>Board</translation>
+        <location filename="../src/LousaExtras.cpp" line="633"/>
+        <source>FUNDO</source>
+        <translation>FOND</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="284"/>
-        <location filename="../src/LousaPanel.cpp" line="1651"/>
+        <location filename="../src/LousaExtras.cpp" line="636"/>
+        <source>Pontos</source>
+        <translation>Points</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="637"/>
+        <source>Grade</source>
+        <translation>Grille</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="638"/>
+        <source>Caderno</source>
+        <translation>Cahier</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="639"/>
+        <source>Liso</source>
+        <translation>Uni</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="640"/>
+        <source>Cortiça</source>
+        <translation>Liège</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="641"/>
+        <source>Lousa branca</source>
+        <translation>Tableau blanc</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="670"/>
+        <source>COR DO FUNDO</source>
+        <translation>COULEUR DU FOND</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="675"/>
+        <source>A da mesa do tema</source>
+        <translation>Celle du bureau du thème</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="681"/>
+        <source>Outra cor…</source>
+        <translation>Une autre couleur…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="712"/>
+        <source>Cor do fundo</source>
+        <translation>Couleur du fond</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="726"/>
+        <source>CARDS</source>
+        <translation>CARTES</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="727"/>
+        <source>Meio tortos, como presos num quadro</source>
+        <translation>Un peu de travers, comme épinglées sur un tableau</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="731"/>
+        <source>Minimapa no canto</source>
+        <translation>Mini-carte dans le coin</translation>
+    </message>
+</context>
+<context>
+    <name>LousaBoardPicker</name>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="899"/>
+        <source>QUAL LOUSA</source>
+        <translation>QUEL BOARD</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="924"/>
+        <source>vazia</source>
+        <translation>vide</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="942"/>
+        <source>Renomear…</source>
+        <translation>Renommer…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="943"/>
+        <source>Excluir…</source>
+        <translation>Supprimer…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="972"/>
+        <source>Nova lousa</source>
+        <translation>Nouveau Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="980"/>
+        <source>Botão direito numa lousa pra renomear ou excluir.</source>
+        <translation>Clic droit sur un Board pour le renommer ou le supprimer.</translation>
+    </message>
+</context>
+<context>
+    <name>LousaCheatSheet</name>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="324"/>
+        <source>Atalhos da Lousa</source>
+        <translation>Raccourcis du Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="334"/>
+        <source>Fechar (Esc)</source>
+        <translation>Fermer (Échap)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="342"/>
+        <source>Pôr no quadro</source>
+        <translation>Mettre sur le Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="343"/>
         <source>Post-it</source>
         <translation>Post-it</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="286"/>
+        <location filename="../src/LousaExtras.cpp" line="344"/>
         <source>Comentário</source>
         <translation>Commentaire</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="288"/>
-        <location filename="../src/LousaPanel.cpp" line="1268"/>
-        <location filename="../src/LousaPanel.cpp" line="1653"/>
-        <source>Imagem</source>
-        <translation>Image</translation>
-    </message>
-    <message>
-        <location filename="../src/LousaPanel.cpp" line="290"/>
-        <location filename="../src/LousaPanel.cpp" line="1280"/>
-        <source>Documento</source>
-        <translation>Document</translation>
-    </message>
-    <message>
-        <location filename="../src/LousaPanel.cpp" line="292"/>
-        <source>Personagem</source>
-        <translation>Personnage</translation>
-    </message>
-    <message>
-        <location filename="../src/LousaPanel.cpp" line="294"/>
+        <location filename="../src/LousaExtras.cpp" line="345"/>
+        <location filename="../src/LousaExtras.cpp" line="372"/>
         <source>Texto livre</source>
         <translation>Texte libre</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="296"/>
+        <location filename="../src/LousaExtras.cpp" line="346"/>
+        <source>2 cliques no fundo</source>
+        <translation>Double-clic sur le fond</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="346"/>
+        <source>Texto livre ali mesmo</source>
+        <translation>Texte libre à cet endroit</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="347"/>
+        <source>Imagem</source>
+        <translation>Image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="348"/>
+        <source>Documento de uma gaveta</source>
+        <translation>Document d&apos;un tiroir</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="349"/>
+        <source>Personagem</source>
+        <translation>Personnage</translation>
+    </message>
+    <message>
+        <source>Arrastar da bandeja</source>
+        <translation type="vanished">Glisser depuis le plateau</translation>
+    </message>
+    <message>
+        <source>Personagem, documento, capítulo</source>
+        <translation type="vanished">Personnage, document, chapitre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="350"/>
+        <source>Personagem, Documento</source>
+        <translation>Personnage, Document</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="350"/>
+        <source>Na barra de baixo: escolhe do projeto (inclui capítulos)</source>
+        <translation>Dans la barre du bas : choisir dans le projet (chapitres inclus)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="352"/>
+        <source>Andar pelo quadro</source>
+        <translation>Se déplacer sur le Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="353"/>
+        <source>Arrastar o fundo</source>
+        <translation>Glisser le fond</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="353"/>
+        <source>Move o quadro</source>
+        <translation>Déplace le Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="354"/>
+        <source>Rodinha</source>
+        <translation>Molette</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="354"/>
+        <source>Aproxima e afasta</source>
+        <translation>Rapproche et éloigne</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="355"/>
+        <source>Ver tudo</source>
+        <translation>Tout voir</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="356"/>
+        <source>Buscar um card</source>
+        <translation>Chercher une carte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="357"/>
+        <source>Lista das áreas</source>
+        <translation>Liste des zones</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="358"/>
+        <source>Minimapa</source>
+        <translation>Mini-carte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="358"/>
+        <source>Clica e vai</source>
+        <translation>Clic et on y va</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="360"/>
+        <source>Selecionar</source>
+        <translation>Sélectionner</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="361"/>
+        <source>Shift+clique</source>
+        <translation>Maj+clic</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="361"/>
+        <source>Marca mais um</source>
+        <translation>En sélectionne une de plus</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="362"/>
+        <source>Shift+S (segurar)</source>
+        <translation>Maj+S (maintenir)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="362"/>
+        <source>Pincel: marca o que o mouse tocar</source>
+        <translation>Pinceau : sélectionne ce que la souris touche</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="363"/>
+        <source>Recorta e cola onde está o mouse</source>
+        <translation>Coupe et colle là où est la souris</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="364"/>
+        <source>Cancela</source>
+        <translation>Annule</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="366"/>
+        <source>Ligar</source>
+        <translation>Relier</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="367"/>
+        <source>Arrastar o pin</source>
+        <translation>Glisser l&apos;épingle</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="367"/>
+        <source>Do alfinete até outro card</source>
+        <translation>De l&apos;épingle à une autre carte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="386"/>
+        <source>Área (barra de baixo)</source>
+        <translation>Zone (barre du bas)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="387"/>
+        <source>Shift+clique na área</source>
+        <translation>Maj+clic sur la zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="387"/>
+        <source>Marca a área com tudo dentro; arrastar leva junto</source>
+        <translation>Sélectionne la zone avec tout ce qu&apos;elle contient ; glisser emporte tout</translation>
+    </message>
+    <message>
+        <source>Ligar (bandeja)</source>
+        <translation type="vanished">Relier (plateau)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="368"/>
+        <source>Clica num card e depois no outro</source>
+        <translation>Clic sur une carte, puis sur l&apos;autre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="368"/>
+        <source>Ligar (barra de baixo)</source>
+        <translation>Relier (barre du bas)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="369"/>
+        <source>Post-it na linha, 1 s</source>
+        <translation>Post-it sur la ligne, 1 s</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="369"/>
+        <source>Vira uma parada da linha</source>
+        <translation>Devient un arrêt de la ligne</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="370"/>
+        <source>2 cliques na linha</source>
+        <translation>Double-clic sur la ligne</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="370"/>
+        <source>Dá um nome à ligação</source>
+        <translation>Donne un nom à la connexion</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="373"/>
+        <source>2 cliques</source>
+        <translation>Double-clic</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="373"/>
+        <source>Escreve</source>
+        <translation>Écrire</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="374"/>
+        <source>Termina</source>
+        <translation>Terminer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="375"/>
+        <source>Bolinha de cima</source>
+        <translation>Pastille du haut</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="375"/>
+        <source>Gira (ou Shift+arrastar)</source>
+        <translation>Fait pivoter (ou Maj+glisser)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="376"/>
+        <source>Canto</source>
+        <translation>Coin</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="376"/>
+        <source>Tamanho da letra</source>
+        <translation>Taille du texte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="377"/>
+        <source>Lateral</source>
+        <translation>Côté</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="377"/>
+        <source>Largura do texto</source>
+        <translation>Largeur du texte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="379"/>
+        <source>Guardar e desfazer</source>
+        <translation>Mettre de côté et annuler</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="380"/>
+        <source>Guarda na gaveta da lousa</source>
+        <translation>La met de côté dans le plateau du Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="381"/>
+        <source>Apaga de vez</source>
+        <translation>Supprime définitivement</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="382"/>
+        <source>Desfaz (até 50 vezes)</source>
+        <translation>Annule (jusqu&apos;à 50 fois)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="383"/>
+        <source>Refaz</source>
+        <translation>Rétablit</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="385"/>
+        <source>Áreas</source>
+        <translation>Zones</translation>
+    </message>
+    <message>
+        <source>Área (bandeja)</source>
+        <translation type="vanished">Zone (plateau)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="386"/>
+        <source>E arraste no quadro</source>
+        <translation>Et glissez sur le Board</translation>
+    </message>
+    <message>
+        <source>Ctrl+Shift+arrastar</source>
+        <translation type="vanished">Ctrl+Maj+glisser</translation>
+    </message>
+    <message>
+        <source>Leva junto o que tem dentro</source>
+        <translation type="vanished">Emporte ce qu&apos;il y a dedans</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="388"/>
+        <source>A área marcada vira uma gaveta</source>
+        <translation>La zone sélectionnée devient un tiroir</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="389"/>
+        <source>Todas as áreas viram gavetas</source>
+        <translation>Toutes les zones deviennent des tiroirs</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="391"/>
+        <source>Cards</source>
+        <translation>Cartes</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="392"/>
+        <source>2 cliques no título</source>
+        <translation>Double-clic sur le titre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="392"/>
+        <source>Edita o título</source>
+        <translation>Modifie le titre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="393"/>
+        <source>2 cliques no personagem</source>
+        <translation>Double-clic sur le personnage</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="393"/>
+        <source>Vira a ficha</source>
+        <translation>Retourne sur la fiche</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="394"/>
+        <source>2 cliques no documento</source>
+        <translation>Double-clic sur le document</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="394"/>
+        <source>Abre no editor</source>
+        <translation>L&apos;ouvre dans l&apos;éditeur</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="395"/>
+        <source>Não precisa salvar</source>
+        <translation>Pas besoin d&apos;enregistrer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="395"/>
+        <source>Tudo é salvo sozinho</source>
+        <translation>Tout s&apos;enregistre tout seul</translation>
+    </message>
+</context>
+<context>
+    <name>LousaDock</name>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="15"/>
+        <source>Post-it</source>
+        <translation>Post-it</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="15"/>
+        <source>Post-it (Ctrl+N)</source>
+        <translation>Post-it (Ctrl+N)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="16"/>
+        <source>Comentário</source>
+        <translation>Commentaire</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="16"/>
+        <source>Comentário (Alt+C)</source>
+        <translation>Commentaire (Alt+C)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="17"/>
+        <source>Texto</source>
+        <translation>Texte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="17"/>
+        <source>Texto livre (Ctrl+T, ou dois cliques no quadro)</source>
+        <translation>Texte libre (Ctrl+T, ou double-clic sur le Board)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="18"/>
         <source>Símbolo</source>
         <translation>Symbole</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="352"/>
+        <location filename="../src/LousaDock.cpp" line="19"/>
+        <source>Imagem</source>
+        <translation>Image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="19"/>
+        <source>Imagem (Ctrl+G)</source>
+        <translation>Image (Ctrl+G)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="20"/>
+        <source>Personagem</source>
+        <translation>Personnage</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="20"/>
+        <source>Personagem do projeto (Ctrl+Shift+C)</source>
+        <translation>Un personnage du projet (Ctrl+Maj+C)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="21"/>
+        <source>Documento</source>
+        <translation>Document</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="21"/>
+        <source>Documento ou capítulo do projeto (Ctrl+H)</source>
+        <translation>Un document ou un chapitre du projet (Ctrl+H)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="22"/>
+        <source>Área</source>
+        <translation>Zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="22"/>
+        <source>Desenhar uma área (arraste no quadro)</source>
+        <translation>Dessiner une zone (glissez sur le Board)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="23"/>
+        <source>Ligar</source>
+        <translation>Relier</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="23"/>
+        <source>Ligar dois cards: clique num e depois no outro</source>
+        <translation>Relier deux cartes : cliquez sur l&apos;une, puis sur l&apos;autre</translation>
+    </message>
+</context>
+<context>
+    <name>LousaExportSheet</name>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="748"/>
+        <source>EXPORTAR COMO IMAGEM</source>
+        <translation>EXPORTER EN IMAGE</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="751"/>
+        <source>O que entra na imagem</source>
+        <translation>Ce qui entre dans l&apos;image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="752"/>
+        <location filename="../src/LousaExtras.cpp" line="753"/>
+        <source>A lousa toda</source>
+        <translation>Tout le Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="752"/>
+        <source>Uma área</source>
+        <translation>Une zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="752"/>
+        <location filename="../src/LousaExtras.cpp" line="753"/>
+        <source>O que está na tela</source>
+        <translation>Ce qui est à l&apos;écran</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="768"/>
+        <source>Qual área</source>
+        <translation>Quelle zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="770"/>
+        <source>Área sem nome</source>
+        <translation>Zone sans nom</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="779"/>
+        <source>Fundo transparente</source>
+        <translation>Fond transparent</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="794"/>
+        <source>Salvar imagem…</source>
+        <translation>Enregistrer l&apos;image…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="794"/>
+        <source>Enter salva</source>
+        <translation>Entrée enregistre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="843"/>
+        <source>Nada pra exportar.</source>
+        <translation>Rien à exporter.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="878"/>
+        <source>%1 × %2 px</source>
+        <translation>%1 × %2 px</translation>
+    </message>
+</context>
+<context>
+    <name>LousaMinimap</name>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="243"/>
+        <source>Minimapa: clique pra ir até lá</source>
+        <translation>Mini-carte : cliquez pour y aller</translation>
+    </message>
+</context>
+<context>
+    <name>LousaPanel</name>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="339"/>
+        <location filename="../src/LousaPanel.cpp" line="515"/>
+        <source>Lousa</source>
+        <translation>Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="132"/>
+        <source>Post-it</source>
+        <translation>Post-it</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="133"/>
+        <source>Comentário</source>
+        <translation>Commentaire</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="136"/>
+        <location filename="../src/LousaPanel.cpp" line="2130"/>
+        <source>Imagem</source>
+        <translation>Image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="139"/>
+        <location filename="../src/LousaPanel.cpp" line="1305"/>
+        <location filename="../src/LousaPanel.cpp" line="1333"/>
+        <location filename="../src/LousaPanel.cpp" line="2142"/>
+        <source>Documento</source>
+        <translation>Document</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="137"/>
+        <source>Personagem</source>
+        <translation>Personnage</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="134"/>
+        <source>Texto livre</source>
+        <translation>Texte libre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="135"/>
+        <source>Símbolo</source>
+        <translation>Symbole</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="463"/>
+        <source>Cards guardados (Delete guarda o card marcado)</source>
+        <translation>Cartes mises de côté (Suppr met de côté la carte sélectionnée)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="465"/>
+        <source>Lista das áreas (F)</source>
+        <translation>Liste des zones (F)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1006"/>
         <source>Escolher imagem</source>
         <translation>Choisir une image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="353"/>
+        <location filename="../src/LousaPanel.cpp" line="1007"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="383"/>
         <source>Vincular documento</source>
-        <translation>Lier un document</translation>
+        <translation type="vanished">Lier un document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="383"/>
+        <location filename="../src/LousaPanel.cpp" line="1047"/>
         <source>Buscar...</source>
         <translation>Rechercher...</translation>
     </message>
@@ -7432,160 +8226,143 @@ Bienvenue dans la famille Qenna ! Commencez votre nouveau projet ci-dessous.</tr
         <translation type="vanished">(sans titre)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="421"/>
+        <location filename="../src/LousaPanel.cpp" line="1076"/>
         <source>Personagem na lousa</source>
         <translation>Personnage sur le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="421"/>
+        <location filename="../src/LousaPanel.cpp" line="1076"/>
         <source>Buscar personagem...</source>
         <translation>Rechercher un personnage...</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1285"/>
+        <location filename="../src/LousaPanel.cpp" line="2147"/>
         <source>(sem nome)</source>
         <translation>(sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="422"/>
+        <location filename="../src/LousaPanel.cpp" line="1077"/>
         <source>+ Novo personagem</source>
         <translation>+ Nouveau personnage</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1372"/>
+        <location filename="../src/LousaPanel.cpp" line="1153"/>
         <source>Sem gaveta de personagens</source>
         <translation>Aucun tiroir de personnages</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1373"/>
+        <location filename="../src/LousaPanel.cpp" line="1154"/>
         <source>Crie primeiro uma gaveta de personagens no projeto.</source>
         <translation>Créez d&apos;abord un tiroir de personnages dans le projet.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="461"/>
         <source>Definir área</source>
-        <translation>Définir une zone</translation>
+        <translation type="vanished">Définir une zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="383"/>
         <source>Vincular</source>
-        <translation>Lier</translation>
+        <translation type="vanished">Lier</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="422"/>
+        <location filename="../src/LousaPanel.cpp" line="1047"/>
+        <location filename="../src/LousaPanel.cpp" line="1077"/>
         <source>Pôr na lousa</source>
         <translation>Mettre sur le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="422"/>
+        <location filename="../src/LousaPanel.cpp" line="1077"/>
         <source>Nenhum personagem ainda.</source>
         <translation>Aucun personnage pour l’instant.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="473"/>
         <source>Exportar área (Ctrl+D)</source>
-        <translation>Exporter la zone (Ctrl+D)</translation>
+        <translation type="vanished">Exporter la zone (Ctrl+D)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="479"/>
         <source>Exportar todas as áreas (Ctrl+Shift+D)</source>
-        <translation>Exporter toutes les zones (Ctrl+Shift+D)</translation>
+        <translation type="vanished">Exporter toutes les zones (Ctrl+Shift+D)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="487"/>
-        <location filename="../src/LousaPanel.cpp" line="1111"/>
-        <location filename="../src/LousaPanel.cpp" line="1139"/>
+        <location filename="../src/LousaPanel.cpp" line="2047"/>
+        <location filename="../src/LousaPanel.cpp" line="2075"/>
         <source>Exportar áreas</source>
         <translation>Exporter les zones</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="488"/>
         <source>Não há áreas na lousa. Crie uma área primeiro.</source>
-        <translation>Il n&apos;y a aucune zone sur le Board. Créez d&apos;abord une zone.</translation>
+        <translation type="vanished">Il n&apos;y a aucune zone sur le Board. Créez d&apos;abord une zone.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="498"/>
         <source>Exportar Lousa como imagem</source>
-        <translation>Exporter le Board en image</translation>
+        <translation type="vanished">Exporter le Board en image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="507"/>
-        <location filename="../src/LousaPanel.cpp" line="2328"/>
         <source>Cor do canvas</source>
-        <translation>Couleur du canevas</translation>
+        <translation type="vanished">Couleur du canevas</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="517"/>
-        <location filename="../src/LousaPanel.cpp" line="879"/>
+        <location filename="../src/LousaPanel.cpp" line="704"/>
         <source>Nova lousa</source>
         <translation>Nouveau Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="541"/>
         <source>Ajuda</source>
-        <translation>Aide</translation>
+        <translation type="vanished">Aide</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="551"/>
         <source>Fechar lousa</source>
-        <translation>Fermer le Board</translation>
+        <translation type="vanished">Fermer le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="571"/>
-        <location filename="../src/LousaPanel.cpp" line="1124"/>
+        <location filename="../src/LousaPanel.cpp" line="790"/>
+        <location filename="../src/LousaPanel.cpp" line="2060"/>
         <source>Área</source>
         <translation>Zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="636"/>
+        <location filename="../src/LousaPanel.cpp" line="1615"/>
         <source>Nova conexão</source>
         <translation>Nouvelle connexion</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="636"/>
+        <location filename="../src/LousaPanel.cpp" line="1615"/>
         <source>Cor da conexão</source>
         <translation>Couleur de la connexion</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="636"/>
-        <location filename="../src/LousaPanel.cpp" line="880"/>
-        <location filename="../src/LousaPanel.cpp" line="1296"/>
+        <location filename="../src/LousaPanel.cpp" line="705"/>
+        <location filename="../src/LousaPanel.cpp" line="1615"/>
+        <location filename="../src/LousaPanel.cpp" line="2158"/>
         <source>Criar</source>
         <translation>Créer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="656"/>
         <source>Clique em + para adicionar um card à lousa</source>
-        <translation>Cliquez sur + pour ajouter une carte au Board</translation>
+        <translation type="vanished">Cliquez sur + pour ajouter une carte au Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="662"/>
+        <location filename="../src/LousaPanel.cpp" line="892"/>
         <source>Ou comece com um modelo…</source>
         <translation>Ou commencez avec un modèle…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="690"/>
         <source>Trocar de lousa</source>
-        <translation>Changer de Board</translation>
+        <translation type="vanished">Changer de Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="699"/>
-        <location filename="../src/LousaPanel.cpp" line="761"/>
         <source>Lousas</source>
-        <translation>Boards</translation>
+        <translation type="vanished">Boards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="717"/>
         <source>Renomear…</source>
-        <translation>Renommer…</translation>
+        <translation type="vanished">Renommer…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="718"/>
         <source>Excluir…</source>
-        <translation>Supprimer…</translation>
+        <translation type="vanished">Supprimer…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="832"/>
+        <location filename="../src/LousaPanel.cpp" line="654"/>
         <source>Lousa 1</source>
         <translation>Board 1</translation>
     </message>
@@ -7594,152 +8371,586 @@ Bienvenue dans la famille Qenna ! Commencez votre nouveau projet ci-dessous.</tr
         <translation type="vanished">Nom du Board&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="879"/>
-        <location filename="../src/LousaPanel.cpp" line="905"/>
+        <location filename="../src/LousaPanel.cpp" line="704"/>
+        <location filename="../src/LousaPanel.cpp" line="730"/>
         <source>Nome da lousa</source>
         <translation>Nom du tableau</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="880"/>
+        <location filename="../src/LousaPanel.cpp" line="705"/>
         <source>Lousa %1</source>
         <translation>Board %1</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="905"/>
+        <location filename="../src/LousaPanel.cpp" line="730"/>
         <source>Renomear lousa</source>
         <translation>Renommer le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="917"/>
-        <location filename="../src/LousaPanel.cpp" line="925"/>
+        <location filename="../src/LousaPanel.cpp" line="741"/>
+        <location filename="../src/LousaPanel.cpp" line="748"/>
         <source>Excluir lousa</source>
         <translation>Supprimer le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="918"/>
+        <location filename="../src/LousaPanel.cpp" line="742"/>
         <source>Não é possível excluir a última lousa do projeto.</source>
         <translation>Impossible de supprimer le dernier Board du projet.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="926"/>
+        <location filename="../src/LousaPanel.cpp" line="749"/>
         <source>Excluir a lousa &quot;%1&quot; e todo o seu conteúdo? Essa ação não pode ser desfeita.</source>
         <translation>Supprimer le Board «&#xa0;%1&#xa0;» et tout son contenu&#xa0;? Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="954"/>
         <source>Áreas (F)</source>
-        <translation>Zones (F)</translation>
+        <translation type="vanished">Zones (F)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="955"/>
-        <location filename="../src/LousaPanel.cpp" line="964"/>
+        <location filename="../src/LousaPanel.cpp" line="466"/>
         <source>Áreas</source>
         <translation>Zones</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1017"/>
+        <location filename="../src/LousaPanel.cpp" line="477"/>
+        <source>GUARDADOS</source>
+        <translation>MIS DE CÔTÉ</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="484"/>
+        <source>Clique pra pôr de volta no quadro; botão direito pra apagar de vez</source>
+        <translation>Clic pour le remettre sur le Board ; clic droit pour le supprimer définitivement</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="495"/>
+        <source>Pôr de volta no quadro</source>
+        <translation>Remettre sur le Board</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="496"/>
+        <source>Apagar de vez</source>
+        <translation>Supprimer définitivement</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="518"/>
+        <source>%1  ·  %2 lousas</source>
+        <translation>%1  ·  %2 Boards</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="561"/>
+        <source>Guardados</source>
+        <translation>Mis de côté</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="562"/>
+        <source>Guardados  %1</source>
+        <translation>Mis de côté  %1</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="593"/>
+        <source>Nada guardado. Delete guarda o card marcado.</source>
+        <translation>Rien de côté. Suppr met ici la carte sélectionnée.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="886"/>
+        <source>A lousa está vazia.
+Escolha algo na barra aqui embaixo, ou dê dois cliques no quadro pra escrever.</source>
+        <translation>Le Board est vide.
+Choisissez quelque chose dans la barre du bas, ou double-cliquez sur le Board pour écrire.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1741"/>
         <source>(área sem nome)</source>
         <translation>(zone sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1019"/>
+        <location filename="../src/LousaPanel.cpp" line="1746"/>
         <source>Nenhuma área criada</source>
         <translation>Aucune zone créée</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1098"/>
-        <location filename="../src/LousaPanel.cpp" line="1148"/>
+        <location filename="../src/LousaPanel.cpp" line="2034"/>
+        <location filename="../src/LousaPanel.cpp" line="2084"/>
         <source>Exportar área</source>
         <translation>Exporter la zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1099"/>
+        <location filename="../src/LousaPanel.cpp" line="2035"/>
         <source>Não há post-its ou comentários dentro da(s) área(s).</source>
         <translation>Il n&apos;y a aucun post-it ni commentaire dans la ou les zones.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1105"/>
+        <location filename="../src/LousaPanel.cpp" line="2041"/>
         <source>A área será exportada para uma gaveta nova, com o nome da área.</source>
         <translation>La zone sera exportée dans un nouveau tiroir portant son nom.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1106"/>
+        <location filename="../src/LousaPanel.cpp" line="2042"/>
         <source>Cada área vira uma gaveta nova, com o nome da área (%1 áreas → %1 gavetas).</source>
         <translation>Chaque zone devient un nouveau tiroir portant son nom (%1 zones → %1 tiroirs).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1109"/>
+        <location filename="../src/LousaPanel.cpp" line="2045"/>
         <source>Os post-its sem título serão nomeados com as primeiras palavras do conteúdo.</source>
         <translation>Les post-it sans titre seront nommés d&apos;après les premiers mots de leur contenu.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1111"/>
+        <location filename="../src/LousaPanel.cpp" line="2047"/>
         <source>Exportar</source>
         <translation>Exporter</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1140"/>
+        <location filename="../src/LousaPanel.cpp" line="2076"/>
         <source>%1 gaveta(s) criada(s) com %2 documento(s).</source>
         <translation>%1 tiroir(s) créé(s) avec %2 document(s).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1149"/>
+        <location filename="../src/LousaPanel.cpp" line="2085"/>
         <source>Selecione uma área primeiro — clique na barra de topo dela.</source>
         <translation>Sélectionnez d&apos;abord une zone — cliquez sur sa barre supérieure.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1162"/>
-        <location filename="../src/LousaPanel.cpp" line="1167"/>
-        <location filename="../src/LousaPanel.cpp" line="1194"/>
-        <location filename="../src/LousaPanel.cpp" line="1198"/>
+        <location filename="../src/LousaPanel.cpp" line="426"/>
+        <location filename="../src/LousaPanel.cpp" line="1903"/>
+        <location filename="../src/LousaPanel.cpp" line="1914"/>
+        <location filename="../src/LousaPanel.cpp" line="1918"/>
+        <location filename="../src/LousaPanel.cpp" line="1922"/>
         <source>Exportar como imagem</source>
         <translation>Exporter en image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1163"/>
+        <location filename="../src/LousaPanel.cpp" line="124"/>
+        <source>vazio</source>
+        <translation>vide</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="125"/>
+        <source>1 palavra</source>
+        <translation>1 mot</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="126"/>
+        <source>%1 palavras</source>
+        <translation>%1 mots</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="138"/>
+        <source>Capítulo</source>
+        <translation>Chapitre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="157"/>
+        <source>Capítulo %1</source>
+        <translation>Chapitre %1</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="386"/>
+        <source>Trocar, criar, renomear ou excluir lousas</source>
+        <translation>Changer, créer, renommer ou supprimer des Boards</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="390"/>
+        <source>Desfazer (Ctrl+Z)</source>
+        <translation>Annuler (Ctrl+Z)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="391"/>
+        <source>Refazer (Ctrl+Y)</source>
+        <translation>Rétablir (Ctrl+Y)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="401"/>
+        <source>Afastar</source>
+        <translation>Éloigner</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="405"/>
+        <source>Voltar a 100%</source>
+        <translation>Revenir à 100 %</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="408"/>
+        <source>Aproximar</source>
+        <translation>Rapprocher</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="409"/>
+        <source>Ver tudo (Ctrl+0)</source>
+        <translation>Tout voir (Ctrl+0)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="425"/>
+        <source>Fundo e cards</source>
+        <translation>Fond et cartes</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="427"/>
+        <source>Atalhos (?)</source>
+        <translation>Raccourcis (?)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="428"/>
+        <source>Fechar a lousa</source>
+        <translation>Fermer le Board</translation>
+    </message>
+    <message>
+        <source>%1
+Dois cliques renomeiam; botão direito pra mais.</source>
+        <translation type="vanished">%1
+Double-clic pour renommer ; clic droit pour plus.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="750"/>
+        <source>Excluir</source>
+        <translation>Supprimer</translation>
+    </message>
+    <message>
+        <source>A lousa está vazia.
+Escolha algo na bandeja aqui embaixo, ou dê dois cliques no quadro pra escrever.</source>
+        <translation type="vanished">Le Board est vide.
+Choisissez quelque chose dans le plateau en bas, ou double-cliquez sur le Board pour écrire.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1253"/>
+        <source>Dá pra voltar com Ctrl+Z enquanto a lousa estiver aberta.</source>
+        <translation>Vous pouvez le récupérer avec Ctrl+Z tant que le Board est ouvert.</translation>
+    </message>
+    <message>
+        <source>Sem título</source>
+        <translation type="vanished">Sans titre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1036"/>
+        <source>Capítulo sem título</source>
+        <translation>Chapitre sans titre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1047"/>
+        <source>Documento ou capítulo</source>
+        <translation>Document ou chapitre</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1048"/>
+        <source>Nada nas gavetas nem no manuscrito ainda.</source>
+        <translation>Rien encore dans les tiroirs ni dans le manuscrit.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1291"/>
+        <source>Guardar</source>
+        <translation>Mettre de côté</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1292"/>
+        <source>Guardar na gaveta da lousa (Delete)</source>
+        <translation>Mettre de côté dans le plateau du Board (Suppr)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1295"/>
+        <source>Apagar de vez (Shift+Delete)</source>
+        <translation>Supprimer définitivement (Maj+Suppr)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1302"/>
+        <location filename="../src/LousaPanel.cpp" line="1441"/>
+        <source>Cor</source>
+        <translation>Couleur</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1306"/>
+        <source>Criar um documento com este card</source>
+        <translation>Créer un document à partir de cette carte</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1309"/>
+        <source>Evento</source>
+        <translation>Événement</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1309"/>
+        <source>Virar evento na Timeline</source>
+        <translation>Transformer en événement de la Chronologie</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1315"/>
+        <source>Fonte</source>
+        <translation>Police</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1318"/>
+        <source>Negrito</source>
+        <translation>Gras</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1320"/>
+        <source>Itálico</source>
+        <translation>Italique</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1326"/>
+        <source>Trocar</source>
+        <translation>Changer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1326"/>
+        <source>Trocar o símbolo</source>
+        <translation>Changer le symbole</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1331"/>
+        <source>Trocar imagem</source>
+        <translation>Changer d&apos;image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1332"/>
+        <source>Legenda</source>
+        <translation>Légende</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1333"/>
+        <source>Criar um documento com esta imagem</source>
+        <translation>Créer un document à partir de cette image</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1337"/>
+        <source>Foto</source>
+        <translation>Photo</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1337"/>
+        <source>Ficha</source>
+        <translation>Fiche</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1337"/>
+        <source>Virar o card (dois cliques)</source>
+        <translation>Retourner la carte (double-clic)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1338"/>
+        <location filename="../src/LousaPanel.cpp" line="1341"/>
+        <source>Abrir</source>
+        <translation>Ouvrir</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1338"/>
+        <source>Abrir o documento do personagem</source>
+        <translation>Ouvrir le document du personnage</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1341"/>
+        <source>Abrir no editor</source>
+        <translation>Ouvrir dans l&apos;éditeur</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1345"/>
+        <source>Alinhar pelo topo</source>
+        <translation>Aligner en haut</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1346"/>
+        <source>Alinhar pelo meio</source>
+        <translation>Aligner au milieu</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1347"/>
+        <source>Alinhar pela esquerda</source>
+        <translation>Aligner à gauche</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1348"/>
+        <source>Espaçar igual na horizontal</source>
+        <translation>Espacer également à l&apos;horizontale</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1349"/>
+        <source>Espaçar igual na vertical</source>
+        <translation>Espacer également à la verticale</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1350"/>
+        <source>Arrumar</source>
+        <translation>Ranger</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1350"/>
+        <source>Arrumar em grade</source>
+        <translation>Ranger en grille</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1354"/>
+        <location filename="../src/LousaPanel.cpp" line="1496"/>
+        <location filename="../src/LousaPanel.cpp" line="1666"/>
+        <source>Cor da linha</source>
+        <translation>Couleur de la ligne</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1357"/>
+        <source>Dar nome</source>
+        <translation>Nommer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1357"/>
+        <source>Nome</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1357"/>
+        <source>Nome da ligação (dois cliques na linha)</source>
+        <translation>Nom de la connexion (double-clic sur la ligne)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1360"/>
+        <source>Seta</source>
+        <translation>Flèche</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1360"/>
+        <location filename="../src/LousaPanel.cpp" line="1658"/>
+        <source>Seta na ponta</source>
+        <translation>Flèche au bout</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1362"/>
+        <source>Curva</source>
+        <translation>Courbe</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1363"/>
+        <source>Linha em curva (o padrão é reta, de pin a pin)</source>
+        <translation>Ligne courbe (par défaut elle est droite, d&apos;épingle à épingle)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1366"/>
+        <location filename="../src/LousaPanel.cpp" line="1663"/>
+        <source>Remover a linha</source>
+        <translation>Retirer la ligne</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1372"/>
+        <location filename="../src/LousaPanel.cpp" line="1521"/>
+        <source>Cor da área</source>
+        <translation>Couleur de la zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1374"/>
+        <source>Renomear</source>
+        <translation>Renommer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1377"/>
+        <source>Virar gaveta</source>
+        <translation>En faire un tiroir</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1378"/>
+        <source>Exportar a área para uma gaveta (Ctrl+D)</source>
+        <translation>Exporter la zone vers un tiroir (Ctrl+D)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1379"/>
+        <source>Remover a área</source>
+        <translation>Retirer la zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1525"/>
+        <source>Nome da área</source>
+        <translation>Nom de la zone</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1644"/>
+        <source>Nome da ligação</source>
+        <translation>Nom de la connexion</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1644"/>
+        <source>irmãos, trai, deve dinheiro…</source>
+        <translation>frères, trahit, doit de l&apos;argent…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1645"/>
+        <source>Salvar</source>
+        <translation>Enregistrer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1656"/>
+        <source>Cor…</source>
+        <translation>Couleur…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1657"/>
+        <source>Dar um nome…</source>
+        <translation>Lui donner un nom…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1657"/>
+        <source>Trocar o nome…</source>
+        <translation>Changer le nom…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1660"/>
+        <source>Em curva</source>
+        <translation>En courbe</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1692"/>
+        <source>ÁREAS</source>
+        <translation>ZONES</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1904"/>
         <source>A lousa está vazia — não há nada para exportar.</source>
         <translation>Le Board est vide — il n&apos;y a rien à exporter.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1168"/>
+        <location filename="../src/LousaPanel.cpp" line="1915"/>
         <source>Imagem PNG (*.png)</source>
         <translation>Image PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1195"/>
+        <location filename="../src/LousaPanel.cpp" line="1919"/>
         <source>Não foi possível salvar a imagem.</source>
         <translation>Impossible d&apos;enregistrer l&apos;image.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1198"/>
+        <location filename="../src/LousaPanel.cpp" line="1922"/>
         <source>Imagem exportada com sucesso.</source>
         <translation>Image exportée avec succès.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1207"/>
+        <location filename="../src/LousaPanel.cpp" line="1931"/>
         <source>Mapa de Personagens</source>
         <translation>Carte des personnages</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1208"/>
+        <location filename="../src/LousaPanel.cpp" line="1932"/>
         <source>Arco da História</source>
         <translation>Arc narratif</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1209"/>
+        <location filename="../src/LousaPanel.cpp" line="1933"/>
         <source>Construção de Mundo</source>
         <translation>Construction d&apos;univers</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1254"/>
-        <location filename="../src/LousaPanel.cpp" line="1295"/>
+        <location filename="../src/LousaPanel.cpp" line="2116"/>
+        <location filename="../src/LousaPanel.cpp" line="2157"/>
         <source>Criar documento</source>
         <translation>Créer un document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1255"/>
+        <location filename="../src/LousaPanel.cpp" line="2117"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Créez un tiroir avant d&apos;utiliser cette fonction.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="2646"/>
+        <source>Documento não encontrado</source>
+        <translation>Document introuvable</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="2668"/>
+        <source>Capítulo não encontrado</source>
+        <translation>Chapitre introuvable</translation>
     </message>
     <message>
         <source>Nome do documento:</source>
@@ -7750,78 +8961,74 @@ Bienvenue dans la famille Qenna ! Commencez votre nouveau projet ci-dessous.</tr
         <translation type="vanished">Tiroir de destination&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1288"/>
+        <location filename="../src/LousaPanel.cpp" line="2150"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
         <translation>La fiche d&apos;enregistrement du personnage s&apos;ouvrira ensuite (photo et rôle).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1289"/>
+        <location filename="../src/LousaPanel.cpp" line="2151"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
         <translation>La fiche d&apos;enregistrement du lieu s&apos;ouvrira ensuite (photo).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1290"/>
+        <location filename="../src/LousaPanel.cpp" line="2152"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation>La fiche d&apos;enregistrement de l&apos;objet s&apos;ouvrira ensuite (photo).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1295"/>
+        <location filename="../src/LousaPanel.cpp" line="2157"/>
         <source>Nome do documento</source>
         <translation>Nom du document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1296"/>
+        <location filename="../src/LousaPanel.cpp" line="2158"/>
         <source>Gaveta de destino</source>
         <translation>Tiroir de destination</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1425"/>
-        <location filename="../src/LousaPanel.cpp" line="1436"/>
         <source>Cards guardados</source>
-        <translation>Cartes rangées</translation>
+        <translation type="vanished">Cartes rangées</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1449"/>
         <source>Restaurar</source>
-        <translation>Restaurer</translation>
+        <translation type="vanished">Restaurer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1454"/>
+        <location filename="../src/LousaPanel.cpp" line="501"/>
+        <location filename="../src/LousaPanel.cpp" line="1253"/>
         <source>Apagar</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1505"/>
         <source>Gaveta (%1)</source>
-        <translation>Tiroir (%1)</translation>
+        <translation type="vanished">Tiroir (%1)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1568"/>
+        <location filename="../src/LousaPanel.cpp" line="500"/>
+        <location filename="../src/LousaPanel.cpp" line="1250"/>
         <source>Apagar cards</source>
         <translation>Supprimer les cartes</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1569"/>
+        <location filename="../src/LousaPanel.cpp" line="500"/>
+        <location filename="../src/LousaPanel.cpp" line="1251"/>
         <source>Apagar este card definitivamente?</source>
         <translation>Supprimer définitivement cette carte&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1570"/>
+        <location filename="../src/LousaPanel.cpp" line="1252"/>
         <source>Apagar %1 cards definitivamente?</source>
         <translation>Supprimer définitivement %1 cartes&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1597"/>
         <source>Ajuda — Lousa</source>
-        <translation>Aide — Board</translation>
+        <translation type="vanished">Aide — Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1629"/>
         <source>Introdução</source>
-        <translation>Introduction</translation>
+        <translation type="vanished">Introduction</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1633"/>
         <source>Bem-vindo à lousa.
 
 Aqui você tem um espaço livre para criar, planejar e organizar seu projeto — antes de começar a escrever, no meio do processo, ou quando a cabeça pedir.
@@ -7829,7 +9036,7 @@ Aqui você tem um espaço livre para criar, planejar e organizar seu projeto —
 Solte post-its, comentários, imagens, documentos e personagens pela tela. Conecte eles com linhas, delimite áreas de planejamento, rotacione, empilhe, organize como quiser.
 
 Se tiver dúvida em alguma coisa, as seções abaixo têm tudo explicado.</source>
-        <translation>Bienvenue sur le Board.
+        <translation type="vanished">Bienvenue sur le Board.
 
 Vous disposez ici d&apos;un espace libre pour créer, planifier et organiser votre projet — avant de commencer à écrire, au milieu du processus, ou quand l&apos;envie vous prend.
 
@@ -7838,475 +9045,561 @@ Déposez post-it, commentaires, images, documents et personnages sur l&apos;écr
 En cas de doute, les sections ci-dessous expliquent tout.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1645"/>
         <source>Se mover na lousa</source>
-        <translation>Se déplacer sur le Board</translation>
+        <translation type="vanished">Se déplacer sur le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1646"/>
         <source>Arrastar o fundo</source>
-        <translation>Faire glisser le fond</translation>
+        <translation type="vanished">Faire glisser le fond</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1646"/>
         <source>Move a lousa</source>
-        <translation>Déplace le Board</translation>
+        <translation type="vanished">Déplace le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1647"/>
         <source>Scroll do mouse</source>
-        <translation>Molette de la souris</translation>
+        <translation type="vanished">Molette de la souris</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1647"/>
         <source>Aproxima e afasta</source>
-        <translation>Zoome et dézoome</translation>
+        <translation type="vanished">Zoome et dézoome</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1648"/>
         <source>Indicador de zoom</source>
-        <translation>Indicateur de zoom</translation>
+        <translation type="vanished">Indicateur de zoom</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1648"/>
         <source>Mostra o zoom atual</source>
-        <translation>Affiche le niveau de zoom actuel</translation>
+        <translation type="vanished">Affiche le niveau de zoom actuel</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1650"/>
         <source>Colocar coisas na lousa</source>
-        <translation>Placer des éléments sur le Board</translation>
+        <translation type="vanished">Placer des éléments sur le Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1652"/>
         <source>Comentário com rabinho de balão</source>
-        <translation>Commentaire avec une pointe de bulle</translation>
+        <translation type="vanished">Commentaire avec une pointe de bulle</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1654"/>
         <source>Traz um doc da gaveta</source>
-        <translation>Apporte un document du tiroir</translation>
+        <translation type="vanished">Apporte un document du tiroir</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1655"/>
         <source>Coloca um personagem do projeto</source>
-        <translation>Place un personnage du projet</translation>
+        <translation type="vanished">Place un personnage du projet</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1656"/>
         <source>Texto solto, sem card</source>
-        <translation>Texte libre, sans carte</translation>
+        <translation type="vanished">Texte libre, sans carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1657"/>
         <source>Botão ★ na toolbar</source>
-        <translation>Bouton ★ dans la barre d&apos;outils</translation>
+        <translation type="vanished">Bouton ★ dans la barre d&apos;outils</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1657"/>
         <source>Símbolo ou emoji</source>
-        <translation>Symbole ou emoji</translation>
+        <translation type="vanished">Symbole ou emoji</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1659"/>
         <source>Selecionar e mover cards</source>
-        <translation>Sélectionner et déplacer les cartes</translation>
+        <translation type="vanished">Sélectionner et déplacer les cartes</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1660"/>
         <source>Shift+click</source>
-        <translation>Shift+clic</translation>
+        <translation type="vanished">Shift+clic</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1660"/>
         <source>Marca ou desmarca um card</source>
-        <translation>Sélectionne ou désélectionne une carte</translation>
+        <translation type="vanished">Sélectionne ou désélectionne une carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1661"/>
         <source>Shift+S (segurar)</source>
-        <translation>Shift+S (maintenir)</translation>
+        <translation type="vanished">Shift+S (maintenir)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1661"/>
         <source>Passa o mouse e seleciona tudo que tocar</source>
-        <translation>Passez la souris pour sélectionner tout ce qu&apos;elle touche</translation>
+        <translation type="vanished">Passez la souris pour sélectionner tout ce qu&apos;elle touche</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1662"/>
         <source>Arrastar selecionado</source>
-        <translation>Faire glisser la sélection</translation>
+        <translation type="vanished">Faire glisser la sélection</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1662"/>
         <source>Move todos os marcados juntos</source>
-        <translation>Déplace ensemble tout ce qui est sélectionné</translation>
+        <translation type="vanished">Déplace ensemble tout ce qui est sélectionné</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1663"/>
         <source>Ctrl+X (1 card marcado)</source>
-        <translation>Ctrl+X (1 carte sélectionnée)</translation>
+        <translation type="vanished">Ctrl+X (1 carte sélectionnée)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1663"/>
         <source>Recorta — o card fica transparente até ser colado</source>
-        <translation>Coupe — la carte reste transparente jusqu&apos;à ce qu&apos;elle soit collée</translation>
+        <translation type="vanished">Coupe — la carte reste transparente jusqu&apos;à ce qu&apos;elle soit collée</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1664"/>
         <source>Cola onde o mouse estiver</source>
-        <translation>Colle là où se trouve la souris</translation>
+        <translation type="vanished">Colle là où se trouve la souris</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1665"/>
         <source>Escape</source>
-        <translation>Échap</translation>
+        <translation type="vanished">Échap</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1665"/>
         <source>Cancela o recorte</source>
-        <translation>Annule la coupe</translation>
+        <translation type="vanished">Annule la coupe</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1667"/>
         <source>Apagar e guardar</source>
-        <translation>Supprimer et ranger</translation>
+        <translation type="vanished">Supprimer et ranger</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1668"/>
         <source>× no card</source>
-        <translation>× sur la carte</translation>
+        <translation type="vanished">× sur la carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1668"/>
         <source>Guarda na gaveta da lousa — pode ser restaurado depois</source>
-        <translation>La range dans le tiroir du Board — elle peut être restaurée plus tard</translation>
+        <translation type="vanished">La range dans le tiroir du Board — elle peut être restaurée plus tard</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1669"/>
         <source>Shift+× no card</source>
-        <translation>Shift+× sur la carte</translation>
+        <translation type="vanished">Shift+× sur la carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1669"/>
         <source>Deleta o card definitivamente</source>
-        <translation>Supprime la carte définitivement</translation>
+        <translation type="vanished">Supprime la carte définitivement</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1670"/>
         <source>Delete (com cards marcados)</source>
-        <translation>Suppr (avec des cartes sélectionnées)</translation>
+        <translation type="vanished">Suppr (avec des cartes sélectionnées)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1670"/>
         <source>Manda todos para a gaveta da lousa</source>
-        <translation>Envoie tout dans le tiroir du Board</translation>
+        <translation type="vanished">Envoie tout dans le tiroir du Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1671"/>
         <source>Shift+Delete</source>
-        <translation>Shift+Suppr</translation>
+        <translation type="vanished">Shift+Suppr</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1671"/>
         <source>Apaga de vez — pede confirmação</source>
-        <translation>Supprime pour de bon — demande confirmation</translation>
+        <translation type="vanished">Supprime pour de bon — demande confirmation</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1672"/>
         <source>Botão gaveta (canto inf. esq.)</source>
-        <translation>Bouton tiroir (coin inf. gauche)</translation>
+        <translation type="vanished">Bouton tiroir (coin inf. gauche)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1672"/>
         <source>Abre a gaveta de cards guardados</source>
-        <translation>Ouvre le tiroir des cartes rangées</translation>
+        <translation type="vanished">Ouvre le tiroir des cartes rangées</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1674"/>
         <source>Desfazer e refazer</source>
-        <translation>Annuler et rétablir</translation>
+        <translation type="vanished">Annuler et rétablir</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1675"/>
         <source>Volta atrás — até 50 vezes</source>
-        <translation>Revient en arrière — jusqu&apos;à 50 fois</translation>
+        <translation type="vanished">Revient en arrière — jusqu&apos;à 50 fois</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1676"/>
         <source>Vai pra frente de novo</source>
-        <translation>Revient en avant</translation>
+        <translation type="vanished">Revient en avant</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1678"/>
         <source>Ligar cards com linhas</source>
-        <translation>Relier les cartes par des lignes</translation>
+        <translation type="vanished">Relier les cartes par des lignes</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1679"/>
         <source>Ponto colorido no topo</source>
-        <translation>Point coloré en haut</translation>
+        <translation type="vanished">Point coloré en haut</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1679"/>
         <source>Arrasta até outro card pra conectar</source>
-        <translation>Faites-le glisser sur une autre carte pour les relier</translation>
+        <translation type="vanished">Faites-le glisser sur une autre carte pour les relier</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1680"/>
         <source>Post-it perto de uma linha (1s)</source>
-        <translation>Post-it près d&apos;une ligne (1 s)</translation>
+        <translation type="vanished">Post-it près d&apos;une ligne (1 s)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1680"/>
         <source>Vira uma parada no meio da linha</source>
-        <translation>Devient une étape sur la ligne</translation>
+        <translation type="vanished">Devient une étape sur la ligne</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1681"/>
         <source>Passar o mouse na linha</source>
-        <translation>Survoler la ligne</translation>
+        <translation type="vanished">Survoler la ligne</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1681"/>
         <source>Aparece o × pra deletar a linha</source>
-        <translation>La × apparaît pour supprimer la ligne</translation>
+        <translation type="vanished">La × apparaît pour supprimer la ligne</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1683"/>
         <source>Textos e símbolos</source>
-        <translation>Textes et symboles</translation>
+        <translation type="vanished">Textes et symboles</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1684"/>
         <source>Duplo-click</source>
-        <translation>Double-clic</translation>
+        <translation type="vanished">Double-clic</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1684"/>
         <source>Entra pra editar</source>
-        <translation>Passe en mode édition</translation>
+        <translation type="vanished">Passe en mode édition</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1685"/>
         <source>Shift+arrastar</source>
-        <translation>Shift+glisser</translation>
+        <translation type="vanished">Shift+glisser</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1685"/>
         <source>Gira o elemento</source>
-        <translation>Fait pivoter l&apos;élément</translation>
+        <translation type="vanished">Fait pivoter l&apos;élément</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1686"/>
         <source>Puxar o canto inferior dir.</source>
-        <translation>Tirer le coin inférieur droit</translation>
+        <translation type="vanished">Tirer le coin inférieur droit</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1686"/>
         <source>Muda o tamanho da letra</source>
-        <translation>Change la taille du texte</translation>
+        <translation type="vanished">Change la taille du texte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1688"/>
         <source>Áreas de planejamento</source>
-        <translation>Zones de planification</translation>
+        <translation type="vanished">Zones de planification</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1689"/>
         <source>Botão Definir área na toolbar</source>
-        <translation>Bouton «&#xa0;Définir une zone&#xa0;» dans la barre d&apos;outils</translation>
+        <translation type="vanished">Bouton «&#xa0;Définir une zone&#xa0;» dans la barre d&apos;outils</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1689"/>
         <source>Ativa o modo de desenhar área</source>
-        <translation>Active le mode de tracé de zone</translation>
+        <translation type="vanished">Active le mode de tracé de zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1690"/>
         <source>Arrastar no fundo</source>
-        <translation>Faire glisser sur le fond</translation>
+        <translation type="vanished">Faire glisser sur le fond</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1690"/>
         <source>Cria o retângulo da área</source>
-        <translation>Crée le rectangle de la zone</translation>
+        <translation type="vanished">Crée le rectangle de la zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1691"/>
         <source>Grade de pontos na área</source>
-        <translation>Grille de points sur la zone</translation>
+        <translation type="vanished">Grille de points sur la zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1691"/>
         <source>Segura aqui pra mover a área</source>
-        <translation>Maintenez ici pour déplacer la zone</translation>
+        <translation type="vanished">Maintenez ici pour déplacer la zone</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1692"/>
         <source>Ctrl+Shift+mover</source>
-        <translation>Ctrl+Shift+déplacer</translation>
+        <translation type="vanished">Ctrl+Shift+déplacer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1692"/>
         <source>Move a área com tudo que tem dentro</source>
-        <translation>Déplace la zone avec tout ce qu&apos;elle contient</translation>
+        <translation type="vanished">Déplace la zone avec tout ce qu&apos;elle contient</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1693"/>
         <source>Passar o mouse na borda</source>
-        <translation>Survoler le bord</translation>
+        <translation type="vanished">Survoler le bord</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1693"/>
         <source>Aparece os pontos pra redimensionar</source>
-        <translation>Les poignées de redimensionnement apparaissent</translation>
+        <translation type="vanished">Les poignées de redimensionnement apparaissent</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1694"/>
         <source>Exporta a área marcada pra uma gaveta</source>
-        <translation>Exporte la zone sélectionnée dans un tiroir</translation>
+        <translation type="vanished">Exporte la zone sélectionnée dans un tiroir</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1695"/>
         <source>Exporta todas as áreas de uma vez</source>
-        <translation>Exporte toutes les zones d&apos;un coup</translation>
+        <translation type="vanished">Exporte toutes les zones d&apos;un coup</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1696"/>
         <source>Tecla F</source>
-        <translation>Touche F</translation>
+        <translation type="vanished">Touche F</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1696"/>
         <source>Lista de áreas — clica pra ir direto</source>
-        <translation>Liste des zones — cliquez pour y aller directement</translation>
+        <translation type="vanished">Liste des zones — cliquez pour y aller directement</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1698"/>
         <source>Outros</source>
-        <translation>Autres</translation>
+        <translation type="vanished">Autres</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1699"/>
         <source>Círculo colorido na toolbar</source>
-        <translation>Cercle coloré dans la barre d&apos;outils</translation>
+        <translation type="vanished">Cercle coloré dans la barre d&apos;outils</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1699"/>
         <source>Muda a cor do fundo da lousa</source>
-        <translation>Change la couleur de fond du Board</translation>
+        <translation type="vanished">Change la couleur de fond du Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1700"/>
         <source>Ícone de doc no card</source>
-        <translation>Icône de document sur la carte</translation>
+        <translation type="vanished">Icône de document sur la carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1700"/>
         <source>Cria um doc a partir desse card</source>
-        <translation>Crée un document à partir de cette carte</translation>
+        <translation type="vanished">Crée un document à partir de cette carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1701"/>
         <source>Duplo-click na foto/iniciais</source>
-        <translation>Double-clic sur la photo/les initiales</translation>
+        <translation type="vanished">Double-clic sur la photo/les initiales</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1701"/>
         <source>Abre o doc do personagem dentro do card</source>
-        <translation>Ouvre le document du personnage dans la carte</translation>
+        <translation type="vanished">Ouvre le document du personnage dans la carte</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1702"/>
         <source>Não precisa salvar</source>
-        <translation>Pas besoin d&apos;enregistrer</translation>
+        <translation type="vanished">Pas besoin d&apos;enregistrer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1702"/>
         <source>Tudo é salvo sozinho enquanto você trabalha</source>
-        <translation>Tout s&apos;enregistre tout seul pendant que vous travaillez</translation>
+        <translation type="vanished">Tout s&apos;enregistre tout seul pendant que vous travaillez</translation>
+    </message>
+</context>
+<context>
+    <name>LousaSearchBar</name>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="501"/>
+        <source>Buscar na lousa…</source>
+        <translation>Chercher dans le Board…</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="521"/>
+        <source>Anterior (Shift+Enter)</source>
+        <translation>Précédent (Maj+Entrée)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="522"/>
+        <source>Próximo (Enter)</source>
+        <translation>Suivant (Entrée)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="523"/>
+        <source>Fechar (Esc)</source>
+        <translation>Fermer (Échap)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="553"/>
+        <source>nada</source>
+        <translation>rien</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaExtras.cpp" line="554"/>
+        <source>%1 de %2</source>
+        <translation>%1 sur %2</translation>
+    </message>
+</context>
+<context>
+    <name>LousaTray</name>
+    <message>
+        <source>+ Novo</source>
+        <translation type="vanished">+ Nouveau</translation>
+    </message>
+    <message>
+        <source>no quadro</source>
+        <translation type="vanished">sur le Board</translation>
+    </message>
+    <message>
+        <source>Pôr de volta no quadro</source>
+        <translation type="vanished">Remettre sur le Board</translation>
+    </message>
+    <message>
+        <source>Apagar de vez</source>
+        <translation type="vanished">Supprimer définitivement</translation>
+    </message>
+    <message>
+        <source>Post-it</source>
+        <translation type="vanished">Post-it</translation>
+    </message>
+    <message>
+        <source>Post-it (Ctrl+N)</source>
+        <translation type="vanished">Post-it (Ctrl+N)</translation>
+    </message>
+    <message>
+        <source>Comentário</source>
+        <translation type="vanished">Commentaire</translation>
+    </message>
+    <message>
+        <source>Comentário (Alt+C)</source>
+        <translation type="vanished">Commentaire (Alt+C)</translation>
+    </message>
+    <message>
+        <source>Texto</source>
+        <translation type="vanished">Texte</translation>
+    </message>
+    <message>
+        <source>Texto livre (Ctrl+T, ou dois cliques no quadro)</source>
+        <translation type="vanished">Texte libre (Ctrl+T, ou double-clic sur le Board)</translation>
+    </message>
+    <message>
+        <source>Símbolo</source>
+        <translation type="vanished">Symbole</translation>
+    </message>
+    <message>
+        <source>Imagem</source>
+        <translation type="vanished">Image</translation>
+    </message>
+    <message>
+        <source>Imagem (Ctrl+G)</source>
+        <translation type="vanished">Image (Ctrl+G)</translation>
+    </message>
+    <message>
+        <source>Área</source>
+        <translation type="vanished">Zone</translation>
+    </message>
+    <message>
+        <source>Desenhar uma área (arraste no quadro)</source>
+        <translation type="vanished">Dessiner une zone (glissez sur le Board)</translation>
+    </message>
+    <message>
+        <source>Ligar</source>
+        <translation type="vanished">Relier</translation>
+    </message>
+    <message>
+        <source>Ligar dois cards: clique num e depois no outro</source>
+        <translation type="vanished">Relier deux cartes : cliquez sur l&apos;une, puis sur l&apos;autre</translation>
+    </message>
+    <message>
+        <source>Áreas</source>
+        <translation type="vanished">Zones</translation>
+    </message>
+    <message>
+        <source>Lista das áreas (F)</source>
+        <translation type="vanished">Liste des zones (F)</translation>
+    </message>
+    <message>
+        <source>Elenco</source>
+        <translation type="vanished">Distribution</translation>
+    </message>
+    <message>
+        <source>Documentos</source>
+        <translation type="vanished">Documents</translation>
+    </message>
+    <message>
+        <source>Capítulos</source>
+        <translation type="vanished">Chapitres</translation>
+    </message>
+    <message>
+        <source>Guardados</source>
+        <translation type="vanished">Mis de côté</translation>
+    </message>
+    <message>
+        <source>PÔR NO QUADRO</source>
+        <translation type="vanished">METTRE SUR LE BOARD</translation>
+    </message>
+    <message>
+        <source>Arraste pro quadro</source>
+        <translation type="vanished">Glissez sur le Board</translation>
+    </message>
+    <message>
+        <source>Buscar…</source>
+        <translation type="vanished">Chercher…</translation>
+    </message>
+    <message>
+        <source>Mostrar a bandeja</source>
+        <translation type="vanished">Afficher le plateau</translation>
+    </message>
+    <message>
+        <source>Recolher a bandeja</source>
+        <translation type="vanished">Replier le plateau</translation>
+    </message>
+    <message>
+        <source>Nada com &quot;%1&quot;.</source>
+        <translation type="vanished">Rien avec « %1 ».</translation>
+    </message>
+    <message>
+        <source>Nenhum documento nas gavetas ainda.</source>
+        <translation type="vanished">Pas encore de documents dans les tiroirs.</translation>
+    </message>
+    <message>
+        <source>Este manuscrito ainda não tem capítulos.</source>
+        <translation type="vanished">Ce manuscrit n&apos;a pas encore de chapitres.</translation>
+    </message>
+    <message>
+        <source>Nada guardado. O Guardar da barra do card (ou a tecla Delete) traz ele pra cá.</source>
+        <translation type="vanished">Rien de côté. Le « Mettre de côté » de la barre de la carte (ou la touche Suppr) l&apos;amène ici.</translation>
     </message>
 </context>
 <context>
     <name>MainMenuDialog</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1071"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1109"/>
         <source>Qenna Writer</source>
         <translation>Qenna Writer</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1176"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1232"/>
         <source>Ver atualizações</source>
         <translation>Voir les nouveautés</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1181"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1237"/>
         <source>O que mudou na versão %1</source>
         <translation>Ce qui a changé dans la version %1</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1213"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1269"/>
         <source>Novo projeto</source>
         <translation>Nouveau projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1220"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1276"/>
         <source>Nova ideia</source>
         <translation>Nouvelle idée</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1224"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1280"/>
         <source>Comece a escrever agora, sem criar um projeto ainda</source>
         <translation>Commencez à écrire tout de suite, sans créer de projet pour l&apos;instant</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1228"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1284"/>
         <source>Carregar pasta</source>
         <translation>Charger un dossier</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1243"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1299"/>
         <source>Idioma:</source>
         <translation>Langue&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1248"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1304"/>
         <source>Português (BR)</source>
         <translation>Português (BR)</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1249"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1305"/>
         <source>English</source>
         <translation>English</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1250"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1306"/>
         <source>Español</source>
         <translation>Español</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1269"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1325"/>
         <source>Verificar atualizações</source>
         <translation>Rechercher des mises à jour</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1279"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1335"/>
         <source>Sobre o Qenna Writer</source>
         <translation>À propos de Qenna Writer</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1291"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1347"/>
         <source>Lixeira — projetos excluídos</source>
         <translation>Corbeille — projets supprimés</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1315"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1371"/>
         <source>Biblioteca</source>
         <translation>Bibliothèque</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1326"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1382"/>
         <source>Estante</source>
         <translation>Étagère</translation>
     </message>
@@ -8319,7 +9612,7 @@ En cas de doute, les sections ci-dessous expliquent tout.</translation>
         <translation type="vanished">Rayonnage</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1326"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1382"/>
         <source>Pilha</source>
         <translation>Pile</translation>
     </message>
@@ -8338,12 +9631,12 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucun projet pour l&apos;instant</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1566"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1622"/>
         <source>1 projeto</source>
         <translation>1 projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1566"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1622"/>
         <source>%1 projetos</source>
         <translation>%1 projets</translation>
     </message>
@@ -8356,31 +9649,31 @@ Cliquez sur «&#xa0;Nouveau projet&#xa0;» pour commencer, ou sur «&#xa0;Charge
         <translation type="vanished">Aucune</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1704"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1757"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1760"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1813"/>
         <source>Erro</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1705"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1761"/>
         <source>Não foi possível ler o projeto para edição.</source>
         <translation>Impossible de lire le projet pour le modifier.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1758"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1814"/>
         <source>Não foi possível salvar as alterações:
 %1</source>
         <translation>Impossible d&apos;enregistrer les modifications&#xa0;:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1779"/>
-        <location filename="../src/MainMenuDialog.cpp" line="1799"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1835"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1855"/>
         <source>Cover Creator</source>
         <translation>Cover Creator</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1780"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1836"/>
         <source>O Cover Creator ainda não está instalado.
 
 Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
@@ -8389,51 +9682,52 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
 Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1800"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1856"/>
         <source>Execute &apos;npm run build&apos; no diretório mira-cover para habilitar o criador de capas no modo desenvolvimento.</source>
         <translation>Exécutez &apos;npm run build&apos; dans le dossier mira-cover pour activer le créateur de couvertures en mode développement.</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1325"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1381"/>
         <source>Continuar</source>
         <translation>Continuer</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1325"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1381"/>
         <source>Vitrine</source>
         <translation>Vitrine</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1325"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1381"/>
         <source>Cinema</source>
         <translation>Cinéma</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1326"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1382"/>
         <source>Seu dia</source>
         <translation>Votre journée</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1432"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1488"/>
         <source>Capítulo %1</source>
         <translation>Chapitre %1</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1437"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1493"/>
         <source>cap. %1 · %2</source>
         <translation>chap. %1 · %2</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1501"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1557"/>
         <source>Abrir</source>
         <translation>Ouvrir</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="1502"/>
+        <location filename="../src/MainMenuDialog.cpp" line="1558"/>
         <source>Continuar de onde parei</source>
         <translation>Reprendre là où j&apos;en étais</translation>
     </message>
     <message>
+        <location filename="../src/MainMenuDialog.cpp" line="2058"/>
         <source>Cor sólida do tema</source>
         <translation>Couleur unie du thème</translation>
     </message>
@@ -8442,7 +9736,7 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
     <name>MainWindow</name>
     <message>
         <location filename="../src/MainWindow.cpp" line="718"/>
-        <location filename="../src/MainWindow.cpp" line="6466"/>
+        <location filename="../src/MainWindow.cpp" line="6491"/>
         <source>Qenna Writer</source>
         <translation>Qenna Writer</translation>
     </message>
@@ -8565,13 +9859,13 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <location filename="../src/MainWindow.cpp" line="1177"/>
         <location filename="../src/MainWindow.cpp" line="1190"/>
         <location filename="../src/MainWindow.cpp" line="1345"/>
-        <location filename="../src/MainWindow.cpp" line="3449"/>
-        <location filename="../src/MainWindow.cpp" line="4135"/>
-        <location filename="../src/MainWindow.cpp" line="5653"/>
-        <location filename="../src/MainWindow.cpp" line="5742"/>
-        <location filename="../src/MainWindow.cpp" line="9937"/>
-        <location filename="../src/MainWindow.cpp" line="10002"/>
-        <location filename="../src/MainWindow.cpp" line="10059"/>
+        <location filename="../src/MainWindow.cpp" line="3474"/>
+        <location filename="../src/MainWindow.cpp" line="4160"/>
+        <location filename="../src/MainWindow.cpp" line="5678"/>
+        <location filename="../src/MainWindow.cpp" line="5767"/>
+        <location filename="../src/MainWindow.cpp" line="9960"/>
+        <location filename="../src/MainWindow.cpp" line="10025"/>
+        <location filename="../src/MainWindow.cpp" line="10082"/>
         <source>Cena %1</source>
         <translation>Scène %1</translation>
     </message>
@@ -8586,11 +9880,11 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation>Nouvelle scène créée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5654"/>
-        <location filename="../src/MainWindow.cpp" line="5743"/>
-        <location filename="../src/MainWindow.cpp" line="9938"/>
-        <location filename="../src/MainWindow.cpp" line="10003"/>
-        <location filename="../src/MainWindow.cpp" line="10060"/>
+        <location filename="../src/MainWindow.cpp" line="5679"/>
+        <location filename="../src/MainWindow.cpp" line="5768"/>
+        <location filename="../src/MainWindow.cpp" line="9961"/>
+        <location filename="../src/MainWindow.cpp" line="10026"/>
+        <location filename="../src/MainWindow.cpp" line="10083"/>
         <source>%1 — %2</source>
         <translation>%1 — %2</translation>
     </message>
@@ -8637,7 +9931,7 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2198"/>
-        <location filename="../src/MainWindow.cpp" line="6454"/>
+        <location filename="../src/MainWindow.cpp" line="6479"/>
         <source>Lembrete</source>
         <translation>Rappel</translation>
     </message>
@@ -8648,7 +9942,7 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2224"/>
-        <location filename="../src/MainWindow.cpp" line="8487"/>
+        <location filename="../src/MainWindow.cpp" line="8512"/>
         <source>Projeto salvo em:
 %1</source>
         <translation>Projet enregistré dans&#xa0;:
@@ -8683,85 +9977,85 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2390"/>
-        <location filename="../src/MainWindow.cpp" line="3281"/>
+        <location filename="../src/MainWindow.cpp" line="3306"/>
         <source>Nenhum manuscrito</source>
         <translation>Aucun manuscrit</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2391"/>
-        <location filename="../src/MainWindow.cpp" line="3282"/>
+        <location filename="../src/MainWindow.cpp" line="3307"/>
         <source>Você precisa criar um manuscrito antes de adicionar capítulos. Vamos criar um agora.</source>
         <translation>Vous devez créer un manuscrit avant d&apos;ajouter des chapitres. Créons-en un maintenant.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2914"/>
-        <location filename="../src/MainWindow.cpp" line="7312"/>
-        <location filename="../src/MainWindow.cpp" line="7344"/>
+        <location filename="../src/MainWindow.cpp" line="2925"/>
+        <location filename="../src/MainWindow.cpp" line="7337"/>
+        <location filename="../src/MainWindow.cpp" line="7369"/>
         <source>Erro ao abrir</source>
         <translation>Erreur d&apos;ouverture</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2915"/>
-        <location filename="../src/MainWindow.cpp" line="7313"/>
-        <location filename="../src/MainWindow.cpp" line="7345"/>
+        <location filename="../src/MainWindow.cpp" line="2926"/>
+        <location filename="../src/MainWindow.cpp" line="7338"/>
+        <location filename="../src/MainWindow.cpp" line="7370"/>
         <source>Não foi possível abrir o projeto:
 %1</source>
         <translation>Impossible d&apos;ouvrir le projet&#xa0;:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3320"/>
-        <location filename="../src/MainWindow.cpp" line="3336"/>
-        <location filename="../src/MainWindow.cpp" line="3429"/>
-        <location filename="../src/MainWindow.cpp" line="3811"/>
+        <location filename="../src/MainWindow.cpp" line="3345"/>
+        <location filename="../src/MainWindow.cpp" line="3361"/>
+        <location filename="../src/MainWindow.cpp" line="3454"/>
+        <location filename="../src/MainWindow.cpp" line="3836"/>
         <source>(sem título)</source>
         <translation>(sans titre)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3337"/>
+        <location filename="../src/MainWindow.cpp" line="3362"/>
         <source>Excluir manuscrito</source>
         <translation>Supprimer le manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3338"/>
+        <location filename="../src/MainWindow.cpp" line="3363"/>
         <source>Excluir &quot;%1&quot;? Todos os capítulos serão removidos. Esta ação não pode ser desfeita.</source>
         <translation>Supprimer «&#xa0;%1&#xa0;»&#xa0;? Tous les chapitres seront retirés. Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3430"/>
+        <location filename="../src/MainWindow.cpp" line="3455"/>
         <source>Excluir capítulo</source>
         <translation>Supprimer le chapitre</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3431"/>
+        <location filename="../src/MainWindow.cpp" line="3456"/>
         <source>Excluir &quot;%1&quot;? O texto do capítulo será removido. Esta ação não pode ser desfeita.</source>
         <translation>Supprimer «&#xa0;%1&#xa0;»&#xa0;? Le texte du chapitre sera retiré. Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3484"/>
-        <location filename="../src/MainWindow.cpp" line="3488"/>
+        <location filename="../src/MainWindow.cpp" line="3509"/>
+        <location filename="../src/MainWindow.cpp" line="3513"/>
         <source>Excluir cena</source>
         <translation>Supprimer la scène</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3485"/>
+        <location filename="../src/MainWindow.cpp" line="3510"/>
         <source>Não dá pra excluir a única cena de um capítulo. Apague o texto manualmente se quiser limpar.</source>
         <translation>Impossible de supprimer la seule scène d&apos;un chapitre. Effacez le texte manuellement si vous voulez la vider.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3489"/>
+        <location filename="../src/MainWindow.cpp" line="3514"/>
         <source>Excluir esta cena? O texto da cena será removido.</source>
         <translation>Supprimer cette scène&#xa0;? Le texte de la scène sera retiré.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3530"/>
-        <location filename="../src/MainWindow.cpp" line="9661"/>
+        <location filename="../src/MainWindow.cpp" line="3555"/>
+        <location filename="../src/MainWindow.cpp" line="9684"/>
         <source>Mover cena</source>
         <translation>Déplacer la scène</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3531"/>
-        <location filename="../src/MainWindow.cpp" line="9662"/>
+        <location filename="../src/MainWindow.cpp" line="3556"/>
+        <location filename="../src/MainWindow.cpp" line="9685"/>
         <source>Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto.</source>
         <translation>Impossible de déplacer l&apos;unique scène d&apos;un chapitre : le chapitre se retrouverait sans texte.</translation>
     </message>
@@ -8774,7 +10068,7 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation type="vanished">Nom de l&apos;élément&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3632"/>
+        <location filename="../src/MainWindow.cpp" line="3657"/>
         <source>Nova pasta</source>
         <translation>Nouveau dossier</translation>
     </message>
@@ -8783,7 +10077,7 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation type="vanished">Nom du dossier&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3748"/>
+        <location filename="../src/MainWindow.cpp" line="3773"/>
         <source>Adicionar elemento</source>
         <translation>Ajouter un élément</translation>
     </message>
@@ -8792,102 +10086,102 @@ Voulez-vous l&apos;installer maintenant&#xa0;? (rapide, sans connexion Internet)
         <translation type="vanished">Type d&apos;élément&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3812"/>
+        <location filename="../src/MainWindow.cpp" line="3837"/>
         <source>Excluir item</source>
         <translation>Supprimer l&apos;élément</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3813"/>
+        <location filename="../src/MainWindow.cpp" line="3838"/>
         <source>Excluir &quot;%1&quot; da gaveta? Esta ação não pode ser desfeita.</source>
         <translation>Supprimer «&#xa0;%1&#xa0;» du tiroir&#xa0;? Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3895"/>
+        <location filename="../src/MainWindow.cpp" line="3920"/>
         <source>Editar gaveta…</source>
         <translation>Modifier le tiroir…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3907"/>
-        <location filename="../src/MainWindow.cpp" line="3912"/>
-        <location filename="../src/MainWindow.cpp" line="3917"/>
+        <location filename="../src/MainWindow.cpp" line="3932"/>
+        <location filename="../src/MainWindow.cpp" line="3937"/>
+        <location filename="../src/MainWindow.cpp" line="3942"/>
         <source>Excluir gaveta</source>
         <translation>Supprimer le tiroir</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3913"/>
+        <location filename="../src/MainWindow.cpp" line="3938"/>
         <source>Esta gaveta não está vazia. Esvazie os itens e pastas antes de excluí-la.</source>
         <translation>Ce tiroir n&apos;est pas vide. Videz ses éléments et dossiers avant de le supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3916"/>
-        <location filename="../src/MainWindow.cpp" line="9359"/>
-        <location filename="../src/MainWindow.cpp" line="9961"/>
-        <location filename="../src/MainWindow.cpp" line="10565"/>
+        <location filename="../src/MainWindow.cpp" line="3941"/>
+        <location filename="../src/MainWindow.cpp" line="9384"/>
+        <location filename="../src/MainWindow.cpp" line="9984"/>
+        <location filename="../src/MainWindow.cpp" line="10791"/>
         <source>(sem nome)</source>
         <translation>(sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3918"/>
+        <location filename="../src/MainWindow.cpp" line="3943"/>
         <source>Excluir a gaveta &quot;%1&quot;?</source>
         <translation>Supprimer le tiroir «&#xa0;%1&#xa0;»&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5011"/>
+        <location filename="../src/MainWindow.cpp" line="5036"/>
         <source>%1 advérbios em -mente neste trecho</source>
         <translation>%1 adverbes en -ment dans ce passage</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5014"/>
+        <location filename="../src/MainWindow.cpp" line="5039"/>
         <source>repete &quot;%1&quot;, %2 palavras atrás</source>
         <translation>répète «&#xa0;%1&#xa0;», %2 mots plus tôt</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5053"/>
+        <location filename="../src/MainWindow.cpp" line="5078"/>
         <source>Parágrafo longo (%1 palavras). Considere dividir.</source>
         <translation>Paragraphe long (%1 mots). Pensez à le diviser.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5098"/>
+        <location filename="../src/MainWindow.cpp" line="5123"/>
         <source>Esta voz não marca palavra por palavra — o realce acompanha a frase.</source>
         <translation>Cette voix ne suit pas mot à mot — la surbrillance accompagne la phrase.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5127"/>
+        <location filename="../src/MainWindow.cpp" line="5152"/>
         <source>Selecionar imagem</source>
         <translation>Sélectionner une image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5129"/>
+        <location filename="../src/MainWindow.cpp" line="5154"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5142"/>
+        <location filename="../src/MainWindow.cpp" line="5167"/>
         <source>Inserir imagem</source>
         <translation>Insérer une image</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5143"/>
+        <location filename="../src/MainWindow.cpp" line="5168"/>
         <source>Não foi possível salvar a imagem recortada. A imagem original será inserida sem o recorte.</source>
         <translation>Impossible d&apos;enregistrer l&apos;image rognée. L&apos;image originale sera insérée sans le rognage.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5211"/>
+        <location filename="../src/MainWindow.cpp" line="5236"/>
         <source>Descartar rascunho?</source>
         <translation>Abandonner le brouillon&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5212"/>
+        <location filename="../src/MainWindow.cpp" line="5237"/>
         <source>Você tem uma ideia não salva. Se sair agora, o texto será perdido. Descartar mesmo assim?</source>
         <translation>Vous avez une idée non enregistrée. Si vous quittez maintenant, le texte sera perdu. L&apos;abandonner quand même&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5230"/>
+        <location filename="../src/MainWindow.cpp" line="5255"/>
         <source>Salvar projeto</source>
         <translation>Enregistrer le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5231"/>
+        <location filename="../src/MainWindow.cpp" line="5256"/>
         <source>Falha ao salvar o projeto:
 %1
 
@@ -8902,27 +10196,27 @@ Fermer quand même&#xa0;?</translation>
         <translation type="vanished">Détecter la présence par scène dans tous les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5542"/>
+        <location filename="../src/MainWindow.cpp" line="5567"/>
         <source>Escaneando… (%1/%2)</source>
         <translation>Analyse… (%1/%2)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6016"/>
+        <location filename="../src/MainWindow.cpp" line="6041"/>
         <source>Escaneando diálogos… (%1/%2 capítulos)</source>
         <translation>Analyse des dialogues… (%1/%2 chapitres)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6455"/>
+        <location filename="../src/MainWindow.cpp" line="6480"/>
         <source>Lembretes (%1)</source>
         <translation>Rappels (%1)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6459"/>
+        <location filename="../src/MainWindow.cpp" line="6484"/>
         <source>+ %1 mais</source>
         <translation>+ %1 de plus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6466"/>
+        <location filename="../src/MainWindow.cpp" line="6491"/>
         <source>Qenna Writer — %1</source>
         <translation>Qenna Writer — %1</translation>
     </message>
@@ -8931,301 +10225,301 @@ Fermer quand même&#xa0;?</translation>
         <translation type="vanished">Modifications non enregistrées</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6483"/>
+        <location filename="../src/MainWindow.cpp" line="6508"/>
         <source>Você tem uma ideia não salva. Salvar antes de continuar?</source>
         <translation>Vous avez une idée non enregistrée. L&apos;enregistrer avant de continuer&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6484"/>
+        <location filename="../src/MainWindow.cpp" line="6509"/>
         <source>Há alterações no projeto atual. Salvar antes de continuar?</source>
         <translation>Le projet actuel contient des modifications. Les enregistrer avant de continuer&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6504"/>
+        <location filename="../src/MainWindow.cpp" line="6529"/>
         <source>Caminho do projeto vazio.</source>
         <translation>Chemin du projet vide.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6508"/>
+        <location filename="../src/MainWindow.cpp" line="6533"/>
         <source>Pasta do projeto não existe: %1</source>
         <translation>Le dossier du projet n&apos;existe pas&#xa0;: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6514"/>
+        <location filename="../src/MainWindow.cpp" line="6539"/>
         <source>Esta pasta é %1, não um projeto — abri-la aqui criaria arquivos do Qenna Writer dentro dela e depois excluí-la apagaria tudo que já existe lá. Escolha (ou crie) uma subpasta dedicada ao projeto.</source>
         <translation>Ce dossier est %1, pas un projet — l&apos;ouvrir ici créerait des fichiers de Qenna Writer à l&apos;intérieur, et le supprimer ensuite effacerait tout ce qu&apos;il contient déjà. Choisissez (ou créez) un sous-dossier dédié au projet.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6545"/>
+        <location filename="../src/MainWindow.cpp" line="6570"/>
         <source>Carregando…</source>
         <translation>Chargement…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6858"/>
-        <location filename="../src/MainWindow.cpp" line="9371"/>
+        <location filename="../src/MainWindow.cpp" line="6883"/>
+        <location filename="../src/MainWindow.cpp" line="9396"/>
         <source>Cancelar</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6910"/>
+        <location filename="../src/MainWindow.cpp" line="6935"/>
         <source>Nova versão do Cover Creator disponível: %1</source>
         <translation>Nouvelle version du Cover Creator disponible&#xa0;: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6911"/>
+        <location filename="../src/MainWindow.cpp" line="6936"/>
         <source>Instalar o Cover Creator (%1)?</source>
         <translation>Installer le Cover Creator (%1)&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6914"/>
+        <location filename="../src/MainWindow.cpp" line="6939"/>
         <source>A atualização pra %1 não terminou</source>
         <translation>La mise à jour vers %1 ne s&apos;est pas terminée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6915"/>
+        <location filename="../src/MainWindow.cpp" line="6940"/>
         <source>Nova versão disponível: %1</source>
         <translation>Nouvelle version disponible&#xa0;: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6955"/>
-        <location filename="../src/MainWindow.cpp" line="6957"/>
+        <location filename="../src/MainWindow.cpp" line="6980"/>
+        <location filename="../src/MainWindow.cpp" line="6982"/>
         <source>Baixar e instalar</source>
         <translation>Télécharger et installer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6956"/>
+        <location filename="../src/MainWindow.cpp" line="6981"/>
         <source>Concluir instalação</source>
         <translation>Terminer l&apos;installation</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6956"/>
+        <location filename="../src/MainWindow.cpp" line="6981"/>
         <source>Baixar e concluir</source>
         <translation>Télécharger et terminer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6957"/>
+        <location filename="../src/MainWindow.cpp" line="6982"/>
         <source>Instalar</source>
         <translation>Installer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6997"/>
+        <location filename="../src/MainWindow.cpp" line="7022"/>
         <source>Tentar novamente</source>
         <translation>Réessayer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7030"/>
+        <location filename="../src/MainWindow.cpp" line="7055"/>
         <source>Baixando…</source>
         <translation>Téléchargement…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7058"/>
+        <location filename="../src/MainWindow.cpp" line="7083"/>
         <source>Não foi possível salvar o instalador no disco.</source>
         <translation>Impossible d&apos;enregistrer le programme d&apos;installation sur le disque.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7105"/>
+        <location filename="../src/MainWindow.cpp" line="7130"/>
         <source>arquivo incompleto (conexão interrompida).</source>
         <translation>fichier incomplet (connexion interrompue).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7106"/>
+        <location filename="../src/MainWindow.cpp" line="7131"/>
         <source>Falha ao baixar atualização: %1</source>
         <translation>Échec du téléchargement de la mise à jour&#xa0;: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7122"/>
+        <location filename="../src/MainWindow.cpp" line="7147"/>
         <source>Cover Creator instalado</source>
         <translation>Cover Creator installé</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7123"/>
+        <location filename="../src/MainWindow.cpp" line="7148"/>
         <source>Já pode usar o botão &quot;Criar capa&quot; no Menu Principal.</source>
         <translation>Vous pouvez maintenant utiliser le bouton «&#xa0;Créer une couverture&#xa0;» du Menu principal.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7149"/>
+        <location filename="../src/MainWindow.cpp" line="7174"/>
         <source>Não consegui salvar o projeto antes de atualizar: %1</source>
         <translation>Impossible d&apos;enregistrer le projet avant la mise à jour : %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7232"/>
+        <location filename="../src/MainWindow.cpp" line="7257"/>
         <source>Cover Creator</source>
         <translation>Cover Creator</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7233"/>
+        <location filename="../src/MainWindow.cpp" line="7258"/>
         <source>Não foi possível baixar o Cover Creator agora. Verifique sua conexão com a internet e tente de novo pelo botão &quot;Criar capa&quot;.</source>
         <translation>Impossible de télécharger le Cover Creator pour le moment. Vérifiez votre connexion Internet et réessayez via le bouton «&#xa0;Créer une couverture&#xa0;».</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7281"/>
+        <location filename="../src/MainWindow.cpp" line="7306"/>
         <source>Abertura automática ativada</source>
         <translation>Ouverture automatique activée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7282"/>
+        <location filename="../src/MainWindow.cpp" line="7307"/>
         <source>O app agora sempre abrirá esse projeto de forma automática. Caso queira desabilitar isso depois, basta desmarcar essa opção.</source>
         <translation>L&apos;application ouvrira désormais toujours ce projet automatiquement. Pour désactiver cela plus tard, il suffit de décocher cette option.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7306"/>
+        <location filename="../src/MainWindow.cpp" line="7331"/>
         <source>Abrir projeto</source>
         <translation>Ouvrir un projet</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7381"/>
+        <location filename="../src/MainWindow.cpp" line="7406"/>
         <source>Não é possível excluir</source>
         <translation>Suppression impossible</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7382"/>
+        <location filename="../src/MainWindow.cpp" line="7407"/>
         <source>Este é o projeto aberto no momento. Feche-o antes de excluí-lo.</source>
         <translation>C&apos;est le projet actuellement ouvert. Fermez-le avant de le supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7387"/>
+        <location filename="../src/MainWindow.cpp" line="7412"/>
         <source>Erro ao excluir</source>
         <translation>Erreur de suppression</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7388"/>
+        <location filename="../src/MainWindow.cpp" line="7413"/>
         <source>Não foi possível mover o projeto para a lixeira.
 %1</source>
         <translation>Impossible de déplacer le projet dans la corbeille.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7416"/>
+        <location filename="../src/MainWindow.cpp" line="7441"/>
         <source>Tudo atualizado</source>
         <translation>Tout est à jour</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7417"/>
+        <location filename="../src/MainWindow.cpp" line="7442"/>
         <source>O Qenna Writer e o Cover Creator estão na versão mais recente.</source>
         <translation>Qenna Writer et le Cover Creator sont à jour.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7725"/>
-        <location filename="../src/MainWindow.cpp" line="7823"/>
+        <location filename="../src/MainWindow.cpp" line="7750"/>
+        <location filename="../src/MainWindow.cpp" line="7848"/>
         <source>Pasta já existe</source>
         <translation>Le dossier existe déjà</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7726"/>
-        <location filename="../src/MainWindow.cpp" line="7824"/>
+        <location filename="../src/MainWindow.cpp" line="7751"/>
+        <location filename="../src/MainWindow.cpp" line="7849"/>
         <source>A pasta &apos;%1&apos; já existe e não está vazia. Usar mesmo assim?
 Conteúdo existente pode ser sobrescrito.</source>
         <translation>Le dossier &apos;%1&apos; existe déjà et n&apos;est pas vide. L&apos;utiliser quand même&#xa0;?
 Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7734"/>
-        <location filename="../src/MainWindow.cpp" line="7766"/>
-        <location filename="../src/MainWindow.cpp" line="7832"/>
-        <location filename="../src/MainWindow.cpp" line="7873"/>
+        <location filename="../src/MainWindow.cpp" line="7759"/>
+        <location filename="../src/MainWindow.cpp" line="7791"/>
+        <location filename="../src/MainWindow.cpp" line="7857"/>
+        <location filename="../src/MainWindow.cpp" line="7898"/>
         <source>Erro</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7735"/>
-        <location filename="../src/MainWindow.cpp" line="7833"/>
+        <location filename="../src/MainWindow.cpp" line="7760"/>
+        <location filename="../src/MainWindow.cpp" line="7858"/>
         <source>Falha ao criar o projeto:
 %1</source>
         <translation>Échec de la création du projet&#xa0;:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7767"/>
+        <location filename="../src/MainWindow.cpp" line="7792"/>
         <source>Projeto criado, mas falha ao salvar índice inicial:
 %1</source>
         <translation>Projet créé, mais l&apos;enregistrement de l&apos;index initial a échoué&#xa0;:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7874"/>
+        <location filename="../src/MainWindow.cpp" line="7899"/>
         <source>Projeto criado, mas falha ao salvar o conteúdo:
 %1</source>
         <translation>Projet créé, mais l&apos;enregistrement du contenu a échoué&#xa0;:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7971"/>
+        <location filename="../src/MainWindow.cpp" line="7996"/>
         <source>Voltando para</source>
         <translation>Retour à</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7971"/>
+        <location filename="../src/MainWindow.cpp" line="7996"/>
         <source>Avançando para</source>
         <translation>Passage à</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8216"/>
+        <location filename="../src/MainWindow.cpp" line="8241"/>
         <source>Nunca fez backup deste projeto.</source>
         <translation>Aucune sauvegarde de ce projet pour l&apos;instant.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8218"/>
+        <location filename="../src/MainWindow.cpp" line="8243"/>
         <source>Último backup: agora mesmo.</source>
         <translation>Dernière sauvegarde&#xa0;: à l&apos;instant.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8219"/>
+        <location filename="../src/MainWindow.cpp" line="8244"/>
         <source>Último backup: há %1 min.</source>
         <translation>Dernière sauvegarde&#xa0;: il y a %1 min.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8221"/>
+        <location filename="../src/MainWindow.cpp" line="8246"/>
         <source>Último backup: há %1h.</source>
         <translation>Dernière sauvegarde&#xa0;: il y a %1 h.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8223"/>
+        <location filename="../src/MainWindow.cpp" line="8248"/>
         <source>Último backup: há %1 dia(s).</source>
         <translation>Dernière sauvegarde&#xa0;: il y a %1 jour(s).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8477"/>
+        <location filename="../src/MainWindow.cpp" line="8502"/>
         <source>Escolha uma pasta</source>
         <translation>Choisissez un dossier</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8478"/>
+        <location filename="../src/MainWindow.cpp" line="8503"/>
         <source>Escolha primeiro uma pasta de destino para o backup.</source>
         <translation>Choisissez d&apos;abord un dossier de destination pour la sauvegarde.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8486"/>
+        <location filename="../src/MainWindow.cpp" line="8511"/>
         <source>Backup concluído</source>
         <translation>Sauvegarde terminée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8489"/>
+        <location filename="../src/MainWindow.cpp" line="8514"/>
         <source>Erro ao fazer backup</source>
         <translation>Erreur de sauvegarde</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8557"/>
+        <location filename="../src/MainWindow.cpp" line="8582"/>
         <source>Bíblia do universo exportada</source>
         <translation>Bible de l&apos;univers exportée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8559"/>
-        <location filename="../src/MainWindow.cpp" line="8595"/>
+        <location filename="../src/MainWindow.cpp" line="8584"/>
+        <location filename="../src/MainWindow.cpp" line="8620"/>
         <source>Exportar</source>
         <translation>Exporter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8578"/>
+        <location filename="../src/MainWindow.cpp" line="8603"/>
         <source>Exportado com sucesso</source>
         <translation>Exporté avec succès</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10494"/>
+        <location filename="../src/MainWindow.cpp" line="10720"/>
         <source>Salvar “%1” em</source>
         <translation>Enregistrer « %1 » dans</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10565"/>
+        <location filename="../src/MainWindow.cpp" line="10791"/>
         <source>✓ Salvo em %1</source>
         <translation>✓ Enregistré dans %1</translation>
     </message>
@@ -9238,272 +10532,272 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation type="vanished">Chargement de la zone Thèmes…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9204"/>
-        <location filename="../src/MainWindow.cpp" line="9247"/>
+        <location filename="../src/MainWindow.cpp" line="9229"/>
+        <location filename="../src/MainWindow.cpp" line="9272"/>
         <source>Excluir vínculo</source>
         <translation>Supprimer le lien</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9205"/>
-        <location filename="../src/MainWindow.cpp" line="9248"/>
+        <location filename="../src/MainWindow.cpp" line="9230"/>
+        <location filename="../src/MainWindow.cpp" line="9273"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation>Supprimer ce lien&#xa0;? Cette action est irréversible.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9339"/>
+        <location filename="../src/MainWindow.cpp" line="9364"/>
         <source>Documento do vínculo</source>
         <translation>Document du lien</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9347"/>
+        <location filename="../src/MainWindow.cpp" line="9372"/>
         <source>Nome do documento:</source>
         <translation>Nom du document&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9353"/>
+        <location filename="../src/MainWindow.cpp" line="9378"/>
         <source>Gaveta de destino:</source>
         <translation>Tiroir de destination&#xa0;:</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1104"/>
-        <location filename="../src/MainWindow.cpp" line="3611"/>
-        <location filename="../src/MainWindow.cpp" line="3633"/>
-        <location filename="../src/MainWindow.cpp" line="9372"/>
+        <location filename="../src/MainWindow.cpp" line="3636"/>
+        <location filename="../src/MainWindow.cpp" line="3658"/>
+        <location filename="../src/MainWindow.cpp" line="9397"/>
         <source>Criar</source>
         <translation>Créer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3610"/>
+        <location filename="../src/MainWindow.cpp" line="3635"/>
         <source>Novo documento</source>
         <translation>Nouveau document</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3610"/>
+        <location filename="../src/MainWindow.cpp" line="3635"/>
         <source>Nome do documento</source>
         <translation>Nom du document</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3632"/>
+        <location filename="../src/MainWindow.cpp" line="3657"/>
         <source>Nome da pasta</source>
         <translation>Nom du dossier</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3748"/>
+        <location filename="../src/MainWindow.cpp" line="3773"/>
         <source>Adicionar</source>
         <translation>Ajouter</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4387"/>
+        <location filename="../src/MainWindow.cpp" line="4412"/>
         <source>Sequência %1</source>
         <translation>Séquence %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5533"/>
+        <location filename="../src/MainWindow.cpp" line="5558"/>
         <source>Rodar</source>
         <translation>Lancer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5847"/>
+        <location filename="../src/MainWindow.cpp" line="5872"/>
         <source>Figurante</source>
         <translation>Figurant</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5848"/>
+        <location filename="../src/MainWindow.cpp" line="5873"/>
         <source>Sempre que o texto disser &quot;%1&quot;, quem fala é %2?</source>
         <translation>Chaque fois que le texte dit « %1 », est-ce %2 qui parle ?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5849"/>
+        <location filename="../src/MainWindow.cpp" line="5874"/>
         <source>&quot;%1&quot; vira apelido de %2, e as outras falas com essa tag se resolvem sozinhas.</source>
         <translation>« %1 » devient un alias de %2, et les autres répliques avec cette incise se règlent toutes seules.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5851"/>
+        <location filename="../src/MainWindow.cpp" line="5876"/>
         <source>Sim, é %1</source>
         <translation>Oui, c&apos;est %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5900"/>
+        <location filename="../src/MainWindow.cpp" line="5925"/>
         <source>Conhecendo o elenco… (%1/%2 capítulos)</source>
         <translation>Découverte de la distribution… (%1/%2 chapitres)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5918"/>
+        <location filename="../src/MainWindow.cpp" line="5943"/>
         <source>%1 · capítulo que não existe mais</source>
         <translation>%1 · chapitre qui n&apos;existe plus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5963"/>
+        <location filename="../src/MainWindow.cpp" line="5988"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6020"/>
+        <location filename="../src/MainWindow.cpp" line="6045"/>
         <source>&lt;span style=&apos;color:%1&apos;&gt;+%2 novas&lt;/span&gt; · &lt;span style=&apos;color:%3&apos;&gt;%4 trocaram de locutor&lt;/span&gt; · &lt;span style=&apos;color:%5&apos;&gt;−%6 saíram&lt;/span&gt;</source>
         <translation>&lt;span style=&apos;color:%1&apos;&gt;+%2 nouvelles&lt;/span&gt; · &lt;span style=&apos;color:%3&apos;&gt;%4 ont changé de locuteur&lt;/span&gt; · &lt;span style=&apos;color:%5&apos;&gt;−%6 retirées&lt;/span&gt;</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6053"/>
+        <location filename="../src/MainWindow.cpp" line="6078"/>
         <source>Personagem</source>
         <translation>Personnage</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6054"/>
+        <location filename="../src/MainWindow.cpp" line="6079"/>
         <source>%1 (provável)</source>
         <translation>%1 (probable)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6056"/>
+        <location filename="../src/MainWindow.cpp" line="6081"/>
         <source>%1 (figurante)</source>
         <translation>%1 (figurant)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6057"/>
+        <location filename="../src/MainWindow.cpp" line="6082"/>
         <source>sem locutor</source>
         <translation>sans locuteur</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6111"/>
+        <location filename="../src/MainWindow.cpp" line="6136"/>
         <source>%1 → %2</source>
         <translation>%1 → %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6126"/>
+        <location filename="../src/MainWindow.cpp" line="6151"/>
         <source>%1 · versão antiga de uma fala editada</source>
         <translation>%1 · ancienne version d&apos;une réplique modifiée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6127"/>
+        <location filename="../src/MainWindow.cpp" line="6152"/>
         <source>%1 · saiu do texto</source>
         <translation>%1 · n&apos;est plus dans le texte</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6135"/>
+        <location filename="../src/MainWindow.cpp" line="6160"/>
         <source>Pronto: %1 de %1 capítulos lidos</source>
         <translation>Terminé : %1 sur %1 chapitres lus</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6138"/>
+        <location filename="../src/MainWindow.cpp" line="6163"/>
         <source>Nada mudou: as falas salvas já batiam com o texto.</source>
         <translation>Rien n&apos;a changé : les répliques enregistrées correspondaient déjà au texte.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9390"/>
+        <location filename="../src/MainWindow.cpp" line="9415"/>
         <source>%1 — %2 de %3</source>
         <translation>%1 — %2 sur %3</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9726"/>
+        <location filename="../src/MainWindow.cpp" line="9749"/>
         <source>(evento sem título)</source>
         <translation>(événement sans titre)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9873"/>
-        <location filename="../src/MainWindow.cpp" line="9884"/>
+        <location filename="../src/MainWindow.cpp" line="9896"/>
+        <location filename="../src/MainWindow.cpp" line="9907"/>
         <source>da cena</source>
         <translation>de la scène</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9877"/>
-        <location filename="../src/MainWindow.cpp" line="9878"/>
-        <location filename="../src/MainWindow.cpp" line="9897"/>
+        <location filename="../src/MainWindow.cpp" line="9900"/>
+        <location filename="../src/MainWindow.cpp" line="9901"/>
+        <location filename="../src/MainWindow.cpp" line="9920"/>
         <source>Narrativa</source>
         <translation>Narration</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9881"/>
+        <location filename="../src/MainWindow.cpp" line="9904"/>
         <source>sem capítulo: vai pros Soltos</source>
         <translation>sans chapitre : va dans En vrac</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9882"/>
+        <location filename="../src/MainWindow.cpp" line="9905"/>
         <source>sem data: fica onde a cena está</source>
         <translation>sans date : reste là où se trouve la scène</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9883"/>
+        <location filename="../src/MainWindow.cpp" line="9906"/>
         <source>quando: &lt;b&gt;%1&lt;/b&gt; · %2</source>
         <translation>quand : &lt;b&gt;%1&lt;/b&gt; · %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9884"/>
+        <location filename="../src/MainWindow.cpp" line="9907"/>
         <source>do capítulo</source>
         <translation>du chapitre</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9888"/>
+        <location filename="../src/MainWindow.cpp" line="9911"/>
         <source>Evento “%1” na linha</source>
         <translation>Événement « %1 » sur la ligne</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9898"/>
+        <location filename="../src/MainWindow.cpp" line="9921"/>
         <source>✓ Na Timeline · %1</source>
         <translation>✓ Sur la Timeline · %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9899"/>
+        <location filename="../src/MainWindow.cpp" line="9922"/>
         <source>✓ Na Timeline · %1, %2</source>
         <translation>✓ Sur la Timeline · %1, %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9900"/>
+        <location filename="../src/MainWindow.cpp" line="9923"/>
         <source>ver</source>
         <translation>voir</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9935"/>
-        <location filename="../src/MainWindow.cpp" line="9946"/>
-        <location filename="../src/MainWindow.cpp" line="10000"/>
-        <location filename="../src/MainWindow.cpp" line="10011"/>
-        <location filename="../src/MainWindow.cpp" line="10057"/>
-        <location filename="../src/MainWindow.cpp" line="10068"/>
+        <location filename="../src/MainWindow.cpp" line="9958"/>
+        <location filename="../src/MainWindow.cpp" line="9969"/>
+        <location filename="../src/MainWindow.cpp" line="10023"/>
+        <location filename="../src/MainWindow.cpp" line="10034"/>
+        <location filename="../src/MainWindow.cpp" line="10080"/>
+        <location filename="../src/MainWindow.cpp" line="10091"/>
         <source>Capítulo</source>
         <translation>Chapitre</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9951"/>
-        <location filename="../src/MainWindow.cpp" line="10016"/>
-        <location filename="../src/MainWindow.cpp" line="10073"/>
+        <location filename="../src/MainWindow.cpp" line="9974"/>
+        <location filename="../src/MainWindow.cpp" line="10039"/>
+        <location filename="../src/MainWindow.cpp" line="10096"/>
         <source>Documento</source>
         <translation>Document</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10323"/>
+        <location filename="../src/MainWindow.cpp" line="10549"/>
         <source>Renomear</source>
         <translation>Renommer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10324"/>
+        <location filename="../src/MainWindow.cpp" line="10550"/>
         <source>Não foi possível renomear.</source>
         <translation>Impossible de renommer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10352"/>
+        <location filename="../src/MainWindow.cpp" line="10578"/>
         <source>Capítulo sem título</source>
         <translation>Chapitre sans titre</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10356"/>
+        <location filename="../src/MainWindow.cpp" line="10582"/>
         <source>Documento sem título</source>
         <translation>Document sans titre</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10382"/>
+        <location filename="../src/MainWindow.cpp" line="10608"/>
         <source>Salvar imagem gerada</source>
         <translation>Enregistrer l&apos;image générée</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10383"/>
+        <location filename="../src/MainWindow.cpp" line="10609"/>
         <source>PNG (*.png)</source>
         <translation>PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10460"/>
+        <location filename="../src/MainWindow.cpp" line="10686"/>
         <source>Criar documento</source>
         <translation>Créer un document</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10461"/>
+        <location filename="../src/MainWindow.cpp" line="10687"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Créez un tiroir avant d&apos;utiliser cette fonction.</translation>
     </message>
@@ -9540,18 +10834,24 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Aligner</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="10329"/>
+        <location filename="../src/MainWindow.cpp" line="10339"/>
+        <location filename="../src/MainWindow.cpp" line="10369"/>
         <source>Editar fala</source>
         <translation>Modifier la réplique</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="10330"/>
         <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
         <translation>Cette réplique a changé ou a quitté le texte depuis l&apos;ouverture du Pensarium. Actualisez la liste et réessayez.</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="10370"/>
         <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
         <translation>Impossible d&apos;ouvrir le texte d&apos;origine de cette réplique. Rien n&apos;a été modifié.</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="10340"/>
         <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
         <translation>Impossible de localiser cette réplique avec certitude dans le texte d&apos;origine. Elle n&apos;a pas été modifiée ; ouvrez le texte pour vérifier l&apos;occurrence.</translation>
     </message>
@@ -9560,9 +10860,9 @@ Le contenu existant pourrait être écrasé.</translation>
     <name>ManuscriptPanel</name>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="568"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1630"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1663"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1841"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1631"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1664"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1842"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="202"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1413"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="2078"/>
@@ -9581,19 +10881,19 @@ Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="949"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1625"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1696"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1758"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1812"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1847"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2641"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4199"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4263"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4454"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4708"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4895"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5339"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5458"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1626"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1697"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1759"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1813"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1848"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2643"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4216"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4280"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4471"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4725"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4912"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5356"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5475"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="194"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="361"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="846"/>
@@ -9613,12 +10913,12 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Aucun manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2206"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2208"/>
         <source>Crie um manuscrito pra começar.</source>
         <translation>Créez un manuscrit pour commencer.</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2207"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2209"/>
         <source>Nenhum capítulo ainda.</source>
         <translation>Aucun chapitre pour l&apos;instant.</translation>
     </message>
@@ -9628,65 +10928,65 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Scène %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3338"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3340"/>
         <source>Renomear manuscrito</source>
         <translation>Renommer le manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1722"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3343"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1723"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3345"/>
         <source>Visualizar como e-reader</source>
         <translation>Afficher comme sur une liseuse</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3384"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3386"/>
         <source>Excluir manuscrito</source>
         <translation>Supprimer le manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3410"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3412"/>
         <source>Exportar para DOCX…</source>
         <translation>Exporter en DOCX…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3412"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3414"/>
         <source>Em breve</source>
         <translation>Bientôt</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3414"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3416"/>
         <source>Renomear capítulo</source>
         <translation>Renommer le chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3419"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3511"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3421"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3513"/>
         <source>Elementos presentes…</source>
         <translation>Éléments présents…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3424"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3539"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3426"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3541"/>
         <source>Abrir no Menu de Referência</source>
         <translation>Ouvrir dans le Menu de Référence</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3492"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3494"/>
         <source>Excluir capítulo</source>
         <translation>Supprimer le chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3506"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3508"/>
         <source>Renomear cena</source>
         <translation>Renommer la scène</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3516"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3518"/>
         <source>Criar variação</source>
         <translation>Créer une variante</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3546"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3548"/>
         <source>Excluir cena</source>
         <translation>Supprimer la scène</translation>
     </message>
@@ -9702,7 +11002,7 @@ Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="507"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1569"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1570"/>
         <source>Manuscritos</source>
         <translation>Manuscrits</translation>
     </message>
@@ -9898,8 +11198,8 @@ Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="1196"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2638"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4978"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2640"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4995"/>
         <source>Sumário</source>
         <translation>Sommaire</translation>
     </message>
@@ -10080,17 +11380,17 @@ Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="1401"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2277"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2279"/>
         <source>Nova parte</source>
         <translation>Nouvelle partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4966"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4983"/>
         <source>Sinopse deste livro</source>
         <translation>Synopsis de ce livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4966"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4983"/>
         <source>Sinopse deste livro…</source>
         <translation>Synopsis de ce livre…</translation>
     </message>
@@ -10109,20 +11409,20 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Commence au chapitre :</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1605"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1678"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="1751"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4251"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4445"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4886"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5453"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1606"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1679"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1752"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4268"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4462"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4903"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5470"/>
         <source>Livro</source>
         <translation>Livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1718"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2213"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2278"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1719"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2215"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2280"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="389"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1487"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1792"/>
@@ -10131,23 +11431,23 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Nouveau chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1726"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1727"/>
         <source>Estatísticas</source>
         <translation>Statistiques</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1753"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1754"/>
         <source>Capa</source>
         <translation>Couverture</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1765"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5463"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1766"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5480"/>
         <source>livro %1 de %2 · %3 capítulos · %4 palavras</source>
         <translation>livre %1 sur %2 · %3 chapitres · %4 mots</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="1819"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1820"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1959"/>
         <source>livro %1 de %2 · %n capítulo(s)</source>
         <translation>
@@ -10156,71 +11456,71 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1916"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1917"/>
         <source>Onde você parou</source>
         <translation>Où vous vous êtes arrêté</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1934"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1935"/>
         <source>Continuar ›</source>
         <translation>Continuer ›</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1943"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1944"/>
         <source>antes: %1 (%2)</source>
         <translation>avant : %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1969"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1970"/>
         <source>%1 de %2 finais</source>
         <translation>%1 sur %2 finaux</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1984"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2395"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3436"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1985"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2397"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3438"/>
         <source>Sem status</source>
         <translation>Sans statut</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1994"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1995"/>
         <source>Mostrar só estes</source>
         <translation>Afficher seulement ceux-ci</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2016"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2034"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2017"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2035"/>
         <source>Leitura</source>
         <translation>Lecture</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2017"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2034"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2018"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2035"/>
         <source>História</source>
         <translation>Passé</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2018"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2019"/>
         <source>Na ordem em que o leitor lê</source>
         <translation>Dans l&apos;ordre où le lecteur lit</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2019"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2020"/>
         <source>Na ordem em que as coisas acontecem (pelo &quot;quando se passa&quot;)</source>
         <translation>Dans l&apos;ordre où les choses arrivent (selon « quand ça se passe »)</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2027"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2028"/>
         <source>Preencha o &quot;quando se passa&quot; dos capítulos (Renomear capítulo) pra ver a ordem da história.</source>
         <translation>Remplissez le « quand ça se passe » des chapitres (Renommer le chapitre) pour voir l&apos;ordre de l&apos;histoire.</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2037"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2038"/>
         <source>A leitura segue a ordem da história.</source>
         <translation>La lecture suit l&apos;ordre de l&apos;histoire.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="2038"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2039"/>
         <source>%n capítulo(s) fora da ordem da história</source>
         <translation>
             <numerusform>%n chapitre hors de l&apos;ordre de l&apos;histoire</numerusform>
@@ -10228,27 +11528,27 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2045"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2046"/>
         <source>Defina o narrador de cada capítulo pelo botão direito (Narrador).</source>
         <translation>Définissez le narrateur de chaque chapitre par clic droit (Narrateur).</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2063"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2064"/>
         <source>sem narrador</source>
         <translation>sans narrateur</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2094"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2095"/>
         <source>%1 narradores · &lt;b&gt;%2&lt;/b&gt; narra %3 de %4</source>
         <translation>%1 narrateurs · &lt;b&gt;%2&lt;/b&gt; raconte %3 sur %4</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2104"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2105"/>
         <source>&lt;b&gt;%1&lt;/b&gt; narra %2 de %3: %4</source>
         <translation>&lt;b&gt;%1&lt;/b&gt; raconte %2 sur %3 : %4</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="2105"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2106"/>
         <source>maior intervalo sem %1: %n capítulo(s)</source>
         <translation>
             <numerusform>plus long intervalle sans %1 : %n chapitre</numerusform>
@@ -10256,32 +11556,32 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2134"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2135"/>
         <source>Ritmo do livro</source>
         <translation>Rythme du livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2135"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2136"/>
         <source>%1 palavras · média %2</source>
         <translation>%1 mots · moyenne %2</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2150"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2151"/>
         <source>Passe o mouse nas barras. Azul = diálogo.</source>
         <translation>Survolez les barres. Bleu = dialogue.</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2152"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2153"/>
         <source>&lt;b&gt;%1&lt;/b&gt; · %2 palavras · %3% diálogo</source>
         <translation>&lt;b&gt;%1&lt;/b&gt; · %2 mots · %3% dialogue</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2239"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2241"/>
         <source>Nenhum capítulo com esse status.</source>
         <translation>Aucun chapitre avec ce statut.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="2312"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2314"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1407"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1455"/>
         <source>%n cap.</source>
@@ -10291,25 +11591,25 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2354"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2356"/>
         <source>Mostrar os capítulos desta parte</source>
         <translation>Afficher les chapitres de cette partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2354"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2356"/>
         <source>Recolher esta parte</source>
         <translation>Replier cette partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2396"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2398"/>
         <source>clique pra trocar</source>
         <translation>cliquez pour changer</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="2408"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2744"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2891"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2977"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2410"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2746"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2893"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2979"/>
         <source>%n versões</source>
         <translation>
             <numerusform>%n version</numerusform>
@@ -10317,47 +11617,47 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2409"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2411"/>
         <source>Versão ativa: %1</source>
         <translation>Version active : %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2409"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2418"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3528"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2411"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2420"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3530"/>
         <source>(sem nome)</source>
         <translation>(sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2428"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2430"/>
         <source>Nova variação</source>
         <translation>Nouvelle variante</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2442"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2444"/>
         <source>Você parou aqui</source>
         <translation>Vous vous êtes arrêté ici</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2493"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2495"/>
         <source>Posição na leitura</source>
         <translation>Position dans la lecture</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="2507"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2509"/>
         <source>Narrador: %1</source>
         <translation>Narrateur : %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="1821"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2817"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="2975"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3091"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3175"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3286"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4460"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4634"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4812"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="1822"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2819"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="2977"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3093"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3177"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3288"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4477"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4651"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4829"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="219"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="257"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="364"/>
@@ -10374,7 +11674,7 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>%1 mots</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="3090"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3092"/>
         <source>%n capítulos</source>
         <translation>
             <numerusform>%n chapitre</numerusform>
@@ -10382,7 +11682,7 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="3092"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3094"/>
         <source>%n finais</source>
         <translation>
             <numerusform>%n final</numerusform>
@@ -10390,8 +11690,8 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="3176"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3287"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3178"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3289"/>
         <source>%n cenas</source>
         <translation>
             <numerusform>%n scène</numerusform>
@@ -10399,17 +11699,17 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3204"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3206"/>
         <source>largura = tamanho da cena</source>
         <translation>largeur = longueur de la scène</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3229"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3231"/>
         <source>Lendo a linha de %1: &lt;b&gt;%2 de %3&lt;/b&gt;</source>
         <translation>Lecture de la ligne de %1 : &lt;b&gt;%2 sur %3&lt;/b&gt;</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="3230"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3232"/>
         <source>Linha de %1: %n capítulo(s)</source>
         <translation>
             <numerusform>Ligne de %1 : %n chapitre</numerusform>
@@ -10417,108 +11717,108 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3233"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3235"/>
         <source>Ler a linha ›</source>
         <translation>Lire la ligne ›</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3234"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3236"/>
         <source>Próximo ›</source>
         <translation>Suivant ›</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3234"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3236"/>
         <source>Recomeçar</source>
         <translation>Recommencer</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3283"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3285"/>
         <source>Quando: %1</source>
         <translation>Quand : %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3285"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3287"/>
         <source>POV: %1</source>
         <translation>POV : %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3291"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4629"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3293"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4646"/>
         <source>Sem resumo ainda.</source>
         <translation>Pas encore de résumé.</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3307"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3309"/>
         <source>Aparecem: %1</source>
         <translation>Présents : %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3311"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3313"/>
         <source>diálogo %1%</source>
         <translation>dialogue %1%</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3432"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3434"/>
         <source>Status</source>
         <translation>Statut</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3448"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3450"/>
         <source>Narrador</source>
         <translation>Narrateur</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3461"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3463"/>
         <source>%1 (sugerido)</source>
         <translation>%1 (suggéré)</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3472"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3474"/>
         <source>Nenhum personagem cadastrado</source>
         <translation>Aucun personnage enregistré</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3476"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3478"/>
         <source>Sem narrador definido</source>
         <translation>Aucun narrateur défini</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3482"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3484"/>
         <source>Tirar o começo de parte daqui</source>
         <translation>Retirer le début de partie ici</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3485"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3487"/>
         <source>Começar uma parte aqui…</source>
         <translation>Commencer une partie ici…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3524"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3526"/>
         <source>Versão ativa</source>
         <translation>Version active</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3560"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3562"/>
         <source>Renomear parte…</source>
         <translation>Renommer la partie…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3567"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3569"/>
         <source>Renomear parte</source>
         <translation>Renommer la partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3574"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3576"/>
         <source>Cor…</source>
         <translation>Couleur…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3580"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3582"/>
         <source>Cor da parte</source>
         <translation>Couleur de la partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3587"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3589"/>
         <source>Desfazer a parte (os capítulos ficam)</source>
         <translation>Défaire la partie (les chapitres restent)</translation>
     </message>
@@ -10528,17 +11828,17 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Faites glisser pour changer la largeur</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3350"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3352"/>
         <source>Cor do livro…</source>
         <translation>Couleur du livre…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3357"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3359"/>
         <source>Cor do livro</source>
         <translation>Couleur du livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3366"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3368"/>
         <source>Cor automática</source>
         <translation>Couleur automatique</translation>
     </message>
@@ -10609,7 +11909,7 @@ Le contenu existant pourrait être écrasé.</translation>
     </message>
     <message>
         <location filename="../src/ManuscriptPanel.cpp" line="1401"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="3567"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3569"/>
         <source>Nome da parte</source>
         <translation>Nom de la partie</translation>
     </message>
@@ -10619,35 +11919,35 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation>Créer</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3350"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3352"/>
         <source>Cor da lombada…</source>
         <translation>Couleur du dos…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3377"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="4512"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3379"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4529"/>
         <source>Começar nova revisão</source>
         <translation>Commencer une nouvelle révision</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3378"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3380"/>
         <source>Zera o quanto de cada capítulo você já passou</source>
         <translation>Remet à zéro votre avancée dans chaque chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="3403"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="3405"/>
         <source>Trocar desenho…</source>
         <translation>Changer le dessin…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4110"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4127"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1476"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1884"/>
         <source>vazio</source>
         <translation>vide</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="4112"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4129"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="524"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="777"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="1476"/>
@@ -10659,22 +11959,22 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4221"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4238"/>
         <source>a saga</source>
         <translation>la saga</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4257"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4274"/>
         <source>LIVRO %1 DE %2</source>
         <translation>LIVRE %1 SUR %2</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4298"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4315"/>
         <source>SUMÁRIO</source>
         <translation>SOMMAIRE</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ManuscriptPanel.cpp" line="4408"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4425"/>
         <source>%1 palavras · cerca de %n lauda(s)</source>
         <translation>
             <numerusform>%1 mots · environ %n feuillet</numerusform>
@@ -10682,118 +11982,118 @@ Le contenu existant pourrait être écrasé.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4461"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4478"/>
         <source>%1 · %2 palavras</source>
         <translation>%1 · %2 mots</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4465"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4482"/>
         <source>▸ Continuar de onde parou</source>
         <translation>▸ Reprendre là où vous étiez</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4486"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4503"/>
         <source>Botão direito: começar nova revisão</source>
         <translation>Clic droit : commencer une nouvelle révision</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4521"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4538"/>
         <source>%1% do livro revisitado</source>
         <translation>%1% du livre revu</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4528"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4545"/>
         <source>cap. %1 · %2</source>
         <translation>chap. %1 · %2</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4555"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4572"/>
         <source>Revisado até o fim</source>
         <translation>Révisé jusqu&apos;au bout</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4556"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4573"/>
         <source>Você foi até %1% deste capítulo</source>
         <translation>Vous êtes allé à %1% de ce chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4557"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4574"/>
         <source>Ainda não passou por aqui nesta revisão</source>
         <translation>Vous n&apos;êtes pas encore passé ici dans cette révision</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4626"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4643"/>
         <source>CAP. %1</source>
         <translation>CHAP. %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4633"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4650"/>
         <source>imagem própria</source>
         <translation>image personnelle</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4707"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4724"/>
         <location filename="../src/ManuscriptPanelStyles2.cpp" line="359"/>
         <source>Livro %1</source>
         <translation>Livre %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4753"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4770"/>
         <source>cena %1 de %2 · onde você parou</source>
         <translation>scène %1 sur %2 · là où vous étiez</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4755"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4772"/>
         <source>onde você parou</source>
         <translation>là où vous étiez</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4772"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4789"/>
         <source>CONTINUAR</source>
         <translation>CONTINUER</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4909"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4926"/>
         <source>Livro %1 de %2</source>
         <translation>Livre %1 sur %2</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4910"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4927"/>
         <source>Livro %1 da saga %2</source>
         <translation>Livre %1 de la saga %2</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4941"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4958"/>
         <source>PÁGINAS</source>
         <translation>PAGES</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4942"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4959"/>
         <source>PALAVRAS</source>
         <translation>MOTS</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4943"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4960"/>
         <source>CAPÍTULOS</source>
         <translation>CHAPITRES</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4951"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4968"/>
         <source>Sinopse</source>
         <translation>Synopsis</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4953"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4970"/>
         <source>Sem sinopse ainda.</source>
         <translation>Pas encore de synopsis.</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4960"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4977"/>
         <source>escrever</source>
         <translation>écrire</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="4960"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="4977"/>
         <source>editar</source>
         <translation>modifier</translation>
     </message>
@@ -10802,109 +12102,109 @@ Le contenu existant pourrait être écrasé.</translation>
         <translation type="vanished">Synopsis de ce livre :</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5033"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5050"/>
         <source>Da mesma série</source>
         <translation>De la même série</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5070"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5087"/>
         <source>Trocar desenho</source>
         <translation>Changer le dessin</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5077"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5094"/>
         <source>cap. %1</source>
         <translation>chap. %1</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5107"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5124"/>
         <source>Só este capítulo</source>
         <translation>Ce chapitre seulement</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5108"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5125"/>
         <source>O livro todo</source>
         <translation>Tout le livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5191"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5208"/>
         <source>Automático</source>
         <translation>Automatique</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5207"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5224"/>
         <source>o desenho continua crescendo com o capítulo; só muda a fundação</source>
         <translation>le dessin continue de grandir avec le chapitre ; seule sa base change</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5229"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5237"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5246"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5254"/>
         <source>Cor do desenho</source>
         <translation>Couleur du dessin</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5237"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5254"/>
         <source>Cor dos desenhos do livro</source>
         <translation>Couleur des dessins du livre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5253"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5270"/>
         <source>Cor dos desenhos do livro…</source>
         <translation>Couleur des dessins du livre…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5253"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5270"/>
         <source>Cor do desenho…</source>
         <translation>Couleur du dessin…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5259"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5276"/>
         <source>Voltar à cor da parte</source>
         <translation>Revenir à la couleur de la partie</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5273"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5290"/>
         <source>Usar imagem minha…</source>
         <translation>Utiliser mon image…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5273"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5290"/>
         <source>Trocar imagem…</source>
         <translation>Changer l&apos;image…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5277"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5294"/>
         <source>Imagem do capítulo</source>
         <translation>Image du chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5278"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5295"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5288"/>
-        <location filename="../src/ManuscriptPanel.cpp" line="5302"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5305"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5319"/>
         <source>Recortar imagem do capítulo</source>
         <translation>Rogner l&apos;image du chapitre</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5295"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5312"/>
         <source>Recortar…</source>
         <translation>Rogner…</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5310"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5327"/>
         <source>Voltar ao desenho</source>
         <translation>Revenir au dessin</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5342"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5359"/>
         <source>A SAGA</source>
         <translation>LA SAGA</translation>
     </message>
     <message>
-        <location filename="../src/ManuscriptPanel.cpp" line="5342"/>
+        <location filename="../src/ManuscriptPanel.cpp" line="5359"/>
         <source>A SAGA %1</source>
         <translation>LA SAGA %1</translation>
     </message>
@@ -11854,337 +13154,337 @@ Le contenu existant pourrait être écrasé.</translation>
 <context>
     <name>MsVignette</name>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1208"/>
+        <location filename="../src/MsVignette.cpp" line="1155"/>
         <source>Galhos</source>
         <translation>Branches</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1209"/>
+        <location filename="../src/MsVignette.cpp" line="1156"/>
         <source>Raízes</source>
         <translation>Racines</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1210"/>
+        <location filename="../src/MsVignette.cpp" line="1157"/>
         <source>Chamas</source>
         <translation>Flammes</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1211"/>
+        <location filename="../src/MsVignette.cpp" line="1158"/>
         <source>Cidade</source>
         <translation>Ville</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1212"/>
+        <location filename="../src/MsVignette.cpp" line="1159"/>
         <source>Constelação</source>
         <translation>Constellation</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1213"/>
+        <location filename="../src/MsVignette.cpp" line="1160"/>
         <source>Montanhas</source>
         <translation>Montagnes</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1214"/>
+        <location filename="../src/MsVignette.cpp" line="1161"/>
         <source>Coral</source>
         <translation>Corail</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1215"/>
+        <location filename="../src/MsVignette.cpp" line="1162"/>
         <source>Rachaduras</source>
         <translation>Fissures</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1216"/>
+        <location filename="../src/MsVignette.cpp" line="1163"/>
         <source>Mandala</source>
         <translation>Mandala</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1217"/>
+        <location filename="../src/MsVignette.cpp" line="1164"/>
         <source>Relâmpago</source>
         <translation>Éclair</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1218"/>
+        <location filename="../src/MsVignette.cpp" line="1165"/>
         <source>Ondas</source>
         <translation>Vagues</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1219"/>
+        <location filename="../src/MsVignette.cpp" line="1166"/>
         <source>Círculos</source>
         <translation>Cercles</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1220"/>
+        <location filename="../src/MsVignette.cpp" line="1167"/>
         <source>Raios</source>
         <translation>Rayons</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1221"/>
+        <location filename="../src/MsVignette.cpp" line="1168"/>
         <source>Floresta</source>
         <translation>Forêt</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1222"/>
+        <location filename="../src/MsVignette.cpp" line="1169"/>
         <source>Jardim</source>
         <translation>Jardin</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1223"/>
+        <location filename="../src/MsVignette.cpp" line="1170"/>
         <source>Revoada</source>
         <translation>Nuée</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1224"/>
+        <location filename="../src/MsVignette.cpp" line="1171"/>
         <source>Chuva</source>
         <translation>Pluie</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1225"/>
+        <location filename="../src/MsVignette.cpp" line="1172"/>
         <source>Rio</source>
         <translation>Rivière</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1226"/>
+        <location filename="../src/MsVignette.cpp" line="1173"/>
         <source>Galáxia</source>
         <translation>Galaxie</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1227"/>
+        <location filename="../src/MsVignette.cpp" line="1174"/>
         <source>Cristais</source>
         <translation>Cristaux</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1228"/>
+        <location filename="../src/MsVignette.cpp" line="1175"/>
         <source>Aurora</source>
         <translation>Aurore</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1229"/>
+        <location filename="../src/MsVignette.cpp" line="1176"/>
         <source>Dunas</source>
         <translation>Dunes</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1230"/>
+        <location filename="../src/MsVignette.cpp" line="1177"/>
         <source>Teia</source>
         <translation>Toile</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1231"/>
+        <location filename="../src/MsVignette.cpp" line="1178"/>
         <source>Ruínas</source>
         <translation>Ruines</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1232"/>
+        <location filename="../src/MsVignette.cpp" line="1179"/>
         <source>Farol</source>
         <translation>Phare</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1233"/>
+        <location filename="../src/MsVignette.cpp" line="1180"/>
         <source>Castelo</source>
         <translation>Château</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1234"/>
+        <location filename="../src/MsVignette.cpp" line="1181"/>
         <source>Cyberpunk</source>
         <translation>Cyberpunk</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1235"/>
+        <location filename="../src/MsVignette.cpp" line="1182"/>
         <source>Medieval</source>
         <translation>Médiéval</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1236"/>
+        <location filename="../src/MsVignette.cpp" line="1183"/>
         <source>Steampunk</source>
         <translation>Steampunk</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1237"/>
+        <location filename="../src/MsVignette.cpp" line="1184"/>
         <source>Japão feudal</source>
         <translation>Japon féodal</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1238"/>
+        <location filename="../src/MsVignette.cpp" line="1185"/>
         <source>Oriente</source>
         <translation>Orient</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1239"/>
+        <location filename="../src/MsVignette.cpp" line="1186"/>
         <source>Nevasca</source>
         <translation>Blizzard</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1248"/>
+        <location filename="../src/MsVignette.cpp" line="1223"/>
         <source>Clássicos</source>
         <translation>Classiques</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1249"/>
+        <location filename="../src/MsVignette.cpp" line="1224"/>
         <source>Natureza e céu</source>
         <translation>Nature et ciel</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="1251"/>
+        <location filename="../src/MsVignette.cpp" line="1226"/>
         <source>Lugares</source>
         <translation>Lieux</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1187"/>
         <source>Vela</source>
         <translation>Bougie</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1188"/>
         <source>Ampulheta</source>
         <translation>Sablier</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1189"/>
         <source>Chave</source>
         <translation>Clé</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1190"/>
         <source>Bússola</source>
         <translation>Boussole</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1191"/>
         <source>Relógio de bolso</source>
         <translation>Montre à gousset</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1192"/>
         <source>Pena e tinteiro</source>
         <translation>Plume et encrier</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1193"/>
         <source>Xícara</source>
         <translation>Tasse</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1194"/>
         <source>Pilha de livros</source>
         <translation>Pile de livres</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1195"/>
         <source>Lampião</source>
         <translation>Lanterne</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1196"/>
         <source>Guitarra</source>
         <translation>Guitare</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1197"/>
         <source>Estrada</source>
         <translation>Route</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1198"/>
         <source>Noir</source>
         <translation>Noir</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1199"/>
         <source>Mansão</source>
         <translation>Manoir</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1200"/>
         <source>Planeta</source>
         <translation>Planète</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1201"/>
         <source>Frota</source>
         <translation>Flotte</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1202"/>
         <source>Veleiro</source>
         <translation>Voilier</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1203"/>
         <source>Asas</source>
         <translation>Ailes</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1204"/>
         <source>Roda-gigante</source>
         <translation>Grande roue</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1205"/>
         <source>Morro</source>
         <translation>Colline</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1206"/>
         <source>Trem</source>
         <translation>Train</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1207"/>
         <source>Azulejo</source>
         <translation>Azulejo</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1208"/>
         <source>Labirinto</source>
         <translation>Labyrinthe</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1209"/>
         <source>Cordel</source>
         <translation>Cordel</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1210"/>
         <source>Origami</source>
         <translation>Origami</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1211"/>
         <source>Mapa do tesouro</source>
         <translation>Carte au trésor</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1212"/>
         <source>Xadrez</source>
         <translation>Échecs</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1213"/>
         <source>Lâminas</source>
         <translation>Lames</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1214"/>
         <source>Armas de fogo</source>
         <translation>Armes à feu</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1228"/>
         <source>Objetos</source>
         <translation>Objets</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1230"/>
         <source>Cenas</source>
         <translation>Scènes</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1232"/>
         <source>Feitos à mão</source>
         <translation>Fait main</translation>
     </message>
     <message>
-        <location filename="../src/MsVignette.cpp" line="0"/>
+        <location filename="../src/MsVignette.cpp" line="1234"/>
         <source>Arsenal</source>
         <translation>Arsenal</translation>
     </message>
@@ -12860,257 +14160,257 @@ Le contenu existant pourrait être écrasé.</translation>
 <context>
     <name>PensarioPanel</name>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="201"/>
-        <location filename="../src/PensarioPanel.cpp" line="1309"/>
+        <location filename="../src/PensarioPanel.cpp" line="204"/>
+        <location filename="../src/PensarioPanel.cpp" line="1312"/>
         <source>Escaneando… (%1/%2)</source>
         <translation>Analyse… (%1/%2)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="202"/>
-        <location filename="../src/PensarioPanel.cpp" line="1310"/>
         <location filename="../src/PensarioDialogues.cpp" line="214"/>
+        <location filename="../src/PensarioPanel.cpp" line="205"/>
+        <location filename="../src/PensarioPanel.cpp" line="1313"/>
         <source>Escanear diálogos em todos os capítulos</source>
         <translation>Analyser les dialogues dans tous les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="223"/>
+        <location filename="../src/PensarioPanel.cpp" line="226"/>
         <source>Pensário</source>
         <translation>Pensarium</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="236"/>
+        <location filename="../src/PensarioPanel.cpp" line="239"/>
         <source>Por capítulo</source>
         <translation>Par chapitre</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="237"/>
+        <location filename="../src/PensarioPanel.cpp" line="240"/>
         <source>Por criação</source>
         <translation>Par création</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="247"/>
+        <location filename="../src/PensarioPanel.cpp" line="250"/>
         <source>Capítulo</source>
         <translation>Chapitre</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="247"/>
+        <location filename="../src/PensarioPanel.cpp" line="250"/>
         <source>Criação</source>
         <translation>Création</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="275"/>
+        <location filename="../src/PensarioPanel.cpp" line="278"/>
         <location filename="../src/PensarioStyles.cpp" line="530"/>
         <source>Gerador de nomes</source>
         <translation>Générateur de noms</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="284"/>
+        <location filename="../src/PensarioPanel.cpp" line="287"/>
         <location filename="../src/PensarioStyles.cpp" line="537"/>
         <source>Mapa-múndi</source>
         <translation>Mappemonde</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="293"/>
-        <location filename="../src/PensarioPanel.cpp" line="336"/>
+        <location filename="../src/PensarioPanel.cpp" line="296"/>
+        <location filename="../src/PensarioPanel.cpp" line="339"/>
         <location filename="../src/PensarioStyles.cpp" line="472"/>
         <source>Glossário</source>
         <translation>Glossaire</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="308"/>
+        <location filename="../src/PensarioPanel.cpp" line="311"/>
         <source>Fechar</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="332"/>
+        <location filename="../src/PensarioPanel.cpp" line="335"/>
         <location filename="../src/PensarioStyles.cpp" line="467"/>
         <location filename="../src/PensarioStyles.cpp" line="1784"/>
         <source>Comentários</source>
         <translation>Commentaires</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="333"/>
+        <location filename="../src/PensarioPanel.cpp" line="336"/>
         <location filename="../src/PensarioStyles.cpp" line="468"/>
         <source>Notas</source>
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="334"/>
+        <location filename="../src/PensarioPanel.cpp" line="337"/>
         <location filename="../src/PensarioStyles.cpp" line="469"/>
         <source>Memórias</source>
         <translation>Mémoires</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="335"/>
-        <location filename="../src/PensarioStyles.cpp" line="470"/>
         <location filename="../src/PensarioDialogues.cpp" line="197"/>
+        <location filename="../src/PensarioPanel.cpp" line="338"/>
+        <location filename="../src/PensarioStyles.cpp" line="470"/>
         <source>Diálogos</source>
         <translation>Dialogues</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="517"/>
+        <location filename="../src/PensarioPanel.cpp" line="520"/>
         <location filename="../src/PensarioStyles.cpp" line="1972"/>
         <source>+ Nova nota</source>
         <translation>+ Nouvelle note</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="558"/>
+        <location filename="../src/PensarioPanel.cpp" line="561"/>
         <source>Nenhuma nota ainda.
 Clique em “+ Nova nota” para criar a primeira.</source>
         <translation>Aucune note pour l&apos;instant.
 Cliquez sur «&#xa0;+ Nouvelle note&#xa0;» pour créer la première.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="613"/>
+        <location filename="../src/PensarioPanel.cpp" line="616"/>
         <location filename="../src/PensarioStyles.cpp" line="1643"/>
         <source>Excluir nota</source>
         <translation>Supprimer la note</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="723"/>
+        <location filename="../src/PensarioPanel.cpp" line="726"/>
         <source>Personagens</source>
         <translation>Personnages</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="724"/>
+        <location filename="../src/PensarioPanel.cpp" line="727"/>
         <source>Lugares</source>
         <translation>Lieux</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="725"/>
+        <location filename="../src/PensarioPanel.cpp" line="728"/>
         <source>Armas</source>
         <translation>Armes</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="744"/>
+        <location filename="../src/PensarioPanel.cpp" line="747"/>
         <source>Gerar</source>
         <translation>Générer</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="757"/>
+        <location filename="../src/PensarioPanel.cpp" line="760"/>
         <source>Feminino</source>
         <translation>Féminin</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="764"/>
+        <location filename="../src/PensarioPanel.cpp" line="767"/>
         <source>Masculino</source>
         <translation>Masculin</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="788"/>
+        <location filename="../src/PensarioPanel.cpp" line="791"/>
         <source>Começa com…</source>
         <translation>Commence par…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="792"/>
+        <location filename="../src/PensarioPanel.cpp" line="795"/>
         <source>Termina com…</source>
         <translation>Finit par…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="813"/>
+        <location filename="../src/PensarioPanel.cpp" line="816"/>
         <source>Escolha uma categoria e clique em Gerar.</source>
         <translation>Choisissez une catégorie et cliquez sur Générer.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="891"/>
+        <location filename="../src/PensarioPanel.cpp" line="894"/>
         <source>Clique para copiar</source>
         <translation>Cliquez pour copier</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="897"/>
+        <location filename="../src/PensarioPanel.cpp" line="900"/>
         <source>Nenhum nome com esse começo/fim neste estilo.
 Tente outro estilo ou um afixo mais comum.</source>
         <translation>Aucun nom avec ce début/cette fin dans ce style.
 Essayez un autre style ou un affixe plus courant.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="899"/>
+        <location filename="../src/PensarioPanel.cpp" line="902"/>
         <source>Nada gerado. Tente de novo.</source>
         <translation>Rien n&apos;a été généré. Réessayez.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="913"/>
+        <location filename="../src/PensarioPanel.cpp" line="916"/>
         <source>« %1 » copiado</source>
         <translation>«&#xa0;%1&#xa0;» copié</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="962"/>
-        <location filename="../src/PensarioPanel.cpp" line="1265"/>
-        <location filename="../src/PensarioPanel.cpp" line="1554"/>
-        <location filename="../src/PensarioPanel.cpp" line="1937"/>
+        <location filename="../src/PensarioPanel.cpp" line="965"/>
+        <location filename="../src/PensarioPanel.cpp" line="1268"/>
+        <location filename="../src/PensarioPanel.cpp" line="1557"/>
+        <location filename="../src/PensarioPanel.cpp" line="1940"/>
         <source>Personagem</source>
         <translation>Personnage</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="966"/>
+        <location filename="../src/PensarioPanel.cpp" line="969"/>
         <source>Todas</source>
         <translation>Toutes</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="967"/>
+        <location filename="../src/PensarioPanel.cpp" line="970"/>
         <source>Do projeto</source>
         <translation>Du projet</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="975"/>
+        <location filename="../src/PensarioPanel.cpp" line="978"/>
         <source>Filtro: %1  ▾</source>
         <translation>Filtre&#xa0;: %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="996"/>
+        <location filename="../src/PensarioPanel.cpp" line="999"/>
         <source>Todas as memórias</source>
         <translation>Toutes les mémoires</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="997"/>
+        <location filename="../src/PensarioPanel.cpp" line="1000"/>
         <source>Memórias do projeto</source>
         <translation>Mémoires du projet</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1009"/>
+        <location filename="../src/PensarioPanel.cpp" line="1012"/>
         <source>Memórias de %1</source>
         <translation>Mémoires de %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1043"/>
+        <location filename="../src/PensarioPanel.cpp" line="1046"/>
         <source>Nenhuma memória ainda. Selecione um trecho no editor e escolha “Adicionar à memória…” na barra de seleção.</source>
         <translation>Aucune mémoire pour l&apos;instant. Sélectionnez un passage dans l&apos;éditeur et choisissez «&#xa0;Ajouter aux mémoires…&#xa0;» dans la barre de sélection.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1045"/>
+        <location filename="../src/PensarioPanel.cpp" line="1048"/>
         <source>Nenhuma memória neste filtro.</source>
         <translation>Aucune mémoire avec ce filtre.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1060"/>
+        <location filename="../src/PensarioPanel.cpp" line="1063"/>
         <location filename="../src/PensarioStyles.cpp" line="756"/>
         <source>Memória</source>
         <translation>Mémoire</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1060"/>
+        <location filename="../src/PensarioPanel.cpp" line="1063"/>
         <location filename="../src/PensarioStyles.cpp" line="756"/>
         <source>Memória do %1</source>
         <translation>Mémoire de %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1061"/>
+        <location filename="../src/PensarioPanel.cpp" line="1064"/>
         <source>%1  ·  %2</source>
         <translation>%1  ·  %2</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1064"/>
+        <location filename="../src/PensarioPanel.cpp" line="1067"/>
         <source>[%1]  %2</source>
         <translation>[%1]  %2</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1162"/>
+        <location filename="../src/PensarioPanel.cpp" line="1165"/>
         <location filename="../src/PensarioStyles.cpp" line="1656"/>
         <source>Excluir memória</source>
         <translation>Supprimer la mémoire</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1212"/>
+        <location filename="../src/PensarioPanel.cpp" line="1215"/>
         <location filename="../src/PensarioStyles.cpp" line="1381"/>
         <location filename="../src/PensarioStyles.cpp" line="1628"/>
         <location filename="../src/PensarioStyles.cpp" line="1646"/>
@@ -13119,24 +14419,24 @@ Essayez un autre style ou un affixe plus courant.</translation>
         <translation>Ouvrir dans l&apos;éditeur</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1213"/>
+        <location filename="../src/PensarioPanel.cpp" line="1216"/>
         <location filename="../src/PensarioStyles.cpp" line="1650"/>
         <source>Abrir no menu de referência</source>
         <translation>Ouvrir dans le menu de référence</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1283"/>
+        <location filename="../src/PensarioPanel.cpp" line="1286"/>
         <source>▴  Estatísticas</source>
         <translation>▴  Statistiques</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1283"/>
+        <location filename="../src/PensarioPanel.cpp" line="1286"/>
         <source>▾  Estatísticas</source>
         <translation>▾  Statistiques</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1320"/>
         <location filename="../src/PensarioDialogues.cpp" line="230"/>
+        <location filename="../src/PensarioPanel.cpp" line="1323"/>
         <source>Como o detector de diálogos funciona</source>
         <translation>Comment fonctionne le détecteur de dialogues</translation>
     </message>
@@ -13151,141 +14451,141 @@ Si un dialogue détecté est lié au mauvais personnage, vous pouvez le corriger
 Les statistiques sont des estimations et ne garantissent pas une exactitude absolue par rapport au contenu des chapitres.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1381"/>
+        <location filename="../src/PensarioPanel.cpp" line="1384"/>
         <source>Quem mais fala</source>
         <translation>Qui parle le plus</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1382"/>
         <location filename="../src/PensarioPanel.cpp" line="1385"/>
+        <location filename="../src/PensarioPanel.cpp" line="1388"/>
         <source>%1 · %2 diálogos · %3 palavras</source>
         <translation>%1 · %2 dialogues · %3 mots</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1384"/>
+        <location filename="../src/PensarioPanel.cpp" line="1387"/>
         <source>Capítulo com mais diálogo</source>
         <translation>Chapitre avec le plus de dialogues</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1387"/>
+        <location filename="../src/PensarioPanel.cpp" line="1390"/>
         <source>Diálogo mais longo</source>
         <translation>Dialogue le plus long</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1387"/>
+        <location filename="../src/PensarioPanel.cpp" line="1390"/>
         <source>%1 · %2 palavras</source>
         <translation>%1 · %2 mots</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1458"/>
+        <location filename="../src/PensarioPanel.cpp" line="1461"/>
         <source>Nenhum diálogo detectado ainda. Escreva falas com travessão (“— Não vou, disse Maria.”) e espere alguns segundos.</source>
         <translation>Aucun dialogue détecté pour l&apos;instant. Écrivez des répliques avec un tiret cadratin («&#xa0;— Je n&apos;irai pas, dit Maria.&#xa0;») et patientez quelques secondes.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1460"/>
+        <location filename="../src/PensarioPanel.cpp" line="1463"/>
         <source>Nenhum diálogo neste filtro.</source>
         <translation>Aucun dialogue avec ce filtre.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1488"/>
-        <location filename="../src/PensarioDialogues.cpp" line="542"/>
+        <location filename="../src/PensarioDialogues.cpp" line="558"/>
+        <location filename="../src/PensarioPanel.cpp" line="1491"/>
         <source>Carregar mais (%1 restantes)</source>
         <translation>Charger plus (%1 restants)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1604"/>
+        <location filename="../src/PensarioPanel.cpp" line="1607"/>
         <source>Diálogos sem atribuição (%1)</source>
         <translation>Dialogues non attribués (%1)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1628"/>
+        <location filename="../src/PensarioPanel.cpp" line="1631"/>
         <source>Figurantes (%1)</source>
         <translation>Figurants (%1)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1629"/>
+        <location filename="../src/PensarioPanel.cpp" line="1632"/>
         <source>Falas de quem não está no elenco: &quot;o porteiro&quot;, &quot;a moça&quot;… Atribuir uma delas a um personagem pode transformar a tag em apelido.</source>
         <translation>Répliques de personnes hors distribution : « le portier », « la fille »… En attribuer une à un personnage peut transformer l&apos;incise en alias.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1666"/>
+        <location filename="../src/PensarioPanel.cpp" line="1669"/>
         <source>Também falam na cena com:</source>
         <translation>Parlent aussi dans la scène avec&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1681"/>
+        <location filename="../src/PensarioPanel.cpp" line="1684"/>
         <source>Clique para remover</source>
         <translation>Cliquez pour retirer</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1726"/>
+        <location filename="../src/PensarioPanel.cpp" line="1729"/>
         <location filename="../src/PensarioStyles.cpp" line="1785"/>
         <source>Todos</source>
         <translation>Tous</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1751"/>
+        <location filename="../src/PensarioPanel.cpp" line="1754"/>
         <source>Cap.: %1  ▾</source>
         <translation>Chap.&#xa0;: %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1793"/>
-        <location filename="../src/PensarioStyles.cpp" line="629"/>
         <location filename="../src/PensarioDialogues.cpp" line="263"/>
-        <location filename="../src/PensarioDialogues.cpp" line="639"/>
+        <location filename="../src/PensarioDialogues.cpp" line="655"/>
+        <location filename="../src/PensarioPanel.cpp" line="1796"/>
+        <location filename="../src/PensarioStyles.cpp" line="629"/>
         <source>Todos os capítulos</source>
         <translation>Tous les chapitres</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1799"/>
-        <location filename="../src/PensarioPanel.cpp" line="2314"/>
         <location filename="../src/PensarioDialogues.cpp" line="272"/>
         <location filename="../src/PensarioDialogues.cpp" line="483"/>
-        <location filename="../src/PensarioDialogues.cpp" line="644"/>
+        <location filename="../src/PensarioDialogues.cpp" line="660"/>
+        <location filename="../src/PensarioPanel.cpp" line="1802"/>
+        <location filename="../src/PensarioPanel.cpp" line="2392"/>
         <source>Cena %1</source>
         <translation>Scène %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1857"/>
+        <location filename="../src/PensarioPanel.cpp" line="1860"/>
         <source>+  Personagem</source>
         <translation>+  Personnage</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1932"/>
-        <location filename="../src/PensarioPanel.cpp" line="1943"/>
+        <location filename="../src/PensarioPanel.cpp" line="1935"/>
+        <location filename="../src/PensarioPanel.cpp" line="1946"/>
         <source>Sem locutor</source>
         <translation>Sans locuteur</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1944"/>
+        <location filename="../src/PensarioPanel.cpp" line="1947"/>
         <source>Figurante</source>
         <translation>Figurant</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1947"/>
+        <location filename="../src/PensarioPanel.cpp" line="1950"/>
         <source>%1 · figurante</source>
         <translation>%1 · figurant</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1950"/>
+        <location filename="../src/PensarioPanel.cpp" line="1953"/>
         <source>%1 · provável</source>
         <translation>%1 · probable</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1986"/>
-        <location filename="../src/PensarioDialogues.cpp" line="689"/>
+        <location filename="../src/PensarioDialogues.cpp" line="705"/>
+        <location filename="../src/PensarioPanel.cpp" line="1989"/>
         <source>Confirmar: é %1</source>
         <translation>Confirmer : c&apos;est %1</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1988"/>
+        <location filename="../src/PensarioDialogues.cpp" line="706"/>
+        <location filename="../src/PensarioPanel.cpp" line="1991"/>
         <location filename="../src/PensarioStyles.cpp" line="1660"/>
-        <location filename="../src/PensarioDialogues.cpp" line="690"/>
         <source>Atribuir ao personagem…</source>
         <translation>Attribuer au personnage…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1988"/>
+        <location filename="../src/PensarioPanel.cpp" line="1991"/>
         <location filename="../src/PensarioStyles.cpp" line="1660"/>
         <source>Alterar locutor…</source>
         <translation>Changer de locuteur…</translation>
@@ -13295,12 +14595,12 @@ Les statistiques sont des estimations et ne garantissent pas une exactitude abso
         <translation type="vanished">Supprimer le dialogue</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2116"/>
+        <location filename="../src/PensarioPanel.cpp" line="2194"/>
         <source>(sem nome)</source>
         <translation>(sans nom)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2126"/>
+        <location filename="../src/PensarioPanel.cpp" line="2204"/>
         <source>Presente nesta cena/capítulo</source>
         <translation>Présent dans cette scène/ce chapitre</translation>
     </message>
@@ -13397,34 +14697,34 @@ Les statistiques sont des estimations et ne garantissent pas une exactitude abso
         <translation>Supprimer le terme</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2217"/>
+        <location filename="../src/PensarioPanel.cpp" line="2295"/>
         <source>Nenhum comentário ainda.
 Selecione um trecho e use o marcador com comentário para que ele apareça aqui.</source>
         <translation>Aucun commentaire pour l&apos;instant.
 Sélectionnez un passage et utilisez le marqueur avec commentaire pour qu&apos;il apparaisse ici.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2340"/>
+        <location filename="../src/PensarioPanel.cpp" line="2418"/>
         <source>Capítulo sem título</source>
         <translation>Chapitre sans titre</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2361"/>
+        <location filename="../src/PensarioPanel.cpp" line="2439"/>
         <source>Item sem título</source>
         <translation>Élément sans titre</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2370"/>
+        <location filename="../src/PensarioPanel.cpp" line="2448"/>
         <source>Manuscrito</source>
         <translation>Manuscrit</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="263"/>
+        <location filename="../src/PensarioPanel.cpp" line="266"/>
         <source>Estilo e ferramentas do Pensário</source>
         <translation>Style et outils du Pensarium</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1509"/>
+        <location filename="../src/PensarioPanel.cpp" line="1512"/>
         <source>O detector lê a cena como uma conversa: quem a tag nomeia, quem falou antes, quem foi chamado pelo nome.
 Nome escrito na tag: a fala é daquele personagem.
 &quot;provável&quot;: deduzida pela conversa. Confirme ou corrija pelo clique direito; o que você corrige nunca é desfeito.
@@ -13437,13 +14737,13 @@ Nom écrit dans l&apos;incise : la réplique est à ce personnage.
 Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2023"/>
-        <location filename="../src/PensarioDialogues.cpp" line="694"/>
+        <location filename="../src/PensarioDialogues.cpp" line="710"/>
+        <location filename="../src/PensarioPanel.cpp" line="2034"/>
         <source>Não é fala (some e não volta)</source>
         <translation>Pas une réplique (retirée pour de bon)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2207"/>
+        <location filename="../src/PensarioPanel.cpp" line="2285"/>
         <source>Nenhum comentário neste filtro.</source>
         <translation>Aucun commentaire dans ce filtre.</translation>
     </message>
@@ -13898,7 +15198,7 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Rien ici pour l&apos;instant.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="471"/>
+        <location filename="../src/PensarioPanel.cpp" line="474"/>
         <source>Arraste pra mudar a largura</source>
         <translation>Faites glisser pour changer la largeur</translation>
     </message>
@@ -13914,7 +15214,7 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
     </message>
     <message>
         <location filename="../src/PensarioDialogues.cpp" line="199"/>
-        <location filename="../src/PensarioDialogues.cpp" line="582"/>
+        <location filename="../src/PensarioDialogues.cpp" line="598"/>
         <source>%1 falas</source>
         <translation>%1 répliques</translation>
     </message>
@@ -13984,39 +15284,41 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>sans locuteur</translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="506"/>
         <source>Clique pra abrir no texto · botão direito pra conferir ou trocar</source>
-        <translation>Cliquez pour ouvrir dans le texte · clic droit pour confirmer ou changer</translation>
+        <translation type="vanished">Cliquez pour ouvrir dans le texte · clic droit pour confirmer ou changer</translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="564"/>
+        <location filename="../src/PensarioDialogues.cpp" line="580"/>
         <source>MANUSCRITO</source>
         <translation>MANUSCRIT</translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="581"/>
+        <location filename="../src/PensarioDialogues.cpp" line="597"/>
         <source>(sem título)</source>
         <translation>(sans titre)</translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="691"/>
+        <location filename="../src/PensarioDialogues.cpp" line="707"/>
         <source>Trocar quem disse…</source>
         <translation>Changer qui l&apos;a dit…</translation>
     </message>
     <message>
-        <location filename="../src/PensarioDialogues.cpp" line="692"/>
+        <location filename="../src/PensarioDialogues.cpp" line="708"/>
         <source>Abrir no texto</source>
         <translation>Ouvrir dans le texte</translation>
     </message>
     <message>
+        <location filename="../src/PensarioDialogues.cpp" line="506"/>
         <source>Clique para abrir no texto · lápis para editar · botão direito para conferir ou trocar</source>
         <translation>Cliquez pour ouvrir dans le texte · crayon pour modifier · clic droit pour confirmer ou changer</translation>
     </message>
     <message>
+        <location filename="../src/PensarioDialogues.cpp" line="531"/>
         <source>Editar esta fala</source>
         <translation>Modifier cette réplique</translation>
     </message>
     <message>
+        <location filename="../src/PensarioPanel.cpp" line="2026"/>
         <source>Editar no texto de origem</source>
         <translation>Modifier dans le texte d&apos;origine</translation>
     </message>
@@ -14185,221 +15487,221 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
 <context>
     <name>ProjectEditDialog</name>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="448"/>
+        <location filename="../src/MainMenuDialog.cpp" line="486"/>
         <source>Editar projeto</source>
         <translation>Modifier le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="464"/>
-        <location filename="../src/MainMenuDialog.cpp" line="869"/>
+        <location filename="../src/MainMenuDialog.cpp" line="502"/>
+        <location filename="../src/MainMenuDialog.cpp" line="907"/>
         <source>Sem capa</source>
         <translation>Sans couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="468"/>
+        <location filename="../src/MainMenuDialog.cpp" line="506"/>
         <source>Escolher capa…</source>
         <translation>Choisir une couverture…</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="474"/>
+        <location filename="../src/MainMenuDialog.cpp" line="512"/>
         <source>Escolher capa</source>
         <translation>Choisir une couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="475"/>
+        <location filename="../src/MainMenuDialog.cpp" line="513"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.webp *.bmp)</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="484"/>
+        <location filename="../src/MainMenuDialog.cpp" line="522"/>
         <source>Remover capa</source>
         <translation>Retirer la couverture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="494"/>
+        <location filename="../src/MainMenuDialog.cpp" line="532"/>
         <source>Criar capa…</source>
         <translation>Créer une couverture…</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="512"/>
+        <location filename="../src/MainMenuDialog.cpp" line="550"/>
         <source>Detalhes da obra</source>
         <translation>Détails de l&apos;œuvre</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="531"/>
+        <location filename="../src/MainMenuDialog.cpp" line="569"/>
         <source>Nome do projeto</source>
         <translation>Nom du projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="533"/>
+        <location filename="../src/MainMenuDialog.cpp" line="571"/>
         <source>Ex: Minha história</source>
         <translation>Ex.&#xa0;: Mon histoire</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="536"/>
+        <location filename="../src/MainMenuDialog.cpp" line="574"/>
         <source>Autor</source>
         <translation>Auteur</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="538"/>
+        <location filename="../src/MainMenuDialog.cpp" line="576"/>
         <source>Ex: Maria Silva</source>
         <translation>Ex.&#xa0;: Marie Dupont</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="541"/>
+        <location filename="../src/MainMenuDialog.cpp" line="579"/>
         <source>Gêneros</source>
         <translation>Genres</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="543"/>
+        <location filename="../src/MainMenuDialog.cpp" line="581"/>
         <source>Ex: Fantasia, Romance</source>
         <translation>Ex.&#xa0;: Fantasy, Romance</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="546"/>
+        <location filename="../src/MainMenuDialog.cpp" line="584"/>
         <source>Sinopse</source>
         <translation>Synopsis</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="548"/>
+        <location filename="../src/MainMenuDialog.cpp" line="586"/>
         <source>Escreva uma breve sinopse…</source>
         <translation>Rédigez un court synopsis…</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="551"/>
+        <location filename="../src/MainMenuDialog.cpp" line="589"/>
         <source>Detalhes</source>
         <translation>Détails</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="569"/>
-        <location filename="../src/MainMenuDialog.cpp" line="580"/>
+        <location filename="../src/MainMenuDialog.cpp" line="607"/>
+        <location filename="../src/MainMenuDialog.cpp" line="618"/>
         <source>Cor da lombada</source>
         <translation>Couleur du dos</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="583"/>
-        <location filename="../src/MainMenuDialog.cpp" line="666"/>
+        <location filename="../src/MainMenuDialog.cpp" line="621"/>
+        <location filename="../src/MainMenuDialog.cpp" line="704"/>
         <source>Padrão</source>
         <translation>Par défaut</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="597"/>
+        <location filename="../src/MainMenuDialog.cpp" line="635"/>
         <source>Base da lombada</source>
         <translation>Base du dos</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="599"/>
+        <location filename="../src/MainMenuDialog.cpp" line="637"/>
         <source>Cor sólida</source>
         <translation>Couleur unie</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="601"/>
+        <location filename="../src/MainMenuDialog.cpp" line="639"/>
         <source>Usar a capa como textura</source>
         <translation>Utiliser la couverture comme texture</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="607"/>
+        <location filename="../src/MainMenuDialog.cpp" line="645"/>
         <source>Posição:</source>
         <translation>Position&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="629"/>
+        <location filename="../src/MainMenuDialog.cpp" line="667"/>
         <source>Acabamento</source>
         <translation>Finition</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="631"/>
+        <location filename="../src/MainMenuDialog.cpp" line="669"/>
         <source>Liso</source>
         <translation>Lisse</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="632"/>
+        <location filename="../src/MainMenuDialog.cpp" line="670"/>
         <source>Couro</source>
         <translation>Cuir</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="633"/>
+        <location filename="../src/MainMenuDialog.cpp" line="671"/>
         <source>Linho</source>
         <translation>Lin</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="634"/>
+        <location filename="../src/MainMenuDialog.cpp" line="672"/>
         <source>Veludo</source>
         <translation>Velours</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="635"/>
+        <location filename="../src/MainMenuDialog.cpp" line="673"/>
         <source>Fosco</source>
         <translation>Mat</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="636"/>
+        <location filename="../src/MainMenuDialog.cpp" line="674"/>
         <source>Metálico</source>
         <translation>Métallique</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="644"/>
+        <location filename="../src/MainMenuDialog.cpp" line="682"/>
         <source>Fonte</source>
         <translation>Police</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="654"/>
-        <location filename="../src/MainMenuDialog.cpp" line="663"/>
+        <location filename="../src/MainMenuDialog.cpp" line="692"/>
+        <location filename="../src/MainMenuDialog.cpp" line="701"/>
         <source>Cor do texto</source>
         <translation>Couleur du texte</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="684"/>
+        <location filename="../src/MainMenuDialog.cpp" line="722"/>
         <source>Orientação</source>
         <translation>Orientation</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="686"/>
+        <location filename="../src/MainMenuDialog.cpp" line="724"/>
         <source>Vertical</source>
         <translation>Vertical</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="687"/>
+        <location filename="../src/MainMenuDialog.cpp" line="725"/>
         <source>Horizontal</source>
         <translation>Horizontal</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="692"/>
+        <location filename="../src/MainMenuDialog.cpp" line="730"/>
         <source>Posição do texto</source>
         <translation>Position du texte</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="694"/>
+        <location filename="../src/MainMenuDialog.cpp" line="732"/>
         <source>Topo</source>
         <translation>Haut</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="695"/>
+        <location filename="../src/MainMenuDialog.cpp" line="733"/>
         <source>Centro</source>
         <translation>Centre</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="696"/>
+        <location filename="../src/MainMenuDialog.cpp" line="734"/>
         <source>Baixo</source>
         <translation>Bas</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="701"/>
+        <location filename="../src/MainMenuDialog.cpp" line="739"/>
         <source>Tam. da fonte (0=auto)</source>
         <translation>Taille police (0=auto)</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="710"/>
+        <location filename="../src/MainMenuDialog.cpp" line="748"/>
         <source>Largura da lombada</source>
         <translation>Largeur du dos</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="714"/>
+        <location filename="../src/MainMenuDialog.cpp" line="752"/>
         <source>Conforme o projeto</source>
         <translation>Selon le projet</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="715"/>
+        <location filename="../src/MainMenuDialog.cpp" line="753"/>
         <source>Manual</source>
         <translation>Manuel</translation>
     </message>
@@ -14408,12 +15710,12 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation type="vanished">Dos</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="739"/>
+        <location filename="../src/MainMenuDialog.cpp" line="777"/>
         <source>Cancelar</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../src/MainMenuDialog.cpp" line="743"/>
+        <location filename="../src/MainMenuDialog.cpp" line="781"/>
         <source>Salvar</source>
         <translation>Enregistrer</translation>
     </message>
@@ -20874,207 +22176,207 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="161"/>
+        <location filename="../src/LousaPanel.cpp" line="240"/>
         <source>Mapa de Personagens — arraste, edite e conecte à vontade</source>
         <translation>Carte des personnages — déplacez, modifiez et reliez à volonté</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="164"/>
+        <location filename="../src/LousaPanel.cpp" line="243"/>
         <source>Protagonista</source>
         <translation>Protagoniste</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="164"/>
+        <location filename="../src/LousaPanel.cpp" line="243"/>
         <source>Quem carrega a história.</source>
         <translation>Celui qui porte l&apos;histoire.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="167"/>
+        <location filename="../src/LousaPanel.cpp" line="246"/>
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="167"/>
+        <location filename="../src/LousaPanel.cpp" line="246"/>
         <source>Guia e ensina o protagonista.</source>
         <translation>Guide et forme le protagoniste.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="170"/>
+        <location filename="../src/LousaPanel.cpp" line="249"/>
         <source>Aliado</source>
         <translation>Allié</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="170"/>
+        <location filename="../src/LousaPanel.cpp" line="249"/>
         <source>Luta ao lado do protagonista.</source>
         <translation>Se bat aux côtés du protagoniste.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="173"/>
+        <location filename="../src/LousaPanel.cpp" line="252"/>
         <source>Antagonista</source>
         <translation>Antagoniste</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="173"/>
+        <location filename="../src/LousaPanel.cpp" line="252"/>
         <source>Se opõe diretamente ao protagonista.</source>
         <translation>S&apos;oppose directement au protagoniste.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="176"/>
+        <location filename="../src/LousaPanel.cpp" line="255"/>
         <source>Vilão secundário</source>
         <translation>Méchant secondaire</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="176"/>
+        <location filename="../src/LousaPanel.cpp" line="255"/>
         <source>Serve ou desafia o antagonista principal.</source>
         <translation>Sert ou défie l&apos;antagoniste principal.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="191"/>
+        <location filename="../src/LousaPanel.cpp" line="270"/>
         <source>Arco da História</source>
         <translation>Arc narratif</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="194"/>
+        <location filename="../src/LousaPanel.cpp" line="273"/>
         <source>Ato 1 — Detonante</source>
         <translation>Acte 1 — Exposition</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="195"/>
+        <location filename="../src/LousaPanel.cpp" line="274"/>
         <source>Ato 2 — Confronto</source>
         <translation>Acte 2 — Confrontation</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="196"/>
+        <location filename="../src/LousaPanel.cpp" line="275"/>
         <source>Ato 3 — Resolução</source>
         <translation>Acte 3 — Résolution</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="199"/>
+        <location filename="../src/LousaPanel.cpp" line="278"/>
         <source>Incidente incitante</source>
         <translation>Élément déclencheur</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="200"/>
+        <location filename="../src/LousaPanel.cpp" line="279"/>
         <source>O que tira o herói da zona de conforto?</source>
         <translation>Qu&apos;est-ce qui fait sortir le héros de sa zone de confort&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="202"/>
+        <location filename="../src/LousaPanel.cpp" line="281"/>
         <source>1º ponto de virada</source>
         <translation>1er tournant</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="203"/>
+        <location filename="../src/LousaPanel.cpp" line="282"/>
         <source>A decisão que não tem mais volta.</source>
         <translation>La décision sans retour.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="205"/>
+        <location filename="../src/LousaPanel.cpp" line="284"/>
         <source>Meio do meio</source>
         <translation>Point médian</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="206"/>
+        <location filename="../src/LousaPanel.cpp" line="285"/>
         <source>O ponto sem retorno emocional.</source>
         <translation>Le point de non-retour émotionnel.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="208"/>
+        <location filename="../src/LousaPanel.cpp" line="287"/>
         <source>2º ponto de virada</source>
         <translation>2e tournant</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="209"/>
+        <location filename="../src/LousaPanel.cpp" line="288"/>
         <source>A crise que empurra pro clímax.</source>
         <translation>La crise qui pousse vers le climax.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="211"/>
+        <location filename="../src/LousaPanel.cpp" line="290"/>
         <source>Clímax</source>
         <translation>Climax</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="212"/>
+        <location filename="../src/LousaPanel.cpp" line="291"/>
         <source>O confronto final.</source>
         <translation>L&apos;affrontement final.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="214"/>
+        <location filename="../src/LousaPanel.cpp" line="293"/>
         <source>Resolução</source>
         <translation>Résolution</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="215"/>
+        <location filename="../src/LousaPanel.cpp" line="294"/>
         <source>O novo normal do protagonista.</source>
         <translation>La nouvelle normalité du protagoniste.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="223"/>
+        <location filename="../src/LousaPanel.cpp" line="302"/>
         <source>Construção de Mundo</source>
         <translation>Construction d&apos;univers</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="226"/>
+        <location filename="../src/LousaPanel.cpp" line="305"/>
         <source>Geografia</source>
         <translation>Géographie</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="227"/>
+        <location filename="../src/LousaPanel.cpp" line="306"/>
         <source>Poder &amp; Política</source>
         <translation>Pouvoir et politique</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="228"/>
+        <location filename="../src/LousaPanel.cpp" line="307"/>
         <source>Cultura &amp; Sociedade</source>
         <translation>Culture et société</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="229"/>
+        <location filename="../src/LousaPanel.cpp" line="308"/>
         <source>História &amp; Mitologia</source>
         <translation>Histoire et mythologie</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="232"/>
+        <location filename="../src/LousaPanel.cpp" line="311"/>
         <source>Onde isso acontece?</source>
         <translation>Où cela se passe-t-il&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="233"/>
+        <location filename="../src/LousaPanel.cpp" line="312"/>
         <source>Clima, território, o que molda quem vive aqui.</source>
         <translation>Climat, territoire, ce qui façonne ceux qui vivent ici.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="235"/>
+        <location filename="../src/LousaPanel.cpp" line="314"/>
         <source>Quem manda aqui?</source>
         <translation>Qui commande ici&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="236"/>
+        <location filename="../src/LousaPanel.cpp" line="315"/>
         <source>Como o poder é conquistado, mantido ou perdido.</source>
         <translation>Comment le pouvoir se gagne, se garde ou se perd.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="238"/>
+        <location filename="../src/LousaPanel.cpp" line="317"/>
         <source>Como vivem?</source>
         <translation>Comment vivent-ils&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="239"/>
+        <location filename="../src/LousaPanel.cpp" line="318"/>
         <source>Costumes, crenças, o que é considerado normal.</source>
         <translation>Coutumes, croyances, ce qui est considéré comme normal.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="241"/>
+        <location filename="../src/LousaPanel.cpp" line="320"/>
         <source>O que aconteceu antes?</source>
         <translation>Que s&apos;est-il passé avant&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="242"/>
+        <location filename="../src/LousaPanel.cpp" line="321"/>
         <source>Os eventos e mitos que ainda pesam no presente.</source>
         <translation>Les événements et les mythes qui pèsent encore sur le présent.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1034"/>
+        <location filename="../src/LousaPanel.cpp" line="1970"/>
         <source>Sem título</source>
         <translation>Sans titre</translation>
     </message>
@@ -21790,8 +23092,8 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Point en suspens général</translation>
     </message>
     <message>
-        <location filename="../src/NewProjectSheet.cpp" line="41"/>
         <location filename="../src/NewProjectFlow.cpp" line="29"/>
+        <location filename="../src/NewProjectSheet.cpp" line="41"/>
         <source>Novo Projeto</source>
         <translation>Nouveau Projet</translation>
     </message>
@@ -22266,9 +23568,8 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>N&apos;oubliez jamais qui vous êtes&#xa0;: c&apos;est ce qui rend votre écriture unique.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="43"/>
         <source>Existem 404 quotes que aparecem aqui no app, qual o seu favorito?</source>
-        <translation>Il y a 404 citations qui apparaissent ici dans l&apos;application — quelle est votre préférée&#xa0;?</translation>
+        <translation type="vanished">Il y a 404 citations qui apparaissent ici dans l&apos;application — quelle est votre préférée&#xa0;?</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="44"/>
@@ -22791,9 +24092,8 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Écrivez des genres que vous n&apos;aimez pas, cela vous aidera à comprendre votre propre style.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="148"/>
         <source>Navessa Allen é uma escritora de ficção científica e fantasia conhecida por suas histórias que exploram temas como identidade, tecnologia e sociedade, e por sua habilidade de criar personagens complexos e mundos imaginativos.</source>
-        <translation>Navessa Allen est une autrice de science-fiction et de fantasy connue pour ses histoires qui explorent l&apos;identité, la technologie et la société, et pour son talent à créer des personnages complexes et des mondes imaginatifs.</translation>
+        <translation type="vanished">Navessa Allen est une autrice de science-fiction et de fantasy connue pour ses histoires qui explorent l&apos;identité, la technologie et la société, et pour son talent à créer des personnages complexes et des mondes imaginatifs.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="149"/>
@@ -23026,9 +24326,8 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Qenna Writer a failli avoir une assistante IA. Failli. L&apos;idée n&apos;a pas abouti parce que les API coûtent cher et que les modèles d&apos;IA locaux sont bêtes.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="199"/>
         <source>Clique e arraste o nome dos seus personagens para criar vínculos entre eles e escrever sobre </source>
-        <translation>Cliquez et faites glisser le nom de vos personnages pour créer des liens entre eux et écrire sur </translation>
+        <translation type="vanished">Cliquez et faites glisser le nom de vos personnages pour créer des liens entre eux et écrire sur </translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="200"/>
@@ -23041,19 +24340,16 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Dans Qenna Writer, les outils de création sont entre vos mains. Chaque outil est facultatif. Si vous ne voulez en utiliser aucun, écrivez simplement.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="202"/>
         <source>O nome da guerreira que ficava no logo do Mira Writing (um dos nomes antigos do Qenna Writer, que por um dia também se chamou Qiyva Writer) era... Mira. Sente saudade dela? Ainda dá pra trazer esse logo de volta na opção de Temas do Main Menu ali em cima.</source>
-        <translation>Le nom de la guerrière qui figurait sur le logo de Mira Writing (l&apos;un des anciens noms de Qenna Writer, qui s&apos;est aussi appelé Qiyva Writer pendant une journée) était... Mira. Elle vous manque&#xa0;? Vous pouvez encore faire revenir ce logo via l&apos;option Thèmes du Menu principal, là-haut.</translation>
+        <translation type="vanished">Le nom de la guerrière qui figurait sur le logo de Mira Writing (l&apos;un des anciens noms de Qenna Writer, qui s&apos;est aussi appelé Qiyva Writer pendant une journée) était... Mira. Elle vous manque&#xa0;? Vous pouvez encore faire revenir ce logo via l&apos;option Thèmes du Menu principal, là-haut.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="203"/>
         <source>O seu projeto é salvo automaticamente a cada 15 minutos. Você pode alterar o tempo entre os salvamentos automáticos ou desativá-lo nas configurações.</source>
-        <translation>Votre projet est enregistré automatiquement toutes les 15 minutes. Vous pouvez modifier l&apos;intervalle entre les enregistrements automatiques ou les désactiver dans les paramètres.</translation>
+        <translation type="vanished">Votre projet est enregistré automatiquement toutes les 15 minutes. Vous pouvez modifier l&apos;intervalle entre les enregistrements automatiques ou les désactiver dans les paramètres.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="204"/>
         <source>Ao criar um novo projeto, cada template possuí gavetas e documentos de planejamento prontos para você começar. O template básico geralmente tem o necessário, mas caso você seja um arquiteto ambicioso, pode usar o template avançado.</source>
-        <translation>À la création d&apos;un nouveau projet, chaque modèle propose des tiroirs et des documents de planification prêts à l&apos;emploi. Le modèle de base contient généralement l&apos;essentiel, mais si vous êtes un architecte ambitieux, vous pouvez utiliser le modèle avancé.</translation>
+        <translation type="vanished">À la création d&apos;un nouveau projet, chaque modèle propose des tiroirs et des documents de planification prêts à l&apos;emploi. Le modèle de base contient généralement l&apos;essentiel, mais si vous êtes un architecte ambitieux, vous pouvez utiliser le modèle avancé.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="205"/>
@@ -23071,29 +24367,24 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>Ajoutez des images à vos personnages pour rendre leur affichage plus joli dans le Menu de Référence et les tiroirs.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="208"/>
         <source>Utilize o Painel de Consistência para manter o controle de seus personagens e sempre saber como e onde estão.</source>
-        <translation>Utilisez le Panneau de Cohérence pour suivre vos personnages et toujours savoir comment et où ils sont.</translation>
+        <translation type="vanished">Utilisez le Panneau de Cohérence pour suivre vos personnages et toujours savoir comment et où ils sont.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="209"/>
         <source>O editor detectará a presença dos personagens nos capítulos e cenas automaticamente caso ele seja citado mais de três vezes.</source>
-        <translation>L&apos;éditeur détectera automatiquement la présence d&apos;un personnage dans les chapitres et les scènes s&apos;il est cité plus de trois fois.</translation>
+        <translation type="vanished">L&apos;éditeur détectera automatiquement la présence d&apos;un personnage dans les chapitres et les scènes s&apos;il est cité plus de trois fois.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="210"/>
         <source>Os status dos personagens são notificados à você caso eles estejam presentes nas cenas, garantindo a consistência. Você não esquecerá que um deles está ferido ou apaixonado.</source>
-        <translation>Le statut des personnages vous est signalé quand ils sont présents dans une scène, pour garantir la cohérence. Vous n&apos;oublierez pas que l&apos;un d&apos;eux est blessé ou amoureux.</translation>
+        <translation type="vanished">Le statut des personnages vous est signalé quand ils sont présents dans une scène, pour garantir la cohérence. Vous n&apos;oublierez pas que l&apos;un d&apos;eux est blessé ou amoureux.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="211"/>
         <source>Caso não goste dos avisos de status dos personagens ou da detecção de presença deles nas cenas, essas opções podem ser desabilitadas nas configurações.</source>
-        <translation>Si vous n&apos;aimez pas les alertes de statut des personnages ou la détection de leur présence dans les scènes, ces options peuvent être désactivées dans les paramètres.</translation>
+        <translation type="vanished">Si vous n&apos;aimez pas les alertes de statut des personnages ou la détection de leur présence dans les scènes, ces options peuvent être désactivées dans les paramètres.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="212"/>
         <source>Caso queira registrar algum comentário sobre algum trecho do seu projeto, selecione-o e clique em &apos;adicionar comentário&apos;.</source>
-        <translation>Pour laisser un commentaire sur un passage de votre projet, sélectionnez-le et cliquez sur «&#xa0;ajouter un commentaire&#xa0;».</translation>
+        <translation type="vanished">Pour laisser un commentaire sur un passage de votre projet, sélectionnez-le et cliquez sur «&#xa0;ajouter un commentaire&#xa0;».</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="213"/>
@@ -23146,42 +24437,37 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation>L&apos;exportation est aussi une forme de sauvegarde. Exportez votre projet en docx de temps en temps.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="223"/>
         <source>Use a função de comentários para registrar suas ideias, dúvidas e observações sobre trechos específicos do seu projeto, facilitando o processo de revisão e edição!</source>
-        <translation>Utilisez la fonction commentaires pour noter vos idées, questions et remarques sur des passages précis de votre projet, et faciliter la relecture et la correction&#xa0;!</translation>
+        <translation type="vanished">Utilisez la fonction commentaires pour noter vos idées, questions et remarques sur des passages précis de votre projet, et faciliter la relecture et la correction&#xa0;!</translation>
+    </message>
+    <message>
+        <source>O Qenna Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
+        <translation type="vanished">Qenna Writer sauvegarde automatiquement votre projet à chaque fermeture de l&apos;application. Les sauvegardes se trouvent dans le dossier de votre projet, sous «&#xa0;backups&#xa0;» — vous pouvez changer ce dossier dans les paramètres.</translation>
     </message>
     <message>
         <location filename="../src/_quotes_data.inc" line="224"/>
-        <source>O Qenna Writer efetua backups automáticos do seu projeto sempre que o app é fechado. Eles podem ser encontrados dentro da pasta do seu projeto, em &apos;backups&apos; — você pode trocar essa pasta nas configurações.</source>
-        <translation>Qenna Writer sauvegarde automatiquement votre projet à chaque fermeture de l&apos;application. Les sauvegardes se trouvent dans le dossier de votre projet, sous «&#xa0;backups&#xa0;» — vous pouvez changer ce dossier dans les paramètres.</translation>
-    </message>
-    <message>
-        <location filename="../src/_quotes_data.inc" line="225"/>
         <source>Ao exportar capas criadas no app, verifique as licenças e permissões das imagens e fontes usadas. Eu não vou brigar na justiça por você.</source>
         <translation>Quand vous exportez des couvertures créées dans l&apos;application, vérifiez les licences et autorisations des images et polices utilisées. Je n&apos;irai pas au tribunal pour vous.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="226"/>
         <source>A função de Som Imersivo permite reproduzir sons e músicas de ambiente enquanto você escreve, criando uma atmosfera mais envolvente para a sua escrita!</source>
-        <translation>La fonction Son immersif permet de diffuser des sons et des musiques d&apos;ambiance pendant que vous écrivez, pour une atmosphère plus immersive&#xa0;!</translation>
+        <translation type="vanished">La fonction Son immersif permet de diffuser des sons et des musiques d&apos;ambiance pendant que vous écrivez, pour une atmosphère plus immersive&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="227"/>
+        <location filename="../src/_quotes_data.inc" line="226"/>
         <source>Faça backup. Sempre. Já é dificíl confiar em humanos, quem dirá em programas.</source>
         <translation>Faites des sauvegardes. Toujours. C&apos;est déjà difficile de faire confiance aux humains, alors aux logiciels...</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="228"/>
         <source>Caso ocorra algum problema com o seu projeto, você pode recuperar um backup através da pasta &apos;backups&apos; ou .mira-guard na raiz do seu projeto.</source>
-        <translation>En cas de problème avec votre projet, vous pouvez récupérer une sauvegarde depuis le dossier «&#xa0;backups&#xa0;» ou .mira-guard à la racine de votre projet.</translation>
+        <translation type="vanished">En cas de problème avec votre projet, vous pouvez récupérer une sauvegarde depuis le dossier «&#xa0;backups&#xa0;» ou .mira-guard à la racine de votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="229"/>
         <source>Para restaurar um backup .bak, basta renomear o arquivo para o nome original e mudar a extensão para .mira.json e abrir normalmente no app.</source>
-        <translation>Pour restaurer une sauvegarde .bak, il suffit de renommer le fichier avec son nom d&apos;origine, de changer l&apos;extension en .mira.json et de l&apos;ouvrir normalement dans l&apos;application.</translation>
+        <translation type="vanished">Pour restaurer une sauvegarde .bak, il suffit de renommer le fichier avec son nom d&apos;origine, de changer l&apos;extension en .mira.json et de l&apos;ouvrir normalement dans l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="230"/>
+        <location filename="../src/_quotes_data.inc" line="228"/>
         <source>Não haverá outro quote sobre backup, mas por favor, faça backup. — P.H. Lobato, Criador do Qenna Writer</source>
         <translation>Il n&apos;y aura pas d&apos;autre citation sur les sauvegardes, mais s&apos;il vous plaît, faites des sauvegardes. — P.H. Lobato, créateur de Qenna Writer</translation>
     </message>
@@ -23194,396 +24480,406 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <translation type="vanished">Avec les récents en mode rayonnage, l&apos;épaisseur des livres varie selon la taille du projet.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="233"/>
+        <location filename="../src/_quotes_data.inc" line="231"/>
         <source>Você pode reordenar as cenas do capítulo arrastando-as.</source>
         <translation>Vous pouvez réorganiser les scènes d&apos;un chapitre en les faisant glisser.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="234"/>
+        <location filename="../src/_quotes_data.inc" line="232"/>
         <source>Utilize a função Memórias para salvar trechos e diálogos importantes da sua história.</source>
         <translation>Utilisez la fonction Mémoires pour enregistrer les passages et dialogues importants de votre histoire.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="235"/>
+        <location filename="../src/_quotes_data.inc" line="233"/>
         <source>Ao salvar memórias, você pode fazê-lo tanto em memórias do projeto ou em memórias de um personagem específico.</source>
         <translation>Quand vous enregistrez une mémoire, vous pouvez la ranger dans les mémoires du projet ou dans celles d&apos;un personnage précis.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="236"/>
+        <location filename="../src/_quotes_data.inc" line="234"/>
         <source>Crie documentos e fichas dos seus personagens e adicione o elemento de Personagem a elas. Há funções do app que dependem disso!</source>
         <translation>Créez des documents et des fiches pour vos personnages et ajoutez-leur l&apos;élément Personnage. Certaines fonctions de l&apos;application en dépendent&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="237"/>
+        <location filename="../src/_quotes_data.inc" line="235"/>
         <source>Ao criar uma gaveta, atenção com os nomes. Dependendo dele, a gaveta e os documento dela pode receber elementos de forma automática, facilitando seu trabalho.</source>
         <translation>En créant un tiroir, faites attention au nom. Selon celui-ci, le tiroir et ses documents peuvent recevoir des éléments automatiquement, ce qui vous facilite le travail.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="238"/>
+        <location filename="../src/_quotes_data.inc" line="236"/>
         <source>Você pode exportar o seu projeto COMPLETO para .docx através da barra superior.</source>
         <translation>Vous pouvez exporter votre projet COMPLET en .docx depuis la barre supérieure.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="239"/>
         <source>É possível adicionar suas próprias músicas na ferramenta de som imersivo.</source>
-        <translation>Vous pouvez ajouter votre propre musique à l&apos;outil Son immersif.</translation>
+        <translation type="vanished">Vous pouvez ajouter votre propre musique à l&apos;outil Son immersif.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="240"/>
         <source>Se você criou uma capa na ferramenta de criar capas e pretende usá-la de forma comercial, verifique as licenças de fonte e arte. Eu não vou ao tribunal por você.</source>
-        <translation>Si vous avez créé une couverture avec l&apos;outil de création de couvertures et comptez l&apos;utiliser commercialement, vérifiez les licences des polices et des illustrations. Je n&apos;irai pas au tribunal pour vous.</translation>
+        <translation type="vanished">Si vous avez créé une couverture avec l&apos;outil de création de couvertures et comptez l&apos;utiliser commercialement, vérifiez les licences des polices et des illustrations. Je n&apos;irai pas au tribunal pour vous.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="241"/>
+        <location filename="../src/_quotes_data.inc" line="238"/>
         <source>Você pode importar e exportar temas criados no app.</source>
         <translation>Vous pouvez importer et exporter les thèmes créés dans l&apos;application.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="242"/>
+        <location filename="../src/_quotes_data.inc" line="239"/>
         <source>O Qenna Writer é gratuito e a ideia é que seja sempre assim.</source>
         <translation>Qenna Writer est gratuit, et l&apos;idée est qu&apos;il le reste toujours.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="243"/>
+        <location filename="../src/_quotes_data.inc" line="240"/>
         <source>Você pode consultar o horário limite da sua meta diária dentro do Contador de Palavras.</source>
         <translation>Vous pouvez consulter l&apos;heure limite de votre objectif quotidien dans le Compteur de mots.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="244"/>
         <source>Divida o seu capítulos em cenas utilizando &apos;---&apos; em qualquer momento.</source>
-        <translation>Divisez vos chapitres en scènes en utilisant &apos;---&apos; à tout moment.</translation>
+        <translation type="vanished">Divisez vos chapitres en scènes en utilisant &apos;---&apos; à tout moment.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="245"/>
+        <location filename="../src/_quotes_data.inc" line="242"/>
         <source>Use a função de Contador de Palavras para acompanhar seu progresso diário e manter-se motivado a alcançar suas metas de escrita!</source>
         <translation>Utilisez le Compteur de mots pour suivre votre progression quotidienne et rester motivé à atteindre vos objectifs d&apos;écriture&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="246"/>
         <source>Caso você não goste dos sons do app, você pode desativá-los nas configurações.</source>
-        <translation>Si vous n&apos;aimez pas les sons de l&apos;application, vous pouvez les désactiver dans les paramètres.</translation>
+        <translation type="vanished">Si vous n&apos;aimez pas les sons de l&apos;application, vous pouvez les désactiver dans les paramètres.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="247"/>
+        <location filename="../src/_quotes_data.inc" line="243"/>
         <source>Ao criar temas, use sua criatividade. Você pode criar temas inspirados no gênero do seu projeto, para aumentar a imersão.</source>
         <translation>En créant des thèmes, laissez parler votre créativité. Vous pouvez créer des thèmes inspirés du genre de votre projet pour renforcer l&apos;immersion.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="248"/>
         <source>Temas podem ser importados e exportados.</source>
-        <translation>Les thèmes peuvent être importés et exportés.</translation>
+        <translation type="vanished">Les thèmes peuvent être importés et exportés.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="249"/>
         <source>Os Temas padrão do editor foram feitos no próprio criador de Temas dele. Caso não goste de algum, pode excluí-lo.</source>
-        <translation>Les Thèmes par défaut de l&apos;éditeur ont été créés avec son propre créateur de Thèmes. Si l&apos;un d&apos;eux ne vous plaît pas, vous pouvez le supprimer.</translation>
+        <translation type="vanished">Les Thèmes par défaut de l&apos;éditeur ont été créés avec son propre créateur de Thèmes. Si l&apos;un d&apos;eux ne vous plaît pas, vous pouvez le supprimer.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="250"/>
         <source>Você pode excluir memórias salvas no Menu de Referência.</source>
-        <translation>Vous pouvez supprimer les mémoires enregistrées dans le Menu de Référence.</translation>
+        <translation type="vanished">Vous pouvez supprimer les mémoires enregistrées dans le Menu de Référence.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="251"/>
+        <location filename="../src/_quotes_data.inc" line="246"/>
         <source>Descanse! Você pode marcar folgas no painel de Meta Diária. É possível configurar os dias mínimos de meta batida para ganhar uma folga. Nada de trapacear.</source>
         <translation>Reposez-vous&#xa0;! Vous pouvez marquer des jours de repos dans le panneau de l&apos;Objectif quotidien. Vous pouvez définir le nombre minimal de jours d&apos;objectif atteint pour en gagner un. Pas de triche.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="252"/>
+        <location filename="../src/_quotes_data.inc" line="247"/>
         <source>Existe um código secreto para desbloquear os dias mínimos de meta batida para ganhar uma folga. Eu sei qual é, mas não vou te contar. Vá escrever.</source>
         <translation>Il existe un code secret pour débloquer le nombre minimal de jours d&apos;objectif atteint nécessaires à un jour de repos. Je le connais, mais je ne vous le dirai pas. Allez écrire.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="253"/>
+        <location filename="../src/_quotes_data.inc" line="248"/>
         <source>Caso você tire uma folga sem ter folgas disponíveis, o calendário marcará aquele dia como vermelho, pois é uma folga trapaceada.</source>
         <translation>Si vous prenez un jour de repos sans en avoir de disponible, le calendrier marquera ce jour en rouge&#xa0;: c&apos;est un repos triché.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="254"/>
+        <location filename="../src/_quotes_data.inc" line="249"/>
         <source>Folgas trapaceadas não são um grande problema, mas se você fizer disso um hábito, o calendário ficará cada vez mais vermelho, o que pode ser desmotivador. Use as folgas com sabedoria!</source>
         <translation>Les repos trichés ne sont pas bien graves, mais si cela devient une habitude, le calendrier sera de plus en plus rouge, ce qui peut démotiver. Utilisez vos jours de repos avec sagesse&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="255"/>
+        <location filename="../src/_quotes_data.inc" line="250"/>
         <source>Utilize a função lousa para organizar suas ideias, criar mapas mentais e planejar sua história de forma visual, intuitiva e divertida.</source>
         <translation>Utilisez la fonction Board pour organiser vos idées, créer des cartes mentales et planifier votre histoire de façon visuelle, intuitive et ludique.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="256"/>
+        <location filename="../src/_quotes_data.inc" line="251"/>
         <source>A função de Lousa é uma ferramenta versátil que pode ser usada para criar diagramas, fluxogramas, mapas de personagens e muito mais. Use-a para dar vida às suas ideias e tornar o processo de planejamento mais envolvente!</source>
         <translation>Le Board est un outil polyvalent qui permet de créer des diagrammes, des organigrammes, des cartes de personnages et bien plus. Servez-vous-en pour donner vie à vos idées et rendre la planification plus captivante&#xa0;!</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="257"/>
+        <location filename="../src/_quotes_data.inc" line="252"/>
         <source>Ao usar a lousa, experimente diferentes formas de organizar suas ideias. Você pode criar áreas para diferentes aspectos da sua história e conectá-las.</source>
         <translation>Sur le Board, essayez différentes façons d&apos;organiser vos idées. Vous pouvez créer des zones pour les différents aspects de votre histoire et les relier.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="258"/>
+        <location filename="../src/_quotes_data.inc" line="253"/>
         <source>É possível anexar imagens e documentos já existentes do projeto na lousa, incluindo personagens.</source>
         <translation>Vous pouvez joindre au Board des images et des documents existants du projet, y compris des personnages.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="259"/>
+        <location filename="../src/_quotes_data.inc" line="254"/>
         <source>Na lousa, arraste um post-it em uma linha para criar um post-it de comentário sobre aquela conexão.</source>
         <translation>Sur le Board, faites glisser un post-it sur une ligne pour créer un post-it de commentaire sur cette connexion.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="260"/>
+        <location filename="../src/_quotes_data.inc" line="255"/>
         <source>Tudo criado na lousa pode ser exportado. É possível iniciar o seu projeto nela antes de começar, o que te garante uma base sólida para escrever e evitar a temida folha em branco.</source>
         <translation>Tout ce qui est créé sur le Board peut être exporté. Vous pouvez y lancer votre projet avant de commencer, ce qui vous donne une base solide et vous évite la redoutable page blanche.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="261"/>
+        <location filename="../src/_quotes_data.inc" line="256"/>
         <source>Crie áreas na lousa para separar os seus planejamentos... ou abrace o caos e navegue, você decide.</source>
         <translation>Créez des zones sur le Board pour séparer vos plans... ou embrassez le chaos et naviguez à vue, c&apos;est vous qui voyez.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="262"/>
+        <location filename="../src/_quotes_data.inc" line="257"/>
         <source>É possível trocar a cor da lousa, dos post-its, linhas e comentários.</source>
         <translation>Vous pouvez changer la couleur du Board, des post-it, des lignes et des commentaires.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="263"/>
+        <location filename="../src/_quotes_data.inc" line="258"/>
         <source>Acredite, a lousa é o melhor amigo do seu planejamento. Use-a sem piedade.</source>
         <translation>Croyez-moi, le Board est le meilleur ami de votre planification. Servez-vous-en sans pitié.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="264"/>
+        <location filename="../src/_quotes_data.inc" line="259"/>
         <source>Ao adicionar personagens a lousa, você pode clicar duas vezes no card deles para virá-lo e ler as informações.</source>
         <translation>Quand vous ajoutez des personnages au Board, un double-clic sur leur carte la retourne pour lire leurs informations.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="265"/>
+        <location filename="../src/_quotes_data.inc" line="260"/>
         <source>A lousa é infinita. Ela possuí limites de zoom, mas não de tamanho. E isso é tão útil quanto assustador.</source>
         <translation>Le Board est infini. Il a des limites de zoom, mais pas de taille. Et c&apos;est aussi utile qu&apos;effrayant.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="266"/>
+        <location filename="../src/_quotes_data.inc" line="261"/>
         <source>Como é a sua lousa? Ela é organizada e bonita ou um completo caos que só você entende?</source>
         <translation>À quoi ressemble votre Board&#xa0;? Rangé et joli, ou un chaos total que vous seul comprenez&#xa0;?</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="267"/>
         <source>A lousa cria personagens, mas também pode criar cenários e objetos. Basta extrair o post-it deles para uma drawer que possua esses elementos.</source>
-        <translation>Le Board crée des personnages, mais aussi des lieux et des objets. Il suffit d&apos;exporter leur post-it dans un tiroir doté de ces éléments.</translation>
+        <translation type="vanished">Le Board crée des personnages, mais aussi des lieux et des objets. Il suffit d&apos;exporter leur post-it dans un tiroir doté de ces éléments.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="268"/>
         <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultar o glossário a qualquer momento através da barra superior.</source>
-        <translation>Le glossaire sert à enregistrer les mots et termes créés pour votre projet. Il suffit de sélectionner le mot et de cliquer sur «&#xa0;Ajouter au Glossaire&#xa0;». Vous pouvez consulter le glossaire à tout moment depuis la barre supérieure.</translation>
+        <translation type="vanished">Le glossaire sert à enregistrer les mots et termes créés pour votre projet. Il suffit de sélectionner le mot et de cliquer sur «&#xa0;Ajouter au Glossaire&#xa0;». Vous pouvez consulter le glossaire à tout moment depuis la barre supérieure.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="269"/>
         <source>O glossário é exportado junto com o seu projeto.</source>
-        <translation>Le glossaire est exporté avec votre projet.</translation>
+        <translation type="vanished">Le glossaire est exporté avec votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="270"/>
+        <location filename="../src/_quotes_data.inc" line="265"/>
         <source>Não há um limite de palavras para o glossário.</source>
         <translation>Il n&apos;y a pas de limite de mots pour le glossaire.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="271"/>
         <source>Ao criar novos projetos, escolha se deseja iniciar no editor ou na lousa. A lousa é ótima caso já tenha várias ideias e queira organizá-las antes de começar. Se preferir da forma tradicional, basta optar pelo editor.</source>
-        <translation>En créant un nouveau projet, choisissez de commencer dans l&apos;éditeur ou sur le Board. Le Board est idéal si vous avez déjà beaucoup d&apos;idées à organiser avant de commencer. Si vous préférez la méthode traditionnelle, choisissez l&apos;éditeur.</translation>
+        <translation type="vanished">En créant un nouveau projet, choisissez de commencer dans l&apos;éditeur ou sur le Board. Le Board est idéal si vous avez déjà beaucoup d&apos;idées à organiser avant de commencer. Si vous préférez la méthode traditionnelle, choisissez l&apos;éditeur.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="272"/>
         <source>Arraste personagens para dentro de uma pasta para colocá-los lá. Se ainda não tiver uma pasta, arrastar o personagem para a opção de criar pasta também criará uma.</source>
-        <translation>Faites glisser des personnages dans un dossier pour les y ranger. Si vous n&apos;avez pas encore de dossier, faire glisser le personnage sur l&apos;option de création de dossier en créera un.</translation>
+        <translation type="vanished">Faites glisser des personnages dans un dossier pour les y ranger. Si vous n&apos;avez pas encore de dossier, faire glisser le personnage sur l&apos;option de création de dossier en créera un.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="273"/>
+        <location filename="../src/_quotes_data.inc" line="267"/>
         <source>Não há limite de gavetas com elementos. Você pode ter várias gavetas com os mesmos elementos caso queira.</source>
         <translation>Il n&apos;y a pas de limite de tiroirs avec éléments. Vous pouvez avoir plusieurs tiroirs avec les mêmes éléments si vous le souhaitez.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="274"/>
+        <location filename="../src/_quotes_data.inc" line="268"/>
         <source>Ousado, mas caso queira, você pode acumular folgas batendo a meta e depois tirá-las todas de uma vez — saindo de férias.</source>
         <translation>Audacieux, mais si vous le souhaitez, vous pouvez accumuler des jours de repos en atteignant l&apos;objectif puis les prendre tous d&apos;un coup — en partant en vacances.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="275"/>
+        <location filename="../src/_quotes_data.inc" line="269"/>
         <source>A lousa está sempre há um clique de distância. Você sempre pode voltar nela para consultar ou continuar planejando, mesmo com a obra em andamento.</source>
         <translation>Le Board est toujours à un clic. Vous pouvez y revenir pour consulter ou continuer à planifier, même avec l&apos;œuvre en cours.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="276"/>
+        <location filename="../src/_quotes_data.inc" line="270"/>
         <source>Use a função Linha do Tempo para organizar a cronologia do seu projeto.</source>
         <translation>Utilisez la fonction Chronologie pour organiser la ligne du temps de votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="277"/>
+        <location filename="../src/_quotes_data.inc" line="271"/>
         <source>Você pode criar várias linhas do tempo diferentes e conectá-las.</source>
         <translation>Vous pouvez créer plusieurs lignes du temps et les relier entre elles.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="278"/>
+        <location filename="../src/_quotes_data.inc" line="272"/>
         <source>As Ramificações exibem todas as linhas e eventos da Linha do Tempo. Clique nos eventos para focar em uma linha específica.</source>
         <translation>La vue Branches affiche toutes les lignes et tous les événements de la Chronologie. Cliquez sur un événement pour vous concentrer sur une ligne précise.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="279"/>
+        <location filename="../src/_quotes_data.inc" line="273"/>
         <source>Ao criar novas linhas do tempo, verifique as cores para evitar confusões.</source>
         <translation>En créant de nouvelles lignes du temps, vérifiez les couleurs pour éviter les confusions.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="280"/>
         <source>Os seus personagens recebem linhas do tempo próprias com base em suas aparições na história.</source>
-        <translation>Vos personnages reçoivent leurs propres lignes du temps selon leurs apparitions dans l&apos;histoire.</translation>
+        <translation type="vanished">Vos personnages reçoivent leurs propres lignes du temps selon leurs apparitions dans l&apos;histoire.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="281"/>
         <source>Há três tipos diferentes de exibição da linha do tempo: Trilha, Espiral e Ramificações. A Trilha é a menos confusa, mas as Ramificações e Espirais se tornam fáceis de ler com o tempo.</source>
-        <translation>Il existe trois vues de la chronologie&#xa0;: Piste, Spirale et Branches. La Piste est la moins déroutante, mais les Branches et la Spirale deviennent faciles à lire avec l&apos;habitude.</translation>
+        <translation type="vanished">Il existe trois vues de la chronologie&#xa0;: Piste, Spirale et Branches. La Piste est la moins déroutante, mais les Branches et la Spirale deviennent faciles à lire avec l&apos;habitude.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="282"/>
+        <location filename="../src/_quotes_data.inc" line="276"/>
         <source>Clique nos dias do calendário para saber o quanto escreveu e em quais documentos.</source>
         <translation>Cliquez sur un jour du calendrier pour voir combien vous avez écrit et dans quels documents.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="283"/>
+        <location filename="../src/_quotes_data.inc" line="277"/>
         <source>Você pode alterar o que é exibido no contador de palavras ao clicar com o botão direito nele.</source>
         <translation>Vous pouvez changer ce qu&apos;affiche le compteur de mots par un clic droit dessus.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="284"/>
         <source>Temas são necessários. Por isso o app tem 101 deles. E caso queira modificar algo em algum, eles podem ser usados como templates para temas personalizados. Basta escolher a opção &apos;Duplicar&apos; para editá-lo.</source>
-        <translation>Les thèmes sont indispensables. C&apos;est pour ça que l&apos;application en compte 101. Et si vous voulez en modifier un, ils servent de modèles pour des thèmes personnalisés. Il suffit de choisir l&apos;option «&#xa0;Dupliquer&#xa0;» pour le modifier.</translation>
+        <translation type="vanished">Les thèmes sont indispensables. C&apos;est pour ça que l&apos;application en compte 101. Et si vous voulez en modifier un, ils servent de modèles pour des thèmes personnalisés. Il suffit de choisir l&apos;option «&#xa0;Dupliquer&#xa0;» pour le modifier.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="285"/>
         <source>Use a função de Memórias para salvar informações importantes sobre sua história e personagens.</source>
-        <translation>Utilisez la fonction Mémoires pour enregistrer des informations importantes sur votre histoire et vos personnages.</translation>
+        <translation type="vanished">Utilisez la fonction Mémoires pour enregistrer des informations importantes sur votre histoire et vos personnages.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="286"/>
+        <location filename="../src/_quotes_data.inc" line="279"/>
         <source>Você pode criar eventos da linha do tempo a partir do editor ou da lousa.</source>
         <translation>Vous pouvez créer des événements de chronologie depuis l&apos;éditeur ou depuis le Board.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="287"/>
+        <location filename="../src/_quotes_data.inc" line="280"/>
         <source>Use a função de lembretes para se lembrar do que precisa fazer em seu projeto.</source>
         <translation>Utilisez la fonction rappels pour vous souvenir de ce qu&apos;il reste à faire dans votre projet.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="288"/>
+        <location filename="../src/_quotes_data.inc" line="281"/>
         <source>Use a função Grupos para reunir documentos de diferentes gavetas e elementos num só lugar, organizando o que se conecta na sua história.</source>
         <translation>Utilisez la fonction Groupes pour réunir au même endroit des documents de tiroirs et d&apos;éléments différents, et organiser ce qui se relie dans votre histoire.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="231"/>
+        <location filename="../src/_quotes_data.inc" line="229"/>
         <source>No menu principal, a Biblioteca tem seis vistas: Continuar, Vitrine, Cinema, Seu dia, Estante e Pilha.</source>
         <translation>Dans le menu principal, la Bibliothèque propose six vues : Continuer, Vitrine, Cinéma, Votre journée, Étagère et Pile.</translation>
     </message>
     <message>
-        <location filename="../src/_quotes_data.inc" line="232"/>
+        <location filename="../src/_quotes_data.inc" line="230"/>
         <source>O botão Continuar do menu principal abre o projeto direto na última frase que você escreveu.</source>
         <translation>Le bouton Continuer du menu principal ouvre le projet directement sur la dernière phrase que vous avez écrite.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="282"/>
         <source>Curiosidade: a personagem no logo que aparece em diferentes histórias e universos é a própria Qenna.</source>
         <translation>Le saviez-vous ? Le personnage du logo qui apparaît dans différentes histoires et différents univers est Qenna elle-même.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="148"/>
         <source>Navessa Allen é uma autora de romance conhecida por &apos;Lights Out&apos;, um dos grandes fenômenos recentes do dark romance.</source>
         <translation>Navessa Allen est une autrice de romance connue pour « Lights Out », l&apos;un des grands phénomènes récents de la dark romance.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="199"/>
         <source>Arraste um personagem e solte em cima de outro, na gaveta, para criar um vínculo entre eles.</source>
         <translation>Faites glisser un personnage et déposez-le sur un autre, dans le tiroir, pour créer un lien entre eux.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="202"/>
         <source>O nome da guerreira que ficava no logo do Mira Writing (um dos nomes antigos do Qenna Writer, que por um dia também se chamou Qiyva Writer) era... Mira.</source>
         <translation>Le nom de la guerrière qui figurait sur le logo de Mira Writing (l&apos;un des anciens noms de Qenna Writer, qui s&apos;est aussi appelé Qiyva Writer pendant une journée) était... Mira.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="203"/>
         <source>O seu projeto é salvo automaticamente a cada 4 minutos. Pode escrever sem medo.</source>
         <translation>Votre projet est enregistré automatiquement toutes les 4 minutes. Écrivez sans crainte.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="204"/>
         <source>Ao criar um novo projeto, você escolhe como ele começa: em branco, com gavetas básicas ou completo, com gavetas e documentos de planejamento prontos. Se você é um arquiteto ambicioso, vá de completo.</source>
         <translation>En créant un nouveau projet, vous choisissez comment il commence : vierge, avec les tiroirs de base ou complet, avec des tiroirs et des documents de planification prêts. Si vous êtes un architecte ambitieux, choisissez complet.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="208"/>
         <source>Use o painel de Estatísticas para acompanhar seus personagens: presença, falas, status e local de cada um.</source>
         <translation>Utilisez le panneau Statistiques pour suivre vos personnages : présence, répliques, statut et lieu de chacun.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="209"/>
         <source>O editor detecta a presença dos personagens nos capítulos e cenas automaticamente quando eles são citados três vezes ou mais.</source>
         <translation>L&apos;éditeur détecte automatiquement la présence des personnages dans les chapitres et les scènes lorsqu&apos;ils sont cités trois fois ou plus.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="210"/>
         <source>Marque o status dos seus personagens no painel de Estatísticas. Se um personagem morto ou desaparecido voltar a aparecer numa cena, o app te avisa. Ressurreição, só se for de propósito.</source>
         <translation>Indiquez le statut de vos personnages dans le panneau Statistiques. Si un personnage mort ou disparu réapparaît dans une scène, l&apos;app vous prévient. Les résurrections, seulement exprès.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="211"/>
         <source>Caso não goste da detecção automática de presença dos personagens nas cenas, ela pode ser desligada nas configurações.</source>
         <translation>Si vous n&apos;aimez pas la détection automatique de la présence des personnages dans les scènes, vous pouvez la désactiver dans les paramètres.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="212"/>
         <source>Caso queira registrar algum comentário sobre um trecho do seu projeto, selecione-o e clique em &apos;Marcador com comentário&apos;.</source>
         <translation>Si vous voulez laisser un commentaire sur un passage de votre projet, sélectionnez-le et cliquez sur « Marqueur avec commentaire ».</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="223"/>
         <source>O Qenna Writer pode zipar a pasta inteira do seu projeto de tempos em tempos. Ative em Configurações → Backup e escolha uma pasta fora do projeto, de preferência em outro disco ou na nuvem.</source>
         <translation>Qenna Writer peut compresser en zip tout le dossier de votre projet de temps en temps. Activez-le dans Paramètres → Sauvegarde et choisissez un dossier en dehors du projet, de préférence sur un autre disque ou dans le cloud.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="225"/>
         <source>A função de Som ambiente toca sons e músicas de fundo enquanto você escreve, criando uma atmosfera mais envolvente para a sua escrita!</source>
         <translation>La fonction Son d&apos;ambiance joue des sons et de la musique de fond pendant que vous écrivez, pour une atmosphère plus immersive !</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="227"/>
         <source>Toda vez que um capítulo é salvo, a versão anterior dele fica guardada na pasta &apos;bak&apos;, dentro da pasta do seu projeto. Se algo der errado, ela está lá.</source>
         <translation>Chaque fois qu&apos;un chapitre est enregistré, sa version précédente est conservée dans le dossier « bak », à l&apos;intérieur du dossier de votre projet. Si quelque chose tourne mal, elle est là.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="237"/>
         <source>É possível usar suas próprias músicas no Som ambiente: coloque arquivos .mp3 ou .ogg na pasta &apos;ambience-sounds&apos;, dentro da pasta onde o app está instalado.</source>
         <translation>Vous pouvez utiliser votre propre musique dans le Son d&apos;ambiance : placez des fichiers .mp3 ou .ogg dans le dossier « ambience-sounds », dans le dossier où l&apos;app est installée.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="241"/>
         <source>Divida os seus capítulos em cenas a qualquer momento: digite &apos;----&apos; numa linha vazia e aperte Enter.</source>
         <translation>Divisez vos chapitres en scènes à tout moment : tapez « ---- » sur une ligne vide et appuyez sur Entrée.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="244"/>
         <source>Os temas padrão do editor foram feitos no próprio criador de temas dele. Eles ficam sempre disponíveis; já os temas que você cria podem ser excluídos quando quiser.</source>
         <translation>Les thèmes par défaut de l&apos;éditeur ont été créés avec son propre créateur de thèmes. Ils restent toujours disponibles ; les thèmes que vous créez peuvent être supprimés quand vous voulez.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="245"/>
         <source>Você pode excluir memórias salvas no Pensário.</source>
         <translation>Vous pouvez supprimer les mémoires enregistrées dans le Pensarium.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="262"/>
         <source>A lousa não serve só pra planejar: clique com o botão direito num post-it e escolha &apos;Criar documento&apos; para levá-lo a uma gaveta, como personagem, cenário ou objeto.</source>
         <translation>Le board ne sert pas qu&apos;à planifier : faites un clic droit sur un post-it et choisissez « Créer un document » pour l&apos;envoyer dans un tiroir, comme personnage, décor ou objet.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="263"/>
         <source>O glossário serve para salvar palavras e termos criados para o seu projeto. Basta selecionar a palavra e clicar em &apos;Adicionar ao Glossário&apos;. Você pode consultá-lo a qualquer momento na aba Glossário do Pensário.</source>
         <translation>Le glossaire sert à enregistrer les mots et termes créés pour votre projet. Il suffit de sélectionner le mot et de cliquer sur « Ajouter au Glossaire ». Vous pouvez le consulter à tout moment dans l&apos;onglet Glossaire du Pensarium.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="264"/>
         <source>O glossário vai junto quando você exporta a Bíblia do universo.</source>
         <translation>Le glossaire est inclus quand vous exportez la Bible de l&apos;univers.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="266"/>
         <source>Arraste personagens até o chip de uma pasta para colocá-los lá. Para criar uma pasta, use o botão &apos;+ Pasta&apos;.</source>
         <translation>Faites glisser des personnages sur la puce d&apos;un dossier pour les y ranger. Pour créer un dossier, utilisez le bouton « + Dossier ».</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="274"/>
         <source>Filtre a Linha do Tempo por personagem para ver só os eventos em que ele aparece.</source>
         <translation>Filtrez la Chronologie par personnage pour ne voir que les événements où il apparaît.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="275"/>
         <source>Há três tipos diferentes de exibição da linha do tempo: Trilho, Espiral e Ramificações. O Trilho é o menos confuso, mas as Ramificações e a Espiral se tornam fáceis de ler com o tempo.</source>
         <translation>Il y a trois façons d&apos;afficher la chronologie : Rail, Spirale et Branches. Le Rail est le moins déroutant, mais les Branches et la Spirale deviennent faciles à lire avec le temps.</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="278"/>
         <source>Temas são necessários. Por isso o app tem centenas deles. E caso queira modificar algo em algum, ele pode servir de base para um tema personalizado. Basta escolher a opção &apos;Editar uma cópia&apos;.</source>
         <translation>Les thèmes sont indispensables. C&apos;est pourquoi l&apos;app en propose des centaines. Et si vous voulez modifier quelque chose dans l&apos;un d&apos;eux, il peut servir de base à un thème personnalisé. Il suffit de choisir « Modifier une copie ».</translation>
     </message>
     <message>
+        <location filename="../src/_quotes_data.inc" line="43"/>
         <source>Existem 277 quotes que aparecem aqui no app, qual o seu favorito?</source>
         <translation>Il y a 277 citations qui apparaissent ici dans l&apos;app, laquelle est votre préférée ?</translation>
     </message>
@@ -28145,26 +29441,26 @@ Utilisez «&#xa0;Dupliquer&#xa0;» sur un thème par défaut pour commencer.</tr
         <translation>Nouveau thème</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="78"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="64"/>
+        <location filename="../src/ThemesPanel.cpp" line="78"/>
         <source>alto</source>
         <translation>élevé</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="79"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="65"/>
+        <location filename="../src/ThemesPanel.cpp" line="79"/>
         <source>médio</source>
         <translation>moyen</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="80"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="66"/>
+        <location filename="../src/ThemesPanel.cpp" line="80"/>
         <source>suave</source>
         <translation>doux</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="81"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="67"/>
+        <location filename="../src/ThemesPanel.cpp" line="81"/>
         <source>bem suave</source>
         <translation>très doux</translation>
     </message>
@@ -30293,117 +31589,117 @@ Mode éditeur épuré avec des barres escamotables. Comme dans la toute premièr
         <translation>Espacement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1129"/>
+        <location filename="../src/TopToolbar.cpp" line="1132"/>
         <source>Esquerda</source>
         <translation>Gauche</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1130"/>
+        <location filename="../src/TopToolbar.cpp" line="1133"/>
         <source>Centro</source>
         <translation>Centre</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1131"/>
+        <location filename="../src/TopToolbar.cpp" line="1134"/>
         <source>Direita</source>
         <translation>Droite</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1132"/>
+        <location filename="../src/TopToolbar.cpp" line="1135"/>
         <source>Justificado</source>
         <translation>Justifié</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1175"/>
+        <location filename="../src/TopToolbar.cpp" line="1178"/>
         <source>Aplicar em:</source>
         <translation>Appliquer à&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1181"/>
+        <location filename="../src/TopToolbar.cpp" line="1184"/>
         <source>Esse documento</source>
         <translation>Ce document</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1182"/>
+        <location filename="../src/TopToolbar.cpp" line="1185"/>
         <source>Todos os documentos</source>
         <translation>Tous les documents</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1183"/>
+        <location filename="../src/TopToolbar.cpp" line="1186"/>
         <source>Somente manuscrito</source>
         <translation>Manuscrit uniquement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1184"/>
+        <location filename="../src/TopToolbar.cpp" line="1187"/>
         <source>Somente gavetas</source>
         <translation>Tiroirs uniquement</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1646"/>
+        <location filename="../src/TopToolbar.cpp" line="1649"/>
         <source>Digite o tamanho (10–48, aceita 0,5)</source>
         <translation>Saisissez la taille (10–48, accepte 0,5)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1678"/>
+        <location filename="../src/TopToolbar.cpp" line="1681"/>
         <source> pt</source>
         <translation> pt</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1722"/>
+        <location filename="../src/TopToolbar.cpp" line="1725"/>
         <source>Tamanho da fonte (%1)</source>
         <translation>Taille de police (%1)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1734"/>
+        <location filename="../src/TopToolbar.cpp" line="1737"/>
         <source>Espaçamento (%1)</source>
         <translation>Espacement (%1)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1753"/>
+        <location filename="../src/TopToolbar.cpp" line="1756"/>
         <source>Entre linhas</source>
         <translation>Interligne</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1757"/>
+        <location filename="../src/TopToolbar.cpp" line="1760"/>
         <source>Simples (1.0)</source>
         <translation>Simple (1.0)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1758"/>
+        <location filename="../src/TopToolbar.cpp" line="1761"/>
         <source>Justo (1.15)</source>
         <translation>Serré (1.15)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1759"/>
+        <location filename="../src/TopToolbar.cpp" line="1762"/>
         <source>Compacto (1.3)</source>
         <translation>Compact (1.3)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1760"/>
+        <location filename="../src/TopToolbar.cpp" line="1763"/>
         <source>Confortável (1.5)</source>
         <translation>Confortable (1.5)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1761"/>
+        <location filename="../src/TopToolbar.cpp" line="1764"/>
         <source>Padrão (1.7)</source>
         <translation>Par défaut (1.7)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1762"/>
+        <location filename="../src/TopToolbar.cpp" line="1765"/>
         <source>Amplo (1.9)</source>
         <translation>Large (1.9)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1763"/>
+        <location filename="../src/TopToolbar.cpp" line="1766"/>
         <source>Espaçoso (2.2)</source>
         <translation>Aéré (2.2)</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1784"/>
+        <location filename="../src/TopToolbar.cpp" line="1787"/>
         <source>Antes do parágrafo</source>
         <translation>Avant le paragraphe</translation>
     </message>
     <message>
-        <location filename="../src/TopToolbar.cpp" line="1826"/>
+        <location filename="../src/TopToolbar.cpp" line="1829"/>
         <source>Depois do parágrafo</source>
         <translation>Après le paragraphe</translation>
     </message>
@@ -31774,19 +33070,21 @@ horaire. Les jours suivants, il se réinitialise toujours à cette heure.</trans
 <context>
     <name>ZoneItem</name>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="148"/>
+        <location filename="../src/ZoneItem.cpp" line="110"/>
+        <location filename="../src/ZoneItem.cpp" line="121"/>
+        <location filename="../src/ZoneItem.cpp" line="204"/>
         <source>Área</source>
         <translation>Zone</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="219"/>
-        <location filename="../src/ZoneItem.cpp" line="331"/>
+        <location filename="../src/ZoneItem.cpp" line="290"/>
+        <location filename="../src/ZoneItem.cpp" line="405"/>
         <source>Cor da área</source>
         <translation>Couleur de la zone</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="295"/>
-        <location filename="../src/ZoneItem.cpp" line="326"/>
+        <location filename="../src/ZoneItem.cpp" line="369"/>
+        <location filename="../src/ZoneItem.cpp" line="400"/>
         <source>Nome da área</source>
         <translation>Nom de la zone</translation>
     </message>
@@ -31795,22 +33093,22 @@ horaire. Les jours suivants, il se réinitialise toujours à cette heure.</trans
         <translation type="vanished">Nom&#xa0;:</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="324"/>
+        <location filename="../src/ZoneItem.cpp" line="398"/>
         <source>Renomear área</source>
         <translation>Renommer la zone</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="330"/>
+        <location filename="../src/ZoneItem.cpp" line="404"/>
         <source>Cor...</source>
         <translation>Couleur...</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="335"/>
+        <location filename="../src/ZoneItem.cpp" line="409"/>
         <source>Exportar área para gaveta</source>
         <translation>Exporter la zone vers un tiroir</translation>
     </message>
     <message>
-        <location filename="../src/ZoneItem.cpp" line="337"/>
+        <location filename="../src/ZoneItem.cpp" line="411"/>
         <source>Remover área</source>
         <translation>Retirer la zone</translation>
     </message>

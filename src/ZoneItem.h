@@ -3,6 +3,7 @@
 #include "LousaTypes.h"
 
 #include <QColor>
+#include <QList>
 #include <QGraphicsObject>
 #include <QPointF>
 #include <QSizeF>
@@ -17,6 +18,13 @@ public:
     void setZoneData(const CanvasZone& d);
     void setSelected(bool on);
     bool isSelected() const { return m_selected; }
+    void setCardCount(int n);          // quantos cards estão dentro (vai na etiqueta)
+    // Cor do quadro atrás da etiqueta (a etiqueta "corta" a borda da área).
+    static void setBoardColor(const QColor& c) { s_boardColor = c; }
+    // Zoom da tela: com zoom longe a etiqueta cresce pra continuar legível.
+    static void setViewZoom(const QList<ZoneItem*>& zones, qreal zoom);
+    // Marcada com tudo o que tem dentro (Shift/Ctrl+clique): o arrasto leva junto.
+    void setContentsSelected(bool on) { m_contentsSelected = on; }
 
     QRectF       boundingRect() const override;
     QPainterPath shape()         const override;
@@ -29,6 +37,7 @@ signals:
     void zoneClicked(const QString& id);  // clique na zona (para seleção/export)
     void exportRequested(const QString& id);  // "Exportar área" no context menu
     void dragStartedWithContents(const QString& id, bool withContents);
+    void contentsSelectRequested(const QString& id);   // Shift/Ctrl+clique
     void draggedBy(const QString& id, const QPointF& delta);
 
 protected:
@@ -42,7 +51,9 @@ protected:
 
 private:
     // Hit-test helpers
-    bool isOnGrip(const QPointF& p) const;
+    qreal  labelScale() const;         // quanto a etiqueta cresce agora (zoom longe)
+    QRectF tagRect() const;            // etiqueta com o nome (canto de cima)
+    QRectF controlsRect() const;       // cor + × (canto de cima, à direita)
     bool isOnDelete(const QPointF& p) const;
     bool isOnColorDot(const QPointF& p) const;
     int  handleAt(const QPointF& p) const;  // -1 = none, 0-7 = handle index
@@ -50,6 +61,10 @@ private:
     void emitData();
 
     CanvasZone m_data;
+    int        m_count = 0;
+    bool       m_contentsSelected = false;
+    static QColor s_boardColor;
+    static qreal  s_labelScale;
 
     // Interaction state
     bool    m_hovered    = false;
