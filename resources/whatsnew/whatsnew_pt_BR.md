@@ -1,95 +1,107 @@
-**Qenna Writer - HOTFIX: 1.4.6**
+**Qenna Writer - Update 1.4.7**
 
-Arrastar um capítulo (ou uma cena) na gaveta de manuscrito podia fechar o Qenna na hora, principalmente em projetos de roteiro. Corrigido.
+*Hellooooooo, it's me...*
+*I was wondering if*-nah! Just kidding.
 
----
-
-**Qenna Writer - UPDATE: 1.4.5**
-
-Olá meus lindos, nova atualização do Qenna chegoooou! Bora, bora.
-
-Dessa vez, o foco da atualização foi algo que admito, chegamos a deixar meio de lado.
-Sempre funcionou bem, mas podia ser muito mais: o modo de projeto **roteiro**. 
+Atualização nova, meus lindos! Vem ver:
 
 ## Novidades
+*Ele chegou...*
 
-**• O roteiro agora te guia**
-Até aqui, escrever roteiro no Qenna funcionava, mas você precisava já saber o que você estava fazendo. Agora não precisa mais, ao menos não tanto.
-No canto direito do DocHeader (o título no topo da página), aparece em qual elemento do roteiro você está: Cena, Ação, Personagem, Diálogo, Parênteses ou Transição. E, logo embaixo, pra onde o Enter, o Tab e o Shift+Tab vão te levar. Nada de decorar atalho, o próprio app te diz.
+**• REWORK DA LOUSA!**
+Sim. A lousa foi a única ferramenta do Qenna que havia ficado de fora do rework completo que o app recebeu nas últimas versões.
+Não foi proposital, mas necessário. A lousa é uma ferramenta cheia de pegadinhas quando se trata de mexer nos fios ali atrás e... bem, precisava ser feita na calma.
 
-**• Escrever roteiro ficou natural**
-O editor agora se comporta como os programas de roteiro de verdade. A página ganhou a coluna certinha do formato e cada elemento tem o seu espaçamento: o nome do personagem colado na fala, uma linha antes da ação, duas antes de uma cena nova.
-Algumas coisinhas que fazem diferença no dia a dia:
-- Shift+Tab volta pro elemento anterior.
-- Digitou "(" no começo de uma fala? Abre os Parênteses.
-- Enter numa linha vazia te devolve pra Ação.
-- O nome do personagem e o cabeçalho da cena viram CAIXA ALTA sozinhos quando você sai da linha.
-E o melhor: dá pra escrever sem apertar Tab nenhuma vez. Uma linha curta toda em caixa alta vira Personagem, e um "CORTA PARA:" vira Transição. O Qenna entende sozinho.
+**NOVA UI DA LOUSA:** Também está aqui! A Lousa recebeu uma NOVA UI, mais intuitiva, bonita e responsiva. As ferramentas agora ficam numa doca flutuando embaixo do quadro, cada uma com o seu nome, e o quadro fica livre pra você. É bem mais dinâmico e simples construir tudo que quiser nela. E isso trouxe também novos brinquedos:
 
-**• Autocompletar**
-Começou a digitar o nome de um personagem? O Qenna sugere: tanto quem está no seu elenco quanto quem já falou no roteiro.
-Nas cenas é a mesma coisa. Ele sugere INT. e EXT., os lugares que você já usou no roteiro (com quantas cenas cada um tem) e, depois do traço, a hora do dia: DIA, NOITE, MADRUGADA, AMANHECER e por aí vai.
+**• PNG's na lousa!** Agora você pode carregar imagens PNG (fundo transparente) diretamente na lousa, como adesivos. Personagens, objetos, o que quiser. Elas ficam e permanecem.
+Tem um botão só pra eles, o **Adesivo**. Mas também dá pra arrastar o PNG direto do seu computador pro quadro, ou copiar e colar com Ctrl+V. Puxou pelo canto, cresce. Pela bolinha de cima, gira. E ainda dá pra espelhar, mandar pra trás dos cards ou travar no lugar.
+E, pra não começar do zero, o Qenna já vem com uma cartela de adesivos própria: círculo de caneta, seta, X, carimbo de PISTA, de CONFIDENCIAL, impressão digital, lupa, mancha de café... Tudo que um quadro de investigação que se preze precisa.
 
-**• Cada cena do roteiro é uma cena do Qenna**
-Todo cabeçalho de cena (INT. / EXT.) agora vira uma cena de verdade dentro do capítulo, com o próprio cabeçalho como nome. Sem separador aparecendo no meio do texto: o roteiro continua limpo, mas a cena tá lá, pra navegar, organizar e usar em tudo que o Qenna já faz com cenas.
+**• Texto na lousa:** O antigo abria uma caixa de diálogo HORROROSA com a quebra de linha toda ruim e que era... bem, problemática de resolver. Agora, o texto na lousa é literalmente isso. Dois cliques no quadro e você escreve direto nele, totalmente ajustável e com quebra de linha **automática**. Como sempre deveria ser.
 
-**• Páginas e minutos**
-No roteiro, o que importa são as páginas: cada página dá mais ou menos um minuto de tela. Então o contador do roteiro agora mostra páginas na frente e o tempo estimado do lado. E não é chute: a conta usa exatamente a mesma paginação do PDF exportado. Se o contador diz 30 páginas, o PDF sai com 30.
+**• Post-its com estilo:** O post-it ganhou um botão de Estilo. São 8 formatos (o quadradinho de sempre, ficha pautada, tira, redondo, etiqueta de bagagem, folha arrancada do caderno, picotado e até fita rotuladora), 5 jeitos de prender (pin, fita adesiva, clipe, grampo ou nada) e 4 bordas (nenhuma, contorno de caneta, recorte tracejado e cantoneiras de álbum). Gostou de uma combinação? Marca "Usar nos próximos post-its" e todo post-it novo já nasce assim.
 
-**• Breakdown no painel de Estatísticas**
-Pra quem quer levar o roteiro pra frente, o painel de Estatísticas ganhou uma seção só de roteiro:
-- **Elenco**: quem aparece em quais cenas. Clique numa pessoa e as cenas dela acendem.
-- **Cenas**: a tira de produção, com o tamanho de cada cena em oitavos de página (o jeito que se mede em set) e as cores de praxe. Clique numa cena e ela abre.
-- **Locais**: todos os lugares do roteiro, num lugar só.
+**• Quadro de investigação de verdade:** A linha agora vai reta, de pin a pin, como barbante. E sai de onde o card está preso: do pin, do clipe, da fita. Se quiser, dá pra dar nome à ligação, pôr seta ou deixar curva.
+Os personagens viraram polaroid (dois cliques e ela vira, mostrando a ficha no verso), e documentos e capítulos aparecem como folha, com o começo do texto e um "abrir" que leva direto pro editor.
 
-**• Exportação no padrão da indústria**
-PDF e DOCX agora saem do jeito que um roteiro tem que sair: papel Carta, fonte Courier 12, margens do formato, página de rosto com "Escrito por" e o seu contato (puxado dos Dados do autor) e o número da página no canto. E nada de nome de personagem ou cabeçalho de cena sozinho no pé da página, longe do que vem depois.
-Tem também a opção "Numerar as cenas", pra quem precisa.
+E além disso, há muito mais: fundos novos (cortiça, lousa branca, caderno, grade), cards meio tortinhos como se estivessem presos num quadro de verdade, minimapa, busca de cards com Ctrl+F, várias lousas no mesmo projeto escolhidas pela miniatura, exportar o quadro como imagem vendo antes (até com fundo transparente) e uma cola com todos os atalhos no botão "?". A lousa realmente foi reformulada e está maravilhosa.
 
-**• Fountain**
-O Fountain é o formato de texto que praticamente todo programa de roteiro lê. Agora o Qenna exporta pra ele e também importa: em Novo Projeto, escolha Roteiro e aponte o arquivo .fountain. As cenas viram cenas, as seções do arquivo viram capítulos, e quem fala mais de uma vez já entra como personagem.
+Ah, claro! **100% compatível com lousas antigas.** Nada foi quebrado.
+*Pelo menos que eu saiba. Deixo os testes mais aprofundados com vocês.*
 
-**• Correções**
-- Transição virava Ação quando o documento era reaberto. Corrigido.
-- O elemento Cena não era alcançável pelo Tab. Agora é.
-- O alinhamento e o espaçamento do projeto passavam por cima do formato do roteiro. Não passam mais.
-- O cabeçalho do PDF no formato de submissão (Shunn) saía gigante. Corrigido.
+**• Novos Themes:**
+○ **Dracula's Tomb:** o clássico Dracula, só que um pouco mais escuro.
+○ **90's Manga:** inspirado no estilo dos mangás japoneses dos anos 90.
+○ **Basalt Green Nebula:** um theme verde-escuro, com uma nebulosa espacial no fundo.
+○ **Patch Bay:** um theme escuro com tons vermelhos e verdes, com uma estética de halloween das antigas.
+○ **Silver Halide:** um theme escuro e prateado, com molduras retas e um halo de luz em volta da página.
 
-Mas não foi só de roteiro que vivemos nessa versão.
+E não para por aí. Mais **60 themes novos**, em quatro famílias:
 
-**• O Granna agora te conta quem falou**
-Lembra do Granna, o nosso detector de diálogos? Até agora ele trabalhava calado. Pra saber quem ele achou que disse cada fala, ou pra corrigir, você tinha que abrir o Pensário, ir em Diálogos, achar a fala e clicar com o direito. Muito caminho pra uma coisa tão simples.
-Agora ele fala com você ali mesmo, no DocHeader (o título no topo da página):
-- Terminou uma fala e deu Enter? A foto de quem disse desliza de trás do título e volta. É o Granna dizendo "peguei, salvei".
-- Se ele deduziu pela conversa, sem nome na fala, a foto vem com um contorno pontilhado: ele tem uma suspeita, mas ainda não bateu o martelo.
-- Se ele não faz ideia, aparece um (?) com um anel se fechando em volta.
-- Clicou numa fala que já existia? A foto de quem disse fica ali enquanto o cursor estiver no parágrafo.
-(Personagem sem foto aparece com a inicial, na cor dele.)
-Em qualquer um desses casos, é só clicar na foto (ou no ?) pra abrir o "Quem disse?": quem está na cena aparece primeiro, o resto do elenco embaixo. Um clique e está atribuído, sem sair do texto. Dá pra marcar como figurante ou "Não é fala" ali mesmo também.
-E ele não se mete enquanto você escreve: só avisa quando você termina o parágrafo. Fala de figurante não mostra nada.
+○ **Clássicos de editor**
+Os themes mais populares do VSCode, do Neovim e companhia, com a paleta oficial de cada um, do jeito que já vieram o Tokyo Night, o Nord e o Dracula. Eles funcionam MUITO bem no Qenna.
+Escuros: Code Dark Dimmed, Catppuccin Macchiato, Rosé Pine Moon, Monokai Pro, Nightfox, Oxocarbon, Poimandres, Vesper, Iceberg, Cobalt2, Shades of Purple, SynthWave '84, Flexoki Dark, Kanagawa Dragon, Melange Dark, Zenburn, Ayu Dark, Noctis, Andromeda, Aura, Mariana, Darcula, Tomorrow Night e Houston.
+Claros: Code Light, Catppuccin Latte, Rosé Pine Dawn, Ayu Light, Everforest Light, Kanagawa Lotus, Flexoki Light, Melange Light, One Light, Night Owl Light, Quiet Light, Alabaster e Zenbones.
+*Dica: se você escreve muito à noite, experimenta o Flexoki, o Zenburn e o Melange. Foram feitos pra cansar pouco a vista.*
 
-**• Ilustrações de capítulo: cor, recorte e mais**
-As ilustrações da gaveta de manuscrito ganharam um carinho.
-- O "Trocar desenho" (clique direito no capítulo) agora funciona em todos os modos que mostram a ilustração, incluindo a Seleção de capítulo (dá pra clicar direto na arte grande lá em cima) e o Álbum.
-- **Cada capítulo pode ter a sua cor.** Dentro do "Trocar desenho", escolha a cor da ilustração daquele capítulo. Ou do livro todo de uma vez, se preferir. E se arrepender, "Voltar à cor da parte" desfaz.
-- **Imagem própria em qualidade de verdade.** A imagem carregada do PC ficava em baixa resolução e esticava nos modos com arte grande. Agora ela entra no mesmo padrão das capas. Foto de celular tirada em pé também não aparece mais deitada.
-- **Recorte.** Ao carregar uma imagem, você escolhe o enquadramento antes de usar. E se quiser reenquadrar depois, tem o "Recortar…".
-(Se você já tinha carregado uma imagem antes dessa versão, carregue de novo pra ganhar a qualidade nova.)
+○ **Madeiras**
+As madeiras da mesa que o Qenna sempre teve, retrabalhadas como acabamentos de verdade: Shou Sugi Ban (madeira queimada japonesa), Whitewash (caiada), Driftwood (madeira que o mar devolveu), Milk Paint (lambri pintado de verde-sálvia), Aizome (tingida de índigo), Green Bamboo (o bambu ainda verde), Shellac (goma-laca âmbar) e Fumed Oak (carvalho defumado).
+E, pra quem gosta de um escuro macio, sem contraste alto entre o texto e a folha: Walnut Dusk, Midnight Pine, Sage Den e Plum Bamboo.
 
-**• Ilustrações novas: Objetos e Cenas**
-O "Trocar desenho" ganhou dois grupos novos. Como sempre, cada capítulo tem o seu desenho e ele cresce junto com as palavras.
-- **Objetos**: Vela, Ampulheta (a areia desce conforme você escreve), Chave, Bússola, Relógio de bolso, Pena e tinteiro (a folha vai se enchendo de linhas), Xícara, Pilha de livros e Lampião.
-- **Cenas**: Estrada, Noir, Mansão, Planeta, Frota, Veleiro, Asas, Roda-gigante, Morro (as casinhas sobem o morro) e Trem.
-Os capítulos que você já tem não mudam de desenho sozinhos: as novas estão no "Trocar desenho", pra você escolher.
+○ **Amps e pedais**
+Inspirados nos amplificadores e pedais de guitarra: Thermal, Thermal Light, Plexi, Hall Reverb e Analog Delay.
 
-**• Atualização que parou no meio**
-Sabe quando a atualização é interrompida no meio (fechou o instalador, o PC desligou, a internet caiu)? Antes, o Qenna achava que já estava atualizado e não te avisava de nada. Agora ele percebe e oferece "Concluir instalação". E o instalador que já tinha sido baixado fica guardado, então ele não baixa tudo de novo.
-Também tem um botão novo no menu principal: "Ver atualizações". Abre o patch note da versão que você tem instalada, quando quiser.
+○ **Diversos**
+Crow's Court, Triple Word (o tabuleiro de palavras cruzadas), Intaglio (o papel-moeda), Spirit Blossom, Terrazzo e Mixtape.
 
-**• Outras correções**
-- Em 39 themes, o texto de algumas folhas e popups sumia no fundo da página, porque o painel e a página tinham cores opostas. Corrigido.
-- Na Seleção de capítulo, com o mouse exatamente na divisa entre dois capítulos, a gaveta ficava piscando sem parar entre os dois. Corrigido.
-- Depois de recortar a imagem de um capítulo, a gaveta de manuscrito congelava: dava pra ver, mas nenhum clique funcionava até você fechar e abrir de novo. Corrigido. E a causa podia afetar outros painéis também, então se algum já congelou do nada pra você, é bem possível que esteja resolvido.
+*Comentário: De verdade, a nova ferramenta de criador de Themes que trouxemos na última versão é INSANAAAA. É muito divertido ficar criando themes nela.*
+
+**• Ilustrações novas no Índice Ilustrado**
+Lembra das ilustrações que chegaram na versão passada? Agora a leva está completa. O "Trocar desenho" (clique direito no capítulo) ganhou três grupos novos:
+- **Feitos à mão:** Azulejo, Labirinto (o caminho avança até o centro conforme você escreve), Cordel, Origami, Mapa do tesouro (a trilha anda rumo ao X) e Xadrez.
+- **Arsenal:** essas funcionam diferente. As palavras não fazem o desenho crescer: cada faixa de palavras **destrava a próxima arma**. Nas Lâminas, você começa com um punhal e vai subindo até a Foice. Nas Armas de fogo, começa com uma pistola na mesa de investigação e termina com uma bazuca na frente de um tanque em chamas. E cada arma vem com o seu cenário.
+- **Guitarra:** mesma ideia. Começa num violão clássico, no quarto, e vai destravando Telecaster, Stratocaster, Les Paul, ES-335, Explorer, Flying V... Todas desenhadas com as medidas reais de cada modelo. E no topo, com 12 mil palavras, está a **Luciana**, a minha guitarra. Ela merecia.
+
+Como sempre, os capítulos que você já tem não mudam de desenho sozinhos: as novas estão no "Trocar desenho", pra você escolher.
+
+*Acredito que você já viu quando abriu o app...*
+**• A NOVA VINHETA DO QENNA**
+Bonita, rápida e inspiradora. Do jeito que eu imaginava que ficaria.
+Mas claro, tem uma opção para desativá-la nas configurações, caso você não valorize o meu trabalho e considere as horas que desperdicei fazendo ela inúteis.
+*Sério, machucaria muito meus sentimentos você desabilitá-la. Não faça isso.*
+
+**• Estética do Main Menu**
+Corrigi a largura da barra e também fiz atualizações nas artes da letra Q.
+Agora, o Q do main menu tem 23 artes novas, de vários gêneros diferentes.
+Viu uma que gostou? Double-click para mantê-la. Caso não goste das artes, você pode dar um clique direito e escolher a opção cor sólida, *mas você não vai fazer isso. Você valoriza o meu trabalho, não valoriza?*
+
+**• Quotes do Main Menu**
+Esses pediam uma atualização faz tempo. Alguns Quotes citavam funções do finado Mira Writing que nem sequer existem mais no app.
+Foram atualizados.
+
+## Fixes
+Bora ver o que foi consertado, mexido e ajustado!
+
+**• Diálogos no painel de diálogos não eram selecionados por inteiro**
+*Obrigado, Mars!*
+Agora, quando você clica para abrir um diálogo no painel de diálogos, ele é selecionado por inteiro no texto.
+E de brinde, agora você pode editar diálogos diretamente no painel de diálogos, tendo efeito imediato no documento.
+
+**• Luzes de on/off da função de identar a primeira linha e Focus Mode**
+Ficavam eternamente quadrados independente do radius do theme. Corrigido. Fix pequeno (*literalmente*)
+
+**• Themes com sombra/luz**
+Alguns themes com efeitos de luz na página podiam apresentar uma espécie de faixa ou recorte no lado esquerdo da página. Corrigido.
+
+**• Sombras coloridas**
+Themes com sombra ou brilho colorido e transparente na página (um halo rosa, por exemplo) podiam mostrar uma sombra preta e pesada no lugar da cor. Corrigido. Agora a sombra sai na cor e na transparência que o theme pediu.
+
+**• Novo projeto congelando depois da capa**
+Ao criar um projeto novo, abrir a capa rápida e clicar em "Pronto", a janela voltava pros campos por dentro, mas a tela continuava congelada mostrando a capa. Corrigido, e a correção vale pra todas as janelas desse estilo no app.
+
+**• Textos quase invisíveis em alguns themes**
+Em themes claros com o fundo da mesa colorido (Shellac, Solitaire, Luna, Milk Paint, Green Bamboo e outros), vários painéis e janelas mostravam o texto quase sumindo no fundo. Corrigido. Agora o fundo desses painéis se ajusta sozinho até o texto ficar legível, e os themes que já liam bem continuam iguaizinhos.
 
 ---
 É isso, meus lindos. Se divirtam.

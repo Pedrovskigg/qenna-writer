@@ -1,95 +1,107 @@
-**Qenna Writer - HOTFIX: 1.4.6**
+**Qenna Writer - Update 1.4.7**
 
-Dragging a chapter (or a scene) in the manuscript drawer could close Qenna on the spot, especially in screenplay projects. Fixed.
+*Hellooooooo, it's me...*
+*I was wondering if*-nah! Just kidding.
 
----
-
-**Qenna Writer - UPDATE: 1.4.5**
-
-Hello my lovelies, a new Qenna update has arriiived! Let's go, let's go.
-
-This time, the focus of the update was something that, I admit, we'd kind of left aside.
-It always worked well, but it could be so much more: the **screenplay** project mode.
+A brand new update, my lovelies! Come take a look:
 
 ## What's new
+*It's here...*
 
-**• The screenplay now guides you**
-Until now, writing a screenplay in Qenna worked, but you had to already know what you were doing. Not anymore, or at least not as much.
-On the right side of the DocHeader (the title at the top of the page), you'll see which screenplay element you're in: Scene, Action, Character, Dialogue, Parenthetical or Transition. And right below it, where Enter, Tab and Shift+Tab will take you. No shortcuts to memorize, the app tells you.
+**• THE BOARD REWORK!**
+Yes. The Board was the only Qenna tool left out of the full rework the app got over the last few versions.
+It wasn't on purpose, but it was necessary. The Board is full of traps when it comes to touching the wires behind it and... well, it had to be done calmly.
 
-**• Writing a screenplay feels natural now**
-The editor now behaves like real screenwriting software. The page got the proper column of the format and each element has its own spacing: the character name right on top of the line, one blank line before action, two before a new scene.
-A few little things that make a difference day to day:
-- Shift+Tab goes back to the previous element.
-- Typed "(" at the start of a line of dialogue? It opens a Parenthetical.
-- Enter on an empty line takes you back to Action.
-- Character names and scene headings turn ALL CAPS on their own when you leave the line.
-And the best part: you can write without pressing Tab even once. A short line in all caps becomes a Character, and a "CUT TO:" becomes a Transition. Qenna figures it out on its own.
+**THE BOARD'S NEW UI:** Here it is too! The Board got a NEW UI, more intuitive, prettier and more responsive. The tools now sit in a dock floating under the board, each one with its name, and the board is all yours. Building whatever you want on it is much more dynamic and simple. And it brought new toys along:
 
-**• Autocomplete**
-Started typing a character's name? Qenna suggests it: both the people in your cast and whoever has already spoken in the screenplay.
-Scenes work the same way. It suggests INT. and EXT., the places you've already used in the screenplay (with how many scenes each one has) and, after the dash, the time of day: DAY, NIGHT, DAWN, DUSK and so on.
+**• PNGs on the Board!** You can now load PNG images (transparent background) straight onto the Board, like stickers. Characters, objects, whatever you want. They stay put.
+They have a button of their own, **Sticker**. But you can also drag the PNG straight from your computer onto the board, or copy and paste it with Ctrl+V. Pull a corner and it grows. Use the little dot on top and it rotates. You can also flip it, send it behind the cards or lock it in place.
+And so you don't start from scratch, Qenna ships with its own sticker sheet: pen circle, arrow, X, CLUE stamp, CONFIDENTIAL stamp, fingerprint, magnifying glass, coffee stain... Everything a self-respecting investigation board needs.
 
-**• Every screenplay scene is a Qenna scene**
-Every scene heading (INT. / EXT.) now becomes a real scene inside the chapter, named after the heading itself. No separator showing up in the middle of the text: the screenplay stays clean, but the scene is there, to navigate, organize and use in everything Qenna already does with scenes.
+**• Text on the Board:** The old one opened a HIDEOUS dialog box with awful line breaks that was... well, a problem to fix. Now text on the Board is literally that. Double-click the board and type right on it, fully adjustable and with **automatic** line breaks. As it always should have been.
 
-**• Pages and minutes**
-In a screenplay, what matters is pages: each page is roughly one minute of screen time. So the screenplay counter now shows pages up front and the estimated runtime next to them. And it's not a guess: the count uses exactly the same pagination as the exported PDF. If the counter says 30 pages, the PDF comes out with 30.
+**• Stylish sticky notes:** Sticky notes got a Style button. There are 8 shapes (the usual little square, ruled index card, strip, round, luggage tag, sheet torn out of a notebook, pinked edges and even label-maker tape), 5 ways to attach them (pin, tape, clip, staple or nothing) and 4 borders (none, pen outline, dashed cut-out and photo-album corners). Like a combination? Check "Use for new sticky notes" and every new note is born that way.
 
-**• Breakdown in the Statistics panel**
-For those taking the screenplay further, the Statistics panel got a section just for screenplays:
-- **Cast**: who appears in which scenes. Click a person and their scenes light up.
-- **Scenes**: the production strip, with each scene's length in eighths of a page (the way it's measured on set) and the customary colors. Click a scene and it opens.
-- **Locations**: every place in the screenplay, all in one spot.
+**• A real investigation board:** The line now runs straight, pin to pin, like string. And it comes out of wherever the card is attached: the pin, the clip, the tape. If you want, you can name the connection, add an arrow or make it curved.
+Characters became polaroids (double-click and it flips, showing their sheet on the back), and documents and chapters show up as a page, with the start of the text and an "open" that takes you straight to the editor.
 
-**• Industry-standard export**
-PDF and DOCX now come out the way a screenplay should: US Letter paper, Courier 12, the format's margins, a title page with "Written by" and your contact info (pulled from Author details) and the page number in the corner. And no character name or scene heading left alone at the bottom of a page, away from what follows it.
-There's also a "Number the scenes" option, for those who need it.
+And there's much more: new backgrounds (cork, whiteboard, notebook, grid), slightly crooked cards as if they were pinned to a real board, a minimap, card search with Ctrl+F, several boards in the same project picked by thumbnail, exporting the board as an image with a preview (even with a transparent background) and a cheat sheet with every shortcut on the "?" button. The Board really was rebuilt and it looks wonderful.
 
-**• Fountain**
-Fountain is the plain-text format that practically every screenwriting program reads. Qenna now exports to it and imports it too: in New Project, choose Screenplay and point to the .fountain file. Scenes become scenes, the file's sections become chapters, and anyone who speaks more than once comes in as a character.
+Oh, of course! **100% compatible with old boards.** Nothing was broken.
+*At least as far as I know. I'll leave the deeper testing to you.*
 
-**• Fixes**
-- Transition turned into Action when the document was reopened. Fixed.
-- The Scene element couldn't be reached with Tab. Now it can.
-- The project's alignment and spacing overrode the screenplay format. Not anymore.
-- The PDF header in the submission format (Shunn) came out huge. Fixed.
+**• New Themes:**
+○ **Dracula's Tomb:** Dracula's classic theme, but a little darker.
+○ **90's Manga:** inspired by the 90's Japanese manga style.
+○ **Basalt Green Nebula:** a dark green theme, with a cool space nebula in the back.
+○ **Patch Bay:** a dark theme with red and green tones, with an old-school Halloween look.
+○ **Silver Halide:** a dark silver theme, with straight frames and a halo of light around the page.
 
-But screenplays weren't all we did in this version.
+And it doesn't stop there. **60 more new themes**, in four families:
 
-**• Granna now tells you who spoke**
-Remember Granna, our dialogue detector? Until now it worked in silence. To find out who it thought said each line, or to correct it, you had to open the Pensarium, go to Dialogues, find the line and right-click it. A long way for something so simple.
-Now it talks to you right there, in the DocHeader (the title at the top of the page):
-- Finished a line and pressed Enter? The photo of whoever said it slides out from behind the title and back. That's Granna saying "got it, saved".
-- If it deduced it from the conversation, with no name in the line, the photo comes with a dotted outline: it has a hunch, but hasn't made up its mind yet.
-- If it has no idea, a (?) shows up with a ring closing around it.
-- Clicked on a line that already existed? The photo of whoever said it stays there while the cursor is in the paragraph.
-(Characters without a photo show their initial, in their color.)
-In any of these cases, just click the photo (or the ?) to open "Who said it?": whoever is in the scene comes first, the rest of the cast below. One click and it's assigned, without leaving the text. You can mark it as an Extra or "Not dialogue" right there too.
-And it doesn't butt in while you write: it only lets you know when you finish the paragraph. Lines from extras don't show anything.
+○ **Editor classics**
+The most popular themes from VSCode, Neovim and friends, each with its official palette, the same way Tokyo Night, Nord and Dracula already came. They work REALLY well in Qenna.
+Dark: Code Dark Dimmed, Catppuccin Macchiato, Rosé Pine Moon, Monokai Pro, Nightfox, Oxocarbon, Poimandres, Vesper, Iceberg, Cobalt2, Shades of Purple, SynthWave '84, Flexoki Dark, Kanagawa Dragon, Melange Dark, Zenburn, Ayu Dark, Noctis, Andromeda, Aura, Mariana, Darcula, Tomorrow Night and Houston.
+Light: Code Light, Catppuccin Latte, Rosé Pine Dawn, Ayu Light, Everforest Light, Kanagawa Lotus, Flexoki Light, Melange Light, One Light, Night Owl Light, Quiet Light, Alabaster and Zenbones.
+*Tip: if you write a lot at night, try Flexoki, Zenburn and Melange. They were made to be easy on the eyes.*
 
-**• Chapter illustrations: color, cropping and more**
-The illustrations in the manuscript drawer got some love.
-- "Change drawing" (right-click the chapter) now works in every mode that shows the illustration, including Chapter select (you can click right on the big art at the top) and the Sticker album.
-- **Each chapter can have its own color.** Inside "Change drawing", pick the illustration color for that chapter. Or for the whole book at once, if you prefer. And if you change your mind, "Back to the part color" undoes it.
-- **Your own image in real quality.** An image loaded from your PC came in at low resolution and got stretched in the modes with big art. Now it follows the same standard as covers. A phone photo taken upright doesn't show up sideways anymore either.
-- **Cropping.** When you load an image, you choose the framing before using it. And if you want to reframe it later, there's "Crop…".
-(If you had loaded an image before this version, load it again to get the new quality.)
+○ **Woods**
+The desk woods Qenna has always had, reworked as real finishes: Shou Sugi Ban (Japanese charred wood), Whitewash, Driftwood (wood the sea gave back), Milk Paint (sage-green painted paneling), Aizome (indigo-dyed), Green Bamboo (bamboo still green), Shellac (amber shellac) and Fumed Oak.
+And, for those who like a soft dark, with no harsh contrast between the text and the page: Walnut Dusk, Midnight Pine, Sage Den and Plum Bamboo.
 
-**• New illustrations: Objects and Scenes**
-"Change drawing" got two new groups. As always, each chapter has its own drawing and it grows along with the words.
-- **Objects**: Candle, Hourglass (the sand runs down as you write), Key, Compass, Pocket watch, Quill and inkwell (the page fills up with lines), Cup, Stack of books and Lantern.
-- **Scenes**: Road, Noir, Mansion, Planet, Fleet, Sailboat, Wings, Ferris wheel, Hillside (the little houses climb the hill) and Train.
-The chapters you already have don't change drawings on their own: the new ones are in "Change drawing", for you to choose.
+○ **Amps and pedals**
+Inspired by guitar amps and pedals: Thermal, Thermal Light, Plexi, Hall Reverb and Analog Delay.
 
-**• Update that stopped halfway**
-You know when an update gets interrupted halfway (you closed the installer, the PC shut down, the internet dropped)? Before, Qenna thought it was already up to date and didn't tell you anything. Now it notices and offers "Finish installing". And the installer that had already been downloaded is kept, so it doesn't download everything again.
-There's also a new button in the main menu: "See what's new". It opens the patch note for the version you have installed, whenever you want.
+○ **Miscellaneous**
+Crow's Court, Triple Word (the crossword board), Intaglio (banknote paper), Spirit Blossom, Terrazzo and Mixtape.
 
-**• Other fixes**
-- In 39 themes, the text of some sheets and popups disappeared into the page background, because the panel and the page had opposite colors. Fixed.
-- In Chapter select, with the mouse exactly on the border between two chapters, the drawer kept flickering nonstop between the two. Fixed.
-- After cropping a chapter's image, the manuscript drawer froze: you could see it, but no click worked until you closed and opened it again. Fixed. And the cause could affect other panels too, so if one of them ever froze out of nowhere for you, it's quite likely solved.
+*Comment: Honestly, the new Theme creator tool we brought in the last version is INSANEEEE. Creating themes in it is so much fun.*
+
+**• New illustrations in the Illustrated Index**
+Remember the illustrations that arrived in the last version? The set is now complete. "Change drawing" (right-click the chapter) got three new groups:
+- **Handmade:** Azulejo (Portuguese tile), Maze (the path moves toward the center as you write), Cordel, Origami, Treasure map (the trail moves toward the X) and Chess.
+- **Arsenal:** these work differently. Words don't make the drawing grow: each word range **unlocks the next weapon**. In Blades, you start with a dagger and work your way up to the Scythe. In Firearms, you start with a pistol on the investigation desk and end with a bazooka in front of a burning tank. And each weapon comes with its own scene.
+- **Guitar:** same idea. It starts with a classical guitar in a bedroom and unlocks Telecaster, Stratocaster, Les Paul, ES-335, Explorer, Flying V... All drawn with each model's real measurements. And at the top, at 12 thousand words, is **Luciana**, my guitar. She deserved it.
+
+As always, the chapters you already have don't change drawings on their own: the new ones are in "Change drawing", for you to choose.
+
+*I think you already saw it when you opened the app...*
+**• QENNA'S NEW OPENING VIGNETTE**
+Beautiful, quick and inspiring. Just the way I imagined it.
+But of course, there's an option to turn it off in the settings, in case you don't value my work and consider the hours I wasted making it useless.
+*Seriously, it would really hurt my feelings if you turned it off. Don't do it.*
+
+**• Main Menu look**
+I fixed the width of the bar and also updated the art of the letter Q.
+The main menu's Q now has 23 new artworks, from lots of different genres.
+Saw one you like? Double-click to keep it. If you don't like the art, you can right-click and pick the solid color option, *but you won't do that. You value my work, don't you?*
+
+**• Main Menu quotes**
+These had needed an update for a long time. Some quotes mentioned features from the late Mira Writing that don't even exist in the app anymore.
+They've been updated.
+
+## Fixes
+Let's see what got fixed, touched and adjusted!
+
+**• Dialogues in the dialogue panel weren't selected in full**
+*Thank you, Mars!*
+Now, when you click to open a dialogue in the dialogue panel, it gets selected in full in the text.
+And as a bonus, you can now edit dialogues right in the dialogue panel, with immediate effect on the document.
+
+**• First-line indent and Focus Mode on/off lights**
+They stayed square forever, regardless of the theme's radius. Fixed. A small fix (*literally*)
+
+**• Themes with shadow/light**
+Some themes with light effects on the page could show a kind of strip or cut-out on the left side of the page. Fixed.
+
+**• Colored shadows**
+Themes with a colored, transparent shadow or glow on the page (a pink halo, for example) could show a heavy black shadow instead of the color. Fixed. The shadow now comes out in the color and transparency the theme asked for.
+
+**• New project freezing after the cover**
+When creating a new project, opening the quick cover and clicking "Done", the window went back to the fields on the inside, but the screen stayed frozen on the cover. Fixed, and the fix covers every window of that style in the app.
+
+**• Nearly invisible text in some themes**
+In light themes with a colored desk background (Shellac, Solitaire, Luna, Milk Paint, Green Bamboo and others), several panels and windows showed text almost disappearing into the background. Fixed. The background of those panels now adjusts itself until the text is readable, and themes that already read well stay exactly the same.
 
 ---
 That's it, my lovelies. Have fun.

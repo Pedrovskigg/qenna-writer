@@ -1,95 +1,107 @@
-**Qenna Writer - HOTFIX: 1.4.6**
+**Qenna Writer - Update 1.4.7**
 
-Trascinare un capitolo (o una scena) nel cassetto dei manoscritti poteva chiudere Qenna all'istante, soprattutto nei progetti di sceneggiatura. Corretto.
+*Hellooooooo, it's me...*
+*I was wondering if*-nah! Just kidding.
 
----
-
-**Qenna Writer - UPDATE: 1.4.5**
-
-Ciao miei cari, è arrivato un nuovo aggiornamento di Qennaaa! Andiamo, andiamo.
-
-Questa volta, il focus dell'aggiornamento è stato qualcosa che, lo ammetto, avevamo un po' lasciato da parte.
-Ha sempre funzionato bene, ma poteva essere molto di più: la modalità di progetto **sceneggiatura**.
+Nuovo aggiornamento, miei cari! Venite a vedere:
 
 ## Novità
+*È arrivato...*
 
-**• La sceneggiatura ora ti guida**
-Finora, scrivere una sceneggiatura in Qenna funzionava, ma dovevi già sapere cosa stavi facendo. Ora non serve più, o almeno non così tanto.
-Nell'angolo destro del DocHeader (il titolo in cima alla pagina) compare in quale elemento della sceneggiatura ti trovi: Scena, Azione, Personaggio, Dialogo, Parentetica o Transizione. E, subito sotto, dove ti porteranno Invio, Tab e Shift+Tab. Niente scorciatoie da memorizzare, te lo dice l'app.
+**• IL REWORK DELLA BOARD!**
+Sì. La Board era l'unico strumento di Qenna rimasto fuori dal rework completo che l'app ha ricevuto nelle ultime versioni.
+Non è stato voluto, ma necessario. La Board è uno strumento pieno di trappole quando si tratta di toccare i fili lì dietro e... beh, andava fatta con calma.
 
-**• Scrivere una sceneggiatura è diventato naturale**
-L'editor ora si comporta come i veri programmi di sceneggiatura. La pagina ha la colonna giusta del formato e ogni elemento ha la sua spaziatura: il nome del personaggio attaccato alla battuta, una riga prima dell'azione, due prima di una nuova scena.
-Alcune piccole cose che fanno la differenza ogni giorno:
-- Shift+Tab torna all'elemento precedente.
-- Hai digitato "(" all'inizio di una battuta? Si apre una Parentetica.
-- Invio su una riga vuota ti riporta all'Azione.
-- Il nome del personaggio e l'intestazione della scena diventano MAIUSCOLI da soli quando lasci la riga.
-E la parte migliore: puoi scrivere senza premere Tab neanche una volta. Una riga corta tutta in maiuscolo diventa Personaggio, e uno "STACCO SU:" diventa Transizione. Qenna lo capisce da solo.
+**LA NUOVA UI DELLA BOARD:** C'è anche questa! La Board ha ricevuto una NUOVA UI, più intuitiva, bella e reattiva. Gli strumenti ora stanno in un dock che fluttua sotto la lavagna, ognuno con il suo nome, e la lavagna resta libera per te. Costruirci sopra quello che vuoi è molto più dinamico e semplice. E sono arrivati anche giocattoli nuovi:
 
-**• Completamento automatico**
-Hai iniziato a scrivere il nome di un personaggio? Qenna te lo suggerisce: sia chi è nel tuo cast sia chi ha già parlato nella sceneggiatura.
-Con le scene è lo stesso. Suggerisce INT. ed EXT., i luoghi che hai già usato nella sceneggiatura (con quante scene ha ciascuno) e, dopo il trattino, l'ora del giorno: GIORNO, NOTTE, ALBA, TRAMONTO e così via.
+**• PNG sulla Board!** Ora puoi caricare immagini PNG (sfondo trasparente) direttamente sulla Board, come adesivi. Personaggi, oggetti, quello che vuoi. Restano lì dove le metti.
+Hanno un pulsante tutto loro, **Adesivo**. Ma puoi anche trascinare il PNG direttamente dal tuo computer sulla lavagna, o copiarlo e incollarlo con Ctrl+V. Tiri un angolo e cresce. Dal pallino in alto, ruota. E puoi anche specchiarlo, mandarlo dietro le schede o bloccarlo al suo posto.
+E, per non partire da zero, Qenna ha già il suo foglio di adesivi: cerchio di penna, freccia, X, timbro INDIZIO, timbro CONFIDENZIALE, impronta digitale, lente d'ingrandimento, macchia di caffè... Tutto ciò che serve a una lavagna investigativa che si rispetti.
 
-**• Ogni scena della sceneggiatura è una scena di Qenna**
-Ogni intestazione di scena (INT. / EXT.) ora diventa una vera scena dentro il capitolo, con l'intestazione stessa come nome. Nessun separatore in mezzo al testo: la sceneggiatura resta pulita, ma la scena c'è, per navigare, organizzare e usarla in tutto ciò che Qenna fa già con le scene.
+**• Testo sulla Board:** Quello vecchio apriva una finestra di dialogo ORRENDA, con gli a capo tutti sbagliati e che era... beh, complicata da sistemare. Ora il testo sulla Board è letteralmente questo. Doppio clic sulla lavagna e scrivi direttamente lì, completamente regolabile e con l'a capo **automatico**. Come sarebbe sempre dovuto essere.
 
-**• Pagine e minuti**
-In una sceneggiatura contano le pagine: ogni pagina vale più o meno un minuto sullo schermo. Così il contatore della sceneggiatura ora mostra le pagine davanti e la durata stimata accanto. E non è una stima a occhio: il conteggio usa esattamente la stessa impaginazione del PDF esportato. Se il contatore dice 30 pagine, il PDF esce con 30.
+**• Post-it con stile:** Il post-it ha guadagnato un pulsante Stile. Ci sono 8 forme (il solito quadratino, scheda a righe, striscia, rotondo, etichetta da bagaglio, foglio strappato dal quaderno, bordo seghettato e persino nastro dell'etichettatrice), 5 modi per fissarlo (puntina, nastro adesivo, graffetta, punto metallico o niente) e 4 bordi (nessuno, contorno a penna, ritaglio tratteggiato e angolini da album). Ti piace una combinazione? Spunta "Usa per i prossimi post-it" e ogni nuovo post-it nasce così.
 
-**• Spoglio nel pannello Statistiche**
-Per chi vuole portare avanti la sceneggiatura, il pannello Statistiche ha una sezione tutta dedicata:
-- **Cast**: chi compare in quali scene. Clicca su una persona e le sue scene si illuminano.
-- **Scene**: la striscia di produzione, con la lunghezza di ogni scena in ottavi di pagina (come si misura sul set) e i colori consueti. Clicca su una scena e si apre.
-- **Luoghi**: tutti i luoghi della sceneggiatura, in un posto solo.
+**• Una vera lavagna investigativa:** La linea ora va dritta, da puntina a puntina, come uno spago. E parte da dove è fissata la scheda: dalla puntina, dalla graffetta, dal nastro. Se vuoi, puoi dare un nome al collegamento, aggiungere una freccia o lasciarla curva.
+I personaggi sono diventati polaroid (doppio clic e si gira, mostrando la scheda sul retro), e documenti e capitoli appaiono come un foglio, con l'inizio del testo e un "apri" che ti porta dritto all'editor.
 
-**• Esportazione secondo lo standard del settore**
-PDF e DOCX ora escono come deve uscire una sceneggiatura: carta Letter, font Courier 12, margini del formato, frontespizio con "Scritto da" e i tuoi contatti (presi dai Dati dell'autore) e il numero di pagina nell'angolo. E niente nome di personaggio o intestazione di scena da soli in fondo alla pagina, lontani da ciò che segue.
-C'è anche l'opzione "Numera le scene", per chi ne ha bisogno.
+E c'è molto di più: sfondi nuovi (sughero, lavagna bianca, quaderno, griglia), schede un po' storte come se fossero appese a una lavagna vera, minimappa, ricerca delle schede con Ctrl+F, più board nello stesso progetto scelte dalla miniatura, esportazione della lavagna come immagine con anteprima (anche con sfondo trasparente) e un promemoria con tutte le scorciatoie nel pulsante "?". La Board è stata davvero rifatta ed è meravigliosa.
 
-**• Fountain**
-Fountain è il formato di testo che praticamente ogni programma di sceneggiatura legge. Ora Qenna esporta in Fountain e lo importa anche: in Nuovo Progetto, scegli Sceneggiatura e indica il file .fountain. Le scene diventano scene, le sezioni del file diventano capitoli, e chi parla più di una volta entra già come personaggio.
+Ah, certo! **100% compatibile con le board vecchie.** Non si è rotto niente.
+*Almeno per quanto ne so. I test più approfonditi li lascio a voi.*
 
-**• Correzioni**
-- La Transizione diventava Azione quando il documento veniva riaperto. Corretto.
-- L'elemento Scena non era raggiungibile con Tab. Ora lo è.
-- L'allineamento e la spaziatura del progetto prevalevano sul formato della sceneggiatura. Non più.
-- L'intestazione del PDF nel formato di invio (Shunn) usciva enorme. Corretto.
+**• Nuovi Themes:**
+○ **Dracula's Tomb:** il classico Dracula, ma un po' più scuro.
+○ **90's Manga:** ispirato allo stile dei manga giapponesi degli anni '90.
+○ **Basalt Green Nebula:** un theme verde scuro, con una nebulosa spaziale sullo sfondo.
+○ **Patch Bay:** un theme scuro con toni rossi e verdi, con un'estetica da Halloween di una volta.
+○ **Silver Halide:** un theme scuro e argentato, con cornici dritte e un alone di luce attorno alla pagina.
 
-Ma in questa versione non abbiamo vissuto solo di sceneggiatura.
+E non finisce qui. Altri **60 themes nuovi**, in quattro famiglie:
 
-**• Granna ora ti dice chi ha parlato**
-Ti ricordi di Granna, il nostro rilevatore di dialoghi? Finora lavorava in silenzio. Per sapere chi pensava avesse detto ogni battuta, o per correggerlo, dovevi aprire il Pensarium, andare su Dialoghi, trovare la battuta e fare clic destro. Tanta strada per una cosa così semplice.
-Ora ti parla proprio lì, nel DocHeader (il titolo in cima alla pagina):
-- Hai finito una battuta e premuto Invio? La foto di chi l'ha detta scivola fuori da dietro il titolo e torna indietro. È Granna che dice "preso, salvato".
-- Se l'ha dedotto dalla conversazione, senza nome nella battuta, la foto ha un contorno tratteggiato: ha un sospetto, ma non ha ancora deciso.
-- Se non ne ha idea, compare un (?) con un anello che si chiude intorno.
-- Hai cliccato su una battuta che c'era già? La foto di chi l'ha detta resta lì finché il cursore è nel paragrafo.
-(Un personaggio senza foto compare con l'iniziale, nel suo colore.)
-In tutti questi casi, basta cliccare sulla foto (o sul ?) per aprire "Chi l'ha detto?": chi è nella scena compare per primo, il resto del cast sotto. Un clic ed è assegnato, senza lasciare il testo. Lì stesso puoi anche segnarla come Comparsa o "Non è una battuta".
-E non si intromette mentre scrivi: avvisa solo quando finisci il paragrafo. Le battute delle comparse non mostrano niente.
+○ **Classici degli editor**
+I themes più famosi di VSCode, Neovim e compagnia, con la palette ufficiale di ognuno, come già erano arrivati Tokyo Night, Nord e Dracula. Funzionano DAVVERO bene in Qenna.
+Scuri: Code Dark Dimmed, Catppuccin Macchiato, Rosé Pine Moon, Monokai Pro, Nightfox, Oxocarbon, Poimandres, Vesper, Iceberg, Cobalt2, Shades of Purple, SynthWave '84, Flexoki Dark, Kanagawa Dragon, Melange Dark, Zenburn, Ayu Dark, Noctis, Andromeda, Aura, Mariana, Darcula, Tomorrow Night e Houston.
+Chiari: Code Light, Catppuccin Latte, Rosé Pine Dawn, Ayu Light, Everforest Light, Kanagawa Lotus, Flexoki Light, Melange Light, One Light, Night Owl Light, Quiet Light, Alabaster e Zenbones.
+*Consiglio: se scrivi molto di notte, prova Flexoki, Zenburn e Melange. Sono fatti per stancare poco la vista.*
 
-**• Illustrazioni dei capitoli: colore, ritaglio e altro**
-Le illustrazioni del cassetto dei manoscritti hanno ricevuto un po' d'affetto.
-- "Cambia disegno" (clic destro sul capitolo) ora funziona in tutte le modalità che mostrano l'illustrazione, compresa la Selezione capitolo (puoi cliccare direttamente sulla grande illustrazione in alto) e l'Album di figurine.
-- **Ogni capitolo può avere il suo colore.** Dentro "Cambia disegno", scegli il colore dell'illustrazione di quel capitolo. O di tutto il libro in una volta, se preferisci. E se ci ripensi, "Torna al colore della parte" annulla.
-- **La tua immagine in qualità vera.** L'immagine caricata dal PC restava a bassa risoluzione e si stirava nelle modalità con l'illustrazione grande. Ora segue lo stesso standard delle copertine. E una foto del telefono scattata in verticale non appare più coricata.
-- **Ritaglio.** Quando carichi un'immagine, scegli l'inquadratura prima di usarla. E se vuoi reinquadrarla dopo, c'è "Ritaglia…".
-(Se avevi già caricato un'immagine prima di questa versione, caricala di nuovo per avere la nuova qualità.)
+○ **Legni**
+I legni della scrivania che Qenna ha sempre avuto, rielaborati come vere finiture: Shou Sugi Ban (legno bruciato giapponese), Whitewash (sbiancato a calce), Driftwood (legno restituito dal mare), Milk Paint (perlinato dipinto verde salvia), Aizome (tinto d'indaco), Green Bamboo (il bambù ancora verde), Shellac (gommalacca ambrata) e Fumed Oak (rovere fumé).
+E, per chi ama uno scuro morbido, senza contrasto forte tra il testo e il foglio: Walnut Dusk, Midnight Pine, Sage Den e Plum Bamboo.
 
-**• Nuove illustrazioni: Oggetti e Scene**
-"Cambia disegno" ha due nuovi gruppi. Come sempre, ogni capitolo ha il suo disegno, che cresce insieme alle parole.
-- **Oggetti**: Candela, Clessidra (la sabbia scende man mano che scrivi), Chiave, Bussola, Orologio da tasca, Penna e calamaio (il foglio si riempie di righe), Tazzina, Pila di libri e Lanterna.
-- **Scene**: Strada, Noir, Villa, Pianeta, Flotta, Veliero, Ali, Ruota panoramica, Collina (le casette salgono sulla collina) e Treno.
-I capitoli che hai già non cambiano disegno da soli: i nuovi sono in "Cambia disegno", da scegliere tu.
+○ **Ampli e pedali**
+Ispirati agli amplificatori e ai pedali per chitarra: Thermal, Thermal Light, Plexi, Hall Reverb e Analog Delay.
 
-**• Aggiornamento rimasto a metà**
-Sai quando l'aggiornamento si interrompe a metà (hai chiuso l'installer, il PC si è spento, è caduta la connessione)? Prima, Qenna pensava di essere già aggiornato e non ti avvisava di niente. Ora se ne accorge e propone "Completa l'installazione". E l'installer già scaricato viene conservato, così non riscarica tutto da capo.
-C'è anche un nuovo pulsante nel menu principale: "Vedi novità". Apre il patch note della versione che hai installato, quando vuoi.
+○ **Vari**
+Crow's Court, Triple Word (il tabellone delle parole crociate), Intaglio (la carta moneta), Spirit Blossom, Terrazzo e Mixtape.
 
-**• Altre correzioni**
-- In 39 themes, il testo di alcuni fogli e popup spariva nello sfondo della pagina, perché il pannello e la pagina avevano colori opposti. Corretto.
-- Nella Selezione capitolo, con il mouse esattamente sul confine tra due capitoli, il cassetto continuava a lampeggiare tra i due. Corretto.
-- Dopo aver ritagliato l'immagine di un capitolo, il cassetto dei manoscritti si bloccava: si vedeva, ma nessun clic funzionava finché non lo chiudevi e riaprivi. Corretto. E la causa poteva colpire anche altri pannelli, quindi se uno ti si è mai bloccato dal nulla, è molto probabile che sia risolto.
+*Commento: Davvero, il nuovo creatore di Themes che abbiamo portato nella scorsa versione è PAZZESCOOO. È divertentissimo creare themes con lui.*
+
+**• Nuove illustrazioni nell'Indice illustrato**
+Ti ricordi le illustrazioni arrivate nella versione scorsa? Ora la raccolta è completa. "Cambia disegno" (clic destro sul capitolo) ha guadagnato tre gruppi nuovi:
+- **Fatto a mano:** Azulejo, Labirinto (il percorso avanza verso il centro mentre scrivi), Cordel, Origami, Mappa del tesoro (il sentiero avanza verso la X) e Scacchi.
+- **Arsenale:** queste funzionano in modo diverso. Le parole non fanno crescere il disegno: ogni fascia di parole **sblocca l'arma successiva**. Nelle Lame inizi con un pugnale e sali fino alla Falce. Nelle Armi da fuoco inizi con una pistola sul tavolo dell'indagine e finisci con un bazooka davanti a un carro armato in fiamme. E ogni arma ha la sua scena.
+- **Chitarra:** stessa idea. Si parte da una chitarra classica, in cameretta, e si sbloccano Telecaster, Stratocaster, Les Paul, ES-335, Explorer, Flying V... Tutte disegnate con le misure reali di ogni modello. E in cima, a 12 mila parole, c'è **Luciana**, la mia chitarra. Se lo meritava.
+
+Come sempre, i capitoli che hai già non cambiano disegno da soli: quelli nuovi sono in "Cambia disegno", li scegli tu.
+
+*Credo che tu l'abbia già vista aprendo l'app...*
+**• LA NUOVA SIGLA DI QENNA**
+Bella, veloce e ispirante. Proprio come la immaginavo.
+Ma certo, c'è un'opzione per disattivarla nelle impostazioni, nel caso tu non apprezzi il mio lavoro e consideri inutili le ore che ho sprecato per farla.
+*Sul serio, mi ferirebbe tantissimo se la disattivassi. Non farlo.*
+
+**• L'aspetto del Menu principale**
+Ho sistemato la larghezza della barra e aggiornato anche le illustrazioni della lettera Q.
+Ora la Q del menu principale ha 23 illustrazioni nuove, di tanti generi diversi.
+Ne hai vista una che ti piace? Doppio clic per tenerla. Se le illustrazioni non ti piacciono, puoi fare clic destro e scegliere l'opzione colore pieno, *ma non lo farai. Tu apprezzi il mio lavoro, vero?*
+
+**• Le frasi del Menu principale**
+Aspettavano un aggiornamento da tempo. Alcune frasi citavano funzioni del defunto Mira Writing che nell'app non esistono nemmeno più.
+Sono state aggiornate.
+
+## Correzioni
+Vediamo cosa è stato sistemato, ritoccato e regolato!
+
+**• I dialoghi nel pannello dei dialoghi non venivano selezionati per intero**
+*Grazie, Mars!*
+Ora, quando fai clic per aprire un dialogo nel pannello dei dialoghi, viene selezionato per intero nel testo.
+E in omaggio, ora puoi modificare i dialoghi direttamente nel pannello dei dialoghi, con effetto immediato sul documento.
+
+**• Le luci on/off del rientro della prima riga e del Focus Mode**
+Restavano quadrate per sempre, a prescindere dal raggio del theme. Corretto. Un fix piccolo (*letteralmente*)
+
+**• Themes con ombra/luce**
+Alcuni themes con effetti di luce sulla pagina potevano mostrare una specie di striscia o ritaglio sul lato sinistro della pagina. Corretto.
+
+**• Ombre colorate**
+I themes con un'ombra o un bagliore colorato e trasparente sulla pagina (un alone rosa, per esempio) potevano mostrare un'ombra nera e pesante al posto del colore. Corretto. Ora l'ombra esce nel colore e nella trasparenza che il theme chiedeva.
+
+**• Nuovo progetto bloccato dopo la copertina**
+Creando un progetto nuovo, aprendo la copertina rapida e facendo clic su "Fatto", la finestra tornava ai campi dentro, ma lo schermo restava bloccato sulla copertina. Corretto, e la correzione vale per tutte le finestre di quello stile nell'app.
+
+**• Testi quasi invisibili in alcuni themes**
+Nei themes chiari con lo sfondo della scrivania colorato (Shellac, Solitaire, Luna, Milk Paint, Green Bamboo e altri), vari pannelli e finestre mostravano il testo che quasi spariva nello sfondo. Corretto. Ora lo sfondo di quei pannelli si regola da solo finché il testo non è leggibile, e i themes che si leggevano già bene restano identici.
 
 ---
 È tutto, miei cari. Divertitevi.
