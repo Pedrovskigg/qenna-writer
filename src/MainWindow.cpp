@@ -442,18 +442,10 @@ QString promptCreateManuscript(QWidget* parent, ProjectModel* projectModel)
 // do QColor antes do Qt 6.6 não cobre essa sintaxe.
 QColor parseColor(const QString& s)
 {
-    if (!s.startsWith(QLatin1String("rgba("))) return QColor(s);
-    QString inner = s.mid(5);
-    if (inner.endsWith(QChar(')'))) inner.chop(1);
-    const QStringList parts = inner.split(QChar(','));
-    if (parts.size() != 4) return QColor(s);
-    bool ok = false;
-    const int r = parts.at(0).trimmed().toInt(&ok); if (!ok) return QColor();
-    const int g = parts.at(1).trimmed().toInt(&ok); if (!ok) return QColor();
-    const int b = parts.at(2).trimmed().toInt(&ok); if (!ok) return QColor();
-    // Alpha: 0..255 inteiro (formato simplificado que usamos no MiraTheme).
-    const int a = parts.at(3).trimmed().toInt(&ok); if (!ok) return QColor();
-    return QColor(r, g, b, a);
+    // Theme::toColor entende os dois formatos de alpha (0..255 e 0..1). O
+    // parser antigo daqui só lia inteiro: "rgba(255,126,219,0.28)" falhava,
+    // virava cor inválida e a sombra/halo saía PRETA (achado no SynthWave).
+    return Theme::toColor(s);
 }
 
 // Configura margens externas do frame float. O lado virado pra borda da página
@@ -2663,6 +2655,9 @@ void MainWindow::setupEditor()
     // Zero: a faixa pinta o mesmo fundo da folha pra parecer o topo da pagina,
     // e qualquer folga abriria uma emenda com o fundo do app no meio.
     pageStackLayout->setSpacing(0);
+    // O halo da página (positionPageGlow) mede a folha por aqui: quando o
+    // layout termina de assentar o pageStack, ele precisa ser refeito.
+    pageStack->installEventFilter(this);
 
     // Faixa de titulo (ver DocHeaderBar) — o unico lugar onde o documento em
     // edicao aparece, nos DOIS modos de barra. A topbar horizontal ja mostrou
@@ -5401,6 +5396,12 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     // largura velha, a barra era espremida e os botoes se sobrepunham.
     if (toolbar && watched == toolbar && event->type() == QEvent::LayoutRequest)
         layoutToolbarHolder();
+
+    // A folha assentou num lugar novo (o layout roda depois do resize da
+    // coluna): o halo acompanha a folha de verdade.
+    if (editor && watched == editor->parentWidget()
+        && (event->type() == QEvent::Move || event->type() == QEvent::Resize))
+        positionPageGlow();
 
     // Modo focado: a hotzone revela a barra (o conteúdo reaparece no espaço
     // já reservado, sem reflow); sair da barra a esconde de novo.
@@ -8794,14 +8795,18 @@ void MainWindow::positionPageGlow()
 {
     if (!editorScroll || !editorColumn) return;
 
+    // A folha de verdade é o pageStack (faixa do título + editor), pai do
+    // editor. Medir pela editorColumn errava: ela é mais larga que a folha (o
+    // espaço da scrollbar externa) e a folha fica CENTRADA nela, 8 px pra
+    // dentro de um lado; na altura, o mesmo com uns 4 px. O halo parava na
+    // borda da coluna e sobrava uma faixa escura entre a luz e a página.
+    QWidget* page = (editor && editor->parentWidget()) ? editor->parentWidget() : editorColumn;
+    QWidget* vp = editorScroll->viewport();
+    const QRect sheet = QRect(page->mapTo(vp, QPoint(0, 0)), page->size()).intersected(vp->rect());
+
     // O vidro dos painéis desfoca a folha junto com o fundo: manda o lugar e a
     // cor dela (mesma conta do halo, logo abaixo) a cada mudança de layout.
     {
-        QWidget* vp = editorScroll->viewport();
-        const int extra = externalScrollBar ? (externalScrollBar->sizeHint().width() + 6) : 0;
-        QRect sheet(editorColumn->mapTo(vp, QPoint(0, 0)), editorColumn->size());
-        sheet.setWidth(qMax(0, sheet.width() - extra));
-        sheet = sheet.intersected(vp->rect());
         QColor fill = parseColor(Theme::editorBackground());
         fill.setAlpha(qBound(0, Theme::editorOpacity(), 100) * 255 / 100);
         PanelGlass::setPage(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()), fill);
@@ -8814,16 +8819,6 @@ void MainWindow::positionPageGlow()
     }
 
     if (!m_pageGlow) m_pageGlow = new PageGlow(this);
-
-    QWidget* vp = editorScroll->viewport();
-    // editorColumn = folha + scrollbar externa; o halo sai da FOLHA, então a
-    // faixa da scrollbar não conta (mesma conta de updateEditorLayout).
-    const int scrollExtra = externalScrollBar
-        ? (externalScrollBar->sizeHint().width() + 6 /*spacing*/)
-        : 0;
-    QRect sheet(editorColumn->mapTo(vp, QPoint(0, 0)), editorColumn->size());
-    sheet.setWidth(qMax(0, sheet.width() - scrollExtra));
-    sheet = sheet.intersected(vp->rect());
     if (sheet.isEmpty()) { m_pageGlow->hide(); return; }
 
     const QRect sheetInWindow(vp->mapTo(this, sheet.topLeft()), sheet.size());

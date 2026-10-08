@@ -99,17 +99,10 @@ private:
 // Parseia "rgba(r,g,b,a)" — espelha a função homônima de MainWindow.cpp/ConstrutorWindow.cpp.
 QColor parseColor(const QString& s)
 {
-    if (!s.startsWith(QLatin1String("rgba("))) return QColor(s);
-    QString inner = s.mid(5);
-    if (inner.endsWith(QChar(')'))) inner.chop(1);
-    const QStringList parts = inner.split(QChar(','));
-    if (parts.size() != 4) return QColor(s);
-    bool ok = false;
-    const int r = parts.at(0).trimmed().toInt(&ok); if (!ok) return QColor();
-    const int g = parts.at(1).trimmed().toInt(&ok); if (!ok) return QColor();
-    const int b = parts.at(2).trimmed().toInt(&ok); if (!ok) return QColor();
-    const int a = parts.at(3).trimmed().toInt(&ok); if (!ok) return QColor();
-    return QColor(r, g, b, a);
+    // Theme::toColor entende os dois formatos de alpha (0..255 e 0..1). O
+    // parser antigo daqui só lia inteiro: "rgba(255,126,219,0.28)" falhava,
+    // virava cor inválida e a sombra/halo saía PRETA (achado no SynthWave).
+    return Theme::toColor(s);
 }
 
 constexpr int kSaveDelay = 600; // ms debounce
