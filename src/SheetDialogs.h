@@ -61,8 +61,10 @@ int askPick(QWidget* parent, const QString& eyebrow, const QString& searchPlaceh
             const QString& extraText = QString(), const QString& emptyText = QString());
 
 // Confirmação: um texto e, se tiver, um aviso em destaque embaixo.
+// cancelText troca o "Cancelar" (ex.: "Manter vinheta").
 bool confirm(QWidget* parent, const QString& eyebrow, const QString& text,
-             const QString& warning, const QString& okText);
+             const QString& warning, const QString& okText,
+             const QString& cancelText = QString());
 
 // Alterações não salvas: Salvar / Descartar / Cancelar, no desenho das folhas.
 enum class SaveChoice { Save, Discard, Cancel };

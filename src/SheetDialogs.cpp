@@ -633,7 +633,7 @@ private:
 class ConfirmSheet : public SheetDialog {
 public:
     ConfirmSheet(QWidget* parent, const QString& eyebrow, const QString& text,
-                 const QString& warning, const QString& okText)
+                 const QString& warning, const QString& okText, const QString& cancelText)
         : SheetDialog(parent, 400)
     {
         setEyebrow(eyebrow);
@@ -652,6 +652,8 @@ public:
         }
         addFooter(okText, QCoreApplication::translate("Sheets", "confirma"));
         m_okBtn->setDefault(true);
+        if (!cancelText.isEmpty())
+            for (auto* b : card()->findChildren<QPushButton*>(QStringLiteral("sheetBtn"))) b->setText(cancelText);
         applySheetTheme(QStringLiteral("QLabel#sheetBody { color: %1; background: transparent; }")
                         .arg(Palette::onPage().ink.name()));
     }
@@ -779,9 +781,9 @@ int askPick(QWidget* parent, const QString& eyebrow, const QString& searchPlaceh
 }
 
 bool confirm(QWidget* parent, const QString& eyebrow, const QString& text,
-             const QString& warning, const QString& okText)
+             const QString& warning, const QString& okText, const QString& cancelText)
 {
-    ConfirmSheet s(parent, eyebrow, text, warning, okText);
+    ConfirmSheet s(parent, eyebrow, text, warning, okText, cancelText);
     return s.exec() == QDialog::Accepted;
 }
 

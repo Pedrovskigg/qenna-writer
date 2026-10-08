@@ -87,6 +87,9 @@ private:
     void selectId(const QString& id);
     void onGridHover(const QString& id);
     void showMoreMenu();
+    void showSortMenu();
+    void sortList(QList<Theme::MiraTheme>& list) const;
+    void refreshSortButton();
     void showCatPhoto(const QString& id);
 
     QString shownId() const;
@@ -109,6 +112,10 @@ private:
     // usados); vale dentro da categoria do trilho.
     QString m_filter;
     QHash<QString, QPushButton*> m_filterChips;
+    // Ordem da grade ("" = a do Qenna, com as recomendações primeiro; "new",
+    // "old" = pela versão em que o tema saiu; "az" = pelo nome). Fica salva.
+    QString m_sort;
+    QPushButton* m_sortButton = nullptr;
 
     // Meio
     QStackedWidget* m_middle = nullptr;

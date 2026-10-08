@@ -9,7 +9,9 @@
 
 #include <QAbstractButton>
 #include <QApplication>
+#include <QActionGroup>
 #include <QCheckBox>
+#include <QCollator>
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileDialog>
@@ -32,6 +34,7 @@
 #include <QScreen>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QSettings>
 #include <QStackedWidget>
 #include <QStandardPaths>
 #include <QTimeEdit>
@@ -1011,9 +1014,102 @@ QWidget* ThemesPanel::buildGridPage()
         bl->addWidget(b);
     }
     bl->addStretch(1);
+    // Ordem da grade, à direita dos filtros. Lembrada entre aberturas.
+    m_sort = QSettings().value(QStringLiteral("themesPanel/sort")).toString();
+    m_sortButton = new QPushButton(bar);
+    m_sortButton->setObjectName(QStringLiteral("themeFilterChip"));
+    m_sortButton->setCursor(Qt::PointingHandCursor);
+    m_sortButton->setFocusPolicy(Qt::NoFocus);
+    connect(m_sortButton, &QPushButton::clicked, this, &ThemesPanel::showSortMenu);
+    bl->addWidget(m_sortButton);
+    refreshSortButton();
     pl->addWidget(bar);
     pl->addWidget(m_gridScroll, 1);
     return page;
+}
+
+namespace {
+QString sortLabel(const QString& key)
+{
+    if (key == QLatin1String("new")) return ThemesPanel::tr("Mais recentes");
+    if (key == QLatin1String("old")) return ThemesPanel::tr("Mais antigos");
+    if (key == QLatin1String("az"))  return ThemesPanel::tr("A–Z");
+    return ThemesPanel::tr("Padrão");
+}
+} // namespace
+
+void ThemesPanel::refreshSortButton()
+{
+    if (!m_sortButton) return;
+    m_sortButton->setText(tr("Ordem: %1  ▾").arg(sortLabel(m_sort)));
+}
+
+void ThemesPanel::showSortMenu()
+{
+    auto* menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    menu->setToolTipsVisible(true);
+    auto* group = new QActionGroup(menu);
+    const struct { const char* key; QString tip; } items[] = {
+        { "",    tr("A ordem do Qenna, com as recomendações de cada categoria primeiro") },
+        { "new", tr("Os temas mais novos primeiro, pela versão em que saíram") },
+        { "old", tr("Os temas mais antigos primeiro, pela versão em que saíram") },
+        { "az",  tr("Pelo nome, em ordem alfabética") },
+    };
+    for (const auto& it : items) {
+        const QString key = QString::fromLatin1(it.key);
+        QAction* a = menu->addAction(sortLabel(key));
+        a->setCheckable(true);
+        a->setChecked(m_sort == key);
+        a->setToolTip(it.tip);
+        group->addAction(a);
+        connect(a, &QAction::triggered, this, [this, key]() {
+            if (m_sort == key) return;
+            m_sort = key;
+            QSettings().setValue(QStringLiteral("themesPanel/sort"), m_sort);
+            refreshSortButton();
+            m_hoverId.clear();
+            rebuildGrid();
+            m_gridScroll->verticalScrollBar()->setValue(0);
+        });
+    }
+    menu->popup(m_sortButton->mapToGlobal(QPoint(0, m_sortButton->height() + 4)));
+}
+
+// "Mais recentes/antigos" segue a versão em que o tema saiu (releaseHistory);
+// dentro da mesma versão, a ordem do Theme.cpp, que cresce no fim a cada leva.
+// Tema que ainda não saiu em release é o mais novo; os seus, mais ainda.
+void ThemesPanel::sortList(QList<Theme::MiraTheme>& list) const
+{
+    if (m_sort.isEmpty() || list.size() < 2) return;
+    if (m_sort == QLatin1String("az")) {
+        QCollator col{QLocale()};
+        col.setCaseSensitivity(Qt::CaseInsensitive);
+        col.setNumericMode(true);
+        std::stable_sort(list.begin(), list.end(), [&col](const Theme::MiraTheme& a, const Theme::MiraTheme& b) {
+            return col.compare(a.name, b.name) < 0;
+        });
+        return;
+    }
+    auto* mgr = Theme::Manager::instance();
+    const auto& history = Theme::releaseHistory();   // da versão mais nova pra mais antiga
+    QHash<QString, int> tier;
+    for (int i = 0; i < history.size(); ++i)
+        for (const QString& id : history.at(i).second) tier.insert(id, int(history.size()) - i);
+    const int unreleased = int(history.size()) + 1;
+    QHash<QString, int> pos;
+    const QList<Theme::MiraTheme> bundled = mgr->bundledThemes();
+    for (int i = 0; i < bundled.size(); ++i) pos.insert(bundled.at(i).id, i);
+    const QList<Theme::MiraTheme> custom = mgr->customThemes();
+    for (int i = 0; i < custom.size(); ++i) pos.insert(custom.at(i).id, i);
+    auto key = [&](const Theme::MiraTheme& t) {
+        const int k = mgr->isCustom(t.id) ? unreleased + 1 : tier.value(t.id, unreleased);
+        return qMakePair(k, pos.value(t.id));
+    };
+    const bool newest = m_sort == QLatin1String("new");
+    std::stable_sort(list.begin(), list.end(), [&](const Theme::MiraTheme& a, const Theme::MiraTheme& b) {
+        return newest ? key(b) < key(a) : key(a) < key(b);
+    });
 }
 
 void ThemesPanel::setFilter(const QString& key)
@@ -1402,6 +1498,7 @@ void ThemesPanel::rebuildGrid()
         list = filtered;
         empty = tr("Nenhum tema encontrado.");
     }
+    sortList(list);
     const bool newTile = (m_view == QLatin1String("mine")) && m_searchText.isEmpty();
     m_grid->setThemes(list, newTile, empty);
     m_grid->setSelected(m_selectedId);
@@ -2055,7 +2152,7 @@ void ThemesPanel::applyStyle()
             border-radius: @radius-control; padding: 2px 6px; font-size: 12px;
         }
     )")).arg(
-        Theme::appBackground(),     // 1
+        Theme::chromeBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3
         Theme::textMuted(),         // 4

@@ -474,6 +474,9 @@ int main(int argc, char *argv[])
     const qreal splashDpr = QGuiApplication::primaryScreen()
         ? QGuiApplication::primaryScreen()->devicePixelRatio() : qreal(1);
 
+    // A vinheta pode ser desligada nas Configurações: aí o app abre direto.
+    const bool showSplash = QSettings().value(QStringLiteral("app/openingVignette"), true).toBool();
+
     QSplashScreen splash;
     splash.setAttribute(Qt::WA_TranslucentBackground);
     splash.setWindowFlag(Qt::FramelessWindowHint);
@@ -483,7 +486,7 @@ int main(int argc, char *argv[])
     // splash.finish() tudo é síncrono: não há event loop, então um QTimer
     // nunca dispararia. As artes só vivem durante a animação: depois o splash
     // fica com o último quadro e a memória volta.
-    {
+    if (showSplash) {
         SplashLetters splashLetters = loadSplashLetters();
         splash.setPixmap(splashCanvasFrame(splashLetters, 0, splashDpr));
         splash.show();
@@ -571,7 +574,7 @@ int main(int argc, char *argv[])
 
     // Segura o splash até o tempo mínimo. Não é atraso fixo: se o carregamento
     // já passou disso — projeto grande, disco lento — não espera nada.
-    while (splashClock.elapsed() < kSplashMinMs) {
+    while (showSplash && splashClock.elapsed() < kSplashMinMs) {
         QApplication::processEvents();
         QThread::msleep(kSplashFrameMs);
     }
@@ -581,8 +584,8 @@ int main(int argc, char *argv[])
     // show() depois, quando o usuário escolher/criar um projeto.
     if (window.hasProjectLoaded()) {
         window.show();
-        splash.finish(&window);
-    } else {
+        if (showSplash) splash.finish(&window);
+    } else if (showSplash) {
         splash.close();
     }
 

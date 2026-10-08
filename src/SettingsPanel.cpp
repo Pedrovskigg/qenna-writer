@@ -1,5 +1,6 @@
 #include "SettingsPanel.h"
 #include "SceneBreaks.h"
+#include "SheetDialogs.h"
 #include "GlossaryInText.h"
 #include "IconUtils.h"
 #include "LeftBar.h"
@@ -339,6 +340,24 @@ SettingsPanel::SettingsPanel(QWidget* parent)
            tr("As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as "
               "linhas entrando em cascata. Desligado, tudo aparece na hora."));
     connect(animCheck, &QCheckBox::toggled, this, [](bool on) { PanelMotion::setEnabled(on); });
+
+    // A vinheta é lida no main.cpp antes de tudo; aqui só a preferência.
+    auto* vignetteCheck = new ToggleSwitch(this);
+    vignetteCheck->setChecked(QSettings().value(QStringLiteral("app/openingVignette"), true).toBool());
+    addRow(Appearance, tr("Vinheta de abertura"), tr("O logo do Qenna se montando ao abrir o app."), vignetteCheck,
+           tr("A animação do logo que toca enquanto o Qenna abre. Desligada, o app abre direto. "
+              "Vale na próxima vez que você abrir o Qenna."));
+    connect(vignetteCheck, &QCheckBox::toggled, this, [this, vignetteCheck](bool on) {
+        if (!on && !Sheets::confirm(this, tr("Vinheta de abertura"),
+                tr("Você realmente deseja desligar a vinheta do app? Eu sei que ela é meio demorada, "
+                   "mas poxa, deu tanto trabalho pra fazer 🥺"),
+                QString(), tr("Confirmar"), tr("Manter vinheta"))) {
+            const QSignalBlocker block(vignetteCheck);
+            vignetteCheck->setChecked(true);
+            return;
+        }
+        QSettings().setValue(QStringLiteral("app/openingVignette"), on);
+    });
 
     m_themeButton = new QPushButton(this);
     m_themeButton->setObjectName(QStringLiteral("settingsLinkBtn"));
@@ -1419,7 +1438,7 @@ void SettingsPanel::applyTheme()
             color: %5;
         }
     )"))
-        .arg(Theme::appBackground(),   // 1
+        .arg(Theme::chromeBackground(),   // 1
              subtleBd,                 // 2
              txtPrim,                  // 3
              hover,                    // 4
