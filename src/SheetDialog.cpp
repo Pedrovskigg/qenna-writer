@@ -5,6 +5,7 @@
 
 #include <QApplication>
 #include <QButtonGroup>
+#include <QChildEvent>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
 #include <QGridLayout>
@@ -43,6 +44,52 @@ QIcon closeIcon(const QColor& c)
 }
 } // namespace
 
+namespace {
+// A sombra do cartão (QGraphicsDropShadowEffect) pinta o cartão a partir de
+// uma cópia guardada e não fica sabendo quando um filho some, aparece ou é
+// reposicionado pelo layout: no "Pronto" da capa rápida a folha trocava de
+// página e a tela continuava na antiga. Este vigia acompanha todos os filhos
+// do cartão e manda repintar (só Show/Hide não bastava: o layout da página
+// nova move os filhos depois, sem avisar a sombra).
+class CardRepaintWatcher : public QObject {
+public:
+    explicit CardRepaintWatcher(QWidget* card) : QObject(card), m_card(card) { watch(card); }
+    bool eventFilter(QObject* o, QEvent* e) override
+    {
+        switch (e->type()) {
+        case QEvent::ChildAdded: {
+            QObject* c = static_cast<QChildEvent*>(e)->child();
+            if (c->isWidgetType()) watch(c);
+            break;
+        }
+        case QEvent::Show:
+        case QEvent::Hide:
+        case QEvent::Move:
+        case QEvent::Resize:
+            // pedido na hora, no meio da troca, se perde: vai no ciclo seguinte
+            if (o != m_card && !m_pending) {
+                m_pending = true;
+                QMetaObject::invokeMethod(this, [this]() { m_pending = false; m_card->update(); },
+                                          Qt::QueuedConnection);
+            }
+            break;
+        default:
+            break;
+        }
+        return false;
+    }
+private:
+    void watch(QObject* o)
+    {
+        o->installEventFilter(this);
+        for (QObject* c : o->children())
+            if (c->isWidgetType()) watch(c);
+    }
+    QWidget* m_card;
+    bool m_pending = false;
+};
+} // namespace
+
 SheetDialog::SheetDialog(QWidget* parent, int width)
     : QDialog(parent, Qt::Dialog | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint)
 {
@@ -63,6 +110,7 @@ SheetDialog::SheetDialog(QWidget* parent, int width)
     shadow->setOffset(0, 12);
     shadow->setColor(QColor(0, 0, 0, 110));
     m_card->setGraphicsEffect(shadow);
+    new CardRepaintWatcher(m_card);
 
     m_root = new QVBoxLayout(m_card);
     m_root->setContentsMargins(0, 0, 0, 0);
