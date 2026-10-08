@@ -9,6 +9,24 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("1.4.7"), {
+            QStringLiteral("patch-bay"), QStringLiteral("silver-halide"), QStringLiteral("draculas-tomb"), QStringLiteral("90s-manga"),
+            QStringLiteral("basalt-green-nebula"), QStringLiteral("crows-court"), QStringLiteral("triple-word"), QStringLiteral("intaglio"),
+            QStringLiteral("thermal"), QStringLiteral("spirit-blossom"), QStringLiteral("terrazzo"), QStringLiteral("mixtape"),
+            QStringLiteral("thermal-light"), QStringLiteral("plexi"), QStringLiteral("hall-reverb"), QStringLiteral("analog-delay"),
+            QStringLiteral("shou-sugi-ban"), QStringLiteral("whitewash"), QStringLiteral("driftwood"), QStringLiteral("milk-paint"),
+            QStringLiteral("aizome"), QStringLiteral("green-bamboo"), QStringLiteral("shellac"), QStringLiteral("fumed-oak"),
+            QStringLiteral("code-dark-dimmed"), QStringLiteral("catppuccin-macchiato"), QStringLiteral("rose-pine-moon"), QStringLiteral("monokai-pro"),
+            QStringLiteral("nightfox"), QStringLiteral("oxocarbon"), QStringLiteral("poimandres"), QStringLiteral("vesper"),
+            QStringLiteral("iceberg"), QStringLiteral("cobalt2"), QStringLiteral("shades-of-purple"), QStringLiteral("synthwave-84"),
+            QStringLiteral("code-light"), QStringLiteral("catppuccin-latte"), QStringLiteral("rose-pine-dawn"), QStringLiteral("ayu-light"),
+            QStringLiteral("everforest-light"), QStringLiteral("kanagawa-lotus"), QStringLiteral("walnut-dusk"), QStringLiteral("midnight-pine"),
+            QStringLiteral("sage-den"), QStringLiteral("plum-bamboo"), QStringLiteral("flexoki-dark"), QStringLiteral("kanagawa-dragon"),
+            QStringLiteral("melange-dark"), QStringLiteral("ayu-dark"), QStringLiteral("noctis"), QStringLiteral("andromeda"),
+            QStringLiteral("aura"), QStringLiteral("mariana"), QStringLiteral("darcula"), QStringLiteral("tomorrow-night"),
+            QStringLiteral("houston"), QStringLiteral("flexoki-light"), QStringLiteral("melange-light"), QStringLiteral("one-light"),
+            QStringLiteral("night-owl-light"), QStringLiteral("quiet-light"), QStringLiteral("alabaster"), QStringLiteral("zenbones"),
+        } },
         { QStringLiteral("1.4.0"), {
             QStringLiteral("fluorescent"), QStringLiteral("alpenglow"), QStringLiteral("solitaire"), QStringLiteral("world-1-1"),
             QStringLiteral("ballpoint"), QStringLiteral("clay-court"), QStringLiteral("dmg-01"), QStringLiteral("deep-end"),
