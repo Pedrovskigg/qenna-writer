@@ -34,7 +34,7 @@ Palette themePalette()
     p.t1 = Theme::toColor(Theme::textBright());
     p.t2 = Theme::toColor(Theme::textMuted());
     p.border = Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::Counter));
-    p.inset = Theme::toColor(Theme::appBackground());
+    p.inset = Theme::toColor(Theme::chromeBackground());
     p.inset.setAlpha(150);
     p.insetBorder = Theme::toColor(Theme::subtleBorder());
     p.track = p.t1; p.track.setAlpha(22);

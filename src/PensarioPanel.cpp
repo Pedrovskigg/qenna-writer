@@ -3029,7 +3029,7 @@ void PensarioPanel::applyTheme()
         if (!w) continue;
         const QString side = (w == m_rail) ? QStringLiteral("right") : (w == m_dock ? QStringLiteral("top") : QStringLiteral("left"));
         w->setStyleSheet(QStringLiteral("#%1 { background: %2; border-%3: 1px solid %4; }")
-            .arg(w->objectName(), Theme::appBackground(), side, Theme::subtleBorder()));
+            .arg(w->objectName(), Theme::chromeBackground(), side, Theme::subtleBorder()));
     }
     if (m_styleBtn) {
         m_styleBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/layout.svg"),

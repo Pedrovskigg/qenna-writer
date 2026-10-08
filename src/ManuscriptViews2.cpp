@@ -847,7 +847,7 @@ int MsSpineStack::hitIndex(const QPoint& p) const {
 void MsSpineStack::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    p.fillRect(rect(), tcol(Theme::appBackground()));
+    p.fillRect(rect(), tcol(Theme::chromeBackground()));
     QColor curColor;
     for (int i = 0; i < m_spines.size(); ++i) {
         const Spine& s = m_spines.at(i);
@@ -998,7 +998,7 @@ void MsFan::paintEvent(QPaintEvent*) {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
-    p.fillRect(rect(), tcol(Theme::appBackground()));
+    p.fillRect(rect(), tcol(Theme::chromeBackground()));
     QRadialGradient glow(QPointF(width() / 2.0, height() * 1.2), width() * 0.75);
     glow.setColorAt(0, withAlpha(hsl(m_tint, 0.40, 0.30), 0.45));
     glow.setColorAt(1, QColor(0, 0, 0, 0));

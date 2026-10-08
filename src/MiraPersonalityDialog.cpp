@@ -227,7 +227,7 @@ void MiraPersonalityDialog::toggleTrait(const QString& id, QPushButton* chip)
 void MiraPersonalityDialog::applyDialogStyle()
 {
     setStyleSheet(QStringLiteral("#miraPersonalityDialog { background: %1; } QLabel { color: %2; }")
-        .arg(Theme::appBackground(), Theme::textPrimary()));
+        .arg(Theme::chromeBackground(), Theme::textPrimary()));
     for (auto it = m_traitButtons.constBegin(); it != m_traitButtons.constEnd(); ++it) {
         it.value()->setStyleSheet(chipQss(it.value()->isChecked()));
     }

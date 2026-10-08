@@ -283,7 +283,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);
-        p.fillRect(rect(), Theme::toColor(Theme::appBackground()));
+        p.fillRect(rect(), Theme::toColor(Theme::chromeBackground()));
         QColor line = Theme::toColor(Theme::subtleBorder());
         p.setPen(QPen(line, 1));
         p.drawLine(0, 0, 0, height());
@@ -361,7 +361,7 @@ protected:
     {
         QPainter p(this);
         p.setRenderHint(QPainter::Antialiasing, true);
-        p.fillRect(rect(), Theme::toColor(Theme::appBackground()));
+        p.fillRect(rect(), Theme::toColor(Theme::chromeBackground()));
         p.setPen(QPen(Theme::toColor(Theme::subtleBorder()), 1));
         p.drawLine(width() - 1, 0, width() - 1, height());
         const QColor hole = Theme::toColor(Theme::panelBackground());
@@ -1117,7 +1117,7 @@ void RefMenuPanel::applyMainStyleSheet()
     // as faixas internas em appBackground ficam tão translúcidas quanto o
     // corpo, senão o vidro aparecia só nas bordas.
     const QString panelBg   = Theme::panelBackgroundCssFor(Theme::PanelKey::RefMenu);
-    const QString appBg     = Theme::withPanelOpacity(Theme::appBackground());
+    const QString appBg     = Theme::withPanelOpacity(Theme::chromeBackground());
     const QString border    = Theme::panelBorderFor(Theme::PanelKey::RefMenu);
     const QString subtle    = Theme::subtleBorder();
     const QString txtPrim   = Theme::textPrimary();
@@ -1748,7 +1748,7 @@ static QString refListStyleSheet()
         QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )")).arg(Theme::appBackground(),
+    )")).arg(Theme::chromeBackground(),
            Theme::textPrimary(),
            Theme::panelBorder(),
            Theme::hoverOverlay(),
@@ -1928,7 +1928,7 @@ void RefMenuPanel::buildWorldExplorerView()
                 padding: 0;
             }
             QToolButton#refVisualCard:hover { background: %3; border-color: %4; }
-        )")).arg(Theme::appBackground(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::borderStrong()));
+        )")).arg(Theme::chromeBackground(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::borderStrong()));
 
         auto* inner = new QWidget(card);
         inner->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -2113,7 +2113,7 @@ void RefMenuPanel::buildGroupsView()
         QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover    { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )")).arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::chromeBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::accentInfoSoft()));
 
     for (const auto& g : groups) {
@@ -2167,7 +2167,7 @@ void RefMenuPanel::buildGroupsView()
         QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover    { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )")).arg(Theme::appBackground(), Theme::textPrimary(), Theme::panelBorder(),
+    )")).arg(Theme::chromeBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::accentInfoSoft()));
 
     int shown = 0;
@@ -2818,7 +2818,7 @@ void RefMenuPanel::buildManuscriptsView()
         QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget::item:hover { background: %4; color: %5; }
         QListWidget::item:selected { background: %6; color: %5; }
-    )")).arg(Theme::appBackground(),
+    )")).arg(Theme::chromeBackground(),
            Theme::textPrimary(),
            Theme::panelBorder(),
            Theme::hoverOverlay(),
@@ -2966,7 +2966,7 @@ void RefMenuPanel::buildDrawerView()
                     padding: 4px 10px; font-size: 11px;
                 }
                 QToolButton:hover { background: %4; color: %5; }
-            )")).arg(Theme::appBackground(),
+            )")).arg(Theme::chromeBackground(),
                    Theme::textPrimary(),
                    Theme::panelBorder(),
                    Theme::hoverOverlay(),
@@ -3033,7 +3033,7 @@ void RefMenuPanel::buildDrawerView()
                 QToolButton#refVisualCard:hover { background: %4; border-color: %5; }
                 QToolButton#refVisualCard:checked { border-color: %1; background: %6; }
             )")).arg(accent,
-                   Theme::appBackground(),
+                   Theme::chromeBackground(),
                    Theme::panelBorder(),
                    Theme::hoverOverlay(),
                    Theme::borderStrong(),
@@ -3125,7 +3125,7 @@ void RefMenuPanel::buildDrawerView()
             QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
             QListWidget::item:hover { background: %4; color: %5; }
             QListWidget::item:selected { background: %6; color: %5; }
-        )")).arg(Theme::appBackground(),
+        )")).arg(Theme::chromeBackground(),
                Theme::textPrimary(),
                Theme::panelBorder(),
                Theme::hoverOverlay(),
@@ -3188,7 +3188,7 @@ void RefMenuPanel::buildSearchAllView()
             QListWidget::item { padding: 6px 8px; border-radius: @radius-item; }
             QListWidget::item:hover { background: %4; color: %5; }
             QListWidget::item:selected { background: %6; color: %5; }
-        )")).arg(Theme::appBackground(),
+        )")).arg(Theme::chromeBackground(),
                Theme::textPrimary(),
                Theme::panelBorder(),
                Theme::hoverOverlay(),
@@ -3448,7 +3448,7 @@ void RefMenuPanel::buildPlaceholderView(const QString& title, const QString& sub
             border: 1px dashed %2;
             border-radius: @radius-panel;
         }
-    )")).arg(Theme::appBackground(), Theme::panelBorder()));
+    )")).arg(Theme::chromeBackground(), Theme::panelBorder()));
     auto* lay = new QVBoxLayout(card);
     lay->setContentsMargins(16, 16, 16, 16);
     lay->setSpacing(6);

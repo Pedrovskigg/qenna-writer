@@ -292,6 +292,16 @@ private:
 // API legada — chamadas existentes (`Theme::appBackground()` etc.) seguem
 // funcionando e passam a refletir o tema atual.
 QString appBackground();
+// Fundo de painel que nasce da cor da mesa (appBackground) mas garante que a
+// letra do tema (textPrimary/textMuted, pensadas pro panelBackground) seja
+// legível em cima. Mistura a mesa em direção ao painel só o necessário; tema
+// que já lê bem recebe a própria appBackground, sem mudança. Usar em todo
+// painel/diálogo com texto; appBackground crua fica pra mesa (Lousa, mapa,
+// fundo atrás da página, barra de título que emenda no fundo).
+QString chromeBackground();
+// A cor de texto do tema que lê melhor sobre `bg` (pra superfícies que não
+// podem mudar de cor, como a barra de título).
+QColor readableTextOn(const QColor& bg);
 QString panelBackground();
 QString panelBorder();
 // Valor cru (px) do tema atual — usado pelo Editor de Temas (spinbox/slider).

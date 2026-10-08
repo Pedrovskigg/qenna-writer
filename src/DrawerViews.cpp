@@ -562,7 +562,7 @@ void DwPolaroid::paintEvent(QPaintEvent*) {
         qreal x = kPolSide + 6;
         const QRectF strip(kPolSide, m_legendY + 4, width() - 2 * kPolSide, 22);
         p.setPen(Qt::NoPen);
-        QColor stripBg = tc(Theme::appBackground());
+        QColor stripBg = tc(Theme::chromeBackground());
         stripBg.setAlphaF(0.7);
         p.setBrush(stripBg);
         p.drawRoundedRect(strip, 4, 4);

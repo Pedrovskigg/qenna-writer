@@ -1526,7 +1526,7 @@ QWidget* PensarioPanel::renderTable(Tab tab, const QVector<PnItem>& items, QWidg
         QTableWidget::item { padding: 0px 4px; border-bottom: 1px solid %2; }
         QHeaderView::section { background: %3; color: %4; border: none; border-bottom: 1px solid %2;
                                padding: 4px; font-size: 9.5px; font-weight: 700; }
-    )")).arg(Theme::textPrimary(), Theme::subtleBorder(), Theme::appBackground(), Theme::textMuted()));
+    )")).arg(Theme::textPrimary(), Theme::subtleBorder(), Theme::chromeBackground(), Theme::textMuted()));
     t->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     for (int r = 0; r < items.size(); ++r) {
         const PnItem& it = items.at(r);
@@ -1935,7 +1935,7 @@ void PensarioPanel::rebuildBoard() {
         auto* col = new QFrame(m_board);
         col->setObjectName(QStringLiteral("pnBoardCol"));
         col->setStyleSheet(Theme::qss(QStringLiteral("QFrame#pnBoardCol { background: %1; border: 1px solid %2; border-top: 3px solid %3; border-radius: 8px; }"))
-            .arg(Theme::appBackground(), Theme::subtleBorder(), c.second.name()));
+            .arg(Theme::chromeBackground(), Theme::subtleBorder(), c.second.name()));
         auto* cl = new QVBoxLayout(col);
         cl->setContentsMargins(0, 0, 0, 0);
         cl->setSpacing(0);

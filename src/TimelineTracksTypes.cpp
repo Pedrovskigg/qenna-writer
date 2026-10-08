@@ -35,7 +35,7 @@ Palette Palette::current()
     p.ink     = QColor(Theme::textPrimary());
     p.bright  = QColor(Theme::textBright());
     p.muted   = QColor(Theme::textMuted());
-    p.app     = QColor(Theme::appBackground());
+    p.app     = QColor(Theme::chromeBackground());
     p.accent  = QColor(Theme::accentDefault());
     p.warning = QColor(Theme::accentWarning());
     p.info    = QColor(Theme::accentInfo());

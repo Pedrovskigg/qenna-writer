@@ -332,7 +332,7 @@ void MiniCounterWidget::paintEvent(QPaintEvent*)
             for (int i = 0; i < padded.size(); ++i) if (padded.at(i) != QLatin1Char('0')) return i;
             return n - 1;   // tudo zero: só a última casa acesa
         }();
-        QColor cell = Theme::toColor(Theme::appBackground()); cell.setAlpha(150);
+        QColor cell = Theme::toColor(Theme::chromeBackground()); cell.setAlpha(150);
         QColor lead = t2; lead.setAlphaF(lead.alphaF() * 0.5);
         const QFont df = mono(12, true);
         const QFontMetricsF dm(df);

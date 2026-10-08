@@ -2,6 +2,8 @@
 
 #include "CrashLogger.h"
 
+#include <cmath>
+
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDir>
@@ -5888,11 +5890,7 @@ void Manager::loadBundled()
           QStringLiteral("#d5d8da"), QStringLiteral("#6c6f93"), QStringLiteral("#ffffff"),
           QStringLiteral("#e95678"), QStringLiteral("#191a21"), QStringLiteral("#d5d8da"));
 
-    // Zenburn — o avô de baixo contraste, cinza quente e nada berrante.
-    solid(QStringLiteral("zenburn"), QStringLiteral("Zenburn"), true, QStringLiteral("220,220,204"),
-          QStringLiteral("#363633"), QStringLiteral("#3f3f3d"), QStringLiteral("#545248"),
-          QStringLiteral("#dcdccc"), QStringLiteral("#8f8f77"), QStringLiteral("#f0f0e0"),
-          QStringLiteral("#dfaf8f"), QStringLiteral("#383836"), QStringLiteral("#dcdccc"));
+    // (o Zenburn antigo saiu daqui: a leva 13 trouxe o de paleta oficial, mesmo id)
 
     // Oceanic Deep — azul-petróleo profundo com teal de recife.
     solid(QStringLiteral("oceanic-deep"), QStringLiteral("Oceanic Deep"), true, QStringLiteral("205,211,222"),
@@ -14397,6 +14395,79 @@ QString qss(const QString& sheet)
     out.replace(QLatin1String("@radius-control"), controlBorderRadius());
     out.replace(QLatin1String("@radius-item"),    itemBorderRadius());
     return out;
+}
+namespace {
+double relLuminance(const QColor& c)
+{
+    auto ch = [](double v) { return v <= 0.03928 ? v / 12.92 : std::pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * ch(c.redF()) + 0.7152 * ch(c.greenF()) + 0.0722 * ch(c.blueF());
+}
+// Contraste WCAG de `fg` (com a transparência dele) sobre `bg` opaco.
+double contrastOn(const QColor& fg, const QColor& bg)
+{
+    const double a = fg.alphaF();
+    const QColor flat = QColor::fromRgbF(fg.redF() * a + bg.redF() * (1 - a),
+                                         fg.greenF() * a + bg.greenF() * (1 - a),
+                                         fg.blueF() * a + bg.blueF() * (1 - a));
+    const double l1 = relLuminance(flat), l2 = relLuminance(bg);
+    return (qMax(l1, l2) + 0.05) / (qMin(l1, l2) + 0.05);
+}
+QColor mixColor(const QColor& a, const QColor& b, double t)
+{
+    return QColor::fromRgbF(a.redF() + (b.redF() - a.redF()) * t,
+                            a.greenF() + (b.greenF() - a.greenF()) * t,
+                            a.blueF() + (b.blueF() - a.blueF()) * t,
+                            a.alphaF() + (b.alphaF() - a.alphaF()) * t);
+}
+} // namespace
+
+QString chromeBackground()
+{
+    const MiraTheme& t = Manager::instance()->current();
+    // roda em paintEvent: guarda o último resultado
+    static QString lastKey, lastOut;
+    const QString key = t.appBackground + QLatin1Char('|') + t.panelBackground + QLatin1Char('|')
+                      + t.textPrimary + QLatin1Char('|') + t.textMuted;
+    if (key == lastKey) return lastOut;
+    lastKey = key;
+    const QColor app = toColor(t.appBackground), panel = toColor(t.panelBackground);
+    const QColor prim = toColor(t.textPrimary), muted = toColor(t.textMuted);
+    if (!app.isValid() || !panel.isValid() || !prim.isValid() || !muted.isValid())
+        return lastOut = t.appBackground;
+    // a meta nunca passa do que o próprio tema entrega no painel: tema de
+    // cinza-sobre-cinza proposital não vira outro tema
+    QColor panelOpaque = panel; panelOpaque.setAlphaF(1.0);
+    const double wantPrim  = qMin(4.5, 0.9 * contrastOn(prim, panelOpaque));
+    const double wantMuted = qMin(3.0, 0.9 * contrastOn(muted, panelOpaque));
+    for (int i = 0; i <= 20; ++i) {
+        const QColor bg = mixColor(app, panel, i / 20.0);
+        QColor opaque = bg; opaque.setAlphaF(1.0);
+        if (contrastOn(prim, opaque) >= wantPrim && contrastOn(muted, opaque) >= wantMuted) {
+            if (i == 0) return lastOut = t.appBackground;
+            return lastOut = bg.alpha() == 255 ? bg.name()
+                : QStringLiteral("rgba(%1,%2,%3,%4)").arg(bg.red()).arg(bg.green()).arg(bg.blue())
+                      .arg(QString::number(bg.alphaF(), 'f', 3));
+        }
+    }
+    return lastOut = t.panelBackground;
+}
+
+QColor readableTextOn(const QColor& bg)
+{
+    const MiraTheme& t = Manager::instance()->current();
+    QColor opaque = bg; opaque.setAlphaF(1.0);
+    const QColor primary = toColor(t.textPrimary);
+    if (contrastOn(primary, opaque) >= 4.5) return primary;
+    QColor best = primary;
+    double bestC = contrastOn(primary, opaque);
+    for (const QString& css : { t.textBright, t.editorTextColor, t.panelBackground, t.editorBackground }) {
+        const QColor c = toColor(css);
+        if (!c.isValid()) continue;
+        const double cr = contrastOn(c, opaque);
+        if (cr > bestC) { best = c; bestC = cr; }
+    }
+    if (bestC >= 4.5) { best.setAlphaF(1.0); return best; }
+    return relLuminance(opaque) > 0.18 ? QColor(20, 16, 12) : QColor(245, 240, 230);
 }
 QString textPrimary()       { return Manager::instance()->current().textPrimary; }
 QString textMuted()         { return Manager::instance()->current().textMuted; }

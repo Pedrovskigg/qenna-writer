@@ -223,7 +223,7 @@ void WordCountPanel::applyThemeStyle()
     // pra "lazyass" (warning) que não muda por tema.
     // Cor própria do contador (Criador de Temas) e a opacidade dos painéis.
     const QString bgPanel    = Theme::panelBackgroundCssFor(Theme::PanelKey::Counter);
-    const QString bgCard     = Theme::appBackground();
+    const QString bgCard     = Theme::chromeBackground();
     const QString bgHover    = Theme::hoverOverlay();
     const QString border     = Theme::panelBorderFor(Theme::PanelKey::Counter);
     const QString borderSub  = Theme::subtleBorder();

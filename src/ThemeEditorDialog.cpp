@@ -1313,7 +1313,7 @@ void ThemeEditorDialog::applyStyle()
             background: %3; width: 12px; height: 12px; margin: -4px 0; border-radius: 6px;
         }
     )")).arg(
-        Theme::appBackground(),     // 1
+        Theme::chromeBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3
         Theme::textMuted(),         // 4

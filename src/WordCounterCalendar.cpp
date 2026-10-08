@@ -131,7 +131,7 @@ void WordCounterCalendar::buildUi()
 void WordCounterCalendar::applyThemeStyle()
 {
     const QString bgPanel    = Theme::panelBackground();
-    const QString bgCard     = Theme::appBackground();
+    const QString bgCard     = Theme::chromeBackground();
     const QString bgHover    = Theme::hoverOverlay();
     const QString border     = Theme::panelBorder();
     const QString borderSub  = Theme::subtleBorder();

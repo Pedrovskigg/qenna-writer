@@ -261,7 +261,7 @@ void ProjectInfoPanel::applyDialogStyle() {
             border-color: %9;
         }
     )")).arg(
-        Theme::appBackground(),     // 1
+        Theme::chromeBackground(),     // 1
         Theme::textPrimary(),       // 2
         Theme::textBright(),        // 3
         Theme::textMuted(),         // 4

@@ -1001,7 +1001,7 @@ private:
                 border-radius: 7px;
             }
         )")).arg(
-            Theme::appBackground(),     // 1
+            Theme::chromeBackground(),     // 1
             Theme::textPrimary(),       // 2
             Theme::textBright(),        // 3
             Theme::textMuted(),         // 4
@@ -2411,7 +2411,7 @@ void MainMenuDialog::applyDialogStyle()
         #stackSynopsisScroll QScrollBar::add-page:vertical,
         #stackSynopsisScroll QScrollBar::sub-page:vertical { background: transparent; }
     )")).arg(
-        Theme::appBackground(),    // 1
+        Theme::chromeBackground(),    // 1
         Theme::textPrimary(),      // 2
         Theme::textBright(),       // 3
         Theme::textMuted(),        // 4

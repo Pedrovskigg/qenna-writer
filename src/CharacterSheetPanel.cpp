@@ -101,7 +101,7 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
         "QLabel#sheetFindCount { color: %3; font-size: 12px; }"
     ).arg(Theme::editorBackground(), Theme::editorTextColor(), Theme::textMuted(),
           Theme::inputBackground(), Theme::subtleBorder(), Theme::hoverOverlay(),
-          Theme::appBackground())));
+          Theme::chromeBackground())));
 }
 
 void CharacterSheetPanel::buildFindBar()

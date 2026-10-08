@@ -2037,7 +2037,7 @@ void TimelinePanel::onExportEventAsDoc(const TimelineEvent& event)
 void TimelinePanel::applyTheme()
 {
     if (m_scene)
-        m_scene->setBackgroundColor(QColor(Theme::appBackground()));
+        m_scene->setBackgroundColor(QColor(Theme::chromeBackground()));
 
     const QString qss = Theme::qss(QStringLiteral(R"(
         QWidget#timelinePanel { background: %1; }
@@ -2085,7 +2085,7 @@ void TimelinePanel::applyTheme()
             border-color: %8;
             color: #ffffff;
         }
-    )")).arg(Theme::appBackground(),
+    )")).arg(Theme::chromeBackground(),
             Theme::panelBackground(),
             Theme::subtleBorder(),
             Theme::textPrimary(),

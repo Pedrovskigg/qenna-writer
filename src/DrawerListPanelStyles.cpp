@@ -641,7 +641,7 @@ void DrawerListPanel::buildDossier(const QList<DrawerItem>& items) {
     ls->setFrameShape(QFrame::NoFrame);
     ls->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     ls->setStyleSheet(QStringLiteral("#dossierList { background: %1; border-right: 1px solid %2; }")
-        .arg(Theme::appBackground(), Theme::subtleBorder()));
+        .arg(Theme::chromeBackground(), Theme::subtleBorder()));
     ls->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     auto* lh = new QWidget(ls);
     auto* ll = new QVBoxLayout(lh);
@@ -939,7 +939,7 @@ void DrawerListPanel::buildTable(const QList<DrawerItem>& items) {
         QHeaderView::section { background: %4; color: %5; border: none; border-bottom: 1px solid %6;
                                padding: 7px 8px; font-size: 10px; font-weight: 700; }
     )")).arg(Theme::textPrimary(), Theme::subtleBorder(), Theme::hoverOverlay(),
-             Theme::appBackground(), Theme::textMuted(), Theme::subtleBorder()));
+             Theme::chromeBackground(), Theme::textMuted(), Theme::subtleBorder()));
     t->viewport()->setStyleSheet(QStringLiteral("background: transparent;"));
     const QList<DwBond> bonds = dwBonds();
     for (int r = 0; r < items.size(); ++r) {
@@ -1092,7 +1092,7 @@ void DrawerListPanel::buildCompare() {
     head->setObjectName(QStringLiteral("cmpHead"));
     head->setAttribute(Qt::WA_StyledBackground, true);
     head->setStyleSheet(QStringLiteral("#cmpHead { background: %1; border-bottom: 1px solid %2; }")
-        .arg(Theme::appBackground(), Theme::subtleBorder()));
+        .arg(Theme::chromeBackground(), Theme::subtleBorder()));
     auto* hl = new QHBoxLayout(head);
     hl->setContentsMargins(12, 7, 8, 7);
     hl->setSpacing(6);

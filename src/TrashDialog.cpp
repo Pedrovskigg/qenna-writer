@@ -236,7 +236,7 @@ void TrashDialog::applyTheme()
         Theme::panelBackground(),      // 1
         Theme::textPrimary(),          // 2
         Theme::textMuted(),            // 3
-        Theme::appBackground(),        // 4
+        Theme::chromeBackground(),        // 4
         Theme::panelBorder(),          // 5
         Theme::accentSuccessSoft(),    // 6
         Theme::accentSuccessBorderSoft(), // 7

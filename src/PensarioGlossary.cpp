@@ -54,7 +54,7 @@ protected:
     }
     void paintEvent(QPaintEvent*) override {
         QPainter p(this);
-        p.fillRect(rect(), Theme::toColor(Theme::appBackground()));
+        p.fillRect(rect(), Theme::toColor(Theme::chromeBackground()));
         p.setPen(QPen(Theme::toColor(Theme::subtleBorder()), 1));
         p.drawLine(0, 0, 0, height());
         const int n = kLetters.size();

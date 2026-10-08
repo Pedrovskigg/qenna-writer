@@ -458,7 +458,7 @@ void HelpPanel::applyTheme()
           Theme::textPrimary(),       // 3
           Theme::textMuted(),         // 4
           Theme::hoverOverlay(),      // 5
-          Theme::appBackground(),     // 6
+          Theme::chromeBackground(),     // 6
           Theme::accentInfoSoft(),    // 7
           Theme::accentDefault(),     // 8
           Theme::inputBackground())));// 9

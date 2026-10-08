@@ -99,7 +99,8 @@ void apply(QWidget* window)
     HWND hwnd = reinterpret_cast<HWND>(window->internalWinId());
     if (!hwnd) return;
     const QColor bg(Theme::appBackground());
-    const QColor text(Theme::textPrimary());
+    // a barra fica na cor da mesa (emenda no fundo); a letra é que se adapta
+    const QColor text = Theme::readableTextOn(bg);
     // a principal emenda no fundo; as outras se destacam com a borda dos painéis
     const bool main = qobject_cast<QMainWindow*>(window) != nullptr;
     const QColor border = main ? bg : QColor(Theme::panelBorder());

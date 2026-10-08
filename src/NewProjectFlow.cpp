@@ -112,7 +112,7 @@ void NewIdeaNameDialog::applyDialogStyle() {
         QPushButton#npBtnPrimary:hover { background: %9; }
         QPushButton#npBtnPrimary:disabled { background: %5; color: %4; border-color: %6; }
     )")).arg(
-        Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
+        Theme::chromeBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
     ));
@@ -244,7 +244,7 @@ void NewProjectFolderDialog::applyDialogStyle() {
         }
         QPushButton#npBtnPrimary:hover { background: %9; }
     )")).arg(
-        Theme::appBackground(), Theme::textPrimary(), Theme::textBright(),
+        Theme::chromeBackground(), Theme::textPrimary(), Theme::textBright(),
         Theme::textMuted(), Theme::panelBackground(), Theme::panelBorder(),
         Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDefault()
     ));
