@@ -324,5 +324,12 @@
         <file alias="lousa/plus.svg">../src/assets/icons/lousa/plus.svg</file>
         <file alias="lousa/minus.svg">../src/assets/icons/lousa/minus.svg</file>
         <file alias="lousa/layers.svg">../src/assets/icons/lousa/layers.svg</file>
+        <file alias="lousa/sticker.svg">../src/assets/icons/lousa/sticker.svg</file>
+        <file alias="lousa/flip-h.svg">../src/assets/icons/lousa/flip-h.svg</file>
+        <file alias="lousa/flip-v.svg">../src/assets/icons/lousa/flip-v.svg</file>
+        <file alias="lousa/outline.svg">../src/assets/icons/lousa/outline.svg</file>
+        <file alias="lousa/lock.svg">../src/assets/icons/lousa/lock.svg</file>
+        <file alias="lousa/unlock.svg">../src/assets/icons/lousa/unlock.svg</file>
+        <file alias="lousa/style.svg">../src/assets/icons/lousa/style.svg</file>
     </qresource>
 </RCC>

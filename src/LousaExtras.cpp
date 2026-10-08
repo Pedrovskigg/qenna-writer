@@ -211,6 +211,7 @@ QTransform draw(QPainter* p, const QRectF& target, const Snapshot& s, const QRec
     }
     p->setPen(Qt::NoPen);
     for (const CanvasCard& c : s.cards) {
+        if (c.type == QStringLiteral("sticker")) continue;   // enfeite: fora do mapa
         if (c.type == QStringLiteral("text")) {
             const QRectF r = xf.mapRect(QRectF(c.x, c.y, qMax(60.0, c.width), 14));
             QColor col = c.color.isValid() ? c.color : QColor(Qt::white);
@@ -345,6 +346,7 @@ void LousaCheatSheet::build()
             { QStringLiteral("Ctrl+T"), tr("Texto livre") },
             { tr("2 cliques no fundo"), tr("Texto livre ali mesmo") },
             { QStringLiteral("Ctrl+G"), tr("Imagem") },
+            { tr("Arrastar ou colar um PNG"), tr("Fundo transparente vira adesivo") },
             { QStringLiteral("Ctrl+H"), tr("Documento de uma gaveta") },
             { QStringLiteral("Ctrl+Shift+C"), tr("Personagem") },
             { tr("Personagem, Documento"), tr("Na barra de baixo: escolhe do projeto (inclui capítulos)") },
@@ -392,6 +394,8 @@ void LousaCheatSheet::build()
             { tr("2 cliques no título"), tr("Edita o título") },
             { tr("2 cliques no personagem"), tr("Vira a ficha") },
             { tr("2 cliques no documento"), tr("Abre no editor") },
+            { tr("Estilo (no post-it)"), tr("Formato, presilha e borda") },
+            { QStringLiteral("Ctrl+] · Ctrl+["), tr("Adesivo pra frente / pra trás") },
             { tr("Não precisa salvar"), tr("Tudo é salvo sozinho") },
         }},
     };
@@ -706,17 +710,15 @@ void popup(QWidget* parent, const QPoint& globalPos, const Choice& current,
         refreshTiles();
         onChange(*state);
     });
+    // "Outra cor…" fecha este balão e abre o seletor de cor direto da Lousa,
+    // como era antes do rework. Seletor aberto de dentro do balão (popup dentro
+    // de popup) fazia o Windows devolver a vez pra janela principal ao fechar:
+    // o app parecia minimizar e a Lousa voltava sem responder ao mouse.
+    auto wantCustom = std::make_shared<bool>(false);
     QObject::connect(customPill, &QToolButton::clicked, dlg, [=]() {
         customPill->setChecked(state->color.isValid());
-        const QColor start = state->color.isValid() ? state->color : QColor(Theme::appBackground());
-        const QColor nc = ColorPopover::getColor(start, dlg, QCoreApplication::translate("LousaBoardLook", "Cor do fundo"));
-        if (!nc.isValid()) return;
-        state->color = nc;
-        themePill->setChecked(false);
-        customPill->setChecked(true);
-        refreshCustomIcon();
-        refreshTiles();
-        onChange(*state);
+        *wantCustom = true;
+        dlg->accept();
     });
     colorRow->addWidget(themePill);
     colorRow->addWidget(customPill);
@@ -736,6 +738,16 @@ void popup(QWidget* parent, const QPoint& globalPos, const Choice& current,
     placePopup(dlg, globalPos, QSize(300, 380));
     dlg->exec();
     dlg->deleteLater();
+
+    if (*wantCustom) {
+        const QColor start = state->color.isValid() ? state->color : QColor(Theme::appBackground());
+        const QColor nc = ColorPopover::getColor(start, parent,
+                                                 QCoreApplication::translate("LousaBoardLook", "Cor do fundo"));
+        if (nc.isValid()) {
+            state->color = nc;
+            onChange(*state);
+        }
+    }
 }
 
 } // namespace LousaBoardLook

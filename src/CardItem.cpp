@@ -190,6 +190,151 @@ QPainterPath foldedPath(qreal w, qreal h, qreal r, qreal f)
     return p;
 }
 
+QString plainExcerpt(const QString& html, int maxChars)
+{
+    QString t;
+    if (html.contains(QLatin1Char('<'))) {
+        QTextDocument d;
+        d.setHtml(html);
+        t = d.toPlainText();
+    } else {
+        t = html;
+    }
+    t.replace(QChar(0x2029), QLatin1Char('\n'));
+    t.replace(QRegularExpression(QStringLiteral("\n{3,}")), QStringLiteral("\n\n"));
+    t = t.trimmed();
+    if (t.size() > maxChars) t = t.left(maxChars).trimmed() + QStringLiteral("…");
+    return t;
+}
+
+constexpr qreal kPi = 3.14159265358979;
+
+// Sorteio pequeno semeado pelo id: o mesmo card sai sempre igual.
+struct Jitter {
+    quint32 s;
+    explicit Jitter(const QString& id, quint32 salt = 0) : s(qHash(id) ^ (salt * 2654435761u)) { if (!s) s = 7; }
+    qreal next() { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return (s % 10000u) / 10000.0; }  // 0..1
+};
+
+// Picotado: recortado com tesoura de picotar, os quatro lados em zigue-zague.
+QPainterPath zigzagPath(qreal w, qreal h, qreal t)
+{
+    QPolygonF pts;
+    const int n = qMax(2, qRound(w / t)), m = qMax(2, qRound(h / t));
+    const qreal dx = w / n, dy = h / m, d = t * 0.55;
+    for (int i = 0; i < n; ++i) pts << QPointF(i * dx, 0) << QPointF((i + 0.5) * dx, d);
+    for (int i = 0; i < m; ++i) pts << QPointF(w, i * dy) << QPointF(w - d, (i + 0.5) * dy);
+    for (int i = n; i > 0; --i) pts << QPointF(i * dx, h) << QPointF((i - 0.5) * dx, h - d);
+    for (int i = m; i > 0; --i) pts << QPointF(0, i * dy) << QPointF(d, (i - 0.5) * dy);
+    QPainterPath p;
+    p.addPolygon(pts);
+    p.closeSubpath();
+    return p;
+}
+
+// Folha arrancada do caderno: a borda de cima rasgada e os furos da espiral.
+QPainterPath tornPath(qreal w, qreal h, const QString& id)
+{
+    Jitter j(id, 3);
+    QPolygonF pts;
+    pts << QPointF(0, h) << QPointF(0, 18);
+    qreal x = 0;
+    while (x < w) {
+        x += 4 + j.next() * 7;
+        pts << QPointF(qMin(x, w), 16 + j.next() * 5);
+    }
+    pts << QPointF(w, h);
+    QPainterPath p;
+    p.addPolygon(pts);
+    p.closeSubpath();
+    QPainterPath holes;
+    for (qreal hx = 12; hx < w - 6; hx += 17) holes.addEllipse(QPointF(hx, 28), 3.2, 3.2);
+    return p.subtracted(holes);
+}
+
+// Etiqueta de bagagem: os cantos de cima chanfrados e o furo do barbante.
+QPainterPath tagPath(qreal w, qreal h)
+{
+    const qreal c = qMin(28.0, qMin(w, h) * 0.22);
+    QPolygonF pts;
+    pts << QPointF(c, 0) << QPointF(w - c, 0) << QPointF(w, c)
+        << QPointF(w, h) << QPointF(0, h) << QPointF(0, c);
+    QPainterPath p;
+    p.addPolygon(pts);
+    p.closeSubpath();
+    QPainterPath hole;
+    hole.addEllipse(QPointF(w / 2.0, 15.0), 5.5, 5.5);
+    return p.subtracted(hole);
+}
+
+// Contorno de caneta à mão em volta do card.
+QPainterPath penLoop(const QRectF& r, bool round, const QString& id)
+{
+    Jitter j(id, 11);
+    auto jt = [&j](qreal amp) { return (j.next() - 0.5) * 2.0 * amp; };
+    QPainterPath p;
+    if (round) {
+        const QPointF c = r.center();
+        const qreal rx = r.width() / 2.0, ry = r.height() / 2.0;
+        constexpr int n = 10;
+        QVector<QPointF> pts;
+        for (int i = 0; i <= n + 1; ++i) {
+            const qreal a = i * 2.0 * kPi / n - kPi / 2 + 0.2;
+            const qreal k = 1.0 + jt(0.03) + (i > n ? 0.06 : 0.0);   // a ponta passa da largada
+            pts << QPointF(c.x() + std::cos(a) * rx * k, c.y() + std::sin(a) * ry * k);
+        }
+        p.moveTo(pts[0]);
+        for (int i = 1; i < pts.size(); ++i) p.quadTo(pts[i - 1], (pts[i - 1] + pts[i]) / 2.0);
+        return p;
+    }
+    const qreal L = r.left(), T = r.top(), R = r.right(), B = r.bottom(), W = r.width(), H = r.height();
+    p.moveTo(L + 2 + jt(2), T + 4 + jt(2));
+    p.cubicTo(L + W * 0.35, T - 2 + jt(2), L + W * 0.7, T + 3 + jt(2), R - 2 + jt(2), T + jt(2));
+    p.cubicTo(R + 2 + jt(2), T + H * 0.4, R - 2 + jt(2), T + H * 0.7, R + jt(2), B - 2 + jt(2));
+    p.cubicTo(L + W * 0.6, B + 2 + jt(2), L + W * 0.3, B - 3 + jt(2), L + 3 + jt(2), B + jt(2));
+    p.cubicTo(L - 2 + jt(2), T + H * 0.6, L + 2 + jt(2), T + H * 0.3, L - 1 + jt(2), T + 12 + jt(2));
+    return p;
+}
+
+// Mistura duas cores (t = quanto de b).
+QColor mixColor(const QColor& a, const QColor& b, qreal t)
+{
+    return QColor(qRound(a.red()   + (b.red()   - a.red())   * t),
+                  qRound(a.green() + (b.green() - a.green()) * t),
+                  qRound(a.blue()  + (b.blue()  - a.blue())  * t));
+}
+
+// Fita rotuladora: a cor do post-it, funda, como a fita de plástico de verdade.
+QColor dymoColor(const QColor& c)
+{
+    const QColor h = c.toHsl();
+    const int hue = h.hslHue() < 0 ? 220 : h.hslHue();
+    return QColor::fromHsl(hue, qMin(255, int(h.hslSaturation() * 0.7)), 52);
+}
+
+QFont dymoFont()
+{
+    QFont f(QStringLiteral("Segoe UI"));
+    f.setPixelSize(14);
+    f.setWeight(QFont::Black);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, 2.2);
+    f.setStyleStrategy(QFont::NoSubpixelAntialias);
+    return f;
+}
+
+// Tamanho com que cada formato nasce.
+QSizeF noteSizeFor(const QString& shape, const QString& type)
+{
+    if (shape == QStringLiteral("index"))  return { 240, 150 };
+    if (shape == QStringLiteral("strip"))  return { 220, 44 };
+    if (shape == QStringLiteral("round"))  return { 150, 150 };
+    if (shape == QStringLiteral("tag"))    return { 170, 190 };
+    if (shape == QStringLiteral("torn"))   return { 200, 210 };
+    if (shape == QStringLiteral("pinked")) return { 200, 170 };
+    if (shape == QStringLiteral("dymo"))   return { 160, CardItem::kDymoH };
+    return type == QStringLiteral("comment") ? QSizeF(220, 130) : QSizeF(200, 160);
+}
+
 // Grupos do seletor de símbolos (mesma lista do Mira 1, organizada).
 struct SymbolGroup { const char* label; QStringList symbols; };
 const QVector<SymbolGroup>& symbolGroups()
@@ -215,23 +360,6 @@ const QVector<SymbolGroup>& symbolGroups()
     return g;
 }
 
-QString plainExcerpt(const QString& html, int maxChars)
-{
-    QString t;
-    if (html.contains(QLatin1Char('<'))) {
-        QTextDocument d;
-        d.setHtml(html);
-        t = d.toPlainText();
-    } else {
-        t = html;
-    }
-    t.replace(QChar(0x2029), QLatin1Char('\n'));
-    t.replace(QRegularExpression(QStringLiteral("\n{3,}")), QStringLiteral("\n\n"));
-    t = t.trimmed();
-    if (t.size() > maxChars) t = t.left(maxChars).trimmed() + QStringLiteral("…");
-    return t;
-}
-
 } // namespace
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -250,7 +378,10 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
     if (t == QStringLiteral("image"))     loadPixmapFromContent();
     if (t == QStringLiteral("character")) loadCharacterPhoto();
 
-    if (t == QStringLiteral("text")) {
+    if (t == QStringLiteral("sticker")) {
+        loadStickerFromContent();
+        setZValue(m_data.z);
+    } else if (t == QStringLiteral("text")) {
         auto* bti  = new BodyTextItem(this);
         bti->bodyW = 0; bti->bodyH = 0;      // tamanho natural, sem mínimo
         m_textItem = bti;
@@ -297,6 +428,10 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
                 m_data.content = m_textItem->document()->toPlainText();
                 emit dataChanged(m_data);
             });
+            // Ficha e folha de caderno: parágrafo novo também cai em cima da pauta.
+            connect(m_textItem->document(), &QTextDocument::blockCountChanged, this, [this]() {
+                applyLineGrid();
+            });
         }
         m_textItem->setFont(uiFont(t == QStringLiteral("image") ? 12.5 : 13));
         QTextOption opt;
@@ -307,6 +442,7 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
 
         updateTextItem();
         applyTextColor();
+        applyNoteShape();
     }
     refreshTilt();
 }
@@ -335,7 +471,7 @@ bool CardItem::isPaperDoc() const
 
 qreal CardItem::tiltDegrees() const
 {
-    if (!s_tilt || isTextSymbol()) return 0.0;
+    if (!s_tilt || isTextSymbol() || isSticker()) return 0.0;
     // Mesmo id, mesma inclinação: o quadro não "mexe" toda vez que abre.
     const uint hv = qHash(m_data.id);
     const qreal unit = (int(hv % 2001u) - 1000) / 1000.0;   // -1 .. 1
@@ -350,7 +486,7 @@ void CardItem::refreshTilt()
 {
     if (isTextSymbol()) { refreshContentMetrics(); return; }
     setTransformOriginPoint(m_data.width / 2.0, m_data.height / 2.0);
-    setRotation(tiltDegrees());
+    setRotation(isSticker() ? m_data.rotation : tiltDegrees());
 }
 
 QPointF CardItem::pinScenePos() const
@@ -359,7 +495,140 @@ QPointF CardItem::pinScenePos() const
         const QRectF cb = contentBounds();
         return mapToScene(QPointF(cb.center().x(), cb.top()));
     }
-    return mapToScene(QPointF(m_data.width / 2.0, 0.0));
+    return mapToScene(anchorPoint());
+}
+
+// ── Formatos do post-it ──────────────────────────────────────────────────────
+
+CardItem::NoteGeo CardItem::noteGeo() const
+{
+    const qreal w = m_data.width, h = m_data.height;
+    const QString s = noteShape();
+    NoteGeo g;
+    if (s == QStringLiteral("index")) {
+        g.title = QRectF(14, 7, w - 28, 20);
+        g.body  = QRectF(14, 36, w - 28, h - 44);
+    } else if (s == QStringLiteral("strip")) {
+        g.title = QRectF(32, 0, w - 44, h);
+        g.hasBody = false;
+    } else if (s == QStringLiteral("round")) {
+        g.title = QRectF(w * 0.14, h * 0.14, w * 0.72, h * 0.72);
+        g.hasBody = false;
+        g.centered = true;
+    } else if (s == QStringLiteral("tag")) {
+        g.title = QRectF(14, 28, w - 28, 20);
+        g.body  = QRectF(14, 52, w - 28, h - 64);
+    } else if (s == QStringLiteral("torn")) {
+        g.title = QRectF(30, 36, w - 44, 20);
+        g.body  = QRectF(30, 56, w - 44, h - 68);
+    } else if (s == QStringLiteral("pinked")) {
+        g.title = QRectF(18, 14, w - 36, 20);
+        g.body  = QRectF(18, 38, w - 36, h - 54);
+    } else if (s == QStringLiteral("dymo")) {
+        g.title = QRectF(12, 0, w - 24, h);
+        g.hasBody = false;
+        g.centered = true;
+    } else {
+        const qreal padBot = (m_data.type == QStringLiteral("note")) ? kFoldSize : 10.0;
+        g.title = QRectF(12, 6, w - 24, 20);
+        g.body  = QRectF(12, kHeaderH + 2.0, w - 24, h - kHeaderH - 2.0 - padBot);
+    }
+    g.body.setWidth(qMax(10.0, g.body.width()));
+    g.body.setHeight(qMax(10.0, g.body.height()));
+    return g;
+}
+
+QPointF CardItem::anchorPoint() const
+{
+    const qreal cx = m_data.width / 2.0;
+    if (!isNoteLike()) return QPointF(cx, 0.0);
+    const QString s = noteShape();
+    const QString f = m_data.fastener;
+    const qreal top = (s == QStringLiteral("torn")) ? 21.0 : 0.0;   // a folha começa abaixo do rasgo
+    if (f == QStringLiteral("clip"))   return QPointF(cx, top - 16.0);
+    if (f == QStringLiteral("staple")) return QPointF(cx, top + 10.0);
+    if (f.isEmpty() && s == QStringLiteral("tag")) return QPointF(cx, -30.0);  // o pin, lá em cima do barbante
+    return QPointF(cx, top);
+}
+
+QColor CardItem::paperColor() const
+{
+    const QString s = noteShape();
+    if (s == QStringLiteral("index")) return mixColor(QColor(0xfd, 0xfb, 0xf5), m_data.color, 0.28);
+    if (s == QStringLiteral("torn"))  return QColor(0xfd, 0xfc, 0xf8);
+    if (s == QStringLiteral("dymo"))  return dymoColor(m_data.color);
+    return m_data.color;
+}
+
+void CardItem::applyLineGrid()
+{
+    if (!isNoteLike() || !m_textItem) return;
+    const bool ruled = noteShape() == QStringLiteral("index") || noteShape() == QStringLiteral("torn");
+    QTextDocument* d = m_textItem->document();
+    for (QTextBlock b = d->begin(); b.isValid(); b = b.next()) {
+        QTextBlockFormat bf = b.blockFormat();
+        const bool isRuled = bf.lineHeightType() == QTextBlockFormat::FixedHeight;
+        if (isRuled == ruled) continue;
+        if (ruled) bf.setLineHeight(20, QTextBlockFormat::FixedHeight);
+        else       bf.setLineHeight(100, QTextBlockFormat::SingleHeight);
+        QTextCursor(b).setBlockFormat(bf);
+    }
+}
+
+void CardItem::fitDymo()
+{
+    if (noteShape() != QStringLiteral("dymo")) return;
+    QString t = m_data.title.simplified();
+    if (t.isEmpty()) t = plainExcerpt(m_data.content, 40).section(QLatin1Char('\n'), 0, 0).simplified();
+    if (t.isEmpty()) t = tr("Sem título");
+    const qreal nw = qBound(80.0, QFontMetricsF(dymoFont()).horizontalAdvance(t.toUpper()) + 32.0, 900.0);
+    if (qAbs(nw - m_data.width) < 0.5 && qAbs(m_data.height - kDymoH) < 0.5) return;
+    prepareGeometryChange();
+    m_data.width = nw;
+    m_data.height = kDymoH;
+    setTransformOriginPoint(m_data.width / 2.0, m_data.height / 2.0);
+    update();
+}
+
+void CardItem::applyNoteShape()
+{
+    if (!isNoteLike() || !m_textItem) return;
+    const NoteGeo g = noteGeo();
+    if (m_bodyClip) m_bodyClip->setVisible(g.hasBody);
+    m_textItem->setTextInteractionFlags(g.hasBody ? Qt::TextEditorInteraction : Qt::NoTextInteraction);
+    if (!g.hasBody && m_textItem->hasFocus()) m_textItem->clearFocus();
+    applyLineGrid();
+    fitDymo();
+    m_scrollOffset = 0.0;
+    updateTextItem();
+    applyTextColor();
+}
+
+void CardItem::setNoteStyle(const QString& shape, const QString& fastener, const QString& frame)
+{
+    if (!isNoteLike()) return;
+    if (shape == m_data.shape && fastener == m_data.fastener && frame == m_data.frame) return;
+    emit gestureStarted();
+    prepareGeometryChange();
+    if (shape != m_data.shape) {
+        // Cada formato nasce no tamanho dele, com o centro no mesmo lugar.
+        const QPointF c = pos() + QPointF(m_data.width / 2.0, m_data.height / 2.0);
+        const QSizeF sz = noteSizeFor(shape, m_data.type);
+        m_data.width  = sz.width();
+        m_data.height = sz.height();
+        setPos(c - QPointF(sz.width() / 2.0, sz.height() / 2.0));
+        m_data.x = pos().x();
+        m_data.y = pos().y();
+    }
+    m_data.shape    = shape;
+    m_data.fastener = fastener;
+    m_data.frame    = frame;
+    applyNoteShape();
+    refreshTilt();
+    update();
+    emit dataChanged(m_data);
+    emit positionChanged(m_data.id);
+    emit gestureFinished();
 }
 
 // ── Conteúdo pintado (doc / chapter / verso do personagem) ──────────────────
@@ -585,6 +854,7 @@ void CardItem::beginTitleEdit()
         m_titleEditor->document()->setDocumentMargin(0);
         m_titleEditor->setTextWidth(-1);  // uma linha (sem quebra)
     }
+    const NoteGeo geo = noteGeo();
     m_titleEditor->setFont(uiFont(13, QFont::Bold));
     m_titleEditor->setDefaultTextColor(inkColor());
     {
@@ -592,15 +862,13 @@ void CardItem::beginTitleEdit()
         m_titleEditor->document()->setPlainText(m_data.title);
     }
     {
-        // a cor do post 40% mais clara (misturada com branco)
-        const QColor c = m_data.color;
+        // a cor do papel 40% mais clara (misturada com branco); papel escuro clareia menos
+        const QColor c = paperColor();
         static_cast<TitleEditItem*>(m_titleEditor)->setField(
-            qMax(10.0, m_data.width - 24.0),
-            QColor(qRound(c.red() + (255 - c.red()) * 0.4),
-                   qRound(c.green() + (255 - c.green()) * 0.4),
-                   qRound(c.blue() + (255 - c.blue()) * 0.4)));
+            qMax(10.0, geo.title.width()),
+            calcIsDark(c) ? c.lighter(135) : mixColor(c, Qt::white, 0.4));
     }
-    m_titleEditor->setPos(12.0, 7.0);
+    m_titleEditor->setPos(geo.title.left(), geo.title.center().y() - 10.0);
     m_titleEditor->setVisible(true);
     m_titleEditor->setTextInteractionFlags(Qt::TextEditorInteraction);
 
@@ -622,6 +890,10 @@ void CardItem::onTitleEditFinished()
     m_titleEditor->setVisible(false);  // título passa a ser pintado pelo paint()
     if (t != m_data.title) {
         m_data.title = t;
+        if (noteShape() == QStringLiteral("dymo")) {
+            fitDymo();
+            emit positionChanged(m_data.id);
+        }
         emit dataChanged(m_data);
     }
     update();
@@ -828,6 +1100,7 @@ void CardItem::syncFromData()
     prepareGeometryChange();
     if (m_data.type == QStringLiteral("image"))     loadPixmapFromContent();
     if (m_data.type == QStringLiteral("character")) loadCharacterPhoto();
+    if (isSticker()) { loadStickerFromContent(); setZValue(m_data.z); }
     if (m_data.type == QStringLiteral("doc") || m_data.type == QStringLiteral("chapter")
         || m_data.type == QStringLiteral("character")) rebuildRichDoc();
     if (m_data.type == QStringLiteral("text") && m_textItem) {
@@ -837,6 +1110,7 @@ void CardItem::syncFromData()
     if (isTextSymbol()) { applyContentFont(); refreshContentMetrics(); }
     else                updateTextItem();
     applyTextColor();
+    applyNoteShape();
     refreshTilt();
     update();
 }
@@ -849,18 +1123,35 @@ QRectF CardItem::boundingRect() const
         // conteúdo + alça de rotação em cima + alças de tamanho/largura
         return contentBounds().adjusted(-10, -36, 18, 16);
     }
+    if (isSticker()) {
+        // gira em volta do centro: um quadrado que cabe o adesivo em qualquer
+        // ângulo, mais as alças e o "120% · 15°" embaixo
+        const qreal r = std::hypot(m_data.width, m_data.height) / 2.0 + 48.0;
+        return QRectF(m_data.width / 2.0 - r, m_data.height / 2.0 - r, r * 2, r * 2);
+    }
     // sombra, pin (sobe 8 px), anel de seleção e brilho do snap
     constexpr qreal kMargin = 18.0;
     const qreal extraH = (m_data.type == QStringLiteral("comment")) ? kTailH : 0.0;
-    return QRectF(-kMargin, -kMargin,
+    const qreal top = qMax(kMargin, -anchorPoint().y() + 16.0);   // clipe e barbante sobem mais
+    return QRectF(-kMargin, -top,
                   m_data.width  + kMargin * 2,
-                  m_data.height + extraH + kMargin * 2);
+                  m_data.height + extraH + kMargin + top);
 }
 
 QPainterPath CardItem::outlinePath() const
 {
     const qreal w = m_data.width, h = m_data.height;
     QPainterPath p;
+    if (isNoteLike() && !m_data.shape.isEmpty()) {
+        const QString s = m_data.shape;
+        if (s == QStringLiteral("round"))  { p.addEllipse(QRectF(0, 0, w, h)); return p; }
+        if (s == QStringLiteral("tag"))    return tagPath(w, h);
+        if (s == QStringLiteral("torn"))   return tornPath(w, h, m_data.id);
+        if (s == QStringLiteral("pinked")) return zigzagPath(w, h, 9.0);
+        const qreal r = (s == QStringLiteral("dymo")) ? 3.0 : 2.0;   // ficha, tira, fita
+        p.addRoundedRect(QRectF(0, 0, w, h), r, r);
+        return p;
+    }
     if (m_data.type == QStringLiteral("note")) {
         return foldedPath(w, h, 3.0, kFoldSize);
     }
@@ -878,9 +1169,22 @@ QPainterPath CardItem::shape() const
         p.addRect(boundingRect()); // toda a área (conteúdo + alças) é interativa
         return p;
     }
+    if (isSticker()) {
+        const qreal w = m_data.width, h = m_data.height;
+        if (m_selected && !m_data.locked) {
+            p.addRect(QRectF(-14, -14, w + 28, h + 28));   // as alças dos cantos
+            p.addRect(stkRotateRect());
+            return p.simplified();
+        }
+        p.addRect(QRectF(0, 0, w, h));
+        return p;
+    }
     p = outlinePath();
-    p.addEllipse(QPointF(m_data.width / 2.0, 0.0), 10.0, 10.0);  // o pin pega o clique
-    return p;
+    QPainterPath extra;
+    extra.addEllipse(anchorPoint(), 10.0, 10.0);   // o pin (ou a presilha) pega o clique
+    if (isNoteLike() && m_data.shape == QStringLiteral("round"))
+        extra.addRect(QRectF(m_data.width * 0.854 - 10, m_data.height * 0.854 - 10, 20, 20));
+    return p.united(extra);
 }
 
 void CardItem::updateTextItem()
@@ -906,19 +1210,17 @@ void CardItem::updateTextItem()
     }
 
     // note / comment
-    constexpr qreal padL = 12.0;
-    const qreal padTop = kHeaderH + 2.0;
-    const qreal padBot = (m_data.type == QStringLiteral("note")) ? kFoldSize : 10.0;
-    const qreal tw = qMax(10.0, w - 2.0 * padL);
-    const qreal th = qMax(10.0, h - padTop - padBot);
+    const NoteGeo g = noteGeo();
+    const qreal tw = g.body.width();
+    const qreal th = g.body.height();
     if (auto* bti = static_cast<BodyTextItem*>(m_textItem)) { bti->bodyW = tw; bti->bodyH = th; }
     m_textItem->setTextWidth(tw);
-    if (m_bodyClip) m_bodyClip->setRect(QRectF(0, padTop, w, th));
+    if (m_bodyClip) m_bodyClip->setRect(QRectF(0, g.body.top(), w, th));
 
     qreal visH = 0.0, contentH = 0.0;
     if (scrollRegion(visH, contentH))
         m_scrollOffset = qBound(0.0, m_scrollOffset, qMax(0.0, contentH - visH));
-    m_textItem->setPos(padL, padTop - m_scrollOffset);
+    m_textItem->setPos(g.body.left(), g.body.top() - m_scrollOffset);
 }
 
 // ── Cores ──────────────────────────────────────────────────────────────────
@@ -929,7 +1231,7 @@ QColor CardItem::inkColor() const
 {
     // Tinta do papel: a própria cor bem escura (marrom no amarelo, vinho no
     // vermelho), em vez de preto chapado. Em papel escuro, branco suave.
-    const QColor bg = m_data.color;
+    const QColor bg = paperColor();
     if (calcIsDark(bg)) return QColor(255, 255, 255, 228);
     QColor c = bg.toHsl();
     const int hue = c.hslHue() < 0 ? 40 : c.hslHue();
@@ -999,9 +1301,9 @@ bool CardItem::scrollRegion(qreal& visH, qreal& contentH) const
         return true;
     }
     if (!m_textItem || !isNoteLike()) return false;
-    const qreal padTop = kHeaderH + 2.0;
-    const qreal padBot = (t == QStringLiteral("note")) ? kFoldSize : 10.0;
-    visH     = qMax(0.0, m_data.height - padTop - padBot);
+    const NoteGeo g = noteGeo();
+    if (!g.hasBody) return false;
+    visH     = g.body.height();
     contentH = m_textItem->document()->size().height();
     return true;
 }
@@ -1057,8 +1359,12 @@ void CardItem::paintShadow(QPainter* p, const QRectF& r, qreal rad, qreal lift) 
 
 void CardItem::paintPin(QPainter* p, const QColor& c) const
 {
+    paintPinAt(p, QPointF(m_data.width / 2.0, 0.0), c);
+}
+
+void CardItem::paintPinAt(QPainter* p, const QPointF& ctr, const QColor& c) const
+{
     // Alfinete de quadro de investigação: é dele que a linha sai.
-    const QPointF ctr(m_data.width / 2.0, 0.0);
     const qreal r = 6.0;
     p->save();
     p->setPen(Qt::NoPen);
@@ -1145,6 +1451,8 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     p->setRenderHint(QPainter::Antialiasing);
     p->setRenderHint(QPainter::TextAntialiasing);
     p->setRenderHint(QPainter::SmoothPixmapTransform);
+
+    if (isSticker()) { paintSticker(p); return; }
 
     // ── text / symbol: soltos no quadro, sem papel ─────────────────────────
     if (isTextSymbol()) {
@@ -1337,9 +1645,35 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
     }
 
     // ── Post-it e comentário ────────────────────────────────────────────────
-    const QColor bg = m_data.color;
-    const bool isComment = (t == QStringLiteral("comment"));
+    paintNote(p);
+}
+
+void CardItem::paintPathShadow(QPainter* p, const QPainterPath& path, qreal lift) const
+{
+    // A mesma sombra macia de papel, pra formatos que não são retângulo.
+    p->save();
+    p->setBrush(Qt::NoBrush);
+    const QPainterPath sp = path.translated(0, lift);
+    for (int i = 6; i >= 1; --i) {
+        p->setPen(QPen(QColor(0, 0, 0, int(7 + (6 - i) * 2)), i * 3.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawPath(sp);
+    }
+    p->setPen(Qt::NoPen);
+    p->setBrush(QColor(0, 0, 0, 40));
+    p->drawPath(sp);
+    p->restore();
+}
+
+void CardItem::paintNote(QPainter* p)
+{
+    const qreal w = m_data.width;
+    const qreal h = m_data.height;
+    const QString s = noteShape();
+    const bool isComment = (m_data.type == QStringLiteral("comment"));
     const QPainterPath outline = outlinePath();
+    const NoteGeo g = noteGeo();
+    const QColor bg = m_data.color;
+    const QColor paper = paperColor();
 
     if (m_snapping && m_snapColor.isValid()) {
         p->save();
@@ -1354,16 +1688,20 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
         p->restore();
     }
 
-    paintShadow(p, QRectF(0, 0, w, h), isComment ? 10 : 3, 3);
+    if (s.isEmpty()) paintShadow(p, QRectF(0, 0, w, h), isComment ? 10 : 3, 3);
+    else             paintPathShadow(p, outline, s == QStringLiteral("dymo") ? 2 : 3);
     p->setPen(Qt::NoPen);
-    p->setBrush(bg);
+    p->setBrush(paper);
     p->drawPath(outline);
 
     if (isComment) {
         QPolygonF tail;
-        tail << QPointF(22, h - 1) << QPointF(40, h - 1) << QPointF(22, h + kTailH);
+        if (s == QStringLiteral("round"))
+            tail << QPointF(w * 0.30, h * 0.93) << QPointF(w * 0.46, h * 0.99) << QPointF(w * 0.24, h + kTailH);
+        else
+            tail << QPointF(22, h - 1) << QPointF(40, h - 1) << QPointF(22, h + kTailH);
         p->drawPolygon(tail);
-    } else {
+    } else if (s.isEmpty()) {
         // A dobrinha: o canto cortado vira uma aba dobrada por cima.
         const qreal f = kFoldSize;
         QPolygonF flap;
@@ -1375,58 +1713,229 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
         p->drawPolygon(flap);
     }
 
+    // Pauta, margem e faixa: desenhadas dentro do papel.
+    if (s == QStringLiteral("index") || s == QStringLiteral("torn") || s == QStringLiteral("strip")) {
+        p->save();
+        p->setClipPath(outline);
+        if (s == QStringLiteral("strip")) {
+            p->fillRect(QRectF(0, 0, 22, h), bg.darker(isDark() ? 80 : 122));
+        } else {
+            const bool torn = (s == QStringLiteral("torn"));
+            p->setPen(QPen(torn ? QColor(0x7a, 0xa3, 0xd4, 90) : QColor(0x6b, 0x9b, 0xd1, 90), 1.0));
+            if (torn) p->drawLine(QPointF(0, g.title.top() + 17.5), QPointF(w, g.title.top() + 17.5));
+            for (qreal y = g.body.top() + 17.5 - m_scrollOffset; y < h - 3; y += 20.0)
+                if (y > g.body.top()) p->drawLine(QPointF(0, y), QPointF(w, y));
+            if (torn) {
+                p->setPen(QPen(QColor(0xe0, 0x70, 0x70, 120), 1.4));
+                p->drawLine(QPointF(22.5, 0), QPointF(22.5, h));
+                p->fillRect(QRectF(0, 0, 6, h), bg);
+            } else {
+                p->setPen(QPen(QColor(0xd9, 0x53, 0x4f, 150), 1.4));
+                p->drawLine(QPointF(0, 31), QPointF(w, 31));
+            }
+        }
+        p->restore();
+    }
+
     const QColor ink = inkColor();
     const QColor muted(ink.red(), ink.green(), ink.blue(), 110);
 
-    // Título (duplo clique em cima edita)
+    // Título (duplo clique em cima edita). Sem corpo (tira, redondo, fita) e
+    // sem título, aparece o começo do texto: nada some ao trocar de formato.
     if (!m_editingTitle) {
-        const QRectF titleRect(12, 6, w - 24, 20);
-        if (m_data.title.trimmed().isEmpty()) {
+        QString title = m_data.title.trimmed();
+        bool fromBody = false;
+        if (title.isEmpty() && !g.hasBody) {
+            title = plainExcerpt(m_data.content, 80).section(QLatin1Char('\n'), 0, 0).simplified();
+            fromBody = !title.isEmpty();
+        }
+        if (s == QStringLiteral("dymo")) {
+            const QString t = (title.isEmpty() ? tr("Sem título") : title).toUpper();
+            p->setFont(dymoFont());
+            p->setPen(QColor(0, 0, 0, 120));
+            p->drawText(g.title.translated(0, 1.2), Qt::AlignCenter, t);
+            p->setPen(QColor(255, 255, 255, 45));
+            p->drawText(g.title.translated(0, -1.0), Qt::AlignCenter, t);
+            p->setPen(QColor(255, 255, 255, title.isEmpty() ? 120 : 235));
+            p->drawText(g.title, Qt::AlignCenter, t);
+        } else if (title.isEmpty()) {
             if (m_hovered || m_selected) {
                 p->setFont(uiFont(12.5, QFont::Normal, true));
                 p->setPen(muted);
-                p->drawText(titleRect, Qt::AlignVCenter | Qt::AlignLeft, tr("Sem título"));
+                p->drawText(g.title, (g.centered ? Qt::AlignCenter : Qt::AlignVCenter | Qt::AlignLeft),
+                            tr("Sem título"));
             }
-        } else {
-            const QFont tf = uiFont(13, QFont::Bold);
+        } else if (g.centered) {
+            const QFont tf = uiFont(s == QStringLiteral("round") ? 15 : 13, fromBody ? QFont::Normal : QFont::Bold);
             p->setFont(tf);
             p->setPen(ink);
-            p->drawText(titleRect, Qt::AlignVCenter | Qt::AlignLeft,
-                        QFontMetricsF(tf).elidedText(m_data.title, Qt::ElideRight, w - 24));
+            p->save();
+            p->setClipRect(g.title);
+            p->drawText(g.title, Qt::AlignCenter | Qt::TextWordWrap, title);
+            p->restore();
+        } else {
+            const QFont tf = uiFont(13, fromBody ? QFont::Normal : QFont::Bold);
+            p->setFont(tf);
+            p->setPen(ink);
+            p->drawText(g.title, Qt::AlignVCenter | Qt::AlignLeft,
+                        QFontMetricsF(tf).elidedText(title, Qt::ElideRight, g.title.width()));
         }
     }
 
     // Placeholder quando vazio
-    if (m_textItem && m_textItem->document()->isEmpty() && (m_hovered || m_selected)) {
+    if (g.hasBody && m_textItem && m_textItem->document()->isEmpty() && (m_hovered || m_selected)) {
         p->setPen(QColor(ink.red(), ink.green(), ink.blue(), 80));
         p->setFont(uiFont(13));
-        p->drawText(QRectF(12, kHeaderH + 2, w - 24, h - kHeaderH - kFoldSize),
-                    Qt::AlignLeft | Qt::AlignTop, tr("Escreva aqui…"));
+        p->drawText(g.body, Qt::AlignLeft | Qt::AlignTop, tr("Escreva aqui…"));
     }
 
     {
         qreal visH = 0.0, contentH = 0.0;
         if (scrollRegion(visH, contentH))
-            paintScrollbar(p, kHeaderH + 2.0, visH, contentH,
+            paintScrollbar(p, g.body.top(), visH, contentH,
                            QColor(ink.red(), ink.green(), ink.blue(), 140));
     }
 
-    // Alça de tamanho no canto (comentário; no post-it, a dobrinha já é a alça)
-    if (isComment && (m_hoverResize || m_selected)) {
+    // Alça de tamanho no canto (no post-it quadrado, a dobrinha já é a alça)
+    if (s.isEmpty() && !isComment) {
+        if (m_hoverResize) {
+            p->setPen(Qt::NoPen);
+            p->setBrush(QColor(0, 0, 0, 30));
+            p->drawPolygon(QPolygonF() << QPointF(w - kFoldSize, h - kFoldSize)
+                                       << QPointF(w, h - kFoldSize) << QPointF(w - kFoldSize, h));
+        }
+    } else if (s != QStringLiteral("dymo") && (m_hoverResize || m_selected)) {
         p->setPen(QPen(QColor(ink.red(), ink.green(), ink.blue(), m_hoverResize ? 170 : 90),
                        1.5, Qt::SolidLine, Qt::RoundCap));
-        const qreal ox = w - 6, oy = h - 6;
-        p->drawLine(QPointF(ox - 8, oy), QPointF(ox, oy - 8));
-        p->drawLine(QPointF(ox - 4, oy), QPointF(ox, oy - 4));
-    } else if (!isComment && m_hoverResize) {
-        p->setPen(Qt::NoPen);
-        p->setBrush(QColor(0, 0, 0, 30));
-        p->drawPolygon(QPolygonF() << QPointF(w - kFoldSize, h - kFoldSize)
-                                   << QPointF(w, h - kFoldSize) << QPointF(w - kFoldSize, h));
+        const QPointF o = (s == QStringLiteral("round")) ? QPointF(w * 0.854 + 2, h * 0.854 + 2)
+                                                         : QPointF(w - 6, h - 6);
+        p->drawLine(QPointF(o.x() - 8, o.y()), QPointF(o.x(), o.y() - 8));
+        p->drawLine(QPointF(o.x() - 4, o.y()), QPointF(o.x(), o.y() - 4));
     }
 
-    paintPin(p, bg.darker(isDark() ? 70 : 125));
+    paintFrame(p, outline);
+    paintFastener(p, bg.darker(isDark() ? 70 : 125));
     if (m_selected) paintSelectionRing(p, outline);
+}
+
+void CardItem::paintFastener(QPainter* p, const QColor& pinColor) const
+{
+    const QString f = m_data.fastener;
+    const QPointF a = anchorPoint();
+    const qreal cx = m_data.width / 2.0;
+    if (f.isEmpty()) {
+        if (noteShape() == QStringLiteral("tag")) {
+            // o barbante sai do furo e sobe até o pin
+            p->save();
+            p->setPen(QPen(QColor(0x9b, 0x7a, 0x55), 1.6, Qt::SolidLine, Qt::RoundCap));
+            p->drawLine(QPointF(cx, 15.0), a);
+            p->restore();
+        }
+        paintPinAt(p, a, pinColor);
+        return;
+    }
+    if (f == QStringLiteral("none")) return;
+    p->save();
+    if (f == QStringLiteral("tape")) {
+        // um pedaço de fita, tortinho, com as pontas rasgadas
+        Jitter j(m_data.id, 5);
+        p->translate(a);
+        p->rotate(-5.0 + j.next() * 10.0);
+        const qreal tw = qMin(78.0, qMax(40.0, m_data.width * 0.55)), th = 22.0;
+        QPolygonF poly;
+        poly << QPointF(-tw / 2, -th / 2) << QPointF(tw / 2, -th / 2);
+        for (int i = 1; i <= 5; ++i)
+            poly << QPointF(tw / 2 + ((i % 2) ? -3.0 : 0.0), -th / 2 + th * i / 5.0);
+        poly << QPointF(-tw / 2, th / 2);
+        for (int i = 4; i >= 1; --i)
+            poly << QPointF(-tw / 2 + ((i % 2) ? 3.0 : 0.0), -th / 2 + th * i / 5.0);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0, 0, 0, 22));
+        p->drawPolygon(poly.translated(0, 1.3));
+        p->setBrush(QColor(236, 226, 196, 215));
+        p->drawPolygon(poly);
+        p->setBrush(QColor(255, 255, 255, 40));
+        p->drawRect(QRectF(-tw / 2 + 4, -th / 2 + 3, tw - 8, 4));
+    } else if (f == QStringLiteral("clip")) {
+        // clipe de arame, metade pra fora da borda de cima
+        p->translate(a.x() - 11.0, a.y() - 2.0);
+        QPainterPath cp;
+        cp.moveTo(15, 16);
+        cp.lineTo(15, 44);
+        cp.arcTo(QRectF(5, 39, 10, 10), 0, -180);
+        cp.lineTo(5, 9);
+        cp.arcTo(QRectF(5, 2, 14, 14), 180, -180);
+        cp.lineTo(19, 43);
+        p->setBrush(Qt::NoBrush);
+        p->setPen(QPen(QColor(0, 0, 0, 50), 2.6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawPath(cp.translated(0.8, 1.4));
+        p->setPen(QPen(QColor(0x8d, 0x93, 0x99), 2.4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawPath(cp);
+        p->setPen(QPen(QColor(255, 255, 255, 110), 0.8, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawPath(cp.translated(-0.5, -0.5));
+    } else if (f == QStringLiteral("staple")) {
+        // grampeado no quadro
+        p->translate(a);
+        p->rotate(-3.0);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0, 0, 0, 60));
+        p->drawRoundedRect(QRectF(-15, -1, 30, 4), 2, 2);
+        QLinearGradient lg(0, -2, 0, 2);
+        lg.setColorAt(0, QColor(0xe6, 0xe8, 0xea));
+        lg.setColorAt(1, QColor(0x8d, 0x93, 0x99));
+        p->setBrush(lg);
+        p->drawRoundedRect(QRectF(-15, -2, 30, 4), 2, 2);
+    }
+    p->restore();
+}
+
+void CardItem::paintFrame(QPainter* p, const QPainterPath& outline) const
+{
+    const QString fr = m_data.frame;
+    if (fr.isEmpty()) return;
+    const qreal w = m_data.width, h = m_data.height;
+    const QString s = noteShape();
+    p->save();
+    if (fr == QStringLiteral("pen")) {
+        // contornado com caneta vermelha, à mão
+        p->setBrush(Qt::NoBrush);
+        p->setPen(QPen(QColor(0xc0, 0x39, 0x2b), 2.4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p->drawPath(penLoop(QRectF(-6, -6, w + 12, h + 12), s == QStringLiteral("round"), m_data.id));
+    } else if (fr == QStringLiteral("cut")) {
+        // "destaque aqui": tracejado por dentro e a tesourinha
+        QTransform t;
+        t.translate(w / 2.0, h / 2.0);
+        t.scale((w - 8.0) / w, (h - 8.0) / h);
+        t.translate(-w / 2.0, -h / 2.0);
+        const QColor ink = inkColor();
+        QPen pen(QColor(ink.red(), ink.green(), ink.blue(), 115), 1.3);
+        pen.setDashPattern({ 4.0, 3.0 });
+        p->setPen(pen);
+        p->setBrush(Qt::NoBrush);
+        p->drawPath(t.map(outline));
+        const bool mid = (s == QStringLiteral("round") || s == QStringLiteral("tag"));
+        // a tesourinha fica em cima do tracejado, na sobra acima do título
+        const QPointF at(mid ? w / 2.0 + 10.0 : w - 30.0,
+                         s == QStringLiteral("torn") ? 22.0 : 4.0);
+        p->setPen(Qt::NoPen);
+        p->setBrush(paperColor());
+        p->drawRect(QRectF(at.x() - 1, at.y() - 7, 16, 14));
+        QFont sf(QStringLiteral("Segoe UI Symbol"));
+        sf.setPixelSize(13);
+        p->setFont(sf);
+        p->setPen(QColor(ink.red(), ink.green(), ink.blue(), 190));
+        p->drawText(QRectF(at.x(), at.y() - 8, 14, 16), Qt::AlignCenter, QString(QChar(0x2702)));
+    } else if (fr == QStringLiteral("corners")) {
+        // cantoneiras de álbum de foto
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0x2e, 0x2a, 0x24));
+        const qreal k = 22.0, o = 4.0;
+        p->drawPolygon(QPolygonF() << QPointF(-o, -o) << QPointF(-o + k, -o) << QPointF(-o, -o + k));
+        p->drawPolygon(QPolygonF() << QPointF(w + o, -o) << QPointF(w + o - k, -o) << QPointF(w + o, -o + k));
+        p->drawPolygon(QPolygonF() << QPointF(-o, h + o) << QPointF(-o + k, h + o) << QPointF(-o, h + o - k));
+        p->drawPolygon(QPolygonF() << QPointF(w + o, h + o) << QPointF(w + o - k, h + o) << QPointF(w + o, h + o - k));
+    }
+    p->restore();
 }
 
 // ── Snap ─────────────────────────────────────────────────────────────────────
@@ -1462,11 +1971,15 @@ QVariant CardItem::itemChange(GraphicsItemChange change, const QVariant& value)
 
 bool CardItem::isOnPin(const QPointF& p) const
 {
-    return QLineF(p, QPointF(m_data.width / 2.0, 0.0)).length() <= 10.0;
+    if (isSticker()) return false;   // adesivo não tem pin: não liga linha
+    return QLineF(p, anchorPoint()).length() <= 10.0;
 }
 
 bool CardItem::isOnResizeZone(const QPointF& p) const
 {
+    if (isSticker() || noteShape() == QStringLiteral("dymo")) return false;   // a fita segue o título
+    if (noteShape() == QStringLiteral("round"))
+        return QRectF(m_data.width * 0.854 - 10, m_data.height * 0.854 - 10, 20, 20).contains(p);
     return QRectF(m_data.width - 18, m_data.height - 18, 20, 20).contains(p);
 }
 
@@ -1484,6 +1997,34 @@ void CardItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 
     const bool wasSelected = m_selected;
     emit cardPressed();
+
+    // Adesivo: alça de girar e cantos de tamanho (Shift na alça = de 15 em 15°).
+    if (isSticker()) {
+        const bool onRot = wasSelected && !m_data.locked && stkRotateRect().contains(e->pos());
+        const bool onCorner = wasSelected && !m_data.locked && stkCornerAt(e->pos()) >= 0;
+        if ((e->modifiers() & Qt::ShiftModifier) && !onRot && !onCorner) { e->accept(); return; }
+        if (m_data.locked) { e->accept(); return; }   // travado: só marca
+        if (onRot) {
+            emit gestureStarted();
+            m_stkRotating = true;
+            e->accept(); return;
+        }
+        if (onCorner) {
+            emit gestureStarted();
+            m_stkScaling     = true;
+            m_stkCenterScene = mapToScene(QPointF(m_data.width / 2.0, m_data.height / 2.0));
+            m_stkPressDist   = qMax(4.0, QLineF(m_stkCenterScene, e->scenePos()).length());
+            m_stkPressSize   = QSizeF(m_data.width, m_data.height);
+            e->accept(); return;
+        }
+        emit gestureStarted();
+        emit dragStarted(m_data.id);
+        m_dragging        = true;
+        m_pressScene      = e->scenePos();
+        m_pressItemOrigin = pos();
+        setCursor(Qt::ClosedHandCursor);
+        e->accept(); return;
+    }
 
     // Shift+click em cards = só alterna a seleção. text/symbol usam Shift+arrastar pra girar.
     if ((e->modifiers() & Qt::ShiftModifier) && !isTextSymbol()) {
@@ -1559,9 +2100,12 @@ void CardItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
     }
 
     // Post-it e comentário: o corpo é texto; arrasta pela faixa do título.
-    if (isNoteLike() && e->pos().y() >= kHeaderH) {
-        e->ignore();
-        return;
+    if (isNoteLike()) {
+        const NoteGeo g = noteGeo();
+        if (g.hasBody && e->pos().y() >= g.body.top()) {
+            e->ignore();
+            return;
+        }
     }
     // Imagem escrevendo a legenda: o clique na legenda é do texto.
     if (m_data.type == QStringLiteral("image") && m_editingText
@@ -1581,6 +2125,33 @@ void CardItem::mousePressEvent(QGraphicsSceneMouseEvent* e)
 
 void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent* e)
 {
+    if (m_stkRotating) {
+        const QPointF c = mapToScene(QPointF(m_data.width / 2.0, m_data.height / 2.0));
+        const QPointF v = e->scenePos() - c;
+        qreal deg = std::atan2(v.y(), v.x()) * 180.0 / kPi + 90.0;
+        if (e->modifiers() & Qt::ShiftModifier) deg = std::round(deg / 15.0) * 15.0;
+        m_data.rotation = std::fmod(deg + 720.0, 360.0);
+        setRotation(m_data.rotation);
+        update();
+        emit positionChanged(m_data.id);
+        e->accept();
+        return;
+    }
+    if (m_stkScaling) {
+        const qreal f = QLineF(m_stkCenterScene, e->scenePos()).length() / m_stkPressDist;
+        const qreal base = m_data.baseWidth > 0 ? m_data.baseWidth : m_stkPressSize.width();
+        const qreal nw = qBound(base * 0.2, m_stkPressSize.width() * f, base * 4.0);
+        const qreal nh = nw * m_stkPressSize.height() / qMax(1.0, m_stkPressSize.width());
+        prepareGeometryChange();
+        m_data.width  = nw;
+        m_data.height = nh;
+        setTransformOriginPoint(nw / 2.0, nh / 2.0);
+        setPos(m_stkCenterScene - QPointF(nw / 2.0, nh / 2.0));   // o centro fica parado
+        update();
+        emit positionChanged(m_data.id);
+        e->accept();
+        return;
+    }
     if (m_rotating) {
         if (m_rotByHandle) {
             const QPointF pivot = mapToScene(transformOriginPoint());
@@ -1643,6 +2214,14 @@ void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent* e)
                            ? 110.0 : kMinH;
         m_data.width  = qMax(minW, m_pressSize.width()  + d.x());
         m_data.height = qMax(minH, m_pressSize.height() + d.y());
+        if (noteShape() == QStringLiteral("strip")) {
+            m_data.height = m_pressSize.height();            // a tira só alarga
+        } else if (noteShape() == QStringLiteral("round")) {
+            const qreal side = qMax(90.0, qMax(m_pressSize.width() + d.x(), m_pressSize.height() + d.y()));
+            m_data.width = m_data.height = side;             // continua redondo
+        } else if (noteShape() == QStringLiteral("tag")) {
+            m_data.height = qMax(120.0, m_data.height);
+        }
         updateTextItem();
         update();
         emit positionChanged(m_data.id);
@@ -1654,6 +2233,18 @@ void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent* e)
 
 void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
 {
+    if (m_stkRotating || m_stkScaling) {
+        const bool scaled = m_stkScaling;
+        m_stkRotating = m_stkScaling = false;
+        m_data.x = pos().x();
+        m_data.y = pos().y();
+        if (scaled) m_stkCacheKey.clear();   // contorno refeito no tamanho novo
+        update();
+        emit dataChanged(m_data);
+        emit gestureFinished();
+        e->accept();
+        return;
+    }
     if (m_rotating || m_fontResizing || m_widthResizing) {
         m_rotating = m_fontResizing = m_widthResizing = m_rotByHandle = false;
         setCursor(Qt::OpenHandCursor);
@@ -1689,7 +2280,7 @@ void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* e)
 
 QString CardItem::cardTooltipText() const
 {
-    if (m_data.type == QStringLiteral("symbol")) return {};
+    if (m_data.type == QStringLiteral("symbol") || isSticker()) return {};
 
     QStringList parts;
     const QString title = m_data.title.trimmed();
@@ -1717,6 +2308,14 @@ void CardItem::hoverEnterEvent(QGraphicsSceneHoverEvent* e)
 void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
 {
     const QPointF lp = e->pos();
+    if (isSticker()) {
+        if (m_data.locked)                                     setCursor(Qt::ArrowCursor);
+        else if (m_selected && stkRotateRect().contains(lp))   setCursor(Qt::CrossCursor);
+        else if (m_selected && stkCornerAt(lp) >= 0)
+            setCursor((stkCornerAt(lp) == 0 || stkCornerAt(lp) == 3) ? Qt::SizeFDiagCursor : Qt::SizeBDiagCursor);
+        else                                                   setCursor(Qt::OpenHandCursor);
+        return;
+    }
     if (isTextSymbol()) {
         if (m_editingText && contentBounds().contains(lp)) setCursor(Qt::IBeamCursor);
         else if (m_selected && tsRotateRect().contains(lp)) setCursor(Qt::CrossCursor);
@@ -1735,7 +2334,8 @@ void CardItem::hoverMoveEvent(QGraphicsSceneHoverEvent* e)
     if (isOnPin(lp))                                   setCursor(Qt::CrossCursor);
     else if (onOpen)                                   setCursor(Qt::PointingHandCursor);
     else if (onResize)                                 setCursor(Qt::SizeFDiagCursor);
-    else if (isNoteLike() && lp.y() >= kHeaderH)       setCursor(Qt::IBeamCursor);
+    else if (isNoteLike() && noteGeo().hasBody && lp.y() >= noteGeo().body.top())
+                                                       setCursor(Qt::IBeamCursor);
     else                                               setCursor(Qt::OpenHandCursor);
 }
 
@@ -1754,6 +2354,19 @@ void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent* e)
 void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
 {
     const QString t = m_data.type;
+    if (isSticker()) {
+        // dois cliques na alça de girar: volta pra 0°
+        if (m_selected && !m_data.locked && stkRotateRect().contains(e->pos()) && !qFuzzyIsNull(m_data.rotation)) {
+            emit gestureStarted();
+            m_data.rotation = 0.0;
+            setRotation(0.0);
+            update();
+            emit dataChanged(m_data);
+            emit gestureFinished();
+        }
+        e->accept();
+        return;
+    }
     if (t == QStringLiteral("character")) {
         toggleImageDesc(!m_showDesc);
         e->accept();
@@ -1788,7 +2401,7 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
         e->accept();
         return;
     }
-    if (isNoteLike() && e->pos().y() < kHeaderH) {
+    if (isNoteLike() && (!noteGeo().hasBody || e->pos().y() < noteGeo().body.top())) {
         beginTitleEdit();
         e->accept();
         return;
@@ -1807,7 +2420,21 @@ void CardItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
             if (nc.isValid()) setCardColor(nc);
         });
     };
-    if (t == QStringLiteral("image")) {
+    if (isSticker()) {
+        menu.addAction(tr("Espelhar"), this, [this]() { setStickerFlip(!m_data.flipX, m_data.flipY); });
+        menu.addAction(tr("Virar de ponta-cabeça"), this, [this]() { setStickerFlip(m_data.flipX, !m_data.flipY); });
+        QMenu* ol = menu.addMenu(tr("Contorno"));
+        const QList<QPair<QString, QString>> outlines = {
+            { QString(), tr("Recorte branco") }, { QStringLiteral("none"), tr("Nenhum") },
+            { QStringLiteral("shadow"), tr("Só sombra") } };
+        for (const auto& [key, label] : outlines) {
+            QAction* a = ol->addAction(label, this, [this, key]() { setStickerOutline(key); });
+            a->setCheckable(true);
+            a->setChecked(m_data.outline == key);
+        }
+        menu.addAction(m_data.locked ? tr("Destravar") : tr("Travar"), this,
+                       [this]() { setLocked(!m_data.locked); });
+    } else if (t == QStringLiteral("image")) {
         menu.addAction(tr("Escolher imagem…"), this, &CardItem::chooseImage);
         menu.addAction(tr("Escrever a legenda"), this, &CardItem::beginCaptionEdit);
         menu.addAction(tr("Criar documento"), this, [this]() { emit createDocRequested(m_data.id); });
@@ -1836,4 +2463,260 @@ void CardItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
     menu.addAction(tr("Guardar na gaveta da lousa"), this, [this]() { emit stashRequested(m_data.id); });
     menu.addAction(tr("Apagar de vez"), this, [this]() { emit deleteRequested(m_data.id); });
     menu.exec(e->screenPos());
+}
+
+// ── Adesivo ──────────────────────────────────────────────────────────────────
+
+void CardItem::loadStickerFromContent()
+{
+    m_stkSrc = QImage();
+    if (!m_data.content.isEmpty())
+        m_stkSrc.loadFromData(QByteArray::fromBase64(m_data.content.toLatin1()));
+    if (!m_stkSrc.isNull())
+        m_stkSrc = m_stkSrc.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    m_stkCache = QImage();
+    m_stkCacheKey.clear();
+}
+
+void CardItem::ensureStickerCache()
+{
+    if (m_stkSrc.isNull() || m_data.width < 1 || m_data.height < 1) return;
+    // O contorno é feito numa cópia do tamanho que aparece (com folga pro zoom),
+    // não no PNG inteiro: fica rápido e a borda branca tem sempre a mesma grossura.
+    const qreal longest = qMax(m_data.width, m_data.height);
+    const qreal want = qBound(240.0, longest * 2.5, 1600.0);
+    const qreal sc = qMin(1.0, want / qMax(m_stkSrc.width(), m_stkSrc.height()));
+    const QSize ws(qMax(1, qRound(m_stkSrc.width() * sc)), qMax(1, qRound(m_stkSrc.height() * sc)));
+    const QString ol = m_data.outline;
+    const QString key = QStringLiteral("%1|%2x%3|%4|%5|%6").arg(ol).arg(ws.width()).arg(ws.height())
+        .arg(m_data.flipX).arg(m_data.flipY).arg(qRound(ws.width() / m_data.width * 8));
+    if (key == m_stkCacheKey && !m_stkCache.isNull()) return;
+    m_stkCacheKey = key;
+
+    QImage work = (ws == m_stkSrc.size()) ? m_stkSrc
+                : m_stkSrc.scaled(ws, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    if (m_data.flipX || m_data.flipY) work = work.mirrored(m_data.flipX, m_data.flipY);
+    work = work.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+
+    const qreal k = ws.width() / m_data.width;             // px da cópia por px do quadro
+    const bool cut    = ol.isEmpty();
+    const bool shadow = (ol != QStringLiteral("none"));
+    const qreal border = cut ? 3.2 * k : 0.0;
+    const qreal lift   = shadow ? 3.0 * k : 0.0;
+    const qreal blur   = shadow ? 3.0 * k : 0.0;
+    const int pad = int(std::ceil(border + lift + blur * 2.0 + 2.0));
+    m_stkCachePad = pad;
+    const QSize full(ws.width() + pad * 2, ws.height() + pad * 2);
+
+    // Silhueta branca do desenho: base do recorte e da sombra.
+    QImage sil(ws, QImage::Format_ARGB32_Premultiplied);
+    sil.fill(Qt::transparent);
+    {
+        QPainter sp(&sil);
+        sp.drawImage(0, 0, work);
+        sp.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        sp.fillRect(sil.rect(), Qt::white);
+    }
+    QImage body(full, QImage::Format_ARGB32_Premultiplied);
+    body.fill(Qt::transparent);
+    {
+        QPainter bp(&body);
+        bp.setRenderHint(QPainter::SmoothPixmapTransform);
+        if (cut) {
+            // a borda branca: a silhueta carimbada em volta, num círculo
+            for (int ring = 1; ring <= 2; ++ring) {
+                const qreal r = border * ring / 2.0;
+                const int steps = ring == 1 ? 12 : 24;
+                for (int i = 0; i < steps; ++i) {
+                    const qreal a = i * 2.0 * kPi / steps;
+                    bp.drawImage(QPointF(pad + std::cos(a) * r, pad + std::sin(a) * r), sil);
+                }
+            }
+        } else {
+            bp.drawImage(pad, pad, sil);
+        }
+    }
+    QImage out(full, QImage::Format_ARGB32_Premultiplied);
+    out.fill(Qt::transparent);
+    QPainter op(&out);
+    op.setRenderHint(QPainter::SmoothPixmapTransform);
+    if (shadow) {
+        // sombra: a mesma forma em preto, borrada (encolhe e estica de volta)
+        QImage dark = body;
+        {
+            QPainter dp(&dark);
+            dp.setCompositionMode(QPainter::CompositionMode_SourceIn);
+            dp.fillRect(dark.rect(), Qt::black);
+        }
+        const int fct = qMax(2, qRound(blur));
+        QImage small = dark.scaled(qMax(1, full.width() / fct), qMax(1, full.height() / fct),
+                                   Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        const QImage soft = small.scaled(full, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        op.setOpacity(0.30);
+        op.drawImage(QPointF(0, lift), soft);
+        op.setOpacity(1.0);
+    }
+    if (cut) op.drawImage(0, 0, body);
+    op.drawImage(pad, pad, work);
+    op.end();
+    m_stkCache = out;
+}
+
+QRectF CardItem::stkRotateRect() const
+{
+    return QRectF(m_data.width / 2.0 - 10.0, -44.0, 20.0, 20.0);
+}
+
+int CardItem::stkCornerAt(const QPointF& p) const
+{
+    const qreal w = m_data.width, h = m_data.height;
+    const QPointF c[4] = { { -8, -8 }, { w + 8, -8 }, { -8, h + 8 }, { w + 8, h + 8 } };
+    for (int i = 0; i < 4; ++i)
+        if (QLineF(p, c[i]).length() <= 10.0) return i;
+    return -1;
+}
+
+void CardItem::paintSticker(QPainter* p)
+{
+    const qreal w = m_data.width, h = m_data.height;
+    ensureStickerCache();
+    if (!m_stkCache.isNull()) {
+        const qreal k = (m_stkCache.width() - 2.0 * m_stkCachePad) / w;
+        const qreal padD = m_stkCachePad / k;
+        p->drawImage(QRectF(-padD, -padD, w + 2 * padD, h + 2 * padD), m_stkCache);
+    } else {
+        QPen pen(QColor(0, 0, 0, 90), 1.2, Qt::DashLine);
+        p->setPen(pen);
+        p->setBrush(Qt::NoBrush);
+        p->drawRoundedRect(QRectF(0, 0, w, h), 6, 6);
+    }
+
+    if (m_selected) {
+        const QColor a = accent();
+        const QColor handleFill = s_boardLight ? QColor(255, 255, 255) : QColor(0x23, 0x23, 0x22);
+        QPen dash(a, 1.3);
+        dash.setDashPattern({ 4.0, 3.0 });
+        p->setPen(dash);
+        p->setBrush(Qt::NoBrush);
+        p->drawRoundedRect(QRectF(-8, -8, w + 16, h + 16), 4, 4);
+        if (!m_data.locked) {
+            p->setPen(QPen(a, 1.4));
+            p->setBrush(handleFill);
+            for (const QPointF& c : { QPointF(-8, -8), QPointF(w + 8, -8), QPointF(-8, h + 8), QPointF(w + 8, h + 8) })
+                p->drawRoundedRect(QRectF(c.x() - 5, c.y() - 5, 10, 10), 2, 2);
+            // alça de girar
+            const QPointF rc = stkRotateRect().center();
+            p->setPen(QPen(a, 1.3));
+            p->drawLine(QPointF(w / 2.0, -8), QPointF(rc.x(), rc.y() + 9));
+            p->setPen(Qt::NoPen);
+            p->setBrush(a);
+            p->drawEllipse(rc, 9, 9);
+            p->setPen(QPen(Qt::white, 1.5, Qt::SolidLine, Qt::RoundCap));
+            p->setBrush(Qt::NoBrush);
+            p->drawArc(QRectF(rc.x() - 4, rc.y() - 4, 8, 8), 60 * 16, 280 * 16);
+        } else {
+            // travado: um cadeado no canto
+            const QPointF lc(w + 8, -8);
+            p->setPen(Qt::NoPen);
+            p->setBrush(a);
+            p->drawEllipse(lc, 10, 10);
+            p->setPen(QPen(Qt::white, 1.4));
+            p->setBrush(Qt::NoBrush);
+            p->drawArc(QRectF(lc.x() - 3, lc.y() - 6, 6, 7), 0, 180 * 16);
+            p->setPen(Qt::NoPen);
+            p->setBrush(Qt::white);
+            p->drawRoundedRect(QRectF(lc.x() - 4.5, lc.y() - 2, 9, 7), 1.5, 1.5);
+        }
+    }
+
+    if (m_stkScaling || m_stkRotating) {
+        // "120% · 15°" de pé, embaixo do adesivo, durante o gesto
+        const qreal base = m_data.baseWidth > 0 ? m_data.baseWidth : w;
+        int deg = qRound(m_data.rotation) % 360;
+        if (deg > 180) deg -= 360;
+        const QString t = QStringLiteral("%1% · %2°").arg(qRound(w / base * 100.0)).arg(deg);
+        p->save();
+        p->translate(w / 2.0, h / 2.0);
+        p->rotate(-rotation());
+        const QFont f = uiFont(12);
+        p->setFont(f);
+        const qreal tw = QFontMetricsF(f).horizontalAdvance(t) + 20.0;
+        const qreal ext = std::hypot(w, h) / 2.0 + 12.0;
+        const QRectF r(-tw / 2.0, ext, tw, 22);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0x2e, 0x2a, 0x24, 235));
+        p->drawRoundedRect(r, 11, 11);
+        p->setPen(Qt::white);
+        p->drawText(r, Qt::AlignCenter, t);
+        p->restore();
+    }
+}
+
+void CardItem::setStickerFlip(bool flipX, bool flipY)
+{
+    if (!isSticker() || (flipX == m_data.flipX && flipY == m_data.flipY)) return;
+    emit gestureStarted();
+    m_data.flipX = flipX;
+    m_data.flipY = flipY;
+    update();
+    emit dataChanged(m_data);
+    emit gestureFinished();
+}
+
+void CardItem::setStickerOutline(const QString& outline)
+{
+    if (!isSticker() || outline == m_data.outline) return;
+    emit gestureStarted();
+    m_data.outline = outline;
+    update();
+    emit dataChanged(m_data);
+    emit gestureFinished();
+}
+
+void CardItem::setStickerZ(qreal z)
+{
+    if (!isSticker() || qFuzzyCompare(z, m_data.z)) return;
+    m_data.z = z;
+    setZValue(z);
+    emit dataChanged(m_data);
+}
+
+void CardItem::setLocked(bool locked)
+{
+    if (locked == m_data.locked) return;
+    emit gestureStarted();
+    prepareGeometryChange();
+    m_data.locked = locked;
+    update();
+    emit dataChanged(m_data);
+    emit gestureFinished();
+}
+
+QSizeF CardItem::defaultNoteSize(const QString& shape, const QString& type)
+{
+    return noteSizeFor(shape, type);
+}
+
+QPixmap CardItem::renderPreview(const CanvasCard& data, const QSize& size, qreal dpr)
+{
+    // Desenha um card de verdade numa cena à parte: a miniatura nunca mente.
+    const bool tilt = s_tilt;
+    s_tilt = false;
+    QGraphicsScene sc;
+    auto* it = new CardItem(data);
+    sc.addItem(it);
+    s_tilt = tilt;
+    QRectF src = it->mapRectToScene(it->shape().boundingRect());
+    if (data.type == QStringLiteral("comment")) src.setBottom(src.bottom() + kTailH);
+    if (!data.frame.isEmpty()) src.adjust(-8, -8, 8, 8);
+    src.adjust(-4, -4, 4, 4);
+    QPixmap pm(QSize(qRound(size.width() * dpr), qRound(size.height() * dpr)));
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    sc.render(&p, QRectF(QPointF(0, 0), QSizeF(size)), src, Qt::KeepAspectRatio);
+    p.end();
+    return pm;
 }

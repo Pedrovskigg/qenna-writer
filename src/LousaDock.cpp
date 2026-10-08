@@ -17,6 +17,7 @@ const ToolDef kTools[] = {
     { "text",      "text",      QT_TRANSLATE_NOOP("LousaDock", "Texto"),      QT_TRANSLATE_NOOP("LousaDock", "Texto livre (Ctrl+T, ou dois cliques no quadro)"), false },
     { "symbol",    "symbol",    QT_TRANSLATE_NOOP("LousaDock", "Símbolo"),    QT_TRANSLATE_NOOP("LousaDock", "Símbolo"), false },
     { "image",     "image",     QT_TRANSLATE_NOOP("LousaDock", "Imagem"),     QT_TRANSLATE_NOOP("LousaDock", "Imagem (Ctrl+G)"), false },
+    { "sticker",   "sticker",   QT_TRANSLATE_NOOP("LousaDock", "Adesivo"),    QT_TRANSLATE_NOOP("LousaDock", "Adesivo: PNG solto no quadro (ou arraste um PNG, ou cole com Ctrl+V)"), false },
     { "character", "character", QT_TRANSLATE_NOOP("LousaDock", "Personagem"), QT_TRANSLATE_NOOP("LousaDock", "Personagem do projeto (Ctrl+Shift+C)"), true },
     { "doc",       "doc",       QT_TRANSLATE_NOOP("LousaDock", "Documento"),  QT_TRANSLATE_NOOP("LousaDock", "Documento ou capítulo do projeto (Ctrl+H)"), false },
     { "area",      "area",      QT_TRANSLATE_NOOP("LousaDock", "Área"),       QT_TRANSLATE_NOOP("LousaDock", "Desenhar uma área (arraste no quadro)"), true },
@@ -101,6 +102,13 @@ void LousaDock::setCompact(bool compact)
     if (m_compact == compact) return;
     m_compact = compact;
     layoutButtons();
+}
+
+QRect LousaDock::toolGlobalRect(const QString& kind) const
+{
+    for (const auto& [b, k] : m_tools)
+        if (k == kind && b->isVisible()) return QRect(b->mapToGlobal(QPoint(0, 0)), b->size());
+    return QRect(mapToGlobal(QPoint(0, 0)), size());
 }
 
 void LousaDock::setToolChecked(const QString& kind, bool on)

@@ -7,7 +7,7 @@
 // Estrutura de dados de um card na lousa. Compat com canvas.json do Mira 1.
 struct CanvasCard {
     QString id;
-    QString type;            // "note" | "comment" | "image" | "doc" | "character" | "chapter" | "text" | "symbol"
+    QString type;            // "note" | "comment" | "image" | "doc" | "character" | "chapter" | "text" | "symbol" | "sticker"
     qreal   x       = 0;
     qreal   y       = 0;
     qreal   width   = 200;
@@ -29,6 +29,18 @@ struct CanvasCard {
     // text: largura em que o texto quebra a linha sozinho. 0 = sem quebra
     // (texto livre de antes do rework: cresce pro lado e só quebra no Enter).
     qreal   wrapWidth = 0;
+    // note / comment: o jeito do papel (leva 2 do rework, 2026-10-07).
+    // "" = o de sempre (quadrado com a dobrinha; o comentário é o balão).
+    QString shape;           // "" | "index" | "strip" | "round" | "tag" | "torn" | "pinked" | "dymo"
+    QString fastener;        // "" = pin | "tape" | "clip" | "staple" | "none"
+    QString frame;           // "" = nenhuma | "pen" | "cut" | "corners"
+    // sticker: o PNG (base64) fica em content; width/height = tamanho no quadro.
+    bool    flipX    = false;
+    bool    flipY    = false;
+    QString outline;         // "" = recorte branco | "none" | "shadow"
+    qreal   baseWidth = 0;   // largura com que entrou (100%); limita de 20% a 400%
+    qreal   z        = 1;    // camada: > 0 por cima dos cards, < 0 atrás deles
+    bool    locked   = false;
 };
 
 struct CanvasConnection {

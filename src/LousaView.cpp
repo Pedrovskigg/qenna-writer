@@ -7,6 +7,7 @@
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 #include <QMimeData>
+#include <QUrl>
 #include <QVariantAnimation>
 #include <QMouseEvent>
 #include <QPen>
@@ -87,9 +88,23 @@ void LousaView::mouseDoubleClickEvent(QMouseEvent* event)
     QGraphicsView::mouseDoubleClickEvent(event);
 }
 
+// Imagem arrastada do Windows (arquivo) ou de outro programa (imagem crua).
+static bool hasDroppableImage(const QMimeData* md)
+{
+    if (md->hasImage()) return true;
+    for (const QUrl& u : md->urls()) {
+        if (!u.isLocalFile()) continue;
+        const QString s = u.toLocalFile().toLower();
+        for (const char* ext : { ".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif" })
+            if (s.endsWith(QLatin1String(ext))) return true;
+    }
+    return false;
+}
+
 void LousaView::dragEnterEvent(QDragEnterEvent* event)
 {
-    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
+    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))
+        || hasDroppableImage(event->mimeData())) {
         event->acceptProposedAction();
         return;
     }
@@ -98,7 +113,8 @@ void LousaView::dragEnterEvent(QDragEnterEvent* event)
 
 void LousaView::dragMoveEvent(QDragMoveEvent* event)
 {
-    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
+    if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))
+        || hasDroppableImage(event->mimeData())) {
         event->acceptProposedAction();
         return;
     }
@@ -110,6 +126,21 @@ void LousaView::dropEvent(QDropEvent* event)
     if (event->mimeData()->hasFormat(QString::fromLatin1(kLousaMime))) {
         const QString payload = QString::fromUtf8(event->mimeData()->data(QString::fromLatin1(kLousaMime)));
         emit itemDropped(payload, mapToScene(event->position().toPoint()));
+        event->acceptProposedAction();
+        return;
+    }
+    if (hasDroppableImage(event->mimeData())) {
+        const QPointF at = mapToScene(event->position().toPoint());
+        QList<QImage> images;
+        for (const QUrl& u : event->mimeData()->urls()) {
+            if (!u.isLocalFile()) continue;
+            QImage img(u.toLocalFile());
+            if (!img.isNull()) images << img;
+        }
+        if (images.isEmpty() && event->mimeData()->hasImage())
+            images << qvariant_cast<QImage>(event->mimeData()->imageData());
+        for (int i = 0; i < images.size(); ++i)
+            emit imageDropped(images.at(i), at + QPointF(24.0 * i, 24.0 * i));
         event->acceptProposedAction();
         return;
     }
@@ -224,9 +255,15 @@ void LousaView::mousePressEvent(QMouseEvent* event)
 
     // Ligar: primeiro card, depois o segundo
     if (m_connectMode && event->button() == Qt::LeftButton) {
+        // O adesivo não recebe linha: pega o card que estiver embaixo dele.
         CardItem* card = nullptr;
-        for (QGraphicsItem* it = itemAt(event->pos()); it; it = it->parentItem())
-            if ((card = dynamic_cast<CardItem*>(it))) break;
+        for (QGraphicsItem* hit : items(event->pos())) {
+            for (QGraphicsItem* it = hit; it && !card; it = it->parentItem()) {
+                auto* ci = dynamic_cast<CardItem*>(it);
+                if (ci && !ci->isSticker()) card = ci;
+            }
+            if (card) break;
+        }
         if (!card) { setConnectMode(false); event->accept(); return; }
         auto* sc = qobject_cast<LousaScene*>(scene());
         if (m_connectFrom.isEmpty()) {

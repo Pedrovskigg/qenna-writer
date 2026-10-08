@@ -363,6 +363,8 @@ qt_add_executable(qenna-writer
     src/LousaPanel.h
     src/LousaDock.cpp
     src/LousaDock.h
+    src/LousaStickers.cpp
+    src/LousaStickers.h
     src/LousaActionBar.cpp
     src/LousaActionBar.h
     src/LousaExtras.cpp

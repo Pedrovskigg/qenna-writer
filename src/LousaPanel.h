@@ -3,6 +3,7 @@
 #include "LousaTypes.h"
 
 #include <QDialog>
+#include <QImage>
 #include <QHash>
 #include <QList>
 #include <QPair>
@@ -97,6 +98,14 @@ private:
     void createText(const QPointF& at);
     void createSymbol(const QPointF* at = nullptr);
     void createImage();
+    void createImageCard(const QImage& img, const QPointF* at);   // foto com moldura e legenda
+    void placeImage(const QImage& img, const QPointF* at);        // transparente vira adesivo
+    void placeSticker(const QImage& img, const QPointF* at, const QString& outline,
+                      qreal longest, bool remember);
+    void showStickerPicker();
+    void showNoteStyle(CardItem* card, const QPoint& globalPos);
+    void setStickerLayer(CardItem* card, const QString& how);    // "front" | "back" | "behind"
+    bool pasteImageFromClipboard();
     void pickDocForBoard();
     void pickCharacterForBoard();
     void placeFromPayload(const QString& payload, const QPointF* at);
@@ -164,6 +173,7 @@ private:
     // Fundo e cards (A)
     void showBoardLook();
     void applyLookPrefs();
+    void reclaimInput();      // a Lousa volta a ser a janela ativa depois de popup
 
     // Busca (J)
     void runSearch(const QString& text);

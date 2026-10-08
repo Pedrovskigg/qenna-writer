@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QFrame>
+#include <QRect>
 #include <QList>
 #include <QPair>
 #include <QString>
@@ -22,6 +23,7 @@ public:
     int  fullWidth() const;          // largura com os nomes
     // Botões que ficam "acesos" enquanto o modo está ligado (Área, Ligar).
     void setToolChecked(const QString& kind, bool on);
+    QRect toolGlobalRect(const QString& kind) const;   // onde está o botão (pra abrir a cartela em cima)
     void applyTheme();
 
 signals:

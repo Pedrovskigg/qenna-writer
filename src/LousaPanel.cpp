@@ -13,6 +13,7 @@
 #include "LousaExtras.h"
 #include "LousaScene.h"
 #include "LousaDock.h"
+#include "LousaStickers.h"
 #include "LousaView.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
@@ -21,6 +22,13 @@
 
 #include <QApplication>
 #include <QBuffer>
+#include <QCheckBox>
+#include <QClipboard>
+#include <QGridLayout>
+#include <QMimeData>
+#include <QScreen>
+#include <QStackedWidget>
+#include <QUrl>
 #include <QCloseEvent>
 #include <QCursor>
 #include <QDialog>
@@ -134,6 +142,7 @@ QString cardTypeName(const QString& type)
     if (type == QStringLiteral("text"))      return QCoreApplication::translate("LousaPanel", "Texto livre");
     if (type == QStringLiteral("symbol"))    return QCoreApplication::translate("LousaPanel", "Símbolo");
     if (type == QStringLiteral("image"))     return QCoreApplication::translate("LousaPanel", "Imagem");
+    if (type == QStringLiteral("sticker"))   return QCoreApplication::translate("LousaPanel", "Adesivo");
     if (type == QStringLiteral("character")) return QCoreApplication::translate("LousaPanel", "Personagem");
     if (type == QStringLiteral("chapter"))   return QCoreApplication::translate("LousaPanel", "Capítulo");
     return QCoreApplication::translate("LousaPanel", "Documento");
@@ -566,8 +575,9 @@ void LousaPanel::refreshStashUi()
     m_stashList->clear();
     for (int i = 0; i < m_stash.size(); ++i) {
         const CanvasCard& c = m_stash[i];
+        const bool isSticker = (c.type == QStringLiteral("sticker"));
         QString label = c.title.trimmed();
-        if (label.isEmpty()) {
+        if (label.isEmpty() && !isSticker) {
             const QString text = (c.type == QStringLiteral("image")) ? c.description : plainOf(c.content);
             label = text.simplified().left(48);
         }
@@ -582,8 +592,16 @@ void LousaPanel::refreshStashUi()
         QPainter p(&dot);
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
-        p.setBrush(col);
-        p.drawRoundedRect(QRectF(1, 2, 12, 10), 2, 2);
+        if (isSticker) {
+            QImage img;
+            img.loadFromData(QByteArray::fromBase64(c.content.toLatin1()));
+            if (!img.isNull())
+                p.drawImage(QRectF(0, 0, 14, 14), img.scaled(28, 28, Qt::KeepAspectRatio, Qt::SmoothTransformation)
+                                                     .copy(QRect(0, 0, 28, 28)));
+        } else {
+            p.setBrush(col);
+            p.drawRoundedRect(QRectF(1, 2, 12, 10), 2, 2);
+        }
         p.end();
         auto* item = new QListWidgetItem(QIcon(dot), QStringLiteral("%1  ·  %2").arg(label, cardTypeName(c.type)));
         item->setData(Qt::UserRole, i);
@@ -811,6 +829,9 @@ void LousaPanel::buildUi()
     connect(m_view, &LousaView::itemDropped, this, [this](const QString& payload, const QPointF& p) {
         placeFromPayload(payload, &p);
     });
+    connect(m_view, &LousaView::imageDropped, this, [this](const QImage& img, const QPointF& p) {
+        placeImage(img, &p);
+    });
     connect(m_view, &LousaView::connectPicked, this, &LousaPanel::askNewConnection);
     connect(m_view, &LousaView::connectModeChanged, this, [this](bool on) {
         m_dock->setToolChecked(QStringLiteral("connect"), on);
@@ -960,6 +981,8 @@ void LousaPanel::createFromTool(const QString& kind)
         createSymbol();
     } else if (kind == QStringLiteral("image")) {
         createImage();
+    } else if (kind == QStringLiteral("sticker")) {
+        showStickerPicker();
     } else if (kind == QStringLiteral("area")) {
         const bool on = !m_view->isPlanMode();
         m_view->setPlanMode(on);
@@ -1006,10 +1029,26 @@ void LousaPanel::createImage()
         this, tr("Escolher imagem"), QString(),
         tr("Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)"));
     if (path.isEmpty()) return;
-    QImage img(path);
+    const QImage img(path);
     if (img.isNull()) return;
+    createImageCard(img, nullptr);
+}
+
+void LousaPanel::createImageCard(const QImage& src, const QPointF* at)
+{
+    if (!m_scene || src.isNull()) return;
+    QImage img = src;
     if (img.width() > 900 || img.height() > 900)
         img = img.scaled(900, 900, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (img.hasAlphaChannel()) {
+        // JPEG não tem transparência: o que for transparente vira papel claro, não preto.
+        QImage flat(img.size(), QImage::Format_RGB32);
+        flat.fill(QColor(0xf3, 0xef, 0xe6));
+        QPainter fp(&flat);
+        fp.drawImage(0, 0, img);
+        fp.end();
+        img = flat;
+    }
     QByteArray ba;
     QBuffer buf(&ba);
     buf.open(QIODevice::WriteOnly);
@@ -1020,8 +1059,559 @@ void LousaPanel::createImage()
     const qreal photoW = c.width - 14.0;
     const qreal photoH = qBound(90.0, photoW * img.height() / qMax(1, img.width()), 340.0);
     c.height = photoH + 7.0 + CardItem::kCaptionH;
+    if (at) {
+        c.x = at->x() - c.width / 2.0;
+        c.y = at->y() - c.height / 2.0;
+    }
     c.content = QString::fromLatin1(ba.toBase64());
     placeCard(c);
+    save();
+}
+
+// ── Adesivos ─────────────────────────────────────────────────────────────────
+
+// Corta a sobra transparente em volta: o adesivo começa onde o desenho começa.
+static QImage trimTransparent(const QImage& src)
+{
+    const QImage a = src.convertToFormat(QImage::Format_ARGB32);
+    int x0 = a.width(), y0 = a.height(), x1 = -1, y1 = -1;
+    for (int y = 0; y < a.height(); ++y) {
+        const auto* line = reinterpret_cast<const QRgb*>(a.constScanLine(y));
+        for (int x = 0; x < a.width(); ++x) {
+            if (qAlpha(line[x]) <= 8) continue;
+            x0 = qMin(x0, x); x1 = qMax(x1, x);
+            y0 = qMin(y0, y); y1 = qMax(y1, y);
+        }
+    }
+    if (x1 < 0) return a;   // toda transparente: deixa como está
+    const QRect r = QRect(QPoint(x0, y0), QPoint(x1, y1)).adjusted(-2, -2, 2, 2).intersected(a.rect());
+    return a.copy(r);
+}
+
+void LousaPanel::placeImage(const QImage& img, const QPointF* at)
+{
+    if (img.isNull()) return;
+    if (LousaStickers::hasTransparency(img)) placeSticker(img, at, QString(), 0.0, true);
+    else                                     createImageCard(img, at);
+}
+
+void LousaPanel::placeSticker(const QImage& src, const QPointF* at, const QString& outline,
+                              qreal longest, bool remember)
+{
+    if (!m_scene || src.isNull()) return;
+    QImage img = src.convertToFormat(QImage::Format_ARGB32);
+    if (qMax(img.width(), img.height()) > 1000)
+        img = img.scaled(1000, 1000, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    img = trimTransparent(img);
+    QByteArray ba;
+    QBuffer buf(&ba);
+    buf.open(QIODevice::WriteOnly);
+    img.save(&buf, "PNG");
+
+    pushUndo();
+    CanvasCard c = nextCardData(QStringLiteral("sticker"));
+    const qreal L = longest > 0 ? longest : qMin(220.0, qreal(qMax(img.width(), img.height())));
+    const qreal sc = L / qMax(1, qMax(img.width(), img.height()));
+    c.width  = qMax(8.0, img.width() * sc);
+    c.height = qMax(8.0, img.height() * sc);
+    c.baseWidth = c.width;
+    const QPointF ctr = at ? *at : viewCenter();
+    c.x = ctr.x() - c.width / 2.0;
+    c.y = ctr.y() - c.height / 2.0;
+    c.content = QString::fromLatin1(ba.toBase64());
+    c.outline = outline;
+    qreal top = 0.0;
+    for (CardItem* x : m_scene->cardItems())
+        if (x->isSticker()) top = qMax(top, x->cardData().z);
+    c.z = top + 1.0;
+    placeCard(c);
+    if (remember) LousaStickers::remember(img);
+    save();
+}
+
+void LousaPanel::setStickerLayer(CardItem* card, const QString& how)
+{
+    if (!m_scene || !card || !card->isSticker()) return;
+    pushUndo();
+    QList<CardItem*> front, behind;
+    for (CardItem* x : m_scene->cardItems())
+        if (x->isSticker() && x != card) (x->cardData().z > 0 ? front : behind) << x;
+    auto byZ = [](CardItem* a, CardItem* b) { return a->cardData().z < b->cardData().z; };
+    std::sort(front.begin(), front.end(), byZ);
+    std::sort(behind.begin(), behind.end(), byZ);
+    if (how == QStringLiteral("front"))     front.append(card);    // por cima de tudo
+    else if (how == QStringLiteral("back")) front.prepend(card);   // logo acima dos cards
+    else                                    behind.append(card);   // atrás dos cards
+    // Por cima dos cards: 1, 2, 3...; atrás: entre as áreas (-2) e as linhas (-1).
+    for (int i = 0; i < front.size(); ++i) front[i]->setStickerZ(1.0 + i);
+    for (int i = 0; i < behind.size(); ++i)
+        behind[i]->setStickerZ(-1.9 + 0.8 * (i + 1) / (behind.size() + 1));
+    save();
+    scheduleActionBar();
+}
+
+bool LousaPanel::pasteImageFromClipboard()
+{
+    const QMimeData* md = QApplication::clipboard()->mimeData();
+    if (!md) return false;
+    QImage img;
+    // PNG primeiro: é o formato que guarda a transparência.
+    if (md->hasFormat(QStringLiteral("image/png")))
+        img = QImage::fromData(md->data(QStringLiteral("image/png")), "PNG");
+    if (img.isNull()) {
+        for (const QUrl& u : md->urls()) {
+            if (!u.isLocalFile()) continue;
+            img = QImage(u.toLocalFile());
+            if (!img.isNull()) break;
+        }
+    }
+    if (img.isNull() && md->hasImage()) img = qvariant_cast<QImage>(md->imageData());
+    if (img.isNull()) return false;
+    QPointF at = viewCenter();
+    if (m_view) {
+        const QPoint vp = m_view->viewport()->mapFromGlobal(QCursor::pos());
+        if (m_view->viewport()->rect().contains(vp)) at = m_view->mapToScene(vp);
+    }
+    placeImage(img, &at);
+    return true;
+}
+
+namespace {
+
+// Botão da cartela / da folha de estilo, com a miniatura desenhada.
+QToolButton* thumbButton(QWidget* parent, const QPixmap& pm, const QSize& box, const QString& tip,
+                         const QString& objectName)
+{
+    auto* b = new QToolButton(parent);
+    b->setObjectName(objectName);
+    b->setIcon(QIcon(pm));
+    b->setIconSize(box - QSize(10, 10));
+    b->setFixedSize(box);
+    b->setToolTip(tip);
+    b->setCursor(Qt::PointingHandCursor);
+    return b;
+}
+
+QPixmap fitPixmap(const QImage& img, const QSize& size, qreal dpr)
+{
+    QPixmap pm(QSize(qRound(size.width() * dpr), qRound(size.height() * dpr)));
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    if (img.isNull()) return pm;
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
+    const qreal sc = qMin(size.width() / qreal(img.width()), size.height() / qreal(img.height()));
+    const QSizeF s(img.width() * sc, img.height() * sc);
+    p.drawImage(QRectF(QPointF((size.width() - s.width()) / 2.0, (size.height() - s.height()) / 2.0), s), img);
+    p.end();
+    return pm;
+}
+
+QString popupQss(const QString& panel)
+{
+    return Theme::qss(QStringLiteral(
+        "QWidget#%7 { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"
+        "QLabel#lousaPopTitle { color: %4; font-size: 11px; font-weight: 700; letter-spacing: 1px; background: transparent; }"
+        "QLabel#lousaPopHint { color: %4; font-size: 11px; background: transparent; }"
+        "QToolButton#lousaPopTab { background: transparent; color: %3; border: 1px solid %2;"
+        "  border-radius: 11px; padding: 3px 12px; font-size: 12px; }"
+        "QToolButton#lousaPopTab:checked { background: %3; color: %1; border-color: %3; }"
+        "QToolButton#lousaPopCell { background: #efeae2; border: 1px solid transparent; border-radius: @radius-control; }"
+        "QToolButton#lousaPopCell:hover { border-color: %6; }"
+        "QToolButton#lousaPopOpt { background: %5; border: 1.5px solid transparent; border-radius: @radius-control; }"
+        "QToolButton#lousaPopOpt:hover { border-color: %2; }"
+        "QToolButton#lousaPopOpt:checked { border-color: %6; }"
+        "QToolButton#lousaPopSwatch { border: 2px solid transparent; border-radius: 11px; }"
+        "QToolButton#lousaPopSwatch:checked { border-color: %6; }"
+        "QPushButton#lousaPopBtn { background: %6; color: white; border: none; border-radius: @radius-control;"
+        "  padding: 6px 14px; font-weight: 600; }"
+        "QCheckBox { color: %3; background: transparent; spacing: 8px; }"
+        "QCheckBox::indicator { width: 14px; height: 14px; border: 1.5px solid %4; border-radius: 3px; background: transparent; }"
+        "QCheckBox::indicator:checked { background: %6; border-color: %6; }"
+        "QFrame#lousaPopSep { background: %2; border: none; }"
+        "QScrollArea, QWidget#lousaPopPage { background: transparent; }"
+    ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
+          Theme::textMuted(), Theme::hoverOverlay(), Theme::accentDefault(), panel));
+}
+
+QDialog* makePopupDialog(QWidget* parent, QWidget** panelOut, const QString& objectName)
+{
+    auto* dlg = new QDialog(parent, Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
+    dlg->setAttribute(Qt::WA_TranslucentBackground);
+    auto* outer = new QVBoxLayout(dlg);
+    outer->setContentsMargins(0, 0, 0, 0);
+    auto* panel = new QWidget(dlg);
+    panel->setObjectName(objectName);
+    panel->setAttribute(Qt::WA_StyledBackground, true);
+    outer->addWidget(panel);
+    panel->setStyleSheet(popupQss(objectName));
+    *panelOut = panel;
+    return dlg;
+}
+
+void placePopup(QDialog* dlg, const QRect& anchor, bool above)
+{
+    dlg->adjustSize();
+    const QSize s = dlg->sizeHint();
+    QPoint at(anchor.center().x() - s.width() / 2, above ? anchor.top() - s.height() - 10 : anchor.bottom() + 8);
+    if (QScreen* scr = QGuiApplication::screenAt(anchor.center())) {
+        const QRect ar = scr->availableGeometry();
+        at.setX(qBound(ar.left() + 8, at.x(), ar.right() - s.width() - 8));
+        at.setY(qBound(ar.top() + 8, at.y(), ar.bottom() - s.height() - 8));
+    }
+    dlg->move(at);
+}
+
+QFrame* popupSep(QWidget* parent)
+{
+    auto* sep = new QFrame(parent);
+    sep->setObjectName(QStringLiteral("lousaPopSep"));
+    sep->setFixedHeight(1);
+    return sep;
+}
+
+} // namespace
+
+void LousaPanel::showStickerPicker()
+{
+    if (!m_scene) return;
+    QWidget* panel = nullptr;
+    std::unique_ptr<QDialog> dlg(makePopupDialog(this, &panel, QStringLiteral("lousaStkPanel")));
+    auto* pl = new QVBoxLayout(panel);
+    pl->setContentsMargins(14, 12, 14, 12);
+    pl->setSpacing(10);
+    const qreal dpr = devicePixelRatioF();
+    const QSize cell(58, 58);
+
+    // Abas: a cartela da Qenna e os PNGs já usados
+    auto* tabs = new QHBoxLayout;
+    tabs->setSpacing(6);
+    auto* tabQenna = new QToolButton(panel);
+    tabQenna->setObjectName(QStringLiteral("lousaPopTab"));
+    tabQenna->setText(tr("Da Qenna"));
+    auto* tabRecent = new QToolButton(panel);
+    tabRecent->setObjectName(QStringLiteral("lousaPopTab"));
+    tabRecent->setText(tr("Usados antes"));
+    for (QToolButton* t : { tabQenna, tabRecent }) {
+        t->setCheckable(true);
+        t->setAutoExclusive(true);
+        t->setCursor(Qt::PointingHandCursor);
+        tabs->addWidget(t);
+    }
+    tabs->addStretch(1);
+    pl->addLayout(tabs);
+
+    auto* stack = new QStackedWidget(panel);
+    QString picked;   // "qenna:<id>", "recent:<arquivo>" ou "file"
+    QDialog* d = dlg.get();
+    auto pick = [d, &picked](const QString& what) { picked = what; d->accept(); };
+
+    // Página 1: a cartela da Qenna
+    auto* pageQ = new QWidget;
+    pageQ->setObjectName(QStringLiteral("lousaPopPage"));
+    auto* ql = new QVBoxLayout(pageQ);
+    ql->setContentsMargins(0, 0, 0, 0);
+    ql->setSpacing(6);
+    auto addGroup = [&](const QString& title, const QStringList& ids) {
+        auto* lbl = new QLabel(title, pageQ);
+        lbl->setObjectName(QStringLiteral("lousaPopTitle"));
+        ql->addWidget(lbl);
+        auto* gw = new QWidget(pageQ);
+        gw->setObjectName(QStringLiteral("lousaPopPage"));
+        auto* g = new QGridLayout(gw);
+        g->setContentsMargins(0, 0, 0, 0);
+        g->setSpacing(6);
+        int n = 0;
+        for (const QString& id : ids) {
+            const QImage img = LousaStickers::render(id, 120);
+            QToolButton* b = thumbButton(gw, fitPixmap(img, cell - QSize(14, 14), dpr), cell,
+                                         LousaStickers::label(id), QStringLiteral("lousaPopCell"));
+            connect(b, &QToolButton::clicked, d, [pick, id]() { pick(QStringLiteral("qenna:") + id); });
+            g->addWidget(b, n / 6, n % 6);
+            ++n;
+        }
+        ql->addWidget(gw);
+    };
+    addGroup(tr("MARCAÇÕES"), LousaStickers::markIds());
+    addGroup(tr("CARIMBOS E OBJETOS"), LousaStickers::objectIds());
+    stack->addWidget(pageQ);
+
+    // Página 2: usados antes (em qualquer projeto)
+    auto* pageR = new QWidget;
+    pageR->setObjectName(QStringLiteral("lousaPopPage"));
+    auto* rl = new QVBoxLayout(pageR);
+    rl->setContentsMargins(0, 0, 0, 0);
+    const QList<LousaStickers::Recent> recents = LousaStickers::recent();
+    if (recents.isEmpty()) {
+        auto* empty = new QLabel(tr("Os PNGs que você puser no quadro aparecem aqui, em qualquer projeto."), pageR);
+        empty->setObjectName(QStringLiteral("lousaPopHint"));
+        empty->setWordWrap(true);
+        empty->setMinimumHeight(80);
+        empty->setAlignment(Qt::AlignCenter);
+        rl->addWidget(empty);
+    } else {
+        auto* scroll = new QScrollArea(pageR);
+        scroll->setFrameShape(QFrame::NoFrame);
+        scroll->setWidgetResizable(true);
+        scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        auto* gw = new QWidget;
+        gw->setObjectName(QStringLiteral("lousaPopPage"));
+        auto* g = new QGridLayout(gw);
+        g->setContentsMargins(0, 0, 0, 0);
+        g->setSpacing(6);
+        int n = 0;
+        for (const LousaStickers::Recent& r : recents) {
+            QToolButton* b = thumbButton(gw, fitPixmap(r.image, cell - QSize(14, 14), dpr), cell, QString(),
+                                         QStringLiteral("lousaPopCell"));
+            const QString path = r.path;
+            connect(b, &QToolButton::clicked, d, [pick, path]() { pick(QStringLiteral("recent:") + path); });
+            g->addWidget(b, n / 6, n % 6);
+            ++n;
+        }
+        g->setRowStretch(g->rowCount(), 1);
+        scroll->setWidget(gw);
+        scroll->setFixedHeight(qMin(3, (n + 5) / 6) * (cell.height() + 6));
+        rl->addWidget(scroll);
+    }
+    stack->addWidget(pageR);
+    pl->addWidget(stack);
+
+    QSettings st;
+    const bool showRecent = st.value(QStringLiteral("lousa/stickerTab")).toString() == QStringLiteral("recent")
+                            && !recents.isEmpty();
+    (showRecent ? tabRecent : tabQenna)->setChecked(true);
+    stack->setCurrentIndex(showRecent ? 1 : 0);
+    connect(tabQenna, &QToolButton::clicked, d, [stack]() { stack->setCurrentIndex(0); });
+    connect(tabRecent, &QToolButton::clicked, d, [stack]() { stack->setCurrentIndex(1); });
+
+    pl->addWidget(popupSep(panel));
+    auto* foot = new QHBoxLayout;
+    foot->setSpacing(10);
+    auto* fileBtn = new QPushButton(tr("Escolher PNG…"), panel);
+    fileBtn->setObjectName(QStringLiteral("lousaPopBtn"));
+    fileBtn->setCursor(Qt::PointingHandCursor);
+    connect(fileBtn, &QPushButton::clicked, d, [pick]() { pick(QStringLiteral("file")); });
+    foot->addWidget(fileBtn);
+    auto* hint = new QLabel(tr("ou arraste uma imagem pro quadro,\nou cole com Ctrl+V"), panel);
+    hint->setObjectName(QStringLiteral("lousaPopHint"));
+    foot->addWidget(hint, 1);
+    pl->addLayout(foot);
+
+    placePopup(d, m_dock ? m_dock->toolGlobalRect(QStringLiteral("sticker")) : QRect(QCursor::pos(), QSize(1, 1)), true);
+    const int res = d->exec();
+    st.setValue(QStringLiteral("lousa/stickerTab"), stack->currentIndex() == 1 ? QStringLiteral("recent") : QStringLiteral("qenna"));
+    if (res != QDialog::Accepted || picked.isEmpty()) return;
+
+    if (picked.startsWith(QStringLiteral("qenna:"))) {
+        const QString id = picked.mid(6);
+        placeSticker(LousaStickers::render(id, 480), nullptr, LousaStickers::defaultOutline(id),
+                     LousaStickers::defaultSize(id), false);
+    } else if (picked.startsWith(QStringLiteral("recent:"))) {
+        placeSticker(QImage(picked.mid(7)), nullptr, QString(), 0.0, true);
+    } else {
+        const QString path = QFileDialog::getOpenFileName(
+            this, tr("Escolher adesivo"), QString(),
+            tr("Imagens (*.png *.webp *.gif *.jpg *.jpeg *.bmp)"));
+        if (path.isEmpty()) return;
+        const QImage img(path);
+        if (img.isNull()) return;
+        // Pelo botão Adesivo, até foto sem transparência vira adesivo (com a borda branca).
+        placeSticker(img, nullptr, QString(), 0.0, true);
+    }
+    m_view->setFocus();
+}
+
+void LousaPanel::showNoteStyle(CardItem* card, const QPoint& globalPos)
+{
+    if (!card || !m_scene) return;
+    QWidget* panel = nullptr;
+    std::unique_ptr<QDialog> dlg(makePopupDialog(this, &panel, QStringLiteral("lousaStylePanel")));
+    QDialog* d = dlg.get();
+    auto* pl = new QVBoxLayout(panel);
+    pl->setContentsMargins(14, 12, 14, 12);
+    pl->setSpacing(8);
+    const qreal dpr = devicePixelRatioF();
+    const bool isNote = card->cardData().type == QStringLiteral("note");
+
+    struct Opt { QString key; QString label; };
+    const QList<Opt> shapes = {
+        { QString(), tr("Quadrado") }, { QStringLiteral("index"), tr("Ficha pautada") },
+        { QStringLiteral("strip"), tr("Tira") }, { QStringLiteral("round"), tr("Redondo") },
+        { QStringLiteral("tag"), tr("Etiqueta") }, { QStringLiteral("torn"), tr("Folha arrancada") },
+        { QStringLiteral("pinked"), tr("Picotado") }, { QStringLiteral("dymo"), tr("Fita rotuladora") } };
+    const QList<Opt> fasteners = {
+        { QString(), tr("Pin") }, { QStringLiteral("tape"), tr("Fita adesiva") },
+        { QStringLiteral("clip"), tr("Clipe") }, { QStringLiteral("staple"), tr("Grampo") },
+        { QStringLiteral("none"), tr("Nada") } };
+    const QList<Opt> frames = {
+        { QString(), tr("Nenhuma") }, { QStringLiteral("pen"), tr("Caneta") },
+        { QStringLiteral("cut"), tr("Recorte") }, { QStringLiteral("corners"), tr("Cantoneiras") } };
+    const QList<QColor> palette = {
+        QColor(QStringLiteral("#f6d06a")), QColor(QStringLiteral("#f39a95")), QColor(QStringLiteral("#6dd3ac")),
+        QColor(QStringLiteral("#b49cf5")), QColor(QStringLiteral("#8fc3f0")), QColor(QStringLiteral("#f4a96a")),
+        QColor(QStringLiteral("#e8e4dc")) };
+
+    QList<QToolButton*> shapeBtns, fastBtns, frameBtns, swatches;
+    auto section = [&](const QString& title, const QList<Opt>& opts, int cols, const QSize& box,
+                       QList<QToolButton*>& out) {
+        auto* lbl = new QLabel(title, panel);
+        lbl->setObjectName(QStringLiteral("lousaPopTitle"));
+        pl->addWidget(lbl);
+        auto* gw = new QWidget(panel);
+        gw->setObjectName(QStringLiteral("lousaPopPage"));
+        auto* g = new QGridLayout(gw);
+        g->setContentsMargins(0, 0, 0, 0);
+        g->setSpacing(6);
+        for (int i = 0; i < opts.size(); ++i) {
+            QToolButton* b = thumbButton(gw, QPixmap(), box, opts[i].label, QStringLiteral("lousaPopOpt"));
+            b->setCheckable(true);
+            g->addWidget(b, i / cols, i % cols);
+            out << b;
+        }
+        pl->addWidget(gw);
+    };
+    section(tr("FORMATO"), shapes, 4, QSize(68, 58), shapeBtns);
+    section(tr("PRESO COM"), fasteners, 5, QSize(53, 58), fastBtns);
+    section(tr("BORDA"), frames, 4, QSize(68, 58), frameBtns);
+
+    auto* colorLbl = new QLabel(tr("COR"), panel);
+    colorLbl->setObjectName(QStringLiteral("lousaPopTitle"));
+    pl->addWidget(colorLbl);
+    auto* colors = new QHBoxLayout;
+    colors->setSpacing(4);
+    for (const QColor& c : palette) {
+        QPixmap dot(QSize(qRound(18 * dpr), qRound(18 * dpr)));
+        dot.setDevicePixelRatio(dpr);
+        dot.fill(Qt::transparent);
+        QPainter p(&dot);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(QPen(c.darker(118), 1));
+        p.setBrush(c);
+        p.drawEllipse(QRectF(1, 1, 16, 16));
+        p.end();
+        QToolButton* b = thumbButton(panel, dot, QSize(26, 26), QString(), QStringLiteral("lousaPopSwatch"));
+        b->setIconSize(QSize(18, 18));
+        b->setCheckable(true);
+        colors->addWidget(b);
+        swatches << b;
+    }
+    auto* more = new QToolButton(panel);
+    more->setObjectName(QStringLiteral("lousaPopTab"));
+    more->setText(tr("Outra…"));
+    more->setCursor(Qt::PointingHandCursor);
+    colors->addWidget(more);
+    colors->addStretch(1);
+    pl->addLayout(colors);
+
+    QCheckBox* keep = nullptr;
+    QSettings st;
+    auto savedStyle = [&st]() {
+        return QStringList{ st.value(QStringLiteral("lousa/noteShape")).toString(),
+                            st.value(QStringLiteral("lousa/noteFastener")).toString(),
+                            st.value(QStringLiteral("lousa/noteFrame")).toString(),
+                            st.value(QStringLiteral("lousa/noteColor")).toString() };
+    };
+    auto currentStyle = [card]() {
+        const CanvasCard cd = card->cardData();
+        return QStringList{ cd.shape, cd.fastener, cd.frame, cd.color.name() };
+    };
+    if (isNote) {
+        pl->addWidget(popupSep(panel));
+        keep = new QCheckBox(tr("Usar nos próximos post-its"), panel);
+        keep->setCursor(Qt::PointingHandCursor);
+        const QStringList saved = savedStyle();
+        keep->setChecked(!saved.at(3).isEmpty() && saved == currentStyle());
+        pl->addWidget(keep);
+    }
+    auto storeDefaults = [&st, keep, currentStyle]() {
+        if (!keep) return;
+        const QStringList s = keep->isChecked() ? currentStyle() : QStringList{ QString(), QString(), QString(), QString() };
+        st.setValue(QStringLiteral("lousa/noteShape"), s.at(0));
+        st.setValue(QStringLiteral("lousa/noteFastener"), s.at(1));
+        st.setValue(QStringLiteral("lousa/noteFrame"), s.at(2));
+        st.setValue(QStringLiteral("lousa/noteColor"), s.at(3));
+    };
+
+    // Miniaturas desenhadas com o card de verdade, na cor e no jeito atuais.
+    auto refresh = [&]() {
+        const CanvasCard cd = card->cardData();
+        auto preview = [&](CanvasCard p, const QSize& box) {
+            p.id = QStringLiteral("preview-") + p.shape + p.fastener + p.frame;
+            p.x = p.y = 0;
+            p.title = (p.shape == QStringLiteral("dymo")) ? tr("Fita") : QString();
+            p.content.clear();
+            const QSizeF sz = CardItem::defaultNoteSize(p.shape, p.type);
+            p.width = sz.width();
+            p.height = sz.height();
+            return CardItem::renderPreview(p, box - QSize(12, 12), dpr);
+        };
+        for (int i = 0; i < shapes.size(); ++i) {
+            CanvasCard p = cd;
+            p.shape = shapes[i].key;
+            p.frame.clear();
+            shapeBtns[i]->setIcon(QIcon(preview(p, shapeBtns[i]->size())));
+            shapeBtns[i]->setChecked(cd.shape == shapes[i].key);
+        }
+        for (int i = 0; i < fasteners.size(); ++i) {
+            CanvasCard p = cd;
+            p.fastener = fasteners[i].key;
+            p.frame.clear();
+            fastBtns[i]->setIcon(QIcon(preview(p, fastBtns[i]->size())));
+            fastBtns[i]->setChecked(cd.fastener == fasteners[i].key);
+        }
+        for (int i = 0; i < frames.size(); ++i) {
+            CanvasCard p = cd;
+            p.frame = frames[i].key;
+            frameBtns[i]->setIcon(QIcon(preview(p, frameBtns[i]->size())));
+            frameBtns[i]->setChecked(cd.frame == frames[i].key);
+        }
+        for (int i = 0; i < palette.size(); ++i)
+            swatches[i]->setChecked(cd.color.name() == palette[i].name());
+    };
+    for (QToolButton* b : shapeBtns) b->setIconSize(b->size() - QSize(12, 12));
+    for (QToolButton* b : fastBtns)  b->setIconSize(b->size() - QSize(12, 12));
+    for (QToolButton* b : frameBtns) b->setIconSize(b->size() - QSize(12, 12));
+    refresh();
+
+    auto apply = [&](const QString& shape, const QString& fastener, const QString& frame) {
+        card->setNoteStyle(shape, fastener, frame);
+        storeDefaults();
+        refresh();
+    };
+    for (int i = 0; i < shapes.size(); ++i)
+        connect(shapeBtns[i], &QToolButton::clicked, d, [&, i]() {
+            const CanvasCard cd = card->cardData();
+            apply(shapes[i].key, cd.fastener, cd.frame);
+        });
+    for (int i = 0; i < fasteners.size(); ++i)
+        connect(fastBtns[i], &QToolButton::clicked, d, [&, i]() {
+            const CanvasCard cd = card->cardData();
+            apply(cd.shape, fasteners[i].key, cd.frame);
+        });
+    for (int i = 0; i < frames.size(); ++i)
+        connect(frameBtns[i], &QToolButton::clicked, d, [&, i]() {
+            const CanvasCard cd = card->cardData();
+            apply(cd.shape, cd.fastener, frames[i].key);
+        });
+    for (int i = 0; i < palette.size(); ++i)
+        connect(swatches[i], &QToolButton::clicked, d, [&, i]() {
+            card->setCardColor(palette[i]);
+            storeDefaults();
+            refresh();
+        });
+    connect(more, &QToolButton::clicked, d, [&]() {
+        const QColor nc = ColorPopover::getColor(card->cardData().color, this, tr("Cor"));
+        if (nc.isValid()) card->setCardColor(nc);
+        storeDefaults();
+        refresh();
+    });
+    if (keep) connect(keep, &QCheckBox::toggled, d, [&]() { storeDefaults(); });
+
+    placePopup(d, QRect(globalPos, QSize(1, 1)), false);
+    d->exec();
+    m_scene->refreshZoneCounts();
+    save();
+    scheduleActionBar();
 }
 
 void LousaPanel::pickDocForBoard()
@@ -1302,6 +1892,7 @@ void LousaPanel::refreshActionBar()
         Btn color; color.id = QStringLiteral("color"); color.swatch = d.color; color.tip = tr("Cor");
         if (t == QStringLiteral("note") || t == QStringLiteral("comment")) {
             b << color;
+            b << btn(QStringLiteral("style"), QStringLiteral("style"), tr("Estilo"), tr("Formato, presilha e borda"));
             Btn doc = btn(QStringLiteral("doc"), QStringLiteral("doc-plus"), tr("Documento"),
                           tr("Criar um documento com este card"));
             doc.separatorBefore = true;
@@ -1326,6 +1917,26 @@ void LousaPanel::refreshActionBar()
             Btn sym = btn(QStringLiteral("symbol"), QStringLiteral("symbol"), tr("Trocar"), tr("Trocar o símbolo"));
             sym.separatorBefore = true;
             b << sym;
+            tail();
+        } else if (t == QStringLiteral("sticker")) {
+            Btn fx = btn(QStringLiteral("stk-flipx"), QStringLiteral("flip-h"), tr("Espelhar"));
+            fx.checkable = true; fx.checked = d.flipX;
+            Btn fy = btn(QStringLiteral("stk-flipy"), QStringLiteral("flip-v"), tr("Virar"), tr("De ponta-cabeça"));
+            fy.checkable = true; fy.checked = d.flipY;
+            b << fx << fy;
+            const QString on = d.outline == QStringLiteral("none")   ? tr("Sem contorno")
+                             : d.outline == QStringLiteral("shadow") ? tr("Só sombra")
+                                                                     : tr("Recorte branco");
+            Btn ol = btn(QStringLiteral("stk-outline"), QStringLiteral("outline"), on, tr("Contorno"));
+            ol.separatorBefore = true;
+            b << ol;
+            b << btn(QStringLiteral("stk-layer"), QStringLiteral("layers"), tr("Camada"),
+                     tr("Pra frente, pra trás ou atrás dos cards"));
+            Btn lk = btn(QStringLiteral("stk-lock"), d.locked ? QStringLiteral("lock") : QStringLiteral("unlock"),
+                         d.locked ? tr("Destravar") : tr("Travar"),
+                         d.locked ? tr("Destravar: volta a mexer") : tr("Travar no lugar"));
+            lk.separatorBefore = true; lk.checkable = true; lk.checked = d.locked;
+            b << lk;
             tail();
         } else if (t == QStringLiteral("image")) {
             b << btn(QStringLiteral("image"), QStringLiteral("photo-swap"), tr("Trocar imagem"));
@@ -1478,6 +2089,37 @@ void LousaPanel::onAction(const QString& id, const QPoint& globalPos)
         } else if (id == QStringLiteral("caption")) {
             m_view->setFocus();
             one->beginCaptionEdit();
+        } else if (id == QStringLiteral("style")) {
+            showNoteStyle(one, globalPos);
+        } else if (id == QStringLiteral("stk-flipx")) {
+            one->setStickerFlip(!d.flipX, d.flipY);
+        } else if (id == QStringLiteral("stk-flipy")) {
+            one->setStickerFlip(d.flipX, !d.flipY);
+        } else if (id == QStringLiteral("stk-outline")) {
+            QMenu menu(this);
+            const QList<QPair<QString, QString>> opts = {
+                { QString(), tr("Recorte branco") }, { QStringLiteral("none"), tr("Nenhum") },
+                { QStringLiteral("shadow"), tr("Só sombra") } };
+            for (const auto& [key, label] : opts) {
+                QAction* a = menu.addAction(label);
+                a->setCheckable(true);
+                a->setChecked(d.outline == key);
+                a->setData(key);
+            }
+            if (QAction* chosen = menu.exec(globalPos)) one->setStickerOutline(chosen->data().toString());
+        } else if (id == QStringLiteral("stk-layer")) {
+            QMenu menu(this);
+            QAction* front  = menu.addAction(tr("Trazer pra frente") + QStringLiteral("\tCtrl+]"));
+            QAction* back   = menu.addAction(tr("Mandar pra trás") + QStringLiteral("\tCtrl+["));
+            QAction* behind = menu.addAction(tr("Atrás dos cards"));
+            behind->setCheckable(true);
+            behind->setChecked(d.z < 0);
+            QAction* chosen = menu.exec(globalPos);
+            if (chosen == front)       setStickerLayer(one, QStringLiteral("front"));
+            else if (chosen == back)   setStickerLayer(one, QStringLiteral("back"));
+            else if (chosen == behind) setStickerLayer(one, d.z < 0 ? QStringLiteral("back") : QStringLiteral("behind"));
+        } else if (id == QStringLiteral("stk-lock")) {
+            one->setLocked(!d.locked);
         } else if (id == QStringLiteral("flip")) {
             one->toggleImageDesc(!one->isFlipped());
         } else if (id == QStringLiteral("open")) {
@@ -1824,6 +2466,9 @@ void LousaPanel::showBoardLook()
     cur.tilt = CardItem::tiltEnabled();
     cur.minimap = m_minimapOn;
     const QPoint at = m_lookBtn->mapToGlobal(QPoint(m_lookBtn->width() / 2, m_lookBtn->height() + 6));
+    // Enquanto a janelinha está aberta, cada escolha muda só o quadro. Reaplicar
+    // o estilo da janela inteira a cada clique (applyTheme) redesenhava a Lousa
+    // toda por baixo do popup, e ela saía dali sem responder direito ao mouse.
     LousaBoardLook::popup(this, at, cur, [this](const LousaBoardLook::Choice& c) {
         m_scene->setBoardStyle(c.style);
         m_scene->setCanvasColor(c.color);
@@ -1832,10 +2477,26 @@ void LousaPanel::showBoardLook()
         QSettings st;
         st.setValue(QStringLiteral("lousa/tilt"), c.tilt);
         st.setValue(QStringLiteral("lousa/minimap"), c.minimap);
-        applyLookPrefs();
+        positionOverlays();
         save();
     });
+    applyLookPrefs();   // uma vez, com o popup já fechado
+    reclaimInput();
 }
+
+void LousaPanel::reclaimInput()
+{
+    // Depois de popup dentro de popup (Fundo → Outra cor…), a Lousa volta a ser
+    // a janela ativa e ninguém fica segurando o mouse.
+    if (QWidget* g = QWidget::mouseGrabber()) g->releaseMouse();
+    if (QWidget* k = QWidget::keyboardGrabber()) k->releaseKeyboard();
+    if (m_scene)
+        if (QGraphicsItem* it = m_scene->mouseGrabberItem()) it->ungrabMouse();
+    raise();
+    activateWindow();
+    if (m_view) m_view->setFocus(Qt::OtherFocusReason);
+}
+
 
 void LousaPanel::applyLookPrefs()
 {
@@ -2523,6 +3184,20 @@ void LousaPanel::keyPressEvent(QKeyEvent* event)
         event->accept(); return;
     }
 
+    // Ctrl+V com imagem copiada: PNG transparente vira adesivo; o resto, card de imagem.
+    if (ctrl && !shift && !alt && key == Qt::Key_V && m_cutCardId.isEmpty()) {
+        if (pasteImageFromClipboard()) { event->accept(); return; }
+    }
+
+    // Ctrl+] / Ctrl+[: adesivo pra frente / pra trás
+    if (ctrl && !alt && (key == Qt::Key_BracketRight || key == Qt::Key_BracketLeft) && m_scene) {
+        const QList<CardItem*> sel = m_scene->selectedCardItems();
+        if (sel.size() == 1 && sel.first()->isSticker()) {
+            setStickerLayer(sel.first(), key == Qt::Key_BracketRight ? QStringLiteral("front") : QStringLiteral("back"));
+            event->accept(); return;
+        }
+    }
+
     if (key == Qt::Key_Escape) {
         if (m_cheat && m_cheat->isVisible()) { m_cheat->hide(); event->accept(); return; }
         if (m_search && m_search->isVisible()) { m_search->hide(); event->accept(); return; }
@@ -2712,6 +3387,15 @@ static CanvasCard cardFromJson(const QJsonObject& o)
     c.rotation        = o.value(QStringLiteral("rotation")).toDouble(0.0);
     c.fontFamily      = o.value(QStringLiteral("fontFamily")).toString();
     c.wrapWidth       = o.value(QStringLiteral("wrapWidth")).toDouble(0.0);
+    c.shape           = o.value(QStringLiteral("shape")).toString();
+    c.fastener        = o.value(QStringLiteral("fastener")).toString();
+    c.frame           = o.value(QStringLiteral("frame")).toString();
+    c.flipX           = o.value(QStringLiteral("flipX")).toBool(false);
+    c.flipY           = o.value(QStringLiteral("flipY")).toBool(false);
+    c.outline         = o.value(QStringLiteral("outline")).toString();
+    c.baseWidth       = o.value(QStringLiteral("baseWidth")).toDouble(0.0);
+    c.z               = o.value(QStringLiteral("z")).toDouble(1.0);
+    c.locked          = o.value(QStringLiteral("locked")).toBool(false);
     return c;
 }
 
@@ -2740,6 +3424,17 @@ static QJsonObject cardToJson(const CanvasCard& c)
     if (!qFuzzyIsNull(c.rotation)) o.insert(QStringLiteral("rotation"), c.rotation);
     if (!c.fontFamily.isEmpty()) o.insert(QStringLiteral("fontFamily"), c.fontFamily);
     if (c.wrapWidth > 0) o.insert(QStringLiteral("wrapWidth"), c.wrapWidth);
+    if (!c.shape.isEmpty())    o.insert(QStringLiteral("shape"), c.shape);
+    if (!c.fastener.isEmpty()) o.insert(QStringLiteral("fastener"), c.fastener);
+    if (!c.frame.isEmpty())    o.insert(QStringLiteral("frame"), c.frame);
+    if (c.type == QStringLiteral("sticker")) {
+        if (c.flipX) o.insert(QStringLiteral("flipX"), true);
+        if (c.flipY) o.insert(QStringLiteral("flipY"), true);
+        if (!c.outline.isEmpty()) o.insert(QStringLiteral("outline"), c.outline);
+        o.insert(QStringLiteral("baseWidth"), c.baseWidth);
+        o.insert(QStringLiteral("z"), c.z);
+    }
+    if (c.locked) o.insert(QStringLiteral("locked"), true);
     return o;
 }
 
@@ -2922,9 +3617,18 @@ CanvasCard LousaPanel::nextCardData(const QString& type) const
         c.color  = QColor(QStringLiteral("#fbbf24"));
         c.fontSize = 60;
         c.content  = QStringLiteral("★");
-    } else { // note (default)
-        c.width  = 200; c.height = 160;
-        c.color  = QColor(QStringLiteral("#f6d06a"));
+    } else if (type == QStringLiteral("sticker")) {
+        c.width  = 160; c.height = 160;
+        c.baseWidth = 160;
+    } else { // note (default) — com o estilo de "Usar nos próximos post-its"
+        QSettings st;
+        c.shape    = st.value(QStringLiteral("lousa/noteShape")).toString();
+        c.fastener = st.value(QStringLiteral("lousa/noteFastener")).toString();
+        c.frame    = st.value(QStringLiteral("lousa/noteFrame")).toString();
+        const QSizeF sz = CardItem::defaultNoteSize(c.shape, QStringLiteral("note"));
+        c.width  = sz.width(); c.height = sz.height();
+        const QColor saved(st.value(QStringLiteral("lousa/noteColor")).toString());
+        c.color  = saved.isValid() ? saved : QColor(QStringLiteral("#f6d06a"));
     }
     c.x = center.x() - c.width  / 2.0;
     c.y = center.y() - c.height / 2.0;

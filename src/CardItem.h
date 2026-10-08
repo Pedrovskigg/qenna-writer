@@ -3,6 +3,7 @@
 #include "LousaTypes.h"
 
 #include <QColor>
+#include <QImage>
 #include <QGraphicsObject>
 #include <QPixmap>
 #include <QPointF>
@@ -60,6 +61,17 @@ public:
     void setTextStyle(const QString& family, bool bold, bool italic);
     void setSymbol(const QString& symbol);
     void chooseImage();
+    // Post-it / comentário: formato, presilha e borda (vazio = o de sempre).
+    void setNoteStyle(const QString& shape, const QString& fastener, const QString& frame);
+    // Adesivo
+    void setStickerFlip(bool flipX, bool flipY);
+    void setStickerOutline(const QString& outline);
+    void setStickerZ(qreal z);
+    void setLocked(bool locked);
+    bool isSticker() const { return m_data.type == QStringLiteral("sticker"); }
+    // Miniatura de um card desenhado de verdade (folha de estilo, cartela).
+    static QPixmap renderPreview(const CanvasCard& data, const QSize& size, qreal dpr = 1.0);
+    static QSizeF defaultNoteSize(const QString& shape, const QString& type);
 
     // Ponto de onde a linha sai: o pin (topo-centro), já com a inclinação.
     QPointF pinScenePos() const;
@@ -85,6 +97,7 @@ public:
     static constexpr qreal kMinH      =  80.0;
     static constexpr qreal kCaptionH  =  30.0; // image: faixa da legenda
     static constexpr qreal kPolaroidFoot = 46.0; // character: nome + papel
+    static constexpr qreal kDymoH     =  36.0; // note "dymo": altura da fita
     static qreal radius();
 
 signals:
@@ -118,6 +131,25 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
 
 private:
+    // Onde ficam o título e o texto em cada formato de post-it.
+    struct NoteGeo { QRectF title; QRectF body; bool hasBody = true; bool centered = false; };
+    NoteGeo noteGeo() const;
+    QString noteShape() const { return isNoteLike() ? m_data.shape : QString(); }
+    QPointF anchorPoint() const;      // de onde a linha sai (pin, fita, clipe...)
+    QColor paperColor() const;        // a cor do papel no formato atual
+    void   applyNoteShape();          // esconde/mostra o corpo, pauta, fita rotuladora
+    void   applyLineGrid();           // ficha e folha: linha de 20 px, em cima da pauta
+    void   fitDymo();                 // fita rotuladora: a largura segue o título
+    void   paintNote(QPainter* p);
+    void   paintFastener(QPainter* p, const QColor& pinColor) const;
+    void   paintFrame(QPainter* p, const QPainterPath& outline) const;
+    void   paintPathShadow(QPainter* p, const QPainterPath& path, qreal lift) const;
+    // Adesivo
+    void   loadStickerFromContent();
+    void   ensureStickerCache();
+    void   paintSticker(QPainter* p);
+    QRectF stkRotateRect() const;
+    int    stkCornerAt(const QPointF& p) const;   // -1 = nenhum
     QString cardTooltipText() const;
     bool   isNoteLike() const;       // note / comment
     bool   isPaperDoc() const;       // doc / chapter
@@ -135,6 +167,7 @@ private:
                           qreal contentH, const QColor& thumb) const;
     void   paintSelectionRing(QPainter* p, const QPainterPath& outline) const;
     void   paintPin(QPainter* p, const QColor& c) const;
+    void   paintPinAt(QPainter* p, const QPointF& ctr, const QColor& c) const;
     void   paintShadow(QPainter* p, const QRectF& r, qreal radius, qreal lift) const;
     void   paintCover(QPainter* p, const QRectF& r, qreal radius) const;  // foto (cover) ou silhueta
     QPainterPath outlinePath() const;  // contorno do card (sem rabinho/sombra)
@@ -188,6 +221,16 @@ private:
     int     m_pressFontSize   = 0;
     qreal   m_pressWrap       = 0.0;
     QRectF  m_paintedSceneRect;          // text/symbol: última área ocupada no quadro
+    // sticker
+    QImage  m_stkSrc;                    // o PNG como entrou
+    QImage  m_stkCache;                  // com contorno e sombra
+    qreal   m_stkCachePad  = 0.0;        // borda extra do cache, em px da imagem
+    QString m_stkCacheKey;
+    bool    m_stkScaling   = false;
+    bool    m_stkRotating  = false;
+    QPointF m_stkCenterScene;
+    qreal   m_stkPressDist = 1.0;
+    QSizeF  m_stkPressSize;
 
     QColor readableInk() const;    // cor do texto/símbolo, legível no fundo atual
     static bool s_tilt;

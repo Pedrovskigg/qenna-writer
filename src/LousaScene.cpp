@@ -111,7 +111,15 @@ void LousaScene::setViewZoom(qreal zoom)
 QRectF LousaScene::contentBounds() const
 {
     QRectF r;
-    for (const CardItem* c : m_cards)       r = r.united(c->sceneBoundingRect());
+    for (const CardItem* c : m_cards) {
+        if (c->isSticker()) {
+            // a caixa do adesivo tem folga pras alças; no quadro conta só ele
+            const CanvasCard d = c->cardData();
+            r = r.united(c->mapRectToScene(QRectF(-12, -12, d.width + 24, d.height + 24)));
+        } else {
+            r = r.united(c->sceneBoundingRect());
+        }
+    }
     for (const ZoneItem* z : m_zones)       r = r.united(z->sceneBoundingRect());
     for (const ConnectionItem* c : m_connections) r = r.united(c->boundingRect());
     return r;
@@ -553,6 +561,7 @@ void LousaScene::refreshZoneCounts()
         const QRectF zr(z->pos(), QSizeF(z->zoneData().width, z->zoneData().height));
         int n = 0;
         for (const CardItem* c : m_cards) {
+            if (c->isSticker()) continue;   // adesivo é enfeite, não conta
             const CanvasCard d = c->cardData();
             if (zr.contains(QPointF(d.x + d.width / 2.0, d.y + d.height / 2.0))) ++n;
         }
@@ -685,7 +694,7 @@ void LousaScene::endPinDrag(const QPointF& cursorScene)
     CardItem* target = nullptr;
     for (QGraphicsItem* it : hits) {
         auto* ci = dynamic_cast<CardItem*>(it);
-        if (ci && ci->cardData().id != fromId) { target = ci; break; }
+        if (ci && !ci->isSticker() && ci->cardData().id != fromId) { target = ci; break; }
     }
     if (!target) return;
     emit pendingConnection(fromId, target->cardData().id);

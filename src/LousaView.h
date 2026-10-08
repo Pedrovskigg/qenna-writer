@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QGraphicsView>
+#include <QImage>
 #include <QPoint>
 #include <QPointF>
 
@@ -39,6 +40,7 @@ signals:
     void viewportMoved();                    // rolou ou deu zoom (barra de ações, minimapa)
     void backgroundDoubleClicked(const QPointF& scenePos);
     void itemDropped(const QString& payload, const QPointF& scenePos);  // veio da bandeja
+    void imageDropped(const QImage& image, const QPointF& scenePos);   // arrastada do Windows
     void connectPicked(const QString& fromId, const QString& toId);
     void connectModeChanged(bool on);
 
