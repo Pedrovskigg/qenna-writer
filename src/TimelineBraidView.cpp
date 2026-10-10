@@ -1,6 +1,7 @@
 #include "TimelineBraidView.h"
 
 #include "Theme.h"
+#include "TimelineChrono.h"
 
 #include <QCoreApplication>
 #include <QMap>
@@ -14,6 +15,21 @@ using namespace Tracks;
 
 namespace {
 constexpr qreal kDay = 1440.0;
+
+// Separa "2024-05-06, 19:00" em dia ("2024-05-06") e hora ("19:00"). Sem hora
+// reconhecível no fim, o dia é o marcador inteiro e a hora fica vazia.
+QPair<QString, QString> splitClock(const QString& marker)
+{
+    const QString m = marker.trimmed();
+    const int cut = std::max(m.lastIndexOf(QLatin1Char(',')), m.lastIndexOf(QLatin1Char(' ')));
+    if (cut <= 0) return { m, QString() };
+    const QString tail = m.mid(cut + 1).trimmed();
+    QString head = m.left(cut).trimmed();
+    while (head.endsWith(QLatin1Char(',')) || head.endsWith(QChar(0x00B7))) head.chop(1);
+    head = head.trimmed();
+    if (head.isEmpty() || TimelineChrono::clockMinutes(tail) < 0) return { m, QString() };
+    return { head, tail };
+}
 }
 
 TimelineBraidView::TimelineBraidView(QWidget* parent)
@@ -64,6 +80,7 @@ void TimelineBraidView::paintEvent(QPaintEvent*)
     const QFont fCapSub = uiFont(11);
 
     // região "antes do início"
+    qreal beforeLabelRight = 0; // fim do texto "ANTES DO INÍCIO", que divide a 3ª linha de rótulos
     if (d.startOk && !times.isEmpty() && times.first() < d.startChrono) {
         qreal firstDay = -1;
         for (qreal t : times) if (t >= d.startChrono) { firstDay = pos.value(t); break; }
@@ -74,6 +91,7 @@ void TimelineBraidView::paintEvent(QPaintEvent*)
         p.setFont(fCap);
         p.setPen(alpha(pal.info, 0.85));
         p.drawText(QPointF(x0 - 18, botY + 48), tr("ANTES DO INÍCIO"));
+        beforeLabelRight = x0 - 18 + QFontMetricsF(fCap).horizontalAdvance(tr("ANTES DO INÍCIO"));
         QPen dash(alpha(pal.info, 0.5), 1, Qt::CustomDashLine);
         dash.setDashPattern({ 3, 3 });
         p.setPen(dash);
@@ -129,14 +147,46 @@ void TimelineBraidView::paintEvent(QPaintEvent*)
         }
     }
     {
+        // Rótulos do eixo da história em até três linhas: cada um vai pra
+        // primeira linha onde cabe inteiro; no mesmo dia do anterior, só a
+        // hora aparece. Sem lugar em nenhuma, encurta com "…" (o cartão do
+        // hover mostra o marcador completo).
         const QFont f = monoFont(10.5);
+        const QFontMetricsF fm(f);
         p.setFont(f); p.setPen(pal.ink);
+        constexpr int kRows = 3;
+        constexpr qreal kGap = 10;
+        const qreal rowY[kRows] = { botY + 20, botY + 34, botY + 48 };
+        qreal rowRight[kRows] = { -1e9, -1e9, -1e9 };
+        if (beforeLabelRight > 0) rowRight[2] = beforeLabelRight;
+        QString prevDay;
         for (int i = 0; i < times.size(); ++i) {
             QString mk;
             for (const Event& e : d.events) if (!e.manual && e.chronoOk && e.chrono == times[i]) { mk = e.marker; break; }
-            const qreal x = pos.value(times[i]);
-            const bool close = i % 2 && x - pos.value(times[i - 1]) < 52;
-            p.drawText(QPointF(x - QFontMetricsF(f).horizontalAdvance(mk) / 2, botY + (close ? 34 : 20)), mk);
+            const auto [day, clock] = splitClock(mk);
+            const QString t = !clock.isEmpty() && day == prevDay ? clock : mk.trimmed();
+            prevDay = day;
+            if (t.isEmpty()) continue;
+            const qreal w = fm.horizontalAdvance(t);
+            // centro do rótulo, empurrado pra dentro quando a ponta sairia da tela
+            const qreal x = std::clamp(pos.value(times[i]), 8 + w / 2, std::max(8 + w / 2, W - 8 - w / 2));
+            int row = -1;
+            for (int r = 0; r < kRows && row < 0; ++r)
+                if (x - w / 2 >= rowRight[r] + kGap) row = r;
+            if (row >= 0) {
+                p.drawText(QPointF(x - w / 2, rowY[row]), t);
+                rowRight[row] = x + w / 2;
+                continue;
+            }
+            // nenhuma linha livre: usa a que libera mais cedo e corta o texto
+            row = int(std::min_element(rowRight, rowRight + kRows) - rowRight);
+            const qreal left = std::max(rowRight[row] + kGap, x - w / 2);
+            const qreal room = 2 * (x - left);
+            if (room < fm.horizontalAdvance(QStringLiteral("00…"))) continue;
+            const QString el = fm.elidedText(t, Qt::ElideRight, room);
+            const qreal ew = fm.horizontalAdvance(el);
+            p.drawText(QPointF(x - ew / 2, rowY[row]), el);
+            rowRight[row] = x + ew / 2;
         }
     }
 
