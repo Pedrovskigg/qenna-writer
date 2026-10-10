@@ -2,6 +2,7 @@
 #include <QPaintEvent>
 #include <QToolTip>
 
+#include "PanelMotion.h"
 #include "ScreenplayFormat.h"
 #include "SpellChecker.h"
 
@@ -28,6 +29,8 @@
 #include <QTextFrame>
 #include <QTextImageFormat>
 #include <QTextObjectInterface>
+#include <QTimer>
+#include <QVariantAnimation>
 #include <qmath.h>
 
 namespace {
@@ -157,7 +160,147 @@ void SpellEditor::updateScreenplayColumn()
 
 void SpellEditor::setSpellChecker(SpellChecker* checker)
 {
+    if (m_checker) disconnect(m_checker, nullptr, this, nullptr);
     m_checker = checker;
+    // Idioma trocado ou palavra aprendida: "nome que também é palavra comum"
+    // depende do dicionário.
+    if (m_checker) connect(m_checker, &SpellChecker::changed, this, &SpellEditor::rebuildAutocorrectNames);
+    rebuildAutocorrectNames();
+}
+
+void SpellEditor::setAutocorrectNames(const QStringList& names)
+{
+    if (names == m_autocorrectSource) return;
+    m_autocorrectSource = names;
+    rebuildAutocorrectNames();
+}
+
+void SpellEditor::rebuildAutocorrectNames()
+{
+    SpellChecker* checker = m_checker;
+    m_autocorrect.setNames(m_autocorrectSource, [checker](const QString& w) {
+        return checker && checker->isEnabled() && checker->isCorrect(w);
+    });
+}
+
+namespace {
+// Letra de palavra pra autocorreção: letras, acentos soltos e o apóstrofo do
+// possessivo ("Wallidon's").
+bool isNameChar(QChar c)
+{
+    return c.isLetter() || c.isMark() || c == QLatin1Char('\'') || c == QChar(0x2019);
+}
+}
+
+SpellEditor::NameFix SpellEditor::nameFixBeforeKey(QKeyEvent* event) const
+{
+    if (!NameAutocorrect::enabledSetting() || m_autocorrect.isEmpty()) return {};
+    if (!m_checker || !m_checker->isEnabled() || isReadOnly() || event->isAutoRepeat()) return {};
+    if (event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) return {};
+
+    // Só a tecla que TERMINA a palavra: espaço, Enter, pontuação, travessão,
+    // aspas. Apóstrofo e hífen continuam a palavra.
+    bool ends = event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter;
+    if (!ends && event->text().size() == 1) {
+        const QChar c = event->text().at(0);
+        ends = !isNameChar(c) && !c.isDigit() && c != QLatin1Char('-') && c != QLatin1Char('_')
+               && (c.isSpace() || c.isPunct() || c.isSymbol());
+    }
+    if (!ends) return {};
+
+    const QTextCursor cur = textCursor();
+    if (cur.hasSelection()) return {};
+    const QString text = cur.block().text();
+    const int end = cur.positionInBlock();
+    if (end < text.size() && isNameChar(text.at(end))) return {};   // cursor no meio da palavra
+    int start = end;
+    while (start > 0 && isNameChar(text.at(start - 1))) --start;
+    // Aspas simples abrindo a fala não fazem parte do nome.
+    while (start < end && (text.at(start) == QLatin1Char('\'') || text.at(start) == QChar(0x2019))) ++start;
+    if (end - start < 3) return {};
+    if (start > 0 && (text.at(start - 1).isDigit() || text.at(start - 1) == QLatin1Char('-'))) return {};
+
+    const QString word = text.mid(start, end - start);
+    if (m_checker->isCorrect(word)) return {};
+    const QString fixed = m_autocorrect.correctionFor(word);
+    if (fixed.isEmpty()) return {};
+    return { cur.block().position() + start, word, fixed, -1 };
+}
+
+void SpellEditor::applyNameFix(const NameFix& fix)
+{
+    QTextCursor c(document());
+    c.setPosition(fix.start);
+    c.setPosition(fix.start + fix.typed.size(), QTextCursor::KeepAnchor);
+    const QString now = c.selectedText();
+    // A tecla pode ter mexido na palavra (o roteiro põe o Personagem em caixa
+    // alta no Enter): segue valendo se for a mesma palavra.
+    if (now.compare(fix.typed, Qt::CaseInsensitive) != 0) return;
+    QString fixed = fix.fixed;
+    if (now != fix.typed && now.size() > 1 && now == now.toUpper()) fixed = fixed.toUpper();
+
+    c.beginEditBlock();
+    c.insertText(fixed);
+    c.endEditBlock();
+    m_lastNameFix = { fix.start, now, fixed, textCursor().position() };
+    m_pulseText = fixed;
+    pulseRange(fix.start, fixed.size());
+}
+
+bool SpellEditor::revertNameFix(QKeyEvent* event)
+{
+    if (m_lastNameFix.start < 0) return false;
+    if (event->key() != Qt::Key_Backspace || event->modifiers() != Qt::NoModifier) return false;
+    const NameFix fix = m_lastNameFix;
+    m_lastNameFix = NameFix();
+    const QTextCursor cur = textCursor();
+    if (cur.hasSelection() || cur.position() != fix.cursorAfter) return false;
+
+    QTextCursor c(document());
+    c.setPosition(fix.start);
+    c.setPosition(fix.start + fix.fixed.size(), QTextCursor::KeepAnchor);
+    if (c.selectedText() != fix.fixed) return false;
+    c.beginEditBlock();
+    c.insertText(fix.typed);
+    c.endEditBlock();
+    m_pulseLength = 0;
+    if (m_pulseAnim) m_pulseAnim->stop();
+    viewport()->update();
+    // A pessoa quis essa palavra: o projeto passa a aceitá-la, sem sublinhado
+    // vermelho e sem nova correção.
+    if (m_checker) m_checker->addToPersonalDictionary(NameAutocorrect::withoutPossessive(fix.typed));
+    return true;
+}
+
+void SpellEditor::pulseRange(int start, int length)
+{
+    m_pulseStart = start;
+    m_pulseLength = length;
+    if (!m_pulseAnim) {
+        m_pulseAnim = new QVariantAnimation(this);
+        m_pulseAnim->setStartValue(0.0);
+        m_pulseAnim->setEndValue(1.0);
+        m_pulseAnim->setDuration(700);
+        connect(m_pulseAnim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            // Sobe rápido e apaga devagar.
+            const qreal t = v.toReal();
+            m_pulse = t < 0.18 ? t / 0.18 : 1.0 - (t - 0.18) / 0.82;
+            viewport()->update();
+        });
+        connect(m_pulseAnim, &QVariantAnimation::finished, this, [this]() {
+            m_pulseLength = 0;
+            viewport()->update();
+        });
+    }
+    m_pulseAnim->stop();
+    if (PanelMotion::enabled()) {
+        m_pulseAnim->start();
+    } else {
+        // Sem animações: o realce aparece e some, sem esmaecer.
+        m_pulse = 0.8;
+        viewport()->update();
+        QTimer::singleShot(450, this, [this]() { m_pulseLength = 0; viewport()->update(); });
+    }
 }
 
 void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
@@ -317,6 +460,7 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
 
 void SpellEditor::mousePressEvent(QMouseEvent* event)
 {
+    m_lastNameFix = NameFix();
     // Ctrl+clique num link de referência abre o doc no RefMenu (não posiciona cursor).
     if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ControlModifier)) {
         const QString href = anchorAt(event->pos());
@@ -334,6 +478,27 @@ void SpellEditor::paintEvent(QPaintEvent* event)
 {
     if (m_beforePaint) m_beforePaint();
     QTextEdit::paintEvent(event);
+    if (m_pulseLength > 0 && m_pulse > 0
+        && m_pulseStart + m_pulseLength < document()->characterCount()) {
+        QTextCursor a(document());
+        a.setPosition(m_pulseStart);
+        a.setPosition(m_pulseStart + m_pulseLength, QTextCursor::KeepAnchor);
+        // Texto trocado no meio do pulsar (outro capítulo, desfazer): não pinta.
+        if (a.selectedText() != m_pulseText) m_pulseLength = 0;
+        a.setPosition(m_pulseStart);
+        const QRect r1 = cursorRect(a);
+        a.setPosition(m_pulseStart + m_pulseLength);
+        const QRect r2 = cursorRect(a);
+        if (m_pulseLength > 0 && r1.top() == r2.top() && r2.left() > r1.left()) {
+            QPainter p(viewport());
+            p.setRenderHint(QPainter::Antialiasing);
+            QColor c = palette().color(QPalette::Highlight);
+            c.setAlphaF(0.38 * m_pulse);
+            p.setPen(Qt::NoPen);
+            p.setBrush(c);
+            p.drawRoundedRect(QRectF(r1.left() - 2, r1.top(), r2.left() - r1.left() + 4, r1.height()), 3, 3);
+        }
+    }
     if (!m_overlay) return;
     QPainter p(viewport());
     m_overlayTips = m_overlay(p, event->rect());
@@ -459,6 +624,19 @@ void SpellEditor::keyPressEvent(QKeyEvent* event)
     if (event->key() == Qt::Key_Control && !event->isAutoRepeat())
         emit refHighlightRequested(true);   // "modo ver os links"
 
+    if (revertNameFix(event)) return;
+    // Qualquer outra tecla (fora Shift/Ctrl/Alt sozinhos) encerra a chance de desfazer.
+    const int k = event->key();
+    if (k != Qt::Key_Shift && k != Qt::Key_Control && k != Qt::Key_Alt && k != Qt::Key_Meta && k != Qt::Key_AltGr)
+        m_lastNameFix = NameFix();
+
+    const NameFix fix = nameFixBeforeKey(event);
+    handleKey(event);
+    if (fix.start >= 0) applyNameFix(fix);
+}
+
+void SpellEditor::handleKey(QKeyEvent* event)
+{
     if (m_screenplayMode) {
         if (screenplayKeyPress(event)) return;
         QTextEdit::keyPressEvent(event);
@@ -481,5 +659,6 @@ void SpellEditor::focusOutEvent(QFocusEvent* event)
 {
     // Sem foco, o keyRelease do Ctrl não chega — limpa o realce pra não ficar preso.
     emit refHighlightRequested(false);
+    m_lastNameFix = NameFix();
     QTextEdit::focusOutEvent(event);
 }

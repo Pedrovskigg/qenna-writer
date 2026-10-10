@@ -199,6 +199,8 @@ qt_add_executable(qenna-writer
     src/SpellChecker.h
     src/SpellHighlighter.cpp
     src/SpellHighlighter.h
+    src/NameAutocorrect.cpp
+    src/NameAutocorrect.h
     src/SpellEditor.cpp
     src/SpellEditor.h
     src/Fountain.cpp

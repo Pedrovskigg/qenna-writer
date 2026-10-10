@@ -1552,6 +1552,19 @@ void MainWindow::setupEditor()
         }
     });
 
+    // Autocorreção de nomes: o editor recebe nome e apelidos de tudo que tem
+    // ficha (personagens, cenários, objetos). Abrir, fechar e editar o elenco
+    // passam por aqui.
+    connect(elementsStore, &ElementsStore::changed, this, [this]() {
+        if (!editor || !elementsStore) return;
+        QStringList names;
+        for (const Element& e : elementsStore->elements()) {
+            names << e.name;
+            names << e.aliases;
+        }
+        editor->setAutocorrectNames(names);
+    });
+
     // Reinicia o timer a cada mudança de texto
     connect(editor, &QTextEdit::textChanged, this, [this]() {
         if (detectionEnabled) detectionTimer->start();

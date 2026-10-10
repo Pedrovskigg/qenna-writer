@@ -4,6 +4,7 @@
 #include "GlossaryInText.h"
 #include "IconUtils.h"
 #include "LeftBar.h"
+#include "NameAutocorrect.h"
 #include "PanelMotion.h"
 #include "SmoothCaret.h"
 
@@ -509,6 +510,14 @@ SettingsPanel::SettingsPanel(QWidget* parent)
               "ou adicionar ao dicionário do projeto."));
     m_langCombo->setFixedWidth(kControlWidth);
     addRow(Spelling, tr("Idioma do dicionário"), tr("Qual dicionário o corretor usa."), m_langCombo);
+    auto* nameFixCheck = new ToggleSwitch(this);
+    nameFixCheck->setChecked(NameAutocorrect::enabledSetting());
+    addRow(Spelling, tr("Corrigir nomes automaticamente"), tr("\"Elizbeth\" vira \"Elizabeth\" enquanto você digita."), nameFixCheck,
+           tr("Errou o nome de um personagem, cenário ou objeto por uma ou duas letras? Assim que a "
+              "palavra termina, o Qenna troca pelo nome certo. Só acontece com palavras que o corretor "
+              "já marcou como erro. Apertar Backspace logo depois desfaz a troca, e o projeto passa a "
+              "aceitar aquela palavra."));
+    connect(nameFixCheck, &QCheckBox::toggled, this, [](bool on) { NameAutocorrect::setEnabledSetting(on); });
     auto* glsCheck = new ToggleSwitch(this);
     glsCheck->setChecked(GlossaryInText::enabledSetting());
     addRow(Spelling, tr("Termos do glossário no texto"), tr("Sublinhado pontilhado e ficha no hover."), glsCheck,

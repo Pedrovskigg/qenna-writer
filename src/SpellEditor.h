@@ -8,8 +8,11 @@
 #include <QTextEdit>
 #include <functional>
 
+#include "NameAutocorrect.h"
+
 class SpellChecker;
 class QContextMenuEvent;
+class QVariantAnimation;
 
 class SpellEditor : public QTextEdit {
     Q_OBJECT
@@ -40,6 +43,11 @@ public:
     // Nomes (em MAIÚSCULAS) que fazem uma linha de Ação virar Personagem no
     // Enter: elenco do projeto + apelidos. Os já usados no documento contam sozinhos.
     void setScreenplayCues(const QSet<QString>& cues) { m_screenplayCues = cues; }
+
+    // Nomes do projeto (personagens, cenários, objetos e apelidos) pra
+    // autocorreção: palavra errada a 1-2 letras de um deles vira o nome quando
+    // termina. Ver NameAutocorrect.
+    void setAutocorrectNames(const QStringList& names);
 
     // Desenho por cima do texto, depois da pintura normal (a quebra de cena,
     // ver SceneBreaks). Devolve as áreas desenhadas com o texto do tooltip.
@@ -91,6 +99,18 @@ protected:
     void resizeEvent(QResizeEvent* event) override;
 
 private:
+    // Autocorreção de nomes. A troca acontece depois da tecla que termina a
+    // palavra (espaço, pontuação, Enter), num passo de desfazer só dela, e o
+    // primeiro Backspace logo em seguida devolve o que foi digitado e ensina a
+    // palavra ao dicionário do projeto.
+    struct NameFix { int start = -1; QString typed; QString fixed; int cursorAfter = -1; };
+    NameFix nameFixBeforeKey(QKeyEvent* event) const;
+    void applyNameFix(const NameFix& fix);
+    bool revertNameFix(QKeyEvent* event);
+    void rebuildAutocorrectNames();
+    void pulseRange(int start, int length);
+    void handleKey(QKeyEvent* event);
+
     bool screenplayKeyPress(QKeyEvent* event);
     void onScreenplayCursorMoved();
     void updateScreenplayColumn();
@@ -108,4 +128,14 @@ private:
     OverlayPainter m_overlay;
     std::function<void()> m_beforePaint;
     QList<QPair<QRect, QString>> m_overlayTips;
+
+    QStringList m_autocorrectSource;
+    NameAutocorrect m_autocorrect;
+    NameFix m_lastNameFix;
+    // Pulsar sutil em cima do nome corrigido.
+    int m_pulseStart = -1;
+    int m_pulseLength = 0;
+    QString m_pulseText;
+    qreal m_pulse = 0;
+    QVariantAnimation* m_pulseAnim = nullptr;
 };
