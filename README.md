@@ -21,9 +21,13 @@ writer, for other writers.
 
 ## Tech stack
 
-- C++17, Qt 6.8 (Core, Gui, Widgets, Svg, Multimedia, Network)
+- C++17, Qt 6.8 (Core, Gui, Widgets, Svg, Multimedia, Network, TextToSpeech)
 - CMake + Ninja, MinGW-w64 (GCC) on Windows
 - [Hunspell](https://github.com/hunspell/hunspell) for spell-checking
+- zlib (from the MinGW toolchain) for reading theme packages
+- LibreOffice Hunspell dictionaries and MyThes thesauri, plus OpenWordnet-PT,
+  for spell-checking and synonyms
+- Natural Earth, GeoNames and flag-icons for the offline world map
 
 ## Building from source (Windows)
 

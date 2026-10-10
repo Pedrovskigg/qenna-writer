@@ -8,7 +8,7 @@ in the [`licenses/`](licenses/) folder except where noted.
 
 ## Qt 6.8.3
 
-Modules used: Core, Gui, Widgets, Svg, Multimedia, Network.
+Modules used: Core, Gui, Widgets, Svg, Multimedia, Network, TextToSpeech.
 
 - **License:** GNU Lesser General Public License v3.0 (LGPL-3.0) — official
   open-source Qt build.
@@ -133,6 +133,29 @@ repository.
 - **MyThes format/engine reference license:** BSD 3-Clause,
   Copyright 2003 Kevin B. Hendricks.
 - **Source:** https://github.com/LibreOffice/dictionaries
+
+## World map data (Pensário map)
+
+Bundled under `src/assets/geo/` and `src/assets/flags/`, used offline by the
+world map. Converted to the formats the app reads; no geographic content was
+added.
+
+- **Natural Earth** — country and state borders (`countries.geojson`,
+  `states.geojson`). **Public domain.** Made with Natural Earth.
+  Source: https://www.naturalearthdata.com
+- **GeoNames** — cities (`cities.tsv`) and country facts
+  (`countries_info.tsv`). **Creative Commons Attribution 4.0 (CC BY 4.0).**
+  Attribution: GeoNames (https://www.geonames.org).
+  Full text: https://creativecommons.org/licenses/by/4.0/
+- **GEBCO elevation image (NASA Visible Earth)** — source of the shaded relief
+  (`relief.png`) and of the coastline used to synthesize the ocean depth
+  texture (`ocean.png`). Image by NASA Earth Observatory, from the GEBCO
+  bathymetry/topography data. Source:
+  https://visibleearth.nasa.gov/images/73934
+- **flag-icons** — country flags (`src/assets/flags/*.svg`).
+  **MIT License**, Copyright (c) 2013 Panayiotis Lipiridis.
+  Source: https://github.com/lipis/flag-icons
+  Full text: [`licenses/MIT.txt`](licenses/MIT.txt)
 
 ## Bundled fonts
 
