@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/brushes">
+        <file alias="lapis.myb">brushes/lapis.myb</file>
+        <file alias="carvao.myb">brushes/carvao.myb</file>
+        <file alias="nanquim.myb">brushes/nanquim.myb</file>
+        <file alias="aquarela.myb">brushes/aquarela.myb</file>
+        <file alias="macio.myb">brushes/macio.myb</file>
+        <file alias="marcador.myb">brushes/marcador.myb</file>
+        <file alias="borracha.myb">brushes/borracha.myb</file>
+    </qresource>
+</RCC>

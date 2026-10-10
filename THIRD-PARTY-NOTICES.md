@@ -45,6 +45,29 @@ how to fetch it) and statically linked into `qenna-writer.exe`.
 - **Full texts:** [`licenses/hunspell/`](licenses/hunspell/) (all three
   upstream options included, as shipped by the Hunspell project itself).
 
+## libmypaint 1.6.1 (Board sketch brushes)
+
+The brush engine of MyPaint, used by the Board's Sketch sheet.
+
+- **License:** ISC — Copyright (C) 2008-2011 Martin Renold and contributors.
+- **Usage:** Compiled statically from `third_party/libmypaint` (the official
+  1.6.1 sources). Changes for Qenna: a CMake build without GLib or gettext,
+  and the json-c brush loader left out (`QENNA_NO_JSONC`); the app reads
+  `.myb` files with Qt instead. See `third_party/libmypaint/README-QENNA.md`.
+- **Source:** https://github.com/mypaint/libmypaint
+- **Full text:** [`third_party/libmypaint/COPYING`](third_party/libmypaint/COPYING)
+
+## MyPaint brushes (Board sketch brushes)
+
+The seven built-in Sketch brushes (`resources/brushes/*.myb`) are settings from
+the official mypaint-brushes package, by David Revoy (deevad) and the MyPaint
+"classic" set.
+
+- **License:** CC0 1.0 Universal (public domain dedication), per the
+  package's `Licenses.dep5`.
+- **Source:** https://github.com/mypaint/mypaint-brushes
+- **Details:** [`resources/brushes/README.md`](resources/brushes/README.md)
+
 ## Spell-checking dictionaries (pt_BR, en_US, es_ES)
 
 Hunspell dictionaries bundled under `src/assets/spell/<locale>/` (shipped

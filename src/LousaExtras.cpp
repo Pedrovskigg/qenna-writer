@@ -117,6 +117,7 @@ Snapshot fromScene(const LousaScene* scene)
     s.cards = scene->allCardData();
     s.zones = scene->allZoneData();
     s.conns = scene->allConnectionData();
+    s.inks  = scene->allInkData();
     s.bg    = scene->effectiveCanvasColor();
     return s;
 }
@@ -164,6 +165,8 @@ Snapshot fromFile(const QString& path, const QColor& themeBg)
         c.color = QColor(o.value(QStringLiteral("color")).toString(QStringLiteral("#ffffff")));
         s.conns << c;
     }
+    for (const auto& v : root.value(QStringLiteral("inks")).toArray())
+        s.inks << LousaInk::fromJson(v.toObject());
     return s;
 }
 
@@ -175,6 +178,7 @@ QRectF bounds(const Snapshot& s)
         r = r.united(QRectF(c.x, c.y, w, c.height));
     }
     for (const CanvasZone& z : s.zones) r = r.united(QRectF(z.x, z.y, z.width, z.height));
+    for (const CanvasInk& k : s.inks) r = r.united(LousaInk::bounds(k));
     return r;
 }
 
@@ -227,6 +231,20 @@ QTransform draw(QPainter* p, const QRectF& target, const Snapshot& s, const QRec
         }
         p->setBrush(cardFill(c));
         p->drawRect(xf.mapRect(QRectF(c.x, c.y, c.width, c.height)));
+    }
+    // Traços da Caneta: linha fina na cor de cada um.
+    p->setBrush(Qt::NoBrush);
+    for (const CanvasInk& k : s.inks) {
+        if (k.pts.size() < 2) continue;
+        QColor col = k.color;
+        col.setAlpha(k.tool == QStringLiteral("highlight") ? 110 : 200);
+        QPen pen(col, k.tool == QStringLiteral("highlight") ? 2.0 : 1.0);
+        pen.setCapStyle(Qt::RoundCap);
+        p->setPen(pen);
+        QPolygonF poly;
+        poly.reserve(k.pts.size());
+        for (const InkPoint& q : k.pts) poly << xf.map(QPointF(q.x, q.y));
+        p->drawPolyline(poly);
     }
     p->restore();
     return xf;
@@ -930,7 +948,7 @@ QString pick(QWidget* parent, const QPoint& globalPos, const QString& projectRoo
             p.setClipPath(clip);
             p.fillRect(QRectF(0, 0, 180, 112), snap.bg.isValid() ? snap.bg : themeBg);
             LousaDraw::draw(&p, QRectF(8, 8, 164, 96), snap, QRectF());
-            if (snap.cards.isEmpty() && snap.zones.isEmpty()) {
+            if (snap.cards.isEmpty() && snap.zones.isEmpty() && snap.inks.isEmpty()) {
                 p.setPen(QColor(Theme::textMuted()));
                 p.drawText(QRectF(0, 0, 180, 112), Qt::AlignCenter,
                            QCoreApplication::translate("LousaBoardPicker", "vazia"));

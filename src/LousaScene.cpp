@@ -122,6 +122,7 @@ QRectF LousaScene::contentBounds() const
     }
     for (const ZoneItem* z : m_zones)       r = r.united(z->sceneBoundingRect());
     for (const ConnectionItem* c : m_connections) r = r.united(c->boundingRect());
+    for (const InkItem* k : m_inks)        r = r.united(LousaInk::bounds(k->inkData()));
     return r;
 }
 
@@ -235,6 +236,9 @@ CardItem* LousaScene::addCard(const CanvasCard& data)
         onCardPressedSelect(item);
     });
     connect(item, &CardItem::gestureStarted, this, &LousaScene::undoSnapshotRequested);
+    connect(item, &CardItem::sketchEditRequested, this, &LousaScene::sketchEditRequested);
+    connect(item, &CardItem::sketchPhotoRequested, this, &LousaScene::sketchPhotoRequested);
+    connect(item, &CardItem::sketchExportRequested, this, &LousaScene::sketchExportRequested);
     connect(item, &CardItem::dragStarted, this, &LousaScene::onCardDragStarted);
     connect(item, &CardItem::draggedBy,   this, &LousaScene::onCardDraggedBy);
     connect(item, &CardItem::hoverPreviewRequested, this, &LousaScene::cardHoverPreview);
@@ -267,6 +271,7 @@ void LousaScene::clearCardSelection()
 {
     for (CardItem* c : m_cards)
         c->setCardSelected(false);
+    selectInk(QString());
 }
 
 void LousaScene::toggleCardSelection(CardItem* c)
@@ -293,6 +298,7 @@ QList<CardItem*> LousaScene::selectedCardItems() const
 void LousaScene::onCardPressedSelect(CardItem* item)
 {
     selectConnection(QString());
+    selectInk(QString());
     // Clicar num card da área marcada com tudo dentro mantém o grupo (pra
     // arrastar tudo junto); qualquer outro clique desfaz.
     const bool keepGroup = !m_zoneWithContents.isEmpty() && item->isCardSelected()
@@ -553,6 +559,72 @@ void LousaScene::onZoneClicked(const QString& id)
     for (ZoneItem* z : m_zones)
         z->setSelected(z->zoneData().id == id);
     scheduleSelectionSignal();
+}
+
+// ── Caneta ──────────────────────────────────────────────────────────────────
+
+InkItem* LousaScene::addInk(const CanvasInk& data)
+{
+    auto* item = new InkItem(data);
+    addItem(item);
+    m_inks.append(item);
+    connect(item, &InkItem::pressed, this, [this](InkItem* it) {
+        // Marca só ele: desmarca cards, linha e área.
+        for (CardItem* c : m_cards) c->setCardSelected(false);
+        clearZoneSelection();
+        selectConnection(QString());
+        selectInk(it->inkData().id);
+    });
+    connect(item, &InkItem::gestureStarted, this, &LousaScene::undoSnapshotRequested);
+    connect(item, &InkItem::moved, this, [this](InkItem*) { emit inkDataChanged(); });
+    return item;
+}
+
+void LousaScene::removeInk(const QString& id)
+{
+    for (int i = 0; i < m_inks.size(); ++i) {
+        if (m_inks[i]->inkData().id != id) continue;
+        InkItem* it = m_inks.takeAt(i);
+        if (m_selectedInkId == id) m_selectedInkId.clear();
+        removeItem(it);
+        it->deleteLater();
+        scheduleSelectionSignal();
+        return;
+    }
+}
+
+void LousaScene::clearInks()
+{
+    for (InkItem* it : std::as_const(m_inks)) { removeItem(it); it->deleteLater(); }
+    m_inks.clear();
+    m_selectedInkId.clear();
+}
+
+QList<CanvasInk> LousaScene::allInkData() const
+{
+    QList<CanvasInk> out;
+    for (const InkItem* it : m_inks) out.append(it->inkData());
+    return out;
+}
+
+void LousaScene::selectInk(const QString& id)
+{
+    if (m_selectedInkId == id) return;
+    m_selectedInkId = id;
+    for (InkItem* it : std::as_const(m_inks)) it->setInkSelected(!id.isEmpty() && it->inkData().id == id);
+    scheduleSelectionSignal();
+}
+
+QString LousaScene::inkAt(const QPointF& scenePos, qreal radius) const
+{
+    QPainterPath probe;
+    probe.addEllipse(scenePos, radius, radius);
+    for (int i = m_inks.size() - 1; i >= 0; --i) {   // o de cima primeiro
+        const CanvasInk& d = m_inks[i]->inkData();
+        if (!LousaInk::bounds(d).adjusted(-radius, -radius, radius, radius).contains(scenePos)) continue;
+        if (LousaInk::hitPath(d, 0.0).intersects(probe)) return d.id;
+    }
+    return QString();
 }
 
 void LousaScene::refreshZoneCounts()

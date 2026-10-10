@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LousaInk.h"
 #include "LousaTypes.h"
 
 #include <QColor>
@@ -75,6 +76,17 @@ public:
     void      selectZoneWithContents(const QString& id);
     const QList<ZoneItem*>& zoneItems() const { return m_zones; }
 
+    // ── Caneta (traços no quadro) ─────────────────────────────────────────────
+    InkItem*  addInk(const CanvasInk& data);
+    void      removeInk(const QString& id);
+    void      clearInks();
+    QList<CanvasInk> allInkData() const;
+    const QList<InkItem*>& inkItems() const { return m_inks; }
+    QString   selectedInkId() const { return m_selectedInkId; }
+    void      selectInk(const QString& id);   // "" = nenhum
+    // Borracha da caneta: o traço que passa a `radius` do ponto. Vazio = nenhum.
+    QString   inkAt(const QPointF& scenePos, qreal radius) const;
+
     // ── Pin drag (chamado por CardItem) ──────────────────────────────────────
     void startPinDrag(const QString& fromCardId, const QPointF& fromScene);
     void updatePinDrag(const QPointF& cursorScene);
@@ -97,10 +109,14 @@ signals:
     void zoneExportRequested(const QString& id);     // exportar zona (context menu)
     void selectionChanged();                         // cards, linha ou área marcados mudaram
     void cardOpenRequested(const CanvasCard& card);  // doc/capítulo: abrir no editor
+    void sketchEditRequested(const QString& id);
+    void sketchPhotoRequested(const QString& id);
+    void sketchExportRequested(const QString& id);
     void gestureFinished();                          // fim de arrasto/redimensão
     void connectionLabelEditRequested(const QString& id);
     void connectionMenuRequested(const QString& id, const QPoint& screenPos);
     void boardLookChanged();
+    void inkDataChanged();                           // traço movido (salvar)
 
 protected:
     void drawBackground(QPainter* painter, const QRectF& rect) override;
@@ -134,6 +150,8 @@ private:
     QList<CardItem*>       m_cards;
     QList<ConnectionItem*> m_connections;
     QList<ZoneItem*>       m_zones;
+    QList<InkItem*>        m_inks;
+    QString                m_selectedInkId;
 
     // Pin drag state
     QString            m_dragFromId;

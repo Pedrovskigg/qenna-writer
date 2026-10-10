@@ -375,10 +375,12 @@ CardItem::CardItem(const CanvasCard& data, QGraphicsItem* parent)
     setPos(m_data.x, m_data.y);
 
     const QString t = m_data.type;
-    if (t == QStringLiteral("image"))     loadPixmapFromContent();
+    if (t == QStringLiteral("image") || t == QStringLiteral("sketch")) loadPixmapFromContent();
     if (t == QStringLiteral("character")) loadCharacterPhoto();
 
-    if (t == QStringLiteral("sticker")) {
+    if (t == QStringLiteral("sketch")) {
+        // só a imagem da folha: sem texto, sem legenda
+    } else if (t == QStringLiteral("sticker")) {
         loadStickerFromContent();
         setZValue(m_data.z);
     } else if (t == QStringLiteral("text")) {
@@ -1098,7 +1100,7 @@ void CardItem::syncFromData()
 {
     setPos(m_data.x, m_data.y);
     prepareGeometryChange();
-    if (m_data.type == QStringLiteral("image"))     loadPixmapFromContent();
+    if (m_data.type == QStringLiteral("image") || isSketch()) loadPixmapFromContent();
     if (m_data.type == QStringLiteral("character")) loadCharacterPhoto();
     if (isSticker()) { loadStickerFromContent(); setZValue(m_data.z); }
     if (m_data.type == QStringLiteral("doc") || m_data.type == QStringLiteral("chapter")
@@ -1272,6 +1274,15 @@ void CardItem::loadCharacterPhoto()
         ? QByteArray::fromBase64(url.mid(comma + 1).toLatin1())
         : QByteArray::fromBase64(url.toLatin1());
     m_pixmap.loadFromData(ba);
+}
+
+void CardItem::setSketchImage(const QString& pngBase64)
+{
+    if (!isSketch()) return;
+    m_data.content = pngBase64;
+    loadPixmapFromContent();
+    update();
+    emit dataChanged(m_data);
 }
 
 void CardItem::loadPixmapFromContent()
@@ -1503,6 +1514,30 @@ void CardItem::paint(QPainter* p, const QStyleOptionGraphicsItem*, QWidget*)
                 p->drawRoundedRect(wr, 3, 3);
             }
         }
+        return;
+    }
+
+    // ── Esboço: a folha desenhada, como papel preso no quadro ───────────────
+    if (t == QStringLiteral("sketch")) {
+        const QRectF r(0, 0, w, h);
+        paintShadow(p, r, 3, 3);
+        p->setPen(Qt::NoPen);
+        p->setBrush(QColor(0xfd, 0xfb, 0xf6));
+        p->drawRoundedRect(r, 3, 3);
+        if (!m_pixmap.isNull()) {
+            p->save();
+            p->setRenderHint(QPainter::SmoothPixmapTransform);
+            QPainterPath clip;
+            clip.addRoundedRect(r, 3, 3);
+            p->setClipPath(clip);
+            p->drawPixmap(r, m_pixmap, QRectF(m_pixmap.rect()));
+            p->restore();
+        }
+        p->setPen(QPen(QColor(0, 0, 0, 34), 1));
+        p->setBrush(Qt::NoBrush);
+        p->drawRoundedRect(r.adjusted(0.5, 0.5, -0.5, -0.5), 3, 3);
+        paintPin(p, m_data.color.isValid() ? m_data.color : QColor(0xd9, 0x77, 0x57));
+        if (m_selected) paintSelectionRing(p, outlinePath());
         return;
     }
 
@@ -2214,6 +2249,7 @@ void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent* e)
                            ? 110.0 : kMinH;
         m_data.width  = qMax(minW, m_pressSize.width()  + d.x());
         m_data.height = qMax(minH, m_pressSize.height() + d.y());
+        if (isSketch()) m_data.height = m_data.width * 1.3;   // proporção da folha
         if (noteShape() == QStringLiteral("strip")) {
             m_data.height = m_pressSize.height();            // a tira só alarga
         } else if (noteShape() == QStringLiteral("round")) {
@@ -2377,6 +2413,11 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* e)
         e->accept();
         return;
     }
+    if (isSketch()) {
+        emit sketchEditRequested(m_data.id);
+        e->accept();
+        return;
+    }
     if (isPaperDoc()) {
         emit openRequested(m_data.id);
         e->accept();
@@ -2434,6 +2475,10 @@ void CardItem::contextMenuEvent(QGraphicsSceneContextMenuEvent* e)
         }
         menu.addAction(m_data.locked ? tr("Destravar") : tr("Travar"), this,
                        [this]() { setLocked(!m_data.locked); });
+    } else if (isSketch()) {
+        menu.addAction(tr("Desenhar"), this, [this]() { emit sketchEditRequested(m_data.id); });
+        menu.addAction(tr("Usar como foto do personagem…"), this, [this]() { emit sketchPhotoRequested(m_data.id); });
+        menu.addAction(tr("Exportar desenho…"), this, [this]() { emit sketchExportRequested(m_data.id); });
     } else if (t == QStringLiteral("image")) {
         menu.addAction(tr("Escolher imagem…"), this, &CardItem::chooseImage);
         menu.addAction(tr("Escrever a legenda"), this, &CardItem::beginCaptionEdit);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LousaInk.h"
 #include "LousaTypes.h"
 
 #include <QDialog>
@@ -128,6 +129,7 @@ private:
         QList<CanvasCard>       cards;
         QList<CanvasConnection> connections;
         QList<CanvasZone>       zones;
+        QList<CanvasInk>        inks;
     };
     BoardState captureState() const;
     void       applyState(const BoardState& s);
@@ -219,6 +221,15 @@ private:
     QList<QPair<QToolButton*, QString>> m_iconBindings;
 
     LousaDock*       m_dock      = nullptr;
+    class LousaInkBar* m_inkBar  = nullptr;   // barra da Caneta, em cima da Doca
+    bool             m_inkEraseUndone = false;   // a borracha já empilhou o desfazer deste gesto
+    void             setInkMode(bool on);
+    void             syncInkTool();
+    // Esboço: folha pra desenhar (SketchEditor por cima da Lousa)
+    QPointer<class SketchEditor> m_sketchEditor;
+    void             createSketch();
+    void             openSketchEditor(const QString& cardId);
+    void             useSketchAsPhoto(const QImage& image);
     LousaActionBar*  m_actionBar = nullptr;
     LousaMinimap*    m_minimap   = nullptr;
     LousaCheatSheet* m_cheat     = nullptr;

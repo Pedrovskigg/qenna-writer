@@ -1412,174 +1412,189 @@ Enjoy.</translation>
         <translation>Letters and signs</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="745"/>
-        <location filename="../src/CardItem.cpp" line="1472"/>
-        <location filename="../src/CardItem.cpp" line="1789"/>
+        <location filename="../src/CardItem.cpp" line="747"/>
+        <location filename="../src/CardItem.cpp" line="1483"/>
+        <location filename="../src/CardItem.cpp" line="1824"/>
         <source>Escreva aqui…</source>
         <translation>Write here…</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="980"/>
+        <location filename="../src/CardItem.cpp" line="982"/>
         <source>Escolher imagem</source>
         <translation>Choose image</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="981"/>
+        <location filename="../src/CardItem.cpp" line="983"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1014"/>
+        <location filename="../src/CardItem.cpp" line="1016"/>
         <source>SÍMBOLO</source>
         <translation>SYMBOL</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1438"/>
+        <location filename="../src/CardItem.cpp" line="1449"/>
         <source>Clique com o botão direito para escolher a imagem</source>
         <translation>Right-click to choose the image</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1521"/>
+        <location filename="../src/CardItem.cpp" line="1556"/>
         <source>Legenda (duplo clique)</source>
         <translation>Caption (double-click)</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1545"/>
+        <location filename="../src/CardItem.cpp" line="1580"/>
         <source>Capítulo</source>
         <translation>Chapter</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1558"/>
+        <location filename="../src/CardItem.cpp" line="1593"/>
         <source>Capítulo sem título</source>
         <translation>Untitled chapter</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1558"/>
+        <location filename="../src/CardItem.cpp" line="1593"/>
         <source>Documento sem título</source>
         <translation>Untitled document</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1577"/>
+        <location filename="../src/CardItem.cpp" line="1612"/>
         <source>Sem resumo ainda.</source>
         <translation>No summary yet.</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1577"/>
+        <location filename="../src/CardItem.cpp" line="1612"/>
         <source>Documento vazio.</source>
         <translation>Empty document.</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1587"/>
+        <location filename="../src/CardItem.cpp" line="1622"/>
         <source>abrir →</source>
         <translation>open →</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1620"/>
+        <location filename="../src/CardItem.cpp" line="1655"/>
         <source>FICHA · DUPLO CLIQUE VOLTA</source>
         <translation>PROFILE · DOUBLE-CLICK FLIPS BACK</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1639"/>
+        <location filename="../src/CardItem.cpp" line="1674"/>
         <source>A ficha deste personagem ainda está vazia.</source>
         <translation>This character&apos;s profile is still empty.</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2418"/>
+        <location filename="../src/CardItem.cpp" line="2459"/>
         <source>Cor…</source>
         <translation>Color…</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2424"/>
+        <location filename="../src/CardItem.cpp" line="2465"/>
         <source>Espelhar</source>
         <translation>Mirror</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2425"/>
+        <location filename="../src/CardItem.cpp" line="2466"/>
         <source>Virar de ponta-cabeça</source>
         <translation>Flip upside down</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2426"/>
+        <location filename="../src/CardItem.cpp" line="2467"/>
         <source>Contorno</source>
         <translation>Outline</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2428"/>
+        <location filename="../src/CardItem.cpp" line="2469"/>
         <source>Recorte branco</source>
         <translation>White cutout</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2428"/>
+        <location filename="../src/CardItem.cpp" line="2469"/>
         <source>Nenhum</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2429"/>
+        <location filename="../src/CardItem.cpp" line="2470"/>
         <source>Só sombra</source>
         <translation>Shadow only</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2435"/>
+        <location filename="../src/CardItem.cpp" line="2476"/>
         <source>Destravar</source>
         <translation>Unlock</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2435"/>
+        <location filename="../src/CardItem.cpp" line="2476"/>
         <source>Travar</source>
         <translation>Lock</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2438"/>
+        <location filename="../src/CardItem.cpp" line="2479"/>
+        <source>Desenhar</source>
+        <translation>Draw</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="2480"/>
+        <source>Usar como foto do personagem…</source>
+        <translation>Use as character photo…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="2481"/>
+        <source>Exportar desenho…</source>
+        <translation>Export drawing…</translation>
+    </message>
+    <message>
+        <location filename="../src/CardItem.cpp" line="2483"/>
         <source>Escolher imagem…</source>
         <translation>Choose image…</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2439"/>
+        <location filename="../src/CardItem.cpp" line="2484"/>
         <source>Escrever a legenda</source>
         <translation>Write the caption</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2442"/>
+        <location filename="../src/CardItem.cpp" line="2487"/>
         <source>Trocar símbolo…</source>
         <translation>Change symbol…</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2448"/>
+        <location filename="../src/CardItem.cpp" line="2493"/>
         <source>Escrever</source>
         <translation>Write</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2451"/>
+        <location filename="../src/CardItem.cpp" line="2496"/>
         <source>Ver a foto</source>
         <translation>See the photo</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2451"/>
+        <location filename="../src/CardItem.cpp" line="2496"/>
         <source>Ver a ficha</source>
         <translation>See the profile</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2454"/>
+        <location filename="../src/CardItem.cpp" line="2499"/>
         <source>Abrir</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2456"/>
+        <location filename="../src/CardItem.cpp" line="2501"/>
         <source>Editar o título</source>
         <translation>Edit the title</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2459"/>
+        <location filename="../src/CardItem.cpp" line="2504"/>
         <source>Virar evento na Timeline</source>
         <translation>Turn into a Timeline event</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2463"/>
+        <location filename="../src/CardItem.cpp" line="2508"/>
         <source>Guardar na gaveta da lousa</source>
         <translation>Put away in the board&apos;s tray</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2464"/>
+        <location filename="../src/CardItem.cpp" line="2509"/>
         <source>Apagar de vez</source>
         <translation>Delete for good</translation>
     </message>
@@ -1588,7 +1603,7 @@ Enjoy.</translation>
         <translation type="vanished">Right-click → Choose image</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="1545"/>
+        <location filename="../src/CardItem.cpp" line="1580"/>
         <source>Documento</source>
         <translation>Document</translation>
     </message>
@@ -1597,9 +1612,9 @@ Enjoy.</translation>
         <translation type="vanished">empty document</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="583"/>
-        <location filename="../src/CardItem.cpp" line="1753"/>
-        <location filename="../src/CardItem.cpp" line="1766"/>
+        <location filename="../src/CardItem.cpp" line="585"/>
+        <location filename="../src/CardItem.cpp" line="1788"/>
+        <location filename="../src/CardItem.cpp" line="1801"/>
         <source>Sem título</source>
         <translation>Untitled</translation>
     </message>
@@ -1612,7 +1627,7 @@ Enjoy.</translation>
         <translation type="vanished">Card color</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2419"/>
+        <location filename="../src/CardItem.cpp" line="2460"/>
         <source>Cor</source>
         <translation>Color</translation>
     </message>
@@ -1621,8 +1636,8 @@ Enjoy.</translation>
         <translation type="vanished">Choose image...</translation>
     </message>
     <message>
-        <location filename="../src/CardItem.cpp" line="2440"/>
-        <location filename="../src/CardItem.cpp" line="2458"/>
+        <location filename="../src/CardItem.cpp" line="2485"/>
+        <location filename="../src/CardItem.cpp" line="2503"/>
         <source>Criar documento</source>
         <translation>Create document</translation>
     </message>
@@ -7542,72 +7557,72 @@ Welcome to the Qenna family! Start your new project below.</translation>
 <context>
     <name>LousaBoardLook</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="637"/>
+        <location filename="../src/LousaExtras.cpp" line="655"/>
         <source>FUNDO</source>
         <translation>BACKGROUND</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="640"/>
+        <location filename="../src/LousaExtras.cpp" line="658"/>
         <source>Pontos</source>
         <translation>Dots</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="641"/>
+        <location filename="../src/LousaExtras.cpp" line="659"/>
         <source>Grade</source>
         <translation>Grid</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="642"/>
+        <location filename="../src/LousaExtras.cpp" line="660"/>
         <source>Caderno</source>
         <translation>Notebook</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="643"/>
+        <location filename="../src/LousaExtras.cpp" line="661"/>
         <source>Liso</source>
         <translation>Plain</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="644"/>
+        <location filename="../src/LousaExtras.cpp" line="662"/>
         <source>Cortiça</source>
         <translation>Cork</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="645"/>
+        <location filename="../src/LousaExtras.cpp" line="663"/>
         <source>Lousa branca</source>
         <translation>Whiteboard</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="674"/>
+        <location filename="../src/LousaExtras.cpp" line="692"/>
         <source>COR DO FUNDO</source>
         <translation>BACKGROUND COLOR</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="679"/>
+        <location filename="../src/LousaExtras.cpp" line="697"/>
         <source>A da mesa do tema</source>
         <translation>The theme&apos;s desk</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="685"/>
+        <location filename="../src/LousaExtras.cpp" line="703"/>
         <source>Outra cor…</source>
         <translation>Another color…</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="745"/>
+        <location filename="../src/LousaExtras.cpp" line="763"/>
         <source>Cor do fundo</source>
         <translation>Background color</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="728"/>
+        <location filename="../src/LousaExtras.cpp" line="746"/>
         <source>CARDS</source>
         <translation>CARDS</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="729"/>
+        <location filename="../src/LousaExtras.cpp" line="747"/>
         <source>Meio tortos, como presos num quadro</source>
         <translation>A little crooked, as if pinned to a board</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="733"/>
+        <location filename="../src/LousaExtras.cpp" line="751"/>
         <source>Minimapa no canto</source>
         <translation>Minimap in the corner</translation>
     </message>
@@ -7615,32 +7630,32 @@ Welcome to the Qenna family! Start your new project below.</translation>
 <context>
     <name>LousaBoardPicker</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="911"/>
+        <location filename="../src/LousaExtras.cpp" line="929"/>
         <source>QUAL LOUSA</source>
         <translation>WHICH BOARD</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="936"/>
+        <location filename="../src/LousaExtras.cpp" line="954"/>
         <source>vazia</source>
         <translation>empty</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="954"/>
+        <location filename="../src/LousaExtras.cpp" line="972"/>
         <source>Renomear…</source>
         <translation>Rename…</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="955"/>
+        <location filename="../src/LousaExtras.cpp" line="973"/>
         <source>Excluir…</source>
         <translation>Delete…</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="984"/>
+        <location filename="../src/LousaExtras.cpp" line="1002"/>
         <source>Nova lousa</source>
         <translation>New board</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="992"/>
+        <location filename="../src/LousaExtras.cpp" line="1010"/>
         <source>Botão direito numa lousa pra renomear ou excluir.</source>
         <translation>Right-click a board to rename or delete it.</translation>
     </message>
@@ -7648,68 +7663,68 @@ Welcome to the Qenna family! Start your new project below.</translation>
 <context>
     <name>LousaCheatSheet</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="325"/>
+        <location filename="../src/LousaExtras.cpp" line="343"/>
         <source>Atalhos da Lousa</source>
         <translation>Board shortcuts</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="335"/>
+        <location filename="../src/LousaExtras.cpp" line="353"/>
         <source>Fechar (Esc)</source>
         <translation>Close (Esc)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="343"/>
+        <location filename="../src/LousaExtras.cpp" line="361"/>
         <source>Pôr no quadro</source>
         <translation>Put on the board</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="344"/>
+        <location filename="../src/LousaExtras.cpp" line="362"/>
         <source>Post-it</source>
         <translation>Post-it</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="345"/>
+        <location filename="../src/LousaExtras.cpp" line="363"/>
         <source>Comentário</source>
         <translation>Comment</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="346"/>
-        <location filename="../src/LousaExtras.cpp" line="374"/>
+        <location filename="../src/LousaExtras.cpp" line="364"/>
+        <location filename="../src/LousaExtras.cpp" line="392"/>
         <source>Texto livre</source>
         <translation>Free text</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="347"/>
+        <location filename="../src/LousaExtras.cpp" line="365"/>
         <source>2 cliques no fundo</source>
         <translation>Double-click the background</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="347"/>
+        <location filename="../src/LousaExtras.cpp" line="365"/>
         <source>Texto livre ali mesmo</source>
         <translation>Free text right there</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="348"/>
+        <location filename="../src/LousaExtras.cpp" line="366"/>
         <source>Imagem</source>
         <translation>Image</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="349"/>
+        <location filename="../src/LousaExtras.cpp" line="367"/>
         <source>Arrastar ou colar um PNG</source>
         <translation>Drag in or paste a PNG</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="349"/>
+        <location filename="../src/LousaExtras.cpp" line="367"/>
         <source>Fundo transparente vira adesivo</source>
         <translation>A transparent background becomes a sticker</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="350"/>
+        <location filename="../src/LousaExtras.cpp" line="368"/>
         <source>Documento de uma gaveta</source>
         <translation>Document from a drawer</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="351"/>
+        <location filename="../src/LousaExtras.cpp" line="369"/>
         <source>Personagem</source>
         <translation>Character</translation>
     </message>
@@ -7722,127 +7737,127 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Character, document, chapter</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="352"/>
+        <location filename="../src/LousaExtras.cpp" line="370"/>
         <source>Personagem, Documento</source>
         <translation>Character, Document</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="352"/>
+        <location filename="../src/LousaExtras.cpp" line="370"/>
         <source>Na barra de baixo: escolhe do projeto (inclui capítulos)</source>
         <translation>In the bottom bar: pick from the project (chapters too)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="354"/>
+        <location filename="../src/LousaExtras.cpp" line="372"/>
         <source>Andar pelo quadro</source>
         <translation>Moving around</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="355"/>
+        <location filename="../src/LousaExtras.cpp" line="373"/>
         <source>Arrastar o fundo</source>
         <translation>Drag the background</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="355"/>
+        <location filename="../src/LousaExtras.cpp" line="373"/>
         <source>Move o quadro</source>
         <translation>Moves the board</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="356"/>
+        <location filename="../src/LousaExtras.cpp" line="374"/>
         <source>Rodinha</source>
         <translation>Mouse wheel</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="356"/>
+        <location filename="../src/LousaExtras.cpp" line="374"/>
         <source>Aproxima e afasta</source>
         <translation>Zooms in and out</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="357"/>
+        <location filename="../src/LousaExtras.cpp" line="375"/>
         <source>Ver tudo</source>
         <translation>See everything</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="358"/>
+        <location filename="../src/LousaExtras.cpp" line="376"/>
         <source>Buscar um card</source>
         <translation>Find a card</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="359"/>
+        <location filename="../src/LousaExtras.cpp" line="377"/>
         <source>Lista das áreas</source>
         <translation>List of areas</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="360"/>
+        <location filename="../src/LousaExtras.cpp" line="378"/>
         <source>Minimapa</source>
         <translation>Minimap</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="360"/>
+        <location filename="../src/LousaExtras.cpp" line="378"/>
         <source>Clica e vai</source>
         <translation>Click and go</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="362"/>
+        <location filename="../src/LousaExtras.cpp" line="380"/>
         <source>Selecionar</source>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="363"/>
+        <location filename="../src/LousaExtras.cpp" line="381"/>
         <source>Shift+clique</source>
         <translation>Shift+click</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="363"/>
+        <location filename="../src/LousaExtras.cpp" line="381"/>
         <source>Marca mais um</source>
         <translation>Selects one more</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="364"/>
+        <location filename="../src/LousaExtras.cpp" line="382"/>
         <source>Shift+S (segurar)</source>
         <translation>Shift+S (hold)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="364"/>
+        <location filename="../src/LousaExtras.cpp" line="382"/>
         <source>Pincel: marca o que o mouse tocar</source>
         <translation>Brush: selects whatever the mouse touches</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="365"/>
+        <location filename="../src/LousaExtras.cpp" line="383"/>
         <source>Recorta e cola onde está o mouse</source>
         <translation>Cuts and pastes where the mouse is</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="366"/>
+        <location filename="../src/LousaExtras.cpp" line="384"/>
         <source>Cancela</source>
         <translation>Cancels</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="368"/>
+        <location filename="../src/LousaExtras.cpp" line="386"/>
         <source>Ligar</source>
         <translation>Connect</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="369"/>
+        <location filename="../src/LousaExtras.cpp" line="387"/>
         <source>Arrastar o pin</source>
         <translation>Drag the pin</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="369"/>
+        <location filename="../src/LousaExtras.cpp" line="387"/>
         <source>Do alfinete até outro card</source>
         <translation>From the pin to another card</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="388"/>
+        <location filename="../src/LousaExtras.cpp" line="406"/>
         <source>Área (barra de baixo)</source>
         <translation>Area (bottom bar)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="389"/>
+        <location filename="../src/LousaExtras.cpp" line="407"/>
         <source>Shift+clique na área</source>
         <translation>Shift+click the area</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="389"/>
+        <location filename="../src/LousaExtras.cpp" line="407"/>
         <source>Marca a área com tudo dentro; arrastar leva junto</source>
         <translation>Selects the area with everything inside; dragging takes it all</translation>
     </message>
@@ -7851,107 +7866,107 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Connect (tray)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="370"/>
+        <location filename="../src/LousaExtras.cpp" line="388"/>
         <source>Clica num card e depois no outro</source>
         <translation>Click one card, then the other</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="370"/>
+        <location filename="../src/LousaExtras.cpp" line="388"/>
         <source>Ligar (barra de baixo)</source>
         <translation>Connect (bottom bar)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="371"/>
+        <location filename="../src/LousaExtras.cpp" line="389"/>
         <source>Post-it na linha, 1 s</source>
         <translation>Post-it on the line, 1 s</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="371"/>
+        <location filename="../src/LousaExtras.cpp" line="389"/>
         <source>Vira uma parada da linha</source>
         <translation>Becomes a stop on the line</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="372"/>
+        <location filename="../src/LousaExtras.cpp" line="390"/>
         <source>2 cliques na linha</source>
         <translation>Double-click the line</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="372"/>
+        <location filename="../src/LousaExtras.cpp" line="390"/>
         <source>Dá um nome à ligação</source>
         <translation>Names the connection</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="375"/>
+        <location filename="../src/LousaExtras.cpp" line="393"/>
         <source>2 cliques</source>
         <translation>Double-click</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="375"/>
+        <location filename="../src/LousaExtras.cpp" line="393"/>
         <source>Escreve</source>
         <translation>Write</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="376"/>
+        <location filename="../src/LousaExtras.cpp" line="394"/>
         <source>Termina</source>
         <translation>Finish</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="377"/>
+        <location filename="../src/LousaExtras.cpp" line="395"/>
         <source>Bolinha de cima</source>
         <translation>Top dot</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="377"/>
+        <location filename="../src/LousaExtras.cpp" line="395"/>
         <source>Gira (ou Shift+arrastar)</source>
         <translation>Rotates (or Shift+drag)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="378"/>
+        <location filename="../src/LousaExtras.cpp" line="396"/>
         <source>Canto</source>
         <translation>Corner</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="378"/>
+        <location filename="../src/LousaExtras.cpp" line="396"/>
         <source>Tamanho da letra</source>
         <translation>Font size</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="379"/>
+        <location filename="../src/LousaExtras.cpp" line="397"/>
         <source>Lateral</source>
         <translation>Side</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="379"/>
+        <location filename="../src/LousaExtras.cpp" line="397"/>
         <source>Largura do texto</source>
         <translation>Text width</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="381"/>
+        <location filename="../src/LousaExtras.cpp" line="399"/>
         <source>Guardar e desfazer</source>
         <translation>Put away and undo</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="382"/>
+        <location filename="../src/LousaExtras.cpp" line="400"/>
         <source>Guarda na gaveta da lousa</source>
         <translation>Puts it in the board&apos;s tray</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="383"/>
+        <location filename="../src/LousaExtras.cpp" line="401"/>
         <source>Apaga de vez</source>
         <translation>Deletes for good</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="384"/>
+        <location filename="../src/LousaExtras.cpp" line="402"/>
         <source>Desfaz (até 50 vezes)</source>
         <translation>Undo (up to 50 times)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="385"/>
+        <location filename="../src/LousaExtras.cpp" line="403"/>
         <source>Refaz</source>
         <translation>Redo</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="387"/>
+        <location filename="../src/LousaExtras.cpp" line="405"/>
         <source>Áreas</source>
         <translation>Areas</translation>
     </message>
@@ -7960,7 +7975,7 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Area (tray)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="388"/>
+        <location filename="../src/LousaExtras.cpp" line="406"/>
         <source>E arraste no quadro</source>
         <translation>And drag on the board</translation>
     </message>
@@ -7973,72 +7988,72 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Takes along whatever is inside</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="390"/>
+        <location filename="../src/LousaExtras.cpp" line="408"/>
         <source>A área marcada vira uma gaveta</source>
         <translation>The selected area becomes a drawer</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="391"/>
+        <location filename="../src/LousaExtras.cpp" line="409"/>
         <source>Todas as áreas viram gavetas</source>
         <translation>Every area becomes a drawer</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="393"/>
+        <location filename="../src/LousaExtras.cpp" line="411"/>
         <source>Cards</source>
         <translation>Cards</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="394"/>
+        <location filename="../src/LousaExtras.cpp" line="412"/>
         <source>2 cliques no título</source>
         <translation>Double-click the title</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="394"/>
+        <location filename="../src/LousaExtras.cpp" line="412"/>
         <source>Edita o título</source>
         <translation>Edits the title</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="395"/>
+        <location filename="../src/LousaExtras.cpp" line="413"/>
         <source>2 cliques no personagem</source>
         <translation>Double-click the character</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="395"/>
+        <location filename="../src/LousaExtras.cpp" line="413"/>
         <source>Vira a ficha</source>
         <translation>Flips to the profile</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="396"/>
+        <location filename="../src/LousaExtras.cpp" line="414"/>
         <source>2 cliques no documento</source>
         <translation>Double-click the document</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="396"/>
+        <location filename="../src/LousaExtras.cpp" line="414"/>
         <source>Abre no editor</source>
         <translation>Opens it in the editor</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="397"/>
+        <location filename="../src/LousaExtras.cpp" line="415"/>
         <source>Estilo (no post-it)</source>
         <translation>Style (on a sticky note)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="397"/>
+        <location filename="../src/LousaExtras.cpp" line="415"/>
         <source>Formato, presilha e borda</source>
         <translation>Shape, fastener and border</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="398"/>
+        <location filename="../src/LousaExtras.cpp" line="416"/>
         <source>Adesivo pra frente / pra trás</source>
         <translation>Sticker forward / backward</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="399"/>
+        <location filename="../src/LousaExtras.cpp" line="417"/>
         <source>Não precisa salvar</source>
         <translation>No need to save</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="399"/>
+        <location filename="../src/LousaExtras.cpp" line="417"/>
         <source>Tudo é salvo sozinho</source>
         <translation>Everything saves on its own</translation>
     </message>
@@ -8102,41 +8117,61 @@ Welcome to the Qenna family! Start your new project below.</translation>
     </message>
     <message>
         <location filename="../src/LousaDock.cpp" line="21"/>
+        <source>Caneta</source>
+        <translation>Pen</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="21"/>
+        <source>Caneta: riscar no quadro (Esc sai)</source>
+        <translation>Pen: draw on the board (Esc to exit)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="22"/>
+        <source>Esboço</source>
+        <translation>Sketch</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="22"/>
+        <source>Esboço: uma folha pra desenhar com pincel (dois cliques nela reabrem)</source>
+        <translation>Sketch: a sheet to draw on with brushes (double-click it to reopen)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaDock.cpp" line="23"/>
         <source>Personagem</source>
         <translation>Character</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="21"/>
+        <location filename="../src/LousaDock.cpp" line="23"/>
         <source>Personagem do projeto (Ctrl+Shift+C)</source>
         <translation>A character from the project (Ctrl+Shift+C)</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="22"/>
+        <location filename="../src/LousaDock.cpp" line="24"/>
         <source>Documento</source>
         <translation>Document</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="22"/>
+        <location filename="../src/LousaDock.cpp" line="24"/>
         <source>Documento ou capítulo do projeto (Ctrl+H)</source>
         <translation>A document or chapter from the project (Ctrl+H)</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="23"/>
+        <location filename="../src/LousaDock.cpp" line="25"/>
         <source>Área</source>
         <translation>Area</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="23"/>
+        <location filename="../src/LousaDock.cpp" line="25"/>
         <source>Desenhar uma área (arraste no quadro)</source>
         <translation>Draw an area (drag on the board)</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="24"/>
+        <location filename="../src/LousaDock.cpp" line="26"/>
         <source>Ligar</source>
         <translation>Connect</translation>
     </message>
     <message>
-        <location filename="../src/LousaDock.cpp" line="24"/>
+        <location filename="../src/LousaDock.cpp" line="26"/>
         <source>Ligar dois cards: clique num e depois no outro</source>
         <translation>Connect two cards: click one, then the other</translation>
     </message>
@@ -8144,72 +8179,170 @@ Welcome to the Qenna family! Start your new project below.</translation>
 <context>
     <name>LousaExportSheet</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="760"/>
+        <location filename="../src/LousaExtras.cpp" line="778"/>
         <source>EXPORTAR COMO IMAGEM</source>
         <translation>EXPORT AS IMAGE</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="763"/>
+        <location filename="../src/LousaExtras.cpp" line="781"/>
         <source>O que entra na imagem</source>
         <translation>What goes into the image</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="764"/>
-        <location filename="../src/LousaExtras.cpp" line="765"/>
+        <location filename="../src/LousaExtras.cpp" line="782"/>
+        <location filename="../src/LousaExtras.cpp" line="783"/>
         <source>A lousa toda</source>
         <translation>The whole board</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="764"/>
+        <location filename="../src/LousaExtras.cpp" line="782"/>
         <source>Uma área</source>
         <translation>One area</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="764"/>
-        <location filename="../src/LousaExtras.cpp" line="765"/>
+        <location filename="../src/LousaExtras.cpp" line="782"/>
+        <location filename="../src/LousaExtras.cpp" line="783"/>
         <source>O que está na tela</source>
         <translation>What&apos;s on screen</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="780"/>
+        <location filename="../src/LousaExtras.cpp" line="798"/>
         <source>Qual área</source>
         <translation>Which area</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="782"/>
+        <location filename="../src/LousaExtras.cpp" line="800"/>
         <source>Área sem nome</source>
         <translation>Unnamed area</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="791"/>
+        <location filename="../src/LousaExtras.cpp" line="809"/>
         <source>Fundo transparente</source>
         <translation>Transparent background</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="806"/>
+        <location filename="../src/LousaExtras.cpp" line="824"/>
         <source>Salvar imagem…</source>
         <translation>Save image…</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="806"/>
+        <location filename="../src/LousaExtras.cpp" line="824"/>
         <source>Enter salva</source>
         <translation>Enter saves</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="855"/>
+        <location filename="../src/LousaExtras.cpp" line="873"/>
         <source>Nada pra exportar.</source>
         <translation>Nothing to export.</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="890"/>
+        <location filename="../src/LousaExtras.cpp" line="908"/>
         <source>%1 × %2 px</source>
         <translation>%1 × %2 px</translation>
     </message>
 </context>
 <context>
+    <name>LousaInkBar</name>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="22"/>
+        <source>Caneta</source>
+        <translation>Pen</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="22"/>
+        <source>Caneta: fina, segue a pressão</source>
+        <translation>Pen: fine, follows the pressure</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="23"/>
+        <source>Marcador</source>
+        <translation>Marker</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="23"/>
+        <source>Marcador: grosso e firme</source>
+        <translation>Marker: thick and solid</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="24"/>
+        <source>Marca-texto</source>
+        <translation>Highlighter</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="24"/>
+        <source>Marca-texto: transparente, por cima dos cards</source>
+        <translation>Highlighter: see-through, over the cards</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="25"/>
+        <source>Borracha</source>
+        <translation>Eraser</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="25"/>
+        <source>Borracha: apaga o traço inteiro (a ponta de trás da caneta também apaga)</source>
+        <translation>Eraser: removes the whole stroke (the back end of the pen erases too)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="107"/>
+        <source>Outra cor</source>
+        <translation>Another color</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="109"/>
+        <source>Cor da caneta</source>
+        <translation>Pen color</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="127"/>
+        <source>Espessura</source>
+        <translation>Thickness</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="134"/>
+        <source>Estabilizador</source>
+        <translation>Stabilizer</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="143"/>
+        <source>Quanto maior, mais o traço vem atrás da caneta, e mais liso sai. Vale pra Caneta e pro Esboço.</source>
+        <translation>The higher it is, the more the stroke trails behind the pen, and the smoother it comes out. Applies to the Pen and the Sketch.</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="169"/>
+        <source>Desfazer</source>
+        <translation>Undo</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="169"/>
+        <source>Desfazer (Ctrl+Z)</source>
+        <translation>Undo (Ctrl+Z)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="170"/>
+        <source>Limpar</source>
+        <translation>Clear</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="170"/>
+        <source>Apaga todos os traços desta lousa (Ctrl+Z desfaz)</source>
+        <translation>Erases every stroke on this board (Ctrl+Z undoes it)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="172"/>
+        <source>Pronto</source>
+        <translation>Done</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaInkBar.cpp" line="172"/>
+        <source>Sair da caneta (Esc)</source>
+        <translation>Leave the pen (Esc)</translation>
+    </message>
+</context>
+<context>
     <name>LousaMinimap</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="244"/>
+        <location filename="../src/LousaExtras.cpp" line="262"/>
         <source>Minimapa: clique pra ir até lá</source>
         <translation>Minimap: click to go there</translation>
     </message>
@@ -8217,67 +8350,67 @@ Welcome to the Qenna family! Start your new project below.</translation>
 <context>
     <name>LousaPanel</name>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="348"/>
-        <location filename="../src/LousaPanel.cpp" line="524"/>
+        <location filename="../src/LousaPanel.cpp" line="352"/>
+        <location filename="../src/LousaPanel.cpp" line="542"/>
         <source>Lousa</source>
         <translation>Board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="140"/>
+        <location filename="../src/LousaPanel.cpp" line="143"/>
         <source>Post-it</source>
         <translation>Post-it</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="141"/>
+        <location filename="../src/LousaPanel.cpp" line="144"/>
         <source>Comentário</source>
         <translation>Comment</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="144"/>
-        <location filename="../src/LousaPanel.cpp" line="2791"/>
+        <location filename="../src/LousaPanel.cpp" line="147"/>
+        <location filename="../src/LousaPanel.cpp" line="2967"/>
         <source>Imagem</source>
         <translation>Image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="148"/>
-        <location filename="../src/LousaPanel.cpp" line="1896"/>
-        <location filename="../src/LousaPanel.cpp" line="1944"/>
-        <location filename="../src/LousaPanel.cpp" line="2803"/>
+        <location filename="../src/LousaPanel.cpp" line="152"/>
+        <location filename="../src/LousaPanel.cpp" line="2054"/>
+        <location filename="../src/LousaPanel.cpp" line="2106"/>
+        <location filename="../src/LousaPanel.cpp" line="2979"/>
         <source>Documento</source>
         <translation>Document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="146"/>
+        <location filename="../src/LousaPanel.cpp" line="150"/>
         <source>Personagem</source>
         <translation>Character</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="142"/>
+        <location filename="../src/LousaPanel.cpp" line="145"/>
         <source>Texto livre</source>
         <translation>Free text</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="143"/>
+        <location filename="../src/LousaPanel.cpp" line="146"/>
         <source>Símbolo</source>
         <translation>Symbol</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="472"/>
+        <location filename="../src/LousaPanel.cpp" line="490"/>
         <source>Cards guardados (Delete guarda o card marcado)</source>
         <translation>Put-away cards (Delete puts the selected card here)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="474"/>
+        <location filename="../src/LousaPanel.cpp" line="492"/>
         <source>Lista das áreas (F)</source>
         <translation>List of areas (F)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1029"/>
+        <location filename="../src/LousaPanel.cpp" line="1187"/>
         <source>Escolher imagem</source>
         <translation>Choose image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1030"/>
+        <location filename="../src/LousaPanel.cpp" line="1188"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</source>
         <translation>Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp)</translation>
     </message>
@@ -8286,7 +8419,7 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Link document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1637"/>
+        <location filename="../src/LousaPanel.cpp" line="1795"/>
         <source>Buscar...</source>
         <translation>Search...</translation>
     </message>
@@ -8295,32 +8428,33 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">(untitled)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1666"/>
+        <location filename="../src/LousaPanel.cpp" line="1824"/>
         <source>Personagem na lousa</source>
         <translation>Character on the board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1666"/>
+        <location filename="../src/LousaPanel.cpp" line="1103"/>
+        <location filename="../src/LousaPanel.cpp" line="1824"/>
         <source>Buscar personagem...</source>
         <translation>Search character...</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2808"/>
+        <location filename="../src/LousaPanel.cpp" line="2984"/>
         <source>(sem nome)</source>
         <translation>(unnamed)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1667"/>
+        <location filename="../src/LousaPanel.cpp" line="1825"/>
         <source>+ Novo personagem</source>
         <translation>+ New character</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1743"/>
+        <location filename="../src/LousaPanel.cpp" line="1901"/>
         <source>Sem gaveta de personagens</source>
         <translation>No character drawer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1744"/>
+        <location filename="../src/LousaPanel.cpp" line="1902"/>
         <source>Crie primeiro uma gaveta de personagens no projeto.</source>
         <translation>First create a character drawer in the project.</translation>
     </message>
@@ -8333,13 +8467,14 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Link</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1637"/>
-        <location filename="../src/LousaPanel.cpp" line="1667"/>
+        <location filename="../src/LousaPanel.cpp" line="1795"/>
+        <location filename="../src/LousaPanel.cpp" line="1825"/>
         <source>Pôr na lousa</source>
         <translation>Add to board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1667"/>
+        <location filename="../src/LousaPanel.cpp" line="1104"/>
+        <location filename="../src/LousaPanel.cpp" line="1825"/>
         <source>Nenhum personagem ainda.</source>
         <translation>No characters yet.</translation>
     </message>
@@ -8352,8 +8487,8 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Export all areas (Ctrl+Shift+D)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2708"/>
-        <location filename="../src/LousaPanel.cpp" line="2736"/>
+        <location filename="../src/LousaPanel.cpp" line="2884"/>
+        <location filename="../src/LousaPanel.cpp" line="2912"/>
         <source>Exportar áreas</source>
         <translation>Export areas</translation>
     </message>
@@ -8370,7 +8505,7 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Canvas color</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="722"/>
+        <location filename="../src/LousaPanel.cpp" line="740"/>
         <source>Nova lousa</source>
         <translation>New board</translation>
     </message>
@@ -8383,25 +8518,25 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Close board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="808"/>
-        <location filename="../src/LousaPanel.cpp" line="2721"/>
+        <location filename="../src/LousaPanel.cpp" line="826"/>
+        <location filename="../src/LousaPanel.cpp" line="2897"/>
         <source>Área</source>
         <translation>Area</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2257"/>
+        <location filename="../src/LousaPanel.cpp" line="2425"/>
         <source>Nova conexão</source>
         <translation>New connection</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2257"/>
+        <location filename="../src/LousaPanel.cpp" line="2425"/>
         <source>Cor da conexão</source>
         <translation>Connection color</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="723"/>
-        <location filename="../src/LousaPanel.cpp" line="2257"/>
-        <location filename="../src/LousaPanel.cpp" line="2819"/>
+        <location filename="../src/LousaPanel.cpp" line="741"/>
+        <location filename="../src/LousaPanel.cpp" line="2425"/>
+        <location filename="../src/LousaPanel.cpp" line="2995"/>
         <source>Criar</source>
         <translation>Create</translation>
     </message>
@@ -8410,7 +8545,7 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Click + to add a card to the board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="913"/>
+        <location filename="../src/LousaPanel.cpp" line="962"/>
         <source>Ou comece com um modelo…</source>
         <translation>Or start with a template…</translation>
     </message>
@@ -8431,7 +8566,7 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Delete…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="672"/>
+        <location filename="../src/LousaPanel.cpp" line="690"/>
         <source>Lousa 1</source>
         <translation>Board 1</translation>
     </message>
@@ -8440,34 +8575,34 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Board name:</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="722"/>
-        <location filename="../src/LousaPanel.cpp" line="748"/>
+        <location filename="../src/LousaPanel.cpp" line="740"/>
+        <location filename="../src/LousaPanel.cpp" line="766"/>
         <source>Nome da lousa</source>
         <translation>Board name</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="723"/>
+        <location filename="../src/LousaPanel.cpp" line="741"/>
         <source>Lousa %1</source>
         <translation>Board %1</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="748"/>
+        <location filename="../src/LousaPanel.cpp" line="766"/>
         <source>Renomear lousa</source>
         <translation>Rename board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="759"/>
-        <location filename="../src/LousaPanel.cpp" line="766"/>
+        <location filename="../src/LousaPanel.cpp" line="777"/>
+        <location filename="../src/LousaPanel.cpp" line="784"/>
         <source>Excluir lousa</source>
         <translation>Delete board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="760"/>
+        <location filename="../src/LousaPanel.cpp" line="778"/>
         <source>Não é possível excluir a última lousa do projeto.</source>
         <translation>You can&apos;t delete the project&apos;s last board.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="767"/>
+        <location filename="../src/LousaPanel.cpp" line="785"/>
         <source>Excluir a lousa &quot;%1&quot; e todo o seu conteúdo? Essa ação não pode ser desfeita.</source>
         <translation>Delete the board &quot;%1&quot; and all its content? This action can&apos;t be undone.</translation>
     </message>
@@ -8476,189 +8611,189 @@ Welcome to the Qenna family! Start your new project below.</translation>
         <translation type="vanished">Areas (F)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="475"/>
+        <location filename="../src/LousaPanel.cpp" line="493"/>
         <source>Áreas</source>
         <translation>Areas</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="486"/>
+        <location filename="../src/LousaPanel.cpp" line="504"/>
         <source>GUARDADOS</source>
         <translation>PUT AWAY</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="493"/>
+        <location filename="../src/LousaPanel.cpp" line="511"/>
         <source>Clique pra pôr de volta no quadro; botão direito pra apagar de vez</source>
         <translation>Click to put it back on the board; right-click to delete for good</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="504"/>
+        <location filename="../src/LousaPanel.cpp" line="522"/>
         <source>Pôr de volta no quadro</source>
         <translation>Put back on the board</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="505"/>
+        <location filename="../src/LousaPanel.cpp" line="523"/>
         <source>Apagar de vez</source>
         <translation>Delete for good</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="527"/>
+        <location filename="../src/LousaPanel.cpp" line="545"/>
         <source>%1  ·  %2 lousas</source>
         <translation>%1  ·  %2 boards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="570"/>
+        <location filename="../src/LousaPanel.cpp" line="588"/>
         <source>Guardados</source>
         <translation>Put away</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="571"/>
+        <location filename="../src/LousaPanel.cpp" line="589"/>
         <source>Guardados  %1</source>
         <translation>Put away  %1</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="611"/>
+        <location filename="../src/LousaPanel.cpp" line="629"/>
         <source>Nada guardado. Delete guarda o card marcado.</source>
         <translation>Nothing put away. Delete puts the selected card here.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="907"/>
+        <location filename="../src/LousaPanel.cpp" line="956"/>
         <source>A lousa está vazia.
 Escolha algo na barra aqui embaixo, ou dê dois cliques no quadro pra escrever.</source>
         <translation>The board is empty.
 Pick something from the bar below, or double-click the board to write.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2383"/>
+        <location filename="../src/LousaPanel.cpp" line="2551"/>
         <source>(área sem nome)</source>
         <translation>(unnamed area)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2388"/>
+        <location filename="../src/LousaPanel.cpp" line="2556"/>
         <source>Nenhuma área criada</source>
         <translation>No areas created</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2695"/>
-        <location filename="../src/LousaPanel.cpp" line="2745"/>
+        <location filename="../src/LousaPanel.cpp" line="2871"/>
+        <location filename="../src/LousaPanel.cpp" line="2921"/>
         <source>Exportar área</source>
         <translation>Export area</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2696"/>
+        <location filename="../src/LousaPanel.cpp" line="2872"/>
         <source>Não há post-its ou comentários dentro da(s) área(s).</source>
         <translation>There are no post-its or comments inside the area(s).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2702"/>
+        <location filename="../src/LousaPanel.cpp" line="2878"/>
         <source>A área será exportada para uma gaveta nova, com o nome da área.</source>
         <translation>The area will be exported to a new drawer, named after the area.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2703"/>
+        <location filename="../src/LousaPanel.cpp" line="2879"/>
         <source>Cada área vira uma gaveta nova, com o nome da área (%1 áreas → %1 gavetas).</source>
         <translation>Each area becomes a new drawer, named after the area (%1 areas → %1 drawers).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2706"/>
+        <location filename="../src/LousaPanel.cpp" line="2882"/>
         <source>Os post-its sem título serão nomeados com as primeiras palavras do conteúdo.</source>
         <translation>Untitled post-its will be named after the first words of their content.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2708"/>
+        <location filename="../src/LousaPanel.cpp" line="2884"/>
         <source>Exportar</source>
         <translation>Export</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2737"/>
+        <location filename="../src/LousaPanel.cpp" line="2913"/>
         <source>%1 gaveta(s) criada(s) com %2 documento(s).</source>
         <translation>%1 drawer(s) created with %2 document(s).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2746"/>
+        <location filename="../src/LousaPanel.cpp" line="2922"/>
         <source>Selecione uma área primeiro — clique na barra de topo dela.</source>
         <translation>Select an area first — click its top bar.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="435"/>
-        <location filename="../src/LousaPanel.cpp" line="2564"/>
-        <location filename="../src/LousaPanel.cpp" line="2575"/>
-        <location filename="../src/LousaPanel.cpp" line="2579"/>
-        <location filename="../src/LousaPanel.cpp" line="2583"/>
+        <location filename="../src/LousaPanel.cpp" line="439"/>
+        <location filename="../src/LousaPanel.cpp" line="2740"/>
+        <location filename="../src/LousaPanel.cpp" line="2751"/>
+        <location filename="../src/LousaPanel.cpp" line="2755"/>
+        <location filename="../src/LousaPanel.cpp" line="2759"/>
         <source>Exportar como imagem</source>
         <translation>Export as Image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="132"/>
+        <location filename="../src/LousaPanel.cpp" line="135"/>
         <source>vazio</source>
         <translation>empty</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="133"/>
+        <location filename="../src/LousaPanel.cpp" line="136"/>
         <source>1 palavra</source>
         <translation>1 word</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="134"/>
+        <location filename="../src/LousaPanel.cpp" line="137"/>
         <source>%1 palavras</source>
         <translation>%1 words</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="147"/>
+        <location filename="../src/LousaPanel.cpp" line="151"/>
         <source>Capítulo</source>
         <translation>Chapter</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="166"/>
+        <location filename="../src/LousaPanel.cpp" line="170"/>
         <source>Capítulo %1</source>
         <translation>Chapter %1</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="395"/>
+        <location filename="../src/LousaPanel.cpp" line="399"/>
         <source>Trocar, criar, renomear ou excluir lousas</source>
         <translation>Switch, create, rename or delete boards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="399"/>
+        <location filename="../src/LousaPanel.cpp" line="403"/>
         <source>Desfazer (Ctrl+Z)</source>
         <translation>Undo (Ctrl+Z)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="400"/>
+        <location filename="../src/LousaPanel.cpp" line="404"/>
         <source>Refazer (Ctrl+Y)</source>
         <translation>Redo (Ctrl+Y)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="410"/>
+        <location filename="../src/LousaPanel.cpp" line="414"/>
         <source>Afastar</source>
         <translation>Zoom out</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="414"/>
+        <location filename="../src/LousaPanel.cpp" line="418"/>
         <source>Voltar a 100%</source>
         <translation>Back to 100%</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="417"/>
+        <location filename="../src/LousaPanel.cpp" line="421"/>
         <source>Aproximar</source>
         <translation>Zoom in</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="418"/>
+        <location filename="../src/LousaPanel.cpp" line="422"/>
         <source>Ver tudo (Ctrl+0)</source>
         <translation>See everything (Ctrl+0)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="434"/>
+        <location filename="../src/LousaPanel.cpp" line="438"/>
         <source>Fundo e cards</source>
         <translation>Background and cards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="436"/>
+        <location filename="../src/LousaPanel.cpp" line="440"/>
         <source>Atalhos (?)</source>
         <translation>Shortcuts (?)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="437"/>
+        <location filename="../src/LousaPanel.cpp" line="441"/>
         <source>Fechar a lousa</source>
         <translation>Close the board</translation>
     </message>
@@ -8669,7 +8804,7 @@ Dois cliques renomeiam; botão direito pra mais.</source>
 Double-click to rename; right-click for more.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="768"/>
+        <location filename="../src/LousaPanel.cpp" line="786"/>
         <source>Excluir</source>
         <translation>Delete</translation>
     </message>
@@ -8680,7 +8815,7 @@ Escolha algo na bandeja aqui embaixo, ou dê dois cliques no quadro pra escrever
 Pick something from the tray below, or double-click the board to write.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1843"/>
+        <location filename="../src/LousaPanel.cpp" line="2001"/>
         <source>Dá pra voltar com Ctrl+Z enquanto a lousa estiver aberta.</source>
         <translation>You can bring it back with Ctrl+Z while the board is open.</translation>
     </message>
@@ -8689,605 +8824,641 @@ Pick something from the tray below, or double-click the board to write.</transla
         <translation type="vanished">Untitled</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1626"/>
+        <location filename="../src/LousaPanel.cpp" line="1784"/>
         <source>Capítulo sem título</source>
         <translation>Untitled chapter</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1637"/>
+        <location filename="../src/LousaPanel.cpp" line="1795"/>
         <source>Documento ou capítulo</source>
         <translation>Document or chapter</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1638"/>
+        <location filename="../src/LousaPanel.cpp" line="1796"/>
         <source>Nada nas gavetas nem no manuscrito ainda.</source>
         <translation>Nothing in the drawers or the manuscript yet.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1881"/>
+        <location filename="../src/LousaPanel.cpp" line="2039"/>
         <source>Guardar</source>
         <translation>Put away</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1882"/>
+        <location filename="../src/LousaPanel.cpp" line="2040"/>
         <source>Guardar na gaveta da lousa (Delete)</source>
         <translation>Put away in the board&apos;s tray (Delete)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1885"/>
+        <location filename="../src/LousaPanel.cpp" line="2043"/>
         <source>Apagar de vez (Shift+Delete)</source>
         <translation>Delete for good (Shift+Delete)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1603"/>
-        <location filename="../src/LousaPanel.cpp" line="1892"/>
-        <location filename="../src/LousaPanel.cpp" line="2052"/>
+        <location filename="../src/LousaPanel.cpp" line="1761"/>
+        <location filename="../src/LousaPanel.cpp" line="2050"/>
+        <location filename="../src/LousaPanel.cpp" line="2214"/>
         <source>Cor</source>
         <translation>Color</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="145"/>
+        <location filename="../src/LousaPanel.cpp" line="148"/>
         <source>Adesivo</source>
         <translation>Sticker</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1291"/>
+        <location filename="../src/LousaPanel.cpp" line="149"/>
+        <source>Esboço</source>
+        <translation>Sketch</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1103"/>
+        <source>Foto de qual personagem?</source>
+        <translation>Photo for which character?</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1104"/>
+        <source>Usar o desenho</source>
+        <translation>Use the drawing</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1106"/>
+        <source>Recortar o rosto</source>
+        <translation>Crop the face</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="1449"/>
         <source>Da Qenna</source>
         <translation>From Qenna</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1294"/>
+        <location filename="../src/LousaPanel.cpp" line="1452"/>
         <source>Usados antes</source>
         <translation>Used before</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1335"/>
+        <location filename="../src/LousaPanel.cpp" line="1493"/>
         <source>MARCAÇÕES</source>
         <translation>MARKS</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1336"/>
+        <location filename="../src/LousaPanel.cpp" line="1494"/>
         <source>CARIMBOS E OBJETOS</source>
         <translation>STAMPS AND OBJECTS</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1346"/>
+        <location filename="../src/LousaPanel.cpp" line="1504"/>
         <source>Os PNGs que você puser no quadro aparecem aqui, em qualquer projeto.</source>
         <translation>The PNGs you put on the board show up here, in any project.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1390"/>
+        <location filename="../src/LousaPanel.cpp" line="1548"/>
         <source>Escolher PNG…</source>
         <translation>Choose PNG…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1395"/>
+        <location filename="../src/LousaPanel.cpp" line="1553"/>
         <source>ou arraste uma imagem pro quadro,
 ou cole com Ctrl+V</source>
         <translation>or drag an image onto the board,
 or paste with Ctrl+V</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1413"/>
+        <location filename="../src/LousaPanel.cpp" line="1571"/>
         <source>Escolher adesivo</source>
         <translation>Choose sticker</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1414"/>
+        <location filename="../src/LousaPanel.cpp" line="1572"/>
         <source>Imagens (*.png *.webp *.gif *.jpg *.jpeg *.bmp)</source>
         <translation>Images (*.png *.webp *.gif *.jpg *.jpeg *.bmp)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1438"/>
+        <location filename="../src/LousaPanel.cpp" line="1596"/>
         <source>Quadrado</source>
         <translation>Square</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1438"/>
+        <location filename="../src/LousaPanel.cpp" line="1596"/>
         <source>Ficha pautada</source>
         <translation>Index card</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1439"/>
+        <location filename="../src/LousaPanel.cpp" line="1597"/>
         <source>Tira</source>
         <translation>Strip</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1439"/>
+        <location filename="../src/LousaPanel.cpp" line="1597"/>
         <source>Redondo</source>
         <translation>Round</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1440"/>
+        <location filename="../src/LousaPanel.cpp" line="1598"/>
         <source>Etiqueta</source>
         <translation>Tag</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1440"/>
+        <location filename="../src/LousaPanel.cpp" line="1598"/>
         <source>Folha arrancada</source>
         <translation>Torn-out page</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1441"/>
+        <location filename="../src/LousaPanel.cpp" line="1599"/>
         <source>Picotado</source>
         <translation>Pinked edge</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1441"/>
+        <location filename="../src/LousaPanel.cpp" line="1599"/>
         <source>Fita rotuladora</source>
         <translation>Label tape</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1443"/>
+        <location filename="../src/LousaPanel.cpp" line="1601"/>
         <source>Pin</source>
         <translation>Pin</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1443"/>
+        <location filename="../src/LousaPanel.cpp" line="1601"/>
         <source>Fita adesiva</source>
         <translation>Tape</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1444"/>
+        <location filename="../src/LousaPanel.cpp" line="1602"/>
         <source>Clipe</source>
         <translation>Paper clip</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1444"/>
+        <location filename="../src/LousaPanel.cpp" line="1602"/>
         <source>Grampo</source>
         <translation>Staple</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1445"/>
+        <location filename="../src/LousaPanel.cpp" line="1603"/>
         <source>Nada</source>
         <translation>Nothing</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1447"/>
+        <location filename="../src/LousaPanel.cpp" line="1605"/>
         <source>Nenhuma</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1447"/>
+        <location filename="../src/LousaPanel.cpp" line="1605"/>
         <source>Caneta</source>
         <translation>Pen</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1448"/>
+        <location filename="../src/LousaPanel.cpp" line="1606"/>
         <source>Recorte</source>
         <translation>Cut line</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1448"/>
+        <location filename="../src/LousaPanel.cpp" line="1606"/>
         <source>Cantoneiras</source>
         <translation>Photo corners</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1473"/>
+        <location filename="../src/LousaPanel.cpp" line="1631"/>
         <source>FORMATO</source>
         <translation>SHAPE</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1474"/>
+        <location filename="../src/LousaPanel.cpp" line="1632"/>
         <source>PRESO COM</source>
         <translation>HELD WITH</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1475"/>
+        <location filename="../src/LousaPanel.cpp" line="1633"/>
         <source>BORDA</source>
         <translation>BORDER</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1477"/>
+        <location filename="../src/LousaPanel.cpp" line="1635"/>
         <source>COR</source>
         <translation>COLOR</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1500"/>
+        <location filename="../src/LousaPanel.cpp" line="1658"/>
         <source>Outra…</source>
         <translation>Other…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1520"/>
+        <location filename="../src/LousaPanel.cpp" line="1678"/>
         <source>Usar nos próximos post-its</source>
         <translation>Use for new sticky notes</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1541"/>
+        <location filename="../src/LousaPanel.cpp" line="1699"/>
         <source>Fita</source>
         <translation>Tape</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1895"/>
+        <location filename="../src/LousaPanel.cpp" line="2053"/>
         <source>Estilo</source>
         <translation>Style</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1895"/>
+        <location filename="../src/LousaPanel.cpp" line="2053"/>
         <source>Formato, presilha e borda</source>
         <translation>Shape, fastener and border</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1897"/>
+        <location filename="../src/LousaPanel.cpp" line="2055"/>
         <source>Criar um documento com este card</source>
         <translation>Create a document from this card</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1900"/>
+        <location filename="../src/LousaPanel.cpp" line="2058"/>
         <source>Evento</source>
         <translation>Event</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1900"/>
+        <location filename="../src/LousaPanel.cpp" line="2058"/>
         <source>Virar evento na Timeline</source>
         <translation>Turn into a Timeline event</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1906"/>
+        <location filename="../src/LousaPanel.cpp" line="2064"/>
         <source>Fonte</source>
         <translation>Font</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1909"/>
+        <location filename="../src/LousaPanel.cpp" line="2067"/>
         <source>Negrito</source>
         <translation>Bold</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1911"/>
+        <location filename="../src/LousaPanel.cpp" line="2069"/>
         <source>Itálico</source>
         <translation>Italic</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1917"/>
+        <location filename="../src/LousaPanel.cpp" line="2075"/>
         <source>Trocar</source>
         <translation>Change</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1917"/>
+        <location filename="../src/LousaPanel.cpp" line="2075"/>
         <source>Trocar o símbolo</source>
         <translation>Change the symbol</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1922"/>
+        <location filename="../src/LousaPanel.cpp" line="2080"/>
         <source>Espelhar</source>
         <translation>Mirror</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1924"/>
+        <location filename="../src/LousaPanel.cpp" line="2082"/>
         <source>Virar</source>
         <translation>Flip</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1924"/>
+        <location filename="../src/LousaPanel.cpp" line="2082"/>
         <source>De ponta-cabeça</source>
         <translation>Upside down</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1927"/>
+        <location filename="../src/LousaPanel.cpp" line="2085"/>
         <source>Sem contorno</source>
         <translation>No outline</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1928"/>
-        <location filename="../src/LousaPanel.cpp" line="2102"/>
+        <location filename="../src/LousaPanel.cpp" line="2086"/>
+        <location filename="../src/LousaPanel.cpp" line="2270"/>
         <source>Só sombra</source>
         <translation>Shadow only</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1929"/>
-        <location filename="../src/LousaPanel.cpp" line="2101"/>
+        <location filename="../src/LousaPanel.cpp" line="2087"/>
+        <location filename="../src/LousaPanel.cpp" line="2269"/>
         <source>Recorte branco</source>
         <translation>White cutout</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1930"/>
+        <location filename="../src/LousaPanel.cpp" line="2088"/>
         <source>Contorno</source>
         <translation>Outline</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1933"/>
+        <location filename="../src/LousaPanel.cpp" line="2091"/>
         <source>Camada</source>
         <translation>Layer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1934"/>
+        <location filename="../src/LousaPanel.cpp" line="2092"/>
         <source>Pra frente, pra trás ou atrás dos cards</source>
         <translation>Forward, backward or behind the cards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1936"/>
+        <location filename="../src/LousaPanel.cpp" line="2094"/>
         <source>Destravar</source>
         <translation>Unlock</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1936"/>
+        <location filename="../src/LousaPanel.cpp" line="2094"/>
         <source>Travar</source>
         <translation>Lock</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1937"/>
+        <location filename="../src/LousaPanel.cpp" line="2095"/>
         <source>Destravar: volta a mexer</source>
         <translation>Unlock: it can move again</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1937"/>
+        <location filename="../src/LousaPanel.cpp" line="2095"/>
         <source>Travar no lugar</source>
         <translation>Lock in place</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1942"/>
+        <location filename="../src/LousaPanel.cpp" line="2100"/>
+        <source>Desenhar</source>
+        <translation>Draw</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="2100"/>
+        <source>Abrir a folha (dois cliques)</source>
+        <translation>Open the sheet (double-click)</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="2101"/>
+        <source>Usar como foto do personagem</source>
+        <translation>Use as character photo</translation>
+    </message>
+    <message>
+        <location filename="../src/LousaPanel.cpp" line="2104"/>
         <source>Trocar imagem</source>
         <translation>Change image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1943"/>
+        <location filename="../src/LousaPanel.cpp" line="2105"/>
         <source>Legenda</source>
         <translation>Caption</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1944"/>
+        <location filename="../src/LousaPanel.cpp" line="2106"/>
         <source>Criar um documento com esta imagem</source>
         <translation>Create a document from this image</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1948"/>
+        <location filename="../src/LousaPanel.cpp" line="2101"/>
+        <location filename="../src/LousaPanel.cpp" line="2110"/>
         <source>Foto</source>
         <translation>Photo</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1948"/>
+        <location filename="../src/LousaPanel.cpp" line="2110"/>
         <source>Ficha</source>
         <translation>Profile</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1948"/>
+        <location filename="../src/LousaPanel.cpp" line="2110"/>
         <source>Virar o card (dois cliques)</source>
         <translation>Flip the card (double-click)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1949"/>
-        <location filename="../src/LousaPanel.cpp" line="1952"/>
+        <location filename="../src/LousaPanel.cpp" line="2111"/>
+        <location filename="../src/LousaPanel.cpp" line="2114"/>
         <source>Abrir</source>
         <translation>Open</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1949"/>
+        <location filename="../src/LousaPanel.cpp" line="2111"/>
         <source>Abrir o documento do personagem</source>
         <translation>Open the character&apos;s document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1952"/>
+        <location filename="../src/LousaPanel.cpp" line="2114"/>
         <source>Abrir no editor</source>
         <translation>Open in the editor</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1956"/>
+        <location filename="../src/LousaPanel.cpp" line="2118"/>
         <source>Alinhar pelo topo</source>
         <translation>Align to the top</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1957"/>
+        <location filename="../src/LousaPanel.cpp" line="2119"/>
         <source>Alinhar pelo meio</source>
         <translation>Align to the middle</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1958"/>
+        <location filename="../src/LousaPanel.cpp" line="2120"/>
         <source>Alinhar pela esquerda</source>
         <translation>Align to the left</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1959"/>
+        <location filename="../src/LousaPanel.cpp" line="2121"/>
         <source>Espaçar igual na horizontal</source>
         <translation>Space evenly across</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1960"/>
+        <location filename="../src/LousaPanel.cpp" line="2122"/>
         <source>Espaçar igual na vertical</source>
         <translation>Space evenly down</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1961"/>
+        <location filename="../src/LousaPanel.cpp" line="2123"/>
         <source>Arrumar</source>
         <translation>Tidy up</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1961"/>
+        <location filename="../src/LousaPanel.cpp" line="2123"/>
         <source>Arrumar em grade</source>
         <translation>Arrange in a grid</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1965"/>
-        <location filename="../src/LousaPanel.cpp" line="2138"/>
-        <location filename="../src/LousaPanel.cpp" line="2308"/>
+        <location filename="../src/LousaPanel.cpp" line="2127"/>
+        <location filename="../src/LousaPanel.cpp" line="2306"/>
+        <location filename="../src/LousaPanel.cpp" line="2476"/>
         <source>Cor da linha</source>
         <translation>Line color</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1968"/>
+        <location filename="../src/LousaPanel.cpp" line="2130"/>
         <source>Dar nome</source>
         <translation>Name it</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1968"/>
+        <location filename="../src/LousaPanel.cpp" line="2130"/>
         <source>Nome</source>
         <translation>Name</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1968"/>
+        <location filename="../src/LousaPanel.cpp" line="2130"/>
         <source>Nome da ligação (dois cliques na linha)</source>
         <translation>Name of the connection (double-click the line)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1971"/>
+        <location filename="../src/LousaPanel.cpp" line="2133"/>
         <source>Seta</source>
         <translation>Arrow</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1971"/>
-        <location filename="../src/LousaPanel.cpp" line="2300"/>
+        <location filename="../src/LousaPanel.cpp" line="2133"/>
+        <location filename="../src/LousaPanel.cpp" line="2468"/>
         <source>Seta na ponta</source>
         <translation>Arrow at the end</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1973"/>
+        <location filename="../src/LousaPanel.cpp" line="2135"/>
         <source>Curva</source>
         <translation>Curve</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1974"/>
+        <location filename="../src/LousaPanel.cpp" line="2136"/>
         <source>Linha em curva (o padrão é reta, de pin a pin)</source>
         <translation>Curved line (the default is straight, pin to pin)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1977"/>
-        <location filename="../src/LousaPanel.cpp" line="2305"/>
+        <location filename="../src/LousaPanel.cpp" line="2139"/>
+        <location filename="../src/LousaPanel.cpp" line="2473"/>
         <source>Remover a linha</source>
         <translation>Remove the line</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1983"/>
-        <location filename="../src/LousaPanel.cpp" line="2163"/>
+        <location filename="../src/LousaPanel.cpp" line="2145"/>
+        <location filename="../src/LousaPanel.cpp" line="2331"/>
         <source>Cor da área</source>
         <translation>Area color</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1985"/>
+        <location filename="../src/LousaPanel.cpp" line="2147"/>
         <source>Renomear</source>
         <translation>Rename</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1988"/>
+        <location filename="../src/LousaPanel.cpp" line="2150"/>
         <source>Virar gaveta</source>
         <translation>Make it a drawer</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1989"/>
+        <location filename="../src/LousaPanel.cpp" line="2151"/>
         <source>Exportar a área para uma gaveta (Ctrl+D)</source>
         <translation>Export the area to a drawer (Ctrl+D)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1990"/>
+        <location filename="../src/LousaPanel.cpp" line="2152"/>
         <source>Remover a área</source>
         <translation>Remove the area</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2101"/>
+        <location filename="../src/LousaPanel.cpp" line="2269"/>
         <source>Nenhum</source>
         <translation>None</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2112"/>
+        <location filename="../src/LousaPanel.cpp" line="2280"/>
         <source>Trazer pra frente</source>
         <translation>Bring to front</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2113"/>
+        <location filename="../src/LousaPanel.cpp" line="2281"/>
         <source>Mandar pra trás</source>
         <translation>Send backward</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2114"/>
+        <location filename="../src/LousaPanel.cpp" line="2282"/>
         <source>Atrás dos cards</source>
         <translation>Behind the cards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2167"/>
+        <location filename="../src/LousaPanel.cpp" line="2335"/>
         <source>Nome da área</source>
         <translation>Area name</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2286"/>
+        <location filename="../src/LousaPanel.cpp" line="2454"/>
         <source>Nome da ligação</source>
         <translation>Connection name</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2286"/>
+        <location filename="../src/LousaPanel.cpp" line="2454"/>
         <source>irmãos, trai, deve dinheiro…</source>
         <translation>siblings, betrays, owes money…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2287"/>
+        <location filename="../src/LousaPanel.cpp" line="2455"/>
         <source>Salvar</source>
         <translation>Save</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2298"/>
+        <location filename="../src/LousaPanel.cpp" line="2466"/>
         <source>Cor…</source>
         <translation>Color…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2299"/>
+        <location filename="../src/LousaPanel.cpp" line="2467"/>
         <source>Dar um nome…</source>
         <translation>Give it a name…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2299"/>
+        <location filename="../src/LousaPanel.cpp" line="2467"/>
         <source>Trocar o nome…</source>
         <translation>Change the name…</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2302"/>
+        <location filename="../src/LousaPanel.cpp" line="2470"/>
         <source>Em curva</source>
         <translation>Curved</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2334"/>
+        <location filename="../src/LousaPanel.cpp" line="2502"/>
         <source>ÁREAS</source>
         <translation>AREAS</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2565"/>
+        <location filename="../src/LousaPanel.cpp" line="2741"/>
         <source>A lousa está vazia — não há nada para exportar.</source>
         <translation>The board is empty — there&apos;s nothing to export.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2576"/>
+        <location filename="../src/LousaPanel.cpp" line="2752"/>
         <source>Imagem PNG (*.png)</source>
         <translation>PNG Image (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2580"/>
+        <location filename="../src/LousaPanel.cpp" line="2756"/>
         <source>Não foi possível salvar a imagem.</source>
         <translation>Couldn&apos;t save the image.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2583"/>
+        <location filename="../src/LousaPanel.cpp" line="2759"/>
         <source>Imagem exportada com sucesso.</source>
         <translation>Image exported successfully.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2592"/>
+        <location filename="../src/LousaPanel.cpp" line="2768"/>
         <source>Mapa de Personagens</source>
         <translation>Character Map</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2593"/>
+        <location filename="../src/LousaPanel.cpp" line="2769"/>
         <source>Arco da História</source>
         <translation>Story Arc</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2594"/>
+        <location filename="../src/LousaPanel.cpp" line="2770"/>
         <source>Construção de Mundo</source>
         <translation>Worldbuilding</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2777"/>
-        <location filename="../src/LousaPanel.cpp" line="2818"/>
+        <location filename="../src/LousaPanel.cpp" line="2953"/>
+        <location filename="../src/LousaPanel.cpp" line="2994"/>
         <source>Criar documento</source>
         <translation>Create document</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2778"/>
+        <location filename="../src/LousaPanel.cpp" line="2954"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Create a drawer before using this feature.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="3321"/>
+        <location filename="../src/LousaPanel.cpp" line="3512"/>
         <source>Documento não encontrado</source>
         <translation>Document not found</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="3343"/>
+        <location filename="../src/LousaPanel.cpp" line="3534"/>
         <source>Capítulo não encontrado</source>
         <translation>Chapter not found</translation>
     </message>
@@ -9300,27 +9471,27 @@ or paste with Ctrl+V</translation>
         <translation type="vanished">Target drawer:</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2811"/>
+        <location filename="../src/LousaPanel.cpp" line="2987"/>
         <source>Vai abrir o cadastro de personagem em seguida (foto e papel).</source>
         <translation>This will open the character form next (photo and role).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2812"/>
+        <location filename="../src/LousaPanel.cpp" line="2988"/>
         <source>Vai abrir o cadastro de cenário em seguida (foto).</source>
         <translation>This will open the setting form next (photo).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2813"/>
+        <location filename="../src/LousaPanel.cpp" line="2989"/>
         <source>Vai abrir o cadastro de objeto em seguida (foto).</source>
         <translation>This will open the object form next (photo).</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2818"/>
+        <location filename="../src/LousaPanel.cpp" line="2994"/>
         <source>Nome do documento</source>
         <translation>Document name</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2819"/>
+        <location filename="../src/LousaPanel.cpp" line="2995"/>
         <source>Gaveta de destino</source>
         <translation>Destination drawer</translation>
     </message>
@@ -9333,8 +9504,8 @@ or paste with Ctrl+V</translation>
         <translation type="vanished">Restore</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="510"/>
-        <location filename="../src/LousaPanel.cpp" line="1843"/>
+        <location filename="../src/LousaPanel.cpp" line="528"/>
+        <location filename="../src/LousaPanel.cpp" line="2001"/>
         <source>Apagar</source>
         <translation>Delete</translation>
     </message>
@@ -9343,19 +9514,19 @@ or paste with Ctrl+V</translation>
         <translation type="vanished">Drawer (%1)</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="509"/>
-        <location filename="../src/LousaPanel.cpp" line="1840"/>
+        <location filename="../src/LousaPanel.cpp" line="527"/>
+        <location filename="../src/LousaPanel.cpp" line="1998"/>
         <source>Apagar cards</source>
         <translation>Delete cards</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="509"/>
-        <location filename="../src/LousaPanel.cpp" line="1841"/>
+        <location filename="../src/LousaPanel.cpp" line="527"/>
+        <location filename="../src/LousaPanel.cpp" line="1999"/>
         <source>Apagar este card definitivamente?</source>
         <translation>Permanently delete this card?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="1842"/>
+        <location filename="../src/LousaPanel.cpp" line="2000"/>
         <source>Apagar %1 cards definitivamente?</source>
         <translation>Permanently delete %1 cards?</translation>
     </message>
@@ -9699,32 +9870,32 @@ If you have any doubts, the sections below explain everything.</translation>
 <context>
     <name>LousaSearchBar</name>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="505"/>
+        <location filename="../src/LousaExtras.cpp" line="523"/>
         <source>Buscar na lousa…</source>
         <translation>Search the board…</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="525"/>
+        <location filename="../src/LousaExtras.cpp" line="543"/>
         <source>Anterior (Shift+Enter)</source>
         <translation>Previous (Shift+Enter)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="526"/>
+        <location filename="../src/LousaExtras.cpp" line="544"/>
         <source>Próximo (Enter)</source>
         <translation>Next (Enter)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="527"/>
+        <location filename="../src/LousaExtras.cpp" line="545"/>
         <source>Fechar (Esc)</source>
         <translation>Close (Esc)</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="557"/>
+        <location filename="../src/LousaExtras.cpp" line="575"/>
         <source>nada</source>
         <translation>nothing</translation>
     </message>
     <message>
-        <location filename="../src/LousaExtras.cpp" line="558"/>
+        <location filename="../src/LousaExtras.cpp" line="576"/>
         <source>%1 de %2</source>
         <translation>%1 of %2</translation>
     </message>
@@ -22504,207 +22675,207 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
         <translation>Requires care so the inflexibility doesn&apos;t make the reading too predictable</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="249"/>
+        <location filename="../src/LousaPanel.cpp" line="253"/>
         <source>Mapa de Personagens — arraste, edite e conecte à vontade</source>
         <translation>Character Map — drag, edit, and connect freely</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="252"/>
+        <location filename="../src/LousaPanel.cpp" line="256"/>
         <source>Protagonista</source>
         <translation>Protagonist</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="252"/>
+        <location filename="../src/LousaPanel.cpp" line="256"/>
         <source>Quem carrega a história.</source>
         <translation>Who carries the story.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="255"/>
+        <location filename="../src/LousaPanel.cpp" line="259"/>
         <source>Mentor</source>
         <translation>Mentor</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="255"/>
+        <location filename="../src/LousaPanel.cpp" line="259"/>
         <source>Guia e ensina o protagonista.</source>
         <translation>Guides and teaches the protagonist.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="258"/>
+        <location filename="../src/LousaPanel.cpp" line="262"/>
         <source>Aliado</source>
         <translation>Ally</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="258"/>
+        <location filename="../src/LousaPanel.cpp" line="262"/>
         <source>Luta ao lado do protagonista.</source>
         <translation>Fights alongside the protagonist.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="261"/>
+        <location filename="../src/LousaPanel.cpp" line="265"/>
         <source>Antagonista</source>
         <translation>Antagonist</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="261"/>
+        <location filename="../src/LousaPanel.cpp" line="265"/>
         <source>Se opõe diretamente ao protagonista.</source>
         <translation>Directly opposes the protagonist.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="264"/>
+        <location filename="../src/LousaPanel.cpp" line="268"/>
         <source>Vilão secundário</source>
         <translation>Secondary villain</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="264"/>
+        <location filename="../src/LousaPanel.cpp" line="268"/>
         <source>Serve ou desafia o antagonista principal.</source>
         <translation>Serves or challenges the main antagonist.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="279"/>
+        <location filename="../src/LousaPanel.cpp" line="283"/>
         <source>Arco da História</source>
         <translation>Story Arc</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="282"/>
+        <location filename="../src/LousaPanel.cpp" line="286"/>
         <source>Ato 1 — Detonante</source>
         <translation>Act 1 — Setup</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="283"/>
+        <location filename="../src/LousaPanel.cpp" line="287"/>
         <source>Ato 2 — Confronto</source>
         <translation>Act 2 — Confrontation</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="284"/>
+        <location filename="../src/LousaPanel.cpp" line="288"/>
         <source>Ato 3 — Resolução</source>
         <translation>Act 3 — Resolution</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="287"/>
+        <location filename="../src/LousaPanel.cpp" line="291"/>
         <source>Incidente incitante</source>
         <translation>Inciting incident</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="288"/>
+        <location filename="../src/LousaPanel.cpp" line="292"/>
         <source>O que tira o herói da zona de conforto?</source>
         <translation>What pulls the hero out of their comfort zone?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="290"/>
+        <location filename="../src/LousaPanel.cpp" line="294"/>
         <source>1º ponto de virada</source>
         <translation>1st plot point</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="291"/>
+        <location filename="../src/LousaPanel.cpp" line="295"/>
         <source>A decisão que não tem mais volta.</source>
         <translation>The point of no return.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="293"/>
+        <location filename="../src/LousaPanel.cpp" line="297"/>
         <source>Meio do meio</source>
         <translation>Midpoint</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="294"/>
+        <location filename="../src/LousaPanel.cpp" line="298"/>
         <source>O ponto sem retorno emocional.</source>
         <translation>The point of no emotional return.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="296"/>
+        <location filename="../src/LousaPanel.cpp" line="300"/>
         <source>2º ponto de virada</source>
         <translation>2nd plot point</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="297"/>
+        <location filename="../src/LousaPanel.cpp" line="301"/>
         <source>A crise que empurra pro clímax.</source>
         <translation>The crisis that pushes toward the climax.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="299"/>
+        <location filename="../src/LousaPanel.cpp" line="303"/>
         <source>Clímax</source>
         <translation>Climax</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="300"/>
+        <location filename="../src/LousaPanel.cpp" line="304"/>
         <source>O confronto final.</source>
         <translation>The final confrontation.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="302"/>
+        <location filename="../src/LousaPanel.cpp" line="306"/>
         <source>Resolução</source>
         <translation>Resolution</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="303"/>
+        <location filename="../src/LousaPanel.cpp" line="307"/>
         <source>O novo normal do protagonista.</source>
         <translation>The protagonist&apos;s new normal.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="311"/>
+        <location filename="../src/LousaPanel.cpp" line="315"/>
         <source>Construção de Mundo</source>
         <translation>Worldbuilding</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="314"/>
+        <location filename="../src/LousaPanel.cpp" line="318"/>
         <source>Geografia</source>
         <translation>Geography</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="315"/>
+        <location filename="../src/LousaPanel.cpp" line="319"/>
         <source>Poder &amp; Política</source>
         <translation>Power &amp; Politics</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="316"/>
+        <location filename="../src/LousaPanel.cpp" line="320"/>
         <source>Cultura &amp; Sociedade</source>
         <translation>Culture &amp; Society</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="317"/>
+        <location filename="../src/LousaPanel.cpp" line="321"/>
         <source>História &amp; Mitologia</source>
         <translation>History &amp; Mythology</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="320"/>
+        <location filename="../src/LousaPanel.cpp" line="324"/>
         <source>Onde isso acontece?</source>
         <translation>Where does this happen?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="321"/>
+        <location filename="../src/LousaPanel.cpp" line="325"/>
         <source>Clima, território, o que molda quem vive aqui.</source>
         <translation>Climate, terrain — what shapes the people who live here.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="323"/>
+        <location filename="../src/LousaPanel.cpp" line="327"/>
         <source>Quem manda aqui?</source>
         <translation>Who&apos;s really in charge?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="324"/>
+        <location filename="../src/LousaPanel.cpp" line="328"/>
         <source>Como o poder é conquistado, mantido ou perdido.</source>
         <translation>How power is won, kept, or lost.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="326"/>
+        <location filename="../src/LousaPanel.cpp" line="330"/>
         <source>Como vivem?</source>
         <translation>How do they live?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="327"/>
+        <location filename="../src/LousaPanel.cpp" line="331"/>
         <source>Costumes, crenças, o que é considerado normal.</source>
         <translation>Customs, beliefs — what counts as normal here.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="329"/>
+        <location filename="../src/LousaPanel.cpp" line="333"/>
         <source>O que aconteceu antes?</source>
         <translation>What happened before?</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="330"/>
+        <location filename="../src/LousaPanel.cpp" line="334"/>
         <source>Os eventos e mitos que ainda pesam no presente.</source>
         <translation>The events and myths that still weigh on the present.</translation>
     </message>
     <message>
-        <location filename="../src/LousaPanel.cpp" line="2631"/>
+        <location filename="../src/LousaPanel.cpp" line="2807"/>
         <source>Sem título</source>
         <translation>Untitled</translation>
     </message>
@@ -27610,6 +27781,307 @@ If you don&apos;t have an API key, or simply don&apos;t want to use the assistan
     <message>
         <source>Excluir projeto</source>
         <translation type="vanished">Delete project</translation>
+    </message>
+</context>
+<context>
+    <name>SketchBrushes</name>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="20"/>
+        <source>Lápis</source>
+        <translation>Pencil</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="20"/>
+        <source>grafite, granulado</source>
+        <translation>graphite, grainy</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="21"/>
+        <source>Carvão</source>
+        <translation>Charcoal</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="21"/>
+        <source>grosso, áspero</source>
+        <translation>thick, rough</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="22"/>
+        <source>Nanquim</source>
+        <translation>Ink</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="22"/>
+        <source>ponta fina, firme</source>
+        <translation>fine tip, steady</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="23"/>
+        <source>Aquarela</source>
+        <translation>Watercolor</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="23"/>
+        <source>transparente, borda molhada</source>
+        <translation>see-through, wet edge</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="24"/>
+        <source>Pincel macio</source>
+        <translation>Soft brush</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="24"/>
+        <source>sombra, volume</source>
+        <translation>shading, volume</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="25"/>
+        <source>Marcador</source>
+        <translation>Marker</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="25"/>
+        <source>cor chapada</source>
+        <translation>flat color</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="26"/>
+        <source>Borracha</source>
+        <translation>Eraser</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="26"/>
+        <source>apaga onde passa</source>
+        <translation>erases where it goes</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchBrushes.cpp" line="128"/>
+        <source>Não são pincéis do MyPaint: %1</source>
+        <translation>Not MyPaint brushes: %1</translation>
+    </message>
+</context>
+<context>
+    <name>SketchEditor</name>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="384"/>
+        <source>Camada %1</source>
+        <translation>Layer %1</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="484"/>
+        <location filename="../src/SketchEditor.cpp" line="608"/>
+        <source>Esboço</source>
+        <translation>Sketch</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="484"/>
+        <source>Esboço · %1</source>
+        <translation>Sketch · %1</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="518"/>
+        <source>Rascunho</source>
+        <translation>Rough</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="519"/>
+        <source>Arte</source>
+        <translation>Final art</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="603"/>
+        <source>PNG com o papel</source>
+        <translation>PNG with the paper</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="604"/>
+        <source>PNG com fundo transparente</source>
+        <translation>PNG with a transparent background</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="611"/>
+        <source>Exportar desenho</source>
+        <translation>Export drawing</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="611"/>
+        <source>Imagem PNG (*.png)</source>
+        <translation>PNG image (*.png)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="694"/>
+        <source>Esconder camada</source>
+        <translation>Hide layer</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="694"/>
+        <source>Mostrar camada</source>
+        <translation>Show layer</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="811"/>
+        <source>Importar pincéis</source>
+        <translation>Import brushes</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="812"/>
+        <source>Pincéis do MyPaint (*.myb *.zip)</source>
+        <translation>MyPaint brushes (*.myb *.zip)</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/SketchEditor.cpp" line="816"/>
+        <source>%n pincel(is) importado(s).</source>
+        <translation>
+            <numerusform>%n brush imported.</numerusform>
+            <numerusform>%n brushes imported.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="857"/>
+        <source>Usar como foto do personagem</source>
+        <translation>Use as character photo</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="862"/>
+        <source>Exportar…</source>
+        <translation>Export…</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="863"/>
+        <source>Salvar o desenho como PNG, com o papel ou com fundo transparente</source>
+        <translation>Save the drawing as a PNG, with the paper or with a transparent background</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="880"/>
+        <source>Afastar (Ctrl+−, ou Ctrl+rodinha)</source>
+        <translation>Zoom out (Ctrl+−, or Ctrl+wheel)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="885"/>
+        <source>Aproximar (Ctrl++, ou Ctrl+rodinha)</source>
+        <translation>Zoom in (Ctrl++, or Ctrl+wheel)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="886"/>
+        <source>Ajustar</source>
+        <translation>Fit</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="886"/>
+        <source>A folha inteira na tela (Ctrl+0)</source>
+        <translation>The whole sheet on screen (Ctrl+0)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="903"/>
+        <source>CAMADAS</source>
+        <translation>LAYERS</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="917"/>
+        <source>Subir camada</source>
+        <translation>Move layer up</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="918"/>
+        <source>Descer camada</source>
+        <translation>Move layer down</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="919"/>
+        <source>Nova camada</source>
+        <translation>New layer</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="920"/>
+        <source>Apagar camada (Ctrl+Z desfaz)</source>
+        <translation>Delete layer (Ctrl+Z undoes it)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="931"/>
+        <location filename="../src/SketchEditor.cpp" line="1048"/>
+        <source>Opacidade</source>
+        <translation>Opacity</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="964"/>
+        <source>PINCÉIS DA QENNA</source>
+        <translation>QENNA BRUSHES</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="968"/>
+        <source>MEUS PINCÉIS</source>
+        <translation>MY BRUSHES</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="977"/>
+        <source>Pincéis do MyPaint (.myb) ou um pacote em .zip. Valem em todos os projetos.</source>
+        <translation>MyPaint brushes (.myb) or a .zip pack. They work in every project.</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="983"/>
+        <source>Importar pincéis…</source>
+        <translation>Import brushes…</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="992"/>
+        <source>COR</source>
+        <translation>COLOR</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1015"/>
+        <source>Outra cor</source>
+        <translation>Another color</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1017"/>
+        <source>Cor do pincel</source>
+        <translation>Brush color</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1040"/>
+        <source>Tamanho</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1058"/>
+        <source>Estabilizador</source>
+        <translation>Stabilizer</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1062"/>
+        <source>Quanto maior, mais o traço vem atrás da caneta, e mais liso sai. Vale pra Caneta e pro Esboço.</source>
+        <translation>The higher it is, the more the stroke trails behind the pen, and the smoother it comes out. Applies to the Pen and the Sketch.</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1079"/>
+        <source>Desfazer</source>
+        <translation>Undo</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1079"/>
+        <source>Desfazer (Ctrl+Z)</source>
+        <translation>Undo (Ctrl+Z)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1080"/>
+        <source>Limpar camada</source>
+        <translation>Clear layer</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1080"/>
+        <source>Apaga o desenho da camada escolhida (Ctrl+Z desfaz)</source>
+        <translation>Erases the drawing on the chosen layer (Ctrl+Z undoes it)</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1082"/>
+        <source>Pronto</source>
+        <translation>Done</translation>
+    </message>
+    <message>
+        <location filename="../src/SketchEditor.cpp" line="1082"/>
+        <source>Salvar e voltar pra Lousa (Esc)</source>
+        <translation>Save and go back to the Board (Esc)</translation>
     </message>
 </context>
 <context>

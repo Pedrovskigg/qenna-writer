@@ -280,6 +280,15 @@
         <file alias="canvasicons/export-plan-area.svg">../src/assets/icons/canvasicons/export-plan-area.svg</file>
         <file alias="canvasicons/export-all-plan-areas.svg">../src/assets/icons/canvasicons/export-all-plan-areas.svg</file>
         <file alias="lousa/postit.svg">../src/assets/icons/lousa/postit.svg</file>
+        <file alias="lousa/pen.svg">../src/assets/icons/lousa/pen.svg</file>
+        <file alias="lousa/eye.svg">../src/assets/icons/lousa/eye.svg</file>
+        <file alias="lousa/eye-off.svg">../src/assets/icons/lousa/eye-off.svg</file>
+        <file alias="lousa/layer-up.svg">../src/assets/icons/lousa/layer-up.svg</file>
+        <file alias="lousa/layer-down.svg">../src/assets/icons/lousa/layer-down.svg</file>
+        <file alias="lousa/marker.svg">../src/assets/icons/lousa/marker.svg</file>
+        <file alias="lousa/highlighter.svg">../src/assets/icons/lousa/highlighter.svg</file>
+        <file alias="lousa/eraser.svg">../src/assets/icons/lousa/eraser.svg</file>
+        <file alias="lousa/sketch.svg">../src/assets/icons/lousa/sketch.svg</file>
         <file alias="lousa/comment.svg">../src/assets/icons/lousa/comment.svg</file>
         <file alias="lousa/text.svg">../src/assets/icons/lousa/text.svg</file>
         <file alias="lousa/symbol.svg">../src/assets/icons/lousa/symbol.svg</file>

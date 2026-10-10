@@ -1,5 +1,8 @@
 #pragma once
 
+#include "LousaInk.h"
+
+#include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QImage>
 #include <QPoint>
@@ -7,6 +10,7 @@
 
 class LousaScene;
 class QGraphicsRectItem;
+class QTimer;
 
 class LousaView : public QGraphicsView
 {
@@ -34,6 +38,12 @@ public:
     void setBrushMode(bool on);
     bool isBrushMode() const { return m_brushMode; }
 
+    // Caneta: arrastar risca no quadro. tool = "pen" | "marker" | "highlight" | "eraser".
+    // A ponta de trás da caneta da mesa apaga em qualquer ponta.
+    void setInkMode(bool on);
+    bool isInkMode() const { return m_inkMode; }
+    void setInkTool(const QString& tool, const QColor& color, qreal size);
+
 signals:
     void zoomChanged(qreal zoom);
     void zoneDrawn(const QRectF& sceneRect); // emitido ao soltar o mouse no plan mode
@@ -43,6 +53,10 @@ signals:
     void imageDropped(const QImage& image, const QPointF& scenePos);   // arrastada do Windows
     void connectPicked(const QString& fromId, const QString& toId);
     void connectModeChanged(bool on);
+    void inkStrokeFinished(const CanvasInk& ink);   // traço novo pronto (sem id)
+    void inkEraseStarted();                         // começou a apagar (um passo de desfazer)
+    void inkErased(const QString& id);              // a borracha tocou este traço
+    void inkEraseFinished();
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
@@ -55,6 +69,7 @@ protected:
     void mousePressEvent(QMouseEvent* event) override;
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
+    bool viewportEvent(QEvent* event) override;   // caneta da mesa (pressão)
 
 private:
     qreal  m_zoom    = 1.0;
@@ -73,4 +88,31 @@ private:
     // Ligar
     bool               m_connectMode = false;
     QString            m_connectFrom;
+
+    // Caneta
+    QPointF toScene(const QPointF& viewPos) const;
+    void    inkBegin(const QPointF& viewPos, qreal pressure, bool eraser, bool straight);
+    void    inkMove(const QPointF& viewPos, qreal pressure);
+    void    inkEnd();
+    void    inkSnapNow();
+    qreal   mousePressure(const QPointF& viewPos);
+    bool               m_inkMode    = false;
+    QString            m_inkTool    = QStringLiteral("pen");
+    QColor             m_inkColor   = QColor(QStringLiteral("#c0392b"));
+    qreal              m_inkSize    = 4.0;
+    bool               m_inkDrawing = false;
+    bool               m_inkErasing = false;
+    bool               m_inkStraight = false;
+    bool               m_inkSnapped = false;
+    bool               m_tabletDown = false;
+    CanvasInk          m_ink;
+    class InkItem*     m_inkPreview = nullptr;
+    LousaInk::Stabilizer m_inkStab;
+    int                m_inkStabStrength = 0;
+    QPointF            m_inkRaw;          // onde a caneta está (sem estabilizador)
+    QPointF            m_inkLastView;
+    qreal              m_inkMouseP  = 0.55;
+    QTimer*            m_inkHold    = nullptr;
+    class QGraphicsLineItem* m_inkString = nullptr;   // o fio do estabilizador
+    void    inkShowString(bool on);
 };

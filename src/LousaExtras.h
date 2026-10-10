@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LousaInk.h"
 #include "LousaTypes.h"
 #include "SheetDialog.h"
 
@@ -27,6 +28,7 @@ struct Snapshot {
     QList<CanvasCard>       cards;
     QList<CanvasZone>       zones;
     QList<CanvasConnection> conns;
+    QList<CanvasInk>        inks;   // traços da Caneta
     QColor                  bg;
 };
 Snapshot fromScene(const LousaScene* scene);

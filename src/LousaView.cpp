@@ -4,6 +4,7 @@
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QGraphicsLineItem>
 #include <QGraphicsRectItem>
 #include <QKeyEvent>
 #include <QMimeData>
@@ -12,7 +13,10 @@
 #include <QMouseEvent>
 #include <QPen>
 #include <QScrollBar>
+#include <QTabletEvent>
+#include <QTimer>
 #include <QWheelEvent>
+#include <cmath>
 
 LousaView::LousaView(LousaScene* scene, QWidget* parent)
     : QGraphicsView(scene, parent)
@@ -30,6 +34,194 @@ LousaView::LousaView(LousaScene* scene, QWidget* parent)
     setInteractive(true);
     setMouseTracking(true);
     setAcceptDrops(true);
+    viewport()->setAttribute(Qt::WA_TabletTracking, true);
+
+    // Segurar a caneta parada no fim do traço: vira forma perfeita.
+    m_inkHold = new QTimer(this);
+    m_inkHold->setSingleShot(true);
+    m_inkHold->setInterval(520);
+    connect(m_inkHold, &QTimer::timeout, this, [this]() { inkSnapNow(); });
+}
+
+// ── Caneta ───────────────────────────────────────────────────────────────────
+
+void LousaView::setInkMode(bool on)
+{
+    if (m_inkMode == on) return;
+    if (m_inkDrawing) inkEnd();
+    m_inkMode = on;
+    // Riscando, os cards não reagem ao mouse: o traço passa por cima de tudo.
+    setInteractive(!on);
+    viewport()->setCursor(on ? Qt::CrossCursor : Qt::ArrowCursor);
+}
+
+void LousaView::setInkTool(const QString& tool, const QColor& color, qreal size)
+{
+    m_inkTool  = tool;
+    m_inkColor = color;
+    m_inkSize  = size;
+}
+
+QPointF LousaView::toScene(const QPointF& viewPos) const
+{
+    return viewportTransform().inverted().map(viewPos);
+}
+
+qreal LousaView::mousePressure(const QPointF& viewPos)
+{
+    // Mouse não tem pressão: rápido afina, devagar engrossa.
+    const qreal d = QLineF(viewPos, m_inkLastView).length();
+    const qreal target = qBound(0.25, 1.0 - d / 38.0, 0.95);
+    m_inkMouseP = m_inkMouseP * 0.7 + target * 0.3;
+    return m_inkMouseP;
+}
+
+void LousaView::inkBegin(const QPointF& viewPos, qreal pressure, bool eraser, bool straight)
+{
+    m_inkDrawing  = true;
+    m_inkErasing  = eraser || m_inkTool == QStringLiteral("eraser");
+    m_inkStraight = straight;
+    m_inkSnapped  = false;
+    m_inkLastView = viewPos;
+    m_inkMouseP   = 0.55;
+    const QPointF sp = toScene(viewPos);
+    m_inkRaw = sp;
+    if (m_inkErasing) {
+        emit inkEraseStarted();
+        if (auto* sc = qobject_cast<LousaScene*>(scene())) {
+            const QString id = sc->inkAt(sp, 8.0 / m_zoom);
+            if (!id.isEmpty()) emit inkErased(id);
+        }
+        return;
+    }
+    m_inkStabStrength = LousaInk::stabilizerSetting();
+    m_inkStab.reset(sp);
+    inkShowString(m_inkStabStrength > 0 && !straight);
+    m_ink = CanvasInk();
+    m_ink.tool  = m_inkTool;
+    m_ink.color = m_inkColor;
+    m_ink.size  = m_inkSize;
+    m_ink.pts.append({ float(sp.x()), float(sp.y()), float(pressure) });
+    if (!m_inkPreview) {
+        m_inkPreview = new InkItem(m_ink);
+        m_inkPreview->setPreview(true);
+        scene()->addItem(m_inkPreview);
+    } else {
+        m_inkPreview->setInkData(m_ink);
+    }
+    m_inkHold->start();
+}
+
+void LousaView::inkMove(const QPointF& viewPos, qreal pressure)
+{
+    if (!m_inkDrawing) return;
+    const QPointF sp = toScene(viewPos);
+    m_inkLastView = viewPos;
+    if (m_inkErasing) {
+        if (auto* sc = qobject_cast<LousaScene*>(scene())) {
+            const QString id = sc->inkAt(sp, 8.0 / m_zoom);
+            if (!id.isEmpty()) emit inkErased(id);
+        }
+        return;
+    }
+    if (m_inkSnapped) return;
+    m_inkRaw = sp;
+    if (m_inkStraight) {
+        const InkPoint a = m_ink.pts.first();
+        m_ink.pts = { a, { float(sp.x()), float(sp.y()), float(pressure) } };
+    } else {
+        const QPointF pt = m_inkStab.feed(sp, m_inkStabStrength, m_zoom);
+        if (m_inkString) m_inkString->setLine(QLineF(pt, sp));
+        const InkPoint& last = m_ink.pts.last();
+        if (std::hypot(pt.x() - last.x, pt.y() - last.y) * m_zoom < 1.2) return;
+        m_ink.pts.append({ float(pt.x()), float(pt.y()), float(pressure) });
+    }
+    if (m_inkPreview) m_inkPreview->setInkData(m_ink);
+    m_inkHold->start();
+}
+
+void LousaView::inkShowString(bool on)
+{
+    if (!on) {
+        if (m_inkString) { scene()->removeItem(m_inkString); delete m_inkString; m_inkString = nullptr; }
+        return;
+    }
+    if (!m_inkString) {
+        m_inkString = new QGraphicsLineItem();
+        QColor c = m_inkColor;
+        c.setAlphaF(0.55);
+        QPen pen(c, 1.2, Qt::DashLine);
+        pen.setCosmetic(true);
+        pen.setDashPattern({ 3, 3 });
+        m_inkString->setPen(pen);
+        m_inkString->setZValue(InkItem::kZ + 1);
+        scene()->addItem(m_inkString);
+    }
+    m_inkString->setLine(QLineF(m_inkRaw, m_inkRaw));
+}
+
+void LousaView::inkSnapNow()
+{
+    if (!m_inkDrawing || m_inkErasing || m_inkSnapped || m_inkStraight) return;
+    if (m_ink.tool == QStringLiteral("highlight")) return;   // marca-texto segue a mão
+    if (!LousaInk::snapShape(m_ink.pts)) return;
+    m_inkSnapped = true;
+    inkShowString(false);
+    if (m_inkPreview) m_inkPreview->setInkData(m_ink);
+}
+
+void LousaView::inkEnd()
+{
+    if (!m_inkDrawing) return;
+    m_inkDrawing = false;
+    m_inkHold->stop();
+    inkShowString(false);
+    if (m_inkErasing) { m_inkErasing = false; emit inkEraseFinished(); return; }
+    // O traço alcança onde a caneta parou (o estabilizador deixa ele pra trás).
+    if (!m_inkSnapped && !m_inkStraight && m_inkStabStrength > 0 && !m_ink.pts.isEmpty()) {
+        const InkPoint last = m_ink.pts.last();
+        if (std::hypot(m_inkRaw.x() - last.x, m_inkRaw.y() - last.y) > 0.5)
+            m_ink.pts.append({ float(m_inkRaw.x()), float(m_inkRaw.y()), last.p });
+    }
+    if (m_inkPreview) {
+        scene()->removeItem(m_inkPreview);
+        delete m_inkPreview;
+        m_inkPreview = nullptr;
+    }
+    if (!m_ink.pts.isEmpty()) emit inkStrokeFinished(m_ink);
+    m_ink = CanvasInk();
+}
+
+bool LousaView::viewportEvent(QEvent* event)
+{
+    if (m_inkMode) {
+        switch (event->type()) {
+        case QEvent::TabletPress: {
+            auto* t = static_cast<QTabletEvent*>(event);
+            if (t->button() == Qt::LeftButton || t->buttons() & Qt::LeftButton) {
+                m_tabletDown = true;
+                const bool eraser = t->pointerType() == QPointingDevice::PointerType::Eraser;
+                inkBegin(t->position(), qBound(0.0, t->pressure(), 1.0), eraser,
+                         t->modifiers() & Qt::ShiftModifier);
+            }
+            event->accept();
+            return true;
+        }
+        case QEvent::TabletMove: {
+            auto* t = static_cast<QTabletEvent*>(event);
+            if (m_tabletDown) inkMove(t->position(), qBound(0.0, t->pressure(), 1.0));
+            event->accept();
+            return true;
+        }
+        case QEvent::TabletRelease:
+            if (m_tabletDown) { m_tabletDown = false; inkEnd(); }
+            event->accept();
+            return true;
+        default:
+            break;
+        }
+    }
+    return QGraphicsView::viewportEvent(event);
 }
 
 // Tipo do que se arrasta pro quadro ("character:<itemId>", "doc:<itemId>",
@@ -235,6 +427,12 @@ void LousaView::setPlanMode(bool on)
 
 void LousaView::mousePressEvent(QMouseEvent* event)
 {
+    // Caneta: o botão esquerdo risca (a caneta da mesa chega como tablet).
+    if (m_inkMode && event->button() == Qt::LeftButton) {
+        if (!m_tabletDown) inkBegin(event->position(), 0.55, false, event->modifiers() & Qt::ShiftModifier);
+        event->accept();
+        return;
+    }
     // Plan mode: arrastar no canvas vazio cria zona
     if (m_planMode && event->button() == Qt::LeftButton) {
         m_drawing   = true;
@@ -303,6 +501,11 @@ void LousaView::setBrushMode(bool on)
 
 void LousaView::mouseMoveEvent(QMouseEvent* event)
 {
+    if (m_inkMode && m_inkDrawing && !m_tabletDown) {
+        inkMove(event->position(), mousePressure(event->position()));
+        event->accept();
+        return;
+    }
     // Brush select: enquanto Shift+S está segurado, passar o mouse seleciona cards.
     if (m_brushMode) {
         for (QGraphicsItem* it = itemAt(event->pos()); it; it = it->parentItem()) {
@@ -333,6 +536,11 @@ void LousaView::mouseMoveEvent(QMouseEvent* event)
 
 void LousaView::mouseReleaseEvent(QMouseEvent* event)
 {
+    if (m_inkMode && event->button() == Qt::LeftButton) {
+        if (!m_tabletDown) inkEnd();
+        event->accept();
+        return;
+    }
     if (m_drawing && event->button() == Qt::LeftButton) {
         m_drawing = false;
         const QRectF zone = m_planGhost ? m_planGhost->rect() : QRectF();

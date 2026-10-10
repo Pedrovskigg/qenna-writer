@@ -68,7 +68,11 @@ public:
     void setStickerOutline(const QString& outline);
     void setStickerZ(qreal z);
     void setLocked(bool locked);
+    // Esboço: a imagem pronta da folha (PNG em base64) depois de desenhar.
+    void setSketchImage(const QString& pngBase64);
     bool isSticker() const { return m_data.type == QStringLiteral("sticker"); }
+    // Esboço: folha desenhada no editor da Lousa (o card mostra a imagem pronta).
+    bool isSketch() const { return m_data.type == QStringLiteral("sketch"); }
     // Miniatura de um card desenhado de verdade (folha de estilo, cartela).
     static QPixmap renderPreview(const CanvasCard& data, const QSize& size, qreal dpr = 1.0);
     static QSizeF defaultNoteSize(const QString& shape, const QString& type);
@@ -107,6 +111,9 @@ signals:
     void createDocRequested(const QString& id);
     void createTimelineEventRequested(const QString& id); // criar evento na Timeline (note/comment)
     void openRequested(const QString& id);       // doc/capítulo: abrir no editor
+    void sketchEditRequested(const QString& id); // esboço: abrir a folha pra desenhar
+    void sketchPhotoRequested(const QString& id); // esboço: virar foto de personagem
+    void sketchExportRequested(const QString& id); // esboço: salvar como PNG
     void emptyTextFinished(const QString& id);   // texto livre terminou vazio → some
     void positionChanged(const QString& id);      // CardItem se moveu na cena
     void pinDragStarted(const QString& fromId, const QPointF& pinScenePos);

@@ -65,6 +65,9 @@
 #include <QTimer>
 #include <QToolButton>
 #include <QUuid>
+#include "LousaInkBar.h"
+#include "SketchEditor.h"
+#include "ImageCropDialog.h"
 #include <QVBoxLayout>
 
 #include <algorithm>
@@ -143,6 +146,7 @@ QString cardTypeName(const QString& type)
     if (type == QStringLiteral("symbol"))    return QCoreApplication::translate("LousaPanel", "Símbolo");
     if (type == QStringLiteral("image"))     return QCoreApplication::translate("LousaPanel", "Imagem");
     if (type == QStringLiteral("sticker"))   return QCoreApplication::translate("LousaPanel", "Adesivo");
+    if (type == QStringLiteral("sketch"))    return QCoreApplication::translate("LousaPanel", "Esboço");
     if (type == QStringLiteral("character")) return QCoreApplication::translate("LousaPanel", "Personagem");
     if (type == QStringLiteral("chapter"))   return QCoreApplication::translate("LousaPanel", "Capítulo");
     return QCoreApplication::translate("LousaPanel", "Documento");
@@ -452,6 +456,20 @@ void LousaPanel::buildChrome()
     // ── Embaixo: a Doca, e os botões de Guardados e Áreas ──
     m_dock = new LousaDock(this);
     connect(m_dock, &LousaDock::createRequested, this, &LousaPanel::createFromTool);
+
+    // ── Caneta: a barra aparece em cima da Doca enquanto ela está ligada ──
+    m_inkBar = new LousaInkBar(this);
+    m_inkBar->hide();
+    connect(m_inkBar, &LousaInkBar::toolChanged, this, &LousaPanel::syncInkTool);
+    connect(m_inkBar, &LousaInkBar::undoRequested, this, [this]() { undo(); });
+    connect(m_inkBar, &LousaInkBar::doneRequested, this, [this]() { setInkMode(false); });
+    connect(m_inkBar, &LousaInkBar::clearRequested, this, [this]() {
+        if (!m_scene || m_scene->inkItems().isEmpty()) return;
+        pushUndo();
+        m_scene->clearInks();
+        save();
+        refreshEmptyState();
+    });
 
     auto makeChip = [this](const QString& icon, const QString& tip) {
         auto* b = new QToolButton(this);
@@ -838,6 +856,37 @@ void LousaPanel::buildUi()
     });
 
     connect(m_scene, &LousaScene::zoneDataChanged, this, [this]() { m_scene->refreshZoneCounts(); save(); });
+    connect(m_scene, &LousaScene::inkDataChanged, this, [this]() { save(); });
+    connect(m_scene, &LousaScene::sketchEditRequested, this, &LousaPanel::openSketchEditor);
+    connect(m_scene, &LousaScene::sketchExportRequested, this, [this](const QString& id) {
+        CardItem* c = m_scene->findCard(id);
+        const QImage paper = SketchEditor::renderFromDisk(m_projectRoot, id, true);
+        if (paper.isNull() || !c) return;
+        SketchEditor::exportDialog(this, paper, SketchEditor::renderFromDisk(m_projectRoot, id, false),
+                                   c->cardData().title, QCursor::pos());
+    });
+    connect(m_scene, &LousaScene::sketchPhotoRequested, this, [this](const QString& id) {
+        if (CardItem* c = m_scene->findCard(id)) {
+            QImage img;
+            img.loadFromData(QByteArray::fromBase64(c->cardData().content.toLatin1()));
+            useSketchAsPhoto(img);
+        }
+    });
+    connect(m_view, &LousaView::inkStrokeFinished, this, [this](CanvasInk ink) {
+        pushUndo();
+        ink.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
+        m_scene->addInk(ink);
+        save();
+        refreshEmptyState();
+    });
+    connect(m_view, &LousaView::inkEraseStarted, this, [this]() { m_inkEraseUndone = false; });
+    connect(m_view, &LousaView::inkErased, this, [this](const QString& id) {
+        if (!m_inkEraseUndone) { pushUndo(); m_inkEraseUndone = true; }
+        m_scene->removeInk(id);
+    });
+    connect(m_view, &LousaView::inkEraseFinished, this, [this]() {
+        if (m_inkEraseUndone) { save(); refreshEmptyState(); }
+    });
     connect(m_scene, &LousaScene::cardDataChanged,       this, [this]() { save(); scheduleTrayRefresh(); });
     connect(m_scene, &LousaScene::connectionDataChanged, this, [this]() { save(); });
     connect(m_scene, &LousaScene::undoSnapshotRequested, this, [this]() { pushUndo(); });
@@ -963,9 +1012,120 @@ CardItem* LousaPanel::placeCard(const CanvasCard& c)
     return item;
 }
 
+void LousaPanel::setInkMode(bool on)
+{
+    if (!m_view || !m_inkBar) return;
+    if (on) {
+        if (m_view->isPlanMode()) { m_view->setPlanMode(false); m_dock->setToolChecked(QStringLiteral("area"), false); }
+        if (m_view->isConnectMode()) m_view->setConnectMode(false);
+        if (m_scene) m_scene->clearAllSelection();
+        syncInkTool();
+    }
+    m_view->setInkMode(on);
+    m_inkBar->setVisible(on);
+    m_dock->setToolChecked(QStringLiteral("pen"), on);
+    refreshEmptyState();
+    positionOverlays();
+    m_view->setFocus();
+}
+
+void LousaPanel::createSketch()
+{
+    // Uma folha aberta por vez: senão elas se empilham e não dá pra saber qual se está desenhando.
+    if (!m_scene || !m_view || m_projectRoot.isEmpty() || m_sketchEditor) return;
+    pushUndo();
+    CanvasCard c = nextCardData(QStringLiteral("sketch"));
+    // Folha em branco até a primeira vez que fechar o editor.
+    QImage paper(240, 312, QImage::Format_RGB32);
+    paper.fill(SketchEditor::paperColor());
+    QByteArray png;
+    QBuffer buf(&png);
+    buf.open(QIODevice::WriteOnly);
+    paper.save(&buf, "PNG");
+    c.content = QString::fromLatin1(png.toBase64());
+    placeCard(c);
+    save();
+    openSketchEditor(c.id);
+}
+
+void LousaPanel::openSketchEditor(const QString& cardId)
+{
+    if (!m_scene || m_sketchEditor) return;
+    CardItem* card = m_scene->findCard(cardId);
+    if (!card || !card->isSketch()) return;
+    if (m_view && m_view->isInkMode()) setInkMode(false);
+    auto* ed = new SketchEditor(this);
+    m_sketchEditor = ed;
+    ed->setGeometry(rect());
+    ed->show();
+    ed->raise();
+    ed->open(m_projectRoot, cardId, card->cardData().title);
+    connect(ed, &SketchEditor::finished, this, [this, ed](const QString& id, const QImage& image) {
+        if (CardItem* c = m_scene->findCard(id)) {
+            // No quadro vai a imagem reduzida; as camadas ficam nos PNGs da pasta.
+            const QImage small = image.scaledToWidth(600, Qt::SmoothTransformation);
+            QByteArray png;
+            QBuffer buf(&png);
+            buf.open(QIODevice::WriteOnly);
+            small.save(&buf, "PNG");
+            pushUndo();
+            c->setSketchImage(QString::fromLatin1(png.toBase64()));
+            save();
+        }
+        ed->deleteLater();
+        if (m_view) m_view->setFocus();
+    });
+    connect(ed, &SketchEditor::photoRequested, this, &LousaPanel::useSketchAsPhoto);
+}
+
+void LousaPanel::useSketchAsPhoto(const QImage& image)
+{
+    if (image.isNull() || !m_projectModel || !m_elementsStore) return;
+    struct CEntry { QString drawerName, title, elementId, drawerKey; };
+    QVector<CEntry> entries;
+    for (const Drawer& d : m_projectModel->drawers()) {
+        const bool isChar = (d.drawerElementType == QStringLiteral("character"));
+        for (const DrawerItem& it : d.items) {
+            if (!isChar && it.elementType != QStringLiteral("character")) continue;
+            if (it.elementId.isEmpty()) continue;
+            entries.append({ d.title, it.title, it.elementId, d.key });
+        }
+    }
+    QSet<QString> drawerKeys;
+    for (const CEntry& e : entries) drawerKeys.insert(e.drawerKey);
+    QVector<Sheets::PickItem> items;
+    for (const CEntry& e : entries) {
+        QPixmap photo;
+        if (const Element* el = m_elementsStore->findElement(e.elementId))
+            photo = CoverUtils::pixmapFromDataUrl(el->image);
+        items.append({ e.title, drawerKeys.size() > 1 ? e.drawerName : QString(), photo });
+    }
+    QWidget* parent = m_sketchEditor ? static_cast<QWidget*>(m_sketchEditor) : static_cast<QWidget*>(this);
+    const int idx = Sheets::askPick(parent, tr("Foto de qual personagem?"), tr("Buscar personagem..."), items,
+                                    tr("Usar o desenho"), QString(), tr("Nenhum personagem ainda."));
+    if (idx < 0 || idx >= entries.size()) return;
+    const QString dataUrl = ImageCropDialog::cropImage(image, parent, tr("Recortar o rosto"));
+    if (dataUrl.isEmpty()) return;
+    const Element* el = m_elementsStore->findElement(entries[idx].elementId);
+    if (!el) return;
+    Element copy = *el;
+    copy.image = dataUrl;
+    m_elementsStore->updateElement(copy.id, copy);
+    m_elementsStore->save();
+}
+
+void LousaPanel::syncInkTool()
+{
+    if (m_view && m_inkBar) m_view->setInkTool(m_inkBar->tool(), m_inkBar->color(), m_inkBar->size());
+}
+
 void LousaPanel::createFromTool(const QString& kind)
 {
     if (!m_scene || !m_view) return;
+    if (m_sketchEditor) return;   // com uma folha aberta, nada de criar outra coisa por baixo dela
+    if (kind == QStringLiteral("pen")) { setInkMode(!m_view->isInkMode()); return; }
+    if (m_view->isInkMode()) setInkMode(false);
+    if (kind == QStringLiteral("sketch")) { createSketch(); return; }
     if (kind != QStringLiteral("area") && m_view->isPlanMode()) {
         m_view->setPlanMode(false);
         m_dock->setToolChecked(QStringLiteral("area"), false);
@@ -1938,6 +2098,10 @@ void LousaPanel::refreshActionBar()
             lk.separatorBefore = true; lk.checkable = true; lk.checked = d.locked;
             b << lk;
             tail();
+        } else if (t == QStringLiteral("sketch")) {
+            b << btn(QStringLiteral("sketch-edit"), QStringLiteral("sketch"), tr("Desenhar"), tr("Abrir a folha (dois cliques)"));
+            b << btn(QStringLiteral("sketch-photo"), QStringLiteral("character"), tr("Foto"), tr("Usar como foto do personagem"));
+            tail();
         } else if (t == QStringLiteral("image")) {
             b << btn(QStringLiteral("image"), QStringLiteral("photo-swap"), tr("Trocar imagem"));
             b << btn(QStringLiteral("caption"), QStringLiteral("label"), tr("Legenda"));
@@ -2032,6 +2196,7 @@ void LousaPanel::positionActionBar()
     m_actionBar->move(x, y);
     m_actionBar->show();
     m_actionBar->raise();
+    if (m_sketchEditor) m_sketchEditor->raise();
     if (m_cheat && m_cheat->isVisible()) m_cheat->raise();   // a cola fica por cima de tudo
 }
 
@@ -2084,6 +2249,12 @@ void LousaPanel::onAction(const QString& id, const QPoint& globalPos)
         } else if (id == QStringLiteral("symbol")) {
             QString sym = d.content.isEmpty() ? QStringLiteral("★") : d.content;
             if (CardItem::pickSymbol(this, sym, globalPos)) one->setSymbol(sym);
+        } else if (id == QStringLiteral("sketch-edit")) {
+            openSketchEditor(d.id);
+        } else if (id == QStringLiteral("sketch-photo")) {
+            QImage img;
+            img.loadFromData(QByteArray::fromBase64(d.content.toLatin1()));
+            useSketchAsPhoto(img);
         } else if (id == QStringLiteral("image")) {
             one->chooseImage();
         } else if (id == QStringLiteral("caption")) {
@@ -2391,6 +2562,12 @@ void LousaPanel::refreshMapList()
 void LousaPanel::positionOverlays()
 {
     if (!m_view) return;
+    // A folha de esboço aberta fica na frente de tudo da Lousa: os botões que
+    // sobem aqui (Doca, minimapa, barras) não podem ficar clicáveis por cima dela.
+    struct KeepSketchOnTop {
+        LousaPanel* p;
+        ~KeepSketchOnTop() { if (p->m_sketchEditor) p->m_sketchEditor->raise(); }
+    } keepSketchOnTop{ this };
     const QRect va = m_view->geometry();
     constexpr int kM = 14;   // distância das bordas
     if (m_leftBar) { m_leftBar->adjustSize(); m_leftBar->move(va.left() + kM, va.top() + kM); m_leftBar->raise(); }
@@ -2412,7 +2589,8 @@ void LousaPanel::positionOverlays()
         m_stashChip->raise();
         m_areasChip->raise();
     }
-    const bool hasContent = m_scene && (!m_scene->cardItems().isEmpty() || !m_scene->zoneItems().isEmpty());
+    const bool hasContent = m_scene && (!m_scene->cardItems().isEmpty() || !m_scene->zoneItems().isEmpty()
+                                        || !m_scene->inkItems().isEmpty());
     bool miniOn = m_minimap && m_minimapOn && hasContent;
     int miniLeft = miniOn ? va.right() - m_minimap->width() - kM : va.right() - kM;
     if (m_dock) {
@@ -2429,6 +2607,13 @@ void LousaPanel::positionOverlays()
         x = qBound(chipsRight + 16, x, qMax(chipsRight + 16, miniLeft - 16 - m_dock->width()));
         m_dock->move(x, va.bottom() - m_dock->height() - kM - 4);
         m_dock->raise();
+        if (m_inkBar && m_inkBar->isVisible()) {
+            m_inkBar->adjustSize();
+            int bx = m_dock->x() + m_dock->width() / 2 - m_inkBar->width() / 2;
+            bx = qBound(va.left() + kM, bx, qMax(va.left() + kM, va.right() - kM - m_inkBar->width()));
+            m_inkBar->move(bx, m_dock->y() - m_inkBar->height() - 10);
+            m_inkBar->raise();
+        }
     }
     if (m_minimap) {
         m_minimap->move(va.right() - m_minimap->width() - kM, va.bottom() - m_minimap->height() - kM);
@@ -2996,6 +3181,7 @@ LousaPanel::BoardState LousaPanel::captureState() const
     s.cards       = m_scene->allCardData();
     s.connections = m_scene->allConnectionData();
     s.zones       = m_scene->allZoneData();
+    s.inks        = m_scene->allInkData();
     // Tira o conteúdo pesado de imagem dos snapshots (guarda à parte por id).
     for (CanvasCard& c : s.cards) {
         if (c.type == QStringLiteral("image") && !c.content.isEmpty()) {
@@ -3013,6 +3199,8 @@ void LousaPanel::applyState(const BoardState& s)
     m_scene->clearCards();
     m_scene->clearConnections();
     m_scene->clearZones();
+    m_scene->clearInks();
+    for (const CanvasInk& k : s.inks) m_scene->addInk(k);
     for (CanvasCard c : s.cards) {
         // Texto livre recém-criado e ainda vazio não volta no desfazer.
         if (c.type == QStringLiteral("text") && c.content.trimmed().isEmpty()) continue;
@@ -3064,7 +3252,10 @@ void LousaPanel::redo()
 void LousaPanel::refreshEmptyState()
 {
     if (!m_emptyStateBox || !m_scene || !m_view) return;
-    const bool empty = m_scene->cardItems().isEmpty() && m_scene->zoneItems().isEmpty();
+    const bool noContent = m_scene->cardItems().isEmpty() && m_scene->zoneItems().isEmpty()
+                        && m_scene->inkItems().isEmpty();
+    // Com a Caneta ligada, o aviso de "lousa vazia" sai da frente do risco.
+    const bool empty = noContent && !m_view->isInkMode();
     if (m_emptyStateBox->isVisible() != empty) m_emptyStateBox->setVisible(empty);
     if (empty) {
         m_emptyStateBox->adjustSize();
@@ -3074,7 +3265,7 @@ void LousaPanel::refreshEmptyState()
         m_emptyStateBox->raise();
     }
     if (m_minimap) {
-        const bool show = m_minimapOn && !empty;
+        const bool show = m_minimapOn && !noContent;
         if (m_minimap->isVisible() != show) m_minimap->setVisible(show);
     }
 }
@@ -3082,6 +3273,7 @@ void LousaPanel::refreshEmptyState()
 void LousaPanel::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
+    if (m_sketchEditor) m_sketchEditor->setGeometry(rect());
     QTimer::singleShot(0, this, [this]() {
         refreshEmptyState();
         positionOverlays();
@@ -3110,6 +3302,13 @@ void LousaPanel::keyPressEvent(QKeyEvent* event)
 
     // Delete = guardar selecionados na gaveta; Shift+Delete = apagar de vez
     if ((key == Qt::Key_Delete || key == Qt::Key_Backspace) && m_scene) {
+        if (!m_scene->selectedInkId().isEmpty()) {
+            pushUndo();
+            m_scene->removeInk(m_scene->selectedInkId());
+            save();
+            refreshEmptyState();
+            event->accept(); return;
+        }
         if (!m_scene->selectedCardItems().isEmpty()) {
             if (shift) deleteSelectedCards();
             else       stashSelectedCards();
@@ -3206,6 +3405,7 @@ void LousaPanel::keyPressEvent(QKeyEvent* event)
             m_cutCardId.clear();
             event->accept(); return;
         }
+        if (m_view && m_view->isInkMode()) { setInkMode(false); event->accept(); return; }
         if (m_view && m_view->isPlanMode()) {
             m_view->setPlanMode(false);
             m_dock->setToolChecked(QStringLiteral("area"), false);
@@ -3472,6 +3672,11 @@ void LousaPanel::load()
     m_scene->clearCards();
     m_scene->clearConnections();
     m_scene->clearZones();
+    m_scene->clearInks();
+    for (const auto& v : root.value(QStringLiteral("inks")).toArray()) {
+        const CanvasInk k = LousaInk::fromJson(v.toObject());
+        if (!k.id.isEmpty() && !k.pts.isEmpty()) m_scene->addInk(k);
+    }
     for (const auto& v : root.value(QStringLiteral("zones")).toArray()) {
         const QJsonObject o = v.toObject();
         CanvasZone z;
@@ -3567,6 +3772,9 @@ void LousaPanel::save() const
         zones.append(o);
     }
     root.insert(QStringLiteral("zones"), zones);
+    QJsonArray inks;
+    for (const CanvasInk& k : m_scene->allInkData()) inks.append(LousaInk::toJson(k));
+    if (!inks.isEmpty()) root.insert(QStringLiteral("inks"), inks);
 
     QJsonArray stash;
     for (const CanvasCard& c : m_stash) stash.append(cardToJson(c));
@@ -3620,6 +3828,9 @@ CanvasCard LousaPanel::nextCardData(const QString& type) const
     } else if (type == QStringLiteral("sticker")) {
         c.width  = 160; c.height = 160;
         c.baseWidth = 160;
+    } else if (type == QStringLiteral("sketch")) {
+        c.width  = 240; c.height = 312;   // proporção da folha (1 : 1,3)
+        c.color  = QColor(QStringLiteral("#d97757"));
     } else { // note (default) — com o estilo de "Usar nos próximos post-its"
         QSettings st;
         c.shape    = st.value(QStringLiteral("lousa/noteShape")).toString();
@@ -3722,6 +3933,7 @@ void LousaPanel::applyTheme()
         }
     }
     if (m_dock) m_dock->applyTheme();
+    if (m_inkBar) m_inkBar->applyTheme();
     if (m_actionBar) m_actionBar->applyTheme();
     if (m_search) m_search->applyTheme();
     if (m_cheat) m_cheat->applyTheme();

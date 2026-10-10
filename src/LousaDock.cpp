@@ -18,6 +18,8 @@ const ToolDef kTools[] = {
     { "symbol",    "symbol",    QT_TRANSLATE_NOOP("LousaDock", "Símbolo"),    QT_TRANSLATE_NOOP("LousaDock", "Símbolo"), false },
     { "image",     "image",     QT_TRANSLATE_NOOP("LousaDock", "Imagem"),     QT_TRANSLATE_NOOP("LousaDock", "Imagem (Ctrl+G)"), false },
     { "sticker",   "sticker",   QT_TRANSLATE_NOOP("LousaDock", "Adesivo"),    QT_TRANSLATE_NOOP("LousaDock", "Adesivo: PNG solto no quadro (ou arraste um PNG, ou cole com Ctrl+V)"), false },
+    { "pen",       "pen",       QT_TRANSLATE_NOOP("LousaDock", "Caneta"),     QT_TRANSLATE_NOOP("LousaDock", "Caneta: riscar no quadro (Esc sai)"), false },
+    { "sketch",    "sketch",    QT_TRANSLATE_NOOP("LousaDock", "Esboço"),     QT_TRANSLATE_NOOP("LousaDock", "Esboço: uma folha pra desenhar com pincel (dois cliques nela reabrem)"), false },
     { "character", "character", QT_TRANSLATE_NOOP("LousaDock", "Personagem"), QT_TRANSLATE_NOOP("LousaDock", "Personagem do projeto (Ctrl+Shift+C)"), true },
     { "doc",       "doc",       QT_TRANSLATE_NOOP("LousaDock", "Documento"),  QT_TRANSLATE_NOOP("LousaDock", "Documento ou capítulo do projeto (Ctrl+H)"), false },
     { "area",      "area",      QT_TRANSLATE_NOOP("LousaDock", "Área"),       QT_TRANSLATE_NOOP("LousaDock", "Desenhar uma área (arraste no quadro)"), true },
@@ -58,7 +60,7 @@ LousaDock::LousaDock(QWidget* parent)
         b->setText(QCoreApplication::translate("LousaDock", d.label));
         b->setToolTip(QCoreApplication::translate("LousaDock", d.tip));
         const QString kind = QString::fromLatin1(d.kind);
-        if (kind == QStringLiteral("area") || kind == QStringLiteral("connect")) b->setCheckable(true);
+        if (kind == QStringLiteral("area") || kind == QStringLiteral("connect") || kind == QStringLiteral("pen")) b->setCheckable(true);
         connect(b, &QToolButton::clicked, this, [this, kind]() { emit createRequested(kind); });
         m_lay->addWidget(b);
         m_tools.append({b, kind});

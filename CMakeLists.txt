@@ -10,7 +10,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" APP_VERSION_STRING)
 string(STRIP "${APP_VERSION_STRING}" APP_VERSION_STRING)
 
-project(qenna-writer VERSION ${APP_VERSION_STRING} LANGUAGES CXX)
+project(qenna-writer VERSION ${APP_VERSION_STRING} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -37,6 +37,9 @@ qt_standard_project_setup()
 
 # Hunspell (corretor ortográfico) — compilado a partir de third_party/hunspell.
 include(cmake/Hunspell.cmake)
+
+# libmypaint (motor dos pincéis do Esboço da Lousa) — third_party/libmypaint.
+include(cmake/LibMyPaint.cmake)
 
 qt_add_executable(qenna-writer
     src/main.cpp
@@ -364,6 +367,16 @@ qt_add_executable(qenna-writer
     src/LousaPanel.cpp
     src/LousaPanel.h
     src/LousaDock.cpp
+    src/LousaInk.cpp
+    src/LousaInk.h
+    src/LousaInkBar.cpp
+    src/LousaInkBar.h
+    src/SketchEngine.cpp
+    src/SketchEngine.h
+    src/SketchBrushes.cpp
+    src/SketchBrushes.h
+    src/SketchEditor.cpp
+    src/SketchEditor.h
     src/LousaDock.h
     src/LousaStickers.cpp
     src/LousaStickers.h
@@ -440,6 +453,7 @@ qt_add_executable(qenna-writer
     resources/icons.qrc
     resources/geo.qrc
     resources/flags.qrc
+    resources/brushes.qrc
     resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
@@ -478,6 +492,7 @@ target_link_libraries(qenna-writer PRIVATE
     Qt6::Network
     Qt6::TextToSpeech
     hunspell
+    mypaint
     ZLIB::ZLIB
 )
 
