@@ -5,6 +5,7 @@
 // e este desenha o próprio, por cima do viewport, na cor do texto do tema.
 // Configurações › Interface liga/desliga.
 
+#include <QColor>
 #include <QElapsedTimer>
 #include <QList>
 #include <QPixmap>
@@ -48,15 +49,28 @@ private:
     void restartBlink();
     bool shouldDraw() const;
     void updateArea(const QRectF& a, const QRectF& b);
-    // Letra nova entrando num fade: antes da tecla, guarda uma foto do vazio
-    // onde ela vai cair; depois cobre a letra com a foto e vai tirando.
+    // Letra nova entrando num fade: depois da tecla, a letra nasce coberta e a
+    // cobertura vai saindo. Página de cor lisa (todos os temas de fábrica):
+    // a cobertura é a própria cor da página (ou a do marcador debaixo da
+    // letra), e vale em qualquer ponto da linha. Página translúcida: uma foto
+    // do vazio tirada antes da tecla — só no fim da linha, onde o vazio existe.
     void prepareLetterFade();
     void startLetterFade();
-    struct Patch { QRectF rect; QPixmap pm; QPointF origin; QElapsedTimer clock; };
+    // Confere, a cada letra, o que o liga/desliga da opção conserta (tamanho e
+    // ordem da camada); caixa-preta em smoothcaret.log quando algo sai errado.
+    void ensureLayer();
+    void diag(const QString& reason) const;
+    static QString rectText(const QRect& r);
+    bool m_typedLetter = false;
+    // Cor lisa que a página pinta por trás do texto na altura y (viewport);
+    // inválida se a página é translúcida.
+    QColor solidPageColor(qreal y) const;
+    struct Patch { QRectF rect; QPixmap pm; QColor fill; QPointF origin; QElapsedTimer clock; };
     QList<Patch> m_patches;
     QTimer* m_fadeTick = nullptr;
-    bool m_grabbing = false;
+    mutable bool m_grabbing = false;
     bool m_pending = false;
+    QColor m_pendingFill;
     QPixmap m_pendingPm;
     QPointF m_pendingOrigin;
     QRectF m_pendingFrom;

@@ -2,6 +2,11 @@
 
 #include <QAbstractTextDocumentLayout>
 #include <QApplication>
+#include <QDateTime>
+#include <QDir>
+#include <QFile>
+#include <QHash>
+#include <QStandardPaths>
 #include <QEasingCurve>
 #include <QEvent>
 #include <QKeyEvent>
@@ -236,7 +241,21 @@ bool SmoothCaret::eventFilter(QObject* watched, QEvent* event) {
         setGeometry(m_ed->viewport()->geometry());
         raise();
         retarget(false);
-    } else if (m_ed && watched == m_ed && event->type() == QEvent::KeyPress) {
+    } else if (m_ed && watched == m_ed
+               && (event->type() == QEvent::KeyPress
+                   || (event->type() == QEvent::InputMethod
+                       && !static_cast<QInputMethodEvent*>(event)->commitString().isEmpty()))) {
+        // InputMethod: texto que o Windows entrega pelos serviços de texto
+        // (ditado, sugestões de digitação, teclados de composição) em vez de
+        // tecla. Sem isso, nesse caminho a letra nunca tinha fade.
+        const QString txt = event->type() == QEvent::KeyPress ? static_cast<QKeyEvent*>(event)->text()
+                                                              : static_cast<QInputMethodEvent*>(event)->commitString();
+        const bool letter = txt.size() >= 1 && !txt.at(0).isSpace() && txt.at(0).isPrint()
+                            && !(static_cast<QInputEvent*>(event)->modifiers() & (Qt::ControlModifier | Qt::AltModifier));
+        // Letra anterior que nunca chegou ao cursorPositionChanged.
+        if (m_pending && m_typedLetter) diag(QStringLiteral("letra sem cursorPositionChanged"));
+        m_typedLetter = letter;
+        if (letter) ensureLayer();
         prepareLetterFade();
         // O cursor anda dentro do processamento desta tecla; depois dela,
         // qualquer movimento volta a ser teleporte.
@@ -253,25 +272,111 @@ bool SmoothCaret::eventFilter(QObject* watched, QEvent* event) {
     return false;
 }
 
+QColor SmoothCaret::solidPageColor(qreal y) const {
+    if (!m_ed) return QColor();
+    // Pergunta ao próprio editor que cor ele pinta na margem desta linha (um
+    // pixel, dentro da margem do documento). A folha de estilo do Qt mexe no
+    // autoFillBackground do viewport, então paleta e atributos não dizem a
+    // verdade; o pixel diz. Opaco = página lisa; com alfa = translúcida.
+    QWidget* vp = m_ed->viewport();
+    const int py = qBound(0, int(y), vp->height() - 1);
+    m_grabbing = true;
+    const QColor c = vp->grab(QRect(1, py, 1, 1)).toImage().pixelColor(0, 0);
+    m_grabbing = false;
+    return c.alpha() == 255 ? c : QColor();
+}
+
+void SmoothCaret::ensureLayer() {
+    // O que o liga/desliga da opção conserta, conferido a cada letra: a camada
+    // do cursor com o tamanho do viewport e por cima dele. Se algo desfez,
+    // anota (caixa-preta) e arruma.
+    if (!m_ed || !m_active) return;
+    QWidget* vp = m_ed->viewport();
+    if (geometry() != vp->geometry()) {
+        diag(QStringLiteral("camada fora do lugar: %1 x viewport %2")
+                 .arg(rectText(geometry()), rectText(vp->geometry())));
+        setGeometry(vp->geometry());
+    }
+    const QObjectList kids = m_ed->children();
+    if (kids.indexOf(this) < kids.indexOf(vp)) {
+        diag(QStringLiteral("camada abaixo do viewport"));
+        raise();
+    }
+    if (!isVisible()) {
+        diag(QStringLiteral("camada invisível com a opção ligada"));
+        setVisible(true);
+    }
+}
+
+QString SmoothCaret::rectText(const QRect& r) {
+    return QStringLiteral("%1,%2 %3x%4").arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height());
+}
+
+void SmoothCaret::diag(const QString& reason) const {
+    // Caixa-preta do fade (2026-10-10): o "fade morre do nada" não reproduz em
+    // harness. Quando uma letra comum não ganha fade por motivo inesperado,
+    // anota o motivo e o estado em smoothcaret.log, ao lado do crash.log.
+    // No máximo uma linha por motivo a cada 20 s.
+    static QHash<QString, qint64> last;
+    const QString key = reason.section(QLatin1Char(':'), 0, 0);
+    const qint64 now = QDateTime::currentMSecsSinceEpoch();
+    if (now - last.value(key, 0) < 20000) return;
+    last.insert(key, now);
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir().mkpath(dir);
+    QFile f(dir + QStringLiteral("/smoothcaret.log"));
+    if (f.size() > 256 * 1024) f.remove();
+    if (!f.open(QIODevice::Append | QIODevice::Text)) return;
+    QString state;
+    if (m_ed) {
+        const QTextCursor c = m_ed->textCursor();
+        QWidget* fw = QApplication::focusWidget();
+        state = QStringLiteral("camada %1 | viewport %2 | visível %3 | ativo %4 | fade %5ms | foco %6 | rolagem %7,%8 | bloco %9/%10 | página %11")
+                    .arg(rectText(geometry()), rectText(m_ed->viewport()->geometry()))
+                    .arg(isVisible()).arg(m_active).arg(fadeMs())
+                    .arg(fw ? QString::fromLatin1(fw->metaObject()->className()) + QLatin1Char('#') + fw->objectName() : QStringLiteral("-"))
+                    .arg(m_ed->horizontalScrollBar()->value()).arg(m_ed->verticalScrollBar()->value())
+                    .arg(c.positionInBlock()).arg(c.block().length() - 1)
+                    .arg(solidPageColor(caretRect().center().y()).isValid() ? QStringLiteral("lisa") : QStringLiteral("translúcida"));
+    }
+    f.write((QDateTime::currentDateTime().toString(Qt::ISODate) + QStringLiteral("  ") + reason
+             + QStringLiteral("  ||  ") + state + QLatin1Char('\n')).toUtf8());
+}
+
 void SmoothCaret::prepareLetterFade() {
     m_pending = false;
-    if (!m_active || !m_ed || !isVisible() || fadeMs() <= 0) return;
-    // Só no fim da linha: no meio, o texto da direita anda e a foto do "vazio"
-    // não seria vazio.
+    if (!m_active || !m_ed || fadeMs() <= 0) return;
+    if (!isVisible()) { if (m_typedLetter) diag(QStringLiteral("camada invisível")); return; }
     const QTextCursor c = m_ed->textCursor();
-    if (c.hasSelection() || !c.atBlockEnd()) return;
+    if (c.hasSelection()) return;
     const QRectF cr = caretRect();
-    if (cr.height() <= 0) return;
+    if (cr.height() <= 0) { if (m_typedLetter) diag(QStringLiteral("cursor sem altura")); return; }
+    m_pendingFrom = cr.translated(scrollOffset());
+    m_pendingPos = c.position();
+    m_pendingPm = QPixmap();
+
+    // Página lisa: a cobertura é cor, decidida depois da tecla. Sem foto, e
+    // por isso vale também no meio da linha. (Antes era sempre foto, e no meio
+    // da linha não havia fade: voltar pra mexer numa frase "desligava" o
+    // efeito sem aviso, e parecia que ele morria do nada.)
+    m_pendingFill = solidPageColor(cr.center().y());
+    if (m_pendingFill.isValid()) { m_pending = true; return; }
+
+    // Página translúcida: foto do vazio, só no fim da linha (no meio, o texto
+    // da direita anda e a foto não seria vazio). Tirada da JANELA, com o fundo
+    // do tema que aparece através da página: o viewport sozinho dava só a cor
+    // da página meio transparente, e a "cobertura" virava um quadrado claro.
+    if (!c.atBlockEnd()) return;
     const int w = qMax(24, int(cr.height() * 1.6));
     const QRect g = QRect(int(std::floor(cr.x())), int(std::floor(cr.y())), w, int(std::ceil(cr.height())) + 1)
                         .intersected(m_ed->viewport()->rect());
     if (g.isEmpty()) return;
+    QWidget* win = m_ed->window();
+    const QRect inWin(m_ed->viewport()->mapTo(win, g.topLeft()), g.size());
     m_grabbing = true;   // o próprio cursor não entra na foto
-    m_pendingPm = m_ed->viewport()->grab(g);
+    m_pendingPm = win->grab(inWin);
     m_grabbing = false;
     m_pendingOrigin = QPointF(g.topLeft()) + scrollOffset();
-    m_pendingFrom = cr.translated(scrollOffset());
-    m_pendingPos = c.position();
     m_pending = true;
 }
 
@@ -280,15 +385,39 @@ void SmoothCaret::startLetterFade() {
     m_pending = false;
     if (!m_ed) return;
     const QRectF now = caretRect().translated(scrollOffset());
+    const int pos = m_ed->textCursor().position();
     // A letra caiu na mesma linha, logo depois de onde estava o cursor.
-    if (std::abs(now.y() - m_pendingFrom.y()) > 1.0 || now.x() <= m_pendingFrom.x() + 0.5) return;
-    if (m_ed->textCursor().position() <= m_pendingPos) return;
+    if (std::abs(now.y() - m_pendingFrom.y()) > 1.0 || now.x() <= m_pendingFrom.x() + 0.5 || pos <= m_pendingPos) {
+        // Quebra de linha (a palavra desceu) é esperado; o resto, anota.
+        const bool wrapped = now.y() > m_pendingFrom.y() + 1.0 && now.x() < m_pendingFrom.x();
+        if (m_typedLetter && !wrapped)
+            diag(QStringLiteral("letra sem fade: y %1 -> %2, x %3 -> %4, pos %5 -> %6")
+                     .arg(m_pendingFrom.y(), 0, 'f', 1).arg(now.y(), 0, 'f', 1)
+                     .arg(m_pendingFrom.x(), 0, 'f', 1).arg(now.x(), 0, 'f', 1)
+                     .arg(m_pendingPos).arg(pos));
+        return;
+    }
     Patch p;
-    p.rect = QRectF(m_pendingFrom.x() - 0.5, m_pendingFrom.y(), now.x() - m_pendingFrom.x() + 1.0, m_pendingFrom.height())
-                 .intersected(QRectF(m_pendingOrigin, QSizeF(m_pendingPm.size()) / m_pendingPm.devicePixelRatio()));
+    p.rect = QRectF(m_pendingFrom.x() - 0.5, m_pendingFrom.y(), now.x() - m_pendingFrom.x() + 1.0, m_pendingFrom.height());
+    if (m_pendingFill.isValid()) {
+        // Letra caindo dentro de um marcador: cobre com a cor do grifo.
+        QTextCursor at(m_ed->document());
+        at.setPosition(pos);
+        const QBrush bg = at.charFormat().background();
+        QColor fill = m_pendingFill;
+        if (bg.style() != Qt::NoBrush && bg.color().alpha() > 0) {
+            const QColor g = bg.color();
+            const qreal a = g.alphaF();
+            fill = QColor::fromRgbF(g.redF() * a + fill.redF() * (1 - a), g.greenF() * a + fill.greenF() * (1 - a),
+                                    g.blueF() * a + fill.blueF() * (1 - a));
+        }
+        p.fill = fill;
+    } else {
+        p.rect = p.rect.intersected(QRectF(m_pendingOrigin, QSizeF(m_pendingPm.size()) / m_pendingPm.devicePixelRatio()));
+        p.pm = m_pendingPm;
+        p.origin = m_pendingOrigin;
+    }
     if (p.rect.isEmpty()) return;
-    p.pm = m_pendingPm;
-    p.origin = m_pendingOrigin;
     p.clock.start();
     m_patches.append(p);
     if (!m_fadeTick->isActive()) m_fadeTick->start();
@@ -313,8 +442,12 @@ void SmoothCaret::paintEvent(QPaintEvent*) {
         if (cover <= 0.01) continue;
         p.save();
         p.setOpacity(cover);
-        p.setClipRect(patch.rect);
-        p.drawPixmap(patch.origin, patch.pm);
+        if (patch.fill.isValid()) {
+            p.fillRect(patch.rect, patch.fill);
+        } else {
+            p.setClipRect(patch.rect);
+            p.drawPixmap(patch.origin, patch.pm);
+        }
         p.restore();
     }
     p.translate(off);
