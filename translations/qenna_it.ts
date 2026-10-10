@@ -23538,6 +23538,11 @@ La × toglie una riga che non è una battuta, e non torna più.</translation>
         <source>CAPA RÁPIDA</source>
         <translation>COPERTINA RAPIDA</translation>
     </message>
+    <message>
+        <location filename="../src/QuickCoverWidgets.cpp" line="260"/>
+        <source>CARREGAR CAPA</source>
+        <translation>CARICA COPERTINA</translation>
+    </message>
 </context>
 <context>
     <name>QuickCoverPanel</name>

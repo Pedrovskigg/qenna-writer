@@ -207,7 +207,7 @@ NewProjectSheet::NewProjectSheet(const QStringList& fontFamilies, QWidget* paren
     group(tr("Autor"), m_author);
     m_genres = new TagEdit(fields);
     group(tr("Gêneros"), m_genres);
-    m_synopsis = textArea(fields, 70);
+    m_synopsis = textArea(fields, 206);
     m_synopsis->setPlaceholderText(tr("Escreva uma breve sinopse…"));
     group(tr("Sinopse (opcional)"), m_synopsis);
 
@@ -308,6 +308,7 @@ NewProjectSheet::NewProjectSheet(const QStringList& fontFamilies, QWidget* paren
     connect(m_panel, &QuickCoverPanel::exportRequested, this, &NewProjectSheet::exportImage);
     connect(m_panel, &QuickCoverPanel::pickImageRequested, this, &NewProjectSheet::pickImage);
     connect(m_canvas, &QuickCoverCanvas::editRequested, this, [this]() { setEditing(true); });
+    connect(m_canvas, &QuickCoverCanvas::loadRequested, this, &NewProjectSheet::loadCover);
 
     // ── rodapé: a pasta numa linha + Cancelar / Criar projeto ──
     QPushButton* ok = addFooter(tr("Criar projeto"), QString());
@@ -397,22 +398,25 @@ void NewProjectSheet::refreshPath()
 
 void NewProjectSheet::setEditing(bool on)
 {
-    if (on && m_asIs) {
-        // a capa de antes vira ponto de partida: o fundo sem texto (o Cover
-        // Creator grava um) com título e autor por cima; sem ele, a capa
-        // inteira como foto e nenhum texto (senão sairia título sobre título)
+    if (on && (m_asIs || !m_loadedCover.isEmpty())) {
+        // a capa de antes (ou a carregada) vira ponto de partida: o fundo sem
+        // texto (o Cover Creator grava um) com título e autor por cima; sem
+        // ele, a capa inteira como foto e nenhum texto (senão sairia título
+        // sobre título)
+        const bool loaded = !m_loadedCover.isEmpty();
         m_asIs = false;
         m_openedOnce = true;
         m_canvas->setStaticCover(QPixmap());
         const QString family = m_spec.texts.isEmpty() ? QString() : m_spec.texts.first().family;
         m_spec = QuickCover::defaults(family);
         m_spec.image = QStringLiteral("custom");
-        if (!m_existing.coverBg.isEmpty()) {
+        if (!loaded && !m_existing.coverBg.isEmpty()) {
             m_spec.customImage = m_existing.coverBg;
         } else {
-            m_spec.customImage = m_existing.cover;
+            m_spec.customImage = loaded ? m_loadedCover : m_existing.cover;
             m_spec.texts.clear();
         }
+        m_loadedCover.clear();
         m_panel->imagePicked();
     }
     if (on && !m_openedOnce) {
@@ -458,6 +462,20 @@ void NewProjectSheet::pickImage()
     m_spec.image = QStringLiteral("custom");
     m_panel->imagePicked();
     m_canvas->refresh();
+}
+
+void NewProjectSheet::loadCover()
+{
+    // uma capa pronta, feita fora do Qenna: entra como está, sem texto por cima
+    const QString dir = QStandardPaths::writableLocation(QStandardPaths::PicturesLocation);
+    const QString path = QFileDialog::getOpenFileName(this, tr("Escolher imagem da capa"), dir,
+                                                      tr("Imagens (*.png *.jpg *.jpeg *.webp *.bmp)"));
+    if (path.isEmpty()) return;
+    const QString url = CoverUtils::loadCoverAsDataUrl(path);
+    if (url.isEmpty()) return;
+    m_loadedCover = url;
+    m_asIs = false;
+    m_canvas->setStaticCover(CoverUtils::pixmapFromDataUrl(url));
 }
 
 void NewProjectSheet::exportImage()
@@ -511,10 +529,16 @@ void NewProjectSheet::accept()
         SheetDialog::accept();
         return;
     }
-    // a capa vira a capa do projeto: com texto (coverFull) e sem (coverBg)
-    const QSize size(800, 1200);
-    m_coverFull = QuickCover::toDataUrl(QuickCover::render(m_spec, size, true, m_title->text(), m_author->text()));
-    m_coverBg = QuickCover::toDataUrl(QuickCover::render(m_spec, size, false, m_title->text(), m_author->text()));
+    if (!m_loadedCover.isEmpty()) {
+        // capa carregada: ela mesma, sem versão sem texto
+        m_coverFull = m_loadedCover;
+        m_coverBg.clear();
+    } else {
+        // a capa vira a capa do projeto: com texto (coverFull) e sem (coverBg)
+        const QSize size(800, 1200);
+        m_coverFull = QuickCover::toDataUrl(QuickCover::render(m_spec, size, true, m_title->text(), m_author->text()));
+        m_coverBg = QuickCover::toDataUrl(QuickCover::render(m_spec, size, false, m_title->text(), m_author->text()));
+    }
     if (!m_editMode) {
         QSettings st;
         if (!m_author->text().trimmed().isEmpty()) st.setValue(QLatin1String(kLastAuthorKey), m_author->text().trimmed());

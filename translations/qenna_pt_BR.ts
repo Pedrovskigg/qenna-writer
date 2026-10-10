@@ -21952,6 +21952,11 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <source>CAPA RÁPIDA</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../src/QuickCoverWidgets.cpp" line="260"/>
+        <source>CARREGAR CAPA</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QuickCoverPanel</name>

@@ -23538,6 +23538,11 @@ Le × retire une ligne qui n&apos;est pas une réplique, et elle ne revient pas.
         <source>CAPA RÁPIDA</source>
         <translation>COUVERTURE RAPIDE</translation>
     </message>
+    <message>
+        <location filename="../src/QuickCoverWidgets.cpp" line="260"/>
+        <source>CARREGAR CAPA</source>
+        <translation>CHARGER UNE COUVERTURE</translation>
+    </message>
 </context>
 <context>
     <name>QuickCoverPanel</name>

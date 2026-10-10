@@ -23538,6 +23538,11 @@ The statistics are estimates and don&apos;t guarantee absolute accuracy with the
         <source>CAPA RÁPIDA</source>
         <translation>QUICK COVER</translation>
     </message>
+    <message>
+        <location filename="../src/QuickCoverWidgets.cpp" line="260"/>
+        <source>CARREGAR CAPA</source>
+        <translation>LOAD COVER</translation>
+    </message>
 </context>
 <context>
     <name>QuickCoverPanel</name>

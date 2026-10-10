@@ -56,6 +56,12 @@ const char* kIconFolder = R"(<svg viewBox="0 0 24 24" fill="none" stroke="curren
 const char* kIconSave = R"(<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>)";
 // pincel com faísca: o que aparece na capa com o mouse em cima
 const char* kIconBrush = R"(<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 5.5l4 4-10.2 10.2-4-4z"/><path d="M12.3 15.7c-2.6-.3-4.6 1.4-4.9 3.9-.2 1.6-.8 3-2.4 3.9 3.3 1.5 7.6.9 9.3-1.4 1-1.4 1.1-3.3-.1-4.5z" fill="currentColor" fill-opacity=".25"/><path d="M25 17.5v3M23.5 19h3M8 5v3.4M6.3 6.7h3.4"/></svg>)";
+// quadro com a seta subindo: uma capa pronta que vem do computador
+const char* kIconLoadCover = R"(<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 26H8.5A2.5 2.5 0 016 23.5v-15A2.5 2.5 0 018.5 6h15A2.5 2.5 0 0126 8.5V17"/><circle cx="12" cy="12.5" r="2" fill="currentColor" fill-opacity=".25"/><path d="M6 21l6-6 5 5"/><path d="M24 29v-8M20.5 24.5L24 21l3.5 3.5"/></svg>)";
+
+// O corte do hover: da esquerda a 60% da altura até a direita a 40%.
+constexpr qreal kSplitLeft = 0.60;
+constexpr qreal kSplitRight = 0.40;
 
 // As cinco formas do degradê, desenhadas (um retângulo com a faixa escura).
 QIcon fadeShapeIcon(int type, const QColor& c)
@@ -153,7 +159,6 @@ QuickCoverCanvas::QuickCoverCanvas(QuickCover::Spec* spec, QWidget* parent)
     setMouseTracking(true);
     setFocusPolicy(Qt::TabFocus);
     setCursor(Qt::PointingHandCursor);
-    setToolTip(tr("Capa rápida"));
 }
 
 void QuickCoverCanvas::setTexts(const QString& title, const QString& author)
@@ -167,7 +172,6 @@ void QuickCoverCanvas::setEditing(bool on)
 {
     m_editing = on;
     setCursor(on ? Qt::ArrowCursor : Qt::PointingHandCursor);
-    setToolTip(on ? QString() : tr("Capa rápida"));
     update();
 }
 
@@ -182,6 +186,12 @@ int QuickCoverCanvas::hitAt(const QPointF& p) const
     for (int i = m_hits.size() - 1; i >= 0; --i)
         if (m_hits[i].contains(p)) return i;
     return -1;
+}
+
+int QuickCoverCanvas::zoneAt(const QPointF& p) const
+{
+    const qreal cut = height() * (kSplitLeft + (kSplitRight - kSplitLeft) * p.x() / width());
+    return p.y() < cut ? 0 : 1;
 }
 
 void QuickCoverCanvas::paintEvent(QPaintEvent*)
@@ -228,25 +238,62 @@ void QuickCoverCanvas::paintEvent(QPaintEvent*)
             p.drawLine(QPointF(width() / 2.0, 0), QPointF(width() / 2.0, height()));
         }
     } else if (m_hover || hasFocus()) {
-        // véu + pincel + "CAPA RÁPIDA": é aqui que se chama a ferramenta
-        p.fillRect(rect(), QColor(10, 8, 6, 118));
-        const QPointF c(width() / 2.0, height() / 2.0 - 10);
-        p.setPen(QPen(QColor(255, 255, 255, 180), 1.5));
-        p.setBrush(QColor(255, 255, 255, 36));
-        p.drawEllipse(c, 29, 29);
-        svgIcon(QString::fromUtf8(kIconBrush), Qt::white, 28).paint(&p, QRect(int(c.x()) - 14, int(c.y()) - 14, 28, 28));
+        // véu cortado na diagonal: em cima o pincel da capa rápida, embaixo
+        // carregar uma capa pronta. A metade sob o mouse clareia, a outra recua.
+        const qreal w = width(), h = height();
+        const QPointF cutL(0, h * kSplitLeft), cutR(w, h * kSplitRight);
+        QPainterPath top;
+        top.moveTo(0, 0);
+        top.lineTo(w, 0);
+        top.lineTo(cutR);
+        top.lineTo(cutL);
+        top.closeSubpath();
+        QPainterPath bottom;
+        bottom.moveTo(cutL);
+        bottom.lineTo(cutR);
+        bottom.lineTo(w, h);
+        bottom.lineTo(0, h);
+        bottom.closeSubpath();
+        const int zone = m_hover ? m_zone : 0;
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(10, 8, 6, zone == 0 ? 118 : 172));
+        p.drawPath(top);
+        p.setBrush(QColor(10, 8, 6, zone == 1 ? 118 : 172));
+        p.drawPath(bottom);
+        // o fio do corte, um pouco mais vivo no meio
+        QLinearGradient seam(cutL, cutR);
+        seam.setColorAt(0, QColor(255, 255, 255, 30));
+        seam.setColorAt(0.5, QColor(255, 255, 255, 170));
+        seam.setColorAt(1, QColor(255, 255, 255, 30));
+        p.setPen(QPen(QBrush(seam), 1.2));
+        p.drawLine(cutL, cutR);
+
         QFont f = uiFont(10.5, QFont::DemiBold);
         f.setLetterSpacing(QFont::PercentageSpacing, 118);
         p.setFont(f);
-        p.setPen(Qt::white);
-        p.drawText(QRectF(0, c.y() + 36, width(), 20), Qt::AlignHCenter | Qt::AlignTop, tr("CAPA RÁPIDA"));
+        const auto option = [&](const QPointF& c, const char* icon, const QString& label, bool on) {
+            p.setOpacity(on ? 1.0 : 0.55);
+            p.setPen(QPen(QColor(255, 255, 255, on ? 200 : 150), 1.5));
+            p.setBrush(QColor(255, 255, 255, on ? 52 : 22));
+            p.drawEllipse(c, 27, 27);
+            svgIcon(QString::fromUtf8(icon), Qt::white, 26).paint(&p, QRect(int(c.x()) - 13, int(c.y()) - 13, 26, 26));
+            p.setPen(Qt::white);
+            p.drawText(QRectF(0, c.y() + 34, w, 20), Qt::AlignHCenter | Qt::AlignTop, label);
+        };
+        option(QPointF(w / 2.0, h * 0.24), kIconBrush, tr("CAPA RÁPIDA"), zone == 0);
+        option(QPointF(w / 2.0, h * 0.70), kIconLoadCover, tr("CARREGAR CAPA"), zone == 1);
+        p.setOpacity(1.0);
     }
 }
 
 void QuickCoverCanvas::mousePressEvent(QMouseEvent* e)
 {
     if (e->button() != Qt::LeftButton) return;
-    if (!m_editing) { emit editRequested(); return; }
+    if (!m_editing) {
+        if (zoneAt(e->position()) == 0) emit editRequested();
+        else emit loadRequested();
+        return;
+    }
     const int i = hitAt(e->position());
     if (i < 0) return;
     if (i != m_sel) { m_sel = i; emit selectedChanged(i); }
@@ -259,7 +306,11 @@ void QuickCoverCanvas::mousePressEvent(QMouseEvent* e)
 
 void QuickCoverCanvas::mouseMoveEvent(QMouseEvent* e)
 {
-    if (!m_editing) return;
+    if (!m_editing) {
+        const int zone = zoneAt(e->position());
+        if (zone != m_zone) { m_zone = zone; update(); }
+        return;
+    }
     if (m_drag < 0) {
         setCursor(hitAt(e->position()) >= 0 ? Qt::OpenHandCursor : Qt::ArrowCursor);
         return;
@@ -285,7 +336,13 @@ void QuickCoverCanvas::mouseReleaseEvent(QMouseEvent*)
     }
 }
 
-void QuickCoverCanvas::enterEvent(QEnterEvent* e) { QWidget::enterEvent(e); m_hover = true; update(); }
+void QuickCoverCanvas::enterEvent(QEnterEvent* e)
+{
+    QWidget::enterEvent(e);
+    m_hover = true;
+    m_zone = zoneAt(e->position());
+    update();
+}
 void QuickCoverCanvas::leaveEvent(QEvent* e) { QWidget::leaveEvent(e); m_hover = false; update(); }
 
 void QuickCoverCanvas::keyPressEvent(QKeyEvent* e)

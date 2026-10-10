@@ -23538,6 +23538,11 @@ Las estadísticas son estimaciones y no garantizan precisión absoluta con el co
         <source>CAPA RÁPIDA</source>
         <translation>PORTADA RÁPIDA</translation>
     </message>
+    <message>
+        <location filename="../src/QuickCoverWidgets.cpp" line="260"/>
+        <source>CARREGAR CAPA</source>
+        <translation>CARGAR PORTADA</translation>
+    </message>
 </context>
 <context>
     <name>QuickCoverPanel</name>

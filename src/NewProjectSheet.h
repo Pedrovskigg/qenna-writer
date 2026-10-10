@@ -50,7 +50,8 @@ public:
     // e os ajustes da capa rápida, pra reabrir de onde parou.
     QString coverDataUrl() const { return m_coverFull; }
     QString coverBgDataUrl() const { return m_coverBg; }
-    QJsonObject quickCoverJson() const { return QuickCover::toJson(m_spec); }
+    // Capa carregada pronta (imagem do computador) não tem ajustes de capa rápida.
+    QJsonObject quickCoverJson() const { return m_loadedCover.isEmpty() ? QuickCover::toJson(m_spec) : QJsonObject(); }
 
 public slots:
     void accept() override;
@@ -61,6 +62,7 @@ protected:
 private:
     void setEditing(bool on);
     void pickImage();
+    void loadCover();
     void exportImage();
     void refreshPath();
     void refreshCanvasTexts();
@@ -93,4 +95,5 @@ private:
     QString m_rememberedAuthor;
     QString m_coverFull;
     QString m_coverBg;
+    QString m_loadedCover;           // capa pronta carregada do computador (data URL)
 };

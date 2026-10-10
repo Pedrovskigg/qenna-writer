@@ -1,6 +1,7 @@
 #pragma once
 // Peças da capa rápida (ver QuickCover.h): a capa em si, que se edita direto
-// no preview (hover mostra o pincel; editando, clica num texto pra escolher e
+// no preview (hover divide a capa na diagonal: em cima o pincel da capa rápida,
+// embaixo carregar uma capa pronta; editando, clica num texto pra escolher e
 // arrasta pra mover), a bolinha de cor e o painel das quatro abas (Foto,
 // Degradê, Grão, Texto) que entra no lugar dos campos da folha.
 
@@ -58,6 +59,7 @@ public:
     void setStaticCover(const QPixmap& pm) { m_static = pm; update(); }
 signals:
     void editRequested();
+    void loadRequested();   // metade de baixo do hover: carregar uma capa pronta
     void selectedChanged(int index);
     void moved();
 protected:
@@ -70,12 +72,14 @@ protected:
     void keyPressEvent(QKeyEvent* e) override;
 private:
     int hitAt(const QPointF& p) const;
+    int zoneAt(const QPointF& p) const;   // 0 = capa rápida (em cima), 1 = carregar
     QuickCover::Spec* m_spec;
     QPixmap m_static;
     QString m_title, m_author;
     QVector<QRectF> m_hits;
     bool m_editing = false;
     bool m_hover = false;
+    int m_zone = 0;
     bool m_snap = false;
     int m_sel = 0;
     int m_drag = -1;
