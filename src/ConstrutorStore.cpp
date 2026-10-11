@@ -580,7 +580,7 @@ int ConstrutorStore::replaceInMentionTexts(const QVector<QPair<QString, QString>
     for (const auto& t : terms) {
         if (t.first.isEmpty() || t.first == t.second) continue;
         compiled.append({ QRegularExpression(
-                              QStringLiteral("(?<![\p{L}\p{N}_])%1(?![\p{L}\p{N}_])")
+                              QStringLiteral("(?<![\\p{L}\\p{N}_])%1(?![\\p{L}\\p{N}_])")
                                   .arg(QRegularExpression::escape(t.first)),
                               QRegularExpression::UseUnicodePropertiesOption),
                           t.second });
