@@ -24,6 +24,9 @@ jobs:
         env:
           VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
         run: |
+          # Os visualizadores pedem usuário + senha do macOS (autenticação da Apple):
+          # login = runner, senha = a mesma do VNC.
+          sudo dscl . -passwd /Users/runner "$VNC_PASSWORD"
           KS=/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart
           sudo $KS -configure -allowAccessFor -allUsers -privs -all
           sudo $KS -configure -clientopts -setvnclegacy -vnclegacy yes
