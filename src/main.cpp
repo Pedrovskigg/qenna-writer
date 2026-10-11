@@ -20,6 +20,7 @@
 #include <QSplashScreen>
 #include <QStringList>
 #include <QThread>
+#include <QTimer>
 #include <QTranslator>
 #include <QVector>
 #include <QtMath>
@@ -415,6 +416,41 @@ protected:
     }
 };
 
+// Teste de fumaça (compilação do macOS na nuvem): com QENNA_SMOKE=<pasta>, o
+// app fotografa o Main Menu, aciona a Nova ideia e fotografa o editor. Sem a
+// variável, nada disso existe.
+void grabTopLevels(const QString &dir, const QString &tag)
+{
+    QDir().mkpath(dir);
+    int i = 0;
+    for (QWidget *w : QApplication::topLevelWidgets()) {
+        if (!w->isVisible() || w->width() < 50) continue;
+        const QString file = QStringLiteral("%1/%2-%3-%4.png")
+            .arg(dir, tag, QString::number(i++), QString::fromLatin1(w->metaObject()->className()));
+        w->grab().save(file);
+        qInfo("smoke: %s %dx%d", qPrintable(file), w->width(), w->height());
+    }
+}
+
+void runSmokeTest(const QString &dir)
+{
+    QTimer::singleShot(10000, qApp, [dir]() {
+        grabTopLevels(dir, QStringLiteral("1-menu"));
+        bool fired = false;
+        for (QWidget *w : QApplication::topLevelWidgets()) {
+            if (w->isVisible() && w->inherits("MainMenuDialog")) {
+                fired = QMetaObject::invokeMethod(w, "newIdeaRequested");
+                break;
+            }
+        }
+        qInfo("smoke: nova ideia %s", fired ? "acionada" : "NAO achada");
+        QTimer::singleShot(10000, qApp, [dir]() {
+            grabTopLevels(dir, QStringLiteral("2-editor"));
+            qInfo("smoke: fim");
+        });
+    });
+}
+
 }
 
 int main(int argc, char *argv[])
@@ -588,6 +624,9 @@ int main(int argc, char *argv[])
     } else if (showSplash) {
         splash.close();
     }
+
+    const QString smokeDir = qEnvironmentVariable("QENNA_SMOKE");
+    if (!smokeDir.isEmpty()) runSmokeTest(smokeDir);
 
     return app.exec();
 }

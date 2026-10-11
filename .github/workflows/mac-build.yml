@@ -43,15 +43,16 @@ jobs:
         continue-on-error: true
         run: |
           APP=build/qenna-writer.app/Contents/MacOS/qenna-writer
-          ls -la build/qenna-writer.app/Contents/MacOS | head -20
-          "$APP" > app.log 2>&1 &
+          mkdir -p shots grabs
+          QENNA_SMOKE="$PWD/grabs" "$APP" > app.log 2>&1 &
           PID=$!
-          mkdir -p shots
-          for t in 8 16 30; do
-            sleep $(( t - ${LAST:-0} )); LAST=$t
-            screencapture -x shots/t${t}s.png || true
+          for t in 04 08 12 16 20 24 28 32 36; do
+            sleep 4
+            screencapture -x shots/tela-${t}s.png || true
+            kill -0 $PID 2>/dev/null || { echo "APP MORREU antes de ${t}s"; break; }
           done
-          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 30s"; kill $PID; else echo "APP MORREU"; wait $PID; echo "exit=$?"; fi
+          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 36s"; kill $PID; else wait $PID; echo "exit=$?"; fi
+          cat app.log | tail -40
           cp -R "$HOME/Library/Application Support/Qenna Writer" appdata 2>/dev/null || true
 
       - name: Resultados
@@ -63,5 +64,6 @@ jobs:
             build.log
             app.log
             shots/
+            grabs/
             appdata/
           if-no-files-found: ignore
