@@ -1,0 +1,59 @@
+name: mac-remote
+
+# Mac da nuvem com tela remota pra testar o Qenna na mão. Só roda quando
+# disparado (gh workflow run mac-remote). Acesso pelo Tailscale (rede
+# privada do Pe), com senha VNC: nada fica exposto na internet.
+on:
+  workflow_dispatch:
+
+jobs:
+  mac:
+    runs-on: macos-14
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          hostname: qenna-mac
+
+      - name: Compartilhamento de tela
+        env:
+          VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
+        run: |
+          KS=/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart
+          sudo $KS -configure -allowAccessFor -allUsers -privs -all
+          sudo $KS -configure -clientopts -setvnclegacy -vnclegacy yes
+          # Senha VNC "legada" (até 8 caracteres), no formato que o ARD espera.
+          echo "$VNC_PASSWORD" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt > /dev/null
+          sudo $KS -activate -restart -agent -console
+          sleep 5
+          nc -z localhost 5900 && echo "VNC OUVINDO na 5900" || echo "VNC NAO SUBIU"
+          tailscale ip -4 || true
+
+      - name: Hunspell
+        run: git clone --depth 1 --branch v1.7.2 https://github.com/hunspell/hunspell.git third_party/hunspell
+
+      - name: Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: 'qtmultimedia qtspeech'
+          cache: true
+
+      - name: Build
+        run: |
+          brew install ninja || true
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+
+      - name: Abrir o Qenna e esperar
+        run: |
+          open build/qenna-writer.app
+          echo "Pronto. Conecte em qenna-mac:5900. A sessão fica de pé até ser cancelada."
+          sleep 19000
