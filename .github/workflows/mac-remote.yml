@@ -20,60 +20,33 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           hostname: qenna-mac
 
-      - name: Compartilhamento de tela
+      # O compartilhamento de tela da Apple, nestes Macs, só manda imagem preta
+      # (fica fora das permissões de gravação de tela). O macVNC (LibVNC, GPL)
+      # roda a partir do shell do job, que já tem permissão de capturar a tela
+      # (é o mesmo caminho do screencapture). Login: só a senha.
+      - name: Servidor de tela (macVNC)
         env:
           VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
         run: |
-          # Os visualizadores pedem usuário + senha do macOS (autenticação da Apple).
-          # A senha do runner não dá pra trocar sem a antiga, então criamos um
-          # usuário próprio: login = qenna, senha = a mesma do VNC. Ele controla a
-          # tela que já está logada (a do runner), onde o Qenna abre.
-          sudo sysadminctl -addUser qenna -fullName Qenna -password "$VNC_PASSWORD" -admin || true
-          dscl . -read /Users/qenna RecordName || echo "USUARIO NAO CRIADO"
-          # Entrando como qenna o Mac abre uma sessão própria (vazia, preta). A tela
-          # onde o Qenna abre é a do runner: dá a ele a mesma senha, com o qenna
-          # (admin) autorizando.
-          sudo sysadminctl -resetPasswordFor runner -newPassword "$VNC_PASSWORD" -adminUser qenna -adminPassword "$VNC_PASSWORD" 2>&1 | tee -a diag.txt || true
-          KS=/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart
-          sudo $KS -configure -allowAccessFor -allUsers -privs -all -access -on -users qenna
-          sudo $KS -configure -clientopts -setvnclegacy -vnclegacy yes
-          # Senha VNC "legada" (até 8 caracteres), no formato que o ARD espera.
-          echo "$VNC_PASSWORD" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt > /dev/null
-          # Sem permissão de gravação de tela (TCC) o serviço de compartilhamento
-          # manda imagem toda preta. Nos Macs do GitHub o TCC.db do sistema é
-          # gravável (é assim que eles liberam o screencapture).
+          brew install libvncserver || true
+          git clone --depth 1 https://github.com/LibVNC/macVNC.git /tmp/macVNC
+          cmake -S /tmp/macVNC -B /tmp/macVNC/build -DCMAKE_BUILD_TYPE=Release
+          cmake --build /tmp/macVNC/build
+          BIN=$(find /tmp/macVNC/build -type f -perm -u+x -name 'macVNC*' | head -1)
+          echo "BIN=$BIN"
           DB="/Library/Application Support/com.apple.TCC/TCC.db"
           for svc in kTCCServiceScreenCapture kTCCServicePostEvent kTCCServiceAccessibility; do
-            for c in com.apple.screensharing.agent com.apple.RemoteDesktopAgent com.apple.RemoteManagementAgent com.apple.screensharingd; do
-              sudo sqlite3 "$DB" "INSERT OR REPLACE INTO access VALUES('$svc','$c',0,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1700000000,NULL,NULL,'UNUSED',0);" || true
-            done
-            for c in /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/MacOS/ARDAgent /System/Library/CoreServices/RemoteManagement/screensharingd.bundle/Contents/MacOS/screensharingd /System/Library/CoreServices/RemoteManagement/ScreensharingAgent.bundle/Contents/MacOS/ScreensharingAgent; do
+            for c in "$BIN" /bin/bash /usr/local/opt/runner/provisioner/provisioner; do
               sudo sqlite3 "$DB" "INSERT OR REPLACE INTO access VALUES('$svc','$c',1,2,4,1,NULL,NULL,0,'UNUSED',NULL,0,1700000000,NULL,NULL,'UNUSED',0);" || true
             done
           done
-          sudo sqlite3 "$DB" "SELECT service, client FROM access WHERE client LIKE '%creen%' OR client LIKE '%ARD%' OR client LIKE '%Remote%';" || true
-          # Tela sempre acordada.
           sudo pmset -a displaysleep 0 sleep 0 || true
           caffeinate -dimsu &
-          sudo pkill -f screensharingd || true
-          sudo $KS -activate -restart -agent -console
-          sleep 5
-          nc -z localhost 5900 && echo "VNC OUVINDO na 5900" || echo "VNC NAO SUBIU"
-          tailscale ip -4 || true
-
-      - name: Diagnóstico
-        continue-on-error: true
-        run: |
-          mkdir -p diag
-          screencapture -x diag/tela.png || true
-          sudo sqlite3 "/Library/Application Support/com.apple.TCC/TCC.db" "SELECT service, client, auth_value FROM access;" > diag/tcc.txt 2>&1 || true
-          sudo $(echo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart) -help > /dev/null 2>&1 || true
-          (who; ps aux | grep -iE 'screensharing|ARDAgent|loginwindow' | grep -v grep) > diag/proc.txt 2>&1
-          cp diag.txt diag/ 2>/dev/null || true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: diag
-          path: diag/
+          "$BIN" -h 2>&1 | head -30 || true
+          nohup "$BIN" -rfbport 5901 -passwd "$VNC_PASSWORD" > /tmp/macvnc.log 2>&1 &
+          sleep 6
+          cat /tmp/macvnc.log
+          nc -z localhost 5901 && echo "macVNC OUVINDO na 5901" || echo "macVNC NAO SUBIU"
 
       - name: Hunspell
         run: git clone --depth 1 --branch v1.7.2 https://github.com/hunspell/hunspell.git third_party/hunspell
