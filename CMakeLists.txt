@@ -533,6 +533,12 @@ add_custom_command(TARGET sync-runtime-assets POST_BUILD
     COMMENT "Espelhando as artes do Q do Main Menu"
     VERBATIM)
 foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
+    # ambience-sounds não é versionado (93 MB): num clone limpo, como o da
+    # compilação do macOS na nuvem, a pasta não existe e a cópia derrubava a build.
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/assets/${asset_dir}")
+        message(STATUS "Assets de runtime ausentes, pulando: ${asset_dir}")
+        continue()
+    endif()
     add_custom_command(TARGET sync-runtime-assets POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
                 "${CMAKE_SOURCE_DIR}/src/assets/${asset_dir}"
