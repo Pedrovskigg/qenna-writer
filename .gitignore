@@ -130,3 +130,9 @@ Patch note.txt
 
 # Rascunhos internos (posts, notas) — nao vao pro repo publico
 reddit-post-*.txt
+
+# Referências de desenho do dress-up (fora do repo)
+grace-drawing/
+
+# Character Creator (bases e sprites do dress-up, fora do repo)
+Character Creator/
