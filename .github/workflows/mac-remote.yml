@@ -1,10 +1,11 @@
 name: mac-remote
 
 # Mac da nuvem com tela remota pra testar o Qenna na mão. Só roda quando
-# disparado (gh workflow run mac-remote). Acesso pelo Tailscale (rede
+# alguém empurra o branch mac-remote (git push origin mac-build:mac-remote). Acesso pelo Tailscale (rede
 # privada do Pe), com senha VNC: nada fica exposto na internet.
 on:
-  workflow_dispatch:
+  push:
+    branches: [mac-remote]
 
 jobs:
   mac:
