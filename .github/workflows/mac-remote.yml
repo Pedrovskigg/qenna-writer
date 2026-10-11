@@ -24,11 +24,14 @@ jobs:
         env:
           VNC_PASSWORD: ${{ secrets.VNC_PASSWORD }}
         run: |
-          # Os visualizadores pedem usuário + senha do macOS (autenticação da Apple):
-          # login = runner, senha = a mesma do VNC.
-          sudo dscl . -passwd /Users/runner "$VNC_PASSWORD"
+          # Os visualizadores pedem usuário + senha do macOS (autenticação da Apple).
+          # A senha do runner não dá pra trocar sem a antiga, então criamos um
+          # usuário próprio: login = qenna, senha = a mesma do VNC. Ele controla a
+          # tela que já está logada (a do runner), onde o Qenna abre.
+          sudo sysadminctl -addUser qenna -fullName Qenna -password "$VNC_PASSWORD" -admin || true
+          dscl . -read /Users/qenna RecordName || echo "USUARIO NAO CRIADO"
           KS=/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart
-          sudo $KS -configure -allowAccessFor -allUsers -privs -all
+          sudo $KS -configure -allowAccessFor -allUsers -privs -all -access -on -users qenna
           sudo $KS -configure -clientopts -setvnclegacy -vnclegacy yes
           # Senha VNC "legada" (até 8 caracteres), no formato que o ARD espera.
           echo "$VNC_PASSWORD" | perl -we 'BEGIN { @k = unpack "C*", pack "H*", "1734516E8BA8C5E2FF1C39567390ADCA"}; $_ = <>; chomp; s/^(.{8}).*/$1/; @p = unpack "C*", $_; foreach (@k) { printf "%02X", $_ ^ (shift @p || 0) }; print "\n"' | sudo tee /Library/Preferences/com.apple.VNCSettings.txt > /dev/null
