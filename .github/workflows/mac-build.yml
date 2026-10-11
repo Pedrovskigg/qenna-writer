@@ -1,0 +1,67 @@
+name: mac-build
+
+on:
+  push:
+    branches: [mac-build]
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      # O Hunspell não é versionado (ver cmake/Hunspell.cmake).
+      - name: Hunspell
+        run: git clone --depth 1 --branch v1.7.2 https://github.com/hunspell/hunspell.git third_party/hunspell
+
+      - name: Qt 6.8.3
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: mac
+          target: desktop
+          arch: clang_64
+          modules: 'qtmultimedia qtspeech'
+          cache: true
+
+      - name: Ninja
+        run: brew install ninja || true
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      # -k 0: segue compilando depois do primeiro erro, pra lista sair inteira
+      # numa rodada só.
+      - name: Build
+        run: |
+          set -o pipefail
+          cmake --build build -- -k 0 2>&1 | tee build.log
+
+      - name: Abrir o app e tirar print
+        if: success()
+        continue-on-error: true
+        run: |
+          APP=build/qenna-writer.app/Contents/MacOS/qenna-writer
+          ls -la build/qenna-writer.app/Contents/MacOS | head -20
+          "$APP" > app.log 2>&1 &
+          PID=$!
+          mkdir -p shots
+          for t in 8 16 30; do
+            sleep $(( t - ${LAST:-0} )); LAST=$t
+            screencapture -x shots/t${t}s.png || true
+          done
+          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 30s"; kill $PID; else echo "APP MORREU"; wait $PID; echo "exit=$?"; fi
+          cp -R "$HOME/Library/Application Support/Qenna Writer" appdata 2>/dev/null || true
+
+      - name: Resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-resultados
+          path: |
+            build.log
+            app.log
+            shots/
+            appdata/
+          if-no-files-found: ignore
