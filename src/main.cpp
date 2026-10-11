@@ -475,8 +475,10 @@ int main(int argc, char *argv[])
     //
     // Se algum dia isso for revertido, o sintoma volta como "exportação de PDF
     // gigante" ou "margem enorme no PDF", que não parecem problema de fonte.
+#ifdef Q_OS_WIN
     if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM"))
         qputenv("QT_QPA_PLATFORM", "windows:fontengine=freetype");
+#endif
 
     QApplication app(argc, argv);
 
