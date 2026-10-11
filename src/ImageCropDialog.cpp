@@ -68,7 +68,7 @@ protected:
         p.fillPath(outer.subtracted(inner), QColor(0, 0, 0, 140));
 
         // Borda do retângulo.
-        QPen pen(QColor(Theme::accentDefault()));
+        QPen pen{QColor(Theme::accentDefault())};
         pen.setWidth(2);
         p.setPen(pen);
         p.setBrush(Qt::NoBrush);
