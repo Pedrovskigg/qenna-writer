@@ -242,6 +242,10 @@ qt_add_executable(qenna-writer
     src/LoadingToast.cpp
     src/LoadingToast.h
     src/BackgroundOverlay.cpp
+    src/AnimBackground.cpp
+    src/AnimBackground.h
+    src/AnimBackgroundCity.cpp
+    src/AnimBackgroundEngines.h
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp

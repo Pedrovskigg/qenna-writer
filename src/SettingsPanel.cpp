@@ -14,6 +14,7 @@
 #include "SpellChecker.h"
 #include "Theme.h"
 #include "UiScale.h"
+#include "AnimBackground.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -341,6 +342,29 @@ SettingsPanel::SettingsPanel(QWidget* parent)
            tr("As gavetas e a gaveta de Manuscritos saem de trás da barra lateral, com as "
               "linhas entrando em cascata. Desligado, tudo aparece na hora."));
     connect(animCheck, &QCheckBox::toggled, this, [](bool on) { PanelMotion::setEnabled(on); });
+
+    // Temas Animados: o clima da mesa. Desligado, a mesa fica parada no último quadro.
+    auto* bgAnimCheck = new ToggleSwitch(this);
+    bgAnimCheck->setChecked(AnimBg::enabled());
+    const QString bgAnimHint = tr("Os temas da categoria Animados têm clima na mesa: chuva, neve, cidade, floresta. "
+                                  "A animação para sozinha quando o Qenna fica em segundo plano. Desligada, a mesa "
+                                  "fica parada no último quadro e o app trabalha menos.");
+    addRow(Appearance, tr("Fundos animados"), tr("O clima na mesa dos temas Animados."), bgAnimCheck, bgAnimHint);
+    auto* bgAnimLevel = new QComboBox(this);
+    bgAnimLevel->addItem(tr("Leve"), 0);
+    bgAnimLevel->addItem(tr("Média"), 1);
+    bgAnimLevel->addItem(tr("Forte"), 2);
+    bgAnimLevel->setCurrentIndex(AnimBg::intensity());
+    QWidget* levelRow = addRow(Appearance, tr("Intensidade da animação"), tr("Quanta chuva, neve e folha cai na mesa."),
+                               new Segmented(bgAnimLevel, this), bgAnimHint, true);
+    levelRow->setEnabled(AnimBg::enabled());
+    connect(bgAnimLevel, qOverload<int>(&QComboBox::currentIndexChanged), this, [bgAnimLevel](int idx) {
+        AnimBg::setIntensity(bgAnimLevel->itemData(idx).toInt());
+    });
+    connect(bgAnimCheck, &QCheckBox::toggled, this, [levelRow](bool on) {
+        AnimBg::setEnabled(on);
+        levelRow->setEnabled(on);
+    });
 
     // A vinheta é lida no main.cpp antes de tudo; aqui só a preferência.
     auto* vignetteCheck = new ToggleSwitch(this);

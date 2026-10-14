@@ -27604,6 +27604,34 @@ Se non hai una chiave API o semplicemente non vuoi usare l&apos;assistente, ness
         <source>Digite aqui pra testar…</source>
         <translation>Scrivi qui per provare…</translation>
     </message>
+    <message>
+        <source>Fundos animados</source>
+        <translation>Sfondi animati</translation>
+    </message>
+    <message>
+        <source>O clima na mesa dos temas Animados.</source>
+        <translation>Il meteo sulla scrivania dei temi Animati.</translation>
+    </message>
+    <message>
+        <source>Os temas da categoria Animados têm clima na mesa: chuva, neve, cidade, floresta. A animação para sozinha quando o Qenna fica em segundo plano. Desligada, a mesa fica parada no último quadro e o app trabalha menos.</source>
+        <translation>I temi della categoria Animati hanno il meteo sulla scrivania: pioggia, neve, città, foresta. L&apos;animazione si ferma da sola quando Qenna è in secondo piano. Spenta, la scrivania resta ferma sull&apos;ultimo fotogramma e l&apos;app lavora meno.</translation>
+    </message>
+    <message>
+        <source>Leve</source>
+        <translation>Leggera</translation>
+    </message>
+    <message>
+        <source>Forte</source>
+        <translation>Forte</translation>
+    </message>
+    <message>
+        <source>Intensidade da animação</source>
+        <translation>Intensità dell&apos;animazione</translation>
+    </message>
+    <message>
+        <source>Quanta chuva, neve e folha cai na mesa.</source>
+        <translation>Quanta pioggia, neve e foglie cadono sulla scrivania.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30735,6 +30763,86 @@ Puoi inviare questo file a chiunque usi Qenna.</translation>
         <location filename="../src/ThemesPanel.cpp" line="2062"/>
         <source>Diurno e Noturno valem pro tema selecionado, o da prévia à direita (agora: %1). Pra escolher outro, clique nele em Todos ou numa categoria e volte aqui.</source>
         <translation>Giorno e Notte valgono per il tema selezionato, quello nell&apos;anteprima a destra (ora: %1). Per sceglierne un altro, cliccalo in Tutti o in una categoria e torna qui.</translation>
+    </message>
+    <message>
+        <source>Animados</source>
+        <translation>Animati</translation>
+    </message>
+    <message>
+        <source>Animação</source>
+        <translation>Animazione</translation>
+    </message>
+    <message>
+        <source>Hora</source>
+        <translation>Ora del giorno</translation>
+    </message>
+    <message>
+        <source>Do tema</source>
+        <translation>Del tema</translation>
+    </message>
+    <message>
+        <source>Dia</source>
+        <translation>Giorno</translation>
+    </message>
+    <message>
+        <source>Entardecer</source>
+        <translation>Tramonto</translation>
+    </message>
+    <message>
+        <source>Noite</source>
+        <translation>Notte</translation>
+    </message>
+    <message>
+        <source>Este tema tem a própria luz.</source>
+        <translation>Questo tema ha una luce propria.</translation>
+    </message>
+    <message>
+        <source>Chuva</source>
+        <translation>Pioggia</translation>
+    </message>
+    <message>
+        <source>Nenhuma</source>
+        <translation>Nessuna</translation>
+    </message>
+    <message>
+        <source>Garoa</source>
+        <translation>Pioggerella</translation>
+    </message>
+    <message>
+        <source>Tempestade</source>
+        <translation>Temporale</translation>
+    </message>
+    <message>
+        <source>Camadas</source>
+        <translation>Livelli</translation>
+    </message>
+    <message>
+        <source>Estrelas</source>
+        <translation>Stelle</translation>
+    </message>
+    <message>
+        <source>Neblina</source>
+        <translation>Nebbia</translation>
+    </message>
+    <message>
+        <source>Folhas</source>
+        <translation>Foglie</translation>
+    </message>
+    <message>
+        <source>Pétalas</source>
+        <translation>Petali</translation>
+    </message>
+    <message>
+        <source>Vaga-lumes</source>
+        <translation>Lucciole</translation>
+    </message>
+    <message>
+        <source>Neve</source>
+        <translation>Neve</translation>
+    </message>
+    <message>
+        <source>Voltar ao padrão do tema</source>
+        <translation>Torna al predefinito del tema</translation>
     </message>
 </context>
 <context>

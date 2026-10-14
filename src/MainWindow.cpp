@@ -8824,6 +8824,9 @@ void MainWindow::positionPageGlow()
         fill.setAlpha(qBound(0, Theme::editorOpacity(), 100) * 255 / 100);
         PanelGlass::setPage(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()), fill);
     }
+    // Temas Animados: a mesa não repinta em cima da folha e pinta a sombra dela.
+    if (backgroundWidget)
+        backgroundWidget->setSheetRect(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()));
 
     const QColor c = parseColor(Theme::pageShadowColor());
     if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
@@ -8845,7 +8848,10 @@ void MainWindow::applyPageShadow()
 {
     if (!editorColumn) return;
     positionPageGlow();
-    if (Theme::pageShadowEnabled()) {
+    // Nos temas Animados a sombra é pintada pelo BackgroundWidget: o efeito do
+    // Qt refaria o desfoque da página inteira a cada quadro da animação.
+    const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
+    if (Theme::pageShadowEnabled() && !animated) {
         auto* effect = qobject_cast<QGraphicsDropShadowEffect*>(editorColumn->graphicsEffect());
         if (!effect) {
             effect = new QGraphicsDropShadowEffect(editorColumn);
@@ -8867,7 +8873,8 @@ void MainWindow::applyBackgroundFromTheme()
     const bool hasImage = !img.isEmpty();
     // Degradê ou grão na mesa também precisam do fundo pintado por baixo de
     // tudo, mesmo sem foto: tratam-se como a imagem daqui pra baixo.
-    const bool painted = hasImage || BackgroundOverlay::active(Theme::Manager::instance()->current());
+    const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
+    const bool painted = hasImage || animated || BackgroundOverlay::active(Theme::Manager::instance()->current());
 
     if (backgroundWidget) {
         backgroundWidget->setBackground(hasImage ? img : QString(), mode);
@@ -8875,6 +8882,7 @@ void MainWindow::applyBackgroundFromTheme()
         backgroundWidget->setGeometry(rect());
         backgroundWidget->setVisible(painted);
         backgroundWidget->lower();
+        backgroundWidget->refreshAnimation();
         backgroundWidget->update();
     }
 

@@ -1,5 +1,6 @@
 #include "ThemeScene.h"
 
+#include "AnimBackground.h"
 #include "BackgroundOverlay.h"
 #include "PanelGlass.h"
 
@@ -184,10 +185,13 @@ void panelRect(QPainter& p, const QRectF& r, const Pal& c, qreal tl, qreal tr_, 
 
 void drawBackgroundImage(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QPixmap& bg);
 
-void drawBackground(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QColor& app, const QPixmap& bg)
+// live: a prévia grande, que anda pelo relógio; sem live, um quadro parado.
+void drawBackground(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, const QColor& app, const QPixmap& bg, bool live = false)
 {
     p.fillRect(r, app);
     drawBackgroundImage(p, r, t, bg);
+    // Temas Animados: o clima da mesa, como o app pinta.
+    AnimBg::paintPreview(p, r, t, live);
     // O mesmo degradê e grão que o BackgroundWidget pinta no app.
     BackgroundOverlay::paint(p, r, t);
 }
@@ -908,7 +912,7 @@ void paintScene(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, Scene s
     p.translate(r.topLeft());
     p.scale(r.width() / kSceneW, r.height() / kSceneH);
     const QRectF all(0, 0, kSceneW, kSceneH);
-    drawBackground(p, all, t, c.app, bg);
+    drawBackground(p, all, t, c.app, bg, true);
     paintSheet(p, c, t);
     paintToolbar(p, c);
     paintRefMenu(p, c);

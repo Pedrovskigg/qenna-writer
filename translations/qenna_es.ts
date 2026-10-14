@@ -27604,6 +27604,34 @@ Si no tienes una clave de API o simplemente no quieres usar el asistente, no hay
         <source>Digite aqui pra testar…</source>
         <translation>Escribe aquí para probar…</translation>
     </message>
+    <message>
+        <source>Fundos animados</source>
+        <translation>Fondos animados</translation>
+    </message>
+    <message>
+        <source>O clima na mesa dos temas Animados.</source>
+        <translation>El clima sobre el escritorio de los temas Animados.</translation>
+    </message>
+    <message>
+        <source>Os temas da categoria Animados têm clima na mesa: chuva, neve, cidade, floresta. A animação para sozinha quando o Qenna fica em segundo plano. Desligada, a mesa fica parada no último quadro e o app trabalha menos.</source>
+        <translation>Los temas de la categoría Animados tienen clima en el escritorio: lluvia, nieve, ciudad, bosque. La animación se detiene sola cuando Qenna queda en segundo plano. Apagada, el escritorio se queda quieto en el último fotograma y la app trabaja menos.</translation>
+    </message>
+    <message>
+        <source>Leve</source>
+        <translation>Suave</translation>
+    </message>
+    <message>
+        <source>Forte</source>
+        <translation>Fuerte</translation>
+    </message>
+    <message>
+        <source>Intensidade da animação</source>
+        <translation>Intensidad de la animación</translation>
+    </message>
+    <message>
+        <source>Quanta chuva, neve e folha cai na mesa.</source>
+        <translation>Cuánta lluvia, nieve y hojas caen sobre el escritorio.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30735,6 +30763,86 @@ Puedes enviar este archivo a cualquier persona que use Qenna.</translation>
         <location filename="../src/ThemesPanel.cpp" line="1374"/>
         <source>Fechar</source>
         <translation>Cerrar</translation>
+    </message>
+    <message>
+        <source>Animados</source>
+        <translation>Animados</translation>
+    </message>
+    <message>
+        <source>Animação</source>
+        <translation>Animación</translation>
+    </message>
+    <message>
+        <source>Hora</source>
+        <translation>Hora del día</translation>
+    </message>
+    <message>
+        <source>Do tema</source>
+        <translation>Del tema</translation>
+    </message>
+    <message>
+        <source>Dia</source>
+        <translation>Día</translation>
+    </message>
+    <message>
+        <source>Entardecer</source>
+        <translation>Atardecer</translation>
+    </message>
+    <message>
+        <source>Noite</source>
+        <translation>Noche</translation>
+    </message>
+    <message>
+        <source>Este tema tem a própria luz.</source>
+        <translation>Este tema tiene su propia luz.</translation>
+    </message>
+    <message>
+        <source>Chuva</source>
+        <translation>Lluvia</translation>
+    </message>
+    <message>
+        <source>Nenhuma</source>
+        <translation>Ninguna</translation>
+    </message>
+    <message>
+        <source>Garoa</source>
+        <translation>Llovizna</translation>
+    </message>
+    <message>
+        <source>Tempestade</source>
+        <translation>Tormenta</translation>
+    </message>
+    <message>
+        <source>Camadas</source>
+        <translation>Capas</translation>
+    </message>
+    <message>
+        <source>Estrelas</source>
+        <translation>Estrellas</translation>
+    </message>
+    <message>
+        <source>Neblina</source>
+        <translation>Niebla</translation>
+    </message>
+    <message>
+        <source>Folhas</source>
+        <translation>Hojas</translation>
+    </message>
+    <message>
+        <source>Pétalas</source>
+        <translation>Pétalos</translation>
+    </message>
+    <message>
+        <source>Vaga-lumes</source>
+        <translation>Luciérnagas</translation>
+    </message>
+    <message>
+        <source>Neve</source>
+        <translation>Nieve</translation>
+    </message>
+    <message>
+        <source>Voltar ao padrão do tema</source>
+        <translation>Volver al predeterminado del tema</translation>
     </message>
 </context>
 <context>

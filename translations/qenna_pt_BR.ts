@@ -25737,6 +25737,34 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
         <source>Digite aqui pra testar…</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Fundos animados</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>O clima na mesa dos temas Animados.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Os temas da categoria Animados têm clima na mesa: chuva, neve, cidade, floresta. A animação para sozinha quando o Qenna fica em segundo plano. Desligada, a mesa fica parada no último quadro e o app trabalha menos.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Leve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Forte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Intensidade da animação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Quanta chuva, neve e folha cai na mesa.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -28578,6 +28606,86 @@ Esse arquivo pode ser enviado pra qualquer pessoa que use o Qenna.</source>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="1374"/>
         <source>Fechar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Animados</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Animação</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hora</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Do tema</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dia</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Entardecer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Noite</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Este tema tem a própria luz.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Chuva</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Nenhuma</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Garoa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Tempestade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Camadas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Estrelas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Neblina</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Folhas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pétalas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vaga-lumes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Neve</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Voltar ao padrão do tema</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
