@@ -1576,8 +1576,14 @@ void ThemesPanel::refreshSide()
     const bool redemption = shown->id == QLatin1String("redemption");
     if (redemption)
         m_loreCard->setText(QStringLiteral("<i>for those who stay unshaken amidst a crash of worlds</i>"));
-    m_loreCard->setCursor(redemption ? Qt::ArrowCursor : Qt::PointingHandCursor);
-    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy") || redemption);
+    // John & Mary: o cigarro é só estética; o aviso vai junto, com o número de ajuda. Não abre foto.
+    const bool johnMary = shown->id == QLatin1String("anim-johnmary");
+    if (johnMary)
+        m_loreCard->setText(tr("Esse theme tem apenas fins estéticos e não busca incentivar o fumo. "
+                               "Cigarro causa câncer e outros problemas de saúde. No Brasil, você não "
+                               "está sozinho. Para obter ajuda, ligue: 136"));
+    m_loreCard->setCursor(redemption || johnMary ? Qt::ArrowCursor : Qt::PointingHandCursor);
+    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy") || redemption || johnMary);
     const bool fav = mgr->isFavorite(shown->id);
     m_favButton->setStyleSheet(QStringLiteral("QToolButton#favBtn { color: %1; }")
                                    .arg(fav ? kFav.name() : Theme::textMuted()));
@@ -2250,6 +2256,13 @@ QWidget* ThemesPanel::buildAnimSection(QWidget* side)
     v->addLayout(chips({ { QStringLiteral("theme"), tr("Do tema") }, { QStringLiteral("day"), tr("Dia") },
                          { QStringLiteral("dusk"), tr("Entardecer") }, { QStringLiteral("night"), tr("Noite") } },
                        m_todButtons, [](AnimBg::Config& c, const QString& v) { c.tod = v; }));
+    // Hora real: a luz da mesa acompanha o relógio (caixinha, pra hora não virar cinco pílulas)
+    m_realCheck = new QCheckBox(tr("Hora real (a luz acompanha o relógio)"), m_animWrap);
+    m_realCheck->setCursor(Qt::PointingHandCursor);
+    connect(m_realCheck, &QCheckBox::toggled, this, [this](bool on) {
+        editAnim([&](AnimBg::Config& c) { c.tod = on ? QStringLiteral("real") : QStringLiteral("theme"); });
+    });
+    v->addWidget(m_realCheck);
     m_animNote = new QLabel(tr("Este tema tem a própria luz."), m_animWrap);
     m_animNote->setObjectName(QStringLiteral("animNote"));
     v->addWidget(m_animNote);
@@ -2343,6 +2356,11 @@ void ThemesPanel::refreshAnim()
         b->setChecked(todOK ? v == c.tod : v == QLatin1String("theme"));
     }
     m_animNote->setVisible(!todOK);
+    {
+        const QSignalBlocker block(m_realCheck);
+        m_realCheck->setEnabled(todOK);
+        m_realCheck->setChecked(todOK && c.tod == QLatin1String("real"));
+    }
     for (QPushButton* b : m_rainButtons) b->setChecked(b->property("animValue").toString() == c.rain);
     for (QCheckBox* cb : m_extraChecks) {
         const QSignalBlocker block(cb);

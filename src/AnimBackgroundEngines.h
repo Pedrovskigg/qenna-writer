@@ -30,7 +30,9 @@ struct Ctx {
     double H = kSceneH;
     Zones zones;
     int intensity = 1;
-    QString tod = QStringLiteral("theme");
+    QString tod = QStringLiteral("theme");   // theme, day, dusk, night ou real (a hora corre)
+    double hour = 12;           // na hora real: a hora do relógio, de 0 a 24
+    QString rain = QStringLiteral("none");   // a chuva do Personalizar (o cruzamento troca cabeça por guarda-chuva)
     bool neon = false;          // chuva pega as cores do neon
     bool hasNeonCols = false;   // cyberpunk troca as cores do neon pelas da vinheta
     QColor neonA, neonB;
@@ -50,9 +52,22 @@ public:
 
 namespace fx {
 
-inline double rnd() { return QRandomGenerator::global()->generateDouble(); }
+// O gerador da vez: o global, ou o semeado enquanto um Seeded existir.
+QRandomGenerator* rng();
+inline double rnd() { return rng()->generateDouble(); }
 inline double R(double a, double b) { return a + rnd() * (b - a); }
-inline int RI(int n) { return n <= 0 ? 0 : int(QRandomGenerator::global()->bounded(n)); }
+inline int RI(int n) { return n <= 0 ? 0 : int(rng()->bounded(n)); }
+// Sorteio repetível: a mesma semente monta sempre o mesmo cenário (a cidade não muda com a hora).
+class Seeded {
+public:
+    explicit Seeded(quint32 seed);
+    ~Seeded();
+    Seeded(const Seeded&) = delete;
+    Seeded& operator=(const Seeded&) = delete;
+private:
+    QRandomGenerator m_gen;
+    QRandomGenerator* m_prev;
+};
 template <class T, size_t N> const T& pick(const T (&a)[N]) { return a[RI(int(N))]; }
 
 QColor hex(const char* s);
@@ -63,6 +78,14 @@ double smooth(double a, double b, double x);
 double INT(const Ctx& c);                       // 0.45 / 1 / 1.8 conforme a intensidade
 double LV(const Pal& p, const Ctx& c);          // claridade: 0 noite, 1 dia
 double LVopen(const Pal& p, const Ctx& c);      // igual, mas "do tema" conta como noite
+// Hora real: quanto de dia, entardecer e noite tem na hora (só dois vizinhos ligados por vez).
+struct TodW { double day = 0, dusk = 0, night = 1; };
+TodW todW(double hour);
+QString nearestTod(double hour);                 // a hora fixa mais perto (pra cena sem luz contínua)
+// Um valor por hora: nas horas fixas escolhe; na hora real mistura os vizinhos pelo peso.
+QColor todPick(const Ctx& c, const QColor& day, const QColor& dusk, const QColor& night);
+double todPick(const Ctx& c, double day, double dusk, double night);
+double lateK(const Ctx& c);                      // de madrugada parte das janelas apaga (só na hora real)
 // Densidade das partículas acompanha a largura da mesa.
 inline int count(double base, const Ctx& c) { return qMax(1, int(std::lround(base * INT(c) * c.W / 1440.0))); }
 
@@ -88,9 +111,7 @@ QColor hsl(double h, double s, double l, double a = 1.0);
 
 // Fábricas (AnimBackgroundCity.cpp)
 std::unique_ptr<Layer> makeCity();
-std::unique_ptr<Layer> makeCityX(bool towers, bool helis, bool train, bool water);
 std::unique_ptr<Layer> makeTown();
-std::unique_ptr<Layer> makeHillside();
 std::unique_ptr<Layer> makeCyberpunk();
 std::unique_ptr<Layer> makeRetroGrid();
 std::unique_ptr<Layer> makeNeonSign();

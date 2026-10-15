@@ -27632,6 +27632,26 @@ If you don&apos;t have an API key, or simply don&apos;t want to use the assistan
         <source>Quanta chuva, neve e folha cai na mesa.</source>
         <translation>How much rain, snow and leaves fall on the desk.</translation>
     </message>
+    <message>
+        <source>Qualidade da animação</source>
+        <translation>Animation quality</translation>
+    </message>
+    <message>
+        <source>A resolução em que a mesa é desenhada.</source>
+        <translation>The resolution the desk is drawn at.</translation>
+    </message>
+    <message>
+        <source>Quadros por segundo</source>
+        <translation>Frames per second</translation>
+    </message>
+    <message>
+        <source>Quantas vezes por segundo a mesa se mexe.</source>
+        <translation>How many times per second the desk moves.</translation>
+    </message>
+    <message>
+        <source>Se o computador sofrer com os temas Animados, abaixe estes dois. Na qualidade Média a arte é desenhada a 75% e esticada na tela, quase sem diferença à vista; na Leve, a 50%, fica um pouco mais macia. Cada passo pra baixo deixa a mesa bem mais leve, e menos quadros por segundo também.</source>
+        <translation>If your computer struggles with Animated themes, lower these two. At Medium quality the art is drawn at 75% and stretched to the screen, with almost no visible difference; at Light, 50%, it gets a little softer. Each step down makes the desk much lighter, and so do fewer frames per second.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30386,6 +30406,16 @@ Use &quot;Duplicate&quot; on a default theme to get started.</translation>
         <location filename="../src/ThemesPanel.cpp" line="1548"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation>🐈 This theme was inspired by the hyperactivity and restlessness of the best orange cat — Tommy, The Fearsome.</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="2262"/>
+        <source>Hora real (a luz acompanha o relógio)</source>
+        <translation>Real time (the light follows the clock)</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1581"/>
+        <source>Esse theme tem apenas fins estéticos e não busca incentivar o fumo. Cigarro causa câncer e outros problemas de saúde. No Brasil, você não está sozinho. Para obter ajuda, ligue: 136</source>
+        <translation>This theme is for aesthetic purposes only and is not meant to encourage smoking. Smoking causes cancer and other health problems. In Brazil, you are not alone. For help, call: 136</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="279"/>

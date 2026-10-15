@@ -28,6 +28,12 @@ bool enabled();                 // false = a mesa fica parada no último quadro
 void setEnabled(bool on);
 int intensity();                // 0 leve, 1 média, 2 forte
 void setIntensity(int level);
+// Resolução em que a arte é desenhada antes de esticar na tela: 100, 75 ou 50 (%).
+// Abaixo de 100 a mesa custa bem menos e fica um pouco mais macia.
+int quality();
+void setQuality(int percent);
+int fps();                      // quadros por segundo da mesa: 30, 20 ou 15
+void setFps(int value);
 
 // ---- Personalizar de cada tema ----
 // tod: "theme" | "day" | "dusk" | "night"; rain: "none" | "drizzle" | "rain" |
@@ -45,6 +51,10 @@ void setConfig(const QString& themeId, const Config& c);
 void resetConfig(const QString& themeId);
 // Cenas com luz própria (vela, aurora, neon…) não trocam a hora do dia.
 bool todAllowed(const QString& scene);
+// Cenas em que a Hora real muda a luz aos poucos (as outras pulam pra hora fixa mais perto).
+bool continuousTod(const QString& scene);
+// A hora do relógio, de 0 a 24 (QENNA_ANIM_HOUR fixa uma, pra teste).
+double clockHour();
 // Ordem das camadas no Personalizar.
 QStringList extraIds();
 
@@ -88,6 +98,7 @@ public:
     void paint(QPainter& p, double pxPerUnit);
 
 private:
+    void tickHour();
     struct Impl;
     std::unique_ptr<Impl> d;
     QString m_themeId;

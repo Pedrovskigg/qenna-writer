@@ -27632,6 +27632,26 @@ Si no tienes una clave de API o simplemente no quieres usar el asistente, no hay
         <source>Quanta chuva, neve e folha cai na mesa.</source>
         <translation>Cuánta lluvia, nieve y hojas caen sobre el escritorio.</translation>
     </message>
+    <message>
+        <source>Qualidade da animação</source>
+        <translation>Calidad de la animación</translation>
+    </message>
+    <message>
+        <source>A resolução em que a mesa é desenhada.</source>
+        <translation>La resolución a la que se dibuja el escritorio.</translation>
+    </message>
+    <message>
+        <source>Quadros por segundo</source>
+        <translation>Fotogramas por segundo</translation>
+    </message>
+    <message>
+        <source>Quantas vezes por segundo a mesa se mexe.</source>
+        <translation>Cuántas veces por segundo se mueve el escritorio.</translation>
+    </message>
+    <message>
+        <source>Se o computador sofrer com os temas Animados, abaixe estes dois. Na qualidade Média a arte é desenhada a 75% e esticada na tela, quase sem diferença à vista; na Leve, a 50%, fica um pouco mais macia. Cada passo pra baixo deixa a mesa bem mais leve, e menos quadros por segundo também.</source>
+        <translation>Si tu ordenador sufre con los temas Animados, baja estos dos. En calidad Media el arte se dibuja al 75% y se estira en la pantalla, casi sin diferencia a la vista; en Suave, al 50%, queda un poco más suave. Cada paso hacia abajo aligera mucho el escritorio, y menos fotogramas por segundo también.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30386,6 +30406,16 @@ Usa &quot;Duplicar&quot; en un tema predeterminado para empezar.</translation>
         <location filename="../src/ThemesPanel.cpp" line="1548"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation>🐈 Este tema fue creado inspirado en la hiperactividad e inquietud del mejor gato naranja — Tommy, El Temible.</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="2262"/>
+        <source>Hora real (a luz acompanha o relógio)</source>
+        <translation>Hora real (la luz sigue al reloj)</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1581"/>
+        <source>Esse theme tem apenas fins estéticos e não busca incentivar o fumo. Cigarro causa câncer e outros problemas de saúde. No Brasil, você não está sozinho. Para obter ajuda, ligue: 136</source>
+        <translation>Este tema tiene fines únicamente estéticos y no busca incentivar el consumo de tabaco. Fumar causa cáncer y otros problemas de salud. En Brasil, no estás solo. Para obtener ayuda, llama al: 136</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="279"/>

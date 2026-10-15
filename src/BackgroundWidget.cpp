@@ -10,6 +10,7 @@
 #include <QPainter>
 #include <QPaintEvent>
 #include <QTimer>
+#include <QtMath>
 
 BackgroundWidget::BackgroundWidget(QWidget* parent)
     : QWidget(parent)
@@ -22,7 +23,7 @@ BackgroundWidget::BackgroundWidget(QWidget* parent)
 
     m_timer = new QTimer(this);
     m_timer->setTimerType(Qt::PreciseTimer);
-    m_timer->setInterval(33); // 30 quadros por segundo
+    m_timer->setInterval(33); // 30 quadros por segundo; Configurações pode baixar pra 20 ou 15
     connect(m_timer, &QTimer::timeout, this, &BackgroundWidget::tick);
     // Personalizar, intensidade ou o liga/desliga mudaram: remonta a mesa.
     connect(AnimBg::Notifier::instance(), &AnimBg::Notifier::changed, this, &BackgroundWidget::refreshAnimation);
@@ -99,7 +100,7 @@ void BackgroundWidget::rebuildScaled()
     m_scaledFor = target;
 }
 
-void BackgroundWidget::paintEvent(QPaintEvent* /*event*/)
+void BackgroundWidget::paintEvent(QPaintEvent* event)
 {
     QPainter p(this);
     // 1) Cor sólida cobrindo (caso a imagem deixe áreas vazias).
@@ -111,10 +112,15 @@ void BackgroundWidget::paintEvent(QPaintEvent* /*event*/)
     // 3) O clima dos temas Animados, nas coordenadas da cena (758 de altura).
     if (m_anim) {
         const double s = sceneScale();
-        p.save();
-        p.scale(s, s);
-        m_anim->paint(p, s * devicePixelRatioF());
-        p.restore();
+        if (AnimBg::quality() < 100) {
+            paintAnimLow(p, event->region(), s);
+        } else {
+            if (!m_low.isNull()) m_low = QImage();
+            p.save();
+            p.scale(s, s);
+            m_anim->paint(p, s * devicePixelRatioF());
+            p.restore();
+        }
     }
     // 4) Degradê e grão do tema por cima da mesa (cor ou foto).
     BackgroundOverlay::paint(p, QRectF(rect()), Theme::Manager::instance()->current());
@@ -240,8 +246,40 @@ void BackgroundWidget::hideEvent(QHideEvent* event)
     updateTimer();
 }
 
+// Qualidade abaixo de 100%: a cena é desenhada numa imagem menor e esticada
+// na tela. Só a parte da mesa que vai ser repintada é redesenhada nela.
+void BackgroundWidget::paintAnimLow(QPainter& p, const QRegion& region, double s)
+{
+    const double q = AnimBg::quality() / 100.0, dpr = devicePixelRatioF();
+    const QSize sz(qMax(1, qCeil(width() * dpr * q)), qMax(1, qCeil(height() * dpr * q)));
+    if (m_low.size() != sz) {
+        m_low = QImage(sz, QImage::Format_ARGB32_Premultiplied);
+        m_low.fill(Qt::transparent);
+    }
+    const double kx = sz.width() / double(qMax(1, width())), ky = sz.height() / double(qMax(1, height()));
+    // a região a repintar, na escala da imagem, com folga pro esticar suave não puxar pixel velho da borda
+    QRegion clip;
+    for (const QRect& r : region)
+        clip += QRect(QPoint(qFloor(r.left() * kx) - 2, qFloor(r.top() * ky) - 2),
+                      QPoint(qCeil((r.right() + 1) * kx) + 1, qCeil((r.bottom() + 1) * ky) + 1));
+    {
+        QPainter x(&m_low);
+        x.setClipRegion(clip);
+        x.setCompositionMode(QPainter::CompositionMode_Source);
+        x.fillRect(m_low.rect(), Qt::transparent);
+        x.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        x.scale(s * kx, s * ky);
+        m_anim->paint(x, s * qMin(kx, ky));
+    }
+    p.save();
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    p.drawImage(QRectF(rect()), m_low);
+    p.restore();
+}
+
 void BackgroundWidget::updateTimer()
 {
+    m_timer->setInterval(qRound(1000.0 / AnimBg::fps()));
     const bool run = m_anim && AnimBg::enabled() && isVisible();
     if (run && !m_timer->isActive()) { m_clock.restart(); m_timer->start(); }
     else if (!run && m_timer->isActive()) m_timer->stop();

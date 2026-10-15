@@ -1,5 +1,6 @@
 #include "AnimBackground.h"
 #include "AnimBackgroundEngines.h"
+#include "AnimKit.h"
 
 #include "Theme.h"
 
@@ -8,14 +9,18 @@
 #include <QFont>
 #include <QHash>
 #include <QImage>
+#include <QTransform>
 #include <QLinearGradient>
 #include <QPainterPath>
 #include <QRadialGradient>
 #include <QSettings>
+#include <QTime>
 #include <QtMath>
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <iterator>
 #include <functional>
 #include <map>
 #include <vector>
@@ -55,8 +60,68 @@ double INT(const Ctx& c)
     return v[qBound(0, c.intensity, 2)];
 }
 
+namespace { QRandomGenerator* s_rng = nullptr; }
+
+QRandomGenerator* rng() { return s_rng ? s_rng : QRandomGenerator::global(); }
+
+Seeded::Seeded(quint32 seed) : m_gen(seed), m_prev(s_rng) { s_rng = &m_gen; }
+Seeded::~Seeded() { s_rng = m_prev; }
+
+TodW todW(double h)
+{
+    // noite até 5h, aurora 6h12, dia 7h36 às 16h36, entardecer 18h, noite a partir de 19h24
+    static const struct { double h; char k; } K[] = { { 0, 'n' }, { 5, 'n' }, { 6.2, 'd' }, { 7.6, 'D' }, { 16.6, 'D' }, { 18, 'd' }, { 19.4, 'n' }, { 24, 'n' } };
+    h = std::fmod(std::fmod(h, 24) + 24, 24);
+    for (size_t i = 0; i + 1 < std::size(K); ++i) {
+        if (h < K[i].h || h > K[i + 1].h) continue;
+        const double t = smooth(0, 1, (h - K[i].h) / (K[i + 1].h - K[i].h));
+        TodW w;
+        w.night = 0;
+        auto add = [&](char k, double v) { (k == 'D' ? w.day : k == 'd' ? w.dusk : w.night) += v; };
+        add(K[i].k, 1 - t);
+        add(K[i + 1].k, t);
+        return w;
+    }
+    return {};
+}
+
+QString nearestTod(double h)
+{
+    const TodW w = todW(h);
+    if (w.day >= w.dusk && w.day >= w.night) return QStringLiteral("day");
+    return w.dusk >= w.night ? QStringLiteral("dusk") : QStringLiteral("night");
+}
+
+QColor todPick(const Ctx& c, const QColor& day, const QColor& dusk, const QColor& night)
+{
+    if (c.tod == QLatin1String("day")) return day;
+    if (c.tod == QLatin1String("dusk")) return dusk;
+    if (c.tod != QLatin1String("real")) return night;
+    const TodW w = todW(c.hour);
+    if (w.day > 0 && w.dusk > 0) return mix(dusk, day, w.day);
+    if (w.dusk > 0 && w.night > 0) return mix(night, dusk, w.dusk);
+    return w.day > 0.5 ? day : w.dusk > 0.5 ? dusk : night;
+}
+
+double todPick(const Ctx& c, double day, double dusk, double night)
+{
+    if (c.tod == QLatin1String("day")) return day;
+    if (c.tod == QLatin1String("dusk")) return dusk;
+    if (c.tod != QLatin1String("real")) return night;
+    const TodW w = todW(c.hour);
+    return day * w.day + dusk * w.dusk + night * w.night;
+}
+
+double lateK(const Ctx& c)
+{
+    if (c.tod != QLatin1String("real")) return 1;
+    const double h = std::fmod(c.hour, 24), hh = h < 12 ? h + 24 : h;
+    return 1 - 0.55 * smooth(23, 27, hh) + 0.55 * smooth(28, 30.5, hh);
+}
+
 double LV(const Pal& p, const Ctx& c)
 {
+    if (c.tod == QLatin1String("real")) return todPick(c, 1.0, 0.45, 0.0);
     if (c.tod == QLatin1String("day")) return 1;
     if (c.tod == QLatin1String("dusk")) return 0.45;
     if (c.tod == QLatin1String("night")) return 0;
@@ -90,6 +155,14 @@ void skyTOD(QPainter& p, const Pal& pal, const Ctx& c, const QColor& top, const 
     }
     if (c.tod == QLatin1String("night")) {
         sky(p, c, mix(pal.app, hex("#02040b"), 0.65), mix(pal.app, hex("#0b1424"), 0.55));
+        return;
+    }
+    if (c.tod == QLatin1String("real")) {
+        QLinearGradient g(0, 0, 0, c.H);
+        g.setColorAt(0, todPick(c, mix(hex("#6fa7da"), pal.app, 0.12), mix(hex("#29285a"), pal.app, 0.15), mix(pal.app, hex("#02040b"), 0.65)));
+        g.setColorAt(0.55, todPick(c, mix(hex("#a6c8e6"), pal.app, 0.1), mix(hex("#b25f7c"), pal.app, 0.1), mix(pal.app, hex("#070c18"), 0.6)));
+        g.setColorAt(1, todPick(c, mix(hex("#dde9f1"), pal.app, 0.08), mix(hex("#f2a25a"), pal.app, 0.08), mix(pal.app, hex("#0b1424"), 0.55)));
+        p.fillRect(QRectF(0, 0, c.W, c.H), g);
         return;
     }
     QLinearGradient g(0, 0, 0, c.H);
@@ -381,7 +454,16 @@ public:
             }
         }
         m_motes.clear();
-        for (int i = 0; i < 24; ++i) m_motes.push_back({ R(0, c.W), R(c.H * 0.3, c.H), R(0.3, 1), R(0, 6.28) });
+        for (int i = 0; i < 60; ++i) m_motes.push_back({ R(0, c.W), R(c.H * 0.3, c.H), R(0.3, 1), R(0, 6.28) });
+        m_mist.clear();
+        for (int i = 0; i < 18; ++i) { static const double MY[3] = { 0.62, 0.7, 0.8 }; const int k = i % 3; m_mist.push_back({ k, R(-100, c.W), c.H * MY[k] + R(-30, 30), R(80, 180), R(5, 14), R(0.06, 0.12) }); }
+        m_ferns.clear();
+        const QRectF& zl = c.zones.left;
+        const QRectF& zr = c.zones.right;
+        for (int i = 0; i < 9; ++i) {
+            const double fx = i < 6 ? (zl.width() > 60 ? R(zl.left(), zl.right()) : R(0, c.W * 0.25)) : (zr.width() > 60 ? R(zr.left(), zr.right()) : R(c.W * 0.75, c.W));
+            m_ferns.push_back({ fx, R(50, 95), rnd() < 0.5 ? R(0.5, 1.1) : M_PI - R(0.5, 1.1), R(0, 6.28) });
+        }
         m_birds.active = false;
         m_nextBirds = R(2, 5);
     }
@@ -404,6 +486,7 @@ public:
             m_birds.y += std::sin(m_t * 0.5) * 3 * dt;
             if (m_birds.x > c.W + 160) { m_birds.active = false; m_nextBirds = R(12, 26); }
         }
+        for (Mist& m : m_mist) { m.x += m.v * (0.5 + gust(c, m_t, m.x)) * dt; if (m.x - m.r > c.W) m.x = -m.r; }
         for (Mote& m : m_motes) {
             m.x += (18 + 40 * gust(c, m_t, m.x)) * m.z * dt;
             m.y += std::sin(m_t * 1.1 + m.ph) * 8 * dt;
@@ -420,6 +503,7 @@ public:
             const double f = F[i];
             return mix(mix(hor, tint, std::sin(f * M_PI) * 0.55), deep, f);
         };
+        const double sx = anchorX(c, 0.5), sy = night ? c.H * 0.2 : c.H * 0.36;
         // Céu, astro e serras não se mexem: uma imagem pronta, refeita só
         // quando muda a hora do dia ou o tamanho.
         if (!m_back.valid(c) || m_backTod != c.tod) {
@@ -428,7 +512,7 @@ public:
             x.setRenderHint(QPainter::Antialiasing);
             vfill(x, QRectF(0, 0, c.W, c.H), top, hor, 0, c.H * 0.62);
             // astro atrás da serra, no pedaço de mesa que fica à vista
-            const double sx = anchorX(c, 0.5), sy = night ? c.H * 0.2 : c.H * 0.36, sr = night ? 20 : 38;
+            const double sr = night ? 20 : 38;
             QRadialGradient sg(QPointF(sx, sy), sr * 7);
             sg.setColorAt(0, alpha(star, night ? 0.35 : 0.55));
             sg.setColorAt(1, alpha(star, 0));
@@ -442,6 +526,17 @@ public:
                 for (const QPointF& pt : m_ridges[i]) path.lineTo(pt);
                 path.lineTo(c.W, c.H);
                 x.fillPath(path, colorAt(i));
+                if (i == 1) {
+                    const double tx = anchorX(c, 0.78);
+                    double ty = c.H;
+                    for (size_t j = 1; j < m_ridges[1].size(); ++j)
+                        if (m_ridges[1][j].x() >= tx) {
+                            const QPointF a = m_ridges[1][j - 1], b = m_ridges[1][j];
+                            ty = a.y() + (b.y() - a.y()) * (tx - a.x()) / qMax(1.0, b.x() - a.x());
+                            break;
+                        }
+                    lookout(x, tx, ty + 2, colorAt(1), night ? alpha(hex("#ffd28a"), 0.95) : c.tod == QLatin1String("dusk") ? alpha(hex("#ffd28a"), 0.6) : colorAt(1));
+                }
                 const double y0 = c.H * (0.45 + i * 0.1), y1 = c.H * (0.68 + i * 0.08);
                 vfill(x, QRectF(0, y0, c.W, c.H - y0), alpha(hor, 0), alpha(hor, 0.28), y0, y1);
             }
@@ -449,38 +544,85 @@ public:
             m_back.set(c, pm);
             m_backTod = c.tod;
         }
-        blit(p, m_back.pm, 0, 0, c.W, c.H);
         // As fileiras: árvore por árvore (um caminho só, com todas, é muito
         // mais lento de preencher no Qt). O chão fica abaixo da borda.
-        auto rows = [&](QPainter& x, int from, int to) {
+        const QString spriteKey = c.tod + QLatin1Char('#') + QString::number(c.px, 'f', 2);
+        if (m_mistDot.isNull() || m_mistCol != hor) { m_mistDot = softDot(hor, 0.05); m_mistCol = hor; }
+        // uma fileira: a de trás desenhada direto (vai pra imagem fixa); as outras, cada pinheiro uma imagem
+        // pronta (com a contraluz) que o vento só entorta. Depois, a névoa assentada no pé da fileira.
+        auto row = [&](QPainter& x, int k) {
             x.setPen(Qt::NoPen);
-            for (int k = from; k < to; ++k) {
-                x.setBrush(colorAt(k + 2));
-                for (const Tree& t : m_layers[k]) {
+            const QColor col = colorAt(k + 2), pg = mix(col, hor, 0.04);
+            const QColor rim = alpha(mix(col, star, 0.5), night ? 0.45 : 0.9);
+            const double rdx = -1.2 - k * 0.7;
+            for (Tree& t : m_layers[k]) {
+                const double base = hill(c, k, t.x) + t.dy, sway = gust(c, m_t, t.x) * t.s.h * SWAY[k] + std::sin(m_t * 1.6 + t.ph) * t.s.h * 0.004;
+                if (k <= 1) {
                     QPainterPath tp;
-                    addTree(tp, t.x, hill(c, k, t.x) + t.dy, t.s, gust(c, m_t, t.x) * t.s.h * SWAY[k] + std::sin(m_t * 1.6 + t.ph) * t.s.h * 0.004);
-                    x.drawPath(tp);
+                    addTree(tp, t.x, base, t.s, 0);
+                    if (k == 1) x.fillPath(tp.translated(rdx, -1), rim);
+                    x.fillPath(tp, pg);
+                    continue;
                 }
-                if (k < 3) {
-                    static const double Y0[3] = { 0.5, 0.42, 0.36 }, A[3] = { 0.3, 0.24, 0.18 };
-                    const double y0 = c.H * Y0[k];
-                    vfill(x, QRectF(0, y0, c.W, c.H - y0), alpha(hor, 0), alpha(hor, A[k]), y0, c.H);
-                }
+                if (t.img.isNull() || t.imgKey != spriteKey) treeSprite(t, k, c, base, pg, rim, rdx, spriteKey);
+                x.save();
+                x.setRenderHint(QPainter::SmoothPixmapTransform, k >= 2);
+                x.setTransform(QTransform(1, 0, -sway / t.s.h, 1, t.x, base), true);
+                x.drawImage(t.imgRect, t.img);
+                x.restore();
+            }
+            if (k < 3) {
+                static const double Y0[3] = { 0.5, 0.42, 0.36 }, A[3] = { 0.3, 0.24, 0.18 };
+                const double y0 = c.H * Y0[k];
+                vfill(x, QRectF(0, y0, c.W, c.H - y0), alpha(hor, 0), alpha(hor, A[k]), y0, c.H);
             }
         };
-        // As duas fileiras do fundo quase não balançam: refeitas a cada 4 quadros.
-        if (!m_far.valid(c) || m_farTod != c.tod || ++m_farAge >= 4) {
+        // névoa correndo entre as fileiras (imagem pronta, só desliza)
+        auto mist = [&](QPainter& x, int k) {
+            for (const Mist& m : m_mist)
+                if (m.k == k) {
+                    x.setOpacity(m.a);
+                    blit(x, m_mistDot, m.x - m.r, m.y - m.r, m.r * 2, m.r * 2);
+                }
+            x.setOpacity(1);
+        };
+        // As duas fileiras de trás quase não balançam: imagens fixas, refeitas só quando muda a hora ou o tamanho.
+        if (!m_far.valid(c) || m_farTod != c.tod) {
             QPixmap pm = layer(c, c.W, c.H);
             QPainter x(&pm);
             x.setRenderHint(QPainter::Antialiasing);
-            rows(x, 0, 2);
+            row(x, 0);
             x.end();
             m_far.set(c, pm);
+            QPixmap pm1 = layer(c, c.W, c.H);
+            QPainter x1(&pm1);
+            x1.setRenderHint(QPainter::Antialiasing);
+            row(x1, 1);
+            x1.end();
+            m_mid.set(c, pm1);
             m_farTod = c.tod;
-            m_farAge = 0;
         }
-        blit(p, m_far.pm, 0, 0, c.W, c.H);
-        rows(p, 2, 4);
+        // Céu, serras, as duas fileiras de trás e os raios de luz numa imagem só. Os raios mexem
+        // bem devagar: a imagem é refeita a cada 45 quadros (e quando muda a hora ou o tamanho).
+        if (!m_raysPm.valid(c) || m_raysTod != c.tod || ++m_raysAge >= 45) {
+            QPixmap pm = layer(c, c.W, c.H);
+            QPainter x(&pm);
+            x.setRenderHint(QPainter::Antialiasing);
+            blit(x, m_back.pm, 0, 0, c.W, c.H);
+            blit(x, m_far.pm, 0, 0, c.W, c.H);
+            blit(x, m_mid.pm, 0, 0, c.W, c.H);
+            rays(x, sx, sy, star, night ? 0.3 : 1);
+            x.end();
+            m_raysPm.set(c, pm);
+            m_raysTod = c.tod;
+            m_raysAge = 0;
+        }
+        blit(p, m_raysPm.pm, 0, 0, c.W, c.H);
+        mist(p, 0);
+        mist(p, 1);
+        row(p, 2);
+        mist(p, 2);
+        row(p, 3);
         if (m_birds.active) {
             p.setPen(roundPen(colorAt(4), 1.6));
             p.setBrush(Qt::NoBrush);
@@ -492,17 +634,45 @@ public:
                 p.drawPath(w);
             }
         }
+        // samambaias no primeiro plano, balançando com a rajada
+        for (const Fern& f : m_ferns) fern(p, f.x, c.H + 6, f.len, f.ang, (gust(c, m_t, f.x) * 0.25 + std::sin(m_t * 1.7 + f.ph) * 0.06) * (std::cos(f.ang) >= 0 ? 1 : -1), colorAt(5));
+        // poeira no ar: brilha mais dentro dos raios de luz
         for (const Mote& m : m_motes) {
-            p.setOpacity((0.15 + 0.35 * m.z) * (night ? 0.5 : 1));
-            disc(p, m.x, m.y, 1.4 * m.z, alpha(star, 0.5));
+            const double r2 = night ? 0 : inRay(sx, sy, m.x, m.y);
+            p.setOpacity(qMin(1.0, (0.12 + 0.3 * m.z) * (night ? 0.5 : 1) + r2 * 0.8));
+            disc(p, m.x, m.y, 1.4 * m.z * (1 + r2 * 0.6), alpha(star, 0.5));
         }
         p.setOpacity(1);
     }
 
 private:
     struct Shape { std::vector<QPointF> R, L; double h = 0, st = 0, tw = 0; };
-    struct Tree { double x = 0; Shape s; double ph = 0, dy = 0; };
+    struct Tree { double x = 0; Shape s; double ph = 0, dy = 0; QImage img; QRectF imgRect; QString imgKey; };
+    // o pinheiro parado numa imagem (só a parte que aparece acima da borda), com a contraluz junto;
+    // coordenadas locais: (0, 0) é o pé, y pra cima é negativo
+    static void treeSprite(Tree& t, int k, const Ctx& c, double base, const QColor& col, const QColor& rim, double rdx, const QString& key)
+    {
+        QPainterPath tp;
+        addTree(tp, 0, 0, t.s, 0);
+        QRectF br = tp.boundingRect().adjusted(rdx - 2, -3, 2, 2);
+        br.setBottom(qMin(br.bottom(), c.H + 12 - base));
+        if (br.height() < 2 || br.width() < 2) { t.img = QImage(1, 1, QImage::Format_ARGB32_Premultiplied); t.img.fill(Qt::transparent); t.imgRect = QRectF(0, 0, 0, 0); t.imgKey = key; return; }
+        QImage img(qMax(1, int(std::ceil(br.width() * c.px))), qMax(1, int(std::ceil(br.height() * c.px))), QImage::Format_ARGB32_Premultiplied);
+        img.fill(Qt::transparent);
+        QPainter x(&img);
+        x.setRenderHint(QPainter::Antialiasing);
+        x.scale(c.px, c.px);
+        x.translate(-br.left(), -br.top());
+        if (k >= 1) x.fillPath(tp.translated(rdx, -1), rim);
+        x.fillPath(tp, col);
+        x.end();
+        t.img = img;
+        t.imgRect = br;
+        t.imgKey = key;
+    }
     struct Mote { double x, y, z, ph; };
+    struct Mist { int k; double x, y, r, v, a; };
+    struct Fern { double x, len, ang, ph; };
     struct Bird { double dx, dy, ph; };
     struct Flock { bool active = false; double x = 0, y = 0, v = 0; std::vector<Bird> b; };
 
@@ -524,20 +694,110 @@ private:
     static Shape shape(double h, int k)
     {
         Shape s;
-        const int n = 7 + RI(4);
-        const double w = h * R(0.13, 0.17);
-        s.st = R(0.05, 0.09);
-        for (int i = 0; i < n; ++i) {
-            const double a = double(i) / n, y0 = h * (s.st + (0.96 - s.st) * a), y1 = h * (s.st + (0.96 - s.st) * (i + 1) / n);
-            const double wi = w * std::pow(1 - a, 0.85) * R(0.92, 1.08), lift = (y1 - y0) * 0.35;
-            s.R.push_back(QPointF(wi * 0.42, y0 + lift));
-            s.R.push_back(QPointF(wi, y0 - (y1 - y0) * 0.12));
-            s.L.push_back(QPointF(wi * 0.42, y0 + lift));
-            s.L.push_back(QPointF(wi * R(0.94, 1.04), y0 - (y1 - y0) * 0.12));
-        }
+        const double r = rnd();
+        const int kind = (k > 0 && r < 0.07) ? 2 : (rnd() < 0.3 ? 1 : 0);   // 0 pinheiro, 1 abeto fino, 2 árvore seca
+        const int n = kind == 2 ? 4 : 7 + RI(4);
+        s.st = kind == 2 ? R(0.3, 0.45) : R(0.05, 0.09);
+        const double w = h * (kind == 1 ? R(0.09, 0.12) : kind == 2 ? R(0.05, 0.08) : R(0.13, 0.17));
+        auto side = [&](std::vector<QPointF>& arr) {
+            for (int i = 0; i < n; ++i) {
+                const double a = double(i) / n, y0 = h * (s.st + (0.96 - s.st) * a), dy = h * (0.96 - s.st) / n, wi = w * std::pow(1 - a, 0.85) * R(0.86, 1.1);
+                const double lift = dy * 0.35, droop = dy * R(0.05, 0.25);
+                if (kind == 2) {
+                    arr.push_back(QPointF(w * 0.12, y0));
+                    arr.push_back(QPointF(wi, y0 + droop * 0.5));
+                    arr.push_back(QPointF(w * 0.12, y0 + dy * 0.25));
+                    continue;
+                }
+                // a camada sobe do tronco, faz o serrilhado embaixo e cai na ponta
+                arr.push_back(QPointF(wi * 0.36, y0 + lift));
+                arr.push_back(QPointF(wi * 0.6, y0 + R(-1, 2) - droop * 0.3));
+                arr.push_back(QPointF(wi * 0.68, y0 + lift * 0.55));
+                arr.push_back(QPointF(wi * 0.86, y0 - droop * 0.6));
+                arr.push_back(QPointF(wi, y0 - droop + R(-2, 1)));
+            }
+        };
+        side(s.R);
+        side(s.L);
         s.h = h;
-        s.tw = qMax(1.2, h * (k == 3 ? 0.03 : 0.024));
+        s.tw = qMax(1.2, h * (k == 3 ? 0.03 : 0.024)) * (kind == 2 ? 0.85 : 1);
         return s;
+    }
+    // raios de luz saindo do sol por entre as árvores
+    void rays(QPainter& x, double sx, double sy, const QColor& star, double a) const
+    {
+        x.setCompositionMode(QPainter::CompositionMode_Plus);
+        x.setPen(Qt::NoPen);
+        for (int i = 0; i < 7; ++i) {
+            const double ang = 0.75 + i * 0.22 + std::sin(m_t * 0.07 + i) * 0.03, wd = 0.022 + 0.016 * std::sin(m_t * 0.13 + i * 1.7), len = 1300;
+            QLinearGradient g(sx, sy, sx + std::cos(ang) * len, sy + std::sin(ang) * len);
+            g.setColorAt(0, alpha(star, 0.13 * a));
+            g.setColorAt(0.6, alpha(star, 0.04 * a));
+            g.setColorAt(1, alpha(star, 0));
+            QPolygonF ray;
+            ray << QPointF(sx, sy) << QPointF(sx + std::cos(ang - wd) * len, sy + std::sin(ang - wd) * len) << QPointF(sx + std::cos(ang + wd) * len, sy + std::sin(ang + wd) * len);
+            x.setBrush(g);
+            x.drawPolygon(ray);
+        }
+        x.setBrush(Qt::NoBrush);
+        x.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    }
+    double inRay(double sx, double sy, double x, double y) const
+    {
+        const double ang = std::atan2(y - sy, x - sx);
+        double best = 0;
+        for (int i = 0; i < 7; ++i) {
+            const double c0 = 0.75 + i * 0.22 + std::sin(m_t * 0.07 + i) * 0.03, wd = 0.022 + 0.016 * std::sin(m_t * 0.13 + i * 1.7);
+            best = qMax(best, 1 - std::abs(ang - c0) / wd);
+        }
+        return qMax(0.0, best);
+    }
+    // torre de vigia de incêndio na serra (a do Firewatch): pernas em treliça, cabine com a janelinha
+    static void lookout(QPainter& x, double tx, double ty, const QColor& col, const QColor& lit)
+    {
+        x.setBrush(Qt::NoBrush);
+        x.setPen(QPen(col, 1.2));
+        x.drawLine(QPointF(tx - 9, ty), QPointF(tx - 5, ty - 46));
+        x.drawLine(QPointF(tx + 9, ty), QPointF(tx + 5, ty - 46));
+        for (int i = 0; i < 4; ++i) {
+            const double ya = ty - i * 11.5, yb = ty - (i + 1) * 11.5, wa = 9 - i, wb = 8 - i;
+            x.drawLine(QPointF(tx - wa, ya), QPointF(tx + wb, yb));
+            x.drawLine(QPointF(tx + wa, ya), QPointF(tx - wb, yb));
+        }
+        x.setPen(Qt::NoPen);
+        x.fillRect(QRectF(tx - 9, ty - 47, 18, 2), col);
+        x.fillRect(QRectF(tx - 7, ty - 58, 14, 11), col);
+        QPolygonF roof;
+        roof << QPointF(tx - 10, ty - 58) << QPointF(tx, ty - 64) << QPointF(tx + 10, ty - 58);
+        x.setBrush(col);
+        x.drawPolygon(roof);
+        x.setBrush(Qt::NoBrush);
+        x.fillRect(QRectF(tx - 5, ty - 55, 10, 4), lit);
+    }
+    // samambaia: haste arqueando e os folíolos dos dois lados
+    static void fern(QPainter& x, double x0, double y0, double len, double ang, double sway, const QColor& col)
+    {
+        const double dir = std::cos(ang) >= 0 ? 1 : -1, ex = x0 + dir * len * 0.85 + sway * 12, ey = y0 - len * 0.35, cx = x0 + dir * len * 0.25, cy = y0 - len * 1.05;
+        auto at = [&](double t) { return QPointF((1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * cx + t * t * ex, (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * cy + t * t * ey); };
+        QPainterPath stem(QPointF(x0, y0));
+        stem.quadTo(cx, cy, ex, ey);
+        x.setBrush(Qt::NoBrush);
+        x.setPen(QPen(col, 1.4));
+        x.drawPath(stem);
+        x.setPen(Qt::NoPen);
+        QPainterPath leaves;
+        for (int i = 2; i < 17; ++i) {
+            const double t = i / 17.0;
+            const QPointF a = at(t), b = at(t + 0.02);
+            const double nx = -(b.y() - a.y()), ny = b.x() - a.x(), nlen = qMax(1e-6, std::hypot(nx, ny)), lf = len * 0.16 * std::sin(t * M_PI) + 2;
+            for (double sd : { -1.0, 1.0 }) {
+                const QPointF pt(a.x() + nx / nlen * lf * sd, a.y() + ny / nlen * lf * sd + lf * 0.3);
+                leaves.moveTo(a);
+                leaves.quadTo((a.x() + pt.x()) / 2 + (b.x() - a.x()) * 3, (a.y() + pt.y()) / 2 + (b.y() - a.y()) * 3, pt.x(), pt.y());
+                leaves.quadTo((a.x() + pt.x()) / 2, (a.y() + pt.y()) / 2, a.x(), a.y());
+            }
+        }
+        x.fillPath(leaves, col);
     }
     static void addTree(QPainterPath& path, double x, double base, const Shape& s, double sway)
     {
@@ -588,6 +848,13 @@ private:
     int m_farAge = 0;
     std::vector<Tree> m_layers[4];
     std::vector<Mote> m_motes;
+    std::vector<Mist> m_mist;
+    QPixmap m_mistDot;
+    Cached m_raysPm, m_mid;
+    QString m_raysTod;
+    int m_raysAge = 0;
+    QColor m_mistCol;
+    std::vector<Fern> m_ferns;
     Flock m_birds;
     double m_t = 0, m_nextBirds = 3;
 };
@@ -1719,6 +1986,8 @@ public:
 
 std::unique_ptr<Layer> makeScene(const QString& id)
 {
+    // natureza com volume (AnimNature.cpp): farol, charneca, campina e céu estrelado
+    if (auto l = makeNature(id)) return l;
     if (id == QLatin1String("pines")) return std::make_unique<Forest>();
     if (id == QLatin1String("branch")) return std::make_unique<Branch>();
     if (id == QLatin1String("meadow")) return std::make_unique<Meadow>();
@@ -1735,13 +2004,18 @@ std::unique_ptr<Layer> makeScene(const QString& id)
     if (id == QLatin1String("lava")) return std::make_unique<Lava>();
     if (id == QLatin1String("neon")) return makeNeonSign();
     if (id == QLatin1String("city")) return makeCity();
-    if (id == QLatin1String("paulista")) return makeCityX(true, true, false, false);
-    if (id == QLatin1String("train")) return makeCityX(false, false, true, false);
-    if (id == QLatin1String("harbor")) return makeCityX(false, false, false, true);
+    if (id == QLatin1String("paulista")) return makeCityDepth(true, true, false, false);
+    if (id == QLatin1String("train")) return makeCityDepth(false, false, true, false);
+    if (id == QLatin1String("harbor")) return makeCityDepth(false, false, false, true);
     if (id == QLatin1String("town")) return makeTown();
-    if (id == QLatin1String("hillside")) return makeHillside();
-    if (id == QLatin1String("neoncity")) return makeCyberpunk();
+    if (id == QLatin1String("neoncity")) return makeNeonDistrict();
     if (id == QLatin1String("retro")) return makeRetroGrid();
+    // levas 2 a 4 (AnimLeva*.cpp)
+    if (auto l = makeLeva2a(id)) return l;
+    if (auto l = makeLeva2b(id)) return l;
+    if (auto l = makeLeva3(id)) return l;
+    if (auto l = makeLeva4(id)) return l;
+    if (auto l = makeLeva5(id)) return l;
     return std::make_unique<None>();
 }
 
@@ -1806,6 +2080,30 @@ void setIntensity(int level)
     emit Notifier::instance()->changed();
 }
 
+int quality()
+{
+    const int q = QSettings().value(QStringLiteral("anim/quality"), 100).toInt();
+    return q <= 50 ? 50 : q <= 75 ? 75 : 100;
+}
+
+void setQuality(int percent)
+{
+    QSettings().setValue(QStringLiteral("anim/quality"), percent);
+    emit Notifier::instance()->changed();
+}
+
+int fps()
+{
+    const int f = QSettings().value(QStringLiteral("anim/fps"), 30).toInt();
+    return f <= 15 ? 15 : f <= 20 ? 20 : 30;
+}
+
+void setFps(int value)
+{
+    QSettings().setValue(QStringLiteral("anim/fps"), value);
+    emit Notifier::instance()->changed();
+}
+
 Config factoryConfig(const Theme::MiraTheme& t)
 {
     Config c;
@@ -1840,12 +2138,27 @@ void resetConfig(const QString& themeId)
     emit Notifier::instance()->changed();
 }
 
+double clockHour()
+{
+    // QENNA_ANIM_HOUR fixa a hora (pra testar sem esperar o dia passar)
+    bool ok = false;
+    const double fixedH = qEnvironmentVariable("QENNA_ANIM_HOUR").toDouble(&ok);
+    if (ok) return fixedH;
+    return QTime::currentTime().msecsSinceStartOfDay() / 3600000.0;
+}
+
+bool continuousTod(const QString& scene)
+{
+    return scene == QLatin1String("paulista") || scene == QLatin1String("train") || scene == QLatin1String("harbor")
+        || scene == QLatin1String("light") || scene == QLatin1String("moor") || scene == QLatin1String("meadow");
+}
+
 bool todAllowed(const QString& scene)
 {
     static const QStringList open = { QStringLiteral("none"), QStringLiteral("pines"), QStringLiteral("city"), QStringLiteral("light"),
                                        QStringLiteral("moor"), QStringLiteral("koi"), QStringLiteral("branch"), QStringLiteral("meadow"),
                                        QStringLiteral("paulista"), QStringLiteral("train"), QStringLiteral("harbor"), QStringLiteral("town"),
-                                       QStringLiteral("hillside") };
+                                       QStringLiteral("clouds"), QStringLiteral("prairie") };
     return open.contains(scene);
 }
 
@@ -1859,6 +2172,8 @@ QStringList extraIds()
 
 struct Stack::Impl {
     Ctx c;
+    bool real = false;   // Hora real: a hora anda junto com o relógio
+    bool cont = false;   // a cena tem luz contínua (senão usa a hora fixa mais perto)
     std::unique_ptr<Layer> scene;
     std::vector<std::unique_ptr<Layer>> extras;   // na ordem de extraIds()
     std::unique_ptr<Layer> rain;
@@ -1887,6 +2202,10 @@ void Stack::setup(const Theme::MiraTheme& t, const Config& cfg, double sceneW, c
     c.zones = zones;
     c.intensity = intensity();
     c.tod = todAllowed(t.animScene) ? cfg.tod : QStringLiteral("theme");
+    d->real = c.tod == QLatin1String("real");
+    d->cont = continuousTod(t.animScene);
+    if (d->real) tickHour();
+    c.rain = cfg.rain;
     c.neon = t.animScene == QLatin1String("neon") || t.animScene == QLatin1String("neoncity");
     c.hasNeonCols = false;
     d->scene = makeScene(t.animScene);
@@ -1913,9 +2232,17 @@ void Stack::resize(double sceneW, const Zones& zones)
 
 bool Stack::isEmpty() const { return !d->scene; }
 
+void Stack::tickHour()
+{
+    Ctx& c = d->c;
+    c.hour = clockHour();
+    c.tod = d->cont ? QStringLiteral("real") : nearestTod(c.hour);
+}
+
 void Stack::step(double dt)
 {
     dt = qBound(0.0, dt, 0.1);
+    if (d->real) tickHour();
     d->each([&](Layer& l) { l.step(dt, d->c); });
 }
 
@@ -1957,7 +2284,8 @@ void paintPreview(QPainter& p, const QRectF& r, const Theme::MiraTheme& t, bool 
     if (t.animScene.isEmpty() || r.height() < 4) return;
     const double s = r.height() / kSceneH, W = r.width() / s;
     const Config cfg = config(t);
-    const QString key = t.id + QLatin1Char('#') + encode(cfg) + QLatin1Char('#') + QString::number(int(W)) + QLatin1Char('#') + QString::number(intensity());
+    QString key = t.id + QLatin1Char('#') + encode(cfg) + QLatin1Char('#') + QString::number(int(W)) + QLatin1Char('#') + QString::number(intensity());
+    if (cfg.tod == QLatin1String("real")) key += QLatin1Char('#') + QString::number(int(clockHour() * 4));
     p.save();
     p.setClipRect(r, Qt::IntersectClip);
     p.translate(r.topLeft());

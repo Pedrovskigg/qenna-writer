@@ -1,5 +1,5 @@
 // Cenas urbanas dos temas Animados: a cidade (e as variações Paulista,
-// trem, porto), a cidadezinha, o morro, o cyberpunk da vinheta, o anos 80 e a
+// trem, porto), a cidadezinha, o cyberpunk da vinheta, o anos 80 e a
 // placa de neon do Neon Rain. Portado de city_v.js/fx.js do Weather Lab.
 
 #include "AnimBackgroundEngines.h"
@@ -108,7 +108,7 @@ public:
     {
         const double ROAD = road(c), TR = ROAD - 92;
         skyTOD(p, pal, c, mix(pal.app, Qt::black, 0.35), mix(pal.app, hex(m_towers ? "#4a3a3a" : "#5a3a40"), 0.35));
-        if (m_builtFor != c.tod || m_cache.pm.isNull() || qAbs(m_cache.px - c.px) > 0.01) { build(pal, c); m_builtFor = c.tod; }
+        if (m_builtFor != c.tod || m_cache.pm.isNull() || qAbs(m_cache.px - c.px) > 0.01) { Seeded sd(0xC17E5EEDu); build(pal, c); m_builtFor = c.tod; }
         vfill(p, QRectF(0, ROAD - 260, c.W, 260), alpha(hex("#ff9a5a"), 0), alpha(hex("#ff9a5a"), 0.12 * (1 - m_L)), ROAD - 260, ROAD);
         if (m_toggle > 0.25 && !m_wins.empty()) {
             m_toggle = 0;
@@ -381,7 +381,7 @@ public:
     void paint(QPainter& p, const Pal& pal, Ctx& c) override
     {
         skyTOD(p, pal, c, mix(pal.app, Qt::black, 0.3), mix(pal.app, hex("#2a3550"), 0.3));
-        if (m_builtFor != c.tod || m_pm.isNull() || qAbs(m_px - c.px) > 0.01) { build(pal, c); m_builtFor = c.tod; }
+        if (m_builtFor != c.tod || m_pm.isNull() || qAbs(m_px - c.px) > 0.01) { Seeded sd(0x70A15EEDu); build(pal, c); m_builtFor = c.tod; }
         if (m_toggle > 0.6 && !m_wins.empty()) {
             m_toggle = 0;
             Win& w = m_wins[size_t(RI(int(m_wins.size())))];
@@ -479,86 +479,6 @@ private:
     std::vector<Puff> m_smoke;
     std::vector<QPointF> m_lamps;
     std::vector<Win> m_wins;
-};
-
-// ============================================================ o morro
-
-class Hillside : public Layer {
-public:
-    void init(Ctx&) override { m_pm = QPixmap(); }
-    void step(double dt, Ctx&) override { m_t += dt; }
-    void paint(QPainter& p, const Pal& pal, Ctx& c) override
-    {
-        skyTOD(p, pal, c, mix(pal.app, Qt::black, 0.3), mix(pal.app, hex("#3a2a48"), 0.35));
-        if (m_builtFor != c.tod || m_pm.isNull() || qAbs(m_px - c.px) > 0.01) { build(pal, c); m_builtFor = c.tod; }
-        // brilho da cidade no céu, atrás do morro
-        QRadialGradient g(QPointF(c.W * 0.32, c.H * 0.45), 600);
-        g.setColorAt(0, alpha(hex("#ff9a5a"), 0.16 * (1 - m_L)));
-        g.setColorAt(1, alpha(hex("#ff9a5a"), 0));
-        p.fillRect(QRectF(0, 0, c.W, c.H), g);
-        blit(p, m_pm, 0, 0, c.W, c.H);
-        for (const Tw& t : m_tw) p.fillRect(QRectF(t.x - 0.5, t.y - 0.5, t.s + 1, t.s + 1), alpha(t.c, 0.5 + 0.5 * std::sin(m_t * 2.5 + t.ph)));
-    }
-
-private:
-    struct Tw { double x, y, s; QColor c; double ph; };
-    static double crest(const Ctx& c, double u) { return c.H * 0.3 + std::pow(std::abs(u - 0.32) * 1.6, 1.3) * c.H * 0.35 + std::sin(u * 14) * 10; }
-    static double crest2(const Ctx& c, double u) { return c.H * 0.42 + std::pow(std::abs(u - 0.85) * 1.9, 1.4) * c.H * 0.3 + std::sin(u * 19) * 8; }
-    void build(const Pal& pal, const Ctx& c)
-    {
-        m_L = LVopen(pal, c);
-        QPixmap pm = layer(c, c.W, c.H);
-        QPainter x(&pm);
-        x.setRenderHint(QPainter::Antialiasing);
-        x.setPen(Qt::NoPen);
-        m_tw.clear();
-        const QColor haze = c.tod == QLatin1String("day") ? hex("#8fa4b8") : c.tod == QLatin1String("dusk") ? hex("#6a4a62") : QColor(Qt::black);
-        static const char* DAY[6] = { "#c97b5a", "#d8b48a", "#e8dcc8", "#9fb3c4", "#c4a4a4", "#e0c070" };
-        static const char* WARMS[3] = { "#ffd28a", "#ffc46b", "#ffe6b8" };
-        static const char* COOL[2] = { "#f4f8ff", "#cfe6ff" };
-        for (int k = 0; k < 2; ++k) {
-            auto cf = [&](double u) { return k == 0 ? crest2(c, u) : crest(c, u); };
-            const QColor col = mix(mix(pal.app, Qt::black, k == 0 ? 0.2 : 0.35), haze, m_L * 0.5);
-            QPainterPath hill(QPointF(0, c.H));
-            for (double xx = 0; xx <= c.W + 8; xx += 8) hill.lineTo(xx, cf(xx / c.W));
-            hill.lineTo(c.W + 8, c.H);
-            x.fillPath(hill, col);
-            // casinhas: de noite, luz; de dia, cor de tijolo e reboco
-            const int n = int(std::lround((k == 0 ? 1600 : 2800) * c.W / 1440));
-            for (int i = 0; i < n; ++i) {
-                const double xx = R(0, c.W), y0 = cf(xx / c.W), d = std::pow(rnd(), 0.7), y = y0 + 6 + d * (c.H - y0);
-                const double s = (k == 0 ? 1.2 : 1.7) * (0.6 + d * 0.8);
-                if (m_L > 0.5) {
-                    x.fillRect(QRectF(xx, y, s * 2.4, s * 1.8), hex(DAY[RI(6)]));
-                } else {
-                    if (rnd() < 0.55) continue;
-                    const QColor lc = rnd() < 0.7 ? hex(WARMS[RI(3)]) : hex(COOL[RI(2)]);
-                    x.fillRect(QRectF(xx, y, s, s), alpha(lc, R(0.55, 1) * (1 - 0.7 * m_L)));
-                    if (rnd() < 0.04) m_tw.push_back({ xx, y, s, lc, R(0, 6.28) });
-                }
-            }
-            // ruas sobem em zigue-zague, com luz de sódio
-            if (m_L < 0.6) {
-                x.setBrush(alpha(hex("#ff9d3c"), 0.85 * (1 - m_L)));
-                for (int r = 0; r < (k == 0 ? 3 : 6); ++r) {
-                    double xx = R(0, c.W), y = c.H;
-                    for (int i = 0; i < 40; ++i) {
-                        const double nx = xx + R(-30, 30), ny = y - R(8, 16);
-                        if (ny < cf(nx / c.W) + 8) break;
-                        x.drawEllipse(QPointF(nx, ny), 1.2, 1.2);
-                        xx = nx; y = ny;
-                    }
-                }
-            }
-        }
-        x.end();
-        m_pm = pm;
-        m_px = c.px;
-    }
-    QPixmap m_pm;
-    double m_px = 0, m_L = 0, m_t = 0;
-    QString m_builtFor;
-    std::vector<Tw> m_tw;
 };
 
 // ============================================================ cyberpunk (a vinheta do índice ilustrado, animada)
@@ -905,9 +825,7 @@ private:
 } // namespace
 
 std::unique_ptr<Layer> makeCity() { return std::make_unique<City>(false, false, false, false); }
-std::unique_ptr<Layer> makeCityX(bool towers, bool helis, bool train, bool water) { return std::make_unique<City>(towers, helis, train, water); }
 std::unique_ptr<Layer> makeTown() { return std::make_unique<Town>(); }
-std::unique_ptr<Layer> makeHillside() { return std::make_unique<Hillside>(); }
 std::unique_ptr<Layer> makeCyberpunk() { return std::make_unique<Cyberpunk>(); }
 std::unique_ptr<Layer> makeRetroGrid() { return std::make_unique<RetroGrid>(); }
 std::unique_ptr<Layer> makeNeonSign() { return std::make_unique<NeonSign>(); }

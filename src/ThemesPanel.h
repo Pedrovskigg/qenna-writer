@@ -155,6 +155,7 @@ private:
     QList<QPushButton*> m_rainButtons;
     QList<QCheckBox*> m_extraChecks;
     QLabel* m_animNote = nullptr;
+    QCheckBox* m_realCheck = nullptr;
     QPushButton* m_animReset = nullptr;
     QTimer* m_animTimer = nullptr;
 

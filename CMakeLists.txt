@@ -246,6 +246,16 @@ qt_add_executable(qenna-writer
     src/AnimBackground.h
     src/AnimBackgroundCity.cpp
     src/AnimBackgroundEngines.h
+    src/AnimKit.h
+    src/AnimKit.cpp
+    src/AnimLeva2a.cpp
+    src/AnimLeva2b.cpp
+    src/AnimLeva3.cpp
+    src/AnimLeva4.cpp
+    src/AnimLeva5.cpp
+    src/AnimCityDepth.cpp
+    src/AnimNeonDistrict.cpp
+    src/AnimNature.cpp
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp

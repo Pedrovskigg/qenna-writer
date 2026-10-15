@@ -58,6 +58,7 @@ private:
     void rebuildScaled();
     void paintImage(QPainter& p);
     void paintSheetShadow(QPainter& p);
+    void paintAnimLow(QPainter& p, const QRegion& region, double s);
     void tick();
     void updateTimer();
     QRegion animRegion() const;
@@ -76,5 +77,6 @@ private:
     QElapsedTimer m_clock;
     QRect m_sheet;
     QImage m_shadow;
+    QImage m_low;          // a mesa em resolução menor (qualidade abaixo de 100%)
     QString m_shadowKey;
 };

@@ -27632,6 +27632,26 @@ Si vous n&apos;avez pas de clé API ou ne souhaitez simplement pas utiliser l&ap
         <source>Quanta chuva, neve e folha cai na mesa.</source>
         <translation>Combien de pluie, de neige et de feuilles tombent sur le bureau.</translation>
     </message>
+    <message>
+        <source>Qualidade da animação</source>
+        <translation>Qualité de l&apos;animation</translation>
+    </message>
+    <message>
+        <source>A resolução em que a mesa é desenhada.</source>
+        <translation>La résolution à laquelle le bureau est dessiné.</translation>
+    </message>
+    <message>
+        <source>Quadros por segundo</source>
+        <translation>Images par seconde</translation>
+    </message>
+    <message>
+        <source>Quantas vezes por segundo a mesa se mexe.</source>
+        <translation>Combien de fois par seconde le bureau bouge.</translation>
+    </message>
+    <message>
+        <source>Se o computador sofrer com os temas Animados, abaixe estes dois. Na qualidade Média a arte é desenhada a 75% e esticada na tela, quase sem diferença à vista; na Leve, a 50%, fica um pouco mais macia. Cada passo pra baixo deixa a mesa bem mais leve, e menos quadros por segundo também.</source>
+        <translation>Si votre ordinateur peine avec les thèmes Animés, baissez ces deux réglages. En qualité Moyenne, le décor est dessiné à 75 % puis étiré à l&apos;écran, sans presque aucune différence visible ; en Légère, à 50 %, il devient un peu plus doux. Chaque cran vers le bas allège beaucoup le bureau, tout comme moins d&apos;images par seconde.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30397,6 +30417,16 @@ Utilisez «&#xa0;Dupliquer&#xa0;» sur un thème par défaut pour commencer.</tr
         <location filename="../src/ThemesPanel.cpp" line="1548"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation>🐈 Ce thème est inspiré de l&apos;hyperactivité et de l&apos;agitation du meilleur chat roux — Tommy, le Redoutable.</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="2262"/>
+        <source>Hora real (a luz acompanha o relógio)</source>
+        <translation>Heure réelle (la lumière suit l&apos;horloge)</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1581"/>
+        <source>Esse theme tem apenas fins estéticos e não busca incentivar o fumo. Cigarro causa câncer e outros problemas de saúde. No Brasil, você não está sozinho. Para obter ajuda, ligue: 136</source>
+        <translation>Ce thème a une vocation purement esthétique et ne cherche pas à encourager le tabagisme. Le tabac provoque le cancer et d&apos;autres problèmes de santé. Au Brésil, vous n&apos;êtes pas seul. Pour obtenir de l&apos;aide, appelez le : 136</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="279"/>

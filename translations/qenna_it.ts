@@ -27632,6 +27632,26 @@ Se non hai una chiave API o semplicemente non vuoi usare l&apos;assistente, ness
         <source>Quanta chuva, neve e folha cai na mesa.</source>
         <translation>Quanta pioggia, neve e foglie cadono sulla scrivania.</translation>
     </message>
+    <message>
+        <source>Qualidade da animação</source>
+        <translation>Qualità dell&apos;animazione</translation>
+    </message>
+    <message>
+        <source>A resolução em que a mesa é desenhada.</source>
+        <translation>La risoluzione a cui viene disegnata la scrivania.</translation>
+    </message>
+    <message>
+        <source>Quadros por segundo</source>
+        <translation>Fotogrammi al secondo</translation>
+    </message>
+    <message>
+        <source>Quantas vezes por segundo a mesa se mexe.</source>
+        <translation>Quante volte al secondo si muove la scrivania.</translation>
+    </message>
+    <message>
+        <source>Se o computador sofrer com os temas Animados, abaixe estes dois. Na qualidade Média a arte é desenhada a 75% e esticada na tela, quase sem diferença à vista; na Leve, a 50%, fica um pouco mais macia. Cada passo pra baixo deixa a mesa bem mais leve, e menos quadros por segundo também.</source>
+        <translation>Se il computer fatica con i temi Animati, abbassa queste due opzioni. Con qualità Media l&apos;immagine viene disegnata al 75% e allargata sullo schermo, quasi senza differenze visibili; con Leggera, al 50%, diventa un po&apos; più morbida. Ogni passo in giù alleggerisce molto la scrivania, e lo stesso vale per meno fotogrammi al secondo.</translation>
+    </message>
 </context>
 <context>
     <name>SheetDialog</name>
@@ -30397,6 +30417,16 @@ Usa &quot;Duplica&quot; su un tema predefinito per iniziare.</translation>
         <location filename="../src/ThemesPanel.cpp" line="1548"/>
         <source>🐈 Esse theme foi feito inspirado na hiperatividade e inquietação do melhor gato laranja — Tommy, O Temível.</source>
         <translation>🐈 Questo tema è ispirato all&apos;iperattività e all&apos;irrequietezza del miglior gatto rosso — Tommy, il Temibile.</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="2262"/>
+        <source>Hora real (a luz acompanha o relógio)</source>
+        <translation>Ora reale (la luce segue l&apos;orologio)</translation>
+    </message>
+    <message>
+        <location filename="../src/ThemesPanel.cpp" line="1581"/>
+        <source>Esse theme tem apenas fins estéticos e não busca incentivar o fumo. Cigarro causa câncer e outros problemas de saúde. No Brasil, você não está sozinho. Para obter ajuda, ligue: 136</source>
+        <translation>Questo tema ha solo fini estetici e non intende incoraggiare il fumo. Il fumo provoca il cancro e altri problemi di salute. In Brasile, non sei solo. Per ricevere aiuto, chiama: 136</translation>
     </message>
     <message>
         <location filename="../src/ThemesPanel.cpp" line="279"/>
