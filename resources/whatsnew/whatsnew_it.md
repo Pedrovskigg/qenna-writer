@@ -1,109 +1,80 @@
-**Qenna Writer - Update 1.4.7**
+**Qenna Writer - Update 1.4.9**
+*Troppa roba per essere solo una 1.4.8, ma non abbastanza per essere una 1.5.0*
 
-*Hellooooooo, it's me...*
-*I was wondering if*-nah! Just kidding.
+C'mon Kids!
 
-Nuovo aggiornamento, miei cari! Venite a vedere:
+La nuova versione di Qenna Writer ci ha messo un po', ma è uscita.
+Colpa mia, lo ammetto. Quest'ultima settimana ho giocato più di quanto abbia lavorato qui, quindi mi prendo la colpa.
+Ed è PROPRIO così. Non ti piace? Mandami una e-mail, ok?
+
+Anyway, senza perderci in chiacchiere, vediamo cosa c'è di nuovo e, lo ammetto, ci sono un sacco di cose belle.
 
 ## Novità
-*È arrivato...*
 
-**• IL REWORK DELLA BOARD!**
-Sì. La Board era l'unico strumento di Qenna rimasto fuori dal rework completo che l'app ha ricevuto nelle ultime versioni.
-Non è stato voluto, ma necessario. La Board è uno strumento pieno di trappole quando si tratta di toccare i fili lì dietro e... beh, andava fatta con calma.
+**○ TEMI ANIMATI!**
+Proprio così! Qenna ora ha una nuova categoria di Temi. I Temi animati.
+Sono 55 Temi con illustrazioni vivide che si muovono, con effetti, pioggia, neve, temporali con fulmini e molto altro!
+Sul serio. Ci sono tante opzioni belle, non solo nei Temi in sé, ma anche per personalizzarli!
 
-**LA NUOVA UI DELLA BOARD:** C'è anche questa! La Board ha ricevuto una NUOVA UI, più intuitiva, bella e reattiva. Gli strumenti ora stanno in un dock che fluttua sotto la lavagna, ognuno con il suo nome, e la lavagna resta libera per te. Costruirci sopra quello che vuoi è molto più dinamico e semplice. E sono arrivati anche giocattoli nuovi:
+**•** Personalizza per ogni tema: ora del giorno, pioggia e livelli sopra (stelle, nebbia, foglie, petali, lucciole, neve). Salvato per tema.
+**•** Ora reale: la luce segue l'orologio del computer. In diversi temi le ore passano dentro il disegno: il giorno diventa tramonto e poi notte, poco a poco.
+**•** Le miniature e l'anteprima del pannello dei Temi mostrano il meteo e le opzioni per personalizzarlo.
+**•** Nelle Impostazioni: on/off, intensità, qualità dell'animazione e fotogrammi al secondo, per i computer meno potenti.
 
-**• PNG sulla Board!** Ora puoi caricare immagini PNG (sfondo trasparente) direttamente sulla Board, come adesivi. Personaggi, oggetti, quello che vuoi. Restano lì dove le metti.
-Hanno un pulsante tutto loro, **Adesivo**. Ma puoi anche trascinare il PNG direttamente dal tuo computer sulla lavagna, o copiarlo e incollarlo con Ctrl+V. Tiri un angolo e cresce. Dal pallino in alto, ruota. E puoi anche specchiarlo, mandarlo dietro le schede o bloccarlo al suo posto.
-E, per non partire da zero, Qenna ha già il suo foglio di adesivi: cerchio di penna, freccia, X, timbro INDIZIO, timbro CONFIDENZIALE, impronta digitale, lente d'ingrandimento, macchia di caffè... Tutto ciò che serve a una lavagna investigativa che si rispetti.
+L'animazione si mette in pausa da sola quando Qenna è in secondo piano o ridotto a icona.
 
-**• Testo sulla Board:** Quello vecchio apriva una finestra di dialogo ORRENDA, con gli a capo tutti sbagliati e che era... beh, complicata da sistemare. Ora il testo sulla Board è letteralmente questo. Doppio clic sulla lavagna e scrivi direttamente lì, completamente regolabile e con l'a capo **automatico**. Come sarebbe sempre dovuto essere.
+E passando ora alla Board:
 
-**• Post-it con stile:** Il post-it ha guadagnato un pulsante Stile. Ci sono 8 forme (il solito quadratino, scheda a righe, striscia, rotondo, etichetta da bagaglio, foglio strappato dal quaderno, bordo seghettato e persino nastro dell'etichettatrice), 5 modi per fissarlo (puntina, nastro adesivo, graffetta, punto metallico o niente) e 4 bordi (nessuno, contorno a penna, ritaglio tratteggiato e angolini da album). Ti piace una combinazione? Spunta "Usa per i prossimi post-it" e ogni nuovo post-it nasce così.
+**○ Penna e Schizzo sulla Board!**
+Ora, se hai un pen display o una tavoletta grafica, o il tuo computer supporta la penna in qualche modo, puoi usarla direttamente sulla Board.
+Ci sono penna, marcatore, evidenziatore e gomma, e riconosce la pressione della penna.
+Niente penna? Funziona anche con il mouse.
+E un paio di trucchi: resta fermo alla fine del tratto e diventa una forma perfetta, e con Shift viene una linea retta.
 
-**• Una vera lavagna investigativa:** La linea ora va dritta, da puntina a puntina, come uno spago. E parte da dove è fissata la scheda: dalla puntina, dalla graffetta, dal nastro. Se vuoi, puoi dare un nome al collegamento, aggiungere una freccia o lasciarla curva.
-I personaggi sono diventati polaroid (doppio clic e si gira, mostrando la scheda sul retro), e documenti e capitoli appaiono come un foglio, con l'inizio del testo e un "apri" che ti porta dritto all'editor.
+E per gli artisti:
+**• Schizzo**
+Dentro la Board puoi usare lo strumento Schizzo. Una pagina bianca con livelli e pennelli per disegnare.
+Il disegno si può esportare e l'app importa alcuni formati di pennelli esterni.
+E il disegno può diventare la foto del tuo personaggio.
 
-E c'è molto di più: sfondi nuovi (sughero, lavagna bianca, quaderno, griglia), schede un po' storte come se fossero appese a una lavagna vera, minimappa, ricerca delle schede con Ctrl+F, più board nello stesso progetto scelte dalla miniatura, esportazione della lavagna come immagine con anteprima (anche con sfondo trasparente) e un promemoria con tutte le scorciatoie nel pulsante "?". La Board è stata davvero rifatta ed è meravigliosa.
+E arriva anche:
+**○ Correzione automatica dei nomi**
+Un esempio pratico rende tutto più facile.
+Se il tuo personaggio si chiama Mary e scrivi Marg, l'app lo correggerà automaticamente in Mary.
+Vale per personaggi, luoghi, oggetti e soprannomi. Il primo Backspace subito dopo annulla e insegna la parola al dizionario. Si attiva e disattiva in Impostazioni › Correttore.
 
-Ah, certo! **100% compatibile con le board vecchie.** Non si è rotto niente.
-*Almeno per quanto ne so. I test più approfonditi li lascio a voi.*
+*E ora, di nuovo al banco di lavoro.*
 
-**• Nuovi Themes:**
-○ **Dracula's Tomb:** il classico Dracula, ma un po' più scuro.
-○ **90's Manga:** ispirato allo stile dei manga giapponesi degli anni '90.
-○ **Basalt Green Nebula:** un theme verde scuro, con una nebulosa spaziale sullo sfondo.
-○ **Patch Bay:** un theme scuro con toni rossi e verdi, con un'estetica da Halloween di una volta.
-○ **Silver Halide:** un theme scuro e argentato, con cornici dritte e un alone di luce attorno alla pagina.
+## Correzioni e ritocchi
 
-E non finisce qui. Altri **60 themes nuovi**, in quattro famiglie:
+**• Copertina del progetto**
+"Copertina rapida" e "Carica copertina" divise in diagonale, nei fogli di Nuovo progetto e Modifica progetto. Il riquadro della sinossi in Nuovo progetto è molto più grande (circa 12 righe).
 
-○ **Classici degli editor**
-I themes più famosi di VSCode, Neovim e compagnia, con la palette ufficiale di ognuno, come già erano arrivati Tokyo Night, Nord e Dracula. Funzionano DAVVERO bene in Qenna.
-Scuri: Code Dark Dimmed, Catppuccin Macchiato, Rosé Pine Moon, Monokai Pro, Nightfox, Oxocarbon, Poimandres, Vesper, Iceberg, Cobalt2, Shades of Purple, SynthWave '84, Flexoki Dark, Kanagawa Dragon, Melange Dark, Zenburn, Ayu Dark, Noctis, Andromeda, Aura, Mariana, Darcula, Tomorrow Night e Houston.
-Chiari: Code Light, Catppuccin Latte, Rosé Pine Dawn, Ayu Light, Everforest Light, Kanagawa Lotus, Flexoki Light, Melange Light, One Light, Night Owl Light, Quiet Light, Alabaster e Zenbones.
-*Consiglio: se scrivi molto di notte, prova Flexoki, Zenburn e Melange. Sono fatti per stancare poco la vista.*
+**• Rinomina nel Costruttore**
+Rinominare nel Costruttore e nel Territorio rispetta la parola intera. Prima, rinominare un nome che compariva dentro un altro li cambiava entrambi: rinominare Ana cambiava anche Mariana. Corretto.
 
-○ **Legni**
-I legni della scrivania che Qenna ha sempre avuto, rielaborati come vere finiture: Shou Sugi Ban (legno bruciato giapponese), Whitewash (sbiancato a calce), Driftwood (legno restituito dal mare), Milk Paint (perlinato dipinto verde salvia), Aizome (tinto d'indaco), Green Bamboo (il bambù ancora verde), Shellac (gommalacca ambrata) e Fumed Oak (rovere fumé).
-E, per chi ama uno scuro morbido, senza contrasto forte tra il testo e il foglio: Walnut Dusk, Midnight Pine, Sage Den e Plum Bamboo.
+**• Cursore fluido**
+La dissolvenza della lettera del cursore fluido non sparisce più quando torni a modificare il centro di una frase.
 
-○ **Ampli e pedali**
-Ispirati agli amplificatori e ai pedali per chitarra: Thermal, Thermal Light, Plexi, Hall Reverb e Analog Delay.
-
-○ **Vari**
-Crow's Court, Triple Word (il tabellone delle parole crociate), Intaglio (la carta moneta), Spirit Blossom, Terrazzo e Mixtape.
-
-*Commento: Davvero, il nuovo creatore di Themes che abbiamo portato nella scorsa versione è PAZZESCOOO. È divertentissimo creare themes con lui.*
-
-**• Nuove illustrazioni nell'Indice illustrato**
-Ti ricordi le illustrazioni arrivate nella versione scorsa? Ora la raccolta è completa. "Cambia disegno" (clic destro sul capitolo) ha guadagnato tre gruppi nuovi:
-- **Fatto a mano:** Azulejo, Labirinto (il percorso avanza verso il centro mentre scrivi), Cordel, Origami, Mappa del tesoro (il sentiero avanza verso la X) e Scacchi.
-- **Arsenale:** queste funzionano in modo diverso. Le parole non fanno crescere il disegno: ogni fascia di parole **sblocca l'arma successiva**. Nelle Lame inizi con un pugnale e sali fino alla Falce. Nelle Armi da fuoco inizi con una pistola sul tavolo dell'indagine e finisci con un bazooka davanti a un carro armato in fiamme. E ogni arma ha la sua scena.
-- **Chitarra:** stessa idea. Si parte da una chitarra classica, in cameretta, e si sbloccano Telecaster, Stratocaster, Les Paul, ES-335, Explorer, Flying V... Tutte disegnate con le misure reali di ogni modello. E in cima, a 12 mila parole, c'è **Luciana**, la mia chitarra. Se lo meritava.
-
-Come sempre, i capitoli che hai già non cambiano disegno da soli: quelli nuovi sono in "Cambia disegno", li scegli tu.
-
-*Credo che tu l'abbia già vista aprendo l'app...*
-**• LA NUOVA SIGLA DI QENNA**
-Bella, veloce e ispirante. Proprio come la immaginavo.
-Ma certo, c'è un'opzione per disattivarla nelle impostazioni, nel caso tu non apprezzi il mio lavoro e consideri inutili le ore che ho sprecato per farla.
-*Sul serio, mi ferirebbe tantissimo se la disattivassi. Non farlo.*
-
-**• L'aspetto del Menu principale**
-Ho sistemato la larghezza della barra e aggiornato anche le illustrazioni della lettera Q.
-Ora la Q del menu principale ha 23 illustrazioni nuove, di tanti generi diversi.
-Ne hai vista una che ti piace? Doppio clic per tenerla. Se le illustrazioni non ti piacciono, puoi fare clic destro e scegliere l'opzione colore pieno, *ma non lo farai. Tu apprezzi il mio lavoro, vero?*
-
-**• Le frasi del Menu principale**
-Aspettavano un aggiornamento da tempo. Alcune frasi citavano funzioni del defunto Mira Writing che nell'app non esistono nemmeno più.
-Sono state aggiornate.
-
-## Correzioni
-Vediamo cosa è stato sistemato, ritoccato e regolato!
-
-**• I dialoghi nel pannello dei dialoghi non venivano selezionati per intero**
-*Grazie, Mars!*
-Ora, quando fai clic per aprire un dialogo nel pannello dei dialoghi, viene selezionato per intero nel testo.
-E in omaggio, ora puoi modificare i dialoghi direttamente nel pannello dei dialoghi, con effetto immediato sul documento.
-
-**• Le luci on/off del rientro della prima riga e del Focus Mode**
-Restavano quadrate per sempre, a prescindere dal raggio del theme. Corretto. Un fix piccolo (*letteralmente*)
-
-**• Themes con ombra/luce**
-Alcuni themes con effetti di luce sulla pagina potevano mostrare una specie di striscia o ritaglio sul lato sinistro della pagina. Corretto.
-
-**• Ombre colorate**
-I themes con un'ombra o un bagliore colorato e trasparente sulla pagina (un alone rosa, per esempio) potevano mostrare un'ombra nera e pesante al posto del colore. Corretto. Ora l'ombra esce nel colore e nella trasparenza che il theme chiedeva.
-
-**• Nuovo progetto bloccato dopo la copertina**
-Creando un progetto nuovo, aprendo la copertina rapida e facendo clic su "Fatto", la finestra tornava ai campi dentro, ma lo schermo restava bloccato sulla copertina. Corretto, e la correzione vale per tutte le finestre di quello stile nell'app.
-
-**• Testi quasi invisibili in alcuni themes**
-Nei themes chiari con lo sfondo della scrivania colorato (Shellac, Solitaire, Luna, Milk Paint, Green Bamboo e altri), vari pannelli e finestre mostravano il testo che quasi spariva nello sfondo. Corretto. Ora lo sfondo di quei pannelli si regola da solo finché il testo non è leggibile, e i themes che si leggevano già bene restano identici.
+**• Timeline**
+Le etichette delle date della Treccia non si sovrappongono più.
 
 ---
-È tutto, miei cari. Divertitevi.
+Per ora è tutto, amici. Ma prima di chiudere voglio darvi un'informazione importante:
 
-P.H. Lobato — Guardiano delle Terre di Qenna
+**QENNA WRITER FOR macOS**
+In questo momento sto iniziando a lavorare al port di Qenna per macOS.
+A prima vista il risultato è stato promettente. L'app ha funzionato sul Mac con tutte le funzioni, quasi nessun problema è stato trovato e i pochi emersi sono estetici e facili da risolvere.
+Però non ho un Mac per testare una versione definitiva di Qenna su quel sistema. E questo complica un po' le cose. L'ho provata su una macchina virtuale con quasi 800 ms di ritardo e, beh... è stata una tortura.
+
+Per questo, lascio qui una richiesta:
+**Se hai un Mac** (iMac, MacBook, Mac mini, uno qualsiasi), vorrei invitarti a partecipare a una pre-release della versione per macOS quando entrerà in test. Ti manderei l'installer direttamente; basterebbe installarlo, usare Qenna (come lo usi già) e dirmi se hai trovato qualcosa di strano.
+Sul serio, mi aiuterebbe tantissimo.
+
+Se ti interessa partecipare per far crescere Qenna ancora di più, scrivimi via e-mail: qennawriter@gmail.com o tramite i repository del progetto, ok?
+Grazie davvero!
+
+Per oggi è tutto, amici, thank you!
+
+*Pieno di caffeina e con la voglia di licenziarmi,*
+— P.H. Lobato, Guardiano delle Terre di Qenna
