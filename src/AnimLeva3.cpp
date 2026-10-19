@@ -1611,118 +1611,6 @@ private:
     double m_t = 0, m_jet = -1e9, m_jy = 100, m_jv = 190, m_next = 3;
 };
 
-// ============================================================ último posto (posto de estrada no deserto)
-
-class LastExit : public Layer {
-public:
-    void init(Ctx&) override
-    {
-        m_back.reset();
-        m_car = -1e9;
-        m_moths.clear();
-        for (int i = 0; i < 14; ++i) m_moths.push_back({ R(0, 6.28), R(20, 70), R(1.5, 4), R(0, 6.28), R(120, 340) });
-    }
-    void step(double dt, Ctx& c) override
-    {
-        m_t += dt;
-        m_next -= dt;
-        m_flick = rnd() < 0.08 ? 1 : m_flick * 0.6;
-        if (m_signOff > 0) m_signOff -= dt; else if (rnd() < dt * 0.04) m_signOff = R(0.2, 1.2);
-        for (auto& m : m_moths) m[0] += m[2] * dt;
-        if (m_car < -1e8 && m_next <= 0) { m_car = c.W + 60; m_cv = R(260, 340); }
-        if (m_car > -1e8) { m_car -= m_cv * dt; if (m_car < -400) { m_car = -1e9; m_next = R(9, 20); } }
-    }
-    void paint(QPainter& p, const Pal& pal, Ctx& c) override
-    {
-        // o letreiro fica à direita da barra lateral, no começo da mesa à vista
-        const double GY = c.H * 0.74, CAN = 300, o = zx(c, 45) - 45, CX0 = 60 + o, CX1 = 400 + o, SG = 58 + o;
-        if (!m_back.valid(c)) {
-            QPixmap pm = layer(c, c.W, c.H);
-            QPainter x(&pm);
-            x.setRenderHint(QPainter::Antialiasing, true);
-            vfill(x, QRectF(0, 0, c.W, GY), mix(pal.app, hex("#04060f"), 0.5), mix(pal.app, hex("#1a2240"), 0.4), 0, GY);
-            x.drawPixmap(0, 0, starLayer(c, 380, GY * 0.85, 0.7));
-            fillProfile(x, c, profile(6, 0.45), GY - 40, 34, mix(pal.app, hex("#0e1018"), 0.5), 6);
-            x.fillRect(QRectF(0, GY, c.W, c.H - GY), mix(pal.app, hex("#08090c"), 0.55));
-            x.fillRect(QRectF(0, GY + 60, c.W, 46), mix(pal.app, hex("#121318"), 0.5));
-            for (double xx = 0; xx < c.W; xx += 60) x.fillRect(QRectF(xx, GY + 82, 30, 2), alpha(hex("#d8c070"), 0.5));
-            x.fillRect(QRectF(SG + 28, 150, 6, GY + 40 - 150), mix(pal.app, Qt::black, 0.5));   // poste do letreiro, atrás da cobertura
-            x.fillRect(QRectF(CX0, CAN, CX1 - CX0, 26), hex("#e8e8ea"));
-            x.fillRect(QRectF(CX0, CAN + 18, CX1 - CX0, 8), hex("#c8302a"));
-            for (double px : { CX0 + 50, CX1 - 50 }) x.fillRect(QRectF(px - 5, CAN + 26, 10, GY + 40 - CAN - 26), mix(pal.app, hex("#2a2a2e"), 0.4));
-            for (double px : { CX0 + 120, CX1 - 120 }) {
-                x.fillRect(QRectF(px - 14, GY - 36, 28, 76), hex("#c8c8cc"));
-                x.fillRect(QRectF(px - 14, GY - 36, 28, 10), hex("#c8302a"));
-                x.fillRect(QRectF(px - 9, GY - 20, 18, 12), hex("#2a3a2a"));
-            }
-            x.fillRect(QRectF(CX1 - 10, GY - 70, 140, 110), mix(pal.app, hex("#1a1a20"), 0.4));
-            x.fillRect(QRectF(CX1 + 10, GY - 50, 50, 30), alpha(hex("#fff2c8"), 0.75));
-            x.end();
-            m_back.set(c, pm);
-        }
-        blit(p, m_back.pm, 0, 0, c.W, c.H);
-        // luz fria da cobertura, com uma lâmpada falhando
-        const double lit = 1 - 0.5 * m_flick;
-        p.setCompositionMode(QPainter::CompositionMode_Plus);
-        QLinearGradient g(0, CAN + 26, 0, GY + 50);
-        g.setColorAt(0, alpha(hex("#e8fff0"), 0.32 * lit));
-        g.setColorAt(1, alpha(hex("#e8fff0"), 0.04));
-        QPolygonF cone;
-        cone << QPointF(CX0, CAN + 26) << QPointF(CX1, CAN + 26) << QPointF(CX1 + 60, GY + 50) << QPointF(CX0 - 60, GY + 50);
-        p.setPen(Qt::NoPen);
-        p.setBrush(g);
-        p.drawPolygon(cone);
-        p.save();
-        p.translate((CX0 + CX1) / 2, GY + 40);
-        p.scale(1, 0.3);
-        glow(p, 0, 0, 260, hex("#e8fff0"), 0.22 * lit);
-        p.restore();
-        for (int i = 0; i < 5; ++i) p.fillRect(QRectF(CX0 + 30 + i * 70, CAN + 26, 40, 3), alpha(hex("#f4fff8"), 0.95 * (i == 3 ? 1 - m_flick : 1)));
-        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        // letreiro: GAS e o preço, que às vezes apaga
-        const double so = m_signOff > 0 && rnd() < 0.7 ? 0.15 : 1;
-        p.fillRect(QRectF(SG, 100, 120, 90), hex("#1a1a1e"));
-        p.fillRect(QRectF(SG + 6, 106, 108, 36), alpha(Qt::white, 0.92 * so + 0.05));
-        QFont f(QStringLiteral("IBM Plex Sans"));
-        f.setPixelSize(26);
-        f.setWeight(QFont::ExtraBold);
-        p.setFont(f);
-        p.setPen(alpha(hex("#c8302a"), so));
-        p.drawText(QRectF(SG + 6, 106, 108, 36), Qt::AlignCenter, QStringLiteral("GAS"));
-        QFont m(QStringLiteral("IBM Plex Mono"));
-        m.setPixelSize(24);
-        m.setWeight(QFont::DemiBold);
-        p.setFont(m);
-        p.setPen(alpha(hex("#ff4a2a"), 0.95 * so + 0.05));
-        p.drawText(QRectF(SG + 6, 148, 108, 36), Qt::AlignCenter, QStringLiteral("4.29"));
-        p.setCompositionMode(QPainter::CompositionMode_Plus);
-        glow(p, SG + 60, 145, 140, hex("#ffd0c0"), 0.18 * so);
-        // mariposas em volta da luz
-        for (const auto& mo : m_moths) p.fillRect(QRectF(mo[4] + o + std::cos(mo[0]) * mo[1], CAN + 40 + std::sin(mo[0] * 1.3 + mo[3]) * mo[1] * 0.4, 1.6, 1.6), alpha(hex("#fff8e8"), 0.8));
-        // carro passando: faróis varrendo a estrada
-        if (m_car > -1e8) {
-            const double cx = m_car, cy = GY + 74;
-            QLinearGradient hg(cx, 0, cx - 320, 0);
-            hg.setColorAt(0, alpha(hex("#fff4d6"), 0.4));
-            hg.setColorAt(1, alpha(hex("#fff4d6"), 0));
-            QPolygonF beam;
-            beam << QPointF(cx, cy - 3) << QPointF(cx - 320, cy - 30) << QPointF(cx - 320, cy + 26) << QPointF(cx, cy + 4);
-            p.setPen(Qt::NoPen);
-            p.setBrush(hg);
-            p.drawPolygon(beam);
-            p.fillRect(QRectF(cx - 2, cy - 2, 4, 4), hex("#fff8e8"));
-            p.fillRect(QRectF(cx + 52, cy - 1, 4, 3), alpha(hex("#ff3020"), 0.9));
-        }
-        p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        if (m_car > -1e8) { p.fillRect(QRectF(m_car - 2, GY + 62, 58, 16), hex("#060608")); p.fillRect(QRectF(m_car + 12, GY + 54, 28, 10), hex("#060608")); }
-    }
-
-private:
-    Cache m_back;
-    std::vector<std::array<double, 5>> m_moths;
-    double m_t = 0, m_next = 4, m_flick = 0, m_signOff = 0, m_car = -1e9, m_cv = 300;
-};
-
 } // namespace
 
 std::unique_ptr<Layer> makeLeva3(const QString& id)
@@ -1734,7 +1622,6 @@ std::unique_ptr<Layer> makeLeva3(const QString& id)
     if (id == QLatin1String("lapa")) return std::make_unique<Lapa>();
     if (id == QLatin1String("ferris")) return std::make_unique<Ferris>();
     if (id == QLatin1String("kowloon")) return std::make_unique<Kowloon>();
-    if (id == QLatin1String("lastexit")) return std::make_unique<LastExit>();
     return nullptr;
 }
 

@@ -99,5 +99,10 @@ std::unique_ptr<Layer> makeCityDepth(bool towers, bool helis, bool train, bool w
 std::unique_ptr<Layer> makeNeonDistrict();
 // Natureza com volume (farol, charneca, campina, céu estrelado), em AnimNature.cpp
 std::unique_ptr<Layer> makeNature(const QString& scene);
+// Deserto em perspectiva (Last Exit, Route 66), em AnimDesert.cpp
+std::unique_ptr<Layer> makeDesert(const QString& scene);
+// Temas de gênero da leva 7 (Eve of Battle, Outpost, Hoard, Rooftop, Citadel), em AnimGenres*.cpp
+std::unique_ptr<Layer> makeGenresA(const QString& scene);
+std::unique_ptr<Layer> makeGenresB(const QString& scene);
 
 } // namespace AnimBg

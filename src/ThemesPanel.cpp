@@ -103,6 +103,8 @@ const QHash<QString, QStringList>& recommended()
                                           QStringLiteral("fig-preserve"), QStringLiteral("acafrao") } },
         { QStringLiteral("colorful"),   { QStringLiteral("blacklight"), QStringLiteral("rose-pine"), QStringLiteral("outrun"),
                                           QStringLiteral("ocean"), QStringLiteral("solarized-dark") } },
+        { QStringLiteral("animados"),   { QStringLiteral("anim-lastexit"), QStringLiteral("anim-train"), QStringLiteral("anim-johnmary"), QStringLiteral("anim-fireescape"),
+                                          QStringLiteral("anim-campfire"), QStringLiteral("anim-lighthouse"), QStringLiteral("anim-candle") } },
     };
     return r;
 }
@@ -1484,6 +1486,18 @@ void ThemesPanel::rebuildGrid()
         empty = tr("Nenhum favorito ainda.\nClique no coração de um tema pra marcá-lo.");
     } else if (m_view == QLatin1String("all") || m_view == QLatin1String("daynight")) {
         list = mgr->bundledThemes();
+        // Em "Todos", as recomendações de todas as categorias vêm primeiro, na ordem
+        // das categorias no trilho e, dentro de cada uma, na ordem da lista.
+        if (m_view == QLatin1String("all")) {
+            static const char* order[] = { "light", "warm", "dark", "colorful", "estampados", "animados" };
+            QHash<QString, int> rank;
+            for (const char* cat : order)
+                for (const QString& id : recommended().value(QString::fromLatin1(cat)))
+                    if (!rank.contains(id)) rank.insert(id, int(rank.size()));
+            std::stable_sort(list.begin(), list.end(), [&rank](const Theme::MiraTheme& a, const Theme::MiraTheme& b) {
+                return rank.value(a.id, INT_MAX) < rank.value(b.id, INT_MAX);
+            });
+        }
     } else {
         for (const auto& t : mgr->bundledThemes()) if (t.category == m_view) list.append(t);
         // As recomendações da categoria vêm primeiro, na ordem da lista.

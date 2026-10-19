@@ -101,6 +101,11 @@ inline void blit(QPainter& p, const QPixmap& pm, double x, double y, double w, d
 {
     p.drawPixmap(QRectF(x, y, w, h), pm, QRectF(QPointF(0, 0), QSizeF(pm.size())));
 }
+// Janela que acende e apaga num cenário em cache: o cenário é montado duas vezes com a mesma
+// semente (todas apagadas e todas acesas) e a troca copia o retângulo da versão certa, pixel a
+// pixel. Assim o que estava na frente da janela (outro prédio, o viaduto, a névoa) continua na
+// frente; pintar a janela direto no cache furava tudo isso e, com as horas, enchia o viaduto de janelas.
+void copyRect(QPainter& x, const QPixmap& src, const QRectF& r);
 // Ponto ao acaso num pedaço de mesa à vista.
 QPointF visPoint(const Ctx& c);
 // x de uma âncora (vela, farol, sol) dentro do pedaço esquerdo à vista.

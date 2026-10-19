@@ -256,6 +256,10 @@ qt_add_executable(qenna-writer
     src/AnimCityDepth.cpp
     src/AnimNeonDistrict.cpp
     src/AnimNature.cpp
+    src/AnimDesert.cpp
+    src/AnimCanvas.h
+    src/AnimGenresA.cpp
+    src/AnimGenresB.cpp
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp
@@ -471,6 +475,9 @@ qt_add_executable(qenna-writer
     resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
+
+# O planeta do Citadel é pintado pixel a pixel na montagem do tema: otimizado mesmo no Debug, senão trava ~1 s ao trocar de tema
+set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 qt_add_translations(qenna-writer
     TS_FILES

@@ -60,7 +60,7 @@ public:
 
     void init(Ctx& c) override
     {
-        m_cache.pm = QPixmap();
+        m_cache.pm = m_cache.dark = m_cache.lit = QPixmap();
         m_builtFor.clear();
         m_helisList.clear();
         m_trainOn = false;
@@ -108,16 +108,15 @@ public:
     {
         const double ROAD = road(c), TR = ROAD - 92;
         skyTOD(p, pal, c, mix(pal.app, Qt::black, 0.35), mix(pal.app, hex(m_towers ? "#4a3a3a" : "#5a3a40"), 0.35));
-        if (m_builtFor != c.tod || m_cache.pm.isNull() || qAbs(m_cache.px - c.px) > 0.01) { Seeded sd(0xC17E5EEDu); build(pal, c); m_builtFor = c.tod; }
+        if (m_builtFor != c.tod || m_cache.pm.isNull() || qAbs(m_cache.px - c.px) > 0.01) { build(pal, c); m_builtFor = c.tod; }
         vfill(p, QRectF(0, ROAD - 260, c.W, 260), alpha(hex("#ff9a5a"), 0), alpha(hex("#ff9a5a"), 0.12 * (1 - m_L)), ROAD - 260, ROAD);
         if (m_toggle > 0.25 && !m_wins.empty()) {
             m_toggle = 0;
             QPainter x(&m_cache.pm);
             for (int i = 0; i < 3; ++i) {
                 Win& w = m_wins[size_t(RI(int(m_wins.size())))];
-                w.on = !w.on && rnd() < 1 - 0.85 * m_L;
-                if (w.on) w.c = warm();
-                paintWin(x, w);
+                w.on = !w.on && rnd() < qMin(1.0, w.p / qMax(0.05, 1 - w.p));   // a cidade fica tão acesa quanto nasceu
+                copyRect(x, w.on ? m_cache.lit : m_cache.dark, QRectF(w.x, w.y, w.w, w.h));
             }
         }
         blit(p, m_cache.pm, 0, 0, c.W, c.H);
@@ -199,7 +198,7 @@ public:
     }
 
 private:
-    struct Win { double x, y, w, h; bool on; QColor c, bg; };
+    struct Win { double x, y, w, h; bool on; QColor c, bg; double p; };   // p: chance de nascer acesa
     struct Ant { double x, y, ph; };
     struct Car { int dir; double x, v, lane; };
     struct Plane { bool on = false; double x = 0, y = 0, v = 0; };
@@ -211,16 +210,32 @@ private:
         static const char* W[5] = { "#ffcf7a", "#ffd99a", "#ffe7b8", "#f4b860", "#bfe0ff" };
         return hex(W[RI(5)]);
     }
-    static void paintWin(QPainter& x, const Win& w) { x.fillRect(QRectF(w.x, w.y, w.w, w.h), w.on ? w.c : w.bg); }
     Car newCar(int dir, bool any, const Ctx& c) const
     {
         const double ROAD = road(c), DECK = ROAD - 30;
         const double lane = m_water ? (dir > 0 ? DECK - 3 : DECK - 7) : (dir > 0 ? ROAD + 12 : ROAD + 24);
         return { dir, any ? R(0, c.W) : (dir > 0 ? -40.0 : c.W + 40), R(70, 140), lane };
     }
+    // montado apagado e aceso (ver copyRect); o cache começa apagado e recebe as acesas do sorteio
     void build(const Pal& pal, const Ctx& c)
     {
         m_L = LVopen(pal, c);
+        {
+            Seeded sd(0xC17E5EEDu);
+            m_cache.dark = scene(pal, c, false);
+        }
+        {
+            Seeded sd(0xC17E5EEDu);
+            m_cache.lit = scene(pal, c, true);
+        }
+        m_cache.pm = m_cache.dark;
+        QPainter x(&m_cache.pm);
+        for (const Win& w : m_wins)
+            if (w.on) copyRect(x, m_cache.lit, QRectF(w.x, w.y, w.w, w.h));
+        m_cache.px = c.px;
+    }
+    QPixmap scene(const Pal& pal, const Ctx& c, bool lit)
+    {
         const double ROAD = road(c), TR = ROAD - 92, DECK = ROAD - 30;
         QPixmap pm = layer(c, c.W, c.H);
         QPainter x(&pm);
@@ -255,10 +270,11 @@ private:
                     const QColor bg = m_L > 0.5 ? mix(col, hex("#c8d8e6"), 0.18) : col;
                     for (double wy = by + 10; wy < ROAD - 14; wy += s)
                         for (double wx = bx + 6; wx < bx + bw - 6; wx += s) {
-                            Win w{ wx, wy, ww, wh, rnd() < (m_towers ? 0.24 : 0.32) * (1 - 0.85 * m_L),
-                                   (m_towers && rnd() < 0.4) ? hex("#e8f0ff") : warm(), bg };
+                            const double pOn = (m_towers ? 0.24 : 0.32) * (1 - 0.85 * m_L);
+                            const bool on = rnd() < pOn;
+                            Win w{ wx, wy, ww, wh, on, (m_towers && rnd() < 0.4) ? hex("#e8f0ff") : warm(), bg, pOn };
                             m_wins.push_back(w);
-                            if (w.on) paintWin(x, w);
+                            if (lit) x.fillRect(QRectF(w.x, w.y, w.w, w.h), w.c);
                         }
                 }
                 bx += bw + (k == 0 ? R(0, 6) : k == 1 ? R(2, 14) : R(8, 30));
@@ -339,11 +355,10 @@ private:
             x.fillRect(QRectF(0, DECK - 30, c.W, 40), lg);
         }
         x.end();
-        m_cache.pm = pm;
-        m_cache.px = c.px;
+        return pm;
     }
 
-    struct { QPixmap pm; double px = 0; } m_cache;
+    struct { QPixmap pm, dark, lit; double px = 0; } m_cache;
     bool m_towers, m_helis, m_train, m_water;
     QString m_builtFor;
     std::vector<Win> m_wins;
@@ -361,7 +376,7 @@ private:
 
 class Town : public Layer {
 public:
-    void init(Ctx&) override { m_pm = QPixmap(); m_smoke.clear(); }
+    void init(Ctx&) override { m_pm = m_dark = m_lit = QPixmap(); m_smoke.clear(); }
     void step(double dt, Ctx&) override
     {
         m_t += dt;
@@ -381,13 +396,13 @@ public:
     void paint(QPainter& p, const Pal& pal, Ctx& c) override
     {
         skyTOD(p, pal, c, mix(pal.app, Qt::black, 0.3), mix(pal.app, hex("#2a3550"), 0.3));
-        if (m_builtFor != c.tod || m_pm.isNull() || qAbs(m_px - c.px) > 0.01) { Seeded sd(0x70A15EEDu); build(pal, c); m_builtFor = c.tod; }
+        if (m_builtFor != c.tod || m_pm.isNull() || qAbs(m_px - c.px) > 0.01) { build(pal, c); m_builtFor = c.tod; }
         if (m_toggle > 0.6 && !m_wins.empty()) {
             m_toggle = 0;
             Win& w = m_wins[size_t(RI(int(m_wins.size())))];
             w.on = !w.on && rnd() < 1 - 0.85 * m_L;
             QPainter x(&m_pm);
-            x.fillRect(QRectF(w.x, w.y, w.w, w.h), w.on ? hex("#ffc870") : w.bg);
+            copyRect(x, w.on ? m_lit : m_dark, QRectF(w.x, w.y, w.w, w.h));
         }
         blit(p, m_pm, 0, 0, c.W, c.H);
         const QColor sc = c.tod == QLatin1String("day") ? hex("#e8edf2") : mix(pal.app, hex("#c8ccd6"), 0.5);
@@ -406,9 +421,26 @@ private:
     struct Chim { double x, y, s; };
     struct Puff { double x, y, r, a, vx, vy, s; };
     struct Win { double x, y, w, h; bool on; QColor bg; };
+    // montado apagado e aceso (ver copyRect); o cache começa apagado e recebe as acesas do sorteio
     void build(const Pal& pal, const Ctx& c)
     {
         m_L = LVopen(pal, c);
+        {
+            Seeded sd(0x70A15EEDu);
+            m_dark = scene(pal, c, false);
+        }
+        {
+            Seeded sd(0x70A15EEDu);
+            m_lit = scene(pal, c, true);
+        }
+        m_pm = m_dark;
+        QPainter x(&m_pm);
+        for (const Win& w : m_wins)
+            if (w.on) copyRect(x, m_lit, QRectF(w.x, w.y, w.w, w.h));
+        m_px = c.px;
+    }
+    QPixmap scene(const Pal& pal, const Ctx& c, bool lit)
+    {
         const double STREET = c.H - 40;
         QPixmap pm = layer(c, c.W, c.H);
         QPainter x(&pm);
@@ -456,7 +488,7 @@ private:
                 for (int i = 0; i < wn; ++i) {
                     Win wv{ hx + (i + 0.5) * w / wn - 6 * sc, top + hh * 0.3, 12 * sc, 14 * sc, rnd() < 0.6 * (1 - 0.85 * m_L), mix(col, Qt::black, 0.2) };
                     m_wins.push_back(wv);
-                    x.fillRect(QRectF(wv.x, wv.y, wv.w, wv.h), wv.on ? hex("#ffc870") : wv.bg);
+                    x.fillRect(QRectF(wv.x, wv.y, wv.w, wv.h), lit ? hex("#ffc870") : wv.bg);
                 }
                 hx += w + R(8, 30) * sc;
             }
@@ -469,10 +501,9 @@ private:
             m_lamps.push_back(QPointF(lx + 10, STREET - 66));
         }
         x.end();
-        m_pm = pm;
-        m_px = c.px;
+        return pm;
     }
-    QPixmap m_pm;
+    QPixmap m_pm, m_dark, m_lit;
     double m_px = 0, m_L = 0, m_t = 0, m_toggle = 0;
     QString m_builtFor;
     std::vector<Chim> m_chimneys;
@@ -494,7 +525,7 @@ public:
         c.hasNeonCols = true;
         c.neonA = hsl(m_hue + 160, 1, 0.62);
         c.neonB = hsl(m_hue - 70, 1, 0.65);
-        m_pm = QPixmap();
+        m_pm = m_dark = m_lit = QPixmap();
         m_cars.clear();
         const int n = count(9, c);
         for (int i = 0; i < n; ++i) m_cars.push_back(newCar(true, c));
@@ -527,7 +558,7 @@ public:
             for (int i = 0; i < 3; ++i) {
                 Win& w = m_wins[size_t(RI(int(m_wins.size())))];
                 w.on = !w.on;
-                x.fillRect(QRectF(w.x, w.y, 3, 4), w.on ? hsl(h, 0.6, 0.7, 0.8) : w.shade);
+                copyRect(x, w.on ? m_lit : m_dark, QRectF(w.x, w.y, 3, 4));
             }
         }
         blit(p, m_pm, 0, 0, c.W, c.H);
@@ -578,7 +609,25 @@ private:
         const int dir = rnd() < 0.5 ? 1 : -1;
         return { dir, any ? R(0, c.W) : (dir > 0 ? -30.0 : c.W + 30), R(60, c.H * 0.55), R(70, 170) };
     }
+    // montado apagado e aceso (ver copyRect) com a mesma semente, sorteada a cada montagem
     void build(const Ctx& c)
+    {
+        const quint32 seed = QRandomGenerator::global()->generate();
+        {
+            Seeded sd(seed);
+            m_dark = scene(c, false);
+        }
+        {
+            Seeded sd(seed);
+            m_lit = scene(c, true);
+        }
+        m_pm = m_dark;
+        QPainter x(&m_pm);
+        for (const Win& w : m_wins)
+            if (w.on) copyRect(x, m_lit, QRectF(w.x, w.y, 3, 4));
+        m_px = c.px;
+    }
+    QPixmap scene(const Ctx& c, bool lit)
     {
         const double h = m_hue;
         QPixmap pm = layer(c, c.W, c.H);
@@ -611,7 +660,7 @@ private:
                     if (rnd() < 0.4) neonRect(QRectF(bx + w - 2.6, top, 2.6, bh * R(0.3, 0.8)));
                     for (double yy = top + 14; yy < c.H - 6; yy += 11)
                         for (double xx = bx + 5; xx < bx + w - 5; xx += 8)
-                            if (rnd() < 0.18) { m_wins.push_back({ xx, yy, true, shade }); x.fillRect(QRectF(xx, yy, 3, 4), win); }
+                            if (rnd() < 0.18) { m_wins.push_back({ xx, yy, true, shade }); x.fillRect(QRectF(xx, yy, 3, 4), lit ? win : shade); }
                     if (rnd() < 0.35) {
                         const double ah = R(26, 70);
                         x.setPen(QPen(faint, 1.4));
@@ -631,10 +680,9 @@ private:
             if (MA[k] > 0) vfill(x, QRectF(0, 0, c.W, c.H), hsl(h, 0.32, 0.24, 0), hsl(h, 0.32, 0.24, MA[k]), c.H * 0.35, c.H);
         }
         x.end();
-        m_pm = pm;
-        m_px = c.px;
+        return pm;
     }
-    QPixmap m_pm;
+    QPixmap m_pm, m_dark, m_lit;
     double m_px = 0, m_hue = 270, m_t = 0, m_toggle = 0;
     std::vector<Strip> m_strips;
     std::vector<Sign> m_signs;

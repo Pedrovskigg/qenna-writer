@@ -180,6 +180,16 @@ QPixmap layer(const Ctx& c, double w, double h)
     return pm;
 }
 
+void copyRect(QPainter& x, const QPixmap& src, const QRectF& r)
+{
+    const double px = src.devicePixelRatio();
+    const QRect d = QRectF(r.x() * px, r.y() * px, r.width() * px, r.height() * px).toAlignedRect() & QRect(QPoint(0, 0), src.size());
+    if (d.isEmpty()) return;
+    x.setCompositionMode(QPainter::CompositionMode_Source);
+    x.drawPixmap(QRectF(d.x() / px, d.y() / px, d.width() / px, d.height() / px), src, QRectF(d));
+    x.setCompositionMode(QPainter::CompositionMode_SourceOver);
+}
+
 QPixmap softDot(const QColor& col, double inner)
 {
     QPixmap pm(64, 64);
@@ -2013,6 +2023,9 @@ std::unique_ptr<Layer> makeScene(const QString& id)
     // levas 2 a 4 (AnimLeva*.cpp)
     if (auto l = makeLeva2a(id)) return l;
     if (auto l = makeLeva2b(id)) return l;
+    if (auto l = makeDesert(id)) return l;
+    if (auto l = makeGenresA(id)) return l;   // leva 7, gêneros (AnimGenresA/B.cpp)
+    if (auto l = makeGenresB(id)) return l;   // Last Exit e Route 66 (AnimDesert.cpp)
     if (auto l = makeLeva3(id)) return l;
     if (auto l = makeLeva4(id)) return l;
     if (auto l = makeLeva5(id)) return l;
