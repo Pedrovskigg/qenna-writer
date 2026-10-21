@@ -108,6 +108,8 @@ class FindBar;
 class GlobalSearchPanel;
 class PresencePopup;
 
+namespace carto { class Panel; }
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -622,6 +624,7 @@ private:
     bool m_backupFailWarnedThisSession = false;
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;
+    carto::Panel *cartoPanel = nullptr;   // o Mapa (gerador de mundos)
     TimelinePanel *timelinePanel = nullptr;
     OutlinePanel *outlinePanel = nullptr;
     CharacterSheetPanel *characterSheetPanel = nullptr;

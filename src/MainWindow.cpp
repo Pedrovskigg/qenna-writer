@@ -153,6 +153,7 @@
 #include "MemoryAddPopup.h"
 #include "QuickSavePopup.h"
 #include "LousaPanel.h"
+#include "carto/CartoPanel.h"
 #include "TimelinePanel.h"
 #include "CharacterSheetPanel.h"
 #include "ChapterStatsDialog.h"
@@ -3176,6 +3177,22 @@ void MainWindow::setupEditor()
                 } else {
                     showLousa();
                 }
+            }
+        } else if (action == LeftBar::WorldMap) {
+            CrashLogger::log("cartoPanelToggle");
+            if (!cartoPanel) {
+                cartoPanel = new carto::Panel(this);
+                connect(cartoPanel, &carto::Panel::closeRequested, this, [this]() { leftBar->clearSelection(); });
+                if (!projectRoot.isEmpty()) cartoPanel->setProjectRoot(projectRoot);
+            }
+            if (cartoPanel->isVisible()) {
+                cartoPanel->hide();
+                leftBar->clearSelection();
+            } else {
+                cartoPanel->show();
+                cartoPanel->raise();
+                cartoPanel->activateWindow();
+                leftBar->setActiveFixedAction(LeftBar::WorldMap);
             }
         } else if (action == LeftBar::Timeline) {
             CrashLogger::log("timelinePanelToggle");
@@ -6468,6 +6485,7 @@ void MainWindow::applyProjectRoot(const QString& root)
         lousaPanel->setElementsStore(elementsStore);
         lousaPanel->setProjectRoot(root);
     }
+    if (cartoPanel) cartoPanel->setProjectRoot(root);
     if (timelinePanel) {
         timelinePanel->setProjectModel(projectModel);
         timelinePanel->setProjectRoot(root);
