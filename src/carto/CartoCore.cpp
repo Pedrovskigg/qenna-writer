@@ -1,4 +1,5 @@
 #include "CartoCore.h"
+#include "CartoProf.h"
 #include "CartoNameLang.h"
 
 #include <QCoreApplication>
@@ -270,6 +271,7 @@ static double waterByType(const QString& type)
 }
 World generate(int seed, int water, const QString& type, int size, const QString& climate)
 {
+    CARTO_PROF("generate");
     const double pct = (water / 100.0 + waterByType(type)) / 2;
     const int faults = type == QLatin1String("archipelago") ? 3500 : 3000;
     const SizePreset& sp = sizePreset(size);
@@ -286,6 +288,7 @@ World generate(int seed, int water, const QString& type, int size, const QString
 }
 World emptyWorld(int seed, int size, const QString& climate)
 {
+    CARTO_PROF("emptyWorld");
     const double EMPTY_REF = 80;
     const SizePreset& sp = sizePreset(size);
     World w;

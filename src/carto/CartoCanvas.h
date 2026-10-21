@@ -11,12 +11,15 @@
 #include "CartoPaint.h"
 #include "CartoScene.h"
 
+#include <QElapsedTimer>
 #include <QImage>
+#include <QTransform>
 #include <QPointer>
 #include <QTimer>
 #include <QWidget>
 
 #include <atomic>
+#include <unordered_map>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -184,7 +187,9 @@ private:
     double m_litHour = kHourDefault;
     QImage m_climate;
     QImage m_clouds;
-    int m_cloudPad = 0;
+    int m_cloudPad = 0, m_cloudDs = 1;
+    QString m_cloudKey;
+    void startClouds();             // em segundo plano; só dependem da semente e do tamanho
     QImage m_oceanTile, m_paperTile, m_atlasTile;
 
     // vista
@@ -211,7 +216,10 @@ private:
     QRectF m_sel;
     // pincelada
     struct Stroke {
-        std::vector<float> h, m, k;   // o mundo antes
+        // o mundo antes, só nos blocos de 64×64 que a pincelada tocou (copiar o mundo inteiro custava 90 MB no Super)
+        struct Blk { std::vector<float> h, m, k; };
+        std::unordered_map<int, Blk> saved;
+        int bw = 0;
         std::optional<std::array<int, 4>> box, pending;
         double lastX = 0, lastY = 0;
         DabState st;
@@ -239,12 +247,35 @@ private:
     bool m_nameNew = false;
     bool m_newName = false;
     std::vector<QRectF> m_avoid;   // lugares que os nomes evitam no PNG
-    // camada da cena guardada (plantações, estradas, sprites) com folga em volta: arrastar o mapa só desloca
-    QImage m_sceneCache;
+    // camada da cena (plantações, estradas, sprites) em azulejos de 512 px presos ao mapa: arrastar
+    // só desenha o azulejo que entra; os vizinhos vêm adiantados quando sobra tempo
+    static constexpr int kTile = 512;
+    QHash<qint64, QImage> m_tiles;
+    QTimer m_tileTimer;
     QString m_sceneKey;
     double m_cachePanX = 0, m_cachePanY = 0;
-    int m_cacheMargin = 0;
+    QString groundKey(bool withUser = true) const;
+    QImage renderTile(const SceneState& st, int i, int j);
+    // o que os azulejos desenharam: com o resto igual, uma construção nova só refaz os azulejos em volta dela
+    struct TileBasis { QString keyNoUser; int docVer = -1; double maxLift = 0; UserLayer user; std::vector<int> bRealm; std::vector<RGB> colors; };
+    // pincelada que terminou: o terreno mudou só nesse retângulo (do mundo) entre essas versões
+    struct TerrainDirty { int from, to; std::array<int, 4> box; };
+    std::optional<TerrainDirty> m_terrainDirty;
+    double maxLift() const;          // o quanto o relevo mais alto sobe na tela (px do mundo)
+    std::optional<TileBasis> m_tileBasis;
+    TileBasis tileBasis() const;
+    QString m_roadKey;
+    void prefetchTile();
     int m_sceneRev = 0;
+    double m_cacheAng = 0, m_cacheSq = 1, m_cacheZoom = 1;
+    // interação: durante giro, inclinação e zoom a imagem que existe se transforma (nada se repinta);
+    // a pintura nítida vem em segundo plano quando a mão para
+    QElapsedTimer m_lastMove;
+    QTimer m_cacheTimer;
+    std::shared_ptr<std::atomic<bool>> m_cancel;   // da pintura de fundo em curso
+    bool baseMatches() const;
+    int lodStep() const;                           // px do mundo por px pintado, pelo zoom (de longe não precisa de tudo)
+    QTransform baseTransform() const;              // imagem pintada → tela (gira e achata se a vista mudou)
     Path m_ruler;                  // pontos da régua (mundo)
     bool m_rulerDone = false;
     double m_nameNewLen = 0;

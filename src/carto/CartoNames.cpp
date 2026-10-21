@@ -1,4 +1,5 @@
 #include "CartoNames.h"
+#include "CartoProf.h"
 
 #include "CartoNameLang.h"
 
@@ -70,6 +71,7 @@ int argmax(const std::vector<int>& cells, const Arr& arr) { int b = cells[0]; fo
 
 std::vector<NameFeature> buildNames(World& w, const std::vector<River>& rivers, const QString& density)
 {
+    CARTO_PROF("buildNames");
     const int S = infoStep(w), W = w.W, H = w.H;
     const double ref = w.ref > 0 ? w.ref : 1;
     const int gw = (W + S - 1) / S, gh = (H + S - 1) / S, N = gw * gh;

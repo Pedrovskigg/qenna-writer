@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdint>
 #include <functional>
+#include <memory>
 #include <vector>
 
 #ifndef M_PI
@@ -89,6 +90,8 @@ const SizePreset& sizePreset(int size);
 
 struct Planet { double lat0 = 0.0; double span = 78.0; bool set = false; };
 
+struct NoiseCache;   // ruído das bordas dos pincéis, guardado por bloco (CartoEdit.cpp)
+
 // O mundo: altura (terra > 0, mar <= 0), umidade (0–1) e frio extra, na resolução final.
 struct World {
     int W = 0, H = 0;
@@ -103,6 +106,7 @@ struct World {
     double scale = 1.0;         // escala do mundo (1, 0,7 ou 0,5)
     // caches preguiçosos (relevo escondido dos pincéis, ondulação da temperatura)
     std::vector<float> F, T;
+    std::shared_ptr<NoiseCache> brushNoise;   // só depende da semente: cópias do mundo podem dividir
 };
 
 World generate(int seed, int water, const QString& type, int size, const QString& climate);

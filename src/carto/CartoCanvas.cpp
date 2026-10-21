@@ -1,4 +1,5 @@
 #include "CartoCanvas.h"
+#include "CartoProf.h"
 
 #include <QCoreApplication>
 #include <QGuiApplication>
@@ -40,6 +41,13 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
     m_settle.setSingleShot(true);
     m_settle.setInterval(220);
     connect(&m_settle, &QTimer::timeout, this, &Canvas::requestFull);
+    m_cacheTimer.setSingleShot(true);
+    m_cacheTimer.setInterval(140);
+    connect(&m_cacheTimer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
+    m_tileTimer.setSingleShot(true);
+    m_tileTimer.setInterval(0);
+    connect(&m_tileTimer, &QTimer::timeout, this, &Canvas::prefetchTile);
+    m_lastMove.start();
     m_strokeTick.setSingleShot(true);
     m_strokeTick.setInterval(0);
     connect(&m_strokeTick, &QTimer::timeout, this, [this]() {
@@ -82,6 +90,7 @@ const RealmPaint* Canvas::prepareRealms()
 
 void Canvas::setDoc(Doc* d, bool refit)
 {
+    CARTO_PROF("pôr o mapa na mesa");
     waitIdle();
     m_doc = d;
     m_world = d ? &d->world : nullptr;
@@ -93,9 +102,7 @@ void Canvas::setDoc(Doc* d, bool refit)
     m_selArt.clear(); m_selName.clear();
     m_roadFrom.reset(); m_bridgeStart.reset();
     if (!w) { update(); return; }
-    const Clouds c = clouds(*w, w->seed);
-    m_clouds = QImage(c.rgba.data(), c.W, c.H, c.W * 4, QImage::Format_RGBA8888).copy();
-    m_cloudPad = c.pad;
+    startClouds();
     if (refit) fit();
     paintPreview(3);
     requestFull();
@@ -110,18 +117,23 @@ void Canvas::layersReplaced()
 
 void Canvas::worldReplaced()
 {
+    CARTO_PROF("mundo trocado");
     if (!m_world) return;
     sceneChanged();
-    const Clouds c = clouds(*m_world, m_world->seed);
-    m_clouds = QImage(c.rgba.data(), c.W, c.H, c.W * 4, QImage::Format_RGBA8888).copy();
-    m_cloudPad = c.pad;
+    startClouds();
     requestFull();
 }
 
 void Canvas::waitIdle()
 {
+    CARTO_PROF("esperar pintura de fundo");
+    const bool wasPending = m_settle.isActive();
     m_settle.stop();
+    // a pintura que estiver no meio fica velha com a edição: para agora (e volta depois, já com a edição)
+    bool cancelled = false;
+    if (m_cancel && m_jobs.load() > 0) { m_cancel->store(true); cancelled = true; }
     m_pool->waitForDone();
+    if (cancelled || wasPending) m_settle.start();
     // a pintura que acabou de terminar ainda está na fila: entrega agora (senão ela chega depois e apaga a edição)
     QCoreApplication::sendPostedEvents(this, QEvent::MetaCall);
 }
@@ -129,6 +141,7 @@ void Canvas::waitIdle()
 // ── pintura ──
 void Canvas::paintPreview(int step)
 {
+    CARTO_PROF("prévia (síncrona)");
     if (!m_world) return;
     waitIdle();
     const auto t0 = Clock::now();
@@ -143,21 +156,24 @@ void Canvas::requestFull()
     if (!m_world) return;
     m_settle.stop();
     const RealmPaint* realms = prepareRealms();
+    if (m_cancel) m_cancel->store(true);               // a anterior ficou velha
+    auto cancel = std::make_shared<std::atomic<bool>>(false);
+    m_cancel = cancel;
     const int gen = ++m_gen;
     World* w = m_world;
-    const View v = currentView(1);
+    const View v = currentView(lodStep());
     QPointer<Canvas> self(this);
     m_jobs++;
     emit statusChanged();
-    m_pool->start([self, gen, w, v, realms]() {
+    m_pool->start([self, gen, w, v, realms, cancel]() {
         const auto t0 = Clock::now();
-        auto r = std::make_shared<Render>(carto::render(*w, v, realms));
+        auto r = std::make_shared<Render>(carto::render(*w, v, realms, true, 0, cancel.get()));
         const double ms = msSince(t0);
         if (!self) return;
-        QMetaObject::invokeMethod(self, [self, gen, r, ms]() {
+        QMetaObject::invokeMethod(self, [self, gen, r, ms, cancel]() {
             if (!self) return;
             self->m_jobs--;
-            if (gen == self->m_gen) {
+            if (gen == self->m_gen && !cancel->load()) {
                 self->m_timing = tr("pintou em %1 ms").arg(qRound(ms));
                 self->adoptBase(r);
             }
@@ -168,6 +184,7 @@ void Canvas::requestFull()
 
 void Canvas::adoptBase(std::shared_ptr<Render> r)
 {
+    CARTO_PROF("adotar pintura");
     m_base = std::move(r);
     if (!m_base) return;
     const Geom& g = m_base->g;
@@ -188,6 +205,7 @@ void Canvas::refreshLight()
 
 void Canvas::presentRect(int x0, int y0, int x1, int y1)
 {
+    CARTO_PROF("luz da hora (relight)");
     if (!m_base || x1 <= x0 || y1 <= y0) return;
     const Geom& g = m_base->g;
     const uint8_t* src = m_base->data.data();
@@ -205,6 +223,7 @@ void Canvas::presentRect(int x0, int y0, int x1, int y1)
 
 void Canvas::refreshClimate()
 {
+    CARTO_PROF("camada de clima");
     if (!m_base || !m_world) return;
     const Geom& g = m_base->g;
     std::vector<uint8_t> raw(static_cast<size_t>(g.W) * g.H * 4, 0);
@@ -214,11 +233,12 @@ void Canvas::refreshClimate()
 
 void Canvas::paintBox(const std::array<int, 4>& box, bool live)
 {
-    if (!m_base || !m_world || m_base->g.step != 1) return;
+    CARTO_PROF("repintar pedaço");
+    if (!m_base || !m_world) return;
     const Geom& g = m_base->g;
     const auto v = dirtyToView(g, { double(box[0]), double(box[1]), double(box[2]), double(box[3]) }, live);
     if (v[2] <= v[0] || v[3] <= v[1]) return;
-    paintRegion(*m_world, g, m_base->data.data(), v[0], v[1], v[2], v[3], &m_base->aux, nullptr, g.info && m_doc ? m_doc->info.get() : nullptr);
+    paintBands(*m_world, g, m_base->data.data(), v[0], v[1], v[2], v[3], &m_base->aux, g.info && m_doc ? m_doc->info.get() : nullptr);
     presentRect(v[0], v[1], v[2], v[3]);
     if (m_showClimate && !m_climate.isNull())   // a camada de clima é barata: refaz só o pedaço, direto na imagem
         paintClimate(*m_world, g, m_climate.bits(), v[0], v[1], v[2], v[3]);
@@ -258,6 +278,8 @@ void Canvas::zoomBy(double f, QPointF at)
     m_panX = at.x() - (at.x() - m_panX) * (nz / m_zoom);
     m_panY = at.y() - (at.y() - m_panY) * (nz / m_zoom);
     m_zoom = nz;
+    m_lastMove.restart();
+    if (m_base && m_base->g.step != lodStep()) m_settle.start();   // chegou perto (ou longe): outro nível de detalhe
     update();
     emit viewChanged();
 }
@@ -279,10 +301,11 @@ void Canvas::setView(double ang, double pitch, bool quick)
     const auto n = worldToPlane(*m_world, m_ang, q[0], q[1]);
     m_panX = c.x() - m_zoom * n[0];
     m_panY = c.y() - m_zoom * n[1] * sq();
+    m_lastMove.restart();
     if (quick) {
-        const int step = m_world->W * m_world->H > 4e6 ? 5 : 3;
-        paintPreview(step);
+        // a imagem que existe gira e achata na hora; a nítida vem quando a mão para
         m_settle.start();
+        update();
     } else requestFull();
     emit viewChanged();
 }
@@ -356,6 +379,7 @@ QImage Canvas::exportImage(double scale, const std::function<void(QPainter&)>& e
 
 void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
 {
+    CARTO_PROF("desenhar a mesa");
     const bool atlas = m_mode == QLatin1String("atlas"), ink = m_mode == QLatin1String("ink");
     QBrush sea(atlas ? m_atlasTile : ink ? m_paperTile : m_oceanTile);
     QTransform seaT; seaT.translate(m_panX, m_panY); seaT.scale(m_zoom, m_zoom);
@@ -363,24 +387,25 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     p.fillRect(QRect(QPoint(0, 0), sz), sea);
     if (!m_base) return;
     const Geom& g = m_base->g;
-    const double s = g.step;
-    const QRectF dst(-g.cu * s, -g.cv * s * g.sq, g.W * s, g.H * s * g.sq);
+    const bool matches = baseMatches();
     p.save();
-    p.translate(m_panX, m_panY);
-    p.scale(m_zoom, m_zoom);
+    p.setTransform(baseTransform(), true);
     p.setRenderHint(QPainter::SmoothPixmapTransform);
-    p.drawImage(dst, m_present);
-    if (m_showClimate && !m_climate.isNull()) p.drawImage(dst, m_climate);
+    p.drawImage(QPointF(0, 0), m_present);
+    if (m_showClimate && !m_climate.isNull()) p.drawImage(QPointF(0, 0), m_climate);
     p.restore();
 
     // cena: plantações e estradas no chão, depois o que fica de pé
     SceneState st = sceneState();
     st.vw = sz.width(); st.vh = sz.height();
+    st.quick = !exporting && m_lastMove.elapsed() < 130;
     if (exporting) {
         st.namesTool = false; st.selName.clear(); st.avoid = m_avoid;
         if (st.info()) { m_scene.drawFields(p, st); m_scene.drawRoads(p, st); }
         if (!m_showClimate) m_scene.drawSprites(p, st);
     } else drawGroundLayer(p, st, sz);
+    // girando ou inclinando, a pintura ainda é da vista anterior: o que pisa no chão espera ela chegar
+    const bool steady = matches || exporting;
 
     // nuvens: moram no mundo; giram com a mesa e a câmera achata
     const double cop = (m_showClimate || atlas || ink) ? 0
@@ -389,12 +414,12 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
         p.save();
         p.translate(m_panX, m_panY);
         p.scale(m_zoom, m_zoom);
-        p.scale(1, g.sq);
-        p.rotate(g.ang * 180 / M_PI);
+        p.scale(1, sq());
+        p.rotate(m_ang * 180 / M_PI);
         p.translate(-m_world->W / 2.0, -m_world->H / 2.0);
         p.setOpacity(cop);
         p.setRenderHint(QPainter::SmoothPixmapTransform);
-        p.drawImage(QPointF(-m_cloudPad, -m_cloudPad), m_clouds);
+        p.drawImage(QRectF(-m_cloudPad, -m_cloudPad, m_clouds.width() * m_cloudDs, m_clouds.height() * m_cloudDs), m_clouds);
         p.restore();
     }
 
@@ -425,16 +450,19 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
             p.fillRect(R, vg);
         }
         p.restore();
-        if (T.night > 0.01) m_scene.drawLights(p, st, T.night);   // janelas, tochas e faróis acesos
+        if (T.night > 0.01 && steady) m_scene.drawLights(p, st, T.night);   // janelas, tochas e faróis acesos
     }
 
     // nomes por cima de tudo (legíveis até de noite)
-    if (st.info()) m_scene.drawLabels(p, st);
+    if (st.info() && steady) {
+        m_scene.drawLabels(p, st);
+        if (m_scene.labelsPending()) m_cacheTimer.start();   // nome com carimbo emprestado: o certo vem quando a mão parar
+    }
 
     // ferramentas
     if (exporting) return;
     p.setRenderHint(QPainter::Antialiasing);
-    drawToolOverlay(p, st);
+    if (steady) drawToolOverlay(p, st);
     if (m_tool == Tool::Ruler) drawRuler(p, st);
     if (m_drag == Drag::Area) {
         const QRectF r = m_sel.normalized();
@@ -454,38 +482,259 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     }
 }
 
-// plantações, estradas e sprites numa imagem guardada com folga de 1/4 da tela em volta:
-// arrastando o mapa, a imagem só se desloca; refaz quando a folga acaba ou algo muda
+// plantações, estradas e sprites em azulejos presos ao mapa (coordenadas da tela sem o arrasto):
+// arrastando, os azulejos só se deslocam e só o que entra na tela é desenhado
+namespace { qint64 tileId(int i, int j) { return (static_cast<qint64>(i) << 32) ^ static_cast<quint32>(j); } }
+
+QString Canvas::groundKey(bool withUser) const
+{
+    const Info* in = m_doc ? m_doc->info.get() : nullptr;
+    const SpriteSun sun = spriteSun(m_hour);
+    QString k = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9")
+                    .arg(reinterpret_cast<quintptr>(m_base.get())).arg(m_ang, 0, 'g', 12).arg(m_pitch).arg(m_zoom, 0, 'g', 12).arg(m_fitZoom, 0, 'g', 12)
+                    .arg(m_mode).arg(m_showClimate).arg(m_opts.sprites).arg(m_doc && m_doc->info ? m_doc->infoVer : -1)
+        + QStringLiteral("|%1|%2|%3|%4|%5").arg(in ? in->user.showGen : true)
+              .arg(m_world ? worldScale(*m_world) : 1).arg(sun.L[0], 0, 'f', 3).arg(sun.L[1], 0, 'f', 3).arg(devicePixelRatioF());
+    if (withUser) k += QStringLiteral("|v%1|u%2|r%3").arg(m_doc ? m_doc->ver : -1).arg(in ? in->user.ver : -1).arg(m_sceneRev);
+    return k;
+}
+
+double Canvas::maxLift() const
+{
+    if (!m_base || m_base->aux.lift.empty()) return 0;
+    CARTO_PROF("relevo mais alto");
+    float m = 0;
+    for (float v : m_base->aux.lift) m = std::max(m, v);
+    return m * m_base->g.step;
+}
+
+Canvas::TileBasis Canvas::tileBasis() const
+{
+    TileBasis b;
+    b.keyNoUser = groundKey(false);
+    b.docVer = m_doc ? m_doc->ver : -1;
+    if (const Info* in = m_doc ? m_doc->info.get() : nullptr) {
+        b.user = in->user;
+        for (const Building& o : in->buildings) b.bRealm.push_back(o.realm);
+        for (const Realm& r : in->realms) b.colors.push_back(r.color);
+    }
+    return b;
+}
+
+namespace {
+// o que mudou entre duas camadas do usuário: os pontos (do mundo) de tudo que entrou, saiu ou mexeu
+bool userDiff(const UserLayer& a, const UserLayer& b, std::vector<Pt>& pts)
+{
+    if (a.showGen != b.showGen || a.scale != b.scale) return false;
+    auto each = [&](const auto& va, const auto& vb, auto same, auto add) {
+        const size_t n = std::max(va.size(), vb.size());
+        for (size_t i = 0; i < n; i++) {
+            if (i < va.size() && i < vb.size() && same(va[i], vb[i])) continue;
+            if (i < va.size()) add(va[i]);
+            if (i < vb.size()) add(vb[i]);
+        }
+    };
+    auto path = [&](const Path& p) { pts.insert(pts.end(), p.begin(), p.end()); };
+    each(a.arts, b.arts, [](const Art& x, const Art& y) { return x.id == y.id && x.kind == y.kind && x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.size == y.size && x.realm == y.realm && x.v == y.v; },
+         [&](const Art& x) { pts.push_back({ x.x, x.y }); });
+    each(a.houses, b.houses, [](const House& x, const House& y) { return x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.floors == y.floors && x.timber == y.timber && x.v == y.v; },
+         [&](const House& x) { pts.push_back({ x.x, x.y }); });
+    each(a.walls, b.walls, [](const Wall& x, const Wall& y) { return x.pts == y.pts; }, [&](const Wall& x) { path(x.pts); });
+    each(a.fields, b.fields, [](const Field& x, const Field& y) { return x.x == y.x && x.y == y.y && x.w == y.w && x.d == y.d && x.yaw == y.yaw && x.crop == y.crop; },
+         [&](const Field& x) { const double r = std::max(x.w, x.d); pts.push_back({ x.x - r, x.y - r }); pts.push_back({ x.x + r, x.y + r }); pts.push_back({ x.x - r, x.y + r }); pts.push_back({ x.x + r, x.y - r }); });
+    each(a.bridges, b.bridges, [](const Path& x, const Path& y) { return x == y; }, path);
+    each(a.roads, b.roads, [](const Road& x, const Road& y) { return x.kind == y.kind && x.pts == y.pts; }, [&](const Road& x) { path(x.pts); });
+    return true;
+}
+QString roadsSig(const UserLayer& U)
+{
+    size_t h = qHash(U.roads.size());
+    for (const Road& r : U.roads) {
+        h = qHashMulti(h, r.kind, r.pts.size());
+        for (const Pt& q : r.pts) h = qHashMulti(h, q[0], q[1]);
+    }
+    return QString::number(h, 16);
+}
+}
+
+QImage Canvas::renderTile(const SceneState& st, int i, int j)
+{
+    CARTO_PROF("azulejo do chão");
+    const double dpr = devicePixelRatioF();
+    QImage img(qRound(kTile * dpr), qRound(kTile * dpr), QImage::Format_ARGB32_Premultiplied);
+    img.setDevicePixelRatio(dpr);
+    img.fill(Qt::transparent);
+    QPainter q(&img);
+    SceneState s2 = st;
+    s2.panX = -static_cast<double>(i) * kTile;
+    s2.panY = -static_cast<double>(j) * kTile;
+    s2.vw = s2.vh = kTile;
+    s2.clip = QRectF(0, 0, kTile, kTile);
+    s2.planKey = m_sceneKey;
+    s2.roadKey = m_roadKey;
+    if (s2.info()) { m_scene.drawFields(q, s2); m_scene.drawRoads(q, s2); }
+    if (!m_showClimate) m_scene.drawSprites(q, s2);
+    q.end();
+    return img;
+}
+
 void Canvas::drawGroundLayer(QPainter& p, const SceneState& st, QSize sz)
 {
     if (!m_doc || (!st.info() && m_showClimate)) return;
-    const Info* in = m_doc->info.get();
-    const SpriteSun sun = spriteSun(m_hour);
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9")
-                            .arg(reinterpret_cast<quintptr>(m_base.get())).arg(m_ang, 0, 'g', 12).arg(m_pitch).arg(m_zoom, 0, 'g', 12).arg(m_fitZoom, 0, 'g', 12)
-                            .arg(m_mode).arg(m_showClimate).arg(m_opts.sprites).arg(m_doc->ver)
-        + QStringLiteral("|%1|%2|%3|%4|%5|%6|%7|%8x%9").arg(m_doc->infoVer).arg(in ? in->user.ver : -1).arg(in ? in->user.showGen : true)
-              .arg(worldScale(*m_world)).arg(sun.L[0], 0, 'f', 3).arg(sun.L[1], 0, 'f', 3).arg(m_sceneRev).arg(sz.width()).arg(sz.height());
-    const int M = qRound(std::max(sz.width(), sz.height()) * 0.25);
-    const double dx = m_panX - m_cachePanX, dy = m_panY - m_cachePanY;
-    if (key != m_sceneKey || std::fabs(dx) > m_cacheMargin || std::fabs(dy) > m_cacheMargin || m_sceneCache.isNull()) {
-        const double dpr = devicePixelRatioF();
-        QImage img(qRound((sz.width() + 2 * M) * dpr), qRound((sz.height() + 2 * M) * dpr), QImage::Format_ARGB32_Premultiplied);
-        img.setDevicePixelRatio(dpr);
-        img.fill(Qt::transparent);
-        QPainter q(&img);
-        q.translate(M, M);
-        SceneState s2 = st;
-        s2.cull = M + 60;
-        if (s2.info()) { m_scene.drawFields(q, s2); m_scene.drawRoads(q, s2); }
-        if (!m_showClimate) m_scene.drawSprites(q, s2);
-        q.end();
-        m_sceneCache = img;
-        m_sceneKey = key;
-        m_cachePanX = m_panX; m_cachePanY = m_panY;
-        m_cacheMargin = M;
+    const QString key = groundKey();
+    const bool viewSame = key == m_sceneKey && m_ang == m_cacheAng && sq() == m_cacheSq && m_zoom == m_cacheZoom;
+    // girando, inclinando ou no zoom: os azulejos guardados vão junto com o mapa
+    if (!m_tiles.isEmpty() && !viewSame && (!baseMatches() || m_lastMove.elapsed() < 130)) {
+        const QTransform T = QTransform::fromTranslate(-m_cachePanX, -m_cachePanY) * QTransform::fromScale(1 / m_cacheZoom, 1 / (m_cacheZoom * m_cacheSq))
+                           * QTransform().rotateRadians(m_ang - m_cacheAng) * QTransform::fromScale(m_zoom, m_zoom * sq()) * QTransform::fromTranslate(m_panX, m_panY);
+        p.save();
+        p.setTransform(T, true);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        for (auto it = m_tiles.cbegin(); it != m_tiles.cend(); ++it) {
+            const int i = static_cast<int>(it.key() >> 32), j = static_cast<int>(static_cast<qint32>(it.key() & 0xffffffff));
+            p.drawImage(QPointF(m_cachePanX + static_cast<double>(i) * kTile, m_cachePanY + static_cast<double>(j) * kTile), it.value());
+        }
+        p.restore();
+        m_tileTimer.stop();
+        m_cacheTimer.start();                 // refaz quando a mão parar
+        return;
     }
-    p.drawImage(QPointF(m_panX - m_cachePanX - m_cacheMargin, m_panY - m_cachePanY - m_cacheMargin), m_sceneCache);
+    if (!baseMatches()) return;               // ainda sem pintura da vista de agora e sem nada guardado
+    if (!viewSame) {
+        // mesma vista e mesmo mapa, só a camada do usuário mudou: refaz só os azulejos em volta do que mexeu
+        bool partial = false;
+        const Info* in = m_doc->info.get();
+        if (m_tileBasis && !m_tiles.isEmpty() && in && m_ang == m_cacheAng && sq() == m_cacheSq && m_zoom == m_cacheZoom) {
+            TileBasis now = tileBasis();
+            std::vector<Pt> pts;
+            const bool sameTerrain = now.docVer == m_tileBasis->docVer;
+            const bool stroked = m_terrainDirty && m_terrainDirty->from == m_tileBasis->docVer && m_terrainDirty->to == now.docVer;
+            if (now.keyNoUser == m_tileBasis->keyNoUser && (sameTerrain || stroked) && now.bRealm == m_tileBasis->bRealm && now.colors == m_tileBasis->colors
+                && userDiff(m_tileBasis->user, now.user, pts)) {
+                CARTO_PROF("azulejos: só o que mexeu");
+                const double ks = worldScale(*m_world), big = (40 * ks + 12) * m_zoom + 24;
+                double x0 = INFINITY, y0 = INFINITY, x1 = -INFINITY, y1 = -INFINITY;
+                double up = 1.6 * big;
+                if (stroked) {
+                    // o pedaço pincelado, amostrado numa grade; pra cima vai até onde o relevo mais alto
+                    // (de antes ou de agora) pode tapar ou destapar o que fica atrás
+                    const auto& b = m_terrainDirty->box;
+                    const int n = 16;
+                    for (int a = 0; a <= n; a++) for (int c = 0; c <= n; c++)
+                        pts.push_back({ b[0] + (b[2] - b[0]) * double(a) / n, b[1] + (b[3] - b[1]) * double(c) / n });
+                    now.maxLift = std::max(m_tileBasis->maxLift, maxLift());
+                    up += m_zoom * sq() * now.maxLift;
+                } else now.maxLift = m_tileBasis->maxLift;
+                for (const Pt& q : pts) {
+                    const auto g = m_scene.ground(st, q[0], q[1]);
+                    if (!g) continue;
+                    const double X = g->X - st.panX, Y = g->Y - st.panY;
+                    x0 = std::min(x0, X); y0 = std::min(y0, Y); x1 = std::max(x1, X); y1 = std::max(y1, Y);
+                }
+                if (x0 <= x1) {
+                    x0 -= big; x1 += big; y0 -= up; y1 += big;
+                    for (auto it = m_tiles.begin(); it != m_tiles.end();) {
+                        const int i = static_cast<int>(it.key() >> 32), j = static_cast<int>(static_cast<qint32>(it.key() & 0xffffffff));
+                        const bool hit = i * double(kTile) < x1 && (i + 1) * double(kTile) > x0 && j * double(kTile) < y1 && (j + 1) * double(kTile) > y0;
+                        if (hit) it = m_tiles.erase(it); else ++it;
+                    }
+                }
+                partial = true;
+                m_tileBasis = std::move(now);
+            }
+        }
+        if (!partial) {
+            m_tiles.clear();
+            m_tileBasis = tileBasis();
+        }
+        m_terrainDirty.reset();
+        m_sceneKey = key;
+        m_roadKey = m_tileBasis->keyNoUser + QStringLiteral("|v%1|rd").arg(m_tileBasis->docVer) + (in ? roadsSig(in->user) : QString());
+        m_cacheAng = m_ang; m_cacheSq = sq(); m_cacheZoom = m_zoom;
+    }
+    m_cachePanX = m_panX; m_cachePanY = m_panY;
+    const int i0 = static_cast<int>(std::floor(-m_panX / kTile)), i1 = static_cast<int>(std::floor((sz.width() - m_panX - 1) / kTile));
+    const int j0 = static_cast<int>(std::floor(-m_panY / kTile)), j1 = static_cast<int>(std::floor((sz.height() - m_panY - 1) / kTile));
+    // longe demais da tela: sai da memória
+    for (auto it = m_tiles.begin(); it != m_tiles.end();) {
+        const int i = static_cast<int>(it.key() >> 32), j = static_cast<int>(static_cast<qint32>(it.key() & 0xffffffff));
+        if (i < i0 - 2 || i > i1 + 2 || j < j0 - 2 || j > j1 + 2) it = m_tiles.erase(it); else ++it;
+    }
+    for (int j = j0; j <= j1; j++)
+        for (int i = i0; i <= i1; i++) {
+            auto it = m_tiles.find(tileId(i, j));
+            if (it == m_tiles.end()) it = m_tiles.insert(tileId(i, j), renderTile(st, i, j));
+            p.drawImage(QPointF(m_panX + static_cast<double>(i) * kTile, m_panY + static_cast<double>(j) * kTile), it.value());
+        }
+    // a volta da tela, adiantada aos poucos (um azulejo por vez entre os quadros)
+    bool ring = false;
+    for (int j = j0 - 1; j <= j1 + 1 && !ring; j++)
+        for (int i = i0 - 1; i <= i1 + 1 && !ring; i++) ring = !m_tiles.contains(tileId(i, j));
+    if (ring && !m_tileTimer.isActive()) m_tileTimer.start();
+}
+
+void Canvas::prefetchTile()
+{
+    if (!m_doc || !m_base || m_tiles.isEmpty() || !baseMatches()) return;
+    if (groundKey() != m_sceneKey || m_ang != m_cacheAng || sq() != m_cacheSq || m_zoom != m_cacheZoom) return;
+    if (m_lastMove.elapsed() < 130 && m_drag != Drag::Pan) return;     // girando ou no zoom: espera
+    SceneState st = sceneState();
+    st.vw = width(); st.vh = height();
+    if (!st.info() && m_showClimate) return;
+    const int i0 = static_cast<int>(std::floor(-m_panX / kTile)), i1 = static_cast<int>(std::floor((width() - m_panX - 1) / kTile));
+    const int j0 = static_cast<int>(std::floor(-m_panY / kTile)), j1 = static_cast<int>(std::floor((height() - m_panY - 1) / kTile));
+    const double cx = (i0 + i1) / 2.0, cy = (j0 + j1) / 2.0;
+    int bi = 0, bj = 0;
+    double best = INFINITY;
+    for (int j = j0 - 1; j <= j1 + 1; j++)
+        for (int i = i0 - 1; i <= i1 + 1; i++)
+            if (!m_tiles.contains(tileId(i, j))) { const double d = std::hypot(i - cx, j - cy); if (d < best) { best = d; bi = i; bj = j; } }
+    if (best == INFINITY) return;
+    m_tiles.insert(tileId(bi, bj), renderTile(st, bi, bj));
+    m_tileTimer.start();
+}
+
+void Canvas::startClouds()
+{
+    if (!m_world) return;
+    const int ds = std::max(1, static_cast<int>(std::floor(m_world->W / 1500.0)));
+    const QString key = QStringLiteral("%1|%2|%3").arg(m_world->seed).arg(m_world->W).arg(m_world->H);
+    if (key == m_cloudKey && !m_clouds.isNull()) return;
+    m_cloudKey = key;
+    m_clouds = QImage();
+    World shape;   // as nuvens só leem o tamanho do mundo: não segura o mundo de verdade na outra linha
+    shape.W = m_world->W; shape.H = m_world->H;
+    const int seed = m_world->seed;
+    QPointer<Canvas> self(this);
+    QThreadPool::globalInstance()->start([self, shape, seed, ds, key]() {
+        const Clouds c = clouds(shape, seed, ds);
+        QImage img = QImage(c.rgba.data(), c.W, c.H, c.W * 4, QImage::Format_RGBA8888).copy();
+        const int pad = c.pad;
+        QMetaObject::invokeMethod(qApp, [self, img, pad, ds, key]() {
+            if (!self || self->m_cloudKey != key) return;
+            self->m_clouds = img; self->m_cloudPad = pad; self->m_cloudDs = ds;
+            self->update();
+        }, Qt::QueuedConnection);
+    });
+}
+
+bool Canvas::baseMatches() const
+{
+    return m_base && m_base->g.ang == m_ang && m_base->g.sq == sq();
+}
+
+int Canvas::lodStep() const
+{
+    const double k = m_zoom * devicePixelRatioF();   // px da tela por px do mundo
+    return k >= 0.75 ? 1 : k >= 0.42 ? 2 : k >= 0.28 ? 3 : 4;
+}
+
+QTransform Canvas::baseTransform() const
+{
+    const Geom& g = m_base->g;
+    const double s = g.step;
+    return QTransform::fromScale(s, s) * QTransform::fromTranslate(-g.cu * s, -g.cv * s) * QTransform().rotateRadians(m_ang - g.ang)
+         * QTransform::fromScale(m_zoom, m_zoom * sq()) * QTransform::fromTranslate(m_panX, m_panY);
 }
 
 void Canvas::resizeEvent(QResizeEvent*)
@@ -629,15 +878,18 @@ SceneState Canvas::sceneState() const
 // ── pincelada ──
 void Canvas::startStroke(QPointF pos, bool inverse)
 {
+    CARTO_PROF("pincel: apertar");
     if (!m_world) return;
     waitIdle();
-    if (!m_base || m_base->g.step != 1) {
-        // precisa da pintura cheia pra repintar só o pedaço
-        auto r = std::make_shared<Render>(carto::render(*m_world, currentView(1), prepareRealms()));
+    if (!m_base || !baseMatches()) {
+        // a pintura precisa ser da vista de agora pra repintar só o pedaço
+        auto r = std::make_shared<Render>(carto::render(*m_world, currentView(lodStep()), prepareRealms()));
         adoptBase(r);
     }
+    // o relevo mais alto de antes: quem a pincelada destapar atrás dele também se refaz
+    if (m_tileBasis) m_tileBasis->maxLift = std::max(m_tileBasis->maxLift, maxLift());
     m_stroke = std::make_unique<Stroke>();
-    m_stroke->h = m_world->h; m_stroke->m = m_world->m; m_stroke->k = m_world->k;
+    m_stroke->bw = (m_world->W + 63) / 64;
     const auto q = screenToWorld(pos);
     m_stroke->lastX = q[0]; m_stroke->lastY = q[1];
     m_stroke->st.r = m_brushSize; m_stroke->st.strength = m_brushStr; m_stroke->st.inverse = inverse; m_stroke->st.riverLen = 0;
@@ -649,6 +901,25 @@ void Canvas::dab(double qx, double qy, double nx, double ny)
 {
     double x = qx, y = qy;
     if (m_brush == Brush::River) { const double o = riverOffset(*m_world, m_stroke->st.riverLen, m_stroke->st.r); x += nx * o; y += ny * o; }
+    {   // guarda o "antes" dos blocos que esta carimbada pode tocar
+        const World& w = *m_world;
+        const double rr = m_stroke->st.r * 1.3 + 2;
+        const int bx0 = std::max(0, static_cast<int>(std::floor(x - rr)) / 64), bx1 = std::min(w.W - 1, static_cast<int>(std::ceil(x + rr))) / 64;
+        const int by0 = std::max(0, static_cast<int>(std::floor(y - rr)) / 64), by1 = std::min(w.H - 1, static_cast<int>(std::ceil(y + rr))) / 64;
+        for (int by = by0; by <= by1; by++) for (int bx = bx0; bx <= bx1; bx++) {
+            const int key = by * m_stroke->bw + bx;
+            if (m_stroke->saved.count(key)) continue;
+            Stroke::Blk& b = m_stroke->saved[key];
+            const int X0 = bx * 64, Y0 = by * 64, X1 = std::min(w.W, X0 + 64), Y1 = std::min(w.H, Y0 + 64), ww = X1 - X0;
+            for (auto* f : { &b.h, &b.m, &b.k }) f->resize(static_cast<size_t>(ww) * (Y1 - Y0));
+            for (int yy = Y0; yy < Y1; yy++) {
+                const size_t o = static_cast<size_t>(yy) * w.W + X0, d = static_cast<size_t>(yy - Y0) * ww;
+                std::copy_n(w.h.begin() + o, ww, b.h.begin() + d);
+                std::copy_n(w.m.begin() + o, ww, b.m.begin() + d);
+                std::copy_n(w.k.begin() + o, ww, b.k.begin() + d);
+            }
+        }
+    }
     const auto b = applyDab(*m_world, m_brush, x, y, m_stroke->st);
     if (m_brush == Brush::River) m_stroke->river.push_back({ x, y });
     if (!b) return;
@@ -680,11 +951,25 @@ void Canvas::moveStroke(QPointF pos)
 
 void Canvas::endStroke()
 {
+    CARTO_PROF("pincel: soltar");
     if (!m_stroke) return;
     m_strokeTick.stop();
     std::unique_ptr<Stroke> s = std::move(m_stroke);
     if (!s->box) { update(); return; }
+    const bool floraFresh = m_doc->floraVer == m_doc->ver && m_doc->floraScale == worldScale(*m_world);
+    const int verFrom = m_doc->ver;
     m_doc->touch();
+    if (floraFresh) {
+        const auto& fb = *s->box;
+        updateFloraBox(*m_world, m_doc->flora, fb[0], fb[1], fb[2], fb[3]);
+        m_doc->floraVer = m_doc->ver;
+    }
+    if (m_terrainDirty && m_terrainDirty->to == verFrom) {
+        auto& d = m_terrainDirty->box;
+        const auto& fb = *s->box;
+        d = { std::min(d[0], fb[0]), std::min(d[1], fb[1]), std::max(d[2], fb[2]), std::max(d[3], fb[3]) };
+        m_terrainDirty->to = m_doc->ver;
+    } else m_terrainDirty = TerrainDirty{ verFrom, m_doc->ver, *s->box };
     int riverId = 0;
     if (s->river.size() >= 4) {
         River rv; rv.id = ++m_doc->riverSeq; rv.pts = resample(s->river, 6);
@@ -692,7 +977,20 @@ void Canvas::endStroke()
         riverId = rv.id;
     }
     const auto& b = *s->box;
-    Snapshot before = snapshotRect(*m_world, s->h, s->m, s->k, b[0], b[1], b[2], b[3]);
+    // o "antes": o mundo de agora com os blocos guardados por cima (fora deles nada mudou)
+    Snapshot before = snapshotRect(*m_world, m_world->h, m_world->m, m_world->k, b[0], b[1], b[2], b[3]);
+    {
+        const int ww = b[2] - b[0];
+        for (const auto& [key, blk] : s->saved) {
+            const int X0 = (key % s->bw) * 64, Y0 = (key / s->bw) * 64, bwid = std::min(m_world->W, X0 + 64) - X0;
+            const int bhgt = static_cast<int>(blk.h.size()) / std::max(1, bwid);
+            for (int yy = std::max(Y0, b[1]); yy < std::min(Y0 + bhgt, b[3]); yy++)
+                for (int xx = std::max(X0, b[0]); xx < std::min(X0 + bwid, b[2]); xx++) {
+                    const size_t src = static_cast<size_t>(yy - Y0) * bwid + (xx - X0), dst = static_cast<size_t>(yy - b[1]) * ww + (xx - b[0]);
+                    before.h[dst] = blk.h[src]; before.m[dst] = blk.m[src]; before.k[dst] = blk.k[src];
+                }
+        }
+    }
     Snapshot after = snapshotRect(*m_world, m_world->h, m_world->m, m_world->k, b[0], b[1], b[2], b[3]);
     const auto t0 = Clock::now();
     paintBox(b, false);            // passada exata: acerta o mar raso longe da pincelada

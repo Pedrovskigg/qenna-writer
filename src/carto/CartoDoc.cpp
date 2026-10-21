@@ -1,4 +1,5 @@
 #include "CartoDoc.h"
+#include "CartoProf.h"
 
 #include <QJsonArray>
 
@@ -6,10 +7,14 @@ namespace carto {
 
 QJsonObject Doc::layersToJson()
 {
+    CARTO_PROF("camadas → json");
     QJsonObject o;
-    Info& in = ensureInfo();
-    o.insert("realms", realmsToJson(in));
-    o.insert("user", in.user.toJson());
+    // grava o que o usuário fez (territórios e construções) sem refazer as cidades sugeridas:
+    // elas saem do terreno de novo ao abrir
+    if (info) {
+        o.insert("realms", realmsToJson(*info));
+        o.insert("user", info->user.toJson());
+    }
     o.insert("labels", labels.toJson());
     QJsonArray rv;
     for (const River& r : rivers) {
@@ -25,6 +30,7 @@ QJsonObject Doc::layersToJson()
 
 void Doc::layersFromJson(const QJsonObject& o)
 {
+    CARTO_PROF("json → camadas");
     labels = LabelLayer::fromJson(o.value("labels").toObject());
     rivers.clear();
     for (const QJsonValue& v : o.value("rivers").toArray()) {

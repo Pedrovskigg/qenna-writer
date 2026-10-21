@@ -1,4 +1,5 @@
 #include "CartoStore.h"
+#include "CartoProf.h"
 
 #include <QDataStream>
 #include <QDir>
@@ -41,6 +42,7 @@ void unpackDelta(std::vector<float>& base, const QByteArray& packed, double q)
 
 World rebuildBase(int seed, int water, const QString& type, int size, const QString& climate)
 {
+    CARTO_PROF("refazer mundo da semente");
     return type == QLatin1String("empty") ? emptyWorld(seed, size, climate) : generate(seed, water, type, size, climate);
 }
 
@@ -117,16 +119,34 @@ void Store::removeMap(const QString& id)
     saveManifest();
 }
 
+SaveJob Store::prepareSave(const QString& id, const World& w, const MapViewState& view) const
+{
+    SaveJob j;
+    j.path = pathOf(id);
+    j.seed = w.seed; j.water = w.water; j.type = w.type; j.size = w.size; j.climate = w.climate;
+    j.ref = w.ref; j.scale = w.scale; j.W = w.W; j.H = w.H;
+    j.h = w.h; j.m = w.m; j.k = w.k;
+    j.view = view;
+    return j;
+}
+
 bool Store::saveMap(const QString& id, const World& w, const MapViewState& view) const
 {
-    const QString path = pathOf(id);
-    if (path.isEmpty() || w.W <= 0) return false;
+    return writeSave(prepareSave(id, w, view));
+}
+
+bool writeSave(const SaveJob& j)
+{
+    CARTO_PROF("salvar arquivo");
+    const QString& path = j.path;
+    const MapViewState& view = j.view;
+    if (path.isEmpty() || j.W <= 0) return false;
     QDir().mkpath(QFileInfo(path).absolutePath());
-    const World base = rebuildBase(w.seed, w.water, w.type, w.size, w.climate);
+    const World base = rebuildBase(j.seed, j.water, j.type, j.size, j.climate);
     QJsonObject meta{
-        { QStringLiteral("seed"), w.seed }, { QStringLiteral("water"), w.water }, { QStringLiteral("type"), w.type },
-        { QStringLiteral("size"), w.size }, { QStringLiteral("climate"), w.climate }, { QStringLiteral("ref"), w.ref },
-        { QStringLiteral("scale"), w.scale },
+        { QStringLiteral("seed"), j.seed }, { QStringLiteral("water"), j.water }, { QStringLiteral("type"), j.type },
+        { QStringLiteral("size"), j.size }, { QStringLiteral("climate"), j.climate }, { QStringLiteral("ref"), j.ref },
+        { QStringLiteral("scale"), j.scale },
         { QStringLiteral("view"), QJsonObject{ { QStringLiteral("ang"), view.ang }, { QStringLiteral("pitch"), view.pitch },
                                                 { QStringLiteral("mode"), view.mode }, { QStringLiteral("style"), view.style },
                                                 { QStringLiteral("hour"), view.hour } } },
@@ -137,9 +157,9 @@ bool Store::saveMap(const QString& id, const World& w, const MapViewState& view)
         QDataStream ds(&body, QIODevice::WriteOnly);
         ds.setVersion(QDataStream::Qt_6_5);
         ds << kMagic << kVersion << QJsonDocument(meta).toJson(QJsonDocument::Compact);
-        const bool sameSize = base.W == w.W && base.H == w.H;
+        const bool sameSize = base.W == j.W && base.H == j.H;
         for (int f = 0; f < 3; f++) {
-            const std::vector<float>& cur = f == 0 ? w.h : f == 1 ? w.m : w.k;
+            const std::vector<float>& cur = f == 0 ? j.h : f == 1 ? j.m : j.k;
             const std::vector<float>& bas = f == 0 ? base.h : f == 1 ? base.m : base.k;
             bool any = false;
             QByteArray packed;
@@ -156,6 +176,7 @@ bool Store::saveMap(const QString& id, const World& w, const MapViewState& view)
 
 bool Store::loadMap(const QString& id, World& w, MapViewState& view) const
 {
+    CARTO_PROF("abrir arquivo");
     QFile f(pathOf(id));
     if (!f.open(QIODevice::ReadOnly)) return false;
     QDataStream ds(&f);

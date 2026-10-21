@@ -29,6 +29,8 @@ struct MapViewState {
     QJsonObject extra;                       // camadas das próximas etapas (territórios, construções, nomes)
 };
 
+struct SaveJob;
+
 class Store {
 public:
     void setProjectRoot(const QString& root);
@@ -48,6 +50,7 @@ public:
     // um mapa
     bool loadMap(const QString& id, World& world, MapViewState& view) const;
     bool saveMap(const QString& id, const World& world, const MapViewState& view) const;
+    SaveJob prepareSave(const QString& id, const World& world, const MapViewState& view) const;
 
 private:
     QString manifestPath() const;
@@ -56,6 +59,19 @@ private:
     QVector<MapMeta> m_maps;
     QString m_activeId;
 };
+
+// Salvar em segundo plano: a mão do app só copia os campos (rápido); refazer o
+// mundo da semente, calcular a diferença, comprimir e gravar vão pra outra linha.
+struct SaveJob {
+    QString path;
+    int seed = 0, water = 60, size = 1;
+    QString type, climate;
+    double ref = 1, scale = 1;
+    int W = 0, H = 0;
+    std::vector<float> h, m, k;
+    MapViewState view;
+};
+bool writeSave(const SaveJob& job);
 
 // mundo novo pela receita (gerado ou mar vazio)
 World rebuildBase(int seed, int water, const QString& type, int size, const QString& climate);

@@ -119,6 +119,7 @@ public:
 // count = quantos reinos sugerir (3; 5 em mapa grande)
 std::unique_ptr<Info> buildInfo(World& w, int count);
 void recomputeRealms(const World& w, Info& info);
+void refreshOwners(Info& info);   // só quem é dono de cada cidade, castelo e artefato (sem refazer os reinos)
 void setRealmState(const World& w, Info& info, const RealmState& st);
 // mode: claim (pro território `realm`) ou neutral (barreira)
 bool paintTerritory(const World& w, Info& info, double x, double y, double r, bool neutral, int realm);
@@ -160,5 +161,7 @@ std::vector<Path> roadBridges(const World& w, const UserLayer& U);
 enum FloraType { Broad = 0, Pine, SnowPine, Palm, Cactus, Shrub, Rock, Reed, Dead };
 struct Flora { double x, y; int type; double v, s; int b; };
 std::vector<Flora> buildFlora(World& w);
+// depois de uma pincelada: cada planta só depende do terreno do próprio lugar, então basta refazer as do retângulo
+void updateFloraBox(World& w, std::vector<Flora>& flora, int x0, int y0, int x1, int y1);
 
 } // namespace carto

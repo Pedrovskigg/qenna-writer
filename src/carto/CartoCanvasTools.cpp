@@ -57,12 +57,13 @@ void Canvas::realmEdit(const std::function<void(Info&)>& fn)
 void Canvas::userEdit(const std::function<bool(Info&)>& fn)
 {
     if (!m_doc) return;
-    waitIdle();
+    // construções não entram na pintura do terreno: a pintura de fundo pode seguir
+    if (!m_doc->info || m_doc->infoVer != m_doc->ver) waitIdle();
     auto before = std::make_shared<Doc::Layers>(m_doc->layers());
     Info& in = m_doc->ensureInfo();
     if (!fn(in)) return;
     in.user.ver++;
-    recomputeRealms(*m_world, in);      // a bandeira pega a cor do território onde ficou
+    refreshOwners(in);                  // a bandeira pega a cor do território onde ficou
     layersDone(before, false);
     emit selectionChanged();
 }
@@ -238,7 +239,7 @@ bool Canvas::toolRelease(QMouseEvent*)
         if (m_artDrag) {
             const ArtDrag ad = *m_artDrag;
             m_artDrag.reset();
-            if (ad.moved) { waitIdle(); recomputeRealms(*m_world, in); layersDone(std::move(m_editBefore), false); }
+            if (ad.moved) { refreshOwners(in); layersDone(std::move(m_editBefore), false); }
             return true;
         }
         if (m_bstroke) {

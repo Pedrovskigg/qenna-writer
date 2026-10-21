@@ -33,6 +33,12 @@ struct SceneState {
     QString selName;
     std::vector<QRectF> avoid;    // lugares ocupados (a Cartela no PNG): nome não senta ali
     double cull = 60;             // folga fora da tela onde ainda se desenha (a camada guardada desenha além da tela)
+    bool quick = false;           // a mão está mexendo a vista: vale o carimbo de letra mais perto (o certo vem quando parar)
+    // camada do chão em azulejos: planKey identifica a vista sem o arrasto (onde cada coisa cai na tela
+    // fica guardado por ela) e clip é o azulejo, em coordenadas da tela de st: só entra o que encosta nele
+    QString planKey;
+    QString roadKey;              // o traçado das estradas na tela (não muda quando só um castelo entra)
+    QRectF clip;
     bool info() const { return mode != QLatin1String("terrain") && doc && doc->info; }
 };
 
@@ -55,11 +61,18 @@ public:
     const Label* nameByRef(const QString& ref) const;
     std::vector<Label>& names() { return m_lastNames; }
     void invalidate() { m_itemsKey.clear(); m_lightsKey.clear(); }
+    bool labelsPending() const { return m_labelsNear; }   // algum nome saiu com carimbo de outro tamanho
 
 private:
+    bool m_labelsNear = false;
     struct Item { int k; int idx; int sub; double d; };
     const std::vector<Item>& items(const SceneState& st);
     const std::vector<Path>& userRoadBridges(const SceneState& st);
+    struct SpriteIndex;
+    struct RoadPlan;
+    const SpriteIndex& spriteIndex(const SceneState& st, const std::vector<Item>& its);
+    std::shared_ptr<SpriteIndex> m_sprIdx;
+    std::shared_ptr<RoadPlan> m_roadPlan;
     void drawAtlasWalls(QPainter& p, const SceneState& st, const UserLayer& U);
 
     QString m_itemsKey;

@@ -8,6 +8,7 @@
 #include "CartoCore.h"
 
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <vector>
 
@@ -39,6 +40,7 @@ struct Geom {
     bool info = false;
     double extF = 0;
     int reach = 0, nearReach = 0;
+    const std::atomic<bool>* cancel = nullptr;   // pintura de fundo que ficou velha: para no meio (só durante o render)
 };
 Geom viewGeom(const World& w, const View& v);
 std::array<int, 4> worldRectToView(const Geom& g, double x0, double y0, double x1, double y1);
@@ -65,17 +67,23 @@ public:
 // destino opcional: `out`/`aux` são um azulejo de largura w com origem em (x0, y0)
 struct Dst { int w; int x0; int y0; };
 
+// distância até a costa em meia resolução (a água rasa usa): calculada uma vez pro
+// retângulo inteiro e dividida entre as faixas (cada faixa refazia uma janela enorme)
+struct DistField { int sx0 = 0, sy0 = 0, cw = 0, ch = 0; std::vector<float> d; };
+DistField makeDistField(const World& w, const Geom& g, int tx0, int ty0, int tx1, int ty1, int threads = 1);
+
 // Pinta [tx0,tx1)×[ty0,ty1) da vista em `out` (RGBA não pré-multiplicado).
 // inkEdges: a Tinta risca as cristas no fim (quem pinta em faixas paralelas deixa pra depois)
 void paintRegion(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1,
-                 Aux* aux, const Dst* dst = nullptr, const RealmPaint* realms = nullptr, bool inkEdges = true);
+                 Aux* aux, const Dst* dst = nullptr, const RealmPaint* realms = nullptr, bool inkEdges = true, const DistField* df = nullptr);
 void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, int tx1, int ty1, const Dst* dst = nullptr);
 // o mesmo retângulo em faixas paralelas (threads ≤ 0 = um por núcleo); resultado idêntico
 void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1, Aux* aux,
                 const RealmPaint* realms = nullptr, int threads = 0);
 
 struct Render { Geom g; std::vector<uint8_t> data; Aux aux; };
-Render render(World& w, const View& v, const RealmPaint* realms = nullptr, bool withAux = true, int threads = 0);
+Render render(World& w, const View& v, const RealmPaint* realms = nullptr, bool withAux = true, int threads = 0,
+              const std::atomic<bool>* cancel = nullptr);
 
 // ── hora do dia ──
 constexpr double kHourDefault = 14.4;
@@ -97,8 +105,9 @@ extern const ClimateKind kClimate[4];
 void paintClimate(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1);
 
 // ── nuvens aquarela (RGBA do tamanho do mundo + margem pad) e grão do oceano ──
-struct Clouds { int W = 0, H = 0, pad = 0; std::vector<uint8_t> rgba; };
-Clouds clouds(const World& w, int seed);
+// ds: 1 amostra a cada ds px do mundo (nuvem é mancha macia; nos mapas grandes basta 1 por unidade do desenho)
+struct Clouds { int W = 0, H = 0, pad = 0, ds = 1; std::vector<uint8_t> rgba; };
+Clouds clouds(const World& w, int seed, int ds = 1);
 extern const RGB kOcean;
 std::vector<uint8_t> oceanTile(int size, int seed);
 

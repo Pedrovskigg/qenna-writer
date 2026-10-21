@@ -17,6 +17,7 @@
 #include <memory>
 
 class QButtonGroup;
+class QThreadPool;
 class QHBoxLayout;
 class QVBoxLayout;
 class QComboBox;
@@ -248,6 +249,8 @@ private:
     QHash<int, double> m_brushSizes;   // tamanho por pincel (o rio é fino)
     double m_strength = 0.5;
     QTimer* m_saveTimer = nullptr;
+    QThreadPool* m_savePool = nullptr;    // gravações em segundo plano, uma de cada vez e em ordem
+    void flushSaves();
     QTimer* m_playTimer = nullptr;
     qint64 m_playLast = 0;
     QList<QPair<QToolButton*, QString>> m_icons;

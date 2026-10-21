@@ -1,7 +1,10 @@
 #include "CartoEdit.h"
+#include "CartoProf.h"
 
 #include <algorithm>
 #include <limits>
+#include <memory>
+#include <thread>
 
 namespace carto {
 
@@ -27,8 +30,86 @@ double riverOffset(const World& w, double len, double r)
     return (fbm(len * 0.011, 7.3, 3, static_cast<double>(w.seed) + 99) - 0.5) * 2 * r * 3.2;
 }
 
+// ── ruído das bordas, guardado ──
+// brushNoise custa 6 ruídos por pixel e o pincel pedia 2 (mais 4 da Montanha) a cada
+// carimbada: num pincel de raio 140 eram 185 ms por carimbo. Ele só depende da semente
+// e da posição, então cada bloco de 64×64 é calculado uma vez e reaproveitado.
+struct NoiseCache {
+    static constexpr int B = 64;
+    int W = 0, H = 0, bw = 0, bh = 0, seed = 0;
+    std::vector<std::unique_ptr<float[]>> f[3];   // 0: borda (901) · 1: alvo (501) · 2: cristas da Montanha
+};
+
+namespace {
+template <typename Fn>
+void parallelRows(int y0, int y1, size_t work, Fn fn)
+{
+    const int rows = y1 - y0 + 1;
+    int nt = work > 30000 ? static_cast<int>(std::min<unsigned>(std::max(1u, std::thread::hardware_concurrency()), 16u)) : 1;
+    nt = std::max(1, std::min(nt, rows / 6));
+    if (nt <= 1) { fn(y0, y1); return; }
+    std::vector<std::thread> th;
+    for (int t = 0; t < nt; t++) {
+        const int a = y0 + rows * t / nt, b = y0 + rows * (t + 1) / nt - 1;
+        if (a <= b) th.emplace_back(fn, a, b);
+    }
+    for (std::thread& t : th) t.join();
+}
+
+NoiseCache& noiseCache(World& w)
+{
+    if (!w.brushNoise || w.brushNoise->W != w.W || w.brushNoise->H != w.H || w.brushNoise->seed != w.seed) {
+        auto c = std::make_shared<NoiseCache>();
+        c->W = w.W; c->H = w.H; c->seed = w.seed;
+        c->bw = (w.W + NoiseCache::B - 1) / NoiseCache::B; c->bh = (w.H + NoiseCache::B - 1) / NoiseCache::B;
+        for (auto& f : c->f) f.resize(static_cast<size_t>(c->bw) * c->bh);
+        w.brushNoise = c;
+    }
+    return *w.brushNoise;
+}
+
+// garante os blocos do campo `field` que cobrem a caixa (os que faltam, calculados em paralelo)
+void ensureNoise(World& w, int field, int x0, int y0, int x1, int y1)
+{
+    NoiseCache& c = noiseCache(w);
+    std::vector<int> todo;
+    for (int by = y0 / NoiseCache::B; by <= y1 / NoiseCache::B; by++)
+        for (int bx = x0 / NoiseCache::B; bx <= x1 / NoiseCache::B; bx++) {
+            const int i = by * c.bw + bx;
+            if (!c.f[field][i]) todo.push_back(i);
+        }
+    if (todo.empty()) return;
+    const double seed = static_cast<double>(w.seed);
+    // poucos blocos novos por carimbada: reparte por linha (bloco × 64 linhas), senão sobra núcleo parado
+    std::vector<float*> dst(todo.size());
+    for (size_t t = 0; t < todo.size(); t++) { c.f[field][todo[t]].reset(new float[NoiseCache::B * NoiseCache::B]); dst[t] = c.f[field][todo[t]].get(); }
+    auto fill = [&](int a, int b) {
+        for (int r = a; r <= b; r++) {
+            const int t = r / NoiseCache::B, yy = r % NoiseCache::B;
+            const int i = todo[t], bx = i % c.bw, by = i / c.bw;
+            float* row = dst[t] + yy * NoiseCache::B;
+            const int Y = by * NoiseCache::B + yy;
+            for (int xx = 0; xx < NoiseCache::B; xx++) {
+                const int X = bx * NoiseCache::B + xx;
+                double v = 0;
+                if (field == 0) v = brushNoise(w, X, Y, 901);
+                else if (field == 1) v = brushNoise(w, X, Y, 501);
+                else v = 1 - std::fabs(2 * fbm(X * 0.022, Y * 0.022, 4, seed + 733) - 1);
+                row[xx] = static_cast<float>(v);
+            }
+        }
+    };
+    parallelRows(0, static_cast<int>(todo.size()) * NoiseCache::B - 1, todo.size() * 40000, fill);
+}
+inline float noiseAt(const NoiseCache& c, int field, int x, int y)
+{
+    return c.f[field][(y / NoiseCache::B) * c.bw + x / NoiseCache::B][(y % NoiseCache::B) * NoiseCache::B + x % NoiseCache::B];
+}
+}
+
 std::optional<std::array<int, 4>> applyDab(World& world, Brush tool, double x, double y, const DabState& st)
 {
+    CARTO_PROF("applyDab");
     const int W = world.W, H = world.H;
     std::vector<float>& h = world.h; std::vector<float>& m = world.m; std::vector<float>& k = world.k;
     const double ref = world.ref != 0 ? world.ref : 1;
@@ -56,28 +137,35 @@ std::optional<std::array<int, 4>> applyDab(World& world, Brush tool, double x, d
 
     std::vector<float> avg;
     const int aw = x1 - x0 + 1, ah = y1 - y0 + 1;
+    { CARTO_PROF("dab: ruído");
+    ensureNoise(world, 0, x0, y0, x1, y1);
+    ensureNoise(world, 1, x0, y0, x1, y1);
+    if (t == T::Mountain) ensureNoise(world, 2, x0, y0, x1, y1); }
+    const NoiseCache& NC = *world.brushNoise;
     if (t == T::Smooth) {
         avg.resize(static_cast<size_t>(aw) * ah);
-        for (int yy = y0; yy <= y1; yy++) for (int xx = x0; xx <= x1; xx++) {
+        parallelRows(y0, y1, static_cast<size_t>(aw) * ah, [&](int ya, int yb) { for (int yy = ya; yy <= yb; yy++) for (int xx = x0; xx <= x1; xx++) {
             double sum = 0; int n = 0;
             for (int dy = -3; dy <= 3; dy++) for (int dx = -3; dx <= 3; dx++) {
                 const int X = static_cast<int>(clampd(xx + dx, 0, W - 1)), Y = static_cast<int>(clampd(yy + dy, 0, H - 1));
                 sum += h[static_cast<size_t>(Y) * W + X]; n++;
             }
             avg[static_cast<size_t>(yy - y0) * aw + (xx - x0)] = static_cast<float>(sum / n);
-        }
+        } });
     }
 
-    for (int yy = y0; yy <= y1; yy++) {
+    parallelRows(y0, y1, static_cast<size_t>(aw) * ah, [&](int ya, int yb) {
+    for (int yy = ya; yy <= yb; yy++) {
         for (int xx = x0; xx <= x1; xx++) {
             const size_t i = static_cast<size_t>(yy) * W + xx;
-            const double nE = brushNoise(world, xx, yy, 901);
+            const double nE = noiseAt(NC, 0, xx, yy);
             const double Fi = F[i];
             const double warp = t == T::River ? 0.85 + 0.3 * nE : (0.74 + 0.5 * nE) * (1 - 0.28 * clampd(Fi, -1, 1));
-            const double d = jsHypot(xx - x, yy - y) / rr * warp;
+            const double ddx = xx - x, ddy = yy - y;
+            const double d = std::sqrt(ddx * ddx + ddy * ddy) / rr * warp;
             if (d >= 1) continue;
             const double f = (1 - d * d) * (1 - d * d);
-            const double D = brushNoise(world, xx, yy, 501);
+            const double D = noiseAt(NC, 1, xx, yy);
             const double a = f * rate;
             switch (t) {
             case T::Land: {
@@ -91,7 +179,7 @@ std::optional<std::array<int, 4>> applyDab(World& world, Brush tool, double x, d
                 break;
             }
             case T::Mountain: {
-                const double rn = 1 - std::fabs(2 * fbm(xx * 0.022, yy * 0.022, 4, static_cast<double>(world.seed) + 733) - 1);
+                const double rn = noiseAt(NC, 2, xx, yy);
                 const double peak = 0.55 * smoothstep(-0.6, 1.0, Fi) + 0.45 * rn * rn;
                 const double target = ref * (0.30 + 1.0 * peak) * (0.55 + 0.45 * (1 - d * d));
                 if (h[i] < target) h[i] = static_cast<float>(h[i] + (target - h[i]) * a * 0.9);
@@ -119,11 +207,13 @@ std::optional<std::array<int, 4>> applyDab(World& world, Brush tool, double x, d
             }
         }
     }
+    });
     return std::array<int, 4>{ x0, y0, x1 + 1, y1 + 1 };
 }
 
 bool addArea(World& world, const PlaneRect& rect, double ang, int seed)
 {
+    CARTO_PROF("addArea");
     const int W = world.W, H = world.H;
     std::vector<float>& h = world.h;
     const double rx = rect.x, ry = rect.y, rw = rect.w, rh = rect.h;
@@ -164,6 +254,7 @@ bool addArea(World& world, const PlaneRect& rect, double ang, int seed)
 Snapshot snapshotRect(const World& w, const std::vector<float>& h, const std::vector<float>& m, const std::vector<float>& k,
                       int x0, int y0, int x1, int y1)
 {
+    CARTO_PROF("snapshotRect");
     Snapshot s; s.x0 = x0; s.y0 = y0; s.x1 = x1; s.y1 = y1;
     const int ww = x1 - x0, hh = y1 - y0, W = w.W;
     auto take = [&](const std::vector<float>& a) {

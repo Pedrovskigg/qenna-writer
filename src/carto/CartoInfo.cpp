@@ -1,4 +1,5 @@
 #include "CartoInfo.h"
+#include "CartoProf.h"
 
 #include "CartoEdit.h"
 
@@ -8,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <thread>
 
 namespace carto {
 
@@ -196,19 +198,28 @@ RGB Info::realmColor(int id) const
 
 void recomputeRealms(const World& w, Info& info)
 {
+    CARTO_PROF("recomputeRealms");
     const CostGrid& g = info.realmGrid;
     const int gw = g.gw, gh = g.gh, N = gw * gh, S = info.step;
     std::vector<float> cost = g.cost;
     for (int i = 0; i < N; i++) if (info.barrier[i]) cost[i] = std::numeric_limits<float>::infinity();
-    info.dist.clear();
-    for (const RealmDef& d : info.defs) {
+    // um Dijkstra por território, cada um num núcleo
+    info.dist.assign(info.defs.size(), {});
+    auto one = [&](size_t r) {
+        const RealmDef& d = info.defs[r];
         std::vector<int> src;
         for (const Pt& p : d.seeds) { const int c = info.cellOf(p[0], p[1]); if (!info.barrier[c]) src.push_back(c); }
         for (int c : d.paint) if (c >= 0 && c < N && !info.barrier[c]) src.push_back(c);
-        if (src.empty()) { info.dist.emplace_back(N, kFar); continue; }
+        if (src.empty()) { info.dist[r].assign(N, kFar); return; }
         Tree t = dijkstra(gw, gh, cost, src);
         for (double& v : t.dist) if (!std::isfinite(v)) v = kFar;
-        info.dist.push_back(std::move(t.dist));
+        info.dist[r] = std::move(t.dist);
+    };
+    {
+        std::vector<std::thread> th;
+        for (size_t r = 1; r < info.defs.size(); r++) th.emplace_back(one, r);
+        if (!info.defs.empty()) one(0);
+        for (std::thread& t : th) t.join();
     }
     info.reach.clear();
     for (const RealmDef& d : info.defs) info.reach.push_back(d.reach);
@@ -226,10 +237,16 @@ void recomputeRealms(const World& w, Info& info)
         R.x = n ? (sx / n) * S + 2 : 0; R.y = n ? (sy / n) * S + 2 : 0; R.area = n;
         info.realms.push_back(R);
     }
+    refreshOwners(info);
+    (void)w;
+}
+
+void refreshOwners(Info& info)
+{
+    if (info.owner.empty()) return;
     for (Town& t : info.towns) t.realm = info.owner[info.cellOf(t.x, t.y)];
     for (Building& b : info.buildings) if (b.town >= 0) b.realm = info.towns[b.town].realm;
     for (Art& a : info.user.arts) a.realm = info.owner[info.cellOf(a.x, a.y)];
-    (void)w;
 }
 
 void setRealmState(const World& w, Info& info, const RealmState& st)
@@ -267,6 +284,7 @@ bool paintTerritory(const World& w, Info& info, double x, double y, double r, bo
 // ── cidades e estradas sugeridas ──
 std::unique_ptr<Info> buildInfo(World& w, int count)
 {
+    CARTO_PROF("buildInfo");
     auto info = std::make_unique<Info>();
     const int S = infoStep(w);
     info->step = S;
@@ -670,16 +688,17 @@ bool Router::pathTo(double tx, double ty, Path& out) const
 }
 
 // ── vegetação: uma tentativa a cada 4 px, sorteio preso à semente ──
-std::vector<Flora> buildFlora(World& w)
+namespace {
+// a planta da célula (cx, cy) da grade: `inside` diz se o ponto sorteado cai onde interessa
+template <typename In>
+bool floraCell(World& w, double cx, double cy, double S, double seed, In inside, Flora& out)
 {
-    std::vector<Flora> out;
-    const double S = 4 * std::pow(worldScale(w), 0.8);
-    const double seed = static_cast<double>(w.seed) + 77;
-    for (double cy = 0; cy < w.H; cy += S) for (double cx = 0; cx < w.W; cx += S) {
+    {
         const double r1 = hash2(jsRound(cx * 7), jsRound(cy * 7), seed), r2 = hash2(cx, cy, seed + 1), r3 = hash2(cx, cy, seed + 2), r4 = hash2(cx, cy, seed + 3);
         const double x = cx + r1 * S, y = cy + r2 * S;
+        if (!inside(x, y)) return false;
         const ClimateSample c = climateAt(w, x, y);
-        if (!c.valid || c.t < 0.025) continue;
+        if (!c.valid || c.t < 0.025) return false;
         const double alt = 1 - smoothstep(0.34, 0.55, c.t);
         double p = 0;
         int type = -1;
@@ -704,11 +723,46 @@ std::vector<Flora> buildFlora(World& w)
             break;
         }
         if (c.t > 0.55 && c.id != 0) { p = 0.015; type = Rock; }   // pedra solta acima da linha das árvores
-        if (type < 0 || r3 >= p) continue;
+        if (type < 0 || r3 >= p) return false;
         double v = std::fmod(r1 * 7.13 + r2 * 3.7, 1.0);
-        out.push_back({ x, y, type, v, 0.8 + 0.45 * r4, c.id });
+        out = { x, y, type, v, 0.8 + 0.45 * r4, c.id };
+        return true;
     }
+}
+}
+
+std::vector<Flora> buildFlora(World& w)
+{
+    CARTO_PROF("buildFlora");
+    std::vector<Flora> out;
+    const double S = 4 * std::pow(worldScale(w), 0.8);
+    const double seed = static_cast<double>(w.seed) + 77;
+    Flora f;
+    auto all = [](double, double) { return true; };
+    for (double cy = 0; cy < w.H; cy += S) for (double cx = 0; cx < w.W; cx += S)
+        if (floraCell(w, cx, cy, S, seed, all, f)) out.push_back(f);
     return out;
+}
+
+void updateFloraBox(World& w, std::vector<Flora>& flora, int x0, int y0, int x1, int y1)
+{
+    CARTO_PROF("vegetação do pedaço");
+    // a planta lê o terreno nos 4 px em volta do ponto: 2 px de folga cobrem a borda
+    const double X0 = x0 - 2, Y0 = y0 - 2, X1 = x1 + 2, Y1 = y1 + 2;
+    auto inside = [&](double x, double y) { return x >= X0 && x <= X1 && y >= Y0 && y <= Y1; };
+    flora.erase(std::remove_if(flora.begin(), flora.end(), [&](const Flora& f) { return inside(f.x, f.y); }), flora.end());
+    const double S = 4 * std::pow(worldScale(w), 0.8);
+    const double seed = static_cast<double>(w.seed) + 77;
+    // as mesmas células da grade inteira (cy = n·S somado do zero, como no laço de buildFlora)
+    Flora f;
+    double cy = 0;
+    for (; cy + S < Y0 - S; cy += S) {}
+    for (; cy < w.H && cy <= Y1; cy += S) {
+        double cx = 0;
+        for (; cx + S < X0 - S; cx += S) {}
+        for (; cx < w.W && cx <= X1; cx += S)
+            if (floraCell(w, cx, cy, S, seed, inside, f)) flora.push_back(f);
+    }
 }
 
 // ── gravar e ler ──

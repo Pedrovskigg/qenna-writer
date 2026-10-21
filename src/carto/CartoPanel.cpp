@@ -1,4 +1,5 @@
 #include "CartoPanel.h"
+#include "CartoProf.h"
 
 #include "CartoAstrolabe.h"
 #include "CartoCartela.h"
@@ -21,6 +22,7 @@
 #include <QPushButton>
 #include <QRandomGenerator>
 #include <QSettings>
+#include <QThreadPool>
 #include <QSlider>
 #include <QSpinBox>
 #include <QTimer>
@@ -90,6 +92,8 @@ Panel::Panel(QWidget* parent) : QWidget(parent, Qt::Window)
     setMinimumSize(820, 560);
     resize(1280, 820);
     m_brushSizes = { { int(Brush::River), 10.0 } };
+    m_savePool = new QThreadPool(this);
+    m_savePool->setMaxThreadCount(1);
     m_saveTimer = new QTimer(this);
     m_saveTimer->setSingleShot(true);
     m_saveTimer->setInterval(1500);
@@ -110,7 +114,10 @@ Panel::Panel(QWidget* parent) : QWidget(parent, Qt::Window)
 Panel::~Panel()
 {
     if (m_saveTimer->isActive()) saveNow();
+    flushSaves();
 }
+
+void Panel::flushSaves() { if (m_savePool) m_savePool->waitForDone(); }
 
 // ── montagem ──
 void Panel::buildUi()
@@ -759,6 +766,7 @@ QString Panel::toolLabel() const
 
 void Panel::syncUi()
 {
+    CARTO_PROF("syncUi");
     if (!m_canvas) return;
     const int idx = m_store.indexOf(m_mapId);
     if (!m_titleEdit->isVisible()) m_title->setText(idx >= 0 ? m_store.maps()[idx].name : tr("Mapa"));
@@ -904,6 +912,7 @@ void Panel::showMapMenu()
                              tr("O mapa some do projeto. Um backup do projeto traz ele de volta."), tr("Excluir"))) return;
         m_saveTimer->stop();
         m_canvas->waitIdle();
+        flushSaves();   // uma gravação atrasada não pode recriar o arquivo apagado
         m_store.removeMap(m_mapId);
         m_hasWorld = false;
         m_mapId.clear();
@@ -918,16 +927,17 @@ void Panel::scheduleSave() { if (m_hasWorld) m_saveTimer->start(); }
 
 void Panel::saveNow()
 {
+    CARTO_PROF("salvar (painel)");
     m_saveTimer->stop();
     if (!m_hasWorld || m_mapId.isEmpty()) return;
-    m_canvas->waitIdle();
     m_view.ang = m_canvas->angle();
     m_view.pitch = m_canvas->pitch();
     m_view.mode = m_canvas->mode();
     m_view.style = m_canvas->terrainStyle();
     m_view.hour = m_canvas->hour();
     m_view.extra = m_doc.layersToJson();
-    m_store.saveMap(m_mapId, m_doc.world, m_view);
+    auto job = std::make_shared<SaveJob>(m_store.prepareSave(m_mapId, m_doc.world, m_view));
+    m_savePool->start([job]() { writeSave(*job); });
 }
 
 void Panel::hideEvent(QHideEvent*)
@@ -938,6 +948,7 @@ void Panel::hideEvent(QHideEvent*)
 void Panel::closeEvent(QCloseEvent* e)
 {
     if (m_saveTimer->isActive()) saveNow();
+    flushSaves();
     emit closeRequested();
     e->accept();
 }
@@ -1082,6 +1093,7 @@ void Panel::setPlaying(bool on)
 
 void Panel::generateFromPanel()
 {
+    CARTO_PROF("gerar (painel)");
     m_canvas->waitIdle();
     Undo u; u.kind = Undo::Full; u.world = std::make_shared<World>(m_doc.world); u.layers = std::make_shared<Doc::Layers>(m_doc.layers());
     const bool wasAuto = m_store.indexOf(m_mapId) >= 0 && m_store.maps()[m_store.indexOf(m_mapId)].name == mapTitle(m_doc.world);

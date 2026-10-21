@@ -1,4 +1,5 @@
 #include "CartoPaint.h"
+#include "CartoProf.h"
 
 #include <algorithm>
 #include <atomic>
@@ -87,8 +88,48 @@ double liftAt(const World& w, const View& v, double qx, double qy)
 }
 
 // ── o pintor ──
+DistField makeDistField(const World& world, const Geom& g, int tx0, int ty0, int tx1, int ty1, int threads)
+{
+    const int W = g.W, H = g.H, s = g.step, WW = world.W, WH = world.H;
+    const int dM = g.style == Style::Ink ? 18 : 8, reach = g.reach, DS = 2;
+    const std::vector<float>& wh = world.h;
+    const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
+    const double bqx = g.ccx - g.cu * dux - g.cv * dvx, bqy = g.ccy - g.cu * duy - g.cv * dvy;
+    DistField f;
+    f.sx0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(tx0 - reach - dM) / DS)) * DS);
+    f.sy0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(ty0 - reach - dM) / DS)) * DS);
+    const int sx1 = std::min(W, tx1 + reach + dM), sy1 = std::min(H, ty1 + reach + dM);
+    f.cw = static_cast<int>(std::ceil(static_cast<double>(sx1 - f.sx0) / DS)) + 1;
+    f.ch = static_cast<int>(std::ceil(static_cast<double>(sy1 - f.sy0) / DS)) + 1;
+    std::vector<float> hc(static_cast<size_t>(f.cw) * f.ch);
+    auto rows = [&](int va, int vb) {
+        for (int v = va; v < vb; v++) {
+            const int V = f.sy0 + v * DS;
+            double qx = bqx + f.sx0 * dux + V * dvx, qy = bqy + f.sx0 * duy + V * dvy;
+            for (int u = 0; u < f.cw; u++, qx += dux * DS, qy += duy * DS) {
+                double val = -1e3;
+                if (!(qx < 0 || qy < 0 || qx > WW - 1 || qy > WH - 1)) {
+                    const int ix = std::min(WW - 2, toInt32(qx)), iy = std::min(WH - 2, toInt32(qy));
+                    const double fx = qx - ix, fy = qy - iy;
+                    const size_t j = static_cast<size_t>(iy) * WW + ix;
+                    val = wh[j] * (1 - fx) * (1 - fy) + wh[j + 1] * fx * (1 - fy) + wh[j + WW] * (1 - fx) * fy + wh[j + WW + 1] * fx * fy;
+                }
+                hc[static_cast<size_t>(v) * f.cw + u] = static_cast<float>(val);
+            }
+        }
+    };
+    if (threads <= 1 || f.ch < 64) rows(0, f.ch);
+    else {
+        std::vector<std::thread> th;
+        for (int t = 0; t < threads; t++) th.emplace_back(rows, f.ch * t / threads, f.ch * (t + 1) / threads);
+        for (std::thread& t : th) t.join();
+    }
+    f.d = distanceToLand(hc, f.cw, f.ch);
+    return f;
+}
+
 void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1,
-                 Aux* aux, const Dst* dst, const RealmPaint* realms, bool inkEdges)
+                 Aux* aux, const Dst* dst, const RealmPaint* realms, bool inkEdges, const DistField* dfIn)
 {
     const int W = g.W, H = g.H, s = g.step;
     const int OW = dst ? dst->w : W, OX = dst ? dst->x0 : 0, OY = dst ? dst->y0 : 0;
@@ -126,6 +167,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     const size_t NB = static_cast<size_t>(bw) * bh;
     std::vector<float> h(NB), m(NB), k(NB), tw(NB), qxA(NB), qyA(NB);
     for (int v = 0; v < bh; v++) {
+        if (g.cancel && g.cancel->load(std::memory_order_relaxed)) return;
         const int V = v + by0;
         double qx = bqx + bx0 * dux + V * dvx, qy = bqy + bx0 * duy + V * dvy;
         for (int u = 0; u < bw; u++, qx += dux, qy += duy) {
@@ -151,19 +193,14 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     };
 
     // S: vizinhança larga em meia resolução, só pra medir a distância até a costa
+    // (quem pinta em faixas manda o campo pronto, calculado uma vez pro retângulo inteiro)
     const int DS = 2;
-    const int sx0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(tx0 - reach - dM) / DS)) * DS);
-    const int sy0 = std::max(0, static_cast<int>(std::floor(static_cast<double>(ty0 - reach - dM) / DS)) * DS);
-    const int sx1 = std::min(W, tx1 + reach + dM), sy1 = std::min(H, ty1 + reach + dM);
-    const int cw = static_cast<int>(std::ceil(static_cast<double>(sx1 - sx0) / DS)) + 1;
-    const int ch = static_cast<int>(std::ceil(static_cast<double>(sy1 - sy0) / DS)) + 1;
-    std::vector<float> hc(static_cast<size_t>(cw) * ch);
-    for (int v = 0; v < ch; v++) {
-        const int V = sy0 + v * DS;
-        double qx = bqx + sx0 * dux + V * dvx, qy = bqy + sx0 * duy + V * dvy;
-        for (int u = 0; u < cw; u++, qx += dux * DS, qy += duy * DS) hc[static_cast<size_t>(v) * cw + u] = static_cast<float>(sampleW(wh, qx, qy, -1e3));
-    }
-    const std::vector<float> distC = distanceToLand(hc, cw, ch);
+    DistField dfOwn;
+    if (!dfIn) dfOwn = makeDistField(world, g, tx0, ty0, tx1, ty1, 1);
+    const DistField& DF = dfIn ? *dfIn : dfOwn;
+    const int sx0 = DF.sx0, sy0 = DF.sy0, cw = DF.cw, ch = DF.ch;
+    const std::vector<float>& distC = DF.d;
+    (void)reach;
     auto distAt = [&](double x, double y) -> double {
         const double u = clampd((x - sx0) / DS, 0, cw - 1.001), v = clampd((y - sy0) / DS, 0, ch - 1.001);
         const int iu = toInt32(u), iv = toInt32(v);
@@ -320,6 +357,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     };
 
     for (int row = ty0; row < rowEnd; row++) {
+        if (g.cancel && g.cancel->load(std::memory_order_relaxed)) return;
         for (int col = tx0; col < tx1; col++) {
             const long long i = LB(col, row);
             const size_t iu = static_cast<size_t>(i);
@@ -579,13 +617,16 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
     }
 }
 
-Render render(World& w, const View& v, const RealmPaint* realms, bool withAux, int threads)
+Render render(World& w, const View& v, const RealmPaint* realms, bool withAux, int threads, const std::atomic<bool>* cancel)
 {
+    CARTO_PROF("render");
     Render r;
     r.g = viewGeom(w, v);
     r.data.assign(static_cast<size_t>(r.g.W) * r.g.H * 4, 0);
     if (withAux) r.aux.resize(static_cast<size_t>(r.g.W) * r.g.H);
+    r.g.cancel = cancel;
     paintBands(w, r.g, r.data.data(), 0, 0, r.g.W, r.g.H, withAux ? &r.aux : nullptr, realms, threads);
+    r.g.cancel = nullptr;
     return r;
 }
 
@@ -595,20 +636,24 @@ Render render(World& w, const View& v, const RealmPaint* realms, bool withAux, i
 void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1, int ty1, Aux* aux,
                 const RealmPaint* realms, int threads)
 {
+    CARTO_PROF("paintBands");
     ensureTempWave(w);
     noiseTiles();
     if (threads <= 0) threads = static_cast<int>(std::max(1u, std::thread::hardware_concurrency()));
-    const int rows = ty1 - ty0;
-    const int bands = std::max(1, std::min(rows / 48, threads * 3));
+    // faixas VERTICAIS: a coluna de relevo só sobe (até extF px), então faixa horizontal
+    // fina repetia a pintura das linhas de baixo; de lado a sobra é só a folga dM
+    const int cols = tx1 - tx0;
+    const int bands = std::max(1, std::min(cols / 48, threads * 2));
     if (bands <= 1 || threads <= 1) {
         paintRegion(w, g, out, tx0, ty0, tx1, ty1, aux, nullptr, realms, true);
         return;
     }
+    const DistField df = makeDistField(w, g, tx0, ty0, tx1, ty1, threads);
     std::atomic<int> next{ 0 };
     auto work = [&]() {
         for (int b; (b = next.fetch_add(1)) < bands;) {
-            const int y0 = ty0 + rows * b / bands, y1 = ty0 + rows * (b + 1) / bands;
-            paintRegion(w, g, out, tx0, y0, tx1, y1, aux, nullptr, realms, false);
+            const int x0 = tx0 + cols * b / bands, x1 = tx0 + cols * (b + 1) / bands;
+            paintRegion(w, g, out, x0, ty0, x1, ty1, aux, nullptr, realms, false, &df);
         }
     };
     std::vector<std::thread> pool;
@@ -755,12 +800,15 @@ void paintClimate(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int t
 }
 
 // ── nuvens ──
-Clouds clouds(const World& w, int seed)
+Clouds clouds(const World& w, int seed, int ds)
 {
+    CARTO_PROF("nuvens");
     const int W = w.W, Hs = w.H;
     const double U = W / 1500.0, svgH = w.H / U;
     const int pad = padFor(w);
-    const int CW = W + 2 * pad, CH = Hs + 2 * pad;
+    ds = std::max(1, ds);
+    const int FW = W + 2 * pad, FH = Hs + 2 * pad;        // em px do mundo
+    const int CW = (FW + ds - 1) / ds, CH = (FH + ds - 1) / ds;   // na grade amostrada
     std::vector<float> A(static_cast<size_t>(CW) * CH, 0.0f);
     SeededRand rng(toUint32(static_cast<double>(seed) * 7919 + 4321));
     const double svgW = 1500, margin = 0.08;
@@ -791,9 +839,11 @@ Clouds clouds(const World& w, int seed)
             by0 = std::min(by0, b.dy - b.ry); by1 = std::max(by1, b.dy + b.ry);
         }
         const double disp = 30;
-        const int X0 = static_cast<int>(clampd(std::floor(pcx + (bx0 - disp) * U), 0, CW - 1)), X1 = static_cast<int>(clampd(std::ceil(pcx + (bx1 + disp) * U), 0, CW - 1));
-        const int Y0 = static_cast<int>(clampd(std::floor(pcy + (by0 - disp) * U), 0, CH - 1)), Y1 = static_cast<int>(clampd(std::ceil(pcy + (by1 + disp) * U), 0, CH - 1));
-        for (int py = Y0; py <= Y1; py++) for (int px = X0; px <= X1; px++) {
+        const int X0 = static_cast<int>(clampd(std::floor((pcx + (bx0 - disp) * U) / ds), 0, CW - 1)), X1 = static_cast<int>(clampd(std::ceil((pcx + (bx1 + disp) * U) / ds), 0, CW - 1));
+        const int Y0 = static_cast<int>(clampd(std::floor((pcy + (by0 - disp) * U) / ds), 0, CH - 1)), Y1 = static_cast<int>(clampd(std::ceil((pcy + (by1 + disp) * U) / ds), 0, CH - 1));
+        // linhas independentes (cada pixel só é escrito pela própria linha): uma fatia por núcleo
+        auto rows = [&](int ya, int yb) { for (int gy = ya; gy <= yb; gy++) for (int gx = X0; gx <= X1; gx++) {
+            const int px = gx * ds, py = gy * ds;
             const double sx = (px - pcx) / U, sy = (py - pcy) / U;
             const double wx = sx + cx, wy = sy + cy;
             const double qx = sx + disp * 2 * (fbm(wx * 0.018, wy * 0.018, 3, seed + 23) - 0.5) * 1.6;
@@ -808,11 +858,21 @@ Clouds clouds(const World& w, int seed)
             double a = smoothstep(0, 0.55, 1 - q);
             a *= 1 - 0.30 * fbm(wx * 0.05, wy * 0.05 * 0.65, 3, seed + 7);
             a *= op;
-            const size_t i = static_cast<size_t>(py) * CW + px;
+            const size_t i = static_cast<size_t>(gy) * CW + gx;
             A[i] = static_cast<float>(a + A[i] * (1 - a));
+        } };
+        const int nt = std::max(1, std::min(static_cast<int>(std::thread::hardware_concurrency()), (Y1 - Y0 + 1) / 16));
+        if (nt <= 1) rows(Y0, Y1);
+        else {
+            std::vector<std::thread> th;
+            for (int t = 0; t < nt; t++) {
+                const int a = Y0 + (Y1 - Y0 + 1) * t / nt, b = Y0 + (Y1 - Y0 + 1) * (t + 1) / nt - 1;
+                if (a <= b) th.emplace_back(rows, a, b);
+            }
+            for (std::thread& t : th) t.join();
         }
     }
-    Clouds c; c.W = CW; c.H = CH; c.pad = pad; c.rgba.assign(static_cast<size_t>(CW) * CH * 4, 0);
+    Clouds c; c.W = CW; c.H = CH; c.pad = pad; c.ds = ds; c.rgba.assign(static_cast<size_t>(CW) * CH * 4, 0);
     for (size_t i = 0; i < A.size(); i++) {
         if (A[i] <= 0) continue;
         c.rgba[i * 4] = 245; c.rgba[i * 4 + 1] = 242; c.rgba[i * 4 + 2] = 236; c.rgba[i * 4 + 3] = u8c(A[i] * 255.0);
