@@ -68,9 +68,10 @@ struct RealmState { std::vector<RealmDef> defs; std::vector<uint8_t> barrier; };
 
 // ── o que o usuário constrói ──
 struct Art {
-    QString id, kind;             // castle · tower · lighthouse · windmill · temple · ruins
+    QString id, kind;             // castle · tower · lighthouse · windmill · temple · ruins · e os de artSpecs()
     double x = 0, y = 0, yaw = 0, v = 0;
     int size = 0;
+    QString style;                // castelo: "" (humano) · elven · dwarf · orc
     QString name;
     int realm = -1;
 };
@@ -91,6 +92,16 @@ struct UserLayer {
     static UserLayer fromJson(const QJsonObject& o);
 };
 QString artName(const QString& kind);   // "Castelo", "Torre"...
+// artefatos das levas novas (estátua em diante): tamanho, onde vão e pra onde nascem virados
+struct ArtSpec {
+    const char* kind;
+    double r, h;                  // raio no chão e altura (px do mundo, escala 1)
+    bool water, named;            // só no mar · ganha nome ao nascer ("Dragão 1")
+    char face;                    // 'f' de frente pra quem olha · 't' três quartos de frente · 's' de lado · 0 livre
+};
+const std::vector<ArtSpec>& artSpecs();
+const ArtSpec* artSpec(const QString& kind);
+double faceYaw(const ArtSpec& s, double v, double viewAng, double yaw);   // o giro de nascença, virado pra câmera (livre: fica yaw)
 
 class Info : public RealmPaint {
 public:

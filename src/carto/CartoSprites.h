@@ -38,7 +38,7 @@ void resetSun();
 
 struct FloraImg { QImage img; double ax = 0, ay = 0, ppw = 1; };
 const FloraImg& floraImage(int type, double v, double pitchDeg, double ppw, bool mirror);
-const QImage& glowImage(const QString& kind);   // window · torch · beacon · lantern
+const QImage& glowImage(const QString& kind);   // window · torch · beacon · lantern · arcane · fairy · fire · ghost · holy · eye
 
 void drawHouse(QPainter& p, double x, double y, double yaw, double v, int floors, bool timber, const Cam& cam, bool snowy);
 void drawCastle(QPainter& p, double x, double y, double yaw, int size, const Cam& cam, const RGB& realmCol);
@@ -54,6 +54,11 @@ void drawRuins(QPainter& p, const Art& a, const Cam& cam);
 void drawWallSeg(QPainter& p, const Pt& a, const Pt& b, const Cam& cam, double k);
 void drawWallTower(QPainter& p, const Pt& at, const Cam& cam, double k);
 void atlasGlyph(QPainter& p, int type, double X, double Y, double k);
+// levas novas (CartoSpritesArts.cpp): estátua, navio, dragão... e os castelos élfico, anão e orc;
+// devolve false se o artefato não é delas (aí vale o desenho de sempre)
+bool drawArt(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol);
+struct ArtLight { double lx, ly, z, r; const char* kind; double force; };
+const std::vector<ArtLight>& artLights(const QString& kind);   // luzes de noite, no sistema do artefato (antes da escala)
 void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v);
 
 } // namespace carto::spr

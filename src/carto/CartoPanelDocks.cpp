@@ -33,6 +33,22 @@ QString buildKindName(const QString& k)
 }
 
 namespace {
+// rótulo curto do botão (o nome inteiro fica pro título e pro artefato selecionado)
+QString buildChoiceLabel(const QString& k)
+{
+    if (k == QLatin1String("mage")) return Panel::tr("Mago");
+    if (k == QLatin1String("greattree")) return Panel::tr("Árvore");
+    if (k == QLatin1String("stones")) return Panel::tr("Pedras");
+    if (k == QLatin1String("floatisland")) return Panel::tr("Ilha");
+    if (k == QLatin1String("sword")) return Panel::tr("Espada");
+    if (k == QLatin1String("heads")) return Panel::tr("Cabeças");
+    if (k == QLatin1String("seaserpent")) return Panel::tr("Serpente");
+    if (k == QLatin1String("camp")) return Panel::tr("Tendas");
+    return buildKindName(k);
+}
+}
+
+namespace {
 QLabel* caption(QWidget* parent, const QString& text)
 {
     auto* c = new QLabel(text, parent);
@@ -300,7 +316,7 @@ void Panel::buildBuildCard()
         for (int c = 0; c < 4; c++) g->setColumnStretch(c, 1);
         for (int i = 0; i < items.size(); i++) {
             const QString k = items[i].first;
-            auto* b = newChoice(m_buildCard, items[i].second, buildKindName(k), tips.value(i));
+            auto* b = newChoice(m_buildCard, items[i].second, buildChoiceLabel(k), tips.value(i));
             connect(b, &QToolButton::clicked, this, [this, k]() { m_canvas->opts().buildKind = k; m_canvas->optsChanged(); syncUi(); });
             m_buildBtns.insert(k, b);
             g->addWidget(b, i / 4, i % 4);
@@ -314,6 +330,38 @@ void Panel::buildBuildCard()
     grid(tr("PINCÉIS"), { { "village", "house" }, { "fields", "field" }, { "wall", "wall" }, { "road", "road" }, { "erase", "erase" } },
          { tr("Pincel de vila: casas brotam em terra firme"), tr("Pincel de plantação"), tr("Muralha: desenhe o traço; ela sobe e desce com o chão"),
            tr("Estrada: ligue dois pontos (ela acha o caminho pelo vale) ou desenhe à mão"), tr("Apaga o que você construiu") });
+    grid(tr("MAIS"), { { "statue", "a-statue" }, { "ship", "a-ship" }, { "colosseum", "a-colosseum" }, { "cave", "a-cave" },
+                       { "mine", "a-mine" }, { "mage", "a-mage" }, { "greattree", "a-greattree" }, { "stones", "a-stones" }, { "camp", "a-camp" } },
+         { tr("Estátua de bronze sobre pedestal"), tr("Navio de três mastros: clique no mar"), tr("Coliseu de pedra com arena"), tr("Entrada de caverna numa rocha"),
+           tr("Mina escorada, com trilhos e vagonete"), tr("Torre do mago com cristal flutuante"), tr("Árvore Sagrada (enorme)"), tr("Círculo de pedras"),
+           tr("Acampamento com tendas e fogueira") });
+    grid(tr("LENDAS"), { { "dragon", "a-dragon" }, { "bones", "a-bones" }, { "portal", "a-portal" }, { "floatisland", "a-floatisland" },
+                         { "sword", "a-sword" }, { "heads", "a-heads" } },
+         { tr("Dragão empoleirado numa rocha"), tr("Ossada de dragão no chão"), tr("Portal de pedra com luz arcana"), tr("Ilha flutuante com torre e cascata"),
+           tr("Espada cravada na pedra"), tr("Cabeças de pedra colossais") });
+    grid(tr("MAR"), { { "longship", "a-longship" }, { "wreck", "a-wreck" }, { "seaserpent", "a-seaserpent" }, { "kraken", "a-kraken" } },
+         { tr("Drakkar viking: clique no mar"), tr("Naufrágio afundando: clique no mar"), tr("Serpente marinha: clique no mar"), tr("Kraken: clique no mar") });
+    grid(tr("MONUMENTOS"), { { "pyramid", "a-pyramid" }, { "ziggurat", "a-ziggurat" }, { "pagoda", "a-pagoda" }, { "obelisk", "a-obelisk" },
+                             { "graveyard", "a-graveyard" }, { "farm", "a-farm" } },
+         { tr("Pirâmide com o topo de ouro"), tr("Templo em degraus com escadaria"), tr("Pagode de cinco andares"), tr("Obelisco de pedra com ponta de ouro"),
+           tr("Cemitério com mausoléu"), tr("Fazenda: celeiro, silo e plantação") });
+    m_cstyleRow = new QWidget(m_buildCard);
+    auto* cy = new QVBoxLayout(m_cstyleRow);
+    cy->setContentsMargins(0, 0, 0, 0);
+    cy->setSpacing(4);
+    cy->addWidget(caption(m_cstyleRow, tr("ESTILO DO CASTELO")));
+    cy->addLayout(newSeg(m_cstyleRow, { QStringLiteral("human"), QStringLiteral("elven"), QStringLiteral("dwarf"), QStringLiteral("orc") }, { tr("Humano"), tr("Élfico"), tr("Anão"), tr("Orc") },
+                         { tr("Muralha de pedra, torres de flecha e a menagem"), tr("Muralha clara, torres finas e uma torre altíssima no meio"),
+                           tr("Fortaleza escavada no monte, com portão dourado e forjas"), tr("Paliçada de toras, torres de vigia e o salão comprido") },
+                         m_cstyleBtns, [this](const QString& v) {
+                             const QString style = v == QLatin1String("human") ? QString() : v;
+                             if (Art* a = m_canvas->selectedArt(); a && a->kind == QLatin1String("castle")) {
+                                 const QString id = a->id;
+                                 m_canvas->userEdit([id, style](Info& in) { for (Art& x : in.user.arts) if (x.id == id) { x.style = style; return true; } return false; });
+                             } else m_canvas->opts().castleStyle = style;
+                             syncUi();
+                         }));
+    l->addWidget(m_cstyleRow);
     m_csizeRow = new QWidget(m_buildCard);
     auto* cs = new QVBoxLayout(m_csizeRow);
     cs->setContentsMargins(0, 0, 0, 0);
@@ -413,6 +461,9 @@ void Panel::syncBuildCard()
     const Art* sel = m_canvas->selectedArt();
     const bool selCastle = sel && sel->kind == QLatin1String("castle");
     m_csizeRow->setVisible(o.buildKind == QLatin1String("castle") || selCastle);
+    m_cstyleRow->setVisible(o.buildKind == QLatin1String("castle") || selCastle);
+    const QString cst = selCastle ? sel->style : o.castleStyle;
+    for (auto it = m_cstyleBtns.begin(); it != m_cstyleBtns.end(); ++it) it.value()->setChecked(it.key() == (cst.isEmpty() ? QStringLiteral("human") : cst));
     const int cs = selCastle ? sel->size : o.castleSize;
     for (auto it = m_csizeBtns.begin(); it != m_csizeBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == cs);
     m_roadRow->setVisible(o.buildKind == QLatin1String("road"));
@@ -436,6 +487,31 @@ void Panel::syncBuildCard()
     else if (k == QLatin1String("windmill")) hint = tr("Clique pra colocar um moinho. Q/E giram as pás pra outro lado.");
     else if (k == QLatin1String("temple")) hint = tr("Clique pra colocar um templo.");
     else if (k == QLatin1String("ruins")) hint = tr("Clique pra colocar ruínas.");
+    else if (k == QLatin1String("statue")) hint = tr("Clique pra pôr uma estátua; Q/E giram pra onde ela olha.");
+    else if (k == QLatin1String("ship")) hint = tr("Clique no mar pra pôr o navio; Q/E viram a proa.");
+    else if (k == QLatin1String("colosseum")) hint = tr("Clique pra pôr um coliseu (é grande).");
+    else if (k == QLatin1String("cave")) hint = tr("Clique pra pôr a entrada de uma caverna; Q/E viram a boca.");
+    else if (k == QLatin1String("mine")) hint = tr("Clique pra pôr uma mina; Q/E viram a boca.");
+    else if (k == QLatin1String("mage")) hint = tr("Clique pra pôr a torre do mago.");
+    else if (k == QLatin1String("greattree")) hint = tr("Clique pra pôr uma Árvore Sagrada (enorme).");
+    else if (k == QLatin1String("stones")) hint = tr("Clique pra pôr um círculo de pedras.");
+    else if (k == QLatin1String("camp")) hint = tr("Clique pra pôr um acampamento.");
+    else if (k == QLatin1String("dragon")) hint = tr("Clique pra pôr um dragão; Q/E viram a cabeça.");
+    else if (k == QLatin1String("bones")) hint = tr("Clique pra pôr uma ossada de dragão.");
+    else if (k == QLatin1String("portal")) hint = tr("Clique pra pôr um portal; Q/E giram o anel.");
+    else if (k == QLatin1String("floatisland")) hint = tr("Clique pra pôr uma ilha flutuante (ela paira no céu).");
+    else if (k == QLatin1String("sword")) hint = tr("Clique pra pôr a espada na pedra.");
+    else if (k == QLatin1String("heads")) hint = tr("Clique pra pôr as cabeças de pedra; Q/E viram pra onde olham.");
+    else if (k == QLatin1String("longship")) hint = tr("Clique no mar pra pôr um drakkar; Q/E viram a proa.");
+    else if (k == QLatin1String("wreck")) hint = tr("Clique no mar pra pôr um naufrágio.");
+    else if (k == QLatin1String("seaserpent")) hint = tr("Clique no mar pra pôr uma serpente marinha; Q/E viram a cabeça.");
+    else if (k == QLatin1String("kraken")) hint = tr("Clique no mar pra pôr um kraken.");
+    else if (k == QLatin1String("pyramid")) hint = tr("Clique pra pôr uma pirâmide (é grande); Q/E viram a entrada.");
+    else if (k == QLatin1String("ziggurat")) hint = tr("Clique pra pôr um zigurate; Q/E viram a escadaria.");
+    else if (k == QLatin1String("pagoda")) hint = tr("Clique pra pôr um pagode.");
+    else if (k == QLatin1String("obelisk")) hint = tr("Clique pra pôr um obelisco.");
+    else if (k == QLatin1String("graveyard")) hint = tr("Clique pra pôr um cemitério; Q/E viram o portão.");
+    else if (k == QLatin1String("farm")) hint = tr("Clique pra pôr uma fazenda; Q/E viram o celeiro.");
     else if (k == QLatin1String("bridge")) hint = tr("Clique numa margem e depois na outra.");
     else if (k == QLatin1String("select")) hint = tr("Clique num artefato pra selecionar; arraste pra mover. Q/E giram, Delete apaga.");
     else if (k == QLatin1String("village")) hint = tr("Pinte: as casas brotam em terra firme e pouco inclinada.");

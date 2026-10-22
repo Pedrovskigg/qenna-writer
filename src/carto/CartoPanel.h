@@ -211,8 +211,9 @@ private:
     // construir
     QFrame* m_buildCard = nullptr;
     QLabel* m_buildTitle = nullptr;
-    QHash<QString, QToolButton*> m_buildBtns, m_scaleBtns, m_csizeBtns, m_rmodeBtns, m_rkindBtns;
+    QHash<QString, QToolButton*> m_buildBtns, m_scaleBtns, m_csizeBtns, m_cstyleBtns, m_rmodeBtns, m_rkindBtns;
     QWidget* m_csizeRow = nullptr;
+    QWidget* m_cstyleRow = nullptr;
     QWidget* m_roadRow = nullptr;
     QWidget* m_buildSizeRow = nullptr;
     QSlider* m_buildSize = nullptr;

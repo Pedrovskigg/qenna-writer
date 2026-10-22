@@ -46,8 +46,9 @@ struct ToolOpts {
     QString realmTool = QStringLiteral("seed");
     double realmBrush = 22;
     // construir
-    QString buildKind = QStringLiteral("castle");   // select castle tower lighthouse windmill temple ruins bridge village fields wall road erase
+    QString buildKind = QStringLiteral("castle");   // select castle tower lighthouse windmill temple ruins (e os de artSpecs()) bridge village fields wall road erase
     int castleSize = 1;
+    QString castleStyle;                             // "" humano · elven · dwarf · orc
     double buildBrush = 14;
     QString roadMode = QStringLiteral("route");      // route · hand
     QString roadKind = QStringLiteral("road");       // trail · road · royal

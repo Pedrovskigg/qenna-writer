@@ -156,7 +156,62 @@ QString artName(const QString& kind)
     if (kind == QLatin1String("windmill")) return QCoreApplication::translate("carto", "Moinho");
     if (kind == QLatin1String("temple")) return QCoreApplication::translate("carto", "Templo");
     if (kind == QLatin1String("ruins")) return QCoreApplication::translate("carto", "Ruínas");
+    if (kind == QLatin1String("statue")) return QCoreApplication::translate("carto", "Estátua");
+    if (kind == QLatin1String("ship")) return QCoreApplication::translate("carto", "Navio");
+    if (kind == QLatin1String("colosseum")) return QCoreApplication::translate("carto", "Coliseu");
+    if (kind == QLatin1String("cave")) return QCoreApplication::translate("carto", "Caverna");
+    if (kind == QLatin1String("mine")) return QCoreApplication::translate("carto", "Mina");
+    if (kind == QLatin1String("mage")) return QCoreApplication::translate("carto", "Torre do Mago");
+    if (kind == QLatin1String("greattree")) return QCoreApplication::translate("carto", "Árvore Sagrada");
+    if (kind == QLatin1String("stones")) return QCoreApplication::translate("carto", "Círculo de Pedras");
+    if (kind == QLatin1String("camp")) return QCoreApplication::translate("carto", "Acampamento");
+    if (kind == QLatin1String("dragon")) return QCoreApplication::translate("carto", "Dragão");
+    if (kind == QLatin1String("bones")) return QCoreApplication::translate("carto", "Ossada");
+    if (kind == QLatin1String("seaserpent")) return QCoreApplication::translate("carto", "Serpente Marinha");
+    if (kind == QLatin1String("kraken")) return QCoreApplication::translate("carto", "Kraken");
+    if (kind == QLatin1String("longship")) return QCoreApplication::translate("carto", "Drakkar");
+    if (kind == QLatin1String("wreck")) return QCoreApplication::translate("carto", "Naufrágio");
+    if (kind == QLatin1String("pyramid")) return QCoreApplication::translate("carto", "Pirâmide");
+    if (kind == QLatin1String("ziggurat")) return QCoreApplication::translate("carto", "Zigurate");
+    if (kind == QLatin1String("pagoda")) return QCoreApplication::translate("carto", "Pagode");
+    if (kind == QLatin1String("obelisk")) return QCoreApplication::translate("carto", "Obelisco");
+    if (kind == QLatin1String("graveyard")) return QCoreApplication::translate("carto", "Cemitério");
+    if (kind == QLatin1String("portal")) return QCoreApplication::translate("carto", "Portal");
+    if (kind == QLatin1String("heads")) return QCoreApplication::translate("carto", "Cabeças de Pedra");
+    if (kind == QLatin1String("floatisland")) return QCoreApplication::translate("carto", "Ilha Flutuante");
+    if (kind == QLatin1String("farm")) return QCoreApplication::translate("carto", "Fazenda");
+    if (kind == QLatin1String("sword")) return QCoreApplication::translate("carto", "Espada na Pedra");
     return QCoreApplication::translate("carto", "Artefato");
+}
+
+const std::vector<ArtSpec>& artSpecs()
+{
+    static const std::vector<ArtSpec> specs = {
+        { "statue", 2.4, 9, false, false, 'f' }, { "ship", 7.5, 12, true, true, 's' }, { "colosseum", 10.5, 6, false, true, 0 },
+        { "cave", 6.5, 5, false, true, 'f' }, { "mine", 6, 4, false, true, 'f' }, { "mage", 2.6, 19, false, true, 0 },
+        { "greattree", 9, 21, false, true, 0 }, { "stones", 6, 4, false, false, 0 }, { "camp", 7, 3.5, false, false, 'f' },
+        { "dragon", 6.5, 11, false, true, 't' }, { "bones", 9.5, 3.5, false, false, 's' }, { "portal", 4.6, 7.5, false, true, 'f' },
+        { "floatisland", 6, 19, false, true, 0 }, { "sword", 3, 11.5, false, true, 'f' }, { "heads", 5.6, 6.5, false, true, 'f' },
+        { "longship", 7, 9, true, true, 's' }, { "wreck", 7.5, 6, true, true, 's' }, { "seaserpent", 8.5, 6, true, true, 's' },
+        { "kraken", 6.5, 8, true, true, 0 }, { "pyramid", 10, 8, false, true, 'f' }, { "ziggurat", 7.5, 10, false, true, 'f' },
+        { "pagoda", 4.5, 18, false, true, 0 }, { "obelisk", 1.9, 12, false, false, 0 }, { "graveyard", 6.5, 5, false, true, 'f' },
+        { "farm", 7.5, 5.5, false, true, 'f' },
+    };
+    return specs;
+}
+const ArtSpec* artSpec(const QString& kind)
+{
+    for (const ArtSpec& s : artSpecs()) if (kind == QLatin1String(s.kind)) return &s;
+    return nullptr;
+}
+double faceYaw(const ArtSpec& s, double v, double viewAng, double yaw)
+{
+    // a direção do chão que aponta pra quem olha, com um desvio sorteado pra não ficar duro
+    const double toEye = std::atan2(std::cos(viewAng), std::sin(viewAng)), j = (v - 0.5) * 0.9, side = v > 0.5 ? 1 : -1;
+    if (s.face == 'f') return toEye + j * 0.8;
+    if (s.face == 't') return toEye + side * (0.75 + j * 0.3);
+    if (s.face == 's') return toEye + M_PI / 2 + side * (0.65 + j * 0.3);   // de lado, em três quartos: as velas abrem pra quem olha
+    return yaw;
 }
 
 // ── reinos ──
@@ -482,6 +537,7 @@ double artRadius(const Art& a)
 {
     if (a.kind == QLatin1String("castle")) { static const double R[4] = { 7, 11.5, 17.5, 29 }; return R[clampi(a.size, 0, 3)]; }
     if (a.kind == QLatin1String("temple") || a.kind == QLatin1String("ruins")) return 6;
+    if (const ArtSpec* s = artSpec(a.kind)) return s->r;
     return 3;
 }
 
@@ -494,7 +550,8 @@ Art& addArt(const World& w, Info& info, const QString& kind, double x, double y,
     a.id = QStringLiteral("a%1").arg(U.seq);
     a.kind = kind; a.x = x; a.y = y; a.yaw = uRand(U, 1) * M_PI / 2; a.v = uRand(U, 2);
     a.size = kind == QLatin1String("castle") ? size : 0;
-    if (kind == QLatin1String("castle") || kind == QLatin1String("temple") || kind == QLatin1String("lighthouse")) {
+    const ArtSpec* spec = artSpec(kind);
+    if (kind == QLatin1String("castle") || kind == QLatin1String("temple") || kind == QLatin1String("lighthouse") || (spec && spec->named)) {
         int n = 0;
         for (const Art& o : U.arts) if (o.kind == kind) n++;
         a.name = QStringLiteral("%1 %2").arg(artName(kind)).arg(n + 1);
@@ -780,6 +837,7 @@ QJsonObject UserLayer::toJson() const
     QJsonArray A, Hs, Ws, Fs, Bs, Rs;
     for (const Art& a : arts)
         A.append(QJsonObject{ { "id", a.id }, { "kind", a.kind }, { "x", a.x }, { "y", a.y }, { "yaw", a.yaw }, { "v", a.v }, { "size", a.size }, { "name", a.name } });
+    for (int i = 0; i < A.size(); i++) if (!arts[i].style.isEmpty()) { QJsonObject o = A[i].toObject(); o["style"] = arts[i].style; A[i] = o; }
     for (const House& h : houses)
         Hs.append(QJsonObject{ { "x", h.x }, { "y", h.y }, { "yaw", h.yaw }, { "v", h.v }, { "floors", h.floors }, { "timber", h.timber } });
     for (const Wall& wl : walls) Ws.append(pathJ(wl.pts));
@@ -798,6 +856,7 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         const QJsonObject a = v.toObject();
         Art t; t.id = a.value("id").toString(); t.kind = a.value("kind").toString(); t.x = a.value("x").toDouble(); t.y = a.value("y").toDouble();
         t.yaw = a.value("yaw").toDouble(); t.v = a.value("v").toDouble(); t.size = a.value("size").toInt(); t.name = a.value("name").toString();
+        t.style = a.value("style").toString();
         U.arts.push_back(t);
     }
     for (const QJsonValue& v : o.value("houses").toArray()) {

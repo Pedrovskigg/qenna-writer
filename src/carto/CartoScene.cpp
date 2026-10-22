@@ -27,6 +27,7 @@ double artHeight(const QString& kind)
     if (kind == QLatin1String("windmill")) return 9;
     if (kind == QLatin1String("temple")) return 6;
     if (kind == QLatin1String("ruins")) return 4;
+    if (const ArtSpec* s = artSpec(kind)) return s->h;
     return 6;
 }
 inline bool isFull(const SceneState& st) { return st.mode == QLatin1String("full"); }
@@ -280,7 +281,8 @@ const std::vector<Scene::Item>& Scene::items(const SceneState& st)
         for (const House& h : U->houses) mark(h.x, h.y, 1);
         for (const Art& a : U->arts)
             mark(a.x, a.y, a.kind == QLatin1String("castle") ? static_cast<int>(std::ceil((spr::kCastle[std::max(0, std::min(3, a.size))].R + 2) * kk / G))
-                           : (a.kind == QLatin1String("temple") || a.kind == QLatin1String("ruins")) ? static_cast<int>(std::ceil(3 * kk)) : 1);
+                           : (a.kind == QLatin1String("temple") || a.kind == QLatin1String("ruins")) ? static_cast<int>(std::ceil(3 * kk))
+                           : artSpec(a.kind) ? static_cast<int>(std::ceil((artSpec(a.kind)->r + 1) * kk / G)) : 1);
         for (const Field& f : U->fields) mark(f.x, f.y, static_cast<int>(std::ceil(std::max(f.w, f.d) / 2 / G)) + 1);
         for (const Wall& wl : U->walls) for (const Pt& p : wl.pts) mark(p[0], p[1], 1);
         for (const Road& rd : U->roads) for (size_t i = 0; i < rd.pts.size(); i += 2) mark(rd.pts[i][0], rd.pts[i][1], rd.kind == QLatin1String("trail") ? 0 : 1);
@@ -603,7 +605,8 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
             if (!g || !g->vis || out(*g)) continue;
             const spr::Cam c = camAt(st, g->L, o.x, o.y);
             const RGB rc = realmCol(*info, o.realm);
-            if (o.kind == QLatin1String("castle")) spr::drawCastle(p, o.x, o.y, o.yaw, o.size, c, rc);
+            if (spr::drawArt(p, o, c, rc)) {}
+            else if (o.kind == QLatin1String("castle")) spr::drawCastle(p, o.x, o.y, o.yaw, o.size, c, rc);
             else if (o.kind == QLatin1String("tower")) spr::drawTowerArt(p, o, c, rc);
             else if (o.kind == QLatin1String("lighthouse")) spr::drawLighthouse(p, o, c);
             else if (o.kind == QLatin1String("windmill")) spr::drawWindmill(p, o, c);
@@ -711,6 +714,11 @@ void Scene::drawLights(QPainter& p, const SceneState& st, double night)
             else if (a.kind == QLatin1String("lighthouse")) add(a.x, a.y, 11.6 * k, 5.5 * k, "beacon", 1);
             else if (a.kind == QLatin1String("windmill")) add(a.x, a.y, 1.8 * k, 2.2 * k, "window", 0.8);
             else if (a.kind == QLatin1String("temple")) for (int sg : { -1, 1 }) add(a.x + std::cos(a.yaw) * 3.4 * k * sg, a.y + std::sin(a.yaw) * 3.4 * k * sg, 1.4 * k, 2.2 * k, "torch", 0.95);
+            else {
+                const double ca = std::cos(a.yaw), sa = std::sin(a.yaw);
+                for (const spr::ArtLight& l : spr::artLights(a.kind))
+                    add(a.x + (ca * l.lx - sa * l.ly) * k, a.y + (sa * l.lx + ca * l.ly) * k, l.z * k, l.r * k, l.kind, l.force);
+            }
         }
         for (const Wall& wl : U.walls) for (size_t i = 0; i < wl.pts.size(); i += 6) add(wl.pts[i][0], wl.pts[i][1], 4.8 * k, 1.9 * k, "torch", 0.85);
         for (const Road& rd : U.roads) if (rd.kind == QLatin1String("royal"))

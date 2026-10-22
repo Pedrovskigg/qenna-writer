@@ -1,4 +1,5 @@
 #include "CartoSprites.h"
+#include "CartoSpritesKit.h"
 
 #include <QHash>
 #include <QLinearGradient>
@@ -12,26 +13,18 @@
 
 namespace carto::spr {
 
-namespace {
-using V3 = std::array<double, 3>;
-
-QColor rgb(const RGB& c, double k = 1, double a = 1)
+namespace kit {
+QColor rgb(const RGB& c, double k, double a)
 {
     auto ch = [k](double v) { return static_cast<int>(jsRound(clampd(v * k, 0, 255))); };
     return QColor(ch(c[0]), ch(c[1]), ch(c[2]), static_cast<int>(jsRound(clampd(a, 0, 1) * 255)));
 }
 RGB mix(const RGB& a, const RGB& b, double t) { return { a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t }; }
 double frac(double x) { return x - std::floor(x); }
-// xorshift32 (o mesmo do Lab)
-struct Rng {
-    uint32_t s;
-    explicit Rng(double seed) { s = toUint32(seed); if (!s) s = 1; }
-    double operator()() { s ^= s << 13; s ^= s >> 17; s ^= s << 5; return s / 4294967296.0; }
-};
 // luz do noroeste: quanto uma direção no chão (ângulo a) olha pro sol
 double facing(double a) { return 0.5 + 0.5 * (-std::cos(a) * 0.6 - std::sin(a) * 0.8); }
 
-QPen pen(const QColor& c, double w, Qt::PenCapStyle cap = Qt::FlatCap)
+QPen pen(const QColor& c, double w, Qt::PenCapStyle cap)
 {
     QPen p(c, w);
     p.setCapStyle(cap);
@@ -40,6 +33,7 @@ QPen pen(const QColor& c, double w, Qt::PenCapStyle cap = Qt::FlatCap)
 }
 void line(QPainter& p, QPointF a, QPointF b) { p.drawLine(a, b); }
 }
+using namespace kit;
 
 // ── vegetação ──
 namespace {
@@ -364,6 +358,12 @@ const QImage& glowImage(const QString& kind)
     if (kind == QLatin1String("torch")) col = { 255, 150, 64 };
     else if (kind == QLatin1String("beacon")) col = { 255, 244, 210 };
     else if (kind == QLatin1String("lantern")) col = { 255, 206, 140 };
+    else if (kind == QLatin1String("arcane")) col = { 186, 150, 255 };
+    else if (kind == QLatin1String("fairy")) col = { 190, 255, 214 };
+    else if (kind == QLatin1String("fire")) col = { 255, 128, 40 };
+    else if (kind == QLatin1String("ghost")) col = { 150, 255, 210 };
+    else if (kind == QLatin1String("holy")) col = { 255, 236, 170 };
+    else if (kind == QLatin1String("eye")) col = { 255, 210, 80 };
     const int n = 64;
     QImage img(n, n, QImage::Format_ARGB32_Premultiplied);
     img.fill(Qt::transparent);
@@ -379,24 +379,11 @@ const QImage& glowImage(const QString& kind)
 }
 
 // ── sólidos ──
-namespace {
+namespace kit {
 const V3 LIGHT0 = [] { const V3 l = { -0.55, -0.75, 1.8 }; const double n = std::sqrt(l[0] * l[0] + l[1] * l[1] + l[2] * l[2]); return V3{ l[0] / n, l[1] / n, l[2] / n }; }();
 V3 LIGHT = LIGHT0;
 
-using PtFn = std::function<QPointF(double, double)>;
-using Deco = std::function<void(QPainter&, const PtFn&, double)>;
-struct Face {
-    std::vector<V3> v;
-    RGB col{};
-    bool hasC = false;
-    V3 c{};
-    double bias = 0;
-    bool flat = false;
-    std::array<int, 4> q = { 0, 1, 2, 3 };
-    Deco deco;
-};
-using Faces = std::vector<Face>;
-Face face(std::vector<V3> v, const RGB& col, const V3& c, Deco deco = {}, double bias = 0)
+Face face(std::vector<V3> v, const RGB& col, const V3& c, Deco deco, double bias)
 {
     Face f; f.v = std::move(v); f.col = col; f.hasC = true; f.c = c; f.deco = std::move(deco); f.bias = bias;
     return f;
@@ -460,8 +447,8 @@ void quad(QPainter& p, const PtFn& pt, double s0, double s1, double t0, double t
 }
 
 // caixa (paredes + tampa) centrada em (cx, cy), girada por yaw
-Faces boxFaces(double cx, double cy, double yaw, double w, double d, double z0, double z1, const RGB& col, const RGB* topCol = nullptr,
-               const std::function<Deco(int, double)>& deco = {})
+Faces boxFaces(double cx, double cy, double yaw, double w, double d, double z0, double z1, const RGB& col, const RGB* topCol,
+               const std::function<Deco(int, double)>& deco)
 {
     const double c = std::cos(yaw), s = std::sin(yaw);
     auto L = [&](double lx, double ly) { return std::array<double, 2>{ cx + c * lx - s * ly, cy + s * lx + c * ly }; };
@@ -782,8 +769,8 @@ void drawField(QPainter& p, const Field& f, const Cam& cam)
 }
 
 // ── artefatos únicos ──
-namespace {
-Faces taperFaces(double x, double y, double r0, double r1, double z0, double z1, int n, const RGB& col, const std::function<Deco(int)>& deco = {})
+namespace kit {
+Faces taperFaces(double x, double y, double r0, double r1, double z0, double z1, int n, const RGB& col, const std::function<Deco(int)>& deco)
 {
     Faces faces;
     for (int k = 0; k < n; k++) {

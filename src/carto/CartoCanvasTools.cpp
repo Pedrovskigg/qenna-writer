@@ -19,7 +19,7 @@ namespace {
 bool isUnique(const QString& k)
 {
     return k == QLatin1String("castle") || k == QLatin1String("tower") || k == QLatin1String("lighthouse") || k == QLatin1String("windmill")
-        || k == QLatin1String("temple") || k == QLatin1String("ruins");
+        || k == QLatin1String("temple") || k == QLatin1String("ruins") || artSpec(k);
 }
 QColor rgbC(const RGB& c, int a = 255) { return QColor(qRound(c[0]), qRound(c[1]), qRound(c[2]), a); }
 QPen dashPen(const QColor& c, double w, double on, double off)
@@ -372,6 +372,7 @@ std::array<double, 2> Canvas::artExtent(const Art& a) const
     if (a.kind == QLatin1String("windmill")) return { 4 * k, 9 * k };
     if (a.kind == QLatin1String("temple")) return { 4.6 * k, 6.5 * k };
     if (a.kind == QLatin1String("ruins")) return { 5.6 * k, 4 * k };
+    if (const ArtSpec* s = artSpec(a.kind)) return { s->r * k, s->h * k };
     return { 3 * k, 6 * k };
 }
 
@@ -459,9 +460,26 @@ void Canvas::buildDown(QPointF pos)
         return;
     }
     if (isUnique(kind)) {
+        // navio e criaturas do mar vão na água; o resto, em terra
+        const ArtSpec* spec = artSpec(kind);
+        const bool sea = spec && spec->water, wet = heightAt(*m_world, q[0], q[1]) <= 0;
+        if (sea != wet) {
+            m_toolMsg = sea ? tr("Esse vai no mar: clique na água.") : tr("Aqui é água: construa em terra (navios e criaturas do mar vão na água).");
+            emit selectionChanged();
+            return;
+        }
+        m_toolMsg.clear();
         QString made;
         const int size = m_opts.castleSize;
-        userEdit([&](Info& in) { made = addArt(*m_world, in, kind, q[0], q[1], size).id; return true; });
+        const QString style = m_opts.castleStyle;
+        const double ang = m_ang;
+        userEdit([&](Info& in) {
+            Art& a = addArt(*m_world, in, kind, q[0], q[1], size);
+            if (kind == QLatin1String("castle")) a.style = style;
+            if (spec) a.yaw = faceYaw(*spec, a.v, ang, a.yaw);    // o que tem frente nasce virado pra quem olha
+            made = a.id;
+            return true;
+        });
         setSelArt(made);
         return;
     }
