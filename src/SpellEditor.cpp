@@ -303,6 +303,13 @@ void SpellEditor::pulseRange(int start, int length)
     }
 }
 
+void SpellEditor::insertFromMimeData(const QMimeData* source)
+{
+    const int from = textCursor().selectionStart();
+    QTextEdit::insertFromMimeData(source);
+    emit pasted(from, textCursor().position());
+}
+
 void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
 {
     QMenu* menu = createStandardContextMenu(event->pos());

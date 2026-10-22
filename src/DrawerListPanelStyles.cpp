@@ -34,6 +34,7 @@
 #include <QTextBrowser>
 #include <QTextDocument>
 #include <QTimer>
+#include <utility>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -389,8 +390,9 @@ QPixmap DrawerListPanel::itemPhoto(const DrawerItem& it) const {
 
 QString DrawerListPanel::itemHtml(const DrawerItem& it) const {
     if (it.isSheet) return ProjectModel::characterSheetToHtml(it.sheet, it.title, QString(), QString());
-    if (it.hasInlineHtml) return it.html;
+    // o texto mais novo primeiro: o editor escreve no cache, e o inline só muda quando o projeto salva
     if (m_cache && m_cache->has(DocCache::itemKey(it.id))) return m_cache->get(DocCache::itemKey(it.id));
+    if (it.hasInlineHtml) return it.html;
     if (!m_projectRoot.isEmpty() && !it.file.isEmpty()) {
         bool ok = false;
         const QString html = ProjectStorage::readText(ProjectStorage::joinPath(m_projectRoot, it.file), &ok);
@@ -1025,6 +1027,7 @@ void DrawerListPanel::buildTable(const QList<DrawerItem>& items) {
                 }
                 cell->setText(words >= 0 ? QLocale().toString(words) : QStringLiteral("—"));
                 cell->setData(Qt::UserRole + 1, words);
+                cell->setData(Qt::UserRole + 2, QStringLiteral("words"));   // refreshDirtyWordCells acha a célula por aqui
                 cell->setForeground(tcol(Theme::textMuted()));
                 break;
             }
@@ -1388,4 +1391,57 @@ void DrawerListPanel::showHoverCard() {
     m_hoverCard->show();
     if (!wasShown) PanelMotion::popIn(m_hoverCard);
     m_hoverCard->raise();
+}
+
+// ── a contagem acompanha o que se escreve ──
+// O painel guarda a prévia e a contagem de cada doc (m_previewCache) pra não reler
+// tudo a cada redesenho. Quando o editor grava um doc no cache, o guardado daquele
+// doc sai, e a célula de palavras da tabela é refeita depois de uma pausa curta.
+void DrawerListPanel::setDocCache(DocCache* cache)
+{
+    if (m_cache) disconnect(m_cache, nullptr, this, nullptr);
+    m_cache = cache;
+    if (m_cache) connect(m_cache, &DocCache::contentChanged, this, &DrawerListPanel::onDocContentChanged);
+}
+
+void DrawerListPanel::onDocContentChanged(const QString& key)
+{
+    if (!key.startsWith(QStringLiteral("it:"))) return;
+    const QString id = key.mid(3);
+    m_previewCache.remove(id);
+    m_previewCache.remove(QStringLiteral("w:") + id);
+    m_wordsDirty.insert(id);
+    if (!m_wordsTimer) {
+        m_wordsTimer = new QTimer(this);
+        m_wordsTimer->setSingleShot(true);
+        m_wordsTimer->setInterval(900);
+        connect(m_wordsTimer, &QTimer::timeout, this, &DrawerListPanel::refreshDirtyWordCells);
+    }
+    m_wordsTimer->start();
+}
+
+void DrawerListPanel::refreshDirtyWordCells()
+{
+    const QSet<QString> dirty = std::exchange(m_wordsDirty, {});
+    if (!m_model || !m_altHost || dirty.isEmpty()) return;
+    for (QTableWidget* t : m_altHost->findChildren<QTableWidget*>()) {
+        const bool sorting = t->isSortingEnabled();
+        t->setSortingEnabled(false);   // mudar o valor com a ordenação ligada pula a linha de lugar no meio do laço
+        for (int r = 0; r < t->rowCount(); ++r)
+            for (int c = 0; c < t->columnCount(); ++c) {
+                QTableWidgetItem* cell = t->item(r, c);
+                if (!cell || cell->data(Qt::UserRole + 2).toString() != QLatin1String("words")) continue;
+                const QString id = cell->data(Qt::UserRole).toString();
+                if (!dirty.contains(id)) continue;
+                const DrawerItem* it = m_model->findDrawerItem(id);
+                if (!it) continue;
+                QTextDocument d;
+                d.setHtml(itemHtml(*it));
+                const int words = d.toPlainText().split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts).size();
+                m_previewCache.insert(QStringLiteral("w:") + id, QString::number(words));
+                cell->setText(QLocale().toString(words));
+                cell->setData(Qt::UserRole + 1, words);
+            }
+        t->setSortingEnabled(sorting);
+    }
 }

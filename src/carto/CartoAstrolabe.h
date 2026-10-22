@@ -13,6 +13,7 @@ class Astrolabe : public QWidget {
 public:
     explicit Astrolabe(QWidget* parent = nullptr);
     void setState(double ang, double pitch, double hour, const QString& mode);
+    void setLockedMode(const QString& mode);   // vista apagada (vazio = nenhuma)
 
 signals:
     void modeRequested(const QString& mode);
@@ -34,6 +35,7 @@ private:
 
     double m_ang = 0, m_pitch = 40, m_hour = 14.4;
     QString m_mode = QStringLiteral("full");
+    QString m_locked;
     enum class Drag { None, Hour, Tilt, Rot } m_drag = Drag::None;
     double m_a0 = 0, m_ang0 = 0;
     bool m_moved = false, m_near = false;

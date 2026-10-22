@@ -28,7 +28,16 @@ class QThreadPool;
 
 namespace carto {
 
-enum class Tool { Pan, Area, Brush, Realm, Build, Names, Ruler };
+enum class Tool { Pan, Area, Brush, Realm, Build, Names, Ruler, Explore };
+
+// Explorar: o que o painel manda desenhar por cima do mapa
+struct ExploreLinkView { QString id; int a = -1, b = -1; QString label; QColor color; };
+struct ExploreView {
+    int sel = -1, hov = -1;                  // território escolhido e o do mouse
+    std::vector<int> counts;                 // documentos de cada território
+    std::vector<ExploreLinkView> links;      // arcos: as conexões do escolhido (ou a do lado a lado)
+    bool duo = false;                        // lado a lado aberto: o arco vem cheio
+};
 
 // opções das ferramentas (a doca do painel mostra e muda)
 struct ToolOpts {
@@ -43,8 +52,6 @@ struct ToolOpts {
     QString roadMode = QStringLiteral("route");      // route · hand
     QString roadKind = QStringLiteral("road");       // trail · road · royal
     // nomes
-    bool namesAuto = true;
-    QString density = QStringLiteral("normal");      // few · normal · many
     QString nameStyle = QStringLiteral("land");      // land · water
     // vista
     bool sprites = true;
@@ -113,6 +120,12 @@ public:
     double leaguePx() const;           // quantos px da tela dá uma légua (1 légua = 6 km; 1 px do mundo = 0,6 km na escala Normal)
     SceneState sceneState() const;
 
+    // Explorar (CartoCanvasExplore.cpp)
+    void setExplore(ExploreView v) { m_explore = std::move(v); update(); }
+    int realmAtScreen(QPointF s) const;                    // território em terra embaixo do ponto (−1 = nenhum)
+    std::optional<QPointF> realmCenterOnScreen(int r) const;
+    void panBy(double dx, double dy);
+
     // tela ↔ mundo
     QPointF screenToPlane(QPointF s) const;
     std::array<double, 2> screenToWorld(QPointF s) const;
@@ -128,6 +141,8 @@ signals:
     void layersEdited(std::shared_ptr<Doc::Layers> before);   // território, construção ou nome mudou
     void selectionChanged();                  // artefato, nome ou território selecionado
     void statusChanged();
+    void exploreHover(int realm, QString linkId, QPoint at);   // Explorar: o que está embaixo do mouse
+    void exploreClicked(int realm, QString linkId);
 
 protected:
     void paintEvent(QPaintEvent*) override;
@@ -165,6 +180,10 @@ private:
     void drawRuler(QPainter& p, const SceneState& st);
     void drawGroundLayer(QPainter& p, const SceneState& st, QSize sz);
     void sceneChanged() { m_scene.invalidate(); m_sceneRev++; }
+    void drawExplore(QPainter& p, const SceneState& st);
+    const std::vector<float>& exploreSegs(int slot, int r);
+    QString exploreLinkAt(QPointF s) const;
+    void exploreMove(QPointF pos);
     void realmDown(QPointF pos, bool shift);
     void buildDown(QPointF pos);
     void namesDown(QPointF pos);
@@ -267,6 +286,11 @@ private:
     QString m_roadKey;
     void prefetchTile();
     int m_sceneRev = 0;
+    // Explorar
+    ExploreView m_explore;
+    struct XOutline { int r = -1, infoVer = -1, rev = -1; const Info* info = nullptr; std::vector<float> segs; } m_xoutline[2];
+    std::vector<std::pair<QRectF, QString>> m_xhits;   // rótulos das conexões (clicáveis)
+    int m_xhovRealm = -1; QString m_xhovLink;
     double m_cacheAng = 0, m_cacheSq = 1, m_cacheZoom = 1;
     // interação: durante giro, inclinação e zoom a imagem que existe se transforma (nada se repinta);
     // a pintura nítida vem em segundo plano quando a mão para

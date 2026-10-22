@@ -153,6 +153,7 @@ private:
     void setupToolbar();
     void updateEditorContainerMargins();
     void applyEditorStyle();
+    void formatPastedRange(int from, int to);
     void applyTextColor();
     void applyEditorFont();
     void updateDocCachePinnedKeys();
@@ -387,6 +388,8 @@ private:
     // stores/provider injetados — o Construtor mora embutido nela, não tem
     // mais janela própria.
     TerritorioWindow* ensureTerritorioWindow();
+    void showCartoPanel();
+    void connectCartoProject();
     // Cria (lazy) e devolve o painel de preview de e-reader — feature de uso
     // ocasional, não vale pagar custo de boot criando eager como os painéis
     // sempre visíveis (wordCountPanel etc.).

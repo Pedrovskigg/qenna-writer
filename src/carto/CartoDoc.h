@@ -10,6 +10,7 @@
 
 #include <QJsonObject>
 
+#include <algorithm>
 #include <memory>
 
 namespace carto {
@@ -58,6 +59,26 @@ struct Doc {
         const QString key = QStringLiteral("%1|%2|%3").arg(ver).arg(density).arg(rivers.size());
         if (namesKey != key) { names = buildNames(world, rivers, density); namesKey = key; }
         return names;
+    }
+
+    // mapa só de terreno: sem reinos, cidades, estradas e nomes sugeridos (o usuário cria os dele)
+    void clearSuggestions()
+    {
+        Info& in = ensureInfo();
+        in.defs.clear();
+        std::fill(in.barrier.begin(), in.barrier.end(), uint8_t(0));
+        in.user.showGen = false;
+        recomputeRealms(world, in);
+        labels.autoOn = false;
+    }
+    // há algo pra vista Completo mostrar: território, construção, nome ou sugestão ligada
+    bool hasContent() const
+    {
+        if (labels.autoOn || !labels.custom.empty()) return true;
+        if (!info) return false;
+        const UserLayer& U = info->user;
+        return U.showGen || !info->defs.empty() || !U.arts.empty() || !U.houses.empty() || !U.walls.empty()
+            || !U.fields.empty() || !U.bridges.empty() || !U.roads.empty();
     }
 
     // ── camadas pra gravar e pra desfazer ──

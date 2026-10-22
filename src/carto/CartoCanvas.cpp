@@ -348,7 +348,7 @@ void Canvas::setTool(Tool t)
         m_trail.clear();
     }
     m_tool = t;
-    setCursor(t == Tool::Pan ? Qt::OpenHandCursor : Qt::CrossCursor);
+    setCursor(t == Tool::Pan ? Qt::OpenHandCursor : t == Tool::Explore ? Qt::ArrowCursor : Qt::CrossCursor);
     update();
 }
 
@@ -463,6 +463,7 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     if (exporting) return;
     p.setRenderHint(QPainter::Antialiasing);
     if (steady) drawToolOverlay(p, st);
+    if (steady && m_tool == Tool::Explore) drawExplore(p, st);
     if (m_tool == Tool::Ruler) drawRuler(p, st);
     if (m_drag == Drag::Area) {
         const QRectF r = m_sel.normalized();
@@ -754,7 +755,8 @@ void Canvas::mousePressEvent(QMouseEvent* e)
         m_drag = Drag::Turn; m_ang0 = m_ang; m_pitch0 = m_pitch;
         return;
     }
-    const bool wantsPan = e->button() == Qt::MiddleButton || (e->button() == Qt::LeftButton && ((e->modifiers() & Qt::AltModifier) || m_tool == Tool::Pan));
+    // Explorar: arrastar move o mapa; clicar sem arrastar escolhe (no soltar)
+    const bool wantsPan = e->button() == Qt::MiddleButton || (e->button() == Qt::LeftButton && ((e->modifiers() & Qt::AltModifier) || m_tool == Tool::Pan || m_tool == Tool::Explore));
     if (wantsPan) {
         m_drag = Drag::Pan; m_panX0 = m_panX; m_panY0 = m_panY;
         setCursor(Qt::ClosedHandCursor);
@@ -807,6 +809,7 @@ void Canvas::mouseMoveEvent(QMouseEvent* e)
         toolMove(e);
         return;
     default:
+        if (m_tool == Tool::Explore) { exploreMove(pos); return; }
         if (m_tool != Tool::Pan && m_tool != Tool::Area) { toolMove(e); update(); }
     }
 }
@@ -816,6 +819,16 @@ void Canvas::mouseReleaseEvent(QMouseEvent* e)
     const Drag d = m_drag;
     m_drag = Drag::None;
     if (m_tool == Tool::Pan) setCursor(Qt::OpenHandCursor);
+    if (m_tool == Tool::Explore && d == Drag::Pan && e->button() == Qt::LeftButton) {
+        setCursor(Qt::ArrowCursor);
+        const QPointF dp = e->position() - m_press;
+        if (std::hypot(dp.x(), dp.y()) < 4) {
+            const QString link = exploreLinkAt(e->position());
+            emit exploreClicked(link.isEmpty() ? realmAtScreen(e->position()) : -1, link);
+        }
+        exploreMove(e->position());
+        return;
+    }
     switch (d) {
     case Drag::Turn:
         if (m_moved) { m_settle.stop(); requestFull(); }
@@ -858,6 +871,7 @@ void Canvas::wheelEvent(QWheelEvent* e)
 void Canvas::leaveEvent(QEvent*)
 {
     m_hasHover = false;
+    if (m_tool == Tool::Explore) { m_xhovRealm = -1; m_xhovLink.clear(); emit exploreHover(-1, QString(), QPoint()); }
     if (m_tool != Tool::Pan) update();
 }
 
@@ -870,7 +884,7 @@ SceneState Canvas::sceneState() const
     st.ang = m_ang; st.pitch = m_pitch; st.zoom = m_zoom; st.panX = m_panX; st.panY = m_panY; st.fitZoom = m_fitZoom;
     st.mode = m_mode; st.hour = m_hour; st.sprites = m_opts.sprites;
     st.vw = width(); st.vh = height();
-    st.namesAuto = m_opts.namesAuto; st.density = m_opts.density;
+    if (m_doc) { st.namesAuto = m_doc->labels.autoOn; st.density = m_doc->labels.density; }
     st.namesTool = m_tool == Tool::Names; st.selName = m_selName;
     return st;
 }

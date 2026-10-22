@@ -61,6 +61,7 @@ struct RealmDef {
     std::vector<Pt> seeds;
     double reach = kReachAll;
     std::set<int> paint;          // células pintadas (também viram semente)
+    QString groupId, placeId;     // Explorar: o grupo de documentos e o Lugar do Criador de Mundos
 };
 struct Realm { QString name; RGB color{}; double x = 0, y = 0; int area = 0; };
 struct RealmState { std::vector<RealmDef> defs; std::vector<uint8_t> barrier; };

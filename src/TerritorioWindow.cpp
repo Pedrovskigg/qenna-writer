@@ -878,6 +878,12 @@ void TerritorioWindow::buildUi()
     m_searchEdit->setClearButtonEnabled(true);
     m_searchEdit->setFixedWidth(300);
     tl->addWidget(m_searchEdit);
+    m_mapBtn = new QPushButton(tr("Mapa"), top);
+    m_mapBtn->setObjectName(QStringLiteral("encMapBtn"));
+    m_mapBtn->setCursor(Qt::PointingHandCursor);
+    m_mapBtn->setToolTip(tr("Abrir o mapa do mundo"));
+    connect(m_mapBtn, &QPushButton::clicked, this, &TerritorioWindow::openWorldMapRequested);
+    tl->addWidget(m_mapBtn);
     outer->addWidget(top);
 
     m_formatBar = new EncFormatBar(this);
@@ -1029,6 +1035,8 @@ void TerritorioWindow::applyTheme()
         QPushButton#encSegBtn:checked { background: %7; color: %5; font-weight: 600; }
         QLineEdit#encSearch { background: %1; color: %4; border: 1px solid %3; border-radius: @radius-control; padding: 5px 9px; font-size: 12px; }
         QLineEdit#encSearch:focus { border-color: %8; }
+        QPushButton#encMapBtn { background: transparent; color: %4; border: 1px solid %3; border-radius: @radius-control; padding: 5px 12px; font-size: 12px; }
+        QPushButton#encMapBtn:hover { border-color: %8; color: %5; }
         QListWidget#encSearchResults { background: %2; color: %4; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; font-size: 12px; outline: none; }
         QListWidget#encSearchResults::item { padding: 6px 8px; border-radius: @radius-item; }
         QListWidget#encSearchResults::item:hover, QListWidget#encSearchResults::item:selected { background: %7; color: %5; }
@@ -1101,6 +1109,8 @@ void TerritorioWindow::applyTheme()
         .arg(Theme::textBright(), Theme::textMuted(), Theme::hoverOverlay(), Theme::accentDefault())           // 5-8
         .arg(Theme::accentInfoSoft(), Theme::hoverOverlay(), Theme::subtleBorder(), Theme::accentDanger());   // 9-12
     setStyleSheet(css);
+    if (m_mapBtn) m_mapBtn->setIcon(IconUtils::loadToolbarIcon(QStringLiteral(":/icons/leftbar/worldmap.svg"),
+        tc(Theme::textMuted()), tc(Theme::textPrimary()), tc(Theme::textBright()), QSize(16, 16)));
     if (m_formatBar) m_formatBar->applyIcons();
     for (EncSection* s : std::as_const(m_sections)) s->applyTextColor(1.0);
     rebuildSidebar();

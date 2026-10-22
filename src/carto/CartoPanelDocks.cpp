@@ -14,6 +14,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QSlider>
+#include <QStyle>
 #include <QToolButton>
 #include <QVBoxLayout>
 
@@ -189,13 +190,16 @@ void Panel::syncRealmCard()
     const Info* in = m_doc.info.get();
     const int n = in ? static_cast<int>(in->defs.size()) : 0;
     const int sel = std::max(0, std::min(o.realmSel, n - 1));
-    // a lista só se refaz quando muda (senão o campo de nome perde o foco a cada quadro)
-    QString sigText = QString::number(sel);
+    // a lista só se refaz quando os territórios mudam (senão o campo de nome perde o foco a cada quadro).
+    // Trocar a seleção NÃO refaz: o clique no nome de outro território chega aqui no meio do próprio
+    // evento do campo, e apagar o campo ali derrubava o app (21/10). Seleção = só o destaque das linhas.
+    QString sigText = QString::number(n);
     if (in) for (const RealmDef& d : in->defs) sigText += QStringLiteral("|%1/%2,%3,%4").arg(d.name).arg(d.color[0]).arg(d.color[1]).arg(d.color[2]);
     const int sig = static_cast<int>(qHash(sigText));
     if (sig != m_realmListSig) {
         m_realmListSig = sig;
-        while (QLayoutItem* it = m_realmList->takeAt(0)) { delete it->widget(); delete it; }
+        // deleteLater: a lista também se refaz de dentro do editingFinished do próprio campo de nome
+        while (QLayoutItem* it = m_realmList->takeAt(0)) { if (QWidget* w = it->widget()) { w->hide(); w->deleteLater(); } delete it; }
         const QColor muted = Theme::toColor(Theme::textMuted()), accent = Theme::toColor(Theme::accentDefault());
         for (int i = 0; i < n; i++) {
             const RealmDef& d = in->defs[i];
@@ -250,6 +254,15 @@ void Panel::syncRealmCard()
             empty->setText(tr("Nenhum território ainda. Clique no mapa pra plantar o primeiro."));
             m_realmList->addWidget(empty);
         }
+    }
+    // o destaque do selecionado
+    for (int k = 0; k < m_realmList->count(); k++) {
+        QWidget* row = m_realmList->itemAt(k)->widget();
+        if (!row || !row->property("realmRow").isValid()) continue;
+        const bool on = row->property("realmRow").toInt() == sel;
+        if (row->property("sel").toBool() == on) continue;
+        row->setProperty("sel", on);
+        row->style()->unpolish(row); row->style()->polish(row);
     }
     const RealmDef* d = in && n ? &in->defs[sel] : nullptr;
     const int reach = !d || d->reach >= kReachAll ? 400 : qRound(d->reach);
@@ -447,12 +460,12 @@ void Panel::buildNamesCard()
     m_namesAuto->setText(tr("Sugerir nomes pelo relevo"));
     m_namesAuto->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     m_namesAuto->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    connect(m_namesAuto, &QToolButton::clicked, this, [this](bool on) { m_canvas->opts().namesAuto = on; m_canvas->update(); syncUi(); scheduleSave(); });
+    connect(m_namesAuto, &QToolButton::clicked, this, [this](bool on) { m_doc.labels.autoOn = on; m_canvas->update(); syncUi(); scheduleSave(); });
     l->addWidget(m_namesAuto);
     l->addWidget(caption(m_namesCard, tr("QUANTIDADE")));
     l->addLayout(newSeg(m_namesCard, { QStringLiteral("few"), QStringLiteral("normal"), QStringLiteral("many") }, { tr("Poucos"), tr("Normal"), tr("Muitos") },
                         { tr("Só os grandes: oceano, mares, serras e as maiores regiões"), QString(), tr("Também picos, campos, lagos e ilhas pequenas") },
-                        m_densBtns, [this](const QString& v) { m_canvas->opts().density = v; m_canvas->update(); syncUi(); scheduleSave(); }));
+                        m_densBtns, [this](const QString& v) { m_doc.labels.density = v; m_canvas->update(); syncUi(); scheduleSave(); }));
     l->addWidget(caption(m_namesCard, tr("NOME NOVO")));
     l->addLayout(newSeg(m_namesCard, { QStringLiteral("land"), QStringLiteral("water") }, { tr("Terra"), tr("Água") },
                         { tr("Letras de terra: versalete espaçado"), tr("Letras de água: itálico") },
@@ -534,9 +547,9 @@ void Panel::syncNamesCard()
 {
     if (!m_namesCard || !m_namesCard->isVisible()) return;
     const ToolOpts& o = m_canvas->opts();
-    m_namesAuto->setChecked(o.namesAuto);
-    m_namesAuto->setIcon(icon(o.namesAuto ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
-    for (auto it = m_densBtns.begin(); it != m_densBtns.end(); ++it) it.value()->setChecked(it.key() == o.density);
+    m_namesAuto->setChecked(m_doc.labels.autoOn);
+    m_namesAuto->setIcon(icon(m_doc.labels.autoOn ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
+    for (auto it = m_densBtns.begin(); it != m_densBtns.end(); ++it) it.value()->setChecked(it.key() == m_doc.labels.density);
     for (auto it = m_nstyleBtns.begin(); it != m_nstyleBtns.end(); ++it) it.value()->setChecked(it.key() == o.nameStyle);
     const Label* lab = m_canvas->selName().isEmpty() ? nullptr : m_canvas->scene().nameByRef(m_canvas->selName());
     m_nameBox->setVisible(lab != nullptr);

@@ -5,6 +5,7 @@
 
 #include <QFrame>
 #include <QHash>
+#include <QSet>
 #include <QList>
 #include <QPoint>
 #include <QPointF>
@@ -45,7 +46,7 @@ public:
     void setElementsStore(ElementsStore* store);
     // Necessários para a busca olhar o CONTEÚDO dos documentos, não só o
     // título: o cache evita reler do disco o que já está aberto.
-    void setDocCache(DocCache* cache) { m_cache = cache; }
+    void setDocCache(DocCache* cache);
     void setProjectRoot(const QString& root) { m_projectRoot = root; }
 
     void openDrawer(const QString& drawerKey, const QString& folderId = QString());
@@ -227,6 +228,11 @@ private:
     QStringList m_chapterLabels;
     mutable QHash<QString, QString> m_previewCache;
     QTimer* m_hoverTimer = nullptr;
+    // contagem de palavras da tabela: o doc mudou no editor → refaz só aquela célula, depois de uma pausa
+    QTimer* m_wordsTimer = nullptr;
+    QSet<QString> m_wordsDirty;
+    void onDocContentChanged(const QString& key);
+    void refreshDirtyWordCells();
     QLabel* m_hoverCard = nullptr;
     QString m_hoverItemId;
     QRect m_hoverRect;

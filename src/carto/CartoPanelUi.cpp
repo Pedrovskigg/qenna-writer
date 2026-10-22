@@ -166,8 +166,8 @@ void Panel::cartelaPicked(int i)
 // o subtítulo da Cartela: o mar que dá nome à região
 QString Panel::regionName()
 {
-    if (!m_hasWorld) return QString();
-    const auto& F = m_doc.ensureNames(m_canvas->opts().density);
+    if (!m_hasWorld || !m_doc.labels.autoOn) return QString();   // sem nomes sugeridos, sem mar com nome
+    const auto& F = m_doc.ensureNames(m_doc.labels.density);
     const NameFeature* s = nullptr;
     for (const NameFeature& f : F) if (f.kind == QLatin1String("ocean")) { s = &f; break; }
     if (!s) for (const NameFeature& f : F) if (f.kind == QLatin1String("sea")) { s = &f; break; }

@@ -832,8 +832,11 @@ QJsonObject realmsToJson(const Info& info)
         QJsonArray seeds, paint;
         for (const Pt& p : d.seeds) seeds.append(ptJ(p));
         for (int c : d.paint) paint.append(c);
-        defs.append(QJsonObject{ { "name", d.name }, { "color", rgbJ(d.color) }, { "seeds", seeds },
-                                 { "reach", d.reach >= kReachAll ? -1.0 : d.reach }, { "paint", paint } });
+        QJsonObject o{ { "name", d.name }, { "color", rgbJ(d.color) }, { "seeds", seeds },
+                       { "reach", d.reach >= kReachAll ? -1.0 : d.reach }, { "paint", paint } };
+        if (!d.groupId.isEmpty()) o.insert("group", d.groupId);
+        if (!d.placeId.isEmpty()) o.insert("place", d.placeId);
+        defs.append(o);
     }
     QJsonArray barrier;
     for (size_t i = 0; i < info.barrier.size(); i++) if (info.barrier[i]) barrier.append(static_cast<int>(i));
@@ -851,6 +854,8 @@ void realmsFromJson(Info& info, const QJsonObject& o)
         RealmDef d;
         d.name = a.value("name").toString();
         d.color = jRgb(a.value("color"));
+        d.groupId = a.value("group").toString();
+        d.placeId = a.value("place").toString();
         for (const QJsonValue& s : a.value("seeds").toArray()) d.seeds.push_back(jPt(s));
         const double r = a.value("reach").toDouble(-1);
         d.reach = r < 0 ? kReachAll : r;

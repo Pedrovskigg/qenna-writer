@@ -3,11 +3,13 @@
 
 #include "CartoAstrolabe.h"
 #include "CartoCartela.h"
+#include "CartoExplore.h"
 #include "CartoIcons.h"
 #include "CartoRing.h"
 #include "../SheetDialogs.h"
 #include "../Theme.h"
 
+#include <QApplication>
 #include <QButtonGroup>
 #include <QCloseEvent>
 #include <QComboBox>
@@ -290,6 +292,7 @@ void Panel::buildUi()
 
     buildGenPanel();
     buildSettings();
+    buildWelcome();
     buildCartelaUi();
     buildExportCard();
 
@@ -303,8 +306,17 @@ void Panel::buildUi()
         { QStringLiteral("realm"), tr("Territórios"), QStringLiteral("flag"), true },
         { QStringLiteral("build"), tr("Construir"), QStringLiteral("castle"), true },
         { QStringLiteral("names"), tr("Nomes"), QStringLiteral("names"), true },
+        { QStringLiteral("explore"), tr("Explorar"), QStringLiteral("explore"), true },
     });
     connect(m_ring, &Ring::picked, this, [this](const QString& id, QPoint c) { pickTool(id, c); });
+
+    // Explorar: os documentos de cada território
+    m_explore = new Explorer(this, m_canvas, &m_doc);
+    m_explore->mapEdited = [this]() { scheduleSave(); };
+    m_explore->flash = [this](const QString& m) { flash(m); };
+    m_explore->cartelaTop = [this]() { return m_cartela && m_cartela->isVisible() ? m_cartela->y() : -1; };
+    connect(m_canvas, &Canvas::exploreHover, this, [this](int r, const QString& link, QPoint at) { m_explore->hovered(r, link, at); });
+    connect(m_canvas, &Canvas::exploreClicked, this, [this](int r, const QString& link) { m_explore->clicked(r, link); syncUi(); });
 
     // sinais da mesa
     connect(m_canvas, &Canvas::ringRequested, this, [this](QPoint at) { openRingAt(m_canvas->mapTo(this, at)); });
@@ -520,6 +532,18 @@ void Panel::buildGenPanel()
     connect(dice, &QToolButton::clicked, this, [this]() { m_genSeed->setValue(QRandomGenerator::global()->bounded(99999)); });
     sdrow->addWidget(m_genSeed, 1); sdrow->addWidget(dice);
     l->addLayout(sdrow);
+    m_genInfo = new QToolButton(m_gen);
+    m_genInfo->setObjectName(QStringLiteral("cartoCheck"));
+    m_genInfo->setCheckable(true);
+    m_genInfo->setChecked(QSettings().value(QStringLiteral("carto/genInfo"), true).toBool());
+    m_genInfo->setCursor(Qt::PointingHandCursor);
+    m_genInfo->setText(tr("Gerar territórios e locais"));
+    m_genInfo->setToolTip(tr("Reinos, cidades, estradas e nomes sugeridos pelo terreno. Desmarcado, o mapa vem só com o relevo e o resto é com você."));
+    m_genInfo->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_genInfo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    connect(m_genInfo, &QToolButton::clicked, this, [this](bool on) { QSettings().setValue(QStringLiteral("carto/genInfo"), on); syncUi(); });
+    connect(m_genType, &QButtonGroup::idClicked, this, [this](int id) { m_genInfo->setEnabled(id != 3); syncUi(); });   // mar vazio: não há onde pôr
+    l->addWidget(m_genInfo);
     auto* go = new QPushButton(tr("Gerar mapa"), m_gen);
     go->setObjectName(QStringLiteral("cartoGo"));
     go->setCursor(Qt::PointingHandCursor);
@@ -531,6 +555,89 @@ void Panel::buildGenPanel()
     note->setAlignment(Qt::AlignCenter);
     l->addWidget(note);
     m_gen->hide();
+}
+
+void Panel::buildWelcome()
+{
+    m_welcome = new QFrame(this);
+    m_welcome->setObjectName(QStringLiteral("cartoCard"));
+    m_welcome->setFixedWidth(380);
+    auto* l = new QVBoxLayout(m_welcome);
+    l->setContentsMargins(20, 18, 20, 18);
+    l->setSpacing(12);
+    auto* t = new QLabel(tr("Bem-vindo ao Qenna Map!"), m_welcome);
+    t->setObjectName(QStringLiteral("cartoCardTitle"));
+    l->addWidget(t);
+    auto* body = new QLabel(tr("Aqui, você pode começar a criar o mapa do seu mundo e gerenciá-lo utilizando os documentos do seu projeto. "
+                               "Desenhe o seu mapa ou gere um nas opções acima."), m_welcome);
+    body->setObjectName(QStringLiteral("cartoNote"));
+    body->setStyleSheet(QStringLiteral("font-size: 13px;"));
+    body->setWordWrap(true);
+    l->addWidget(body);
+    auto* ok = new QPushButton(tr("OK"), m_welcome);
+    ok->setObjectName(QStringLiteral("cartoGo"));
+    ok->setCursor(Qt::PointingHandCursor);
+    connect(ok, &QPushButton::clicked, this, [this]() {
+        m_welcome->hide();
+        QSettings().setValue(QStringLiteral("carto/welcomed"), true);
+        if (m_askSize) { m_sizeCard->show(); positionOverlays(); }
+    });
+    l->addWidget(ok);
+    m_welcome->hide();
+
+    // logo depois: o tamanho do mapa em branco (quem desenha precisa escolher antes)
+    m_sizeCard = new QFrame(this);
+    m_sizeCard->setObjectName(QStringLiteral("cartoCard"));
+    m_sizeCard->setFixedWidth(340);
+    auto* sl = new QVBoxLayout(m_sizeCard);
+    sl->setContentsMargins(20, 18, 20, 18);
+    sl->setSpacing(8);
+    auto* st = new QLabel(tr("Tamanho do mapa"), m_sizeCard);
+    st->setObjectName(QStringLiteral("cartoCardTitle"));
+    sl->addWidget(st);
+    auto* sn = new QLabel(tr("Quanto maior, mais espaço pra desenhar e mais pesado fica."), m_sizeCard);
+    sn->setObjectName(QStringLiteral("cartoNote"));
+    sn->setWordWrap(true);
+    sl->addWidget(sn);
+    for (int s = 0; s < 6; s++) {
+        const SizePreset& sp = sizePreset(s);
+        const int W = (sp.gw - 1) * 5 + 1, H = (sp.gh - 1) * 5 + 1;
+        QString label = QStringLiteral("%1 · %2×%3").arg(sizeName(s)).arg(W - 1).arg(H - 1);
+        if (s == 4) label += tr(" (2× o Épico)");
+        if (s == 5) label += tr(" (3× o Épico)");
+        auto* b = new QPushButton(label, m_sizeCard);
+        b->setObjectName(QStringLiteral("cartoSize"));
+        b->setCursor(Qt::PointingHandCursor);
+        connect(b, &QPushButton::clicked, this, [this, s]() { pickBlankSize(s); });
+        sl->addWidget(b);
+    }
+    m_sizeCard->hide();
+}
+
+void Panel::askBlankSize()
+{
+    m_askSize = true;
+    if (!m_welcome->isVisible()) m_sizeCard->show();
+    positionOverlays();
+}
+
+// o mar vazio do começo no tamanho que o usuário escolheu
+void Panel::pickBlankSize(int size)
+{
+    m_askSize = false;
+    m_sizeCard->hide();
+    m_genSize->setCurrentIndex(size);   // o Gerar já abre no mesmo tamanho
+    if (size != m_doc.world.size) {
+        m_canvas->waitIdle();
+        const int seed = m_doc.world.seed;
+        m_canvas->setDoc(nullptr, false);
+        m_doc = Doc();
+        m_doc.world = emptyWorld(seed, size, QStringLiteral("mixed"));
+        m_doc.clearSuggestions();
+        m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
+        saveNow();
+    }
+    syncUi();
 }
 
 void Panel::buildSettings()
@@ -635,6 +742,8 @@ void Panel::applyTheme()
         "QToolButton#cartoChoice:checked { background: %9; color: %5; border-color: %5; }"
         "QToolButton#cartoSeg { background: %4; border: 1px solid %2; border-radius: 8px; color: %6; font-size: 12px; padding: 6px 4px; }"
         "QToolButton#cartoSeg:checked { background: %9; color: %5; border-color: %5; font-weight: 600; }"
+        "QPushButton#cartoSize { background: %4; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 12px; padding: 8px 12px; text-align: left; }"
+        "QPushButton#cartoSize:hover { background: %9; border-color: %5; color: %5; }"
         "QComboBox#cartoCombo, QSpinBox#cartoSpin { background: %11; border: 1px solid %2; border-radius: 8px; color: %3; padding: 5px 8px; font-size: 13px; }"
         "QPushButton#cartoGo { background: %5; color: %12; border: none; border-radius: 9px; padding: 9px 0; font-size: 13px; font-weight: 700; }"
         "QPushButton#cartoGo:hover { background: %5; }"
@@ -655,6 +764,7 @@ void Panel::applyTheme()
     const QColor muted = Theme::toColor(Theme::textMuted()), ink = Theme::toColor(Theme::textPrimary());
     for (const auto& [btn, name] : m_icons) btn->setIcon(icon(name, muted, a));
     if (m_toolBtn) m_toolBtn->setIcon(icon(QStringLiteral("ring"), ink, a));
+    if (m_explore) m_explore->applyTheme();
     if (m_astro) m_astro->update();
     syncUi();
 }
@@ -712,8 +822,15 @@ void Panel::positionOverlays()
         for (QWidget* w : { static_cast<QWidget*>(m_cartela), static_cast<QWidget*>(m_rose), static_cast<QWidget*>(m_cbar), static_cast<QWidget*>(m_cview) }) w->raise();
         m_gen->raise(); m_settings->raise(); m_export->raise();
     }
+    for (QFrame* card : { m_welcome, m_sizeCard }) {
+        if (!card || !card->isVisible()) continue;
+        card->adjustSize();
+        card->move((W - card->width()) / 2, (H - card->height()) / 2);
+        card->raise();
+    }
     placeDock();
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
+    if (m_explore) m_explore->place();
 }
 
 void Panel::placeDock()
@@ -761,6 +878,7 @@ QString Panel::toolLabel() const
     if (m_tool == QLatin1String("build")) return tr("Construir") + QStringLiteral(" · ") + buildKindName(m_canvas->opts().buildKind);
     if (m_tool == QLatin1String("names")) return tr("Nomes");
     if (m_tool == QLatin1String("ruler")) return tr("Régua");
+    if (m_tool == QLatin1String("explore")) return tr("Explorar");
     return tr("Mover");
 }
 
@@ -779,6 +897,15 @@ void Panel::syncUi()
     m_undoBtn->setEnabled(!m_undo.empty());
     m_redoBtn->setEnabled(!m_redo.empty());
     m_genBtn->setChecked(m_gen->isVisible());
+    m_genInfo->setIcon(icon(m_genInfo->isChecked() && m_genInfo->isEnabled() ? QStringLiteral("check") : QStringLiteral("box"),
+                            Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
+    // o Completo só abre quando o mapa tem o que mostrar
+    const bool fullLocked = m_hasWorld && !m_doc.hasContent();
+    m_astro->setLockedMode(fullLocked ? QStringLiteral("full") : QString());
+    if (QToolButton* fb = m_viewBtns.value(QStringLiteral("full"))) {
+        fb->setEnabled(!fullLocked);
+        fb->setToolTip(fullLocked ? fullLockedWhy() : QString());
+    }
     m_setBtn->setChecked(m_settings->isVisible());
     m_playBtn->setIcon(icon(m_playTimer->isActive() ? QStringLiteral("pause") : QStringLiteral("play"),
                             Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
@@ -803,6 +930,7 @@ void Panel::syncUi()
     else if (m_tool == QLatin1String("build")) hint = tr("Construir: escolha na doca · Q/E giram o selecionado · Delete apaga · Ctrl+Z desfaz");
     else if (m_tool == QLatin1String("names")) hint = tr("Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde");
     else if (m_tool == QLatin1String("ruler")) hint = tr("Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa");
+    else if (m_tool == QLatin1String("explore")) hint = m_explore->hint();
     else hint = tr("Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)");
     if (!m_flash.isEmpty()) hint = m_flash;
     m_hint->setText(hint);
@@ -817,10 +945,13 @@ void Panel::setProjectRoot(const QString& root)
     m_store.setProjectRoot(root);
     m_mapId.clear();
     m_hasWorld = false;
+    m_askSize = false; m_sizeCard->hide(); m_welcome->hide();
     m_undo.clear(); m_redo.clear();
     m_canvas->setDoc(nullptr, false);
     if (isVisible()) ensureMap();
 }
+
+void Panel::setProjectLink(const ProjectLink& link) { if (m_explore) m_explore->setLink(link); }
 
 void Panel::showEvent(QShowEvent*)
 {
@@ -831,7 +962,13 @@ void Panel::showEvent(QShowEvent*)
 void Panel::ensureMap()
 {
     if (m_hasWorld || m_store.projectRoot().isEmpty()) return;
-    if (m_store.maps().isEmpty()) { newMap(false); return; }
+    if (m_store.maps().isEmpty()) {
+        // o primeiro mapa do projeto nasce em branco: o usuário desenha ou gera
+        newMap(false, true);
+        if (!QSettings().value(QStringLiteral("carto/welcomed"), false).toBool()) m_welcome->show();   // o OK chama o tamanho
+        askBlankSize();
+        return;
+    }
     openMap(m_store.activeId());
 }
 
@@ -858,17 +995,19 @@ void Panel::openMap(const QString& id)
     m_canvas->setHour(v.hour, true);
     m_canvas->setTerrainStyle(v.style);
     m_styleGroup->button(v.style == QLatin1String("mira") ? 0 : 1)->setChecked(true);
-    m_canvas->setMode(v.mode);
+    m_canvas->setMode(v.mode == QLatin1String("full") && !m_doc.hasContent() ? QStringLiteral("terrain") : v.mode);
     m_canvas->presetView(v.ang, v.pitch);
-    m_canvas->setDoc(&m_doc, true);
+    m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
     syncUi();
 }
 
-void Panel::newMap(bool ask)
+void Panel::newMap(bool ask, bool blank)
 {
     if (m_saveTimer->isActive()) saveNow();
     m_canvas->waitIdle();
-    World w = generate(QRandomGenerator::global()->bounded(99999), 60, QStringLiteral("continent"), 1, QStringLiteral("mixed"));
+    const int seed = QRandomGenerator::global()->bounded(99999);
+    World w = blank ? emptyWorld(seed, 1, QStringLiteral("mixed"))
+                    : generate(seed, 60, QStringLiteral("continent"), 1, QStringLiteral("mixed"));
     QString name = mapTitle(w);
     if (ask) {
         bool ok = false;
@@ -880,11 +1019,13 @@ void Panel::newMap(bool ask)
     m_canvas->setDoc(nullptr, false);
     m_doc = Doc();
     m_doc.world = std::move(w);
+    if (blank) m_doc.clearSuggestions();
     m_view = MapViewState();
     m_hasWorld = true;
     m_undo.clear(); m_redo.clear();
     m_canvas->setMode(m_view.mode);
-    m_canvas->setDoc(&m_doc, true);
+    m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
+    if (blank) { setTool(QStringLiteral("brush")); setBrush(Brush::Land); }
     saveNow();
     syncUi();
 }
@@ -916,7 +1057,7 @@ void Panel::showMapMenu()
         m_store.removeMap(m_mapId);
         m_hasWorld = false;
         m_mapId.clear();
-        if (m_store.maps().isEmpty()) newMap(false);
+        if (m_store.maps().isEmpty()) { newMap(false, true); askBlankSize(); }
         else openMap(m_store.activeId());
     });
     del->setEnabled(m_store.maps().size() > 0);
@@ -976,7 +1117,7 @@ void Panel::pickTool(const QString& id, QPoint ringCenter)
     } else {
         setClimate(false);
         if (id == QLatin1String("build")) ensureView(QStringLiteral("full"));
-        else if (id == QLatin1String("realm") || id == QLatin1String("names")) ensureView(QStringLiteral("info"));
+        else if (id == QLatin1String("realm") || id == QLatin1String("names") || id == QLatin1String("explore")) ensureView(QStringLiteral("info"));
         setTool(id);
     }
 }
@@ -987,6 +1128,7 @@ void Panel::ensureView(const QString& v)
     if (v == QLatin1String("terrain") && m != QLatin1String("terrain")) m_canvas->setMode(QStringLiteral("terrain"));
     else if (v == QLatin1String("full") && m != QLatin1String("full")) m_canvas->setMode(QStringLiteral("full"));
     else if (v == QLatin1String("info") && m == QLatin1String("terrain")) m_canvas->setMode(QStringLiteral("full"));
+    if (m_canvas->mode() == QLatin1String("full") && m_flash == fullLockedWhy()) m_flash.clear();   // a ferramenta abriu o Completo
     scheduleSave();
 }
 
@@ -1035,8 +1177,9 @@ void Panel::setTool(const QString& id)
     if (draws && m_canvas->mode() != QLatin1String("terrain")) m_canvas->setMode(QStringLiteral("terrain"));   // desenhar é na vista Terreno
     m_canvas->setTool(id == QLatin1String("area") ? Tool::Area : id == QLatin1String("brush") ? Tool::Brush : id == QLatin1String("realm") ? Tool::Realm
                       : id == QLatin1String("build") ? Tool::Build : id == QLatin1String("names") ? Tool::Names
-                      : id == QLatin1String("ruler") ? Tool::Ruler : Tool::Pan);
+                      : id == QLatin1String("ruler") ? Tool::Ruler : id == QLatin1String("explore") ? Tool::Explore : Tool::Pan);
     if (id != QLatin1String("ruler")) m_canvas->clearRuler();
+    if (m_explore) m_explore->setActive(id == QLatin1String("explore"));
     const bool brush = id == QLatin1String("brush"), realm = id == QLatin1String("realm"), build = id == QLatin1String("build"), names = id == QLatin1String("names");
     m_brushCard->setVisible(brush);
     m_realmCard->setVisible(realm);
@@ -1063,13 +1206,19 @@ void Panel::setBrush(Brush b)
     syncUi();
 }
 
+QString Panel::fullLockedWhy() const
+{
+    return tr("O Completo abre quando o mapa tiver um território, uma construção ou um nome. Crie um pelas ferramentas ou gere com territórios e locais.");
+}
+
 void Panel::setMode(const QString& mode)
 {
+    if (mode == QLatin1String("full") && m_hasWorld && !m_doc.hasContent()) { flash(fullLockedWhy()); return; }
     // cada ferramenta mora numa vista: desenhar no Terreno, territórios e nomes nas vistas com informação,
     // construir no Completo; se a vista nova não serve, a ferramenta volta pra Mover
     const bool terrain = mode == QLatin1String("terrain");
     const bool keep = m_tool == QLatin1String("pan") || m_tool == QLatin1String("ruler") || (terrain && (m_tool == QLatin1String("area") || m_tool == QLatin1String("brush")))
-        || (!terrain && (m_tool == QLatin1String("realm") || m_tool == QLatin1String("names")))
+        || (!terrain && (m_tool == QLatin1String("realm") || m_tool == QLatin1String("names") || m_tool == QLatin1String("explore")))
         || (mode == QLatin1String("full") && m_tool == QLatin1String("build"));
     if (!keep) { setClimate(false); setTool(QStringLiteral("pan")); }
     m_canvas->setMode(mode);
@@ -1108,11 +1257,16 @@ void Panel::generateFromPanel()
     m_doc.world = rebuildBase(m_genSeed->value(), m_genWater->value(), QString::fromLatin1(types[std::max(0, m_genType->checkedId())]),
                               m_genSize->currentData().toInt(), QString::fromLatin1(climates[std::max(0, m_genClimate->checkedId())]));
     m_doc.world.scale = keepScale;
+    const bool bare = !m_genInfo->isChecked() || m_doc.world.type == QLatin1String("empty");
+    if (bare) m_doc.clearSuggestions();
     pushUndo(std::move(u));
     if (wasAuto) m_store.renameMap(m_mapId, mapTitle(m_doc.world));   // o nome sugerido acompanha o mapa novo
     m_gen->hide();
-    m_canvas->setDoc(&m_doc, true);
+    if (m_welcome->isVisible()) { m_welcome->hide(); QSettings().setValue(QStringLiteral("carto/welcomed"), true); }
+    m_askSize = false; m_sizeCard->hide();   // o tamanho veio do Gerar
+    m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
     if (m_doc.world.type == QLatin1String("empty")) { setTool(QStringLiteral("brush")); setBrush(Brush::Land); }
+    else if (bare && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
     scheduleSave();
     syncUi();
 }
@@ -1120,6 +1274,8 @@ void Panel::generateFromPanel()
 // ── desfazer ──
 void Panel::pushUndo(Undo u)
 {
+    // começou a desenhar: o tamanho fica o que está (trocar agora apagaria o desenho)
+    if (m_askSize) { m_askSize = false; m_sizeCard->hide(); }
     m_undo.push_back(std::move(u));
     if (m_undo.size() > 40) m_undo.pop_front();
     // mundos inteiros pesam: guarda poucos em mapa grande
@@ -1142,6 +1298,18 @@ void Panel::restore(bool undoing)
     m_canvas->waitIdle();
     Undo e = std::move(from.back());
     from.pop_back();
+    // o desfazer não desliga um território do grupo e do Lugar dele: os vínculos voltam pelo nome
+    QHash<QString, QPair<QString, QString>> links;
+    if (m_doc.info) for (const RealmDef& d : m_doc.info->defs) if (!d.groupId.isEmpty() || !d.placeId.isEmpty()) links.insert(d.name, { d.groupId, d.placeId });
+    auto relink = [this, &links]() {
+        if (!m_doc.info) return;
+        for (RealmDef& d : m_doc.info->defs) {
+            const auto it = links.constFind(d.name);
+            if (it == links.cend()) continue;
+            if (d.groupId.isEmpty()) d.groupId = it->first;
+            if (d.placeId.isEmpty()) d.placeId = it->second;
+        }
+    };
     if (e.kind == Undo::Full) {
         Undo back; back.kind = Undo::Full; back.world = std::make_shared<World>(m_doc.world);
         if (e.layers) back.layers = std::make_shared<Doc::Layers>(m_doc.layers());
@@ -1153,12 +1321,16 @@ void Panel::restore(bool undoing)
             // o mapa trocou inteiro (gerar): as camadas voltam junto
             m_doc.info.reset();
             m_doc.setLayers(*e.layers);
+            relink();
         }
         to.push_back(std::move(back));
         m_canvas->setDoc(&m_doc, fresh);
+        if (m_explore) m_explore->mapReplaced();
     } else if (e.kind == Undo::Layers) {
         m_doc.setLayers(undoing ? *e.lBefore : *e.lAfter);
+        relink();
         m_canvas->layersReplaced();
+        if (m_explore) m_explore->mapReplaced();
         to.push_back(std::move(e));
     } else {
         applySnapshot(m_doc.world, undoing ? e.before : e.after);
@@ -1180,6 +1352,8 @@ void Panel::keyPressEvent(QKeyEvent* e)
 {
     const int k = e->key();
     const bool ctrl = e->modifiers() & Qt::ControlModifier;
+    if (m_explore && k == Qt::Key_Escape && m_explore->escape()) { syncUi(); return; }
+    if (m_explore && m_explore->owns(QApplication::focusWidget())) { QWidget::keyPressEvent(e); return; }
     if (ctrl && k == Qt::Key_Z && !(e->modifiers() & Qt::ShiftModifier)) { restore(true); return; }
     if (ctrl && (k == Qt::Key_Y || (k == Qt::Key_Z && (e->modifiers() & Qt::ShiftModifier)))) { restore(false); return; }
     if (ctrl) { QWidget::keyPressEvent(e); return; }
@@ -1193,6 +1367,7 @@ void Panel::keyPressEvent(QKeyEvent* e)
     case Qt::Key_N: pickTool(m_tool == QLatin1String("names") ? QStringLiteral("pan") : QStringLiteral("names"), QPoint()); m_dockFromRing = false; placeDock(); break;
     case Qt::Key_S: m_canvas->opts().sprites = !m_canvas->opts().sprites; QSettings().setValue(QStringLiteral("carto/sprites"), m_canvas->opts().sprites); m_canvas->optsChanged(); applyUiMode(); break;
     case Qt::Key_R: pickTool(m_tool == QLatin1String("ruler") ? QStringLiteral("pan") : QStringLiteral("ruler"), QPoint()); break;
+    case Qt::Key_X: pickTool(m_tool == QLatin1String("explore") ? QStringLiteral("pan") : QStringLiteral("explore"), QPoint()); m_dockFromRing = false; break;
     case Qt::Key_Delete: case Qt::Key_Backspace: deleteSelected(); break;
     case Qt::Key_G: m_gen->setVisible(!m_gen->isVisible()); positionOverlays(); syncUi(); break;
     case Qt::Key_F: m_canvas->fit(); break;

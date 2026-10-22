@@ -44,6 +44,8 @@ struct LabelLayer {
     std::vector<NameEdit> edits;
     std::vector<NameCustom> custom;
     int seq = 0;
+    bool autoOn = true;                               // sugerir nomes pelo relevo
+    QString density = QStringLiteral("normal");      // few · normal · many
     QJsonObject toJson() const;
     static LabelLayer fromJson(const QJsonObject& o);
     bool operator==(const LabelLayer& o) const;

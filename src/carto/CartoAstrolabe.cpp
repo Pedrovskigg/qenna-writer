@@ -47,6 +47,13 @@ void Astrolabe::setState(double ang, double pitch, double hour, const QString& m
     update();
 }
 
+void Astrolabe::setLockedMode(const QString& mode)
+{
+    if (m_locked == mode) return;
+    m_locked = mode;
+    update();
+}
+
 QPointF Astrolabe::local(QPointF p) const { return p - QPointF(kMargin + kSize / 2, kMargin + kSize / 2 - 2); }
 
 void Astrolabe::paintEvent(QPaintEvent*)
@@ -105,7 +112,8 @@ void Astrolabe::paintEvent(QPaintEvent*)
         const QRectF r(C.x() + v.dx - 31, C.y() + v.dy - 10, 62, 20);
         if (on) { p.setPen(Qt::NoPen); p.setBrush(accentSoft); p.drawRoundedRect(r, 10, 10); }
         QFont vf = font(); vf.setPixelSize(11); vf.setBold(on);
-        p.setFont(vf); p.setPen(on ? accent : muted);
+        QColor off = muted; off.setAlphaF(0.35);
+        p.setFont(vf); p.setPen(on ? accent : m == m_locked ? off : muted);
         p.drawText(r, Qt::AlignCenter, viewName(m));
     }
 
@@ -153,7 +161,7 @@ void Astrolabe::mousePressEvent(QMouseEvent* e)
     const double d = std::hypot(l.x(), l.y()), a = std::atan2(l.y(), l.x());
     if (d > 118) { e->ignore(); return; }
     const QString v = d <= 76 ? viewAt(l) : QString();
-    if (!v.isEmpty()) { emit modeRequested(v); return; }
+    if (!v.isEmpty()) { emit modeRequested(v); return; }   // vista apagada: o painel recusa e avisa
     m_moved = false;
     if (d > 97) m_drag = Drag::Hour;
     else if (d > 76 && std::fabs(a) < 75 * DEG) m_drag = Drag::Tilt;

@@ -427,6 +427,9 @@ qt_add_executable(qenna-writer
     src/carto/CartoCanvas.cpp
     src/carto/CartoCanvas.h
     src/carto/CartoCanvasTools.cpp
+    src/carto/CartoCanvasExplore.cpp
+    src/carto/CartoExplore.cpp
+    src/carto/CartoExplore.h
     src/carto/CartoAstrolabe.cpp
     src/carto/CartoAstrolabe.h
     src/carto/CartoRing.cpp
@@ -515,7 +518,7 @@ qt_add_executable(qenna-writer
 set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 # O Mapa pinta milhões de pixels por quadro (gerador, pintor, pincéis): otimizado mesmo no Debug
 set_source_files_properties(src/carto/CartoCore.cpp src/carto/CartoPaint.cpp src/carto/CartoEdit.cpp src/carto/CartoInfo.cpp src/carto/CartoNames.cpp src/carto/CartoSprites.cpp src/carto/CartoScene.cpp
-                            src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+                            src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoCanvasExplore.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 qt_add_translations(qenna-writer
     TS_FILES

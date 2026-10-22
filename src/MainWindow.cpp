@@ -154,6 +154,7 @@
 #include "QuickSavePopup.h"
 #include "LousaPanel.h"
 #include "carto/CartoPanel.h"
+#include "carto/CartoExplore.h"
 #include "TimelinePanel.h"
 #include "CharacterSheetPanel.h"
 #include "ChapterStatsDialog.h"
@@ -1365,6 +1366,7 @@ void MainWindow::setupEditor()
         return SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
     });
     // Roteiro: cada INT./EXT. vira cena do Qenna assim que a pessoa sai da linha.
+    connect(editor, &SpellEditor::pasted, this, &MainWindow::formatPastedRange);
     connect(editor, &SpellEditor::screenplayLineFinished, this, [this]() {
         if (!editor || !editor->isScreenplayMode() || !editorHost) return;
         const int added = ScreenplayFormat::ensureSceneBreaks(editor->document(), true);
@@ -3180,19 +3182,11 @@ void MainWindow::setupEditor()
             }
         } else if (action == LeftBar::WorldMap) {
             CrashLogger::log("cartoPanelToggle");
-            if (!cartoPanel) {
-                cartoPanel = new carto::Panel(this);
-                connect(cartoPanel, &carto::Panel::closeRequested, this, [this]() { leftBar->clearSelection(); });
-                if (!projectRoot.isEmpty()) cartoPanel->setProjectRoot(projectRoot);
-            }
-            if (cartoPanel->isVisible()) {
+            if (cartoPanel && cartoPanel->isVisible()) {
                 cartoPanel->hide();
                 leftBar->clearSelection();
             } else {
-                cartoPanel->show();
-                cartoPanel->raise();
-                cartoPanel->activateWindow();
-                leftBar->setActiveFixedAction(LeftBar::WorldMap);
+                showCartoPanel();
             }
         } else if (action == LeftBar::Timeline) {
             CrashLogger::log("timelinePanelToggle");
@@ -4195,6 +4189,34 @@ SceneBreaks::Info MainWindow::sceneBreakInfo(int breakIndex) const
             in.flashback = okB && okM && v < base;
         }
     return in;
+}
+
+// O texto colado (do Word, do navegador, de outro doc) traz a formatação de parágrafo
+// de lá: recuo zero, outra entrelinha. Os blocos colados recebem a do projeto, igual
+// a abrir o documento ou mexer no botão de recuo. Fica no mesmo passo do desfazer.
+void MainWindow::formatPastedRange(int from, int to)
+{
+    if (!editor || !editorHost || to <= from) return;
+    const bool isManuscriptDoc = editorHost->viewMode().type == EditorHost::ChapterDoc ||
+                                 editorHost->viewMode().type == EditorHost::SceneDoc;
+    if (isManuscriptDoc && projectModel && projectModel->isScreenplay()) return;   // roteiro: cada linha tem o seu elemento
+    QTextBlockFormat bf;
+    bf.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
+    bf.setTextIndent(firstLineIndentEnabled ? 30 : 0);
+    bf.setTopMargin(paragraphSpacingBefore);
+    bf.setBottomMargin(paragraphSpacingAfter);
+    if (projectModel) {
+        const int defAlign = isManuscriptDoc ? projectModel->defaultManuscriptAlignment() : projectModel->defaultDrawerAlignment();
+        if (defAlign != 0) bf.setAlignment(static_cast<Qt::Alignment>(defAlign));
+    }
+    QTextCursor c(editor->document());
+    c.setPosition(from);
+    c.setPosition(to, QTextCursor::KeepAnchor);
+    c.joinPreviousEditBlock();
+    c.mergeBlockFormat(bf);
+    c.endEditBlock();
+    // a quebra de cena perde o recuo e ganha o espaço dela (como no applyEditorStyle)
+    SceneBreaks::applySpacing(editor->document(), false);
 }
 
 void MainWindow::applyEditorStyle()
@@ -6485,7 +6507,7 @@ void MainWindow::applyProjectRoot(const QString& root)
         lousaPanel->setElementsStore(elementsStore);
         lousaPanel->setProjectRoot(root);
     }
-    if (cartoPanel) cartoPanel->setProjectRoot(root);
+    if (cartoPanel) { cartoPanel->setProjectRoot(root); connectCartoProject(); }
     if (timelinePanel) {
         timelinePanel->setProjectModel(projectModel);
         timelinePanel->setProjectRoot(root);
@@ -9793,8 +9815,63 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
                 this, [this](const QString& drawerKey, const QString& itemId) {
                     if (refMenuPanel) refMenuPanel->openForDrawer(drawerKey, itemId);
                 });
+        // A porta do Qenna Map dentro do Criador de Mundos.
+        connect(territorioWindow, &TerritorioWindow::openWorldMapRequested, this, &MainWindow::showCartoPanel);
     }
     return territorioWindow;
+}
+
+// Explorar do Mapa: o que o mapa precisa do projeto. Documento de gaveta editado
+// por fora segue o mesmo caminho do resto do app: o editor descarrega no cache,
+// o cache recebe o texto novo, o editor recarrega se estiver mostrando ele.
+void MainWindow::connectCartoProject()
+{
+    if (!cartoPanel) return;
+    carto::ProjectLink l;
+    l.model = projectModel;
+    l.elements = elementsStore;
+    l.places = territorioStore;
+    l.cache = docCache;
+    l.root = projectRoot;
+    l.syncEditor = [this]() { if (editorHost) editorHost->syncEditorToCache(); };
+    l.itemEdited = [this](const QString& itemId) {
+        if (editorHost) {
+            const auto vm = editorHost->viewMode();
+            if (vm.type == EditorHost::DrawerDoc && vm.itemId == itemId) editorHost->reloadFromCache();
+        }
+        if (projectSaver) projectSaver->saveProject();
+    };
+    l.openItem = [this](const QString& itemId) {
+        if (!editorHost) return;
+        EditorHost::ViewMode vm;
+        vm.type = EditorHost::DrawerDoc;
+        vm.itemId = itemId;
+        editorHost->setViewMode(vm);
+        raise(); activateWindow();
+    };
+    l.openPlace = [this](const QString& placeId, const QString& nodeId) {
+        TerritorioWindow* w = ensureTerritorioWindow();
+        w->openNode(placeId, nodeId);
+        w->show(); w->raise(); w->activateWindow();
+    };
+    l.save = [this]() { if (projectSaver) projectSaver->saveProject(); };
+    cartoPanel->setProjectLink(l);
+}
+
+// O Mapa (Qenna Map): a mesma janela pela LeftBar e pelo Criador de Mundos.
+void MainWindow::showCartoPanel()
+{
+    if (!cartoPanel) {
+        cartoPanel = new carto::Panel(this);
+        connect(cartoPanel, &carto::Panel::closeRequested, this, [this]() { leftBar->clearSelection(); });
+        if (!projectRoot.isEmpty()) cartoPanel->setProjectRoot(projectRoot);
+        connectCartoProject();
+    }
+    if (cartoPanel->isMinimized()) cartoPanel->showNormal();
+    else cartoPanel->show();
+    cartoPanel->raise();
+    cartoPanel->activateWindow();
+    leftBar->setActiveFixedAction(LeftBar::WorldMap);
 }
 
 ReaderPreviewPanel* MainWindow::ensureReaderPreviewPanel()

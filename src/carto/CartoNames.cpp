@@ -427,7 +427,10 @@ QJsonObject LabelLayer::toJson() const
         if (!c.pts.empty()) o.insert("pts", pathJ(c.pts));
         C.append(o);
     }
-    return QJsonObject{ { "edits", E }, { "custom", C }, { "seq", seq } };
+    QJsonObject o{ { "edits", E }, { "custom", C }, { "seq", seq } };
+    if (!autoOn) o.insert("auto", false);
+    if (density != QLatin1String("normal")) o.insert("density", density);
+    return o;
 }
 
 LabelLayer LabelLayer::fromJson(const QJsonObject& o)
@@ -450,6 +453,8 @@ LabelLayer LabelLayer::fromJson(const QJsonObject& o)
         L.custom.push_back(c);
     }
     L.seq = o.value("seq").toInt();
+    L.autoOn = o.value("auto").toBool(true);
+    L.density = o.value("density").toString(QStringLiteral("normal"));
     return L;
 }
 
