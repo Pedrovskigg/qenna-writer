@@ -31,6 +31,7 @@ class QToolButton;
 namespace carto {
 
 class Astrolabe;
+class BuildBar;
 class Cartela;
 class Explorer;
 class Ring;
@@ -73,10 +74,9 @@ private:
     void buildBrushCard();
     // docas das camadas (CartoPanelDocks.cpp)
     void buildRealmCard();
-    void buildBuildCard();
     void buildNamesCard();
     void syncRealmCard();
-    void syncBuildCard();
+    QString buildHint();     // a dica do Construir pro item escolhido
     void syncNamesCard();
     // Cartela, modo Cartela, exportar (CartoPanelUi.cpp)
     void buildCartelaUi();
@@ -186,6 +186,7 @@ private:
     QHash<QString, QToolButton*> m_uiBtns;
     QToolButton* m_cartelaChk = nullptr;
     QToolButton* m_spritesChk = nullptr;
+    QToolButton* m_frameChk = nullptr;
     // exportar
     QFrame* m_export = nullptr;
     QHash<QString, QToolButton*> m_expScaleBtns;
@@ -208,21 +209,8 @@ private:
     QLabel* m_realmSizeValue = nullptr;
     QLabel* m_realmHint = nullptr;
     int m_realmListSig = -1;
-    // construir
-    QFrame* m_buildCard = nullptr;
-    QLabel* m_buildTitle = nullptr;
-    QHash<QString, QToolButton*> m_buildBtns, m_scaleBtns, m_csizeBtns, m_cstyleBtns, m_rmodeBtns, m_rkindBtns;
-    QWidget* m_csizeRow = nullptr;
-    QWidget* m_cstyleRow = nullptr;
-    QWidget* m_roadRow = nullptr;
-    QWidget* m_buildSizeRow = nullptr;
-    QSlider* m_buildSize = nullptr;
-    QLabel* m_buildSizeValue = nullptr;
-    QFrame* m_selBox = nullptr;
-    QLabel* m_selKind = nullptr;
-    QLineEdit* m_selName = nullptr;
-    QToolButton* m_showGen = nullptr;
-    QLabel* m_buildHint = nullptr;
+    // construir: o catálogo de baixo (CartoBuild.cpp)
+    BuildBar* m_build = nullptr;
     // nomes
     QFrame* m_namesCard = nullptr;
     QLabel* m_namesTitle = nullptr;

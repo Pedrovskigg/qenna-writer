@@ -96,7 +96,7 @@ QString artName(const QString& kind);   // "Castelo", "Torre"...
 struct ArtSpec {
     const char* kind;
     double r, h;                  // raio no chão e altura (px do mundo, escala 1)
-    bool water, named;            // só no mar · ganha nome ao nascer ("Dragão 1")
+    bool water, named;            // só no mar · (named: sem uso desde 23/10, nada nasce com nome)
     char face;                    // 'f' de frente pra quem olha · 't' três quartos de frente · 's' de lado · 0 livre
 };
 const std::vector<ArtSpec>& artSpecs();

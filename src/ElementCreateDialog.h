@@ -22,6 +22,8 @@ class QPushButton;
 // silhueta; com foto, a foto de ponta a ponta e o nome por cima), e embaixo
 // apelidos, papel, narrador, trilha na Timeline e tipo de página; cenário e
 // objeto, só foto + nome; documento, só o nome.
+class GroupPicker;
+class ProjectModel;
 class ElementCreateDialog : public SheetDialog {
     Q_OBJECT
 public:
@@ -51,6 +53,9 @@ public:
     QString trackMode() const;  // "" auto | "on" | "off" (trilha na linha do tempo)
     QStringList aliases() const; // apelidos do personagem (para o detector de presença)
     QString gender() const;      // "m" | "f" | "" (forma de tratamento, só personagem)
+    // Documento novo: a etiqueta de grupo no topo (os territórios do mapa são grupos).
+    void enableGroups(const ProjectModel* model);
+    QString groupId() const;
 
 protected:
     void showEvent(QShowEvent* e) override;
@@ -82,6 +87,7 @@ private:
     void setRole(const QString& id);
     void refreshRoleTag();
     QLabel*       m_roleTag = nullptr;      // o papel escrito em cima do nome, no pôster
+    GroupPicker* m_groups = nullptr;
     CharacterPoster* m_poster = nullptr;    // topo da folha de personagem (faixa ou foto)
     QCheckBox*    m_narratorCheck = nullptr;
     QButtonGroup* m_genderGroup = nullptr;  // 0 = Masculino, 1 = Feminino; nenhum = não marcado

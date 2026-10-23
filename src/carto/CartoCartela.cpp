@@ -1,6 +1,7 @@
 #include "CartoCartela.h"
 
 #include "CartoIcons.h"
+#include "../Theme.h"
 
 #include <QFontMetricsF>
 #include <QLocale>
@@ -173,7 +174,7 @@ void Cartela::leaveEvent(QEvent*) { if (m_hover >= 0) { m_hover = -1; update(); 
 // ── rosa dos ventos ──
 Rose::Rose(QWidget* parent) : QWidget(parent)
 {
-    setFixedSize(104, 104);
+    setFixedSize(96, 96);
     setAttribute(Qt::WA_TranslucentBackground);
     setCursor(Qt::OpenHandCursor);
     setToolTip(tr("Rosa dos ventos: arraste pra girar, clique pro norte"));
@@ -181,33 +182,46 @@ Rose::Rose(QWidget* parent) : QWidget(parent)
 
 void Rose::paintEvent(QPaintEvent*)
 {
+    // bússola (no lugar da Cartela): disco do painel, os 8 rumos girando com o mapa (letras sempre de pé)
+    // e a agulha com o norte na cor de destaque
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    const QColor panel = Theme::toColor(Theme::panelBackground()), line = Theme::toColor(Theme::panelBorder());
+    const QColor accent = Theme::toColor(Theme::accentDefault()), muted = Theme::toColor(Theme::textMuted()), ink = Theme::toColor(Theme::textPrimary());
+    const double R = width() / 2.0 - 1.5;
     p.translate(width() / 2.0, height() / 2.0);
-    p.scale(width() / 120.0, height() / 120.0);
+    p.setPen(QPen(line, 1));
+    p.setBrush(panel);
+    p.drawEllipse(QPointF(0, 0), R, R);
+    // risquinhos na borda (16)
+    for (int i = 0; i < 16; i++) {
+        const double a = m_ang + i * M_PI / 8, sn = std::sin(a), cs = -std::cos(a);
+        const double r0 = R - (i % 2 ? 3 : 5);
+        p.setPen(QPen(i % 2 ? line : muted, i % 4 ? 1 : 1.4));
+        p.drawLine(QPointF(sn * r0, cs * r0), QPointF(sn * (R - 1.5), cs * (R - 1.5)));
+    }
+    // os rumos: cardeais maiores, colaterais menores
+    static const char* kDirs[8] = { QT_TR_NOOP("N"), QT_TR_NOOP("NE"), QT_TR_NOOP("L"), QT_TR_NOOP("SE"), QT_TR_NOOP("S"), QT_TR_NOOP("SO"), QT_TR_NOOP("O"), QT_TR_NOOP("NO") };
+    QFont big = font(); big.setPixelSize(qRound(R * 0.25)); big.setBold(true);
+    QFont small = font(); small.setPixelSize(qRound(R * 0.17)); small.setBold(true);
+    for (int i = 0; i < 8; i++) {
+        const bool card = i % 2 == 0;
+        const double a = m_ang + i * M_PI / 4, r = R * (card ? 0.72 : 0.74);
+        const QPointF c(std::sin(a) * r, -std::cos(a) * r);
+        p.setFont(card ? big : small);
+        p.setPen(i == 0 ? accent : card ? ink : muted);
+        p.drawText(QRectF(c.x() - R * 0.3, c.y() - R * 0.15, R * 0.6, R * 0.3), Qt::AlignCenter, tr(kDirs[i]));
+    }
+    // agulha
     p.rotate(m_ang * 180 / M_PI);
-    p.setPen(QPen(kInk, 1));
-    QColor paper = kPaper; paper.setAlpha(217);
-    p.setBrush(paper);
-    p.drawEllipse(QPointF(0, 0), 40, 40);
-    p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(kInk, 0.6));
-    p.drawEllipse(QPointF(0, 0), 34, 34);
-    p.setPen(QPen(kInk, 1));
-    auto tri = [&](QPointF a, QPointF b, bool dark) {
-        QPainterPath t; t.moveTo(a); t.lineTo(b); t.lineTo(0, 0); t.closeSubpath();
-        p.setBrush(dark ? kInk : kPaper);
-        p.drawPath(t);
-    };
-    // as quatro pontas: metade escura, metade clara
-    tri({ 0, -52 }, { 6, -6 }, true); tri({ 0, -52 }, { -6, -6 }, false);
-    tri({ 0, 52 }, { 6, 6 }, false); tri({ 0, 52 }, { -6, 6 }, true);
-    tri({ -52, 0 }, { -6, 6 }, false); tri({ -52, 0 }, { -6, -6 }, true);
-    tri({ 52, 0 }, { 6, -6 }, false); tri({ 52, 0 }, { 6, 6 }, true);
-    QFont f = fellFont(true, false, 11);
-    p.setFont(f);
-    p.setPen(kInk);
-    p.drawText(QRectF(-10, -61, 20, 12), Qt::AlignCenter, QStringLiteral("N"));
+    const double n = R * 0.48, w = R * 0.11;
+    QPolygonF north; north << QPointF(0, -n) << QPointF(w, 0) << QPointF(-w, 0);
+    QPolygonF south; south << QPointF(0, n) << QPointF(w, 0) << QPointF(-w, 0);
+    p.setPen(Qt::NoPen);
+    p.setBrush(accent); p.drawPolygon(north);
+    QColor s = muted; s.setAlphaF(0.55);
+    p.setBrush(s); p.drawPolygon(south);
+    p.setBrush(panel); p.drawEllipse(QPointF(0, 0), w * 0.5, w * 0.5);
 }
 
 void Rose::mousePressEvent(QMouseEvent* e)

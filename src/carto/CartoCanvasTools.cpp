@@ -376,6 +376,17 @@ std::array<double, 2> Canvas::artExtent(const Art& a) const
     return { 3 * k, 6 * k };
 }
 
+std::optional<QRectF> Canvas::selectedArtRect()
+{
+    const Art* a = selectedArt();
+    if (!a || !m_world) return std::nullopt;
+    const auto g = m_scene.ground(sceneState(), a->x, a->y);
+    if (!g) return std::nullopt;
+    const auto [r, h] = artExtent(*a);
+    const double co = std::cos(m_pitch * M_PI / 180), sqv = sq();
+    return QRectF(QPointF(g->X - r * m_zoom, g->Y - (h * co + r * sqv) * m_zoom), QPointF(g->X + r * m_zoom, g->Y + r * sqv * m_zoom));
+}
+
 Art* Canvas::artNear(QPointF s)
 {
     if (!m_doc || !m_doc->info) return nullptr;

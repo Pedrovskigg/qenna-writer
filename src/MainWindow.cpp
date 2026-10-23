@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "GroupPicker.h"
 #include "SheetDialogs.h"
 #include "ChapterSheet.h"
 #include "SceneBreaks.h"
@@ -1155,6 +1156,8 @@ void MainWindow::setupEditor()
         QString subtitle;
         QString avatar;
         bool avatarEditable = false;
+        QString groupId;
+        bool drawerDoc = false;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
             // Capítulo inteiro concatenado num editor só (cenas separadas por
@@ -1189,6 +1192,8 @@ void MainWindow::setupEditor()
         case EditorHost::DrawerDoc: {
             if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) {
                 title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
+                drawerDoc = true;
+                groupId = it->markerId;
 
                 // Personagem/cenário ganham identidade em vez de só o nome do
                 // doc: o papel vira o subtítulo (em caixa alta, como na gaveta)
@@ -1217,11 +1222,16 @@ void MainWindow::setupEditor()
             docHeader->setDocumentAvatar(avatar);
             docHeader->setAvatarEditable(avatarEditable);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
+            if (m_docGroup) {
+                m_docGroup->setGroupId(groupId);
+                docHeader->setGroupTagVisible(drawerDoc && m_docGroup->available());
+            }
         }
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
+    connect(projectModel, &ProjectModel::groupsChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
     // ChapterDoc: recalcula a cena do subtítulo conforme o usuário rola.
     connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
@@ -2681,6 +2691,15 @@ void MainWindow::setupEditor()
     // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
+    // Grupo do documento de gaveta aberto: ver e trocar sem sair do editor
+    // (os territórios do mapa são grupos; o doc aparece no território no Explorar)
+    m_docGroup = new GroupPicker(projectModel, docHeader, /*popup=*/true);
+    docHeader->setGroupTag(m_docGroup->tag());
+    m_docGroup->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
+    m_docGroup->picked = [this](const QString& gid) {
+        if (!editorHost || editorHost->viewMode().type != EditorHost::DrawerDoc) return;
+        projectModel->setDrawerItemGroup(editorHost->viewMode().itemId, gid);
+    };
     // Guia do roteiro (elemento da linha + pra onde as teclas levam).
     connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateScreenplayGuide);
     connect(editor, &SpellEditor::screenplayElementChanged, this, &MainWindow::updateScreenplayGuide);
@@ -3601,6 +3620,7 @@ void MainWindow::setupEditor()
             if (m_elementSheet) m_elementSheet->reject();
             auto* dlg = new ElementCreateDialog(elemType, this, templates);
             dlg->setAttribute(Qt::WA_DeleteOnClose);
+            dlg->enableGroups(projectModel);   // os territórios do mapa são grupos
             m_elementSheet = dlg;
             connect(dlg, &QDialog::accepted, this, [this, dlg, drawerKey, folderId, elemType]() {
             if (!projectModel->findDrawer(drawerKey)) return;   // a gaveta sumiu enquanto a folha estava aberta
@@ -3631,6 +3651,7 @@ void MainWindow::setupEditor()
             it.elementType = elemType;
             it.elementId = elementId;
             it.role = dlg->role();
+            if (projectModel->findGroup(dlg->groupId())) it.markerId = dlg->groupId();
             if (asSheet) {
                 it.isSheet = true;
                 const SheetTemplate* tmpl = (!templateId.isEmpty() && sheetTemplatesStore)
@@ -3651,13 +3672,15 @@ void MainWindow::setupEditor()
             return;
         }
         bool ok = false;
-        const QString title = Sheets::askText(this, tr("Novo documento"), tr("Nome do documento"),
-            QString(), &ok, tr("Criar")).trimmed();
+        QString groupId;
+        const QString title = Sheets::askTextInGroup(this, tr("Novo documento"), tr("Nome do documento"),
+            projectModel, &groupId, &ok, tr("Criar")).trimmed();
         if (!ok || title.isEmpty()) return;
         DrawerItem it;
         it.id = ProjectModel::uid();
         it.title = title;
         it.folderId = folderId;
+        if (projectModel->findGroup(groupId)) it.markerId = groupId;
         it.hasInlineHtml = true;
         it.html = QStringLiteral("<p></p>");
         projectModel->addDrawerItem(drawerKey, it);

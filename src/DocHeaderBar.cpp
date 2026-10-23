@@ -505,8 +505,33 @@ void DocHeaderBar::refreshGuide()
 
 int DocHeaderBar::guideReserve() const
 {
-    if (!m_guideWanted || !m_guide) return 0;
-    return m_guide->sizeHint().width() + kGuideGap;
+    int r = 0;
+    if (m_guideWanted && m_guide) r = m_guide->sizeHint().width() + kGuideGap;
+    if (m_groupWanted && m_groupTag && !m_guideWanted) r = qMax(r, m_groupTag->width() + kGuideGap);
+    return r;
+}
+
+void DocHeaderBar::setGroupTag(QWidget* tag)
+{
+    m_groupTag = tag;
+    tag->setParent(this);
+    refreshGroupTag();
+}
+
+void DocHeaderBar::setGroupTagVisible(bool visible)
+{
+    if (m_groupWanted == visible) return;
+    m_groupWanted = visible;
+    refreshGroupTag();
+}
+
+void DocHeaderBar::refreshGroupTag()
+{
+    if (!m_groupTag) return;
+    const bool on = m_groupWanted && !m_guideWanted;
+    m_groupTag->setVisible(on);
+    if (on) { m_groupTag->move(width() - kSideMargin - m_groupTag->width(), (height() - m_groupTag->height()) / 2); m_groupTag->raise(); }
+    relayoutText();
 }
 
 void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitle)
@@ -664,6 +689,7 @@ void DocHeaderBar::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     refreshGuide();  // canto direito e teclas dependem da largura
+    refreshGroupTag();
     relayoutText(); // a elipse depende da largura disponível
 }
 

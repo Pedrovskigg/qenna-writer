@@ -2263,12 +2263,12 @@ O projeto vai para a Lixeira (acessível pelo ícone de lixeira aqui embaixo), d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="552"/>
+        <location filename="../src/DocHeaderBar.cpp" line="577"/>
         <source>Clique duas vezes para adicionar uma foto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/DocHeaderBar.cpp" line="574"/>
+        <location filename="../src/DocHeaderBar.cpp" line="599"/>
         <source>Clique duas vezes para trocar a foto</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3121,326 +3121,326 @@ O projeto vai para a Lixeira (acessível pelo ícone de lixeira aqui embaixo), d
 <context>
     <name>ElementCreateDialog</name>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="53"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="54"/>
         <source>Protagonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="54"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="55"/>
         <source>Deuteragonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="56"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="57"/>
         <source>Coadjuvante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="55"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="56"/>
         <source>Antagonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="58"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="59"/>
         <source>Contraponto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="59"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="60"/>
         <source>Trickster</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="57"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="58"/>
         <source>Mentor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="54"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="55"/>
         <source>segundo em importância</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="58"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="59"/>
         <source>espelho do protagonista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="60"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="61"/>
         <source>Figurante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="204"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="205"/>
         <source>trocar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="381"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="404"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="400"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="423"/>
         <source>Novo personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="382"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="401"/>
         <source>Novo cenário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="383"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="402"/>
         <source>Novo objeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="383"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="402"/>
         <source>Novo documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="386"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="405"/>
         <source>Nome do personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="387"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="406"/>
         <source>Nome do cenário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="388"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="407"/>
         <source>Nome do objeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="388"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="407"/>
         <source>Nome do documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="427"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="446"/>
         <source>Escolher foto (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="205"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="432"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="206"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="451"/>
         <source>remover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="414"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="433"/>
         <source>O detector de presença também procura esses nomes no texto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="460"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="479"/>
         <source>Papel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="61"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="808"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="62"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="827"/>
         <source>Outro…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="53"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="54"/>
         <source>quem conduz a história</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="55"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="56"/>
         <source>quem se opõe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="56"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="57"/>
         <source>apoia os principais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="57"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="58"/>
         <source>ensina, guia, empurra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="59"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="60"/>
         <source>o imprevisível</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="60"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="61"/>
         <source>aparece de passagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="61"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="62"/>
         <source>um papel com nome seu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="62"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="63"/>
         <source>Sem papel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="62"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="63"/>
         <source>decide depois</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="203"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="204"/>
         <source>Adicionar foto (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="395"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="414"/>
         <source>Nome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="413"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="432"/>
         <source>Apelidos (Mari, a herdeira)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="525"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="544"/>
         <source>Qual papel?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="533"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="552"/>
         <source>Narrador (voz em 1ª pessoa)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="542"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="561"/>
         <source>Forma de tratamento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="547"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="566"/>
         <source>Masculino</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="547"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="566"/>
         <source>Feminino</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="550"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="569"/>
         <source>O detector de diálogos usa isso pra saber de quem é o &quot;ele disse&quot; e o &quot;ela disse&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="565"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="584"/>
         <source>Trilha na Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="569"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="588"/>
         <source>Automático</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="569"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="588"/>
         <source>Sempre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="569"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="588"/>
         <source>Nunca</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="570"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="589"/>
         <source>A Timeline decide pelo papel do personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="571"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="590"/>
         <source>Sempre ganha uma trilha na Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="572"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="591"/>
         <source>Nunca ganha trilha na Timeline</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="587"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="606"/>
         <source>Página</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="591"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="610"/>
         <source>Documento livre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="608"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="627"/>
         <source>Modelo de ficha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="712"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="731"/>
         <source>salva</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="714"/>
-        <location filename="../src/ElementCreateDialog.cpp" line="717"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="733"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="736"/>
         <source>Editar personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="715"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="734"/>
         <source>Editar cenário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="716"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="735"/>
         <source>Editar objeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="716"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="735"/>
         <source>Editar documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="744"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="763"/>
         <source>+ foto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="804"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="823"/>
         <source>Escolher papel (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="592"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="611"/>
         <source>Ficha (campos prontos)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="609"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="628"/>
         <source>Vazio (padrão)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="618"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="637"/>
         <source>Criar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="618"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="637"/>
         <source>cria</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="711"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="730"/>
         <source>Salvar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4241,6 +4241,28 @@ Não encerre o programa caso ele pare de responder.</source>
     <message>
         <location filename="../src/GrannaPickPopup.cpp" line="258"/>
         <source>Fechar</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GroupPicker</name>
+    <message>
+        <location filename="../src/GroupPicker.cpp" line="135"/>
+        <source>Grupo: o documento aparece no território do mesmo nome no mapa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/GroupPicker.cpp" line="193"/>
+        <source>%n documento(s)</source>
+        <translation>
+            <numerusform>%n documento</numerusform>
+            <numerusform>%n documentos</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/GroupPicker.cpp" line="203"/>
+        <location filename="../src/GroupPicker.cpp" line="254"/>
+        <source>Sem grupo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9178,434 +9200,434 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2398"/>
-        <location filename="../src/MainWindow.cpp" line="3325"/>
+        <location filename="../src/MainWindow.cpp" line="2408"/>
+        <location filename="../src/MainWindow.cpp" line="3344"/>
         <source>Nenhum manuscrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2399"/>
-        <location filename="../src/MainWindow.cpp" line="3326"/>
+        <location filename="../src/MainWindow.cpp" line="2409"/>
+        <location filename="../src/MainWindow.cpp" line="3345"/>
         <source>Você precisa criar um manuscrito antes de adicionar capítulos. Vamos criar um agora.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="712"/>
-        <location filename="../src/MainWindow.cpp" line="6545"/>
+        <location filename="../src/MainWindow.cpp" line="713"/>
+        <location filename="../src/MainWindow.cpp" line="6568"/>
         <source>Qenna Writer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="919"/>
+        <location filename="../src/MainWindow.cpp" line="920"/>
         <source>Capítulo %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1049"/>
+        <location filename="../src/MainWindow.cpp" line="1050"/>
         <source>Negrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1056"/>
+        <location filename="../src/MainWindow.cpp" line="1057"/>
         <source>Itálico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1063"/>
+        <location filename="../src/MainWindow.cpp" line="1064"/>
         <source>Sublinhado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1070"/>
+        <location filename="../src/MainWindow.cpp" line="1071"/>
         <source>Tachado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1079"/>
+        <location filename="../src/MainWindow.cpp" line="1080"/>
         <source>Marcador</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1081"/>
+        <location filename="../src/MainWindow.cpp" line="1082"/>
         <source>Marcador com comentário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1083"/>
+        <location filename="../src/MainWindow.cpp" line="1084"/>
         <source>Adicionar ao Glossário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1099"/>
+        <location filename="../src/MainWindow.cpp" line="1100"/>
         <source>Criar documento disso...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1171"/>
-        <location filename="../src/MainWindow.cpp" line="1184"/>
-        <location filename="../src/MainWindow.cpp" line="1339"/>
-        <location filename="../src/MainWindow.cpp" line="3493"/>
-        <location filename="../src/MainWindow.cpp" line="4179"/>
-        <location filename="../src/MainWindow.cpp" line="5731"/>
-        <location filename="../src/MainWindow.cpp" line="5820"/>
-        <location filename="../src/MainWindow.cpp" line="10071"/>
-        <location filename="../src/MainWindow.cpp" line="10136"/>
-        <location filename="../src/MainWindow.cpp" line="10193"/>
+        <location filename="../src/MainWindow.cpp" line="1174"/>
+        <location filename="../src/MainWindow.cpp" line="1187"/>
+        <location filename="../src/MainWindow.cpp" line="1349"/>
+        <location filename="../src/MainWindow.cpp" line="3512"/>
+        <location filename="../src/MainWindow.cpp" line="4202"/>
+        <location filename="../src/MainWindow.cpp" line="5754"/>
+        <location filename="../src/MainWindow.cpp" line="5843"/>
+        <location filename="../src/MainWindow.cpp" line="10094"/>
+        <location filename="../src/MainWindow.cpp" line="10159"/>
+        <location filename="../src/MainWindow.cpp" line="10216"/>
         <source>Cena %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1191"/>
+        <location filename="../src/MainWindow.cpp" line="1194"/>
         <source>(item sem título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1306"/>
+        <location filename="../src/MainWindow.cpp" line="1316"/>
         <source>Nova cena criada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2321"/>
+        <location filename="../src/MainWindow.cpp" line="2331"/>
         <source>Erro ao salvar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2322"/>
+        <location filename="../src/MainWindow.cpp" line="2332"/>
         <source>Não foi possível salvar o projeto:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3364"/>
-        <location filename="../src/MainWindow.cpp" line="3380"/>
-        <location filename="../src/MainWindow.cpp" line="3473"/>
-        <location filename="../src/MainWindow.cpp" line="3855"/>
+        <location filename="../src/MainWindow.cpp" line="3383"/>
+        <location filename="../src/MainWindow.cpp" line="3399"/>
+        <location filename="../src/MainWindow.cpp" line="3492"/>
+        <location filename="../src/MainWindow.cpp" line="3878"/>
         <source>(sem título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1101"/>
+        <location filename="../src/MainWindow.cpp" line="1102"/>
         <source>Criar evento da linha do tempo...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1103"/>
+        <location filename="../src/MainWindow.cpp" line="1104"/>
         <source>Adicionar à memória...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1105"/>
+        <location filename="../src/MainWindow.cpp" line="1106"/>
         <source>Salvar como menção ao sistema...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1114"/>
+        <location filename="../src/MainWindow.cpp" line="1115"/>
         <source>Revisar com a %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1109"/>
+        <location filename="../src/MainWindow.cpp" line="1110"/>
         <source>Gerar imagem disso...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1118"/>
+        <location filename="../src/MainWindow.cpp" line="1119"/>
         <source>Alinhar à esquerda</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1125"/>
+        <location filename="../src/MainWindow.cpp" line="1126"/>
         <source>Centralizar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1132"/>
+        <location filename="../src/MainWindow.cpp" line="1133"/>
         <source>Alinhar à direita</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1139"/>
+        <location filename="../src/MainWindow.cpp" line="1140"/>
         <source>Justificar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10069"/>
-        <location filename="../src/MainWindow.cpp" line="10080"/>
-        <location filename="../src/MainWindow.cpp" line="10134"/>
-        <location filename="../src/MainWindow.cpp" line="10145"/>
-        <location filename="../src/MainWindow.cpp" line="10191"/>
-        <location filename="../src/MainWindow.cpp" line="10202"/>
+        <location filename="../src/MainWindow.cpp" line="10092"/>
+        <location filename="../src/MainWindow.cpp" line="10103"/>
+        <location filename="../src/MainWindow.cpp" line="10157"/>
+        <location filename="../src/MainWindow.cpp" line="10168"/>
+        <location filename="../src/MainWindow.cpp" line="10214"/>
+        <location filename="../src/MainWindow.cpp" line="10225"/>
         <source>Capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5732"/>
-        <location filename="../src/MainWindow.cpp" line="5821"/>
-        <location filename="../src/MainWindow.cpp" line="10072"/>
-        <location filename="../src/MainWindow.cpp" line="10137"/>
-        <location filename="../src/MainWindow.cpp" line="10194"/>
+        <location filename="../src/MainWindow.cpp" line="5755"/>
+        <location filename="../src/MainWindow.cpp" line="5844"/>
+        <location filename="../src/MainWindow.cpp" line="10095"/>
+        <location filename="../src/MainWindow.cpp" line="10160"/>
+        <location filename="../src/MainWindow.cpp" line="10217"/>
         <source>%1 — %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1014"/>
+        <location filename="../src/MainWindow.cpp" line="1015"/>
         <source>Baixando dicionário: %1…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1019"/>
+        <location filename="../src/MainWindow.cpp" line="1020"/>
         <source>Dicionário pronto: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1022"/>
+        <location filename="../src/MainWindow.cpp" line="1023"/>
         <source>Não foi possível baixar o dicionário (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1112"/>
+        <location filename="../src/MainWindow.cpp" line="1113"/>
         <source>Ler em voz alta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1107"/>
+        <location filename="../src/MainWindow.cpp" line="1108"/>
         <source>Salvar como menção ao Território...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1931"/>
+        <location filename="../src/MainWindow.cpp" line="1941"/>
         <source>Leitura interrompida: o texto mudou.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2106"/>
-        <location filename="../src/MainWindow.cpp" line="2130"/>
+        <location filename="../src/MainWindow.cpp" line="2116"/>
+        <location filename="../src/MainWindow.cpp" line="2140"/>
         <source>Menção salva</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2107"/>
+        <location filename="../src/MainWindow.cpp" line="2117"/>
         <source>Trecho vinculado ao sistema do Construtor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2131"/>
+        <location filename="../src/MainWindow.cpp" line="2141"/>
         <source>Trecho vinculado ao território.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2149"/>
+        <location filename="../src/MainWindow.cpp" line="2159"/>
         <source>memória do personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2149"/>
+        <location filename="../src/MainWindow.cpp" line="2159"/>
         <source>memória do projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2151"/>
+        <location filename="../src/MainWindow.cpp" line="2161"/>
         <source>Memória salva</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2152"/>
+        <location filename="../src/MainWindow.cpp" line="2162"/>
         <source>Trecho guardado na %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2206"/>
-        <location filename="../src/MainWindow.cpp" line="6533"/>
+        <location filename="../src/MainWindow.cpp" line="2216"/>
+        <location filename="../src/MainWindow.cpp" line="6556"/>
         <source>Lembrete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2232"/>
+        <location filename="../src/MainWindow.cpp" line="2242"/>
         <source>Backup automático</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2232"/>
-        <location filename="../src/MainWindow.cpp" line="8566"/>
+        <location filename="../src/MainWindow.cpp" line="2242"/>
+        <location filename="../src/MainWindow.cpp" line="8589"/>
         <source>Projeto salvo em:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2235"/>
+        <location filename="../src/MainWindow.cpp" line="2245"/>
         <source>Backup automático falhou</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2244"/>
+        <location filename="../src/MainWindow.cpp" line="2254"/>
         <source>Hora de fazer backup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2245"/>
+        <location filename="../src/MainWindow.cpp" line="2255"/>
         <source>Já faz um tempo desde o último backup de &quot;%1&quot;. Abra Configurações &gt; Backup para salvar uma cópia.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3381"/>
+        <location filename="../src/MainWindow.cpp" line="3400"/>
         <source>Excluir manuscrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3382"/>
+        <location filename="../src/MainWindow.cpp" line="3401"/>
         <source>Excluir &quot;%1&quot;? Todos os capítulos serão removidos. Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3474"/>
+        <location filename="../src/MainWindow.cpp" line="3493"/>
         <source>Excluir capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3475"/>
+        <location filename="../src/MainWindow.cpp" line="3494"/>
         <source>Excluir &quot;%1&quot;? O texto do capítulo será removido. Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3528"/>
-        <location filename="../src/MainWindow.cpp" line="3532"/>
+        <location filename="../src/MainWindow.cpp" line="3547"/>
+        <location filename="../src/MainWindow.cpp" line="3551"/>
         <source>Excluir cena</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3529"/>
+        <location filename="../src/MainWindow.cpp" line="3548"/>
         <source>Não dá pra excluir a única cena de um capítulo. Apague o texto manualmente se quiser limpar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3533"/>
+        <location filename="../src/MainWindow.cpp" line="3552"/>
         <source>Excluir esta cena? O texto da cena será removido.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3574"/>
-        <location filename="../src/MainWindow.cpp" line="9740"/>
+        <location filename="../src/MainWindow.cpp" line="3593"/>
+        <location filename="../src/MainWindow.cpp" line="9763"/>
         <source>Mover cena</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3575"/>
-        <location filename="../src/MainWindow.cpp" line="9741"/>
+        <location filename="../src/MainWindow.cpp" line="3594"/>
+        <location filename="../src/MainWindow.cpp" line="9764"/>
         <source>Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3676"/>
+        <location filename="../src/MainWindow.cpp" line="3699"/>
         <source>Nova pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3792"/>
+        <location filename="../src/MainWindow.cpp" line="3815"/>
         <source>Adicionar elemento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3856"/>
+        <location filename="../src/MainWindow.cpp" line="3879"/>
         <source>Excluir item</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3857"/>
+        <location filename="../src/MainWindow.cpp" line="3880"/>
         <source>Excluir &quot;%1&quot; da gaveta? Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3939"/>
+        <location filename="../src/MainWindow.cpp" line="3962"/>
         <source>Editar gaveta…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3951"/>
-        <location filename="../src/MainWindow.cpp" line="3956"/>
-        <location filename="../src/MainWindow.cpp" line="3961"/>
+        <location filename="../src/MainWindow.cpp" line="3974"/>
+        <location filename="../src/MainWindow.cpp" line="3979"/>
+        <location filename="../src/MainWindow.cpp" line="3984"/>
         <source>Excluir gaveta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3957"/>
+        <location filename="../src/MainWindow.cpp" line="3980"/>
         <source>Esta gaveta não está vazia. Esvazie os itens e pastas antes de excluí-la.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3960"/>
-        <location filename="../src/MainWindow.cpp" line="9440"/>
-        <location filename="../src/MainWindow.cpp" line="10095"/>
-        <location filename="../src/MainWindow.cpp" line="10902"/>
+        <location filename="../src/MainWindow.cpp" line="3983"/>
+        <location filename="../src/MainWindow.cpp" line="9463"/>
+        <location filename="../src/MainWindow.cpp" line="10118"/>
+        <location filename="../src/MainWindow.cpp" line="10925"/>
         <source>(sem nome)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3962"/>
+        <location filename="../src/MainWindow.cpp" line="3985"/>
         <source>Excluir a gaveta &quot;%1&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4459"/>
+        <location filename="../src/MainWindow.cpp" line="4482"/>
         <source>Sequência %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5083"/>
+        <location filename="../src/MainWindow.cpp" line="5106"/>
         <source>%1 advérbios em -mente neste trecho</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5086"/>
+        <location filename="../src/MainWindow.cpp" line="5109"/>
         <source>repete &quot;%1&quot;, %2 palavras atrás</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5125"/>
+        <location filename="../src/MainWindow.cpp" line="5148"/>
         <source>Parágrafo longo (%1 palavras). Considere dividir.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5170"/>
+        <location filename="../src/MainWindow.cpp" line="5193"/>
         <source>Esta voz não marca palavra por palavra — o realce acompanha a frase.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5199"/>
+        <location filename="../src/MainWindow.cpp" line="5222"/>
         <source>Selecionar imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5201"/>
+        <location filename="../src/MainWindow.cpp" line="5224"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5214"/>
+        <location filename="../src/MainWindow.cpp" line="5237"/>
         <source>Inserir imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5215"/>
+        <location filename="../src/MainWindow.cpp" line="5238"/>
         <source>Não foi possível salvar a imagem recortada. A imagem original será inserida sem o recorte.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5283"/>
+        <location filename="../src/MainWindow.cpp" line="5306"/>
         <source>Descartar rascunho?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5284"/>
+        <location filename="../src/MainWindow.cpp" line="5307"/>
         <source>Você tem uma ideia não salva. Se sair agora, o texto será perdido. Descartar mesmo assim?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5302"/>
+        <location filename="../src/MainWindow.cpp" line="5325"/>
         <source>Salvar projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5303"/>
+        <location filename="../src/MainWindow.cpp" line="5326"/>
         <source>Falha ao salvar o projeto:
 %1
 
@@ -9613,633 +9635,633 @@ Fechar mesmo assim?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5620"/>
+        <location filename="../src/MainWindow.cpp" line="5643"/>
         <source>Escaneando… (%1/%2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5925"/>
+        <location filename="../src/MainWindow.cpp" line="5948"/>
         <source>Figurante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5926"/>
+        <location filename="../src/MainWindow.cpp" line="5949"/>
         <source>Sempre que o texto disser &quot;%1&quot;, quem fala é %2?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5927"/>
+        <location filename="../src/MainWindow.cpp" line="5950"/>
         <source>&quot;%1&quot; vira apelido de %2, e as outras falas com essa tag se resolvem sozinhas.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5929"/>
+        <location filename="../src/MainWindow.cpp" line="5952"/>
         <source>Sim, é %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5978"/>
+        <location filename="../src/MainWindow.cpp" line="6001"/>
         <source>Conhecendo o elenco… (%1/%2 capítulos)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5996"/>
+        <location filename="../src/MainWindow.cpp" line="6019"/>
         <source>%1 · capítulo que não existe mais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6041"/>
+        <location filename="../src/MainWindow.cpp" line="6064"/>
         <source>Fechar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6094"/>
+        <location filename="../src/MainWindow.cpp" line="6117"/>
         <source>Escaneando diálogos… (%1/%2 capítulos)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6098"/>
+        <location filename="../src/MainWindow.cpp" line="6121"/>
         <source>&lt;span style=&apos;color:%1&apos;&gt;+%2 novas&lt;/span&gt; · &lt;span style=&apos;color:%3&apos;&gt;%4 trocaram de locutor&lt;/span&gt; · &lt;span style=&apos;color:%5&apos;&gt;−%6 saíram&lt;/span&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6131"/>
+        <location filename="../src/MainWindow.cpp" line="6154"/>
         <source>Personagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6132"/>
+        <location filename="../src/MainWindow.cpp" line="6155"/>
         <source>%1 (provável)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6134"/>
+        <location filename="../src/MainWindow.cpp" line="6157"/>
         <source>%1 (figurante)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6135"/>
+        <location filename="../src/MainWindow.cpp" line="6158"/>
         <source>sem locutor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6189"/>
+        <location filename="../src/MainWindow.cpp" line="6212"/>
         <source>%1 → %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6204"/>
+        <location filename="../src/MainWindow.cpp" line="6227"/>
         <source>%1 · versão antiga de uma fala editada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6205"/>
+        <location filename="../src/MainWindow.cpp" line="6228"/>
         <source>%1 · saiu do texto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6213"/>
+        <location filename="../src/MainWindow.cpp" line="6236"/>
         <source>Pronto: %1 de %1 capítulos lidos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6216"/>
+        <location filename="../src/MainWindow.cpp" line="6239"/>
         <source>Nada mudou: as falas salvas já batiam com o texto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6534"/>
+        <location filename="../src/MainWindow.cpp" line="6557"/>
         <source>Lembretes (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6538"/>
+        <location filename="../src/MainWindow.cpp" line="6561"/>
         <source>+ %1 mais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6545"/>
+        <location filename="../src/MainWindow.cpp" line="6568"/>
         <source>Qenna Writer — %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6562"/>
+        <location filename="../src/MainWindow.cpp" line="6585"/>
         <source>Você tem uma ideia não salva. Salvar antes de continuar?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6563"/>
+        <location filename="../src/MainWindow.cpp" line="6586"/>
         <source>Há alterações no projeto atual. Salvar antes de continuar?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6583"/>
+        <location filename="../src/MainWindow.cpp" line="6606"/>
         <source>Caminho do projeto vazio.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6587"/>
+        <location filename="../src/MainWindow.cpp" line="6610"/>
         <source>Pasta do projeto não existe: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6593"/>
+        <location filename="../src/MainWindow.cpp" line="6616"/>
         <source>Esta pasta é %1, não um projeto — abri-la aqui criaria arquivos do Qenna Writer dentro dela e depois excluí-la apagaria tudo que já existe lá. Escolha (ou crie) uma subpasta dedicada ao projeto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6624"/>
+        <location filename="../src/MainWindow.cpp" line="6647"/>
         <source>Carregando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6989"/>
+        <location filename="../src/MainWindow.cpp" line="7012"/>
         <source>Nova versão do Cover Creator disponível: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6990"/>
+        <location filename="../src/MainWindow.cpp" line="7013"/>
         <source>Instalar o Cover Creator (%1)?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6993"/>
+        <location filename="../src/MainWindow.cpp" line="7016"/>
         <source>A atualização pra %1 não terminou</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6994"/>
+        <location filename="../src/MainWindow.cpp" line="7017"/>
         <source>Nova versão disponível: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7034"/>
-        <location filename="../src/MainWindow.cpp" line="7036"/>
+        <location filename="../src/MainWindow.cpp" line="7057"/>
+        <location filename="../src/MainWindow.cpp" line="7059"/>
         <source>Baixar e instalar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7035"/>
+        <location filename="../src/MainWindow.cpp" line="7058"/>
         <source>Concluir instalação</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7035"/>
+        <location filename="../src/MainWindow.cpp" line="7058"/>
         <source>Baixar e concluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7036"/>
+        <location filename="../src/MainWindow.cpp" line="7059"/>
         <source>Instalar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7076"/>
+        <location filename="../src/MainWindow.cpp" line="7099"/>
         <source>Tentar novamente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7109"/>
+        <location filename="../src/MainWindow.cpp" line="7132"/>
         <source>Baixando…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7137"/>
+        <location filename="../src/MainWindow.cpp" line="7160"/>
         <source>Não foi possível salvar o instalador no disco.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7184"/>
+        <location filename="../src/MainWindow.cpp" line="7207"/>
         <source>arquivo incompleto (conexão interrompida).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7185"/>
+        <location filename="../src/MainWindow.cpp" line="7208"/>
         <source>Falha ao baixar atualização: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7201"/>
+        <location filename="../src/MainWindow.cpp" line="7224"/>
         <source>Cover Creator instalado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7202"/>
+        <location filename="../src/MainWindow.cpp" line="7225"/>
         <source>Já pode usar o botão &quot;Criar capa&quot; no Menu Principal.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7228"/>
+        <location filename="../src/MainWindow.cpp" line="7251"/>
         <source>Não consegui salvar o projeto antes de atualizar: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7311"/>
+        <location filename="../src/MainWindow.cpp" line="7334"/>
         <source>Cover Creator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7312"/>
+        <location filename="../src/MainWindow.cpp" line="7335"/>
         <source>Não foi possível baixar o Cover Creator agora. Verifique sua conexão com a internet e tente de novo pelo botão &quot;Criar capa&quot;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7460"/>
+        <location filename="../src/MainWindow.cpp" line="7483"/>
         <source>Não é possível excluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7461"/>
+        <location filename="../src/MainWindow.cpp" line="7484"/>
         <source>Este é o projeto aberto no momento. Feche-o antes de excluí-lo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7466"/>
+        <location filename="../src/MainWindow.cpp" line="7489"/>
         <source>Erro ao excluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7495"/>
+        <location filename="../src/MainWindow.cpp" line="7518"/>
         <source>Tudo atualizado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7496"/>
+        <location filename="../src/MainWindow.cpp" line="7519"/>
         <source>O Qenna Writer e o Cover Creator estão na versão mais recente.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7804"/>
-        <location filename="../src/MainWindow.cpp" line="7902"/>
+        <location filename="../src/MainWindow.cpp" line="7827"/>
+        <location filename="../src/MainWindow.cpp" line="7925"/>
         <source>Pasta já existe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7805"/>
-        <location filename="../src/MainWindow.cpp" line="7903"/>
+        <location filename="../src/MainWindow.cpp" line="7828"/>
+        <location filename="../src/MainWindow.cpp" line="7926"/>
         <source>A pasta &apos;%1&apos; já existe e não está vazia. Usar mesmo assim?
 Conteúdo existente pode ser sobrescrito.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7813"/>
-        <location filename="../src/MainWindow.cpp" line="7845"/>
-        <location filename="../src/MainWindow.cpp" line="7911"/>
-        <location filename="../src/MainWindow.cpp" line="7952"/>
+        <location filename="../src/MainWindow.cpp" line="7836"/>
+        <location filename="../src/MainWindow.cpp" line="7868"/>
+        <location filename="../src/MainWindow.cpp" line="7934"/>
+        <location filename="../src/MainWindow.cpp" line="7975"/>
         <source>Erro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7814"/>
-        <location filename="../src/MainWindow.cpp" line="7912"/>
+        <location filename="../src/MainWindow.cpp" line="7837"/>
+        <location filename="../src/MainWindow.cpp" line="7935"/>
         <source>Falha ao criar o projeto:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7846"/>
+        <location filename="../src/MainWindow.cpp" line="7869"/>
         <source>Projeto criado, mas falha ao salvar índice inicial:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10440"/>
-        <location filename="../src/MainWindow.cpp" line="10450"/>
-        <location filename="../src/MainWindow.cpp" line="10480"/>
+        <location filename="../src/MainWindow.cpp" line="10463"/>
+        <location filename="../src/MainWindow.cpp" line="10473"/>
+        <location filename="../src/MainWindow.cpp" line="10503"/>
         <source>Editar fala</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10441"/>
+        <location filename="../src/MainWindow.cpp" line="10464"/>
         <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10451"/>
+        <location filename="../src/MainWindow.cpp" line="10474"/>
         <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10481"/>
+        <location filename="../src/MainWindow.cpp" line="10504"/>
         <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10831"/>
+        <location filename="../src/MainWindow.cpp" line="10854"/>
         <source>Salvar “%1” em</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10902"/>
+        <location filename="../src/MainWindow.cpp" line="10925"/>
         <source>✓ Salvo em %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7385"/>
+        <location filename="../src/MainWindow.cpp" line="7408"/>
         <source>Abrir projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7360"/>
+        <location filename="../src/MainWindow.cpp" line="7383"/>
         <source>Abertura automática ativada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7361"/>
+        <location filename="../src/MainWindow.cpp" line="7384"/>
         <source>O app agora sempre abrirá esse projeto de forma automática. Caso queira desabilitar isso depois, basta desmarcar essa opção.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2936"/>
-        <location filename="../src/MainWindow.cpp" line="7391"/>
-        <location filename="../src/MainWindow.cpp" line="7423"/>
+        <location filename="../src/MainWindow.cpp" line="2955"/>
+        <location filename="../src/MainWindow.cpp" line="7414"/>
+        <location filename="../src/MainWindow.cpp" line="7446"/>
         <source>Erro ao abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2937"/>
-        <location filename="../src/MainWindow.cpp" line="7392"/>
-        <location filename="../src/MainWindow.cpp" line="7424"/>
+        <location filename="../src/MainWindow.cpp" line="2956"/>
+        <location filename="../src/MainWindow.cpp" line="7415"/>
+        <location filename="../src/MainWindow.cpp" line="7447"/>
         <source>Não foi possível abrir o projeto:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7953"/>
+        <location filename="../src/MainWindow.cpp" line="7976"/>
         <source>Projeto criado, mas falha ao salvar o conteúdo:
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8050"/>
+        <location filename="../src/MainWindow.cpp" line="8073"/>
         <source>Voltando para</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8050"/>
+        <location filename="../src/MainWindow.cpp" line="8073"/>
         <source>Avançando para</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8657"/>
+        <location filename="../src/MainWindow.cpp" line="8680"/>
         <source>Exportado com sucesso</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8638"/>
-        <location filename="../src/MainWindow.cpp" line="8674"/>
+        <location filename="../src/MainWindow.cpp" line="8661"/>
+        <location filename="../src/MainWindow.cpp" line="8697"/>
         <source>Exportar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9285"/>
-        <location filename="../src/MainWindow.cpp" line="9328"/>
+        <location filename="../src/MainWindow.cpp" line="9308"/>
+        <location filename="../src/MainWindow.cpp" line="9351"/>
         <source>Excluir vínculo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9286"/>
-        <location filename="../src/MainWindow.cpp" line="9329"/>
+        <location filename="../src/MainWindow.cpp" line="9309"/>
+        <location filename="../src/MainWindow.cpp" line="9352"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9420"/>
+        <location filename="../src/MainWindow.cpp" line="9443"/>
         <source>Documento do vínculo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9428"/>
+        <location filename="../src/MainWindow.cpp" line="9451"/>
         <source>Nome do documento:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9434"/>
+        <location filename="../src/MainWindow.cpp" line="9457"/>
         <source>Gaveta de destino:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6937"/>
-        <location filename="../src/MainWindow.cpp" line="9452"/>
+        <location filename="../src/MainWindow.cpp" line="6960"/>
+        <location filename="../src/MainWindow.cpp" line="9475"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7467"/>
+        <location filename="../src/MainWindow.cpp" line="7490"/>
         <source>Não foi possível mover o projeto para a lixeira.
 %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8295"/>
+        <location filename="../src/MainWindow.cpp" line="8318"/>
         <source>Nunca fez backup deste projeto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8297"/>
+        <location filename="../src/MainWindow.cpp" line="8320"/>
         <source>Último backup: agora mesmo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8298"/>
+        <location filename="../src/MainWindow.cpp" line="8321"/>
         <source>Último backup: há %1 min.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8300"/>
+        <location filename="../src/MainWindow.cpp" line="8323"/>
         <source>Último backup: há %1h.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8302"/>
+        <location filename="../src/MainWindow.cpp" line="8325"/>
         <source>Último backup: há %1 dia(s).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8556"/>
+        <location filename="../src/MainWindow.cpp" line="8579"/>
         <source>Escolha uma pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8557"/>
+        <location filename="../src/MainWindow.cpp" line="8580"/>
         <source>Escolha primeiro uma pasta de destino para o backup.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8565"/>
+        <location filename="../src/MainWindow.cpp" line="8588"/>
         <source>Backup concluído</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8568"/>
+        <location filename="../src/MainWindow.cpp" line="8591"/>
         <source>Erro ao fazer backup</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8636"/>
+        <location filename="../src/MainWindow.cpp" line="8659"/>
         <source>Bíblia do universo exportada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1098"/>
-        <location filename="../src/MainWindow.cpp" line="3655"/>
+        <location filename="../src/MainWindow.cpp" line="1099"/>
         <location filename="../src/MainWindow.cpp" line="3677"/>
-        <location filename="../src/MainWindow.cpp" line="9453"/>
+        <location filename="../src/MainWindow.cpp" line="3700"/>
+        <location filename="../src/MainWindow.cpp" line="9476"/>
         <source>Criar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3654"/>
+        <location filename="../src/MainWindow.cpp" line="3676"/>
         <source>Novo documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3654"/>
+        <location filename="../src/MainWindow.cpp" line="3676"/>
         <source>Nome do documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3676"/>
+        <location filename="../src/MainWindow.cpp" line="3699"/>
         <source>Nome da pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3792"/>
+        <location filename="../src/MainWindow.cpp" line="3815"/>
         <source>Adicionar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5611"/>
+        <location filename="../src/MainWindow.cpp" line="5634"/>
         <source>Rodar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9471"/>
+        <location filename="../src/MainWindow.cpp" line="9494"/>
         <source>%1 — %2 de %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9805"/>
+        <location filename="../src/MainWindow.cpp" line="9828"/>
         <source>(evento sem título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10007"/>
-        <location filename="../src/MainWindow.cpp" line="10018"/>
+        <location filename="../src/MainWindow.cpp" line="10030"/>
+        <location filename="../src/MainWindow.cpp" line="10041"/>
         <source>da cena</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10011"/>
-        <location filename="../src/MainWindow.cpp" line="10012"/>
-        <location filename="../src/MainWindow.cpp" line="10031"/>
+        <location filename="../src/MainWindow.cpp" line="10034"/>
+        <location filename="../src/MainWindow.cpp" line="10035"/>
+        <location filename="../src/MainWindow.cpp" line="10054"/>
         <source>Narrativa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10015"/>
+        <location filename="../src/MainWindow.cpp" line="10038"/>
         <source>sem capítulo: vai pros Soltos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10016"/>
+        <location filename="../src/MainWindow.cpp" line="10039"/>
         <source>sem data: fica onde a cena está</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10017"/>
+        <location filename="../src/MainWindow.cpp" line="10040"/>
         <source>quando: &lt;b&gt;%1&lt;/b&gt; · %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10018"/>
+        <location filename="../src/MainWindow.cpp" line="10041"/>
         <source>do capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10022"/>
+        <location filename="../src/MainWindow.cpp" line="10045"/>
         <source>Evento “%1” na linha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10032"/>
+        <location filename="../src/MainWindow.cpp" line="10055"/>
         <source>✓ Na Timeline · %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10033"/>
+        <location filename="../src/MainWindow.cpp" line="10056"/>
         <source>✓ Na Timeline · %1, %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10034"/>
+        <location filename="../src/MainWindow.cpp" line="10057"/>
         <source>ver</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10085"/>
-        <location filename="../src/MainWindow.cpp" line="10150"/>
-        <location filename="../src/MainWindow.cpp" line="10207"/>
+        <location filename="../src/MainWindow.cpp" line="10108"/>
+        <location filename="../src/MainWindow.cpp" line="10173"/>
+        <location filename="../src/MainWindow.cpp" line="10230"/>
         <source>Documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10660"/>
+        <location filename="../src/MainWindow.cpp" line="10683"/>
         <source>Renomear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10661"/>
+        <location filename="../src/MainWindow.cpp" line="10684"/>
         <source>Não foi possível renomear.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10689"/>
+        <location filename="../src/MainWindow.cpp" line="10712"/>
         <source>Capítulo sem título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10693"/>
+        <location filename="../src/MainWindow.cpp" line="10716"/>
         <source>Documento sem título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10719"/>
+        <location filename="../src/MainWindow.cpp" line="10742"/>
         <source>Salvar imagem gerada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10720"/>
+        <location filename="../src/MainWindow.cpp" line="10743"/>
         <source>PNG (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10797"/>
+        <location filename="../src/MainWindow.cpp" line="10820"/>
         <source>Criar documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10798"/>
+        <location filename="../src/MainWindow.cpp" line="10821"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1048"/>
+        <location filename="../src/MainWindow.cpp" line="1049"/>
         <source>Formato</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1078"/>
+        <location filename="../src/MainWindow.cpp" line="1079"/>
         <source>Anotar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1111"/>
+        <location filename="../src/MainWindow.cpp" line="1112"/>
         <source>Ouvir e revisar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1117"/>
+        <location filename="../src/MainWindow.cpp" line="1118"/>
         <source>Alinhar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -21454,22 +21476,22 @@ Selecione um trecho e use o marcador com comentário para que ele apareça aqui.
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="305"/>
+        <location filename="../src/MainWindow.cpp" line="306"/>
         <source>Nome já usado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="306"/>
+        <location filename="../src/MainWindow.cpp" line="307"/>
         <source>Já existe um elemento chamado &quot;%1&quot;. Criar mesmo assim?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="383"/>
+        <location filename="../src/MainWindow.cpp" line="384"/>
         <source>Título da cena</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="383"/>
+        <location filename="../src/MainWindow.cpp" line="384"/>
         <source>Cena %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25815,13 +25837,13 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
 <context>
     <name>SheetDialog</name>
     <message>
-        <location filename="../src/ElementCreateDialog.cpp" line="200"/>
+        <location filename="../src/ElementCreateDialog.cpp" line="201"/>
         <location filename="../src/SheetDialog.cpp" line="128"/>
         <source>Cancelar (Esc)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialog.cpp" line="246"/>
+        <location filename="../src/SheetDialog.cpp" line="254"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -25829,138 +25851,138 @@ Caso você não tenha uma chave de API ou simplesmente não queira usar o assist
 <context>
     <name>Sheets</name>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="63"/>
-        <location filename="../src/SheetDialogs.cpp" line="206"/>
-        <location filename="../src/SheetDialogs.cpp" line="680"/>
+        <location filename="../src/SheetDialogs.cpp" line="64"/>
+        <location filename="../src/SheetDialogs.cpp" line="217"/>
+        <location filename="../src/SheetDialogs.cpp" line="691"/>
         <source>Salvar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="64"/>
-        <location filename="../src/SheetDialogs.cpp" line="653"/>
+        <location filename="../src/SheetDialogs.cpp" line="65"/>
+        <location filename="../src/SheetDialogs.cpp" line="664"/>
         <source>confirma</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="98"/>
-        <location filename="../src/SheetDialogs.cpp" line="122"/>
-        <location filename="../src/SheetDialogs.cpp" line="543"/>
+        <location filename="../src/SheetDialogs.cpp" line="109"/>
+        <location filename="../src/SheetDialogs.cpp" line="133"/>
+        <location filename="../src/SheetDialogs.cpp" line="554"/>
         <source>Escolher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="141"/>
+        <location filename="../src/SheetDialogs.cpp" line="152"/>
         <source>Editar manuscrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="141"/>
+        <location filename="../src/SheetDialogs.cpp" line="152"/>
         <source>Novo manuscrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="155"/>
+        <location filename="../src/SheetDialogs.cpp" line="166"/>
         <source>Escolher capa (opcional; em branco, usa a do projeto)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="160"/>
+        <location filename="../src/SheetDialogs.cpp" line="171"/>
         <source>remover capa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="173"/>
+        <location filename="../src/SheetDialogs.cpp" line="184"/>
         <source>Título do manuscrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="179"/>
+        <location filename="../src/SheetDialogs.cpp" line="190"/>
         <source>Quando a história começa (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="182"/>
+        <location filename="../src/SheetDialogs.cpp" line="193"/>
         <source>ex.: Dia 1, 15/05/2026, Verão de 1999</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="189"/>
+        <location filename="../src/SheetDialogs.cpp" line="200"/>
         <source>É a data-base da Timeline: capítulos antes dela caem no Flashback.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="198"/>
+        <location filename="../src/SheetDialogs.cpp" line="209"/>
         <source>Sinopse (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="201"/>
+        <location filename="../src/SheetDialogs.cpp" line="212"/>
         <source>Em branco, usa a sinopse do projeto.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="206"/>
-        <location filename="../src/SheetDialogs.cpp" line="325"/>
-        <location filename="../src/SheetDialogs.cpp" line="402"/>
+        <location filename="../src/SheetDialogs.cpp" line="217"/>
+        <location filename="../src/SheetDialogs.cpp" line="336"/>
+        <location filename="../src/SheetDialogs.cpp" line="413"/>
         <source>Criar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="206"/>
+        <location filename="../src/SheetDialogs.cpp" line="217"/>
         <source>salva</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="206"/>
-        <location filename="../src/SheetDialogs.cpp" line="326"/>
-        <location filename="../src/SheetDialogs.cpp" line="403"/>
+        <location filename="../src/SheetDialogs.cpp" line="217"/>
+        <location filename="../src/SheetDialogs.cpp" line="337"/>
+        <location filename="../src/SheetDialogs.cpp" line="414"/>
         <source>cria</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="233"/>
+        <location filename="../src/SheetDialogs.cpp" line="244"/>
         <source>Escolher capa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="234"/>
+        <location filename="../src/SheetDialogs.cpp" line="245"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="246"/>
+        <location filename="../src/SheetDialogs.cpp" line="257"/>
         <source>+ capa
 
 (opcional)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="527"/>
+        <location filename="../src/SheetDialogs.cpp" line="538"/>
         <source>(sem título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="537"/>
+        <location filename="../src/SheetDialogs.cpp" line="548"/>
         <source>Nada por aqui ainda.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="545"/>
+        <location filename="../src/SheetDialogs.cpp" line="556"/>
         <source>escolhe</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="674"/>
+        <location filename="../src/SheetDialogs.cpp" line="685"/>
         <source>Alterações não salvas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="683"/>
+        <location filename="../src/SheetDialogs.cpp" line="694"/>
         <source>Descartar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/SheetDialogs.cpp" line="767"/>
+        <location filename="../src/SheetDialogs.cpp" line="789"/>
         <source>Cor</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32303,17 +32325,17 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="540"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="551"/>
         <source>%1 h</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="543"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="554"/>
         <source>1 dia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="544"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="555"/>
         <source>%1 dias</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32359,7 +32381,7 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1011"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1038"/>
         <source>acabamento em %1 ms</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32379,37 +32401,37 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="425"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="436"/>
         <source>Aqui é mar aberto: comece a estrada em terra.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="456"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="467"/>
         <source>Não tem caminho por terra até aí (outra ilha?). Esc recomeça.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="467"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="478"/>
         <source>Esse vai no mar: clique na água.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="467"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="478"/>
         <source>Aqui é água: construa em terra (navios e criaturas do mar vão na água).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="587"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="598"/>
         <source>%1 léguas · %2 km</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="588"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="599"/>
         <source>de barco ~%1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="589"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="600"/>
         <source>a pé ~%1 · a cavalo ~%2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32425,12 +32447,12 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
 <context>
     <name>carto::Cartela</name>
     <message>
-        <location filename="../src/carto/CartoCartela.cpp" line="134"/>
+        <location filename="../src/carto/CartoCartela.cpp" line="135"/>
         <source>1 légua</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCartela.cpp" line="134"/>
+        <location filename="../src/carto/CartoCartela.cpp" line="135"/>
         <source>%1 léguas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32458,39 +32480,39 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="224"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="250"/>
         <source>Sobre %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="270"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1281"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="296"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1307"/>
         <source>%1 e %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="318"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="344"/>
         <source>Explorar: abra um projeto pra ligar os territórios aos documentos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="319"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="345"/>
         <source>Explorar: este mapa ainda não tem territórios. Crie um em Territórios.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="320"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="346"/>
         <source>Explorar: clique num território pra ver os documentos dele · arraste pra mover · Esc fecha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="332"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="358"/>
         <source>ler os dois lados</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/carto/CartoExplore.cpp" line="338"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="509"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="364"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="535"/>
         <source>%n documento(s)</source>
         <translation>
             <numerusform>%n documento</numerusform>
@@ -32498,25 +32520,25 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         </translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="338"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="364"/>
         <source> · clique pra abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="338"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="509"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="364"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="535"/>
         <source>nenhum documento ainda</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="468"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="743"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1158"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="494"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="769"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1184"/>
         <source>Fechar</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/carto/CartoExplore.cpp" line="510"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="536"/>
         <source>%n conexão(ões)</source>
         <translation>
             <numerusform>%n conexão</numerusform>
@@ -32524,281 +32546,281 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         </translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="510"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="536"/>
         <source>nenhuma conexão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="534"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="560"/>
         <source>Das gavetas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="534"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="560"/>
         <source>grupo %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="535"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="561"/>
         <source>Nenhum documento de gaveta neste grupo ainda.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="547"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="573"/>
         <source>Do Criador de Mundos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="547"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="573"/>
         <source>lugar %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="548"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="574"/>
         <source>Ainda não há um Lugar com esse nome no Criador de Mundos. Ele nasce quando você criar um documento lá.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="557"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="583"/>
         <source>Novo documento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="560"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="586"/>
         <source>Adicionar existente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="566"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="592"/>
         <source>Título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="569"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="595"/>
         <source>Ex.: A Ponte dos Enforcados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="574"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="600"/>
         <source>Onde</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="577"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="603"/>
         <source>Numa gaveta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="578"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="604"/>
         <source>No Criador de Mundos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="595"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="621"/>
         <source>Gaveta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="601"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="627"/>
         <source>Vai pra gaveta escolhida já no grupo %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="603"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="629"/>
         <source>Pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="604"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="630"/>
         <source>Sem pasta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="613"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="639"/>
         <source>Vira um documento do lugar %1 no Criador de Mundos.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="616"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="956"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="642"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="982"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="618"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="644"/>
         <source>Criar e abrir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="625"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="651"/>
         <source>Buscar nas gavetas do projeto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="645"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="671"/>
         <source>sai de %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="651"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="677"/>
         <source>“%1” agora faz parte de %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="652"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="678"/>
         <source>“%1” saiu de %2 e entrou em %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="658"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="684"/>
         <source>Nada encontrado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="662"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="688"/>
         <source>Um documento mora em um grupo só. Trazer um de outro território tira ele de lá.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="664"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1139"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="690"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1165"/>
         <source>Voltar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="678"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="704"/>
         <source>Documento sem título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="725"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="893"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1196"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1278"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="751"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="919"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1222"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1304"/>
         <source>Editar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="731"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="899"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="757"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="925"/>
         <source>Ampliar a leitura</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="734"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="760"/>
         <source>Conexões com outros territórios</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="797"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="823"/>
         <source>Negrito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="798"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="824"/>
         <source>Itálico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="799"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="825"/>
         <source>Sublinhado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="800"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="826"/>
         <source>Subtítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="809"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="835"/>
         <source>Lista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="814"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1064"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="840"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1090"/>
         <source>Imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="854"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="880"/>
         <source>“%1” saiu de %2. Continua no projeto, na gaveta %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="888"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="914"/>
         <source>Criador de Mundos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="893"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1278"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="919"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1304"/>
         <source>Editar ficha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="893"/>
-        <location filename="../src/carto/CartoExplore.cpp" line="1278"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="919"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1304"/>
         <source>Concluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="896"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="922"/>
         <source>Abre a janela da ficha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="899"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="925"/>
         <source>Voltar ao leitor pequeno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="903"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="929"/>
         <source>Abrir no Criador de Mundos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="903"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="929"/>
         <source>Abrir no editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="921"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="947"/>
         <source>Lugar %1 · Criador de Mundos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="923"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="949"/>
         <source>Tirar de %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="937"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="963"/>
         <source>Ligar %1 a…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="955"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="981"/>
         <source>Todos os territórios já estão ligados a %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="962"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="988"/>
         <source>Conexões de %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="965"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="991"/>
         <source>Nenhuma ainda.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="967"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="993"/>
         <source>com %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/carto/CartoExplore.cpp" line="968"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="994"/>
         <source>%n conexão(ões) com lugares fora deste mapa</source>
         <translation>
             <numerusform>%n conexão com um lugar fora deste mapa</numerusform>
@@ -32806,32 +32828,32 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         </translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="969"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="995"/>
         <source>Nova conexão…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="1064"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1090"/>
         <source>Imagens (*.png *.jpg *.jpeg *.webp *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="1147"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1173"/>
         <source>Trocar lados</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="1280"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1306"/>
         <source>CONEXÃO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="1283"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1309"/>
         <source>Como esses dois lugares se ligam? Guerra, aliança, comércio, uma família dividida…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoExplore.cpp" line="1299"/>
+        <location filename="../src/carto/CartoExplore.cpp" line="1325"/>
         <source>%1 ainda não tem documentos.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -32839,644 +32861,645 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
 <context>
     <name>carto::Panel</name>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="40"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="41"/>
         <source>Completo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="41"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="42"/>
         <source>Atlas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="42"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="43"/>
         <source>Tinta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="43"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="44"/>
         <source>Terreno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="48"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="42"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="45"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="49"/>
         <source>Ilha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="49"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="50"/>
         <source>Região</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="50"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="51"/>
         <source>Mundo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="51"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="52"/>
         <source>Épico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="52"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="481"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="53"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
         <source>Continente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="53"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="54"/>
         <source>Supercontinente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="59"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="546"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="60"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
         <source>Terra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="60"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="306"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="61"/>
         <source>Mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="61"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="62"/>
         <source>Montanha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="62"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="63"/>
         <source>Suavizar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="63"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="64"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="39"/>
         <source>Rio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="64"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="65"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
         <source>Úmido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="65"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="66"/>
         <source>Seco</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="66"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="67"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
         <source>Frio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="79"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="80"/>
         <source>Noite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="80"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="81"/>
         <source>Amanhecer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="81"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="82"/>
         <source>Manhã</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="82"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="83"/>
         <source>Meio-dia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="83"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="84"/>
         <source>Tarde</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="84"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="85"/>
         <source>Entardecer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="85"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="86"/>
         <source>Anoitecer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="93"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="890"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="975"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="94"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="945"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1030"/>
         <source>Mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="168"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="169"/>
         <source>Clique pra trocar o nome do mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="186"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="187"/>
         <source>Trocar, criar, renomear ou excluir mapas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="217"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="218"/>
         <source>Desfazer (Ctrl+Z)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="218"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="219"/>
         <source>Refazer (Ctrl+Y)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="222"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="223"/>
         <source>Gerar mapa (G)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="222"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="302"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="223"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="316"/>
         <source>Gerar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="225"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="226"/>
         <source>Enquadrar (F)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="227"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="228"/>
         <source>Ajustes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="230"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="231"/>
         <source>Régua: distância e tempo de viagem (R)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="233"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="234"/>
         <source>Exportar imagem (PNG pro livro)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="237"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="238"/>
         <source>Fechar o mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="253"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="104"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="254"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="105"/>
         <source>Passar o dia (P)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="262"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="263"/>
         <source>Ferramentas (ou botão direito no mapa)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="301"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="882"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="315"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="936"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="25"/>
         <source>Mover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="303"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="873"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="317"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="927"/>
         <source>Área</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="304"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="355"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="913"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="318"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="370"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="968"/>
         <source>Pincel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="305"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="872"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="913"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="319"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="968"/>
         <source>Clima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="306"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="876"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="145"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="320"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="129"/>
         <source>Territórios</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="307"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="878"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="297"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="321"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="932"/>
         <source>Construir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="308"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="879"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="529"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="322"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="933"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
         <source>Nomes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="309"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="881"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="323"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="935"/>
         <source>Explorar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="387"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="402"/>
         <source>RELEVO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="388"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="403"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
         <source>CLIMA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="401"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="498"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="579"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="243"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="400"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="416"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="379"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="247"/>
         <source>TAMANHO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="402"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="417"/>
         <source>FORÇA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="415"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
         <source>Shift inverte o pincel (Terra vira Mar, Úmido vira Seco). [&#xa0;e&#xa0;] mudam o tamanho.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="427"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="442"/>
         <source>Mapa de clima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
         <source>Gélido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
         <source>Temperado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
         <source>Árido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="442"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="457"/>
         <source>É o que a terra vira em cada lugar. Pinte com Úmido, Seco e Frio, até no mar. Terra bem baixa e úmida em clima quente vira pântano.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="457"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="547"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="551"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="472"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="562"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="566"/>
         <source>Gerar mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="481"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
         <source>TIPO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="481"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
         <source>Arquipélago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="481"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
         <source>Oceânico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="481"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
         <source>Vazio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="482"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="497"/>
         <source>Só oceano: desenhe o mundo com os pincéis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="484"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="499"/>
         <source>OCEANO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="507"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="606"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="522"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="621"/>
         <source> (2× o Épico)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="508"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="607"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="523"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="622"/>
         <source> (3× o Épico)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
         <source>Misto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
         <source>Verde</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="514"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="529"/>
         <source>Sorteia a latitude, se o mundo é mais frio ou mais quente, e manchas de clima maiores</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="515"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="530"/>
         <source>Perto do polo, cheio de gelo e tundra. No Mundo e acima, era do gelo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="516"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
         <source>Cinturão de desertos, com oásis onde sobra umidade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="516"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
         <source>Úmido: floresta e pântano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="517"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="532"/>
         <source>SEMENTE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="529"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="544"/>
         <source>Semente aleatória</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="540"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="555"/>
         <source>Gerar territórios e locais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="541"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="556"/>
         <source>Reinos, cidades, estradas e nomes sugeridos pelo terreno. Desmarcado, o mapa vem só com o relevo e o resto é com você.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="551"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="566"/>
         <source>Criar mar vazio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="553"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="568"/>
         <source>O mapa atual é substituído. Ctrl+Z desfaz.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="568"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="583"/>
         <source>Bem-vindo ao Qenna Map!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="571"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="586"/>
         <source>Aqui, você pode começar a criar o mapa do seu mundo e gerenciá-lo utilizando os documentos do seu projeto. Desenhe o seu mapa ou gere um nas opções acima.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="577"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="592"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="595"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="610"/>
         <source>Tamanho do mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="598"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="613"/>
         <source>Quanto maior, mais espaço pra desenhar e mais pesado fica.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="651"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="666"/>
         <source>Ajustes do mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="654"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="669"/>
         <source>VISUAL DO TERRENO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="660"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="675"/>
         <source>Mira</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="660"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="675"/>
         <source>Novo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="661"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="676"/>
         <source>O visual original do Mira (V)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="661"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="676"/>
         <source>Tons variados, texturas e luz de fim de tarde (V)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="678"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="693"/>
         <source>INTERFACE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="681"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="696"/>
         <source>Astrolábio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="681"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="696"/>
         <source>Cartela</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="682"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="697"/>
         <source>O instrumento no canto junta vista, rotação, inclinação e hora; as ferramentas abrem num anel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="683"/>
-        <source>A legenda do mapa é a paleta; a rosa dos ventos gira o mapa</source>
+        <location filename="../src/carto/CartoPanel.cpp" line="698"/>
+        <source>Vistas na pílula de cima, ferramentas na barra do lado; a bússola no canto gira o mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="702"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="717"/>
         <source>Cartela no mapa (legenda, escala e título)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="707"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="722"/>
         <source>Árvores, casas e castelos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="876"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="174"/>
-        <source>Pintar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="876"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="174"/>
-        <source>Neutro</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="876"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="174"/>
-        <source>Semear</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="880"/>
-        <source>Régua</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="891"/>
-        <source>semente %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="892"/>
-        <source> · pintando…</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="922"/>
-        <source>%1 × %2 px</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="927"/>
-        <source>Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="928"/>
-        <source>%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="929"/>
-        <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
+        <location filename="../src/carto/CartoPanel.cpp" line="728"/>
+        <source>Moldura do mapa (onde dá pra desenhar)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="930"/>
-        <source>Construir: escolha na doca · Q/E giram o selecionado · Delete apaga · Ctrl+Z desfaz</source>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <source>Pintar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="931"/>
-        <source>Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde</source>
+        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <source>Neutro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="932"/>
-        <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
+        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <source>Semear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="934"/>
+        <source>Régua</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="946"/>
+        <source>semente %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="947"/>
+        <source> · pintando…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="977"/>
+        <source>%1 × %2 px</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="982"/>
+        <source>Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="983"/>
+        <source>%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="984"/>
+        <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="986"/>
+        <source>Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="987"/>
+        <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanel.cpp" line="989"/>
         <source>Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1014"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
         <source>Novo mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1014"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
         <source>Nome do mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1014"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
         <source>Criar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1047"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1102"/>
         <source>Novo mapa…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1048"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1103"/>
         <source>Renomear…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1049"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1104"/>
         <source>Excluir este mapa…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1052"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1107"/>
         <source>Excluir mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1052"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1107"/>
         <source>Excluir o mapa &quot;%1&quot;?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1053"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1108"/>
         <source>O mapa some do projeto. Um backup do projeto traz ele de volta.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1053"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1108"/>
         <source>Excluir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1211"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1266"/>
         <source>O Completo abre quando o mapa tiver um território, uma construção ou um nome. Crie um pelas ferramentas ou gere com territórios e locais.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -33505,821 +33528,839 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="30"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="388"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="35"/>
         <source>Estrada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="31"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="430"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="645"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
         <source>Apagar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="39"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="42"/>
         <source>Mago</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="40"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="43"/>
         <source>Árvore</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="41"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="44"/>
         <source>Pedras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="43"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="46"/>
         <source>Espada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="44"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="47"/>
         <source>Cabeças</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="45"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="48"/>
         <source>Serpente</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="46"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="49"/>
         <source>Tendas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="154"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="138"/>
         <source>+ Novo território</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="163"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="147"/>
         <source>Território %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="173"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="157"/>
         <source>FERRAMENTA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="175"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="159"/>
         <source>Clique pra plantar o território; arraste a semente pra mover; Shift+clique apaga</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="176"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="160"/>
         <source>Pinte área pro território selecionado: ela cresce dali pelo terreno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="176"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="160"/>
         <source>Pinte terra sem dono (barreira)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="178"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="162"/>
         <source>ALCANCE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="179"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="289"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="163"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="273"/>
         <source>sem limite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="185"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="370"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="169"/>
         <source>Pequeno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="186"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="170"/>
         <source>Sem limite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="189"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="392"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="429"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="173"/>
         <source>PINCEL</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="203"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="187"/>
         <source>Pinte área pro território selecionado. Ela vira semente: a borda continua seguindo serra, vale e costa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="204"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="188"/>
         <source>Pinte terra sem dono. Ela vira barreira: nenhum território passa por ali.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="205"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="189"/>
         <source>Clique no mapa pra plantar o território selecionado; ele cresce pelo terreno. Arraste uma semente pra mover; Shift+clique apaga.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="232"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="216"/>
         <source>Trocar a cor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="257"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="241"/>
         <source>Apagar território</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="270"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="254"/>
         <source>Nenhum território ainda. Clique no mapa pra plantar o primeiro.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="299"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="479"/>
         <source>ESCALA DO MUNDO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="542"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
         <source>Menor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
         <source>Mínima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="301"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="486"/>
         <source>Tudo que é construído ou plantado no tamanho de sempre</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="301"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="486"/>
         <source>Construções e árvores menores: o mesmo continente parece um mundo maior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="302"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="487"/>
         <source>Ainda menores: o continente vira um império</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="326"/>
-        <source>ÚNICOS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="328"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="443"/>
         <source>Selecione um artefato pra arrastar, girar, renomear ou apagar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="328"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="56"/>
         <source>Castelo: clique pra colocar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="328"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="56"/>
         <source>Torre de vigia</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="328"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="57"/>
         <source>Farol (na costa fica bonito)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="57"/>
         <source>Moinho</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="58"/>
         <source>Templo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="58"/>
         <source>Ruínas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="59"/>
         <source>Ponte: clique numa margem e depois na outra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="330"/>
-        <source>PINCÉIS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="331"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
         <source>Pincel de vila: casas brotam em terra firme</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="331"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
         <source>Pincel de plantação</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="331"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="61"/>
         <source>Muralha: desenhe o traço; ela sobe e desce com o chão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="332"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="62"/>
         <source>Estrada: ligue dois pontos (ela acha o caminho pelo vale) ou desenhe à mão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="332"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="63"/>
         <source>Apaga o que você construiu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="333"/>
-        <source>MAIS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="335"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="64"/>
         <source>Estátua de bronze sobre pedestal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="335"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="64"/>
         <source>Navio de três mastros: clique no mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="335"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="65"/>
         <source>Coliseu de pedra com arena</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="335"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="65"/>
         <source>Entrada de caverna numa rocha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="66"/>
         <source>Mina escorada, com trilhos e vagonete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="66"/>
         <source>Torre do mago com cristal flutuante</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
         <source>Árvore Sagrada (enorme)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
         <source>Círculo de pedras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="337"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="68"/>
         <source>Acampamento com tendas e fogueira</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="338"/>
-        <source>LENDAS</source>
+        <location filename="../src/carto/CartoBuild.cpp" line="301"/>
+        <source>Únicos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="340"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="303"/>
+        <source>Pincéis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="304"/>
+        <source>Mais</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="305"/>
+        <source>Lendas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="307"/>
+        <source>Monumentos</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="447"/>
+        <source>Escala do mundo e cidades sugeridas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <source>Peq.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <source>Méd.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <source>Gde.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <source>Col.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="649"/>
+        <source>Vale</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="698"/>
+        <source>%1 · sem nome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
         <source>Dragão empoleirado numa rocha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="340"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
         <source>Ossada de dragão no chão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="340"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
         <source>Portal de pedra com luz arcana</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="340"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
         <source>Ilha flutuante com torre e cascata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="341"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="71"/>
         <source>Espada cravada na pedra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="341"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="71"/>
         <source>Cabeças de pedra colossais</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
-        <source>MAR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
         <source>Drakkar viking: clique no mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
         <source>Naufrágio afundando: clique no mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
         <source>Serpente marinha: clique no mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
         <source>Kraken: clique no mar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="344"/>
-        <source>MONUMENTOS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
         <source>Pirâmide com o topo de ouro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
         <source>Templo em degraus com escadaria</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
         <source>Pagode de cinco andares</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
         <source>Obelisco de pedra com ponta de ouro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
         <source>Cemitério com mausoléu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
         <source>Fazenda: celeiro, silo e plantação</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="352"/>
-        <source>ESTILO DO CASTELO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="353"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="84"/>
         <source>Humano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="353"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
         <source>Élfico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="353"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="86"/>
         <source>Anão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="353"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="87"/>
         <source>Orc</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="354"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="84"/>
         <source>Muralha de pedra, torres de flecha e a menagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="354"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
         <source>Muralha clara, torres finas e uma torre altíssima no meio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="355"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="86"/>
         <source>Fortaleza escavada no monte, com portão dourado e forjas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="355"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="87"/>
         <source>Paliçada de toras, torres de vigia e o salão comprido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="369"/>
-        <source>TAMANHO DO CASTELO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="370"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
         <source>Médio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="370"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
         <source>Grande</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="370"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
         <source>Colossal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="384"/>
-        <source>ESTRADA</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="385"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="418"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="649"/>
         <source>Pelo vale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="385"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="418"/>
         <source>À mão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="386"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="419"/>
         <source>Clique no começo e no fim: ela acha o caminho pelo vale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="386"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="419"/>
         <source>Desenhe o traço</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="388"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
         <source>Trilha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="388"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
         <source>Real</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="389"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
         <source>Caminho de terra estreito</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="389"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
         <source>Estrada de terra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="389"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
         <source>Estrada real, calçada de pedra, com lanternas à noite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="406"/>
-        <source>Nome (opcional)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="420"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="534"/>
         <source>Girar (Q)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="425"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="535"/>
         <source>Girar (E)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="431"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="646"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="543"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="446"/>
         <source>Apagar (Delete)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="443"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="507"/>
         <source>Mostrar cidades e estradas sugeridas pelo terreno</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="484"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="284"/>
         <source>Clique pra colocar um castelo; a bandeira pega a cor do território. Clique num artefato pra selecionar e arrastar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="485"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="285"/>
         <source>Clique pra colocar uma torre de vigia.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="486"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="286"/>
         <source>Clique pra colocar um farol (na costa fica bonito).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="487"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="287"/>
         <source>Clique pra colocar um moinho. Q/E giram as pás pra outro lado.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="488"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="288"/>
         <source>Clique pra colocar um templo.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="489"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="289"/>
         <source>Clique pra colocar ruínas.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="490"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="290"/>
         <source>Clique pra pôr uma estátua; Q/E giram pra onde ela olha.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="491"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="291"/>
         <source>Clique no mar pra pôr o navio; Q/E viram a proa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="492"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="292"/>
         <source>Clique pra pôr um coliseu (é grande).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="493"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="293"/>
         <source>Clique pra pôr a entrada de uma caverna; Q/E viram a boca.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="494"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="294"/>
         <source>Clique pra pôr uma mina; Q/E viram a boca.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="495"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="295"/>
         <source>Clique pra pôr a torre do mago.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="296"/>
         <source>Clique pra pôr uma Árvore Sagrada (enorme).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="497"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="297"/>
         <source>Clique pra pôr um círculo de pedras.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="498"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="298"/>
         <source>Clique pra pôr um acampamento.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="499"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="299"/>
         <source>Clique pra pôr um dragão; Q/E viram a cabeça.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="500"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
         <source>Clique pra pôr uma ossada de dragão.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="501"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="301"/>
         <source>Clique pra pôr um portal; Q/E giram o anel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="502"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="302"/>
         <source>Clique pra pôr uma ilha flutuante (ela paira no céu).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="503"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="303"/>
         <source>Clique pra pôr a espada na pedra.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="504"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="304"/>
         <source>Clique pra pôr as cabeças de pedra; Q/E viram pra onde olham.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="505"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="305"/>
         <source>Clique no mar pra pôr um drakkar; Q/E viram a proa.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="506"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="306"/>
         <source>Clique no mar pra pôr um naufrágio.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="507"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="307"/>
         <source>Clique no mar pra pôr uma serpente marinha; Q/E viram a cabeça.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="508"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="308"/>
         <source>Clique no mar pra pôr um kraken.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="509"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="309"/>
         <source>Clique pra pôr uma pirâmide (é grande); Q/E viram a entrada.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="510"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="310"/>
         <source>Clique pra pôr um zigurate; Q/E viram a escadaria.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="511"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="311"/>
         <source>Clique pra pôr um pagode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="512"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="312"/>
         <source>Clique pra pôr um obelisco.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="513"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="313"/>
         <source>Clique pra pôr um cemitério; Q/E viram o portão.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="514"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="314"/>
         <source>Clique pra pôr uma fazenda; Q/E viram o celeiro.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="515"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="315"/>
         <source>Clique numa margem e depois na outra.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="516"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="316"/>
         <source>Clique num artefato pra selecionar; arraste pra mover. Q/E giram, Delete apaga.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="517"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="317"/>
         <source>Pinte: as casas brotam em terra firme e pouco inclinada.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="518"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="318"/>
         <source>Pinte: retalhos de plantação com sebe.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="519"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="319"/>
         <source>Desenhe o traço da muralha; ela sobe e desce com o chão, com torres no caminho.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="520"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="320"/>
         <source>Pinte por cima do que você construiu pra apagar (estradas também).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="521"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="321"/>
         <source>Desenhe o traço da estrada; onde ela passar na água vira ponte.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="522"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="322"/>
         <source>Clique no começo e no fim: a estrada acha o caminho pelo vale e cruza rio estreito com ponte. Ela continua do último ponto; Esc termina.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="536"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
         <source>Sugerir nomes pelo relevo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="541"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="341"/>
         <source>QUANTIDADE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="542"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
         <source>Poucos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="542"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
         <source>Muitos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="543"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
         <source>Só os grandes: oceano, mares, serras e as maiores regiões</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="543"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
         <source>Também picos, campos, lagos e ilhas pequenas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="545"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="345"/>
         <source>NOME NOVO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="546"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
         <source>Água</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="547"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
         <source>Letras de terra: versalete espaçado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="547"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
         <source>Letras de água: itálico</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="601"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="401"/>
         <source>Sugestão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="602"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="402"/>
         <source>Volta pro nome e o lugar que o mapa sugeriu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="633"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="433"/>
         <source>Clique num nome pra editar. Clique no mapa pra pôr um nome novo; arrastando enquanto clica, ele segue o traço (rio, estrada, serra).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="645"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
         <source>Mostrar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="645"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
         <source>Esconder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="646"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="446"/>
         <source>Esconder (Delete)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="647"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="447"/>
         <source>Sugestão do mapa: troque o nome ou arraste pra mover. &quot;Sugestão&quot; desfaz o que você mudou nele.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="648"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="448"/>
         <source>Nome seu: arraste pra mover; Delete apaga.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -34354,107 +34395,107 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="74"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
         <source>Mover (H)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="74"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
         <source>Área: arraste um retângulo pra criar terra (A)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="74"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
         <source>Pincéis de terreno (B)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="74"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="75"/>
         <source>Clima (C)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="121"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="122"/>
         <source>INCLINAÇÃO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="122"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="123"/>
         <source>HORA</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="176"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="177"/>
         <source>Região do %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="240"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="244"/>
         <source>Exportar imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="246"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
         <source>1×</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="246"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
         <source>2×</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="246"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
         <source>3×</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="247"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
         <source>Do tamanho da tela</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="247"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
         <source>Dobro: bom pra imprimir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="247"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
         <source>Triplo: pra página inteira do livro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="257"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
         <source>Cartela (título, escala e legenda)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="262"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="266"/>
         <source>Salvar PNG…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="267"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="271"/>
         <source>Sai a vista de agora, sem os botões. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="280"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="284"/>
         <source>Exportar mapa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="280"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="284"/>
         <source>Imagem PNG (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="303"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="307"/>
         <source>Não deu pra salvar a imagem nesse lugar.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="305"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="309"/>
         <source>Imagem salva: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -34462,8 +34503,48 @@ novo. Dias seguintes, ela sempre vira nesse horário.</source>
 <context>
     <name>carto::Rose</name>
     <message>
-        <location filename="../src/carto/CartoCartela.cpp" line="179"/>
+        <location filename="../src/carto/CartoCartela.cpp" line="180"/>
         <source>Rosa dos ventos: arraste pra girar, clique pro norte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>N</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>NE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>L</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>SE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>SO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>O</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoCartela.cpp" line="204"/>
+        <source>NO</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

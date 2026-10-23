@@ -179,6 +179,32 @@ QString Explorer::groupOf(int r, bool create)
     if (m_link.save) m_link.save();
     return d.groupId;
 }
+void Explorer::syncGroups(const std::vector<RealmDef>* before)
+{
+    if (!m_link.model || !m_doc || !m_doc->info) return;
+    bool groupsTouched = false, mapTouched = false;
+    for (RealmDef& d : m_doc->info->defs) {
+        const QString name = d.name.trimmed();
+        if (name.isEmpty()) continue;
+        if (d.groupId.isEmpty()) {
+            for (const Group& g : m_link.model->groups())
+                if (g.title.trimmed().compare(name, Qt::CaseInsensitive) == 0) { d.groupId = g.id; break; }
+            if (d.groupId.isEmpty()) { d.groupId = m_link.model->addGroup(name, rgbHex(d.color).toUpper()); groupsTouched = true; }
+            mapTouched = true;
+            continue;
+        }
+        // o grupo apagado lá fora não volta sozinho (o Explorar cria de novo se alguém precisar)
+        if (!before || !m_link.model->findGroup(d.groupId)) continue;
+        for (const RealmDef& b : *before) {
+            if (b.groupId != d.groupId) continue;
+            if (b.name != d.name || b.color != d.color) { m_link.model->updateGroup(d.groupId, name, rgbHex(d.color).toUpper()); groupsTouched = true; }
+            break;
+        }
+    }
+    if (mapTouched && mapEdited) mapEdited();
+    if (groupsTouched && m_link.save) m_link.save();
+}
+
 QString Explorer::placeOf(int r, bool create)
 {
     if (!m_link.places || r < 0 || r >= realmCount()) return QString();

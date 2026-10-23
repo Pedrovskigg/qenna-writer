@@ -2,6 +2,7 @@
 #include "CartoProf.h"
 
 #include "CartoAstrolabe.h"
+#include "CartoBuild.h"
 #include "CartoCartela.h"
 #include "CartoExplore.h"
 #include "CartoIcons.h"
@@ -281,14 +282,27 @@ void Panel::buildUi()
     dl->setSpacing(8);
     buildBrushCard();
     buildRealmCard();
-    buildBuildCard();
     buildNamesCard();
     dl->addWidget(m_brushCard);
     dl->addWidget(m_legend);
     dl->addWidget(m_realmCard);
-    dl->addWidget(m_buildCard);
     dl->addWidget(m_namesCard);
     m_dock->hide();
+
+    // Construir: o catálogo embaixo (no jeito do The Sims) e a pílula em cima do selecionado
+    m_build = new BuildBar(this, m_canvas, &m_doc);
+    m_build->changed = [this]() { syncUi(); };
+    m_build->rotate = [this](double d) { rotateSelected(d); };
+    m_build->remove = [this]() { deleteSelected(); };
+    m_build->setScale = [this](double v) {
+        m_canvas->waitIdle();
+        m_doc.world.scale = v;
+        m_doc.touch();               // floresta e cidades sugeridas se refazem na escala (territórios e construções ficam)
+        m_canvas->layersReplaced();
+        scheduleSave();
+        syncUi();
+    };
+    m_canvas->afterPaint = [this]() { if (m_build->active()) m_build->placeSel(); };
 
     buildGenPanel();
     buildSettings();
@@ -335,6 +349,7 @@ void Panel::buildUi()
         scheduleSave();
     });
     connect(m_canvas, &Canvas::layersEdited, this, [this](std::shared_ptr<Doc::Layers> before) {
+        m_explore->syncGroups(&before->realms.defs);     // território novo vira grupo; nome e cor passam pro grupo
         Undo u; u.kind = Undo::Layers; u.lBefore = std::move(before); u.lAfter = std::make_shared<Doc::Layers>(m_doc.layers());
         pushUndo(std::move(u));
         scheduleSave();
@@ -680,7 +695,7 @@ void Panel::buildSettings()
     l->addWidget(ucap);
     l->addLayout(newSeg(m_settings, { QStringLiteral("astro"), QStringLiteral("cartela") }, { tr("Astrolábio"), tr("Cartela") },
                         { tr("O instrumento no canto junta vista, rotação, inclinação e hora; as ferramentas abrem num anel"),
-                          tr("A legenda do mapa é a paleta; a rosa dos ventos gira o mapa") },
+                          tr("Vistas na pílula de cima, ferramentas na barra do lado; a bússola no canto gira o mapa") },
                         m_uiBtns, [this](const QString& v) {
                             m_ui = v;
                             QSettings().setValue(QStringLiteral("carto/ui"), v);
@@ -701,13 +716,19 @@ void Panel::buildSettings()
     };
     check(tr("Cartela no mapa (legenda, escala e título)"), &m_cartelaChk, [this](bool on) {
         m_cartelaOn = on;
-        QSettings().setValue(QStringLiteral("carto/cartela"), on);
+        QSettings().setValue(QStringLiteral("carto/cartelaLegend"), on);
         applyUiMode();
     });
     check(tr("Árvores, casas e castelos"), &m_spritesChk, [this](bool on) {
         m_canvas->opts().sprites = on;
         QSettings().setValue(QStringLiteral("carto/sprites"), on);
         m_canvas->optsChanged();
+        applyUiMode();
+    });
+    check(tr("Moldura do mapa (onde dá pra desenhar)"), &m_frameChk, [this](bool on) {
+        m_canvas->opts().frame = on;
+        QSettings().setValue(QStringLiteral("carto/frame"), on);
+        m_canvas->update();
         applyUiMode();
     });
     m_settings->hide();
@@ -721,6 +742,23 @@ void Panel::applyTheme()
         "QWidget#cartoPanel { background: %8; }"
         "QFrame[cartoFloat=\"true\"], QFrame#cartoCard { background: %1; border: 1px solid %2; border-radius: 12px; }"
         "QFrame#cartoDock { background: transparent; border: none; }"
+        // catálogo do Construir
+        "QWidget#cartoCatCol { background: %4; border-top-left-radius: 11px; border-bottom-left-radius: 11px; }"
+        "QPushButton#cartoCat { background: transparent; border: none; border-radius: 7px; color: %6; font-size: 12px; padding: 0 8px; text-align: left; }"
+        "QPushButton#cartoCat:hover { background: %4; color: %3; }"
+        "QPushButton#cartoCat:checked { background: %9; color: %5; font-weight: 600; }"
+        "QLabel#cartoBarTitle { color: %5; font-family: 'IM FELL English SC', Georgia, serif; font-size: 15px; letter-spacing: 1px; background: transparent; }"
+        "QFrame#cartoMiniSeg { background: %4; border: none; border-radius: 9px; }"
+        "QToolButton#cartoMini { background: transparent; border: none; border-radius: 7px; color: %6; font-size: 11px; padding: 4px 8px; }"
+        "QToolButton#cartoMini:hover { color: %3; }"
+        "QToolButton#cartoMini:checked { background: %9; color: %5; font-weight: 600; }"
+        "QScrollArea#cartoCardScroll, QWidget#cartoCardRow { background: transparent; border: none; }"
+        "QScrollArea#cartoCardScroll QScrollBar:horizontal { background: transparent; height: 6px; margin: 0 10px; }"
+        "QScrollArea#cartoCardScroll QScrollBar::handle:horizontal { background: %2; border-radius: 3px; min-width: 30px; }"
+        "QScrollArea#cartoCardScroll QScrollBar::add-line:horizontal, QScrollArea#cartoCardScroll QScrollBar::sub-line:horizontal { width: 0; }"
+        "QScrollArea#cartoCardScroll QScrollBar::add-page:horizontal, QScrollArea#cartoCardScroll QScrollBar::sub-page:horizontal { background: transparent; }"
+        "QLineEdit#cartoSelName { background: transparent; border: none; border-bottom: 1px solid transparent; color: %3; font-size: 12px; font-weight: 600; padding: 3px 0; }"
+        "QLineEdit#cartoSelName:focus { border-bottom-color: %5; }"
         "QToolButton#cartoBtn, QToolButton#cartoToolBtn { background: transparent; border: none; border-radius: @radius-control; color: %6; font-size: 12px; font-weight: 600; padding: 0 6px; }"
         "QToolButton#cartoBtn:hover, QToolButton#cartoToolBtn:hover { background: %4; color: %3; }"
         "QToolButton#cartoBtn:checked { background: %9; color: %5; }"
@@ -765,6 +803,7 @@ void Panel::applyTheme()
     for (const auto& [btn, name] : m_icons) btn->setIcon(icon(name, muted, a));
     if (m_toolBtn) m_toolBtn->setIcon(icon(QStringLiteral("ring"), ink, a));
     if (m_explore) m_explore->applyTheme();
+    if (m_build) m_build->applyTheme();
     if (m_astro) m_astro->update();
     syncUi();
 }
@@ -805,13 +844,13 @@ void Panel::positionOverlays()
         const bool cartelaUi = m_ui == QLatin1String("cartela");
         m_cartela->resize(m_cartela->sizeHint());
         m_cartela->move(16, H - m_cartela->height() - 14);
-        m_rose->move(m_cartela->x() + m_cartela->width() - 74, m_cartela->y() - 96);
+        m_rose->move(16, H - m_rose->height() - 14);
         m_cbar->adjustSize();
         m_cbar->move(W - m_cbar->width() - 16, m_topPill->y() + m_topPill->height() + 8);
         m_cview->adjustSize();
         m_cview->move(W - m_cview->width() - 16, H - m_cview->height() - 14);
         // a dica fica no meio, entre a Cartela e o canto direito
-        const int left = m_cartela->isVisible() ? m_cartela->x() + m_cartela->width() + 12 : 16;
+        const int left = m_rose->isVisible() ? m_rose->x() + m_rose->width() + 12 : 16;
         const int right = (cartelaUi ? m_cview->x() : m_toolPill->x()) - 12;
         const int room = std::max(200, right - left);
         const bool wrap = m_hint->fontMetrics().horizontalAdvance(m_hint->text()) + 28 > room;
@@ -827,6 +866,21 @@ void Panel::positionOverlays()
         card->adjustSize();
         card->move((W - card->width()) / 2, (H - card->height()) / 2);
         card->raise();
+    }
+    // Construir: o catálogo senta embaixo, entre a Cartela e o canto da direita; a dica sobe pra cima dele
+    if (m_build->active()) {
+        const bool cartelaUi = m_ui == QLatin1String("cartela");
+        const int bh = BuildBar::kHeight;
+        int left = m_rose && m_rose->isVisible() ? m_rose->x() + m_rose->width() + 12 : 16;
+        const int right = (cartelaUi ? m_cview->x() : m_toolPill->x()) - 12;
+        int w = std::min(900, right - left), y = H - 14 - bh;
+        if (w < 460) { left = 16; w = std::min(900, W - 32); y = (cartelaUi ? m_cview->y() : m_astro->y()) - 8 - bh; }   // tela estreita: sobe por cima do canto
+        m_build->place(left, y, w);
+        const bool wrap = m_hint->fontMetrics().horizontalAdvance(m_hint->text()) + 28 > w;
+        m_hint->setWordWrap(wrap);
+        if (wrap) m_hint->setFixedWidth(w); else { m_hint->setMinimumWidth(0); m_hint->setMaximumWidth(QWIDGETSIZE_MAX); }
+        m_hint->adjustSize();
+        m_hint->move(left + (w - m_hint->width()) / 2, y - 10 - m_hint->height());
     }
     placeDock();
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
@@ -886,6 +940,7 @@ void Panel::syncUi()
 {
     CARTO_PROF("syncUi");
     if (!m_canvas) return;
+    if (m_explore) m_explore->syncGroups(nullptr);   // territórios que ainda não têm grupo (mapa gerado, aberto, antigo)
     const int idx = m_store.indexOf(m_mapId);
     if (!m_titleEdit->isVisible()) m_title->setText(idx >= 0 ? m_store.maps()[idx].name : tr("Mapa"));
     QString sub = m_hasWorld ? QStringLiteral("%1 · %2 · %3").arg(modeName(m_canvas->mode()), sizeName(m_doc.world.size), tr("semente %1").arg(m_doc.world.seed)) : QString();
@@ -912,7 +967,7 @@ void Panel::syncUi()
     for (auto it = m_brushBtns.begin(); it != m_brushBtns.end(); ++it) it.value()->setChecked(it.key() == int(m_brush));
     m_brushTitle->setText(m_canvas->showClimate() ? tr("Clima") : tr("Pincel"));
     syncRealmCard();
-    syncBuildCard();
+    m_build->sync();
     syncNamesCard();
     syncCartela();
     if (m_rulerBtn) m_rulerBtn->setChecked(m_tool == QLatin1String("ruler"));
@@ -927,7 +982,7 @@ void Panel::syncUi()
     if (m_tool == QLatin1String("area")) hint = tr("Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)");
     else if (m_tool == QLatin1String("brush")) hint = tr("%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)").arg(brushName(m_brush));
     else if (m_tool == QLatin1String("realm")) hint = tr("Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas");
-    else if (m_tool == QLatin1String("build")) hint = tr("Construir: escolha na doca · Q/E giram o selecionado · Delete apaga · Ctrl+Z desfaz");
+    else if (m_tool == QLatin1String("build")) hint = buildHint();
     else if (m_tool == QLatin1String("names")) hint = tr("Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde");
     else if (m_tool == QLatin1String("ruler")) hint = tr("Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa");
     else if (m_tool == QLatin1String("explore")) hint = m_explore->hint();
@@ -951,7 +1006,7 @@ void Panel::setProjectRoot(const QString& root)
     if (isVisible()) ensureMap();
 }
 
-void Panel::setProjectLink(const ProjectLink& link) { if (m_explore) m_explore->setLink(link); }
+void Panel::setProjectLink(const ProjectLink& link) { if (m_explore) { m_explore->setLink(link); m_explore->syncGroups(nullptr); } }
 
 void Panel::showEvent(QShowEvent*)
 {
@@ -1183,9 +1238,9 @@ void Panel::setTool(const QString& id)
     const bool brush = id == QLatin1String("brush"), realm = id == QLatin1String("realm"), build = id == QLatin1String("build"), names = id == QLatin1String("names");
     m_brushCard->setVisible(brush);
     m_realmCard->setVisible(realm);
-    m_buildCard->setVisible(build);
+    m_build->setActive(build);
     m_namesCard->setVisible(names);
-    m_dock->setVisible(brush || realm || build || names);
+    m_dock->setVisible(brush || realm || names);
     m_legend->setVisible(brush && m_canvas->showClimate());
     if (id == QLatin1String("brush")) setBrush(m_brush);
     syncUi();
@@ -1298,6 +1353,7 @@ void Panel::restore(bool undoing)
     m_canvas->waitIdle();
     Undo e = std::move(from.back());
     from.pop_back();
+    const std::vector<RealmDef> was = m_doc.info ? m_doc.info->defs : std::vector<RealmDef>();
     // o desfazer não desliga um território do grupo e do Lugar dele: os vínculos voltam pelo nome
     QHash<QString, QPair<QString, QString>> links;
     if (m_doc.info) for (const RealmDef& d : m_doc.info->defs) if (!d.groupId.isEmpty() || !d.placeId.isEmpty()) links.insert(d.name, { d.groupId, d.placeId });
@@ -1343,6 +1399,7 @@ void Panel::restore(bool undoing)
         if (m_canvas->mode() != QLatin1String("terrain")) m_canvas->layersReplaced();   // cidades e estradas se refazem no terreno novo
         to.push_back(std::move(e));
     }
+    m_explore->syncGroups(&was);
     scheduleSave();
     syncUi();
 }
@@ -1389,6 +1446,7 @@ void Panel::keyPressEvent(QKeyEvent* e)
     case Qt::Key_BracketLeft: m_sizeSlider->setValue(qRound(m_sizeSlider->value() * 0.85)); break;
     case Qt::Key_BracketRight: m_sizeSlider->setValue(qRound(m_sizeSlider->value() / 0.85 + 1)); break;
     case Qt::Key_Escape:
+        if (m_build->escape()) break;
         m_gen->hide(); m_settings->hide(); m_ring->hide(); m_export->hide();
         m_canvas->cancelAction();
         m_canvas->clearRuler();
@@ -1424,7 +1482,7 @@ bool Panel::eventFilter(QObject* o, QEvent* e)
         if (m_canvas->opts().realmSel != i) { m_canvas->opts().realmSel = i; m_canvas->update(); syncUi(); }
     }
     // a doca arrasta pelo título do cartão
-    if (o == m_brushTitle || o == m_realmTitle || o == m_buildTitle || o == m_namesTitle) {
+    if (o == m_brushTitle || o == m_realmTitle || o == m_namesTitle) {
         if (e->type() == QEvent::MouseButtonPress) {
             auto* me = static_cast<QMouseEvent*>(e);
             m_dockDragging = true;

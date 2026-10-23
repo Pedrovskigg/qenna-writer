@@ -69,6 +69,7 @@ class AIChatPanel;
 class MarkerStore;
 class NotesStore;
 class MapPinsStore;
+class GroupPicker;
 class MarkerPickPopup;
 class MarkerHoverPopup;
 class AmbienceManager;
@@ -675,6 +676,7 @@ private:
     // Faixa de titulo no topo da folha; so existe com a TopToolbar na lateral,
     // onde a barra nao tem mais onde mostrar o documento em edicao.
     DocHeaderBar *docHeader = nullptr;
+    GroupPicker *m_docGroup = nullptr;   // a etiqueta de grupo do doc de gaveta aberto (no DocHeader)
     GrannaNotifier *grannaNotifier = nullptr;
     QScrollArea *editorScroll = nullptr;
     QScrollBar *externalScrollBar = nullptr;

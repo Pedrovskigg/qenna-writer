@@ -550,12 +550,7 @@ Art& addArt(const World& w, Info& info, const QString& kind, double x, double y,
     a.id = QStringLiteral("a%1").arg(U.seq);
     a.kind = kind; a.x = x; a.y = y; a.yaw = uRand(U, 1) * M_PI / 2; a.v = uRand(U, 2);
     a.size = kind == QLatin1String("castle") ? size : 0;
-    const ArtSpec* spec = artSpec(kind);
-    if (kind == QLatin1String("castle") || kind == QLatin1String("temple") || kind == QLatin1String("lighthouse") || (spec && spec->named)) {
-        int n = 0;
-        for (const Art& o : U.arts) if (o.kind == kind) n++;
-        a.name = QStringLiteral("%1 %2").arg(artName(kind)).arg(n + 1);
-    }
+    // nasce sem nome (23/10, pedido do Pe: "Castelo 1", "Navio 2"... poluíam o mapa); quem quiser, nomeia
     U.arts.push_back(a);
     U.ver++;
     return U.arts.back();
@@ -857,6 +852,13 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         Art t; t.id = a.value("id").toString(); t.kind = a.value("kind").toString(); t.x = a.value("x").toDouble(); t.y = a.value("y").toDouble();
         t.yaw = a.value("yaw").toDouble(); t.v = a.value("v").toDouble(); t.size = a.value("size").toInt(); t.name = a.value("name").toString();
         t.style = a.value("style").toString();
+        // o nome automático de antes ("Castelo 1", "Naufrágio 3") sai; o que a pessoa escreveu fica
+        if (!t.name.isEmpty()) {
+            const QString auto0 = artName(t.kind) + QLatin1Char(' ');
+            bool num = false;
+            if (t.name.startsWith(auto0)) t.name.mid(auto0.size()).toInt(&num);
+            if (num) t.name.clear();
+        }
         U.arts.push_back(t);
     }
     for (const QJsonValue& v : o.value("houses").toArray()) {

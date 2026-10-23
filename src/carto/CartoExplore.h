@@ -16,6 +16,7 @@
 #include <QVector>
 
 #include <functional>
+#include <vector>
 
 class ProjectModel;
 class ElementsStore;
@@ -36,6 +37,7 @@ class QWidget;
 namespace carto {
 
 class Canvas;
+struct RealmDef;
 struct Doc;
 
 // o que o mapa precisa do projeto (o MainWindow preenche)
@@ -66,6 +68,9 @@ public:
     bool escape();                                  // fecha a camada de cima
     void close();
     void mapReplaced();                             // outro mapa, gerar, desfazer
+    // cada território é um grupo do projeto: o que não tem grupo ganha (o de mesmo nome ou um novo);
+    // com o estado de antes, nome e cor trocados no mapa passam pro grupo
+    void syncGroups(const std::vector<RealmDef>* before);
     void place();                                   // reposiciona depois de redimensionar
     void applyTheme();
     bool owns(const QWidget* w) const;              // o foco está num painel do Explorar

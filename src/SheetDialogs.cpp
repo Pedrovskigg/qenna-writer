@@ -1,4 +1,5 @@
 #include "SheetDialogs.h"
+#include "GroupPicker.h"
 
 #include "CoverUtils.h"
 #include "SheetDialog.h"
@@ -71,6 +72,15 @@ public:
         applySheetTheme();
     }
     QString value() const { return m_line ? m_line->text() : m_area->toPlainText(); }
+    void enableGroups(const ProjectModel* model)
+    {
+        m_groups = new GroupPicker(model, card());
+        if (!m_groups->available()) return;
+        m_groups->resized = [this]() { adjustSize(); };
+        addHeaderWidget(m_groups->tag());
+        body()->insertWidget(0, m_groups->list());
+    }
+    QString groupId() const { return m_groups ? m_groups->groupId() : QString(); }
 protected:
     void showEvent(QShowEvent* e) override
     {
@@ -79,6 +89,7 @@ protected:
         else m_area->setFocus();
     }
 private:
+    GroupPicker* m_groups = nullptr;
     QLineEdit* m_line = nullptr;
     QTextEdit* m_area = nullptr;
 };
@@ -718,6 +729,17 @@ QString askText(QWidget* parent, const QString& eyebrow, const QString& placehol
     TextSheet s(parent, eyebrow, placeholder, initial, okText, multiline, allowEmpty, hint);
     const bool accepted = s.exec() == QDialog::Accepted;
     if (ok) *ok = accepted;
+    return accepted ? s.value() : QString();
+}
+
+QString askTextInGroup(QWidget* parent, const QString& eyebrow, const QString& placeholder,
+                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText)
+{
+    TextSheet s(parent, eyebrow, placeholder, QString(), okText, false, false, QString());
+    s.enableGroups(model);
+    const bool accepted = s.exec() == QDialog::Accepted;
+    if (ok) *ok = accepted;
+    if (groupId) *groupId = accepted ? s.groupId() : QString();
     return accepted ? s.value() : QString();
 }
 

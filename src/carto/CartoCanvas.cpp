@@ -357,6 +357,7 @@ void Canvas::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
     paintMap(p, size(), false);
+    if (afterPaint) afterPaint();
 }
 
 // a vista atual numa imagem, sem os botões (pro livro): scale = 2 ou 3 sai nítido
@@ -462,6 +463,32 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
     // ferramentas
     if (exporting) return;
     p.setRenderHint(QPainter::Antialiasing);
+    // moldura: o retângulo do mundo no nível do mar (gira e inclina com a mesa; o relevo sobe por cima dela)
+    if (m_opts.frame && m_world) {
+        QTransform t;
+        t.translate(m_panX, m_panY);
+        t.scale(m_zoom, m_zoom * sq());
+        t.rotate(m_ang * 180 / M_PI);
+        t.translate(-m_world->W / 2.0, -m_world->H / 2.0);
+        const double W = m_world->W, H = m_world->H;
+        const QPolygonF box = t.map(QPolygonF(QRectF(0, 0, W, H)));
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(QColor(0, 0, 0, 110), 3.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p.drawPolygon(box);
+        QPen dash(QColor(244, 236, 214, 235), 1.5, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+        dash.setDashPattern({ 6, 4 });
+        p.setPen(dash);
+        p.drawPolygon(box);
+        // cantos marcados (dá pra achar a borda mesmo com o tracejado longe)
+        const double c = std::min(W, H) * 0.04;
+        const QPointF corners[4][3] = { { { 0, c }, { 0, 0 }, { c, 0 } }, { { W - c, 0 }, { W, 0 }, { W, c } },
+                                        { { W, H - c }, { W, H }, { W - c, H } }, { { c, H }, { 0, H }, { 0, H - c } } };
+        for (const auto& k : corners) {
+            QPolygonF l; for (const QPointF& q : k) l << t.map(q);
+            p.setPen(QPen(QColor(0, 0, 0, 120), 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin)); p.drawPolyline(l);
+            p.setPen(QPen(QColor(244, 236, 214), 2.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin)); p.drawPolyline(l);
+        }
+    }
     if (steady) drawToolOverlay(p, st);
     if (steady && m_tool == Tool::Explore) drawExplore(p, st);
     if (m_tool == Tool::Ruler) drawRuler(p, st);

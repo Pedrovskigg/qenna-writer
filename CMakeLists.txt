@@ -372,6 +372,8 @@ qt_add_executable(qenna-writer
     src/RemindersStore.h
     src/RemindersPanel.cpp
     src/RemindersPanel.h
+    src/GroupPicker.cpp
+    src/GroupPicker.h
     src/GroupsPanel.cpp
     src/GroupsPanel.h
     src/LousaScene.cpp
@@ -430,6 +432,8 @@ qt_add_executable(qenna-writer
     src/carto/CartoCanvas.h
     src/carto/CartoCanvasTools.cpp
     src/carto/CartoCanvasExplore.cpp
+    src/carto/CartoBuild.cpp
+    src/carto/CartoBuild.h
     src/carto/CartoExplore.cpp
     src/carto/CartoExplore.h
     src/carto/CartoAstrolabe.cpp

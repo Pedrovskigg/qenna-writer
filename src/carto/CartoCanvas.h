@@ -56,6 +56,7 @@ struct ToolOpts {
     QString nameStyle = QStringLiteral("land");      // land · water
     // vista
     bool sprites = true;
+    bool frame = false;     // moldura: onde a área desenhável do mapa começa e termina
 };
 
 class Canvas : public QWidget {
@@ -105,6 +106,8 @@ public:
     QString selArt() const { return m_selArt; }
     void setSelArt(const QString& id);
     Art* selectedArt();
+    std::optional<QRectF> selectedArtRect();   // a caixa do desenho do selecionado na tela
+    std::function<void()> afterPaint;          // depois de cada quadro (a pílula do selecionado anda junto)
     QString selName() const { return m_selName; }
     void setSelName(const QString& ref);
     QString toolMessage() const { return m_toolMsg; }

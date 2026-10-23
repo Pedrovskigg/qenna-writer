@@ -46,8 +46,9 @@ void Panel::buildCartelaUi()
 {
     QSettings st;
     m_ui = st.value(QStringLiteral("carto/ui"), QStringLiteral("astro")).toString();
-    m_cartelaOn = st.value(QStringLiteral("carto/cartela"), true).toBool();
+    m_cartelaOn = false;   // 22/10: a Cartela saiu da tela (só vai no PNG); na interface Cartela fica a bússola no canto dela
     m_canvas->opts().sprites = st.value(QStringLiteral("carto/sprites"), true).toBool();
+    m_canvas->opts().frame = st.value(QStringLiteral("carto/frame"), false).toBool();
 
     m_cartela = new Cartela(this);
     std::vector<CartelaItem> items;
@@ -215,15 +216,18 @@ void Panel::applyUiMode()
     m_viewSeg->setVisible(cartelaUi);
     m_cbar->setVisible(cartelaUi);
     m_cview->setVisible(cartelaUi);
-    m_cartela->setVisible(cartelaUi || m_cartelaOn);
+    m_cartela->setVisible(false);
     m_rose->setVisible(cartelaUi);
     for (auto it = m_uiBtns.begin(); it != m_uiBtns.end(); ++it) it.value()->setChecked(it.key() == m_ui);
-    m_cartelaChk->setVisible(!cartelaUi);
+    m_cartelaChk->setVisible(false);
     m_cartelaChk->setChecked(m_cartelaOn);
     m_cartelaChk->setIcon(icon(m_cartelaOn ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
     const bool spr = m_canvas->opts().sprites;
     m_spritesChk->setChecked(spr);
     m_spritesChk->setIcon(icon(spr ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
+    const bool frame = m_canvas->opts().frame;
+    m_frameChk->setChecked(frame);
+    m_frameChk->setIcon(icon(frame ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
     positionOverlays();
     syncUi();
 }

@@ -47,6 +47,12 @@ public:
 
     void setSceneVarButtonVisible(bool visible);
 
+    // Grupo do documento de gaveta (a etiqueta do GroupPicker): no canto direito,
+    // fora do layout como o guia do roteiro, e o título reserva o espaço dela.
+    void setGroupTag(QWidget* tag);
+    void setGroupTagVisible(bool visible);
+    void refreshGroupTag();   // a etiqueta trocou de texto e de largura
+
     // Roteiro: guia no canto direito — em que elemento está a linha do cursor
     // e pra onde o Enter, o Tab e o Shift+Tab levam. Fora do roteiro, some.
     // Fica fora do layout (posição fixa no canto) pra não tirar o título do centro.
@@ -126,4 +132,6 @@ private:
     QColor m_placeholderColor;
     QColor m_grannaAccent;
     GrannaBadge* m_granna = nullptr;
+    QWidget* m_groupTag = nullptr;
+    bool m_groupWanted = false;
 };

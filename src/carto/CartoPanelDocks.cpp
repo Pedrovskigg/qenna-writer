@@ -33,22 +33,6 @@ QString buildKindName(const QString& k)
 }
 
 namespace {
-// rótulo curto do botão (o nome inteiro fica pro título e pro artefato selecionado)
-QString buildChoiceLabel(const QString& k)
-{
-    if (k == QLatin1String("mage")) return Panel::tr("Mago");
-    if (k == QLatin1String("greattree")) return Panel::tr("Árvore");
-    if (k == QLatin1String("stones")) return Panel::tr("Pedras");
-    if (k == QLatin1String("floatisland")) return Panel::tr("Ilha");
-    if (k == QLatin1String("sword")) return Panel::tr("Espada");
-    if (k == QLatin1String("heads")) return Panel::tr("Cabeças");
-    if (k == QLatin1String("seaserpent")) return Panel::tr("Serpente");
-    if (k == QLatin1String("camp")) return Panel::tr("Tendas");
-    return buildKindName(k);
-}
-}
-
-namespace {
 QLabel* caption(QWidget* parent, const QString& text)
 {
     auto* c = new QLabel(text, parent);
@@ -292,194 +276,10 @@ void Panel::syncRealmCard()
 }
 
 // ── construir ──
-void Panel::buildBuildCard()
+QString Panel::buildHint()
 {
-    m_buildCard = newCard(&m_buildTitle, tr("Construir"));
-    auto* l = static_cast<QVBoxLayout*>(m_buildCard->layout());
-    l->addWidget(caption(m_buildCard, tr("ESCALA DO MUNDO")));
-    l->addLayout(newSeg(m_buildCard, { QStringLiteral("1"), QStringLiteral("0.7"), QStringLiteral("0.5") }, { tr("Normal"), tr("Menor"), tr("Mínima") },
-                        { tr("Tudo que é construído ou plantado no tamanho de sempre"), tr("Construções e árvores menores: o mesmo continente parece um mundo maior"),
-                          tr("Ainda menores: o continente vira um império") },
-                        m_scaleBtns, [this](const QString& v) {
-                            m_canvas->waitIdle();
-                            m_doc.world.scale = v.toDouble();
-                            m_doc.touch();               // floresta e cidades sugeridas se refazem na escala (territórios e construções ficam)
-                            m_canvas->layersReplaced();
-                            scheduleSave();
-                            syncUi();
-                        }));
-    auto grid = [&](const QString& cap, const QList<QPair<QString, QString>>& items, const QStringList& tips) {
-        l->addWidget(caption(m_buildCard, cap));
-        auto* g = new QGridLayout();
-        g->setHorizontalSpacing(4);
-        g->setVerticalSpacing(4);
-        for (int c = 0; c < 4; c++) g->setColumnStretch(c, 1);
-        for (int i = 0; i < items.size(); i++) {
-            const QString k = items[i].first;
-            auto* b = newChoice(m_buildCard, items[i].second, buildChoiceLabel(k), tips.value(i));
-            connect(b, &QToolButton::clicked, this, [this, k]() { m_canvas->opts().buildKind = k; m_canvas->optsChanged(); syncUi(); });
-            m_buildBtns.insert(k, b);
-            g->addWidget(b, i / 4, i % 4);
-        }
-        l->addLayout(g);
-    };
-    grid(tr("ÚNICOS"), { { "select", "cursor" }, { "castle", "castle" }, { "tower", "tower" }, { "lighthouse", "lighthouse" },
-                         { "windmill", "windmill" }, { "temple", "temple" }, { "ruins", "ruins" }, { "bridge", "bridge" } },
-         { tr("Selecione um artefato pra arrastar, girar, renomear ou apagar"), tr("Castelo: clique pra colocar"), tr("Torre de vigia"), tr("Farol (na costa fica bonito)"),
-           tr("Moinho"), tr("Templo"), tr("Ruínas"), tr("Ponte: clique numa margem e depois na outra") });
-    grid(tr("PINCÉIS"), { { "village", "house" }, { "fields", "field" }, { "wall", "wall" }, { "road", "road" }, { "erase", "erase" } },
-         { tr("Pincel de vila: casas brotam em terra firme"), tr("Pincel de plantação"), tr("Muralha: desenhe o traço; ela sobe e desce com o chão"),
-           tr("Estrada: ligue dois pontos (ela acha o caminho pelo vale) ou desenhe à mão"), tr("Apaga o que você construiu") });
-    grid(tr("MAIS"), { { "statue", "a-statue" }, { "ship", "a-ship" }, { "colosseum", "a-colosseum" }, { "cave", "a-cave" },
-                       { "mine", "a-mine" }, { "mage", "a-mage" }, { "greattree", "a-greattree" }, { "stones", "a-stones" }, { "camp", "a-camp" } },
-         { tr("Estátua de bronze sobre pedestal"), tr("Navio de três mastros: clique no mar"), tr("Coliseu de pedra com arena"), tr("Entrada de caverna numa rocha"),
-           tr("Mina escorada, com trilhos e vagonete"), tr("Torre do mago com cristal flutuante"), tr("Árvore Sagrada (enorme)"), tr("Círculo de pedras"),
-           tr("Acampamento com tendas e fogueira") });
-    grid(tr("LENDAS"), { { "dragon", "a-dragon" }, { "bones", "a-bones" }, { "portal", "a-portal" }, { "floatisland", "a-floatisland" },
-                         { "sword", "a-sword" }, { "heads", "a-heads" } },
-         { tr("Dragão empoleirado numa rocha"), tr("Ossada de dragão no chão"), tr("Portal de pedra com luz arcana"), tr("Ilha flutuante com torre e cascata"),
-           tr("Espada cravada na pedra"), tr("Cabeças de pedra colossais") });
-    grid(tr("MAR"), { { "longship", "a-longship" }, { "wreck", "a-wreck" }, { "seaserpent", "a-seaserpent" }, { "kraken", "a-kraken" } },
-         { tr("Drakkar viking: clique no mar"), tr("Naufrágio afundando: clique no mar"), tr("Serpente marinha: clique no mar"), tr("Kraken: clique no mar") });
-    grid(tr("MONUMENTOS"), { { "pyramid", "a-pyramid" }, { "ziggurat", "a-ziggurat" }, { "pagoda", "a-pagoda" }, { "obelisk", "a-obelisk" },
-                             { "graveyard", "a-graveyard" }, { "farm", "a-farm" } },
-         { tr("Pirâmide com o topo de ouro"), tr("Templo em degraus com escadaria"), tr("Pagode de cinco andares"), tr("Obelisco de pedra com ponta de ouro"),
-           tr("Cemitério com mausoléu"), tr("Fazenda: celeiro, silo e plantação") });
-    m_cstyleRow = new QWidget(m_buildCard);
-    auto* cy = new QVBoxLayout(m_cstyleRow);
-    cy->setContentsMargins(0, 0, 0, 0);
-    cy->setSpacing(4);
-    cy->addWidget(caption(m_cstyleRow, tr("ESTILO DO CASTELO")));
-    cy->addLayout(newSeg(m_cstyleRow, { QStringLiteral("human"), QStringLiteral("elven"), QStringLiteral("dwarf"), QStringLiteral("orc") }, { tr("Humano"), tr("Élfico"), tr("Anão"), tr("Orc") },
-                         { tr("Muralha de pedra, torres de flecha e a menagem"), tr("Muralha clara, torres finas e uma torre altíssima no meio"),
-                           tr("Fortaleza escavada no monte, com portão dourado e forjas"), tr("Paliçada de toras, torres de vigia e o salão comprido") },
-                         m_cstyleBtns, [this](const QString& v) {
-                             const QString style = v == QLatin1String("human") ? QString() : v;
-                             if (Art* a = m_canvas->selectedArt(); a && a->kind == QLatin1String("castle")) {
-                                 const QString id = a->id;
-                                 m_canvas->userEdit([id, style](Info& in) { for (Art& x : in.user.arts) if (x.id == id) { x.style = style; return true; } return false; });
-                             } else m_canvas->opts().castleStyle = style;
-                             syncUi();
-                         }));
-    l->addWidget(m_cstyleRow);
-    m_csizeRow = new QWidget(m_buildCard);
-    auto* cs = new QVBoxLayout(m_csizeRow);
-    cs->setContentsMargins(0, 0, 0, 0);
-    cs->setSpacing(4);
-    cs->addWidget(caption(m_csizeRow, tr("TAMANHO DO CASTELO")));
-    cs->addLayout(newSeg(m_csizeRow, { QStringLiteral("0"), QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3") }, { tr("Pequeno"), tr("Médio"), tr("Grande"), tr("Colossal") }, {},
-                         m_csizeBtns, [this](const QString& v) {
-                             const int size = v.toInt();
-                             if (Art* a = m_canvas->selectedArt(); a && a->kind == QLatin1String("castle")) {
-                                 const QString id = a->id;
-                                 m_canvas->userEdit([id, size](Info& in) { for (Art& x : in.user.arts) if (x.id == id) { x.size = size; return true; } return false; });
-                             } else m_canvas->opts().castleSize = size;
-                             syncUi();
-                         }));
-    l->addWidget(m_csizeRow);
-    m_roadRow = new QWidget(m_buildCard);
-    auto* rr = new QVBoxLayout(m_roadRow);
-    rr->setContentsMargins(0, 0, 0, 0);
-    rr->setSpacing(6);
-    rr->addWidget(caption(m_roadRow, tr("ESTRADA")));
-    rr->addLayout(newSeg(m_roadRow, { QStringLiteral("route"), QStringLiteral("hand") }, { tr("Pelo vale"), tr("À mão") },
-                         { tr("Clique no começo e no fim: ela acha o caminho pelo vale"), tr("Desenhe o traço") },
-                         m_rmodeBtns, [this](const QString& v) { m_canvas->opts().roadMode = v; m_canvas->optsChanged(); syncUi(); }));
-    rr->addLayout(newSeg(m_roadRow, { QStringLiteral("trail"), QStringLiteral("road"), QStringLiteral("royal") }, { tr("Trilha"), tr("Estrada"), tr("Real") },
-                         { tr("Caminho de terra estreito"), tr("Estrada de terra"), tr("Estrada real, calçada de pedra, com lanternas à noite") },
-                         m_rkindBtns, [this](const QString& v) { m_canvas->opts().roadKind = v; m_canvas->optsChanged(); syncUi(); }));
-    l->addWidget(m_roadRow);
-    m_buildSize = sliderRow(m_buildCard, l, tr("PINCEL"), 4, 60, &m_buildSizeValue, &m_buildSizeRow);
-    m_buildSize->setValue(14);
-    m_buildSizeValue->setText(QStringLiteral("14"));
-    connect(m_buildSize, &QSlider::valueChanged, this, [this](int v) { m_canvas->opts().buildBrush = v; m_buildSizeValue->setText(QString::number(v)); m_canvas->update(); });
-    // artefato selecionado: nome, girar, apagar
-    m_selBox = new QFrame(m_buildCard);
-    m_selBox->setObjectName(QStringLiteral("cartoSelBox"));
-    auto* sb = new QVBoxLayout(m_selBox);
-    sb->setContentsMargins(10, 8, 10, 10);
-    sb->setSpacing(6);
-    m_selKind = caption(m_selBox, QString());
-    sb->addWidget(m_selKind);
-    m_selName = new QLineEdit(m_selBox);
-    m_selName->setObjectName(QStringLiteral("cartoField"));
-    m_selName->setPlaceholderText(tr("Nome (opcional)"));
-    connect(m_selName, &QLineEdit::editingFinished, this, [this]() {
-        Art* a = m_canvas->selectedArt();
-        if (!a) return;
-        const QString v = m_selName->text().trimmed(), id = a->id;
-        if (v == a->name) return;
-        m_canvas->userEdit([id, v](Info& in) { for (Art& x : in.user.arts) if (x.id == id) { x.name = v; return true; } return false; });
-    });
-    sb->addWidget(m_selName);
-    auto* sr = new QHBoxLayout();
-    sr->setSpacing(4);
-    const QColor muted = Theme::toColor(Theme::textMuted()), accent = Theme::toColor(Theme::accentDefault());
-    auto* rl = new QToolButton(m_selBox);
-    rl->setObjectName(QStringLiteral("cartoSeg"));
-    rl->setToolTip(tr("Girar (Q)"));
-    m_icons.append({ rl, QStringLiteral("rotl") });
-    connect(rl, &QToolButton::clicked, this, [this]() { rotateSelected(-M_PI / 12); });
-    auto* rrb = new QToolButton(m_selBox);
-    rrb->setObjectName(QStringLiteral("cartoSeg"));
-    rrb->setToolTip(tr("Girar (E)"));
-    m_icons.append({ rrb, QStringLiteral("rotr") });
-    connect(rrb, &QToolButton::clicked, this, [this]() { rotateSelected(M_PI / 12); });
-    auto* del = new QToolButton(m_selBox);
-    del->setObjectName(QStringLiteral("cartoSeg"));
-    del->setText(tr("Apagar"));
-    del->setToolTip(tr("Apagar (Delete)"));
-    del->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    connect(del, &QToolButton::clicked, this, &Panel::deleteSelected);
-    for (QToolButton* b : { rl, rrb, del }) b->setCursor(Qt::PointingHandCursor);
-    sr->addWidget(rl); sr->addWidget(rrb); sr->addWidget(del, 1);
-    sb->addLayout(sr);
-    (void)muted; (void)accent;
-    l->addWidget(m_selBox);
-    m_showGen = new QToolButton(m_buildCard);
-    m_showGen->setObjectName(QStringLiteral("cartoCheck"));
-    m_showGen->setCheckable(true);
-    m_showGen->setCursor(Qt::PointingHandCursor);
-    m_showGen->setText(tr("Mostrar cidades e estradas sugeridas pelo terreno"));
-    m_showGen->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_showGen->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    connect(m_showGen, &QToolButton::clicked, this, [this](bool on) {
-        m_canvas->userEdit([on](Info& in) { in.user.showGen = on; return true; });
-    });
-    l->addWidget(m_showGen);
-    m_buildHint = note(m_buildCard);
-    l->addWidget(m_buildHint);
-}
-
-void Panel::syncBuildCard()
-{
-    if (!m_buildCard || !m_buildCard->isVisible()) return;
-    const ToolOpts& o = m_canvas->opts();
-    for (auto it = m_buildBtns.begin(); it != m_buildBtns.end(); ++it) it.value()->setChecked(it.key() == o.buildKind);
-    const double sc = worldScale(m_doc.world);
-    for (auto it = m_scaleBtns.begin(); it != m_scaleBtns.end(); ++it) it.value()->setChecked(std::fabs(it.key().toDouble() - sc) < 1e-6);
-    const Art* sel = m_canvas->selectedArt();
-    const bool selCastle = sel && sel->kind == QLatin1String("castle");
-    m_csizeRow->setVisible(o.buildKind == QLatin1String("castle") || selCastle);
-    m_cstyleRow->setVisible(o.buildKind == QLatin1String("castle") || selCastle);
-    const QString cst = selCastle ? sel->style : o.castleStyle;
-    for (auto it = m_cstyleBtns.begin(); it != m_cstyleBtns.end(); ++it) it.value()->setChecked(it.key() == (cst.isEmpty() ? QStringLiteral("human") : cst));
-    const int cs = selCastle ? sel->size : o.castleSize;
-    for (auto it = m_csizeBtns.begin(); it != m_csizeBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == cs);
-    m_roadRow->setVisible(o.buildKind == QLatin1String("road"));
-    for (auto it = m_rmodeBtns.begin(); it != m_rmodeBtns.end(); ++it) it.value()->setChecked(it.key() == o.roadMode);
-    for (auto it = m_rkindBtns.begin(); it != m_rkindBtns.end(); ++it) it.value()->setChecked(it.key() == o.roadKind);
-    m_buildSizeRow->setVisible(o.buildKind == QLatin1String("village") || o.buildKind == QLatin1String("fields") || o.buildKind == QLatin1String("erase"));
-    m_selBox->setVisible(sel != nullptr);
-    if (sel) {
-        m_selKind->setText(artName(sel->kind).toUpper());
-        if (!m_selName->hasFocus()) m_selName->setText(sel->name);
-    }
-    m_showGen->setChecked(m_doc.info ? m_doc.info->user.showGen : true);
-    m_showGen->setIcon(icon(m_showGen->isChecked() ? QStringLiteral("check") : QStringLiteral("box"),
-                            Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
     QString hint;
-    const QString& k = o.buildKind;
+    const QString& k = m_canvas->opts().buildKind;
     if (!m_canvas->toolMessage().isEmpty()) hint = m_canvas->toolMessage();
     else if (k == QLatin1String("castle")) hint = tr("Clique pra colocar um castelo; a bandeira pega a cor do território. Clique num artefato pra selecionar e arrastar.");
     else if (k == QLatin1String("tower")) hint = tr("Clique pra colocar uma torre de vigia.");
@@ -518,9 +318,9 @@ void Panel::syncBuildCard()
     else if (k == QLatin1String("fields")) hint = tr("Pinte: retalhos de plantação com sebe.");
     else if (k == QLatin1String("wall")) hint = tr("Desenhe o traço da muralha; ela sobe e desce com o chão, com torres no caminho.");
     else if (k == QLatin1String("erase")) hint = tr("Pinte por cima do que você construiu pra apagar (estradas também).");
-    else if (k == QLatin1String("road")) hint = o.roadMode == QLatin1String("hand") ? tr("Desenhe o traço da estrada; onde ela passar na água vira ponte.")
+    else if (k == QLatin1String("road")) hint = m_canvas->opts().roadMode == QLatin1String("hand") ? tr("Desenhe o traço da estrada; onde ela passar na água vira ponte.")
                                                                                   : tr("Clique no começo e no fim: a estrada acha o caminho pelo vale e cruza rio estreito com ponte. Ela continua do último ponto; Esc termina.");
-    m_buildHint->setText(hint);
+    return hint;
 }
 
 // ── nomes ──
