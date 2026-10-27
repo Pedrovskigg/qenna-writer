@@ -86,7 +86,16 @@ public:
     // Cascata das linhas (gaveta abrindo, troca de estilo ou de livro).
     void playIntro(int delayMs = 70);
 
+    // POV à vista ligado: o DocHeader mostra (e troca) o narrador do capítulo
+    // aberto, com o mesmo rosto e a mesma cor da gaveta.
+    bool povToolOn() const { return tool(ToolPov); }
+    // chapterId vazio = capítulo novo (sugere o narrador da obra, se houver).
+    QString suggestedPovFor(const QString& chapterId) const;
+    QColor povColorFor(const QString& manuscriptId, const QString& elementId) const;
+
 signals:
+    // Uma ferramenta foi ligada ou desligada no menu da gaveta.
+    void toolsChanged();
     void chapterActivated(QString manuscriptId, QString chapterId);
     void sceneActivated(QString manuscriptId, QString chapterId, int sceneIndex);
     void newChapterRequested(QString manuscriptId);

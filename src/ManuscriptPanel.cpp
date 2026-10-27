@@ -1111,6 +1111,7 @@ void ManuscriptPanel::setTool(Tool t, bool on) {
         if (t == ToolHover) disarmHover();
     }
     rebuildList();
+    emit toolsChanged();
 }
 
 void ManuscriptPanel::applyStyleWidth() {
@@ -1530,6 +1531,21 @@ QPixmap ManuscriptPanel::elementAvatar(const QString& elementId, const QColor& c
 bool ManuscriptPanel::povBarVisible(const QList<Chapter>& chs) const {
     // Livro de um narrador só não tem nada a mostrar.
     return tool(ToolPov) && narratorsInOrder(chs).size() >= 2;
+}
+
+QString ManuscriptPanel::suggestedPovFor(const QString& chapterId) const {
+    const Chapter* c = m_model ? m_model->findChapter(chapterId) : nullptr;
+    return suggestedPov(c ? *c : Chapter());
+}
+
+// A cor da gaveta: a ordem em que cada narrador aparece no livro.
+QColor ManuscriptPanel::povColorFor(const QString& manuscriptId, const QString& elementId) const {
+    QList<Chapter> chs;
+    if (m_model)
+        for (const auto& o : m_model->chapters())
+            if (o.manuscriptId == manuscriptId) chs.append(o);
+    std::sort(chs.begin(), chs.end(), [](const Chapter& a, const Chapter& b) { return a.order < b.order; });
+    return povColor(elementId, narratorsInOrder(chs));
 }
 
 // ============================================================ montagem

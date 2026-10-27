@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "PovPicker.h"
 #include "CharacterDetector.h"
 #include <QPointer>
 #include <functional>
@@ -241,6 +242,9 @@ private:
     // "Onde parei" da gaveta de Manuscritos (QSettings por projeto).
     void recordResumePoint();
     void loadResumeTrail();
+    void editChapterDetails(const QString& chapterId);
+    QList<PovPicker::Option> povOptionsFor(const QString& manuscriptId, const QString& chapterId) const;
+    QString narratorElementId() const;
     void resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,
                   const QString& sentence, int position);
     void applyProjectRoot(const QString& root);
@@ -677,6 +681,7 @@ private:
     // onde a barra nao tem mais onde mostrar o documento em edicao.
     DocHeaderBar *docHeader = nullptr;
     GroupPicker *m_docGroup = nullptr;   // a etiqueta de grupo do doc de gaveta aberto (no DocHeader)
+    PovPicker *m_docPov = nullptr;       // o narrador do capítulo/cena aberto (no DocHeader, com o POV à vista ligado)
     GrannaNotifier *grannaNotifier = nullptr;
     QScrollArea *editorScroll = nullptr;
     QScrollBar *externalScrollBar = nullptr;

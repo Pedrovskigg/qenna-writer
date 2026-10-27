@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include "GroupPicker.h"
+#include "PovPicker.h"
 #include "SheetDialogs.h"
 #include "ChapterSheet.h"
 #include "SceneBreaks.h"
@@ -331,7 +332,9 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
                          const QString& manuscriptId, const QString& chapterId,
                          QString* title, QString* marker, QString* summary,
                          QString* type, QString* typeLabel,
-                         bool* povOther = nullptr, bool* openAfter = nullptr)
+                         bool* povOther = nullptr, bool* openAfter = nullptr,
+                         QString* pov = nullptr, const QList<PovPicker::Option>& povOptions = {},
+                         const QString& narratorId = QString())
 {
     ChapterSheetSpec spec;
     spec.kind = ChapterSheetSpec::Chapter;
@@ -343,6 +346,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     spec.typeLabel = *typeLabel;
     spec.showPov = povOther != nullptr;
     spec.povOther = povOther && *povOther;
+    if (pov) { spec.pov = *pov; spec.povOptions = povOptions; spec.narratorId = narratorId; }
     if (model) {
         // posição na gaveta e capítulo anterior (atalhos "=" e "+1 dia")
         const QList<const Chapter*> chs = model->orderedChaptersForManuscript(manuscriptId);
@@ -365,6 +369,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     *typeLabel = spec.typeLabel;
     if (povOther) *povOther = spec.povOther;
     if (openAfter) *openAfter = spec.openAfter;
+    if (pov) *pov = spec.pov;
     return true;
 }
 
@@ -1226,6 +1231,28 @@ void MainWindow::setupEditor()
                 m_docGroup->setGroupId(groupId);
                 docHeader->setGroupTagVisible(drawerDoc && m_docGroup->available());
             }
+            // Narrador do capítulo (cena mostra o do capítulo dela): aparece
+            // quando o capítulo já tem narrador; sem ele, o "Quem narra?" só
+            // com o POV à vista ligado na gaveta.
+            if (m_docPov) {
+                const bool msDoc = vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc;
+                bool anyChar = false;
+                if (msDoc && elementsStore)
+                    for (const auto& e : elementsStore->elements())
+                        if (e.type == QStringLiteral("character")) { anyChar = true; break; }
+                const Chapter* ch = msDoc ? projectModel->findChapter(vm.chapterId) : nullptr;
+                const Element* el = ch && !ch->pov.isEmpty() && elementsStore ? elementsStore->findElement(ch->pov) : nullptr;
+                const bool on = msDoc && anyChar && manuscriptPanel && (el || manuscriptPanel->povToolOn());
+                if (on) {
+                    PovPicker::Option cur;
+                    if (el) {
+                        cur.id = el->id; cur.name = el->name; cur.image = el->image;
+                        cur.color = manuscriptPanel->povColorFor(vm.manuscriptId, el->id);
+                    }
+                    m_docPov->setCurrent(cur);
+                }
+                docHeader->setPovTagVisible(on);
+            }
         }
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
@@ -1233,6 +1260,7 @@ void MainWindow::setupEditor()
     connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::groupsChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
+    connect(manuscriptPanel, &ManuscriptPanel::toolsChanged, this, refreshDocTitle);
     // ChapterDoc: recalcula a cena do subtítulo conforme o usuário rola.
     connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
 
@@ -2412,10 +2440,12 @@ void MainWindow::setupEditor()
         }
         QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false, openAfter = true;
+        QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
-                                 showPov ? &povOther : nullptr, &openAfter)) return;
+                                 showPov ? &povOther : nullptr, &openAfter,
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
@@ -2423,6 +2453,7 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.pov = pov;
         c.type = type;
         c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
@@ -2700,6 +2731,22 @@ void MainWindow::setupEditor()
         if (!editorHost || editorHost->viewMode().type != EditorHost::DrawerDoc) return;
         projectModel->setDrawerItemGroup(editorHost->viewMode().itemId, gid);
     };
+    // Narrador do capítulo aberto: ver e trocar sem abrir a gaveta (POV à vista).
+    // A lista segue o menu "Narrador" da gaveta: sugerido no topo, depois o elenco.
+    m_docPov = new PovPicker(docHeader);
+    docHeader->setPovTag(m_docPov->tag());
+    m_docPov->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
+    m_docPov->options = [this]() {
+        if (!editorHost) return QList<PovPicker::Option>();
+        const auto vm = editorHost->viewMode();
+        return povOptionsFor(vm.manuscriptId, vm.chapterId);
+    };
+    m_docPov->picked = [this](const QString& elementId) {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
+        projectModel->updateChapterPov(vm.chapterId, elementId);
+    };
     // Guia do roteiro (elemento da linha + pra onde as teclas levam).
     connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateScreenplayGuide);
     connect(editor, &SpellEditor::screenplayElementChanged, this, &MainWindow::updateScreenplayGuide);
@@ -2713,6 +2760,13 @@ void MainWindow::setupEditor()
     // (escolher + recortar). O ElementsStore avisa o cabeçalho sozinho via
     // changed(); a ficha, se estiver aberta, não escuta o store e é
     // atualizada na mão.
+    // Duplo clique no título do capítulo (também na cena, onde o título é o
+    // capítulo dela): a folha de Editar capítulo, com o "Quem narra".
+    connect(docHeader, &DocHeaderBar::titleDoubleClicked, this, [this]() {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) editChapterDetails(vm.chapterId);
+    });
     connect(docHeader, &DocHeaderBar::avatarChangeRequested, this, [this]() {
         if (!editorHost || !elementsStore) return;
         const auto vm = editorHost->viewMode();
@@ -3348,10 +3402,12 @@ void MainWindow::setupEditor()
         }
         QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false, openAfter = true;
+        QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
-                                 showPov ? &povOther : nullptr, &openAfter)) return;
+                                 showPov ? &povOther : nullptr, &openAfter,
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
@@ -3359,6 +3415,7 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.pov = pov;
         c.type = type;
         c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
@@ -3419,25 +3476,7 @@ void MainWindow::setupEditor()
         globalSearchPanel->openPanelWith(query);
     });
 
-    connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
-        const Chapter* c = projectModel->findChapter(chapterId);
-        if (!c) return;
-        QString newTitle = c->title;
-        QString newMarker = c->timeMarker;
-        QString newSummary = c->summary;
-        QString newType = c->type;
-        QString newTypeLabel = c->typeLabel;
-        bool newPovOther = c->povOther;
-        const bool showPov = elementsStore && elementsStore->hasNarrator();
-        if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
-                                 &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
-                                 showPov ? &newPovOther : nullptr)) return;
-        projectModel->updateChapterTitle(chapterId, newTitle);
-        projectModel->updateChapterTimeMarker(chapterId, newMarker);
-        projectModel->updateChapterSummary(chapterId, newSummary);
-        projectModel->updateChapterType(chapterId, newType, newTypeLabel);
-        if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
-    });
+    connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, &MainWindow::editChapterDetails);
 
     connect(manuscriptPanel, &ManuscriptPanel::elementsPresentRequested, this,
             [this](const QString& manuscriptId, const QString& chapterId) {
@@ -7757,6 +7796,65 @@ void MainWindow::recordResumePoint()
     }
     QSettings().setValue(resumeGroupFor(projectRoot) + QStringLiteral("/trail"), list);
     manuscriptPanel->setResumeTrail(trail);
+}
+
+// A folha de Editar capítulo (clique direito na gaveta ou duplo clique no título
+// do DocHeader): título, tipo, tempo, resumo e quem narra.
+void MainWindow::editChapterDetails(const QString& chapterId)
+{
+    const Chapter* c = projectModel->findChapter(chapterId);
+    if (!c) return;
+    QString newTitle = c->title;
+    QString newMarker = c->timeMarker;
+    QString newSummary = c->summary;
+    QString newType = c->type;
+    QString newTypeLabel = c->typeLabel;
+    bool newPovOther = c->povOther;
+    QString newPov = c->pov;
+    const bool showPov = elementsStore && elementsStore->hasNarrator();
+    if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
+                             &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
+                             showPov ? &newPovOther : nullptr, nullptr,
+                             &newPov, povOptionsFor(c->manuscriptId, chapterId), narratorElementId())) return;
+    projectModel->updateChapterTitle(chapterId, newTitle);
+    projectModel->updateChapterTimeMarker(chapterId, newMarker);
+    projectModel->updateChapterSummary(chapterId, newSummary);
+    projectModel->updateChapterType(chapterId, newType, newTypeLabel);
+    if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
+    projectModel->updateChapterPov(chapterId, newPov);
+}
+
+// O elenco pra "Quem narra" (DocHeader e folha de capítulo), nas regras do menu
+// "Narrador" da gaveta: o sugerido no topo, depois os personagens em ordem.
+QList<PovPicker::Option> MainWindow::povOptionsFor(const QString& manuscriptId, const QString& chapterId) const
+{
+    QList<PovPicker::Option> out;
+    if (!elementsStore || !manuscriptPanel) return out;
+    const QString sug = manuscriptPanel->suggestedPovFor(chapterId);
+    auto option = [&](const Element& e) {
+        PovPicker::Option o;
+        o.id = e.id; o.name = e.name; o.image = e.image;
+        o.color = manuscriptPanel->povColorFor(manuscriptId, e.id);
+        o.suggested = e.id == sug;
+        return o;
+    };
+    if (const Element* e = sug.isEmpty() ? nullptr : elementsStore->findElement(sug)) out << option(*e);
+    QList<Element> chars;
+    for (const auto& e : elementsStore->elements())
+        if (e.type == QStringLiteral("character") && e.id != sug) chars.append(e);
+    std::sort(chars.begin(), chars.end(), [](const Element& a, const Element& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const auto& e : chars) out << option(e);
+    return out;
+}
+
+QString MainWindow::narratorElementId() const
+{
+    if (elementsStore)
+        for (const auto& e : elementsStore->elements())
+            if (e.narrator && e.type == QStringLiteral("character")) return e.id;
+    return QString();
 }
 
 void MainWindow::resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,

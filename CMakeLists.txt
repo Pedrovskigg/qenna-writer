@@ -374,6 +374,8 @@ qt_add_executable(qenna-writer
     src/RemindersPanel.h
     src/GroupPicker.cpp
     src/GroupPicker.h
+    src/PovPicker.cpp
+    src/PovPicker.h
     src/GroupsPanel.cpp
     src/GroupsPanel.h
     src/LousaScene.cpp
