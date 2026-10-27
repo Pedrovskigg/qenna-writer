@@ -81,6 +81,15 @@ std::vector<NameFeature> buildNames(World& w, const std::vector<River>& rivers, 
     std::vector<float> hg(N);
     for (int gy = 0; gy < gh; gy++) for (int gx = 0; gx < gw; gx++)
         hg[gy * gw + gx] = w.h[static_cast<size_t>(std::min(H - 1, gy * S + (S >> 1))) * W + std::min(W - 1, gx * S + (S >> 1))];
+    // fosso cavado por castelo não é lago nem faz ilha: os nomes leem o terreno de antes de cavar
+    for (const MoatCut& m : w.moats) {
+        const int mw = m.x1 - m.x0;
+        for (int gy = m.y0 / S; gy <= m.y1 / S && gy < gh; gy++) for (int gx = m.x0 / S; gx <= m.x1 / S && gx < gw; gx++) {
+            const int x = std::min(W - 1, gx * S + (S >> 1)), y = std::min(H - 1, gy * S + (S >> 1));
+            if (x < m.x0 || y < m.y0 || x >= m.x1 || y >= m.y1) continue;
+            hg[gy * gw + gx] = std::max(hg[gy * gw + gx], m.before[static_cast<size_t>(y - m.y0) * mw + (x - m.x0)]);
+        }
+    }
     auto wx = [&](int i) { return (i % gw) * double(S) + S / 2.0; };
     auto wy = [&](int i) { return (i / gw) * double(S) + S / 2.0; };
     std::vector<NameFeature> F;

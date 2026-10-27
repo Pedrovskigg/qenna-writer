@@ -181,6 +181,13 @@ QString artName(const QString& kind)
     if (kind == QLatin1String("floatisland")) return QCoreApplication::translate("carto", "Ilha Flutuante");
     if (kind == QLatin1String("farm")) return QCoreApplication::translate("carto", "Fazenda");
     if (kind == QLatin1String("sword")) return QCoreApplication::translate("carto", "Espada na Pedra");
+    if (kind == QLatin1String("colossus")) return QCoreApplication::translate("carto", "Colosso");
+    if (kind == QLatin1String("guardians")) return QCoreApplication::translate("carto", "Guardiões");
+    if (kind == QLatin1String("seatedgod")) return QCoreApplication::translate("carto", "Deus Sentado");
+    if (kind == QLatin1String("cathedral")) return QCoreApplication::translate("carto", "Catedral");
+    if (kind == QLatin1String("arch")) return QCoreApplication::translate("carto", "Arco do Triunfo");
+    if (kind == QLatin1String("market")) return QCoreApplication::translate("carto", "Mercado");
+    if (kind == QLatin1String("aqueduct")) return QCoreApplication::translate("carto", "Aqueduto");
     return QCoreApplication::translate("carto", "Artefato");
 }
 
@@ -196,6 +203,10 @@ const std::vector<ArtSpec>& artSpecs()
         { "kraken", 6.5, 8, true, true, 0 }, { "pyramid", 10, 8, false, true, 'f' }, { "ziggurat", 7.5, 10, false, true, 'f' },
         { "pagoda", 4.5, 18, false, true, 0 }, { "obelisk", 1.9, 12, false, false, 0 }, { "graveyard", 6.5, 5, false, true, 'f' },
         { "farm", 7.5, 5.5, false, true, 'f' },
+        // leva 4: os monumentos grandes
+        { "colossus", 5.6, 33, false, false, 'f' }, { "guardians", 8.5, 21, false, false, 'f' }, { "seatedgod", 6, 14, false, false, 'f' },
+        { "cathedral", 8.5, 20, false, false, 't' }, { "arch", 4.4, 11, false, false, 'f' }, { "market", 7, 4, false, false, 0 },
+        { "aqueduct", 11, 9.5, false, false, 's' },
     };
     return specs;
 }
@@ -527,7 +538,7 @@ bool crowded(const UserLayer& U, double x, double y, double dHouse, double dArt,
 {
     const double k = U.scale > 0 ? U.scale : 1;
     for (const House& b : U.houses) if (std::hypot(b.x - x, b.y - y) < dHouse) return true;
-    for (const Art& a : U.arts) if (std::hypot(a.x - x, a.y - y) < std::max(dArt, (artRadius(a) + 2) * k)) return true;
+    for (const Art& a : U.arts) if (std::hypot(a.x - x, a.y - y) < std::max(dArt, (artRadius(a) * a.sc + 2) * k)) return true;
     for (const Field& f : U.fields) if (std::hypot(f.x - x, f.y - y) < dField) return true;
     return false;
 }
@@ -595,7 +606,82 @@ bool paintFieldsUser(const World& w, Info& info, double x, double y, double r)
     return made > 0;
 }
 
-bool addWall(Info& info, const Path& pts)
+// pincel de Cidade: sobrados de 2 e 3 andares, mais juntos que os da vila; o bairro tem um rumo de ruas
+// (cada quadra de 26 px escolhe um ângulo e as casas saem nele ou a 90°), às vezes um campanário
+bool paintCity(const World& w, Info& info, double x, double y, double r)
+{
+    UserLayer& U = info.user;
+    int made = 0;
+    U.scale = worldScale(w);
+    const double k = worldScale(w);
+    for (int it = 0; it < 7; it++) {
+        U.seq++;
+        const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
+        const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
+        if (!solidGround(w, px, py, 2.6 * k, 0.45) || crowded(U, px, py, 3.7 * k, 9 * k, 5 * k)) continue;
+        const double q = 26 * k, base = hash2(static_cast<int>(std::floor(px / q)), static_cast<int>(std::floor(py / q)), 4441) * M_PI;
+        House h; h.x = px; h.y = py; h.v = uRand(U, 6);
+        h.yaw = base + (uRand(U, 5) < 0.5 ? 0 : M_PI / 2) + (uRand(U, 9) - 0.5) * 0.12;
+        h.floors = uRand(U, 7) < 0.4 ? 3 : 2;
+        h.city = true;
+        h.bell = uRand(U, 10) < 0.05 && std::none_of(U.houses.begin(), U.houses.end(), [&](const House& o) { return o.bell && std::hypot(o.x - px, o.y - py) < 30 * k; });
+        U.houses.push_back(h);
+        made++;
+    }
+    if (made) U.ver++;
+    return made > 0;
+}
+
+namespace {
+// a árvore que o clima daria aqui (o mesmo critério da floresta gerada), pro pincel "Do clima"
+int floraTypeAt(const ClimateSample& c, double r)
+{
+    switch (c.id) {
+    case 0: return SnowPine;
+    case 3: return r < 0.55 ? (c.temp > 0.62 ? Cactus : Shrub) : Shrub;
+    case 4: return r < 0.55 ? Reed : r < 0.75 ? Dead : Broad;
+    default:
+        if (c.temp > 0.70 && c.t < 0.09 && r < 0.35) return Palm;
+        return c.temp < 0.46 ? Pine : c.temp < 0.66 ? (r < 0.5 ? Pine : Broad) : (r < 0.12 ? Pine : Broad);
+    }
+}
+}
+
+// pincel de Floresta (e de Rochedos): planta árvores do usuário, que ficam mesmo se o terreno mudar
+bool paintTrees(World& w, Info& info, double x, double y, double r, const QString& mode)
+{
+    UserLayer& U = info.user;
+    int made = 0;
+    U.scale = worldScale(w);
+    const double k = worldScale(w);
+    const bool rocks = mode == QLatin1String("rocks");
+    const double gap = (rocks ? 3.4 : 2.1) * std::pow(k, 0.8);
+    const int tries = std::max(3, std::min(14, static_cast<int>(std::lround(r * r / (rocks ? 90.0 : 36.0)))));
+    for (int it = 0; it < tries; it++) {
+        U.seq++;
+        const double a = uRand(U, 3) * M_PI * 2, rr = std::sqrt(uRand(U, 4)) * r;
+        const double px = x + std::cos(a) * rr, py = y + std::sin(a) * rr;
+        const ClimateSample c = climateAt(w, px, py);
+        if (!c.valid || c.t < 0.02) continue;                                   // água
+        if (crowded(U, px, py, 2.6 * k, 6 * k, 3.4 * k)) continue;
+        bool near = false;
+        for (const Flora& t : U.trees) if (std::fabs(t.x - px) < gap && std::fabs(t.y - py) < gap && std::hypot(t.x - px, t.y - py) < gap) { near = true; break; }
+        if (near) continue;
+        int type = Broad;
+        if (rocks) type = Rock;
+        else if (mode == QLatin1String("broad")) type = Broad;
+        else if (mode == QLatin1String("pine")) type = Pine;
+        else if (mode == QLatin1String("palm")) type = Palm;
+        else type = floraTypeAt(c, uRand(U, 5));
+        Flora t{ px, py, type, uRand(U, 6), rocks ? 1.3 + 1.4 * uRand(U, 7) : 0.85 + 0.45 * uRand(U, 7), c.id };
+        U.trees.push_back(t);
+        made++;
+    }
+    if (made) U.ver++;
+    return made > 0;
+}
+
+bool addWall(Info& info, const Path& pts, const QString& kind)
 {
     if (pts.size() < 2) return false;
     const Path sm = smoothPath(pts);
@@ -606,7 +692,7 @@ bool addWall(Info& info, const Path& pts)
         if (acc >= 2) { out.push_back(sm[k]); acc = 0; }
     }
     if (out.size() < 2) return false;
-    info.user.walls.push_back({ out });
+    info.user.walls.push_back({ out, kind == QLatin1String("wood") ? kind : QString() });
     info.user.ver++;
     return true;
 }
@@ -640,7 +726,7 @@ bool eraseUser(Info& info, double x, double y, double r)
     UserLayer& U = info.user;
     auto near = [&](double px, double py) { return std::hypot(px - x, py - y) < r; };
     auto count = [&]() {
-        size_t n = U.houses.size() + U.fields.size() + U.arts.size() + U.bridges.size();
+        size_t n = U.houses.size() + U.fields.size() + U.arts.size() + U.bridges.size() + U.trees.size();
         for (const Wall& wl : U.walls) n += wl.pts.size();
         for (const Road& rd : U.roads) n += rd.pts.size();
         return n;
@@ -649,6 +735,7 @@ bool eraseUser(Info& info, double x, double y, double r)
     U.houses.erase(std::remove_if(U.houses.begin(), U.houses.end(), [&](const House& b) { return near(b.x, b.y); }), U.houses.end());
     U.fields.erase(std::remove_if(U.fields.begin(), U.fields.end(), [&](const Field& f) { return near(f.x, f.y); }), U.fields.end());
     U.arts.erase(std::remove_if(U.arts.begin(), U.arts.end(), [&](const Art& a) { return near(a.x, a.y); }), U.arts.end());
+    U.trees.erase(std::remove_if(U.trees.begin(), U.trees.end(), [&](const Flora& t) { return near(t.x, t.y); }), U.trees.end());
     U.bridges.erase(std::remove_if(U.bridges.begin(), U.bridges.end(), [&](const Path& br) {
         for (const Pt& p : br) if (near(p[0], p[1])) return true;
         return false;
@@ -656,8 +743,8 @@ bool eraseUser(Info& info, double x, double y, double r)
     std::vector<Wall> walls;
     for (const Wall& wl : U.walls) {
         Path cur;
-        for (const Pt& p : wl.pts) { if (near(p[0], p[1])) { if (cur.size() > 1) walls.push_back({ cur }); cur.clear(); } else cur.push_back(p); }
-        if (cur.size() > 1) walls.push_back({ cur });
+        for (const Pt& p : wl.pts) { if (near(p[0], p[1])) { if (cur.size() > 1) walls.push_back({ cur, wl.kind }); cur.clear(); } else cur.push_back(p); }
+        if (cur.size() > 1) walls.push_back({ cur, wl.kind });
     }
     U.walls = std::move(walls);
     std::vector<Road> roads;
@@ -829,19 +916,33 @@ RGB jRgb(const QJsonValue& v) { const QJsonArray a = v.toArray(); return { a.at(
 
 QJsonObject UserLayer::toJson() const
 {
-    QJsonArray A, Hs, Ws, Fs, Bs, Rs;
+    QJsonArray A, Hs, Ws, Fs, Bs, Rs, Ts;
     for (const Art& a : arts)
         A.append(QJsonObject{ { "id", a.id }, { "kind", a.kind }, { "x", a.x }, { "y", a.y }, { "yaw", a.yaw }, { "v", a.v }, { "size", a.size }, { "name", a.name } });
-    for (int i = 0; i < A.size(); i++) if (!arts[i].style.isEmpty()) { QJsonObject o = A[i].toObject(); o["style"] = arts[i].style; A[i] = o; }
-    for (const House& h : houses)
-        Hs.append(QJsonObject{ { "x", h.x }, { "y", h.y }, { "yaw", h.yaw }, { "v", h.v }, { "floors", h.floors }, { "timber", h.timber } });
-    for (const Wall& wl : walls) Ws.append(pathJ(wl.pts));
+    for (int i = 0; i < A.size(); i++) {
+        if (arts[i].style.isEmpty() && arts[i].sc == 1) continue;
+        QJsonObject o = A[i].toObject();
+        if (!arts[i].style.isEmpty()) o["style"] = arts[i].style;
+        if (arts[i].sc != 1) o["sc"] = arts[i].sc;
+        A[i] = o;
+    }
+    for (const House& h : houses) {
+        QJsonObject o{ { "x", h.x }, { "y", h.y }, { "yaw", h.yaw }, { "v", h.v }, { "floors", h.floors }, { "timber", h.timber } };
+        if (h.city) o["city"] = true;
+        if (h.bell) o["bell"] = true;
+        Hs.append(o);
+    }
+    // muralha de pedra continua só o traço (como antes); a paliçada vira { kind, pts }
+    for (const Wall& wl : walls) Ws.append(wl.kind.isEmpty() ? QJsonValue(pathJ(wl.pts)) : QJsonValue(QJsonObject{ { "kind", wl.kind }, { "pts", pathJ(wl.pts) } }));
+    for (const Flora& t : trees) Ts.append(QJsonArray{ t.x, t.y, t.type, t.v, t.s, t.b });
     for (const Field& f : fields)
         Fs.append(QJsonObject{ { "x", f.x }, { "y", f.y }, { "w", f.w }, { "d", f.d }, { "yaw", f.yaw }, { "crop", f.crop } });
     for (const Path& b : bridges) Bs.append(pathJ(b));
     for (const Road& r : roads) Rs.append(QJsonObject{ { "kind", r.kind }, { "pts", pathJ(r.pts) } });
-    return QJsonObject{ { "arts", A }, { "houses", Hs }, { "walls", Ws }, { "fields", Fs }, { "bridges", Bs }, { "roads", Rs },
-                        { "showGen", showGen }, { "seq", seq }, { "scale", scale } };
+    QJsonObject o{ { "arts", A }, { "houses", Hs }, { "walls", Ws }, { "fields", Fs }, { "bridges", Bs }, { "roads", Rs },
+                   { "showGen", showGen }, { "seq", seq }, { "scale", scale } };
+    if (!Ts.isEmpty()) o["trees"] = Ts;
+    return o;
 }
 
 UserLayer UserLayer::fromJson(const QJsonObject& o)
@@ -852,6 +953,7 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         Art t; t.id = a.value("id").toString(); t.kind = a.value("kind").toString(); t.x = a.value("x").toDouble(); t.y = a.value("y").toDouble();
         t.yaw = a.value("yaw").toDouble(); t.v = a.value("v").toDouble(); t.size = a.value("size").toInt(); t.name = a.value("name").toString();
         t.style = a.value("style").toString();
+        t.sc = a.value("sc").toDouble(1);
         // o nome automático de antes ("Castelo 1", "Naufrágio 3") sai; o que a pessoa escreveu fica
         if (!t.name.isEmpty()) {
             const QString auto0 = artName(t.kind) + QLatin1Char(' ');
@@ -865,9 +967,18 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         const QJsonObject a = v.toObject();
         House h; h.x = a.value("x").toDouble(); h.y = a.value("y").toDouble(); h.yaw = a.value("yaw").toDouble(); h.v = a.value("v").toDouble();
         h.floors = a.value("floors").toInt(1); h.timber = a.value("timber").toBool();
+        h.city = a.value("city").toBool(); h.bell = a.value("bell").toBool();
         U.houses.push_back(h);
     }
-    for (const QJsonValue& v : o.value("walls").toArray()) U.walls.push_back({ jPath(v) });
+    for (const QJsonValue& v : o.value("walls").toArray()) {
+        if (v.isObject()) U.walls.push_back({ jPath(v.toObject().value("pts")), v.toObject().value("kind").toString() });
+        else U.walls.push_back({ jPath(v), QString() });
+    }
+    for (const QJsonValue& v : o.value("trees").toArray()) {
+        const QJsonArray t = v.toArray();
+        if (t.size() < 6) continue;
+        U.trees.push_back({ t[0].toDouble(), t[1].toDouble(), t[2].toInt(), t[3].toDouble(), t[4].toDouble(), t[5].toInt() });
+    }
     for (const QJsonValue& v : o.value("fields").toArray()) {
         const QJsonObject a = v.toObject();
         Field f; f.x = a.value("x").toDouble(); f.y = a.value("y").toDouble(); f.w = a.value("w").toDouble(); f.d = a.value("d").toDouble();

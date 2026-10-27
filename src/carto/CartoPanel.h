@@ -31,6 +31,7 @@ class QToolButton;
 namespace carto {
 
 class Astrolabe;
+class ArtPicker;
 class BuildBar;
 class Cartela;
 class Explorer;
@@ -98,6 +99,7 @@ private:
     void positionOverlays();
     void placeDock();
     void syncUi();
+    bool escapeOne();   // Esc fecha uma coisa por vez, da mais de cima pra de baixo
 
     // mapas
     void ensureMap();
@@ -137,6 +139,7 @@ private:
     Canvas* m_canvas = nullptr;
     Explorer* m_explore = nullptr;
     Astrolabe* m_astro = nullptr;
+    ArtPicker* m_artPick = nullptr;
     Ring* m_ring = nullptr;
     QFrame* m_titlePill = nullptr;
     QLabel* m_title = nullptr;

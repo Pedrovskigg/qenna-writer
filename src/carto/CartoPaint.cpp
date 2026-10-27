@@ -13,6 +13,46 @@ const double kMiraPitch = std::asin(0.65);
 const double kInkWater[4] = { 3.2, 7.4, 12.6, 19.5 };
 const double kInkWaterA[4] = { 0.78, 0.5, 0.34, 0.2 };
 inline double tEffRock(double tc) { return clampd((tc - kBioStart) / (kBioEnd - kBioStart), 0, 1); }
+// ── v35: as vistas de arte ──
+const RGB kParchWash[5] = { { 206, 218, 222 }, { 132, 158, 98 }, { 186, 190, 118 }, { 220, 178, 108 }, { 134, 158, 116 } };
+const RGB kParchSea = { 140, 170, 166 };
+const RGB kAqua[5] = { { 214, 226, 236 }, { 124, 166, 112 }, { 176, 196, 124 }, { 228, 194, 142 }, { 136, 168, 136 } };
+const RGB& topoColor(double t)
+{
+    static const struct { double lim; RGB c; } bands[] = { { 0.04, { 166, 198, 136 } }, { 0.1, { 184, 212, 146 } }, { 0.18, { 206, 222, 158 } }, { 0.28, { 228, 222, 166 } },
+                                                           { 0.4, { 222, 198, 146 } }, { 0.55, { 202, 168, 122 } }, { 0.7, { 180, 144, 110 } }, { 0.85, { 200, 188, 176 } }, { 99, { 246, 246, 244 } } };
+    for (const auto& b : bands) if (t < b.lim) return b.c;
+    return bands[8].c;
+}
+// quanto o relevo sobe em cada vista (a Tinta pinta inteira e só o liftAt diminui, como sempre foi)
+double styleLift(Style s)
+{
+    switch (s) {
+    case Style::Atlas: return kAtlasLift;
+    case Style::Topo: return 0.6;
+    case Style::Chart: case Style::Blue: return 0.75;
+    default: return 1.0;
+    }
+}
+}
+
+RGB paperOf(Style s)
+{
+    switch (s) {
+    case Style::Parch: return { 234, 214, 174 };
+    case Style::Chart: return { 238, 226, 196 };
+    case Style::Blue: return { 40, 80, 136 };
+    default: return kPaper;
+    }
+}
+RGB inkOf(Style s)
+{
+    switch (s) {
+    case Style::Parch: return { 74, 48, 30 };
+    case Style::Chart: return { 62, 48, 36 };
+    case Style::Blue: return { 232, 240, 250 };
+    default: return kInk;
+    }
 }
 
 Camera cameraOf(const View& v)
@@ -83,7 +123,7 @@ double liftAt(const World& w, const View& v, double qx, double qy)
         return a > 0 ? std::pow(a, 0.55) * extF : 0;
     }
     const double a = std::max(0.0, (t - 0.12) / 0.88);
-    const double k = v.style == Style::Atlas ? kAtlasLift : v.style == Style::Ink ? kInkLift : 1.0;
+    const double k = v.style == Style::Ink ? kInkLift : styleLift(v.style);
     return a > 0 ? std::pow(a, 1.3) * extF * 1.05 * k : 0;
 }
 
@@ -91,7 +131,7 @@ double liftAt(const World& w, const View& v, double qx, double qy)
 DistField makeDistField(const World& world, const Geom& g, int tx0, int ty0, int tx1, int ty1, int threads)
 {
     const int W = g.W, H = g.H, s = g.step, WW = world.W, WH = world.H;
-    const int dM = g.style == Style::Ink ? 18 : 8, reach = g.reach, DS = 2;
+    const int dM = inkFamily(g.style) ? 18 : 8, reach = g.reach, DS = 2;
     const std::vector<float>& wh = world.h;
     const double dux = g.ca * s, duy = -g.sa * s, dvx = g.sa * s, dvy = g.ca * s;
     const double bqx = g.ccx - g.cu * dux - g.cv * dvx, bqy = g.ccy - g.cu * duy - g.cv * dvy;
@@ -139,7 +179,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     const std::vector<float>& wt = ensureTempWave(world);
     const double maxH = world.ref;
     // dM: folga em volta do pedaço (derivada 3 + cavidade 6); a Tinta borra o relevo num raio maior e precisa de 18
-    const int eR = static_cast<int>(std::ceil(g.extF)) + 2, dM = g.style == Style::Ink ? 18 : 8, reach = g.reach;
+    const int eR = static_cast<int>(std::ceil(g.extF)) + 2, dM = inkFamily(g.style) ? 18 : 8, reach = g.reach;
 
     for (int y = ty0; y < ty1; y++) std::fill(out + PI(tx0, y) * 4, out + PI(tx1, y) * 4, 0);
     int16_t* AD = aux ? aux->depth.data() : nullptr;
@@ -210,8 +250,14 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
     };
 
     // 1. cor de bioma por pixel, suavizada
-    const bool rich = g.style == Style::Rich, atlas = g.style == Style::Atlas, ink = g.style == Style::Ink, soft = rich || atlas || ink;
-    const NoiseTiles* NZ = (rich || ink) ? &noiseTiles() : nullptr;
+    // ink = a família da Tinta inteira (Tinta, Pergaminho, Carta, Planta); PAP/INKC = o papel e a tinta dela
+    const Style sty = g.style;
+    const bool rich = sty == Style::Rich, atlas = sty == Style::Atlas, ink = inkFamily(sty);
+    const bool parch = sty == Style::Parch, chart = sty == Style::Chart, blue = sty == Style::Blue, topo = sty == Style::Topo, aqua = sty == Style::Aqua;
+    const bool soft = rich || atlas || ink || topo || aqua;
+    const NoiseTiles* NZ = (rich || ink || aqua) ? &noiseTiles() : nullptr;
+    const RGB PAP = paperOf(sty), INKC = inkOf(sty);
+    const double inkK = blue ? 0.7 : chart ? 0.8 : 1.0, LIFTK = styleLift(sty);
     const double fw = std::sqrt(std::max(1.0, WW / 1000.0));
     const double HPER = 3.4 * fw / s, SQ = g.sq;
     auto hatchK = [&](double X, double Y, double dk) -> double {
@@ -224,10 +270,10 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
         }
         return c;
     };
-    auto inkMix = [&](long long o, double kk, double pn) {
-        out[o]     = u8c(kPaper[0] * pn * (1 - kk) + kInk[0] * kk);
-        out[o + 1] = u8c(kPaper[1] * pn * (1 - kk) + kInk[1] * kk);
-        out[o + 2] = u8c(kPaper[2] * pn * (1 - kk) + kInk[2] * kk);
+    auto inkMix = [&](long long o, double kk, double pn, double pr, double pg, double pb) {
+        out[o]     = u8c(pr * pn * (1 - kk) + INKC[0] * kk);
+        out[o + 1] = u8c(pg * pn * (1 - kk) + INKC[1] * kk);
+        out[o + 2] = u8c(pb * pn * (1 - kk) + INKC[2] * kk);
     };
     const RealmPaint* info = g.info ? realms : nullptr;
     std::vector<float> R(NB, 0.0f), G(NB, 0.0f), B(NB, 0.0f), Wt(NB, 0.0f);
@@ -243,10 +289,15 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             double u = 0.55 * n1 + 0.45 * n2;
             if (id == 1 || id == 2 || id == 4) u += (0.5 - m[i]) * 0.7;
             c = richTone(id, clampd((u - 0.5) * 2.1 + 0.5, 0, 1));
-        } else c = atlas ? kAtlas[id] : ink ? kPaper : kBiomeColors[id];
+        } else if (topo) c = topoColor(h[i] / maxH);
+        else if (aqua) c = kAqua[id];
+        else if (parch) { const RGB& wv = kParchWash[id]; c = { PAP[0] * 0.56 + wv[0] * 0.44, PAP[1] * 0.56 + wv[1] * 0.44, PAP[2] * 0.56 + wv[2] * 0.44 }; }
+        else c = atlas ? kAtlas[id] : ink ? PAP : kBiomeColors[id];
         R[i] = static_cast<float>(c[0]); G[i] = static_cast<float>(c[1]); B[i] = static_cast<float>(c[2]); Wt[i] = 1;
     }
-    if (!ink) boxBlurWeighted({ &R, &G, &B }, Wt, bw, bh, std::max(1, static_cast<int>(jsRound((rich ? 2.0 : atlas ? 4.0 : 3.0) / s))));
+    // (o Topográfico fica em faixas nítidas; a Aquarela e o Pergaminho borram largo, como tinta d'água)
+    const double blurR = topo ? 0 : rich ? 2.0 : atlas ? 4.0 : aqua ? 8.0 : parch ? 6.0 : 3.0;
+    if ((!ink || parch) && blurR > 0) boxBlurWeighted({ &R, &G, &B }, Wt, bw, bh, std::max(1, static_cast<int>(jsRound(blurR / s))));
 
     // a altura que ERGUE a montanha é lida suavizada; cor e sombra usam a cheia
     std::vector<float> hLiftBuf;
@@ -287,9 +338,35 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 if (!open) continue;
                 a = std::max(a, clampd(0.5 + (L ? 0.5 : 0.7) - dd, 0, 1) * kInkWaterA[L]);
             }
-            if (a <= 0.002) continue;
+            // Pergaminho: um azul de aquarela rente à costa, por baixo das linhas
+            const double aw = parch ? 0.46 * (1 - smoothstep(0, farR * 0.42, d)) * (0.75 + 0.5 * tileAt(NZ->A, qx * 0.2, qy * 0.2)) : 0;
+            if (a <= 0.002 && aw <= 0.002) continue;
             const long long o = PI(x, y) * 4;
-            out[o] = u8c(kInk[0]); out[o + 1] = u8c(kInk[1]); out[o + 2] = u8c(kInk[2]); out[o + 3] = u8c(a * 255);
+            const double A = a + aw * (1 - a);
+            for (int c = 0; c < 3; c++) out[o + c] = u8c((INKC[c] * a + kParchSea[c] * aw * (1 - a)) / A);
+            out[o + 3] = u8c(A * 255);
+            continue;
+        }
+        if (topo) {
+            // batimetria em faixas, com a linha de cada faixa (a última é o fundo da página)
+            const double E[3] = { nearR * 0.32, nearR * 0.9, farR * 0.62 };
+            const int band = d < E[0] ? 0 : d < E[1] ? 1 : d < E[2] ? 2 : 3;
+            const bool line = std::fabs(d - E[0]) < 0.75 || std::fabs(d - E[1]) < 0.75 || std::fabs(d - E[2]) < 0.75;
+            if (band == 3 && !line) continue;
+            static const RGB TB[4] = { { 190, 222, 236 }, { 170, 208, 230 }, { 152, 194, 222 }, { 134, 178, 212 } };
+            const long long o = PI(x, y) * 4;
+            out[o] = u8c(line ? 104 : TB[band][0]); out[o + 1] = u8c(line ? 146 : TB[band][1]); out[o + 2] = u8c(line ? 182 : TB[band][2]); out[o + 3] = 255;
+            continue;
+        }
+        if (aqua) {
+            // aquarela: lavada azul que some no papel longe da costa, com a tinta acumulada na beira
+            const double qx = bqx + x * dux + y * dvx, qy = bqy + x * duy + y * dvy;
+            const double n = tileAt(NZ->A, qx * 0.12, qy * 0.12), pool = 1 - smoothstep(0, nearR * 0.1, d);
+            const double aw = 0.82 * (1 - smoothstep(0, farR * (0.38 + 0.4 * n), d));
+            const double A = std::max(aw, pool * 0.92);
+            if (A <= 0.003) continue;
+            const long long o = PI(x, y) * 4;
+            out[o] = u8c(126 - 40 * pool); out[o + 1] = u8c(176 - 36 * pool); out[o + 2] = u8c(204 - 24 * pool); out[o + 3] = u8c(A * 255);
             continue;
         }
         const double af = 0.50 * (1 - smoothstep(0.15 * farR, farR + 2 * farS, d));
@@ -339,7 +416,9 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             const double cov = clampd(0.5 + hh(i) / gr, 0, 1);
             if (cov > 0.01) {
                 if (atlas) over(PI(x, y) * 4, 120, 110, 92, cov * 0.8);
-                else if (ink) over(PI(x, y) * 4, kInk[0], kInk[1], kInk[2], cov);
+                else if (ink) over(PI(x, y) * 4, INKC[0], INKC[1], INKC[2], cov);
+                else if (topo) over(PI(x, y) * 4, 70, 104, 132, cov);
+                else if (aqua) over(PI(x, y) * 4, 150, 170, 168, cov * 0.8);
                 else over(PI(x, y) * 4, kSand[0] * 0.97, kSand[1] * 0.97, kSand[2] * 0.97, cov);
             }
         }
@@ -368,7 +447,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             if (soft) {
                 const double tl = hLift[iu] / maxH;
                 const double ta = std::max(0.0, (tl - 0.12) / 0.88);
-                lift = ta > 0 ? std::pow(ta, 1.3) * extF * 1.05 * (atlas ? kAtlasLift : 1) : 0;
+                lift = ta > 0 ? std::pow(ta, 1.3) * extF * 1.05 * (ink ? (sty == Style::Ink ? 1.0 : LIFTK) : LIFTK) : 0;
             } else {
                 const double tAdj = std::max(0.0, (t - kLiftFloor) / (1 - kLiftFloor));
                 lift = tAdj > 0 ? std::pow(tAdj, 0.55) * extF : 0;
@@ -379,7 +458,8 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             const double tc = std::min(t, 1.15);
             const double gx = qxA[iu] / 5.0, gy = qyA[iu] / 5.0;
             double cr, cg, cb;
-            if (ink) { cr = kPaper[0]; cg = kPaper[1]; cb = kPaper[2]; }
+            if (ink) { if (parch) { cr = R[iu]; cg = G[iu]; cb = B[iu]; } else { cr = PAP[0]; cg = PAP[1]; cb = PAP[2]; } }
+            else if (topo) { cr = R[iu]; cg = G[iu]; cb = B[iu]; }
             else if (tc < 0.04) { if (atlas) { cr = 232; cg = 218; cb = 182; } else { cr = kSand[0]; cg = kSand[1]; cb = kSand[2]; } }
             else {
                 cr = R[iu]; cg = G[iu]; cb = B[iu];
@@ -440,6 +520,25 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             const double lf = std::isnan(lfRaw) ? lfRaw : std::max(0.0, lfRaw);
             double tr = 0.95 + 0.05 * lf, tg = 0.96 + 0.04 * lf, tb = 1.02 - 0.02 * lf;
             if (atlas) { shade = 0.95 + dot * 0.09; nz = 0; tr = tg = tb = 1; }
+            if (topo) { shade = 0.9 + dot * 0.16; nz = 0; tr = tg = tb = 1; }
+            if (aqua) {
+                // granulação do papel, manchas de pigmento e a tinta que acumula na beira da costa
+                const double qx = qxA[iu], qy = qyA[iu];
+                shade = 0.9 + dot * 0.2; tr = tg = tb = 1;
+                nz = (tileAt(NZ->B, qx * 0.7, qy * 0.7) - 0.5) * 0.09 - 0.14 * (1 - smoothstep(0.004, 0.03, tc));
+                const double bl = tileAt(NZ->A, qx * 0.05 + 31, qy * 0.05 + 7);
+                cr += (246 - cr) * 0.3 * bl; cg += (242 - cg) * 0.3 * bl; cb += (232 - cb) * 0.3 * bl;
+            }
+            // Topográfico: curva de nível onde o vizinho está um degrau abaixo (a cada 5, a curva mestra)
+            double cont = 0;
+            if (topo) {
+                const double DH = maxH * 0.075;
+                const int lv = static_cast<int>(std::floor(hv / DH));
+                if (lv > 0) for (long long j : { i + 1, i - 1, i + static_cast<long long>(bw), i - static_cast<long long>(bw) }) {
+                    const double q = hh(j);
+                    if (!std::isnan(q) && std::floor(std::max(0.0, q) / DH) < lv) { cont = lv % 5 == 0 ? 1 : 0.55; break; }
+                }
+            }
 
             if (rich) {
                 const double qx = qxA[iu], qy = qyA[iu];
@@ -481,7 +580,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 const double gX = (hi(i + oI) - hi(i - oI)) * dI;
                 const double gY = (hi(i + static_cast<long long>(oI) * bw) - hi(i - static_cast<long long>(oI) * bw)) * dI;
                 const double qL = (gX * LX + gY * LY) / LLn / maxH * 100;
-                inkD = 0.72 * smoothstep(0.22, 1.3, qL) * (0.3 + 0.7 * smoothstep(0.12, 0.45, tc));
+                inkD = 0.72 * inkK * smoothstep(0.22, 1.3, qL) * (0.3 + 0.7 * smoothstep(0.12, 0.45, tc));
                 const double qx = qxA[iu], qy = qyA[iu];
                 const int id = idA[iu];
                 paperN = 0.985 + 0.03 * tileAt(NZ->B, qx * 1.3, qy * 1.3);
@@ -490,24 +589,43 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                     const double v = qy * 0.42;
                     if (v - std::floor(v) < 0.2 && tileAt(NZ->B, qx * 0.35, qy * 1.4) > 0.62) inkE = 0.6;
                 } else if (id == 1 && tc < 0.36) { if (hash2(std::floor(qx * 0.8), std::floor(qy * 0.8), 73) > 0.985) inkE = 0.35; }
+                if (blue) {
+                    // papel quadriculado da planta (a mesma grade do mar, que a cena desenha por baixo)
+                    const double gxm = std::fabs(qx - jsRound(qx / 20) * 20), gym = std::fabs(qy - jsRound(qy / 20) * 20);
+                    if (std::min(gxm, gym) < 0.45 * s) inkE = std::max(inkE, 0.2);
+                }
             }
 
             if (info && ink) {
+                // fronteira tracejada; na Tinta sem cor (miolo de livro), no Pergaminho com aquarela por dentro e na
+                // Planta com hachura em ângulo diferente por território
                 const RealmSample ra = info->realmAt(qxA[iu], qyA[iu]);
+                if (parch && ra.id >= 0) { const RGB rc = info->realmColor(ra.id); cr += (rc[0] - cr) * 0.22; cg += (rc[1] - cg) * 0.22; cb += (rc[2] - cb) * 0.22; }
+                if (blue && ra.id >= 0) {
+                    const double an = ra.id * 1.13 + 0.4, sv = (qxA[iu] * std::cos(an) + qyA[iu] * std::sin(an)) / 3.4;
+                    if (sv - std::floor(sv) < 0.14) inkE = std::max(inkE, 0.3);
+                }
                 if (ra.edge > 0.01 && ra.eid >= 0) {
                     const double dash = std::sin((qxA[iu] + qyA[iu] * 0.83) * 0.62) > -0.25 ? 1 : 0.15;
                     inkE = std::max(inkE, smoothstep(0.25, 0.85, ra.edge) * 0.9 * dash);
+                }
+            } else if (info && topo) {
+                // Topográfico: só a fronteira, tracejada em vermelho
+                const RealmSample ra = info->realmAt(qxA[iu], qyA[iu]);
+                if (ra.edge > 0.01 && ra.eid >= 0 && std::sin((qxA[iu] + qyA[iu] * 0.83) * 0.7) > -0.2) {
+                    const double ea = smoothstep(0.25, 0.85, ra.edge) * 0.85;
+                    cr += (176 - cr) * ea; cg += (44 - cg) * ea; cb += (40 - cb) * ea;
                 }
             } else if (info) {
                 const RealmSample ra = info->realmAt(qxA[iu], qyA[iu]);
                 if (ra.id >= 0) {
                     const RGB rc = info->realmColor(ra.id);
-                    const double ta = atlas ? 0.30 : 0.12;
+                    const double ta = atlas ? 0.30 : aqua ? 0.2 : 0.12;
                     cr += (rc[0] - cr) * ta; cg += (rc[1] - cg) * ta; cb += (rc[2] - cb) * ta;
                 }
                 if (ra.edge > 0.01 && ra.eid >= 0) {
                     const RGB ec = info->realmColor(ra.eid);
-                    const double ea = 0.85 * ra.edge;
+                    const double ea = (aqua ? 0.5 : 0.85) * ra.edge;
                     cr += (ec[0] * 0.45 - cr) * ea; cg += (ec[1] * 0.45 - cg) * ea; cb += (ec[2] * 0.45 - cb) * ea;
                 }
             }
@@ -523,8 +641,8 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                     if (gr > 1e-6) cov = clampd(0.5 + hv / gr, 0, 1);
                 }
                 const long long o = PI(col, row) * 4;
-                if (cov >= 0.999) { inkMix(o, kk, paperN); out[o + 3] = 255; }
-                else over(o, kInk[0], kInk[1], kInk[2], cov);
+                if (cov >= 0.999) { inkMix(o, kk, paperN, cr, cg, cb); out[o + 3] = 255; }
+                else over(o, INKC[0], INKC[1], INKC[2], cov);
                 if (AD) { AD[PI(col, row)] = static_cast<int16_t>(row); AL[PI(col, row)] = static_cast<float>(lift); }
                 if (AN) { const long long p2 = 2 * PI(col, row); AN[p2] = nqx; AN[p2 + 1] = nqy; }
                 continue;
@@ -532,6 +650,7 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
             if (low) {
                 const double ls = shade + nz;
                 double r = cr * ls * tr, gg = cg * ls * tg, b = cb * ls * tb;
+                if (cont > 0) { r += (110 - r) * 0.55 * cont; gg += (78 - gg) * 0.55 * cont; b += (52 - b) * 0.55 * cont; }
                 const bool coast = hh(i - 1) <= 0 || hh(i + 1) <= 0 || hh(i - bw) <= 0 || hh(i + bw) <= 0;
                 if (atlas && coast) { r = 120; gg = 110; b = 92; }
                 double cov = 1;
@@ -562,11 +681,11 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                     if (AD) AD[PI(col, fy)] = static_cast<int16_t>(row);
                     if (AN) { const long long p2 = 2 * PI(col, fy); AN[p2] = nqx; AN[p2 + 1] = nqy; }
                     if (fy == top && topCov < 0.999) {
-                        over(o, kPaper[0] * paperN * (1 - kk) + kInk[0] * kk, kPaper[1] * paperN * (1 - kk) + kInk[1] * kk,
-                             kPaper[2] * paperN * (1 - kk) + kInk[2] * kk, topCov);
+                        over(o, cr * paperN * (1 - kk) + INKC[0] * kk, cg * paperN * (1 - kk) + INKC[1] * kk,
+                             cb * paperN * (1 - kk) + INKC[2] * kk, topCov);
                         continue;
                     }
-                    inkMix(o, kk, paperN); out[o + 3] = 255;
+                    inkMix(o, kk, paperN, cr, cg, cb); out[o + 3] = 255;
                 }
                 continue;
             }
@@ -581,6 +700,10 @@ void paintRegion(World& world, const Geom& g, uint8_t* out, int tx0, int ty0, in
                 const double b = (cb * (1 - earth) + 42 * earth) * ls * tb;
                 if (AD) AD[PI(col, fy)] = static_cast<int16_t>(row);
                 if (AN) { const long long p2 = 2 * PI(col, fy); AN[p2] = nqx; AN[p2 + 1] = nqy; }
+                if (fy == top && cont > 0) {
+                    out[o] = u8c(r + (110 - r) * 0.55 * cont); out[o + 1] = u8c(gg + (78 - gg) * 0.55 * cont); out[o + 2] = u8c(b + (52 - b) * 0.55 * cont); out[o + 3] = 255;
+                    continue;
+                }
                 if (fy == top && topCov < 0.999) { over(o, r, gg, b, topCov); continue; }
                 out[o] = u8c(r); out[o + 1] = u8c(gg); out[o + 2] = u8c(b); out[o + 3] = 255;
             }
@@ -597,6 +720,7 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
     const int OW = dst ? dst->w : g.W, OX = dst ? dst->x0 : 0, OY = dst ? dst->y0 : 0;
     auto PI = [&](int x, int y) -> long long { return static_cast<long long>(y - OY) * OW + (x - OX); };
     const int16_t* AD = aux.depth.data();
+    const RGB INKC = inkOf(g.style);
     {
         const double T0 = 4.0 / s, T1 = 10.0 / s;
         const int xa = std::max(tx0, OX + 1), xb = std::min(tx1, OX + OW - 1);
@@ -612,7 +736,7 @@ void inkEdgePass(const Geom& g, uint8_t* out, const Aux& aux, int tx0, int ty0, 
             if (e < 0.03) continue;
             const long long o = p * 4;
             const double kk = e * 0.92;
-            for (int c = 0; c < 3; c++) out[o + c] = u8c(out[o + c] + (kInk[c] - out[o + c]) * kk);
+            for (int c = 0; c < 3; c++) out[o + c] = u8c(out[o + c] + (INKC[c] - out[o + c]) * kk);
         }
     }
 }
@@ -660,7 +784,7 @@ void paintBands(World& w, const Geom& g, uint8_t* out, int tx0, int ty0, int tx1
     for (int t = 1; t < std::min(threads, bands); t++) pool.emplace_back(work);
     work();
     for (std::thread& t : pool) t.join();
-    if (g.style == Style::Ink && aux) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, nullptr);
+    if (inkFamily(g.style) && aux) inkEdgePass(g, out, *aux, tx0, ty0, tx1, ty1, nullptr);
 }
 
 // ── hora do dia ──
@@ -691,7 +815,7 @@ SpriteSun spriteSun(double hour)
 }
 std::vector<float> sunLUT(double hour, Style style)
 {
-    if (style == Style::Atlas || style == Style::Ink) return {};
+    if (style == Style::Atlas || artStyle(style)) return {};
     const Sun s = sunAt(hour);
     if (std::fabs(hour - kHourDefault) < 1e-3 || s.sunW <= 0) return {};
     const auto l0 = L0();

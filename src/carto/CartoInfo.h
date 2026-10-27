@@ -66,17 +66,23 @@ struct RealmDef {
 struct Realm { QString name; RGB color{}; double x = 0, y = 0; int area = 0; };
 struct RealmState { std::vector<RealmDef> defs; std::vector<uint8_t> barrier; };
 
+// ── vegetação ──
+enum FloraType { Broad = 0, Pine, SnowPine, Palm, Cactus, Shrub, Rock, Reed, Dead };
+struct Flora { double x, y; int type; double v, s; int b; };
+
 // ── o que o usuário constrói ──
 struct Art {
     QString id, kind;             // castle · tower · lighthouse · windmill · temple · ruins · e os de artSpecs()
     double x = 0, y = 0, yaw = 0, v = 0;
     int size = 0;
-    QString style;                // castelo: "" (humano) · elven · dwarf · orc
+    QString style;                // castelo: "" (humano) · norman · moat · chateau · crag · elven · dwarf · orc · oriental · desert · dark · ice
     QString name;
     int realm = -1;
+    double sc = 1;                // tamanho (o slider da pílula, 0,4 a 4) por cima da escala do mundo
 };
-struct House { double x = 0, y = 0, yaw = 0, v = 0; int floors = 1; bool timber = false; mutable int snowy = -1; };
-struct Wall { Path pts; };
+// casa da vila; city = sobrado do pincel Cidade (2 ou 3 andares, a cumeeira pro fundo), bell = campanário do lado
+struct House { double x = 0, y = 0, yaw = 0, v = 0; int floors = 1; bool timber = false; bool city = false, bell = false; mutable int snowy = -1; };
+struct Wall { Path pts; QString kind; };   // kind: "" pedra · "wood" paliçada
 struct Road { Path pts; QString kind = QStringLiteral("road"); };   // trail · road · royal
 struct UserLayer {
     std::vector<Art> arts;
@@ -85,6 +91,7 @@ struct UserLayer {
     std::vector<Field> fields;
     std::vector<Path> bridges;
     std::vector<Road> roads;
+    std::vector<Flora> trees;     // pincéis Floresta e Rochedos (ficam mesmo se o terreno mudar)
     bool showGen = true;          // mostra as cidades e estradas sugeridas
     int seq = 0, ver = 0;
     double scale = 1;
@@ -142,7 +149,10 @@ void realmsFromJson(Info& info, const QJsonObject& o);
 Art& addArt(const World& w, Info& info, const QString& kind, double x, double y, int size);
 bool paintVillage(const World& w, Info& info, double x, double y, double r);
 bool paintFieldsUser(const World& w, Info& info, double x, double y, double r);
-bool addWall(Info& info, const Path& pts);
+bool paintCity(const World& w, Info& info, double x, double y, double r);
+// mode: auto (a árvore que o clima daria) · broad · pine · palm · rocks
+bool paintTrees(World& w, Info& info, double x, double y, double r, const QString& mode);
+bool addWall(Info& info, const Path& pts, const QString& kind = QString());
 bool addRoad(Info& info, const Path& pts, const QString& kind, bool smooth);
 bool addBridge(Info& info, Pt a, Pt b);
 bool eraseUser(Info& info, double x, double y, double r);
@@ -170,8 +180,6 @@ private:
 std::vector<Path> roadBridges(const World& w, const UserLayer& U);
 
 // ── vegetação ──
-enum FloraType { Broad = 0, Pine, SnowPine, Palm, Cactus, Shrub, Rock, Reed, Dead };
-struct Flora { double x, y; int type; double v, s; int b; };
 std::vector<Flora> buildFlora(World& w);
 // depois de uma pincelada: cada planta só depende do terreno do próprio lugar, então basta refazer as do retângulo
 void updateFloraBox(World& w, std::vector<Flora>& flora, int x0, int y0, int x1, int y1);

@@ -3483,36 +3483,43 @@ Il progetto andrà nel Cestino (accessibile dall&apos;icona del cestino qui sott
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="54"/>
+        <location filename="../src/RoleTiers.h" line="28"/>
         <source>Protagonista</source>
         <translation>Protagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="55"/>
+        <location filename="../src/RoleTiers.h" line="30"/>
         <source>Deuteragonista</source>
         <translation>Deuteragonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="57"/>
+        <location filename="../src/RoleTiers.h" line="32"/>
         <source>Coadjuvante</source>
         <translation>Personaggio secondario</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="56"/>
+        <location filename="../src/RoleTiers.h" line="34"/>
         <source>Antagonista</source>
         <translation>Antagonista</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="59"/>
+        <location filename="../src/RoleTiers.h" line="36"/>
         <source>Contraponto</source>
         <translation>Contraltare</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="60"/>
+        <location filename="../src/RoleTiers.h" line="38"/>
         <source>Trickster</source>
         <translation>Trickster</translation>
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="58"/>
+        <location filename="../src/RoleTiers.h" line="40"/>
         <source>Mentor</source>
         <translation>Mentore</translation>
     </message>
@@ -3528,6 +3535,7 @@ Il progetto andrà nel Cestino (accessibile dall&apos;icona del cestino qui sott
     </message>
     <message>
         <location filename="../src/ElementCreateDialog.cpp" line="61"/>
+        <location filename="../src/RoleTiers.h" line="42"/>
         <source>Figurante</source>
         <translation>Comparsa</translation>
     </message>
@@ -14783,9 +14791,9 @@ Il contenuto esistente potrebbe essere sovrascritto.</translation>
         <translation>Analisi in corso… (%1/%2)</translation>
     </message>
     <message>
+        <location filename="../src/PensarioDialogues.cpp" line="214"/>
         <location filename="../src/PensarioPanel.cpp" line="205"/>
         <location filename="../src/PensarioPanel.cpp" line="1313"/>
-        <location filename="../src/PensarioDialogues.cpp" line="214"/>
         <source>Escanear diálogos em todos os capítulos</source>
         <translation>Analizza i dialoghi in tutti i capitoli</translation>
     </message>
@@ -14858,9 +14866,9 @@ Il contenuto esistente potrebbe essere sovrascritto.</translation>
         <translation>Memorie</translation>
     </message>
     <message>
+        <location filename="../src/PensarioDialogues.cpp" line="197"/>
         <location filename="../src/PensarioPanel.cpp" line="338"/>
         <location filename="../src/PensarioStyles.cpp" line="470"/>
-        <location filename="../src/PensarioDialogues.cpp" line="197"/>
         <source>Diálogos</source>
         <translation>Dialoghi</translation>
     </message>
@@ -15052,8 +15060,8 @@ Prova un altro stile o un affisso più comune.</translation>
         <translation>▾  Statistiche</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1323"/>
         <location filename="../src/PensarioDialogues.cpp" line="230"/>
+        <location filename="../src/PensarioPanel.cpp" line="1323"/>
         <source>Como o detector de diálogos funciona</source>
         <translation>Come funziona il rilevatore di dialoghi</translation>
     </message>
@@ -15104,8 +15112,8 @@ Le statistiche sono stime e non garantiscono una precisione assoluta rispetto al
         <translation>Nessun dialogo con questo filtro.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1491"/>
         <location filename="../src/PensarioDialogues.cpp" line="558"/>
+        <location filename="../src/PensarioPanel.cpp" line="1491"/>
         <source>Carregar mais (%1 restantes)</source>
         <translation>Carica altri (%1 rimanenti)</translation>
     </message>
@@ -15146,19 +15154,19 @@ Le statistiche sono stime e non garantiscono una precisione assoluta rispetto al
         <translation>Cap.: %1  ▾</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1796"/>
-        <location filename="../src/PensarioStyles.cpp" line="629"/>
         <location filename="../src/PensarioDialogues.cpp" line="263"/>
         <location filename="../src/PensarioDialogues.cpp" line="655"/>
+        <location filename="../src/PensarioPanel.cpp" line="1796"/>
+        <location filename="../src/PensarioStyles.cpp" line="629"/>
         <source>Todos os capítulos</source>
         <translation>Tutti i capitoli</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1802"/>
-        <location filename="../src/PensarioPanel.cpp" line="2392"/>
         <location filename="../src/PensarioDialogues.cpp" line="272"/>
         <location filename="../src/PensarioDialogues.cpp" line="483"/>
         <location filename="../src/PensarioDialogues.cpp" line="660"/>
+        <location filename="../src/PensarioPanel.cpp" line="1802"/>
+        <location filename="../src/PensarioPanel.cpp" line="2392"/>
         <source>Cena %1</source>
         <translation>Scena %1</translation>
     </message>
@@ -15189,15 +15197,15 @@ Le statistiche sono stime e non garantiscono una precisione assoluta rispetto al
         <translation>%1 · probabile</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="1989"/>
         <location filename="../src/PensarioDialogues.cpp" line="705"/>
+        <location filename="../src/PensarioPanel.cpp" line="1989"/>
         <source>Confirmar: é %1</source>
         <translation>Conferma: è %1</translation>
     </message>
     <message>
+        <location filename="../src/PensarioDialogues.cpp" line="706"/>
         <location filename="../src/PensarioPanel.cpp" line="1991"/>
         <location filename="../src/PensarioStyles.cpp" line="1660"/>
-        <location filename="../src/PensarioDialogues.cpp" line="706"/>
         <source>Atribuir ao personagem…</source>
         <translation>Attribuisci al personaggio…</translation>
     </message>
@@ -15354,8 +15362,8 @@ Nome scritto nell&apos;inciso: la battuta è di quel personaggio.
 La × toglie una riga che non è una battuta, e non torna più.</translation>
     </message>
     <message>
-        <location filename="../src/PensarioPanel.cpp" line="2034"/>
         <location filename="../src/PensarioDialogues.cpp" line="710"/>
+        <location filename="../src/PensarioPanel.cpp" line="2034"/>
         <source>Não é fala (some e não volta)</source>
         <translation>Non è una battuta (sparisce e non torna)</translation>
     </message>
@@ -23709,8 +23717,8 @@ La × toglie una riga che non è una battuta, e non torna più.</translation>
         <translation>Questione in sospeso generale</translation>
     </message>
     <message>
-        <location filename="../src/NewProjectSheet.cpp" line="41"/>
         <location filename="../src/NewProjectFlow.cpp" line="29"/>
+        <location filename="../src/NewProjectSheet.cpp" line="41"/>
         <source>Novo Projeto</source>
         <translation>Nuovo Progetto</translation>
     </message>
@@ -30493,26 +30501,26 @@ Usa &quot;Duplica&quot; su un tema predefinito per iniziare.</translation>
         <translation>Nuovo tema</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="82"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="64"/>
+        <location filename="../src/ThemesPanel.cpp" line="82"/>
         <source>alto</source>
         <translation>alto</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="83"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="65"/>
+        <location filename="../src/ThemesPanel.cpp" line="83"/>
         <source>médio</source>
         <translation>medio</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="84"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="66"/>
+        <location filename="../src/ThemesPanel.cpp" line="84"/>
         <source>suave</source>
         <translation>tenue</translation>
     </message>
     <message>
-        <location filename="../src/ThemesPanel.cpp" line="85"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="67"/>
+        <location filename="../src/ThemesPanel.cpp" line="85"/>
         <source>bem suave</source>
         <translation>molto tenue</translation>
     </message>
@@ -34471,91 +34479,126 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoInfo.cpp" line="184"/>
+        <source>Colosso</source>
+        <translation>Colosso</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="185"/>
+        <source>Guardiões</source>
+        <translation>Guardiani</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="186"/>
+        <source>Deus Sentado</source>
+        <translation>Dio Seduto</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="187"/>
+        <source>Catedral</source>
+        <translation>Cattedrale</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="188"/>
+        <source>Arco do Triunfo</source>
+        <translation>Arco di Trionfo</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="189"/>
+        <source>Mercado</source>
+        <translation>Mercato</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="190"/>
+        <source>Aqueduto</source>
+        <translation>Acquedotto</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoInfo.cpp" line="191"/>
         <source>Artefato</source>
         <translation>Monumento</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="396"/>
+        <location filename="../src/carto/CartoNames.cpp" line="405"/>
         <source>Oceano</source>
         <translation>Oceano</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="396"/>
+        <location filename="../src/carto/CartoNames.cpp" line="405"/>
         <source>Mar</source>
         <translation>Mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="396"/>
+        <location filename="../src/carto/CartoNames.cpp" line="405"/>
         <source>Baía</source>
         <translation>Baia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="397"/>
+        <location filename="../src/carto/CartoNames.cpp" line="406"/>
         <source>Lago</source>
         <translation>Lago</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="397"/>
+        <location filename="../src/carto/CartoNames.cpp" line="406"/>
         <source>Rio</source>
         <translation>Fiume</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="397"/>
+        <location filename="../src/carto/CartoNames.cpp" line="406"/>
         <source>Serra</source>
         <translation>Catena montuosa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="398"/>
+        <location filename="../src/carto/CartoNames.cpp" line="407"/>
         <source>Pico</source>
         <translation>Picco</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="398"/>
+        <location filename="../src/carto/CartoNames.cpp" line="407"/>
         <source>Floresta</source>
         <translation>Foresta</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="398"/>
+        <location filename="../src/carto/CartoNames.cpp" line="407"/>
         <source>Deserto</source>
         <translation>Deserto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="399"/>
+        <location filename="../src/carto/CartoNames.cpp" line="408"/>
         <source>Pântano</source>
         <translation>Palude</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="399"/>
+        <location filename="../src/carto/CartoNames.cpp" line="408"/>
         <source>Gelo</source>
         <translation>Ghiaccio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="399"/>
+        <location filename="../src/carto/CartoNames.cpp" line="408"/>
         <source>Campos</source>
         <translation>Pianure</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="400"/>
+        <location filename="../src/carto/CartoNames.cpp" line="409"/>
         <source>Ilha</source>
         <translation>Isola</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="400"/>
+        <location filename="../src/carto/CartoNames.cpp" line="409"/>
         <source>Arquipélago</source>
         <translation>Arcipelago</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="401"/>
+        <location filename="../src/carto/CartoNames.cpp" line="410"/>
         <source>Nome livre · terra</source>
         <translation>Nome libero · terra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="401"/>
+        <location filename="../src/carto/CartoNames.cpp" line="410"/>
         <source>Nome livre · água</source>
         <translation>Nome libero · acqua</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoNames.cpp" line="404"/>
+        <location filename="../src/carto/CartoNames.cpp" line="413"/>
         <source>Nome</source>
         <translation>Nome</translation>
     </message>
@@ -34566,17 +34609,17 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>it</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="551"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="668"/>
         <source>%1 h</source>
         <translation>%1 h</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="554"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="671"/>
         <source>1 dia</source>
         <translation>1 giorno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="555"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="672"/>
         <source>%1 dias</source>
         <translation>%1 giorni</translation>
     </message>
@@ -34584,27 +34627,92 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
 <context>
     <name>carto::Astrolabe</name>
     <message>
-        <location filename="../src/carto/CartoAstrolabe.cpp" line="29"/>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="32"/>
         <source>Completo</source>
         <translation>Completa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoAstrolabe.cpp" line="30"/>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="33"/>
         <source>Atlas</source>
         <translation>Atlante</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoAstrolabe.cpp" line="31"/>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="50"/>
+        <source>Mapa de livro de fantasia: papel velho e aquarela por baixo do nanquim</source>
+        <translation>Mappa da libro fantasy: carta vecchia e acquerello sotto l&apos;inchiostro</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="51"/>
+        <source>Carta de navegador: linhas de rumo, rosas dos ventos e monstros no mar</source>
+        <translation>Carta del navigatore: linee di rotta, rose dei venti e mostri marini</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="52"/>
+        <source>Curvas de nível e cores pela altitude: pra ler o relevo</source>
+        <translation>Curve di livello e colori per altitudine: per leggere il rilievo</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="53"/>
+        <source>Manchas de aquarela no papel, sem contorno: boa pra capa e ilustração</source>
+        <translation>Macchie d&apos;acquerello sulla carta, senza contorni: ottima per copertine e illustrazioni</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="54"/>
+        <source>Azul e branco, papel quadriculado: mesa do general</source>
+        <translation>Blu e bianco, carta quadrettata: il tavolo del generale</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="55"/>
+        <source>Nanquim e hachura, preto e branco: o miolo do livro</source>
+        <translation>Inchiostro e tratteggio, bianco e nero: l&apos;interno del libro</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="61"/>
+        <source>Pergaminho</source>
+        <translation>Pergamena</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="62"/>
+        <source>Carta náutica</source>
+        <translation>Carta nautica</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="63"/>
+        <source>Topográfico</source>
+        <translation>Topografico</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="64"/>
+        <source>Aquarela</source>
+        <translation>Acquerello</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="65"/>
+        <source>Planta de guerra</source>
+        <translation>Piano di guerra</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="66"/>
         <source>Tinta</source>
         <translation>Inchiostro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoAstrolabe.cpp" line="32"/>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="35"/>
         <source>Terreno</source>
         <translation>Terreno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoAstrolabe.cpp" line="41"/>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="70"/>
+        <source>Carta</source>
+        <translation>Carta</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="71"/>
+        <source>Planta</source>
+        <translation>Piano</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoAstrolabe.cpp" line="80"/>
         <source>Arraste no meio pra girar · clique na agulha pro norte · arco da direita inclina · arraste o sol pra mudar a hora</source>
         <translation>Trascina il centro per ruotare · clicca l&apos;ago per il nord · l&apos;arco a destra inclina · trascina il sole per cambiare l&apos;ora</translation>
     </message>
@@ -34612,67 +34720,67 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
 <context>
     <name>carto::Canvas</name>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="150"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="158"/>
         <source>prévia em %1 ms</source>
         <translation>anteprima in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="177"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="185"/>
         <source>pintou em %1 ms</source>
         <translation>dipinto in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvas.cpp" line="1038"/>
+        <location filename="../src/carto/CartoCanvas.cpp" line="1060"/>
         <source>acabamento em %1 ms</source>
         <translation>rifinito in %1 ms</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="278"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="392"/>
         <source>Novo mar</source>
         <translation>Nuovo mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="278"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="392"/>
         <source>Novo nome</source>
         <translation>Nuovo nome</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="328"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="442"/>
         <source>Território %1</source>
         <translation>Territorio %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="436"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="550"/>
         <source>Aqui é mar aberto: comece a estrada em terra.</source>
         <translation>Qui è mare aperto: inizia la strada sulla terraferma.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="467"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="584"/>
         <source>Não tem caminho por terra até aí (outra ilha?). Esc recomeça.</source>
         <translation>Non c&apos;è un percorso via terra fin lì (un&apos;altra isola?). Esc ricomincia.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="478"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="595"/>
         <source>Esse vai no mar: clique na água.</source>
         <translation>Questo va in mare: clicca sull&apos;acqua.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="478"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="595"/>
         <source>Aqui é água: construa em terra (navios e criaturas do mar vão na água).</source>
         <translation>Qui c&apos;è acqua: costruisci sulla terra (navi e creature marine vanno in acqua).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="598"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="715"/>
         <source>%1 léguas · %2 km</source>
         <translation>%1 leghe · %2 km</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="599"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="716"/>
         <source>de barco ~%1</source>
         <translation>in barca ~%1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoCanvasTools.cpp" line="600"/>
+        <location filename="../src/carto/CartoCanvasTools.cpp" line="717"/>
         <source>a pé ~%1 · a cavalo ~%2</source>
         <translation>a piedi ~%1 · a cavallo ~%2</translation>
     </message>
@@ -35112,9 +35220,8 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Atlante</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="43"/>
         <source>Tinta</source>
-        <translation>Inchiostro</translation>
+        <translation type="vanished">Inchiostro</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="44"/>
@@ -35122,7 +35229,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Terreno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="45"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="46"/>
         <location filename="../src/carto/CartoPanel.cpp" line="49"/>
         <source>Ilha</source>
         <translation>Isola</translation>
@@ -35144,7 +35251,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="53"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="504"/>
         <source>Continente</source>
         <translation>Continente</translation>
     </message>
@@ -35155,12 +35262,12 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="60"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="361"/>
         <source>Terra</source>
         <translation>Terra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="306"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="362"/>
         <location filename="../src/carto/CartoPanel.cpp" line="61"/>
         <source>Mar</source>
         <translation>Mare</translation>
@@ -35183,7 +35290,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="65"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="453"/>
         <source>Úmido</source>
         <translation>Umido</translation>
     </message>
@@ -35194,7 +35301,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="67"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="536"/>
         <source>Frio</source>
         <translation>Freddo</translation>
     </message>
@@ -35235,8 +35342,8 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanel.cpp" line="94"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="945"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="1030"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="953"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1038"/>
         <source>Mapa</source>
         <translation>Mappa</translation>
     </message>
@@ -35251,358 +35358,357 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Cambia, crea, rinomina o elimina mappe</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="218"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="223"/>
         <source>Desfazer (Ctrl+Z)</source>
         <translation>Annulla (Ctrl+Z)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="219"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="224"/>
         <source>Refazer (Ctrl+Y)</source>
         <translation>Ripeti (Ctrl+Y)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="223"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="228"/>
         <source>Gerar mapa (G)</source>
         <translation>Genera mappa (G)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="223"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="316"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="228"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="324"/>
         <source>Gerar</source>
         <translation>Genera</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="226"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="231"/>
         <source>Enquadrar (F)</source>
         <translation>Inquadra (F)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="228"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="233"/>
         <source>Ajustes</source>
         <translation>Impostazioni</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="231"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="236"/>
         <source>Régua: distância e tempo de viagem (R)</source>
         <translation>Righello: distanza e tempo di viaggio (R)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="234"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="239"/>
         <source>Exportar imagem (PNG pro livro)</source>
         <translation>Esporta immagine (PNG per il libro)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="238"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="243"/>
         <source>Fechar o mapa</source>
         <translation>Chiudi la mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="254"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="262"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="105"/>
         <source>Passar o dia (P)</source>
         <translation>Fai scorrere il giorno (P)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="263"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="271"/>
         <source>Ferramentas (ou botão direito no mapa)</source>
         <translation>Strumenti (o clic destro sulla mappa)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="315"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="936"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="323"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="944"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="25"/>
         <source>Mover</source>
         <translation>Sposta</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="317"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="927"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="325"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="935"/>
         <source>Área</source>
         <translation>Area</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="318"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="370"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="968"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="326"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="378"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="934"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="976"/>
         <source>Pincel</source>
         <translation>Pennello</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="319"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="926"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="968"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="327"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="934"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="976"/>
         <source>Clima</source>
         <translation>Clima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="320"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="129"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="328"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="938"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="132"/>
         <source>Territórios</source>
         <translation>Territori</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="321"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="932"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="329"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="940"/>
         <source>Construir</source>
         <translation>Costruisci</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="322"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="933"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="330"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="941"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="344"/>
         <source>Nomes</source>
         <translation>Nomi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="323"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="935"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="331"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="943"/>
         <source>Explorar</source>
         <translation>Esplora</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="402"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="410"/>
         <source>RELEVO</source>
         <translation>RILIEVO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="403"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="411"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="536"/>
         <source>CLIMA</source>
         <translation>CLIMA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="400"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="416"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="513"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="379"/>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="247"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="424"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="521"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="394"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="249"/>
         <source>TAMANHO</source>
         <translation>DIMENSIONE</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="417"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="425"/>
         <source>FORÇA</source>
         <translation>INTENSITÀ</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="430"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="438"/>
         <source>Shift inverte o pincel (Terra vira Mar, Úmido vira Seco). [&#xa0;e&#xa0;] mudam o tamanho.</source>
         <translation>Shift inverte il pennello (Terra diventa Mare, Umido diventa Secco). [&#xa0;e&#xa0;] cambiano la dimensione.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="442"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="450"/>
         <source>Mapa de clima</source>
         <translation>Mappa del clima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="453"/>
         <source>Gélido</source>
         <translation>Gelido</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="453"/>
         <source>Temperado</source>
         <translation>Temperato</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="445"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="453"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="536"/>
         <source>Árido</source>
         <translation>Arido</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="457"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="465"/>
         <source>É o que a terra vira em cada lugar. Pinte com Úmido, Seco e Frio, até no mar. Terra bem baixa e úmida em clima quente vira pântano.</source>
         <translation>È ciò che diventa la terra in ogni punto. Dipingi con Umido, Secco e Freddo, anche sul mare. La terra molto bassa e umida in un clima caldo diventa palude.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="472"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="562"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="566"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="480"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="570"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="574"/>
         <source>Gerar mapa</source>
         <translation>Genera mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="504"/>
         <source>TIPO</source>
         <translation>TIPO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="504"/>
         <source>Arquipélago</source>
         <translation>Arcipelago</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="504"/>
         <source>Oceânico</source>
         <translation>Oceanico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="496"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="504"/>
         <source>Vazio</source>
         <translation>Vuoto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="497"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="505"/>
         <source>Só oceano: desenhe o mundo com os pincéis</source>
         <translation>Solo oceano: disegna il mondo con i pennelli</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="499"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="507"/>
         <source>OCEANO</source>
         <translation>OCEANO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="522"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="621"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="530"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="629"/>
         <source> (2× o Épico)</source>
         <translation> (2× l&apos;Epico)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="523"/>
-        <location filename="../src/carto/CartoPanel.cpp" line="622"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="630"/>
         <source> (3× o Épico)</source>
         <translation> (3× l&apos;Epico)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="536"/>
         <source>Misto</source>
         <translation>Misto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="528"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="536"/>
         <source>Verde</source>
         <translation>Verde</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="529"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="537"/>
         <source>Sorteia a latitude, se o mundo é mais frio ou mais quente, e manchas de clima maiores</source>
         <translation>Sorteggia la latitudine, se il mondo è più freddo o più caldo, e macchie di clima più grandi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="530"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="538"/>
         <source>Perto do polo, cheio de gelo e tundra. No Mundo e acima, era do gelo</source>
         <translation>Vicino al polo, pieno di ghiaccio e tundra. Da Mondo in su, un&apos;era glaciale</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="539"/>
         <source>Cinturão de desertos, com oásis onde sobra umidade</source>
         <translation>Una fascia di deserti, con oasi dove resta umidità</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="531"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="539"/>
         <source>Úmido: floresta e pântano</source>
         <translation>Umido: foresta e palude</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="532"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="540"/>
         <source>SEMENTE</source>
         <translation>SEME</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="544"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="552"/>
         <source>Semente aleatória</source>
         <translation>Seme casuale</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="555"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="563"/>
         <source>Gerar territórios e locais</source>
         <translation>Genera territori e luoghi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="556"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="564"/>
         <source>Reinos, cidades, estradas e nomes sugeridos pelo terreno. Desmarcado, o mapa vem só com o relevo e o resto é com você.</source>
         <translation>Regni, città, strade e nomi suggeriti dal terreno. Se non è spuntato, la mappa arriva solo con il rilievo e il resto spetta a te.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="566"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="574"/>
         <source>Criar mar vazio</source>
         <translation>Crea mare vuoto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="568"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="576"/>
         <source>O mapa atual é substituído. Ctrl+Z desfaz.</source>
         <translation>La mappa attuale viene sostituita. Ctrl+Z annulla.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="583"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="591"/>
         <source>Bem-vindo ao Qenna Map!</source>
         <translation>Benvenuto in Qenna Map!</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="586"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="594"/>
         <source>Aqui, você pode começar a criar o mapa do seu mundo e gerenciá-lo utilizando os documentos do seu projeto. Desenhe o seu mapa ou gere um nas opções acima.</source>
         <translation>Qui puoi iniziare a creare la mappa del tuo mondo e gestirla con i documenti del tuo progetto. Disegna la tua mappa o generane una dalle opzioni in alto.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="592"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="600"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="610"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="618"/>
         <source>Tamanho do mapa</source>
         <translation>Dimensione della mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="613"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="621"/>
         <source>Quanto maior, mais espaço pra desenhar e mais pesado fica.</source>
         <translation>Più è grande, più spazio hai per disegnare e più diventa pesante.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="666"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="674"/>
         <source>Ajustes do mapa</source>
         <translation>Impostazioni della mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="669"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="677"/>
         <source>VISUAL DO TERRENO</source>
         <translation>STILE DEL TERRENO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="675"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="683"/>
         <source>Mira</source>
         <translation>Mira</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="675"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="683"/>
         <source>Novo</source>
         <translation>Nuovo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="676"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="684"/>
         <source>O visual original do Mira (V)</source>
         <translation>Lo stile originale di Mira (V)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="676"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="684"/>
         <source>Tons variados, texturas e luz de fim de tarde (V)</source>
         <translation>Toni vari, texture e luce del tardo pomeriggio (V)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="693"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="701"/>
         <source>INTERFACE</source>
         <translation>INTERFACCIA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="696"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="704"/>
         <source>Astrolábio</source>
         <translation>Astrolabio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="696"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="704"/>
         <source>Cartela</source>
         <translation>Cartiglio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="697"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="705"/>
         <source>O instrumento no canto junta vista, rotação, inclinação e hora; as ferramentas abrem num anel</source>
         <translation>Lo strumento nell&apos;angolo riunisce vista, rotazione, inclinazione e ora; gli strumenti si aprono in un anello</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="698"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="706"/>
         <source>Vistas na pílula de cima, ferramentas na barra do lado; a bússola no canto gira o mapa</source>
         <translation>Viste nella pillola in alto, strumenti nella barra laterale; la bussola nell&apos;angolo ruota la mappa</translation>
     </message>
@@ -35611,70 +35717,70 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">La legenda della mappa è la tavolozza; la rosa dei venti ruota la mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="717"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="725"/>
         <source>Cartela no mapa (legenda, escala e título)</source>
         <translation>Cartiglio sulla mappa (legenda, scala e titolo)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="722"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="730"/>
         <source>Árvores, casas e castelos</source>
         <translation>Alberi, case e castelli</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="728"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="736"/>
         <source>Moldura do mapa (onde dá pra desenhar)</source>
         <translation>Cornice della mappa (dove si può disegnare)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="938"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Pintar</source>
         <translation>Dipingi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="938"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Neutro</source>
         <translation>Neutro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="930"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="158"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="938"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="161"/>
         <source>Semear</source>
         <translation>Semina</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="934"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="942"/>
         <source>Régua</source>
         <translation>Righello</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="946"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="954"/>
         <source>semente %1</source>
         <translation>seme %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="947"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="955"/>
         <source> · pintando…</source>
         <translation> · dipingendo…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="977"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="985"/>
         <source>%1 × %2 px</source>
         <translation>%1 × %2 px</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="982"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="990"/>
         <source>Área: arraste um retângulo pra criar terra · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Area: trascina un rettangolo per creare terra · rotella: zoom · tasto destro: strumenti (trascinando ruota e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="983"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="991"/>
         <source>%1 · Shift inverte · [ e ] tamanho · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>%1 · Shift inverte · [ e ] dimensione · tasto destro: strumenti (trascinando ruota e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="984"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="992"/>
         <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
         <translation>Territori: semina, dipingi o neutro (nel pannello) · Ctrl+Z annulla · tasto destro: strumenti</translation>
     </message>
@@ -35683,72 +35789,72 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">Costruisci: scegli nel pannello · Q/E ruotano l&apos;elemento selezionato · Canc lo elimina · Ctrl+Z annulla</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="986"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="994"/>
         <source>Nomes: clique num nome pra editar, arraste pra mover · clique no mapa pra pôr um nome novo (arrastando, ele segue o traço) · Delete esconde</source>
         <translation>Nomi: clicca un nome per modificarlo, trascina per spostarlo · clicca sulla mappa per aggiungere un nome nuovo (trascinando, segue il tracciato) · Canc nasconde</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="987"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="995"/>
         <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
         <translation>Righello: clicca per segnare il percorso · doppio clic per finire · Esc cancella</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="989"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="997"/>
         <source>Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Trascina per spostare · rotella: zoom · tasto destro: strumenti (trascinando ruota e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1077"/>
         <source>Novo mapa</source>
         <translation>Nuova mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1077"/>
         <source>Nome do mapa</source>
         <translation>Nome della mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1069"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1077"/>
         <source>Criar</source>
         <translation>Crea</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1102"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1110"/>
         <source>Novo mapa…</source>
         <translation>Nuova mappa…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1103"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1111"/>
         <source>Renomear…</source>
         <translation>Rinomina…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1104"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1112"/>
         <source>Excluir este mapa…</source>
         <translation>Elimina questa mappa…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1107"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1115"/>
         <source>Excluir mapa</source>
         <translation>Elimina mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1107"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1115"/>
         <source>Excluir o mapa &quot;%1&quot;?</source>
         <translation>Eliminare la mappa &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1108"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1116"/>
         <source>O mapa some do projeto. Um backup do projeto traz ele de volta.</source>
         <translation>La mappa esce dal progetto. Un backup del progetto la riporta indietro.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1108"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1116"/>
         <source>Excluir</source>
         <translation>Elimina</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanel.cpp" line="1266"/>
+        <location filename="../src/carto/CartoPanel.cpp" line="1274"/>
         <source>O Completo abre quando o mapa tiver um território, uma construção ou um nome. Crie um pelas ferramentas ou gere com territórios e locais.</source>
         <translation>Completo si apre quando la mappa ha un territorio, una costruzione o un nome. Creane uno con gli strumenti o genera con territori e luoghi.</translation>
     </message>
@@ -35777,7 +35883,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Mura</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="502"/>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="30"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="35"/>
         <source>Estrada</source>
@@ -35785,168 +35891,168 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
     </message>
     <message>
         <location filename="../src/carto/CartoPanelDocks.cpp" line="31"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="460"/>
         <source>Apagar</source>
         <translation>Cancella</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="42"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="43"/>
         <source>Mago</source>
         <translation>Mago</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="43"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="44"/>
         <source>Árvore</source>
         <translation>Albero</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="44"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="45"/>
         <source>Pedras</source>
         <translation>Pietre</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="46"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="47"/>
         <source>Espada</source>
         <translation>Spada</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="47"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="48"/>
         <source>Cabeças</source>
         <translation>Teste</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="48"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="49"/>
         <source>Serpente</source>
         <translation>Serpente</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="49"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="50"/>
         <source>Tendas</source>
         <translation>Tende</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="138"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="141"/>
         <source>+ Novo território</source>
         <translation>+ Nuovo territorio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="147"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="150"/>
         <source>Território %1</source>
         <translation>Territorio %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="157"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="160"/>
         <source>FERRAMENTA</source>
         <translation>STRUMENTO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="159"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="162"/>
         <source>Clique pra plantar o território; arraste a semente pra mover; Shift+clique apaga</source>
         <translation>Clicca per piantare il territorio; trascina il seme per spostarlo; Shift+clic lo elimina</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="160"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="163"/>
         <source>Pinte área pro território selecionado: ela cresce dali pelo terreno</source>
         <translation>Dipingi un&apos;area per il territorio selezionato: cresce da lì sul terreno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="160"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="163"/>
         <source>Pinte terra sem dono (barreira)</source>
         <translation>Dipingi terra senza padrone (barriera)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="162"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="165"/>
         <source>ALCANCE</source>
         <translation>PORTATA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="163"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="273"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="166"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="276"/>
         <source>sem limite</source>
         <translation>senza limite</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="169"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="461"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="462"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="172"/>
         <source>Pequeno</source>
         <translation>Piccolo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="170"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="173"/>
         <source>Sem limite</source>
         <translation>Senza limite</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="429"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="173"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="510"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="176"/>
         <source>PINCEL</source>
         <translation>PENNELLO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="187"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="190"/>
         <source>Pinte área pro território selecionado. Ela vira semente: a borda continua seguindo serra, vale e costa.</source>
         <translation>Dipingi un&apos;area per il territorio selezionato. Diventa un seme: il confine continua a seguire crinali, valli e coste.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="188"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="191"/>
         <source>Pinte terra sem dono. Ela vira barreira: nenhum território passa por ali.</source>
         <translation>Dipingi terra senza padrone. Diventa una barriera: nessun territorio ci passa.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="189"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="192"/>
         <source>Clique no mapa pra plantar o território selecionado; ele cresce pelo terreno. Arraste uma semente pra mover; Shift+clique apaga.</source>
         <translation>Clicca sulla mappa per piantare il territorio selezionato; cresce sul terreno. Trascina un seme per spostarlo; Shift+clic lo elimina.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="216"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="219"/>
         <source>Trocar a cor</source>
         <translation>Cambia il colore</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="241"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="244"/>
         <source>Apagar território</source>
         <translation>Elimina territorio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="254"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="257"/>
         <source>Nenhum território ainda. Clique no mapa pra plantar o primeiro.</source>
         <translation>Ancora nessun territorio. Clicca sulla mappa per piantare il primo.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="479"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="560"/>
         <source>ESCALA DO MUNDO</source>
         <translation>SCALA DEL MONDO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="357"/>
         <source>Normal</source>
         <translation>Normale</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
         <source>Menor</source>
         <translation>Ridotta</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="485"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="566"/>
         <source>Mínima</source>
         <translation>Minima</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="486"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
         <source>Tudo que é construído ou plantado no tamanho de sempre</source>
         <translation>Tutto ciò che è costruito o piantato nella dimensione di sempre</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="486"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="567"/>
         <source>Construções e árvores menores: o mesmo continente parece um mundo maior</source>
         <translation>Costruzioni e alberi più piccoli: lo stesso continente sembra un mondo più grande</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="487"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="568"/>
         <source>Ainda menores: o continente vira um império</source>
         <translation>Ancora più piccoli: il continente diventa un impero</translation>
     </message>
@@ -35955,42 +36061,52 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">UNICI</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="443"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="524"/>
         <source>Selecione um artefato pra arrastar, girar, renomear ou apagar</source>
         <translation>Seleziona un monumento per trascinarlo, ruotarlo, rinominarlo o eliminarlo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="56"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="59"/>
         <source>Castelo: clique pra colocar</source>
         <translation>Castello: clicca per posizionarlo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="56"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="51"/>
+        <source>Deus</source>
+        <translation>Dio</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="52"/>
+        <source>Arco</source>
+        <translation>Arco</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="59"/>
         <source>Torre de vigia</source>
         <translation>Torre di guardia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="57"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
         <source>Farol (na costa fica bonito)</source>
         <translation>Faro (sulla costa sta benissimo)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="57"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
         <source>Moinho</source>
         <translation>Mulino</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="58"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="61"/>
         <source>Templo</source>
         <translation>Tempio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="58"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="61"/>
         <source>Ruínas</source>
         <translation>Rovine</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="59"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="62"/>
         <source>Ponte: clique numa margem e depois na outra</source>
         <translation>Ponte: clicca una sponda e poi l&apos;altra</translation>
     </message>
@@ -35999,27 +36115,27 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">PENNELLI</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="63"/>
         <source>Pincel de vila: casas brotam em terra firme</source>
         <translation>Pennello villaggio: le case spuntano sulla terraferma</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="60"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="63"/>
         <source>Pincel de plantação</source>
         <translation>Pennello campi coltivati</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="61"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="64"/>
         <source>Muralha: desenhe o traço; ela sobe e desce com o chão</source>
         <translation>Mura: disegna il tracciato; salgono e scendono con il terreno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="62"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="65"/>
         <source>Estrada: ligue dois pontos (ela acha o caminho pelo vale) ou desenhe à mão</source>
         <translation>Strada: collega due punti (trova il percorso nella valle) o disegnala a mano</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="63"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="66"/>
         <source>Apaga o que você construiu</source>
         <translation>Cancella ciò che hai costruito</translation>
     </message>
@@ -36028,107 +36144,304 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">ALTRO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="64"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
         <source>Estátua de bronze sobre pedestal</source>
         <translation>Statua di bronzo su un piedistallo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="64"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
         <source>Navio de três mastros: clique no mar</source>
         <translation>Nave a tre alberi: clicca sul mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="65"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="68"/>
         <source>Coliseu de pedra com arena</source>
         <translation>Colosseo di pietra con l&apos;arena</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="65"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="68"/>
         <source>Entrada de caverna numa rocha</source>
         <translation>Ingresso di grotta in una roccia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="66"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
         <source>Mina escorada, com trilhos e vagonete</source>
         <translation>Miniera puntellata, con binari e carrello</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="66"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
         <source>Torre do mago com cristal flutuante</source>
         <translation>Torre del mago con un cristallo fluttuante</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
         <source>Árvore Sagrada (enorme)</source>
         <translation>Albero Sacro (enorme)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="67"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
         <source>Círculo de pedras</source>
         <translation>Cerchio di pietre</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="68"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="71"/>
         <source>Acampamento com tendas e fogueira</source>
         <translation>Accampamento con tende e falò</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="301"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="80"/>
+        <source>Colosso de bronze com a tocha erguida</source>
+        <translation>Colosso di bronzo con la torcia alzata</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="80"/>
+        <source>Guardiões: dois reis de pedra com a mão erguida</source>
+        <translation>Guardiani: due re di pietra con la mano alzata</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="81"/>
+        <source>Deus Sentado no trono, com braseiros</source>
+        <translation>Dio Seduto sul trono, con bracieri</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="81"/>
+        <source>Catedral com rosácea, torres e arcobotantes</source>
+        <translation>Cattedrale con rosone, torri e archi rampanti</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="82"/>
+        <source>Arco do Triunfo</source>
+        <translation>Arco di Trionfo</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="82"/>
+        <source>Mercado: barracas listradas e chafariz</source>
+        <translation>Mercato: bancarelle a righe e fontana</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="83"/>
+        <source>Trecho de aqueduto com duas fileiras de arcos</source>
+        <translation>Tratto di acquedotto con due file di archi</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="84"/>
+        <source>Pincel de cidade: sobrados de dois e três andares</source>
+        <translation>Pennello città: case a due e tre piani</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
+        <source>Pincel de floresta</source>
+        <translation>Pennello foresta</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
+        <source>Pincel de rochedos</source>
+        <translation>Pennello rocce</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="95"/>
+        <source>Normando</source>
+        <translation>Normanno</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="95"/>
+        <source>Torres quadradas e a menagem maciça com torreões</source>
+        <translation>Torri quadrate e un mastio massiccio con torrette</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="96"/>
+        <source>Com fosso</source>
+        <translation>Con fossato</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="96"/>
+        <source>Cava o fosso no terreno em volta; ponte levadiça</source>
+        <translation>Scava il fossato nel terreno intorno; ponte levatoio</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="97"/>
+        <source>Château</source>
+        <translation>Château</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="97"/>
+        <source>Palácio branco, telhado de ardósia, torres de cone e jardim</source>
+        <translation>Palazzo bianco, tetto d&apos;ardesia, torri coniche e giardino</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="98"/>
+        <source>Penhasco</source>
+        <translation>Rupe</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="98"/>
+        <source>Assenta no relevo: muralha e torres acompanham o morro</source>
+        <translation>Poggia sul rilievo: mura e torri seguono la collina</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="102"/>
+        <source>Oriental</source>
+        <translation>Orientale</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="102"/>
+        <source>Muralha branca, guaritas e a torre de vários telhados</source>
+        <translation>Mura bianche, garitte e la torre dai molti tetti</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="103"/>
+        <source>Deserto</source>
+        <translation>Deserto</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="103"/>
+        <source>Adobe, cúpulas, a cebola dourada e os minaretes</source>
+        <translation>Adobe, cupole, la cipolla dorata e i minareti</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="104"/>
+        <source>Sombrio</source>
+        <translation>Oscuro</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="104"/>
+        <source>Pedra negra, torres altíssimas e janelas verdes acesas</source>
+        <translation>Pietra nera, torri altissime e finestre verdi accese</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="105"/>
+        <source>Gelo</source>
+        <translation>Ghiaccio</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="105"/>
+        <source>Torres de cristal e um palácio de cristais tortos</source>
+        <translation>Torri di cristallo e un palazzo di cristalli storti</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="354"/>
+        <source>Castelos</source>
+        <translation>Castelli</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="357"/>
         <source>Únicos</source>
         <translation>Unici</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="303"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="358"/>
         <source>Pincéis</source>
         <translation>Pennelli</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="304"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="359"/>
         <source>Mais</source>
         <translation>Altro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="305"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="361"/>
         <source>Lendas</source>
         <translation>Leggende</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="307"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="363"/>
         <source>Monumentos</source>
         <translation>Monumenti</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="447"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="457"/>
+        <source>PLANTA</source>
+        <translation>PIANTA</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="482"/>
+        <source>Pedra</source>
+        <translation>Pietra</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="482"/>
+        <source>Paliçada</source>
+        <translation>Palizzata</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="483"/>
+        <source>Muralha de pedra com ameias e torres</source>
+        <translation>Mura di pietra con merli e torri</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="483"/>
+        <source>Toras pontudas e torres de vigia de madeira</source>
+        <translation>Tronchi appuntiti e torri di guardia di legno</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="491"/>
+        <source>Do clima</source>
+        <translation>Dal clima</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="491"/>
+        <source>Folhosa</source>
+        <translation>Latifoglia</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="491"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="492"/>
+        <source>Pinheiro</source>
+        <translation>Pino</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="491"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="492"/>
+        <source>Palmeira</source>
+        <translation>Palma</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="492"/>
+        <source>A árvore que o lugar daria (pinheiro no frio, cacto no deserto, junco no brejo)</source>
+        <translation>L&apos;albero che il luogo darebbe (pino al freddo, cactus nel deserto, giunco nella palude)</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="492"/>
+        <source>Copa redonda</source>
+        <translation>Chioma tonda</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="528"/>
         <source>Escala do mundo e cidades sugeridas</source>
         <translation>Scala del mondo e città suggerite</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="626"/>
+        <source>Tamanho (teclas [ e ]; duplo clique volta pra 100%)</source>
+        <translation>Dimensione (tasti [ e ]; doppio clic torna al 100%)</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Peq.</source>
         <translation>Picc.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Méd.</source>
         <translation>Med.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Gde.</source>
         <translation>Gr.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="647"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="785"/>
         <source>Col.</source>
         <translation>Col.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="649"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="787"/>
         <source>Vale</source>
         <translation>Valle</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="698"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="841"/>
         <source>%1 · sem nome</source>
         <translation>%1 · senza nome</translation>
     </message>
@@ -36137,32 +36450,32 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">LEGGENDE</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
         <source>Dragão empoleirado numa rocha</source>
         <translation>Drago appollaiato su una roccia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="69"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
         <source>Ossada de dragão no chão</source>
         <translation>Ossa di drago a terra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
         <source>Portal de pedra com luz arcana</source>
         <translation>Portale di pietra con luce arcana</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="70"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
         <source>Ilha flutuante com torre e cascata</source>
         <translation>Isola fluttuante con torre e cascata</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="71"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
         <source>Espada cravada na pedra</source>
         <translation>Spada conficcata nella roccia</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="71"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
         <source>Cabeças de pedra colossais</source>
         <translation>Teste di pietra colossali</translation>
     </message>
@@ -36171,22 +36484,22 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">MARE</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
         <source>Drakkar viking: clique no mar</source>
         <translation>Drakkar vichingo: clicca sul mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="72"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
         <source>Naufrágio afundando: clique no mar</source>
         <translation>Naufragio che affonda: clicca sul mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
         <source>Serpente marinha: clique no mar</source>
         <translation>Serpente marino: clicca sul mare</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="73"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
         <source>Kraken: clique no mar</source>
         <translation>Kraken: clicca sul mare</translation>
     </message>
@@ -36195,32 +36508,32 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">MONUMENTI</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="77"/>
         <source>Pirâmide com o topo de ouro</source>
         <translation>Piramide con la cima d&apos;oro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="74"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="77"/>
         <source>Templo em degraus com escadaria</source>
         <translation>Tempio a gradoni con scalinata</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="78"/>
         <source>Pagode de cinco andares</source>
         <translation>Pagoda a cinque piani</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="75"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="78"/>
         <source>Obelisco de pedra com ponta de ouro</source>
         <translation>Obelisco di pietra con la punta d&apos;oro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="79"/>
         <source>Cemitério com mausoléu</source>
         <translation>Cimitero con mausoleo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="76"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="79"/>
         <source>Fazenda: celeiro, silo e plantação</source>
         <translation>Fattoria: fienile, silo e campi</translation>
     </message>
@@ -36229,42 +36542,42 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">STILE DEL CASTELLO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="84"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="94"/>
         <source>Humano</source>
         <translation>Umano</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="99"/>
         <source>Élfico</source>
         <translation>Elfico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="86"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="100"/>
         <source>Anão</source>
         <translation>Nanico</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="87"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="101"/>
         <source>Orc</source>
         <translation>Orco</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="84"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="94"/>
         <source>Muralha de pedra, torres de flecha e a menagem</source>
         <translation>Mura di pietra, torri a guglia e il mastio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="85"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="99"/>
         <source>Muralha clara, torres finas e uma torre altíssima no meio</source>
         <translation>Mura chiare, torri sottili e una torre altissima al centro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="86"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="100"/>
         <source>Fortaleza escavada no monte, com portão dourado e forjas</source>
         <translation>Fortezza scavata nel monte, con portone dorato e fucine</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="87"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="101"/>
         <source>Paliçada de toras, torres de vigia e o salão comprido</source>
         <translation>Palizzata di tronchi, torri di guardia e la sala lunga</translation>
     </message>
@@ -36273,23 +36586,23 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">DIMENSIONE DEL CASTELLO</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="461"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="462"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
         <source>Médio</source>
         <translation>Medio</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="461"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="462"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
         <source>Grande</source>
         <translation>Grande</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="404"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="405"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="646"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="461"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="462"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="784"/>
         <source>Colossal</source>
         <translation>Colossale</translation>
     </message>
@@ -36298,48 +36611,48 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">STRADA</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="418"/>
-        <location filename="../src/carto/CartoBuild.cpp" line="649"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="499"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="787"/>
         <source>Pelo vale</source>
         <translation>Per la valle</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="418"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="499"/>
         <source>À mão</source>
         <translation>A mano</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="419"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="500"/>
         <source>Clique no começo e no fim: ela acha o caminho pelo vale</source>
         <translation>Clicca l&apos;inizio e la fine: trova il percorso nella valle</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="419"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="500"/>
         <source>Desenhe o traço</source>
         <translation>Disegna il tracciato</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="502"/>
         <source>Trilha</source>
         <translation>Sentiero</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="421"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="502"/>
         <source>Real</source>
         <translation>Reale</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="503"/>
         <source>Caminho de terra estreito</source>
         <translation>Sentiero di terra stretto</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="503"/>
         <source>Estrada de terra</source>
         <translation>Strada sterrata</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="422"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="503"/>
         <source>Estrada real, calçada de pedra, com lanternas à noite</source>
         <translation>Strada reale, lastricata di pietra, con lanterne di notte</translation>
     </message>
@@ -36348,308 +36661,378 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">Nome (facoltativo)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="534"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="615"/>
         <source>Girar (Q)</source>
         <translation>Ruota (Q)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="535"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="616"/>
         <source>Girar (E)</source>
         <translation>Ruota (E)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="543"/>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="446"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="661"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="461"/>
         <source>Apagar (Delete)</source>
         <translation>Elimina (Canc)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoBuild.cpp" line="507"/>
+        <location filename="../src/carto/CartoBuild.cpp" line="588"/>
         <source>Mostrar cidades e estradas sugeridas pelo terreno</source>
         <translation>Mostra città e strade suggerite dal terreno</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="284"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="32"/>
+        <source>Cidade</source>
+        <translation>Città</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="34"/>
+        <source>Rochedos</source>
+        <translation>Rocce</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="287"/>
+        <source>Ponha num morro ou na serra: a muralha e as torres assentam no relevo, cada uma no seu chão.</source>
+        <translation>Mettilo su una collina o tra i monti: le mura e le torri poggiano sul rilievo, ognuna sul suo terreno.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="288"/>
+        <source>Clique em terra: o castelo cava o fosso em volta (ele acompanha se você mover o castelo).</source>
+        <translation>Clicca sulla terra: il castello scava il fossato intorno (lo segue se sposti il castello).</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="289"/>
         <source>Clique pra colocar um castelo; a bandeira pega a cor do território. Clique num artefato pra selecionar e arrastar.</source>
         <translation>Clicca per posizionare un castello; la bandiera prende il colore del territorio. Clicca un monumento per selezionarlo e trascinarlo.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="285"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="290"/>
         <source>Clique pra colocar uma torre de vigia.</source>
         <translation>Clicca per posizionare una torre di guardia.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="286"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="291"/>
         <source>Clique pra colocar um farol (na costa fica bonito).</source>
         <translation>Clicca per posizionare un faro (sulla costa sta benissimo).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="287"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="292"/>
         <source>Clique pra colocar um moinho. Q/E giram as pás pra outro lado.</source>
         <translation>Clicca per posizionare un mulino. Q/E girano le pale dall&apos;altra parte.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="288"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="293"/>
         <source>Clique pra colocar um templo.</source>
         <translation>Clicca per posizionare un tempio.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="289"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="294"/>
         <source>Clique pra colocar ruínas.</source>
         <translation>Clicca per posizionare delle rovine.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="290"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="295"/>
         <source>Clique pra pôr uma estátua; Q/E giram pra onde ela olha.</source>
         <translation>Clicca per mettere una statua; Q/E girano dove guarda.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="291"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="296"/>
         <source>Clique no mar pra pôr o navio; Q/E viram a proa.</source>
         <translation>Clicca sul mare per mettere la nave; Q/E girano la prua.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="292"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="297"/>
         <source>Clique pra pôr um coliseu (é grande).</source>
         <translation>Clicca per mettere un colosseo (è grande).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="293"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="298"/>
         <source>Clique pra pôr a entrada de uma caverna; Q/E viram a boca.</source>
         <translation>Clicca per mettere l&apos;ingresso di una grotta; Q/E girano l&apos;apertura.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="294"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="299"/>
         <source>Clique pra pôr uma mina; Q/E viram a boca.</source>
         <translation>Clicca per mettere una miniera; Q/E girano l&apos;apertura.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="295"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
         <source>Clique pra pôr a torre do mago.</source>
         <translation>Clicca per mettere la torre del mago.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="296"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="301"/>
         <source>Clique pra pôr uma Árvore Sagrada (enorme).</source>
         <translation>Clicca per mettere un Albero Sacro (enorme).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="297"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="302"/>
         <source>Clique pra pôr um círculo de pedras.</source>
         <translation>Clicca per mettere un cerchio di pietre.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="298"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="303"/>
         <source>Clique pra pôr um acampamento.</source>
         <translation>Clicca per mettere un accampamento.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="299"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="304"/>
         <source>Clique pra pôr um dragão; Q/E viram a cabeça.</source>
         <translation>Clicca per mettere un drago; Q/E girano la testa.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="300"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="305"/>
         <source>Clique pra pôr uma ossada de dragão.</source>
         <translation>Clicca per mettere le ossa di un drago.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="301"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="306"/>
         <source>Clique pra pôr um portal; Q/E giram o anel.</source>
         <translation>Clicca per mettere un portale; Q/E girano l&apos;anello.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="302"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="307"/>
         <source>Clique pra pôr uma ilha flutuante (ela paira no céu).</source>
         <translation>Clicca per mettere un&apos;isola fluttuante (resta sospesa nel cielo).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="303"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="308"/>
         <source>Clique pra pôr a espada na pedra.</source>
         <translation>Clicca per mettere la spada nella roccia.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="304"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="309"/>
         <source>Clique pra pôr as cabeças de pedra; Q/E viram pra onde olham.</source>
         <translation>Clicca per mettere le teste di pietra; Q/E girano dove guardano.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="305"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="310"/>
         <source>Clique no mar pra pôr um drakkar; Q/E viram a proa.</source>
         <translation>Clicca sul mare per mettere un drakkar; Q/E girano la prua.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="306"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="311"/>
         <source>Clique no mar pra pôr um naufrágio.</source>
         <translation>Clicca sul mare per mettere un naufragio.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="307"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="312"/>
         <source>Clique no mar pra pôr uma serpente marinha; Q/E viram a cabeça.</source>
         <translation>Clicca sul mare per mettere un serpente marino; Q/E girano la testa.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="308"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="313"/>
         <source>Clique no mar pra pôr um kraken.</source>
         <translation>Clicca sul mare per mettere un kraken.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="309"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="314"/>
         <source>Clique pra pôr uma pirâmide (é grande); Q/E viram a entrada.</source>
         <translation>Clicca per mettere una piramide (è grande); Q/E girano l&apos;ingresso.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="310"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="315"/>
         <source>Clique pra pôr um zigurate; Q/E viram a escadaria.</source>
         <translation>Clicca per mettere uno ziggurat; Q/E girano la scalinata.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="311"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="316"/>
         <source>Clique pra pôr um pagode.</source>
         <translation>Clicca per mettere una pagoda.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="312"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="317"/>
         <source>Clique pra pôr um obelisco.</source>
         <translation>Clicca per mettere un obelisco.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="313"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="318"/>
         <source>Clique pra pôr um cemitério; Q/E viram o portão.</source>
         <translation>Clicca per mettere un cimitero; Q/E girano il cancello.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="314"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="319"/>
         <source>Clique pra pôr uma fazenda; Q/E viram o celeiro.</source>
         <translation>Clicca per mettere una fattoria; Q/E girano il fienile.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="315"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="320"/>
+        <source>Clique pra pôr o Colosso (enorme); Q/E viram pra onde ele olha.</source>
+        <translation>Clicca per mettere il Colosso (enorme); Q/E girano dove guarda.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="321"/>
+        <source>Clique pra pôr os Guardiões (lindo na beira de um rio); Q/E viram pra onde olham.</source>
+        <translation>Clicca per mettere i Guardiani (bellissimi sulla riva di un fiume); Q/E girano dove guardano.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="322"/>
+        <source>Clique pra pôr o Deus Sentado; Q/E viram o trono.</source>
+        <translation>Clicca per mettere il Dio Seduto; Q/E girano il trono.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="323"/>
+        <source>Clique pra pôr uma catedral; Q/E viram a fachada.</source>
+        <translation>Clicca per mettere una cattedrale; Q/E girano la facciata.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="324"/>
+        <source>Clique pra pôr um arco do triunfo; Q/E viram a passagem.</source>
+        <translation>Clicca per mettere un arco di trionfo; Q/E girano il passaggio.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="325"/>
+        <source>Clique pra pôr um mercado (bom no meio de uma cidade).</source>
+        <translation>Clicca per mettere un mercato (ottimo in mezzo a una città).</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="326"/>
+        <source>Clique pra pôr um trecho de aqueduto; Q/E giram. Vários em fila fazem um aqueduto comprido.</source>
+        <translation>Clicca per mettere un tratto di acquedotto; Q/E ruotano. Più tratti in fila fanno un acquedotto lungo.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="327"/>
+        <source>Pinte: sobrados de cidade, mais juntos que os da vila, com as ruas num rumo só.</source>
+        <translation>Dipingi: case di città, più fitte di quelle del villaggio, con le strade in una sola direzione.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="328"/>
+        <source>Pinte árvores; Do clima escolhe a árvore que o lugar daria.</source>
+        <translation>Dipingi alberi; Dal clima sceglie l&apos;albero che il luogo darebbe.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="329"/>
+        <source>Pinte rochedos e pedras grandes.</source>
+        <translation>Dipingi rocce e massi.</translation>
+    </message>
+    <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="330"/>
         <source>Clique numa margem e depois na outra.</source>
         <translation>Clicca una sponda e poi l&apos;altra.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="316"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="331"/>
         <source>Clique num artefato pra selecionar; arraste pra mover. Q/E giram, Delete apaga.</source>
         <translation>Clicca un monumento per selezionarlo; trascina per spostarlo. Q/E ruotano, Canc elimina.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="317"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="332"/>
         <source>Pinte: as casas brotam em terra firme e pouco inclinada.</source>
         <translation>Dipingi: le case spuntano su terreno solido e poco inclinato.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="318"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="333"/>
         <source>Pinte: retalhos de plantação com sebe.</source>
         <translation>Dipingi: appezzamenti coltivati con siepi.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="319"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="334"/>
         <source>Desenhe o traço da muralha; ela sobe e desce com o chão, com torres no caminho.</source>
         <translation>Disegna il tracciato delle mura; salgono e scendono con il terreno, con torri lungo il percorso.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="320"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="335"/>
         <source>Pinte por cima do que você construiu pra apagar (estradas também).</source>
         <translation>Dipingi sopra ciò che hai costruito per cancellarlo (anche le strade).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="321"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
         <source>Desenhe o traço da estrada; onde ela passar na água vira ponte.</source>
         <translation>Disegna il tracciato della strada; dove attraversa l&apos;acqua diventa un ponte.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="322"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="337"/>
         <source>Clique no começo e no fim: a estrada acha o caminho pelo vale e cruza rio estreito com ponte. Ela continua do último ponto; Esc termina.</source>
         <translation>Clicca l&apos;inizio e la fine: la strada trova il percorso nella valle e attraversa i fiumi stretti con un ponte. Continua dall&apos;ultimo punto; Esc termina.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="336"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="351"/>
         <source>Sugerir nomes pelo relevo</source>
         <translation>Suggerisci nomi dal rilievo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="341"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="356"/>
         <source>QUANTIDADE</source>
         <translation>QUANTITÀ</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="357"/>
         <source>Poucos</source>
         <translation>Pochi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="342"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="357"/>
         <source>Muitos</source>
         <translation>Molti</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="358"/>
         <source>Só os grandes: oceano, mares, serras e as maiores regiões</source>
         <translation>Solo i grandi: oceano, mari, catene montuose e le regioni più grandi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="343"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="358"/>
         <source>Também picos, campos, lagos e ilhas pequenas</source>
         <translation>Anche picchi, pianure, laghi e piccole isole</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="345"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="360"/>
         <source>NOME NOVO</source>
         <translation>NUOVO NOME</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="346"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="361"/>
         <source>Água</source>
         <translation>Acqua</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="362"/>
         <source>Letras de terra: versalete espaçado</source>
         <translation>Lettere di terra: maiuscoletto spaziato</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="347"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="362"/>
         <source>Letras de água: itálico</source>
         <translation>Lettere d&apos;acqua: corsivo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="401"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="416"/>
         <source>Sugestão</source>
         <translation>Suggerimento</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="402"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="417"/>
         <source>Volta pro nome e o lugar que o mapa sugeriu</source>
         <translation>Torna al nome e al posto suggeriti dalla mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="433"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="448"/>
         <source>Clique num nome pra editar. Clique no mapa pra pôr um nome novo; arrastando enquanto clica, ele segue o traço (rio, estrada, serra).</source>
         <translation>Clicca un nome per modificarlo. Clicca sulla mappa per aggiungere un nome nuovo; trascinando mentre clicchi, segue il tracciato (fiume, strada, crinale).</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="460"/>
         <source>Mostrar</source>
         <translation>Mostra</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="445"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="460"/>
         <source>Esconder</source>
         <translation>Nascondi</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="446"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="461"/>
         <source>Esconder (Delete)</source>
         <translation>Nascondi (Canc)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="447"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="462"/>
         <source>Sugestão do mapa: troque o nome ou arraste pra mover. &quot;Sugestão&quot; desfaz o que você mudou nele.</source>
         <translation>Suggerimento della mappa: cambia il nome o trascina per spostarlo. &quot;Suggerimento&quot; annulla ciò che hai cambiato.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelDocks.cpp" line="448"/>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="463"/>
         <source>Nome seu: arraste pra mover; Delete apaga.</source>
         <translation>Nome tuo: trascina per spostarlo; Canc lo elimina.</translation>
     </message>
@@ -36674,6 +37057,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Monti</translation>
     </message>
     <message>
+        <location filename="../src/carto/CartoPanelDocks.cpp" line="33"/>
         <location filename="../src/carto/CartoPanelUi.cpp" line="40"/>
         <source>Floresta</source>
         <translation>Foresta</translation>
@@ -36719,72 +37103,72 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Regione: %1</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="244"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="246"/>
         <source>Exportar imagem</source>
         <translation>Esporta immagine</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="252"/>
         <source>1×</source>
         <translation>1×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="252"/>
         <source>2×</source>
         <translation>2×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="250"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="252"/>
         <source>3×</source>
         <translation>3×</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="253"/>
         <source>Do tamanho da tela</source>
         <translation>Dimensione dello schermo</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="253"/>
         <source>Dobro: bom pra imprimir</source>
         <translation>Doppio: ottimo per la stampa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="251"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="253"/>
         <source>Triplo: pra página inteira do livro</source>
         <translation>Triplo: per una pagina intera del libro</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="261"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="263"/>
         <source>Cartela (título, escala e legenda)</source>
         <translation>Cartiglio (titolo, scala e legenda)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="266"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="268"/>
         <source>Salvar PNG…</source>
         <translation>Salva PNG…</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="271"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="273"/>
         <source>Sai a vista de agora, sem os botões. Na vista Tinta, vira o mapa das primeiras páginas do livro.</source>
         <translation>La vista attuale, senza i pulsanti. Nella vista Inchiostro, diventa la mappa delle prime pagine del libro.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="284"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="286"/>
         <source>Exportar mapa</source>
         <translation>Esporta mappa</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="284"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="286"/>
         <source>Imagem PNG (*.png)</source>
         <translation>Immagine PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="307"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="309"/>
         <source>Não deu pra salvar a imagem nesse lugar.</source>
         <translation>Impossibile salvare l&apos;immagine in quel punto.</translation>
     </message>
     <message>
-        <location filename="../src/carto/CartoPanelUi.cpp" line="309"/>
+        <location filename="../src/carto/CartoPanelUi.cpp" line="311"/>
         <source>Imagem salva: %1</source>
         <translation>Immagine salvata: %1</translation>
     </message>

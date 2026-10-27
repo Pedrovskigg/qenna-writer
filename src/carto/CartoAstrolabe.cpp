@@ -3,7 +3,11 @@
 #include "CartoPaint.h"
 #include "../Theme.h"
 
+#include <QGuiApplication>
+#include <QKeyEvent>
 #include <QMouseEvent>
+#include <QScreen>
+#include <QSettings>
 #include <QPainter>
 #include <QPainterPath>
 #include <QRadialGradient>
@@ -16,8 +20,7 @@ namespace {
 constexpr double kSize = 236, kMargin = 12;     // o instrumento + a sombra em volta
 constexpr double RH = 106, RT = 88, RD = 72;     // aro da hora, arco da inclinação, disco das vistas
 constexpr double DEG = M_PI / 180;
-struct ViewSpot { const char* mode; double dx, dy; };
-const ViewSpot kViews[4] = { { "full", 0, -50 }, { "atlas", 50, 0 }, { "ink", 0, 50 }, { "terrain", -50, 0 } };
+struct ViewSpot { QString mode; double dx, dy, hw; };
 
 QColor mix(const QColor& a, const QColor& b, double t)
 {
@@ -28,9 +31,45 @@ QString viewName(const QString& m)
 {
     if (m == QLatin1String("full")) return Astrolabe::tr("Completo");
     if (m == QLatin1String("atlas")) return Astrolabe::tr("Atlas");
-    if (m == QLatin1String("ink")) return Astrolabe::tr("Tinta");
+    if (isArtMode(m)) return artModeShort(m);
     return Astrolabe::tr("Terreno");
 }
+// amostra de cada vista de arte: o papel, a tinta (o risco na diagonal)
+struct Swatch { QRgb paper, ink; };
+Swatch swatchOf(const QString& m)
+{
+    if (m == QLatin1String("parch")) return { 0xffead6ae, 0xff4a301e };
+    if (m == QLatin1String("chart")) return { 0xffeee2c4, 0xffa43428 };
+    if (m == QLatin1String("topo")) return { 0xffcfdca0, 0xff6e4e34 };
+    if (m == QLatin1String("aqua")) return { 0xfff6f2e8, 0xff7eb0cc };
+    if (m == QLatin1String("blue")) return { 0xff24487c, 0xffe8f0fa };
+    return { 0xfff0e7d0, 0xff28211c };
+}
+QString artModeDesc(const QString& m)
+{
+    if (m == QLatin1String("parch")) return Astrolabe::tr("Mapa de livro de fantasia: papel velho e aquarela por baixo do nanquim");
+    if (m == QLatin1String("chart")) return Astrolabe::tr("Carta de navegador: linhas de rumo, rosas dos ventos e monstros no mar");
+    if (m == QLatin1String("topo")) return Astrolabe::tr("Curvas de nível e cores pela altitude: pra ler o relevo");
+    if (m == QLatin1String("aqua")) return Astrolabe::tr("Manchas de aquarela no papel, sem contorno: boa pra capa e ilustração");
+    if (m == QLatin1String("blue")) return Astrolabe::tr("Azul e branco, papel quadriculado: mesa do general");
+    return Astrolabe::tr("Nanquim e hachura, preto e branco: o miolo do livro");
+}
+}
+
+QString artModeName(const QString& m)
+{
+    if (m == QLatin1String("parch")) return Astrolabe::tr("Pergaminho");
+    if (m == QLatin1String("chart")) return Astrolabe::tr("Carta náutica");
+    if (m == QLatin1String("topo")) return Astrolabe::tr("Topográfico");
+    if (m == QLatin1String("aqua")) return Astrolabe::tr("Aquarela");
+    if (m == QLatin1String("blue")) return Astrolabe::tr("Planta de guerra");
+    return Astrolabe::tr("Tinta");
+}
+QString artModeShort(const QString& m)
+{
+    if (m == QLatin1String("chart")) return Astrolabe::tr("Carta");
+    if (m == QLatin1String("blue")) return Astrolabe::tr("Planta");
+    return artModeName(m);
 }
 
 Astrolabe::Astrolabe(QWidget* parent) : QWidget(parent)
@@ -39,11 +78,14 @@ Astrolabe::Astrolabe(QWidget* parent) : QWidget(parent)
     setAttribute(Qt::WA_TranslucentBackground);
     setMouseTracking(true);
     setToolTip(tr("Arraste no meio pra girar · clique na agulha pro norte · arco da direita inclina · arraste o sol pra mudar a hora"));
+    const QString am = QSettings().value(QStringLiteral("carto/artMode"), QStringLiteral("ink")).toString();
+    if (isArtMode(am)) m_artMode = am;
 }
 
 void Astrolabe::setState(double ang, double pitch, double hour, const QString& mode)
 {
     m_ang = ang; m_pitch = pitch; m_hour = hour; m_mode = mode;
+    if (isArtMode(mode) && mode != m_artMode) { m_artMode = mode; QSettings().setValue(QStringLiteral("carto/artMode"), mode); }
     update();
 }
 
@@ -106,15 +148,25 @@ void Astrolabe::paintEvent(QPaintEvent*)
     // disco das vistas
     p.setPen(QPen(line, 1)); p.setBrush(panel2);
     p.drawEllipse(C, RD, RD);
-    for (const ViewSpot& v : kViews) {
-        const QString m = QString::fromLatin1(v.mode);
-        const bool on = m == m_mode;
-        const QRectF r(C.x() + v.dx - 31, C.y() + v.dy - 10, 62, 20);
+    const ViewSpot spots[4] = { { QStringLiteral("full"), 0, -50, 31 }, { QStringLiteral("atlas"), 50, 0, 31 }, { m_artMode, 0, 50, 45 }, { QStringLiteral("terrain"), -50, 0, 31 } };
+    for (const ViewSpot& v : spots) {
+        const QString& m = v.mode;
+        const bool on = m == m_mode, art = isArtMode(m);
+        const QRectF r(C.x() + v.dx - v.hw, C.y() + v.dy - 10, 2 * v.hw, 20);
         if (on) { p.setPen(Qt::NoPen); p.setBrush(accentSoft); p.drawRoundedRect(r, 10, 10); }
         QFont vf = font(); vf.setPixelSize(11); vf.setBold(on);
         QColor off = muted; off.setAlphaF(0.35);
-        p.setFont(vf); p.setPen(on ? accent : m == m_locked ? off : muted);
-        p.drawText(r, Qt::AlignCenter, viewName(m));
+        const QColor col = on ? accent : m == m_locked ? off : muted;
+        p.setFont(vf); p.setPen(col);
+        p.drawText(art ? r.adjusted(0, 0, -12, 0) : r, Qt::AlignCenter, viewName(m));
+        if (art) {
+            // a setinha: aqui moram as seis vistas de arte
+            QPainterPath caret;
+            const double cx = r.right() - 13, cy = r.center().y() - 1.5;
+            caret.moveTo(cx, cy); caret.lineTo(cx + 3.5, cy + 3.5); caret.lineTo(cx + 7, cy);
+            QPen cp(col, 1.4); cp.setCapStyle(Qt::RoundCap); cp.setJoinStyle(Qt::RoundJoin);
+            p.setPen(cp); p.setBrush(Qt::NoBrush); p.drawPath(caret);
+        }
     }
 
     // o número da inclinação fica por cima do disco
@@ -150,8 +202,9 @@ void Astrolabe::paintEvent(QPaintEvent*)
 
 QString Astrolabe::viewAt(QPointF l) const
 {
-    for (const ViewSpot& v : kViews)
-        if (QRectF(v.dx - 31, v.dy - 11, 62, 22).contains(l)) return QString::fromLatin1(v.mode);
+    const ViewSpot spots[4] = { { QStringLiteral("full"), 0, -50, 31 }, { QStringLiteral("atlas"), 50, 0, 31 }, { m_artMode, 0, 50, 45 }, { QStringLiteral("terrain"), -50, 0, 31 } };
+    for (const ViewSpot& v : spots)
+        if (QRectF(v.dx - v.hw, v.dy - 11, 2 * v.hw, 22).contains(l)) return v.mode;
     return QString();
 }
 
@@ -161,6 +214,10 @@ void Astrolabe::mousePressEvent(QMouseEvent* e)
     const double d = std::hypot(l.x(), l.y()), a = std::atan2(l.y(), l.x());
     if (d > 118) { e->ignore(); return; }
     const QString v = d <= 76 ? viewAt(l) : QString();
+    if (!v.isEmpty() && isArtMode(v) && v == m_mode) {   // já está na vista de arte: abre a lista das seis
+        emit artPickRequested(mapToGlobal((QPointF(kMargin + kSize / 2, kMargin + kSize / 2 - 2 + 50 - 12)).toPoint()));
+        return;
+    }
     if (!v.isEmpty()) { emit modeRequested(v); return; }   // vista apagada: o painel recusa e avisa
     m_moved = false;
     if (d > 97) m_drag = Drag::Hour;
@@ -202,5 +259,99 @@ void Astrolabe::mouseReleaseEvent(QMouseEvent*)
     else if (d == Drag::Tilt) emit pitchDragged(m_pitch, false);
     else if (d == Drag::Hour) emit hourDragged(m_hour, true);
 }
+
+// ── a lista das vistas de arte ──
+namespace {
+constexpr int kPickW = 300, kRowH = 58, kPickPad = 6;
+}
+
+ArtPicker::ArtPicker(QWidget* parent) : QWidget(parent, Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint)
+{
+    setAttribute(Qt::WA_TranslucentBackground);
+    setMouseTracking(true);
+    setFixedSize(kPickW, kPickPad * 2 + kRowH * static_cast<int>(artModes().size()));
+}
+
+void ArtPicker::openAt(QPoint a, const QString& current, bool below)
+{
+    m_current = current;
+    m_hover = -1;
+    QRect r(a.x() - width() / 2, below ? a.y() : a.y() - height(), width(), height());
+    if (const QScreen* sc = QGuiApplication::screenAt(a)) {
+        const QRect g = sc->availableGeometry();
+        r.moveLeft(std::max(g.left() + 8, std::min(g.right() - r.width() - 8, r.left())));
+        r.moveTop(std::max(g.top() + 8, r.top()));
+    }
+    move(r.topLeft());
+    show();
+    setFocus();
+}
+
+int ArtPicker::rowAt(QPointF p) const
+{
+    const int i = static_cast<int>(std::floor((p.y() - kPickPad) / kRowH));
+    return p.x() >= 0 && p.x() <= width() && i >= 0 && i < static_cast<int>(artModes().size()) ? i : -1;
+}
+
+void ArtPicker::paintEvent(QPaintEvent*)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    const QColor panel = Theme::toColor(Theme::panelBackground()), line = Theme::toColor(Theme::panelBorder()), ink = Theme::toColor(Theme::textPrimary()),
+                 muted = Theme::toColor(Theme::textMuted()), accent = Theme::toColor(Theme::accentDefault());
+    p.setPen(QPen(line, 1)); p.setBrush(panel);
+    p.drawRoundedRect(QRectF(0.5, 0.5, width() - 1, height() - 1), 12, 12);
+    const QStringList& ms = artModes();
+    for (int i = 0; i < ms.size(); i++) {
+        const QRectF r(kPickPad, kPickPad + i * kRowH, width() - 2 * kPickPad, kRowH);
+        const bool on = ms[i] == m_current;
+        if (on || i == m_hover) {
+            QColor bg = on ? accent : mix(panel, ink, 0.07);
+            if (on) bg.setAlphaF(0.18);
+            p.setPen(Qt::NoPen); p.setBrush(bg); p.drawRoundedRect(r.adjusted(0, 1, 0, -1), 9, 9);
+        }
+        // amostra: papel com o risco da tinta na diagonal
+        const Swatch sw = swatchOf(ms[i]);
+        const QRectF s(r.left() + 8, r.top() + (kRowH - 30) / 2.0, 30, 30);
+        QPainterPath clip; clip.addRoundedRect(s, 8, 8);
+        p.save(); p.setClipPath(clip);
+        p.fillRect(s, QColor::fromRgb(sw.paper));
+        QPainterPath stripe;
+        stripe.moveTo(s.left() + s.width() * 0.55, s.top()); stripe.lineTo(s.left() + s.width() * 0.7, s.top()); stripe.lineTo(s.left(), s.top() + s.height() * 0.7); stripe.lineTo(s.left(), s.top() + s.height() * 0.55); stripe.closeSubpath();
+        stripe.moveTo(s.right(), s.top() + s.height() * 0.55); stripe.lineTo(s.right(), s.top() + s.height() * 0.7); stripe.lineTo(s.left() + s.width() * 0.7, s.bottom()); stripe.lineTo(s.left() + s.width() * 0.55, s.bottom()); stripe.closeSubpath();
+        p.fillPath(stripe, QColor::fromRgb(sw.ink));
+        p.restore();
+        p.setPen(QPen(QColor(0, 0, 0, 64), 1)); p.setBrush(Qt::NoBrush); p.drawRoundedRect(s, 8, 8);
+        QFont tf = font(); tf.setPixelSize(12); tf.setWeight(QFont::DemiBold);
+        p.setFont(tf); p.setPen(on ? accent : ink);
+        const QRectF tr(s.right() + 10, r.top() + 7, r.right() - s.right() - 16, 16);
+        p.drawText(tr, Qt::AlignLeft | Qt::AlignVCenter, artModeName(ms[i]));
+        QFont df = font(); df.setPixelSize(11); df.setWeight(QFont::Normal);
+        p.setFont(df); p.setPen(muted);
+        const QRectF dr(tr.left(), tr.bottom() + 2, tr.width(), kRowH - 26);
+        p.drawText(dr, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, artModeDesc(ms[i]));
+    }
+}
+
+void ArtPicker::mouseMoveEvent(QMouseEvent* e)
+{
+    const int i = rowAt(e->position());
+    if (i != m_hover) { m_hover = i; setCursor(i >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor); update(); }
+}
+
+void ArtPicker::mousePressEvent(QMouseEvent* e)
+{
+    const int i = rowAt(e->position());
+    hide();
+    if (i >= 0 && rect().contains(e->position().toPoint())) emit picked(artModes()[i]);
+}
+
+void ArtPicker::keyPressEvent(QKeyEvent* e)
+{
+    if (e->key() == Qt::Key_Escape) { hide(); return; }
+    QWidget::keyPressEvent(e);
+}
+
+void ArtPicker::leaveEvent(QEvent*) { if (m_hover >= 0) { m_hover = -1; update(); } }
 
 } // namespace carto

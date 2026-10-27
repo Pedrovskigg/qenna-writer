@@ -93,6 +93,10 @@ struct Planet { double lat0 = 0.0; double span = 78.0; bool set = false; };
 struct NoiseCache;   // ruído das bordas dos pincéis, guardado por bloco (CartoEdit.cpp)
 
 // O mundo: altura (terra > 0, mar <= 0), umidade (0–1) e frio extra, na resolução final.
+// fosso cavado por um castelo "com fosso" (o fosso é o próprio terreno): o retângulo, o terreno de antes de cavar
+// (pra devolver) e a altura que ficou depois (só se devolve onde ninguém pintou por cima). key = a pose do castelo
+struct MoatCut { QString id, key; int x0 = 0, y0 = 0, x1 = 0, y1 = 0; std::vector<float> before, cut; };
+
 struct World {
     int W = 0, H = 0;
     std::vector<float> h, m, k;
@@ -107,6 +111,7 @@ struct World {
     // caches preguiçosos (relevo escondido dos pincéis, ondulação da temperatura)
     std::vector<float> F, T;
     std::shared_ptr<NoiseCache> brushNoise;   // só depende da semente: cópias do mundo podem dividir
+    std::vector<MoatCut> moats;
 };
 
 World generate(int seed, int water, const QString& type, int size, const QString& climate);

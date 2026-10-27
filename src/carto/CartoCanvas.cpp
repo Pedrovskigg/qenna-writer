@@ -60,6 +60,13 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
     m_oceanTile = makeTile(nullptr);
     m_paperTile = makeTile(&paper);
     m_atlasTile = makeTile(&atlas);
+    // o fundo (o mar longe da costa) de cada vista de arte nova
+    const RGB parch = { 232, 212, 172 }, chart = { 212, 222, 202 }, topo = { 134, 178, 212 }, aqua = { 246, 242, 232 }, blue = { 30, 64, 112 };
+    m_artTiles.insert(QStringLiteral("parch"), makeTile(&parch));
+    m_artTiles.insert(QStringLiteral("chart"), makeTile(&chart));
+    m_artTiles.insert(QStringLiteral("topo"), makeTile(&topo));
+    m_artTiles.insert(QStringLiteral("aqua"), makeTile(&aqua));
+    m_artTiles.insert(QStringLiteral("blue"), makeTile(&blue));
 }
 
 Canvas::~Canvas()
@@ -73,8 +80,8 @@ View Canvas::currentView(int step) const
 {
     View v;
     v.ang = m_ang; v.pitch = m_pitch; v.step = step;
-    v.style = m_mode == QLatin1String("atlas") ? Style::Atlas : m_mode == QLatin1String("ink") ? Style::Ink
-            : m_style == QLatin1String("mira") ? Style::Mira : Style::Rich;
+    v.style = styleOfMode(m_mode);
+    if (v.style == Style::Rich && m_style == QLatin1String("mira")) v.style = Style::Mira;
     v.info = infoOn() && m_doc;
     return v;
 }
@@ -110,6 +117,7 @@ void Canvas::setDoc(Doc* d, bool refit)
 
 void Canvas::layersReplaced()
 {
+    syncMoats();                    // desfazer de construção: o fosso volta junto
     sceneChanged();
     if (m_world) requestFull();
     update();
@@ -381,12 +389,18 @@ QImage Canvas::exportImage(double scale, const std::function<void(QPainter&)>& e
 void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
 {
     CARTO_PROF("desenhar a mesa");
-    const bool atlas = m_mode == QLatin1String("atlas"), ink = m_mode == QLatin1String("ink");
-    QBrush sea(atlas ? m_atlasTile : ink ? m_paperTile : m_oceanTile);
+    const bool atlas = m_mode == QLatin1String("atlas"), ink = isArtMode(m_mode);   // ink: Tinta e as outras vistas de arte (sem nuvem, sem hora)
+    QBrush sea(atlas ? m_atlasTile : m_mode == QLatin1String("ink") ? m_paperTile : m_artTiles.value(m_mode, m_oceanTile));
     QTransform seaT; seaT.translate(m_panX, m_panY); seaT.scale(m_zoom, m_zoom);
     sea.setTransform(seaT);
     p.fillRect(QRect(QPoint(0, 0), sz), sea);
     if (!m_base) return;
+    if (ink && m_doc) {
+        // linhas de rumo, ondinhas e monstro da Carta; grade da Planta: por baixo do terreno, aparece só no mar
+        SceneState su = sceneState();
+        su.vw = sz.width(); su.vh = sz.height();
+        m_scene.drawUnder(p, su);
+    }
     const Geom& g = m_base->g;
     const bool matches = baseMatches();
     p.save();
@@ -453,6 +467,8 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
         p.restore();
         if (T.night > 0.01 && steady) m_scene.drawLights(p, st, T.night);   // janelas, tochas e faróis acesos
     }
+
+    if (ink && steady) m_scene.drawOver(p, st);   // rosas dos ventos da Carta, borda gasta do papel
 
     // nomes por cima de tudo (legíveis até de noite)
     if (st.info() && steady) {
@@ -563,11 +579,17 @@ bool userDiff(const UserLayer& a, const UserLayer& b, std::vector<Pt>& pts)
         }
     };
     auto path = [&](const Path& p) { pts.insert(pts.end(), p.begin(), p.end()); };
-    each(a.arts, b.arts, [](const Art& x, const Art& y) { return x.id == y.id && x.kind == y.kind && x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.size == y.size && x.realm == y.realm && x.v == y.v; },
-         [&](const Art& x) { pts.push_back({ x.x, x.y }); });
-    each(a.houses, b.houses, [](const House& x, const House& y) { return x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.floors == y.floors && x.timber == y.timber && x.v == y.v; },
+    // artefato que cresceu (slider de tamanho) passa da folga dos azulejos vizinhos: aí refaz tudo
+    bool big = false;
+    each(a.arts, b.arts, [](const Art& x, const Art& y) { return x.id == y.id && x.kind == y.kind && x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.size == y.size && x.realm == y.realm && x.v == y.v
+                                                                     && x.sc == y.sc && x.style == y.style; },
+         [&](const Art& x) { pts.push_back({ x.x, x.y }); if (x.sc > 1.5) big = true; });
+    if (big) return false;
+    each(a.houses, b.houses, [](const House& x, const House& y) { return x.x == y.x && x.y == y.y && x.yaw == y.yaw && x.floors == y.floors && x.timber == y.timber && x.v == y.v
+                                                                         && x.city == y.city && x.bell == y.bell; },
          [&](const House& x) { pts.push_back({ x.x, x.y }); });
-    each(a.walls, b.walls, [](const Wall& x, const Wall& y) { return x.pts == y.pts; }, [&](const Wall& x) { path(x.pts); });
+    each(a.walls, b.walls, [](const Wall& x, const Wall& y) { return x.pts == y.pts && x.kind == y.kind; }, [&](const Wall& x) { path(x.pts); });
+    each(a.trees, b.trees, [](const Flora& x, const Flora& y) { return x.x == y.x && x.y == y.y && x.type == y.type && x.s == y.s; }, [&](const Flora& x) { pts.push_back({ x.x, x.y }); });
     each(a.fields, b.fields, [](const Field& x, const Field& y) { return x.x == y.x && x.y == y.y && x.w == y.w && x.d == y.d && x.yaw == y.yaw && x.crop == y.crop; },
          [&](const Field& x) { const double r = std::max(x.w, x.d); pts.push_back({ x.x - r, x.y - r }); pts.push_back({ x.x + r, x.y + r }); pts.push_back({ x.x - r, x.y + r }); pts.push_back({ x.x + r, x.y - r }); });
     each(a.bridges, b.bridges, [](const Path& x, const Path& y) { return x == y; }, path);

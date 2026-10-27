@@ -22,16 +22,8 @@ namespace carto::spr {
 
 using namespace kit;
 
-namespace {
-using P2 = std::array<double, 2>;
-
-// sistema do artefato: x pra frente, girado por yaw
-struct Loc {
-    double x, y, c, s;
-    explicit Loc(const Art& b) : x(b.x), y(b.y), c(std::cos(b.yaw)), s(std::sin(b.yaw)) {}
-    V3 operator()(double lx, double ly, double z) const { return { x + c * lx - s * ly, y + s * lx + c * ly, z }; }
-    P2 at(double lx, double ly) const { return { x + c * lx - s * ly, y + s * lx + c * ly }; }
-};
+// peças das levas novas (declaradas no CartoSpritesKit.h: a leva 4, em CartoSpritesArts4.cpp, usa as mesmas)
+namespace kit {
 double seedOf(const Art& b, int k) { return std::floor(b.v * 1e6) + k; }
 RGB sc(const RGB& c, double k) { return { c[0] * k, c[1] * k, c[2] * k }; }
 V3 add3(const V3& a, const V3& b) { return { a[0] + b[0], a[1] + b[1], a[2] + b[2] }; }
@@ -39,9 +31,9 @@ V3 sub3(const V3& a, const V3& b) { return { a[0] - b[0], a[1] - b[1], a[2] - b[
 V3 mul3(const V3& a, double k) { return { a[0] * k, a[1] * k, a[2] * k }; }
 V3 cross(const V3& a, const V3& b) { return { a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0] }; }
 V3 norm(const V3& a) { double l = std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]); if (!l) l = 1; return { a[0] / l, a[1] / l, a[2] / l }; }
-Face poly(std::vector<V3> v, const RGB& col, const V3& c, Deco deco = {}, double bias = 0) { return face(std::move(v), col, c, std::move(deco), bias); }
+Face poly(std::vector<V3> v, const RGB& col, const V3& c, Deco deco, double bias) { return face(std::move(v), col, c, std::move(deco), bias); }
 Face tri(const V3& a, const V3& b, const V3& c, const RGB& col, const V3& C) { Face f = face({ a, b, c }, col, C); f.flat = true; return f; }
-Face flatPoly(std::vector<V3> v, const RGB& col, const V3& c, Deco deco = {}) { Face f = face(std::move(v), col, c, std::move(deco)); f.flat = true; return f; }
+Face flatPoly(std::vector<V3> v, const RGB& col, const V3& c, Deco deco) { Face f = face(std::move(v), col, c, std::move(deco)); f.flat = true; return f; }
 QPainterPath pathOf(const std::vector<QPointF>& pts)
 {
     QPainterPath path;
@@ -73,7 +65,7 @@ Faces beamFaces(const V3& p0, const V3& p1, double w, double h, const RGB& col)
 }
 // anel elíptico (tronco, saia, torso achatado): de z0 com raios (ax0, ay0) até z1 com (ax1, ay1), girado por yaw
 Faces ringFaces(double x, double y, double yaw, double ax0, double ay0, double ax1, double ay1, double z0, double z1, int n, const RGB& col,
-                const std::function<Deco(int, int)>& deco = {})
+                const std::function<Deco(int, int)>& deco)
 {
     const double c = std::cos(yaw), s = std::sin(yaw);
     auto P = [&](double a, double rx, double ry, double z) { const double lx = std::cos(a) * rx, ly = std::sin(a) * ry; return V3{ x + c * lx - s * ly, y + s * lx + c * ly, z }; };
@@ -110,12 +102,12 @@ Faces blobGeneric(const std::function<V3(double, double, double)>& T, double rx,
     }
     return f;
 }
-Faces blobFaces(double cx, double cy, double cz, double rx, double rz, int n, int rings, const RGB& col, double seed, double jitter = 0.18, const std::vector<RGB>& cols = {})
+Faces blobFaces(double cx, double cy, double cz, double rx, double rz, int n, int rings, const RGB& col, double seed, double jitter, const std::vector<RGB>& cols)
 {
     return blobGeneric([=](double x, double y, double z) { return V3{ cx + x, cy + y, cz + z }; }, rx, rx, rz, n, rings, col, seed, jitter, cols);
 }
 // elipsoide no sistema do artefato (corpo, cabeça, coxa): raios diferentes em x, y e z
-Faces ellip(const Loc& L, double lx, double ly, double lz, double rx, double ry, double rz, int n, int rings, const RGB& col, double seed, double jitter = 0.1)
+Faces ellip(const Loc& L, double lx, double ly, double lz, double rx, double ry, double rz, int n, int rings, const RGB& col, double seed, double jitter)
 {
     return blobGeneric([&](double x, double y, double z) { return L(lx + x, ly + y, lz + z); }, rx, ry, rz, n, rings, col, seed, jitter, {});
 }
@@ -153,7 +145,7 @@ Faces moundFaces(double x, double y, double r, double h, double seed, const RGB&
     return out;
 }
 // tubo por uma linha de pontos (pescoço, cauda, tentáculo, costela): vigas que afinam de w0 a w1
-Faces tube(const std::vector<V3>& pts, double w0, double w1, const RGB& col, const RGB* alt = nullptr)
+Faces tube(const std::vector<V3>& pts, double w0, double w1, const RGB& col, const RGB* alt)
 {
     Faces f;
     for (size_t i = 0; i + 1 < pts.size(); i++) {
@@ -164,7 +156,7 @@ Faces tube(const std::vector<V3>& pts, double w0, double w1, const RGB& col, con
     }
     return f;
 }
-void glowAt(QPainter& p, const Cam& cam, const V3& at, double rWorld, const RGB& col, double a, double minR = 4)
+void glowAt(QPainter& p, const Cam& cam, const V3& at, double rWorld, const RGB& col, double a, double minR)
 {
     const QPointF g = cam.proj(at[0], at[1], at[2]), e = cam.proj(at[0], at[1], at[2] + rWorld);
     const double R = std::max(minR, std::hypot(e.x() - g.x(), e.y() - g.y()));
@@ -193,6 +185,9 @@ void groundShadow(QPainter& p, const Cam& cam, double x, double y, double r, dou
     p.drawPath(pathOf(pts));
 }
 Cam detailed(const Cam& cam) { Cam c = cam; c.detail = true; return c; }
+} // namespace kit
+
+namespace {
 
 // ════════════════════════ leva 2 ════════════════════════
 
@@ -1295,6 +1290,13 @@ const QHash<QString, std::vector<ArtLight>>& lightTable()
         { "floatisland", { { -1.2, 1.0, 12.5, 1.8, "window", 0.85 }, { 0, 0, 7.5, 4.4, "fairy", 0.55 } } },
         { "farm", { { 3.9, -1.2, 3.0, 1.6, "window", 0.85 } } },
         { "sword", { { 0, 0, 6.2, 4.4, "holy", 0.7 } } },
+        // leva 4
+        { "colossus", { { 0.05 * 24, 0.175 * 24, 3.6 + 1.2 * 24, 4.2, "fire", 1 }, { 3.6, 0, 1.8, 2.2, "torch", 0.8 } } },
+        { "guardians", { { 1.6, -5.6, 2.8, 2.0, "torch", 0.8 }, { 1.6, 5.6, 2.8, 2.0, "torch", 0.8 } } },
+        { "seatedgod", { { 4.0, -3.4, 2.8, 2.6, "fire", 1 }, { 4.0, 3.4, 2.8, 2.6, "fire", 1 } } },
+        { "cathedral", { { 0, 0, 4.2, 4.6, "window", 0.85 }, { 5.3, 0, 6.4, 2.6, "window", 1 }, { -6.6, 0, 3.6, 2.4, "window", 0.7 } } },
+        { "arch", { { 1.8, -2.3, 1.2, 1.8, "torch", 0.85 }, { 1.8, 2.3, 1.2, 1.8, "torch", 0.85 } } },
+        { "market", { { 3.5, 2.5, 2.4, 1.8, "lantern", 0.9 }, { -3.2, -2.8, 2.4, 1.8, "lantern", 0.9 }, { -1.0, 4.2, 2.4, 1.8, "lantern", 0.85 }, { 2.2, -4.0, 2.4, 1.8, "lantern", 0.85 } } },
     };
     return t;
 }
@@ -1302,6 +1304,7 @@ const QHash<QString, std::vector<ArtLight>>& lightTable()
 
 bool drawArt(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol)
 {
+    if (drawArt4(p, a, cam, realmCol)) return true;          // leva 4: castelos novos e os monumentos grandes
     const QString& k = a.kind;
     if (k == QLatin1String("castle")) {
         if (a.style.isEmpty() || a.style == QLatin1String("human")) return false;

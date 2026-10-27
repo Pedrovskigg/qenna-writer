@@ -32,13 +32,39 @@ double artHeight(const QString& kind)
 }
 inline bool isFull(const SceneState& st) { return st.mode == QLatin1String("full"); }
 inline bool isAtlas(const SceneState& st) { return st.mode == QLatin1String("atlas"); }
-inline bool isInk(const SceneState& st) { return st.mode == QLatin1String("ink"); }
+// vistas de papel (a Tinta e as da v35: Pergaminho, Carta náutica, Aquarela, Planta de guerra): a tinta e o papel
+// de cada uma. O Topográfico se comporta como o Atlas (nomes, castelinhos), mas com as árvores de pena
+struct ArtPal { RGB ink, paper; };
+const ArtPal* artPal(const QString& mode)
+{
+    static const QHash<QString, ArtPal> P = {
+        { QStringLiteral("ink"), { { 40, 33, 28 }, { 240, 231, 208 } } }, { QStringLiteral("parch"), { { 74, 48, 30 }, { 234, 214, 174 } } },
+        { QStringLiteral("chart"), { { 62, 48, 36 }, { 238, 226, 196 } } }, { QStringLiteral("aqua"), { { 96, 76, 62 }, { 246, 242, 232 } } },
+        { QStringLiteral("blue"), { { 232, 240, 250 }, { 36, 72, 124 } } },
+    };
+    auto it = P.find(mode);
+    return it == P.end() ? nullptr : &it.value();
+}
+inline bool isTopo(const SceneState& st) { return st.mode == QLatin1String("topo"); }
+inline bool isInk(const SceneState& st) { return artPal(st.mode) != nullptr; }   // toda vista de papel
+inline bool isAtlasLike(const SceneState& st) { return isAtlas(st) || isTopo(st); }
+// as árvores de pena (a regra da Tinta) em todas as vistas de arte; no Topográfico e na Aquarela o fundo é colorido,
+// então o recheio de papel vai meio transparente (a cor de baixo aparece, como pena e aguada)
+std::optional<spr::InkPal> penTrees(const QString& mode)
+{
+    if (mode == QLatin1String("ink")) return std::nullopt;
+    if (mode == QLatin1String("topo")) return spr::InkPal{ { 56, 70, 44 }, { 240, 236, 214 }, 0.45, 0.7 };   // tinta meio apagada: o relevo manda
+    if (mode == QLatin1String("aqua")) return spr::InkPal{ { 70, 82, 58 }, { 246, 242, 232 }, 0.5 };
+    if (const ArtPal* a = artPal(mode)) return spr::InkPal{ a->ink, a->paper, 1 };
+    return std::nullopt;
+}
 QColor rgba(double r, double g, double b, double a = 1)
 {
     return QColor(static_cast<int>(jsRound(clampd(r, 0, 255))), static_cast<int>(jsRound(clampd(g, 0, 255))),
                   static_cast<int>(jsRound(clampd(b, 0, 255))), static_cast<int>(jsRound(clampd(a, 0, 1) * 255)));
 }
 QColor rgbOf(const RGB& c) { return rgba(c[0], c[1], c[2]); }
+QColor rgbA(const RGB& c, double a) { return rgba(c[0], c[1], c[2], a); }
 RGB realmCol(const Info& info, int r) { return r >= 0 && r < static_cast<int>(info.realms.size()) ? info.realms[r].color : kNeutral; }
 
 // fonte dos nomes: IM Fell (versalete pros nomes de terra, itálico pros de água)
@@ -131,7 +157,7 @@ const TextSprite* findSprite(const QString& fam, double fq, double* near)
     *near = best->first / 1000.0;
     return &best->second;
 }
-const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& path, const QColor& stroke, double lw, bool knock, double knockW1, double knockW2,
+const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& path, const QColor& stroke, double lw, const QColor& knock, double knockW1, double knockW2,
                              const QColor& fill, double dpr)
 {
     SpriteCache& C = spriteCache();
@@ -141,7 +167,7 @@ const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& 
         if (it != C.fam.end()) { auto e = it->find(key); if (e != it->end()) return e->second; }
     }
     if (C.count > 4000) { C.fam.clear(); C.count = 0; }
-    const double pad = (knock ? std::max(knockW1, knockW2) : lw) / 2 + 2;
+    const double pad = (knock.isValid() ? std::max(knockW1, knockW2) : lw) / 2 + 2;
     const QRectF r = path.boundingRect().adjusted(-pad, -pad, pad, pad);
     CARTO_PROF("nomes: carimbo novo");
     TextSprite sp;
@@ -156,10 +182,11 @@ const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& 
         q.setRenderHint(QPainter::Antialiasing);
         q.scale(dpr, dpr);
         q.translate(-r.topLeft());
-        if (knock) {
-            // Tinta: anel largo e suave (o traço do mapa vai sumindo), depois o miolo de papel puro
-            q.strokePath(path, strokePen(QColor(240, 231, 208, 153), knockW1));
-            q.strokePath(path, strokePen(QColor(240, 231, 208), knockW2));
+        if (knock.isValid()) {
+            // vistas de papel: anel largo e suave (o traço do mapa vai sumindo), depois o miolo de papel puro
+            QColor soft = knock; soft.setAlpha(153);
+            q.strokePath(path, strokePen(soft, knockW1));
+            q.strokePath(path, strokePen(knock, knockW2));
         } else q.strokePath(path, strokePen(stroke, lw));
     }
     {
@@ -173,6 +200,15 @@ const TextSprite& textSprite(const QString& fam, double fq, const QPainterPath& 
     return C.fam[fam][key] = sp;
 }
 QString colorKey(const QColor& c) { return QString::number(c.rgba(), 16); }
+}
+
+namespace {
+// o recorte do morro na frente, enquanto a construção se desenha
+struct Hide {
+    QPainter& p; bool on;
+    Hide(QPainter& pp, const std::optional<QPainterPath>& r) : p(pp), on(r.has_value()) { if (on) { p.save(); p.setClipPath(*r, Qt::IntersectClip); } }
+    ~Hide() { if (on) p.restore(); }
+};
 }
 
 // ── chão ──
@@ -217,11 +253,19 @@ spr::Cam Scene::cam(const SceneState& st, double L) const
     return c;
 }
 
-spr::Cam Scene::camAt(const SceneState& st, double L, double ox, double oy) const
+spr::Cam Scene::camAt(const SceneState& st, double L, double ox, double oy, double sc, bool withGround) const
 {
-    const double k = worldScale(st.doc->world);
-    if (k == 1) return cam(st, L);
+    const double k = worldScale(st.doc->world) * sc;
     spr::Cam c = cam(st, L);
+    if (withGround) {
+        // gz: altura do chão em (x, y), no sistema do sprite, em relação ao pé dele (o castelo no Penhasco assenta no relevo)
+        const double co = std::max(0.05, c.co), sqv = st.g ? st.g->sq : 1;
+        c.gz = [this, &st, L, ox, oy, k, co, sqv](double x, double y) {
+            const auto g2 = ground(st, ox + (x - ox) * k, oy + (y - oy) * k);
+            return g2 ? (g2->L - L) * sqv / (co * k) : 0.0;
+        };
+    }
+    if (k == 1) return c;
     const double det = st.zoom * k / st.fitZoom;
     c.edges = det > 1.6; c.detail = det > 1.35;
     const double ca = std::cos(st.ang), sa = std::sin(st.ang), sq = st.g ? st.g->sq : 1, co = c.co;
@@ -232,6 +276,83 @@ spr::Cam Scene::camAt(const SceneState& st, double L, double ox, double oy) cons
         return QPointF(panX + zoom * px, panY + zoom * (sq * (py - L) - co * z * k));
     };
     return c;
+}
+
+// ── o morro na frente tampa o que está atrás dele ──
+// A pintura do chão guarda, por pixel, de que linha do terreno ele veio (aux.depth). Coluna a coluna, na faixa da
+// tela que a construção ocupa, acha o primeiro pixel (de cima pra baixo) que veio de um chão mais à frente que o pé
+// dela: ali passa o cume do morro na frente. A altura exata do cume sai do lift (fração de linha), e os cumes das
+// colunas viram uma linha contínua: o desenho some abaixo dela, acompanhando a colina e não em degraus.
+// Dentro do pé, o chão só tampa se a construção estiver do lado de lá do morro e o chão subir acima do piso
+// dela (é morro, não o chão dela): castelo logo abaixo do topo, visto do outro lado, mostra só as torres. onRelief: a construção já
+// assenta no relevo (o Penhasco), então o chão debaixo dela é sempre chão dela.
+std::optional<QPainterPath> Scene::unhidden(const SceneState& st, double x, double y, double footR, double topH, bool onRelief) const
+{
+    if (!st.g || !st.aux || st.aux->depth.empty() || !st.doc) return std::nullopt;
+    const Geom& m = *st.g;
+    const World& w = st.doc->world;
+    const double s = m.step;
+    const double ca = std::cos(st.ang), sa = std::sin(st.ang), dx = x - w.W / 2.0, dy = y - w.H / 2.0;
+    const double px = ca * dx - sa * dy, py = sa * dx + ca * dy;
+    const int u0 = static_cast<int>(jsRound(px / s + m.cu)), v0 = static_cast<int>(jsRound(py / s + m.cv));
+    if (u0 < 0 || v0 < 0 || u0 >= m.W || v0 >= m.H) return std::nullopt;
+    const double fr = footR / s;                                  // o pé, em linhas do terreno
+    const double co = std::cos(st.pitch * M_PI / 180), sq = m.sq > 0 ? m.sq : 1;
+    const double lift0 = st.aux->lift[static_cast<size_t>(v0) * m.W + u0], rowBase = v0 - lift0;
+    const int r0 = std::max(0, static_cast<int>(std::floor(rowBase - fr - co * topH / (sq * s) - 2)));
+    const int r1 = std::min(m.H - 1, static_cast<int>(std::floor(rowBase + fr)));
+    const int r2 = std::min(m.H - 1, r1 + static_cast<int>(std::ceil(fr)) + 12);   // um pouco abaixo: o cume continua liso nas pontas
+    const int thr = v0 + static_cast<int>(std::ceil(fr)) + 3;     // além do pé: chão mais à frente sempre tampa
+    const int near = v0 + 2;                                      // dentro do pé: tampa se subir acima do piso
+    const double rise = 1.5 + 0.2 * fr;
+    // ...mas só se a construção estiver do lado de lá do morro: no meio dela, o chão sobe em direção a quem olha.
+    // Do lado de cá (o chão desce pra frente), uma lombada de lado não come pedaço dela
+    bool behind = false;
+    if (!onRelief)
+        for (int u = std::max(0, u0 - 1); u <= std::min(m.W - 1, u0 + 1) && !behind; u++)
+            for (int vv = near + 1; vv <= std::min(m.H - 1, thr); vv++)
+                if (st.aux->lift[static_cast<size_t>(vv) * m.W + u] > lift0 + rise) { behind = true; break; }
+    const int rU = static_cast<int>(std::ceil(fr)) + 2;
+    const int ua = std::max(0, u0 - rU), ub = std::min(m.W - 1, u0 + rU);
+    if (r1 < r0 || ub < ua) return std::nullopt;
+    const double rowPx = st.zoom * sq * s, colPx = st.zoom * s;
+    constexpr double kFar = 16000;      // "o infinito" do recorte: o Qt rasteriza só até ~32 mil px
+    bool any = false;
+    std::vector<QPointF> crest;
+    crest.reserve(static_cast<size_t>(ub - ua + 1));
+    for (int u = ua; u <= ub; u++) {
+        double cf = -1;
+        for (int r = r0; r <= r2; r++) {
+            const int d = st.aux->depth[static_cast<size_t>(r) * m.W + u];
+            auto hides = [&](int vv) {
+                return vv > thr || (behind && vv > near && st.aux->lift[static_cast<size_t>(vv) * m.W + u] > lift0 + rise);
+            };
+            if (d < 0 || d >= m.H || !hides(d)) continue;
+            // a linha r mostra o chão d (ou um vizinho dele): o topo exato desse chão é v - lift
+            double best = r + 1;
+            for (int vv = std::max(near + 1, d - 3); vv <= std::min(m.H - 1, d + 3); vv++)
+                if (hides(vv)) best = std::min(best, vv - static_cast<double>(st.aux->lift[static_cast<size_t>(vv) * m.W + u]));
+            cf = std::max(static_cast<double>(r), best);
+            if (r <= r1) any = true;
+            break;
+        }
+        crest.emplace_back(st.panX + colPx * (u - m.cu), cf < 0 ? kFar : st.panY + rowPx * (cf - m.cv));
+    }
+    if (!any) return std::nullopt;
+    // aparece: tudo acima da linha do cume; fora da faixa examinada nada tampa
+    QPainterPath path;
+    const double xl = st.panX + colPx * (ua - 0.5 - m.cu), xr = st.panX + colPx * (ub + 0.5 - m.cu);
+    path.moveTo(-kFar, -kFar);
+    path.lineTo(kFar, -kFar);
+    path.lineTo(kFar, kFar);
+    path.lineTo(xr, kFar);
+    path.lineTo(xr, crest.back().y());
+    for (auto it = crest.rbegin(); it != crest.rend(); ++it) path.lineTo(*it);
+    path.lineTo(xl, crest.front().y());
+    path.lineTo(xl, kFar);
+    path.lineTo(-kFar, kFar);
+    path.closeSubpath();
+    return path;
 }
 
 // ── a lista de tudo que fica de pé, em ordem de profundidade ──
@@ -279,10 +400,12 @@ const std::vector<Scene::Item>& Scene::items(const SceneState& st)
         }
         const double kk = worldScale(w);
         for (const House& h : U->houses) mark(h.x, h.y, 1);
-        for (const Art& a : U->arts)
-            mark(a.x, a.y, a.kind == QLatin1String("castle") ? static_cast<int>(std::ceil((spr::kCastle[std::max(0, std::min(3, a.size))].R + 2) * kk / G))
-                           : (a.kind == QLatin1String("temple") || a.kind == QLatin1String("ruins")) ? static_cast<int>(std::ceil(3 * kk))
-                           : artSpec(a.kind) ? static_cast<int>(std::ceil((artSpec(a.kind)->r + 1) * kk / G)) : 1);
+        for (const Art& a : U->arts) {
+            const double ka = kk * a.sc;
+            mark(a.x, a.y, a.kind == QLatin1String("castle") ? static_cast<int>(std::ceil((spr::kCastle[std::max(0, std::min(3, a.size))].R + 2) * ka / G))
+                           : (a.kind == QLatin1String("temple") || a.kind == QLatin1String("ruins")) ? static_cast<int>(std::ceil(3 * ka))
+                           : artSpec(a.kind) ? static_cast<int>(std::ceil((artSpec(a.kind)->r + 1) * ka / G)) : 1);
+        }
         for (const Field& f : U->fields) mark(f.x, f.y, static_cast<int>(std::ceil(std::max(f.w, f.d) / 2 / G)) + 1);
         for (const Wall& wl : U->walls) for (const Pt& p : wl.pts) mark(p[0], p[1], 1);
         for (const Road& rd : U->roads) for (size_t i = 0; i < rd.pts.size(); i += 2) mark(rd.pts[i][0], rd.pts[i][1], rd.kind == QLatin1String("trail") ? 0 : 1);
@@ -294,6 +417,8 @@ const std::vector<Scene::Item>& Scene::items(const SceneState& st)
         if (!blocked.empty() && blocked[static_cast<size_t>(std::floor(f.y / G)) * gw + static_cast<size_t>(std::floor(f.x / G))]) continue;
         m_items.push_back({ 0, static_cast<int>(i), 0, depthOf(f.x, f.y) });
     }
+    // árvores e rochedos que o usuário plantou (pincéis Floresta e Rochedos): valem em todas as vistas com informação
+    if (U) for (size_t i = 0; i < U->trees.size(); i++) m_items.push_back({ 9, static_cast<int>(i), 0, depthOf(U->trees[i].x, U->trees[i].y) });
     if (info && isFull(st)) {
         for (size_t i = 0; i < U->houses.size(); i++) {
             const House& h = U->houses[i];
@@ -304,7 +429,8 @@ const std::vector<Scene::Item>& Scene::items(const SceneState& st)
         for (size_t wi = 0; wi < U->walls.size(); wi++) {
             const Path& p = U->walls[wi].pts;
             for (size_t i = 0; i + 1 < p.size(); i++) m_items.push_back({ 7, static_cast<int>(wi), static_cast<int>(i), depthOf((p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2) });
-            for (size_t i = 0; i < p.size(); i += 6) m_items.push_back({ 8, static_cast<int>(wi), static_cast<int>(i), depthOf(p[i][0], p[i][1]) + 0.01 });
+            const size_t every = U->walls[wi].kind.isEmpty() ? 6 : 9;   // a paliçada tem torre de vigia mais espaçada
+            for (size_t i = 0; i < p.size(); i += every) m_items.push_back({ 8, static_cast<int>(wi), static_cast<int>(i), depthOf(p[i][0], p[i][1]) + 0.01 });
             m_items.push_back({ 8, static_cast<int>(wi), static_cast<int>(p.size() - 1), depthOf(p.back()[0], p.back()[1]) + 0.01 });
         }
         for (size_t i = 0; i < U->bridges.size(); i++) { const Pt& mid = U->bridges[i][U->bridges[i].size() / 2]; m_items.push_back({ 3, static_cast<int>(i), 0, depthOf(mid[0], mid[1]) }); }
@@ -374,7 +500,9 @@ void Scene::drawAtlasWalls(QPainter& p, const SceneState& st, const UserLayer& U
             started ? path.lineTo(g->X, g->Y) : path.moveTo(g->X, g->Y);
             started = true;
         }
-        QPen pen(QColor(60, 50, 40, 230), 2.6 * k);
+        // a tinta da vista (clara na Planta de guerra, sépia no Pergaminho); fora delas, o marrom do Atlas
+        const ArtPal* ap = artPal(st.mode);
+        QPen pen(ap && st.mode != QLatin1String("ink") ? QColor(int(ap->ink[0]), int(ap->ink[1]), int(ap->ink[2]), 230) : QColor(60, 50, 40, 230), 2.6 * k);
         pen.setDashPattern({ 2.2 / 2.6, 1.6 / 2.6 });
         p.strokePath(path, pen);
     }
@@ -394,8 +522,10 @@ void Scene::drawRoads(QPainter& p, const SceneState& st)
     const UserLayer& U = info.user;
     p.save();
     p.setRenderHint(QPainter::Antialiasing);
-    if (isAtlas(st) || isInk(st)) drawAtlasWalls(p, st, U);
-    const bool atlas = isAtlas(st), inkM = isInk(st), flat = atlas || inkM;
+    if (isAtlasLike(st) || isInk(st)) drawAtlasWalls(p, st, U);
+    const bool atlas = isAtlasLike(st), inkM = isInk(st), flat = atlas || inkM;
+    const ArtPal* P = artPal(st.mode);
+    const QColor paperC = P ? rgbOf(P->paper) : QColor(), inkC = P ? rgbOf(P->ink) : QColor();
     const double kz = clampd(st.zoom / st.fitZoom, 0.8, 2.4);
     const double ks = worldScale(st.doc->world);
     const bool near = st.zoom * ks / st.fitZoom > 1.35;
@@ -439,14 +569,14 @@ void Scene::drawRoads(QPainter& p, const SceneState& st)
         const RoadPlan::Run& r = *rp;
         if (r.n < 2) continue;
         const double lw = inkM ? (r.kind == QLatin1String("royal") ? 5.2 : 3.4) * kz : r.inner + std::max(1.6 * std::min(kz, 1.4), r.inner * 0.35);
-        p.strokePath(r.path, mk(inkM ? QColor(240, 231, 208, 217) : atlas ? r.s->aEdge : r.s->edge, lw));
+        p.strokePath(r.path, mk(inkM ? rgbA(P->paper, 0.85) : atlas ? r.s->aEdge : r.s->edge, lw));
     }
     for (const RoadPlan::Run* rp : runs) {
         const RoadPlan::Run& r = *rp;
         if (r.n < 2) continue;
         const bool trail = r.kind == QLatin1String("trail"), royal = r.kind == QLatin1String("royal");
         const double lw = inkM ? (royal ? 3.2 : trail ? 0.9 : 1.2) * kz : atlas ? (royal ? 2.4 : trail ? 1.1 : 1.5) * kz : r.inner;
-        QPen pen = mk(inkM ? QColor(40, 33, 28) : atlas ? r.s->aFill : r.s->fill, lw);
+        QPen pen = mk(inkM ? inkC : atlas ? r.s->aFill : r.s->fill, lw);
         // trilha é sempre tracejada; a estrada, só de longe (o símbolo de sempre); na Tinta, traço de pena
         QVector<qreal> dash;
         if (inkM) { if (trail) dash = { 1 * kz, 2.6 * kz }; else if (!royal) dash = { 5 * kz, 3 * kz }; }
@@ -454,7 +584,7 @@ void Scene::drawRoads(QPainter& p, const SceneState& st)
         else if (!royal && !near && !atlas) dash = { 5 * kz, 3 * kz };
         if (!dash.isEmpty()) { for (qreal& d : dash) d /= std::max(0.01, lw); pen.setDashPattern(dash); pen.setCapStyle(Qt::RoundCap); }
         p.strokePath(r.path, pen);
-        if (inkM && royal) p.strokePath(r.path, mk(QColor(240, 231, 208), 1.3 * kz));   // estrada real: linha dupla
+        if (inkM && royal) p.strokePath(r.path, mk(paperC, 1.3 * kz));   // estrada real: linha dupla
     }
     if (near && !flat) {
         for (const RoadPlan::Run* rp : runs) {
@@ -501,8 +631,9 @@ const Scene::SpriteIndex& Scene::spriteIndex(const SceneState& st, const std::ve
     };
     for (; pos < static_cast<int>(its.size()); pos++) {
         const Item& it = its[pos];
-        if (it.k == 0) {
-            const Flora& o = flora[it.idx];
+        if (it.k == 0 || it.k == 9) {
+            if (it.k == 9 && !info) continue;
+            const Flora& o = it.k == 0 ? flora[it.idx] : info->user.trees[it.idx];
             const auto g = ground(st, o.x, o.y, 7);
             if (!g || !g->vis) continue;
             const double r = std::max(st.zoom * o.s * ks * 1.6, 26 * k * std::sqrt(ks)) + 4;
@@ -511,7 +642,7 @@ const Scene::SpriteIndex& Scene::spriteIndex(const SceneState& st, const std::ve
         }
         if (!info) continue;
         const UserLayer& U = info->user;
-        if (it.k == 6) { const Art& o = U.arts[it.idx]; around(ground(st, o.x, o.y), big); }
+        if (it.k == 6) { const Art& o = U.arts[it.idx]; around(ground(st, o.x, o.y), big * std::max(1.0, o.sc)); }
         else if (it.k == 7) {
             const Path& pts = U.walls[it.idx].pts;
             span({ ground(st, pts[it.sub][0], pts[it.sub][1]), ground(st, pts[it.sub + 1][0], pts[it.sub + 1][1]) }, big * 0.6);
@@ -538,7 +669,8 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
     if (!st.sprites || !st.aux || st.aux->lift.empty() || !st.doc) return;
     Doc& doc = *st.doc;
     const std::vector<Flora>& flora = doc.ensureFlora();
-    const bool atlas = isAtlas(st), inkM = isInk(st);
+    const std::optional<spr::InkPal> pen = penTrees(st.mode);
+    const bool atlas = isAtlas(st), inkM = isInk(st) || isTopo(st), topoM = isTopo(st);
     const Info* info = st.info() ? doc.info.get() : nullptr;
     const double k = clampd(st.zoom / st.fitZoom, 0.8, 1.8);
     const bool clipped = st.clip.isValid() && !st.planKey.isEmpty();
@@ -570,8 +702,9 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
     const int N = clipped ? static_cast<int>(sel.size()) : static_cast<int>(its.size());
     for (int qi = 0; qi < N; qi++) {
         const Item& it = its[clipped ? sel[qi] : qi];
-        if (it.k == 0) {
-            const Flora& o = flora[it.idx];
+        if (it.k == 0 || it.k == 9) {
+            if (it.k == 9 && !info) continue;
+            const Flora& o = it.k == 0 ? flora[it.idx] : info->user.trees[it.idx];
             // quem fica de fora de longe é sorteado pelo próprio índice (o mesmo em todo azulejo)
             const quint32 hsh = (static_cast<quint32>(o.v * 16777215.0) * 2654435761u) >> 8;
             if (stride > 1 && (hsh % stride)) continue;
@@ -581,11 +714,12 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
                 if (o.type == Shrub || o.type == Rock) continue;
                 if (o.b == 2 && static_cast<int>(std::floor(o.v * 613)) % 4) continue;   // árvore solta na planície: uma em quatro
                 const double zr = st.zoom / st.fitZoom;
-                const int inkStride = zr < 1.6 ? 3 : zr < 2.6 ? 2 : 1;
+                // no Topográfico quem fala é o relevo (faixas de cor e curvas de nível): bem menos árvores e menores
+                const int inkStride = topoM ? (zr < 1.6 ? 8 : zr < 2.6 ? 4 : 2) : zr < 1.6 ? 3 : zr < 2.6 ? 2 : 1;
                 if (inkStride > 1 && static_cast<int>(std::floor(o.v * 997)) % inkStride) continue;
                 const auto g = ground(st, o.x, o.y, 7);
                 if (!g || !g->vis || out(*g)) continue;
-                spr::inkGlyph(p, o.type, g->X, g->Y, k * 1.35 * std::sqrt(ks), o.v);
+                spr::inkGlyph(p, o.type, g->X, g->Y, k * (topoM ? 1.1 : 1.35) * std::sqrt(ks), o.v, pen ? &*pen : nullptr);
                 continue;
             }
             const auto g = ground(st, o.x, o.y, 7);
@@ -601,11 +735,18 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
         const UserLayer& U = info->user;
         if (it.k == 6) {
             const Art& o = U.arts[it.idx];
-            const auto g = ground(st, o.x, o.y, artHeight(o.kind));
-            if (!g || !g->vis || out(*g)) continue;
-            const spr::Cam c = camAt(st, g->L, o.x, o.y);
+            const auto g = ground(st, o.x, o.y, artHeight(o.kind) * o.sc);
+            if (!g || !g->vis) continue;
+            if (o.sc > 1.01) { const double pd = pad * o.sc; if (g->X < -pd || g->Y < -pd || g->X > W + pd || g->Y > H + pd * 2) continue; }
+            else if (out(*g)) continue;
+            const bool crag = o.kind == QLatin1String("castle") && o.style == QLatin1String("crag");
+            const spr::Cam c = camAt(st, g->L, o.x, o.y, o.sc, crag);
             const RGB rc = realmCol(*info, o.realm);
-            if (spr::drawArt(p, o, c, rc)) {}
+            const double ka = ks * o.sc;
+            const double foot = (o.kind == QLatin1String("castle") ? spr::kCastle[std::max(0, std::min(3, o.size))].R + 1
+                                 : artSpec(o.kind) ? artSpec(o.kind)->r : 3) * ka;
+            Hide hide(p, unhidden(st, o.x, o.y, foot, artHeight(o.kind) * 1.4 * ka, crag));
+            if (spr::drawArt4(p, o, c, rc) || spr::drawArt(p, o, c, rc)) {}
             else if (o.kind == QLatin1String("castle")) spr::drawCastle(p, o.x, o.y, o.yaw, o.size, c, rc);
             else if (o.kind == QLatin1String("tower")) spr::drawTowerArt(p, o, c, rc);
             else if (o.kind == QLatin1String("lighthouse")) spr::drawLighthouse(p, o, c);
@@ -627,12 +768,14 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
                 const QPointF q = base(x, y, z);
                 return QPointF(q.x(), q.y() - zs * L);
             };
-            spr::drawWallSeg(p, a, b, c, ks);
+            Hide hide(p, unhidden(st, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, std::hypot(dx, dy) / 2 + ks, 5 * ks));
+            if (U.walls[it.idx].kind.isEmpty()) spr::drawWallSeg(p, a, b, c, ks); else spr::drawPalisadeSeg(p, a, b, c, ks);
         } else if (it.k == 8) {
             const Pt o = U.walls[it.idx].pts[it.sub];
             const auto g = ground(st, o[0], o[1], 5);
             if (!g || !g->vis || out(*g)) continue;
-            spr::drawWallTower(p, o, cam(st, g->L), ks);
+            Hide hide(p, unhidden(st, o[0], o[1], 1.5 * ks, 7 * ks));
+            if (U.walls[it.idx].kind.isEmpty()) spr::drawWallTower(p, o, cam(st, g->L), ks); else spr::drawPalisadeTower(p, o, cam(st, g->L), ks);
         } else if (it.k == 4) {
             const Dock& o = info->docks[it.idx];
             const auto g = ground(st, (o.x0 + o.x1) / 2, (o.y0 + o.y1) / 2);
@@ -653,13 +796,17 @@ void Scene::drawSprites(QPainter& p, const SceneState& st)
             const Building& o = info->buildings[it.idx];
             const auto g = ground(st, o.x, o.y, 12);
             if (!g || !g->vis || out(*g)) continue;
+            Hide hide(p, unhidden(st, o.x, o.y, (spr::kCastle[std::max(0, std::min(3, o.size))].R + 1) * ks, 17 * ks));
             spr::drawCastle(p, o.x, o.y, o.yaw, o.size, camAt(st, g->L, o.x, o.y), realmCol(*info, o.realm));
         } else if (it.k == 1) {
             const bool user = it.sub == 1;
             const double x = user ? U.houses[it.idx].x : info->buildings[it.idx].x, y = user ? U.houses[it.idx].y : info->buildings[it.idx].y;
-            const auto g = ground(st, x, y, 4);
+            const bool city = user && U.houses[it.idx].city;
+            const auto g = ground(st, x, y, city ? (U.houses[it.idx].bell ? 12 : 7) : 4);
             if (!g || !g->vis || out(*g)) continue;
-            if (user) { const House& h = U.houses[it.idx]; spr::drawHouse(p, h.x, h.y, h.yaw, h.v, h.floors, h.timber, camAt(st, g->L, h.x, h.y), h.snowy == 1); }
+            Hide hide(p, unhidden(st, x, y, (city ? 2.2 : 1.6) * ks, (city ? (U.houses[it.idx].bell ? 14 : 9) : 6) * ks));
+            if (city) { const House& h = U.houses[it.idx]; spr::drawCityHouse(p, h, camAt(st, g->L, h.x, h.y), h.snowy == 1); }
+            else if (user) { const House& h = U.houses[it.idx]; spr::drawHouse(p, h.x, h.y, h.yaw, h.v, h.floors, h.timber, camAt(st, g->L, h.x, h.y), h.snowy == 1); }
             else { const Building& h = info->buildings[it.idx]; spr::drawHouse(p, h.x, h.y, h.yaw, h.v, h.floors, h.timber, camAt(st, g->L, h.x, h.y), h.snowy == 1); }
         }
     }
@@ -686,19 +833,22 @@ void Scene::drawLights(QPainter& p, const SceneState& st, double night)
             if (fr(v * 7.31) < 0.25) return;
             add(x, y, (floors == 2 ? 2.8 : 1.7) * k, 2.6 * k, "window", 0.75 + 0.25 * fr(v * 3.7));
         };
-        auto castle = [&](double x, double y, double yaw, int size) {
+        auto castle = [&](double x, double y, double yaw, int size, double kc = -1, const Art* art = nullptr) {
+            if (kc < 0) kc = k;
             const spr::CastleCfg& D = spr::kCastle[std::max(0, std::min(3, size))];
-            const double R = D.R * k;
+            double R = D.R, zt = D.wallH + 0.6;
+            const bool ring = art && spr::castleLightRing(*art, R, zt);   // o do Penhasco acende em volta da muralha dele
+            R *= kc;
             static const int kTorches[4] = { 4, 6, 9, 14 };
             const int n = kTorches[std::max(0, std::min(3, size))];
             for (int i = 0; i < n; i++) {
                 const double a = yaw + (i + 0.5) / n * M_PI * 2;
-                add(x + std::cos(a) * R, y + std::sin(a) * R, (D.wallH + 0.6) * k, 2.4 * k, "torch", 0.9);
+                add(x + std::cos(a) * R, y + std::sin(a) * R, zt * kc, 2.4 * kc, "torch", 0.9);
             }
-            add(x, y, D.keepH * 0.7 * k, 3.4 * k, "window", 1);
-            if (D.hasInner) for (int i = 0; i < 4; i++) {
+            add(x, y, (ring ? zt + D.keepH * 0.4 : D.keepH * 0.7) * kc, 3.4 * kc, "window", 1);
+            if (D.hasInner && !ring) for (int i = 0; i < 4; i++) {
                 const double a = yaw + i / 4.0 * M_PI * 2;
-                add(x + std::cos(a) * D.iR * k, y + std::sin(a) * D.iR * k, (D.iWallH + 0.6) * k, 2.2 * k, "torch", 0.85);
+                add(x + std::cos(a) * D.iR * kc, y + std::sin(a) * D.iR * kc, (D.iWallH + 0.6) * kc, 2.2 * kc, "torch", 0.85);
             }
         };
         if (gen) {
@@ -707,17 +857,23 @@ void Scene::drawLights(QPainter& p, const SceneState& st, double night)
             for (const Boat& b : info.boats) add(b.x, b.y, 2.4 * k, 1.3 * k, "lantern", 0.6);
             for (const Path& br : info.bridges) { add(br[0][0], br[0][1], 1.6, 1.6 * k, "lantern", 0.8); add(br.back()[0], br.back()[1], 1.6, 1.6 * k, "lantern", 0.8); }
         }
-        for (const House& h : U.houses) house(h.x, h.y, h.v, h.floors);
+        for (const House& h : U.houses) {
+            if (!h.city) { house(h.x, h.y, h.v, h.floors); continue; }
+            if (fr(h.v * 7.31) < 0.15) continue;
+            add(h.x, h.y, (h.floors * 1.75 - 1) * k, 2.6 * k, "window", 0.75 + 0.25 * fr(h.v * 3.7));
+            if (h.floors == 3 && fr(h.v * 5.1) > 0.5) add(h.x, h.y, 1.2 * k, 2.2 * k, "window", 0.7);
+        }
         for (const Art& a : U.arts) {
-            if (a.kind == QLatin1String("castle")) castle(a.x, a.y, a.yaw, a.size);
-            else if (a.kind == QLatin1String("tower")) add(a.x, a.y, 9.6 * k, 2.6 * k, "torch", 1);
-            else if (a.kind == QLatin1String("lighthouse")) add(a.x, a.y, 11.6 * k, 5.5 * k, "beacon", 1);
-            else if (a.kind == QLatin1String("windmill")) add(a.x, a.y, 1.8 * k, 2.2 * k, "window", 0.8);
-            else if (a.kind == QLatin1String("temple")) for (int sg : { -1, 1 }) add(a.x + std::cos(a.yaw) * 3.4 * k * sg, a.y + std::sin(a.yaw) * 3.4 * k * sg, 1.4 * k, 2.2 * k, "torch", 0.95);
+            const double ka = k * a.sc;
+            if (a.kind == QLatin1String("castle")) castle(a.x, a.y, a.yaw, a.size, ka, &a);
+            else if (a.kind == QLatin1String("tower")) add(a.x, a.y, 9.6 * ka, 2.6 * ka, "torch", 1);
+            else if (a.kind == QLatin1String("lighthouse")) add(a.x, a.y, 11.6 * ka, 5.5 * ka, "beacon", 1);
+            else if (a.kind == QLatin1String("windmill")) add(a.x, a.y, 1.8 * ka, 2.2 * ka, "window", 0.8);
+            else if (a.kind == QLatin1String("temple")) for (int sg : { -1, 1 }) add(a.x + std::cos(a.yaw) * 3.4 * ka * sg, a.y + std::sin(a.yaw) * 3.4 * ka * sg, 1.4 * ka, 2.2 * ka, "torch", 0.95);
             else {
                 const double ca = std::cos(a.yaw), sa = std::sin(a.yaw);
                 for (const spr::ArtLight& l : spr::artLights(a.kind))
-                    add(a.x + (ca * l.lx - sa * l.ly) * k, a.y + (sa * l.lx + ca * l.ly) * k, l.z * k, l.r * k, l.kind, l.force);
+                    add(a.x + (ca * l.lx - sa * l.ly) * ka, a.y + (sa * l.lx + ca * l.ly) * ka, l.z * ka, l.r * ka, l.kind, l.force);
             }
         }
         for (const Wall& wl : U.walls) for (size_t i = 0; i < wl.pts.size(); i += 6) add(wl.pts[i][0], wl.pts[i][1], 4.8 * k, 1.9 * k, "torch", 0.85);
@@ -782,16 +938,18 @@ const NSty* nameStyle(const QString& kind)
 // [preenchimento, contorno] por vista
 std::pair<QColor, QColor> namePalette(const QString& mode, bool water)
 {
-    if (mode == QLatin1String("ink")) return water ? std::make_pair(QColor(40, 33, 28, 214), QColor(240, 231, 208, 230)) : std::make_pair(QColor(40, 33, 28), QColor(240, 231, 208, 235));
-    if (mode == QLatin1String("atlas")) return water ? std::make_pair(QColor(52, 92, 118), QColor(214, 232, 236, 217)) : std::make_pair(QColor(78, 58, 42), QColor(246, 240, 224, 217));
+    if (const ArtPal* P = artPal(mode)) return water ? std::make_pair(rgbA(P->ink, 0.84), rgbA(P->paper, 0.9)) : std::make_pair(rgbOf(P->ink), rgbA(P->paper, 0.92));
+    if (mode == QLatin1String("atlas") || mode == QLatin1String("topo")) return water ? std::make_pair(QColor(52, 92, 118), QColor(214, 232, 236, 217)) : std::make_pair(QColor(78, 58, 42), QColor(246, 240, 224, 217));
     return water ? std::make_pair(QColor(208, 230, 242, 240), QColor(8, 26, 40, 153)) : std::make_pair(QColor(252, 246, 232, 245), QColor(18, 16, 14, 158));
 }
 // grade de colisão: um nome só entra onde não encosta em outro
 class HitGrid {
 public:
-    bool hits(const std::vector<QRectF>& boxes) const
+    // gap: a folga mínima entre dois nomes (a sugestão da Mira, 26/10): perto demais também é esbarrão
+    bool hits(const std::vector<QRectF>& boxes, double gap = 0) const
     {
-        for (const QRectF& b : boxes) {
+        for (const QRectF& b0 : boxes) {
+            const QRectF b = b0.adjusted(-gap, -gap, gap, gap);
             bool hit = false;
             each(b, [&](qint64 key) {
                 auto it = m_cells.find(key);
@@ -937,7 +1095,7 @@ static std::optional<Layout> layoutName(const Scene& sc, const SceneState& st, c
 }
 
 // knock (Tinta): clareira de papel em volta das letras, como no mapa impresso; o traço do mapa some embaixo
-static bool drawName(QPainter& p, const Layout& L, const std::pair<QColor, QColor>& pal, double alpha, bool knock, bool quick)
+static bool drawName(QPainter& p, const Layout& L, const std::pair<QColor, QColor>& pal, double alpha, const QColor& knock, bool quick)
 {
     bool near = false;
     p.save();
@@ -952,7 +1110,7 @@ static bool drawName(QPainter& p, const Layout& L, const std::pair<QColor, QColo
     const double dpr = p.device() ? p.device()->devicePixelRatioF() : 1.0;
     const double fq = quantSize(L.fs);
     const double lw = std::max(2.6, fq * 0.24), k1 = std::max(9.0, fq * 0.95), k2 = std::max(5.0, fq * 0.5);
-    const QString base = QStringLiteral("g|%1|%2|%3|%4|%5|").arg(L.caps).arg(L.it).arg(colorKey(pal.second), colorKey(pal.first)).arg(knock).arg(dpr);
+    const QString base = QStringLiteral("g|%1|%2|%3|%4|%5|").arg(L.caps).arg(L.it).arg(colorKey(pal.second), colorKey(pal.first)).arg(knock.isValid() ? colorKey(knock) : QStringLiteral("-")).arg(dpr);
     const QTransform t0 = p.worldTransform();
     for (int pass = 0; pass < 2; pass++) {
         for (const Glyph& g : L.glyphs) {
@@ -1000,7 +1158,10 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
     if (!st.info()) return;
     Doc& doc = *st.doc;
     Info& info = *doc.info;
-    const bool atlas = isAtlas(st), inkM = isInk(st), flat = atlas || inkM;
+    const bool atlas = isAtlasLike(st), inkM = isInk(st), flat = atlas || inkM;
+    const ArtPal* P = artPal(st.mode);
+    const QColor knock = P ? rgbOf(P->paper) : QColor();
+    const bool washed = st.mode == QLatin1String("parch") || st.mode == QLatin1String("aqua");   // reino com a cor dele (aquarela)
     const double k = clampd(st.zoom / st.fitZoom, 0.8, 2.4);
     HitGrid hash;
     hash.add(st.avoid);
@@ -1009,8 +1170,17 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
     auto textBox = [](double x, double y, double w, double fs, bool center) {
         return center ? box(x - w / 2, y - fs * 0.6, x + w / 2, y + fs * 0.6) : box(x, y - fs * 0.6, x + w, y + fs * 0.6);
     };
-    const QColor halo = flat ? (inkM ? QColor(240, 231, 208, 235) : QColor(248, 242, 228, 235)) : QColor(14, 16, 20, 179);
-    const QColor ink = flat ? (inkM ? QColor(40, 33, 28) : QColor(44, 32, 24)) : QColor(246, 240, 228);
+    // nome de cidade ou construção: à direita do lugar (como sempre); se encostar em outro nome, tenta à esquerda,
+    // embaixo, e em cima ou embaixo à direita. Nenhum cabe: fica à direita (nome que o usuário deu nunca some)
+    const double gap = 6;
+    auto freeSpot = [&](double X, double Y, double dx, double dy, double w, double fs) {
+        const QPointF tries[5] = { { X + dx, Y - dy }, { X - dx - w, Y - dy }, { X - w / 2, Y + fs * 0.9 + 4 * k },
+                                   { X + dx, Y - dy - fs * 1.3 }, { X + dx, Y - dy + fs * 1.3 } };
+        for (const QPointF& t : tries) if (!hash.hits({ textBox(t.x(), t.y(), w, fs, false) }, gap)) return t;
+        return tries[0];
+    };
+    const QColor halo = flat ? (inkM ? rgbA(P->paper, 0.92) : QColor(248, 242, 228, 235)) : QColor(14, 16, 20, 179);
+    const QColor ink = flat ? (inkM ? rgbOf(P->ink) : QColor(44, 32, 24)) : QColor(246, 240, 228);
     p.save();
     p.setRenderHint(QPainter::Antialiasing);
     // reinos (centralizados, com letras espaçadas)
@@ -1024,25 +1194,27 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
         FontEntry& font = fontAt(true, false, size, ls);
         const double w = font.fm.horizontalAdvance(txt);
         const RGB c = r.color;
-        const QColor fill = inkM ? QColor(40, 33, 28, 230) : atlas ? rgba(c[0] * 0.55, c[1] * 0.55, c[2] * 0.55, 0.85)
+        const QColor fill = inkM ? (washed ? rgba(c[0] * 0.5, c[1] * 0.5, c[2] * 0.5, 0.88) : rgbA(P->ink, 0.9)) : atlas ? rgba(c[0] * 0.55, c[1] * 0.55, c[2] * 0.55, 0.85)
                                                                      : rgba(std::min(255.0, c[0] + 60), std::min(255.0, c[1] + 60), std::min(255.0, c[2] + 60), 0.9);
-        jobs.push_back({ &font, ls, txt, g->X, g->Y, true, 4, flat ? (inkM ? QColor(240, 231, 208, 204) : QColor(246, 240, 224, 191)) : QColor(10, 14, 18, 128), fill, size, true, false });
+        jobs.push_back({ &font, ls, txt, g->X, g->Y, true, 4, flat ? (inkM ? rgbA(P->paper, 0.8) : QColor(246, 240, 224, 191)) : QColor(10, 14, 18, 128), fill, size, true, false });
         hash.add({ textBox(g->X, g->Y, w, size, true) });
     }
     UserLayer& U = info.user;
     if (flat) for (const House& h : U.houses) {
         const auto g = ground(st, h.x, h.y);
         if (!g) continue;
+        // no Topográfico a cidade é mancha suave (quadradinho sem contorno, meio transparente), não um monte de tijolos
+        const bool topo = isTopo(st);
         const double sz = 2.2 * k;
         p.save();
         p.translate(g->X, g->Y);
         p.rotate((h.yaw + st.ang) * 180 / M_PI);
-        p.setBrush(inkM ? QColor(240, 231, 208) : QColor(120, 70, 50));
-        p.setPen(QPen(inkM ? QColor(40, 33, 28) : QColor(44, 30, 22), 0.8));
+        p.setBrush(inkM ? rgbOf(P->paper) : topo ? QColor(128, 64, 48, 185) : QColor(120, 70, 50));
+        if (topo) p.setPen(Qt::NoPen); else p.setPen(QPen(inkM ? rgbOf(P->ink) : QColor(44, 30, 22), 0.8));
         p.drawRect(QRectF(-sz, -sz * 0.7, sz * 2, sz * 1.4));
         p.restore();
     }
-    auto flagOf = [&](const RGB& rc) { return inkM ? RGB{ 40, 33, 28 } : rc; };
+    auto flagOf = [&](const RGB& rc) { return st.mode == QLatin1String("ink") || st.mode == QLatin1String("blue") ? P->ink : rc; };
     for (const Art& a : U.arts) {
         const auto g = ground(st, a.x, a.y);
         if (!g) continue;
@@ -1061,10 +1233,10 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
         const bool castle = a.kind == QLatin1String("castle");
         const double fs = (castle ? 14 : 12) * std::min(1.5, k);
         FontEntry& font = fontAt(castle, !castle, fs);
-        const double lx = g->X + (flat ? 9 : 16) * k, ly = g->Y - (flat ? 4 : 8) * k;
         const double w = font.fm.horizontalAdvance(a.name);
-        jobs.push_back({ &font, 0, a.name, lx, ly, false, 3.5, halo, ink, fs, castle, !castle });
-        hash.add({ textBox(lx, ly, w, fs, false) });
+        const QPointF at = freeSpot(g->X, g->Y, (flat ? 9 : 16) * k, (flat ? 4 : 8) * k, w, fs);
+        jobs.push_back({ &font, 0, a.name, at.x(), at.y(), false, 3.5, halo, ink, fs, castle, !castle });
+        hash.add({ textBox(at.x(), at.y(), w, fs, false) });
     }
     if (U.showGen) for (const Town& tw : info.towns) {
         const auto g = ground(st, tw.x, tw.y);
@@ -1079,10 +1251,10 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
         const double fs = (tw.capital ? 14 : 12) * std::min(1.5, k);
         FontEntry& font = fontAt(tw.capital, !tw.capital, fs);
         const double off = flat ? (tw.capital ? 11 : 6) : (tw.capital ? 16 : 10);
-        const double lx = g->X + off * k, ly = g->Y - (flat ? (tw.capital ? 6 : 1) : 5) * k;
         const double w = font.fm.horizontalAdvance(tw.name);
-        jobs.push_back({ &font, 0, tw.name, lx, ly, false, 3.5, halo, ink, fs, tw.capital, !tw.capital });
-        hash.add({ textBox(lx, ly, w, fs, false) });
+        const QPointF at = freeSpot(g->X, g->Y, off * k, (flat ? (tw.capital ? 6 : 1) : 5) * k, w, fs);
+        jobs.push_back({ &font, 0, tw.name, at.x(), at.y(), false, 3.5, halo, ink, fs, tw.capital, !tw.capital });
+        hash.add({ textBox(at.x(), at.y(), w, fs, false) });
     }
 
     // nomes do relevo: do mais importante pro menos; quem não cabe sem encostar fica de fora
@@ -1126,7 +1298,7 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
             }
             return true;
         };
-        auto bad = [&](const Layout& T) { return hash.hits(T.boxes) || !wet(T); };
+        auto bad = [&](const Layout& T) { return hash.hits(T.boxes, gap) || !wet(T); };
         std::optional<Layout> L = layoutName(*this, st, lab, *sty, fs);
         if (!L) continue;
         if (!ghost && !lab.forced() && !sel && bad(*L)) {
@@ -1143,11 +1315,11 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
             if (!L) continue;
         }
         if (!ghost) hash.add(L->boxes);
-        if (drawName(p, *L, namePalette(st.mode, sty->water), ghost ? 0.32 : 1, inkM && !ghost, st.quick)) m_labelsNear = true;
+        if (drawName(p, *L, namePalette(st.mode, sty->water), ghost ? 0.32 : 1, inkM && !ghost ? knock : QColor(), st.quick)) m_labelsNear = true;
         m_lastLayout.push_back({ lab, L->boxes, L->bbox });
         if (sel) {
             const QRectF b = L->bbox.adjusted(-4, -3, 4, 3);
-            QPen pen(flat ? QColor(40, 33, 28, 217) : QColor(250, 236, 200, 242), 1.5);
+            QPen pen(inkM ? rgbA(P->ink, 0.85) : flat ? QColor(40, 33, 28, 217) : QColor(250, 236, 200, 242), 1.5);
             pen.setDashPattern({ 5 / 1.5, 4 / 1.5 });
             p.setPen(pen); p.setBrush(Qt::NoBrush);
             p.drawRect(b);
@@ -1163,13 +1335,13 @@ void Scene::drawLabels(QPainter& p, const SceneState& st)
             // Tinta: a mesma clareira de papel dos nomes do relevo
             const double fq = quantSize(j.fs);
             const QString fam = QStringLiteral("t|%1|%2|%3|%4|%5|%6|%7|%8").arg(j.caps).arg(j.it).arg(j.ls ? 1 : 0).arg(colorKey(j.stroke), colorKey(j.fill))
-                                    .arg(inkM).arg(dpr).arg(j.txt);
+                                    .arg(inkM ? colorKey(knock) : QStringLiteral("-")).arg(dpr).arg(j.txt);
             double fu = fq;
             const TextSprite* spt = findSprite(fam, fq, st.quick ? &fu : nullptr);
             if (!spt) {
                 fu = fq;
                 FontEntry& fe = fontAt(j.caps, j.it, fq, j.ls ? jsRound(fq * 0.28) : 0);
-                spt = &textSprite(fam, fq, fe.textPath(j.txt), j.stroke, j.lw, inkM, std::max(9.0, fq * 0.95), std::max(5.0, fq * 0.5), j.fill, dpr);
+                spt = &textSprite(fam, fq, fe.textPath(j.txt), j.stroke, j.lw, inkM ? knock : QColor(), std::max(9.0, fq * 0.95), std::max(5.0, fq * 0.5), j.fill, dpr);
             }
             if (fu != fq) m_labelsNear = true;
             const double sc = j.fs / fu;

@@ -592,7 +592,7 @@ void drawHouse(QPainter& p, double x, double y, double yaw, double v, int floors
     drawFaces(p, faces, cam);
 }
 
-namespace {
+namespace kit {
 void wallRing(Faces& out, const std::function<std::array<double, 2>(double, double)>& L, double R, double wallH, double towerR, double towerH,
               bool mid, const RGB& stone, const RGB& roof, bool gate)
 {
@@ -965,9 +965,11 @@ void atlasGlyph(QPainter& p, int type, double X, double Y, double k)
 }
 
 // Tinta: os símbolos do mapa de livro, em nanquim sobre papel (o pé do símbolo fica em X, Y)
-void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v)
+void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v, const InkPal* pal)
 {
-    const QColor INKC(40, 33, 28), INKH(40, 33, 28, 140), PAPERC(240, 231, 208);
+    // a Tinta é nanquim em papel creme; as outras vistas de arte trocam a tinta e o papel (e o papel pode ser meio transparente)
+    const QColor INKC = pal ? rgb(pal->ink, 1, pal->inkA) : QColor(40, 33, 28), INKH = pal ? rgb(pal->ink, 1, 140 / 255.0 * pal->inkA) : QColor(40, 33, 28, 140);
+    const QColor PAPERC = pal ? rgb(pal->paper, 1, pal->paperA) : QColor(240, 231, 208);
     const double lw = std::max(0.7, 0.72 * k);
     const QPen inkPen = pen(INKC, lw, Qt::RoundCap), halfPen = pen(INKH, lw, Qt::RoundCap);
     p.setPen(inkPen);

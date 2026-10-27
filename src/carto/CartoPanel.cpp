@@ -40,7 +40,7 @@ QString modeName(const QString& m)
 {
     if (m == QLatin1String("full")) return Panel::tr("Completo");
     if (m == QLatin1String("atlas")) return Panel::tr("Atlas");
-    if (m == QLatin1String("ink")) return Panel::tr("Tinta");
+    if (isArtMode(m)) return artModeName(m);
     return Panel::tr("Terreno");
 }
 QString sizeName(int s)
@@ -206,7 +206,12 @@ void Panel::buildUi()
         b->setFixedHeight(30);
         b->setCursor(Qt::PointingHandCursor);
         b->setText(modeName(v));
-        connect(b, &QToolButton::clicked, this, [this, v]() { setMode(v); });
+        // o botão "ink" é o das vistas de arte: entra na última escolhida; já dentro, abre a lista das seis
+        connect(b, &QToolButton::clicked, this, [this, v, b]() {
+            if (v != QLatin1String("ink")) { setMode(v); return; }
+            if (isArtMode(m_canvas->mode())) { m_artPick->openAt(b->mapToGlobal(QPoint(b->width() / 2, b->height() + 6)), m_canvas->mode(), true); syncUi(); }
+            else setMode(m_astro->artMode());
+        });
         m_viewBtns.insert(v, b);
         vs->addWidget(b);
     }
@@ -242,6 +247,9 @@ void Panel::buildUi()
     // Astrolábio + pílulas da hora e da ferramenta
     m_astro = new Astrolabe(this);
     connect(m_astro, &Astrolabe::modeRequested, this, &Panel::setMode);
+    m_artPick = new ArtPicker(this);
+    connect(m_astro, &Astrolabe::artPickRequested, this, [this](QPoint at) { m_artPick->openAt(at, m_canvas->mode()); });
+    connect(m_artPick, &ArtPicker::picked, this, &Panel::setMode);
     connect(m_astro, &Astrolabe::angleDragged, this, [this](double a, bool quick) { m_canvas->setView(a, m_canvas->pitch(), quick); });
     connect(m_astro, &Astrolabe::pitchDragged, this, [this](double p, bool quick) { m_canvas->setView(m_canvas->angle(), p, quick); });
     connect(m_astro, &Astrolabe::hourDragged, this, [this](double h, bool fin) { m_canvas->setHour(h, fin); if (fin) scheduleSave(); });
@@ -1443,13 +1451,16 @@ void Panel::keyPressEvent(QKeyEvent* e)
         m_canvas->setTerrainStyle(mira ? QStringLiteral("rich") : QStringLiteral("mira"));
         break;
     }
-    case Qt::Key_BracketLeft: m_sizeSlider->setValue(qRound(m_sizeSlider->value() * 0.85)); break;
-    case Qt::Key_BracketRight: m_sizeSlider->setValue(qRound(m_sizeSlider->value() / 0.85 + 1)); break;
+    case Qt::Key_BracketLeft:
+        if (m_tool == QLatin1String("build") && m_canvas->selectedArt()) m_build->scaleSelected(1 / 1.1);   // o tamanho do selecionado
+        else m_sizeSlider->setValue(qRound(m_sizeSlider->value() * 0.85));
+        break;
+    case Qt::Key_BracketRight:
+        if (m_tool == QLatin1String("build") && m_canvas->selectedArt()) m_build->scaleSelected(1.1);
+        else m_sizeSlider->setValue(qRound(m_sizeSlider->value() / 0.85 + 1));
+        break;
     case Qt::Key_Escape:
-        if (m_build->escape()) break;
-        m_gen->hide(); m_settings->hide(); m_ring->hide(); m_export->hide();
-        m_canvas->cancelAction();
-        m_canvas->clearRuler();
+        escapeOne();
         syncUi();
         break;
     default:
@@ -1463,6 +1474,37 @@ void Panel::keyPressEvent(QKeyEvent* e)
         }
         QWidget::keyPressEvent(e);
     }
+}
+
+bool Panel::escapeOne()
+{
+    // campo de texto: renomear o mapa desiste; os outros gravam o que foi digitado ao perder o foco
+    QWidget* f = QApplication::focusWidget();
+    if (f == m_titleEdit && m_titleEdit->isVisible()) {
+        m_titleEdit->hide(); m_title->show();
+        m_canvas->setFocus();
+        positionOverlays();
+        return true;
+    }
+    const bool selField = f && (f == m_nameEdit || m_build->owns(f));
+    if (qobject_cast<QLineEdit*>(f) && isAncestorOf(f)) {
+        m_canvas->setFocus();
+        if (!selField) return true;   // o nome do território na lista: só sai do campo
+    }
+    if (m_build->escape()) return true;
+    if (m_gen->isVisible() || m_settings->isVisible() || m_ring->isVisible() || m_export->isVisible()) {
+        m_gen->hide(); m_settings->hide(); m_ring->hide(); m_export->hide();
+        positionOverlays();
+        return true;
+    }
+    if (m_canvas->cancelAction()) return true;
+    if (m_canvas->hasRuler()) { m_canvas->clearRuler(); return true; }
+    // o selecionado (nome, construção) solta; a caixa dele fecha junto
+    if (!m_canvas->selName().isEmpty()) { m_canvas->setSelName(QString()); return true; }
+    if (!m_canvas->selArt().isEmpty()) { m_canvas->setSelArt(QString()); return true; }
+    // nada aberto: a ferramenta fecha e volta pra mão
+    if (m_tool != QLatin1String("pan")) { pickTool(QStringLiteral("pan"), QPoint()); m_dockFromRing = false; return true; }
+    return false;
 }
 
 bool Panel::eventFilter(QObject* o, QEvent* e)

@@ -10,6 +10,7 @@
 #include "../Theme.h"
 
 #include <QAbstractButton>
+#include <QComboBox>
 #include <QEvent>
 #include <QFrame>
 #include <QHelpEvent>
@@ -47,6 +48,8 @@ QString shortLabel(const QString& k)
     if (k == QLatin1String("heads")) return Panel::tr("Cabeças");
     if (k == QLatin1String("seaserpent")) return Panel::tr("Serpente");
     if (k == QLatin1String("camp")) return Panel::tr("Tendas");
+    if (k == QLatin1String("seatedgod")) return Panel::tr("Deus");
+    if (k == QLatin1String("arch")) return Panel::tr("Arco");
     return buildKindName(k);
 }
 
@@ -74,22 +77,43 @@ QString tipOf(const QString& k)
         { "pyramid", QT_TRANSLATE_NOOP("carto::Panel", "Pirâmide com o topo de ouro") }, { "ziggurat", QT_TRANSLATE_NOOP("carto::Panel", "Templo em degraus com escadaria") },
         { "pagoda", QT_TRANSLATE_NOOP("carto::Panel", "Pagode de cinco andares") }, { "obelisk", QT_TRANSLATE_NOOP("carto::Panel", "Obelisco de pedra com ponta de ouro") },
         { "graveyard", QT_TRANSLATE_NOOP("carto::Panel", "Cemitério com mausoléu") }, { "farm", QT_TRANSLATE_NOOP("carto::Panel", "Fazenda: celeiro, silo e plantação") },
+        { "colossus", QT_TRANSLATE_NOOP("carto::Panel", "Colosso de bronze com a tocha erguida") }, { "guardians", QT_TRANSLATE_NOOP("carto::Panel", "Guardiões: dois reis de pedra com a mão erguida") },
+        { "seatedgod", QT_TRANSLATE_NOOP("carto::Panel", "Deus Sentado no trono, com braseiros") }, { "cathedral", QT_TRANSLATE_NOOP("carto::Panel", "Catedral com rosácea, torres e arcobotantes") },
+        { "arch", QT_TRANSLATE_NOOP("carto::Panel", "Arco do Triunfo") }, { "market", QT_TRANSLATE_NOOP("carto::Panel", "Mercado: barracas listradas e chafariz") },
+        { "aqueduct", QT_TRANSLATE_NOOP("carto::Panel", "Trecho de aqueduto com duas fileiras de arcos") },
+        { "city", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de cidade: sobrados de dois e três andares") },
+        { "forest", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de floresta") }, { "rocks", QT_TRANSLATE_NOOP("carto::Panel", "Pincel de rochedos") },
     };
     const char* t = tips.value(k, nullptr);
     return t ? Panel::tr(t) : buildKindName(k);
 }
 
+// os povos do castelo, na ordem da categoria Castelos (cada um vira uma cartinha: castle:<estilo>)
 struct StyleSw { const char* v; const char* label; const char* tip; QRgb col; };
-const StyleSw kStyles[4] = {
+const StyleSw kStyles[12] = {
     { "human", QT_TRANSLATE_NOOP("carto::Panel", "Humano"), QT_TRANSLATE_NOOP("carto::Panel", "Muralha de pedra, torres de flecha e a menagem"), 0xffa39a8c },
+    { "norman", QT_TRANSLATE_NOOP("carto::Panel", "Normando"), QT_TRANSLATE_NOOP("carto::Panel", "Torres quadradas e a menagem maciça com torreões"), 0xffb8ad98 },
+    { "moat", QT_TRANSLATE_NOOP("carto::Panel", "Com fosso"), QT_TRANSLATE_NOOP("carto::Panel", "Cava o fosso no terreno em volta; ponte levadiça"), 0xff7aa0b4 },
+    { "chateau", QT_TRANSLATE_NOOP("carto::Panel", "Château"), QT_TRANSLATE_NOOP("carto::Panel", "Palácio branco, telhado de ardósia, torres de cone e jardim"), 0xffe8e2d4 },
+    { "crag", QT_TRANSLATE_NOOP("carto::Panel", "Penhasco"), QT_TRANSLATE_NOOP("carto::Panel", "Assenta no relevo: muralha e torres acompanham o morro"), 0xff8a8070 },
     { "elven", QT_TRANSLATE_NOOP("carto::Panel", "Élfico"), QT_TRANSLATE_NOOP("carto::Panel", "Muralha clara, torres finas e uma torre altíssima no meio"), 0xffdfe8e2 },
     { "dwarf", QT_TRANSLATE_NOOP("carto::Panel", "Anão"), QT_TRANSLATE_NOOP("carto::Panel", "Fortaleza escavada no monte, com portão dourado e forjas"), 0xffc9963c },
     { "orc", QT_TRANSLATE_NOOP("carto::Panel", "Orc"), QT_TRANSLATE_NOOP("carto::Panel", "Paliçada de toras, torres de vigia e o salão comprido"), 0xff7a5434 },
+    { "oriental", QT_TRANSLATE_NOOP("carto::Panel", "Oriental"), QT_TRANSLATE_NOOP("carto::Panel", "Muralha branca, guaritas e a torre de vários telhados"), 0xffeeeae0 },
+    { "desert", QT_TRANSLATE_NOOP("carto::Panel", "Deserto"), QT_TRANSLATE_NOOP("carto::Panel", "Adobe, cúpulas, a cebola dourada e os minaretes"), 0xffe2c290 },
+    { "dark", QT_TRANSLATE_NOOP("carto::Panel", "Sombrio"), QT_TRANSLATE_NOOP("carto::Panel", "Pedra negra, torres altíssimas e janelas verdes acesas"), 0xff403c46 },
+    { "ice", QT_TRANSLATE_NOOP("carto::Panel", "Gelo"), QT_TRANSLATE_NOOP("carto::Panel", "Torres de cristal e um palácio de cristais tortos"), 0xffc0e4f4 },
 };
-bool isBrushKind(const QString& k)
+const StyleSw* styleSw(const QString& v) { for (const StyleSw& s : kStyles) if (v == QLatin1String(s.v)) return &s; return nullptr; }
+// item do catálogo → o tipo de verdade e o estilo (castle:<estilo>)
+QString baseKind(const QString& item) { const int i = item.indexOf(QLatin1Char(':')); return i < 0 ? item : item.left(i); }
+QString styleOfItem(const QString& item) { const int i = item.indexOf(QLatin1Char(':')); return i < 0 ? QString() : item.mid(i + 1); }
+bool isPaintBrush(const QString& k)
 {
-    return k == QLatin1String("village") || k == QLatin1String("fields") || k == QLatin1String("erase") || k == QLatin1String("wall") || k == QLatin1String("road");
+    return k == QLatin1String("village") || k == QLatin1String("city") || k == QLatin1String("fields") || k == QLatin1String("forest") || k == QLatin1String("rocks")
+        || k == QLatin1String("erase");
 }
+bool isBrushKind(const QString& k) { return isPaintBrush(k) || k == QLatin1String("wall") || k == QLatin1String("road"); }
 
 // a cartinha: miniatura, nome e (no castelo) as amostrinhas de estilo
 class Card : public QAbstractButton {
@@ -214,6 +238,34 @@ void paintItem(QPainter& p, const QString& kind, const QString& style, const spr
         spr::drawField(p, Field{ 3, 3, 7, 4.2, 0.25, 1 }, cam);
         return;
     }
+    if (kind == QLatin1String("city")) {
+        disc(p, cam, 9, kLand);
+        struct H { double x, y, v; int floors; bool bell; };
+        std::vector<H> hs = { { -3.6, -3.2, 0.15, 3, false }, { 0.2, -3.6, 0.55, 2, false }, { 3.8, -3.0, 0.8, 3, false }, { -3.4, 1.4, 0.35, 2, false }, { 0.4, 1.0, 0.7, 3, true }, { 4.0, 1.6, 0.95, 2, false } };
+        const double ca = std::cos(kVA), sa = std::sin(kVA);
+        std::sort(hs.begin(), hs.end(), [&](const H& a, const H& b) { return sa * a.x + ca * a.y < sa * b.x + ca * b.y; });
+        for (const H& h : hs) { House hh; hh.x = h.x; hh.y = h.y; hh.yaw = 0.2; hh.v = h.v; hh.floors = h.floors; hh.city = true; hh.bell = h.bell; spr::drawCityHouse(p, hh, cam, false); }
+        return;
+    }
+    if (kind == QLatin1String("forest") || kind == QLatin1String("rocks")) {
+        disc(p, cam, 9, kLand);
+        struct T { double x, y; int type; double v, sc; };
+        std::vector<T> ts = kind == QLatin1String("forest")
+            ? std::vector<T>{ { -5, -3, Pine, 0.2, 1.1 }, { -1.5, -5, Broad, 0.6, 1.2 }, { 2.5, -4, Pine, 0.4, 1 }, { 5.5, -1, Broad, 0.1, 1.1 }, { -4.5, 1.5, Broad, 0.8, 1.15 },
+                              { -0.5, 0, Pine, 0.7, 1.25 }, { 3, 2.5, Broad, 0.3, 1.05 }, { -2, 4.5, Pine, 0.5, 1 }, { 1.5, 5.5, Broad, 0.9, 1 } }
+            : std::vector<T>{ { -4, -2, Rock, 0.2, 2.4 }, { 1.5, -3.5, Rock, 0.6, 1.8 }, { 4.5, 1, Rock, 0.4, 2.6 }, { -1.5, 2.5, Rock, 0.8, 2.0 }, { -5, 4, Rock, 0.5, 1.4 } };
+        const double ca = std::cos(kVA), sa = std::sin(kVA);
+        std::sort(ts.begin(), ts.end(), [&](const T& a, const T& b) { return sa * a.x + ca * a.y < sa * b.x + ca * b.y; });
+        const double dpr = p.device() ? p.device()->devicePixelRatioF() : 1.0;
+        for (const T& t : ts) {
+            const double ppw = s * t.sc;
+            const spr::FloraImg& img = spr::floraImage(t.type, t.v, 40, ppw * dpr, false);
+            const double f = ppw / (2 * img.ppw);
+            const QPointF X = cam.proj(t.x, t.y, 0);
+            p.drawImage(QRectF(X.x() - img.ax * f, X.y() - img.ay * f, img.img.width() * f, img.img.height() * f), img.img);
+        }
+        return;
+    }
     if (kind == QLatin1String("wall")) {
         disc(p, cam, 9, kLand);
         spr::drawWallSeg(p, Pt{ -7, 3 }, Pt{ 0, -2.5 }, cam, 1); spr::drawWallTower(p, Pt{ -7, 3 }, cam, 1);
@@ -253,7 +305,7 @@ void paintItem(QPainter& p, const QString& kind, const QString& style, const spr
     else if (kind == QLatin1String("ruins")) ext = 5.6;
     else if (spec) ext = spec->r;
     disc(p, cam, std::max(4.0, ext * 1.15), spec && spec->water ? kSea : kLand);
-    if (spr::drawArt(p, o, cam, kFlag)) {}
+    if (spr::drawArt4(p, o, cam, kFlag) || spr::drawArt(p, o, cam, kFlag)) {}
     else if (kind == QLatin1String("castle")) spr::drawCastle(p, 0, 0, o.yaw, 1, cam, kFlag);
     else if (kind == QLatin1String("tower")) spr::drawTowerArt(p, o, cam, kFlag);
     else if (kind == QLatin1String("lighthouse")) spr::drawLighthouse(p, o, cam);
@@ -298,13 +350,18 @@ QPixmap BuildBar::thumb(const QString& kind, const QString& style) const
 BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_host(host), m_canvas(canvas), m_doc(doc)
 {
     m_cats = {
-        { QStringLiteral("uni"), Panel::tr("Únicos"), QStringLiteral("castle"),
-          { "castle", "tower", "lighthouse", "windmill", "temple", "ruins", "bridge" } },
-        { QStringLiteral("brs"), Panel::tr("Pincéis"), QStringLiteral("house"), { "village", "fields", "wall", "road", "erase" } },
-        { QStringLiteral("more"), Panel::tr("Mais"), QStringLiteral("a-statue"), { "statue", "colosseum", "cave", "mine", "mage", "greattree", "stones", "camp" } },
+        // v32: os castelos ganharam categoria própria, uma cartinha por povo
+        { QStringLiteral("cas"), Panel::tr("Castelos"), QStringLiteral("castle"),
+          { "castle:human", "castle:norman", "castle:moat", "castle:chateau", "castle:crag", "castle:elven", "castle:dwarf", "castle:orc",
+            "castle:oriental", "castle:desert", "castle:dark", "castle:ice" } },
+        { QStringLiteral("uni"), Panel::tr("Únicos"), QStringLiteral("tower"), { "tower", "lighthouse", "windmill", "temple", "ruins", "bridge" } },
+        { QStringLiteral("brs"), Panel::tr("Pincéis"), QStringLiteral("house"), { "village", "city", "fields", "forest", "rocks", "wall", "road", "erase" } },
+        { QStringLiteral("more"), Panel::tr("Mais"), QStringLiteral("a-statue"),
+          { "statue", "cathedral", "market", "aqueduct", "colosseum", "cave", "mine", "mage", "greattree", "stones", "camp" } },
         { QStringLiteral("leg"), Panel::tr("Lendas"), QStringLiteral("a-dragon"), { "dragon", "bones", "portal", "floatisland", "sword", "heads" } },
         { QStringLiteral("sea"), Panel::tr("Mar"), QStringLiteral("a-longship"), { "ship", "longship", "wreck", "seaserpent", "kraken" } },
-        { QStringLiteral("mon"), Panel::tr("Monumentos"), QStringLiteral("a-pyramid"), { "pyramid", "ziggurat", "pagoda", "obelisk", "graveyard", "farm" } },
+        { QStringLiteral("mon"), Panel::tr("Monumentos"), QStringLiteral("a-pyramid"),
+          { "colossus", "guardians", "seatedgod", "arch", "pyramid", "ziggurat", "pagoda", "obelisk", "graveyard", "farm" } },
     };
     auto btn = [this](QWidget* parent, const QString& iconName, const QString& tip, const QString& obj = QStringLiteral("cartoBtn")) {
         auto* b = new QToolButton(parent);
@@ -365,7 +422,7 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
         b->setCursor(Qt::PointingHandCursor);
         b->setFocusPolicy(Qt::NoFocus);
         b->setIconSize(QSize(15, 15));
-        b->setFixedHeight(22);
+        b->setFixedHeight(19);          // sete categorias na faixa de 158 px
         b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         const QString id = c.id;
         connect(b, &QPushButton::clicked, this, [this, id]() { pickCat(id); });
@@ -397,7 +454,7 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
     auto* cr = new QHBoxLayout(m_castleRow);
     cr->setContentsMargins(0, 0, 0, 0);
     cr->setSpacing(8);
-    m_sizeCap = new QLabel(Panel::tr("TAMANHO"), m_castleRow);
+    m_sizeCap = new QLabel(Panel::tr("PLANTA"), m_castleRow);
     m_sizeCap->setObjectName(QStringLiteral("cartoCaption"));
     cr->addWidget(m_sizeCap);
     mini(m_castleRow, cr, m_sizeBtns, { QStringLiteral("0"), QStringLiteral("1"), QStringLiteral("2"), QStringLiteral("3") },
@@ -410,7 +467,31 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
              } else m_canvas->opts().castleSize = size;
              if (changed) changed();
          });
+    // o povo do castelo selecionado (pra trocar sem recolocar)
+    m_styleBox = new QComboBox(m_castleRow);
+    m_styleBox->setObjectName(QStringLiteral("cartoField"));
+    m_styleBox->setFocusPolicy(Qt::NoFocus);
+    for (const StyleSw& s : kStyles) m_styleBox->addItem(Panel::tr(s.label), QString::fromLatin1(s.v));
+    connect(m_styleBox, &QComboBox::activated, this, [this](int i) { pickStyle(m_styleBox->itemData(i).toString()); });
+    cr->addWidget(m_styleBox);
     hl->addWidget(m_castleRow);
+    // muralha: pedra ou paliçada
+    m_wallRow = new QWidget(head);
+    auto* wr = new QHBoxLayout(m_wallRow);
+    wr->setContentsMargins(0, 0, 0, 0);
+    mini(m_wallRow, wr, m_wallBtns, { QString(), QStringLiteral("wood") }, { Panel::tr("Pedra"), Panel::tr("Paliçada") },
+         { Panel::tr("Muralha de pedra com ameias e torres"), Panel::tr("Toras pontudas e torres de vigia de madeira") },
+         [this](const QString& v) { m_canvas->opts().wallKind = v; if (changed) changed(); });
+    hl->addWidget(m_wallRow);
+    // floresta: a árvore
+    m_treeRow = new QWidget(head);
+    auto* tr2 = new QHBoxLayout(m_treeRow);
+    tr2->setContentsMargins(0, 0, 0, 0);
+    mini(m_treeRow, tr2, m_treeBtns, { QStringLiteral("auto"), QStringLiteral("broad"), QStringLiteral("pine"), QStringLiteral("palm") },
+         { Panel::tr("Do clima"), Panel::tr("Folhosa"), Panel::tr("Pinheiro"), Panel::tr("Palmeira") },
+         { Panel::tr("A árvore que o lugar daria (pinheiro no frio, cacto no deserto, junco no brejo)"), Panel::tr("Copa redonda"), Panel::tr("Pinheiro"), Panel::tr("Palmeira") },
+         [this](const QString& v) { m_canvas->opts().treeMode = v; if (changed) changed(); });
+    hl->addWidget(m_treeRow);
     m_roadRow = new QWidget(head);
     auto* rr = new QHBoxLayout(m_roadRow);
     rr->setContentsMargins(0, 0, 0, 0);
@@ -540,6 +621,43 @@ BuildBar::BuildBar(QWidget* host, Canvas* canvas, Doc* doc) : QObject(host), m_h
     psep->setObjectName(QStringLiteral("cartoSep"));
     psep->setFixedSize(1, 18);
     pl->addWidget(psep, 0, Qt::AlignVCenter);
+    // tamanho do selecionado (40% a 400%): o slider mexe ao vivo e o desfazer guarda o arrasto inteiro como um passo
+    m_sizeIcon = new QLabel(m_sel);
+    m_sizeIcon->setToolTip(Panel::tr("Tamanho (teclas [ e ]; duplo clique volta pra 100%)"));
+    pl->addWidget(m_sizeIcon);
+    m_size = new QSlider(Qt::Horizontal, m_sel);
+    m_size->setRange(40, 400);
+    m_size->setSingleStep(5);
+    m_size->setPageStep(20);
+    m_size->setFixedWidth(96);
+    m_size->setFocusPolicy(Qt::NoFocus);
+    m_size->setToolTip(m_sizeIcon->toolTip());
+    m_size->installEventFilter(this);
+    pl->addWidget(m_size);
+    m_sizeValue = new QLabel(m_sel);
+    m_sizeValue->setObjectName(QStringLiteral("cartoValue"));
+    m_sizeValue->setMinimumWidth(34);
+    pl->addWidget(m_sizeValue);
+    connect(m_size, &QSlider::sliderPressed, this, [this]() { m_sizeBefore = std::make_shared<Doc::Layers>(m_doc->layers()); });
+    connect(m_size, &QSlider::valueChanged, this, [this](int v) {
+        m_sizeValue->setText(QStringLiteral("%1%").arg(v));
+        Art* a = m_canvas->selectedArt();
+        if (!a || !m_doc->info) return;
+        const double sc = v / 100.0;
+        if (std::fabs(a->sc - sc) < 1e-9) return;
+        if (!m_size->isSliderDown()) { setSize(sc); return; }     // teclado/roda: um passo de desfazer
+        a->sc = sc;
+        m_doc->info->user.ver++;
+        m_canvas->layersLive();
+    });
+    connect(m_size, &QSlider::sliderReleased, this, [this]() {
+        if (m_sizeBefore) m_canvas->commitLayers(std::move(m_sizeBefore));
+        m_sizeBefore.reset();
+    });
+    auto* psep2 = new QFrame(m_sel);
+    psep2->setObjectName(QStringLiteral("cartoSep"));
+    psep2->setFixedSize(1, 18);
+    pl->addWidget(psep2, 0, Qt::AlignVCenter);
     auto* del = btn(m_sel, QStringLiteral("trash"), Panel::tr("Apagar (Delete)"));
     connect(del, &QToolButton::clicked, this, [this]() { if (remove) remove(); });
     pl->addWidget(del);
@@ -555,6 +673,7 @@ bool BuildBar::eventFilter(QObject* o, QEvent* e)
         m_scroll->horizontalScrollBar()->setValue(m_scroll->horizontalScrollBar()->value() - d);
         return true;
     }
+    if (o == m_size && e->type() == QEvent::MouseButtonDblClick) { setSize(1); return true; }
     return QObject::eventFilter(o, e);
 }
 
@@ -589,10 +708,27 @@ void BuildBar::pickCat(const QString& id)
     sync();
 }
 
-void BuildBar::pickKind(const QString& kind)
+void BuildBar::scaleSelected(double factor)
+{
+    if (const Art* a = m_canvas->selectedArt()) setSize(a->sc * factor);
+}
+
+void BuildBar::setSize(double sc)
+{
+    Art* a = m_canvas->selectedArt();
+    if (!a) return;
+    sc = std::max(0.4, std::min(4.0, std::round(sc * 100) / 100));
+    const QString id = a->id;
+    m_canvas->userEdit([id, sc](Info& in) { for (Art& x : in.user.arts) if (x.id == id) { if (std::fabs(x.sc - sc) < 1e-9) return false; x.sc = sc; return true; } return false; });
+    if (changed) changed();
+}
+
+void BuildBar::pickKind(const QString& item)
 {
     // como no Sims: pegar outro item do catálogo solta o que estava selecionado
-    if (kind != QLatin1String("select") && !m_canvas->selArt().isEmpty()) m_canvas->setSelArt(QString());
+    if (item != QLatin1String("select") && !m_canvas->selArt().isEmpty()) m_canvas->setSelArt(QString());
+    const QString kind = baseKind(item);
+    if (item.contains(QLatin1Char(':'))) { const QString st = styleOfItem(item); m_canvas->opts().castleStyle = st == QLatin1String("human") ? QString() : st; }
     m_canvas->opts().buildKind = kind;
     m_canvas->optsChanged();
     if (changed) changed();
@@ -623,11 +759,13 @@ void BuildBar::renderRow()
     for (const QString& k : cat->items) {
         auto* card = new Card(m_rowBody);
         card->kind = k;
-        card->setText(shortLabel(k));
-        card->setToolTip(tipOf(k));
-        card->castle = k == QLatin1String("castle");
-        card->style = castleStyle();
-        card->pix = k == QLatin1String("erase") ? iconPixmap(QStringLiteral("erase"), muted, 30) : thumb(k, card->castle ? card->style : QString());
+        const QString st = styleOfItem(k);
+        const StyleSw* sw = styleSw(st);
+        card->setText(sw ? Panel::tr(sw->label) : shortLabel(k));
+        card->setToolTip(sw ? Panel::tr(sw->label) + QStringLiteral(": ") + Panel::tr(sw->tip) : tipOf(k));
+        card->castle = false;              // (as amostrinhas de estilo viraram cartinhas próprias)
+        card->style = st;
+        card->pix = k == QLatin1String("erase") ? iconPixmap(QStringLiteral("erase"), muted, 30) : thumb(baseKind(k), st);
         card->onStyle = [this](const QString& s) { pickStyle(s); };
         connect(card, &QAbstractButton::clicked, this, [this, k]() { pickKind(k); });
         m_rowLay->insertWidget(m_rowLay->count() - 1, card);
@@ -658,12 +796,18 @@ void BuildBar::syncCtx()
     const Art* sel = m_canvas->selectedArt();
     const bool selCastle = sel && sel->kind == QLatin1String("castle");
     m_castleRow->setVisible(k == QLatin1String("castle") || (selCastle && !isBrushKind(k)));
+    m_styleBox->setVisible(selCastle);
+    if (selCastle) { const int i = m_styleBox->findData(sel->style.isEmpty() ? QStringLiteral("human") : sel->style); if (i >= 0 && m_styleBox->currentIndex() != i) m_styleBox->setCurrentIndex(i); }
+    m_wallRow->setVisible(k == QLatin1String("wall"));
+    for (auto it = m_wallBtns.begin(); it != m_wallBtns.end(); ++it) it.value()->setChecked(it.key() == o.wallKind);
+    m_treeRow->setVisible(k == QLatin1String("forest"));
+    for (auto it = m_treeBtns.begin(); it != m_treeBtns.end(); ++it) it.value()->setChecked(it.key() == o.treeMode);
     const int cs = selCastle ? sel->size : o.castleSize;
     for (auto it = m_sizeBtns.begin(); it != m_sizeBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == cs);
     m_roadRow->setVisible(k == QLatin1String("road"));
     for (auto it = m_rmodeBtns.begin(); it != m_rmodeBtns.end(); ++it) it.value()->setChecked(it.key() == o.roadMode);
     for (auto it = m_rkindBtns.begin(); it != m_rkindBtns.end(); ++it) it.value()->setChecked(it.key() == o.roadKind);
-    m_brushRow->setVisible(k == QLatin1String("village") || k == QLatin1String("fields") || k == QLatin1String("erase"));
+    m_brushRow->setVisible(isPaintBrush(k));
     if (m_brush->value() != qRound(o.buildBrush)) { m_brush->blockSignals(true); m_brush->setValue(qRound(o.buildBrush)); m_brush->blockSignals(false); }
     m_brushValue->setText(QString::number(qRound(o.buildBrush)));
 }
@@ -674,16 +818,15 @@ void BuildBar::sync()
     const QString& kind = m_canvas->opts().buildKind;
     if (kind != m_lastKind) {                       // escolheu outro item: a faixa vai pra categoria dele
         m_lastKind = kind;
-        for (const Cat& c : m_cats) if (c.items.contains(kind)) m_cat = c.id;
+        for (const Cat& c : m_cats) for (const QString& it : c.items) if (baseKind(it) == kind) m_cat = c.id;
     }
     for (auto it = m_catBtns.begin(); it != m_catBtns.end(); ++it) it.value()->setChecked(it.key() == m_cat);
     for (const Cat& c : m_cats) if (c.id == m_cat) m_title->setText(c.name);
     if (m_rowCat != m_cat) renderRow();
-    const QString st = castleStyle();
+    const QString st = m_canvas->opts().castleStyle.isEmpty() ? QStringLiteral("human") : m_canvas->opts().castleStyle;
     for (QWidget* w : m_cards) {
         auto* c = static_cast<Card*>(w);
-        c->setChecked(c->kind == kind);
-        if (c->castle && c->style != st) { c->style = st; c->pix = thumb(QStringLiteral("castle"), st); }
+        c->setChecked(c->style.isEmpty() ? c->kind == kind : kind == QLatin1String("castle") && c->style == st);
         c->update();
     }
     syncCtx();
@@ -697,6 +840,8 @@ void BuildBar::sync()
         if (!m_selName->hasFocus() || a->id != m_selId) m_selName->setText(a->name);
         m_selName->setPlaceholderText(Panel::tr("%1 · sem nome").arg(artName(a->kind)));
         m_selId = a->id;
+        if (!m_size->isSliderDown()) { m_size->blockSignals(true); m_size->setValue(qRound(a->sc * 100)); m_size->blockSignals(false); }
+        m_sizeValue->setText(QStringLiteral("%1%").arg(qRound(a->sc * 100)));
     } else m_selId.clear();
     if (m_gear->isVisible()) {
         m_gear->adjustSize();
@@ -737,6 +882,7 @@ void BuildBar::applyTheme()
 {
     const QColor muted = Theme::toColor(Theme::textMuted()), a = Theme::toColor(Theme::accentDefault());
     for (const auto& [b, name] : m_icons) b->setIcon(icon(name, muted, a));
+    m_sizeIcon->setPixmap(iconPixmap(QStringLiteral("expand"), muted, 15));
     m_thumbs.clear();                     // a resolução da tela pode ter mudado; o desenho é o mesmo
     m_rowCat.clear();
     sync();

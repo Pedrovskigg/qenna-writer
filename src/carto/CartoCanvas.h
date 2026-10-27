@@ -12,6 +12,8 @@
 #include "CartoScene.h"
 
 #include <QElapsedTimer>
+#include <QHash>
+#include <QStringList>
 #include <QImage>
 #include <QTransform>
 #include <QPointer>
@@ -29,6 +31,8 @@ class QThreadPool;
 namespace carto {
 
 enum class Tool { Pan, Area, Brush, Realm, Build, Names, Ruler, Explore };
+
+
 
 // Explorar: o que o painel manda desenhar por cima do mapa
 struct ExploreLinkView { QString id; int a = -1, b = -1; QString label; QColor color; };
@@ -48,7 +52,9 @@ struct ToolOpts {
     // construir
     QString buildKind = QStringLiteral("castle");   // select castle tower lighthouse windmill temple ruins (e os de artSpecs()) bridge village fields wall road erase
     int castleSize = 1;
-    QString castleStyle;                             // "" humano · elven · dwarf · orc
+    QString castleStyle;                             // "" humano · norman · moat · chateau · crag · elven · dwarf · orc · oriental · desert · dark · ice
+    QString treeMode = QStringLiteral("auto");       // pincel Floresta: auto (do clima) · broad · pine · palm
+    QString wallKind;                                // muralha: "" pedra · wood paliçada
     double buildBrush = 14;
     QString roadMode = QStringLiteral("route");      // route · hand
     QString roadKind = QStringLiteral("road");       // trail · road · royal
@@ -112,15 +118,19 @@ public:
     void setSelName(const QString& ref);
     QString toolMessage() const { return m_toolMsg; }
     bool consumeNewName() { const bool v = m_newName; m_newName = false; return v; }   // nome livre acabou de nascer: a doca foca o texto
-    void cancelAction();              // Esc: larga a estrada encadeada, a ponte no meio
+    bool cancelAction();              // Esc: larga a estrada encadeada, a ponte no meio; true se tinha algo
     // edições com desfazer (a doca e o teclado usam): foto antes, muda, foto depois
     void realmEdit(const std::function<void(Info&)>& fn);
     void userEdit(const std::function<bool(Info&)>& fn);
     void nameEdit(const std::function<bool(LabelLayer&)>& fn);
+    void layersLive();                                        // mudou ao vivo (slider no meio do arrasto): só redesenha
+    void commitLayers(std::shared_ptr<Doc::Layers> before);  // fim do arrasto: um passo de desfazer
+    void syncMoats();                                         // o fosso dos castelos "com fosso" segue o estado deles
     Scene& scene() { return m_scene; }
     QImage exportImage(double scale, const std::function<void(QPainter&)>& extra = {}, const std::vector<QRectF>& avoid = {});
     // régua: distância e tempo de viagem
     void clearRuler() { m_ruler.clear(); m_rulerDone = false; update(); }
+    bool hasRuler() const { return !m_ruler.empty(); }
     double leaguePx() const;           // quantos px da tela dá uma légua (1 légua = 6 km; 1 px do mundo = 0,6 km na escala Normal)
     SceneState sceneState() const;
 
@@ -214,6 +224,7 @@ private:
     QString m_cloudKey;
     void startClouds();             // em segundo plano; só dependem da semente e do tamanho
     QImage m_oceanTile, m_paperTile, m_atlasTile;
+    QHash<QString, QImage> m_artTiles;
 
     // vista
     double m_ang = 0, m_pitch = 40, m_hour = kHourDefault;

@@ -1,6 +1,7 @@
 #pragma once
 
-// O Astrolábio: as quatro vistas nos pontos cardeais, a agulha gira o mapa
+// O Astrolábio: as quatro vistas nos pontos cardeais (a de baixo é a vista de arte escolhida:
+// Tinta, Pergaminho, Carta náutica, Topográfico, Aquarela ou Planta de guerra), a agulha gira o mapa
 // (clique nela = norte), o arco da direita inclina, e o sol (ou a lua) anda
 // pela borda com a hora (6h à direita, meio-dia em cima, 18h à esquerda).
 
@@ -15,8 +16,11 @@ public:
     void setState(double ang, double pitch, double hour, const QString& mode);
     void setLockedMode(const QString& mode);   // vista apagada (vazio = nenhuma)
 
+    QString artMode() const { return m_artMode; }
+
 signals:
     void modeRequested(const QString& mode);
+    void artPickRequested(QPoint globalAt);   // clicou na vista de arte estando nela: a lista das seis
     void angleDragged(double ang, bool quick);
     void pitchDragged(double pitch, bool quick);
     void hourDragged(double hour, bool final);
@@ -35,10 +39,37 @@ private:
 
     double m_ang = 0, m_pitch = 40, m_hour = 14.4;
     QString m_mode = QStringLiteral("full");
+    QString m_artMode = QStringLiteral("ink");
     QString m_locked;
     enum class Drag { None, Hour, Tilt, Rot } m_drag = Drag::None;
     double m_a0 = 0, m_ang0 = 0;
     bool m_moved = false, m_near = false;
 };
+
+// a lista das vistas de arte (abre em cima do Astrolábio ou do botão da Cartela): amostra, nome e pra que serve
+class ArtPicker : public QWidget {
+    Q_OBJECT
+public:
+    explicit ArtPicker(QWidget* parent);
+    void openAt(QPoint globalAnchor, const QString& current, bool below = false);   // a lista sobe (ou desce) a partir do ponto
+
+signals:
+    void picked(const QString& mode);
+
+protected:
+    void paintEvent(QPaintEvent*) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void keyPressEvent(QKeyEvent*) override;
+    void leaveEvent(QEvent*) override;
+
+private:
+    int rowAt(QPointF p) const;
+    QString m_current;
+    int m_hover = -1;
+};
+
+QString artModeName(const QString& m);    // "Pergaminho", "Carta náutica"...
+QString artModeShort(const QString& m);   // o rótulo curto do Astrolábio ("Carta", "Planta")
 
 } // namespace carto

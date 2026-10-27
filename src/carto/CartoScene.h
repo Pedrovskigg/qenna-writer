@@ -10,6 +10,7 @@
 
 #include <QPointF>
 #include <QRectF>
+#include <QPainterPath>
 
 #include <optional>
 
@@ -48,13 +49,21 @@ class Scene {
 public:
     std::optional<Ground> ground(const SceneState& st, double qx, double qy, double zTop = 0) const;
     spr::Cam cam(const SceneState& st, double L) const;                       // sem escala do mundo
-    spr::Cam camAt(const SceneState& st, double L, double ox, double oy) const; // encolhe em volta do centro do objeto
+    // encolhe em volta do centro do objeto (escala do mundo × sc, o tamanho dele); withGround: a câmera sabe a altura do chão (gz)
+    spr::Cam camAt(const SceneState& st, double L, double ox, double oy, double sc = 1, bool withGround = false) const;
+    // o morro na frente tampa a construção: a parte da tela onde ela ainda aparece (nada = nada tampa).
+    // footR: raio do pé no chão; topH: altura (as duas no mundo); onRelief: assenta no relevo (Penhasco)
+    std::optional<QPainterPath> unhidden(const SceneState& st, double x, double y, double footR, double topH, bool onRelief = false) const;
 
     void drawFields(QPainter& p, const SceneState& st);
     void drawRoads(QPainter& p, const SceneState& st);
     void drawSprites(QPainter& p, const SceneState& st);
     void drawLights(QPainter& p, const SceneState& st, double night);
     void drawLabels(QPainter& p, const SceneState& st);
+    // vistas de arte (CartoSceneDeco.cpp): por baixo do terreno, só aparece no mar (linhas de rumo, ondinhas e monstro da
+    // Carta; a grade da Planta); por cima, as rosas dos ventos da Carta e a borda gasta do papel
+    void drawUnder(QPainter& p, const SceneState& st);
+    void drawOver(QPainter& p, const SceneState& st);
 
     // nome sob o cursor (o desenhado por último ganha)
     const Label* labelAt(QPointF at) const;
@@ -75,6 +84,9 @@ private:
     std::shared_ptr<RoadPlan> m_roadPlan;
     void drawAtlasWalls(QPainter& p, const SceneState& st, const UserLayer& U);
 
+    struct SeaDeco { QString key; std::vector<std::array<double, 3>> roses, waves, beasts; };
+    SeaDeco m_deco;
+    const SeaDeco& seaSpots(const SceneState& st);
     QString m_itemsKey;
     std::vector<Item> m_items;
     QString m_rbKey;

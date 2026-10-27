@@ -12,9 +12,37 @@
 #include <cstdint>
 #include <vector>
 
+#include <QString>
+#include <QStringList>
+
 namespace carto {
 
-enum class Style { Mira, Rich, Atlas, Ink };
+// Parch (Pergaminho), Chart (Carta náutica) e Blue (Planta de guerra) são da família da Tinta (hachura, costa e
+// crista em traço), cada uma com o seu papel e a sua tinta; Topo (Topográfico) e Aqua (Aquarela) pintam por conta própria
+enum class Style { Mira, Rich, Atlas, Ink, Parch, Chart, Topo, Aqua, Blue };
+inline bool inkFamily(Style s) { return s == Style::Ink || s == Style::Parch || s == Style::Chart || s == Style::Blue; }
+inline bool artStyle(Style s) { return inkFamily(s) || s == Style::Topo || s == Style::Aqua; }
+RGB paperOf(Style s);
+RGB inkOf(Style s);
+
+// vistas de arte (a Tinta e as da v35): ficam no lugar de baixo do Astrolábio, sem nuvem e sem hora
+inline const QStringList& artModes()
+{
+    static const QStringList m = { QStringLiteral("ink"), QStringLiteral("parch"), QStringLiteral("chart"), QStringLiteral("topo"), QStringLiteral("aqua"), QStringLiteral("blue") };
+    return m;
+}
+inline bool isArtMode(const QString& m) { return artModes().contains(m); }
+inline Style styleOfMode(const QString& m)
+{
+    if (m == QLatin1String("atlas")) return Style::Atlas;
+    if (m == QLatin1String("ink")) return Style::Ink;
+    if (m == QLatin1String("parch")) return Style::Parch;
+    if (m == QLatin1String("chart")) return Style::Chart;
+    if (m == QLatin1String("topo")) return Style::Topo;
+    if (m == QLatin1String("aqua")) return Style::Aqua;
+    if (m == QLatin1String("blue")) return Style::Blue;
+    return Style::Rich;
+}
 
 struct View {
     double ang = 0.0;       // rotação da mesa (rad), em volta do centro do mundo

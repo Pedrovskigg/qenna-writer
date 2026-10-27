@@ -197,7 +197,9 @@ void Panel::syncCartela()
         m_rose->setAngle(m_canvas->angle());
         const QString act = (m_tool == QLatin1String("brush") && m_canvas->showClimate()) ? QStringLiteral("climate") : m_tool;
         for (auto it = m_cbarBtns.begin(); it != m_cbarBtns.end(); ++it) it.value()->setChecked(it.key() == act);
-        for (auto it = m_viewBtns.begin(); it != m_viewBtns.end(); ++it) it.value()->setChecked(it.key() == m_canvas->mode());
+        for (auto it = m_viewBtns.begin(); it != m_viewBtns.end(); ++it)
+            it.value()->setChecked(it.key() == QLatin1String("ink") ? isArtMode(m_canvas->mode()) : it.key() == m_canvas->mode());
+        if (QToolButton* ab = m_viewBtns.value(QStringLiteral("ink"))) ab->setText(artModeShort(isArtMode(m_canvas->mode()) ? m_canvas->mode() : m_astro->artMode()) + QStringLiteral(" ▾"));
         if (!m_cPitch->isSliderDown()) { m_cPitch->blockSignals(true); m_cPitch->setValue(qRound(m_canvas->pitch())); m_cPitch->blockSignals(false); }
         if (!m_cHour->isSliderDown()) { m_cHour->blockSignals(true); m_cHour->setValue(qRound(m_canvas->hour() * 20)); m_cHour->blockSignals(false); }
         m_cPitchV->setText(QStringLiteral("%1°").arg(qRound(m_canvas->pitch())));

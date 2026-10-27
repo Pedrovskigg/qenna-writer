@@ -13,6 +13,7 @@
 
 #include <QImage>
 #include <QPointF>
+#include <QStringList>
 
 #include <functional>
 
@@ -25,6 +26,9 @@ struct Cam {
     double ang = 0, co = 1, si = 0;
     bool edges = false, detail = false;
     std::function<QPointF(double, double, double)> proj;
+    // altura do chão em (x, y), no sistema do sprite, em relação ao pé dele (o castelo no Penhasco assenta no relevo);
+    // vazio = chão plano (miniatura do catálogo)
+    std::function<double(double, double)> gz;
 };
 
 struct CastleCfg {
@@ -59,6 +63,21 @@ void atlasGlyph(QPainter& p, int type, double X, double Y, double k);
 bool drawArt(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol);
 struct ArtLight { double lx, ly, z, r; const char* kind; double force; };
 const std::vector<ArtLight>& artLights(const QString& kind);   // luzes de noite, no sistema do artefato (antes da escala)
-void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v);
+// pal (opcional): a tinta e o papel da vista (Pergaminho, Carta, Topográfico, Aquarela, Planta); paperA = o quanto o recheio cobre
+struct InkPal { RGB ink, paper; double paperA = 1, inkA = 1; };
+void inkGlyph(QPainter& p, int type, double X, double Y, double k, double v, const InkPal* pal = nullptr);
+// leva 4 (CartoSpritesArts4.cpp): casa de cidade (2 e 3 andares, campanário), paliçada, os castelos novos
+// (humanos: normando, com fosso, château, penhasco; e oriental, deserto, sombrio, gelo) e os monumentos grandes
+void drawCityHouse(QPainter& p, const House& h, const Cam& cam, bool snowy);
+void drawPalisadeSeg(QPainter& p, const Pt& a, const Pt& b, const Cam& cam, double k);
+void drawPalisadeTower(QPainter& p, const Pt& at, const Cam& cam, double k);
+bool drawArt4(QPainter& p, const Art& a, const Cam& cam, const RGB& realmCol);
+// o fosso do castelo "com fosso": meio-lados da ilha (Rx, Ry) e a largura da água (M), já na escala k do artefato
+struct MoatGeom { double Rx, Ry, M; };
+MoatGeom moatGeom(int size, double k);
+// tochas da noite: o castelo do Penhasco acende em volta da muralha dele, não da de sempre (false = a de sempre)
+bool castleLightRing(const Art& a, double& R, double& z);
+// estilos de castelo, na ordem do catálogo
+const QStringList& castleStyles();
 
 } // namespace carto::spr

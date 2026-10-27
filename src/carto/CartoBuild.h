@@ -16,11 +16,15 @@
 #include <QString>
 
 #include <functional>
+#include <memory>
+
+#include "CartoDoc.h"
 
 class QFrame;
 class QHBoxLayout;
 class QLabel;
 class QAbstractButton;
+class QComboBox;
 class QLineEdit;
 class QPushButton;
 class QScrollArea;
@@ -48,6 +52,7 @@ public:
     void applyTheme();
     bool owns(const QWidget* w) const;       // o foco está no nome do selecionado
     bool escape();                           // fecha a engrenagem; true se fechou algo
+    void scaleSelected(double factor);       // [ e ]: o tamanho do selecionado vezes factor
 
     std::function<void()> changed;                 // a faixa mudou uma opção: o painel se ressincroniza
     std::function<void(double)> setScale;          // escala do mundo
@@ -60,7 +65,8 @@ protected:
 private:
     struct Cat { QString id, name, icon; QStringList items; };
     void pickCat(const QString& id);
-    void pickKind(const QString& kind);
+    void pickKind(const QString& item);
+    void setSize(double sc);                 // tamanho do selecionado, um passo de desfazer
     void pickStyle(const QString& style);
     void renderRow();
     void syncCtx();
@@ -84,7 +90,10 @@ private:
     QWidget* m_brushRow = nullptr;
     QLabel* m_sizeCap = nullptr;
     QLabel* m_brushCap = nullptr;
-    QHash<QString, QToolButton*> m_sizeBtns, m_rmodeBtns, m_rkindBtns, m_scaleBtns;
+    QHash<QString, QToolButton*> m_sizeBtns, m_rmodeBtns, m_rkindBtns, m_scaleBtns, m_wallBtns, m_treeBtns;
+    QComboBox* m_styleBox = nullptr;
+    QWidget* m_wallRow = nullptr;
+    QWidget* m_treeRow = nullptr;
     QSlider* m_brush = nullptr;
     QLabel* m_brushValue = nullptr;
     QToolButton* m_selectBtn = nullptr;
@@ -99,6 +108,10 @@ private:
     // pílula do selecionado
     QFrame* m_sel = nullptr;
     QLineEdit* m_selName = nullptr;
+    QLabel* m_sizeIcon = nullptr;
+    QSlider* m_size = nullptr;
+    QLabel* m_sizeValue = nullptr;
+    std::shared_ptr<Doc::Layers> m_sizeBefore;
     QString m_selId;
     bool m_placeQueued = false;
 

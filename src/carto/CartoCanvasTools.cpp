@@ -37,6 +37,118 @@ void Canvas::layersDone(std::shared_ptr<Doc::Layers> before, bool repaint)
     sceneChanged();
     emit layersEdited(std::move(before));
     if (repaint) requestFull();
+    syncMoats();                         // o castelo com fosso mexeu? o fosso segue (cava, devolve)
+    update();
+}
+
+void Canvas::layersLive()
+{
+    sceneChanged();
+    update();
+}
+
+void Canvas::commitLayers(std::shared_ptr<Doc::Layers> before)
+{
+    if (m_doc && m_doc->info) refreshOwners(*m_doc->info);
+    layersDone(std::move(before), false);
+    emit selectionChanged();
+}
+
+// ── o fosso do castelo "com fosso" é o próprio terreno, cavado em volta ──
+// world.moats guarda, por castelo, o terreno de antes e a altura que ficou. O fosso sai do estado das
+// construções: mover, girar, mudar planta, tamanho ou estilo, apagar e o Ctrl+Z devolvem o terreno (só onde
+// ninguém pintou por cima depois) e cavam de novo onde o castelo estiver.
+namespace {
+QString moatKey(const Art& a, double ws)
+{
+    return QStringLiteral("%1|%2|%3|%4|%5|%6").arg(a.x, 0, 'f', 3).arg(a.y, 0, 'f', 3).arg(a.yaw, 0, 'f', 3).arg(a.size).arg(a.sc, 0, 'f', 3).arg(ws, 0, 'f', 3);
+}
+bool carveMoat(World& w, const Art& a, MoatCut& out)
+{
+    const double k = worldScale(w) * a.sc;
+    const spr::MoatGeom g = spr::moatGeom(a.size, k);
+    const double ref = w.ref > 0 ? w.ref : 1;
+    const double c = std::cos(a.yaw), s = std::sin(a.yaw), ext = std::hypot(g.Rx + g.M, g.Ry + g.M) + 3;
+    const int x0 = std::max(0, static_cast<int>(std::floor(a.x - ext))), y0 = std::max(0, static_cast<int>(std::floor(a.y - ext)));
+    const int x1 = std::min(w.W, static_cast<int>(std::ceil(a.x + ext))), y1 = std::min(w.H, static_cast<int>(std::ceil(a.y + ext)));
+    if (x1 <= x0 || y1 <= y0) return false;
+    out.id = a.id; out.key = moatKey(a, worldScale(w));
+    out.x0 = x0; out.y0 = y0; out.x1 = x1; out.y1 = y1;
+    const int ww = x1 - x0;
+    out.before.resize(static_cast<size_t>(ww) * (y1 - y0));
+    out.cut.resize(out.before.size());
+    const double isl = 0.8 * k, edge = 1.8 * k, deep = -0.1 * ref;
+    for (int y = y0; y < y1; y++) for (int x = x0; x < x1; x++) {
+        const size_t i = static_cast<size_t>(y) * w.W + x, j = static_cast<size_t>(y - y0) * ww + (x - x0);
+        out.before[j] = w.h[i];
+        const double dx = x - a.x, dy = y - a.y, lx = c * dx + s * dy, ly = -s * dx + c * dy;
+        const double dIn = std::max(std::fabs(lx) - (g.Rx + isl), std::fabs(ly) - (g.Ry + isl));     // > 0: fora da ilha do castelo
+        const double dOut = std::max(std::fabs(lx) - (g.Rx + g.M), std::fabs(ly) - (g.Ry + g.M));    // < 0: antes da margem de fora
+        if (dIn > 0 && dOut < edge) {
+            const double wgt = std::min({ 1.0, dIn / (0.5 * k), dOut <= 0 ? 1.0 : 1 - dOut / edge });
+            const double v = w.h[i] * (1 - wgt) + deep * wgt;
+            if (v < w.h[i]) w.h[i] = static_cast<float>(v);
+        }
+        out.cut[j] = w.h[i];
+    }
+    return true;
+}
+void uncarveMoat(World& w, const MoatCut& m)
+{
+    const int ww = m.x1 - m.x0;
+    for (int y = m.y0; y < m.y1; y++) for (int x = m.x0; x < m.x1; x++) {
+        const size_t i = static_cast<size_t>(y) * w.W + x, j = static_cast<size_t>(y - m.y0) * ww + (x - m.x0);
+        if (w.h[i] == m.cut[j]) w.h[i] = m.before[j];
+    }
+}
+}
+
+void Canvas::syncMoats()
+{
+    if (!m_doc || !m_world || !m_doc->info || m_artDrag) return;
+    World& w = *m_world;
+    const double ws = worldScale(w);
+    std::vector<const Art*> want;
+    for (const Art& a : m_doc->info->user.arts) if (a.kind == QLatin1String("castle") && a.style == QLatin1String("moat")) want.push_back(&a);
+    auto find = [&](const QString& id) -> const Art* { for (const Art* a : want) if (a->id == id) return a; return nullptr; };
+    std::optional<std::array<int, 4>> box;
+    auto grow = [&](const MoatCut& m) {
+        if (!box) box = std::array<int, 4>{ m.x0, m.y0, m.x1, m.y1 };
+        else box = std::array<int, 4>{ std::min((*box)[0], m.x0), std::min((*box)[1], m.y0), std::max((*box)[2], m.x1), std::max((*box)[3], m.y1) };
+    };
+    bool any = false;
+    for (const MoatCut& m : w.moats) { const Art* a = find(m.id); if (!a || m.key != moatKey(*a, ws)) { any = true; break; } }
+    if (!any) for (const Art* a : want) { bool has = false; for (const MoatCut& m : w.moats) if (m.id == a->id) has = true; if (!has) { any = true; break; } }
+    if (!any) return;
+    waitIdle();
+    std::vector<MoatCut> keep;
+    for (const MoatCut& m : w.moats) {
+        const Art* a = find(m.id);
+        if (a && m.key == moatKey(*a, ws)) { keep.push_back(m); continue; }
+        uncarveMoat(w, m); grow(m);
+    }
+    for (const Art* a : want) {
+        bool has = false;
+        for (const MoatCut& m : keep) if (m.id == a->id) has = true;
+        if (has) continue;
+        MoatCut m;
+        if (carveMoat(w, *a, m)) { grow(m); keep.push_back(std::move(m)); }
+    }
+    w.moats = std::move(keep);
+    if (!box) return;
+    // o terreno mudou nesse retângulo (como numa pincelada): versão nova, vegetação e azulejos do chão só ali
+    const bool floraFresh = m_doc->floraVer == m_doc->ver && m_doc->floraScale == worldScale(w);
+    const int verFrom = m_doc->ver;
+    m_doc->touch();
+    const auto& b = *box;
+    if (floraFresh) { updateFloraBox(w, m_doc->flora, b[0], b[1], b[2], b[3]); m_doc->floraVer = m_doc->ver; }
+    if (m_terrainDirty && m_terrainDirty->to == verFrom) {
+        auto& d = m_terrainDirty->box;
+        d = { std::min(d[0], b[0]), std::min(d[1], b[1]), std::max(d[2], b[2]), std::max(d[3], b[3]) };
+        m_terrainDirty->to = m_doc->ver;
+    } else m_terrainDirty = TerrainDirty{ verFrom, m_doc->ver, b };
+    paintBox(b, false);
+    sceneChanged();
     update();
 }
 
@@ -109,14 +221,16 @@ void Canvas::setSelName(const QString& ref)
     update();
 }
 
-void Canvas::cancelAction()
+bool Canvas::cancelAction()
 {
+    const bool had = m_roadFrom || m_bridgeStart || !m_trail.empty();
     m_roadFrom.reset();
     m_bridgeStart.reset();
     m_toolMsg.clear();
     m_trail.clear();
     emit selectionChanged();
     update();
+    return had;
 }
 
 // ── mouse ──
@@ -245,7 +359,7 @@ bool Canvas::toolRelease(QMouseEvent*)
         if (m_bstroke) {
             m_bstroke = false;
             const QString& k = m_opts.buildKind;
-            if (k == QLatin1String("wall")) addWall(in, m_trailWorld);
+            if (k == QLatin1String("wall")) addWall(in, m_trailWorld, m_opts.wallKind);
             if (k == QLatin1String("road")) addRoad(in, m_trailWorld, m_opts.roadKind, true);
             in.user.ver++;
             m_trail.clear();
@@ -362,7 +476,7 @@ void Canvas::realmDown(QPointF pos, bool shift)
 // ── construir ──
 std::array<double, 2> Canvas::artExtent(const Art& a) const
 {
-    const double k = worldScale(*m_world);
+    const double k = worldScale(*m_world) * a.sc;
     if (a.kind == QLatin1String("castle")) {
         const spr::CastleCfg& c = spr::kCastle[std::max(0, std::min(3, a.size))];
         return { (c.R * 1.25 + 1) * k, (c.kt[1] + c.kt[2] + 2) * k };
@@ -445,6 +559,9 @@ void Canvas::buildDab(double x, double y)
     if (k == QLatin1String("village")) paintVillage(*m_world, in, x, y, m_opts.buildBrush);
     else if (k == QLatin1String("fields")) paintFieldsUser(*m_world, in, x, y, m_opts.buildBrush * 1.4);
     else if (k == QLatin1String("erase")) eraseUser(in, x, y, m_opts.buildBrush);
+    else if (k == QLatin1String("city")) paintCity(*m_world, in, x, y, m_opts.buildBrush);
+    else if (k == QLatin1String("forest")) paintTrees(*m_world, in, x, y, m_opts.buildBrush, m_opts.treeMode);
+    else if (k == QLatin1String("rocks")) paintTrees(*m_world, in, x, y, m_opts.buildBrush, QStringLiteral("rocks"));
 }
 
 void Canvas::buildDown(QPointF pos)
@@ -710,7 +827,8 @@ void Canvas::drawToolOverlay(QPainter& p, const SceneState& st)
             for (size_t i = 1; i < m_trail.size(); i++) pp.lineTo(m_trail[i]);
             p.strokePath(pp, dashPen(QColor(240, 232, 214, 230), 3, 6, 4));
         }
-        if (kind == QLatin1String("village") || kind == QLatin1String("fields") || kind == QLatin1String("erase"))
+        if (kind == QLatin1String("village") || kind == QLatin1String("city") || kind == QLatin1String("fields") || kind == QLatin1String("forest")
+            || kind == QLatin1String("rocks") || kind == QLatin1String("erase"))
             cursorRing(m_opts.buildBrush * (kind == QLatin1String("fields") ? 1.4 : 1), kind == QLatin1String("erase") ? QColor(232, 140, 120) : QColor(240, 232, 214));
     } else if (m_tool == Tool::Names) {
         if (m_nameNew && m_trail.size() >= 2) {
