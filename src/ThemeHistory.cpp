@@ -9,6 +9,10 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("1.5.0"), {
+            QStringLiteral("anim-route66"), QStringLiteral("anim-evebattle"), QStringLiteral("anim-outpost"), QStringLiteral("anim-hoard"),
+            QStringLiteral("anim-rooftop"), QStringLiteral("anim-citadel"),
+        } },
         { QStringLiteral("1.4.9"), {
             QStringLiteral("anim-thunderstorm"), QStringLiteral("anim-drizzle"), QStringLiteral("anim-windowpane"), QStringLiteral("anim-blizzard"),
             QStringLiteral("anim-pines"), QStringLiteral("anim-leaves"), QStringLiteral("anim-hanami"), QStringLiteral("anim-firefly"),
