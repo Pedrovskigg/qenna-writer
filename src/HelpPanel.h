@@ -81,7 +81,7 @@ private:
     QString markersContent() const;
     QString memoriesContent() const;
     QString timelineContent() const;
-    QString coverCreatorContent() const;
+    QString coverContent() const;
     QString createDocumentsContent() const;
     QString themesContent() const;
     QString builderContent() const;

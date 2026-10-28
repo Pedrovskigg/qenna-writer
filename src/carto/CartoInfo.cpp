@@ -920,10 +920,11 @@ QJsonObject UserLayer::toJson() const
     for (const Art& a : arts)
         A.append(QJsonObject{ { "id", a.id }, { "kind", a.kind }, { "x", a.x }, { "y", a.y }, { "yaw", a.yaw }, { "v", a.v }, { "size", a.size }, { "name", a.name } });
     for (int i = 0; i < A.size(); i++) {
-        if (arts[i].style.isEmpty() && arts[i].sc == 1) continue;
+        if (arts[i].style.isEmpty() && arts[i].sc == 1 && arts[i].groupId.isEmpty()) continue;
         QJsonObject o = A[i].toObject();
         if (!arts[i].style.isEmpty()) o["style"] = arts[i].style;
         if (arts[i].sc != 1) o["sc"] = arts[i].sc;
+        if (!arts[i].groupId.isEmpty()) o["group"] = arts[i].groupId;
         A[i] = o;
     }
     for (const House& h : houses) {
@@ -954,6 +955,7 @@ UserLayer UserLayer::fromJson(const QJsonObject& o)
         t.yaw = a.value("yaw").toDouble(); t.v = a.value("v").toDouble(); t.size = a.value("size").toInt(); t.name = a.value("name").toString();
         t.style = a.value("style").toString();
         t.sc = a.value("sc").toDouble(1);
+        t.groupId = a.value("group").toString();
         // o nome automático de antes ("Castelo 1", "Naufrágio 3") sai; o que a pessoa escreveu fica
         if (!t.name.isEmpty()) {
             const QString auto0 = artName(t.kind) + QLatin1Char(' ');

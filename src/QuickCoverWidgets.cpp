@@ -23,6 +23,7 @@
 #include <QSlider>
 #include <QStackedWidget>
 #include <QSvgRenderer>
+#include <QTextEdit>
 #include <QTimer>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -759,7 +760,8 @@ QWidget* QuickCoverPanel::buildText()
 
     auto* editRow = new QHBoxLayout;
     editRow->setSpacing(6);
-    m_textEdit = SheetDialog::field(w);
+    // Duas linhas: Enter quebra a linha (no título e no autor, só na capa)
+    m_textEdit = SheetDialog::textArea(w, 54);
     editRow->addWidget(m_textEdit, 1);
     m_removeBtn = new QToolButton(w);
     m_removeBtn->setObjectName(QStringLiteral("qcMini"));
@@ -767,6 +769,7 @@ QWidget* QuickCoverPanel::buildText()
     m_removeBtn->setToolTip(tr("Tirar este texto da capa"));
     m_removeBtn->setCursor(Qt::PointingHandCursor);
     m_removeBtn->setFixedHeight(28);
+    m_removeBtn->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     connect(m_removeBtn, &QToolButton::clicked, this, [this]() {
         const int i = m_canvas->selected();
         if (i < 0 || i >= m_spec->texts.size() || m_spec->texts[i].role != QLatin1String("extra")) return;
@@ -775,15 +778,26 @@ QWidget* QuickCoverPanel::buildText()
         m_canvas->refresh();
         emit changed();
     });
-    editRow->addWidget(m_removeBtn);
+    editRow->addWidget(m_removeBtn, 0, Qt::AlignTop);
     v->addLayout(editRow);
-    connect(m_textEdit, &QLineEdit::textEdited, this, [this](const QString& s) {
+    connect(m_textEdit, &QTextEdit::textChanged, this, [this]() {
+        if (m_fillingText) return;
         QuickCover::Text* t = current();
         if (!t) return;
-        // título e autor: o mesmo valor dos campos da folha
-        if (t->role == QLatin1String("title")) m_setTitle(s);
-        else if (t->role == QLatin1String("author")) m_setAuthor(s);
-        else t->text = s;
+        const QString s = m_textEdit->toPlainText();
+        const bool title = t->role == QLatin1String("title");
+        if (title || t->role == QLatin1String("author")) {
+            // título e autor: o mesmo valor dos campos da folha. A quebra de
+            // linha fica só na capa; o campo (e o projeto) recebe tudo numa
+            // linha, senão o autor do projeto inteiro virava "P.H.".
+            const bool broken = s.contains(QLatin1Char('\n'));
+            t->layout = broken ? s : QString();
+            const QString line = broken ? QuickCover::flatLine(s) : s;
+            if (title) m_setTitle(line);
+            else m_setAuthor(line);
+        } else {
+            t->text = s;
+        }
         m_canvas->refresh();
         emit changed();
     });
@@ -912,11 +926,16 @@ void QuickCoverPanel::refreshTextPane()
                         : t->role == QLatin1String("author") ? tr("autor") : tr("texto seu");
     m_editingLbl->setText(tr("Editando: <b style='color:%1'>%2</b>").arg(pal.bright.name(), which));
     m_editingLbl->setToolTip(tr("Clique num texto da capa pra trocar"));
-    const QString value = t->role == QLatin1String("title") ? m_title()
-                        : t->role == QLatin1String("author") ? m_author() : t->text;
-    if (m_textEdit->text() != value) m_textEdit->setText(value);
-    m_textEdit->setToolTip(t->role == QLatin1String("extra") ? QString()
-                           : tr("É o mesmo %1 da folha").arg(which));
+    const QString value = t->role == QLatin1String("title") ? QuickCover::shownText(*t, m_title())
+                        : t->role == QLatin1String("author") ? QuickCover::shownText(*t, m_author()) : t->text;
+    if (m_textEdit->toPlainText() != value) {
+        m_fillingText = true;
+        m_textEdit->setPlainText(value);
+        m_textEdit->moveCursor(QTextCursor::End);
+        m_fillingText = false;
+    }
+    m_textEdit->setToolTip(t->role == QLatin1String("extra") ? tr("Enter quebra a linha")
+                           : tr("É o mesmo %1 da folha. Enter quebra a linha só na capa.").arg(which));
     m_removeBtn->setVisible(t->role == QLatin1String("extra"));
     m_boldBtn->setChecked(t->bold);
     m_italicBtn->setChecked(t->italic);

@@ -5,13 +5,18 @@
 
 #include <QApplication>
 #include <QDialogButtonBox>
+#include <QEvent>
 #include <QFile>
+#include <QImageReader>
 #include <QLabel>
 #include <QPixmap>
 #include <QPushButton>
 #include <QScreen>
 #include <QSettings>
+#include <QTextBlock>
 #include <QTextBrowser>
+#include <QTextCursor>
+#include <QTextDocument>
 #include <QVBoxLayout>
 
 namespace {
@@ -30,13 +35,14 @@ WhatsNewDialog::WhatsNewDialog(QWidget* parent)
     root->setContentsMargins(32, 24, 32, 20);
     root->setSpacing(0);
 
-    // Logo do splash atual. Escalado já na densidade da tela: um pixmap
-    // reduzido em 1x ficaria borrado em monitor com escala de 150%.
+    // O logo oficial (out/2026: as cinco letras da vinheta). Escalado já na
+    // densidade da tela: um pixmap reduzido em 1x ficaria borrado em monitor
+    // com escala de 150%.
     m_logo = new QLabel(this);
     m_logo->setAlignment(Qt::AlignCenter);
     {
         const qreal dpr = devicePixelRatioF();
-        QPixmap logo(QStringLiteral(":/app/splash-4.png"));
+        QPixmap logo(QStringLiteral(":/app/logo-oficial.png"));
         if (!logo.isNull()) {
             logo = logo.scaledToWidth(qRound(kLogoWidth * dpr), Qt::SmoothTransformation);
             logo.setDevicePixelRatio(dpr);
@@ -61,6 +67,8 @@ WhatsNewDialog::WhatsNewDialog(QWidget* parent)
     // da margem do documento — senão o texto fica espremido no meio.
     m_body->document()->setDocumentMargin(8);
     m_body->setMarkdown(loadNotes());
+    // a foto do patch note acompanha a largura da janela
+    m_body->viewport()->installEventFilter(this);
     root->addWidget(m_body, 1);
     root->addSpacing(14);
 
@@ -77,6 +85,39 @@ WhatsNewDialog::WhatsNewDialog(QWidget* parent)
     applyTheme();
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
             this, &WhatsNewDialog::applyTheme);
+}
+
+bool WhatsNewDialog::eventFilter(QObject* watched, QEvent* event)
+{
+    if (m_body && watched == m_body->viewport() && event->type() == QEvent::Resize) fitImages();
+    return QDialog::eventFilter(watched, event);
+}
+
+void WhatsNewDialog::fitImages()
+{
+    QTextDocument* doc = m_body->document();
+    const qreal avail = m_body->viewport()->width() - 2 * doc->documentMargin() - 2;
+    if (avail <= 0) return;
+    QTextCursor cur(doc);
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        for (auto it = b.begin(); !it.atEnd(); ++it) {
+            const QTextFragment f = it.fragment();
+            if (!f.charFormat().isImageFormat()) continue;
+            QTextImageFormat img = f.charFormat().toImageFormat();
+            QString path = img.name();
+            if (path.startsWith(QLatin1String("qrc:"))) path = path.mid(3);
+            // a arte vem em 2x: o tamanho natural, na tela, é a metade dos pixels
+            const QSize px = QImageReader(path).size();
+            if (px.isEmpty()) continue;
+            const qreal w = qMin(avail, px.width() / 2.0);
+            if (qAbs(img.width() - w) < 0.5) continue;
+            img.setWidth(w);
+            img.setHeight(w * px.height() / px.width());
+            cur.setPosition(f.position());
+            cur.setPosition(f.position() + f.length(), QTextCursor::KeepAnchor);
+            cur.setCharFormat(img);
+        }
+    }
 }
 
 void WhatsNewDialog::markFreshInstall(bool settingsWereEmpty)

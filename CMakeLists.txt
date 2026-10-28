@@ -376,6 +376,8 @@ qt_add_executable(qenna-writer
     src/RemindersStore.h
     src/RemindersPanel.cpp
     src/RemindersPanel.h
+    src/GroupBadge.cpp
+    src/GroupBadge.h
     src/GroupPicker.cpp
     src/GroupPicker.h
     src/PovPicker.cpp

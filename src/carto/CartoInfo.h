@@ -79,6 +79,7 @@ struct Art {
     QString name;
     int realm = -1;
     double sc = 1;                // tamanho (o slider da pílula, 0,4 a 4) por cima da escala do mundo
+    QString groupId;              // Explorar: batizou, virou lugar (grupo filho do território)
 };
 // casa da vila; city = sobrado do pincel Cidade (2 ou 3 andares, a cumeeira pro fundo), bell = campanário do lado
 struct House { double x = 0, y = 0, yaw = 0, v = 0; int floors = 1; bool timber = false; bool city = false, bell = false; mutable int snowy = -1; };

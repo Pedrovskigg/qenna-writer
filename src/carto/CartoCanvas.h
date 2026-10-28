@@ -41,6 +41,10 @@ struct ExploreView {
     std::vector<int> counts;                 // documentos de cada território
     std::vector<ExploreLinkView> links;      // arcos: as conexões do escolhido (ou a do lado a lado)
     bool duo = false;                        // lado a lado aberto: o arco vem cheio
+    QString selArt;                          // construção batizada escolhida (um Lugar filho do território)
+    std::vector<QString> arts;               // construções batizadas que viram ponto clicável ("art:<id>")
+    std::vector<int> acts;                   // "Atua em": territórios por onde o grupo escolhido se espalha
+    QColor actsColor;
 };
 
 // opções das ferramentas (a doca do painel mostra e muda)
@@ -138,7 +142,12 @@ public:
     void setExplore(ExploreView v) { m_explore = std::move(v); update(); }
     int realmAtScreen(QPointF s) const;                    // território em terra embaixo do ponto (−1 = nenhum)
     std::optional<QPointF> realmCenterOnScreen(int r) const;
+    std::optional<QPointF> worldOnScreen(double x, double y) const;
     void panBy(double dx, double dy);
+    // a árvore do Explorar leva o mapa até o lugar: voa até o ponto do mundo, que para em `at`
+    // (zoomFit = o zoom em vezes o "caber tudo"); flyFit volta pro mapa inteiro
+    void flyTo(double wx, double wy, double zoomFit, QPointF at);
+    void flyFit();
 
     // tela ↔ mundo
     QPointF screenToPlane(QPointF s) const;
@@ -194,6 +203,7 @@ private:
     void drawRuler(QPainter& p, const SceneState& st);
     void drawGroundLayer(QPainter& p, const SceneState& st, QSize sz);
     void sceneChanged() { m_scene.invalidate(); m_sceneRev++; }
+    void drawExploreOutlines(QPainter& p, const SceneState& st);   // antes dos nomes
     void drawExplore(QPainter& p, const SceneState& st);
     const std::vector<float>& exploreSegs(int slot, int r);
     QString exploreLinkAt(QPointF s) const;
@@ -303,13 +313,24 @@ private:
     int m_sceneRev = 0;
     // Explorar
     ExploreView m_explore;
-    struct XOutline { int r = -1, infoVer = -1, rev = -1; const Info* info = nullptr; std::vector<float> segs; } m_xoutline[2];
+    struct XOutline { int r = -1, infoVer = -1, rev = -1; const Info* info = nullptr; std::vector<float> segs; } m_xoutline[6];   // mouse, escolhido, 4 do "Atua em"
+    void fitTarget(double& z, double& px, double& py) const;
+    void flyStart(double z, double px, double py, double refX, double refY);
+    QTimer* m_flyTimer = nullptr;
+    QElapsedTimer m_flyClock;
+    double m_fly[8] = {};   // zoom e pan de antes e de depois, e o ponto (plano) que guia a viagem
     std::vector<std::pair<QRectF, QString>> m_xhits;   // rótulos das conexões (clicáveis)
     int m_xhovRealm = -1; QString m_xhovLink;
     double m_cacheAng = 0, m_cacheSq = 1, m_cacheZoom = 1;
     // interação: durante giro, inclinação e zoom a imagem que existe se transforma (nada se repinta);
     // a pintura nítida vem em segundo plano quando a mão para
     QElapsedTimer m_lastMove;
+    // transição na troca de detalhe (ver paintEvent): o quadro pinta numa imagem e o de antes se desfaz por cima
+    QImage m_frame, m_prevFrame, m_fadeFrom;
+    bool m_fadeArm = false, m_fading = false, m_fadeNextBase = false;
+    QElapsedTimer m_fadeClock;
+    QTimer m_fadeTimer;
+    std::array<double, 5> m_fadeView{};          // pan, zoom, giro e inclinação quando a transição começou
     QTimer m_cacheTimer;
     std::shared_ptr<std::atomic<bool>> m_cancel;   // da pintura de fundo em curso
     bool baseMatches() const;

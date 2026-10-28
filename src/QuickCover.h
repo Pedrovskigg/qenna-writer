@@ -27,6 +27,11 @@ constexpr qreal kRefH = 360.0;
 struct Text {
     QString role;          // "title" | "author" | "extra"
     QString text;          // só "extra" usa: título e autor vêm dos campos do projeto
+    // Título e autor: o mesmo texto do campo, com as quebras de linha que a
+    // pessoa quis só na capa ("P.H." em cima, "LOBATO" embaixo). O projeto
+    // guarda tudo numa linha. Se o campo mudar por outro caminho, o layout
+    // deixa de bater e a capa volta a mostrar o valor novo numa linha.
+    QString layout;
     QString family;
     qreal   size = 36;     // px na capa de referência
     QPointF pos{0.5, 0.72};
@@ -64,6 +69,12 @@ Spec fromJson(const QJsonObject& o, const QString& fallbackFamily);
 QImage render(const Spec& s, const QSize& size, bool withText,
               const QString& title, const QString& author,
               QVector<QRectF>* hitRects = nullptr);
+
+// O texto numa linha só: quebras viram espaço (o valor que vai pro projeto).
+QString flatLine(const QString& s);
+// O que a capa mostra num texto: o layout com quebras, se ele ainda bate com o
+// campo; senão o próprio campo. "extra" mostra o texto dele.
+QString shownText(const Text& t, const QString& field);
 
 // data URL JPEG (o formato das capas do projeto).
 QString toDataUrl(const QImage& img);

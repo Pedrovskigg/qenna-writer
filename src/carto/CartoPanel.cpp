@@ -149,12 +149,6 @@ void Panel::buildUi()
         m_icons.append({ b, iconName });
         return b;
     };
-    auto addSep = [](QFrame* f) {
-        auto* sep = new QFrame(f);
-        sep->setObjectName(QStringLiteral("cartoSep"));
-        sep->setFixedSize(1, 18);
-        static_cast<QHBoxLayout*>(f->layout())->addWidget(sep, 0, Qt::AlignVCenter);
-    };
 
     // título do mapa (clique pra trocar o nome) + troca de mapa
     m_titlePill = makeFloat(QStringLiteral("cartoTitle"));
@@ -187,14 +181,15 @@ void Panel::buildUi()
     m_mapsBtn = makeBtn(m_titlePill, QStringLiteral("down"), tr("Trocar, criar, renomear ou excluir mapas"));
     connect(m_mapsBtn, &QToolButton::clicked, this, &Panel::showMapMenu);
     tl->addWidget(m_mapsBtn, 0, Qt::AlignTop);
+    // 28/10: a pílula de cima saiu; o Gerar mora no menu do título ("Regenerar mapa") e o botão fica guardado, escondido
+    m_genBtn = makeBtn(m_titlePill, QStringLiteral("gen"), tr("Gerar mapa (G)"), tr("Gerar"));
+    m_genBtn->setCheckable(true);
+    m_genBtn->hide();
+    connect(m_genBtn, &QToolButton::clicked, this, [this]() { m_gen->setVisible(!m_gen->isVisible()); positionOverlays(); syncUi(); });
+    tl->addWidget(m_genBtn, 0, Qt::AlignTop);
 
-    // pílula de cima: desfazer, refazer, gerar, enquadrar, ajustes, fechar
-    m_topPill = makeFloat(QStringLiteral("cartoTop"));
-    auto* tp = new QHBoxLayout(m_topPill);
-    tp->setContentsMargins(4, 4, 4, 4);
-    tp->setSpacing(2);
-    // vistas (no modo Cartela; no Astrolábio elas moram no instrumento)
-    m_viewSeg = new QWidget(m_topPill);
+    // vistas (no modo Cartela, no cartão da inclinação e da hora; no Astrolábio elas moram no instrumento)
+    m_viewSeg = new QWidget(this);
     auto* vs = new QHBoxLayout(m_viewSeg);
     vs->setContentsMargins(0, 0, 0, 0);
     vs->setSpacing(2);
@@ -206,43 +201,27 @@ void Panel::buildUi()
         b->setFixedHeight(30);
         b->setCursor(Qt::PointingHandCursor);
         b->setText(modeName(v));
-        // o botão "ink" é o das vistas de arte: entra na última escolhida; já dentro, abre a lista das seis
+        // o botão "ink" é o das vistas de arte: entra na última escolhida; já dentro, abre a lista das seis (pra cima: o cartão mora no pé da tela)
         connect(b, &QToolButton::clicked, this, [this, v, b]() {
             if (v != QLatin1String("ink")) { setMode(v); return; }
-            if (isArtMode(m_canvas->mode())) { m_artPick->openAt(b->mapToGlobal(QPoint(b->width() / 2, b->height() + 6)), m_canvas->mode(), true); syncUi(); }
+            if (isArtMode(m_canvas->mode())) { m_artPick->openAt(b->mapToGlobal(QPoint(b->width() / 2, -6)), m_canvas->mode()); syncUi(); }
             else setMode(m_astro->artMode());
         });
         m_viewBtns.insert(v, b);
-        vs->addWidget(b);
+        vs->addWidget(b, 1);
     }
-    auto* vsep = new QFrame(m_viewSeg);
-    vsep->setObjectName(QStringLiteral("cartoSep"));
-    vsep->setFixedSize(1, 18);
-    vs->addWidget(vsep, 0, Qt::AlignVCenter);
-    tp->addWidget(m_viewSeg);
-    m_undoBtn = makeBtn(m_topPill, QStringLiteral("undo"), tr("Desfazer (Ctrl+Z)"));
-    m_redoBtn = makeBtn(m_topPill, QStringLiteral("redo"), tr("Refazer (Ctrl+Y)"));
-    connect(m_undoBtn, &QToolButton::clicked, this, [this]() { restore(true); });
-    connect(m_redoBtn, &QToolButton::clicked, this, [this]() { restore(false); });
-    tp->addWidget(m_undoBtn); tp->addWidget(m_redoBtn); addSep(m_topPill);
-    m_genBtn = makeBtn(m_topPill, QStringLiteral("gen"), tr("Gerar mapa (G)"), tr("Gerar"));
-    m_genBtn->setCheckable(true);
-    connect(m_genBtn, &QToolButton::clicked, this, [this]() { m_gen->setVisible(!m_gen->isVisible()); positionOverlays(); syncUi(); });
-    m_fitBtn = makeBtn(m_topPill, QStringLiteral("fit"), tr("Enquadrar (F)"));
+    // enquadrar, régua, exportar e ajustes: entram na barra da direita (buildCartelaUi); desfazer e refazer ficam só no Ctrl+Z / Ctrl+Y
+    m_fitBtn = makeBtn(this, QStringLiteral("fit"), tr("Enquadrar (F)"));
     connect(m_fitBtn, &QToolButton::clicked, m_canvas, &Canvas::fit);
-    m_setBtn = makeBtn(m_topPill, QStringLiteral("gear"), tr("Ajustes"));
+    m_setBtn = makeBtn(this, QStringLiteral("gear"), tr("Ajustes"));
     m_setBtn->setCheckable(true);
     connect(m_setBtn, &QToolButton::clicked, this, [this]() { m_settings->setVisible(!m_settings->isVisible()); positionOverlays(); syncUi(); });
-    m_rulerBtn = makeBtn(m_topPill, QStringLiteral("ruler"), tr("Régua: distância e tempo de viagem (R)"));
+    m_rulerBtn = makeBtn(this, QStringLiteral("ruler"), tr("Régua: distância e tempo de viagem (R)"));
     m_rulerBtn->setCheckable(true);
     connect(m_rulerBtn, &QToolButton::clicked, this, [this]() { pickTool(m_tool == QLatin1String("ruler") ? QStringLiteral("pan") : QStringLiteral("ruler"), QPoint()); });
-    m_exportBtn = makeBtn(m_topPill, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
+    m_exportBtn = makeBtn(this, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
     m_exportBtn->setCheckable(true);
     connect(m_exportBtn, &QToolButton::clicked, this, [this]() { m_export->setVisible(!m_export->isVisible()); m_gen->hide(); positionOverlays(); syncUi(); });
-    tp->addWidget(m_genBtn); tp->addWidget(m_fitBtn); tp->addWidget(m_rulerBtn); tp->addWidget(m_exportBtn); tp->addWidget(m_setBtn); addSep(m_topPill);
-    m_closeBtn = makeBtn(m_topPill, QStringLiteral("close"), tr("Fechar o mapa"));
-    connect(m_closeBtn, &QToolButton::clicked, this, &Panel::close);
-    tp->addWidget(m_closeBtn);
 
     // Astrolábio + pílulas da hora e da ferramenta
     m_astro = new Astrolabe(this);
@@ -337,6 +316,7 @@ void Panel::buildUi()
     m_explore->mapEdited = [this]() { scheduleSave(); };
     m_explore->flash = [this](const QString& m) { flash(m); };
     m_explore->cartelaTop = [this]() { return m_cartela && m_cartela->isVisible() ? m_cartela->y() : -1; };
+    m_explore->mapName = [this]() { const int i = m_store.indexOf(m_mapId); return i >= 0 ? m_store.maps()[i].name : QString(); };
     connect(m_canvas, &Canvas::exploreHover, this, [this](int r, const QString& link, QPoint at) { m_explore->hovered(r, link, at); });
     connect(m_canvas, &Canvas::exploreClicked, this, [this](int r, const QString& link) { m_explore->clicked(r, link); syncUi(); });
 
@@ -821,12 +801,18 @@ void Panel::positionOverlays()
 {
     const int W = width(), H = height();
     // o layout guarda a medida velha até o próximo LayoutRequest: refaz antes de medir
-    for (QWidget* w : { static_cast<QWidget*>(m_titlePill), static_cast<QWidget*>(m_topPill), static_cast<QWidget*>(m_toolPill), static_cast<QWidget*>(m_hourPill) })
+    for (QWidget* w : { static_cast<QWidget*>(m_titlePill), static_cast<QWidget*>(m_toolPill), static_cast<QWidget*>(m_hourPill) })
         if (w->layout()) w->layout()->invalidate();
     m_titlePill->adjustSize();
     m_titlePill->move(16, 14);
-    m_topPill->adjustSize();
-    m_topPill->move(W - m_topPill->width() - 16, 14);
+    // a barra da direita sobe pro canto; Ajustes e Exportar abrem do lado esquerdo dela
+    int cardRight = W - 16;
+    if (m_cbar) {
+        m_cbar->layout()->invalidate();
+        m_cbar->adjustSize();
+        m_cbar->move(W - m_cbar->width() - 16, 14);
+        cardRight = m_cbar->x() - 8;
+    }
     m_astro->move(W - m_astro->width() - 4, H - m_astro->height() - 2);
     m_toolPill->adjustSize();
     m_hourPill->adjustSize();
@@ -843,18 +829,17 @@ void Panel::positionOverlays()
     m_gen->adjustSize();
     m_gen->move((W - m_gen->width()) / 2, 70);
     m_settings->adjustSize();
-    m_settings->move(W - m_settings->width() - 16, m_topPill->y() + m_topPill->height() + 8);
+    m_settings->move(cardRight - m_settings->width(), 14);
     if (m_export) {
         m_export->adjustSize();
-        m_export->move(W - m_export->width() - 16, m_topPill->y() + m_topPill->height() + 8);
+        m_export->move(cardRight - m_export->width(), 14);
     }
     if (m_cartela) {
         const bool cartelaUi = m_ui == QLatin1String("cartela");
         m_cartela->resize(m_cartela->sizeHint());
         m_cartela->move(16, H - m_cartela->height() - 14);
         m_rose->move(16, H - m_rose->height() - 14);
-        m_cbar->adjustSize();
-        m_cbar->move(W - m_cbar->width() - 16, m_topPill->y() + m_topPill->height() + 8);
+        if (m_cview->layout()) m_cview->layout()->invalidate();
         m_cview->adjustSize();
         m_cview->move(W - m_cview->width() - 16, H - m_cview->height() - 14);
         // a dica fica no meio, entre a Cartela e o canto direito
@@ -957,8 +942,6 @@ void Panel::syncUi()
     m_astro->setState(m_canvas->angle(), m_canvas->pitch(), m_canvas->hour(), m_canvas->mode());
     m_hourLabel->setText(QStringLiteral("%1 · %2").arg(fmtHour(m_canvas->hour()), phaseName(m_canvas->hour())));
     m_toolBtn->setText(toolLabel() + QStringLiteral("  ▴"));
-    m_undoBtn->setEnabled(!m_undo.empty());
-    m_redoBtn->setEnabled(!m_redo.empty());
     m_genBtn->setChecked(m_gen->isVisible());
     m_genInfo->setIcon(icon(m_genInfo->isChecked() && m_genInfo->isEnabled() ? QStringLiteral("check") : QStringLiteral("box"),
                             Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
@@ -1108,6 +1091,7 @@ void Panel::showMapMenu()
     }
     menu.addSeparator();
     menu.addAction(tr("Novo mapa…"), this, [this]() { newMap(true); });
+    menu.addAction(tr("Regenerar mapa"), this, [this]() { m_gen->show(); m_export->hide(); positionOverlays(); syncUi(); });
     menu.addAction(tr("Renomear…"), this, [this]() { m_title->hide(); m_titleEdit->setText(m_title->text()); m_titleEdit->show(); m_titleEdit->setFocus(); m_titleEdit->selectAll(); positionOverlays(); });
     QAction* del = menu.addAction(tr("Excluir este mapa…"), this, [this]() {
         const int i = m_store.indexOf(m_mapId);

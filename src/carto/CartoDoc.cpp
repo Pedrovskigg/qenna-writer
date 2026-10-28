@@ -28,6 +28,7 @@ QJsonObject Doc::layersToJson()
     o.insert("rivers", rv);
     o.insert("riverSeq", riverSeq);
     if (!title.isEmpty()) o.insert("title", title);
+    if (!groupId.isEmpty()) o.insert("group", groupId);
     // fossos cavados pelos castelos: o terreno de antes e o que ficou (pra devolver quando o castelo sair)
     if (!world.moats.empty()) {
         QJsonArray ms;
@@ -53,6 +54,7 @@ void Doc::layersFromJson(const QJsonObject& o)
     }
     riverSeq = o.value("riverSeq").toInt();
     title = o.value("title").toString();
+    groupId = o.value("group").toString();
     world.moats.clear();
     for (const QJsonValue& v : o.value("moats").toArray()) {
         const QJsonObject m = v.toObject();

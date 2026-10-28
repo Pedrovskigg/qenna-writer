@@ -5,14 +5,17 @@
 
 class ProjectModel;
 class QLabel;
-class QPushButton;
 class QScrollArea;
 class QToolButton;
 class QVBoxLayout;
 
-// Painel flutuante de Grupos. Mostra o picker de grupos no topo e lista
-// todos os documentos marcados com o grupo selecionado, de qualquer gaveta.
-// Aberto pelo botão Groups da LeftBar.
+namespace GroupsUi { class Tree; }
+
+// Painel flutuante de Grupos (LeftBar → Grupos). Desde 27/10 é uma árvore: à
+// esquerda os grupos (um dentro do outro, Lugar ou Social; arrastar muda o pai),
+// à direita o escolhido, com os documentos dele, os que vêm de cima (do pai, do
+// avô...) e os grupos que moram dentro dele. Vale pra qualquer projeto, com ou
+// sem mapa: o mapa só ganha um grupo com o nome dele, e os territórios nascem dentro.
 class GroupsPanel : public QFrame {
     Q_OBJECT
 public:
@@ -36,10 +39,13 @@ private slots:
 
 private:
     void buildUi();
-    void rebuildGroupChips();
-    void rebuildItemList();
+    void select(const QString& groupId);
+    void rebuildDetail();
+    void showNewMenu(const QString& parentId, const QPoint& globalPos);   // Lugar ou Social (vazio = solto)
     void showGroupContextMenu(const QString& groupId, const QPoint& globalPos);
+    void showActsInMenu(const QString& groupId, const QPoint& globalPos);
     void showEditGroupDialog(const QString& groupId);
+    QString nextColor() const;
 
     ProjectModel* m_model;
     QString m_selectedGroupId;
@@ -49,12 +55,13 @@ private:
     QToolButton* m_newBtn = nullptr;
     QToolButton* m_closeBtn = nullptr;
 
-    QWidget*     m_chipsWrap  = nullptr;
-    QScrollArea* m_chipsScroll = nullptr;
+    QScrollArea* m_treeScroll = nullptr;
+    GroupsUi::Tree* m_tree    = nullptr;
+    QLabel*      m_treeFoot   = nullptr;   // dica + onde soltar pra ficar sem pai
 
-    QScrollArea* m_listScroll = nullptr;
-    QWidget*     m_listHost   = nullptr;
-    QVBoxLayout* m_listLay    = nullptr;
+    QScrollArea* m_detailScroll = nullptr;
+    QWidget*     m_detailHost   = nullptr;
+    QVBoxLayout* m_detailLay    = nullptr;
 
     // Drag-para-mover o painel pelo header
     bool  m_dragging   = false;

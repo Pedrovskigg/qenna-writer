@@ -6,6 +6,7 @@
 #include "DocCache.h"
 #include "IconUtils.h"
 #include "ProjectStorage.h"
+#include "GroupBadge.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "PanelMotion.h"
@@ -1780,19 +1781,18 @@ void DrawerListPanel::showItemContextMenu(const QString& itemId, const QPoint& g
     {
         const QString curGroupId = item->markerId;
         bool hasGroups = false;
-        for (const auto& g : m_model->groups()) {
+        // em ordem de árvore, com recuo (grupo dentro de grupo)
+        for (const auto& [gp, depth] : m_model->groupTree()) {
+            const Group& g = *gp;
             hasGroups = true;
-            auto* ga = groupMenu->addAction(g.title);
+            auto* ga = groupMenu->addAction(QString(std::min(depth, 6) * 3, QLatin1Char(' ')) + g.title);
             ga->setCheckable(true);
             ga->setChecked(g.id == curGroupId);
-            // dot colorido via ícone 8x8
-            QPixmap dot(10, 10);
+            // o selo do grupo (Lugar cheio, Social em contorno)
+            QPixmap dot(12, 12);
             dot.fill(Qt::transparent);
             QPainter p(&dot);
-            p.setRenderHint(QPainter::Antialiasing);
-            p.setBrush(QColor(g.color));
-            p.setPen(Qt::NoPen);
-            p.drawEllipse(1, 1, 8, 8);
+            GroupBadge::draw(p, QPointF(6, 6), 5.5, QColor(g.color), g.social());
             p.end();
             ga->setIcon(QIcon(dot));
             const QString gid = g.id;

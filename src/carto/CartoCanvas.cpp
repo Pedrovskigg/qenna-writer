@@ -9,6 +9,7 @@
 #include <QRadialGradient>
 #include <QRandomGenerator>
 #include <QThreadPool>
+#include <QtMath>
 #include <QWheelEvent>
 
 #include <algorithm>
@@ -40,13 +41,16 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
     m_pool->setMaxThreadCount(1);
     m_settle.setSingleShot(true);
     m_settle.setInterval(220);
-    connect(&m_settle, &QTimer::timeout, this, &Canvas::requestFull);
+    // a repintura que vem de "a mão parou" (zoom, giro) chega com transição; a de edição, seca
+    connect(&m_settle, &QTimer::timeout, this, [this]() { m_fadeNextBase = true; requestFull(); });
     m_cacheTimer.setSingleShot(true);
     m_cacheTimer.setInterval(140);
     connect(&m_cacheTimer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
     m_tileTimer.setSingleShot(true);
     m_tileTimer.setInterval(0);
     connect(&m_tileTimer, &QTimer::timeout, this, &Canvas::prefetchTile);
+    m_fadeTimer.setInterval(16);
+    connect(&m_fadeTimer, &QTimer::timeout, this, qOverload<>(&QWidget::update));
     m_lastMove.start();
     m_strokeTick.setSingleShot(true);
     m_strokeTick.setInterval(0);
@@ -193,6 +197,8 @@ void Canvas::requestFull()
 void Canvas::adoptBase(std::shared_ptr<Render> r)
 {
     CARTO_PROF("adotar pintura");
+    if (m_base && r && (m_fadeNextBase || m_base->g.step != r->g.step || m_base->g.ang != r->g.ang || m_base->g.sq != r->g.sq)) m_fadeArm = true;
+    m_fadeNextBase = false;
     m_base = std::move(r);
     if (!m_base) return;
     const Geom& g = m_base->g;
@@ -260,9 +266,9 @@ void Canvas::repaintBox(const std::array<int, 4>& box)
 }
 
 // ── vista ──
-void Canvas::fit()
+// o zoom e o deslocamento de "caber tudo" (sem aplicar)
+void Canvas::fitTarget(double& z, double& px, double& py) const
 {
-    if (!m_world || width() < 10) return;
     const double s = sq();
     double x0 = 1e18, x1 = -1e18, y0 = 1e18, y1 = -1e18;
     const double cs[4][2] = { { 0, 0 }, { double(m_world->W), 0 }, { 0, double(m_world->H) }, { double(m_world->W), double(m_world->H) } };
@@ -271,10 +277,17 @@ void Canvas::fit()
         x0 = std::min(x0, p[0]); x1 = std::max(x1, p[0]); y0 = std::min(y0, p[1]); y1 = std::max(y1, p[1]);
     }
     const double bw = x1 - x0, bh = (y1 - y0) * s;
-    m_fitZoom = std::min(width() / (bw * 1.06), (height() - 150) / (bh * 1.1));
+    z = std::min(width() / (bw * 1.06), (height() - 150) / (bh * 1.1));
+    px = width() / 2.0 - z * (x0 + x1) / 2;
+    py = 70 + (height() - 150) / 2.0 - z * s * (y0 + y1) / 2;
+}
+
+void Canvas::fit()
+{
+    if (!m_world || width() < 10) return;
+    if (m_flyTimer) m_flyTimer->stop();
+    fitTarget(m_fitZoom, m_panX, m_panY);
     m_zoom = m_fitZoom;
-    m_panX = width() / 2.0 - m_zoom * (x0 + x1) / 2;
-    m_panY = 70 + (height() - 150) / 2.0 - m_zoom * s * (y0 + y1) / 2;
     update();
     emit viewChanged();
 }
@@ -361,10 +374,53 @@ void Canvas::setTool(Tool t)
 }
 
 // ── desenho na tela ──
+// Trocar de nível de detalhe (o terreno repintado no zoom novo, os sprites refeitos
+// quando a mão para) era um salto seco na tela. Agora o quadro pinta numa imagem e,
+// na troca, o quadro de antes fica por cima e se desfaz em kFadeMs: como a tela está
+// parada nessa hora, os dois batem pixel a pixel. Mexeu no meio, a transição some.
 void Canvas::paintEvent(QPaintEvent*)
 {
+    constexpr int kFadeMs = 260;
+    const qreal dpr = devicePixelRatioF();
+    const QSize px(qCeil(width() * dpr), qCeil(height() * dpr));
+    std::swap(m_frame, m_prevFrame);
+    if (m_frame.size() != px) {
+        m_frame = QImage(px, QImage::Format_ARGB32_Premultiplied);
+        m_frame.setDevicePixelRatio(dpr);
+    }
+    {
+        QPainter fp(&m_frame);
+        paintMap(fp, size(), false);
+    }
+    const std::array<double, 5> view{ m_panX, m_panY, m_zoom, m_ang, sq() };
+    auto fadeAlpha = [this]() {
+        const double t = std::min(1.0, m_fadeClock.elapsed() / double(kFadeMs));
+        return 1 - t * t * (3 - 2 * t);
+    };
+    if (m_fading && view != m_fadeView) { m_fading = false; m_fadeFrom = QImage(); }
+    if (m_fadeArm && m_prevFrame.size() == px) {
+        // o que estava na tela: o quadro anterior, com a transição que ainda corria por cima
+        QImage from = m_prevFrame;
+        if (m_fading && !m_fadeFrom.isNull()) {
+            QPainter bp(&from);
+            bp.setOpacity(fadeAlpha());
+            bp.drawImage(QPointF(0, 0), m_fadeFrom);
+        }
+        m_fadeFrom = from;
+        m_fadeView = view;
+        m_fadeClock.start();
+        m_fading = true;
+    }
+    m_fadeArm = false;
     QPainter p(this);
-    paintMap(p, size(), false);
+    p.drawImage(QPointF(0, 0), m_frame);
+    if (m_fading) {
+        const double a = fadeAlpha();
+        if (a <= 0) { m_fading = false; m_fadeFrom = QImage(); m_tileTimer.start(); }
+        else { p.setOpacity(a); p.drawImage(QPointF(0, 0), m_fadeFrom); p.setOpacity(1); }
+    }
+    if (m_fading) { if (!m_fadeTimer.isActive()) m_fadeTimer.start(); }
+    else m_fadeTimer.stop();
     if (afterPaint) afterPaint();
 }
 
@@ -470,8 +526,9 @@ void Canvas::paintMap(QPainter& p, QSize sz, bool exporting)
 
     if (ink && steady) m_scene.drawOver(p, st);   // rosas dos ventos da Carta, borda gasta do papel
 
-    // nomes por cima de tudo (legíveis até de noite)
+    // nomes por cima de tudo (legíveis até de noite), até do contorno do Explorar
     if (st.info() && steady) {
+        if (!exporting && m_tool == Tool::Explore) drawExploreOutlines(p, st);
         m_scene.drawLabels(p, st);
         if (m_scene.labelsPending()) m_cacheTimer.start();   // nome com carimbo emprestado: o certo vem quando a mão parar
     }
@@ -651,6 +708,9 @@ void Canvas::drawGroundLayer(QPainter& p, const SceneState& st, QSize sz)
     }
     if (!baseMatches()) return;               // ainda sem pintura da vista de agora e sem nada guardado
     if (!viewSame) {
+        // logo depois de mexer na vista (zoom, giro), os azulejos refeitos no detalhe novo
+        // chegam com transição, venham inteiros ou aos pedaços; edição sem mexer na vista, seca
+        if (!m_tiles.isEmpty() && m_lastMove.elapsed() < 800) m_fadeArm = true;
         // mesma vista e mesmo mapa, só a camada do usuário mudou: refaz só os azulejos em volta do que mexeu
         bool partial = false;
         const Info* in = m_doc->info.get();
@@ -720,11 +780,14 @@ void Canvas::drawGroundLayer(QPainter& p, const SceneState& st, QSize sz)
     bool ring = false;
     for (int j = j0 - 1; j <= j1 + 1 && !ring; j++)
         for (int i = i0 - 1; i <= i1 + 1 && !ring; i++) ring = !m_tiles.contains(tileId(i, j));
-    if (ring && !m_tileTimer.isActive()) m_tileTimer.start();
+    if (ring && !m_tileTimer.isActive() && !m_fading) m_tileTimer.start();   // durante a transição, espera (ver prefetchTile)
 }
 
 void Canvas::prefetchTile()
 {
+    // cada azulejo leva dezenas de ms na linha da tela: adiantar durante a transição
+    // tirava os quadros dela, e ela virava um salto. Volta quando ela acaba (paintEvent).
+    if (m_fading) return;
     if (!m_doc || !m_base || m_tiles.isEmpty() || !baseMatches()) return;
     if (groundKey() != m_sceneKey || m_ang != m_cacheAng || sq() != m_cacheSq || m_zoom != m_cacheZoom) return;
     if (m_lastMove.elapsed() < 130 && m_drag != Drag::Pan) return;     // girando ou no zoom: espera
@@ -799,6 +862,7 @@ void Canvas::mousePressEvent(QMouseEvent* e)
     setFocus();
     m_press = m_last = e->position();
     m_moved = false;
+    if (m_flyTimer) m_flyTimer->stop();   // a mão manda: a viagem do Explorar para
     if (!m_world) return;
     if (e->button() == Qt::RightButton) {
         m_drag = Drag::Turn; m_ang0 = m_ang; m_pitch0 = m_pitch;
@@ -872,8 +936,9 @@ void Canvas::mouseReleaseEvent(QMouseEvent* e)
         setCursor(Qt::ArrowCursor);
         const QPointF dp = e->position() - m_press;
         if (std::hypot(dp.x(), dp.y()) < 4) {
+            // conexão ou construção batizada ("art:<id>") primeiro; senão o território embaixo
             const QString link = exploreLinkAt(e->position());
-            emit exploreClicked(link.isEmpty() ? realmAtScreen(e->position()) : -1, link);
+            emit exploreClicked(link.isEmpty() || link.startsWith(QLatin1String("art:")) ? realmAtScreen(e->position()) : -1, link);
         }
         exploreMove(e->position());
         return;
@@ -912,6 +977,7 @@ void Canvas::mouseReleaseEvent(QMouseEvent* e)
 
 void Canvas::wheelEvent(QWheelEvent* e)
 {
+    if (m_flyTimer) m_flyTimer->stop();
     const double dy = -e->angleDelta().y() * 100.0 / 120.0;
     if (e->modifiers() & Qt::ShiftModifier) { setView(m_ang + (dy ? dy : -e->angleDelta().x() * 100.0 / 120.0) * 0.003, m_pitch, true); return; }
     zoomBy(std::pow(1.0018, -dy), e->position());

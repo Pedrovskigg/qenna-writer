@@ -146,13 +146,9 @@ private:
     QLabel* m_sub = nullptr;
     QLineEdit* m_titleEdit = nullptr;
     QToolButton* m_mapsBtn = nullptr;
-    QFrame* m_topPill = nullptr;
-    QToolButton* m_undoBtn = nullptr;
-    QToolButton* m_redoBtn = nullptr;
     QToolButton* m_genBtn = nullptr;
     QToolButton* m_fitBtn = nullptr;
     QToolButton* m_setBtn = nullptr;
-    QToolButton* m_closeBtn = nullptr;
     QFrame* m_hourPill = nullptr;
     QToolButton* m_playBtn = nullptr;
     QLabel* m_hourLabel = nullptr;
@@ -175,6 +171,7 @@ private:
     Cartela* m_cartela = nullptr;
     Rose* m_rose = nullptr;
     QFrame* m_cbar = nullptr;
+    QFrame* m_cbarSep = nullptr;
     QHash<QString, QToolButton*> m_cbarBtns;
     QFrame* m_cview = nullptr;
     QSlider* m_cPitch = nullptr;

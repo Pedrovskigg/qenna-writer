@@ -1,5 +1,6 @@
 #include "GroupPicker.h"
 
+#include "GroupBadge.h"
 #include "ProjectModel.h"
 #include "TimelineTracksTypes.h"
 
@@ -75,10 +76,12 @@ protected:
     }
 };
 
-// uma linha da lista: bolinha, nome e quantos documentos já moram no grupo
+// uma linha da lista: recuo da árvore, selo (Lugar/Social), nome e quantos documentos já moram no grupo
 class Row : public QAbstractButton {
 public:
     QString color, label, count;
+    int depth = 0;
+    bool social = false, none = false;
     explicit Row(QWidget* parent) : QAbstractButton(parent)
     {
         setCheckable(true);
@@ -96,13 +99,15 @@ protected:
         const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
         if (isChecked()) { p.setBrush(alpha(pal.accent, 0.15)); p.setPen(QPen(alpha(pal.accent, 0.6), 1)); p.drawRoundedRect(r, 6, 6); }
         else if (underMouse()) { p.setBrush(alpha(pal.ink, 0.07)); p.setPen(Qt::NoPen); p.drawRoundedRect(r, 6, 6); }
-        drawDot(p, QPointF(14, height() / 2.0), color, pal.dim);
+        const double x0 = 14 + depth * 14;
+        if (none) drawDot(p, QPointF(x0, height() / 2.0), QString(), pal.dim);
+        else GroupBadge::draw(p, QPointF(x0, height() / 2.0), 7, QColor(color), social);
         QFont f = Tracks::uiFont(12.5); p.setFont(f);
         const QFontMetrics fm(f);
         QFont fs = Tracks::uiFont(10.5);
         const int cw = QFontMetrics(fs).horizontalAdvance(count);
         p.setPen(pal.bright);
-        const QRectF tr(27, 0, width() - 27 - cw - 18, height());
+        const QRectF tr(x0 + 13, 0, width() - x0 - 13 - cw - 18, height());
         p.drawText(tr, Qt::AlignVCenter | Qt::AlignLeft, fm.elidedText(label, Qt::ElideRight, int(tr.width())));
         if (!count.isEmpty()) {
             p.setFont(fs); p.setPen(pal.dim);
@@ -147,7 +152,7 @@ GroupPicker::GroupPicker(const ProjectModel* model, QWidget* parent, bool popup)
         pl->setContentsMargins(4, 4, 4, 4);
         m_list = new ListFrame(m_popup);
         static_cast<ListFrame*>(m_list)->plain = true;
-        m_list->setFixedWidth(250);
+        m_list->setFixedWidth(270);
         pl->addWidget(m_list);
     } else {
         m_list = new ListFrame(parent);
@@ -187,9 +192,10 @@ void GroupPicker::rebuild()
     // quantos documentos de gaveta já moram em cada grupo
     QHash<QString, int> counts;
     if (m_model) for (const Drawer& d : m_model->drawers()) for (const DrawerItem& it : d.items) if (!it.markerId.isEmpty()) counts[it.markerId]++;
-    auto addRow = [&](const QString& id, const QString& label, const QString& color) {
+    auto addRow = [&](const QString& id, const QString& label, const QString& color, int depth, bool social) {
         auto* r = new Row(host);
-        r->label = label; r->color = color;
+        r->label = label; r->color = color; r->depth = depth; r->social = social; r->none = id.isEmpty();
+        if (m_model && !id.isEmpty() && depth > 0) r->setToolTip(m_model->groupPathText(id));
         if (counts.value(id) > 0) r->count = QCoreApplication::translate("GroupPicker", "%n documento(s)", nullptr, counts.value(id));   // vazio não mostra número
         r->setProperty("groupId", id);
         r->setChecked(id == m_id);
@@ -200,8 +206,9 @@ void GroupPicker::rebuild()
         });
         rows->addWidget(r);
     };
-    addRow(QString(), QCoreApplication::translate("GroupPicker", "Sem grupo"), QString());
-    if (m_model) for (const Group& g : m_model->groups()) addRow(g.id, g.title, g.color);
+    addRow(QString(), QCoreApplication::translate("GroupPicker", "Sem grupo"), QString(), 0, false);
+    // em ordem de árvore, com recuo: dá pra escolher a Vila de Wely sabendo de onde ela é
+    if (m_model) for (const auto& [g, depth] : m_model->groupTree()) addRow(g->id, g->title, g->color, std::min(depth, 6), g->social());
 }
 
 void GroupPicker::setGroupId(const QString& id)
@@ -253,6 +260,9 @@ void GroupPicker::sync()
     tag->set = g != nullptr;
     tag->label = g ? g->title : QCoreApplication::translate("GroupPicker", "Sem grupo");
     tag->color = g ? g->color : QString();
+    // o caminho inteiro quando o grupo mora dentro de outro
+    tag->setToolTip(g && !g->parentId.isEmpty() ? m_model->groupPathText(g->id)
+                                                 : QCoreApplication::translate("GroupPicker", "Grupo: o documento aparece no território do mesmo nome no mapa"));
     tag->setFixedWidth(std::min(m_maxW, tag->sizeHint().width()));
     tag->update();
     for (QAbstractButton* r : m_list->findChildren<QAbstractButton*>()) r->setChecked(r->property("groupId").toString() == m_id);

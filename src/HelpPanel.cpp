@@ -206,8 +206,6 @@ constexpr int kTimelineModeTrackThumbWidth   = 520; // nativo 561
 constexpr int kTimelineModeBranchesThumbWidth = 620; // nativo 864
 constexpr int kTimelineModeSpiralThumbWidth  = 520; // nativo 667
 constexpr int kTimelineLineFocusThumbWidth   = 640; // nativo 893
-constexpr int kCoverContextMenuThumbWidth = 320; // nativo 262
-constexpr int kCoverAppEditingThumbWidth  = 640; // nativo 936
 constexpr int kCreateDocSelectMenuThumbWidth = 560; // nativo 563
 constexpr int kCreateDocDialogThumbWidth  = 480; // nativo 559
 constexpr int kThemePanelThumbWidth = 620; // nativo 811
@@ -632,7 +630,7 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("marcadores")) return markersContent();
     if (id == QStringLiteral("memorias")) return memoriesContent();
     if (id == QStringLiteral("funcao-timeline")) return timelineContent();
-    if (id == QStringLiteral("criar-capas")) return coverCreatorContent();
+    if (id == QStringLiteral("criar-capas")) return coverContent();
     if (id == QStringLiteral("criar-documentos")) return createDocumentsContent();
     if (id == QStringLiteral("funcao-temas")) return themesContent();
     if (id == QStringLiteral("construtor")) return builderContent();
@@ -1820,78 +1818,45 @@ QString HelpPanel::timelineContent() const
     return html;
 }
 
-// Conteúdo escrito pelo usuário em help-panel/cover-creator/, montado aqui em HTML.
-QString HelpPanel::coverCreatorContent() const
+// A capa rápida: a capa feita dentro do Qenna (o Cover Creator externo foi
+// descontinuado na 2.0).
+QString HelpPanel::coverContent() const
 {
     QString html;
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O Qenna Writer vem com uma ferramenta separada pra criar a capa do seu livro — o Mira "
-        "Cover. Ela abre numa janela própria, fora do editor."));
+        "A capa do seu livro é feita dentro do próprio Qenna, na capa rápida. Ela aparece em "
+        "três lugares: na folha de Novo projeto, no Editar projeto e no \"Criar capa\" (clique "
+        "com o botão direito no card do livro, no Menu Principal)."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra acessar, vá até a tela inicial (o Menu Principal, com a lista dos seus projetos) e "
-        "clique com o botão direito no card do livro que você quer dar uma capa. A opção \"Criar "
-        "capa\" aparece no menu de contexto."));
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/cover-creator/context-menu.png' style='text-decoration:none;'>"
-        "<img src=':/help/cover-creator/context-menu.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kCoverContextMenuThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
-
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Se for a primeira vez que você usa essa função, o app vai perguntar se quer instalar o "
-        "Mira Cover — é rapidinho, e só precisa fazer isso uma vez."));
+        "Passe o mouse na capa da folha: ela se divide na diagonal. Em cima fica a CAPA RÁPIDA, "
+        "pra montar a capa ali mesmo; embaixo, CARREGAR CAPA, pra usar uma capa pronta do seu "
+        "computador do jeito que ela está."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Dentro do Mira Cover, você monta a capa do zero:"));
+        "Na capa rápida, os campos da folha dão lugar a quatro abas:"));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Título e autor como textos editáveis, com controle de fonte (mais de 100 opções, "
-        "agrupadas por estilo — literário, fantasia, terror, ficção científica, etc.), tamanho, "
-        "cor, sombra, contorno, brilho e rotação."));
+        "<b>Foto:</b> qualquer uma das fotos dos temas do Qenna, uma imagem do seu computador "
+        "(a pastinha) ou nenhuma foto, só uma cor."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Imagem de fundo: você pode subir uma imagem do seu computador ou escolher de uma "
-        "galeria com dezenas de fotos já disponíveis no próprio app, com ajuste de zoom, foco e "
-        "filtro."));
+        "<b>Degradê:</b> embaixo, em cima, os dois ou vinheta, escuro ou claro, com força e "
+        "tamanho. É o mesmo degradê do fundo dos temas."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Cor de fundo sólida, se preferir não usar imagem."));
-    html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Camadas extras: mais textos, símbolos, e formas geométricas (círculo, linha, triângulo, "
-        "retângulo)."));
+        "<b>Grão:</b> fino como película de cinema ou grande, virando mancha de pedra ou feltro."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
-        "Borda ao redor da capa, com cor e espessura ajustáveis."));
-
-    html += QStringLiteral(
-        "<p align='center'>"
-        "<a href='zoom:/help/cover-creator/app-editing.png' style='text-decoration:none;'>"
-        "<img src=':/help/cover-creator/app-editing.png' width='%1'>"
-        "<br><span style='font-size:11px;color:%2;'>%3</span>"
-        "</a>"
-        "</p>"
-    ).arg(QString::number(kCoverAppEditingThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+        "<b>Texto:</b> clique num texto da capa pra escolher e arraste pra mover (no meio, ele "
+        "trava no centro). Tem as fontes que vêm com o Qenna, com busca, negrito, itálico, "
+        "sublinhado, tamanho e cor. \"+ texto\" põe uma linha a mais, como o nome da série ou "
+        "uma frase de efeito."));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Se você já tinha editado uma capa desse projeto antes, o Mira Cover lembra o que você "
-        "fez da última vez e abre de onde parou."));
-
+        "O título e o autor da capa são os mesmos da folha: mudou num, muda no outro. Quer o "
+        "nome em duas linhas na capa? Aperte Enter na caixa de texto da aba Texto. A quebra "
+        "fica só na capa; o projeto continua com o nome inteiro numa linha."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Pra salvar, clique em \"OK\" (ou o botão equivalente de confirmar) — isso grava a capa "
-        "na pasta do projeto e fecha o Mira Cover; ao voltar pro Qenna Writer, a capa já aparece "
-        "atualizada no card do projeto. Também tem um botão de exportar (ícone de download) que "
-        "baixa a imagem da capa avulsa, sem mexer no projeto — útil se você quiser usar essa "
-        "capa em outro lugar."));
-
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O Cover Creator conta com uma galeria de imagens sem copyright que podem ser usadas "
-        "para capas do seu projeto em uso profissional."));
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Ele tem várias opções: ajustes de imagem, adicionar textos, símbolos, efeitos e muito "
-        "mais."));
-    html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O Cover Creator não é muito difícil de se usar, caso já tenha costume com editores "
-        "básicos de imagem, você vai se sentir em casa. Se não tiver, explore. Não vai se "
-        "arrepender."));
+        "\"Pronto\" volta pros campos da folha, e a capa é gravada quando você salva o projeto. "
+        "Na próxima vez, a capa rápida abre de onde você parou. \"Salvar como imagem\" baixa a "
+        "capa em PNG (1600×2400) pra usar fora do Qenna: as fotos e as fontes são livres de "
+        "direitos."));
 
     return html;
 }

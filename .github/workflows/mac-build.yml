@@ -29,20 +29,19 @@ jobs:
       - name: Ninja
         run: brew install ninja || true
 
-      # Os sons ambiente (93 MB) não são versionados: saem do instalador do
-      # Windows da última release, que já leva a pasta inteira.
+      # Os sons ambiente (93 MB) não são versionados: vêm do .zip anexado na
+      # pré-release do Mac (os mesmos que o instalador do Windows já leva). O
+      # innoextract não lê o Inno Setup atual, por isso não saem de lá.
       - name: Sons ambiente
-        continue-on-error: true
         run: |
           set -e
-          brew install innoextract
-          curl -sSL -o setup.exe https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe
-          innoextract --version
-          innoextract -s -d inno -I app/ambience-sounds setup.exe
+          curl -fsSL -o sons.zip "$SONS_URL"
           mkdir -p src/assets
-          cp -R inno/app/ambience-sounds src/assets/
+          unzip -q sons.zip -d src/assets
           ls src/assets/ambience-sounds | wc -l
-          rm -rf inno setup.exe
+          rm sons.zip
+        env:
+          SONS_URL: https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/download/v1.5.0-mac-beta/ambience-sounds.zip
 
       # Universal: o mesmo app abre em Mac com chip Apple (arm64) e em Mac
       # Intel (x86_64). macOS 12 é o mínimo do Qt 6.8.
@@ -88,7 +87,7 @@ jobs:
           PID=$!
           for t in $(seq 1 38); do
             sleep 1
-            case $t in 1|2|3|5|8|12|16|20|22|24|26|30|34|38) screencapture -x shots/tela-$(printf %02d $t)s.png || true ;; esac
+            case $t in 1|2|3|4|5|6|7|8|9|10|11|12|16|20|22|24|26|30|34|38) screencapture -x shots/tela-$(printf %02d $t)s.png || true ;; esac
             kill -0 $PID 2>/dev/null || { echo "APP MORREU antes de ${t}s"; break; }
           done
           if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 38s"; kill $PID; else wait $PID; echo "exit=$?"; fi
