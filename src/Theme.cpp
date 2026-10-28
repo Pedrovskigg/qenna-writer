@@ -1,4 +1,5 @@
 #include "Theme.h"
+#include "AppPaths.h"
 
 #include "CrashLogger.h"
 
@@ -26,7 +27,7 @@ namespace {
 // Vazio se não encontrar.
 QString bundledImagePath(const QString& filename)
 {
-    const QString prod = QCoreApplication::applicationDirPath()
+    const QString prod = appAssetsDir()
         + QStringLiteral("/theme-images/") + filename;
     if (QFile::exists(prod)) return prod;
 #ifdef DEV_ASSETS_DIR

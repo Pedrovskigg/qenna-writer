@@ -11,6 +11,10 @@ file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" APP_VERSION_STRING)
 string(STRIP "${APP_VERSION_STRING}" APP_VERSION_STRING)
 
 project(qenna-writer VERSION ${APP_VERSION_STRING} LANGUAGES C CXX)
+# Mac: a barra de título no tema (WindowChromeMac.mm) fala com o AppKit.
+if(APPLE)
+    enable_language(OBJCXX)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -571,6 +575,10 @@ target_link_libraries(qenna-writer PRIVATE
 if(WIN32)
     target_link_libraries(qenna-writer PRIVATE dwmapi)
 endif()
+if(APPLE)
+    target_sources(qenna-writer PRIVATE src/WindowChromeMac.mm)
+    target_link_libraries(qenna-writer PRIVATE "-framework AppKit")
+endif()
 
 target_compile_definitions(qenna-writer PRIVATE
     DEV_ASSETS_DIR="${CMAKE_SOURCE_DIR}/src/assets"
@@ -581,6 +589,31 @@ set_target_properties(qenna-writer PROPERTIES
     WIN32_EXECUTABLE ON
     MACOSX_BUNDLE ON
 )
+
+# Mac: o nome que aparece no menu do sistema e no Finder vem do CFBundleName
+# (sem ele, o menu mostrava "qenna-writer"), e o ícone do Dock vem do .icns.
+if(APPLE)
+    set(QENNA_ICNS "${CMAKE_SOURCE_DIR}/resources/qenna.icns")
+    set_source_files_properties("${QENNA_ICNS}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(qenna-writer PRIVATE "${QENNA_ICNS}")
+    set_target_properties(qenna-writer PROPERTIES
+        MACOSX_BUNDLE_BUNDLE_NAME "Qenna Writer"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.phlobato.qennawriter"
+        MACOSX_BUNDLE_ICON_FILE "qenna.icns"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${APP_VERSION_STRING}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${APP_VERSION_STRING}"
+        MACOSX_BUNDLE_COPYRIGHT "P.H. Lobato"
+    )
+endif()
+
+# Onde ficam os assets lidos do disco: ao lado do exe no Windows; no Mac em
+# Contents/Resources, porque pasta dentro de Contents/MacOS quebra a assinatura
+# do pacote (ver appAssetsDir() em src/AppPaths.h).
+if(APPLE)
+    set(QENNA_ASSETS_DEST "$<TARGET_BUNDLE_CONTENT_DIR:qenna-writer>/Resources")
+else()
+    set(QENNA_ASSETS_DEST "$<TARGET_FILE_DIR:qenna-writer>")
+endif()
 
 # Assets que o app lê do DISCO em runtime (não do .qrc) e que o instalador pega
 # do diretório de build. Sem cópia automática, esse diretório congela no dia em
@@ -601,7 +634,7 @@ add_custom_target(sync-runtime-assets ALL)
 # fonte continuaria rodando na build (e indo pro instalador). Zera a pasta antes
 # pra ela espelhar a fonte nos dois sentidos.
 add_custom_command(TARGET sync-runtime-assets POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:qenna-writer>/logo/main-menu-Q"
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "${QENNA_ASSETS_DEST}/logo/main-menu-Q"
     COMMENT "Espelhando as artes do Q do Main Menu"
     VERBATIM)
 foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
@@ -614,7 +647,7 @@ foreach(asset_dir logo fonts spell ambience-sounds theme-images thesaurus)
     add_custom_command(TARGET sync-runtime-assets POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
                 "${CMAKE_SOURCE_DIR}/src/assets/${asset_dir}"
-                "$<TARGET_FILE_DIR:qenna-writer>/${asset_dir}"
+                "${QENNA_ASSETS_DEST}/${asset_dir}"
         COMMENT "Sincronizando assets de runtime: ${asset_dir}"
         VERBATIM)
 endforeach()

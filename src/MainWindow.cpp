@@ -64,6 +64,7 @@
 #include <QTextLength>
 #include <QHash>
 #include <QUrl>
+#include <QDesktopServices>
 #include <QWidget>
 #include <QBuffer>
 #include <QDateTime>
@@ -7160,6 +7161,15 @@ void MainWindow::cancelUpdateDownload()
 
 void MainWindow::startUpdateDownload()
 {
+#ifdef Q_OS_MACOS
+    // No Mac não tem instalador pra rodar: o navegador baixa o .dmg e a pessoa
+    // arrasta o app pra Aplicativos, como em qualquer app de Mac.
+    if (!m_updateIsCover) {
+        if (!m_updateDownloadUrl.isEmpty()) QDesktopServices::openUrl(QUrl(m_updateDownloadUrl));
+        if (m_updateToast) m_updateToast->hide();
+        return;
+    }
+#endif
     if (!m_updateIsCover) {
         const QString cached = cachedUpdateSetup(m_updateVersion);
         if (!cached.isEmpty()) { launchDownloadedInstaller(cached); return; }

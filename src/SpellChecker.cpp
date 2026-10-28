@@ -1,4 +1,5 @@
 #include "SpellChecker.h"
+#include "AppPaths.h"
 
 #include <QVector>
 
@@ -452,7 +453,7 @@ void SpellChecker::savePersonalDictionary()
 
 QString SpellChecker::assetsSpellDir()
 {
-    QString dir = QCoreApplication::applicationDirPath() + QStringLiteral("/spell");
+    QString dir = appAssetsDir() + QStringLiteral("/spell");
     if (QDir(dir).exists()) return dir;
 #ifdef DEV_ASSETS_DIR
     dir = QString::fromUtf8(DEV_ASSETS_DIR) + QStringLiteral("/spell");

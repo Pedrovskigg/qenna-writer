@@ -1,0 +1,50 @@
+QENNA WRITER FOR MAC (BETA)
+===========================
+
+Thank you for testing! This is an early build of the Mac version.
+
+1. Drag "Qenna Writer" onto the "Applications" folder in this window.
+
+2. The first time you open it, macOS will say it can't verify the developer.
+   That's expected: Qenna Writer is made by one person and isn't signed with
+   a paid Apple certificate. To open it:
+   - Try to open Qenna Writer once and close the warning.
+   - Open System Settings > Privacy & Security.
+   - Scroll down and click "Open Anyway" next to Qenna Writer.
+   You only need to do this once.
+
+3. If macOS says the app "is damaged and can't be opened", open Terminal
+   and paste this line, then press Enter:
+
+   xattr -cr "/Applications/Qenna Writer.app"
+
+   Then open the app again.
+
+Found a bug? Tell us what you did right before it happened. A screenshot
+helps a lot.
+
+
+QENNA WRITER PARA MAC (BETA)
+============================
+
+Obrigado por testar! Esta é uma versão inicial do Qenna pra Mac.
+
+1. Arraste o "Qenna Writer" pra pasta "Aplicativos" nesta janela.
+
+2. Na primeira vez que você abrir, o macOS vai dizer que não consegue
+   verificar o desenvolvedor. É esperado: o Qenna Writer é feito por uma
+   pessoa só e não tem o certificado pago da Apple. Pra abrir:
+   - Tente abrir o Qenna Writer uma vez e feche o aviso.
+   - Abra Ajustes do Sistema > Privacidade e Segurança.
+   - Desça a página e clique em "Abrir Mesmo Assim", ao lado do Qenna Writer.
+   Isso só precisa ser feito uma vez.
+
+3. Se o macOS disser que o app "está danificado e não pode ser aberto",
+   abra o Terminal, cole esta linha e aperte Enter:
+
+   xattr -cr "/Applications/Qenna Writer.app"
+
+   Depois abra o app de novo.
+
+Achou um bug? Conte o que você fez logo antes de acontecer. Um print
+ajuda muito.

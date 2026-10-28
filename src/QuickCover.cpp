@@ -1,4 +1,5 @@
 #include "QuickCover.h"
+#include "AppPaths.h"
 
 #include "BackgroundOverlay.h"
 #include "CoverUtils.h"
@@ -21,7 +22,7 @@ namespace {
 // Mesma procura do Theme: ao lado do exe (instalado) e depois a pasta de dev.
 QString imagesDir()
 {
-    const QString prod = QCoreApplication::applicationDirPath() + QStringLiteral("/theme-images");
+    const QString prod = appAssetsDir() + QStringLiteral("/theme-images");
     if (QDir(prod).exists()) return prod;
 #ifdef DEV_ASSETS_DIR
     const QString dev = QString::fromUtf8(DEV_ASSETS_DIR) + QStringLiteral("/theme-images");

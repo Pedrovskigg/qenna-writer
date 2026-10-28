@@ -28,6 +28,10 @@
 
 namespace WindowChrome {
 
+#ifdef Q_OS_MACOS
+void applyMac(void* nativeView, const QColor& bg, bool dark); // WindowChromeMac.mm
+#endif
+
 namespace {
 
 // Só janela com moldura do sistema: folhas, popups, tooltips e splash são
@@ -113,6 +117,12 @@ void apply(QWidget* window)
     DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &crBg, sizeof(crBg));
     DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &crText, sizeof(crText));
     DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &crBorder, sizeof(crBorder));
+#elif defined(Q_OS_MACOS)
+    if (!hasSystemFrame(window)) return;
+    const WId view = window->internalWinId(); // o NSView da janela; ver o winId() acima
+    if (!view) return;
+    const QColor bg(Theme::appBackground());
+    applyMac(reinterpret_cast<void*>(view), bg, bg.lightness() < 128);
 #else
     Q_UNUSED(window);
 #endif

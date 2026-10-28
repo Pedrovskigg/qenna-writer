@@ -1,4 +1,5 @@
 #include "AmbienceManager.h"
+#include "AppPaths.h"
 
 #include <QAudioOutput>
 #include <QCoreApplication>
@@ -50,7 +51,7 @@ void AmbienceManager::resolveDirectory()
     // "assets" — mesmo mismatch que existia no bundledImagePath do
     // Theme.cpp (o caminho de prod tinha "assets/" a mais e nunca batia
     // com o que o instalador entrega de verdade pro usuário final).
-    const QString prod = QCoreApplication::applicationDirPath()
+    const QString prod = appAssetsDir()
         + QStringLiteral("/ambience-sounds");
     if (QDir(prod).exists()) {
         m_dir = prod;

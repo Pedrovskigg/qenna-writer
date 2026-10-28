@@ -1,4 +1,5 @@
 #include <QApplication>
+#include "AppPaths.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
@@ -312,7 +313,7 @@ QPixmap splashCanvasFrame(SplashLetters &s, int elapsedMs, qreal dpr)
 
 QStringList registerCustomFonts()
 {
-    QString fontsDir = QCoreApplication::applicationDirPath() + QStringLiteral("/fonts");
+    QString fontsDir = appAssetsDir() + QStringLiteral("/fonts");
     if (!QDir(fontsDir).exists()) {
         fontsDir = QString::fromUtf8(DEV_ASSETS_DIR) + QStringLiteral("/fonts");
     }
@@ -416,6 +417,21 @@ protected:
     }
 };
 
+// O sistema fala "en_US", "es_MX", "pt_PT"; o app só conhece estes códigos. O
+// QTranslator acha o qenna_en a partir de "en_US" sozinho, mas o código cru ia
+// pra app/language, e o combo de idioma (que procura "en") caía no primeiro da
+// lista: "Português (BR)" com a interface inteira em inglês.
+QString appLanguageCode(const QString &code)
+{
+    static const QStringList known = {
+        QStringLiteral("pt_BR"), QStringLiteral("en"), QStringLiteral("es"),
+        QStringLiteral("it"), QStringLiteral("fr") };
+    if (known.contains(code)) return code;
+    if (code.startsWith(QLatin1String("pt"))) return QStringLiteral("pt_BR");
+    const QString two = code.left(2);
+    return known.contains(two) ? two : QString();
+}
+
 // Teste de fumaça (compilação do macOS na nuvem): com QENNA_SMOKE=<pasta>, o
 // app fotografa o Main Menu, aciona a Nova ideia e fotografa o editor. Sem a
 // variável, nada disso existe.
@@ -446,7 +462,12 @@ void runSmokeTest(const QString &dir)
         qInfo("smoke: nova ideia %s", fired ? "acionada" : "NAO achada");
         QTimer::singleShot(10000, qApp, [dir]() {
             grabTopLevels(dir, QStringLiteral("2-editor"));
-            qInfo("smoke: fim");
+            // tema escuro, pra conferir a barra de título nos prints da tela
+            Theme::Manager::instance()->setCurrent(QStringLiteral("grace-dark"));
+            QTimer::singleShot(3000, qApp, [dir]() {
+                grabTopLevels(dir, QStringLiteral("3-escuro"));
+                qInfo("smoke: fim");
+            });
         });
     });
 }
@@ -552,7 +573,11 @@ int main(int argc, char *argv[])
     {
         // Preferência do usuário tem prioridade; cai no locale do sistema como fallback.
         QSettings qs;
-        const QString prefLang = qs.value(QStringLiteral("app/language")).toString();
+        const QString savedLang = qs.value(QStringLiteral("app/language")).toString();
+        // quem já tinha "en_US" gravado de versões antigas volta pro código certo
+        const QString prefLang = appLanguageCode(savedLang);
+        if (!prefLang.isEmpty() && prefLang != savedLang)
+            qs.setValue(QStringLiteral("app/language"), prefLang);
         bool loaded = false;
         QString resolvedLang;
         if (!prefLang.isEmpty()) {
@@ -561,7 +586,8 @@ int main(int argc, char *argv[])
         }
         if (!loaded) {
             for (const QString &locale : QLocale::system().uiLanguages()) {
-                const QString code = QLocale(locale).name();
+                const QString code = appLanguageCode(QLocale(locale).name());
+                if (code.isEmpty()) continue;
                 if (translator.load(QStringLiteral(":/i18n/qenna_") + code)) {
                     loaded = true;
                     resolvedLang = code;

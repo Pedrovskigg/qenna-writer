@@ -2,6 +2,7 @@
 // maré luminosa, lanternas, órbita e vitrola. Portado de leva2a.js / leva2b.js.
 
 #include "AnimKit.h"
+#include "AppPaths.h"
 
 #include <QCoreApplication>
 #include <QImage>
@@ -993,7 +994,7 @@ const QImage& phlCover()
 {
     static const QImage img = [] {
         const QString name = QStringLiteral("/ambience-sounds/P.H.L - The Spring Is Coming.jpg");
-        QImage im(QCoreApplication::applicationDirPath() + name);
+        QImage im(appAssetsDir() + name);
 #ifdef DEV_ASSETS_DIR
         if (im.isNull()) im = QImage(QString::fromUtf8(DEV_ASSETS_DIR) + name);
 #endif

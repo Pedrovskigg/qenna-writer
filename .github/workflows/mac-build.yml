@@ -15,6 +15,7 @@ jobs:
       - name: Hunspell
         run: git clone --depth 1 --branch v1.7.2 https://github.com/hunspell/hunspell.git third_party/hunspell
 
+      # O Qt 6 do Mac já vem universal (chip Apple + Intel).
       - name: Qt 6.8.3
         uses: jurplel/install-qt-action@v4
         with:
@@ -28,8 +29,28 @@ jobs:
       - name: Ninja
         run: brew install ninja || true
 
+      # Os sons ambiente (93 MB) não são versionados: saem do instalador do
+      # Windows da última release, que já leva a pasta inteira.
+      - name: Sons ambiente
+        continue-on-error: true
+        run: |
+          set -e
+          brew install innoextract
+          curl -sSL -o setup.exe https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe
+          innoextract --version
+          innoextract -s -d inno -I app/ambience-sounds setup.exe
+          mkdir -p src/assets
+          cp -R inno/app/ambience-sounds src/assets/
+          ls src/assets/ambience-sounds | wc -l
+          rm -rf inno setup.exe
+
+      # Universal: o mesmo app abre em Mac com chip Apple (arm64) e em Mac
+      # Intel (x86_64). macOS 12 é o mínimo do Qt 6.8.
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
 
       # -k 0: segue compilando depois do primeiro erro, pra lista sair inteira
       # numa rodada só.
@@ -38,22 +59,51 @@ jobs:
           set -o pipefail
           cmake --build build -- -k 0 2>&1 | tee build.log
 
+      # Pacote que roda em Mac sem Qt instalado: frameworks do Qt pra dentro do
+      # .app, nome de gente e assinatura ad-hoc (de graça; sem ela o Mac com
+      # chip Apple nem abre o app).
+      - name: Empacotar
+        run: |
+          set -e
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          rm -rf "Qenna Writer.app"
+          cp -R build/qenna-writer.app "Qenna Writer.app"
+          macdeployqt "Qenna Writer.app" -always-overwrite
+          codesign --force --deep -s - "Qenna Writer.app"
+          codesign --verify --deep --strict --verbose=2 "Qenna Writer.app"
+          lipo -info "Qenna Writer.app/Contents/MacOS/qenna-writer"
+          du -sh "Qenna Writer.app"
+
+      # O teste roda no app empacotado e com a pasta de assets do código fora
+      # do lugar: assim ele só acha fontes, temas e dicionários se eles
+      # estiverem dentro do pacote, como no Mac de quem baixar.
       - name: Abrir o app e tirar print
-        if: success()
         continue-on-error: true
         run: |
-          APP=build/qenna-writer.app/Contents/MacOS/qenna-writer
+          mv src/assets src/assets-fora
+          APP="Qenna Writer.app/Contents/MacOS/qenna-writer"
           mkdir -p shots grabs
           QENNA_SMOKE="$PWD/grabs" "$APP" > app.log 2>&1 &
           PID=$!
-          for t in 04 08 12 16 20 24 28 32 36; do
-            sleep 4
-            screencapture -x shots/tela-${t}s.png || true
+          for t in $(seq 1 38); do
+            sleep 1
+            case $t in 1|2|3|5|8|12|16|20|22|24|26|30|34|38) screencapture -x shots/tela-$(printf %02d $t)s.png || true ;; esac
             kill -0 $PID 2>/dev/null || { echo "APP MORREU antes de ${t}s"; break; }
           done
-          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 36s"; kill $PID; else wait $PID; echo "exit=$?"; fi
+          if kill -0 $PID 2>/dev/null; then echo "APP VIVO apos 38s"; kill $PID; else wait $PID; echo "exit=$?"; fi
           cat app.log | tail -40
-          cp -R "$HOME/Library/Application Support/Qenna Writer" appdata 2>/dev/null || true
+          mv src/assets-fora src/assets
+
+      - name: DMG
+        run: |
+          set -e
+          mkdir dmg
+          cp -R "Qenna Writer.app" dmg/
+          ln -s /Applications dmg/Applications
+          cp .github/mac/LEIA-ME.txt "dmg/Read me first - Leia-me.txt"
+          hdiutil create -volname "Qenna Writer" -srcfolder dmg -ov -format UDZO "Qenna-Writer-$VERSION-mac.dmg"
+          ls -la *.dmg
 
       - name: Resultados
         if: always()
@@ -65,5 +115,11 @@ jobs:
             app.log
             shots/
             grabs/
-            appdata/
           if-no-files-found: ignore
+
+      - name: Instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: qenna-writer-mac-dmg
+          path: "*.dmg"
+          compression-level: 0

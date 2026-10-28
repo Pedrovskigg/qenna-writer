@@ -1,4 +1,5 @@
 #include "MainMenuDialog.h"
+#include "AppPaths.h"
 #include "UpdateBanner.h"
 #include "NewProjectSheet.h"
 #include "ColorPopover.h"
@@ -540,6 +541,9 @@ public:
             reject();
         });
         leftCol->addWidget(coverCreateBtn);
+#ifdef Q_OS_MACOS
+        coverCreateBtn->hide(); // o Cover Creator só existe pra Windows
+#endif
         leftCol->addStretch();
         root->addLayout(leftCol);
 
@@ -1562,6 +1566,9 @@ void MainMenuDialog::showProjectMenu(const QString& path, const QPoint& globalPo
     aAuto->setChecked(!m_autoOpenPath.isEmpty() && QDir::cleanPath(path) == m_autoOpenPath);
     QAction* aEdit   = menu.addAction(QCoreApplication::translate("BookCard", "Editar projeto"));
     QAction* aCover  = menu.addAction(QCoreApplication::translate("BookCard", "Criar capa"));
+#ifdef Q_OS_MACOS
+    aCover->setVisible(false); // o Cover Creator só existe pra Windows
+#endif
     menu.addSeparator();
     QAction* aRemove = menu.addAction(QCoreApplication::translate("BookCard", "Remover dos recentes"));
     QAction* aDelete = menu.addAction(QCoreApplication::translate("BookCard", "Excluir projeto"));
@@ -1989,7 +1996,7 @@ void MainMenuDialog::loadLogoVariants()
 {
     // Mesmo padrão de registerCustomFonts(): pasta ao lado do executável em
     // build/instalação, código-fonte como fallback no ambiente de dev.
-    QString dir = QCoreApplication::applicationDirPath()
+    QString dir = appAssetsDir()
                   + QStringLiteral("/logo/main-menu-Q");
     if (!QDir(dir).exists()) {
         dir = QString::fromUtf8(DEV_ASSETS_DIR) + QStringLiteral("/logo/main-menu-Q");

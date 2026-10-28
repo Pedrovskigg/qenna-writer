@@ -1,4 +1,5 @@
 #include "Thesaurus.h"
+#include "AppPaths.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -79,7 +80,7 @@ QString Thesaurus::dataPathFor(const QString& code) const
     // curada que o MyThes do LibreOffice) e é o idioma da esmagadora maioria
     // dos usuários — não faz sentido fazer download pra isso. Os outros idiomas
     // continuam sob demanda.
-    const QString bundled = QCoreApplication::applicationDirPath()
+    const QString bundled = appAssetsDir()
                           + QStringLiteral("/thesaurus") + file;
     if (QFile::exists(bundled)) return bundled;
 #ifdef DEV_ASSETS_DIR

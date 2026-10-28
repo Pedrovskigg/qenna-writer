@@ -13,6 +13,12 @@
 #include <QUrl>
 
 namespace {
+// O instalador de cada sistema, entre os arquivos da release.
+#ifdef Q_OS_MACOS
+const QLatin1String kInstallerSuffix(".dmg");
+#else
+const QLatin1String kInstallerSuffix(".exe");
+#endif
 const char* kLatestReleaseUrl     = "https://api.github.com/repos/Pedrovskigg/Qenna-Writer-releases/releases/latest";
 const char* kCoverLatestReleaseUrl = "https://api.github.com/repos/Pedrovskigg/qenna-cover-creator/releases/latest";
 }
@@ -63,7 +69,7 @@ void UpdateChecker::onReplyFinished(QNetworkReply* reply)
     for (const QJsonValue& av : obj.value(QStringLiteral("assets")).toArray()) {
         const QJsonObject asset = av.toObject();
         const QString name = asset.value(QStringLiteral("name")).toString();
-        if (name.endsWith(QStringLiteral(".exe"), Qt::CaseInsensitive)) {
+        if (name.endsWith(kInstallerSuffix, Qt::CaseInsensitive)) {
             downloadUrl = asset.value(QStringLiteral("browser_download_url")).toString();
             break;
         }
@@ -100,6 +106,11 @@ QString UpdateChecker::readInstalledCoverVersion(const QString& coverDir)
 void UpdateChecker::checkCover(const QString& coverDir)
 {
     if (m_coverPending) return;
+#ifdef Q_OS_MACOS
+    // O Cover Creator só existe pra Windows (.exe do Electron).
+    emit coverCheckFinished();
+    return;
+#endif
     m_coverPending = true;
 
     const QString installed = readInstalledCoverVersion(coverDir);

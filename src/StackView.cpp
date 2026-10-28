@@ -608,6 +608,9 @@ void StackView::showContextMenuFor(const QString& path, const QPoint& globalPos)
     menu.setObjectName(QStringLiteral("bookCardMenu"));
     QAction* aEdit   = menu.addAction(tr("Editar projeto"));
     QAction* aCover  = menu.addAction(tr("Criar capa"));
+#ifdef Q_OS_MACOS
+    aCover->setVisible(false); // o Cover Creator só existe pra Windows
+#endif
     menu.addSeparator();
     QAction* aRemove = menu.addAction(tr("Remover dos recentes"));
     menu.addSeparator();
