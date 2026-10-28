@@ -11,8 +11,10 @@
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QRandomGenerator>
+#include <QSet>
 
 #include <algorithm>
+#include <functional>
 
 namespace {
 
@@ -193,6 +195,10 @@ QJsonObject groupToJson(const Group& g) {
     o.insert(QStringLiteral("id"), g.id);
     o.insert(QStringLiteral("title"), g.title);
     o.insert(QStringLiteral("color"), g.color);
+    if (!g.parentId.isEmpty()) o.insert(QStringLiteral("parentId"), g.parentId);
+    if (g.social()) o.insert(QStringLiteral("kind"), g.kind);
+    if (g.map) o.insert(QStringLiteral("map"), true);
+    if (!g.actsIn.isEmpty()) o.insert(QStringLiteral("actsIn"), QJsonArray::fromStringList(g.actsIn));
     return o;
 }
 
@@ -201,6 +207,11 @@ Group groupFromJson(const QJsonObject& o) {
     g.id    = jsonString(o.value(QStringLiteral("id")));
     g.title = jsonString(o.value(QStringLiteral("title")));
     g.color = jsonString(o.value(QStringLiteral("color")));
+    g.parentId = jsonString(o.value(QStringLiteral("parentId")));
+    if (jsonString(o.value(QStringLiteral("kind"))) == QLatin1String("social")) g.kind = QStringLiteral("social");
+    g.map = o.value(QStringLiteral("map")).toBool();
+    for (const QJsonValue& v : o.value(QStringLiteral("actsIn")).toArray())
+        if (!v.toString().isEmpty()) g.actsIn << v.toString();
     return g;
 }
 
@@ -1079,14 +1090,113 @@ void ProjectModel::setGroups(const QList<Group>& list) {
     emit groupsChanged();
 }
 
-QString ProjectModel::addGroup(const QString& title, const QString& color) {
+QString ProjectModel::addGroup(const QString& title, const QString& color, const QString& parentId, const QString& kind) {
     Group g;
     g.id    = uid();
     g.title = title;
     g.color = color;
+    g.parentId = findGroup(parentId) ? parentId : QString();
+    g.kind = kind == QLatin1String("social") ? kind : QStringLiteral("place");
     m_groups.append(g);
     emit groupsChanged();
     return g.id;
+}
+
+bool ProjectModel::setGroupParent(const QString& id, const QString& parentId) {
+    if (id == parentId || (!parentId.isEmpty() && (!findGroup(parentId) || groupIsInside(parentId, id)))) return false;
+    for (auto& g : m_groups) {
+        if (g.id != id) continue;
+        if (g.parentId == parentId) return false;
+        g.parentId = parentId;
+        emit groupsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::setGroupKind(const QString& id, const QString& kind) {
+    const QString k = kind == QLatin1String("social") ? kind : QStringLiteral("place");
+    for (auto& g : m_groups) {
+        if (g.id != id || g.kind == k) continue;
+        g.kind = k;
+        // gente não é chão: ninguém "atua" num grupo social
+        if (g.social()) for (auto& o : m_groups) o.actsIn.removeAll(id);
+        emit groupsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::setGroupMap(const QString& id, bool map) {
+    for (auto& g : m_groups) {
+        if (g.id != id || g.map == map) continue;
+        g.map = map;
+        emit groupsChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::setGroupActsIn(const QString& id, const QStringList& places) {
+    for (auto& g : m_groups) {
+        if (g.id != id) continue;
+        QStringList clean;
+        for (const QString& p : places) if (p != id && findGroup(p) && !clean.contains(p)) clean << p;
+        if (clean == g.actsIn) return false;
+        g.actsIn = clean;
+        emit groupsChanged();
+        return true;
+    }
+    return false;
+}
+
+QList<const Group*> ProjectModel::groupChildren(const QString& parentId) const {
+    QList<const Group*> out;
+    for (const auto& g : m_groups) {
+        // pai que não existe mais = solto (projeto antigo, arquivo mexido à mão)
+        const QString p = findGroup(g.parentId) ? g.parentId : QString();
+        if (p == parentId) out << &g;
+    }
+    return out;
+}
+
+QList<const Group*> ProjectModel::groupPath(const QString& id) const {
+    QList<const Group*> out;
+    const Group* g = findGroup(id);
+    while (g && out.size() < 64) {   // 64: trava contra ciclo vindo de arquivo
+        if (out.contains(g)) break;
+        out.prepend(g);
+        g = findGroup(g->parentId);
+    }
+    return out;
+}
+
+bool ProjectModel::groupIsInside(const QString& id, const QString& ancestorId) const {
+    for (const Group* g : groupPath(id)) if (g->id == ancestorId) return true;
+    return false;
+}
+
+QString ProjectModel::groupPathText(const QString& id) const {
+    QStringList names;
+    for (const Group* g : groupPath(id)) names << g->title;
+    return names.join(QStringLiteral(" › "));
+}
+
+QList<QPair<const Group*, int>> ProjectModel::groupTree() const {
+    QList<QPair<const Group*, int>> out;
+    QSet<QString> seen;
+    std::function<void(const QString&, int)> walk = [&](const QString& parent, int depth) {
+        for (const Group* g : groupChildren(parent)) {
+            if (seen.contains(g->id)) continue;
+            seen.insert(g->id);
+            out.append({ g, depth });
+            walk(g->id, depth + 1);
+        }
+    };
+    walk(QString(), 0);
+    // quem ficou de fora (ciclo vindo de arquivo) entra solto no fim
+    for (const auto& g : m_groups) if (!seen.contains(g.id)) out.append({ &g, 0 });
+    return out;
 }
 
 bool ProjectModel::updateGroup(const QString& id, const QString& title, const QString& color) {
@@ -1106,7 +1216,13 @@ bool ProjectModel::removeGroup(const QString& id) {
     for (int i = 0; i < m_groups.size(); ++i)
         if (m_groups[i].id == id) { idx = i; break; }
     if (idx < 0) return false;
+    const QString up = m_groups[idx].parentId;
     m_groups.removeAt(idx);
+    // os filhos sobem um nível; quem atuava nele deixa de atuar
+    for (auto& g : m_groups) {
+        if (g.parentId == id) g.parentId = up;
+        g.actsIn.removeAll(id);
+    }
     // Limpa markerId de todos os itens/pastas que referenciavam este grupo
     for (auto& d : m_drawers) {
         for (auto& f : d.folders)

@@ -5,6 +5,7 @@
 
 #include <QPainter>
 #include <QPainterPath>
+#include <QTimer>
 
 #include <cmath>
 
@@ -33,11 +34,76 @@ std::optional<QPointF> Canvas::realmCenterOnScreen(int r) const
     return QPointF(g->X, g->Y);
 }
 
+std::optional<QPointF> Canvas::worldOnScreen(double x, double y) const
+{
+    if (!m_base) return std::nullopt;
+    const auto g = m_scene.ground(sceneState(), x, y);
+    if (!g) return std::nullopt;
+    return QPointF(g->X, g->Y);
+}
+
 void Canvas::panBy(double dx, double dy)
 {
     m_panX += dx; m_panY += dy;
     update();
     emit viewChanged();
+}
+
+// ── a viagem do Explorar: zoom e deslocamento andam juntos, guiados por um ponto ──
+void Canvas::flyTo(double wx, double wy, double zoomFit, QPointF at)
+{
+    if (!m_world || width() < 10) return;
+    double fz, fx, fy;
+    fitTarget(fz, fx, fy);
+    m_fitZoom = fz;
+    const double z = std::max(fz * 0.35, std::min(std::max(fz * 14, 7.0), fz * zoomFit));
+    const auto n = worldToPlane(*m_world, m_ang, wx, wy);
+    // o relevo levanta o ponto na tela (proporcional ao zoom): mede agora e desconta no alvo
+    QPointF lift(0, 0);
+    if (const auto g = worldOnScreen(wx, wy)) lift = (*g - QPointF(m_panX + m_zoom * n[0], m_panY + m_zoom * sq() * n[1])) / m_zoom;
+    flyStart(z, at.x() - z * (n[0] + lift.x()), at.y() - z * (n[1] * sq() + lift.y()), n[0], n[1]);
+}
+
+void Canvas::flyFit()
+{
+    if (!m_world || width() < 10) return;
+    double z, px, py;
+    fitTarget(z, px, py);
+    m_fitZoom = z;
+    const auto n = worldToPlane(*m_world, m_ang, m_world->W / 2.0, m_world->H / 2.0);
+    flyStart(z, px, py, n[0], n[1]);
+}
+
+void Canvas::flyStart(double z, double px, double py, double refX, double refY)
+{
+    if (!m_flyTimer) {
+        m_flyTimer = new QTimer(this);
+        m_flyTimer->setInterval(15);
+        connect(m_flyTimer, &QTimer::timeout, this, [this]() {
+            const double t = std::min(1.0, m_flyClock.elapsed() / 420.0);
+            const double e = 1 - std::pow(1 - t, 3);
+            const double s = sq();
+            // o ponto-guia anda em linha reta na tela enquanto o zoom muda em escala de log
+            const double z0 = m_fly[0], z1 = m_fly[3];
+            const double z = std::exp(std::log(z0) + (std::log(z1) - std::log(z0)) * e);
+            const double sx0 = m_fly[1] + z0 * m_fly[6], sy0 = m_fly[2] + z0 * s * m_fly[7];
+            const double sx1 = m_fly[4] + z1 * m_fly[6], sy1 = m_fly[5] + z1 * s * m_fly[7];
+            const double sx = sx0 + (sx1 - sx0) * e, sy = sy0 + (sy1 - sy0) * e;
+            m_zoom = z;
+            m_panX = sx - z * m_fly[6];
+            m_panY = sy - z * s * m_fly[7];
+            m_lastMove.restart();
+            update();
+            emit viewChanged();
+            if (t >= 1) { m_flyTimer->stop(); m_settle.start(); }
+        });
+    }
+    if (std::abs(z - m_zoom) < 1e-6 && std::hypot(px - m_panX, py - m_panY) < 0.5) return;
+    m_fly[0] = m_zoom; m_fly[1] = m_panX; m_fly[2] = m_panY;
+    m_fly[3] = z; m_fly[4] = px; m_fly[5] = py;
+    m_fly[6] = refX; m_fly[7] = refY;
+    m_flyClock.restart();
+    m_flyTimer->start();
 }
 
 QString Canvas::exploreLinkAt(QPointF s) const
@@ -96,14 +162,32 @@ const std::vector<float>& Canvas::exploreSegs(int slot, int r)
     return o.segs;
 }
 
-void Canvas::drawExplore(QPainter& p, const SceneState& st)
+// Os contornos vão ANTES dos nomes do mapa (paintMap): por cima, passavam em
+// cima do nome das cidades e dos lugares na beira do território.
+void Canvas::drawExploreOutlines(QPainter& p, const SceneState& st)
 {
-    m_xhits.clear();
     if (!m_doc || !m_doc->info || !infoOn()) return;
     const Info& in = *m_doc->info;
     const int nDefs = static_cast<int>(in.defs.size());
     p.save();
     p.setRenderHint(QPainter::Antialiasing);
+    // "Atua em": os territórios por onde o grupo escolhido se espalha, pontilhados na cor dele
+    for (size_t k = 0; k < m_explore.acts.size() && k < 4; k++) {
+        const int r = m_explore.acts[k];
+        if (r < 0 || r >= nDefs || r == m_explore.sel) continue;
+        const std::vector<float>& segs = exploreSegs(2 + static_cast<int>(k), r);
+        QPainterPath path;
+        for (size_t i = 0; i + 3 < segs.size(); i += 4) {
+            const auto a = m_scene.ground(st, segs[i], segs[i + 1]), b = m_scene.ground(st, segs[i + 2], segs[i + 3]);
+            if (!a || !b) continue;
+            path.moveTo(a->X, a->Y); path.lineTo(b->X, b->Y);
+        }
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(QColor(10, 12, 14, 120), 5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p.drawPath(path);
+        p.setPen(QPen(m_explore.actsColor.isValid() ? m_explore.actsColor.lighter(130) : QColor(240, 236, 226), 2.2, Qt::DotLine, Qt::RoundCap, Qt::RoundJoin));
+        p.drawPath(path);
+    }
     // contornos: o do mouse tracejado na cor do território, o escolhido cheio e claro
     const int rs[2] = { m_explore.hov == m_explore.sel ? -1 : m_explore.hov, m_explore.sel };
     for (int k = 0; k < 2; k++) {
@@ -126,6 +210,17 @@ void Canvas::drawExplore(QPainter& p, const SceneState& st)
         p.setPen(pen);
         p.drawPath(path);
     }
+    p.restore();
+}
+
+void Canvas::drawExplore(QPainter& p, const SceneState& st)
+{
+    m_xhits.clear();
+    if (!m_doc || !m_doc->info || !infoOn()) return;
+    const Info& in = *m_doc->info;
+    const int nDefs = static_cast<int>(in.defs.size());
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing);
     // a contagem embaixo do nome de cada território
     QFont f = font(); f.setPixelSize(11); f.setWeight(QFont::DemiBold);
     p.setFont(f);
@@ -144,6 +239,25 @@ void Canvas::drawExplore(QPainter& p, const SceneState& st)
         p.drawRoundedRect(box, 10, 10);
         p.setPen(chosen ? QColor(30, 26, 22) : QColor(240, 236, 226));
         p.drawText(box, Qt::AlignCenter, txt);
+    }
+    // construções batizadas: pontos clicáveis (um Lugar dentro do território); a escolhida ganha um anel
+    for (const QString& id : m_explore.arts) {
+        const Art* art = nullptr;
+        for (const Art& a : in.user.arts) if (a.id == id) { art = &a; break; }
+        if (!art) continue;
+        const auto g = m_scene.ground(st, art->x, art->y);
+        if (!g) continue;
+        const QPointF c(g->X, g->Y);
+        const bool chosen = id == m_explore.selArt, hov = m_xhovLink == QStringLiteral("art:") + id;
+        if (chosen || hov) {
+            const double rx = 22 * std::max(0.8, std::min(1.6, art->sc)), ry = rx * std::max(0.35, std::sin(m_pitch * M_PI / 180));
+            p.setBrush(Qt::NoBrush);
+            p.setPen(QPen(QColor(10, 12, 14, 150), chosen ? 5 : 4));
+            p.drawEllipse(c, rx, ry);
+            p.setPen(QPen(QColor(252, 248, 238), chosen ? 2.4 : 1.6, chosen ? Qt::SolidLine : Qt::DashLine));
+            p.drawEllipse(c, rx, ry);
+        }
+        m_xhits.push_back({ QRectF(c.x() - 16, c.y() - 34, 32, 42), QStringLiteral("art:") + id });
     }
     // conexões: arco entre os centros, o nome no meio
     QFont lf = font(); lf.setPixelSize(12); lf.setWeight(QFont::DemiBold);

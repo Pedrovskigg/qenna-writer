@@ -20,6 +20,7 @@ class QPushButton;
 class QScrollArea;
 class QSlider;
 class QStackedWidget;
+class QTextEdit;
 class QTimer;
 class QToolButton;
 
@@ -139,7 +140,8 @@ private:
     QSlider* m_grainSize = nullptr;
     // texto
     QLabel* m_editingLbl = nullptr;
-    QLineEdit* m_textEdit = nullptr;
+    QTextEdit* m_textEdit = nullptr;
+    bool m_fillingText = false; // preenchendo a caixa por código, não pela pessoa
     QToolButton* m_removeBtn = nullptr;
     QToolButton* m_boldBtn = nullptr;
     QToolButton* m_italicBtn = nullptr;

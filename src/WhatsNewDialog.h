@@ -10,7 +10,9 @@ class QTextBrowser;
 //
 // O texto vem de resources/whatsnew/whatsnew_<idioma>.md (embarcado no .qrc),
 // não do GitHub: abre sem internet e já no idioma do app. A cada versão, é
-// só trocar o conteúdo desses arquivos.
+// só trocar o conteúdo desses arquivos. Foto entra como imagem do markdown,
+// ![legenda](qrc:/whatsnew/arquivo.jpg), com o arquivo no whatsnew.qrc em 2x:
+// ela ocupa a largura do texto sem passar do tamanho dela.
 class WhatsNewDialog : public QDialog {
     Q_OBJECT
 public:
@@ -25,9 +27,13 @@ public:
     static bool shouldShow();
     static void markSeen();
 
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 private:
     void applyTheme();
     QString loadNotes() const;
+    void fitImages();
 
     QLabel* m_logo = nullptr;
     QLabel* m_title = nullptr;

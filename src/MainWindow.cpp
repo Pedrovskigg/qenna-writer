@@ -2408,19 +2408,6 @@ void MainWindow::setupEditor()
         }
     });
 
-    // Oferta do Cover Creator só na primeira vez que o Qenna Writer abre de
-    // verdade (não é mais bundlado no instalador desde 2026-07-19 — baixa
-    // sob demanda do GitHub). Silenciosa: se não tiver internet ou release
-    // ainda, não incomoda — o usuário sempre pode tentar de novo clicando em
-    // "Criar capa" mais tarde.
-    {
-        QSettings qs;
-        if (!qs.value(QStringLiteral("coverCreator/firstLaunchOffered"), false).toBool()) {
-            qs.setValue(QStringLiteral("coverCreator/firstLaunchOffered"), true);
-            QTimer::singleShot(2000, this, [this]() { requestCoverCreatorInstall(/*silent=*/true); });
-        }
-    }
-
     // Ctrl+S → paulada.
     auto* saveShortcut = new QShortcut(QKeySequence::Save, this);
     connect(saveShortcut, &QShortcut::activated, this, [this]() {
@@ -6899,24 +6886,21 @@ static QString formatUpdateNotes(const QString& markdown, int maxChars = 6000)
 }
 
 void MainWindow::showUpdateToast(const QString& version, const QString& downloadUrl,
-                                 const QString& releaseNotes, bool isCover)
+                                 const QString& releaseNotes)
 {
     m_updateVersion = version;
     m_updateDownloadUrl = downloadUrl;
-    m_updateIsCover = isCover;
-    if (!isCover && !downloadUrl.isEmpty() && version != m_appUpdateVersion) {
+    if (!downloadUrl.isEmpty() && version != m_appUpdateVersion) {
         m_appUpdateVersion = version;
         m_appUpdateUrl = downloadUrl;
         m_appUpdateNotes = formatUpdateNotes(releaseNotes);
         m_appUpdateDismissed = false;
     }
-    if (!isCover) {
-        // Parou no meio = a versão oferecida é a mesma que o exe já diz ser.
-        m_appUpdateIncomplete = !m_installIncompleteVersion.isEmpty()
-            && UpdateChecker::compareVersions(version, QStringLiteral(APP_VERSION)) == 0;
-        m_appUpdateReady = !cachedUpdateSetup(version).isEmpty();
-        syncMenuUpdateBanner();
-    }
+    // Parou no meio = a versão oferecida é a mesma que o exe já diz ser.
+    m_appUpdateIncomplete = !m_installIncompleteVersion.isEmpty()
+        && UpdateChecker::compareVersions(version, QStringLiteral(APP_VERSION)) == 0;
+    m_appUpdateReady = !cachedUpdateSetup(version).isEmpty();
+    syncMenuUpdateBanner();
 
     if (!m_updateToast) {
         m_updateToast = new QFrame(this);
@@ -7042,19 +7026,9 @@ void MainWindow::showUpdateToast(const QString& version, const QString& download
          Theme::accentInfo(),
          Theme::accentDanger())));
 
-    if (isCover) {
-        // Texto varia: primeira instalação (Cover Creator nunca baixado)
-        // vs. atualização de uma cópia já instalada.
-        const QString coverExe = QCoreApplication::applicationDirPath()
-            + QStringLiteral("/Cover Creator/Mira Cover.exe");
-        m_updateToastLabel->setText(QFile::exists(coverExe)
-            ? tr("Nova versão do Cover Creator disponível: %1").arg(version)
-            : tr("Instalar o Cover Creator (%1)?").arg(version));
-    } else {
-        m_updateToastLabel->setText(m_appUpdateIncomplete
-            ? tr("A atualização pra %1 não terminou").arg(version)
-            : tr("Nova versão disponível: %1").arg(version));
-    }
+    m_updateToastLabel->setText(m_appUpdateIncomplete
+        ? tr("A atualização pra %1 não terminou").arg(version)
+        : tr("Nova versão disponível: %1").arg(version));
 
     const QString notes = formatUpdateNotes(releaseNotes);
     if (!notes.isEmpty()) {
@@ -7093,7 +7067,6 @@ void MainWindow::positionUpdateToast()
 
 QString MainWindow::updateActionText() const
 {
-    if (m_updateIsCover) return tr("Baixar e instalar");
     if (m_appUpdateIncomplete) return m_appUpdateReady ? tr("Concluir instalação") : tr("Baixar e concluir");
     return m_appUpdateReady ? tr("Instalar") : tr("Baixar e instalar");
 }
@@ -7108,7 +7081,7 @@ void MainWindow::syncMenuUpdateBanner()
     UpdateBanner* b = menuUpdateBanner();
     if (!b || m_appUpdateVersion.isEmpty() || m_appUpdateDismissed) return;
     b->showAvailable(m_appUpdateVersion, m_appUpdateNotes, m_appUpdateIncomplete, m_appUpdateReady);
-    if (m_updateReply && !m_updateIsCover) b->setDownloading(m_updateToastProgress ? m_updateToastProgress->value() : 0);
+    if (m_updateReply) b->setDownloading(m_updateToastProgress ? m_updateToastProgress->value() : 0);
 }
 
 void MainWindow::resetUpdateToastIdle()
@@ -7127,8 +7100,7 @@ void MainWindow::resetUpdateToastIdle()
         m_updateToast->adjustSize();
         positionUpdateToast();
     }
-    if (!m_updateIsCover)
-        if (UpdateBanner* b = menuUpdateBanner()) b->resetIdle();
+    if (UpdateBanner* b = menuUpdateBanner()) b->resetIdle();
 }
 
 void MainWindow::showUpdateDownloadError(const QString& message)
@@ -7143,8 +7115,7 @@ void MainWindow::showUpdateDownloadError(const QString& message)
         m_updateToastError->setText(message);
         m_updateToastError->show();
     }
-    if (!m_updateIsCover)
-        if (UpdateBanner* b = menuUpdateBanner()) b->showError(message);
+    if (UpdateBanner* b = menuUpdateBanner()) b->showError(message);
     if (m_updateToast) {
         m_updateToast->adjustSize();
         positionUpdateToast();
@@ -7160,7 +7131,7 @@ void MainWindow::cancelUpdateDownload()
 
 void MainWindow::startUpdateDownload()
 {
-    if (!m_updateIsCover) {
+    {
         const QString cached = cachedUpdateSetup(m_updateVersion);
         if (!cached.isEmpty()) { launchDownloadedInstaller(cached); return; }
     }
@@ -7174,24 +7145,13 @@ void MainWindow::startUpdateDownload()
     m_updateToastProgress->show();
     m_updateToast->adjustSize();
     positionUpdateToast();
-    if (!m_updateIsCover)
-        if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(0);
+    if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(0);
 
     if (!m_updateNam) m_updateNam = new QNetworkAccessManager(this);
 
-    QString destPath;
-    if (m_updateIsCover) {
-        // Vai direto pro lugar final — Cover Creator é Electron portable
-        // (single exe), não precisa de instalador nem processo separado.
-        const QString coverDir = QCoreApplication::applicationDirPath()
-            + QStringLiteral("/Cover Creator");
-        QDir().mkpath(coverDir);
-        destPath = coverDir + QStringLiteral("/Mira Cover.exe");
-    } else {
-        const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-        const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
-        destPath = QDir(tempDir).filePath(fileName);
-    }
+    const QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+    const QString fileName = QStringLiteral("qenna-writer-setup-%1.exe").arg(m_updateVersion);
+    const QString destPath = QDir(tempDir).filePath(fileName);
 
     auto* file = new QFile(destPath, this);
     if (!file->open(QIODevice::WriteOnly)) {
@@ -7218,8 +7178,7 @@ void MainWindow::startUpdateDownload()
                 if (total <= 0 || !m_updateToastProgress) return;
                 const int pct = static_cast<int>(received * 100 / total);
                 m_updateToastProgress->setValue(pct);
-                if (!m_updateIsCover)
-                    if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(pct);
+                if (UpdateBanner* b = menuUpdateBanner()) b->setDownloading(pct);
             });
     connect(reply, &QNetworkReply::finished, this, [this, reply, file, destPath]() {
         file->write(reply->readAll());
@@ -7245,23 +7204,6 @@ void MainWindow::startUpdateDownload()
                 ? errorString
                 : tr("arquivo incompleto (conexão interrompida).");
             showUpdateDownloadError(tr("Falha ao baixar atualização: %1").arg(reason));
-            return;
-        }
-
-        if (m_updateIsCover) {
-            // Já está no lugar final (Electron portable) — só grava a versão
-            // (normalmente o próprio Mira Cover grava isso ao abrir, mas como
-            // baixamos sem nunca rodá-lo, precisamos fazer isso por ele, senão
-            // a próxima checagem acha "0.0.0" de novo e reoferece pra sempre).
-            QFile versionFile(QFileInfo(destPath).absolutePath()
-                              + QStringLiteral("/cover-version.txt"));
-            if (versionFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-                versionFile.write(m_updateVersion.toUtf8());
-                versionFile.close();
-            }
-            if (m_updateToast) m_updateToast->hide();
-            showReminderToast(tr("Cover Creator instalado"),
-                tr("Já pode usar o botão \"Criar capa\" no Menu Principal."));
             return;
         }
 
@@ -7351,33 +7293,6 @@ QString MainWindow::cachedUpdateSetup(const QString& version) const
     return (fi.exists() && size > 0 && fi.size() == size) ? path : QString();
 }
 
-void MainWindow::requestCoverCreatorInstall(bool silent)
-{
-    if (!m_updateChecker) return;
-
-    const QString coverDir = QCoreApplication::applicationDirPath()
-        + QStringLiteral("/Cover Creator");
-    if (QFile::exists(coverDir + QStringLiteral("/Mira Cover.exe"))) return; // já instalado
-
-    // coverUpdateAvailable já tem uma conexão permanente que mostra o toast
-    // (ver setup do m_updateChecker) — só precisamos saber, via flag
-    // temporária, se ela disparou ou não pra decidir se avisamos o usuário
-    // no caso silencioso=false sem resultado (offline, sem release, etc.).
-    auto found = std::make_shared<bool>(false);
-    connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
-            this, [found](const QString&, const QString&, const QString&) { *found = true; },
-            Qt::SingleShotConnection);
-    connect(m_updateChecker, &UpdateChecker::coverCheckFinished,
-            this, [this, found, silent]() {
-                if (*found || silent) return;
-                QMessageBox::information(this, tr("Cover Creator"),
-                    tr("Não foi possível baixar o Cover Creator agora. Verifique sua conexão "
-                       "com a internet e tente de novo pelo botão \"Criar capa\"."));
-            }, Qt::SingleShotConnection);
-
-    m_updateChecker->checkCover(coverDir);
-}
-
 void MainWindow::openMainMenu()
 {
     // Salvar ou descartar ANTES de sair do editor (cancelar = fica nele)
@@ -7396,12 +7311,11 @@ void MainWindow::openMainMenu()
 
         connect(mainMenuDialog, &QDialog::finished, this, [this]() { restoreEditorAfterMenu(); });
 
-        // Faixa de versão nova: baixa a versão do APP (os campos do toast
-        // podem estar com um aviso do Cover Creator por cima).
+        // Faixa de versão nova: baixa a versão do APP.
         UpdateBanner* banner = mainMenuDialog->updateBanner();
         connect(banner, &UpdateBanner::downloadRequested, this, [this]() {
             if (m_updateReply || m_appUpdateUrl.isEmpty()) return;
-            if (m_updateIsCover || m_updateVersion != m_appUpdateVersion)
+            if (m_updateVersion != m_appUpdateVersion)
                 showUpdateToast(m_appUpdateVersion, m_appUpdateUrl, QString());
             startUpdateDownload();
         });
@@ -7409,7 +7323,7 @@ void MainWindow::openMainMenu()
         connect(banner, &UpdateBanner::dismissed, this, [this]() {
             // "Depois" vale pro editor também: o toast não reaparece lá.
             if (!m_appUpdateVersion.isEmpty()) m_appUpdateDismissed = true;
-            if (m_updateToast && !m_updateIsCover && !m_updateReply) m_updateToast->hide();
+            if (m_updateToast && !m_updateReply) m_updateToast->hide();
         });
 
         connect(mainMenuDialog, &MainMenuDialog::autoOpenChanged,
@@ -7539,28 +7453,22 @@ void MainWindow::openMainMenu()
                     }
                     if (mainMenuDialog) mainMenuDialog->setRecentProjects(list);
                 });
-            connect(mainMenuDialog, &MainMenuDialog::coverCreatorInstallRequested,
-                this, [this]() { requestCoverCreatorInstall(/*silent=*/false); });
             connect(mainMenuDialog, &MainMenuDialog::checkUpdatesRequested,
                 this, [this]() {
                     if (!m_updateChecker) return;
 
-                    // Contador: espera as duas checagens terminarem
-                    auto* pending   = new int(2);
                     auto* hadUpdate = new bool(false);
 
-                    auto onDone = [this, pending, hadUpdate]() {
-                        if (--(*pending) > 0) return;
+                    auto onDone = [this, hadUpdate]() {
                         if (!*hadUpdate) {
                             // Quem pede é o menu: a resposta aparece nele (o
                             // toast mora no editor, escondido atrás do menu).
                             const QString title = tr("Tudo atualizado");
-                            const QString body = tr("O Qenna Writer e o Cover Creator estão na versão mais recente.");
+                            const QString body = tr("O Qenna Writer está na versão mais recente.");
                             UpdateBanner* b = menuUpdateBanner();
                             if (b && mainMenuDialog->isVisible()) b->showInfo(title, body);
                             else showReminderToast(title, body);
                         }
-                        delete pending;
                         delete hadUpdate;
                     };
 
@@ -7572,51 +7480,10 @@ void MainWindow::openMainMenu()
                                 m_appUpdateDismissed = false;
                                 syncMenuUpdateBanner();
                             }, Qt::SingleShotConnection);
-                    connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
-                            this, [hadUpdate](const QString&,const QString&,const QString&) {
-                                *hadUpdate = true;
-                            }, Qt::SingleShotConnection);
                     connect(m_updateChecker, &UpdateChecker::checkFinished,
-                            this, onDone, Qt::SingleShotConnection);
-                    connect(m_updateChecker, &UpdateChecker::coverCheckFinished,
                             this, onDone, Qt::SingleShotConnection);
 
                     m_updateChecker->check();
-                    const QString coverDir = QCoreApplication::applicationDirPath()
-                                             + QStringLiteral("/Cover Creator");
-                    m_updateChecker->checkCover(coverDir);
-                });
-        connect(m_updateChecker, &UpdateChecker::coverUpdateAvailable,
-                this, [this](const QString& version, const QString& downloadUrl, const QString&) {
-                    showUpdateToast(version, downloadUrl, QString(), /*isCover=*/true);
-                });
-    connect(mainMenuDialog, &MainMenuDialog::coverUpdated,
-                this, [this](const QString& updatedPath) {
-                    // Se o projeto alterado está aberto no editor, recarrega a capa.
-                    if (!projectRoot.isEmpty()
-                        && QDir::cleanPath(projectRoot) == QDir::cleanPath(updatedPath)
-                        && projectModel) {
-                        // Relê a capa do JSON já atualizado pelo MainMenuDialog.
-                        bool ok = false;
-                        const QJsonObject idx = ProjectStorage::readIndex(projectRoot, &ok);
-                        if (!ok) return;
-                        const QJsonObject pd = idx.value(QStringLiteral("data"))
-                            .toObject().value(QStringLiteral("projectDetails")).toObject();
-                        const QString cover = pd.value(QStringLiteral("coverFull")).toString().isEmpty()
-                            ? pd.value(QStringLiteral("cover")).toString()
-                            : pd.value(QStringLiteral("coverFull")).toString();
-                        if (!cover.isEmpty()) {
-                            projectModel->setProjectDetails(
-                                projectModel->projectName(),
-                                projectModel->projectAuthor(),
-                                projectModel->projectGenres(),
-                                projectModel->projectSynopsis(),
-                                cover);
-                        }
-                        // Força atualização do painel se estiver visível.
-                        if (projectInfoPanel && projectInfoPanel->isVisible())
-                            projectInfoPanel->loadFromModel();
-                    }
                 });
     }
     mainMenuDialog->setRecentProjects(loadRecentProjects());

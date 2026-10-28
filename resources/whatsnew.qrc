@@ -5,5 +5,7 @@
         <file alias="whatsnew_es.md">whatsnew/whatsnew_es.md</file>
         <file alias="whatsnew_it.md">whatsnew/whatsnew_it.md</file>
         <file alias="whatsnew_fr.md">whatsnew/whatsnew_fr.md</file>
+        <file alias="mapa.jpg">whatsnew/mapa.jpg</file>
+        <file alias="mapa-tinta.jpg">whatsnew/mapa-tinta.jpg</file>
     </qresource>
 </RCC>

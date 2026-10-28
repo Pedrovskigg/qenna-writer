@@ -322,28 +322,19 @@ private:
     // Atualizações (GitHub Releases): checagem silenciosa no startup; se
     // houver versão nova, mostra um toast com botão pra baixar+instalar.
     void showUpdateToast(const QString& version, const QString& downloadUrl,
-                         const QString& releaseNotes, bool isCover = false);
+                         const QString& releaseNotes);
     void positionUpdateToast();
     void startUpdateDownload();
     void cancelUpdateDownload();
     void showUpdateDownloadError(const QString& message);
     void resetUpdateToastIdle();
-    // Faixa grande do menu principal: mostra a versão nova do app (não a do
-    // Cover Creator) se o menu estiver aí e o usuário não disse "Depois".
+    // Faixa grande do menu principal: mostra a versão nova do app se o menu
+    // estiver aí e o usuário não disse "Depois".
     void syncMenuUpdateBanner();
     void launchDownloadedInstaller(const QString& destPath);
     QString cachedUpdateSetup(const QString& version) const;
     QString updateActionText() const;
     UpdateBanner* menuUpdateBanner() const;
-
-    // Cover Creator via download (sem bundle no instalador do Qenna desde
-    // 2026-07-19): checa a release mais recente no GitHub e, se aceito,
-    // baixa o portable direto pra "<appDir>/Cover Creator/Mira Cover.exe" —
-    // não precisa "instalar" de verdade, é Electron portable (single exe).
-    // silent=true não mostra nada se não houver internet/release (usado no
-    // gatilho automático de primeiro launch); silent=false avisa o usuário
-    // (usado quando ele pede explicitamente, ex. clicou em "Criar capa").
-    void requestCoverCreatorInstall(bool silent);
 
     void closeBondPopup();
     void closeBondViewPanel();
@@ -655,11 +646,9 @@ private:
     QNetworkAccessManager *m_updateNam = nullptr;
     QNetworkReply *m_updateReply = nullptr;
     bool m_updateCancelledByUser = false;
-    bool m_updateIsCover = false; // true = o toast/download atual é do Cover Creator, não auto-update do Qenna
     QString m_updateDownloadUrl;
     QString m_updateVersion;
-    // A versão nova do APP guardada à parte: um aviso do Cover Creator
-    // reaproveita os campos acima e não pode apagar o que a faixa do menu baixa.
+    // A versão nova do APP guardada à parte (a faixa do menu baixa por ela).
     QString m_appUpdateVersion;
     QString m_appUpdateUrl;
     QString m_appUpdateNotes;

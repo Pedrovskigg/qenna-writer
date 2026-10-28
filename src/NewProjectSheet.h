@@ -36,6 +36,8 @@ public:
     void setExisting(const Existing& e);
     // true = a capa não foi mexida: grava a de antes (cover/coverBg/quickCover iguais)
     bool keepsOriginalCover() const { return m_asIs; }
+    // Abre já na capa rápida ("Criar capa" no menu do livro, no menu principal).
+    void openCoverEditor() { setEditing(true); }
 
     QString projectName() const;
     QString author() const;

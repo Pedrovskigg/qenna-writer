@@ -87,13 +87,20 @@ void Panel::buildCartelaUi()
         m_cbarBtns.insert(id, b);
         cb->addWidget(b);
     }
-    // inclinação e hora (o Astrolábio faz isso no outro modo)
+    // embaixo das ferramentas, as ações que moravam na pílula de cima (essas valem nos dois modos)
+    m_cbarSep = new QFrame(m_cbar);
+    m_cbarSep->setObjectName(QStringLiteral("cartoSep"));
+    m_cbarSep->setFixedSize(18, 1);
+    cb->addWidget(m_cbarSep, 0, Qt::AlignHCenter);
+    for (QToolButton* b : { m_fitBtn, m_rulerBtn, m_exportBtn, m_setBtn }) cb->addWidget(b);
+    // vistas, inclinação e hora (o Astrolábio faz isso no outro modo)
     m_cview = new QFrame(this);
     m_cview->setObjectName(QStringLiteral("cartoCard"));
-    m_cview->setFixedWidth(230);
+    m_cview->setFixedWidth(320);   // cabe "Topográfico ▾", a vista de nome mais comprido
     auto* cv = new QVBoxLayout(m_cview);
     cv->setContentsMargins(12, 10, 12, 10);
     cv->setSpacing(8);
+    cv->addWidget(m_viewSeg);
     auto row = [&](const QString& label, QSlider** s, QLabel** v, QToolButton** play) {
         auto* h = new QHBoxLayout();
         h->setSpacing(6);
@@ -216,7 +223,9 @@ void Panel::applyUiMode()
     m_hourPill->setVisible(!cartelaUi);
     m_toolPill->setVisible(!cartelaUi);
     m_viewSeg->setVisible(cartelaUi);
-    m_cbar->setVisible(cartelaUi);
+    m_cbar->setVisible(true);
+    for (QToolButton* b : std::as_const(m_cbarBtns)) b->setVisible(cartelaUi);
+    m_cbarSep->setVisible(cartelaUi);
     m_cview->setVisible(cartelaUi);
     m_cartela->setVisible(false);
     m_rose->setVisible(cartelaUi);

@@ -20,9 +20,6 @@ public:
     // Atualização que parou no meio (o exe já é o novo): oferece a release
     // mesmo com a versão igual à instalada, pra dar pra concluir.
     void setOfferSameVersion(bool on) { m_offerSameVersion = on; }
-    // Checa atualizações do Cover Creator.
-    // coverDir = pasta onde está Mira Cover.exe (lê cover-version.txt de lá).
-    void checkCover(const QString& coverDir);
 
     // -1 se a < b, 0 se iguais, 1 se a > b ("0.17.0" vs "0.16.1"). Público
     // porque a janela de novidades compara a versão instalada com a última vista.
@@ -31,16 +28,11 @@ public:
 signals:
     void updateAvailable(const QString& version, const QString& downloadUrl, const QString& releaseUrl, const QString& releaseNotes);
     void checkFinished();       // dispara ao fim da checagem (update ou não)
-    void coverUpdateAvailable(const QString& version, const QString& downloadUrl, const QString& releaseUrl);
-    void coverCheckFinished();  // dispara ao fim da checagem do Cover (update ou não)
 
 private:
     void onReplyFinished(QNetworkReply* reply);
-    void onCoverReplyFinished(QNetworkReply* reply, const QString& installedVersion);
-    static QString readInstalledCoverVersion(const QString& coverDir);
 
     QNetworkAccessManager* m_nam;
     bool m_pending = false;
     bool m_offerSameVersion = false;
-    bool m_coverPending = false;
 };

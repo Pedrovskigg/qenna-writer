@@ -23,6 +23,7 @@ struct Doc {
     std::vector<River> rivers;
     int riverSeq = 0;
     QString title;              // vazio = o sugerido ("Terras de X")
+    QString groupId;            // Explorar: o grupo do mapa inteiro (a raiz da árvore; os territórios moram dentro)
     int ver = 0;                // sobe a cada mudança no terreno
     // caches
     std::vector<Flora> flora;

@@ -12,6 +12,7 @@
 #include "IconUtils.h"
 #include "MarkerStore.h"
 #include "MemoriesStore.h"
+#include "GroupBadge.h"
 #include "ProjectModel.h"
 #include "RoleTiers.h"
 #include "ProjectStorage.h"
@@ -2116,17 +2117,17 @@ void RefMenuPanel::buildGroupsView()
     )")).arg(Theme::chromeBackground(), Theme::textPrimary(), Theme::panelBorder(),
             Theme::hoverOverlay(), Theme::textBright(), Theme::accentInfoSoft()));
 
-    for (const auto& g : groups) {
-        QPixmap dot(10, 10);
+    // em ordem de árvore, com recuo (grupo dentro de grupo)
+    for (const auto& [gp, depth] : m_model->groupTree()) {
+        const Group& g = *gp;
+        QPixmap dot(12, 12);
         dot.fill(Qt::transparent);
         QPainter dotP(&dot);
-        dotP.setRenderHint(QPainter::Antialiasing);
-        dotP.setBrush(QColor(g.color));
-        dotP.setPen(Qt::NoPen);
-        dotP.drawEllipse(1, 1, 8, 8);
+        GroupBadge::draw(dotP, QPointF(6, 6), 5.5, QColor(g.color), g.social());
         dotP.end();
 
-        auto* item = new QListWidgetItem(g.title);
+        auto* item = new QListWidgetItem(QString(std::min(depth, 6) * 3, QLatin1Char(' ')) + g.title);
+        item->setToolTip(m_model->groupPathText(g.id));
         item->setIcon(QIcon(dot));
         item->setData(Qt::UserRole, g.id);
         grpList->addItem(item);

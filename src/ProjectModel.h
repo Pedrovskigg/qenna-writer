@@ -5,6 +5,8 @@
 #include <QList>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QPair>
+#include <QStringList>
 
 struct Variation {
     QString id;
@@ -96,10 +98,20 @@ struct Manuscript {
     QString vignette;         // família de vinheta do livro todo; "" = automática por capítulo
 };
 
+// Grupo de documentos (LeftBar → Grupos; território do mapa). Desde 27/10 é uma
+// árvore: um grupo pode morar dentro de outro, e os documentos do pai valem pros
+// filhos ("Vindo de cima"). Lugar = tem chão (reino, vila, planeta); Social =
+// gente (família, facção, ordem). "Atua em": lugares onde um grupo se espalha
+// sem morar lá (a Liga Mercante mora em Ardena e atua em Quime).
 struct Group {
     QString id;
     QString title;
     QString color;
+    QString parentId;                          // vazio = solto, no topo
+    QString kind = QStringLiteral("place");    // "place" · "social"
+    bool map = false;                          // o grupo de um mapa (os territórios nascem dentro dele)
+    QStringList actsIn;                        // ids de grupos Lugar
+    bool social() const { return kind == QLatin1String("social"); }
 };
 
 struct Folder {
@@ -321,9 +333,21 @@ public:
 
     const QList<Group>& groups() const { return m_groups; }
     const Group* findGroup(const QString& id) const;
-    QString addGroup(const QString& title, const QString& color);
+    QString addGroup(const QString& title, const QString& color, const QString& parentId = QString(),
+                     const QString& kind = QStringLiteral("place"));
     bool updateGroup(const QString& id, const QString& title, const QString& color);
-    bool removeGroup(const QString& id);
+    bool removeGroup(const QString& id);       // os filhos sobem um nível; os documentos ficam sem grupo
+    // árvore
+    bool setGroupParent(const QString& id, const QString& parentId);   // recusa ciclo (pai dentro do filho)
+    bool setGroupKind(const QString& id, const QString& kind);
+    bool setGroupMap(const QString& id, bool map);
+    bool setGroupActsIn(const QString& id, const QStringList& places);
+    QList<const Group*> groupChildren(const QString& parentId) const;   // na ordem do projeto; vazio = os soltos
+    QList<const Group*> groupPath(const QString& id) const;             // da raiz até ele
+    bool groupIsInside(const QString& id, const QString& ancestorId) const;   // ele mesmo conta
+    QString groupPathText(const QString& id) const;                     // "Ardena › Império do Sol › Wely"
+    // a lista em ordem de árvore (pai, filhos, netos...), com a profundidade de cada um
+    QList<QPair<const Group*, int>> groupTree() const;
     bool setDrawerItemGroup(const QString& itemId, const QString& groupId);
     bool setDrawerFolderGroup(const QString& drawerKey, const QString& folderId, const QString& groupId);
 

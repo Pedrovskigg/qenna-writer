@@ -63,14 +63,8 @@ signals:
     void removeRecentRequested(const QString& path);
     void deleteProjectRequested(const QString& path);
     void autoOpenChanged(const QString& path, bool enabled);
-    // Emitido após o Mira Cover fechar e a capa ser gravada no JSON do projeto.
-    void coverUpdated(const QString& projectPath);
     // Emitido quando o user clica em "Verificar atualizações".
     void checkUpdatesRequested();
-    // Emitido quando "Criar capa" é clicado mas o Cover Creator não está
-    // instalado nem disponível localmente — MainWindow reage baixando a
-    // release mais recente do GitHub.
-    void coverCreatorInstallRequested();
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -123,17 +117,11 @@ private:
     QImage currentLogoImage();
     // Abre o diálogo de edição do projeto (nome/autor/gêneros/sinopse/capa)
     // e grava as alterações direto no índice. Atualiza o grid no fim.
-    void editProject(const QString& path);
+    // openCover: já abre na capa rápida ("Criar capa" no menu do livro).
+    void editProject(const QString& path, bool openCover = false);
     // Mostra o diálogo de confirmação com countdown; ao confirmar, emite
     // deleteProjectRequested para o MainWindow fazer a exclusão de fato.
     void confirmDeleteProject(const QString& path);
-    // Lança o Mira Cover passando o caminho do projeto como argumento.
-    void launchMiraCover(const QString& projectPath);
-    // Inicia o processo do Mira Cover e conecta o sinal finished.
-    void startCoverProcess(const QString& program, const QStringList& args,
-                           const QString& workingDir, const QString& projectPath);
-    // Lê cover.jpg do projeto, converte para data URL e grava no JSON.
-    void updateCoverFromFile(const QString& projectPath);
     // Recolore os ícones dos botões de ação conforme o tema atual (SVG tintado
     // no load não acompanha troca de tema sozinho).
     void refreshActionIcons();

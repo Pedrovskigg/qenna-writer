@@ -1,6 +1,11 @@
 #pragma once
 
 // Explorar: os documentos do projeto presos aos territórios do mapa.
+// Desde 27/10 o cartão é uma ÁRVORE vertical (os grupos têm pai): o mapa é a
+// raiz (um grupo com o nome dele), os territórios moram dentro, e dentro deles
+// as construções batizadas (Lugar) e as famílias, facções... (Social). Clicar na
+// árvore leva o mapa até o lugar; clicar no mapa abre a árvore até ele. O
+// escolhido mostra os documentos dele e, recolhidos, os que vêm de cima.
 // Cada território tem um GRUPO (o mesmo dos Grupos da LeftBar: um documento de
 // qualquer gaveta mora em no máximo um grupo) e um LUGAR no Criador de Mundos
 // (com os documentos e as pastas dele). Clicar no território abre o cartão com
@@ -9,9 +14,11 @@
 // O mapa não conhece o editor principal: o MainWindow passa uma ponte.
 
 #include <QColor>
+#include <QHash>
 #include <QObject>
 #include <QPointer>
 #include <QRect>
+#include <QSet>
 #include <QString>
 #include <QVector>
 
@@ -39,6 +46,7 @@ namespace carto {
 class Canvas;
 struct RealmDef;
 struct Doc;
+struct Art;
 
 // o que o mapa precisa do projeto (o MainWindow preenche)
 struct ProjectLink {
@@ -79,6 +87,9 @@ public:
     std::function<void()> mapEdited;                // ligou grupo ou lugar a um território: o mapa precisa ser salvo
     std::function<void(const QString&)> flash;      // aviso na barra de dica
     std::function<int()> cartelaTop;                // o cartão não desce por cima da Cartela (−1 = sem Cartela)
+    std::function<QString()> mapName;               // o nome do mapa (o grupo-raiz leva esse nome)
+
+    void selectGroup(const QString& groupId, bool fly);   // a árvore escolhe; o mapa vai junto
 
     // um documento da lista do território
     struct XDoc {
@@ -97,7 +108,7 @@ protected:
     bool eventFilter(QObject* o, QEvent* e) override;   // arrastar os painéis pelo cabeçalho
 
 private:
-    enum class CardMode { List, New, Add };
+    enum class CardMode { List, New, Add, NewGroup };
 
     // dados
     int realmCount() const;
@@ -105,6 +116,17 @@ private:
     QColor realmColor(int r) const;
     QString groupOf(int r, bool create);
     QString placeOf(int r, bool create);
+    // a árvore
+    QString rootGroup() const;                      // o grupo do mapa (vazio sem projeto)
+    int realmOfGroup(const QString& gid) const;     // o território desse grupo (−1 = não é território)
+    const Art* artOfGroup(const QString& gid) const;   // a construção batizada desse grupo
+    int mappedRealm(const QString& gid) const;      // o território dele ou do lugar de cima mais perto
+    QString groupTitle(const QString& gid) const;
+    QVector<XDoc> groupDocs(const QString& gid);    // os documentos de gaveta do grupo
+    int groupCount(const QString& gid);             // gaveta + Criador de Mundos (território)
+    void flyToGroup(const QString& gid);
+    void renderTree(QVBoxLayout* bl);
+    void renderSelected(QVBoxLayout* bl, const QString& gid, int depth);
     QVector<XDoc> drawerDocs(int r);
     QVector<XDoc> placeDocs(int r);
     QVector<XLink> linksOf(int r, int* offMap = nullptr);
@@ -129,6 +151,11 @@ private:
     void fitBody(QTextEdit* ed, bool compact);
     void setEditing(bool on);
     void createDoc();
+    void createGroup();               // grupo novo dentro do escolhido (nome e Lugar/Social no cartão)
+    // arrastar documento pra outro grupo da árvore
+    QPushButton* draggable(QPushButton* b, const XDoc& d);
+    bool docDragEvent(QPushButton* b, QEvent* e);
+    bool groupDropEvent(QPushButton* b, QEvent* e);
     void insertImage(QTextEdit* ed);
     QPushButton* row(QWidget* parent, const QString& title, const QString& right, const QColor& dot, bool selected, bool sheet, const std::function<void()>& onClick);
     QLabel* caption(QWidget* parent, const QString& text, const QColor& dot = QColor());
@@ -146,7 +173,12 @@ private:
 
     // cartão do território
     QFrame* m_card = nullptr;
-    QLabel *m_cardSwatch = nullptr, *m_cardTitle = nullptr, *m_cardSub = nullptr;
+    QLabel *m_cardSwatch = nullptr, *m_cardTitle = nullptr, *m_cardSub = nullptr, *m_crumbs = nullptr;
+    QString m_group;                    // o grupo escolhido na árvore
+    QSet<QString> m_open;               // os ramos abertos
+    bool m_upOpen = false;              // "Vindo de cima" aberto
+    QHash<QString, QString> m_artNames; // o nome de cada construção da última vez (renomear no mapa passa pro grupo)
+    QString m_mapSeen;                  // o nome do mapa da última vez
     QScrollArea* m_cardScroll = nullptr;
     QWidget* m_cardBody = nullptr;
     QWidget* m_cardFoot = nullptr;
@@ -154,7 +186,10 @@ private:
     QString m_newWhere = QStringLiteral("drawer"), m_newDrawer, m_newFolder, m_newTitleText, m_query;
     QPointer<QLineEdit> m_newTitle, m_queryEdit;
     QPointer<QComboBox> m_newCombo;
+    QString m_newKind = QStringLiteral("place");   // grupo novo: "place" ou "social"
     QPoint m_cardAt{ -1, -1 }, m_readerAt{ -1, -1 }, m_duoAt{ -1, -1 };
+    QPoint m_dragFrom;                  // onde o arrasto de documento começou (na linha)
+    bool m_dropDone = false;            // soltou num grupo: refaz o cartão quando o arrasto terminar
 
     // leitor
     QFrame* m_reader = nullptr;

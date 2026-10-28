@@ -139,6 +139,7 @@ QJsonObject toJson(const Spec& s)
         QJsonObject j;
         j.insert(QStringLiteral("role"), t.role);
         if (t.role == QLatin1String("extra")) j.insert(QStringLiteral("text"), t.text);
+        else if (!t.layout.isEmpty()) j.insert(QStringLiteral("layout"), t.layout);
         j.insert(QStringLiteral("family"), t.family);
         j.insert(QStringLiteral("size"), t.size);
         j.insert(QStringLiteral("x"), t.pos.x());
@@ -176,6 +177,7 @@ Spec fromJson(const QJsonObject& o, const QString& fallbackFamily)
             Text t;
             t.role = j.value(QStringLiteral("role")).toString(QStringLiteral("extra"));
             t.text = j.value(QStringLiteral("text")).toString();
+            t.layout = j.value(QStringLiteral("layout")).toString();
             t.family = j.value(QStringLiteral("family")).toString(fallbackFamily);
             t.size = qBound(6.0, j.value(QStringLiteral("size")).toDouble(24), 96.0);
             t.pos = QPointF(qBound(0.0, j.value(QStringLiteral("x")).toDouble(0.5), 1.0),
@@ -227,8 +229,7 @@ QImage render(const Spec& s, const QSize& size, bool withText,
     const qreal k = r.width() / kRefW;
     if (hitRects) hitRects->clear();
     for (const Text& tx : s.texts) {
-        QString str = tx.role == QLatin1String("title") ? title
-                    : tx.role == QLatin1String("author") ? author : tx.text;
+        QString str = shownText(tx, tx.role == QLatin1String("title") ? title : author);
         if (tx.upper) str = str.toUpper();
         QFont f(tx.family);
         f.setPixelSize(qMax(1, qRound(tx.size * k)));
@@ -262,6 +263,20 @@ QImage render(const Spec& s, const QSize& size, bool withText,
         p.drawImage(QPointF(0, 0), layer);
     }
     return out;
+}
+
+QString flatLine(const QString& s)
+{
+    QString out = s;
+    out.replace(QLatin1Char('\n'), QLatin1Char(' '));
+    return out.simplified();
+}
+
+QString shownText(const Text& t, const QString& field)
+{
+    if (t.role != QLatin1String("title") && t.role != QLatin1String("author")) return t.text;
+    if (!t.layout.isEmpty() && flatLine(t.layout) == field.simplified()) return t.layout;
+    return field;
 }
 
 QString toDataUrl(const QImage& img)

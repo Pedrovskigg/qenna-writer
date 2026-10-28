@@ -1408,8 +1408,8 @@ void MainMenuDialog::buildMainArea(QVBoxLayout* col)
     m_stackView = new StackView(m_viewHost);
     connect(m_stackView, &StackView::openRequested, this, &MainMenuDialog::openRecentRequested);
     connect(m_stackView, &StackView::autoOpenChanged, this, &MainMenuDialog::autoOpenChanged);
-    connect(m_stackView, &StackView::editRequested, this, &MainMenuDialog::editProject);
-    connect(m_stackView, &StackView::coverCreateRequested, this, &MainMenuDialog::launchMiraCover);
+    connect(m_stackView, &StackView::editRequested, this, [this](const QString& p) { editProject(p); });
+    connect(m_stackView, &StackView::coverCreateRequested, this, [this](const QString& p) { editProject(p, true); });
     connect(m_stackView, &StackView::removeRequested, this, &MainMenuDialog::removeRecentRequested);
     connect(m_stackView, &StackView::deleteRequested, this, &MainMenuDialog::confirmDeleteProject);
     m_stackView->hide();
@@ -1578,7 +1578,7 @@ void MainMenuDialog::showProjectMenu(const QString& path, const QPoint& globalPo
             emit autoOpenChanged(path, on);
         }
         else if (chosen == aEdit) editProject(path);
-        else if (chosen == aCover) launchMiraCover(path);
+        else if (chosen == aCover) editProject(path, true);
         else if (chosen == aRemove) emit removeRecentRequested(path);
         else if (chosen == aDelete) confirmDeleteProject(path);
     });
@@ -1752,7 +1752,7 @@ void MainMenuDialog::refreshActionIcons()
     }
 }
 
-void MainMenuDialog::editProject(const QString& path)
+void MainMenuDialog::editProject(const QString& path, bool openCover)
 {
     bool ok = false;
     QJsonObject idx = ProjectStorage::readIndex(path, &ok);
@@ -1781,6 +1781,7 @@ void MainMenuDialog::editProject(const QString& path)
     ex.coverBg = info.coverBgDataUrl;
     ex.quickCover = pd.value(QStringLiteral("quickCover")).toObject();
     dlg.setExisting(ex);
+    if (openCover) dlg.openCoverEditor();
     if (dlg.exec() != QDialog::Accepted) return;
 
     const QString newName = dlg.projectName().isEmpty() ? name : dlg.projectName();
@@ -1815,124 +1816,6 @@ void MainMenuDialog::editProject(const QString& path)
         return;
     }
     refreshRecents();
-}
-
-void MainMenuDialog::launchMiraCover(const QString& projectPath)
-{
-    const QString exeDir = QCoreApplication::applicationDirPath();
-
-    // ── 1) Produção: Cover Creator já instalado ────────────────────────────
-    const QString installedExe = exeDir + QStringLiteral("/Cover Creator/Mira Cover.exe");
-    if (QFile::exists(installedExe)) {
-        startCoverProcess(installedExe, { projectPath }, QString(), projectPath);
-        return;
-    }
-
-    // ── 2) Produção: setup disponível — perguntar se quer instalar ─────────
-    const QString setupExe = exeDir + QStringLiteral("/Cover Creator/Mira Cover Setup.exe");
-    if (QFile::exists(setupExe)) {
-        const auto resp = QMessageBox::question(
-            this, tr("Cover Creator"),
-            tr("O Cover Creator ainda não está instalado.\n\n"
-               "Deseja instalá-lo agora? (rápido, sem precisar de internet)"),
-            QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-        if (resp != QMessageBox::Yes) return;
-
-        const QString exeToUse = QFile::copy(setupExe, installedExe)
-                                 ? installedExe : setupExe;
-        startCoverProcess(exeToUse, { projectPath }, QString(), projectPath);
-        return;
-    }
-
-    // ── 3) Dev: diretório mira-cover irmão ────────────────────────────────
-    const QString devCoverDir = QDir::cleanPath(
-        exeDir + QStringLiteral("/../../mira-cover"));
-    const QString devElectron = devCoverDir +
-        QStringLiteral("/node_modules/electron/dist/electron.exe");
-
-    if (QFile::exists(devElectron)) {
-        if (!QFile::exists(devCoverDir + QStringLiteral("/dist/index.html"))) {
-            QMessageBox::information(this, tr("Cover Creator"),
-                tr("Execute 'npm run build' no diretório mira-cover para "
-                   "habilitar o criador de capas no modo desenvolvimento."));
-            return;
-        }
-        startCoverProcess(devElectron, { devCoverDir, projectPath },
-                          devCoverDir, projectPath);
-        return;
-    }
-
-    // ── 4) Nada local — pede pro MainWindow baixar a release mais recente
-    // do GitHub (Cover Creator não vem mais bundlado no instalador).
-    emit coverCreatorInstallRequested();
-}
-
-void MainMenuDialog::startCoverProcess(const QString& program,
-                                       const QStringList& args,
-                                       const QString& workingDir,
-                                       const QString& projectPath)
-{
-    QProcess* proc = new QProcess(this);
-    if (!workingDir.isEmpty()) proc->setWorkingDirectory(workingDir);
-
-    connect(proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
-            this, [this, projectPath, proc](int, QProcess::ExitStatus) {
-        proc->deleteLater();
-        updateCoverFromFile(projectPath);
-    });
-
-    proc->start(program, args);
-}
-
-void MainMenuDialog::updateCoverFromFile(const QString& projectPath)
-{
-    const QString coverFilePath = projectPath + QStringLiteral("/cover.jpg");
-    if (!QFile::exists(coverFilePath)) return;
-
-    QFile f(coverFilePath);
-    if (!f.open(QIODevice::ReadOnly)) return;
-    const QByteArray bytes = f.readAll();
-    f.close();
-    if (bytes.isEmpty()) return;
-
-    const QString dataUrl = QStringLiteral("data:image/jpeg;base64,") +
-                            QString::fromLatin1(bytes.toBase64());
-
-    // cover-bg.jpg: render sem texto que o Cover Creator grava ao lado da
-    // capa final (mesmo fundo/foco/zoom, só sem o título) — usado como
-    // textura opcional da lombada na Prateleira 3D. Nem toda capa antiga
-    // tem esse arquivo (recurso novo); nesse caso a lombada cai pra "cover".
-    QString coverBgDataUrl;
-    const QString coverBgFilePath = projectPath + QStringLiteral("/cover-bg.jpg");
-    if (QFile::exists(coverBgFilePath)) {
-        QFile bg(coverBgFilePath);
-        if (bg.open(QIODevice::ReadOnly)) {
-            const QByteArray bgBytes = bg.readAll();
-            bg.close();
-            if (!bgBytes.isEmpty()) {
-                coverBgDataUrl = QStringLiteral("data:image/jpeg;base64,") +
-                                 QString::fromLatin1(bgBytes.toBase64());
-            }
-        }
-    }
-
-    bool ok = false;
-    QJsonObject idx = ProjectStorage::readIndex(projectPath, &ok);
-    if (!ok) return;
-
-    QJsonObject projectData = idx.value(QStringLiteral("data")).toObject();
-    QJsonObject details     = projectData.value(QStringLiteral("projectDetails")).toObject();
-    details.insert(QStringLiteral("cover"),     dataUrl);
-    details.insert(QStringLiteral("coverFull"), dataUrl);
-    if (!coverBgDataUrl.isEmpty()) details.insert(QStringLiteral("coverBg"), coverBgDataUrl);
-    projectData.insert(QStringLiteral("projectDetails"), details);
-    idx.insert(QStringLiteral("data"), projectData);
-
-    QString err;
-    if (ProjectStorage::writeIndex(projectPath, idx, &err)) {
-        refreshRecents();
-        emit coverUpdated(projectPath);
-    }
 }
 
 void MainMenuDialog::confirmDeleteProject(const QString& path)

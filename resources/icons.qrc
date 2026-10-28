@@ -11,7 +11,7 @@
         <file alias="splash.png">../src/assets/logo/splash.png</file>
         <file alias="splash-2.png">../src/assets/logo/splash-2-app.png</file>
         <file alias="splash-3.png">../src/assets/logo/splash-3-app.png</file>
-        <file alias="splash-4.png">../src/assets/logo/splash-4-app.png</file>
+        <file alias="logo-oficial.png">../src/assets/logo/logo-oficial.png</file>
         <!-- Splash animada: letras do logo novo em 2x, montadas em main.cpp. -->
         <file alias="splash-letters/q.png">../src/assets/logo/splash-letters/q.png</file>
         <file alias="splash-letters/e.png">../src/assets/logo/splash-letters/e.png</file>
@@ -128,8 +128,6 @@
         <file alias="timeline/mode-spiral.png">../src/assets/help/timeline/mode-spiral.png</file>
         <file alias="timeline/mode-track.png">../src/assets/help/timeline/mode-track.png</file>
         <file alias="timeline/line-focus.png">../src/assets/help/timeline/line-focus.png</file>
-        <file alias="cover-creator/context-menu.png">../src/assets/help/cover-creator/context-menu.png</file>
-        <file alias="cover-creator/app-editing.png">../src/assets/help/cover-creator/app-editing.png</file>
         <file alias="markers/select-menu.png">../src/assets/help/markers/select-menu.png</file>
         <file alias="markers/color-picker.png">../src/assets/help/markers/color-picker.png</file>
         <file alias="markers/comment-picker.png">../src/assets/help/markers/comment-picker.png</file>

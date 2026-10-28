@@ -8,6 +8,7 @@
 #include "../DocCache.h"
 #include "../DocPreview.h"
 #include "../ElementsStore.h"
+#include "../GroupBadge.h"
 #include "../ProjectModel.h"
 #include "../TerritorioStore.h"
 #include "../Theme.h"
@@ -15,8 +16,13 @@
 #include <QAbstractButton>
 #include <QAbstractTextDocumentLayout>
 #include <QBuffer>
+#include <QApplication>
 #include <QComboBox>
+#include <QDrag>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QMouseEvent>
+#include <QPainter>
 #include <QStyle>
 #include <QDateTime>
 #include <QDir>
@@ -49,7 +55,7 @@
 namespace carto {
 
 namespace {
-constexpr int kCardW = 316, kReaderW = 360, kReaderH = 480, kTop = 86;
+constexpr int kCardW = 336, kReaderW = 360, kReaderH = 480, kTop = 86;
 
 QString rgbHex(const RGB& c) { return QColor(static_cast<int>(c[0]), static_cast<int>(c[1]), static_cast<int>(c[2])).name(); }
 
@@ -108,6 +114,9 @@ QPushButton* textBtn(QWidget* parent, const QString& text, bool primary = false)
     b->setCursor(Qt::PointingHandCursor);
     return b;
 }
+// documento de gaveta arrastado no cartão (o id do item)
+const char kDocMime[] = "application/x-qenna-drawer-item";
+
 void clearLayout(QLayout* l)
 {
     while (QLayoutItem* it = l->takeAt(0)) {
@@ -182,27 +191,167 @@ QString Explorer::groupOf(int r, bool create)
 void Explorer::syncGroups(const std::vector<RealmDef>* before)
 {
     if (!m_link.model || !m_doc || !m_doc->info) return;
+    ProjectModel* M = m_link.model;
     bool groupsTouched = false, mapTouched = false;
+    // 1) o mapa é a raiz: um grupo Lugar com o nome dele (os territórios moram dentro)
+    QString mapTitle = mapName ? mapName().trimmed() : QString();
+    if (mapTitle.isEmpty()) mapTitle = m_doc->displayTitle();
+    bool adopt = false;
+    if (m_doc->groupId.isEmpty() || !M->findGroup(m_doc->groupId)) {
+        m_doc->groupId = M->addGroup(mapTitle, QStringLiteral("#9AA7B8"));
+        M->setGroupMap(m_doc->groupId, true);
+        groupsTouched = mapTouched = adopt = true;
+    } else if (!m_mapSeen.isEmpty() && m_mapSeen != mapTitle) {
+        // o mapa trocou de nome: o grupo dele acompanha
+        if (const Group* g = M->findGroup(m_doc->groupId)) { M->updateGroup(g->id, mapTitle, g->color); groupsTouched = true; }
+    }
+    m_mapSeen = mapTitle;
+    const QString root = m_doc->groupId;
+    if (const Group* g = M->findGroup(root); g && !g->map) { M->setGroupMap(root, true); groupsTouched = true; }
+
+    // 2) cada território é um grupo dentro do mapa
     for (RealmDef& d : m_doc->info->defs) {
         const QString name = d.name.trimmed();
         if (name.isEmpty()) continue;
         if (d.groupId.isEmpty()) {
-            for (const Group& g : m_link.model->groups())
-                if (g.title.trimmed().compare(name, Qt::CaseInsensitive) == 0) { d.groupId = g.id; break; }
-            if (d.groupId.isEmpty()) { d.groupId = m_link.model->addGroup(name, rgbHex(d.color).toUpper()); groupsTouched = true; }
+            for (const Group& g : M->groups())
+                if (!g.map && g.title.trimmed().compare(name, Qt::CaseInsensitive) == 0) { d.groupId = g.id; break; }
+            if (d.groupId.isEmpty()) { d.groupId = M->addGroup(name, rgbHex(d.color).toUpper(), root); groupsTouched = true; }
+            else if (const Group* g = M->findGroup(d.groupId); g && g->parentId.isEmpty()) { M->setGroupParent(d.groupId, root); groupsTouched = true; }
             mapTouched = true;
             continue;
         }
+        // mapa que ganhou a raiz agora (feito antes da árvore): os territórios vão pra dentro dele
+        if (adopt) if (const Group* g = M->findGroup(d.groupId); g && g->parentId.isEmpty()) { M->setGroupParent(d.groupId, root); groupsTouched = true; }
         // o grupo apagado lá fora não volta sozinho (o Explorar cria de novo se alguém precisar)
-        if (!before || !m_link.model->findGroup(d.groupId)) continue;
+        if (!before || !M->findGroup(d.groupId)) continue;
         for (const RealmDef& b : *before) {
             if (b.groupId != d.groupId) continue;
-            if (b.name != d.name || b.color != d.color) { m_link.model->updateGroup(d.groupId, name, rgbHex(d.color).toUpper()); groupsTouched = true; }
+            if (b.name != d.name || b.color != d.color) { M->updateGroup(d.groupId, name, rgbHex(d.color).toUpper()); groupsTouched = true; }
             break;
         }
     }
+
+    // 3) batizou, virou lugar: construção com nome é um Lugar dentro do território
+    const bool seeded = !m_artNames.isEmpty();
+    for (Art& a : m_doc->info->user.arts) {
+        const QString name = a.name.trimmed();
+        const QString was = m_artNames.value(a.id);
+        m_artNames.insert(a.id, name);
+        if (name.isEmpty()) continue;
+        if (const Group* g = a.groupId.isEmpty() ? nullptr : M->findGroup(a.groupId)) {
+            if (seeded && !was.isEmpty() && was != name && g->title != name) { M->updateGroup(g->id, name, g->color); groupsTouched = true; }
+            continue;
+        }
+        if (!a.groupId.isEmpty() && was == name) continue;   // grupo apagado lá fora: só volta se renomear
+        const int r = a.realm >= 0 && a.realm < realmCount() ? a.realm : -1;
+        const Group* parent = r >= 0 ? M->findGroup(m_doc->info->defs[r].groupId) : nullptr;
+        if (!parent) parent = M->findGroup(root);
+        const QString parentId = parent ? parent->id : QString(), color = parent ? parent->color : QStringLiteral("#9AA7B8");
+        a.groupId.clear();
+        for (const Group& o : M->groups())
+            if (!o.map && o.title.trimmed().compare(name, Qt::CaseInsensitive) == 0) { a.groupId = o.id; break; }
+        if (a.groupId.isEmpty()) a.groupId = M->addGroup(name, color, parentId);
+        groupsTouched = mapTouched = true;
+    }
     if (mapTouched && mapEdited) mapEdited();
     if (groupsTouched && m_link.save) m_link.save();
+}
+
+// ── a árvore ──
+QString Explorer::rootGroup() const
+{
+    return m_link.model && m_doc && m_link.model->findGroup(m_doc->groupId) ? m_doc->groupId : QString();
+}
+int Explorer::realmOfGroup(const QString& gid) const
+{
+    if (gid.isEmpty()) return -1;
+    for (int r = 0; r < realmCount(); r++) if (m_doc->info->defs[r].groupId == gid) return r;
+    return -1;
+}
+const Art* Explorer::artOfGroup(const QString& gid) const
+{
+    if (gid.isEmpty() || !m_doc || !m_doc->info) return nullptr;
+    for (const Art& a : m_doc->info->user.arts) if (a.groupId == gid && !a.name.trimmed().isEmpty()) return &a;
+    return nullptr;
+}
+int Explorer::mappedRealm(const QString& gid) const
+{
+    if (!m_link.model) return -1;
+    const QList<const Group*> path = m_link.model->groupPath(gid);
+    for (int k = path.size() - 1; k >= 0; k--) {
+        const int r = realmOfGroup(path[k]->id);
+        if (r >= 0) return r;
+        if (const Art* a = artOfGroup(path[k]->id)) return a->realm >= 0 && a->realm < realmCount() ? a->realm : -1;
+    }
+    return -1;
+}
+QString Explorer::groupTitle(const QString& gid) const
+{
+    const Group* g = m_link.model ? m_link.model->findGroup(gid) : nullptr;
+    return g ? g->title : QString();
+}
+QVector<Explorer::XDoc> Explorer::groupDocs(const QString& gid)
+{
+    QVector<XDoc> out;
+    if (gid.isEmpty() || !m_link.model) return out;
+    for (const Drawer& dr : m_link.model->drawers())
+        for (const DrawerItem& it : dr.items) {
+            if (it.markerId != gid || it.isChapter) continue;
+            XDoc d;
+            d.kind = XDoc::Drawer;
+            d.id = it.id; d.drawerKey = dr.key; d.drawerTitle = dr.title; d.title = it.title;
+            d.color = QColor(dr.color); d.sheet = it.isSheet; d.elementId = it.elementId;
+            out.push_back(d);
+        }
+    return out;
+}
+int Explorer::groupCount(const QString& gid)
+{
+    int n = static_cast<int>(groupDocs(gid).size());
+    const int r = realmOfGroup(gid);
+    if (r >= 0) for (const XDoc& d : placeDocs(r)) if (d.kind == XDoc::PlaceNode || !rawHtml(d).trimmed().isEmpty()) n++;
+    return n;
+}
+
+void Explorer::selectGroup(const QString& groupId, bool fly)
+{
+    if (!m_link.model || !m_link.model->findGroup(groupId)) return;
+    if (groupId != m_group) {
+        flushSave();
+        m_mode = CardMode::List; m_query.clear(); m_upOpen = false;
+        if (m_cur.valid()) { m_cur = XDoc(); m_edit = false; m_links = false; }
+        m_duo->hide(); m_duoLink.clear();
+    }
+    m_group = groupId;
+    for (const Group* g : m_link.model->groupPath(groupId)) m_open.insert(g->id);
+    m_sel = mappedRealm(groupId);
+    renderCard();
+    m_card->show(); m_card->raise();
+    m_reader->setVisible(m_cur.valid());
+    place();
+    pushView();
+    if (fly) flyToGroup(groupId);
+}
+
+// leva o mapa até o grupo: o mapa inteiro, o território ou a construção (social: o lugar de cima)
+void Explorer::flyToGroup(const QString& gid)
+{
+    if (!m_canvas || !m_doc || !m_doc->info || !m_link.model) return;
+    // o meio do pedaço livre do mapa (à direita do cartão)
+    const int left = m_card->isVisible() ? m_card->geometry().right() : 0;
+    const QPointF at = m_canvas->mapFrom(m_host, QPoint((left + m_host->width()) / 2, m_host->height() / 2));
+    const QList<const Group*> path = m_link.model->groupPath(gid);
+    for (int k = path.size() - 1; k >= 0; k--) {
+        const QString id = path[k]->id;
+        if (id == rootGroup()) { m_canvas->flyFit(); return; }
+        if (const Art* a = artOfGroup(id)) { m_canvas->flyTo(a->x, a->y, 3.2, at); return; }
+        const int r = realmOfGroup(id);
+        if (r >= 0 && r < static_cast<int>(m_doc->info->realms.size()) && m_doc->info->realms[r].area) {
+            m_canvas->flyTo(m_doc->info->realms[r].x, m_doc->info->realms[r].y, 1.8, at);
+            return;
+        }
+    }
 }
 
 QString Explorer::placeOf(int r, bool create)
@@ -321,6 +470,17 @@ void Explorer::pushView()
             for (const XDoc& d : pd) if (d.kind == XDoc::PlaceNode || !rawHtml(d).trimmed().isEmpty()) n++;
             v.counts.push_back(n);
         }
+        if (const Art* a = artOfGroup(m_group)) v.selArt = a->id;
+        if (m_doc && m_doc->info)
+            for (const Art& a : m_doc->info->user.arts)
+                if (!a.groupId.isEmpty() && !a.name.trimmed().isEmpty() && m_link.model->findGroup(a.groupId)) v.arts.push_back(a.id);
+        if (const Group* g = m_link.model->findGroup(m_group)) {
+            for (const QString& pid : g->actsIn) {
+                const int r = mappedRealm(pid);
+                if (r >= 0 && std::find(v.acts.begin(), v.acts.end(), r) == v.acts.end()) v.acts.push_back(r);
+            }
+            v.actsColor = QColor(g->color);
+        }
         if (!m_duoLink.isEmpty() && m_duo->isVisible()) {
             v.duo = true;
             for (const XLink& l : linksOf(m_duoA)) if (l.id == m_duoLink) v.links.push_back({ l.id, l.a, l.b, l.label, l.color });
@@ -338,12 +498,15 @@ void Explorer::setActive(bool on)
     m_active = on;
     if (!on) { flushSave(); close(); m_canvas->setExplore(ExploreView()); return; }
     pushView();
+    // a árvore abre junto, no escolhido de antes (ou no mapa inteiro)
+    const QString g = m_link.model && m_link.model->findGroup(m_group) ? m_group : rootGroup();
+    if (!g.isEmpty()) selectGroup(g, false);
 }
 QString Explorer::hint() const
 {
     if (!m_link.ok()) return tr("Explorar: abra um projeto pra ligar os territórios aos documentos");
     if (!realmCount()) return tr("Explorar: este mapa ainda não tem territórios. Crie um em Territórios.");
-    return tr("Explorar: clique num território pra ver os documentos dele · arraste pra mover · Esc fecha");
+    return tr("Explorar: clique num território ou numa construção com nome · a árvore leva o mapa até o lugar · arraste pra mover · Esc fecha");
 }
 void Explorer::hovered(int realm, const QString& linkId, QPoint at)
 {
@@ -351,7 +514,16 @@ void Explorer::hovered(int realm, const QString& linkId, QPoint at)
     if (realm != m_hov) { m_hov = realm; pushView(); }
     if (realm < 0 && linkId.isEmpty()) { m_chip->hide(); return; }
     const QString dot = QStringLiteral("<span style=\"color:%1\">●</span>&nbsp;");
-    if (!linkId.isEmpty()) {
+    if (linkId.startsWith(QLatin1String("art:"))) {
+        QString gid;
+        if (m_doc && m_doc->info) for (const Art& a : m_doc->info->user.arts) if (QStringLiteral("art:") + a.id == linkId) gid = a.groupId;
+        const Group* g = m_link.model ? m_link.model->findGroup(gid) : nullptr;
+        if (!g) { m_chip->hide(); return; }
+        const int count = groupCount(gid);
+        m_chip->setText(dot.arg(g->color) + g->title.toHtmlEscaped()
+                        + QStringLiteral("&nbsp;&nbsp;<span style=\"color:%1\">%2%3</span>")
+                              .arg(m_muted.name(), count ? tr("%n documento(s)", "", count) : tr("nenhum documento ainda"), gid == m_group ? QString() : tr(" · clique pra abrir")));
+    } else if (!linkId.isEmpty()) {
         const auto* l = m_link.places ? m_link.places->link(linkId) : nullptr;
         const QColor c = l && QColor(l->color).isValid() ? QColor(l->color) : m_accent;
         m_chip->setText(dot.arg(c.name()) + linkLabel(linkId).toHtmlEscaped()
@@ -373,26 +545,24 @@ void Explorer::clicked(int realm, const QString& linkId)
 {
     if (!m_active) return;
     if (!m_link.ok()) { if (flash) flash(hint()); return; }
-    if (!linkId.isEmpty()) {
+    if (linkId.startsWith(QLatin1String("art:"))) {
+        if (m_doc && m_doc->info)
+            for (const Art& a : m_doc->info->user.arts)
+                if (QStringLiteral("art:") + a.id == linkId && m_link.model->findGroup(a.groupId)) { selectGroup(a.groupId, true); return; }
+    }
+    if (!linkId.isEmpty() && !linkId.startsWith(QLatin1String("art:"))) {
         const auto* l = m_link.places->link(linkId);
         if (!l) return;
         const int a = realmOfPlace(l->fromTerritorioId), b = realmOfPlace(l->toTerritorioId);
         openDuo(linkId, m_sel == b ? b : a);
         return;
     }
-    if (realm < 0) { if (!m_duo->isVisible()) close(); return; }
-    if (realm != m_sel) {
-        flushSave();
-        m_sel = realm; m_mode = CardMode::List; m_query.clear();
-        if (m_cur.valid()) { m_cur = XDoc(); m_edit = false; }
-        m_duo->hide(); m_duoLink.clear();
-        m_cardAt = QPoint(-1, -1);
-    }
-    renderCard();
-    m_card->show(); m_card->raise();
-    m_reader->setVisible(m_cur.valid());
-    place();
-    pushView();
+    if (m_duo->isVisible() && realm < 0) return;
+    // fora dos territórios (o mar): o mapa inteiro
+    if (realm < 0) { const QString root = rootGroup(); if (root.isEmpty()) close(); else selectGroup(root, true); return; }
+    const QString gid = groupOf(realm, true);
+    if (gid.isEmpty()) return;
+    selectGroup(gid, true);
 }
 void Explorer::close()
 {
@@ -404,17 +574,27 @@ void Explorer::close()
 }
 bool Explorer::escape()
 {
+    if (m_canvas && m_card->isVisible() && m_mode == CardMode::List && !m_cur.valid() && !m_duo->isVisible() && m_link.model) {
+        // Esc sobe um nível na árvore antes de fechar
+        const Group* g = m_link.model->findGroup(m_group);
+        if (g && g->id != rootGroup() && m_link.model->groupIsInside(g->id, rootGroup())) { selectGroup(g->parentId, true); return true; }
+    }
     if (m_duo->isVisible()) { flushSave(); m_duo->hide(); m_duoLink.clear(); if (m_sel >= 0) { m_card->show(); m_reader->setVisible(m_cur.valid()); place(); } pushView(); return true; }
     if (m_cur.valid()) { flushSave(); m_cur = XDoc(); m_edit = false; m_links = false; m_reader->hide(); renderCard(); pushView(); return true; }
     if (m_mode != CardMode::List && m_card->isVisible()) { m_mode = CardMode::List; renderCard(); return true; }
-    if (m_sel >= 0) { close(); return true; }
+    if (m_card->isVisible()) { close(); return true; }
     return false;
 }
 void Explorer::mapReplaced()
 {
     // outro mapa ou o mesmo refeito: os índices dos territórios podem ter mudado
     close();
-    if (m_active) pushView();
+    m_group.clear(); m_open.clear(); m_artNames.clear(); m_mapSeen.clear();
+    if (m_active) {
+        pushView();
+        // a raiz do mapa novo nasce no syncGroups: a árvore abre depois dele
+        QTimer::singleShot(0, this, [this]() { if (m_active && !rootGroup().isEmpty() && !m_card->isVisible()) selectGroup(rootGroup(), false); });
+    }
 }
 bool Explorer::owns(const QWidget* w) const
 {
@@ -496,6 +676,13 @@ void Explorer::buildCard()
     connect(x, &QToolButton::clicked, this, &Explorer::close);
     hl->addWidget(x, 0, Qt::AlignTop);
     l->addWidget(head);
+    m_crumbs = new QLabel(m_card);
+    m_crumbs->setObjectName(QStringLiteral("xCrumbs"));
+    m_crumbs->setTextFormat(Qt::RichText);
+    m_crumbs->setWordWrap(true);
+    m_crumbs->setContentsMargins(16, 0, 14, 10);
+    connect(m_crumbs, &QLabel::linkActivated, this, [this](const QString& id) { selectGroup(id, true); });
+    l->addWidget(m_crumbs);
     auto* sep = new QFrame(m_card); sep->setObjectName(QStringLiteral("xSep")); sep->setFixedHeight(1);
     l->addWidget(sep);
     m_cardScroll = new QScrollArea(m_card);
@@ -522,66 +709,42 @@ void Explorer::buildCard()
 
 void Explorer::renderCard()
 {
-    if (m_sel < 0 || m_sel >= realmCount()) { m_card->hide(); return; }
-    const int r = m_sel;
-    const QString name = realmName(r);
-    m_cardSwatch->setStyleSheet(QStringLiteral("background:%1; border-radius:4px;").arg(realmColor(r).name()));
-    m_cardTitle->setText(name);
-    const QVector<XDoc> dd = drawerDocs(r), pd = placeDocs(r);
-    int nDocs = static_cast<int>(dd.size());
-    for (const XDoc& d : pd) if (d.kind == XDoc::PlaceNode || !rawHtml(d).trimmed().isEmpty()) nDocs++;
-    int off = 0;
-    const int nLinks = static_cast<int>(linksOf(r, &off).size());
-    m_cardSub->setText((nDocs ? tr("%n documento(s)", "", nDocs) : tr("nenhum documento ainda")) + QStringLiteral(" · ")
-                       + (nLinks ? tr("%n conexão(ões)", "", nLinks) : tr("nenhuma conexão")));
+    const Group* G = m_link.model ? m_link.model->findGroup(m_group) : nullptr;
+    if (!G) { m_card->hide(); return; }
+    const QString root = rootGroup();
+    const Group* R = m_link.model->findGroup(root);
+    const QString name = G->title;
+    const int r = realmOfGroup(m_group);   // o escolhido é um território? (Criador de Mundos, pastas)
+    m_cardSwatch->setStyleSheet(QStringLiteral("background:%1; border-radius:4px;").arg(R ? R->color : realmColor(-1).name()));
+    m_cardTitle->setText(R ? R->title : name);
+    m_cardSub->setText(tr("Explorar"));
+    // o caminho até o escolhido, clicável
+    QStringList crumbs;
+    const QList<const Group*> path = m_link.model->groupPath(m_group);
+    for (int k = 0; k < path.size(); k++) {
+        const QString t = path[k]->title.toHtmlEscaped();
+        crumbs << (k == path.size() - 1 ? QStringLiteral("<span style=\"color:%1; font-weight:600\">%2</span>").arg(m_accent.name(), t)
+                                        : QStringLiteral("<a href=\"%1\" style=\"color:%2; text-decoration:none\">%3</a>").arg(path[k]->id, m_muted.name(), t));
+    }
+    m_crumbs->setText(crumbs.join(QStringLiteral("<span style=\"color:%1\"> › </span>").arg(m_muted.name())));
+    m_crumbs->setVisible(path.size() > 1);
 
     auto* bl = static_cast<QVBoxLayout*>(m_cardBody->layout());
     clearLayout(bl);
+    bl->setSpacing(2);
     auto* fl = static_cast<QHBoxLayout*>(m_cardFoot->layout());
     clearLayout(fl);
     auto note = [&](const QString& t) {
         auto* n = new QLabel(t, m_cardBody); n->setObjectName(QStringLiteral("cartoNote")); n->setWordWrap(true);
         n->setContentsMargins(8, 2, 8, 6); bl->addWidget(n);
     };
-    auto source = [&](const QString& icon, const QString& title, const QString& sub) {
-        auto* w = new QWidget(m_cardBody);
-        auto* h = new QHBoxLayout(w);
-        h->setContentsMargins(8, 6, 8, 2);
-        h->setSpacing(7);
-        auto* ic = new QLabel(w); ic->setPixmap(iconPixmap(icon, m_accent, 15, w->devicePixelRatioF()));
-        auto* t = new QLabel(title, w); t->setObjectName(QStringLiteral("xSource"));
-        auto* s = new QLabel(sub, w); s->setObjectName(QStringLiteral("xRowRight"));
-        h->addWidget(ic); h->addWidget(t); h->addStretch(); h->addWidget(s);
-        bl->addWidget(w);
-    };
 
     if (m_mode == CardMode::List) {
-        // 1) os documentos das gavetas marcados com o grupo do território
-        source(QStringLiteral("tray"), tr("Das gavetas"), tr("grupo %1").arg(name));
-        if (dd.isEmpty()) note(tr("Nenhum documento de gaveta neste grupo ainda."));
-        QStringList keys;
-        for (const XDoc& d : dd) if (!keys.contains(d.drawerKey)) keys << d.drawerKey;
-        for (const QString& k : keys) {
-            const XDoc* first = nullptr;
-            for (const XDoc& d : dd) if (d.drawerKey == k) { first = &d; break; }
-            bl->addWidget(caption(m_cardBody, first->drawerTitle, first->color));
-            for (const XDoc& d : dd) if (d.drawerKey == k)
-                bl->addWidget(row(m_cardBody, d.title, QString(), d.color, m_cur.same(d), d.sheet, [this, d]() { openDoc(d); }));
-        }
-        // 2) os documentos do próprio Lugar no Criador de Mundos
-        auto* sp = new QWidget(m_cardBody); sp->setFixedHeight(6); bl->addWidget(sp);
-        source(QStringLiteral("globe"), tr("Do Criador de Mundos"), tr("lugar %1").arg(name));
-        if (pd.isEmpty()) note(tr("Ainda não há um Lugar com esse nome no Criador de Mundos. Ele nasce quando você criar um documento lá."));
-        QString lastFolder = QStringLiteral("\x01");
-        const QColor wc = m_accent;
-        for (const XDoc& d : pd) {
-            if (d.kind == XDoc::PlaceNode && d.folder != lastFolder && !d.folder.isEmpty()) bl->addWidget(caption(m_cardBody, d.folder));
-            if (d.kind == XDoc::PlaceNode) lastFolder = d.folder;
-            bl->addWidget(row(m_cardBody, d.title, QString(), wc, m_cur.same(d), false, [this, d]() { openDoc(d); }));
-        }
+        renderTree(bl);
         bl->addStretch(1);
         auto* nb = textBtn(m_cardFoot, tr("Novo documento"));
         nb->setIcon(icon(QStringLiteral("plus"), m_ink, m_accent, 15));
+        nb->setToolTip(tr("Um documento novo já dentro de %1").arg(name));
         connect(nb, &QPushButton::clicked, this, [this]() { m_mode = CardMode::New; m_newTitleText.clear(); renderCard(); });
         auto* ab = textBtn(m_cardFoot, tr("Adicionar existente"));
         ab->setIcon(icon(QStringLiteral("in"), m_ink, m_accent, 15));
@@ -597,24 +760,28 @@ void Explorer::renderCard()
         connect(m_newTitle, &QLineEdit::textEdited, this, [this](const QString& t) { m_newTitleText = t; });
         connect(m_newTitle, &QLineEdit::returnPressed, this, &Explorer::createDoc);
         bl->addWidget(m_newTitle);
-        bl->addWidget(caption(m_cardBody, tr("Onde")));
-        auto* seg = new QWidget(m_cardBody);
-        auto* sl = new QHBoxLayout(seg); sl->setContentsMargins(0, 0, 0, 0); sl->setSpacing(4);
-        for (const auto& [id, label, ic] : { std::tuple<QString, QString, QString>{ QStringLiteral("drawer"), tr("Numa gaveta"), QStringLiteral("tray") },
-                                            std::tuple<QString, QString, QString>{ QStringLiteral("place"), tr("No Criador de Mundos"), QStringLiteral("globe") } }) {
-            auto* b = new QToolButton(seg);
-            b->setObjectName(QStringLiteral("cartoSeg"));
-            b->setCheckable(true);
-            b->setChecked(m_newWhere == id);
-            b->setText(label);
-            b->setIcon(icon(ic, m_muted, m_accent, 15));
-            b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-            b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            b->setCursor(Qt::PointingHandCursor);
-            connect(b, &QToolButton::clicked, this, [this, id = id]() { m_newWhere = id; renderCard(); });
-            sl->addWidget(b);
+        // o Criador de Mundos só conhece os territórios; o resto vai pra uma gaveta
+        if (r < 0) m_newWhere = QStringLiteral("drawer");
+        else {
+            bl->addWidget(caption(m_cardBody, tr("Onde")));
+            auto* seg = new QWidget(m_cardBody);
+            auto* sl = new QHBoxLayout(seg); sl->setContentsMargins(0, 0, 0, 0); sl->setSpacing(4);
+            for (const auto& [id, label, ic] : { std::tuple<QString, QString, QString>{ QStringLiteral("drawer"), tr("Numa gaveta"), QStringLiteral("tray") },
+                                                std::tuple<QString, QString, QString>{ QStringLiteral("place"), tr("No Criador de Mundos"), QStringLiteral("globe") } }) {
+                auto* b = new QToolButton(seg);
+                b->setObjectName(QStringLiteral("cartoSeg"));
+                b->setCheckable(true);
+                b->setChecked(m_newWhere == id);
+                b->setText(label);
+                b->setIcon(icon(ic, m_muted, m_accent, 15));
+                b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+                b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+                b->setCursor(Qt::PointingHandCursor);
+                connect(b, &QToolButton::clicked, this, [this, id = id]() { m_newWhere = id; renderCard(); });
+                sl->addWidget(b);
+            }
+            bl->addWidget(seg);
         }
-        bl->addWidget(seg);
         m_newCombo = new QComboBox(m_cardBody);
         m_newCombo->setObjectName(QStringLiteral("cartoCombo"));
         if (m_newWhere == QLatin1String("drawer")) {
@@ -645,6 +812,50 @@ void Explorer::renderCard()
         connect(go, &QPushButton::clicked, this, &Explorer::createDoc);
         fl->addWidget(cb, 1); fl->addWidget(go, 1);
         QTimer::singleShot(0, this, [this]() { if (m_newTitle) m_newTitle->setFocus(); });
+    } else if (m_mode == CardMode::NewGroup) {
+        bl->setSpacing(8);
+        const bool social = m_newKind == QLatin1String("social");
+        bl->addWidget(caption(m_cardBody, tr("Nome")));
+        m_newTitle = new QLineEdit(m_cardBody);
+        m_newTitle->setObjectName(QStringLiteral("cartoField"));
+        m_newTitle->setPlaceholderText(social ? tr("Ex.: Casa Varanis") : tr("Ex.: Porto das Brumas"));
+        m_newTitle->setText(m_newTitleText);
+        connect(m_newTitle, &QLineEdit::textEdited, this, [this](const QString& t) { m_newTitleText = t; });
+        connect(m_newTitle, &QLineEdit::returnPressed, this, &Explorer::createGroup);
+        bl->addWidget(m_newTitle);
+        bl->addWidget(caption(m_cardBody, tr("Tipo")));
+        auto* seg = new QWidget(m_cardBody);
+        auto* sl = new QHBoxLayout(seg); sl->setContentsMargins(0, 0, 0, 0); sl->setSpacing(4);
+        const qreal dpr = m_cardBody->devicePixelRatioF();
+        for (const auto& [kind, label] : { std::pair<QString, QString>{ QStringLiteral("place"), tr("Lugar") },
+                                           std::pair<QString, QString>{ QStringLiteral("social"), tr("Social") } }) {
+            auto* b = new QToolButton(seg);
+            b->setObjectName(QStringLiteral("cartoSeg"));
+            b->setCheckable(true);
+            b->setChecked(m_newKind == kind);
+            b->setText(label);
+            QPixmap pm(QSize(14, 14) * dpr);
+            pm.setDevicePixelRatio(dpr);
+            pm.fill(Qt::transparent);
+            { QPainter p(&pm); GroupBadge::draw(p, QPointF(7, 7), 6.5, QColor(G->color), kind == QLatin1String("social")); }
+            b->setIcon(QIcon(pm));
+            b->setIconSize(QSize(14, 14));
+            b->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+            b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            b->setCursor(Qt::PointingHandCursor);
+            connect(b, &QToolButton::clicked, this, [this, kind = kind]() { m_newKind = kind; renderCard(); });
+            sl->addWidget(b);
+        }
+        bl->addWidget(seg);
+        note(social ? tr("Gente: família, facção, ordem, elenco. Fica dentro de %1.").arg(name)
+                    : tr("Tem chão: cidade, região, fortaleza. Fica dentro de %1.").arg(name));
+        bl->addStretch(1);
+        auto* cb = textBtn(m_cardFoot, tr("Cancelar"));
+        connect(cb, &QPushButton::clicked, this, [this]() { m_mode = CardMode::List; renderCard(); });
+        auto* go = textBtn(m_cardFoot, tr("Criar grupo"), true);
+        connect(go, &QPushButton::clicked, this, &Explorer::createGroup);
+        fl->addWidget(cb, 1); fl->addWidget(go, 1);
+        QTimer::singleShot(0, this, [this]() { if (m_newTitle) m_newTitle->setFocus(); });
     } else {
         m_queryEdit = new QLineEdit(m_cardBody);
         m_queryEdit->setObjectName(QStringLiteral("cartoField"));
@@ -657,27 +868,26 @@ void Explorer::renderCard()
         ll->setContentsMargins(0, 4, 0, 0);
         ll->setSpacing(2);
         bl->addWidget(listHost);
-        const QString gid = groupOf(r, false);
-        auto fill = [this, ll, listHost, gid, r]() {
+        const QString gid = m_group;
+        auto fill = [this, ll, listHost, gid]() {
             clearLayout(ll);
             const QString q = m_query.trimmed();
             int shown = 0;
             for (const Drawer& dr : m_link.model->drawers())
                 for (const DrawerItem& it : dr.items) {
-                    if (it.isChapter || (!gid.isEmpty() && it.markerId == gid)) continue;
+                    if (it.isChapter || it.markerId == gid) continue;
                     if (!q.isEmpty() && !it.title.contains(q, Qt::CaseInsensitive)) continue;
                     if (++shown > 80) break;
                     const Group* g = it.markerId.isEmpty() ? nullptr : m_link.model->findGroup(it.markerId);
                     const QString right = g ? tr("sai de %1").arg(g->title) : dr.title;
                     const QString itemId = it.id, from = g ? g->title : QString(), title = it.title;
-                    ll->addWidget(row(listHost, it.title, right, QColor(dr.color), false, it.isSheet, [this, itemId, from, title, r]() {
-                        const QString g2 = groupOf(r, true);
-                        m_link.model->setDrawerItemGroup(itemId, g2);
+                    ll->addWidget(row(listHost, it.title, right, QColor(dr.color), false, it.isSheet, [this, itemId, from, title, gid]() {
+                        m_link.model->setDrawerItemGroup(itemId, gid);
                         if (m_link.save) m_link.save();
-                        if (flash) flash(from.isEmpty() ? tr("“%1” agora faz parte de %2.").arg(title, realmName(r))
-                                                       : tr("“%1” saiu de %2 e entrou em %3.").arg(title, from, realmName(r)));
+                        if (flash) flash(from.isEmpty() ? tr("“%1” agora faz parte de %2.").arg(title, groupTitle(gid))
+                                                       : tr("“%1” saiu de %2 e entrou em %3.").arg(title, from, groupTitle(gid)));
                         m_mode = CardMode::List;
-                        for (const XDoc& d : drawerDocs(r)) if (d.id == itemId) { openDoc(d); return; }
+                        for (const XDoc& d : groupDocs(gid)) if (d.id == itemId) { openDoc(d); return; }
                         renderCard();
                     }));
                 }
@@ -685,7 +895,7 @@ void Explorer::renderCard()
         };
         fill();
         connect(m_queryEdit, &QLineEdit::textChanged, this, [this, fill](const QString& t) { m_query = t; fill(); });
-        note(tr("Um documento mora em um grupo só. Trazer um de outro território tira ele de lá."));
+        note(tr("Um documento mora em um grupo só. Trazer um de outro grupo tira ele de lá."));
         bl->addStretch(1);
         auto* back = textBtn(m_cardFoot, tr("Voltar"));
         connect(back, &QPushButton::clicked, this, [this]() { m_mode = CardMode::List; renderCard(); });
@@ -697,16 +907,199 @@ void Explorer::renderCard()
     QTimer::singleShot(0, this, &Explorer::place);
 }
 
+// a árvore vertical: o mapa na raiz, os ramos abertos até o escolhido
+void Explorer::renderTree(QVBoxLayout* bl)
+{
+    const QString root = rootGroup();
+    if (root.isEmpty()) return;
+    const qreal dpr = m_cardBody->devicePixelRatioF();
+    std::function<void(const Group*, int)> walk = [&](const Group* g, int depth) {
+        const QList<const Group*> kids = m_link.model->groupChildren(g->id);
+        const bool sel = g->id == m_group, open = m_open.contains(g->id);
+        auto* b = new QPushButton(m_cardBody);
+        b->setObjectName(QStringLiteral("xRow"));
+        b->setProperty("sel", sel);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFixedHeight(30);
+        b->setToolTip(m_link.model->groupPathText(g->id));
+        auto* h = new QHBoxLayout(b);
+        h->setContentsMargins(4 + std::min(depth, 7) * 15, 0, 10, 0);
+        h->setSpacing(6);
+        // a setinha abre e fecha o ramo (só quem tem filhos)
+        auto* chev = new QToolButton(b);
+        chev->setObjectName(QStringLiteral("xChev"));
+        chev->setFixedSize(18, 18);
+        chev->setIconSize(QSize(12, 12));
+        if (!kids.isEmpty()) {
+            chev->setCursor(Qt::PointingHandCursor);
+            chev->setIcon(icon(open ? QStringLiteral("chevDown") : QStringLiteral("chevRight"), m_muted, m_accent, 12));
+            const QString id = g->id;
+            connect(chev, &QToolButton::clicked, this, [this, id]() {
+                if (m_open.contains(id)) m_open.remove(id); else m_open.insert(id);
+                renderCard();
+            });
+        } else chev->setEnabled(false);
+        h->addWidget(chev);
+        auto* badge = new QLabel(b);
+        QPixmap pm(QSize(16, 16) * dpr);
+        pm.setDevicePixelRatio(dpr);
+        pm.fill(Qt::transparent);
+        { QPainter p(&pm); GroupBadge::draw(p, QPointF(8, 8), 7.5, QColor(g->color), g->social()); }
+        badge->setPixmap(pm);
+        h->addWidget(badge);
+        auto* t = new QLabel(b);
+        t->setObjectName(QStringLiteral("xRowTitle"));
+        t->setProperty("sel", sel);
+        const int room = kCardW - 70 - std::min(depth, 7) * 15 - 30;
+        t->setText(t->fontMetrics().elidedText(g->title, Qt::ElideRight, std::max(40, room)));
+        h->addWidget(t, 1);
+        const int n = groupCount(g->id);
+        auto* c = new QLabel(n ? QString::number(n) : QString(), b);
+        c->setObjectName(QStringLiteral("xRowRight"));
+        h->addWidget(c);
+        for (QWidget* w : { static_cast<QWidget*>(badge), static_cast<QWidget*>(t), static_cast<QWidget*>(c) }) w->setAttribute(Qt::WA_TransparentForMouseEvents);
+        // solta um documento aqui e ele muda de grupo
+        b->setProperty("xDropGroup", g->id);
+        b->setAcceptDrops(true);
+        b->installEventFilter(this);
+        const QString id = g->id;
+        connect(b, &QPushButton::clicked, this, [this, id, kids]() {
+            // clicar no escolhido abre/fecha o ramo; em outro, escolhe e leva o mapa
+            if (id == m_group && !kids.isEmpty()) { if (m_open.contains(id)) m_open.remove(id); else m_open.insert(id); renderCard(); return; }
+            selectGroup(id, true);
+        });
+        bl->addWidget(b);
+        if (sel) renderSelected(bl, g->id, depth);
+        if (open) for (const Group* k : kids) walk(k, depth + 1);
+    };
+    if (const Group* R = m_link.model->findGroup(root)) walk(R, 0);
+}
+
+// o escolhido aberto na árvore: avisos, "Atua em", os documentos e o que vem de cima
+void Explorer::renderSelected(QVBoxLayout* bl, const QString& gid, int depth)
+{
+    const Group* g = m_link.model->findGroup(gid);
+    if (!g) return;
+    auto* box = new QWidget(m_cardBody);
+    auto* v = new QVBoxLayout(box);
+    v->setContentsMargins(18 + std::min(depth, 7) * 15, 2, 0, 6);
+    v->setSpacing(2);
+    bl->addWidget(box);
+    auto note = [&](const QString& t) {
+        auto* n = new QLabel(t, box); n->setObjectName(QStringLiteral("cartoNote")); n->setWordWrap(true);
+        n->setContentsMargins(8, 2, 8, 4); v->addWidget(n);
+    };
+    auto chips = [&](const QList<QPair<const Group*, QString>>& list) {
+        QHBoxLayout* line = nullptr;
+        int n = 0;
+        for (const auto& [o, text] : list) {
+            if (!line || n == 2) { line = new QHBoxLayout(); line->setContentsMargins(6, 0, 6, 2); line->setSpacing(4); v->addLayout(line); n = 0; }
+            auto* b = new QPushButton(text, box);
+            b->setObjectName(QStringLiteral("xGChip"));
+            b->setCursor(Qt::PointingHandCursor);
+            b->setToolTip(m_link.model->groupPathText(o->id));
+            QPixmap pm(QSize(12, 12) * box->devicePixelRatioF());
+            pm.setDevicePixelRatio(box->devicePixelRatioF());
+            pm.fill(Qt::transparent);
+            { QPainter p(&pm); GroupBadge::draw(p, QPointF(6, 6), 5.5, QColor(o->color), o->social()); }
+            b->setIcon(QIcon(pm));
+            b->setIconSize(QSize(12, 12));
+            const QString id = o->id;
+            connect(b, &QPushButton::clicked, this, [this, id]() { selectGroup(id, true); });
+            line->addWidget(b);
+            n++;
+        }
+        if (line) line->addStretch(1);
+    };
+
+    const int r = realmOfGroup(gid);
+    QList<QPair<const Group*, QString>> acts, actors;
+    for (const QString& pid : g->actsIn) if (const Group* p = m_link.model->findGroup(pid)) acts.append({ p, p->title });
+    for (const Group& o : m_link.model->groups()) if (o.actsIn.contains(gid)) actors.append({ &o, tr("%1 atua aqui").arg(o.title) });
+    if (!acts.isEmpty()) { note(tr("Atua em:")); chips(acts); }
+    if (!actors.isEmpty()) chips(actors);
+
+    // os documentos dele
+    const QVector<XDoc> dd = groupDocs(gid);
+    for (const XDoc& d : dd)
+        v->addWidget(draggable(row(box, d.title, d.drawerTitle, d.color, m_cur.same(d), d.sheet, [this, d]() { openDoc(d); }), d));
+    int nPlace = 0;
+    if (r >= 0) {
+        const QVector<XDoc> pd = placeDocs(r);
+        QString lastFolder = QStringLiteral("\x01");
+        for (const XDoc& d : pd) {
+            if (d.kind == XDoc::PlaceAbout && rawHtml(d).trimmed().isEmpty() && pd.size() == 1) continue;   // "Sobre X" vazio e sozinho não conta
+            if (!nPlace) v->addWidget(caption(box, tr("Do Criador de Mundos")));
+            if (d.kind == XDoc::PlaceNode && d.folder != lastFolder && !d.folder.isEmpty()) v->addWidget(caption(box, d.folder));
+            if (d.kind == XDoc::PlaceNode) lastFolder = d.folder;
+            v->addWidget(row(box, d.title, QString(), m_accent, m_cur.same(d), false, [this, d]() { openDoc(d); }));
+            nPlace++;
+        }
+    }
+    if (dd.isEmpty() && !nPlace) note(tr("Nenhum documento deste grupo ainda."));
+
+    // vindo de cima: os documentos do pai, do avô... (o mais perto primeiro), recolhidos
+    QVector<QPair<XDoc, QString>> up;
+    const QList<const Group*> path = m_link.model->groupPath(gid);
+    for (int k = path.size() - 2; k >= 0; k--) {
+        for (const XDoc& d : groupDocs(path[k]->id)) up.append({ d, path[k]->title });
+        const int ar = realmOfGroup(path[k]->id);
+        if (ar >= 0) for (const XDoc& d : placeDocs(ar)) if (d.kind == XDoc::PlaceNode || !rawHtml(d).trimmed().isEmpty()) up.append({ d, path[k]->title });
+    }
+    if (!up.isEmpty()) {
+        auto* t = new QPushButton(box);
+        t->setObjectName(QStringLiteral("xUp"));
+        t->setCursor(Qt::PointingHandCursor);
+        t->setText(QStringLiteral("↑  ") + tr("Vindo de cima · %1").arg(up.size()) + (m_upOpen ? QStringLiteral("  ▾") : QStringLiteral("  ▸")));
+        t->setToolTip(tr("Os documentos dos lugares de cima valem pra cá também"));
+        connect(t, &QPushButton::clicked, this, [this]() { m_upOpen = !m_upOpen; renderCard(); });
+        v->addWidget(t, 0, Qt::AlignLeft);
+        if (m_upOpen)
+            for (const auto& [d, from] : up)
+                v->addWidget(draggable(row(box, d.title, tr("de %1").arg(from), d.kind == XDoc::Drawer ? d.color : m_accent, m_cur.same(d), d.sheet, [this, d]() { openDoc(d); }), d));
+    }
+
+    // um grupo novo dentro deste, sem sair do mapa
+    auto* add = new QPushButton(box);
+    add->setObjectName(QStringLiteral("xUp"));
+    add->setCursor(Qt::PointingHandCursor);
+    add->setText(QStringLiteral("+  ") + tr("Grupo dentro de %1").arg(add->fontMetrics().elidedText(g->title, Qt::ElideRight, 170)));
+    add->setToolTip(tr("Um lugar ou um grupo social dentro de %1").arg(g->title));
+    connect(add, &QPushButton::clicked, this, [this]() {
+        m_mode = CardMode::NewGroup; m_newTitleText.clear(); m_newKind = QStringLiteral("place");
+        renderCard();
+    });
+    v->addWidget(add, 0, Qt::AlignLeft);
+}
+
+void Explorer::createGroup()
+{
+    const QString parent = m_group;
+    const Group* P = m_link.model ? m_link.model->findGroup(parent) : nullptr;
+    if (!P) return;
+    const QString title = m_newTitleText.trimmed();
+    if (title.isEmpty()) { if (m_newTitle) m_newTitle->setFocus(); return; }
+    const QString parentTitle = P->title;
+    // o filho nasce com a cor do pai, como no painel de Grupos
+    const QString id = m_link.model->addGroup(title, P->color, parent, m_newKind);
+    if (id.isEmpty()) return;
+    if (m_link.save) m_link.save();
+    m_mode = CardMode::List;
+    m_newTitleText.clear();
+    if (flash) flash(tr("%1 agora fica dentro de %2.").arg(title, parentTitle));
+    selectGroup(id, true);
+}
+
 void Explorer::createDoc()
 {
-    const int r = m_sel;
-    if (r < 0) return;
+    const QString gid = m_group;
+    if (!m_link.model || !m_link.model->findGroup(gid)) return;
+    const int r = realmOfGroup(gid);
     const QString title = m_newTitleText.trimmed().isEmpty() ? tr("Documento sem título") : m_newTitleText.trimmed();
     XDoc d;
-    if (m_newWhere == QLatin1String("drawer")) {
+    if (m_newWhere == QLatin1String("drawer") || r < 0) {
         if (m_newCombo) m_newDrawer = m_newCombo->currentData().toString();
         if (m_newDrawer.isEmpty() && !m_link.model->drawers().isEmpty()) m_newDrawer = m_link.model->drawers().first().key;
-        const QString gid = groupOf(r, true);
         DrawerItem it;
         it.id = ProjectModel::uid();
         it.title = title;
@@ -715,7 +1108,7 @@ void Explorer::createDoc()
         it.markerId = gid;
         if (!m_link.model->addDrawerItem(m_newDrawer, it)) return;
         if (m_link.save) m_link.save();
-        for (const XDoc& x : drawerDocs(r)) if (x.id == it.id) d = x;
+        for (const XDoc& x : groupDocs(gid)) if (x.id == it.id) d = x;
     } else {
         if (m_newCombo) m_newFolder = m_newCombo->currentData().toString();
         const QString pid = placeOf(r, true);
@@ -875,9 +1268,11 @@ void Explorer::buildReader()
         if (m_cur.kind != XDoc::Drawer) return;
         flushSave();
         const QString title = m_cur.title;
+        const DrawerItem* it = m_link.model->findDrawerItem(m_cur.id);
+        const QString from = groupTitle(it ? it->markerId : QString());
         m_link.model->setDrawerItemGroup(m_cur.id, QString());
         if (m_link.save) m_link.save();
-        if (flash) flash(tr("“%1” saiu de %2. Continua no projeto, na gaveta %3.").arg(title, realmName(m_sel), m_cur.drawerTitle));
+        if (flash) flash(tr("“%1” saiu de %2. Continua no projeto, na gaveta %3.").arg(title, from, m_cur.drawerTitle));
         m_cur = XDoc(); m_edit = false; m_reader->hide(); renderCard(); pushView();
     });
     fl->addWidget(m_rUngroup);
@@ -944,9 +1339,12 @@ void Explorer::renderReader()
     m_rTools->setVisible(m_edit);
     renderLinksBox();
     loadBody(m_rBody, d, m_edit, !m_wide);
-    m_rFoot->setText(place ? tr("Lugar %1 · Criador de Mundos").arg(realmName(m_sel)) : realmName(m_sel));
-    m_rUngroup->setVisible(!place);
-    m_rUngroup->setText(tr("Tirar de %1").arg(realmName(m_sel)));
+    // de quem é o documento (pode ser de um lugar de cima, aberto pelo "Vindo de cima")
+    const DrawerItem* owner = place ? nullptr : m_link.model->findDrawerItem(d.id);
+    const QString ownerName = place ? realmName(realmOfPlace(d.drawerKey)) : groupTitle(owner ? owner->markerId : QString());
+    m_rFoot->setText(place ? tr("Lugar %1 · Criador de Mundos").arg(ownerName) : ownerName);
+    m_rUngroup->setVisible(!place && !ownerName.isEmpty());
+    m_rUngroup->setText(tr("Tirar de %1").arg(ownerName));
     applyTheme();
 }
 
@@ -1341,7 +1739,13 @@ void Explorer::place()
         m_card->move(std::clamp(x, 8, std::max(8, W - m_card->width() - 8)), std::clamp(y, 64, std::max(64, H - 160)));
         // a altura acompanha o que tem dentro, até onde a tela (ou a Cartela) deixa
         if (m_cardBody->layout()) { m_cardBody->layout()->invalidate(); m_cardBody->layout()->activate(); }
-        const int want = m_cardBody->layout() ? m_cardBody->layout()->sizeHint().height() + 64 + 58 : 400;
+        // texto que quebra linha só mede certo pela largura; o caminho (A › B) soma em cima
+        int want = 400;
+        if (QLayout* L = m_cardBody->layout()) {
+            int body = L->sizeHint().height();
+            if (L->hasHeightForWidth()) body = std::max(body, L->heightForWidth(m_cardScroll->viewport()->width()));
+            want = body + 64 + 58 + (m_crumbs->isVisible() ? m_crumbs->sizeHint().height() + 4 : 0);
+        }
         m_card->setFixedHeight(std::max(220, std::min(want, bottom - m_card->y())));
     }
     if (m_reader->isVisible()) {
@@ -1379,8 +1783,17 @@ void Explorer::applyTheme()
         "QPushButton#xRow { background: transparent; border: 1px solid transparent; border-radius: 8px; text-align: left; }"
         "QPushButton#xRow:hover { background: %4; }"
         "QPushButton#xRow[sel=\"true\"] { background: %7; border-color: %5; }"
+        "QPushButton#xRow[drop=\"true\"] { background: %7; border: 1px dashed %5; }"
         "QLabel#xRowTitle { color: %3; font-size: 13px; background: transparent; }"
         "QLabel#xRowRight { color: %6; font-size: 10.5px; background: transparent; }"
+        "QLabel#xRowTitle[sel=\"true\"] { font-weight: 600; }"
+        "QLabel#xCrumbs { color: %6; font-size: 11.5px; background: transparent; }"
+        "QToolButton#xChev { background: transparent; border: none; border-radius: 4px; }"
+        "QToolButton#xChev:hover { background: %4; }"
+        "QPushButton#xGChip { background: transparent; border: 1px solid %2; border-radius: 10px; color: %3; font-size: 11px; padding: 2px 8px 2px 5px; }"
+        "QPushButton#xGChip:hover { border-color: %5; }"
+        "QPushButton#xUp { background: transparent; border: none; color: %5; font-size: 11.5px; padding: 5px 8px; text-align: left; }"
+        "QPushButton#xUp:hover { text-decoration: underline; }"
         "QPushButton#xBtn { background: transparent; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 12px; padding: 6px 10px; }"
         "QPushButton#xBtn:hover { border-color: %5; color: %5; }"
         "QPushButton#xPrimary { background: %5; border: 1px solid %5; border-radius: 8px; color: %8; font-size: 12px; font-weight: 600; padding: 6px 10px; }"
@@ -1419,8 +1832,100 @@ void Explorer::applyTheme()
     }
 }
 
+// Documento de gaveta: arrastando a linha, ele vai pra outro grupo da árvore.
+// Os do Criador de Mundos moram no lugar, não num grupo: não arrastam.
+QPushButton* Explorer::draggable(QPushButton* b, const XDoc& d)
+{
+    if (d.kind != XDoc::Drawer) return b;
+    b->setProperty("xDragId", d.id);
+    b->installEventFilter(this);
+    return b;
+}
+
+bool Explorer::docDragEvent(QPushButton* b, QEvent* e)
+{
+    if (e->type() == QEvent::MouseButtonPress) {
+        auto* me = static_cast<QMouseEvent*>(e);
+        if (me->button() == Qt::LeftButton) m_dragFrom = me->position().toPoint();
+        return false;
+    }
+    if (e->type() != QEvent::MouseMove) return false;
+    auto* me = static_cast<QMouseEvent*>(e);
+    if (!(me->buttons() & Qt::LeftButton) || (me->position().toPoint() - m_dragFrom).manhattanLength() < QApplication::startDragDistance()) return false;
+    auto* mime = new QMimeData;
+    mime->setData(QLatin1String(kDocMime), b->property("xDragId").toString().toUtf8());
+    // dono = o cartão: a linha é refeita quando o documento muda de grupo
+    auto* drag = new QDrag(m_card);
+    const QPixmap shot = b->grab();
+    QPixmap ghost(shot.size());
+    ghost.setDevicePixelRatio(shot.devicePixelRatio());
+    ghost.fill(Qt::transparent);
+    { QPainter gp(&ghost); gp.setOpacity(0.85); gp.drawPixmap(0, 0, shot); }
+    drag->setPixmap(ghost);
+    drag->setHotSpot(m_dragFrom);
+    drag->setMimeData(mime);
+    b->setDown(false);
+    drag->exec(Qt::MoveAction);
+    // o cartão só se refaz depois do arrasto: refazer no meio apagaria a linha que ainda está segurando o evento
+    if (m_dropDone) {
+        m_dropDone = false;
+        QTimer::singleShot(0, this, [this]() { renderCard(); pushView(); });
+    }
+    return true;
+}
+
+bool Explorer::groupDropEvent(QPushButton* b, QEvent* e)
+{
+    const QString gid = b->property("xDropGroup").toString();
+    auto hot = [b](bool on) {
+        if (b->property("drop").toBool() == on) return;
+        b->setProperty("drop", on);
+        b->style()->unpolish(b); b->style()->polish(b);
+    };
+    auto item = [this, gid](const QDropEvent* de) -> const DrawerItem* {
+        const QString id = QString::fromUtf8(de->mimeData()->data(QLatin1String(kDocMime)));
+        const DrawerItem* it = id.isEmpty() || !m_link.model ? nullptr : m_link.model->findDrawerItem(id);
+        return it && it->markerId != gid ? it : nullptr;   // já mora aqui: nada a fazer
+    };
+    switch (e->type()) {
+    case QEvent::DragEnter:
+    case QEvent::DragMove: {
+        auto* de = static_cast<QDropEvent*>(e);
+        const bool ok = item(de) != nullptr;
+        hot(ok);
+        if (ok) { de->setDropAction(Qt::MoveAction); de->accept(); } else de->ignore();
+        return true;
+    }
+    case QEvent::DragLeave:
+        hot(false);
+        return true;
+    case QEvent::Drop: {
+        auto* de = static_cast<QDropEvent*>(e);
+        hot(false);
+        const DrawerItem* it = item(de);
+        if (!it) { de->ignore(); return true; }
+        const QString id = it->id, title = it->title, from = it->markerId.isEmpty() ? QString() : groupTitle(it->markerId);
+        m_link.model->setDrawerItemGroup(id, gid);
+        if (m_link.save) m_link.save();
+        if (flash) flash(from.isEmpty() ? tr("“%1” agora faz parte de %2.").arg(title, groupTitle(gid))
+                                       : tr("“%1” saiu de %2 e entrou em %3.").arg(title, from, groupTitle(gid)));
+        de->setDropAction(Qt::MoveAction);
+        de->accept();
+        m_dropDone = true;
+        return true;
+    }
+    default:
+        return false;
+    }
+}
+
 bool Explorer::eventFilter(QObject* o, QEvent* e)
 {
+    // documento arrastado pra outro grupo
+    if (auto* b = qobject_cast<QPushButton*>(o)) {
+        if (b->property("xDragId").isValid()) return docDragEvent(b, e);
+        if (b->property("xDropGroup").isValid()) return groupDropEvent(b, e);
+    }
     // arrastar os painéis pelo cabeçalho
     static QPoint grab;
     auto* w = qobject_cast<QWidget*>(o);
