@@ -310,6 +310,21 @@
   }
   footer .flinks { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; font-size: 12px; }
 
+  /* ---------- the Map (1.5): a folha que abre o site ---------- */
+  .leaf.flag { border-top: 3px solid var(--red); }
+  .flag-tag {
+    display: inline-block; margin: 0 0 14px; padding: 3px 9px; border-radius: 2px;
+    background: var(--red); color: var(--red-ink);
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 10.5px;
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .leaf h3.sub {
+    font-family: inherit; font-size: clamp(20px, 2.6vw, 24px); font-weight: 600;
+    letter-spacing: -.005em; text-transform: none; color: var(--ink); margin: 46px 0 10px;
+  }
+  .hero-new { margin-top: 2px !important; }
+  .hero-new a { color: var(--red); font-weight: 500; }
+
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
@@ -321,6 +336,7 @@
   <div class="bar-in">
     <span class="wordmark">Qenna Writer</span>
     <nav class="bar-links">
+      <a href="#mapa">O Mapa</a>
       <a class="hide-sm" href="#recursos">Recursos</a>
       <a class="hide-sm" href="#licenca">Licença</a>
       <a href="https://github.com/Pedrovskigg/qenna-writer">Código</a>
@@ -335,15 +351,16 @@
   <p class="thesis">O livro inteiro num programa só.</p>
   <div class="cta-row">
     <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
-    <p class="meta"><span id="ver">v0.17.2</span> &middot; Windows 10/11 &middot; ~167 MB &middot; gratuito, sem assinatura</p>
+    <p class="meta"><span id="ver">v1.5.0</span> &middot; Windows 10/11 &middot; ~280 MB &middot; gratuito, sem assinatura</p>
     <p class="meta meta-alt"><a href="#recursos">Ver antes de baixar</a> &middot; <a href="https://github.com/Pedrovskigg/qenna-writer">Ler o código</a></p>
+    <p class="meta hero-new">Novo na 1.5: <a href="#mapa">o Mapa</a></p>
   </div>
 </section>
 
 <section class="intro">
   <div class="intro-in">
     <h2>O que &eacute; o Qenna Writer?</h2>
-    <p>Um programa para escrever fic&ccedil;&atilde;o longa &mdash; romance e roteiro &mdash; do primeiro rascunho at&eacute; a revis&atilde;o. Cap&iacute;tulos, cenas, personagens, mundo e linha do tempo no mesmo lugar, em vez de espalhados por quatro programas diferentes.</p>
+    <p>Um programa para escrever fic&ccedil;&atilde;o longa &mdash; romance e roteiro &mdash; do primeiro rascunho at&eacute; a revis&atilde;o. Cap&iacute;tulos, cenas, personagens, mundo, mapas e linha do tempo no mesmo lugar, em vez de espalhados por quatro programas diferentes.</p>
     <div class="genres">
       <span>Um thriller com detalhes que n&atilde;o podem ser esquecidos?</span>
       <span>Uma saga de fantasia de doze livros?</span>
@@ -360,6 +377,72 @@
   <img src="../img/shot-chapters.webp" alt="O Qenna Writer aberto: à esquerda a lista de capítulos com as cenas aninhadas embaixo de cada um, no centro a página do manuscrito" width="1500" height="788">
   <p class="shot-cap">Solarized Highlands</p>
 </div>
+
+<article class="leaf flag" id="mapa">
+  <div class="leaf-head"><span><span class="num">Novo</span> &nbsp;O Mapa</span><span>Qenna Writer 1.5</span></div>
+  <p class="flag-tag">Novo na 1.5</p>
+  <h2>O mundo onde a sua história acontece, num mapa que dá pra explorar</h2>
+  <p class="lede">Gere um continente a partir de uma semente ou pinte um à mão. O terreno é relevo de verdade: <strong>montanha é altura, não desenho de montanha</strong>. A altitude, a latitude e a umidade decidem o clima e o bioma de cada pedaço de chão, e daí vêm os rios, as costas e as florestas.</p>
+  <div class="bleed">
+    <img src="../img/map-full.webp" alt="O Mapa do Qenna Writer: um continente gerado, com montanhas, florestas, estradas, cidades e reinos com nome em letra caligráfica, visto de lado, à tarde" width="1500" height="880" loading="lazy">
+  </div>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">Lands of Quelmar: gerado a partir de uma semente, com castelos, uma catedral e um colosso colocados à mão.</p>
+
+  <h3 class="sub">Construa em cima dele</h3>
+  <p class="lede">Castelos, monumentos, ruínas, navios, monstros no mar. Escolha a peça no catálogo e clique onde ela vai; ela assenta no relevo, e o morro da frente esconde o que está atrás dele.</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/map-build.webp" alt="O catálogo do Construir aberto embaixo do mapa, com os estilos de castelo: humano, normando, com fosso, château, penhasco, élfico, anão e orc" width="1500" height="880" loading="lazy">
+      <figcaption>O catálogo do Construir: castelos em uma dúzia de estilos, monumentos, lendas, o mar e pincéis que pintam cidades e florestas inteiras.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/map-close.webp" alt="O mapa de perto ao entardecer: castelos, uma catedral escura na encosta, estradas e florestas" width="1500" height="880" loading="lazy">
+      <figcaption>De perto, ao entardecer.</figcaption>
+    </figure>
+  </div>
+
+  <h3 class="sub">Os seus documentos moram nele</h3>
+  <p class="lede">Cada território é um grupo do seu projeto. Clique nele no mapa e os documentos abrem ali mesmo: as leis, as estradas, as pessoas que vivem lá, para ler e editar <strong>sem sair do mapa</strong>. Dê nome a um castelo e ele vira um lugar próprio, dentro do reino.</p>
+  <div class="bleed">
+    <img src="../img/map-explore.webp" alt="O modo Explorar: o reino de Valdren contornado no mapa, a árvore de grupos à esquerda e um documento aberto ao lado" width="1500" height="880" loading="lazy">
+  </div>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">Explorar: a árvore à esquerda leva o mapa até cada lugar, e o documento abre ao lado.</p>
+  <ul class="ticks" style="margin-top:22px">
+    <li><strong>Grupos dentro de grupos</strong>: o castelo dentro do reino, a família dentro do castelo. O que é do reino aparece também no castelo.</li>
+    <li><strong>Lugares e gente</strong>: uma família ou uma guilda não é um lugar, então ela pode ser marcada como atuante nos territórios por onde se espalha.</li>
+    <li><strong>Arraste um documento</strong> para um grupo e ele muda de lugar.</li>
+    <li>Os mesmos grupos aparecem em todo o resto do Qenna, com mapa ou sem.</li>
+  </ul>
+
+  <h3 class="sub">Dia, noite e outros jeitos de ver</h3>
+  <div class="cols">
+    <figure>
+      <img src="../img/map-night.webp" alt="O mesmo trecho do mapa de noite, com janelas, tochas e a catedral acesas" width="1500" height="880" loading="lazy">
+      <figcaption>De noite, as janelas, as tochas e os faróis acendem. O relógio pode andar sozinho.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/map-ink.webp" alt="O mapa inteiro na vista Tinta: nanquim e hachura sobre papel creme, como o mapa do começo de um livro de fantasia" width="1500" height="880" loading="lazy">
+      <figcaption>Tinta: preto e branco, do jeito que sairia impresso no começo do livro.</figcaption>
+    </figure>
+  </div>
+  <div class="cols" style="margin-top:26px">
+    <figure>
+      <img src="../img/map-parch.webp" alt="O mapa inteiro na vista Pergaminho, com papel velho e aquarela por baixo do nanquim" width="1500" height="880" loading="lazy">
+      <figcaption>Pergaminho.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/map-chart.webp" alt="O mapa inteiro na vista Carta náutica, com linhas de rumo e rosas dos ventos no mar" width="1500" height="880" loading="lazy">
+      <figcaption>Carta náutica. E ainda Topográfico, Aquarela e Planta de guerra.</figcaption>
+    </figure>
+  </div>
+  <ul class="ticks" style="margin-top:28px">
+    <li><strong>Tamanhos</strong> de uma ilha a um continente, e vários mapas no mesmo projeto.</li>
+    <li><strong>Territórios e fronteiras</strong>, semeados ou pintados, nas suas cores.</li>
+    <li><strong>Régua</strong> que mede distância e tempo de viagem.</li>
+    <li><strong>Exportação em PNG</strong> em 1×, 2× ou 3×, pronta para o livro.</li>
+    <li>Gire, incline, aproxime do continente inteiro até uma torre só.</li>
+  </ul>
+</article>
 
 <article class="leaf" id="recursos">
   <div class="leaf-head"><span><span class="num">I</span> &nbsp;O editor</span><span>Qenna Writer</span></div>
@@ -442,7 +525,7 @@
     </figure>
     <figure>
       <img src="../img/panel-map.webp" alt="O Mapa-múndi com países reais, alfinetes marcando locais da história e uma régua de distância" width="746" height="583" loading="lazy">
-      <figcaption>O Mapa-múndi mantém a geografia honesta: países reais, régua de distância real e alfinetes que ficam onde você colocou.</figcaption>
+      <figcaption>Para histórias na Terra, o Mapa-múndi mantém a geografia honesta: países reais, régua de distância real e alfinetes que ficam onde você colocou.</figcaption>
     </figure>
   </div>
 </article>
@@ -533,7 +616,7 @@
     <div class="idx-row"><dt>Estatísticas</dt><dd>Palavras totais, tempo total, maior sequência</dd></div>
     <div class="idx-row"><dt>Ler em voz alta</dt><dd>O texto lido em voz alta, do parágrafo ou da seleção</dd></div>
     <div class="idx-row"><dt>Corretor e sinônimos</dt><dd>Dicionário e dicionário de sinônimos, no idioma do app</dd></div>
-    <div class="idx-row"><dt>Criador de Capas</dt><dd>Programa separado, incluído, para montar capa com arte livre de direitos</dd></div>
+    <div class="idx-row"><dt>Capa rápida</dt><dd>Capa feita dentro do Qenna: fotos livres de direitos, degradê, grão e o seu título</dd></div>
     <div class="idx-row"><dt>Backup</dt><dd>Projeto inteiro em um zip, com um clique</dd></div>
     <div class="idx-row"><dt>Lixeira</dt><dd>Nada é excluído em definitivo</dd></div>
     <div class="idx-row"><dt>Cinco idiomas</dt><dd>Português, inglês, espanhol, italiano e francês</dd></div>
@@ -560,7 +643,6 @@
         <li><a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Versões e instaladores</a></li>
         <li><a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/LICENSE">Texto da licença</a></li>
         <li><a href="https://github.com/Pedrovskigg/qenna-writer/blob/main/THIRD-PARTY-NOTICES.md">Avisos de terceiros</a></li>
-        <li><a href="https://github.com/Pedrovskigg/qenna-cover-creator">Criador de Capas (repositório separado)</a></li>
         <li><a href="https://alternativeto.net/software/qenna-writer/">Página no AlternativeTo</a></li>
       </ul>
     </div>
@@ -572,7 +654,7 @@
   <p class="attrib">— P.H. Lobato, criador do Qenna Writer</p>
   <div class="cta-row" style="margin-top:34px">
     <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
-    <p class="meta"><span id="ver2">v0.17.2</span> &middot; Windows 10/11 &middot; ~167 MB</p>
+    <p class="meta"><span id="ver2">v1.5.0</span> &middot; Windows 10/11 &middot; ~280 MB</p>
   </div>
 </section>
 
@@ -581,7 +663,6 @@
   <div class="flinks">
     <a href="https://github.com/Pedrovskigg/qenna-writer">Código</a>
     <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest">Versões</a>
-    <a href="https://github.com/Pedrovskigg/qenna-cover-creator">Criador de Capas</a>
     <a href="/">English</a>
   </div>
 </footer>

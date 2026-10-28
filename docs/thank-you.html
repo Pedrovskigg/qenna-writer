@@ -417,7 +417,7 @@
     <p class="started">Your download has started</p>
     <h1>Thank you. While it downloads, read this.</h1>
     <p class="sub">Two things: what Windows is about to tell you, and why this program exists.</p>
-    <p class="fallback">v0.17.2 &middot; ~167 MB &middot; didn't start? <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe">download again</a></p>
+    <p class="fallback">v1.5.0 &middot; ~280 MB &middot; didn't start? <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe">download again</a></p>
   </div>
 
   <div class="warnbox">
@@ -485,7 +485,7 @@
         .then(function (d) {
           if (!d || !d.tag_name) return;
           var el = document.querySelector('.fallback');
-          if (el) el.innerHTML = el.innerHTML.replace('v0.17.2', String(d.tag_name));
+          if (el) el.innerHTML = el.innerHTML.replace('v1.5.0', String(d.tag_name));
         })
         .catch(function () {});
     } catch (e) {}
