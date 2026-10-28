@@ -9,6 +9,22 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("1.4.9"), {
+            QStringLiteral("anim-thunderstorm"), QStringLiteral("anim-drizzle"), QStringLiteral("anim-windowpane"), QStringLiteral("anim-blizzard"),
+            QStringLiteral("anim-pines"), QStringLiteral("anim-leaves"), QStringLiteral("anim-hanami"), QStringLiteral("anim-firefly"),
+            QStringLiteral("anim-sunbeam"), QStringLiteral("anim-aurora"), QStringLiteral("anim-stargazer"), QStringLiteral("anim-fog"),
+            QStringLiteral("anim-koi"), QStringLiteral("anim-hearth"), QStringLiteral("anim-candle"), QStringLiteral("anim-letterfall"),
+            QStringLiteral("anim-neon"), QStringLiteral("anim-lighthouse"), QStringLiteral("anim-lava"), QStringLiteral("anim-city"),
+            QStringLiteral("anim-paulista"), QStringLiteral("anim-train"), QStringLiteral("anim-harbor"), QStringLiteral("anim-hometown"),
+            QStringLiteral("anim-neoncity"), QStringLiteral("anim-retro"), QStringLiteral("anim-sandstorm"), QStringLiteral("anim-ripples"),
+            QStringLiteral("anim-clouds"), QStringLiteral("anim-prairie"), QStringLiteral("anim-deepsea"), QStringLiteral("anim-glowtide"),
+            QStringLiteral("anim-lanterns"), QStringLiteral("anim-orbit"), QStringLiteral("anim-turntable"), QStringLiteral("anim-ink"),
+            QStringLiteral("anim-campfire"), QStringLiteral("anim-fireworks"), QStringLiteral("anim-encore"), QStringLiteral("anim-hyperspace"),
+            QStringLiteral("anim-alley"), QStringLiteral("anim-fireescape"), QStringLiteral("anim-trails"), QStringLiteral("anim-runway"),
+            QStringLiteral("anim-lapa"), QStringLiteral("anim-ferris"), QStringLiteral("anim-kowloon"), QStringLiteral("anim-lastexit"),
+            QStringLiteral("anim-canal"), QStringLiteral("anim-mansard"), QStringLiteral("anim-republica"), QStringLiteral("anim-diner"),
+            QStringLiteral("anim-scramble"), QStringLiteral("anim-mulholland"), QStringLiteral("anim-johnmary"),
+        } },
         { QStringLiteral("1.4.7"), {
             QStringLiteral("patch-bay"), QStringLiteral("silver-halide"), QStringLiteral("draculas-tomb"), QStringLiteral("90s-manga"),
             QStringLiteral("basalt-green-nebula"), QStringLiteral("crows-court"), QStringLiteral("triple-word"), QStringLiteral("intaglio"),

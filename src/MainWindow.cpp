@@ -1,4 +1,6 @@
 #include "MainWindow.h"
+#include "GroupPicker.h"
+#include "PovPicker.h"
 #include "SheetDialogs.h"
 #include "ChapterSheet.h"
 #include "SceneBreaks.h"
@@ -153,6 +155,8 @@
 #include "MemoryAddPopup.h"
 #include "QuickSavePopup.h"
 #include "LousaPanel.h"
+#include "carto/CartoPanel.h"
+#include "carto/CartoExplore.h"
 #include "TimelinePanel.h"
 #include "CharacterSheetPanel.h"
 #include "ChapterStatsDialog.h"
@@ -328,7 +332,9 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
                          const QString& manuscriptId, const QString& chapterId,
                          QString* title, QString* marker, QString* summary,
                          QString* type, QString* typeLabel,
-                         bool* povOther = nullptr, bool* openAfter = nullptr)
+                         bool* povOther = nullptr, bool* openAfter = nullptr,
+                         QString* pov = nullptr, const QList<PovPicker::Option>& povOptions = {},
+                         const QString& narratorId = QString())
 {
     ChapterSheetSpec spec;
     spec.kind = ChapterSheetSpec::Chapter;
@@ -340,6 +346,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     spec.typeLabel = *typeLabel;
     spec.showPov = povOther != nullptr;
     spec.povOther = povOther && *povOther;
+    if (pov) { spec.pov = *pov; spec.povOptions = povOptions; spec.narratorId = narratorId; }
     if (model) {
         // posição na gaveta e capítulo anterior (atalhos "=" e "+1 dia")
         const QList<const Chapter*> chs = model->orderedChaptersForManuscript(manuscriptId);
@@ -362,6 +369,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     *typeLabel = spec.typeLabel;
     if (povOther) *povOther = spec.povOther;
     if (openAfter) *openAfter = spec.openAfter;
+    if (pov) *pov = spec.pov;
     return true;
 }
 
@@ -1153,6 +1161,8 @@ void MainWindow::setupEditor()
         QString subtitle;
         QString avatar;
         bool avatarEditable = false;
+        QString groupId;
+        bool drawerDoc = false;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
             // Capítulo inteiro concatenado num editor só (cenas separadas por
@@ -1187,6 +1197,8 @@ void MainWindow::setupEditor()
         case EditorHost::DrawerDoc: {
             if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) {
                 title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
+                drawerDoc = true;
+                groupId = it->markerId;
 
                 // Personagem/cenário ganham identidade em vez de só o nome do
                 // doc: o papel vira o subtítulo (em caixa alta, como na gaveta)
@@ -1215,12 +1227,40 @@ void MainWindow::setupEditor()
             docHeader->setDocumentAvatar(avatar);
             docHeader->setAvatarEditable(avatarEditable);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
+            if (m_docGroup) {
+                m_docGroup->setGroupId(groupId);
+                docHeader->setGroupTagVisible(drawerDoc && m_docGroup->available());
+            }
+            // Narrador do capítulo (cena mostra o do capítulo dela): aparece
+            // quando o capítulo já tem narrador; sem ele, o "Quem narra?" só
+            // com o POV à vista ligado na gaveta.
+            if (m_docPov) {
+                const bool msDoc = vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc;
+                bool anyChar = false;
+                if (msDoc && elementsStore)
+                    for (const auto& e : elementsStore->elements())
+                        if (e.type == QStringLiteral("character")) { anyChar = true; break; }
+                const Chapter* ch = msDoc ? projectModel->findChapter(vm.chapterId) : nullptr;
+                const Element* el = ch && !ch->pov.isEmpty() && elementsStore ? elementsStore->findElement(ch->pov) : nullptr;
+                const bool on = msDoc && anyChar && manuscriptPanel && (el || manuscriptPanel->povToolOn());
+                if (on) {
+                    PovPicker::Option cur;
+                    if (el) {
+                        cur.id = el->id; cur.name = el->name; cur.image = el->image;
+                        cur.color = manuscriptPanel->povColorFor(vm.manuscriptId, el->id);
+                    }
+                    m_docPov->setCurrent(cur);
+                }
+                docHeader->setPovTagVisible(on);
+            }
         }
     };
     connect(editorHost, &EditorHost::viewModeChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::chaptersChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::drawersChanged, this, refreshDocTitle);
+    connect(projectModel, &ProjectModel::groupsChanged, this, refreshDocTitle);
     connect(projectModel, &ProjectModel::loaded, this, refreshDocTitle);
+    connect(manuscriptPanel, &ManuscriptPanel::toolsChanged, this, refreshDocTitle);
     // ChapterDoc: recalcula a cena do subtítulo conforme o usuário rola.
     connect(editor->verticalScrollBar(), &QAbstractSlider::valueChanged, this, refreshDocTitle);
 
@@ -1364,6 +1404,7 @@ void MainWindow::setupEditor()
         return SceneBreaks::paint(editor, p, clip, [this](int k) { return sceneBreakInfo(k); });
     });
     // Roteiro: cada INT./EXT. vira cena do Qenna assim que a pessoa sai da linha.
+    connect(editor, &SpellEditor::pasted, this, &MainWindow::formatPastedRange);
     connect(editor, &SpellEditor::screenplayLineFinished, this, [this]() {
         if (!editor || !editor->isScreenplayMode() || !editorHost) return;
         const int added = ScreenplayFormat::ensureSceneBreaks(editor->document(), true);
@@ -2399,10 +2440,12 @@ void MainWindow::setupEditor()
         }
         QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false, openAfter = true;
+        QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
-                                 showPov ? &povOther : nullptr, &openAfter)) return;
+                                 showPov ? &povOther : nullptr, &openAfter,
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
@@ -2410,6 +2453,7 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.pov = pov;
         c.type = type;
         c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
@@ -2678,6 +2722,31 @@ void MainWindow::setupEditor()
     // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
+    // Grupo do documento de gaveta aberto: ver e trocar sem sair do editor
+    // (os territórios do mapa são grupos; o doc aparece no território no Explorar)
+    m_docGroup = new GroupPicker(projectModel, docHeader, /*popup=*/true);
+    docHeader->setGroupTag(m_docGroup->tag());
+    m_docGroup->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
+    m_docGroup->picked = [this](const QString& gid) {
+        if (!editorHost || editorHost->viewMode().type != EditorHost::DrawerDoc) return;
+        projectModel->setDrawerItemGroup(editorHost->viewMode().itemId, gid);
+    };
+    // Narrador do capítulo aberto: ver e trocar sem abrir a gaveta (POV à vista).
+    // A lista segue o menu "Narrador" da gaveta: sugerido no topo, depois o elenco.
+    m_docPov = new PovPicker(docHeader);
+    docHeader->setPovTag(m_docPov->tag());
+    m_docPov->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
+    m_docPov->options = [this]() {
+        if (!editorHost) return QList<PovPicker::Option>();
+        const auto vm = editorHost->viewMode();
+        return povOptionsFor(vm.manuscriptId, vm.chapterId);
+    };
+    m_docPov->picked = [this](const QString& elementId) {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc) return;
+        projectModel->updateChapterPov(vm.chapterId, elementId);
+    };
     // Guia do roteiro (elemento da linha + pra onde as teclas levam).
     connect(editor, &QTextEdit::cursorPositionChanged, this, &MainWindow::updateScreenplayGuide);
     connect(editor, &SpellEditor::screenplayElementChanged, this, &MainWindow::updateScreenplayGuide);
@@ -2691,6 +2760,13 @@ void MainWindow::setupEditor()
     // (escolher + recortar). O ElementsStore avisa o cabeçalho sozinho via
     // changed(); a ficha, se estiver aberta, não escuta o store e é
     // atualizada na mão.
+    // Duplo clique no título do capítulo (também na cena, onde o título é o
+    // capítulo dela): a folha de Editar capítulo, com o "Quem narra".
+    connect(docHeader, &DocHeaderBar::titleDoubleClicked, this, [this]() {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) editChapterDetails(vm.chapterId);
+    });
     connect(docHeader, &DocHeaderBar::avatarChangeRequested, this, [this]() {
         if (!editorHost || !elementsStore) return;
         const auto vm = editorHost->viewMode();
@@ -3177,6 +3253,14 @@ void MainWindow::setupEditor()
                     showLousa();
                 }
             }
+        } else if (action == LeftBar::WorldMap) {
+            CrashLogger::log("cartoPanelToggle");
+            if (cartoPanel && cartoPanel->isVisible()) {
+                cartoPanel->hide();
+                leftBar->clearSelection();
+            } else {
+                showCartoPanel();
+            }
         } else if (action == LeftBar::Timeline) {
             CrashLogger::log("timelinePanelToggle");
             ensureTimelinePanel();
@@ -3318,10 +3402,12 @@ void MainWindow::setupEditor()
         }
         QString title, marker, summary, type = QStringLiteral("chapter"), typeLabel;
         bool povOther = false, openAfter = true;
+        QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
-                                 showPov ? &povOther : nullptr, &openAfter)) return;
+                                 showPov ? &povOther : nullptr, &openAfter,
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
         Chapter c;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
@@ -3329,6 +3415,7 @@ void MainWindow::setupEditor()
         c.timeMarker = marker;
         c.summary = summary;
         c.povOther = povOther;
+        c.pov = pov;
         c.type = type;
         c.typeLabel = typeLabel;
         if (!projectRoot.isEmpty()) {
@@ -3389,25 +3476,7 @@ void MainWindow::setupEditor()
         globalSearchPanel->openPanelWith(query);
     });
 
-    connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, [this](const QString& chapterId) {
-        const Chapter* c = projectModel->findChapter(chapterId);
-        if (!c) return;
-        QString newTitle = c->title;
-        QString newMarker = c->timeMarker;
-        QString newSummary = c->summary;
-        QString newType = c->type;
-        QString newTypeLabel = c->typeLabel;
-        bool newPovOther = c->povOther;
-        const bool showPov = elementsStore && elementsStore->hasNarrator();
-        if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
-                                 &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
-                                 showPov ? &newPovOther : nullptr)) return;
-        projectModel->updateChapterTitle(chapterId, newTitle);
-        projectModel->updateChapterTimeMarker(chapterId, newMarker);
-        projectModel->updateChapterSummary(chapterId, newSummary);
-        projectModel->updateChapterType(chapterId, newType, newTypeLabel);
-        if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
-    });
+    connect(manuscriptPanel, &ManuscriptPanel::renameChapterRequested, this, &MainWindow::editChapterDetails);
 
     connect(manuscriptPanel, &ManuscriptPanel::elementsPresentRequested, this,
             [this](const QString& manuscriptId, const QString& chapterId) {
@@ -3590,6 +3659,7 @@ void MainWindow::setupEditor()
             if (m_elementSheet) m_elementSheet->reject();
             auto* dlg = new ElementCreateDialog(elemType, this, templates);
             dlg->setAttribute(Qt::WA_DeleteOnClose);
+            dlg->enableGroups(projectModel);   // os territórios do mapa são grupos
             m_elementSheet = dlg;
             connect(dlg, &QDialog::accepted, this, [this, dlg, drawerKey, folderId, elemType]() {
             if (!projectModel->findDrawer(drawerKey)) return;   // a gaveta sumiu enquanto a folha estava aberta
@@ -3620,6 +3690,7 @@ void MainWindow::setupEditor()
             it.elementType = elemType;
             it.elementId = elementId;
             it.role = dlg->role();
+            if (projectModel->findGroup(dlg->groupId())) it.markerId = dlg->groupId();
             if (asSheet) {
                 it.isSheet = true;
                 const SheetTemplate* tmpl = (!templateId.isEmpty() && sheetTemplatesStore)
@@ -3640,13 +3711,15 @@ void MainWindow::setupEditor()
             return;
         }
         bool ok = false;
-        const QString title = Sheets::askText(this, tr("Novo documento"), tr("Nome do documento"),
-            QString(), &ok, tr("Criar")).trimmed();
+        QString groupId;
+        const QString title = Sheets::askTextInGroup(this, tr("Novo documento"), tr("Nome do documento"),
+            projectModel, &groupId, &ok, tr("Criar")).trimmed();
         if (!ok || title.isEmpty()) return;
         DrawerItem it;
         it.id = ProjectModel::uid();
         it.title = title;
         it.folderId = folderId;
+        if (projectModel->findGroup(groupId)) it.markerId = groupId;
         it.hasInlineHtml = true;
         it.html = QStringLiteral("<p></p>");
         projectModel->addDrawerItem(drawerKey, it);
@@ -4178,6 +4251,34 @@ SceneBreaks::Info MainWindow::sceneBreakInfo(int breakIndex) const
             in.flashback = okB && okM && v < base;
         }
     return in;
+}
+
+// O texto colado (do Word, do navegador, de outro doc) traz a formatação de parágrafo
+// de lá: recuo zero, outra entrelinha. Os blocos colados recebem a do projeto, igual
+// a abrir o documento ou mexer no botão de recuo. Fica no mesmo passo do desfazer.
+void MainWindow::formatPastedRange(int from, int to)
+{
+    if (!editor || !editorHost || to <= from) return;
+    const bool isManuscriptDoc = editorHost->viewMode().type == EditorHost::ChapterDoc ||
+                                 editorHost->viewMode().type == EditorHost::SceneDoc;
+    if (isManuscriptDoc && projectModel && projectModel->isScreenplay()) return;   // roteiro: cada linha tem o seu elemento
+    QTextBlockFormat bf;
+    bf.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
+    bf.setTextIndent(firstLineIndentEnabled ? 30 : 0);
+    bf.setTopMargin(paragraphSpacingBefore);
+    bf.setBottomMargin(paragraphSpacingAfter);
+    if (projectModel) {
+        const int defAlign = isManuscriptDoc ? projectModel->defaultManuscriptAlignment() : projectModel->defaultDrawerAlignment();
+        if (defAlign != 0) bf.setAlignment(static_cast<Qt::Alignment>(defAlign));
+    }
+    QTextCursor c(editor->document());
+    c.setPosition(from);
+    c.setPosition(to, QTextCursor::KeepAnchor);
+    c.joinPreviousEditBlock();
+    c.mergeBlockFormat(bf);
+    c.endEditBlock();
+    // a quebra de cena perde o recuo e ganha o espaço dela (como no applyEditorStyle)
+    SceneBreaks::applySpacing(editor->document(), false);
 }
 
 void MainWindow::applyEditorStyle()
@@ -6468,6 +6569,7 @@ void MainWindow::applyProjectRoot(const QString& root)
         lousaPanel->setElementsStore(elementsStore);
         lousaPanel->setProjectRoot(root);
     }
+    if (cartoPanel) { cartoPanel->setProjectRoot(root); connectCartoProject(); }
     if (timelinePanel) {
         timelinePanel->setProjectModel(projectModel);
         timelinePanel->setProjectRoot(root);
@@ -7696,6 +7798,65 @@ void MainWindow::recordResumePoint()
     manuscriptPanel->setResumeTrail(trail);
 }
 
+// A folha de Editar capítulo (clique direito na gaveta ou duplo clique no título
+// do DocHeader): título, tipo, tempo, resumo e quem narra.
+void MainWindow::editChapterDetails(const QString& chapterId)
+{
+    const Chapter* c = projectModel->findChapter(chapterId);
+    if (!c) return;
+    QString newTitle = c->title;
+    QString newMarker = c->timeMarker;
+    QString newSummary = c->summary;
+    QString newType = c->type;
+    QString newTypeLabel = c->typeLabel;
+    bool newPovOther = c->povOther;
+    QString newPov = c->pov;
+    const bool showPov = elementsStore && elementsStore->hasNarrator();
+    if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
+                             &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
+                             showPov ? &newPovOther : nullptr, nullptr,
+                             &newPov, povOptionsFor(c->manuscriptId, chapterId), narratorElementId())) return;
+    projectModel->updateChapterTitle(chapterId, newTitle);
+    projectModel->updateChapterTimeMarker(chapterId, newMarker);
+    projectModel->updateChapterSummary(chapterId, newSummary);
+    projectModel->updateChapterType(chapterId, newType, newTypeLabel);
+    if (showPov) projectModel->updateChapterPovOther(chapterId, newPovOther);
+    projectModel->updateChapterPov(chapterId, newPov);
+}
+
+// O elenco pra "Quem narra" (DocHeader e folha de capítulo), nas regras do menu
+// "Narrador" da gaveta: o sugerido no topo, depois os personagens em ordem.
+QList<PovPicker::Option> MainWindow::povOptionsFor(const QString& manuscriptId, const QString& chapterId) const
+{
+    QList<PovPicker::Option> out;
+    if (!elementsStore || !manuscriptPanel) return out;
+    const QString sug = manuscriptPanel->suggestedPovFor(chapterId);
+    auto option = [&](const Element& e) {
+        PovPicker::Option o;
+        o.id = e.id; o.name = e.name; o.image = e.image;
+        o.color = manuscriptPanel->povColorFor(manuscriptId, e.id);
+        o.suggested = e.id == sug;
+        return o;
+    };
+    if (const Element* e = sug.isEmpty() ? nullptr : elementsStore->findElement(sug)) out << option(*e);
+    QList<Element> chars;
+    for (const auto& e : elementsStore->elements())
+        if (e.type == QStringLiteral("character") && e.id != sug) chars.append(e);
+    std::sort(chars.begin(), chars.end(), [](const Element& a, const Element& b) {
+        return a.name.localeAwareCompare(b.name) < 0;
+    });
+    for (const auto& e : chars) out << option(e);
+    return out;
+}
+
+QString MainWindow::narratorElementId() const
+{
+    if (elementsStore)
+        for (const auto& e : elementsStore->elements())
+            if (e.narrator && e.type == QStringLiteral("character")) return e.id;
+    return QString();
+}
+
 void MainWindow::resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,
                           const QString& sentence, int position)
 {
@@ -8824,6 +8985,9 @@ void MainWindow::positionPageGlow()
         fill.setAlpha(qBound(0, Theme::editorOpacity(), 100) * 255 / 100);
         PanelGlass::setPage(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()), fill);
     }
+    // Temas Animados: a mesa não repinta em cima da folha e pinta a sombra dela.
+    if (backgroundWidget)
+        backgroundWidget->setSheetRect(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()));
 
     const QColor c = parseColor(Theme::pageShadowColor());
     if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
@@ -8845,7 +9009,10 @@ void MainWindow::applyPageShadow()
 {
     if (!editorColumn) return;
     positionPageGlow();
-    if (Theme::pageShadowEnabled()) {
+    // Nos temas Animados a sombra é pintada pelo BackgroundWidget: o efeito do
+    // Qt refaria o desfoque da página inteira a cada quadro da animação.
+    const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
+    if (Theme::pageShadowEnabled() && !animated) {
         auto* effect = qobject_cast<QGraphicsDropShadowEffect*>(editorColumn->graphicsEffect());
         if (!effect) {
             effect = new QGraphicsDropShadowEffect(editorColumn);
@@ -8867,7 +9034,8 @@ void MainWindow::applyBackgroundFromTheme()
     const bool hasImage = !img.isEmpty();
     // Degradê ou grão na mesa também precisam do fundo pintado por baixo de
     // tudo, mesmo sem foto: tratam-se como a imagem daqui pra baixo.
-    const bool painted = hasImage || BackgroundOverlay::active(Theme::Manager::instance()->current());
+    const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
+    const bool painted = hasImage || animated || BackgroundOverlay::active(Theme::Manager::instance()->current());
 
     if (backgroundWidget) {
         backgroundWidget->setBackground(hasImage ? img : QString(), mode);
@@ -8875,6 +9043,7 @@ void MainWindow::applyBackgroundFromTheme()
         backgroundWidget->setGeometry(rect());
         backgroundWidget->setVisible(painted);
         backgroundWidget->lower();
+        backgroundWidget->refreshAnimation();
         backgroundWidget->update();
     }
 
@@ -9767,8 +9936,63 @@ TerritorioWindow* MainWindow::ensureTerritorioWindow()
                 this, [this](const QString& drawerKey, const QString& itemId) {
                     if (refMenuPanel) refMenuPanel->openForDrawer(drawerKey, itemId);
                 });
+        // A porta do Qenna Map dentro do Criador de Mundos.
+        connect(territorioWindow, &TerritorioWindow::openWorldMapRequested, this, &MainWindow::showCartoPanel);
     }
     return territorioWindow;
+}
+
+// Explorar do Mapa: o que o mapa precisa do projeto. Documento de gaveta editado
+// por fora segue o mesmo caminho do resto do app: o editor descarrega no cache,
+// o cache recebe o texto novo, o editor recarrega se estiver mostrando ele.
+void MainWindow::connectCartoProject()
+{
+    if (!cartoPanel) return;
+    carto::ProjectLink l;
+    l.model = projectModel;
+    l.elements = elementsStore;
+    l.places = territorioStore;
+    l.cache = docCache;
+    l.root = projectRoot;
+    l.syncEditor = [this]() { if (editorHost) editorHost->syncEditorToCache(); };
+    l.itemEdited = [this](const QString& itemId) {
+        if (editorHost) {
+            const auto vm = editorHost->viewMode();
+            if (vm.type == EditorHost::DrawerDoc && vm.itemId == itemId) editorHost->reloadFromCache();
+        }
+        if (projectSaver) projectSaver->saveProject();
+    };
+    l.openItem = [this](const QString& itemId) {
+        if (!editorHost) return;
+        EditorHost::ViewMode vm;
+        vm.type = EditorHost::DrawerDoc;
+        vm.itemId = itemId;
+        editorHost->setViewMode(vm);
+        raise(); activateWindow();
+    };
+    l.openPlace = [this](const QString& placeId, const QString& nodeId) {
+        TerritorioWindow* w = ensureTerritorioWindow();
+        w->openNode(placeId, nodeId);
+        w->show(); w->raise(); w->activateWindow();
+    };
+    l.save = [this]() { if (projectSaver) projectSaver->saveProject(); };
+    cartoPanel->setProjectLink(l);
+}
+
+// O Mapa (Qenna Map): a mesma janela pela LeftBar e pelo Criador de Mundos.
+void MainWindow::showCartoPanel()
+{
+    if (!cartoPanel) {
+        cartoPanel = new carto::Panel(this);
+        connect(cartoPanel, &carto::Panel::closeRequested, this, [this]() { leftBar->clearSelection(); });
+        if (!projectRoot.isEmpty()) cartoPanel->setProjectRoot(projectRoot);
+        connectCartoProject();
+    }
+    if (cartoPanel->isMinimized()) cartoPanel->showNormal();
+    else cartoPanel->show();
+    cartoPanel->raise();
+    cartoPanel->activateWindow();
+    leftBar->setActiveFixedAction(LeftBar::WorldMap);
 }
 
 ReaderPreviewPanel* MainWindow::ensureReaderPreviewPanel()

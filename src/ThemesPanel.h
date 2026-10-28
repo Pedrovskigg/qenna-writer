@@ -1,8 +1,11 @@
 #pragma once
 
+#include "AnimBackground.h"
 #include "Theme.h"
 
 #include <QDialog>
+
+#include <functional>
 #include <QHash>
 #include <QList>
 #include <QString>
@@ -91,12 +94,16 @@ private:
     void sortList(QList<Theme::MiraTheme>& list) const;
     void refreshSortButton();
     void showCatPhoto(const QString& id);
+    // Temas Animados: a seção Animação do lado (hora, chuva, camadas).
+    QWidget* buildAnimSection(QWidget* side);
+    void refreshAnim();
+    void editAnim(const std::function<void(AnimBg::Config&)>& change);
 
     QString shownId() const;
     const Theme::MiraTheme* themeById(const QString& id) const;
 
     // Estado
-    QString m_view = QStringLiteral("all");   // all|favorites|light|warm|dark|colorful|estampados|mine|daynight
+    QString m_view = QStringLiteral("all");   // all|favorites|light|warm|dark|colorful|estampados|animados|mine|daynight
     QString m_searchText;
     QString m_selectedId;
     QString m_hoverId;
@@ -140,6 +147,17 @@ private:
     QPushButton* m_applyButton = nullptr;
     QPushButton* m_customizeButton = nullptr;
     QToolButton* m_moreButton = nullptr;
+    // Animação (só nos temas Animados; toma o lugar de "Parecidos com este")
+    QScrollArea* m_sideScroll = nullptr;
+    QWidget* m_similarWrap = nullptr;
+    QWidget* m_animWrap = nullptr;
+    QList<QPushButton*> m_todButtons;
+    QList<QPushButton*> m_rainButtons;
+    QList<QCheckBox*> m_extraChecks;
+    QLabel* m_animNote = nullptr;
+    QCheckBox* m_realCheck = nullptr;
+    QPushButton* m_animReset = nullptr;
+    QTimer* m_animTimer = nullptr;
 
     // Rodapé
     QLabel* m_usingLabel = nullptr;

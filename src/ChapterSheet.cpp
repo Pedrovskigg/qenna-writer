@@ -64,6 +64,22 @@ void ChapterSheet::build()
     else setEyebrow(s.editMode ? tr("Editar cena") : tr("Nova cena"));
     QVBoxLayout* body = this->body();
 
+    // ── quem narra (só capítulo, e só com elenco) ──
+    if (chapter && !s.povOptions.isEmpty()) {
+        m_povId = povOption(s.pov).id;   // narrador que já saiu do elenco vira "Quem narra?"
+        m_povPick = new PovPicker(card, /*popup=*/false);
+        m_povPick->options = [this]() { return s.povOptions; };
+        m_povPick->setCurrent(povOption(m_povId));
+        m_povPick->resized = [this]() { adjustSize(); };
+        m_povPick->picked = [this](const QString& id) {
+            m_povId = id;
+            m_povPick->setCurrent(povOption(id));
+            syncPovOther();
+        };
+        addHeaderWidget(m_povPick->tag());
+        body->addWidget(m_povPick->list());
+    }
+
     // ── tipo (só capítulo) ──
     if (chapter) {
         const QStringList names = { tr("Capítulo"), tr("Prólogo"), tr("Interlúdio"), tr("Epílogo"), tr("Outro…") };
@@ -216,6 +232,7 @@ void ChapterSheet::build()
         body->addLayout(h);
         body->addWidget(m_pov);
     }
+    syncPovOther();
 
     // ── não mostrar de novo (popup da cena criada com "----") ──
     if (s.showOptOut) {
@@ -237,6 +254,22 @@ void ChapterSheet::build()
 
     refreshTitle();
     refreshReading();
+}
+
+PovPicker::Option ChapterSheet::povOption(const QString& id) const
+{
+    for (const PovPicker::Option& o : s.povOptions) if (!id.isEmpty() && o.id == id) return o;
+    return PovPicker::Option();
+}
+
+// Com alguém escolhido em "Quem narra", o "+ outro POV" sai de cena: a escolha
+// já diz se é o narrador da obra ou outra pessoa.
+void ChapterSheet::syncPovOther()
+{
+    if (!m_pov || !m_povAdd) return;
+    if (!m_povId.isEmpty()) { m_povAdd->hide(); m_pov->hide(); }
+    else { m_pov->setVisible(m_pov->isChecked()); m_povAdd->setVisible(!m_pov->isChecked()); }
+    adjustSize();
 }
 
 void ChapterSheet::refreshTitle()
@@ -290,7 +323,9 @@ void ChapterSheet::finish(bool openAfter)
     } else if (t.isEmpty()) {
         s.title = s.titlePlaceholder;   // cena sem título = o nome padrão ("Cena 3")
     }
-    if (m_pov) s.povOther = m_pov->isVisible() && m_pov->isChecked();
+    if (m_povPick) s.pov = m_povId;
+    if (m_pov) s.povOther = m_povId.isEmpty() ? (m_pov->isVisible() && m_pov->isChecked())
+                                              : (!s.narratorId.isEmpty() && m_povId != s.narratorId);
     if (m_optOut) s.optOut = m_optOut->isChecked();
     s.openAfter = openAfter;
     accept();

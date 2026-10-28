@@ -12,6 +12,7 @@
 
 class SpellChecker;
 class QContextMenuEvent;
+class QMimeData;
 class QVariantAnimation;
 
 class SpellEditor : public QTextEdit {
@@ -87,6 +88,9 @@ signals:
     // Roteiro: a pessoa saiu de uma linha (Enter, clique, setas). É a hora de
     // transformar o cabeçalho recém-escrito em cena do Qenna.
     void screenplayLineFinished();
+    // Algo foi colado (ou solto) entre from e to: o MainWindow põe a formatação
+    // de parágrafo do projeto nesses blocos (o que vem do Word traz recuo zero).
+    void pasted(int from, int to);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -96,6 +100,7 @@ protected:
     void keyPressEvent(QKeyEvent* event) override;
     void keyReleaseEvent(QKeyEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
+    void insertFromMimeData(const QMimeData* source) override;
     void resizeEvent(QResizeEvent* event) override;
 
 private:

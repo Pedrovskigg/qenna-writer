@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QSet>
 #include <QString>
+#include <QStringList>
 #include <QTime>
 
 class QTimer;
@@ -157,6 +158,15 @@ struct MiraTheme {
     // Tamanho do grão: 1 = fino, de película; valores maiores ampliam o ruído
     // com suavização até virar mancha (perolado, feltro, pedra). 1..12.
     int bgGrainSize = 1;
+    // Temas Animados (2026-10): clima na mesa, pintado pelo AnimBackground.
+    // animScene vazio = tema parado, como sempre. Os outros três são o padrão
+    // de fábrica do Personalizar da animação: hora do dia ("theme" | "day" |
+    // "dusk" | "night"), chuva ("none" | "drizzle" | "rain" | "storm") e
+    // camadas por cima ("stars", "fog", "leaves", "petals", "fireflies", "snow").
+    QString animScene;
+    QString animTod = QStringLiteral("theme");
+    QString animRain = QStringLiteral("none");
+    QStringList animExtras;
 
     // --- Metadados de compartilhamento (arquivos .qtheme) ---
     // Nada disso muda a aparência do tema — é a identidade dele enquanto

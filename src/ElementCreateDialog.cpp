@@ -1,5 +1,6 @@
 #include "ElementCreateDialog.h"
 
+#include "GroupPicker.h"
 #include "ImageCropDialog.h"
 #include "TimelineTracksTypes.h"
 
@@ -228,6 +229,15 @@ public:
     QToolButton* removeButton() const { return m_remove; }
     QToolButton* closeButton() const { return m_close; }
     void setEyebrow(const QString& t) { m_eyebrow->setText(t.toUpper()); m_eyebrow->adjustSize(); relayout(); }
+    // a etiqueta de grupo: sem foto, antes do ×; com foto, embaixo do "trocar · remover"
+    void setGroupTag(GroupPicker* gp)
+    {
+        m_picker = gp;
+        gp->tag()->setParent(this);
+        gp->tag()->show();
+        gp->setOnPhoto(!m_photo.isNull());
+        relayout();
+    }
 
     void setPhoto(const QPixmap& pm)
     {
@@ -269,6 +279,7 @@ public:
         np.setColor(QPalette::PlaceholderText, on ? QColor(255, 255, 255, 178) : mix(pal.ink, pal.page, 0.42));
         m_name->setPalette(np);
         m_shadow->setEnabled(on);
+        if (m_picker) m_picker->setOnPhoto(on);
         // na faixa o nome divide a largura com o quadrado: um pouco menor
         m_name->setFont(serifFont(on ? 23 : 19));
         m_add->setVisible(!on);
@@ -290,6 +301,13 @@ public:
         m_role->adjustSize();
         m_role->move(left + 1, m_name->y() - m_role->height() + 3);
         m_add->move(16, 31);
+        if (m_picker) {
+            QWidget* t = m_picker->tag();
+            m_picker->setMaxTagWidth(on ? W - 24 : m_close->x() - 6 - (m_eyebrow->x() + m_eyebrow->width() + 10));
+            if (on) t->move(W - 12 - t->width(), 40);
+            else t->move(m_close->x() - 6 - t->width(), 9);
+            t->raise();
+        }
         if (on) {
             m_remove->adjustSize();
             m_swap->adjustSize();
@@ -337,6 +355,7 @@ protected:
     }
 
 private:
+    GroupPicker* m_picker = nullptr;
     QToolButton* pillLink(const QString& text)
     {
         auto* b = new QToolButton(this);
@@ -880,3 +899,20 @@ QStringList ElementCreateDialog::aliases() const
     }
     return out;
 }
+
+void ElementCreateDialog::enableGroups(const ProjectModel* model)
+{
+    m_groups = new GroupPicker(model, card());
+    if (!m_groups->available()) return;
+    m_groups->resized = [this]() { adjustSize(); };
+    if (m_poster) {
+        CharacterPoster* poster = m_poster;
+        m_groups->changed = [poster]() { poster->relayout(); };
+        m_poster->setGroupTag(m_groups);
+    } else {
+        addHeaderWidget(m_groups->tag());
+    }
+    body()->insertWidget(0, m_groups->list());
+}
+
+QString ElementCreateDialog::groupId() const { return m_groups ? m_groups->groupId() : QString(); }

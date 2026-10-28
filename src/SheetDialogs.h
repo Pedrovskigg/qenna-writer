@@ -10,6 +10,7 @@
 #include <QStringList>
 #include <QVector>
 
+class ProjectModel;
 class QWidget;
 
 namespace Sheets {
@@ -20,6 +21,11 @@ namespace Sheets {
 QString askText(QWidget* parent, const QString& eyebrow, const QString& placeholder,
                 const QString& initial, bool* ok, const QString& okText = QString(),
                 bool multiline = false, bool allowEmpty = false, const QString& hint = QString());
+
+// Um nome + o grupo do documento (etiqueta no topo, lista dentro da folha). Sem
+// grupo no projeto, é igual ao askText. groupId sai com o escolhido ("" = nenhum).
+QString askTextInGroup(QWidget* parent, const QString& eyebrow, const QString& placeholder,
+                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText = QString());
 
 // Escolha entre opções (pílulas). Devolve o índice, ou -1 se cancelou.
 int askChoice(QWidget* parent, const QString& eyebrow, const QStringList& options,

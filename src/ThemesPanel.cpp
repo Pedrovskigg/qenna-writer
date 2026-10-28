@@ -5,6 +5,7 @@
 #include "ThemeExportDialog.h"
 #include "ThemePackage.h"
 #include "ThemeScene.h"
+#include "AnimBackground.h"
 #include "IconUtils.h"
 
 #include <QAbstractButton>
@@ -102,6 +103,8 @@ const QHash<QString, QStringList>& recommended()
                                           QStringLiteral("fig-preserve"), QStringLiteral("acafrao") } },
         { QStringLiteral("colorful"),   { QStringLiteral("blacklight"), QStringLiteral("rose-pine"), QStringLiteral("outrun"),
                                           QStringLiteral("ocean"), QStringLiteral("solarized-dark") } },
+        { QStringLiteral("animados"),   { QStringLiteral("anim-lastexit"), QStringLiteral("anim-train"), QStringLiteral("anim-johnmary"), QStringLiteral("anim-fireescape"),
+                                          QStringLiteral("anim-campfire"), QStringLiteral("anim-lighthouse"), QStringLiteral("anim-candle") } },
     };
     return r;
 }
@@ -888,6 +891,7 @@ ThemesPanel::ThemesPanel(QWidget* parent)
 void ThemesPanel::showEvent(QShowEvent* event)
 {
     QDialog::showEvent(event);
+    refreshAnim();
     if (m_scrolledToCurrent) return;
     m_scrolledToCurrent = true;
     // Rola a grade até o tema em uso — depois do layout, quando a largura
@@ -936,6 +940,7 @@ QWidget* ThemesPanel::buildRail()
         { QStringLiteral("dark"),       tr("Escuros"),    RailItem::None },
         { QStringLiteral("colorful"),   tr("Coloridos"),  RailItem::None },
         { QStringLiteral("estampados"), tr("Estampados"), RailItem::None },
+        { QStringLiteral("animados"),   tr("Animados"),   RailItem::None },
     };
     auto add = [&](const Item& it) {
         auto* b = new RailItem(it.label, it.glyph, rail);
@@ -1240,6 +1245,23 @@ QWidget* ThemesPanel::buildSide()
     m_preview->onZoom = [this]() { setZoomVisible(true); };
     lay->addWidget(m_preview);
 
+    // Do nome em diante o lado rola se faltar altura: a seção Animação dos
+    // temas Animados não cabe em toda tela, e espremida ela se encavala.
+    auto* sideScroll = new QScrollArea(side);
+    sideScroll->setObjectName(QStringLiteral("themesSideScroll"));
+    sideScroll->setFrameShape(QFrame::NoFrame);
+    sideScroll->setWidgetResizable(true);
+    sideScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    auto* sideBody = new QWidget(sideScroll);
+    sideBody->setObjectName(QStringLiteral("themesSideBody"));
+    QVBoxLayout* outer = lay;
+    lay = new QVBoxLayout(sideBody);
+    lay->setContentsMargins(0, 0, 0, 0);
+    lay->setSpacing(12);
+    sideScroll->setWidget(sideBody);
+    outer->addWidget(sideScroll, 1);
+    m_sideScroll = sideScroll;
+
     auto* nameRow = new QHBoxLayout;
     nameRow->setSpacing(8);
     m_nameLabel = new QLabel(side);
@@ -1310,15 +1332,18 @@ QWidget* ThemesPanel::buildSide()
     cf->addLayout(grid);
     lay->addLayout(cf);
 
-    // Parecidos com este
-    auto* sim = new QVBoxLayout;
+    // Parecidos com este (nos temas Animados dá lugar à seção Animação:
+    // comparar paleta não diz muito de um tema que é paisagem)
+    m_similarWrap = new QWidget(side);
+    auto* sim = new QVBoxLayout(m_similarWrap);
     sim->setSpacing(8);
     sim->setContentsMargins(0, 6, 0, 0);
-    sim->addWidget(sectionHead(tr("Parecidos com este"), side));
-    m_similar = new SimilarStrip(side);
+    sim->addWidget(sectionHead(tr("Parecidos com este"), m_similarWrap));
+    m_similar = new SimilarStrip(m_similarWrap);
     m_similar->onPick = [this](const QString& id) { selectId(id); };
     sim->addWidget(m_similar);
-    lay->addLayout(sim);
+    lay->addWidget(m_similarWrap);
+    lay->addWidget(buildAnimSection(side));
 
     lay->addStretch(1);
 
@@ -1352,7 +1377,7 @@ QWidget* ThemesPanel::buildSide()
     acts->addWidget(m_customizeButton);
     acts->addWidget(m_moreButton);
     acts->addStretch(1);
-    lay->addLayout(acts);
+    outer->addLayout(acts);
     return side;
 }
 
@@ -1461,6 +1486,18 @@ void ThemesPanel::rebuildGrid()
         empty = tr("Nenhum favorito ainda.\nClique no coração de um tema pra marcá-lo.");
     } else if (m_view == QLatin1String("all") || m_view == QLatin1String("daynight")) {
         list = mgr->bundledThemes();
+        // Em "Todos", as recomendações de todas as categorias vêm primeiro, na ordem
+        // das categorias no trilho e, dentro de cada uma, na ordem da lista.
+        if (m_view == QLatin1String("all")) {
+            static const char* order[] = { "light", "warm", "dark", "colorful", "estampados", "animados" };
+            QHash<QString, int> rank;
+            for (const char* cat : order)
+                for (const QString& id : recommended().value(QString::fromLatin1(cat)))
+                    if (!rank.contains(id)) rank.insert(id, int(rank.size()));
+            std::stable_sort(list.begin(), list.end(), [&rank](const Theme::MiraTheme& a, const Theme::MiraTheme& b) {
+                return rank.value(a.id, INT_MAX) < rank.value(b.id, INT_MAX);
+            });
+        }
     } else {
         for (const auto& t : mgr->bundledThemes()) if (t.category == m_view) list.append(t);
         // As recomendações da categoria vêm primeiro, na ordem da lista.
@@ -1553,8 +1590,14 @@ void ThemesPanel::refreshSide()
     const bool redemption = shown->id == QLatin1String("redemption");
     if (redemption)
         m_loreCard->setText(QStringLiteral("<i>for those who stay unshaken amidst a crash of worlds</i>"));
-    m_loreCard->setCursor(redemption ? Qt::ArrowCursor : Qt::PointingHandCursor);
-    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy") || redemption);
+    // John & Mary: o cigarro é só estética; o aviso vai junto, com o número de ajuda. Não abre foto.
+    const bool johnMary = shown->id == QLatin1String("anim-johnmary");
+    if (johnMary)
+        m_loreCard->setText(tr("Esse theme tem apenas fins estéticos e não busca incentivar o fumo. "
+                               "Cigarro causa câncer e outros problemas de saúde. No Brasil, você não "
+                               "está sozinho. Para obter ajuda, ligue: 136"));
+    m_loreCard->setCursor(redemption || johnMary ? Qt::ArrowCursor : Qt::PointingHandCursor);
+    m_loreCard->setVisible(shown->id == QLatin1String("tifu") || shown->id == QLatin1String("tommy") || redemption || johnMary);
     const bool fav = mgr->isFavorite(shown->id);
     m_favButton->setStyleSheet(QStringLiteral("QToolButton#favBtn { color: %1; }")
                                    .arg(fav ? kFav.name() : Theme::textMuted()));
@@ -1587,6 +1630,7 @@ void ThemesPanel::refreshSide()
     m_applyButton->setEnabled(!isCur);
     m_applyButton->setText(isCur ? tr("Em uso") : tr("Aplicar"));
     m_customizeButton->setText(mgr->isCustom(shown->id) ? tr("Editar") : tr("Personalizar"));
+    refreshAnim();
 }
 
 void ThemesPanel::refreshFooter()
@@ -2087,6 +2131,7 @@ void ThemesPanel::applyStyle()
         QLineEdit#themesSearch:focus { border-color: %11; }
         QFrame#railSep { background: %8; border: none; }
         QScrollArea#themesGridScroll { background: %5; border: none; }
+        QScrollArea#themesSideScroll, #themesSideBody { background: %1; border: none; }
         #themeFilterBar { background: %5; }
         QPushButton#themeFilterChip {
             background: transparent; color: %4; border: 1px solid %8;
@@ -2142,6 +2187,10 @@ void ThemesPanel::applyStyle()
             padding: 6px 8px; border-radius: @radius-control;
         }
         QPushButton#linkBtn:hover { color: %3; background: %7; }
+        #animWrap QCheckBox { color: %2; font-size: 12px; spacing: 6px; }
+        #animWrap QPushButton#themeFilterChip:disabled { color: %8; border-color: %8; }
+        QLabel#animKey { color: %4; font-size: 11px; }
+        QLabel#animNote { color: %4; font-size: 11px; font-style: italic; }
         #autoSwitchWrap QLabel { font-size: 12px; }
         #autoSwitchWrap QCheckBox { color: %2; font-size: 12px; spacing: 6px; }
         #autoSwitchWrap QLabel#dayNightTitle { color: %3; font-size: 17px; font-weight: 600; }
@@ -2175,4 +2224,161 @@ void ThemesPanel::applyStyle()
         m_gridScroll->viewport()->setStyleSheet(
             QStringLiteral("QWidget#qt_scrollarea_viewport { background: %1; }").arg(Theme::panelBackground()));
     }
+    if (m_sideScroll) {
+        m_sideScroll->viewport()->setStyleSheet(
+            QStringLiteral("QWidget#qt_scrollarea_viewport { background: %1; }").arg(Theme::chromeBackground()));
+    }
+}
+
+// ---------------------------------------------------------------- temas Animados
+
+QWidget* ThemesPanel::buildAnimSection(QWidget* side)
+{
+    m_animWrap = new QWidget(side);
+    m_animWrap->setObjectName(QStringLiteral("animWrap"));
+    auto* v = new QVBoxLayout(m_animWrap);
+    v->setContentsMargins(0, 4, 0, 0);
+    v->setSpacing(6);
+    v->addWidget(sectionHead(tr("Animação"), m_animWrap));
+
+    auto chips = [this](const QList<QPair<QString, QString>>& items, QList<QPushButton*>& out,
+                        const std::function<void(AnimBg::Config&, const QString&)>& apply) {
+        auto* row = new QHBoxLayout;
+        row->setSpacing(6);
+        for (const auto& it : items) {
+            auto* b = new QPushButton(it.second, m_animWrap);
+            b->setObjectName(QStringLiteral("themeFilterChip"));
+            b->setCheckable(true);
+            b->setCursor(Qt::PointingHandCursor);
+            b->setFocusPolicy(Qt::NoFocus);
+            b->setProperty("animValue", it.first);
+            const QString val = it.first;
+            connect(b, &QPushButton::clicked, this, [this, apply, val]() { editAnim([&](AnimBg::Config& c) { apply(c, val); }); });
+            out.append(b);
+            row->addWidget(b);
+        }
+        row->addStretch(1);
+        return row;
+    };
+    auto key = [this](const QString& text) {
+        auto* l = new QLabel(text, m_animWrap);
+        l->setObjectName(QStringLiteral("animKey"));
+        return l;
+    };
+
+    v->addWidget(key(tr("Hora")));
+    v->addLayout(chips({ { QStringLiteral("theme"), tr("Do tema") }, { QStringLiteral("day"), tr("Dia") },
+                         { QStringLiteral("dusk"), tr("Entardecer") }, { QStringLiteral("night"), tr("Noite") } },
+                       m_todButtons, [](AnimBg::Config& c, const QString& v) { c.tod = v; }));
+    // Hora real: a luz da mesa acompanha o relógio (caixinha, pra hora não virar cinco pílulas)
+    m_realCheck = new QCheckBox(tr("Hora real (a luz acompanha o relógio)"), m_animWrap);
+    m_realCheck->setCursor(Qt::PointingHandCursor);
+    connect(m_realCheck, &QCheckBox::toggled, this, [this](bool on) {
+        editAnim([&](AnimBg::Config& c) { c.tod = on ? QStringLiteral("real") : QStringLiteral("theme"); });
+    });
+    v->addWidget(m_realCheck);
+    m_animNote = new QLabel(tr("Este tema tem a própria luz."), m_animWrap);
+    m_animNote->setObjectName(QStringLiteral("animNote"));
+    v->addWidget(m_animNote);
+
+    v->addWidget(key(tr("Chuva")));
+    v->addLayout(chips({ { QStringLiteral("none"), tr("Nenhuma") }, { QStringLiteral("drizzle"), tr("Garoa") },
+                         { QStringLiteral("rain"), tr("Chuva") }, { QStringLiteral("storm"), tr("Tempestade") } },
+                       m_rainButtons, [](AnimBg::Config& c, const QString& v) { c.rain = v; }));
+
+    // Camadas por cima: caixinhas, não pílulas (seis numa linha seria demais).
+    v->addWidget(key(tr("Camadas")));
+    auto* grid = new QGridLayout;
+    grid->setContentsMargins(0, 0, 0, 0);
+    grid->setHorizontalSpacing(14);
+    grid->setVerticalSpacing(4);
+    const QList<QPair<QString, QString>> extras = {
+        { QStringLiteral("stars"), tr("Estrelas") }, { QStringLiteral("fog"), tr("Neblina") }, { QStringLiteral("leaves"), tr("Folhas") },
+        { QStringLiteral("petals"), tr("Pétalas") }, { QStringLiteral("fireflies"), tr("Vaga-lumes") }, { QStringLiteral("snow"), tr("Neve") } };
+    for (int i = 0; i < extras.size(); ++i) {
+        auto* cb = new QCheckBox(extras.at(i).second, m_animWrap);
+        cb->setCursor(Qt::PointingHandCursor);
+        cb->setProperty("animValue", extras.at(i).first);
+        const QString id = extras.at(i).first;
+        connect(cb, &QCheckBox::toggled, this, [this, id](bool on) {
+            editAnim([&](AnimBg::Config& c) {
+                c.extras.removeAll(id);
+                if (on) c.extras.append(id);
+            });
+        });
+        m_extraChecks.append(cb);
+        grid->addWidget(cb, i / 3, i % 3);
+    }
+    grid->setColumnStretch(3, 1);
+    v->addLayout(grid);
+
+    m_animReset = new QPushButton(tr("Voltar ao padrão do tema"), m_animWrap);
+    m_animReset->setObjectName(QStringLiteral("linkBtn"));
+    m_animReset->setCursor(Qt::PointingHandCursor);
+    connect(m_animReset, &QPushButton::clicked, this, [this]() {
+        const QString id = shownId();
+        if (!id.isEmpty()) AnimBg::resetConfig(id);
+    });
+    auto* resetRow = new QHBoxLayout;
+    resetRow->setContentsMargins(-8, 0, 0, 0);
+    resetRow->addWidget(m_animReset);
+    resetRow->addStretch(1);
+    v->addLayout(resetRow);
+
+    // A prévia anda sozinha enquanto um tema Animado está à mostra.
+    m_animTimer = new QTimer(this);
+    m_animTimer->setInterval(33);
+    connect(m_animTimer, &QTimer::timeout, this, [this]() {
+        if (m_preview && m_preview->isVisible()) m_preview->update();
+        if (m_zoomPreview && m_zoomPreview->isVisible()) m_zoomPreview->update();
+    });
+    connect(AnimBg::Notifier::instance(), &AnimBg::Notifier::changed, this, [this]() {
+        refreshAnim();
+        if (m_grid) m_grid->update();
+    });
+    m_animWrap->hide();
+    return m_animWrap;
+}
+
+void ThemesPanel::editAnim(const std::function<void(AnimBg::Config&)>& change)
+{
+    const Theme::MiraTheme* t = themeById(shownId());
+    if (!t || t->animScene.isEmpty()) return;
+    AnimBg::Config c = AnimBg::config(*t);
+    change(c);
+    if (c == AnimBg::factoryConfig(*t)) AnimBg::resetConfig(t->id);
+    else AnimBg::setConfig(t->id, c);
+}
+
+void ThemesPanel::refreshAnim()
+{
+    if (!m_animWrap) return;
+    const Theme::MiraTheme* t = themeById(shownId());
+    const bool anim = t && !t->animScene.isEmpty();
+    m_animWrap->setVisible(anim);
+    if (m_similarWrap) m_similarWrap->setVisible(!anim);
+    // A prévia compara o tema em uso com o mostrado: anda se algum dos dois for Animado.
+    const bool showing = anim || !Theme::Manager::instance()->current().animScene.isEmpty();
+    if (showing && isVisible()) { if (!m_animTimer->isActive()) m_animTimer->start(); }
+    else m_animTimer->stop();
+    if (!anim) return;
+    const AnimBg::Config c = AnimBg::config(*t);
+    const bool todOK = AnimBg::todAllowed(t->animScene);
+    for (QPushButton* b : m_todButtons) {
+        const QString v = b->property("animValue").toString();
+        b->setEnabled(todOK || v == QLatin1String("theme"));
+        b->setChecked(todOK ? v == c.tod : v == QLatin1String("theme"));
+    }
+    m_animNote->setVisible(!todOK);
+    {
+        const QSignalBlocker block(m_realCheck);
+        m_realCheck->setEnabled(todOK);
+        m_realCheck->setChecked(todOK && c.tod == QLatin1String("real"));
+    }
+    for (QPushButton* b : m_rainButtons) b->setChecked(b->property("animValue").toString() == c.rain);
+    for (QCheckBox* cb : m_extraChecks) {
+        const QSignalBlocker block(cb);
+        cb->setChecked(c.extras.contains(cb->property("animValue").toString()));
+    }
+    m_animReset->setVisible(c != AnimBg::factoryConfig(*t));
 }

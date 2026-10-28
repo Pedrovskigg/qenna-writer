@@ -27,6 +27,9 @@ struct SubR {
 
 using Pts = QVector<QPointF>;
 
+// guitarOnly(): a Guitarra desenha só o instrumento, de pé, sem cenário nem sombra (o tema animado Campfire usa)
+bool s_instrumentOnly = false;
+
 void drawFamily(MsCanvas& g, int fam, const QString& id, Rng& rnd, double grow, double VW, double VH, double s, const Pal& P, bool rect, int words) {
     const double CX = VW / 2, CY = VH / 2, wide = VW / 104;
     const QColor ink = P.ink, ink2 = P.ink2, faint = P.faint;
@@ -1146,7 +1149,7 @@ void drawFamily(MsCanvas& g, int fam, const QString& id, Rng& rnd, double grow, 
             rr(x + 1, y + 1, w, h, 1.4, P.shade(0, .4)); rr(x, y, w, h, 1.4, tol); rr(x + 1.6, y + 1.6 + (top ? 3.4 : 0), w - 3.2, h - 3.2 - (top ? 3.4 : 0), .8, grille);
             if (top) { rr(x + 1.6, y + 1.2, w - 3.2, 2.2, .4, P.shade(.1)); for (int i = 0; i < 5; ++i) dot(x + 3.4 + i * (w - 6.8) / 4, y + 2.3, .5, P.paper2); }
         };
-        switch (t) {
+        if (!s_instrumentOnly) switch (t) {
         case 0: {  // violão clássico: quarto à noite, janela, estante de partitura
             wall(.18);
             for (double x = 3; x < VW; x += 6) line(x, 0, x, floorY, P.shade(.15, .6), .6);
@@ -1359,9 +1362,17 @@ void drawFamily(MsCanvas& g, int fam, const QString& id, Rng& rnd, double grow, 
         }
 
         // a guitarra
-        g.save(); g.translate(gx0, gy0); g.rotate(a); g.scale(k, k);
-        g.save(); g.translate(1.6, 1.2); g.fillStyle = rgba(0, 0, 0, .4); bodyPath(); g.fill(); headPath(); g.fill();
-        pathPoly({ { -S.nutW / 2, 0 }, { S.nutW / 2, 0 }, { S.jw / 2, boardEnd }, { -S.jw / 2, boardEnd } }); g.fill(); g.restore();
+        if (s_instrumentOnly) {
+            // de pé, em cm, com 2 cm de folga: a cabeça no topo e o lado mais à esquerda em x = 2
+            double minX = 1e9;
+            for (const QPointF& p : body) minX = std::min(minX, p.x());
+            for (const QPointF& p : head) minX = std::min(minX, p.x());
+            g.save(); g.translate(-minX + 2, -topY + 2);
+        } else {
+            g.save(); g.translate(gx0, gy0); g.rotate(a); g.scale(k, k);
+            g.save(); g.translate(1.6, 1.2); g.fillStyle = rgba(0, 0, 0, .4); bodyPath(); g.fill(); headPath(); g.fill();
+            pathPoly({ { -S.nutW / 2, 0 }, { S.nutW / 2, 0 }, { S.jw / 2, boardEnd }, { -S.jw / 2, boardEnd } }); g.fill(); g.restore();
+        }
         // corpo
         bodyPath(); g.fillStyle = finish(); g.fill();
         if (S.flame) {
@@ -2636,6 +2647,30 @@ bool isPorted(int family) {
         || (family >= MsVignette::Azulejo && family <= MsVignette::Chess)
         || family == MsVignette::Blades || family == MsVignette::Firearms    // parte 4 (2026-10-08): Arsenal
         || family == MsVignette::Guitar;                                       // parte 5 (2026-10-08): Guitarra
+}
+
+QImage guitarOnly(int tier, double pxPerCm) {
+    static const int kWords[] = { 0, 300, 800, 1500, 2500, 4000, 6000, 9000, 12000 };
+    tier = std::clamp(tier, 0, 8);
+    const MsGuitarOutlines::Outline O = MsGuitarOutlines::get(tier);
+    double minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    auto span = [&](const double* d, int n) { for (int i = 0; i < n; ++i) { minX = std::min(minX, d[i * 2]); maxX = std::max(maxX, d[i * 2]); minY = std::min(minY, d[i * 2 + 1]); maxY = std::max(maxY, d[i * 2 + 1]); } };
+    span(O.body, O.nBody);
+    span(O.head, O.nHead);
+    QImage img(std::max(1, int(std::ceil((maxX - minX + 4) * pxPerCm))), std::max(1, int(std::ceil((maxY - minY + 4) * pxPerCm))), QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::transparent);
+    QPainter p(&img);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    const QString seed = QStringLiteral("instrumento-%1").arg(tier);
+    Rng rnd{ hashStr(seed) };
+    const Pal P = paletteFor(QColor(QStringLiteral("#7a4a26")));
+    MsCanvas g(p);
+    g.scale(pxPerCm, pxPerCm);
+    g.lineCap = Qt::RoundCap; g.lineJoin = Qt::RoundJoin; g.strokeStyle = P.ink; g.fillStyle = P.ink;
+    s_instrumentOnly = true;
+    drawFamily(g, MsVignette::Guitar, seed, rnd, .5, 104, 104, pxPerCm, P, true, kWords[tier]);
+    s_instrumentOnly = false;
+    return img;
 }
 
 bool render(QPainter& p, QSize size, const QString& seedId, int words, const QColor& base, int family, bool rect) {

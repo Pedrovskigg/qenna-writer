@@ -77,6 +77,8 @@ signals:
     void openMentionInEditorRequested(const ConstrutorStore::Mention& mention);
     // Clique numa pessoa em "Gente daqui": consultar a ficha.
     void openCharacterRequested(const QString& drawerKey, const QString& itemId);
+    // Botão Mapa do topo: abrir o Qenna Map (a mesma janela da LeftBar).
+    void openWorldMapRequested();
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -138,6 +140,7 @@ private:
     QPushButton* m_lugaresBtn = nullptr;
     QPushButton* m_sistemasBtn = nullptr;
     QLineEdit* m_searchEdit = nullptr;
+    QPushButton* m_mapBtn = nullptr;
     QListWidget* m_searchResults = nullptr;
     EncFormatBar* m_formatBar = nullptr;
 

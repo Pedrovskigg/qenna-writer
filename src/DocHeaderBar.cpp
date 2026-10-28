@@ -301,6 +301,7 @@ DocHeaderBar::DocHeaderBar(QWidget* parent)
     m_title = new QLabel(this);
     m_title->setObjectName(QStringLiteral("docHeaderTitle"));
     m_title->setAlignment(Qt::AlignCenter);
+    m_title->installEventFilter(this);   // duplo clique: editar o capítulo
     m_textCol->addWidget(m_title, 0, Qt::AlignHCenter);
 
     // Subtítulo e botão de variação viajam juntos: no bloco da toolbar o botão
@@ -473,7 +474,7 @@ void DocHeaderBar::setScreenplayGuide(bool visible, ScreenplayElement element, b
     m_guideEl = element;
     m_guideEmpty = emptyLine;
     refreshGuide();
-    if (reserveChanged) relayoutText();
+    if (reserveChanged) refreshGroupTag();   // as etiquetas do canto cedem a vez (e o título se reajusta)
 }
 
 void DocHeaderBar::refreshGuide()
@@ -505,8 +506,54 @@ void DocHeaderBar::refreshGuide()
 
 int DocHeaderBar::guideReserve() const
 {
-    if (!m_guideWanted || !m_guide) return 0;
-    return m_guide->sizeHint().width() + kGuideGap;
+    int r = 0;
+    if (m_guideWanted && m_guide) r = m_guide->sizeHint().width() + kGuideGap;
+    if (m_groupWanted && m_groupTag && !m_guideWanted) r = qMax(r, m_groupTag->width() + kGuideGap);
+    if (m_povWanted && m_povTag && !m_guideWanted) r = qMax(r, m_povTag->width() + kGuideGap);
+    return r;
+}
+
+void DocHeaderBar::setGroupTag(QWidget* tag)
+{
+    m_groupTag = tag;
+    tag->setParent(this);
+    refreshGroupTag();
+}
+
+void DocHeaderBar::setGroupTagVisible(bool visible)
+{
+    if (m_groupWanted == visible) return;
+    m_groupWanted = visible;
+    refreshGroupTag();
+}
+
+void DocHeaderBar::setPovTag(QWidget* tag)
+{
+    m_povTag = tag;
+    tag->setParent(this);
+    refreshGroupTag();
+}
+
+void DocHeaderBar::setPovTagVisible(bool visible)
+{
+    if (m_povWanted == visible) return;
+    m_povWanted = visible;
+    refreshGroupTag();
+}
+
+// Grupo (gaveta) e narrador (manuscrito) dividem o canto direito: nunca valem
+// pro mesmo documento. O guia do roteiro, quando aparece, tem a vez.
+void DocHeaderBar::refreshGroupTag()
+{
+    auto place = [this](QWidget* tag, bool wanted) {
+        if (!tag) return;
+        const bool on = wanted && !m_guideWanted;
+        tag->setVisible(on);
+        if (on) { tag->move(width() - kSideMargin - tag->width(), (height() - tag->height()) / 2); tag->raise(); }
+    };
+    place(m_groupTag, m_groupWanted);
+    place(m_povTag, m_povWanted);
+    relayoutText();
 }
 
 void DocHeaderBar::setDocumentTitle(const QString& title, const QString& subtitle)
@@ -643,6 +690,10 @@ bool DocHeaderBar::eventFilter(QObject* watched, QEvent* event)
         emit avatarChangeRequested();
         return true;
     }
+    if (watched == m_title && event->type() == QEvent::MouseButtonDblClick) {
+        emit titleDoubleClicked();
+        return true;
+    }
     return QWidget::eventFilter(watched, event);
 }
 
@@ -664,6 +715,7 @@ void DocHeaderBar::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
     refreshGuide();  // canto direito e teclas dependem da largura
+    refreshGroupTag();
     relayoutText(); // a elipse depende da largura disponível
 }
 

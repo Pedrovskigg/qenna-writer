@@ -6,7 +6,9 @@
 // atalhos de tempo, e o resumo. Os dois últimos são opcionais e dizem isso.
 // Enquanto aberta, a janela do app escurece por baixo.
 
+#include "PovPicker.h"
 #include "SheetDialog.h"
+#include <QList>
 #include <QString>
 #include <functional>
 
@@ -27,6 +29,12 @@ struct ChapterSheetSpec {
     QString type = QStringLiteral("chapter");   // só capítulo
     QString typeLabel;                           // tipo "custom"
     bool    showPov = false;  bool povOther = false;
+    // Quem narra (só capítulo): etiqueta no topo da folha, com o elenco. Sem
+    // personagem nenhum (povOptions vazio), nem aparece. Escolher alguém que
+    // não é o narrador da obra (narratorId) já marca o "outro POV".
+    QString pov;
+    QList<PovPicker::Option> povOptions;
+    QString narratorId;
     bool    showOptOut = false; bool optOut = false;   // popup da cena criada com "----"
     bool    openAfter = true; // saída: Enter = criar e abrir; Ctrl+Enter = criar e ficar
 
@@ -59,6 +67,8 @@ private:
     void refreshReading();
     void finish(bool openAfter);
     QString currentType() const;
+    void syncPovOther();
+    PovPicker::Option povOption(const QString& id) const;
 
     ChapterSheetSpec& s;
     class SheetChoice* m_typeChoice = nullptr;   // capítulo, prólogo, interlúdio…
@@ -73,6 +83,8 @@ private:
     QToolButton* m_povAdd = nullptr;
     QCheckBox*   m_pov = nullptr;
     QCheckBox*   m_optOut = nullptr;
+    PovPicker*   m_povPick = nullptr;
+    QString      m_povId;
     qreal        m_startChrono = 0.0;
     bool         m_startOk = false;
 };

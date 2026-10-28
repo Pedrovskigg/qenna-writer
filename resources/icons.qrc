@@ -246,6 +246,7 @@
         <file alias="leftbar/whiteboard.svg">../src/assets/icons/leftbar/whiteboard.svg</file>
         <file alias="leftbar/consistency.svg">../src/assets/icons/leftbar/consistency.svg</file>
         <file alias="leftbar/timeline.svg">../src/assets/icons/leftbar/timeline.svg</file>
+        <file alias="leftbar/worldmap.svg">../src/assets/icons/leftbar/worldmap.svg</file>
         <file alias="leftbar/groups.svg">../src/assets/icons/leftbar/groups.svg</file>
         <file alias="leftbar/outline.svg">../src/assets/icons/leftbar/outline.svg</file>
         <file alias="elements/user.svg">../src/assets/icons/elements/user.svg</file>

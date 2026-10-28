@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "PovPicker.h"
 #include "CharacterDetector.h"
 #include <QPointer>
 #include <functional>
@@ -69,6 +70,7 @@ class AIChatPanel;
 class MarkerStore;
 class NotesStore;
 class MapPinsStore;
+class GroupPicker;
 class MarkerPickPopup;
 class MarkerHoverPopup;
 class AmbienceManager;
@@ -107,6 +109,8 @@ class QToolButton;
 class FindBar;
 class GlobalSearchPanel;
 class PresencePopup;
+
+namespace carto { class Panel; }
 
 class MainWindow : public QMainWindow
 {
@@ -151,6 +155,7 @@ private:
     void setupToolbar();
     void updateEditorContainerMargins();
     void applyEditorStyle();
+    void formatPastedRange(int from, int to);
     void applyTextColor();
     void applyEditorFont();
     void updateDocCachePinnedKeys();
@@ -237,6 +242,9 @@ private:
     // "Onde parei" da gaveta de Manuscritos (QSettings por projeto).
     void recordResumePoint();
     void loadResumeTrail();
+    void editChapterDetails(const QString& chapterId);
+    QList<PovPicker::Option> povOptionsFor(const QString& manuscriptId, const QString& chapterId) const;
+    QString narratorElementId() const;
     void resumeAt(const QString& manuscriptId, const QString& chapterId, int sceneIndex,
                   const QString& sentence, int position);
     void applyProjectRoot(const QString& root);
@@ -385,6 +393,8 @@ private:
     // stores/provider injetados — o Construtor mora embutido nela, não tem
     // mais janela própria.
     TerritorioWindow* ensureTerritorioWindow();
+    void showCartoPanel();
+    void connectCartoProject();
     // Cria (lazy) e devolve o painel de preview de e-reader — feature de uso
     // ocasional, não vale pagar custo de boot criando eager como os painéis
     // sempre visíveis (wordCountPanel etc.).
@@ -622,6 +632,7 @@ private:
     bool m_backupFailWarnedThisSession = false;
     GroupsPanel *groupsPanel = nullptr;
     LousaPanel *lousaPanel = nullptr;
+    carto::Panel *cartoPanel = nullptr;   // o Mapa (gerador de mundos)
     TimelinePanel *timelinePanel = nullptr;
     OutlinePanel *outlinePanel = nullptr;
     CharacterSheetPanel *characterSheetPanel = nullptr;
@@ -669,6 +680,8 @@ private:
     // Faixa de titulo no topo da folha; so existe com a TopToolbar na lateral,
     // onde a barra nao tem mais onde mostrar o documento em edicao.
     DocHeaderBar *docHeader = nullptr;
+    GroupPicker *m_docGroup = nullptr;   // a etiqueta de grupo do doc de gaveta aberto (no DocHeader)
+    PovPicker *m_docPov = nullptr;       // o narrador do capítulo/cena aberto (no DocHeader, com o POV à vista ligado)
     GrannaNotifier *grannaNotifier = nullptr;
     QScrollArea *editorScroll = nullptr;
     QScrollBar *externalScrollBar = nullptr;

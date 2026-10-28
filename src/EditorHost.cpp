@@ -83,8 +83,11 @@ bool EditorHost::tryPasteClean() {
     QString cleaned = html;
     cleaned.remove(hrRe);
     QTextCursor cursor = m_editor->textCursor();
+    const int from = cursor.selectionStart();
     cursor.insertHtml(cleaned);
     m_editor->setTextCursor(cursor);
+    // mesmo aviso do colar normal (SpellEditor::pasted): a formatação de parágrafo do projeto entra
+    QMetaObject::invokeMethod(m_editor, "pasted", Q_ARG(int, from), Q_ARG(int, cursor.position()));
     return true;
 }
 

@@ -146,6 +146,14 @@ void SheetDialog::replaceHeader(QWidget* header)
     m_root->insertWidget(0, header);
 }
 
+void SheetDialog::addHeaderWidget(QWidget* w)
+{
+    auto* top = static_cast<QHBoxLayout*>(m_top);
+    w->setParent(m_card);
+    top->insertWidget(top->count() - 1, w, 0, Qt::AlignVCenter);
+    top->insertSpacing(top->count() - 1, 6);
+}
+
 void SheetDialog::setEyebrow(const QString& text)
 {
     m_eyebrow->setText(text.toUpper());

@@ -242,6 +242,24 @@ qt_add_executable(qenna-writer
     src/LoadingToast.cpp
     src/LoadingToast.h
     src/BackgroundOverlay.cpp
+    src/AnimBackground.cpp
+    src/AnimBackground.h
+    src/AnimBackgroundCity.cpp
+    src/AnimBackgroundEngines.h
+    src/AnimKit.h
+    src/AnimKit.cpp
+    src/AnimLeva2a.cpp
+    src/AnimLeva2b.cpp
+    src/AnimLeva3.cpp
+    src/AnimLeva4.cpp
+    src/AnimLeva5.cpp
+    src/AnimCityDepth.cpp
+    src/AnimNeonDistrict.cpp
+    src/AnimNature.cpp
+    src/AnimDesert.cpp
+    src/AnimCanvas.h
+    src/AnimGenresA.cpp
+    src/AnimGenresB.cpp
     src/BackgroundWidget.cpp
     src/BackgroundWidget.h
     src/ThemeEditorDialog.cpp
@@ -354,6 +372,10 @@ qt_add_executable(qenna-writer
     src/RemindersStore.h
     src/RemindersPanel.cpp
     src/RemindersPanel.h
+    src/GroupPicker.cpp
+    src/GroupPicker.h
+    src/PovPicker.cpp
+    src/PovPicker.h
     src/GroupsPanel.cpp
     src/GroupsPanel.h
     src/LousaScene.cpp
@@ -384,6 +406,50 @@ qt_add_executable(qenna-writer
     src/LousaActionBar.h
     src/LousaExtras.cpp
     src/LousaExtras.h
+    src/carto/CartoCore.cpp
+    src/carto/CartoCore.h
+    src/carto/CartoPaint.cpp
+    src/carto/CartoPaint.h
+    src/carto/CartoEdit.cpp
+    src/carto/CartoEdit.h
+    src/carto/CartoInfo.cpp
+    src/carto/CartoInfo.h
+    src/carto/CartoNames.cpp
+    src/carto/CartoNames.h
+    src/carto/CartoNameLang.cpp
+    src/carto/CartoNameLang.h
+    src/carto/CartoDoc.cpp
+    src/carto/CartoDoc.h
+    src/carto/CartoSprites.cpp
+    src/carto/CartoSprites.h
+    src/carto/CartoSpritesArts.cpp
+    src/carto/CartoSpritesArts4.cpp
+    src/carto/CartoSceneDeco.cpp
+    src/carto/CartoSpritesKit.h
+    src/carto/CartoScene.cpp
+    src/carto/CartoScene.h
+    src/carto/CartoStore.cpp
+    src/carto/CartoStore.h
+    src/carto/CartoIcons.cpp
+    src/carto/CartoIcons.h
+    src/carto/CartoCanvas.cpp
+    src/carto/CartoCanvas.h
+    src/carto/CartoCanvasTools.cpp
+    src/carto/CartoCanvasExplore.cpp
+    src/carto/CartoBuild.cpp
+    src/carto/CartoBuild.h
+    src/carto/CartoExplore.cpp
+    src/carto/CartoExplore.h
+    src/carto/CartoAstrolabe.cpp
+    src/carto/CartoAstrolabe.h
+    src/carto/CartoRing.cpp
+    src/carto/CartoRing.h
+    src/carto/CartoPanel.cpp
+    src/carto/CartoPanel.h
+    src/carto/CartoPanelDocks.cpp
+    src/carto/CartoPanelUi.cpp
+    src/carto/CartoCartela.cpp
+    src/carto/CartoCartela.h
     src/LousaTypes.h
     src/CharacterSheetPanel.cpp
     src/CharacterSheetPanel.h
@@ -457,6 +523,12 @@ qt_add_executable(qenna-writer
     resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
+
+# O planeta do Citadel é pintado pixel a pixel na montagem do tema: otimizado mesmo no Debug, senão trava ~1 s ao trocar de tema
+set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+# O Mapa pinta milhões de pixels por quadro (gerador, pintor, pincéis): otimizado mesmo no Debug
+set_source_files_properties(src/carto/CartoCore.cpp src/carto/CartoPaint.cpp src/carto/CartoEdit.cpp src/carto/CartoInfo.cpp src/carto/CartoNames.cpp src/carto/CartoSprites.cpp src/carto/CartoSpritesArts.cpp src/carto/CartoSpritesArts4.cpp src/carto/CartoScene.cpp
+                            src/carto/CartoCanvas.cpp src/carto/CartoCanvasTools.cpp src/carto/CartoCanvasExplore.cpp src/carto/CartoDoc.cpp src/carto/CartoStore.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 qt_add_translations(qenna-writer
     TS_FILES

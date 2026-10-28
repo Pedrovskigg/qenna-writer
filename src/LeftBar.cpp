@@ -384,6 +384,8 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
                     tr("Lousa de planejamento"), Whiteboard);
     makeFixedButton(QStringLiteral("timeline.svg"), QStringLiteral("T"),
                     tr("Linha do tempo"), Timeline);
+    makeFixedButton(QStringLiteral("worldmap.svg"), QStringLiteral("M"),
+                    tr("Mapa do mundo"), WorldMap);
     makeFixedButton(QStringLiteral("manuscriptpanel.svg"), QStringLiteral("T"),
                     tr("Manuscritos"), Manuscripts);
     makeFixedButton(QStringLiteral("outline.svg"), QStringLiteral("O"),
@@ -683,6 +685,7 @@ void LeftBar::buildGroups() {
         { QStringLiteral("info"),        m_fixedButtons.value(Info) },
         { QStringLiteral("whiteboard"),  m_fixedButtons.value(Whiteboard) },
         { QStringLiteral("timeline"),    m_fixedButtons.value(Timeline) },
+        { QStringLiteral("worldmap"),    m_fixedButtons.value(WorldMap) },
         { QStringLiteral("manuscripts"), m_fixedButtons.value(Manuscripts) },
         { QStringLiteral("outline"),     m_fixedButtons.value(Outline) },
         { QStringLiteral("groups"),      m_fixedButtons.value(Groups) },
@@ -692,7 +695,7 @@ void LeftBar::buildGroups() {
 QHash<QString, QStringList> LeftBar::defaultButtonLayout() const {
     return {
         { QStringLiteral("project"),  { QStringLiteral("info") } },
-        { QStringLiteral("planning"), { QStringLiteral("whiteboard"), QStringLiteral("timeline") } },
+        { QStringLiteral("planning"), { QStringLiteral("whiteboard"), QStringLiteral("timeline"), QStringLiteral("worldmap") } },
         { QStringLiteral("writing"),  { QStringLiteral("manuscripts"), QStringLiteral("outline"),
                                         QStringLiteral("groups") } },
     };
@@ -1040,6 +1043,7 @@ void LeftBar::refreshLabels() {
         { QStringLiteral("info"),        tr("Informações") },
         { QStringLiteral("whiteboard"),  tr("Lousa") },
         { QStringLiteral("timeline"),    tr("Linha do tempo") },
+        { QStringLiteral("worldmap"),    tr("Mapa") },
         { QStringLiteral("manuscripts"), tr("Manuscritos") },
         { QStringLiteral("outline"),     tr("Outline") },
         { QStringLiteral("groups"),      tr("Grupos") },

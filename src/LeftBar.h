@@ -29,6 +29,7 @@ public:
         Manuscripts,
         Groups,
         Outline,
+        WorldMap,   // o Mapa (gerador de mundos)
     };
     Q_ENUM(FixedAction)
 

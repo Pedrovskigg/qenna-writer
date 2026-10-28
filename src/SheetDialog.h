@@ -56,6 +56,8 @@ protected:
     // Troca a linha de cima ("NOVO X" + ×) por um cabeçalho próprio, colado
     // nas bordas da folha (o pôster do personagem). Esc continua cancelando.
     void replaceHeader(QWidget* header);
+    // Algo pequeno no cabeçalho, antes do × (a etiqueta de grupo do documento novo).
+    void addHeaderWidget(QWidget* w);
     // Rodapé: dica do Enter + Cancelar + principal. Devolve o principal
     // (já ligado a accept; troque a conexão se precisar validar antes).
     QPushButton* addFooter(const QString& okText, const QString& enterHint);
