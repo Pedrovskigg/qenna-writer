@@ -19,6 +19,27 @@ wrapped in a fully themeable editor with Focus Mode.
 Qenna Writer is free — no subscriptions, no paywalled features. Made by one
 writer, for other writers.
 
+## New in 1.5: the Map
+
+<img width="1500" height="880" alt="Qenna Writer's Map: a generated continent with mountains, forests, roads, cities and kingdoms" src="docs/img/map-full.webp" />
+
+Qenna Writer now draws maps. Generate a continent from a seed or paint one
+by hand; the terrain is real relief (a mountain is height, not a picture of
+a mountain), and altitude, latitude and humidity decide the climate and the
+biome of every patch of ground.
+
+- **Build** on it: castles in a dozen styles, landmarks, legends, ships and
+  sea monsters, and brushes that paint whole cities and forests.
+- **Explore** it: every territory is a group in your project. Click it and
+  its documents open beside the map, readable and editable. Name a castle
+  and it becomes a place of its own.
+- **See it** in the afternoon or at night, with the windows lit, or in the
+  Ink, Parchment, Nautical chart, Topographic, Watercolor and War plan views.
+- A ruler with travel time, several maps per project, and PNG export at 1×,
+  2× or 3× for the front of the book.
+
+<img width="1500" height="880" alt="Explore mode: a kingdom outlined on the map, the tree of groups and a document open beside it" src="docs/img/map-explore.webp" />
+
 ## Tech stack
 
 - C++17, Qt 6.8 (Core, Gui, Widgets, Svg, Multimedia, Network, TextToSpeech)
@@ -77,7 +98,8 @@ keep their own licenses — see
 ## Related projects
 
 - [Cover Creator](https://github.com/Pedrovskigg/qenna-cover-creator) —
-  cover design tool bundled with Qenna Writer
+  the old standalone cover tool, discontinued in 1.5 (covers are now made
+  inside Qenna, with the Quick cover)
 - [Mira's Maestro](https://github.com/Pedrovskigg/Maestro) — free musical
   theory plugin
 
