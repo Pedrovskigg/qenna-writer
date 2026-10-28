@@ -8,6 +8,9 @@ on:
 jobs:
   macos:
     runs-on: macos-14
+    # rascunho de release só aparece pra quem pode escrever no repo (os sons)
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -29,19 +32,21 @@ jobs:
       - name: Ninja
         run: brew install ninja || true
 
-      # Os sons ambiente (93 MB) não são versionados: vêm do .zip anexado na
-      # pré-release do Mac (os mesmos que o instalador do Windows já leva). O
-      # innoextract não lê o Inno Setup atual, por isso não saem de lá.
+      # Os sons ambiente (93 MB) não são versionados: vêm do .zip do rascunho
+      # de release "sons-mac" deste repo (os mesmos do instalador do Windows).
+      # Rascunho, e não release pública, porque a licença do Mixkit deixa usar
+      # os sons dentro do app, mas não redistribuir os arquivos soltos.
       - name: Sons ambiente
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          curl -fsSL -o sons.zip "$SONS_URL"
+          URL=$(gh api "repos/${{ github.repository }}/releases" --jq '.[] | select(.draft and .name == "sons-mac") | .assets[] | select(.name == "ambience-sounds.zip") | .url')
+          curl -fsSL -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" -o sons.zip "$URL"
           mkdir -p src/assets
           unzip -q sons.zip -d src/assets
           ls src/assets/ambience-sounds | wc -l
           rm sons.zip
-        env:
-          SONS_URL: https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/download/v1.5.0-mac-beta/ambience-sounds.zip
 
       # Universal: o mesmo app abre em Mac com chip Apple (arm64) e em Mac
       # Intel (x86_64). macOS 12 é o mínimo do Qt 6.8.
