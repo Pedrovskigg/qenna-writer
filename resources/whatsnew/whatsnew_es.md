@@ -1,80 +1,116 @@
-**Qenna Writer - Update 1.4.9**
-*Demasiadas cosas para ser solo una 1.4.8, pero no las suficientes para ser una 1.5.0*
+**Qenna Writer - BIG UPDATE - 1.5**
 
-C'mon Kids!
+Hello guys!
 
-La nueva versión de Qenna Writer tardó un poco, pero salió.
-Culpa mía, lo reconozco. Esta última semana jugué más de lo que trabajé por aquí, así que asumo la culpa.
-Y es así MISMO. ¿No te gustó? Mándame un e-mail, ¿vale?
+La nueva actualización de Qenna ya está aquí, con las novedades más calientes del momento.
+Trabajé muchísimo en esta versión. Más exactamente, no en ella en sí, sino en lo que trae.
 
-Anyway, sin más rodeos, veamos qué hay de nuevo y, lo admito, hay muchas cosas chulas.
+Antes que nada...
 
-## Novedades
+## Aviso
 
-**○ ¡TEMAS ANIMADOS!**
-¡Así es! Qenna ahora tiene una nueva categoría de Temas. Los Temas animados.
-Son 55 Temas con ilustraciones vívidas que se mueven, tienen efectos, lluvia, nieve, tormenta con rayos ¡y mucho más!
-En serio. Hay un montón de opciones geniales, no solo en los Temas en sí, sino también para personalizarlos.
+Amigos, tengo una noticia triste: el Cover Creator (aquel que se descargaba aparte de Qenna y todo eso) va a ser descontinuado.
+El motivo es más simple y directo de lo que parece: creamos un creador de portadas competente dentro del propio Qenna, y es más fácil llevarle lo que le falta que mantener dos apps al mismo tiempo.
+Así que ya no recibirá actualizaciones. Si lo usas, no te preocupes. El repositorio no se va a borrar y siempre seguirá existiendo, solo que no se actualizará más.
+Pronto, el creador de portadas que hicimos dentro de Qenna tendrá todas las funciones que tenía ese creador más completo. Así que será una migración natural. Probablemente en las próximas versiones.
 
-**•** Personalizar de cada tema: hora del día, lluvia y capas por encima (estrellas, niebla, hojas, pétalos, luciérnagas, nieve). Se guarda por tema.
-**•** Hora real: la luz sigue el reloj del ordenador. En varios temas la hora pasa dentro del dibujo: el día se vuelve atardecer y luego noche, poco a poco.
-**•** Las miniaturas y la vista previa del panel de Temas muestran el clima y las opciones para personalizarlo.
-**•** En Configuración: activar/desactivar, intensidad, calidad de la animación y fotogramas por segundo, para los ordenadores más modestos.
+Las integraciones y conexiones de Qenna Writer con Qenna Cover se quitaron del programa. Pero él sigue funcionando por su cuenta. Solo tienes que abrirlo o crear un acceso directo desde su carpeta raíz.
 
-La animación se pausa sola cuando Qenna está en segundo plano o minimizado.
+Si te gustaba, lo entiendo. Era genial de verdad. Yo también lo voy a extrañar, pero no estamos perdiendo nada. El plan es que el creador de portadas propio de Qenna sea incluso mejor que él. Y va a salir bien. *Voy a hacer que salga bien*.
 
-Y pasando ahora a la Pizarra:
+Y también: si estás leyendo esto, es porque la versión de macOS de Qenna ya se envió a los testers. Ahora toca esperar el veredicto. Tengo confianza: si todo va bien, Qenna tendrá oficialmente su versión para macOS.
 
-**○ ¡Bolígrafo y Boceto en la Pizarra!**
-Ahora, si tienes una pantalla o tableta gráfica, o tu ordenador admite lápiz de alguna forma, puedes usarlo directamente en la Pizarra.
-Hay bolígrafo, marcador, resaltador y borrador, y reconoce la presión del lápiz.
-¿No tienes lápiz? También funciona con el ratón.
-Y un par de trucos: quédate quieto al final del trazo y se convierte en una forma perfecta, y con Shift sale una recta.
+*siguiendo...*
 
-Y para los más artistas:
-**• Boceto**
-Dentro de la Pizarra, puedes usar la herramienta Boceto. Una hoja en blanco con capas y pinceles para dibujar.
-El dibujo se puede exportar y la app acepta algunos formatos de pinceles externos para importarlos.
-Y el dibujo puede convertirse en la foto de tu personaje.
+¿Sabes? Hay una función que se me ocurrió al final de la vida del difunto Mira Writing, pero que terminé dejando de lado por algunos motivos. Es una función algo... de nicho, digamos. Y además extremadamente compleja y trabajosa de crear.
+El Creador de Mapas. El concepto funcionaba genial y había llegado muy lejos, pero... la complejidad no compensaba. Así que lo dejé en la nevera (*literalmente, el archivo donde guardo las ideas de Qenna se llama "la nevera"*) y me olvidé de él.
+Entonces, mucho tiempo después, cuando empecé a trabajar en esta versión, estaba pensando en ideas nuevas y en cosas que podía traer para que Qenna fuera aún más completo de lo que ya es.
+Y me lo encontré de nuevo, mucho tiempo después.
+Y *holy shit*, nunca me había dado cuenta de lo lejos que había llegado. Viendo aquel archivo de casi 3 mil líneas, solo pensé... ¿por qué no?
 
-Y llega también:
-**○ Autocorrección de nombres**
-Un ejemplo práctico lo explica mejor.
-Si tu personaje se llama Mary y escribes Marg, la app lo corregirá automáticamente a Mary.
-Vale para personajes, escenarios, objetos y apodos. El primer Retroceso justo después lo deshace y enseña la palabra al diccionario. Se activa y desactiva en Configuración › Corrector.
+Y después de mucho trabajo y de traducir todo aquello de JSX a C++...
 
-*Y ahora, de vuelta al taller.*
+¡Damas y caballeros!
+Les traigo... No solo una función genial, completa y compleja, sino algo capaz de hacer que tu historia sea aún más memorable e inmensamente divertida de crear.
+Qenna Writer se enorgullece de presentarles...
 
-## Correcciones y ajustes
+## Qenna's Map
 
-**• Portada del proyecto**
-"Portada rápida" y "Cargar portada" divididas en diagonal, en las hojas de Nuevo proyecto y Editar proyecto. La caja de sinopsis de Nuevo proyecto es mucho más grande (unas 12 líneas).
+![Qenna's Map](qrc:/whatsnew/mapa.jpg)
 
-**• Renombrar en el Constructor**
-Renombrar en el Constructor y en el Territorio respeta la palabra entera. Antes, renombrar un nombre que aparecía dentro de otro cambiaba los dos: renombrar a Ana cambiaba también a Mariana. Corregido.
+¡Sí, amigos! Qenna Writer ahora tiene un creador de mapas, y no cualquier creador de mapas. Para nada.
+El creador de mapas de Qenna tiene un nivel de profundidad brutal, que va desde la profundidad del terreno hasta los sprites y el dibujo LIBRE del mapa, para que lo crees como quieras, como tu historia lo pida.
+En serio, si Tolkien hubiera visto esto mientras escribía LOTR, le daba algo. La libertad creativa que tienes para construir aquí es una locura.
 
-**• Cursor suave**
-El efecto de fundido de la letra del cursor suave ya no desaparece cuando vuelves a editar el medio de una frase.
+**• Realismo geográfico**
+Colinas naturales, ríos, costas, relieve. Todo se genera de forma realista y detallada, simulado a partir del relieve: la altitud, la latitud y la humedad deciden el clima y el bioma de cada parte del mapa.
+Aquí no hay un dibujo .png de montaña para representar montañas, mis queridos. Tu montaña **es de verdad una MONTAÑA**, creada con el relieve del mapa.
 
-**• Línea de tiempo**
-Las etiquetas de fecha de la Trenza ya no se pisan entre sí.
+**• Crea tu mapa libremente**
+Genera un mapa aleatorio de forma procedural o dibuja uno a mano, como quieras.
+Ríos, mares, biomas, temperaturas, montañas, bosques. Todo lo que quieras se puede crear. Del tamaño y la forma que quieras. El único límite es tu creatividad.
+Y además, puedes...
 
----
-Por ahora es todo, amigos. Pero antes de cerrar quiero contaros algo importante:
+**• Construir**
+Crea ciudades, castillos, ruinas. Cada elemento del mapa cuenta la historia de tu mundo, así que aprovéchalo.
+Terminé profundizando en esto más de lo que debía, y en cierto modo fue algo bueno. La libertad creativa que te da el mapa es absurda.
 
-**QENNA WRITER FOR macOS**
-Ahora mismo estoy empezando a trabajar en el port de Qenna para macOS.
-A primera vista, el resultado fue prometedor. La app funcionó en el Mac con todas sus funciones, casi no se encontraron problemas y los pocos que aparecieron son estéticos y fáciles de resolver.
-Pero no tengo ningún Mac para probar una versión definitiva de Qenna en ese sistema. Y eso complica un poco las cosas. Lo probé en una máquina virtual con casi 800 ms de retraso y, bueno... fue una tortura.
+**• Tamaños**
+Desde mapas pequeños hasta continentes gigantescos. Crea lo que tu historia pida.
+*Los mapas más grandes pueden consumir más recursos de tu PC, como procesador y memoria RAM. Lo optimicé al máximo, pero pueden ocurrir tirones ocasionales.*
 
-Por eso, dejo aquí una petición:
-**Si tienes un Mac** (iMac, MacBook, Mac mini, cualquiera), me gustaría invitarte a participar en una pre-release de la versión de macOS cuando entre en pruebas. Te mandaría el instalador directamente; solo tendrías que instalarlo, usar Qenna (como ya lo usas) y contarme si encontraste algo fuera de lo normal.
-En serio, me ayudaría muchísimo.
+**• TU MUNDO DENTRO DE TU MAPA**
+Gestiona territorios, crea fronteras, adjunta documentos, personajes, raíces, lore y orígenes. Conectado al Creador de Mundos, los cajones y los grupos.
+Tu mapa no es solo una referencia visual. Es **interactivo** y cuenta **la historia de tu mundo**.
+Puedes crear, explorar y leer los documentos, grupos e información sin salir del mapa.
 
-Si te interesa participar para que Qenna crezca todavía más, escríbeme por e-mail: qennawriter@gmail.com o a través de los repositorios del proyecto, ¿vale?
-¡Muchas gracias!
+**• Estilos diferentes**
+Realista, territorial, cartográfico, topográfico, náutico y varios más. Como quieras. Mira tu mapa de la forma que más te guste.
+¡Y además, hay ciclos de día y noche!
 
-Por hoy es todo, amigos, thank you!
+![El mismo mapa en la vista Tinta](qrc:/whatsnew/mapa-tinta.jpg)
 
-*Con cafeína y ganas de renunciar al trabajo,*
-— P.H. Lobato, Guardián de las Tierras de Qenna
+El Creador de Mapas es una herramienta **BRUTAL**.
+Posiblemente la herramienta más ambiciosa y genial que he añadido a Qenna hasta hoy. La Pizarra parece un juego de niños a su lado.
+A mí no me apasiona mucho escribir fantasía con mundos enormes y lore gigantesco, pero tener esto en las manos me está tentando de verdad a desempolvar algunos proyectos.
+
+Y también:
+**•** El Mapa se puede exportar en PNG.
+
+Esto es solo el comienzo, amigos. Esta herramienta va a estar aún más potenciada en las próximas versiones. Esperen y verán. No estoy jugando.
+
+*Y por lo demás...*
+
+## Más novedades
+
+**• Nuevos Themes animados**
+Route 66, un rework de Last Exit (que lo convirtió en uno de los mejores de la categoría), Citadel, Eve of Battle, Outpost, Hoard y Rooftop.
+Todos son preciosos y están bien optimizados. Vale la pena echarles un vistazo.
+
+**• Selector de POV**
+Para proyectos con distintos puntos de vista, ahora puedes definir el POV de cada capítulo. Está en el creador/editor de capítulos, que, por cierto, ahora se abre con un doble clic en el título del capítulo.
+¡Siempre atendiendo pedidos! *¡Gracias, Mars!*
+
+**• Expansión de los grupos**
+Ahora puedes crear subgrupos dentro de los grupos existentes para llevar aún más lejos la clasificación y la organización de tus docs.
+
+## Fixes
+
+**•** Se corrigieron algunos bugs y errores visuales de los themes animados anteriores.
+No recuerdo de memoria todos los que toqué, porque soy un animal y no los fui anotando mientras los arreglaba, pero fueron unos cuantos, y tenían que ver con las ventanas. Si usas alguno, vas a notar la diferencia.
+
+**•** Se corrigió un bug en el creador de portadas por el que el nombre del autor no se podía dividir en dos líneas. Ahora sí se puede (y el título también).
+
+**•** El texto pegado entraba sin la sangría de párrafo del proyecto. Corregido.
+
+**•** ¡"What's New" con el logo nuevo!
+
+Sé que esta versión tardó un poco más de lo normal, pero créanme, ¡valió la pena!
+Y otra cosa: no voy a hacer spoilers, pero el creador de mapas fue solo el comienzo de algo **más grande**.
+Quiero que Qenna Writer no sea solo una herramienta más para escribir. Quiero que sea el lugar donde vive tu proyecto ENTERO, en cada detalle. ¡Y vamos a caminar en esa dirección!
+
+¡Gracias por la confianza, queridos!
+
+Siempre un placer,
+**— P.H. Lobato — Guardián de las Tierras de Qenna**
+*literalmente ahora, ya que Qenna tiene tierras jajaja*
