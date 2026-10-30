@@ -190,3 +190,52 @@ holder(s).
 
 - **License:** SIL Open Font License 1.1.
 - **Source:** https://openfontlicense.org
+
+## Character silhouettes (photos from Unsplash)
+
+The 38 bust silhouettes in `src/assets/silhouettes/` (offered when a character
+has no photo) were traced from photos published on Unsplash: each one is the
+subject's outline, cut out and reduced to flat tones by a script, not the photo
+itself.
+
+- **License:** Unsplash License (free to use, modify and distribute,
+  commercially or not; attribution not required but given here).
+- **Source:** https://unsplash.com/license
+  - `m01.png`: photo by Cesar Rincon, https://unsplash.com/photos/XHVpWcr5grQ
+  - `m02.png`: photo by Christian Buehner, https://unsplash.com/photos/DItYlc26zVI
+  - `m03.png`: photo by Emmanuel Yeboah Okine, https://unsplash.com/photos/DzAFv1iVMGg
+  - `m04.png`: photo by Ian Dooley, https://unsplash.com/photos/d1UPkiFd04A
+  - `m05.png`: photo by Jurica Koletic, https://unsplash.com/photos/7YVZYZeITc8
+  - `m06.png`: photo by LinkedIn Sales Solutions, https://unsplash.com/photos/pAtA8xe_iVM
+  - `m07.png`: photo by Ludovic Migneault, https://unsplash.com/photos/4uj3iZ5m084
+  - `m08.png`: photo by Mason Wilkes, https://unsplash.com/photos/TMgQMXoglsM
+  - `m09.png`: photo by Taylor, https://unsplash.com/photos/8Vt2haq8NSQ
+  - `m10.png`: photo by Bjorn Pierre, https://unsplash.com/photos/PcW-mKVF3oY
+  - `m11.png`: photo by Brooke Cagle, https://unsplash.com/photos/Nm70URdtf3c
+  - `m12.png`: photo by Dima Dallacqua, https://unsplash.com/photos/4c23dXiYPhc
+  - `m13.png`: photo by Gift Habeshaw, https://unsplash.com/photos/ImFZSnfobKk
+  - `m14.png`: photo by Hà Nguyễn, https://unsplash.com/photos/OFSQ6bHjFjs
+  - `m15.png`: photo by JJ Jordan, https://unsplash.com/photos/JBqwqLG0SXw
+  - `m16.png`: photo by Laurence Cruz, https://unsplash.com/photos/P7yvmajPvkM
+  - `m17.png`: photo by Mubariz Mehdizadeh, https://unsplash.com/photos/Py8F6-hRn5o
+  - `m18.png`: photo by Salome Guruli, https://unsplash.com/photos/6GgCyNnF6Zs
+  - `m19.png`: photo by Gift Habeshaw, https://unsplash.com/photos/kMDGYvqSess
+  - `f01.png`: photo by Aiony Haust, https://unsplash.com/photos/3TLl_97HNJo
+  - `f02.png`: photo by Andrey Zvyagintsev, https://unsplash.com/photos/x0c6vTO5ibA
+  - `f03.png`: photo by Ayo Ogunseinde, https://unsplash.com/photos/6W4F62sN_yI
+  - `f04.png`: photo by Batel Studio, https://unsplash.com/photos/ttSRjiYG_WM
+  - `f05.png`: photo by Jake Nackos, https://unsplash.com/photos/IF9TK5Uy-KI
+  - `f06.png`: photo by Jessica Felicio, https://unsplash.com/photos/_cvwXhGqG-o
+  - `f07.png`: photo by Jimmy Fermin, https://unsplash.com/photos/bqe0J0b26RQ
+  - `f08.png`: photo by Olena Bohovyk, https://unsplash.com/photos/XttWKETqCCQ
+  - `f09.png`: photo by Rafaella Mendes Diniz, https://unsplash.com/photos/et_78QkMMQs
+  - `f10.png`: photo by Yunming Wang, https://unsplash.com/photos/G9f4Enb8XVM
+  - `f11.png`: photo by Aiony Haust, https://unsplash.com/photos/j5L0X1ioajw
+  - `f12.png`: photo by Amin Rk, https://unsplash.com/photos/LtV1m_mu7yg
+  - `f13.png`: photo by Brian Lawson, https://unsplash.com/photos/gfR5vwWe0bw
+  - `f14.png`: photo by Denis Pozdeev, https://unsplash.com/photos/BxDKRZpduDY
+  - `f15.png`: photo by Eduardo Barrios, https://unsplash.com/photos/XMCLLGGMMYU
+  - `f16.png`: photo by Isaiah Mcclean, https://unsplash.com/photos/DrVJk1EaPSc
+  - `f17.png`: photo by See Plus, https://unsplash.com/photos/Fd8lBcvbgR0
+  - `f18.png`: photo by Dwayne Joe, https://unsplash.com/photos/kRVZWfFsWvg
+  - `f19.png`: photo by Lola Azizada, https://unsplash.com/photos/HyoTmwZQwWU

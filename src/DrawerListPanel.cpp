@@ -1240,11 +1240,20 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     photo->installEventFilter(this);
     lay->addWidget(photo, 0, Qt::AlignHCenter);
 
-    auto* nameLbl = new QLabel(title.isEmpty() ? tr("(sem nome)") : title, card);
+    // Uma linha só, com reticências: o cartão tem altura fixa, e o nome que
+    // quebrava em duas espremia o layout e subia por cima da foto ("Langdon/
+    // River II Lloyd", relato da Marley). O nome inteiro fica no tooltip.
+    const QString fullName = title.isEmpty() ? tr("(sem nome)") : title;
+    const int textW = csz.cardW - 16;
+    QFont nameFont = font();
+    nameFont.setPixelSize(12);
+    nameFont.setWeight(QFont::Bold);
+    auto* nameLbl = new QLabel(QFontMetrics(nameFont).elidedText(fullName, Qt::ElideRight, textW), card);
+    nameLbl->setFont(nameFont);
     nameLbl->setStyleSheet(QStringLiteral(
         "color: %1; font-size: 12px; font-weight: 700;").arg(Theme::textBright()));
     nameLbl->setAlignment(Qt::AlignHCenter);
-    nameLbl->setWordWrap(true);
+    if (nameLbl->text() != fullName) nameLbl->setToolTip(fullName);
     lay->addWidget(nameLbl);
 
     // Botão discreto de criar vínculo — overlay no canto sup direito do card,
@@ -1280,7 +1289,13 @@ QWidget* DrawerListPanel::makeElementCard(const QString& itemId, const QString& 
     }
 
     if (!role.isEmpty()) {
-        auto* roleLbl = new QLabel(RoleTiers::roleDisplayName(role).toUpper(), card);
+        QFont roleFont = font();
+        roleFont.setPixelSize(9);
+        roleFont.setWeight(QFont::ExtraBold);
+        roleFont.setLetterSpacing(QFont::AbsoluteSpacing, 0.8);
+        const QString roleText = RoleTiers::roleDisplayName(role).toUpper();
+        auto* roleLbl = new QLabel(QFontMetrics(roleFont).elidedText(roleText, Qt::ElideRight, textW), card);
+        roleLbl->setFont(roleFont);
         roleLbl->setStyleSheet(QStringLiteral(
             "color: %1; font-size: 9px; font-weight: 800; letter-spacing: 0.8px;").arg(roleColor(role)));
         roleLbl->setAlignment(Qt::AlignHCenter);

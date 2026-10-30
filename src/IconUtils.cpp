@@ -3,12 +3,21 @@
 #include "Theme.h"
 
 #include <QFile>
+#include <QGuiApplication>
+#include <QScreen>
 #include <QPainter>
 #include <QPixmap>
 #include <QRegularExpression>
 #include <QSvgRenderer>
 
 namespace {
+
+qreal iconPixelRatio()
+{
+    qreal r = 1.0;
+    for (QScreen* screen : QGuiApplication::screens()) r = qMax(r, screen->devicePixelRatio());
+    return r;
+}
 
 QPixmap renderTintedSvg(const QString &source, const QColor &color, const QSize &size)
 {
@@ -19,13 +28,17 @@ QPixmap renderTintedSvg(const QString &source, const QColor &color, const QSize 
     svg.replace(strokeRegex, QStringLiteral("stroke=\"%1\"").arg(color.name()));
 
     QSvgRenderer renderer(svg.toUtf8());
-    QPixmap pix(size);
-    pix.setDevicePixelRatio(1.0);
+    // Na densidade da tela mais densa: no Retina (2x) o ícone desenhado a 1x
+    // era esticado pelo sistema e borrava (relato da Marley no Mac). Numa tela
+    // comum o QIcon reduz sozinho, e o custo é só memória.
+    const qreal dpr = iconPixelRatio();
+    QPixmap pix((QSizeF(size) * dpr).toSize());
+    pix.setDevicePixelRatio(dpr);
     pix.fill(Qt::transparent);
     QPainter painter(&pix);
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
-    renderer.render(&painter);
+    renderer.render(&painter, QRectF(QPointF(0, 0), QSizeF(size)));
     return pix;
 }
 

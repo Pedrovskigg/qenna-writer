@@ -1,0 +1,42 @@
+<RCC>
+    <qresource prefix="/silhouettes">
+        <file alias="m01.png">../src/assets/silhouettes/m01.png</file>
+        <file alias="m02.png">../src/assets/silhouettes/m02.png</file>
+        <file alias="m03.png">../src/assets/silhouettes/m03.png</file>
+        <file alias="m04.png">../src/assets/silhouettes/m04.png</file>
+        <file alias="m05.png">../src/assets/silhouettes/m05.png</file>
+        <file alias="m06.png">../src/assets/silhouettes/m06.png</file>
+        <file alias="m07.png">../src/assets/silhouettes/m07.png</file>
+        <file alias="m08.png">../src/assets/silhouettes/m08.png</file>
+        <file alias="m09.png">../src/assets/silhouettes/m09.png</file>
+        <file alias="m10.png">../src/assets/silhouettes/m10.png</file>
+        <file alias="m11.png">../src/assets/silhouettes/m11.png</file>
+        <file alias="m12.png">../src/assets/silhouettes/m12.png</file>
+        <file alias="m13.png">../src/assets/silhouettes/m13.png</file>
+        <file alias="m14.png">../src/assets/silhouettes/m14.png</file>
+        <file alias="m15.png">../src/assets/silhouettes/m15.png</file>
+        <file alias="m16.png">../src/assets/silhouettes/m16.png</file>
+        <file alias="m17.png">../src/assets/silhouettes/m17.png</file>
+        <file alias="m18.png">../src/assets/silhouettes/m18.png</file>
+        <file alias="m19.png">../src/assets/silhouettes/m19.png</file>
+        <file alias="f01.png">../src/assets/silhouettes/f01.png</file>
+        <file alias="f02.png">../src/assets/silhouettes/f02.png</file>
+        <file alias="f03.png">../src/assets/silhouettes/f03.png</file>
+        <file alias="f04.png">../src/assets/silhouettes/f04.png</file>
+        <file alias="f05.png">../src/assets/silhouettes/f05.png</file>
+        <file alias="f06.png">../src/assets/silhouettes/f06.png</file>
+        <file alias="f07.png">../src/assets/silhouettes/f07.png</file>
+        <file alias="f08.png">../src/assets/silhouettes/f08.png</file>
+        <file alias="f09.png">../src/assets/silhouettes/f09.png</file>
+        <file alias="f10.png">../src/assets/silhouettes/f10.png</file>
+        <file alias="f11.png">../src/assets/silhouettes/f11.png</file>
+        <file alias="f12.png">../src/assets/silhouettes/f12.png</file>
+        <file alias="f13.png">../src/assets/silhouettes/f13.png</file>
+        <file alias="f14.png">../src/assets/silhouettes/f14.png</file>
+        <file alias="f15.png">../src/assets/silhouettes/f15.png</file>
+        <file alias="f16.png">../src/assets/silhouettes/f16.png</file>
+        <file alias="f17.png">../src/assets/silhouettes/f17.png</file>
+        <file alias="f18.png">../src/assets/silhouettes/f18.png</file>
+        <file alias="f19.png">../src/assets/silhouettes/f19.png</file>
+    </qresource>
+</RCC>

@@ -17,6 +17,7 @@
 #include <QScreen>
 #include <QSet>
 #include <QSettings>
+#include "UiScale.h"
 #include "WhatsNewDialog.h"
 #include <QSplashScreen>
 #include <QStringList>
@@ -500,6 +501,11 @@ int main(int argc, char *argv[])
     if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM"))
         qputenv("QT_QPA_PLATFORM", "windows:fontengine=freetype");
 #endif
+
+    // Zoom do app inteiro (Configurações › Aparência): o Qt só lê o
+    // QT_SCALE_FACTOR antes do QApplication nascer.
+    UiScale::applyAppZoomBeforeApp(qEnvironmentVariableIsSet("QENNA_FRESH_PROFILE")
+        ? QStringLiteral("Qenna Writer (Fresh Test)") : QStringLiteral("Qenna Writer"));
 
     QApplication app(argc, argv);
 

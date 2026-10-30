@@ -120,6 +120,8 @@ qt_add_executable(qenna-writer
     src/GlobalSearchPanel.cpp
     src/GlobalSearchPanel.h
     src/ElementCreateDialog.cpp
+    src/SilhouettePicker.cpp
+    src/SilhouettePicker.h
     src/ElementCreateDialog.h
     src/ImageCropDialog.cpp
     src/ImageCropDialog.h
@@ -534,6 +536,7 @@ qt_add_executable(qenna-writer
     resources/geo.qrc
     resources/flags.qrc
     resources/brushes.qrc
+    resources/silhouettes.qrc
     resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )

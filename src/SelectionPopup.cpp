@@ -3,6 +3,7 @@
 #include "IconUtils.h"
 #include "Theme.h"
 
+#include <QCursor>
 #include <QEvent>
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -41,7 +42,11 @@ SelectionPopup::SelectionPopup(QTextEdit *editor, QWidget *parent)
     , m_layout(nullptr)
 {
     setObjectName(QStringLiteral("selectionPopup"));
-    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::NoDropShadowWindowHint);
+    // WindowDoesNotAcceptFocus: no Mac, clicar numa janela Tool a tornava a
+    // janela ativa, o editor perdia o foco e o popup sumia antes do clique
+    // chegar no botão (nenhum botão da barra funcionava, relato da Marley).
+    setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::NoDropShadowWindowHint
+                   | Qt::WindowDoesNotAcceptFocus);
     setAttribute(Qt::WA_ShowWithoutActivating);
     setAttribute(Qt::WA_TranslucentBackground, false);
     setFocusPolicy(Qt::NoFocus);
@@ -215,6 +220,8 @@ bool SelectionPopup::eventFilter(QObject *watched, QEvent *event)
         }
     } else if (watched == m_editor) {
         if (t == QEvent::FocusOut) {
+            // O foco saiu porque o clique foi no próprio popup: deixa o clique chegar.
+            if (isVisible() && frameGeometry().contains(QCursor::pos())) return QFrame::eventFilter(watched, event);
             hide();
         } else if (t == QEvent::Hide) {
             hide();

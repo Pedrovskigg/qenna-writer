@@ -307,6 +307,28 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         m_uiScaleValue->setText(tr("%1%").arg(pct));
     });
 
+    {
+        auto* zoomSlider = new QSlider(Qt::Horizontal);
+        zoomSlider->setRange(qRound(UiScale::minAppZoom() * 100), qRound(UiScale::maxAppZoom() * 100));
+        zoomSlider->setSingleStep(5);
+        zoomSlider->setPageStep(10);
+        zoomSlider->setValue(qRound(UiScale::appZoom() * 100));
+        auto* zoomValue = valueLabel(nullptr);
+        zoomValue->setText(tr("%1%").arg(zoomSlider->value()));
+        addRow(Appearance, tr("Zoom do app"), tr("Aumenta tudo: painéis, gavetas, textos e janelas. Vale ao reabrir o Qenna."),
+               sliderBox(zoomSlider, zoomValue, this),
+               tr("Deixa o app inteiro maior ou menor, como o zoom de um navegador. "
+                  "Útil em telas muito densas, como as dos MacBooks, onde tudo sai "
+                  "pequeno. Diferente do Tamanho da interface, que só mexe nas barras. "
+                  "A mudança vale na próxima vez que você abrir o Qenna."));
+        connect(zoomSlider, &QSlider::valueChanged, this, [zoomSlider, zoomValue](int v) {
+            const int snapped = qRound(v / 5.0) * 5;   // degraus de 5%
+            if (snapped != v) { zoomSlider->setValue(snapped); return; }
+            zoomValue->setText(tr("%1%").arg(v));
+            UiScale::setAppZoom(v / 100.0);
+        });
+    }
+
     m_toolbarSideCombo = new QComboBox(this);
     m_toolbarSideCombo->addItem(tr("Topo"), 0);
     m_toolbarSideCombo->addItem(tr("Lateral direita"), 1);

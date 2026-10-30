@@ -68,6 +68,7 @@ private:
     void updatePreview();
     void updatePageTypeUi();
     void pickImage();
+    void pickSilhouette();
 
     QString m_elementType;
     QString m_imageDataUrl;

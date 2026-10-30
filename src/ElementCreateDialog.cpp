@@ -3,6 +3,7 @@
 #include "GroupPicker.h"
 #include "TagField.h"
 #include "ImageCropDialog.h"
+#include "SilhouettePicker.h"
 #include "TimelineTracksTypes.h"
 
 #include <QAbstractButton>
@@ -27,6 +28,9 @@
 #include <QPixmap>
 #include <QPushButton>
 #include <QToolButton>
+#include <QToolTip>
+#include <QHelpEvent>
+#include <QMouseEvent>
 #include <QVBoxLayout>
 
 using namespace Tracks;
@@ -79,13 +83,16 @@ QIcon crossIcon(const QColor& c)
 }
 
 // O botão da foto quando ainda não tem foto: um quadrado com uma silhueta,
-// apagado; acende (borda na cor de destaque, "+" no canto) com o mouse em cima.
+// apagado. Com o mouse em cima ele se divide na diagonal, como a capa da
+// folha de projeto: em cima "Carregar imagem", embaixo "Definir silhueta".
 class SilhouetteButton : public QAbstractButton {
 public:
+    static constexpr qreal kSplitLeft = 0.60, kSplitRight = 0.40;
     explicit SilhouetteButton(QWidget* parent) : QAbstractButton(parent)
     {
         setCursor(Qt::PointingHandCursor);
         setFocusPolicy(Qt::NoFocus);
+        setMouseTracking(true);
         m_anim = new QVariantAnimation(this);
         m_anim->setDuration(150);
         connect(m_anim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
@@ -93,10 +100,33 @@ public:
             update();
         });
     }
+    // 0 = carregar imagem (em cima), 1 = definir silhueta (embaixo); vale pro último clique
+    int zone() const { return m_zone; }
 
 protected:
     void enterEvent(QEnterEvent* e) override { animateTo(1.0); QAbstractButton::enterEvent(e); }
-    void leaveEvent(QEvent* e) override { animateTo(0.0); QAbstractButton::leaveEvent(e); }
+    void leaveEvent(QEvent* e) override { animateTo(0.0); QToolTip::hideText(); QAbstractButton::leaveEvent(e); }
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        const int z = zoneAt(e->position());
+        if (z != m_zone) {
+            m_zone = z;
+            update();
+            QToolTip::showText(e->globalPosition().toPoint(), zoneText(z), this);
+        }
+        QAbstractButton::mouseMoveEvent(e);
+    }
+    void mousePressEvent(QMouseEvent* e) override { m_zone = zoneAt(e->position()); QAbstractButton::mousePressEvent(e); }
+    bool event(QEvent* e) override
+    {
+        // a dica acompanha a metade, não o botão inteiro
+        if (e->type() == QEvent::ToolTip) {
+            auto* he = static_cast<QHelpEvent*>(e);
+            QToolTip::showText(he->globalPos(), zoneText(zoneAt(he->pos())), this);
+            return true;
+        }
+        return QAbstractButton::event(e);
+    }
 
     void paintEvent(QPaintEvent*) override
     {
@@ -132,18 +162,71 @@ protected:
         p.drawPath(box);
 
         if (h > 0.01) {
+            // véu cortado na diagonal; a metade sob o mouse clareia, a outra recua
+            const qreal w = width(), hh = height();
+            const QPointF cutL(0, hh * kSplitLeft), cutR(w, hh * kSplitRight);
+            QPainterPath top, bottom;
+            top.moveTo(0, 0); top.lineTo(w, 0); top.lineTo(cutR); top.lineTo(cutL); top.closeSubpath();
+            bottom.moveTo(cutL); bottom.lineTo(cutR); bottom.lineTo(w, hh); bottom.lineTo(0, hh); bottom.closeSubpath();
+            p.save();
+            p.setClipPath(box);
             p.setOpacity(h);
-            const QPointF c(width() - 10.5, 10.5);
             p.setPen(Qt::NoPen);
-            p.setBrush(pal.accent);
-            p.drawEllipse(c, 7, 7);
-            p.setPen(QPen(pal.page, 1.5, Qt::SolidLine, Qt::RoundCap));
-            p.drawLine(c - QPointF(3.2, 0), c + QPointF(3.2, 0));
-            p.drawLine(c - QPointF(0, 3.2), c + QPointF(0, 3.2));
+            p.setBrush(alpha(pal.page, m_zone == 0 ? 0.55 : 0.82));
+            p.drawPath(top);
+            p.setBrush(alpha(pal.page, m_zone == 1 ? 0.55 : 0.82));
+            p.drawPath(bottom);
+            p.setPen(QPen(alpha(pal.accent, 0.8), 1));
+            p.drawLine(cutL, cutR);
+            drawImageIcon(p, QPointF(w * 0.36, hh * 0.27), m_zone == 0 ? pal.accent : alpha(pal.ink, 0.45));
+            drawBustIcon(p, QPointF(w * 0.64, hh * 0.73), m_zone == 1 ? pal.accent : alpha(pal.ink, 0.45));
+            p.restore();
         }
     }
 
 private:
+    int zoneAt(const QPointF& pt) const
+    {
+        const qreal cut = height() * (kSplitLeft + (kSplitRight - kSplitLeft) * pt.x() / width());
+        return pt.y() < cut ? 0 : 1;
+    }
+    static QString zoneText(int z)
+    {
+        return z == 0 ? QCoreApplication::translate("ElementCreateDialog", "Carregar imagem")
+                      : QCoreApplication::translate("ElementCreateDialog", "Definir silhueta");
+    }
+    // moldura de foto com montanha e sol
+    static void drawImageIcon(QPainter& p, const QPointF& c, const QColor& col)
+    {
+        p.setPen(QPen(col, 1.4, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        p.setBrush(Qt::NoBrush);
+        const QRectF r(c.x() - 8, c.y() - 6.5, 16, 13);
+        p.drawRoundedRect(r, 2.5, 2.5);
+        QPainterPath m;
+        m.moveTo(r.left() + 2, r.bottom() - 2);
+        m.lineTo(r.left() + 6.5, r.top() + 5.5);
+        m.lineTo(r.left() + 10, r.bottom() - 4.5);
+        m.lineTo(r.left() + 12, r.bottom() - 6.5);
+        m.lineTo(r.right() - 2, r.bottom() - 2);
+        p.drawPath(m);
+        p.setPen(Qt::NoPen);
+        p.setBrush(col);
+        p.drawEllipse(QPointF(r.right() - 4.2, r.top() + 3.8), 1.6, 1.6);
+    }
+    // busto: cabeça e ombros
+    static void drawBustIcon(QPainter& p, const QPointF& c, const QColor& col)
+    {
+        p.setPen(Qt::NoPen);
+        p.setBrush(col);
+        p.drawEllipse(QPointF(c.x(), c.y() - 3.5), 3.8, 4.3);
+        QPainterPath s;
+        s.moveTo(c.x() - 8, c.y() + 8);
+        s.cubicTo(c.x() - 7.5, c.y() + 2.5, c.x() - 4, c.y() + 1.2, c.x(), c.y() + 1.2);
+        s.cubicTo(c.x() + 4, c.y() + 1.2, c.x() + 7.5, c.y() + 2.5, c.x() + 8, c.y() + 8);
+        s.closeSubpath();
+        p.drawPath(s);
+    }
+    int m_zone = 0;
     void animateTo(qreal v)
     {
         m_anim->stop();
@@ -204,6 +287,7 @@ public:
         m_add->setFixedSize(58, 58);
         m_add->setToolTip(QCoreApplication::translate("ElementCreateDialog", "Adicionar foto (opcional)"));
         m_swap = pillLink(QCoreApplication::translate("ElementCreateDialog", "trocar"));
+        m_sil = pillLink(QCoreApplication::translate("ElementCreateDialog", "silhueta"));
         m_remove = pillLink(QCoreApplication::translate("ElementCreateDialog", "remover"));
         m_shadow = new QGraphicsDropShadowEffect(m_name);
         m_shadow->setBlurRadius(12);
@@ -228,6 +312,7 @@ public:
     QAbstractButton* addButton() const { return m_add; }
     QToolButton* swapButton() const { return m_swap; }
     QToolButton* removeButton() const { return m_remove; }
+    QToolButton* silhouetteButton() const { return m_sil; }
     QToolButton* closeButton() const { return m_close; }
     void setEyebrow(const QString& t) { m_eyebrow->setText(t.toUpper()); m_eyebrow->adjustSize(); relayout(); }
     // a etiqueta de grupo: sem foto, antes do ×; com foto, embaixo do "trocar · remover"
@@ -286,6 +371,7 @@ public:
         m_add->setVisible(!on);
         m_swap->setVisible(on);
         m_remove->setVisible(on);
+        m_sil->setVisible(on);
         relayout();
     }
 
@@ -305,15 +391,18 @@ public:
         if (m_picker) {
             QWidget* t = m_picker->tag();
             m_picker->setMaxTagWidth(on ? W - 24 : m_close->x() - 6 - (m_eyebrow->x() + m_eyebrow->width() + 10));
-            if (on) t->move(W - 12 - t->width(), 40);
+            if (on) t->move(W - 12 - t->width(), 64);
             else t->move(m_close->x() - 6 - t->width(), 9);
             t->raise();
         }
         if (on) {
             m_remove->adjustSize();
             m_swap->adjustSize();
-            m_remove->move(m_close->x() - 6 - m_remove->width(), 10);
-            m_swap->move(m_remove->x() - 5 - m_swap->width(), 10);
+            m_sil->adjustSize();
+            // uma linha abaixo do "NOVO PERSONAGEM": três pílulas não cabem ao lado dele
+            m_remove->move(W - 12 - m_remove->width(), 36);
+            m_sil->move(m_remove->x() - 5 - m_sil->width(), 36);
+            m_swap->move(m_sil->x() - 5 - m_swap->width(), 36);
         }
     }
 
@@ -378,6 +467,7 @@ private:
     SilhouetteButton* m_add = nullptr;
     QToolButton* m_swap = nullptr;
     QToolButton* m_remove = nullptr;
+    QToolButton* m_sil = nullptr;
     QGraphicsDropShadowEffect* m_shadow = nullptr;
     QVariantAnimation* m_anim = nullptr;
     QPixmap m_photo;
@@ -423,7 +513,11 @@ void ElementCreateDialog::buildUi()
         replaceHeader(m_poster);
         m_poster->setEyebrow(tr("Novo personagem"));
         connect(m_poster->closeButton(), &QToolButton::clicked, this, &QDialog::reject);
-        connect(m_poster->addButton(), &QAbstractButton::clicked, this, [this]() { pickImage(); });
+        connect(m_poster->addButton(), &QAbstractButton::clicked, this, [this]() {
+            if (static_cast<SilhouetteButton*>(m_poster->addButton())->zone() == 1) pickSilhouette();
+            else pickImage();
+        });
+        connect(m_poster->silhouetteButton(), &QToolButton::clicked, this, [this]() { pickSilhouette(); });
         connect(m_poster->swapButton(), &QToolButton::clicked, this, [this]() { pickImage(); });
         connect(m_poster->removeButton(), &QToolButton::clicked, this, [this]() { m_imageDataUrl.clear(); updatePreview(); });
         body()->setContentsMargins(16, 14, 16, 4);
@@ -795,6 +889,16 @@ void ElementCreateDialog::updatePreview()
 void ElementCreateDialog::pickImage()
 {
     const QString dataUrl = ImageCropDialog::pickAndCropImage(this);
+    if (dataUrl.isEmpty()) return;
+    m_imageDataUrl = dataUrl;
+    updatePreview();
+}
+
+void ElementCreateDialog::pickSilhouette()
+{
+    // abre na aba da forma de tratamento (Feminino marcado = femininas)
+    const bool female = m_genderGroup && m_genderGroup->button(1) && m_genderGroup->button(1)->isChecked();
+    const QString dataUrl = SilhouettePickerDialog::pick(this, !female, m_titleEdit ? m_titleEdit->text() : QString());
     if (dataUrl.isEmpty()) return;
     m_imageDataUrl = dataUrl;
     updatePreview();
