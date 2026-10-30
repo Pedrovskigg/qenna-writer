@@ -134,7 +134,10 @@ struct SheetField {
 // Ficha estruturada de personagem: alternativa ao documento livre (html).
 // Foto/nome/apelido NÃO ficam aqui — vêm do Element vinculado (elementId).
 struct CharacterSheet {
-    int columns = 2;            // layout: 1 ou 2 colunas
+    int columns = 2;            // leiaute antigo (1 ou 2 colunas); só lido pra compatibilidade
+    // Forma de exibição: "dossie" | "infobox" | "prontuario". Vazio = ainda não
+    // escolhida (a ficha adota a última forma usada ao abrir).
+    QString layout;
     QList<SheetField> fields;
     bool isEmpty() const { return fields.isEmpty(); }
 };

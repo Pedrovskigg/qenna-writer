@@ -1166,6 +1166,7 @@ void MainWindow::setupEditor()
         bool avatarEditable = false;
         QString groupId;
         bool drawerDoc = false;
+        bool sheetDoc = false;
         switch (vm.type) {
         case EditorHost::ChapterDoc: {
             // Capítulo inteiro concatenado num editor só (cenas separadas por
@@ -1201,6 +1202,7 @@ void MainWindow::setupEditor()
             if (const DrawerItem* it = projectModel->findDrawerItem(vm.itemId)) {
                 title = it->title.isEmpty() ? tr("(item sem título)") : it->title;
                 drawerDoc = true;
+                sheetDoc = it->isSheet;
                 groupId = it->markerId;
 
                 // Personagem/cenário ganham identidade em vez de só o nome do
@@ -1226,9 +1228,12 @@ void MainWindow::setupEditor()
         // O título do documento (e o botão de variação da cena) moram na faixa
         // fixa acima da folha, nos dois modos de barra — ver DocHeaderBar.
         if (docHeader) {
-            docHeader->setDocumentTitle(title, subtitle);
-            docHeader->setDocumentAvatar(avatar);
-            docHeader->setAvatarEditable(avatarEditable);
+            // Na ficha, nome, papel e foto já estão grandes na própria folha:
+            // a faixa fica só com as etiquetas e o "⋯" da ficha.
+            docHeader->setDocumentTitle(sheetDoc ? QString() : title, sheetDoc ? QString() : subtitle);
+            docHeader->setDocumentAvatar(sheetDoc ? QString() : avatar);
+            docHeader->setAvatarEditable(avatarEditable && !sheetDoc);
+            docHeader->setSheetMenuVisible(sheetDoc);
             docHeader->setSceneVarButtonVisible(vm.type == EditorHost::SceneDoc);
             if (m_docGroup) {
                 m_docGroup->setGroupId(groupId);
@@ -2789,6 +2794,10 @@ void MainWindow::setupEditor()
         if (!editorHost) return;
         const auto vm = editorHost->viewMode();
         if (vm.type == EditorHost::ChapterDoc || vm.type == EditorHost::SceneDoc) editChapterDetails(vm.chapterId);
+    });
+    connect(docHeader, &DocHeaderBar::sheetMenuRequested, this, [this]() {
+        if (characterSheetPanel && characterSheetPanel->isVisible())
+            characterSheetPanel->openMenu(docHeader->sheetMenuGlobalRect());
     });
     connect(docHeader, &DocHeaderBar::avatarChangeRequested, this, [this]() {
         if (!editorHost || !elementsStore) return;
@@ -5544,8 +5553,15 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     // A folha assentou num lugar novo (o layout roda depois do resize da
     // coluna): o halo acompanha a folha de verdade.
     if (editor && watched == editor->parentWidget()
-        && (event->type() == QEvent::Move || event->type() == QEvent::Resize))
+        && (event->type() == QEvent::Move || event->type() == QEvent::Resize)) {
         positionPageGlow();
+        if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
+    }
+    // O DocHeader mudou de altura (etiquetas aparecendo) e a página encolheu:
+    // a ficha, que mora no lugar dela, acompanha.
+    if (editor && watched == editor->viewport() && event->type() == QEvent::Resize
+        && characterSheetPanel && characterSheetPanel->isVisible())
+        positionCharacterSheet();
 
     // Modo focado: a hotzone revela a barra (o conteúdo reaparece no espaço
     // já reservado, sem reflow); sair da barra a esconde de novo.
@@ -9532,6 +9548,13 @@ CharacterSheetPanel* MainWindow::ensureCharacterSheetPanel()
         characterSheetPanel = new CharacterSheetPanel(projectModel, elementsStore, editorContainer);
         characterSheetPanel->setTemplatesStore(sheetTemplatesStore);
         characterSheetPanel->hide();
+        // Duplo clique no nome da ficha: a mesma folha de editar da gaveta.
+        connect(characterSheetPanel, &CharacterSheetPanel::editCharacterRequested, this, [this](const QString& itemId) {
+            if (!drawerListPanel || !projectModel) return;
+            for (const Drawer& d : projectModel->drawers())
+                for (const DrawerItem& it : d.items)
+                    if (it.id == itemId) { emit drawerListPanel->editItemRequested(d.key, itemId); return; }
+        });
         connect(characterSheetPanel, &CharacterSheetPanel::edited, this, [this]() {
             if (projectSaver) projectSaver->saveProject();
             // Reconta a ficha em foco pra o contador acompanhar a edição.
@@ -9590,16 +9613,19 @@ void MainWindow::hideCharacterSheet()
 
 void MainWindow::positionCharacterSheet()
 {
-    if (!characterSheetPanel || !editorContainer) return;
-    const int topInset = chromeInset(Qt::TopEdge);
-    const int rightInset = chromeInset(Qt::RightEdge);
-    // A ficha ocupa o vao entre as chromes; com a LeftBar na direita, o vao
-    // comeca na borda esquerda da tela e o desconto vai pro outro lado.
-    const int leftInset = chromeInset(Qt::LeftEdge);
-    const int lx = leftInset;
-    const int w = qMax(0, editorContainer->width() - leftInset - rightInset);
-    const int h = qMax(0, editorContainer->height() - topInset);
-    characterSheetPanel->setGeometry(lx, topInset, w, h);
+    if (!characterSheetPanel || !editorContainer || !editor || !editorScroll) return;
+    // A ficha toma o lugar da página do editor: mesmo x e largura, logo abaixo
+    // do DocHeader. Antes ela cobria o vão inteiro entre as chromes com a cor
+    // da chrome, e num tema claro parecia uma segunda folha, maior, atrás da
+    // ficha e por cima do DocHeader (relato da Marley no Mac, 30/10).
+    QWidget* vp = editorScroll->viewport();
+    const QRect page = QRect(editor->mapTo(vp, QPoint(0, 0)), editor->size()).intersected(vp->rect());
+    if (page.isEmpty()) return;
+    const QPoint tl = vp->mapTo(editorContainer, page.topLeft());
+    // A barra de rolagem fica fora da folha, como a do editor.
+    const int w = qMin(page.width() + characterSheetPanel->scrollBarRoom(),
+                       editorContainer->width() - tl.x());
+    characterSheetPanel->setGeometry(tl.x(), tl.y(), w, page.height());
 }
 
 QString MainWindow::chapterHtmlForEdit(const Chapter* chapter) const

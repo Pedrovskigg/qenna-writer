@@ -260,6 +260,7 @@ SheetField sheetFieldFromJson(const QJsonObject& o) {
 QJsonObject characterSheetToJson(const CharacterSheet& s) {
     QJsonObject o;
     o.insert(QStringLiteral("columns"), s.columns);
+    if (!s.layout.isEmpty()) o.insert(QStringLiteral("layout"), s.layout);
     QJsonArray arr;
     for (const auto& f : s.fields) arr.append(sheetFieldToJson(f));
     o.insert(QStringLiteral("fields"), arr);
@@ -269,6 +270,7 @@ QJsonObject characterSheetToJson(const CharacterSheet& s) {
 CharacterSheet characterSheetFromJson(const QJsonObject& o) {
     CharacterSheet s;
     s.columns = o.value(QStringLiteral("columns")).toInt(2);
+    s.layout = o.value(QStringLiteral("layout")).toString();
     const QJsonArray arr = o.value(QStringLiteral("fields")).toArray();
     for (const auto& fv : arr) s.fields.append(sheetFieldFromJson(fv.toObject()));
     return s;

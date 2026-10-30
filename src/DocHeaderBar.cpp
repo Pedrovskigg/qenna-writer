@@ -1,5 +1,7 @@
 #include "DocHeaderBar.h"
 
+#include <QAbstractButton>
+#include <QCoreApplication>
 #include <QEnterEvent>
 #include <QEvent>
 #include <QFontMetrics>
@@ -21,9 +23,40 @@
 #include "DialogueVoices.h"
 #include "IconUtils.h"
 #include "Theme.h"
+#include "TimelineTracksTypes.h"
 #include "UiScale.h"
 
 namespace {
+// O "⋯" da ficha: no desenho das etiquetas de tags e de grupo (pílula de
+// contorno, cor da página), com três pontos no meio.
+class SheetMenuChip : public QAbstractButton {
+public:
+    explicit SheetMenuChip(QWidget* parent) : QAbstractButton(parent)
+    {
+        setCursor(Qt::PointingHandCursor);
+        setFocusPolicy(Qt::NoFocus);
+        setAttribute(Qt::WA_Hover);
+        setFixedSize(34, 22);
+        setToolTip(QCoreApplication::translate("DocHeaderBar", "Ficha: forma de exibição, campos e modelos"));
+    }
+
+protected:
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        const Tracks::Palette pal = Tracks::Palette::onPage();
+        const bool hover = underMouse() || isDown();
+        const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+        p.setBrush(Qt::NoBrush);
+        p.setPen(QPen(hover ? Tracks::alpha(pal.ink, 0.35) : pal.border, 1));
+        p.drawRoundedRect(r, r.height() / 2, r.height() / 2);
+        p.setPen(Qt::NoPen);
+        p.setBrush(hover ? pal.ink : pal.dim);
+        for (int i = -1; i <= 1; ++i) p.drawEllipse(QPointF(width() / 2.0 + i * 5.5, height() / 2.0), 1.6, 1.6);
+    }
+};
+
 // Comporta o bloco de duas linhas (título + subtítulo) com folga.
 constexpr int kHeightBase = 54;
 constexpr int kHeightFloor = 40;
@@ -510,9 +543,12 @@ int DocHeaderBar::guideReserve() const
     if (m_guideWanted && m_guide) r = m_guide->sizeHint().width() + kGuideGap;
     if (m_groupWanted && m_groupTag && !m_guideWanted) r = qMax(r, m_groupTag->width() + kGuideGap);
     if (m_povWanted && m_povTag && !m_guideWanted) r = qMax(r, m_povTag->width() + kGuideGap);
+    const int sheet = m_sheetMenuWanted && m_sheetMenu && !m_guideWanted ? m_sheetMenu->width() + 6 : 0;
+    if (sheet) r = qMax(r, sheet + kGuideGap);
+    if (m_groupWanted && m_groupTag && !m_guideWanted) r = qMax(r, sheet + m_groupTag->width() + kGuideGap);
     if (m_tagsWanted && m_tagsTag && !m_guideWanted) {
         const int group = m_groupWanted && m_groupTag ? m_groupTag->width() + 6 : 0;
-        r = qMax(r, group + m_tagsTag->width() + kGuideGap);
+        r = qMax(r, sheet + group + m_tagsTag->width() + kGuideGap);
     }
     return r;
 }
@@ -561,13 +597,43 @@ void DocHeaderBar::setPovTagVisible(bool visible)
 
 // Grupo (gaveta) e narrador (manuscrito) dividem o canto direito: nunca valem
 // pro mesmo documento. O guia do roteiro, quando aparece, tem a vez.
+void DocHeaderBar::setSheetMenuVisible(bool visible)
+{
+    if (!m_sheetMenu) {
+        m_sheetMenu = new SheetMenuChip(this);
+        connect(static_cast<QAbstractButton*>(m_sheetMenu), &QAbstractButton::clicked,
+                this, &DocHeaderBar::sheetMenuRequested);
+        m_sheetMenu->hide();
+    }
+    if (m_sheetMenuWanted == visible) return;
+    m_sheetMenuWanted = visible;
+    refreshGroupTag();
+}
+
+QRect DocHeaderBar::sheetMenuGlobalRect() const
+{
+    if (!m_sheetMenu) return QRect(mapToGlobal(QPoint(width() - kSideMargin, 0)), QSize(1, height()));
+    return QRect(m_sheetMenu->mapToGlobal(QPoint(0, 0)), m_sheetMenu->size());
+}
+
 void DocHeaderBar::refreshGroupTag()
 {
-    auto place = [this](QWidget* tag, bool wanted) {
+    // Da direita pra esquerda: o ⋯ da ficha, o grupo (ou o narrador), as tags.
+    int right = width() - kSideMargin;
+    if (m_sheetMenu) {
+        const bool on = m_sheetMenuWanted && !m_guideWanted;
+        m_sheetMenu->setVisible(on);
+        if (on) {
+            m_sheetMenu->move(right - m_sheetMenu->width(), (height() - m_sheetMenu->height()) / 2);
+            m_sheetMenu->raise();
+            right = m_sheetMenu->x() - 6;
+        }
+    }
+    auto place = [this, right](QWidget* tag, bool wanted) {
         if (!tag) return;
         const bool on = wanted && !m_guideWanted;
         tag->setVisible(on);
-        if (on) { tag->move(width() - kSideMargin - tag->width(), (height() - tag->height()) / 2); tag->raise(); }
+        if (on) { tag->move(right - tag->width(), (height() - tag->height()) / 2); tag->raise(); }
     };
     place(m_groupTag, m_groupWanted);
     place(m_povTag, m_povWanted);
@@ -577,8 +643,8 @@ void DocHeaderBar::refreshGroupTag()
         m_tagsTag->setVisible(on);
         if (on) {
             const bool group = m_groupTag && m_groupTag->isVisible();
-            const int right = group ? m_groupTag->x() - 6 : width() - kSideMargin;
-            m_tagsTag->move(right - m_tagsTag->width(), (height() - m_tagsTag->height()) / 2);
+            const int tagsRight = group ? m_groupTag->x() - 6 : right;
+            m_tagsTag->move(tagsRight - m_tagsTag->width(), (height() - m_tagsTag->height()) / 2);
             m_tagsTag->raise();
         }
     }

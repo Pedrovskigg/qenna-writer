@@ -59,6 +59,10 @@ public:
     // Tags livres do documento de gaveta (DocTagsPicker): à esquerda da etiqueta de grupo.
     void setTagsTag(QWidget* tag);
     void setTagsTagVisible(bool visible);
+    // Ficha de personagem aberta: o "⋯" no canto direito (forma de exibição,
+    // adicionar, modelos, busca). Clicar emite sheetMenuRequested().
+    void setSheetMenuVisible(bool visible);
+    QRect sheetMenuGlobalRect() const;
 
     // Roteiro: guia no canto direito — em que elemento está a linha do cursor
     // e pra onde o Enter, o Tab e o Shift+Tab levam. Fora do roteiro, some.
@@ -95,6 +99,7 @@ signals:
     void grannaMarkClicked();
     // Um aviso que some sozinho (não o fixo) terminou de sumir.
     void grannaAnnounceEnded();
+    void sheetMenuRequested();
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -147,4 +152,6 @@ private:
     bool m_povWanted = false;
     QWidget* m_tagsTag = nullptr;
     bool m_tagsWanted = false;
+    QWidget* m_sheetMenu = nullptr;
+    bool m_sheetMenuWanted = false;
 };
