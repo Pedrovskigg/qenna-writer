@@ -112,6 +112,8 @@ private:
     void addTerritorioNode(const QString& parentId, TerritorioStore::NodeType type);
     void addSistemaNode(const QString& parentId, ConstrutorStore::NodeType type);
     void deleteNode(const QString& nodeId);
+    void editNodeTags(const QString& nodeId);
+    QWidget* pageTags(QWidget* parent, const QStringList& tags, const std::function<void(const QStringList&)>& save);
     void territorioMenu(const QString& id, const QPoint& globalPos);
     void sistemaMenu(const QString& id, const QPoint& globalPos);
     void nodeMenu(const QString& nodeId, const QPoint& globalPos);

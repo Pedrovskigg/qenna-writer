@@ -669,7 +669,8 @@ private:
     // Faixa de titulo no topo da folha; so existe com a TopToolbar na lateral,
     // onde a barra nao tem mais onde mostrar o documento em edicao.
     DocHeaderBar *docHeader = nullptr;
-    GroupPicker *m_docGroup = nullptr;   // a etiqueta de grupo do doc de gaveta aberto (no DocHeader)
+    GroupPicker *m_docGroup = nullptr;
+    class DocTagsPicker *m_docTags = nullptr;   // as tags livres do doc de gaveta aberto (no DocHeader)   // a etiqueta de grupo do doc de gaveta aberto (no DocHeader)
     PovPicker *m_docPov = nullptr;       // o narrador do capítulo/cena aberto (no DocHeader, com o POV à vista ligado)
     GrannaNotifier *grannaNotifier = nullptr;
     QScrollArea *editorScroll = nullptr;

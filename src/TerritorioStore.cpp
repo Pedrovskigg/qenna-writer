@@ -23,6 +23,8 @@ static QJsonObject nodeToJson(const TerritorioStore::Node& node)
                                          : QStringLiteral("folder"));
     if (!node.content.isEmpty())
         o.insert(QStringLiteral("content"), node.content);
+    if (!node.tags.isEmpty())
+        o.insert(QStringLiteral("tags"), QJsonArray::fromStringList(node.tags));
     o.insert(QStringLiteral("updatedAt"), node.updatedAt);
     if (!node.children.isEmpty()) {
         QJsonArray children;
@@ -42,6 +44,8 @@ static TerritorioStore::Node nodeFromJson(const QJsonObject& o)
                        ? TerritorioStore::NodeType::Doc
                        : TerritorioStore::NodeType::Folder;
     node.content = o.value(QStringLiteral("content")).toString();
+    for (const auto& tv : o.value(QStringLiteral("tags")).toArray())
+        if (!tv.toString().trimmed().isEmpty()) node.tags.append(tv.toString().trimmed());
     node.updatedAt = o.value(QStringLiteral("updatedAt")).toVariant().toLongLong();
     for (const auto& v : o.value(QStringLiteral("children")).toArray())
         node.children.append(nodeFromJson(v.toObject()));
@@ -158,6 +162,8 @@ bool TerritorioStore::load()
             t.nodes.append(nodeFromJson(nv.toObject()));
         for (const auto& mv : o.value(QStringLiteral("mentions")).toArray())
             t.mentions.append(mentionFromJson(mv.toObject()));
+        for (const auto& tv : o.value(QStringLiteral("tags")).toArray())
+            if (!tv.toString().trimmed().isEmpty()) t.tags.append(tv.toString().trimmed());
         if (!t.id.isEmpty())
             m_territorios.append(std::move(t));
     }
@@ -183,6 +189,8 @@ bool TerritorioStore::save() const
             o.insert(QStringLiteral("content"), t.content);
         if (!t.avatarDataUrl.isEmpty())
             o.insert(QStringLiteral("avatarDataUrl"), t.avatarDataUrl);
+        if (!t.tags.isEmpty())
+            o.insert(QStringLiteral("tags"), QJsonArray::fromStringList(t.tags));
         o.insert(QStringLiteral("createdAt"), t.createdAt);
         o.insert(QStringLiteral("updatedAt"), t.updatedAt);
         QJsonArray nodes;
@@ -331,6 +339,27 @@ QString TerritorioStore::addNode(const QString& territorioId, const QString& par
     save();
     emit changed();
     return newNode.id;
+}
+
+bool TerritorioStore::setTerritorioTags(const QString& id, const QStringList& tags)
+{
+    Territorio* t = findTerritorio(id);
+    if (!t || t->tags == tags) return false;
+    t->tags = tags;
+    save();
+    emit changed();
+    return true;
+}
+
+bool TerritorioStore::setNodeTags(const QString& territorioId, const QString& nodeId, const QStringList& tags)
+{
+    Territorio* t = findTerritorio(territorioId);
+    Node* node = t ? findNode(t->nodes, nodeId) : nullptr;
+    if (!node || node->tags == tags) return false;
+    node->tags = tags;
+    save();
+    emit changed();
+    return true;
 }
 
 bool TerritorioStore::updateNode(const QString& territorioId, const QString& nodeId,

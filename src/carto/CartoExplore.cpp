@@ -9,7 +9,9 @@
 #include "../DocPreview.h"
 #include "../ElementsStore.h"
 #include "../GroupBadge.h"
+#include "../ConstrutorStore.h"
 #include "../ProjectModel.h"
+#include "../ProjectTags.h"
 #include "../TerritorioStore.h"
 #include "../Theme.h"
 
@@ -79,6 +81,28 @@ const TerritorioStore::Node* findNode(const QList<TerritorioStore::Node>& nodes,
         if (const auto* c = findNode(n.children, id)) return c;
     }
     return nullptr;
+}
+// os nós de um Lugar que têm a tag (pasta ou documento: os dois têm texto), com o caminho das pastas
+void taggedNodes(const QList<TerritorioStore::Node>& nodes, const QString& path, const QString& folderId, const QString& tag,
+                 QVector<Explorer::XDoc>& out, const QString& placeId)
+{
+    for (const auto& n : nodes) {
+        if (ProjectTags::has(n.tags, tag)) {
+            Explorer::XDoc d;
+            d.kind = Explorer::XDoc::PlaceNode;
+            d.id = n.id; d.title = n.name; d.folder = path; d.folderId = folderId; d.drawerKey = placeId;
+            out.push_back(d);
+        }
+        taggedNodes(n.children, path.isEmpty() ? n.name : path + QStringLiteral(" / ") + n.name, n.id, tag, out, placeId);
+    }
+}
+void taggedSystemNodes(const QList<ConstrutorStore::Node>& nodes, const QString& sysId, const QString& sysName, const QString& tag,
+                       QVector<Explorer::SysHit>& out)
+{
+    for (const auto& n : nodes) {
+        if (ProjectTags::has(n.tags, tag)) out.push_back({ sysId, n.id, n.name, sysName });
+        taggedSystemNodes(n.children, sysId, sysName, tag, out);
+    }
 }
 void collectFolders(const QList<TerritorioStore::Node>& nodes, const QString& path, QVector<QPair<QString, QString>>& out)
 {
@@ -314,6 +338,200 @@ int Explorer::groupCount(const QString& gid)
     return n;
 }
 
+// ── filtro por tag ──
+// documento de gaveta: no território do grupo dele (ou do lugar de cima mais perto);
+// Lugar do Criador de Mundos: no território ligado a ele; o resto e os sistemas vão pra fora
+QVector<QVector<Explorer::XDoc>> Explorer::tagBuckets(const QString& tag, QVector<XDoc>* others, QVector<SysHit>* systems)
+{
+    QVector<QVector<XDoc>> out(realmCount());
+    if (tag.isEmpty() || !m_link.model) return out;
+    for (const Drawer& dr : m_link.model->drawers())
+        for (const DrawerItem& it : dr.items) {
+            if (it.isChapter || !ProjectTags::has(it.tags, tag)) continue;
+            XDoc d;
+            d.kind = XDoc::Drawer;
+            d.id = it.id; d.drawerKey = dr.key; d.drawerTitle = dr.title; d.title = it.title;
+            d.color = QColor(dr.color); d.sheet = it.isSheet; d.elementId = it.elementId;
+            const int r = it.markerId.isEmpty() ? -1 : mappedRealm(it.markerId);
+            if (r >= 0 && r < out.size()) out[r].push_back(d);
+            else if (others) others->push_back(d);
+        }
+    if (m_link.places)
+        for (const auto& t : m_link.places->territorios()) {
+            QVector<XDoc> hits;
+            if (ProjectTags::has(t.tags, tag)) {
+                XDoc about;
+                about.kind = XDoc::PlaceAbout;
+                about.id = t.id; about.drawerKey = t.id;
+                about.title = tr("Sobre %1").arg(t.name);
+                hits.push_back(about);
+            }
+            taggedNodes(t.nodes, QString(), QString(), tag, hits, t.id);
+            if (hits.isEmpty()) continue;
+            const int r = realmOfPlace(t.id);
+            if (r >= 0 && r < out.size()) out[r] += hits;
+            else if (others) *others += hits;
+        }
+    if (systems && m_link.systems)
+        for (const auto& s : m_link.systems->systems()) {
+            if (ProjectTags::has(s.tags, tag)) systems->push_back({ s.id, QString(), s.name, tr("Sistema") });
+            taggedSystemNodes(s.nodes, s.id, s.name, tag, *systems);
+        }
+    return out;
+}
+
+QVector<QPair<QString, int>> Explorer::tagsInUse()
+{
+    QList<QStringList> lists;
+    if (m_link.model)
+        for (const Drawer& dr : m_link.model->drawers())
+            for (const DrawerItem& it : dr.items) if (!it.isChapter && !it.tags.isEmpty()) lists.append(it.tags);
+    std::function<void(const QList<TerritorioStore::Node>&)> pn = [&](const QList<TerritorioStore::Node>& ns) {
+        for (const auto& n : ns) { if (!n.tags.isEmpty()) lists.append(n.tags); pn(n.children); }
+    };
+    if (m_link.places) for (const auto& t : m_link.places->territorios()) { if (!t.tags.isEmpty()) lists.append(t.tags); pn(t.nodes); }
+    std::function<void(const QList<ConstrutorStore::Node>&)> sn = [&](const QList<ConstrutorStore::Node>& ns) {
+        for (const auto& n : ns) { if (!n.tags.isEmpty()) lists.append(n.tags); sn(n.children); }
+    };
+    if (m_link.systems) for (const auto& s : m_link.systems->systems()) { if (!s.tags.isEmpty()) lists.append(s.tags); sn(s.nodes); }
+    QVector<QPair<QString, int>> out;
+    for (const QString& t : ProjectTags::rank(lists)) {
+        int n = 0;
+        for (const QStringList& l : lists) if (ProjectTags::has(l, t)) n++;
+        out.append({ t, n });
+    }
+    return out;
+}
+
+void Explorer::setTagFilter(const QString& tag)
+{
+    m_tagFilter = tag;
+    m_mode = CardMode::List;
+    renderCard();
+    pushView();
+    if (flash && !tag.isEmpty()) flash(tr("Mostrando só o que tem a tag “%1”. As pílulas do mapa contam só ela.").arg(tag));
+}
+
+// a lista de tags pra escolher (com busca)
+void Explorer::renderTagPicker(QVBoxLayout* bl)
+{
+    bl->setSpacing(6);
+    bl->addWidget(caption(m_cardBody, tr("Filtrar por tag")));
+    auto* q = new QLineEdit(m_cardBody);
+    q->setObjectName(QStringLiteral("cartoField"));
+    q->setPlaceholderText(tr("Buscar tag"));
+    q->setText(m_tagQuery);
+    q->setClearButtonEnabled(true);
+    bl->addWidget(q);
+    auto* listHost = new QWidget(m_cardBody);
+    auto* ll = new QVBoxLayout(listHost);
+    ll->setContentsMargins(0, 2, 0, 0);
+    ll->setSpacing(2);
+    bl->addWidget(listHost);
+    const QVector<QPair<QString, int>> tags = tagsInUse();
+    auto fill = [this, ll, listHost, tags]() {
+        clearLayout(ll);
+        const QString f = m_tagQuery.trimmed();
+        int shown = 0;
+        for (const auto& [tag, n] : tags) {
+            if (!f.isEmpty() && !tag.contains(f, Qt::CaseInsensitive)) continue;
+            shown++;
+            const QString t = tag;
+            auto* b = row(listHost, QStringLiteral("#") + tag, QString::number(n), m_accent, tag.compare(m_tagFilter, Qt::CaseInsensitive) == 0, false,
+                          [this, t]() { setTagFilter(t); });
+            b->setToolTip(tr("%n item(ns) com essa tag", "", n));
+            ll->addWidget(b);
+        }
+        if (!shown) {
+            auto* n = new QLabel(tags.isEmpty() ? tr("Nenhuma tag ainda. Ponha tags nos documentos (na folha de criação ou no # do topo do documento aberto) e no Criador de Mundos.")
+                                                : tr("Nenhuma tag com esse nome."), listHost);
+            n->setObjectName(QStringLiteral("cartoNote"));
+            n->setWordWrap(true);
+            n->setContentsMargins(8, 4, 8, 4);
+            ll->addWidget(n);
+        }
+    };
+    fill();
+    connect(q, &QLineEdit::textChanged, this, [this, fill](const QString& t) { m_tagQuery = t; fill(); });
+    connect(q, &QLineEdit::returnPressed, this, [this, tags]() {
+        const QString f = m_tagQuery.trimmed();
+        for (const auto& [tag, n] : tags) if (f.isEmpty() || tag.contains(f, Qt::CaseInsensitive)) { setTagFilter(tag); return; }
+    });
+    QTimer::singleShot(0, q, [q]() { q->setFocus(); });
+}
+
+// o que tem a tag: por território (clicar no nome leva o mapa até ele), o resto e os sistemas no fim
+void Explorer::renderTagged(QVBoxLayout* bl)
+{
+    QVector<XDoc> others;
+    QVector<SysHit> systems;
+    const QVector<QVector<XDoc>> buckets = tagBuckets(m_tagFilter, &others, &systems);
+    int total = static_cast<int>(others.size() + systems.size());
+    for (const auto& b : buckets) total += static_cast<int>(b.size());
+    // a tag ativa: trocar ou limpar
+    auto* bar = new QWidget(m_cardBody);
+    auto* hl = new QHBoxLayout(bar);
+    hl->setContentsMargins(6, 2, 2, 6);
+    hl->setSpacing(6);
+    auto* chip = new QLabel(bar);
+    chip->setObjectName(QStringLiteral("xTagChip"));
+    chip->setText(QStringLiteral("#") + m_tagFilter.toHtmlEscaped());
+    chip->setStyleSheet(QStringLiteral("QLabel#xTagChip { color: %1; border: 1px solid %1; border-radius: 10px; padding: 2px 10px; font-weight: 600; }").arg(m_accent.name()));
+    hl->addWidget(chip);
+    auto* cnt = new QLabel(tr("%n item(ns)", "", total), bar);
+    cnt->setObjectName(QStringLiteral("cartoNote"));
+    hl->addWidget(cnt, 1);
+    auto* clear = iconBtn(bar, tr("Limpar o filtro"));
+    clear->setIcon(icon(QStringLiteral("close"), m_muted, m_accent, 14));
+    connect(clear, &QToolButton::clicked, this, [this]() { setTagFilter(QString()); });
+    hl->addWidget(clear);
+    bl->addWidget(bar);
+    auto docRow = [&](const XDoc& d, bool indent) {
+        const bool place = d.kind != XDoc::Drawer;
+        QString right = place ? tr("Criador de Mundos") : d.drawerTitle;
+        auto* b = row(m_cardBody, d.title, right, place ? m_accent : d.color, m_cur.valid() && m_cur.same(d), d.sheet,
+                      [this, d]() { openDoc(d); });
+        if (indent) b->layout()->setContentsMargins(26, 0, 10, 0);
+        bl->addWidget(b);
+    };
+    for (int r = 0; r < buckets.size(); r++) {
+        if (buckets[r].isEmpty()) continue;
+        const QString gid = groupOf(r, false);
+        auto* head = row(m_cardBody, realmName(r), QString::number(buckets[r].size()), realmColor(r), r == m_sel, false, [this, gid, r]() {
+            if (!gid.isEmpty()) selectGroup(gid, true);
+            else { m_sel = r; pushView(); }
+        });
+        head->setToolTip(tr("Levar o mapa até %1").arg(realmName(r)));
+        if (auto* t = head->findChild<QLabel*>(QStringLiteral("xRowTitle"))) { QFont f = t->font(); f.setBold(true); t->setFont(f); }
+        bl->addSpacing(4);
+        bl->addWidget(head);
+        for (const XDoc& d : buckets[r]) docRow(d, true);
+    }
+    if (!others.isEmpty()) {
+        bl->addSpacing(6);
+        bl->addWidget(caption(m_cardBody, tr("Fora dos territórios")));
+        for (const XDoc& d : others) docRow(d, false);
+    }
+    if (!systems.isEmpty()) {
+        bl->addSpacing(6);
+        bl->addWidget(caption(m_cardBody, tr("Sistemas do Criador de Mundos")));
+        for (const SysHit& s : systems) {
+            const QString sid = s.systemId, nid = s.nodeId;
+            auto* b = row(m_cardBody, s.title, s.nodeId.isEmpty() ? s.sub : s.sub, m_accent, false, false, [this, sid, nid]() {
+                if (m_link.openSystem) m_link.openSystem(sid, nid);
+            });
+            b->setToolTip(tr("Abre no Criador de Mundos"));
+            bl->addWidget(b);
+        }
+    }
+    if (!total) {
+        auto* n = new QLabel(tr("Nada tem essa tag agora."), m_cardBody);
+        n->setObjectName(QStringLiteral("cartoNote"));
+        n->setContentsMargins(8, 4, 8, 4);
+        bl->addWidget(n);
+    }
+}
+
 void Explorer::selectGroup(const QString& groupId, bool fly)
 {
     if (!m_link.model || !m_link.model->findGroup(groupId)) return;
@@ -464,6 +682,10 @@ void Explorer::pushView()
     ExploreView v;
     v.sel = m_sel; v.hov = m_hov;
     if (m_link.ok()) {
+        if (!m_tagFilter.isEmpty()) {
+            v.tag = m_tagFilter;
+            for (const auto& b : tagBuckets(m_tagFilter, nullptr, nullptr)) v.counts.push_back(static_cast<int>(b.size()));
+        } else
         for (int r = 0; r < realmCount(); r++) {
             int n = static_cast<int>(drawerDocs(r).size());
             const QVector<XDoc> pd = placeDocs(r);
@@ -567,13 +789,14 @@ void Explorer::clicked(int realm, const QString& linkId)
 void Explorer::close()
 {
     flushSave();
-    m_sel = -1; m_cur = XDoc(); m_edit = false; m_links = false; m_pickLink = false; m_mode = CardMode::List;
+    m_sel = -1; m_cur = XDoc(); m_edit = false; m_links = false; m_pickLink = false; m_mode = CardMode::List; m_tagFilter.clear();
     m_duoLink.clear(); m_duoEdit = -1;
     m_card->hide(); m_reader->hide(); m_duo->hide(); m_chip->hide();
     pushView();
 }
 bool Explorer::escape()
 {
+    if (!m_tagFilter.isEmpty() && m_mode == CardMode::List && !m_cur.valid() && m_card->isVisible() && !m_duo->isVisible()) { setTagFilter(QString()); return true; }
     if (m_canvas && m_card->isVisible() && m_mode == CardMode::List && !m_cur.valid() && !m_duo->isVisible() && m_link.model) {
         // Esc sobe um nível na árvore antes de fechar
         const Group* g = m_link.model->findGroup(m_group);
@@ -739,7 +962,29 @@ void Explorer::renderCard()
         n->setContentsMargins(8, 2, 8, 6); bl->addWidget(n);
     };
 
-    if (m_mode == CardMode::List) {
+    if (m_mode == CardMode::List && !m_tagFilter.isEmpty()) {
+        renderTagged(bl);
+        bl->addStretch(1);
+        auto* tb = textBtn(m_cardFoot, tr("Trocar tag"));
+        tb->setIcon(icon(QStringLiteral("hash"), m_ink, m_accent, 15));
+        connect(tb, &QPushButton::clicked, this, [this]() { m_mode = CardMode::Tags; m_tagQuery.clear(); renderCard(); });
+        auto* cb = textBtn(m_cardFoot, tr("Limpar filtro"));
+        connect(cb, &QPushButton::clicked, this, [this]() { setTagFilter(QString()); });
+        fl->addWidget(tb, 1); fl->addWidget(cb, 1);
+    } else if (m_mode == CardMode::Tags) {
+        renderTagPicker(bl);
+        bl->addStretch(1);
+        auto* back = textBtn(m_cardFoot, tr("Voltar"));
+        connect(back, &QPushButton::clicked, this, [this]() { m_mode = CardMode::List; renderCard(); });
+        fl->addWidget(back, 1);
+    } else if (m_mode == CardMode::List) {
+        // filtrar por tag (29/10): em cima da árvore, à vista
+        auto* fb = row(m_cardBody, tr("Filtrar por tag"), QString(), QColor(), false, false, [this]() { m_mode = CardMode::Tags; m_tagQuery.clear(); renderCard(); });
+        fb->setToolTip(tr("Mostra só o que tem uma tag (guerra, monarquia…) e onde isso está no mapa"));
+        if (auto* dot = fb->findChild<QLabel*>()) { dot->setFixedSize(16, 16); dot->setStyleSheet(QString()); dot->setPixmap(iconPixmap(QStringLiteral("hash"), m_accent, 16, fb->devicePixelRatioF())); }
+        bl->addWidget(fb);
+        auto* sp = new QFrame(m_cardBody); sp->setObjectName(QStringLiteral("xSep")); sp->setFixedHeight(1);
+        bl->addSpacing(3); bl->addWidget(sp); bl->addSpacing(3);
         renderTree(bl);
         bl->addStretch(1);
         auto* nb = textBtn(m_cardFoot, tr("Novo documento"));

@@ -232,6 +232,8 @@ static QJsonObject nodeToJson(const ConstrutorStore::Node& node)
                                          : QStringLiteral("section"));
     if (!node.content.isEmpty())
         o.insert(QStringLiteral("content"), node.content);
+    if (!node.tags.isEmpty())
+        o.insert(QStringLiteral("tags"), QJsonArray::fromStringList(node.tags));
     o.insert(QStringLiteral("updatedAt"), node.updatedAt);
     if (!node.children.isEmpty()) {
         QJsonArray children;
@@ -251,6 +253,8 @@ static ConstrutorStore::Node nodeFromJson(const QJsonObject& o)
                        ? ConstrutorStore::NodeType::Rule
                        : ConstrutorStore::NodeType::Section;
     node.content = o.value(QStringLiteral("content")).toString();
+    for (const auto& tv : o.value(QStringLiteral("tags")).toArray())
+        if (!tv.toString().trimmed().isEmpty()) node.tags.append(tv.toString().trimmed());
     node.updatedAt = o.value(QStringLiteral("updatedAt")).toVariant().toLongLong();
     for (const auto& v : o.value(QStringLiteral("children")).toArray())
         node.children.append(nodeFromJson(v.toObject()));
@@ -336,6 +340,8 @@ bool ConstrutorStore::load()
         sys.content     = o.value(QStringLiteral("content")).toString();
         for (const auto& tv : o.value(QStringLiteral("territoryIds")).toArray())
             sys.territoryIds.append(tv.toString());
+        for (const auto& tv : o.value(QStringLiteral("tags")).toArray())
+            if (!tv.toString().trimmed().isEmpty()) sys.tags.append(tv.toString().trimmed());
         for (const auto& nv : o.value(QStringLiteral("nodes")).toArray())
             sys.nodes.append(nodeFromJson(nv.toObject()));
         for (const auto& mv : o.value(QStringLiteral("mentions")).toArray())
@@ -367,6 +373,8 @@ bool ConstrutorStore::save() const
             for (const auto& tid : sys.territoryIds) tids.append(tid);
             o.insert(QStringLiteral("territoryIds"), tids);
         }
+        if (!sys.tags.isEmpty())
+            o.insert(QStringLiteral("tags"), QJsonArray::fromStringList(sys.tags));
         QJsonArray nodes;
         for (const Node& n : sys.nodes)
             nodes.append(nodeToJson(n));
@@ -440,6 +448,27 @@ bool ConstrutorStore::updateSystem(const QString& id, const QString& name, int s
     sys->name        = name;
     sys->sliderIndex = sliderIndex;
     sys->updatedAt   = QDateTime::currentMSecsSinceEpoch();
+    save();
+    emit changed();
+    return true;
+}
+
+bool ConstrutorStore::setSystemTags(const QString& id, const QStringList& tags)
+{
+    System* sys = findSystem(id);
+    if (!sys || sys->tags == tags) return false;
+    sys->tags = tags;
+    save();
+    emit changed();
+    return true;
+}
+
+bool ConstrutorStore::setNodeTags(const QString& systemId, const QString& nodeId, const QStringList& tags)
+{
+    System* sys = findSystem(systemId);
+    Node* node = sys ? findNode(sys->nodes, nodeId) : nullptr;
+    if (!node || node->tags == tags) return false;
+    node->tags = tags;
     save();
     emit changed();
     return true;

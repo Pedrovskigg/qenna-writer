@@ -26,6 +26,7 @@ public:
         QString content;
         qint64 updatedAt = 0;
         QList<Node> children;
+        QStringList tags;      // tags livres (as mesmas dos documentos)
     };
 
     // Um trecho do manuscrito vinculado a este território (ou a um nó
@@ -56,6 +57,7 @@ public:
         qint64  updatedAt = 0;
         QList<Node> nodes;
         QList<Mention> mentions;
+        QStringList tags;      // tags livres (as mesmas dos documentos)
     };
 
     // Vínculo entre dois Territórios (a linha do Seletor). Ao contrário do
@@ -91,6 +93,7 @@ public:
     bool updateTerritorioContent(const QString& id, const QString& content);
     bool updateTerritorioAvatar(const QString& id, const QString& avatarDataUrl);
     bool removeTerritorio(const QString& id);
+    bool setTerritorioTags(const QString& id, const QStringList& tags);
 
     // CRUD — nós (parentNodeId vazio = filho direto do território)
     QString addNode(const QString& territorioId, const QString& parentNodeId,
@@ -98,6 +101,7 @@ public:
     bool updateNode(const QString& territorioId, const QString& nodeId,
                     const QString& name, const QString& content);
     bool removeNode(const QString& territorioId, const QString& nodeId);
+    bool setNodeTags(const QString& territorioId, const QString& nodeId, const QStringList& tags);
 
     // CRUD — menções (nodeId vazio = menção no nível do território)
 

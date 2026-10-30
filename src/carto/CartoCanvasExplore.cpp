@@ -230,12 +230,12 @@ void Canvas::drawExplore(QPainter& p, const SceneState& st)
         if (!g) continue;
         const int n = r < static_cast<int>(m_explore.counts.size()) ? m_explore.counts[r] : 0;
         if (n <= 0) continue;   // território sem documento não ganha pílula
-        const QString txt = tr("%n documento(s)", "", n);
+        const QString txt = m_explore.tag.isEmpty() ? tr("%n documento(s)", "", n) : QStringLiteral("#%1 · %2").arg(m_explore.tag).arg(n);
         const double w = fm.horizontalAdvance(txt) + 18, y = g->y() + 24;
         const QRectF box(g->x() - w / 2, y - 10, w, 20);
         const bool chosen = r == m_explore.sel;
         p.setPen(Qt::NoPen);
-        p.setBrush(chosen ? QColor(252, 248, 238, 242) : QColor(14, 16, 20, 184));
+        p.setBrush(chosen ? QColor(252, 248, 238, 242) : !m_explore.tag.isEmpty() ? QColor(150, 74, 44, 225) : QColor(14, 16, 20, 184));
         p.drawRoundedRect(box, 10, 10);
         p.setPen(chosen ? QColor(30, 26, 22) : QColor(240, 236, 226));
         p.drawText(box, Qt::AlignCenter, txt);

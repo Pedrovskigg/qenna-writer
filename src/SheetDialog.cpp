@@ -1,5 +1,6 @@
 #include "SheetDialog.h"
 
+#include "TagField.h"
 #include "Theme.h"
 #include "TimelineTracksTypes.h"
 
@@ -152,6 +153,20 @@ void SheetDialog::addHeaderWidget(QWidget* w)
     w->setParent(m_card);
     top->insertWidget(top->count() - 1, w, 0, Qt::AlignVCenter);
     top->insertSpacing(top->count() - 1, 6);
+}
+
+TagField* SheetDialog::addTagField(const QStringList& initial)
+{
+    auto* box = new QVBoxLayout;
+    box->setSpacing(5);
+    box->addWidget(sectionLabel(QCoreApplication::translate("SheetDialog", "Tags"), m_card));
+    auto* f = new TagField(m_card);
+    f->setTags(initial);
+    f->setToolTip(QCoreApplication::translate("SheetDialog", "Palavras livres pra achar isso depois: guerra, monarquia, linhagem. Enter ou vírgula põe a tag."));
+    f->resized = [this]() { if (isVisible()) adjustSize(); };
+    box->addWidget(f);
+    m_body->addLayout(box);
+    return f;
 }
 
 void SheetDialog::setEyebrow(const QString& text)

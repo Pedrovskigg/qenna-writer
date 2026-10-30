@@ -39,6 +39,7 @@ struct ExploreLinkView { QString id; int a = -1, b = -1; QString label; QColor c
 struct ExploreView {
     int sel = -1, hov = -1;                  // território escolhido e o do mouse
     std::vector<int> counts;                 // documentos de cada território
+    QString tag;                             // filtro por tag: as pílulas contam só os que têm ela
     std::vector<ExploreLinkView> links;      // arcos: as conexões do escolhido (ou a do lado a lado)
     bool duo = false;                        // lado a lado aberto: o arco vem cheio
     QString selArt;                          // construção batizada escolhida (um Lugar filho do território)

@@ -167,6 +167,10 @@ struct DrawerItem {
     // (sheet) em vez do html livre.
     bool isSheet = false;
     CharacterSheet sheet;
+    // Tags livres (29/10): "guerra", "monarquia"... A mesma tag em documentos,
+    // lugares e sistemas do Criador de Mundos e memórias do Pensário; o Explorar
+    // do mapa filtra por ela.
+    QStringList tags;
 };
 
 struct Drawer {
@@ -349,6 +353,7 @@ public:
     // a lista em ordem de árvore (pai, filhos, netos...), com a profundidade de cada um
     QList<QPair<const Group*, int>> groupTree() const;
     bool setDrawerItemGroup(const QString& itemId, const QString& groupId);
+    bool setDrawerItemTags(const QString& itemId, const QStringList& tags);
     bool setDrawerFolderGroup(const QString& drawerKey, const QString& folderId, const QString& groupId);
 
     const QList<CharacterBond>& characterBonds() const { return m_characterBonds; }

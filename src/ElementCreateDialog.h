@@ -56,6 +56,9 @@ public:
     // Documento novo: a etiqueta de grupo no topo (os territórios do mapa são grupos).
     void enableGroups(const ProjectModel* model);
     QString groupId() const;
+    // Tags livres (29/10): pré-preencher na edição e ler na confirmação.
+    void setTags(const QStringList& tags);
+    QStringList tags() const;
 
 protected:
     void showEvent(QShowEvent* e) override;
@@ -88,6 +91,7 @@ private:
     void refreshRoleTag();
     QLabel*       m_roleTag = nullptr;      // o papel escrito em cima do nome, no pôster
     GroupPicker* m_groups = nullptr;
+    class TagField* m_tagField = nullptr;
     CharacterPoster* m_poster = nullptr;    // topo da folha de personagem (faixa ou foto)
     QCheckBox*    m_narratorCheck = nullptr;
     QButtonGroup* m_genderGroup = nullptr;  // 0 = Masculino, 1 = Feminino; nenhum = não marcado

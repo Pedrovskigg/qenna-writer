@@ -379,6 +379,12 @@ qt_add_executable(qenna-writer
     src/GroupBadge.cpp
     src/GroupBadge.h
     src/GroupPicker.cpp
+    src/ProjectTags.cpp
+    src/ProjectTags.h
+    src/TagField.cpp
+    src/TagField.h
+    src/DocTagsPicker.cpp
+    src/DocTagsPicker.h
     src/GroupPicker.h
     src/PovPicker.cpp
     src/PovPicker.h
@@ -456,6 +462,8 @@ qt_add_executable(qenna-writer
     src/carto/CartoPanelUi.cpp
     src/carto/CartoCartela.cpp
     src/carto/CartoCartela.h
+    src/carto/CartoNewMap.cpp
+    src/carto/CartoNewMap.h
     src/LousaTypes.h
     src/CharacterSheetPanel.cpp
     src/CharacterSheetPanel.h

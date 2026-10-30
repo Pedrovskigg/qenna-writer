@@ -14,6 +14,7 @@
 
 class QButtonGroup;
 class QFrame;
+class TagField;
 class QHBoxLayout;
 class QLabel;
 class QLineEdit;
@@ -58,6 +59,8 @@ protected:
     void replaceHeader(QWidget* header);
     // Algo pequeno no cabeçalho, antes do × (a etiqueta de grupo do documento novo).
     void addHeaderWidget(QWidget* w);
+    // "TAGS" + o campo das tags livres no fim do corpo (a folha cresce com ele).
+    TagField* addTagField(const QStringList& initial = QStringList());
     // Rodapé: dica do Enter + Cancelar + principal. Devolve o principal
     // (já ligado a accept; troque a conexão se precisar validar antes).
     QPushButton* addFooter(const QString& okText, const QString& enterHint);

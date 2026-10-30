@@ -56,6 +56,7 @@ const QHash<QString, QString>& shapes()
         { "list", R"(<path d="M9 7h11M9 12h11M9 17h11"/><circle cx="4.5" cy="7" r=".8"/><circle cx="4.5" cy="12" r=".8"/><circle cx="4.5" cy="17" r=".8"/>)" },
         { "in", R"(<path d="M12 4v10M8 10l4 4 4-4"/><path d="M4 14v4.5h16V14"/>)" },
         { "plus", R"(<path d="M12 5v14M5 12h14"/>)" },
+        { "hash", R"(<path d="M10 4 8 20M16 4l-2 16M5 9h15M4 15h15"/>)" },
         { "minus", R"(<path d="M5 12h14"/>)" },
         { "cursor", R"(<path d="M5 3l12 8-5 1.5 3 6-2.4 1.2-3-6L6 17z"/>)" },
         { "tower", R"(<path d="M8 20V7h8v13"/><path d="M7 7V4h2v1.5h2V4h2v1.5h2V4h2v3"/><path d="M12 10v2"/>)" },

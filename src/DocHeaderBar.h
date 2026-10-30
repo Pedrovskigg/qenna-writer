@@ -56,6 +56,9 @@ public:
     // documentos do manuscrito, quando o "POV à vista" está ligado.
     void setPovTag(QWidget* tag);
     void setPovTagVisible(bool visible);
+    // Tags livres do documento de gaveta (DocTagsPicker): à esquerda da etiqueta de grupo.
+    void setTagsTag(QWidget* tag);
+    void setTagsTagVisible(bool visible);
 
     // Roteiro: guia no canto direito — em que elemento está a linha do cursor
     // e pra onde o Enter, o Tab e o Shift+Tab levam. Fora do roteiro, some.
@@ -142,4 +145,6 @@ private:
     bool m_groupWanted = false;
     QWidget* m_povTag = nullptr;
     bool m_povWanted = false;
+    QWidget* m_tagsTag = nullptr;
+    bool m_tagsWanted = false;
 };

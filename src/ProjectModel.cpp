@@ -302,6 +302,7 @@ QJsonObject drawerItemToJson(const DrawerItem& it) {
         o.insert(QStringLiteral("isSheet"), true);
         o.insert(QStringLiteral("sheet"), characterSheetToJson(it.sheet));
     }
+    if (!it.tags.isEmpty()) o.insert(QStringLiteral("tags"), QJsonArray::fromStringList(it.tags));
     return o;
 }
 
@@ -327,6 +328,8 @@ DrawerItem drawerItemFromJson(const QJsonObject& o) {
     it.charLocation     = jsonStringOrEmpty(o.value(QStringLiteral("charLocation")));
     it.origemTerritorioId     = jsonStringOrEmpty(o.value(QStringLiteral("origemTerritorioId")));
     it.localAtualTerritorioId = jsonStringOrEmpty(o.value(QStringLiteral("localAtualTerritorioId")));
+    for (const auto& tv : o.value(QStringLiteral("tags")).toArray())
+        if (!tv.toString().trimmed().isEmpty()) it.tags.append(tv.toString().trimmed());
     if (o.value(QStringLiteral("isSheet")).toBool(false)) {
         it.isSheet = true;
         it.sheet = characterSheetFromJson(o.value(QStringLiteral("sheet")).toObject());
@@ -1243,6 +1246,19 @@ bool ProjectModel::setDrawerItemGroup(const QString& itemId, const QString& grou
                 emit drawersChanged();
                 return true;
             }
+        }
+    }
+    return false;
+}
+
+bool ProjectModel::setDrawerItemTags(const QString& itemId, const QStringList& tags) {
+    for (auto& d : m_drawers) {
+        for (auto& it : d.items) {
+            if (it.id != itemId) continue;
+            if (it.tags == tags) return false;
+            it.tags = tags;
+            emit drawersChanged();
+            return true;
         }
     }
     return false;

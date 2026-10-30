@@ -1,5 +1,6 @@
 #include "SheetDialogs.h"
 #include "GroupPicker.h"
+#include "TagField.h"
 
 #include "CoverUtils.h"
 #include "SheetDialog.h"
@@ -81,6 +82,8 @@ public:
         body()->insertWidget(0, m_groups->list());
     }
     QString groupId() const { return m_groups ? m_groups->groupId() : QString(); }
+    void enableTags(const QStringList& initial) { m_tags = addTagField(initial); }
+    QStringList tags() const { return m_tags ? m_tags->tags() : QStringList(); }
 protected:
     void showEvent(QShowEvent* e) override
     {
@@ -90,6 +93,7 @@ protected:
     }
 private:
     GroupPicker* m_groups = nullptr;
+    TagField* m_tags = nullptr;
     QLineEdit* m_line = nullptr;
     QTextEdit* m_area = nullptr;
 };
@@ -342,6 +346,8 @@ public:
     }
     QString value() const { return m_line->text(); }
     int chosen() const { return m_choice->currentIndex(); }
+    void enableTags(const QStringList& initial) { m_tags = addTagField(initial); }
+    QStringList tags() const { return m_tags ? m_tags->tags() : QStringList(); }
 protected:
     void showEvent(QShowEvent* e) override
     {
@@ -361,6 +367,7 @@ private:
     QLineEdit* m_line = nullptr;
     SheetChoice* m_choice = nullptr;
     QLabel* m_hint = nullptr;
+    TagField* m_tags = nullptr;
 };
 
 // ── cor (com ou sem nome) ────────────────────────────────────────────────────
@@ -733,14 +740,50 @@ QString askText(QWidget* parent, const QString& eyebrow, const QString& placehol
 }
 
 QString askTextInGroup(QWidget* parent, const QString& eyebrow, const QString& placeholder,
-                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText)
+                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText,
+                       QStringList* tags)
 {
     TextSheet s(parent, eyebrow, placeholder, QString(), okText, false, false, QString());
-    s.enableGroups(model);
+    if (model) s.enableGroups(model);
+    if (tags) s.enableTags(*tags);
     const bool accepted = s.exec() == QDialog::Accepted;
     if (ok) *ok = accepted;
     if (groupId) *groupId = accepted ? s.groupId() : QString();
+    if (tags && accepted) *tags = s.tags();
     return accepted ? s.value() : QString();
+}
+
+// só o campo das tags, com uma linha dizendo de quê
+class TagsSheet : public SheetDialog {
+public:
+    TagsSheet(QWidget* parent, const QString& eyebrow, const QString& what, const QStringList& initial)
+        : SheetDialog(parent, 420)
+    {
+        setEyebrow(eyebrow);
+        if (!what.isEmpty()) {
+            auto* t = new QLabel(what, card());
+            t->setObjectName(QStringLiteral("sheetDim"));
+            t->setWordWrap(true);
+            t->setFont(uiFont(12.5));
+            body()->addWidget(t);
+        }
+        m_tags = addTagField(initial);
+        addFooter(QCoreApplication::translate("Sheets", "Salvar"), QCoreApplication::translate("Sheets", "confirma"));
+        applySheetTheme();
+    }
+    QStringList tags() const { return m_tags->tags(); }
+protected:
+    void showEvent(QShowEvent* e) override { SheetDialog::showEvent(e); m_tags->focusInput(); }
+private:
+    TagField* m_tags = nullptr;
+};
+
+bool askTags(QWidget* parent, const QString& eyebrow, const QString& what, QStringList* tags)
+{
+    TagsSheet s(parent, eyebrow, what, tags ? *tags : QStringList());
+    if (s.exec() != QDialog::Accepted) return false;
+    if (tags) *tags = s.tags();
+    return true;
 }
 
 int askChoice(QWidget* parent, const QString& eyebrow, const QStringList& options, const QString& okText)
@@ -764,13 +807,16 @@ bool askManuscript(QWidget* parent, bool editMode, QString* title, QString* stor
 QString askTextWithChoice(QWidget* parent, const QString& eyebrow, const QString& placeholder,
                           const QString& initial, const QString& choiceLabel,
                           const QStringList& options, int* choice, bool* ok,
-                          const QString& okText, const QStringList& optionHints)
+                          const QString& okText, const QStringList& optionHints,
+                          QStringList* tags)
 {
     TextChoiceSheet s(parent, eyebrow, placeholder, initial, choiceLabel, options,
                       choice ? *choice : 0, okText, optionHints);
+    if (tags) s.enableTags(*tags);
     const bool accepted = s.exec() == QDialog::Accepted;
     if (ok) *ok = accepted;
     if (accepted && choice) *choice = s.chosen();
+    if (accepted && tags) *tags = s.tags();
     return accepted ? s.value() : QString();
 }
 

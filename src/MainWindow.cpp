@@ -113,6 +113,8 @@
 #include "EditorLayout.h"
 #include "UiScale.h"
 #include "ElementCreateDialog.h"
+#include "ProjectTags.h"
+#include "DocTagsPicker.h"
 #include "ElementsPresentDialog.h"
 #include "ElementsStore.h"
 #include "RoleTiers.h"
@@ -1232,6 +1234,11 @@ void MainWindow::setupEditor()
                 m_docGroup->setGroupId(groupId);
                 docHeader->setGroupTagVisible(drawerDoc && m_docGroup->available());
             }
+            if (m_docTags) {
+                const DrawerItem* it = drawerDoc ? projectModel->findDrawerItem(vm.itemId) : nullptr;
+                m_docTags->setTags(it ? it->tags : QStringList());
+                docHeader->setTagsTagVisible(drawerDoc);
+            }
             // Narrador do capítulo (cena mostra o do capítulo dela): aparece
             // quando o capítulo já tem narrador; sem ele, o "Quem narra?" só
             // com o POV à vista ligado na gaveta.
@@ -2173,6 +2180,26 @@ void MainWindow::setupEditor()
             [this]() { m_pendingTerritorioMention.reset(); });
 
     memoriesStore = new MemoriesStore(this);
+    // tags livres (29/10): as do projeto inteiro, das mais usadas pras menos (sugestões do campo de tags)
+    ProjectTags::setProvider([this]() {
+        QList<QStringList> lists;
+        if (projectModel)
+            for (const Drawer& d : projectModel->drawers())
+                for (const DrawerItem& it : d.items) if (!it.tags.isEmpty()) lists.append(it.tags);
+        std::function<void(const QList<TerritorioStore::Node>&)> placeNodes = [&](const QList<TerritorioStore::Node>& nodes) {
+            for (const auto& n : nodes) { if (!n.tags.isEmpty()) lists.append(n.tags); placeNodes(n.children); }
+        };
+        if (territorioStore)
+            for (const auto& t : territorioStore->territorios()) { if (!t.tags.isEmpty()) lists.append(t.tags); placeNodes(t.nodes); }
+        std::function<void(const QList<ConstrutorStore::Node>&)> sysNodes = [&](const QList<ConstrutorStore::Node>& nodes) {
+            for (const auto& n : nodes) { if (!n.tags.isEmpty()) lists.append(n.tags); sysNodes(n.children); }
+        };
+        if (construtorStore)
+            for (const auto& s : construtorStore->systems()) { if (!s.tags.isEmpty()) lists.append(s.tags); sysNodes(s.nodes); }
+        if (memoriesStore)
+            for (const auto& m : memoriesStore->memories()) if (!m.tags.isEmpty()) lists.append(m.tags);
+        return ProjectTags::rank(lists);
+    });
     memoryAddPopup = new MemoryAddPopup(this);
     connect(memoryAddPopup, &MemoryAddPopup::confirmed, this,
             [this](const QString& name, const QString& targetType, const QString& elementId,
@@ -2718,6 +2745,14 @@ void MainWindow::setupEditor()
     m_docGroup->picked = [this](const QString& gid) {
         if (!editorHost || editorHost->viewMode().type != EditorHost::DrawerDoc) return;
         projectModel->setDrawerItemGroup(editorHost->viewMode().itemId, gid);
+    };
+    // Tags livres do doc de gaveta aberto: ver e trocar sem sair do editor (o Explorar do mapa filtra por elas)
+    m_docTags = new DocTagsPicker(docHeader);
+    docHeader->setTagsTag(m_docTags->tag());
+    m_docTags->changed = [this]() { if (docHeader) docHeader->refreshGroupTag(); };
+    m_docTags->picked = [this](const QStringList& tags) {
+        if (!editorHost || editorHost->viewMode().type != EditorHost::DrawerDoc) return;
+        projectModel->setDrawerItemTags(editorHost->viewMode().itemId, tags);
     };
     // Narrador do capítulo aberto: ver e trocar sem abrir a gaveta (POV à vista).
     // A lista segue o menu "Narrador" da gaveta: sugerido no topo, depois o elenco.
@@ -3679,6 +3714,7 @@ void MainWindow::setupEditor()
             it.elementId = elementId;
             it.role = dlg->role();
             if (projectModel->findGroup(dlg->groupId())) it.markerId = dlg->groupId();
+            it.tags = dlg->tags();
             if (asSheet) {
                 it.isSheet = true;
                 const SheetTemplate* tmpl = (!templateId.isEmpty() && sheetTemplatesStore)
@@ -3700,14 +3736,16 @@ void MainWindow::setupEditor()
         }
         bool ok = false;
         QString groupId;
+        QStringList tags;
         const QString title = Sheets::askTextInGroup(this, tr("Novo documento"), tr("Nome do documento"),
-            projectModel, &groupId, &ok, tr("Criar")).trimmed();
+            projectModel, &groupId, &ok, tr("Criar"), &tags).trimmed();
         if (!ok || title.isEmpty()) return;
         DrawerItem it;
         it.id = ProjectModel::uid();
         it.title = title;
         it.folderId = folderId;
         if (projectModel->findGroup(groupId)) it.markerId = groupId;
+        it.tags = tags;
         it.hasInlineHtml = true;
         it.html = QStringLiteral("<p></p>");
         projectModel->addDrawerItem(drawerKey, it);
@@ -3763,6 +3801,7 @@ void MainWindow::setupEditor()
             }
         }
         dlg->setInitial(item->title, role, imageDataUrl, narratorVal, trackModeVal, aliasesVal, genderVal);
+        dlg->setTags(item->tags);
         connect(dlg, &QDialog::accepted, this, [this, dlg, itemId, elemType]() {
         // o item pode ter mudado (ou sumido) enquanto a folha estava aberta
         const DrawerItem* item = projectModel->findDrawerItem(itemId);
@@ -3781,6 +3820,9 @@ void MainWindow::setupEditor()
         const QString renameElementId = item->elementId;
 
         projectModel->updateDrawerItemMeta(itemId, newTitle, newRole);
+        projectModel->setDrawerItemTags(itemId, dlg->tags());
+        item = projectModel->findDrawerItem(itemId);   // as escritas acima podem ter mexido na lista
+        if (!item) return;
 
         // Sincroniza Element vinculado, se houver. Foto só é editável quando há elementId.
         if (!item->elementId.isEmpty() && elementsStore) {
@@ -9827,6 +9869,7 @@ void MainWindow::connectCartoProject()
     l.model = projectModel;
     l.elements = elementsStore;
     l.places = territorioStore;
+    l.systems = construtorStore;
     l.cache = docCache;
     l.root = projectRoot;
     l.syncEditor = [this]() { if (editorHost) editorHost->syncEditorToCache(); };
@@ -9848,6 +9891,11 @@ void MainWindow::connectCartoProject()
     l.openPlace = [this](const QString& placeId, const QString& nodeId) {
         TerritorioWindow* w = ensureTerritorioWindow();
         w->openNode(placeId, nodeId);
+        w->show(); w->raise(); w->activateWindow();
+    };
+    l.openSystem = [this](const QString& systemId, const QString& nodeId) {
+        TerritorioWindow* w = ensureTerritorioWindow();
+        w->openConstrutorNode(systemId, nodeId);
         w->show(); w->raise(); w->activateWindow();
     };
     l.save = [this]() { if (projectSaver) projectSaver->saveProject(); };
@@ -10879,6 +10927,7 @@ void MainWindow::saveSelectionDocTo(const QString& destKey)
             it.elementType = elemType;
             it.elementId = elementId;
             it.role = elem.role;
+            it.tags = dlg->tags();
             projectModel->addDrawerItem(destKey, it);
         });
         QWidget* anchor = (drawerListPanel && drawerListPanel->isVisible()) ? static_cast<QWidget*>(drawerListPanel)

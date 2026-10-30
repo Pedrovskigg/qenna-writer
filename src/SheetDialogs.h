@@ -24,8 +24,13 @@ QString askText(QWidget* parent, const QString& eyebrow, const QString& placehol
 
 // Um nome + o grupo do documento (etiqueta no topo, lista dentro da folha). Sem
 // grupo no projeto, é igual ao askText. groupId sai com o escolhido ("" = nenhum).
+// tags: não nulo = a folha ganha o campo de tags (entra com as de antes, sai com as escolhidas).
 QString askTextInGroup(QWidget* parent, const QString& eyebrow, const QString& placeholder,
-                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText = QString());
+                       const ProjectModel* model, QString* groupId, bool* ok, const QString& okText = QString(),
+                       QStringList* tags = nullptr);
+
+// Só as tags livres de alguma coisa (seção do Criador de Mundos). false = cancelou.
+bool askTags(QWidget* parent, const QString& eyebrow, const QString& what, QStringList* tags);
 
 // Escolha entre opções (pílulas). Devolve o índice, ou -1 se cancelou.
 int askChoice(QWidget* parent, const QString& eyebrow, const QStringList& options,
@@ -43,7 +48,8 @@ QString askTextWithChoice(QWidget* parent, const QString& eyebrow, const QString
                           const QString& initial, const QString& choiceLabel,
                           const QStringList& options, int* choice, bool* ok,
                           const QString& okText = QString(),
-                          const QStringList& optionHints = QStringList());
+                          const QStringList& optionHints = QStringList(),
+                          QStringList* tags = nullptr);
 
 // Uma cor da paleta (bolinhas). color entra com a pré-seleção e sai com a escolhida.
 bool askColor(QWidget* parent, const QString& eyebrow, const QString& label,

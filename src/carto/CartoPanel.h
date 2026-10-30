@@ -6,6 +6,7 @@
 // (botão direito no mapa ou a pílula da ferramenta).
 
 #include "CartoCanvas.h"
+#include "CartoNewMap.h"
 #include "CartoStore.h"
 
 #include <QHash>
@@ -92,9 +93,7 @@ private:
     QToolButton* newChoice(QWidget* parent, const QString& icon, const QString& text, const QString& tip);
     QHBoxLayout* newSeg(QWidget* parent, const QStringList& values, const QStringList& labels, const QStringList& tips, QHash<QString, QToolButton*>& out,
                         const std::function<void(const QString&)>& onPick);
-    void buildGenPanel();
     void buildSettings();
-    void buildWelcome();
     void applyTheme();
     void positionOverlays();
     void placeDock();
@@ -104,10 +103,12 @@ private:
     // mapas
     void ensureMap();
     void openMap(const QString& id);
-    void newMap(bool ask, bool blank = false);
+    void newMap(World w, const QString& name, bool bare);
+    void newBlankMap();
+    void toolForNewWorld();
+    void openNewMap(NewMap::Mode mode);
+    void applyNewMap(const NewMapChoice& c, bool replace);
     QString fullLockedWhy() const;
-    void pickBlankSize(int size);
-    void askBlankSize();
     void showMapMenu();
     void scheduleSave();
     void saveNow();
@@ -121,7 +122,6 @@ private:
     void setClimate(bool on);
     void setPlaying(bool on);
     void openRingAt(QPoint at);
-    void generateFromPanel();
     QString toolLabel() const;
     void ensureView(const QString& v);
     void rotateSelected(double d);
@@ -229,21 +229,10 @@ private:
     bool m_dockFromRing = false, m_dockUser = false;
     QPoint m_dockGrab;
     bool m_dockDragging = false;
-    // gerar
-    QFrame* m_gen = nullptr;
-    QButtonGroup* m_genType = nullptr;
-    QSlider* m_genWater = nullptr;
-    QLabel* m_genWaterValue = nullptr;
-    QComboBox* m_genSize = nullptr;
-    QButtonGroup* m_genClimate = nullptr;
-    QSpinBox* m_genSeed = nullptr;
-    QToolButton* m_genInfo = nullptr;   // gerar territórios e locais
+    // novo mapa (nome, tamanho, estilo, bioma e a prévia)
+    NewMap* m_newMap = nullptr;
     // ajustes
     QFrame* m_settings = nullptr;
-    // boas-vindas (só na primeira vez que o mapa abre) e o tamanho do mapa em branco
-    QFrame* m_welcome = nullptr;
-    QFrame* m_sizeCard = nullptr;
-    bool m_askSize = false;   // o mapa em branco ainda espera o tamanho
     QButtonGroup* m_styleGroup = nullptr;
 
     QString m_tool = QStringLiteral("pan");

@@ -1,6 +1,7 @@
 #include "ElementCreateDialog.h"
 
 #include "GroupPicker.h"
+#include "TagField.h"
 #include "ImageCropDialog.h"
 #include "TimelineTracksTypes.h"
 
@@ -634,6 +635,9 @@ void ElementCreateDialog::buildUi()
         updatePageTypeUi();
     }
 
+    // tags livres: o filtro do Explorar do mapa
+    m_tagField = addTagField();
+
     QPushButton* ok = addFooter(tr("Criar"), tr("cria"));
     auto sync = [this, ok]() { ok->setEnabled(!m_titleEdit->text().trimmed().isEmpty()); };
     connect(m_titleEdit, &QLineEdit::textChanged, this, sync);
@@ -916,3 +920,6 @@ void ElementCreateDialog::enableGroups(const ProjectModel* model)
 }
 
 QString ElementCreateDialog::groupId() const { return m_groups ? m_groups->groupId() : QString(); }
+
+void ElementCreateDialog::setTags(const QStringList& tags) { if (m_tagField) m_tagField->setTags(tags); }
+QStringList ElementCreateDialog::tags() const { return m_tagField ? m_tagField->tags() : QStringList(); }

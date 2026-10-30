@@ -1930,6 +1930,7 @@ void LousaPanel::newCharacterOnBoard(const QPointF* at)
         newItem.elementType   = QStringLiteral("character");
         newItem.elementId     = elementId;
         newItem.role          = elem.role;
+        newItem.tags          = dlg->tags();
         m_projectModel->addDrawerItem(targetDrawerKey, newItem);
 
         pushUndo();
@@ -3037,6 +3038,7 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
             it.elementType   = et;
             it.elementId     = elementId;
             it.role          = elem.role;
+            it.tags          = dlg->tags();
             m_projectModel->addDrawerItem(destKey, it);
         });
     } else {

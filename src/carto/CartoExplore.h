@@ -28,6 +28,7 @@
 class ProjectModel;
 class ElementsStore;
 class TerritorioStore;
+class ConstrutorStore;
 class DocCache;
 class QComboBox;
 class QFrame;
@@ -53,12 +54,14 @@ struct ProjectLink {
     ProjectModel* model = nullptr;
     ElementsStore* elements = nullptr;
     TerritorioStore* places = nullptr;
+    ConstrutorStore* systems = nullptr;                                // sistemas do Criador de Mundos (o filtro por tag lista)
     DocCache* cache = nullptr;
     QString root;
     std::function<void()> syncEditor;                                  // o editor principal descarrega no cache
     std::function<void(const QString& itemId)> itemEdited;             // doc de gaveta mudou por fora: recarrega o editor se for ele
     std::function<void(const QString& itemId)> openItem;               // abre no editor (ficha abre a janela da ficha)
     std::function<void(const QString& placeId, const QString& nodeId)> openPlace;   // Criador de Mundos
+    std::function<void(const QString& systemId, const QString& nodeId)> openSystem; // Criador de Mundos, um sistema
     std::function<void()> save;                                        // grava o projeto
     bool ok() const { return model && places; }
 };
@@ -103,12 +106,21 @@ public:
         bool same(const XDoc& o) const { return kind == o.kind && id == o.id; }
     };
     struct XLink { QString id; int a = -1, b = -1; QString label; QColor color; };
+    // filtro por tag (29/10): um sistema do Criador de Mundos que tem a tag (não abre no leitor)
+    struct SysHit { QString systemId, nodeId, title, sub; };
 
 protected:
     bool eventFilter(QObject* o, QEvent* e) override;   // arrastar os painéis pelo cabeçalho
 
 private:
-    enum class CardMode { List, New, Add, NewGroup };
+    enum class CardMode { List, New, Add, NewGroup, Tags };
+
+    // o que tem a tag, por território (índice = território) e o resto
+    QVector<QVector<XDoc>> tagBuckets(const QString& tag, QVector<XDoc>* others, QVector<SysHit>* systems);
+    QVector<QPair<QString, int>> tagsInUse();         // as tags dos documentos, lugares e sistemas, com quantos têm cada uma
+    void renderTagged(QVBoxLayout* bl);
+    void renderTagPicker(QVBoxLayout* bl);
+    void setTagFilter(const QString& tag);
 
     // dados
     int realmCount() const;
@@ -183,6 +195,7 @@ private:
     QWidget* m_cardBody = nullptr;
     QWidget* m_cardFoot = nullptr;
     CardMode m_mode = CardMode::List;
+    QString m_tagFilter, m_tagQuery;    // a tag escolhida no filtro e a busca na lista de tags
     QString m_newWhere = QStringLiteral("drawer"), m_newDrawer, m_newFolder, m_newTitleText, m_query;
     QPointer<QLineEdit> m_newTitle, m_queryEdit;
     QPointer<QComboBox> m_newCombo;

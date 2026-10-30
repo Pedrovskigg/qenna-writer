@@ -185,7 +185,7 @@ void Panel::buildUi()
     m_genBtn = makeBtn(m_titlePill, QStringLiteral("gen"), tr("Gerar mapa (G)"), tr("Gerar"));
     m_genBtn->setCheckable(true);
     m_genBtn->hide();
-    connect(m_genBtn, &QToolButton::clicked, this, [this]() { m_gen->setVisible(!m_gen->isVisible()); positionOverlays(); syncUi(); });
+    connect(m_genBtn, &QToolButton::clicked, this, [this]() { openNewMap(NewMap::Mode::Regen); });
     tl->addWidget(m_genBtn, 0, Qt::AlignTop);
 
     // vistas (no modo Cartela, no cartão da inclinação e da hora; no Astrolábio elas moram no instrumento)
@@ -221,7 +221,7 @@ void Panel::buildUi()
     connect(m_rulerBtn, &QToolButton::clicked, this, [this]() { pickTool(m_tool == QLatin1String("ruler") ? QStringLiteral("pan") : QStringLiteral("ruler"), QPoint()); });
     m_exportBtn = makeBtn(this, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
     m_exportBtn->setCheckable(true);
-    connect(m_exportBtn, &QToolButton::clicked, this, [this]() { m_export->setVisible(!m_export->isVisible()); m_gen->hide(); positionOverlays(); syncUi(); });
+    connect(m_exportBtn, &QToolButton::clicked, this, [this]() { m_export->setVisible(!m_export->isVisible()); positionOverlays(); syncUi(); });
 
     // Astrolábio + pílulas da hora e da ferramenta
     m_astro = new Astrolabe(this);
@@ -291,11 +291,13 @@ void Panel::buildUi()
     };
     m_canvas->afterPaint = [this]() { if (m_build->active()) m_build->placeSel(); };
 
-    buildGenPanel();
     buildSettings();
-    buildWelcome();
     buildCartelaUi();
     buildExportCard();
+    // Novo mapa (29/10): no primeiro mapa do projeto, no "Novo mapa…" e no "Regenerar mapa"
+    m_newMap = new NewMap(this);
+    m_newMap->accepted = [this](const NewMapChoice& c, NewMap::Mode mode) { applyNewMap(c, mode != NewMap::Mode::New); };
+    m_newMap->dismissed = [this]() { m_canvas->setFocus(); syncUi(); };
 
     m_ring = new Ring(this);
     m_ring->setItems({
@@ -449,200 +451,6 @@ void Panel::buildBrushCard()
     m_legend->hide();
 }
 
-void Panel::buildGenPanel()
-{
-    m_gen = new QFrame(this);
-    m_gen->setObjectName(QStringLiteral("cartoCard"));
-    m_gen->setFixedWidth(340);
-    auto* l = new QVBoxLayout(m_gen);
-    l->setContentsMargins(16, 14, 16, 16);
-    l->setSpacing(10);
-    auto* t = new QLabel(tr("Gerar mapa"), m_gen);
-    t->setObjectName(QStringLiteral("cartoCardTitle"));
-    l->addWidget(t);
-    auto seg = [&](const QString& caption, const QStringList& labels, const QStringList& tips, QButtonGroup** grp) {
-        auto* cap = new QLabel(caption, m_gen);
-        cap->setObjectName(QStringLiteral("cartoCaption"));
-        l->addWidget(cap);
-        auto* row = new QHBoxLayout();
-        row->setSpacing(4);
-        *grp = new QButtonGroup(m_gen);
-        for (int i = 0; i < labels.size(); i++) {
-            auto* b = new QToolButton(m_gen);
-            b->setObjectName(QStringLiteral("cartoSeg"));
-            b->setText(labels[i]);
-            if (i < tips.size()) b->setToolTip(tips[i]);
-            b->setCheckable(true);
-            b->setCursor(Qt::PointingHandCursor);
-            b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-            (*grp)->addButton(b, i);
-            row->addWidget(b);
-        }
-        (*grp)->button(0)->setChecked(true);
-        l->addLayout(row);
-    };
-    seg(tr("TIPO"), { tr("Continente"), tr("Arquipélago"), tr("Oceânico"), tr("Vazio") },
-        { QString(), QString(), QString(), tr("Só oceano: desenhe o mundo com os pincéis") }, &m_genType);
-    auto* wrow = new QHBoxLayout();
-    auto* wcap = new QLabel(tr("OCEANO"), m_gen);
-    wcap->setObjectName(QStringLiteral("cartoCaption"));
-    m_genWaterValue = new QLabel(QStringLiteral("60%"), m_gen);
-    m_genWaterValue->setObjectName(QStringLiteral("cartoValue"));
-    wrow->addWidget(wcap); wrow->addStretch(); wrow->addWidget(m_genWaterValue);
-    l->addLayout(wrow);
-    m_genWater = new QSlider(Qt::Horizontal, m_gen);
-    m_genWater->setRange(20, 85);
-    m_genWater->setValue(60);
-    connect(m_genWater, &QSlider::valueChanged, this, [this](int v) { m_genWaterValue->setText(QStringLiteral("%1%").arg(v)); });
-    l->addWidget(m_genWater);
-    connect(m_genType, &QButtonGroup::idClicked, this, [this, wcap](int id) {
-        m_genWater->setEnabled(id != 3); wcap->setEnabled(id != 3); m_genWaterValue->setEnabled(id != 3);
-    });
-    auto* scap = new QLabel(tr("TAMANHO"), m_gen);
-    scap->setObjectName(QStringLiteral("cartoCaption"));
-    l->addWidget(scap);
-    m_genSize = new QComboBox(m_gen);
-    m_genSize->setObjectName(QStringLiteral("cartoCombo"));
-    for (int s = 0; s < 6; s++) {
-        const SizePreset& sp = sizePreset(s);
-        const int W = (sp.gw - 1) * 5 + 1, H = (sp.gh - 1) * 5 + 1;
-        QString label = QStringLiteral("%1 · %2×%3").arg(sizeName(s)).arg(W - 1).arg(H - 1);
-        if (s == 4) label += tr(" (2× o Épico)");
-        if (s == 5) label += tr(" (3× o Épico)");
-        m_genSize->addItem(label, s);
-    }
-    m_genSize->setCurrentIndex(1);
-    l->addWidget(m_genSize);
-    seg(tr("CLIMA"), { tr("Misto"), tr("Frio"), tr("Árido"), tr("Verde") },
-        { tr("Sorteia a latitude, se o mundo é mais frio ou mais quente, e manchas de clima maiores"),
-          tr("Perto do polo, cheio de gelo e tundra. No Mundo e acima, era do gelo"),
-          tr("Cinturão de desertos, com oásis onde sobra umidade"), tr("Úmido: floresta e pântano") }, &m_genClimate);
-    auto* sdcap = new QLabel(tr("SEMENTE"), m_gen);
-    sdcap->setObjectName(QStringLiteral("cartoCaption"));
-    l->addWidget(sdcap);
-    auto* sdrow = new QHBoxLayout();
-    m_genSeed = new QSpinBox(m_gen);
-    m_genSeed->setObjectName(QStringLiteral("cartoSpin"));
-    m_genSeed->setRange(0, 99999);
-    m_genSeed->setButtonSymbols(QAbstractSpinBox::NoButtons);
-    m_genSeed->setValue(QRandomGenerator::global()->bounded(99999));
-    auto* dice = new QToolButton(m_gen);
-    dice->setObjectName(QStringLiteral("cartoBtn"));
-    dice->setFixedSize(34, 30);
-    dice->setToolTip(tr("Semente aleatória"));
-    dice->setCursor(Qt::PointingHandCursor);
-    m_icons.append({ dice, QStringLiteral("dice") });
-    connect(dice, &QToolButton::clicked, this, [this]() { m_genSeed->setValue(QRandomGenerator::global()->bounded(99999)); });
-    sdrow->addWidget(m_genSeed, 1); sdrow->addWidget(dice);
-    l->addLayout(sdrow);
-    m_genInfo = new QToolButton(m_gen);
-    m_genInfo->setObjectName(QStringLiteral("cartoCheck"));
-    m_genInfo->setCheckable(true);
-    m_genInfo->setChecked(QSettings().value(QStringLiteral("carto/genInfo"), true).toBool());
-    m_genInfo->setCursor(Qt::PointingHandCursor);
-    m_genInfo->setText(tr("Gerar territórios e locais"));
-    m_genInfo->setToolTip(tr("Reinos, cidades, estradas e nomes sugeridos pelo terreno. Desmarcado, o mapa vem só com o relevo e o resto é com você."));
-    m_genInfo->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-    m_genInfo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    connect(m_genInfo, &QToolButton::clicked, this, [this](bool on) { QSettings().setValue(QStringLiteral("carto/genInfo"), on); syncUi(); });
-    connect(m_genType, &QButtonGroup::idClicked, this, [this](int id) { m_genInfo->setEnabled(id != 3); syncUi(); });   // mar vazio: não há onde pôr
-    l->addWidget(m_genInfo);
-    auto* go = new QPushButton(tr("Gerar mapa"), m_gen);
-    go->setObjectName(QStringLiteral("cartoGo"));
-    go->setCursor(Qt::PointingHandCursor);
-    connect(go, &QPushButton::clicked, this, &Panel::generateFromPanel);
-    connect(m_genType, &QButtonGroup::idClicked, this, [go](int id) { go->setText(id == 3 ? tr("Criar mar vazio") : tr("Gerar mapa")); });
-    l->addWidget(go);
-    auto* note = new QLabel(tr("O mapa atual é substituído. Ctrl+Z desfaz."), m_gen);
-    note->setObjectName(QStringLiteral("cartoNote"));
-    note->setAlignment(Qt::AlignCenter);
-    l->addWidget(note);
-    m_gen->hide();
-}
-
-void Panel::buildWelcome()
-{
-    m_welcome = new QFrame(this);
-    m_welcome->setObjectName(QStringLiteral("cartoCard"));
-    m_welcome->setFixedWidth(380);
-    auto* l = new QVBoxLayout(m_welcome);
-    l->setContentsMargins(20, 18, 20, 18);
-    l->setSpacing(12);
-    auto* t = new QLabel(tr("Bem-vindo ao Qenna Map!"), m_welcome);
-    t->setObjectName(QStringLiteral("cartoCardTitle"));
-    l->addWidget(t);
-    auto* body = new QLabel(tr("Aqui, você pode começar a criar o mapa do seu mundo e gerenciá-lo utilizando os documentos do seu projeto. "
-                               "Desenhe o seu mapa ou gere um nas opções acima."), m_welcome);
-    body->setObjectName(QStringLiteral("cartoNote"));
-    body->setStyleSheet(QStringLiteral("font-size: 13px;"));
-    body->setWordWrap(true);
-    l->addWidget(body);
-    auto* ok = new QPushButton(tr("OK"), m_welcome);
-    ok->setObjectName(QStringLiteral("cartoGo"));
-    ok->setCursor(Qt::PointingHandCursor);
-    connect(ok, &QPushButton::clicked, this, [this]() {
-        m_welcome->hide();
-        QSettings().setValue(QStringLiteral("carto/welcomed"), true);
-        if (m_askSize) { m_sizeCard->show(); positionOverlays(); }
-    });
-    l->addWidget(ok);
-    m_welcome->hide();
-
-    // logo depois: o tamanho do mapa em branco (quem desenha precisa escolher antes)
-    m_sizeCard = new QFrame(this);
-    m_sizeCard->setObjectName(QStringLiteral("cartoCard"));
-    m_sizeCard->setFixedWidth(340);
-    auto* sl = new QVBoxLayout(m_sizeCard);
-    sl->setContentsMargins(20, 18, 20, 18);
-    sl->setSpacing(8);
-    auto* st = new QLabel(tr("Tamanho do mapa"), m_sizeCard);
-    st->setObjectName(QStringLiteral("cartoCardTitle"));
-    sl->addWidget(st);
-    auto* sn = new QLabel(tr("Quanto maior, mais espaço pra desenhar e mais pesado fica."), m_sizeCard);
-    sn->setObjectName(QStringLiteral("cartoNote"));
-    sn->setWordWrap(true);
-    sl->addWidget(sn);
-    for (int s = 0; s < 6; s++) {
-        const SizePreset& sp = sizePreset(s);
-        const int W = (sp.gw - 1) * 5 + 1, H = (sp.gh - 1) * 5 + 1;
-        QString label = QStringLiteral("%1 · %2×%3").arg(sizeName(s)).arg(W - 1).arg(H - 1);
-        if (s == 4) label += tr(" (2× o Épico)");
-        if (s == 5) label += tr(" (3× o Épico)");
-        auto* b = new QPushButton(label, m_sizeCard);
-        b->setObjectName(QStringLiteral("cartoSize"));
-        b->setCursor(Qt::PointingHandCursor);
-        connect(b, &QPushButton::clicked, this, [this, s]() { pickBlankSize(s); });
-        sl->addWidget(b);
-    }
-    m_sizeCard->hide();
-}
-
-void Panel::askBlankSize()
-{
-    m_askSize = true;
-    if (!m_welcome->isVisible()) m_sizeCard->show();
-    positionOverlays();
-}
-
-// o mar vazio do começo no tamanho que o usuário escolheu
-void Panel::pickBlankSize(int size)
-{
-    m_askSize = false;
-    m_sizeCard->hide();
-    m_genSize->setCurrentIndex(size);   // o Gerar já abre no mesmo tamanho
-    if (size != m_doc.world.size) {
-        m_canvas->waitIdle();
-        const int seed = m_doc.world.seed;
-        m_canvas->setDoc(nullptr, false);
-        m_doc = Doc();
-        m_doc.world = emptyWorld(seed, size, QStringLiteral("mixed"));
-        m_doc.clearSuggestions();
-        m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
-        saveNow();
-    }
-    syncUi();
-}
-
 void Panel::buildSettings()
 {
     m_settings = new QFrame(this);
@@ -792,6 +600,7 @@ void Panel::applyTheme()
     if (m_toolBtn) m_toolBtn->setIcon(icon(QStringLiteral("ring"), ink, a));
     if (m_explore) m_explore->applyTheme();
     if (m_build) m_build->applyTheme();
+    if (m_newMap) m_newMap->applyTheme();
     if (m_astro) m_astro->update();
     syncUi();
 }
@@ -826,8 +635,6 @@ void Panel::positionOverlays()
     if (wrap) m_hint->setFixedWidth(room); else { m_hint->setMinimumWidth(0); m_hint->setMaximumWidth(QWIDGETSIZE_MAX); }
     m_hint->adjustSize();
     m_hint->move(std::max(16, std::min((W - m_hint->width()) / 2, right - m_hint->width())), H - 16 - m_hint->height());
-    m_gen->adjustSize();
-    m_gen->move((W - m_gen->width()) / 2, 70);
     m_settings->adjustSize();
     m_settings->move(cardRight - m_settings->width(), 14);
     if (m_export) {
@@ -852,13 +659,7 @@ void Panel::positionOverlays()
         m_hint->adjustSize();
         m_hint->move(std::max(left, std::min((W - m_hint->width()) / 2, right - m_hint->width())), H - 16 - m_hint->height());
         for (QWidget* w : { static_cast<QWidget*>(m_cartela), static_cast<QWidget*>(m_rose), static_cast<QWidget*>(m_cbar), static_cast<QWidget*>(m_cview) }) w->raise();
-        m_gen->raise(); m_settings->raise(); m_export->raise();
-    }
-    for (QFrame* card : { m_welcome, m_sizeCard }) {
-        if (!card || !card->isVisible()) continue;
-        card->adjustSize();
-        card->move((W - card->width()) / 2, (H - card->height()) / 2);
-        card->raise();
+        m_settings->raise(); m_export->raise();
     }
     // Construir: o catálogo senta embaixo, entre a Cartela e o canto da direita; a dica sobe pra cima dele
     if (m_build->active()) {
@@ -878,6 +679,11 @@ void Panel::positionOverlays()
     placeDock();
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
     if (m_explore) m_explore->place();
+    // a janela de Novo mapa fica por cima de tudo (a doca e o Explorar sobem quando se arrumam)
+    if (m_newMap->isVisible()) {
+        m_newMap->setGeometry(rect());
+        m_newMap->raise();
+    }
 }
 
 void Panel::placeDock()
@@ -942,9 +748,7 @@ void Panel::syncUi()
     m_astro->setState(m_canvas->angle(), m_canvas->pitch(), m_canvas->hour(), m_canvas->mode());
     m_hourLabel->setText(QStringLiteral("%1 · %2").arg(fmtHour(m_canvas->hour()), phaseName(m_canvas->hour())));
     m_toolBtn->setText(toolLabel() + QStringLiteral("  ▴"));
-    m_genBtn->setChecked(m_gen->isVisible());
-    m_genInfo->setIcon(icon(m_genInfo->isChecked() && m_genInfo->isEnabled() ? QStringLiteral("check") : QStringLiteral("box"),
-                            Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
+    m_genBtn->setChecked(m_newMap->isVisible());
     // o Completo só abre quando o mapa tem o que mostrar
     const bool fullLocked = m_hasWorld && !m_doc.hasContent();
     m_astro->setLockedMode(fullLocked ? QStringLiteral("full") : QString());
@@ -991,7 +795,7 @@ void Panel::setProjectRoot(const QString& root)
     m_store.setProjectRoot(root);
     m_mapId.clear();
     m_hasWorld = false;
-    m_askSize = false; m_sizeCard->hide(); m_welcome->hide();
+    m_newMap->dismiss();
     m_undo.clear(); m_redo.clear();
     m_canvas->setDoc(nullptr, false);
     if (isVisible()) ensureMap();
@@ -1010,9 +814,8 @@ void Panel::ensureMap()
     if (m_hasWorld || m_store.projectRoot().isEmpty()) return;
     if (m_store.maps().isEmpty()) {
         // o primeiro mapa do projeto nasce em branco: o usuário desenha ou gera
-        newMap(false, true);
-        if (!QSettings().value(QStringLiteral("carto/welcomed"), false).toBool()) m_welcome->show();   // o OK chama o tamanho
-        askBlankSize();
+        newBlankMap();
+        openNewMap(NewMap::Mode::First);
         return;
     }
     openMap(m_store.activeId());
@@ -1047,32 +850,48 @@ void Panel::openMap(const QString& id)
     syncUi();
 }
 
-void Panel::newMap(bool ask, bool blank)
+void Panel::newMap(World w, const QString& name, bool bare)
 {
     if (m_saveTimer->isActive()) saveNow();
     m_canvas->waitIdle();
-    const int seed = QRandomGenerator::global()->bounded(99999);
-    World w = blank ? emptyWorld(seed, 1, QStringLiteral("mixed"))
-                    : generate(seed, 60, QStringLiteral("continent"), 1, QStringLiteral("mixed"));
-    QString name = mapTitle(w);
-    if (ask) {
-        bool ok = false;
-        name = Sheets::askText(this, tr("Novo mapa"), tr("Nome do mapa"), name, &ok, tr("Criar")).trimmed();
-        if (!ok || name.isEmpty()) return;
-    }
     const MapMeta m = m_store.createMap(name);
     m_mapId = m.id;
     m_canvas->setDoc(nullptr, false);
     m_doc = Doc();
     m_doc.world = std::move(w);
-    if (blank) m_doc.clearSuggestions();
+    if (bare) m_doc.clearSuggestions();
     m_view = MapViewState();
     m_hasWorld = true;
     m_undo.clear(); m_redo.clear();
     m_canvas->setMode(m_view.mode);
     m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
-    if (blank) { setTool(QStringLiteral("brush")); setBrush(Brush::Land); }
+    if (bare && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
     saveNow();
+    syncUi();
+}
+
+// a ferramenta do mapa que acabou de nascer: o Vazio só tem o que desenhar (pincel Terra); o resto começa no Mover
+void Panel::toolForNewWorld()
+{
+    if (m_doc.world.type == QLatin1String("empty")) { setTool(QStringLiteral("brush")); setBrush(Brush::Land); return; }
+    if (m_tool != QLatin1String("pan")) { pickTool(QStringLiteral("pan"), QPoint()); m_dockFromRing = false; }
+}
+
+// o mar vazio que fica atrás da janela de Novo mapa quando o projeto ainda não tem mapa
+void Panel::newBlankMap()
+{
+    World w = emptyWorld(QRandomGenerator::global()->bounded(99999), 1, QStringLiteral("mixed"));
+    const QString name = mapTitle(w);
+    newMap(std::move(w), name, true);   // fica no Mover: é só o fundo da janela, quem escolhe o Vazio lá ganha o pincel
+}
+
+void Panel::openNewMap(NewMap::Mode mode)
+{
+    if (m_store.projectRoot().isEmpty() || (mode != NewMap::Mode::New && !m_hasWorld)) return;
+    m_settings->hide(); m_export->hide(); m_ring->hide();
+    const int i = m_store.indexOf(m_mapId);
+    m_newMap->open(mode, m_hasWorld ? &m_doc.world : nullptr, i >= 0 ? m_store.maps()[i].name : QString(), m_canvas->terrainStyle());
+    positionOverlays();
     syncUi();
 }
 
@@ -1090,8 +909,8 @@ void Panel::showMapMenu()
         });
     }
     menu.addSeparator();
-    menu.addAction(tr("Novo mapa…"), this, [this]() { newMap(true); });
-    menu.addAction(tr("Regenerar mapa"), this, [this]() { m_gen->show(); m_export->hide(); positionOverlays(); syncUi(); });
+    menu.addAction(tr("Novo mapa…"), this, [this]() { openNewMap(NewMap::Mode::New); });
+    menu.addAction(tr("Regenerar mapa"), this, [this]() { openNewMap(NewMap::Mode::Regen); });
     menu.addAction(tr("Renomear…"), this, [this]() { m_title->hide(); m_titleEdit->setText(m_title->text()); m_titleEdit->show(); m_titleEdit->setFocus(); m_titleEdit->selectAll(); positionOverlays(); });
     QAction* del = menu.addAction(tr("Excluir este mapa…"), this, [this]() {
         const int i = m_store.indexOf(m_mapId);
@@ -1104,7 +923,7 @@ void Panel::showMapMenu()
         m_store.removeMap(m_mapId);
         m_hasWorld = false;
         m_mapId.clear();
-        if (m_store.maps().isEmpty()) { newMap(false, true); askBlankSize(); }
+        if (m_store.maps().isEmpty()) { newBlankMap(); openNewMap(NewMap::Mode::First); }
         else openMap(m_store.activeId());
     });
     del->setEnabled(m_store.maps().size() > 0);
@@ -1151,7 +970,7 @@ void Panel::openRingAt(QPoint at)
 
 void Panel::pickTool(const QString& id, QPoint ringCenter)
 {
-    if (id == QLatin1String("gen")) { m_gen->show(); positionOverlays(); syncUi(); return; }
+    if (id == QLatin1String("gen")) { openNewMap(NewMap::Mode::Regen); return; }
     m_dockAt = ringCenter; m_dockFromRing = true; m_dockUser = false;
     if (id == QLatin1String("climate")) {
         setTool(QStringLiteral("brush"));
@@ -1287,33 +1106,35 @@ void Panel::setPlaying(bool on)
     syncUi();
 }
 
-void Panel::generateFromPanel()
+// o Gerar da janela de Novo mapa: mapa novo no projeto, ou o mundo do mapa aberto trocado (primeiro mapa e Regenerar)
+void Panel::applyNewMap(const NewMapChoice& c, bool replace)
 {
-    CARTO_PROF("gerar (painel)");
+    CARTO_PROF("gerar (novo mapa)");
     m_canvas->waitIdle();
+    // a prévia já gerou esse mundo; sem ela (mão rápida no Gerar) gera agora
+    World w = c.world ? std::move(*c.world) : rebuildBase(c.seed, c.water, c.type, c.size, c.climate);
+    const bool bare = !c.info || w.type == QLatin1String("empty");
+    const QString name = c.name.isEmpty() ? mapTitle(w) : c.name;   // em branco: o nome sugerido acompanha a semente
+    if (!replace || !m_hasWorld || m_store.indexOf(m_mapId) < 0) {
+        newMap(std::move(w), name, bare);
+        toolForNewWorld();
+        return;
+    }
     Undo u; u.kind = Undo::Full; u.world = std::make_shared<World>(m_doc.world); u.layers = std::make_shared<Doc::Layers>(m_doc.layers());
-    const bool wasAuto = m_store.indexOf(m_mapId) >= 0 && m_store.maps()[m_store.indexOf(m_mapId)].name == mapTitle(m_doc.world);
-    static const char* types[4] = { "continent", "archipelago", "oceanic", "empty" };
-    static const char* climates[4] = { "mixed", "cold", "arid", "green" };
     const double keepScale = m_doc.world.scale;
     // mapa novo: territórios, construções e nomes do antigo ficam no desfazer
     const int ver = m_doc.ver;
     m_canvas->setDoc(nullptr, false);
     m_doc = Doc();
     m_doc.ver = ver + 1;
-    m_doc.world = rebuildBase(m_genSeed->value(), m_genWater->value(), QString::fromLatin1(types[std::max(0, m_genType->checkedId())]),
-                              m_genSize->currentData().toInt(), QString::fromLatin1(climates[std::max(0, m_genClimate->checkedId())]));
+    m_doc.world = std::move(w);
     m_doc.world.scale = keepScale;
-    const bool bare = !m_genInfo->isChecked() || m_doc.world.type == QLatin1String("empty");
     if (bare) m_doc.clearSuggestions();
     pushUndo(std::move(u));
-    if (wasAuto) m_store.renameMap(m_mapId, mapTitle(m_doc.world));   // o nome sugerido acompanha o mapa novo
-    m_gen->hide();
-    if (m_welcome->isVisible()) { m_welcome->hide(); QSettings().setValue(QStringLiteral("carto/welcomed"), true); }
-    m_askSize = false; m_sizeCard->hide();   // o tamanho veio do Gerar
+    m_store.renameMap(m_mapId, name);
     m_canvas->setDoc(&m_doc, true); if (m_explore) m_explore->mapReplaced();
-    if (m_doc.world.type == QLatin1String("empty")) { setTool(QStringLiteral("brush")); setBrush(Brush::Land); }
-    else if (bare && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
+    toolForNewWorld();
+    if (bare && m_canvas->mode() == QLatin1String("full")) setMode(QStringLiteral("terrain"));
     scheduleSave();
     syncUi();
 }
@@ -1321,8 +1142,6 @@ void Panel::generateFromPanel()
 // ── desfazer ──
 void Panel::pushUndo(Undo u)
 {
-    // começou a desenhar: o tamanho fica o que está (trocar agora apagaria o desenho)
-    if (m_askSize) { m_askSize = false; m_sizeCard->hide(); }
     m_undo.push_back(std::move(u));
     if (m_undo.size() > 40) m_undo.pop_front();
     // mundos inteiros pesam: guarda poucos em mapa grande
@@ -1418,7 +1237,7 @@ void Panel::keyPressEvent(QKeyEvent* e)
     case Qt::Key_R: pickTool(m_tool == QLatin1String("ruler") ? QStringLiteral("pan") : QStringLiteral("ruler"), QPoint()); break;
     case Qt::Key_X: pickTool(m_tool == QLatin1String("explore") ? QStringLiteral("pan") : QStringLiteral("explore"), QPoint()); m_dockFromRing = false; break;
     case Qt::Key_Delete: case Qt::Key_Backspace: deleteSelected(); break;
-    case Qt::Key_G: m_gen->setVisible(!m_gen->isVisible()); positionOverlays(); syncUi(); break;
+    case Qt::Key_G: openNewMap(NewMap::Mode::Regen); break;
     case Qt::Key_F: m_canvas->fit(); break;
     case Qt::Key_Q:
         if (m_tool == QLatin1String("build") && m_canvas->selectedArt()) rotateSelected(-M_PI / 12);
@@ -1476,8 +1295,9 @@ bool Panel::escapeOne()
         if (!selField) return true;   // o nome do território na lista: só sai do campo
     }
     if (m_build->escape()) return true;
-    if (m_gen->isVisible() || m_settings->isVisible() || m_ring->isVisible() || m_export->isVisible()) {
-        m_gen->hide(); m_settings->hide(); m_ring->hide(); m_export->hide();
+    if (m_newMap->isVisible()) { m_newMap->dismiss(); return true; }
+    if (m_settings->isVisible() || m_ring->isVisible() || m_export->isVisible()) {
+        m_settings->hide(); m_ring->hide(); m_export->hide();
         positionOverlays();
         return true;
     }

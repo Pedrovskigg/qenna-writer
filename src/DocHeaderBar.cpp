@@ -510,6 +510,10 @@ int DocHeaderBar::guideReserve() const
     if (m_guideWanted && m_guide) r = m_guide->sizeHint().width() + kGuideGap;
     if (m_groupWanted && m_groupTag && !m_guideWanted) r = qMax(r, m_groupTag->width() + kGuideGap);
     if (m_povWanted && m_povTag && !m_guideWanted) r = qMax(r, m_povTag->width() + kGuideGap);
+    if (m_tagsWanted && m_tagsTag && !m_guideWanted) {
+        const int group = m_groupWanted && m_groupTag ? m_groupTag->width() + 6 : 0;
+        r = qMax(r, group + m_tagsTag->width() + kGuideGap);
+    }
     return r;
 }
 
@@ -534,6 +538,20 @@ void DocHeaderBar::setPovTag(QWidget* tag)
     refreshGroupTag();
 }
 
+void DocHeaderBar::setTagsTag(QWidget* tag)
+{
+    m_tagsTag = tag;
+    tag->setParent(this);
+    refreshGroupTag();
+}
+
+void DocHeaderBar::setTagsTagVisible(bool visible)
+{
+    if (m_tagsWanted == visible) return;
+    m_tagsWanted = visible;
+    refreshGroupTag();
+}
+
 void DocHeaderBar::setPovTagVisible(bool visible)
 {
     if (m_povWanted == visible) return;
@@ -553,6 +571,17 @@ void DocHeaderBar::refreshGroupTag()
     };
     place(m_groupTag, m_groupWanted);
     place(m_povTag, m_povWanted);
+    // as tags ficam do lado esquerdo do grupo (ou no canto, sem grupo)
+    if (m_tagsTag) {
+        const bool on = m_tagsWanted && !m_guideWanted;
+        m_tagsTag->setVisible(on);
+        if (on) {
+            const bool group = m_groupTag && m_groupTag->isVisible();
+            const int right = group ? m_groupTag->x() - 6 : width() - kSideMargin;
+            m_tagsTag->move(right - m_tagsTag->width(), (height() - m_tagsTag->height()) / 2);
+            m_tagsTag->raise();
+        }
+    }
     relayoutText();
 }
 

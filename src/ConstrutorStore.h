@@ -21,6 +21,7 @@ public:
         QString content;
         qint64 updatedAt = 0;
         QList<Node> children;
+        QStringList tags;      // tags livres (as mesmas dos documentos)
     };
 
     // Um trecho do manuscrito vinculado a este sistema (ou a um nó específico
@@ -55,6 +56,7 @@ public:
         // de TerritorioStore::Territorio; ConstrutorStore não depende de
         // TerritorioStore, só guarda os IDs soltos.
         QStringList territoryIds;
+        QStringList tags;      // tags livres (as mesmas dos documentos)
     };
 
     struct CategoryWaypoint {
@@ -83,6 +85,8 @@ public:
     QString addSystem(const QString& name, const QString& categoryId, int sliderIndex);
     bool updateSystem(const QString& id, const QString& name, int sliderIndex);
     bool updateSystemContent(const QString& id, const QString& content);
+    bool setSystemTags(const QString& id, const QStringList& tags);
+    bool setNodeTags(const QString& systemId, const QString& nodeId, const QStringList& tags);
     bool updateSystemTerritories(const QString& id, const QStringList& territoryIds);
     bool removeSystem(const QString& id);
     // Remove um território excluído de todos os sistemas que o tinham

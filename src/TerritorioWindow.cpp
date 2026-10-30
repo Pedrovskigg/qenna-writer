@@ -1,5 +1,6 @@
 #include "TerritorioWindow.h"
 #include "SheetDialogs.h"
+#include "TagField.h"
 #include "AvatarUtils.h"
 #include "ElementsStore.h"
 #include "IconUtils.h"
@@ -1276,14 +1277,14 @@ QString TerritorioWindow::pageSignature() const
     if (m_kind == Kind::Territorio && m_store) {
         if (const auto* t = m_store->territorio(m_currentId)) {
             std::function<void(const QList<TerritorioStore::Node>&)> walk = [&](const QList<TerritorioStore::Node>& ns) {
-                for (const auto& n : ns) { parts << n.id << QString::number(int(n.type)); walk(n.children); }
+                for (const auto& n : ns) { parts << n.id << QString::number(int(n.type)) << n.tags.join(QLatin1Char(',')); walk(n.children); }
             };
             walk(t->nodes);
         }
     } else if (m_kind == Kind::Sistema && m_construtorStore) {
         if (const auto* s = m_construtorStore->system(m_currentId)) {
             std::function<void(const QList<ConstrutorStore::Node>&)> walk = [&](const QList<ConstrutorStore::Node>& ns) {
-                for (const auto& n : ns) { parts << n.id << QString::number(int(n.type)); walk(n.children); }
+                for (const auto& n : ns) { parts << n.id << QString::number(int(n.type)) << n.tags.join(QLatin1Char(',')); walk(n.children); }
             };
             walk(s->nodes);
             parts << s->categoryId;
@@ -1351,7 +1352,7 @@ void TerritorioWindow::rebuildPage()
         return s;
     };
 
-    auto headingRow = [&](const QString& num, const QString& name, int depth, const QString& nodeId,
+    auto headingRow = [&](const QString& num, const QString& name, int depth, const QString& nodeId, const QStringList& tags,
                           const std::function<void(const QString&)>& rename) {
         auto* w = new QWidget(colW);
         auto* h = new QHBoxLayout(w);
@@ -1373,6 +1374,15 @@ void TerritorioWindow::rebuildPage()
             if (!t.isEmpty()) rename(t);
         });
         h->addWidget(e, 1);
+        if (!tags.isEmpty()) {
+            auto* tb = new QToolButton(w);
+            tb->setObjectName(QStringLiteral("encTool"));
+            tb->setText(QStringLiteral("# ") + QFontMetrics(tb->font()).elidedText(tags.join(QStringLiteral(" · ")), Qt::ElideRight, 220));
+            tb->setCursor(Qt::PointingHandCursor);
+            tb->setToolTip(tr("Tags: %1").arg(tags.join(QStringLiteral(", "))));
+            QObject::connect(tb, &QToolButton::clicked, this, [this, nodeId]() { editNodeTags(nodeId); });
+            h->addWidget(tb);
+        }
         auto* more = new QToolButton(w);
         more->setObjectName(QStringLiteral("encTool"));
         more->setText(QStringLiteral("⋯"));
@@ -1419,6 +1429,11 @@ void TerritorioWindow::rebuildPage()
         m_titleEdit->setFrame(false);
         connect(m_titleEdit, &QLineEdit::editingFinished, this, [this]() { saveTitle(m_titleEdit->text()); });
         col->addWidget(m_titleEdit);
+        col->addSpacing(6);
+        {
+            const QString id = t->id;
+            col->addWidget(pageTags(colW, t->tags, [this, id](const QStringList& tags) { if (m_store) m_store->setTerritorioTags(id, tags); }));
+        }
         col->addSpacing(8);
         col->addWidget(makeSection(EncSection::Owner::Territorio, t->id, QString(), t->content,
             tr("Escreva a lore, o resumo ou a história deste território…"), t->updatedAt));
@@ -1428,7 +1443,7 @@ void TerritorioWindow::rebuildPage()
             for (const auto& n : nodes) {
                 const QString nid = n.id;
                 const bool folder = n.type == TerritorioStore::NodeType::Folder;
-                QWidget* head = headingRow(QString(), n.name, folder ? 0 : qMax(1, depth), nid, [this, tid, nid](const QString& name) {
+                QWidget* head = headingRow(QString(), n.name, folder ? 0 : qMax(1, depth), nid, n.tags, [this, tid, nid](const QString& name) {
                     const auto* tt = m_store->territorio(tid);
                     if (!tt) return;
                     std::function<const TerritorioStore::Node*(const QList<TerritorioStore::Node>&)> find =
@@ -1486,6 +1501,11 @@ void TerritorioWindow::rebuildPage()
         m_titleEdit->setFrame(false);
         connect(m_titleEdit, &QLineEdit::editingFinished, this, [this]() { saveTitle(m_titleEdit->text()); });
         col->addWidget(m_titleEdit);
+        col->addSpacing(6);
+        {
+            const QString id = s->id;
+            col->addWidget(pageTags(colW, s->tags, [this, id](const QStringList& tags) { if (m_construtorStore) m_construtorStore->setSystemTags(id, tags); }));
+        }
         col->addSpacing(8);
         col->addWidget(makeSection(EncSection::Owner::Sistema, s->id, QString(), s->content,
             tr("Escreva um resumo, parecer ou introdução deste sistema…"), s->updatedAt));
@@ -1498,7 +1518,7 @@ void TerritorioWindow::rebuildPage()
                 const QString nid = n.id;
                 const QString num = nums.value(nid);
                 const QString label = num == QStringLiteral("§") ? num : (depth == 0 ? tr("Art. %1").arg(num) : num);
-                QWidget* head = headingRow(label, n.name, depth, nid, [this, sid, nid](const QString& name) {
+                QWidget* head = headingRow(label, n.name, depth, nid, n.tags, [this, sid, nid](const QString& name) {
                     const auto* ss = m_construtorStore->system(sid);
                     if (!ss) return;
                     std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find =
@@ -2035,9 +2055,11 @@ void TerritorioWindow::newTerritorio()
 {
     if (!m_store) return;
     bool ok = false;
-    const QString name = Sheets::askText(this, tr("Novo território"), tr("Nome do território"), QString(), &ok, tr("Criar"));
+    QStringList tags;
+    const QString name = Sheets::askTextInGroup(this, tr("Novo território"), tr("Nome do território"), nullptr, nullptr, &ok, tr("Criar"), &tags);
     if (!ok || name.trimmed().isEmpty()) return;
     const QString id = m_store->addTerritorio(name.trimmed());
+    if (!tags.isEmpty()) m_store->setTerritorioTags(id, tags);
     if (m_mode != Mode::Lugares) setMode(Mode::Lugares);
     m_kind = Kind::None;
     openTerritorio(id);
@@ -2051,10 +2073,12 @@ void TerritorioWindow::newSistema()
     for (const auto& c : ConstrutorStore::categories()) { labels << c.displayName; ids << c.id; }
     bool ok = false;
     int cat = 0;
+    QStringList tags;
     const QString name = Sheets::askTextWithChoice(this, tr("Novo sistema"), tr("Nome do sistema"), QString(),
-                                                   tr("Categoria"), labels, &cat, &ok, tr("Criar")).trimmed();
+                                                   tr("Categoria"), labels, &cat, &ok, tr("Criar"), QStringList(), &tags).trimmed();
     if (!ok || name.isEmpty() || cat < 0 || cat >= ids.size()) return;
     const QString id = m_construtorStore->addSystem(name, ids[cat], 0);
+    if (!tags.isEmpty()) m_construtorStore->setSystemTags(id, tags);
     if (m_mode != Mode::Sistemas) setMode(Mode::Sistemas);
     m_kind = Kind::None;
     openSistema(id);
@@ -2109,9 +2133,56 @@ void TerritorioWindow::nodeMenu(const QString& nodeId, const QPoint& globalPos)
     } else {
         return;
     }
+    menu.addAction(tr("Tags…"), this, [this, nodeId]() { QTimer::singleShot(0, this, [this, nodeId]() { editNodeTags(nodeId); }); });
     menu.addSeparator();
     menu.addAction(tr("Excluir"), this, [this, nodeId]() { QTimer::singleShot(0, this, [this, nodeId]() { deleteNode(nodeId); }); });
     menu.exec(globalPos);
+}
+
+// as tags do verbete, logo abaixo do título: o campo fica na página, e cada tag posta ou tirada já grava
+QWidget* TerritorioWindow::pageTags(QWidget* parent, const QStringList& tags, const std::function<void(const QStringList&)>& save)
+{
+    auto* f = new TagField(parent);
+    f->setTags(tags);
+    f->setSuggestOnFocus(true);
+    f->setPlaceholder(tr("Tags: guerra, monarquia, linhagem…"));
+    f->setToolTip(tr("Palavras livres pra achar isso depois. No mapa, o Explorar filtra por elas."));
+    connect(f, &TagField::tagsChanged, this, [this, save](const QStringList& t) {
+        // gravar sem refazer a página (o campo está nas mãos da pessoa)
+        m_selfWriting = true;
+        save(t);
+        m_selfWriting = false;
+    });
+    return f;
+}
+
+void TerritorioWindow::editNodeTags(const QString& nodeId)
+{
+    QStringList tags;
+    QString name;
+    if (m_kind == Kind::Territorio && m_store) {
+        const auto* t = m_store->territorio(m_currentId);
+        std::function<const TerritorioStore::Node*(const QList<TerritorioStore::Node>&)> find = [&](const QList<TerritorioStore::Node>& ns) -> const TerritorioStore::Node* {
+            for (const auto& x : ns) { if (x.id == nodeId) return &x; if (const auto* c = find(x.children)) return c; }
+            return nullptr;
+        };
+        const auto* n = t ? find(t->nodes) : nullptr;
+        if (!n) return;
+        tags = n->tags; name = n->name;
+    } else if (m_kind == Kind::Sistema && m_construtorStore) {
+        const auto* s = m_construtorStore->system(m_currentId);
+        std::function<const ConstrutorStore::Node*(const QList<ConstrutorStore::Node>&)> find = [&](const QList<ConstrutorStore::Node>& ns) -> const ConstrutorStore::Node* {
+            for (const auto& x : ns) { if (x.id == nodeId) return &x; if (const auto* c = find(x.children)) return c; }
+            return nullptr;
+        };
+        const auto* n = s ? find(s->nodes) : nullptr;
+        if (!n) return;
+        tags = n->tags; name = n->name;
+    } else return;
+    if (!Sheets::askTags(this, tr("Tags"), tr("Tags de “%1”").arg(name), &tags)) return;
+    flushAll();
+    if (m_kind == Kind::Territorio) m_store->setNodeTags(m_currentId, nodeId, tags);
+    else m_construtorStore->setNodeTags(m_currentId, nodeId, tags);
 }
 
 void TerritorioWindow::deleteNode(const QString& nodeId)
