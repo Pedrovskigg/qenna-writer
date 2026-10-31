@@ -1,4 +1,5 @@
 #include "ChapterSheet.h"
+#include "PageBackgroundUi.h"
 
 #include "Theme.h"
 #include "TimelineChrono.h"
@@ -204,6 +205,19 @@ void ChapterSheet::build()
         body->addLayout(g);
     }
 
+    // ── fundo da folha (opcional): imagem ou cor por baixo do texto ──
+    if (s.showBackground) {
+        auto* g = new QVBoxLayout;
+        g->setSpacing(6);
+        g->addWidget(sectionLabel(tr("Fundo da folha (opcional)"), card));
+        const QString preview = !s.title.trimmed().isEmpty() ? s.title.trimmed()
+                              : chapter ? tr("Título do capítulo") : s.titlePlaceholder;
+        m_bgField = new PageBgField(s.background, s.inheritBackground, s.inheritFrom, chapter, preview, card);
+        connect(m_bgField, &PageBgField::sizeChanged, this, [this]() { adjustSize(); });
+        g->addWidget(m_bgField);
+        body->addLayout(g);
+    }
+
     // ── outro POV (só em obra com narrador) ──
     if (s.showPov) {
         m_pov = new QCheckBox(chapter ? tr("Este capítulo é de outro POV (não do narrador)")
@@ -327,6 +341,11 @@ void ChapterSheet::finish(bool openAfter)
     if (m_pov) s.povOther = m_povId.isEmpty() ? (m_pov->isVisible() && m_pov->isChecked())
                                               : (!s.narratorId.isEmpty() && m_povId != s.narratorId);
     if (m_optOut) s.optOut = m_optOut->isChecked();
+    if (m_bgField) {
+        s.background = m_bgField->value();
+        s.useForAll = m_bgField->useForAll();
+        s.clearInherited = m_bgField->clearInherited();
+    }
     s.openAfter = openAfter;
     accept();
 }

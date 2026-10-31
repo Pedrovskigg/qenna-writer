@@ -13,6 +13,7 @@
 #include "PresenceTypes.h"
 #include "RepetitionDetector.h"
 #include "SceneBreaks.h"
+#include "PageBackgroundUi.h"
 #include "TopToolbar.h"
 
 #include <QColor>
@@ -401,6 +402,9 @@ private:
     // A cena que começa depois da quebra de número breakIndex no editor (título,
     // tempo, Flashback) — pro desenho da quebra (SceneBreaks).
     SceneBreaks::Info sceneBreakInfo(int breakIndex) const;
+    // Fundo da folha: as faixas do documento aberto (uma por cena no capítulo)
+    // e o fundo de cada uma. Vazio = nada a pintar.
+    QList<PageBg::Region> pageBackgroundRegions() const;
     // --- Operações de cena compartilhadas entre painéis --------------------
     // Vivem aqui, e não no ProjectModel, porque mexem no TEXTO da cena, que
     // fica no DocCache/disco e não no modelo. Tanto o painel de Manuscritos

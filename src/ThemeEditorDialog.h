@@ -67,6 +67,7 @@ private:
     QWidget* contrastBox();
     QWidget* photoPalette();
     QWidget* imageButton();
+    QWidget* pageImageButton();
 
     static QString groupName(Group g);
     static QString panelName(const QString& key);
@@ -78,6 +79,7 @@ private:
 
     Group m_group = Sheet;
     QString m_panel;                  // painel clicado (PanelKey) no grupo Painéis
+    bool m_sheetImage = false;        // grupo Folha: aba "Imagem" (senão "Cor e sombra")
     QString m_activeKey = QStringLiteral("accentDefault");  // cor que recebe as cores da foto
     int m_scene = 0;
     QList<QColor> m_photoColors;

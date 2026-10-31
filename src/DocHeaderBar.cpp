@@ -806,6 +806,14 @@ void DocHeaderBar::leaveEvent(QEvent* event)
     if (m_avatarEditable && m_avatarDataUrl.isEmpty()) refreshAvatar();
 }
 
+void DocHeaderBar::paintEvent(QPaintEvent* event)
+{
+    // a cor da página já veio da folha de estilo; o fundo da folha vai por cima dela
+    if (!underlay) return;
+    QPainter p(this);
+    underlay(p, event->rect());
+}
+
 void DocHeaderBar::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);

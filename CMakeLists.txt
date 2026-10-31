@@ -121,6 +121,8 @@ qt_add_executable(qenna-writer
     src/GlobalSearchPanel.h
     src/ElementCreateDialog.cpp
     src/SilhouettePicker.cpp
+    src/PageBackgroundUi.cpp
+    src/PageBackgroundUi.h
     src/SilhouettePicker.h
     src/ElementCreateDialog.h
     src/ImageCropDialog.cpp

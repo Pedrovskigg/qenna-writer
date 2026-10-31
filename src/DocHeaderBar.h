@@ -4,6 +4,10 @@
 #include <QString>
 #include <QWidget>
 
+#include <functional>
+
+class QPainter;
+
 #include "ScreenplayFormat.h"
 
 class GrannaBadge;
@@ -31,6 +35,10 @@ class DocHeaderBar : public QWidget {
     Q_OBJECT
 public:
     explicit DocHeaderBar(QWidget* parent = nullptr);
+
+    // O fundo da folha continua por trás da faixa (o MainWindow pinta, por
+    // cima da cor da página e por baixo do título).
+    std::function<void(QPainter&, const QRect&)> underlay;
 
     // Mesma assinatura de TopToolbar::setDocumentTitle — o MainWindow alimenta
     // os dois pelo mesmo ponto, sem lógica duplicada.
@@ -102,6 +110,7 @@ signals:
     void sheetMenuRequested();
 
 protected:
+    void paintEvent(QPaintEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
     void enterEvent(QEnterEvent* event) override;

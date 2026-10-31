@@ -57,6 +57,11 @@ public:
     // Roda logo antes da pintura normal (ex.: garantir a paleta que esconde o
     // traço do <hr> do Qt, que troca de tema e folha de estilo podem desfazer).
     void setBeforePaint(std::function<void()> fn) { m_beforePaint = std::move(fn); }
+    // Pinta ANTES do texto (o fundo da folha): por cima da cor da página, por
+    // baixo das letras. Em coordenadas do editor inteiro: cobre a área de texto
+    // e as margens em volta dela, numa peça só.
+    void setUnderlayPainter(std::function<void(QPainter&, const QRect&)> fn) { m_underlay = std::move(fn); }
+    bool event(QEvent* e) override;
 
 signals:
     // Disparado quando o usuário escolhe "Adicionar ao Glossário..." no menu de
@@ -132,6 +137,7 @@ private:
     QMargins m_pageMargins;
     OverlayPainter m_overlay;
     std::function<void()> m_beforePaint;
+    std::function<void(QPainter&, const QRect&)> m_underlay;
     QList<QPair<QRect, QString>> m_overlayTips;
 
     QStringList m_autocorrectSource;

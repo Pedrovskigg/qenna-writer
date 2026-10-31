@@ -127,6 +127,16 @@ struct MiraTheme {
     // Valores menores deixam a imagem de fundo aparecer atrás da página.
     int editorOpacity = 100;
 
+    // Imagem da folha (30/10, pedido do Pe a partir da sugestão da Marley): a
+    // cor da página com uma imagem por cima, em TODO documento. Livro, capítulo
+    // e cena com fundo próprio passam na frente. Data URL (JPEG até 1800 px),
+    // pra viajar dentro do .qtheme. Vazia = só a cor, como sempre.
+    QString pageImage;
+    int pageImageOpacity = 22;
+    int pageImageBlur = 0;
+    QString pageImageFit = QStringLiteral("cover");   // "cover" | "tile" | "top"
+    bool pageImageFixed = false;
+
     // --- Criador de Temas (2026-09). Tudo vazio/zero = o app como sempre foi. ---
     // Cor dos ícones da TopToolbar, da LeftBar e dos botões dos painéis — e dos
     // botões de texto da TopToolbar (fonte, tamanho, entrelinha). As gavetas

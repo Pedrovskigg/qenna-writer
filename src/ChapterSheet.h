@@ -7,6 +7,7 @@
 // Enquanto aberta, a janela do app escurece por baixo.
 
 #include "PovPicker.h"
+#include "ProjectModel.h"
 #include "SheetDialog.h"
 #include <QList>
 #include <QString>
@@ -47,6 +48,15 @@ struct ChapterSheetSpec {
     QString inheritMarker;         // cena: marcador do capítulo (o que ela herda)
     QString inheritSummary;        // cena: resumo do capítulo
     QString startMarker;           // data-base do manuscrito (decide o Flashback na leitura)
+    // Fundo da folha: o próprio (entrada e saída) e o herdado (do livro, pro
+    // capítulo; do capítulo, pra cena). Saída: useForAll = virou o fundo do
+    // livro; clearInherited = "tirar do livro".
+    bool           showBackground = false;
+    PageBackground background;
+    PageBackground inheritBackground;
+    QString        inheritFrom;   // de onde vem o herdado: "book", "theme" ou "chapter"
+    bool           useForAll = false;
+    bool           clearInherited = false;
 };
 
 // Abre a folha (modal). false = cancelou.
@@ -83,6 +93,7 @@ private:
     QToolButton* m_povAdd = nullptr;
     QCheckBox*   m_pov = nullptr;
     QCheckBox*   m_optOut = nullptr;
+    class PageBgField* m_bgField = nullptr;
     PovPicker*   m_povPick = nullptr;
     QString      m_povId;
     qreal        m_startChrono = 0.0;

@@ -8,6 +8,27 @@
 #include <QPair>
 #include <QStringList>
 
+// Fundo da folha (sugestão da Marley, 30/10): uma imagem ou uma cor por baixo
+// do texto, por cima da cor da página. O livro dá o padrão; capítulo e cena
+// herdam ("") a menos que tenham o deles ou digam "nenhum".
+struct PageBackground {
+    QString mode;                          // "" herda (no livro: nenhum) · "image" · "color" · "none"
+    QString image;                         // "data:image/jpeg;base64,…"
+    QString color;                         // hex
+    int     opacity = 22;                  // 0..100: quanto aparece através do papel
+    int     blur = 0;                      // px
+    QString fit = QStringLiteral("cover"); // "cover" (folha toda) · "tile" (repetir) · "top" (só no topo)
+    bool    fixed = false;                 // fica parada ao rolar (senão rola com o texto)
+    bool isSet() const { return mode == QLatin1String("image") || mode == QLatin1String("color"); }
+    bool operator==(const PageBackground& o) const
+    {
+        return mode == o.mode && image == o.image && color == o.color && opacity == o.opacity
+            && blur == o.blur && fit == o.fit && fixed == o.fixed;
+    }
+};
+QJsonObject pageBackgroundToJson(const PageBackground& b);
+PageBackground pageBackgroundFromJson(const QJsonObject& o);
+
 struct Variation {
     QString id;
     QString label;
@@ -29,6 +50,7 @@ struct Scene {
     // Estágio de produção da cena (WorkStatus::id) — "" = não definido.
     // Só existe pro Outline Mode; o editor ignora.
     QString status;
+    PageBackground background;   // "" = herda do capítulo
 };
 
 // Tipo de unidade narrativa (Capítulo/Prólogo/Epílogo/Interlúdio). Catálogo
@@ -74,6 +96,7 @@ struct Chapter {
     QString vignetteImage;
     // Cor do desenho (hex); "" = a da Parte ou a do livro.
     QString vignetteColor;
+    PageBackground background;   // "" = herda do livro
 };
 
 // Parte (ou ato) de um manuscrito: começa num capítulo e vai até o começo da
@@ -96,6 +119,7 @@ struct Manuscript {
     QString coverDataUrl;     // capa própria, opcional — "data:image/jpeg;base64,..."
     QList<ManuscriptPart> parts; // partes/atos (gaveta de Manuscritos), na ordem de leitura
     QString vignette;         // família de vinheta do livro todo; "" = automática por capítulo
+    PageBackground background; // fundo de todos os capítulos ("Usar em todos os capítulos")
 };
 
 // Grupo de documentos (LeftBar → Grupos; território do mapa). Desde 27/10 é uma
@@ -378,6 +402,7 @@ public:
     bool updateManuscriptTitle(const QString& id, const QString& title);
     bool updateManuscriptStoryStart(const QString& id, const QString& marker);
     bool updateManuscriptSynopsis(const QString& id, const QString& synopsis);
+    bool updateManuscriptBackground(const QString& id, const PageBackground& bg);
     bool updateManuscriptCover(const QString& id, const QString& coverDataUrl);
     bool setManuscriptParts(const QString& id, const QList<ManuscriptPart>& parts);
     bool setManuscriptVignette(const QString& id, const QString& family);
@@ -402,6 +427,11 @@ public:
     bool updateChapterVignette(const QString& chapterId, const QString& family);
     bool updateChapterVignetteImage(const QString& chapterId, const QString& dataUrl);
     bool updateChapterVignetteColor(const QString& chapterId, const QString& color);
+    bool updateChapterBackground(const QString& chapterId, const PageBackground& bg);
+    // O fundo que vale de fato: a cena (sceneIndex >= 0) herda do capítulo, que
+    // herda do livro. "nenhum" no caminho volta com mode "none" (folha lisa,
+    // nem o do tema); vazio = ninguém escolheu, vale o do tema.
+    PageBackground effectiveBackground(const QString& chapterId, int sceneIndex = -1) const;
     bool removeChapter(const QString& chapterId);
 
     // Catálogo fixo de tipos de capítulo (Capítulo/Prólogo/Epílogo/Interlúdio).
@@ -452,6 +482,7 @@ public:
     bool updateSceneTimeMarker(const QString& chapterId, int sceneIndex, const QString& marker);
     bool updateSceneSummary(const QString& chapterId, int sceneIndex, const QString& summary);
     bool updateScenePovOther(const QString& chapterId, int sceneIndex, bool value);
+    bool updateSceneBackground(const QString& chapterId, int sceneIndex, const PageBackground& bg);
     bool updateSceneStatus(const QString& chapterId, int sceneIndex, const QString& status);
 
     // Move a CENA (metadados) de um capítulo pro outro. Só mexe no modelo — o

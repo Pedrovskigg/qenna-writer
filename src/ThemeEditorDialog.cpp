@@ -1,4 +1,5 @@
 #include "ThemeEditorDialog.h"
+#include "PageBackgroundUi.h"
 
 #include "ColorPopover.h"
 #include "Theme.h"
@@ -1020,6 +1021,37 @@ QWidget* ThemeEditorDialog::imageButton()
     return b;
 }
 
+// O botão da imagem da folha, com a miniatura dela quando já tem uma.
+QWidget* ThemeEditorDialog::pageImageButton()
+{
+    auto* b = new QPushButton(m_controls);
+    b->setObjectName(QStringLiteral("imageBtn"));
+    b->setCursor(Qt::PointingHandCursor);
+    // com imagem, o botão é só a miniatura (clicar troca): a fila da aba não cabe com texto
+    b->setText(m_theme.pageImage.isEmpty() ? tr("Imagem na folha…") : QString());
+    b->setToolTip(tr("Uma imagem por cima da cor da folha, em todo documento. Capítulo, cena ou livro com fundo próprio passam na frente."));
+    if (m_theme.pageImage.isEmpty()) b->setMinimumWidth(QFontMetrics(px(11)).horizontalAdvance(b->text()) + 28);
+    else b->setToolTip(tr("Trocar imagem"));
+    if (!m_theme.pageImage.isEmpty()) {
+        const int comma = m_theme.pageImage.indexOf(QLatin1Char(','));
+        QImage img;
+        if (comma > 0) img.loadFromData(QByteArray::fromBase64(m_theme.pageImage.mid(comma + 1).toLatin1()));
+        if (!img.isNull()) {
+            b->setIcon(QIcon(QPixmap::fromImage(img.scaled(88, 56, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation))));
+            b->setIconSize(QSize(44, 28));
+        }
+    }
+    connect(b, &QPushButton::clicked, this, [this]() {
+        const QString url = PageBg::pickImage(this);
+        if (url.isEmpty()) return;
+        pushUndo();
+        m_theme.pageImage = url;
+        refreshPreview();
+        rebuildControls();
+    });
+    return b;
+}
+
 void ThemeEditorDialog::rebuildControls()
 {
     // Refaz a faixa do grupo atual (é pequena; recriar é mais simples que sincronizar).
@@ -1138,7 +1170,83 @@ void ThemeEditorDialog::rebuildControls()
             }));
         add(hint(tr("Barra de cima (inclusive os botões de fonte, tamanho e entrelinha), barra lateral e os botões dos painéis. As gavetas mantêm a cor que você deu a cada uma."), 420));
         break;
-    case Sheet:
+    case Sheet: {
+        // duas abas: a cor e a sombra de sempre, e a imagem por cima da cor
+        {
+            auto* box = new QWidget(m_controls);
+            auto* seg = new QHBoxLayout(box);
+            seg->setContentsMargins(0, 0, 0, 0);
+            seg->setSpacing(0);
+            auto* color = new QPushButton(tr("Cor e sombra"), box);
+            auto* image = new QPushButton(tr("Imagem"), box);
+            int w = 0;
+            for (auto* b : { color, image }) {
+                b->setObjectName(QStringLiteral("segBtn"));
+                b->setCheckable(true);
+                b->setCursor(Qt::PointingHandCursor);
+                b->setMinimumWidth(QFontMetrics(px(11)).horizontalAdvance(b->text()) + 26);
+                w += b->minimumWidth();
+                seg->addWidget(b);
+            }
+            color->setProperty("pos", QStringLiteral("left"));
+            image->setProperty("pos", QStringLiteral("right"));
+            color->setChecked(!m_sheetImage);
+            image->setChecked(m_sheetImage);
+            box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+            box->setFixedWidth(w);
+            connect(color, &QPushButton::clicked, this, [this]() { m_sheetImage = false; rebuildControls(); });
+            connect(image, &QPushButton::clicked, this, [this]() { m_sheetImage = true; rebuildControls(); });
+            add(box);
+        }
+        if (m_sheetImage) {
+            // Imagem da folha: a cor da página com uma imagem por cima, em todo documento
+            add(pageImageButton());
+            if (t.pageImage.isEmpty()) {
+                add(hint(tr("Uma imagem por cima da cor da folha, em todo documento. Capítulo, cena ou livro com fundo próprio passam na frente."), 380));
+                break;
+            }
+            add(link(tr("Remover"), [this]() {
+                pushUndo();
+                m_theme.pageImage.clear();
+                refreshPreview();
+                rebuildControls();
+            }));
+            add(slider(tr("Opacidade"), 0, 100, t.pageImageOpacity, QStringLiteral("%"), [this](int v) { m_theme.pageImageOpacity = v; }));
+            add(slider(tr("Desfoque"), 0, 12, t.pageImageBlur, tr("px"), [this](int v) { m_theme.pageImageBlur = v; }));
+            {
+                auto* box = new QWidget(m_controls);
+                auto* bl = new QVBoxLayout(box);
+                bl->setContentsMargins(0, 0, 0, 0);
+                bl->setSpacing(4);
+                auto* lab = new QLabel(tr("Ocupa"), box);
+                lab->setObjectName(QStringLiteral("ctlLabel"));
+                auto* combo = new QComboBox(box);
+                combo->addItem(tr("Folha toda"), QStringLiteral("cover"));
+                combo->addItem(tr("Repetir"), QStringLiteral("tile"));
+                combo->addItem(tr("Só no topo"), QStringLiteral("top"));
+                combo->setCurrentIndex(qMax(0, combo->findData(t.pageImageFit)));
+                connect(combo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this, combo](int) {
+                    pushUndo();
+                    m_theme.pageImageFit = combo->currentData().toString();
+                    refreshPreview();
+                });
+                bl->addWidget(lab);
+                bl->addWidget(combo);
+                add(box);
+            }
+            {
+                auto* tg = new Toggle(tr("Parada"), m_controls);
+                tg->setToolTip(tr("Fica parada ao rolar o texto (senão rola junto)"));
+                tg->setChecked(t.pageImageFixed);
+                connect(tg, &QAbstractButton::toggled, this, [this](bool on) {
+                    pushUndo();
+                    m_theme.pageImageFixed = on;
+                    refreshPreview();
+                });
+                add(tg);
+            }
+            break;
+        }
         add(swatch(QStringLiteral("editorBackground")));
         add(slider(tr("Opacidade"), 20, 100, t.editorOpacity, QStringLiteral("%"), [this](int v) { m_theme.editorOpacity = v; }));
         {
@@ -1158,6 +1266,7 @@ void ThemeEditorDialog::rebuildControls()
             add(slider(tr("Desloc. Y"), -50, 50, t.pageShadowOffset, tr("px"), [this](int v) { m_theme.pageShadowOffset = v; }));
         }
         break;
+    }
     case Title: {
         add(swatch(QStringLiteral("docHeaderColor"), tr("Cor")));
         auto* box = new QWidget(m_controls);
@@ -1248,6 +1357,10 @@ void ThemeEditorDialog::rebuildControls()
     }
     }
     m_controlsLay->addStretch(1);
+    // a medida de cada controle fica em cache no layout; as abas de largura
+    // fixa (Cor e sombra | Imagem) só valem depois de refazer a conta
+    m_controlsLay->invalidate();
+    m_controlsLay->activate();
 }
 
 void ThemeEditorDialog::applyStyle()

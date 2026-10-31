@@ -481,9 +481,32 @@ void SpellEditor::mousePressEvent(QMouseEvent* event)
     QTextEdit::mousePressEvent(event);
 }
 
+// As margens em volta da área de texto são do próprio editor (o viewport é
+// filho): o fundo da folha é pintado nelas depois da cor da página, sem
+// passar por cima do viewport (ele pinta o seu pedaço sozinho).
+bool SpellEditor::event(QEvent* e)
+{
+    const bool r = QTextEdit::event(e);
+    if (e->type() == QEvent::Paint && m_underlay) {
+        const QRegion margins = static_cast<QPaintEvent*>(e)->region() - QRegion(viewport()->geometry());
+        if (!margins.isEmpty()) {
+            QPainter p(this);
+            p.setClipRegion(margins);
+            m_underlay(p, margins.boundingRect());
+        }
+    }
+    return r;
+}
+
 void SpellEditor::paintEvent(QPaintEvent* event)
 {
     if (m_beforePaint) m_beforePaint();
+    if (m_underlay) {
+        QPainter under(viewport());
+        const QPoint at = viewport()->pos();
+        under.translate(-at);
+        m_underlay(under, event->rect().translated(at));
+    }
     QTextEdit::paintEvent(event);
     if (m_pulseLength > 0 && m_pulse > 0
         && m_pulseStart + m_pulseLength < document()->characterCount()) {

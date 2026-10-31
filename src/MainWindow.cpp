@@ -337,7 +337,7 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
                          QString* type, QString* typeLabel,
                          bool* povOther = nullptr, bool* openAfter = nullptr,
                          QString* pov = nullptr, const QList<PovPicker::Option>& povOptions = {},
-                         const QString& narratorId = QString())
+                         const QString& narratorId = QString(), PageBackground* background = nullptr)
 {
     ChapterSheetSpec spec;
     spec.kind = ChapterSheetSpec::Chapter;
@@ -350,6 +350,19 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     spec.showPov = povOther != nullptr;
     spec.povOther = povOther && *povOther;
     if (pov) { spec.pov = *pov; spec.povOptions = povOptions; spec.narratorId = narratorId; }
+    if (background) {
+        spec.showBackground = true;
+        spec.background = *background;
+        // de cima: o fundo do livro; sem ele, a imagem da folha do tema
+        const Manuscript* ms = model ? model->findManuscript(manuscriptId) : nullptr;
+        if (ms && ms->background.isSet()) {
+            spec.inheritBackground = ms->background;
+            spec.inheritFrom = QStringLiteral("book");
+        } else {
+            spec.inheritBackground = PageBg::themeBackground();
+            spec.inheritFrom = QStringLiteral("theme");
+        }
+    }
     if (model) {
         // posição na gaveta e capítulo anterior (atalhos "=" e "+1 dia")
         const QList<const Chapter*> chs = model->orderedChaptersForManuscript(manuscriptId);
@@ -373,6 +386,17 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
     if (povOther) *povOther = spec.povOther;
     if (openAfter) *openAfter = spec.openAfter;
     if (pov) *pov = spec.pov;
+    if (background) {
+        // "tirar do livro" e "Usar em todos os capítulos" mexem no livro; o
+        // capítulo que virou o fundo do livro passa a herdar dele
+        if (model && spec.clearInherited) model->updateManuscriptBackground(manuscriptId, PageBackground());
+        if (model && spec.useForAll) {
+            model->updateManuscriptBackground(manuscriptId, spec.background);
+            *background = PageBackground();
+        } else {
+            *background = spec.background;
+        }
+    }
     return true;
 }
 
@@ -384,7 +408,8 @@ bool promptChapterDialog(QWidget* parent, bool editMode, ProjectModel* model,
 bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
                        QString* marker, QString* summary, bool* optOutChecked = nullptr,
                        bool* povOther = nullptr, ProjectModel* model = nullptr,
-                       const QString& chapterId = QString(), int sceneIndex = -1)
+                       const QString& chapterId = QString(), int sceneIndex = -1,
+                       PageBackground* background = nullptr)
 {
     ChapterSheetSpec spec;
     spec.kind = ChapterSheetSpec::Scene;
@@ -397,6 +422,12 @@ bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
     spec.showPov = povOther != nullptr;
     spec.povOther = povOther && *povOther;
     spec.showOptOut = optOutChecked != nullptr;
+    if (background) {
+        spec.showBackground = true;
+        spec.background = *background;
+        if (model) spec.inheritBackground = PageBg::resolve(model->effectiveBackground(chapterId));
+        spec.inheritFrom = QStringLiteral("chapter");
+    }
     if (model && !chapterId.isEmpty()) {
         if (const Chapter* c = model->findChapter(chapterId)) {
             spec.inheritMarker = c->timeMarker.trimmed();
@@ -413,6 +444,7 @@ bool promptSceneDialog(QWidget* parent, bool editMode, QString* title,
     *summary = spec.summary;
     if (optOutChecked) *optOutChecked = spec.optOut;
     if (povOther) *povOther = spec.povOther;
+    if (background) *background = spec.background;
     return true;
 }
 
@@ -1392,8 +1424,10 @@ void MainWindow::setupEditor()
                 bool optOut = false;
                 bool povOther = false;
                 const bool showPov = elementsStore && elementsStore->hasNarrator();
+                PageBackground background;
                 if (promptSceneDialog(this, false, &title, &marker, &summary, &optOut,
-                                      showPov ? &povOther : nullptr, projectModel, chId, newIndex)) {
+                                      showPov ? &povOther : nullptr, projectModel, chId, newIndex, &background)) {
+                    projectModel->updateSceneBackground(chId, newIndex, background);
                     projectModel->updateSceneTitle(chId, newIndex, title);
                     projectModel->updateSceneTimeMarker(chId, newIndex, marker);
                     projectModel->updateSceneSummary(chId, newIndex, summary);
@@ -1411,6 +1445,25 @@ void MainWindow::setupEditor()
     editor->setBeforePaint([this]() {
         if (!SceneBreaks::qtRulerHidden(editor)) SceneBreaks::hideQtRuler(editor);
     });
+    // Fundo da folha: por baixo do texto. Parado ao rolar = repinta a tela toda
+    // a cada passo (o Qt só desloca o que já estava pintado).
+    editor->setUnderlayPainter([this](QPainter& p, const QRect& clip) {
+        const QList<PageBg::Region> regions = pageBackgroundRegions();
+        if (regions.isEmpty()) return;
+        PageBg::paint(p, editor->size(), editor->viewport()->y() - editor->verticalScrollBar()->value(), regions, clip);
+    });
+    connect(editor->verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() {
+        const QList<PageBg::Region> regions = pageBackgroundRegions();
+        if (regions.isEmpty()) return;
+        if (docHeader) docHeader->update();
+        // as margens não rolam junto com o texto: repinta elas a cada passo
+        editor->update(QRegion(editor->rect()) - QRegion(editor->viewport()->geometry()));
+        if (PageBg::anyFixed(regions)) editor->viewport()->update();
+    });
+    auto repaintPage = [this]() { editor->update(); editor->viewport()->update(); if (docHeader) docHeader->update(); };
+    connect(projectModel, &ProjectModel::chaptersChanged, this, repaintPage);
+    connect(projectModel, &ProjectModel::manuscriptsChanged, this, repaintPage);
+    connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, repaintPage);
     editor->setOverlayPainter([this](QPainter& p, const QRect& clip) {
         // Roteiro: o cabeçalho de cena já é a quebra — nada de traço por cima.
         if (editor->isScreenplayMode()) return QList<QPair<QRect, QString>>();
@@ -2462,11 +2515,13 @@ void MainWindow::setupEditor()
         bool povOther = false, openAfter = true;
         QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
+        PageBackground background;
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
                                  showPov ? &povOther : nullptr, &openAfter,
-                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId(), &background)) return;
         Chapter c;
+        c.background = background;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
@@ -2742,6 +2797,16 @@ void MainWindow::setupEditor()
     // especificos: parou de fazer sentido quando os grupos viraram arrastaveis.
     docHeader = new DocHeaderBar(pageStack);
     pageStackLayout->addWidget(docHeader);
+    // a faixa do título é o topo da mesma folha: o fundo passa por trás dela
+    // (ela fica logo acima do editor, então o y do editor é o dela menos a altura)
+    docHeader->underlay = [this](QPainter& p, const QRect& clip) {
+        const QList<PageBg::Region> regions = pageBackgroundRegions();
+        if (regions.isEmpty()) return;
+        const int h = docHeader->height();
+        p.translate(0, h);
+        PageBg::paint(p, editor->size(), editor->viewport()->y() - editor->verticalScrollBar()->value(), regions,
+                      clip.translated(0, -h));
+    };
     // Grupo do documento de gaveta aberto: ver e trocar sem sair do editor
     // (os territórios do mapa são grupos; o doc aparece no território no Explorar)
     m_docGroup = new GroupPicker(projectModel, docHeader, /*popup=*/true);
@@ -3436,11 +3501,13 @@ void MainWindow::setupEditor()
         bool povOther = false, openAfter = true;
         QString pov;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
+        PageBackground background;
         if (!promptChapterDialog(this, false, projectModel, msId, QString(),
                                  &title, &marker, &summary, &type, &typeLabel,
                                  showPov ? &povOther : nullptr, &openAfter,
-                                 &pov, povOptionsFor(msId, QString()), narratorElementId())) return;
+                                 &pov, povOptionsFor(msId, QString()), narratorElementId(), &background)) return;
         Chapter c;
+        c.background = background;
         c.id = ProjectModel::uid();
         c.manuscriptId = msId;
         c.title = title;
@@ -3584,9 +3651,12 @@ void MainWindow::setupEditor()
         QString newMarker = s->timeMarker;
         QString newSummary = s->summary;
         bool newPovOther = s->povOther;
+        PageBackground newBackground = s->background;
         const bool showPov = elementsStore && elementsStore->hasNarrator();
         if (!promptSceneDialog(this, true, &newTitle, &newMarker, &newSummary, nullptr,
-                               showPov ? &newPovOther : nullptr, projectModel, chapterId, sceneIndex)) return;
+                               showPov ? &newPovOther : nullptr, projectModel, chapterId, sceneIndex,
+                               &newBackground)) return;
+        projectModel->updateSceneBackground(chapterId, sceneIndex, newBackground);
         projectModel->updateSceneTitle(chapterId, sceneIndex, newTitle);
         projectModel->updateSceneTimeMarker(chapterId, sceneIndex, newMarker);
         projectModel->updateSceneSummary(chapterId, sceneIndex, newSummary);
@@ -4261,6 +4331,48 @@ void MainWindow::updateDocCachePinnedKeys()
         if (!k.isEmpty()) pinned.insert(k);
     }
     docCache->setPinnedKeys(pinned);
+}
+
+QList<PageBg::Region> MainWindow::pageBackgroundRegions() const
+{
+    QList<PageBg::Region> out;
+    if (!editor || !editorHost || !projectModel || editor->isScreenplayMode()) return out;
+    const EditorHost::ViewMode vm = editorHost->viewMode();
+    constexpr int kEnd = 1 << 28;
+    if (vm.type == EditorHost::Disabled) return out;
+    // sem escolha nenhuma (livro, capítulo, cena) vale a imagem da folha do tema
+    auto whole = [&out](const PageBackground& bg) {
+        if (bg.isSet()) out << PageBg::Region{ 0, kEnd, bg };
+        return out;
+    };
+    if (vm.type == EditorHost::ManuscriptDoc) {
+        const Manuscript* ms = projectModel->findManuscript(vm.manuscriptId);
+        return whole(PageBg::resolve(ms ? ms->background : PageBackground()));
+    }
+    if (vm.type == EditorHost::SceneDoc)
+        return whole(PageBg::resolve(projectModel->effectiveBackground(vm.chapterId, vm.sceneIndex)));
+    // gavetas, notas e o resto: só o do tema
+    if (vm.type != EditorHost::ChapterDoc) return whole(PageBg::themeBackground());
+    const Chapter* c = projectModel->findChapter(vm.chapterId);
+    if (!c) return out;
+    // nenhuma cena (nem o capítulo) com fundo: nem percorre o documento
+    const int scenes = int(c->scenes.size());
+    bool any = PageBg::resolve(projectModel->effectiveBackground(c->id)).isSet();
+    for (int i = 0; i < scenes && !any; ++i) any = PageBg::resolve(projectModel->effectiveBackground(c->id, i)).isSet();
+    if (!any) return out;
+    // uma faixa por cena, cortada no meio de cada quebra (<hr>)
+    QTextDocument* doc = editor->document();
+    QAbstractTextDocumentLayout* lay = doc->documentLayout();
+    int y = 0, k = 0;
+    for (QTextBlock b = doc->begin(); b.isValid(); b = b.next()) {
+        if (!b.blockFormat().hasProperty(QTextFormat::BlockTrailingHorizontalRulerWidth)) continue;
+        const int mid = qRound(lay->blockBoundingRect(b).center().y());
+        out << PageBg::Region{ y, mid, PageBg::resolve(projectModel->effectiveBackground(c->id, scenes > 1 ? k : -1)) };
+        y = mid;
+        ++k;
+    }
+    out << PageBg::Region{ y, kEnd, PageBg::resolve(projectModel->effectiveBackground(c->id, scenes > 1 ? k : -1)) };
+    return out;
 }
 
 SceneBreaks::Info MainWindow::sceneBreakInfo(int breakIndex) const
@@ -7744,11 +7856,14 @@ void MainWindow::editChapterDetails(const QString& chapterId)
     QString newTypeLabel = c->typeLabel;
     bool newPovOther = c->povOther;
     QString newPov = c->pov;
+    PageBackground newBackground = c->background;
     const bool showPov = elementsStore && elementsStore->hasNarrator();
     if (!promptChapterDialog(this, true, projectModel, c->manuscriptId, chapterId,
                              &newTitle, &newMarker, &newSummary, &newType, &newTypeLabel,
                              showPov ? &newPovOther : nullptr, nullptr,
-                             &newPov, povOptionsFor(c->manuscriptId, chapterId), narratorElementId())) return;
+                             &newPov, povOptionsFor(c->manuscriptId, chapterId), narratorElementId(),
+                             &newBackground)) return;
+    projectModel->updateChapterBackground(chapterId, newBackground);
     projectModel->updateChapterTitle(chapterId, newTitle);
     projectModel->updateChapterTimeMarker(chapterId, newMarker);
     projectModel->updateChapterSummary(chapterId, newSummary);

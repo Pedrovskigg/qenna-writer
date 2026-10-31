@@ -16774,6 +16774,7 @@ const QSet<QString>& knownThemeKeys()
         QStringLiteral("backgroundImage"),
         QStringLiteral("backgroundMode"),
         QStringLiteral("editorOpacity"),
+        QStringLiteral("pageImage"),
         QStringLiteral("iconColor"),
         QStringLiteral("panelBlur"),
         QStringLiteral("docHeaderColor"),
@@ -16860,6 +16861,15 @@ QJsonObject themeToJson(const MiraTheme& t)
         o["bgOverlayOpacity"] = t.bgOverlayOpacity;
         o["bgOverlaySize"] = t.bgOverlaySize;
     }
+    if (!t.pageImage.isEmpty()) {
+        QJsonObject pi;
+        pi["image"] = t.pageImage;
+        pi["opacity"] = t.pageImageOpacity;
+        if (t.pageImageBlur) pi["blur"] = t.pageImageBlur;
+        if (t.pageImageFit != QLatin1String("cover")) pi["fit"] = t.pageImageFit;
+        if (t.pageImageFixed) pi["fixed"] = true;
+        o["pageImage"] = pi;
+    }
     if (t.bgGrain > 0)               o["bgGrain"] = t.bgGrain;
     if (t.bgGrain > 0 && t.bgGrainSize != 1) o["bgGrainSize"] = t.bgGrainSize;
     if (!t.animScene.isEmpty()) {
@@ -16935,6 +16945,14 @@ MiraTheme themeFromJson(const QJsonObject& o)
     t.backgroundImage = o.value("backgroundImage").toString();
     t.backgroundMode = o.value("backgroundMode").toInt(BgZoom);
     t.editorOpacity = o.value("editorOpacity").toInt(100);
+    {
+        const QJsonObject pi = o.value("pageImage").toObject();
+        t.pageImage = pi.value("image").toString();
+        t.pageImageOpacity = qBound(0, pi.value("opacity").toInt(22), 100);
+        t.pageImageBlur = qBound(0, pi.value("blur").toInt(0), 40);
+        t.pageImageFit = pi.value("fit").toString(QStringLiteral("cover"));
+        t.pageImageFixed = pi.value("fixed").toBool(false);
+    }
     t.iconColor = o.value("iconColor").toString();
     t.panelBlur = qBound(0, o.value("panelBlur").toInt(0), 60);
     t.docHeaderColor = o.value("docHeaderColor").toString();

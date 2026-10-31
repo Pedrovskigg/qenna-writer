@@ -16,6 +16,31 @@
 #include <algorithm>
 #include <functional>
 
+QJsonObject pageBackgroundToJson(const PageBackground& b) {
+    QJsonObject o;
+    o.insert(QStringLiteral("mode"), b.mode);
+    if (!b.image.isEmpty()) o.insert(QStringLiteral("image"), b.image);
+    if (!b.color.isEmpty()) o.insert(QStringLiteral("color"), b.color);
+    o.insert(QStringLiteral("opacity"), b.opacity);
+    if (b.blur) o.insert(QStringLiteral("blur"), b.blur);
+    if (b.fit != QLatin1String("cover")) o.insert(QStringLiteral("fit"), b.fit);
+    if (b.fixed) o.insert(QStringLiteral("fixed"), true);
+    return o;
+}
+
+PageBackground pageBackgroundFromJson(const QJsonObject& o) {
+    PageBackground b;
+    if (o.isEmpty()) return b;
+    b.mode = o.value(QStringLiteral("mode")).toString();
+    b.image = o.value(QStringLiteral("image")).toString();
+    b.color = o.value(QStringLiteral("color")).toString();
+    b.opacity = qBound(0, o.value(QStringLiteral("opacity")).toInt(22), 100);
+    b.blur = qBound(0, o.value(QStringLiteral("blur")).toInt(0), 40);
+    b.fit = o.value(QStringLiteral("fit")).toString(QStringLiteral("cover"));
+    b.fixed = o.value(QStringLiteral("fixed")).toBool(false);
+    return b;
+}
+
 namespace {
 
 QString jsonString(const QJsonValue& v) {
@@ -64,6 +89,7 @@ QJsonObject sceneToJson(const Scene& s) {
     if (!s.summary.isEmpty()) o.insert(QStringLiteral("summary"), s.summary);
     if (s.povOther) o.insert(QStringLiteral("povOther"), true);
     if (!s.status.isEmpty()) o.insert(QStringLiteral("status"), s.status);
+    if (!s.background.mode.isEmpty()) o.insert(QStringLiteral("background"), pageBackgroundToJson(s.background));
     return o;
 }
 
@@ -79,6 +105,7 @@ Scene sceneFromJson(const QJsonObject& o) {
     s.summary = jsonString(o.value(QStringLiteral("summary")));
     s.povOther = o.value(QStringLiteral("povOther")).toBool(false);
     s.status = jsonString(o.value(QStringLiteral("status")));
+    s.background = pageBackgroundFromJson(o.value(QStringLiteral("background")).toObject());
     return s;
 }
 
@@ -86,7 +113,7 @@ Scene sceneFromJson(const QJsonObject& o) {
 // partir do HTML do capítulo. Ver a condição de gravação em chapterToJson.
 bool sceneHasMeta(const Scene& s) {
     return !s.title.isEmpty() || !s.timeMarker.isEmpty() || !s.summary.isEmpty()
-        || !s.status.isEmpty() || s.povOther || !s.variations.isEmpty();
+        || !s.status.isEmpty() || s.povOther || !s.variations.isEmpty() || !s.background.mode.isEmpty();
 }
 
 QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
@@ -115,6 +142,7 @@ QJsonObject chapterToJson(const Chapter& c, int fallbackOrder) {
     if (!c.vignette.isEmpty()) o.insert(QStringLiteral("vignette"), c.vignette);
     if (!c.vignetteImage.isEmpty()) o.insert(QStringLiteral("vignetteImage"), c.vignetteImage);
     if (!c.vignetteColor.isEmpty()) o.insert(QStringLiteral("vignetteColor"), c.vignetteColor);
+    if (!c.background.mode.isEmpty()) o.insert(QStringLiteral("background"), pageBackgroundToJson(c.background));
     return o;
 }
 
@@ -138,6 +166,7 @@ Chapter chapterFromJson(const QJsonObject& o) {
     c.vignette = jsonString(o.value(QStringLiteral("vignette")));
     c.vignetteImage = jsonString(o.value(QStringLiteral("vignetteImage")));
     c.vignetteColor = jsonString(o.value(QStringLiteral("vignetteColor")));
+    c.background = pageBackgroundFromJson(o.value(QStringLiteral("background")).toObject());
     return c;
 }
 
@@ -165,6 +194,7 @@ QJsonObject manuscriptToJson(const Manuscript& m) {
         o.insert(QStringLiteral("parts"), arr);
     }
     if (!m.vignette.isEmpty()) o.insert(QStringLiteral("vignette"), m.vignette);
+    if (m.background.isSet()) o.insert(QStringLiteral("background"), pageBackgroundToJson(m.background));
     return o;
 }
 
@@ -187,6 +217,7 @@ Manuscript manuscriptFromJson(const QJsonObject& o) {
         if (!p.id.isEmpty() && !p.startChapterId.isEmpty()) m.parts.append(p);
     }
     m.vignette = jsonString(o.value(QStringLiteral("vignette")));
+    m.background = pageBackgroundFromJson(o.value(QStringLiteral("background")).toObject());
     return m;
 }
 
@@ -1734,6 +1765,58 @@ bool ProjectModel::updateChapterVignetteImage(const QString& chapterId, const QS
         return true;
     }
     return false;
+}
+
+bool ProjectModel::updateChapterBackground(const QString& chapterId, const PageBackground& bg) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (c.background == bg) return true;
+        c.background = bg;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateSceneBackground(const QString& chapterId, int sceneIndex, const PageBackground& bg) {
+    for (auto& c : m_chapters) {
+        if (c.id != chapterId) continue;
+        if (sceneIndex < 0 || sceneIndex >= c.scenes.size()) return false;
+        if (c.scenes[sceneIndex].background == bg) return true;
+        c.scenes[sceneIndex].background = bg;
+        notifyChaptersChanged();
+        return true;
+    }
+    return false;
+}
+
+bool ProjectModel::updateManuscriptBackground(const QString& id, const PageBackground& bg) {
+    for (auto& m : m_manuscripts) {
+        if (m.id != id) continue;
+        if (m.background == bg) return true;
+        m.background = bg;
+        emit manuscriptsChanged();
+        return true;
+    }
+    return false;
+}
+
+PageBackground ProjectModel::effectiveBackground(const QString& chapterId, int sceneIndex) const {
+    const Chapter* c = findChapter(chapterId);
+    if (!c) return PageBackground();
+    // "nenhum" volta como "none" (e não vazio): quem chama sabe que é pra não
+    // cair no fundo do tema
+    PageBackground none;
+    none.mode = QStringLiteral("none");
+    if (sceneIndex >= 0 && sceneIndex < c->scenes.size()) {
+        const PageBackground& s = c->scenes[sceneIndex].background;
+        if (s.isSet()) return s;
+        if (s.mode == QLatin1String("none")) return none;
+    }
+    if (c->background.isSet()) return c->background;
+    if (c->background.mode == QLatin1String("none")) return none;
+    if (const Manuscript* m = findManuscript(c->manuscriptId)) return m->background;
+    return PageBackground();
 }
 
 bool ProjectModel::updateChapterVignetteColor(const QString& chapterId, const QString& color) {

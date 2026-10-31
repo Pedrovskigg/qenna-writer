@@ -3,6 +3,7 @@
 #include "AnimBackground.h"
 #include "BackgroundOverlay.h"
 #include "PanelGlass.h"
+#include "PageBackgroundUi.h"
 
 #include <QCoreApplication>
 #include <QFile>
@@ -496,6 +497,16 @@ void paintSheet(QPainter& p, const Pal& c, const Theme::MiraTheme& t)
     QColor fill = c.ed;
     fill.setAlpha(qMin(fill.alpha(), qBound(0, t.editorOpacity * 255 / 100, 255)));
     p.fillRect(kSheet, fill);
+    // a imagem da folha, por cima da cor e por baixo do texto
+    const PageBackground pageBg = PageBg::themeBackground(t);
+    if (pageBg.isSet()) {
+        p.save();
+        p.translate(kSheet.topLeft());
+        const QSize sz = kSheet.size().toSize();
+        p.setClipRect(QRect(QPoint(0, 0), sz));
+        PageBg::paint(p, sz, 0, { PageBg::Region{ 0, 1 << 28, pageBg } }, QRect(QPoint(0, 0), sz));
+        p.restore();
+    }
     // Título do DocHeader: fonte e cor próprias do tema (padrão: Lora na cor do texto).
     p.setPen(c.dh);
     p.setFont(serifFont(11.5, QFont::Bold, false, c.dhFont));
