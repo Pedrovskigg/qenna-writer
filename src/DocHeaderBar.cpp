@@ -7,6 +7,9 @@
 #include <QFontMetrics>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
+#include <QImage>
+#include <QPixmap>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLayout>
@@ -300,6 +303,179 @@ private:
         m_announce = false;
         if (wasAnnounce && onAnnounceEnded) onAnnounceEnded();
     }
+};
+
+// Aviso de presença (ver DocHeaderBar::showPresence). Fora do layout, por cima
+// da faixa, à direita do título. Cada foto: aparece em 20% do tempo, o
+// contorno se desenha até 45%, some nos últimos 20%; a segunda começa 140 ms
+// depois da primeira, e assim por diante.
+class PresenceBadge : public QWidget
+{
+public:
+    static constexpr int kDurMs = 1300;
+    static constexpr int kStaggerMs = 140;
+
+    explicit PresenceBadge(QWidget* parent) : QWidget(parent)
+    {
+        setCursor(Qt::PointingHandCursor);
+        setMouseTracking(true);
+        m_anim = new QVariantAnimation(this);
+        QObject::connect(m_anim, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+            m_ms = v.toReal();
+            update();
+        });
+        QObject::connect(m_anim, &QVariantAnimation::finished, this, [this]() {
+            if (!m_hold) { hide(); m_faces.clear(); }
+        });
+        hide();
+    }
+
+    struct Face { QString id; QPixmap pix; QColor color; };
+    std::function<void(const QString&, const QRect&)> onClick;
+
+    int side() const { return qMax(18, qRound(34 * UiScale::scale())); }
+    int overlap() const { return qRound(4 * UiScale::scale()); }
+    int pad() const { return qMax(4, qRound(7 * UiScale::scale())); }
+    QString label() const
+    {
+        return m_faces.size() > 1 ? QCoreApplication::translate("DocHeaderBar", "%1 chegaram").arg(m_faces.size()) : QString();
+    }
+    int preferredWidth() const
+    {
+        const int n = int(m_faces.size());
+        int w = pad() * 2 + n * side() - (n - 1) * overlap();
+        if (n > 1) w += qRound(8 * UiScale::scale()) + QFontMetrics(labelFont()).horizontalAdvance(label()) + pad();
+        return w;
+    }
+
+    // Aviso novo: se outro ainda está na tela, quem chegou entra no fim da fila
+    // e a contagem recomeça (sem empilhar dois avisos).
+    void start(const QVector<Face>& faces)
+    {
+        for (const Face& f : faces) {
+            bool dup = false;
+            for (const Face& g : std::as_const(m_faces)) dup = dup || g.id == f.id;
+            if (!dup) m_faces.append(f);
+        }
+        m_anim->stop();
+        m_hold = false;
+        const int total = kDurMs + int(m_faces.size() - 1) * kStaggerMs;
+        m_anim->setStartValue(0.0);
+        m_anim->setEndValue(qreal(total));
+        m_anim->setDuration(total);
+        m_ms = 0;
+        show();
+        raise();
+        m_anim->start();
+    }
+    // Popup de desfazer aberto: a foto fica inteira e parada até soltar.
+    void setHold(bool hold)
+    {
+        if (hold == m_hold) return;
+        m_hold = hold;
+        if (hold) { m_anim->pause(); return; }
+        if (m_anim->state() == QAbstractAnimation::Paused) m_anim->resume();
+        else if (m_anim->state() == QAbstractAnimation::Stopped) { hide(); m_faces.clear(); }
+    }
+
+protected:
+    void enterEvent(QEnterEvent* event) override
+    {
+        QWidget::enterEvent(event);
+        if (m_anim->state() == QAbstractAnimation::Running) m_anim->pause();
+    }
+    void leaveEvent(QEvent* event) override
+    {
+        QWidget::leaveEvent(event);
+        if (!m_hold && m_anim->state() == QAbstractAnimation::Paused) m_anim->resume();
+    }
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if (event->button() != Qt::LeftButton || !onClick) return;
+        // a de cima é a última desenhada: procura de trás pra frente
+        for (int i = int(m_faces.size()) - 1; i >= 0; --i) {
+            const QRect r = faceRect(i).toAlignedRect();
+            if (!r.contains(event->position().toPoint())) continue;
+            onClick(m_faces[i].id, QRect(mapToGlobal(r.topLeft()), r.size()));
+            break;
+        }
+        event->accept();
+    }
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        const qreal s = UiScale::scale();
+        qreal lastAlpha = 0;
+        for (int i = 0; i < m_faces.size(); ++i) {
+            const qreal local = qBound(0.0, (m_ms - i * kStaggerMs) / kDurMs, 1.0);
+            const qreal a = m_hold ? 1.0 : local < 0.2 ? local / 0.2 : local > 0.8 ? (1.0 - local) / 0.2 : 1.0;
+            lastAlpha = a;
+            if (a <= 0.0) continue;
+            const QRectF r = faceRect(i);
+            const qreal rad = r.width() * 0.26;
+            const qreal grow = 3.0 * s;
+            // vários juntos: um respiro na cor da faixa em volta, pra o
+            // contorno de quem está atrás não riscar a foto de quem chegou depois
+            if (i > 0) {
+                const qreal gap = grow + 2.0 * s;
+                QPainterPath cut;
+                cut.addRoundedRect(r.adjusted(-gap, -gap, gap, gap), rad + gap, rad + gap);
+                p.save();
+                p.setOpacity(a);
+                p.fillPath(cut, Tracks::Palette::onPage().page);
+                p.restore();
+            }
+            // a foto, num quadradinho de cantos redondos
+            p.save();
+            p.setOpacity(a);
+            QPainterPath clip;
+            clip.addRoundedRect(r, rad, rad);
+            p.setClipPath(clip);
+            p.drawPixmap(r, m_faces[i].pix, QRectF(m_faces[i].pix.rect()));
+            p.restore();
+            // o contorno se desenha em volta, na cor do personagem
+            QPainterPath ring;
+            ring.addRoundedRect(r.adjusted(-grow, -grow, grow, grow), rad + grow, rad + grow);
+            const qreal prog = m_hold ? 1.0 : qMin(1.0, local / 0.45);
+            QPen pen(m_faces[i].color, 1.8 * s, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+            if (prog < 1.0) {
+                const qreal len = ring.length() / pen.widthF();
+                pen.setDashPattern({ qMax(0.01, len * prog), len + 1.0 });
+            }
+            p.setOpacity(a);
+            p.setPen(pen);
+            p.setBrush(Qt::NoBrush);
+            p.drawPath(ring);
+        }
+        if (m_faces.size() > 1 && lastAlpha > 0) {
+            p.setOpacity(lastAlpha);
+            p.setFont(labelFont());
+            p.setPen(Theme::toColor(Theme::textMuted()));
+            const QRectF last = faceRect(int(m_faces.size()) - 1);
+            p.drawText(QRectF(last.right() + 8 * s + 3 * s, 0, width(), height()), Qt::AlignLeft | Qt::AlignVCenter, label());
+        }
+    }
+
+private:
+    QFont labelFont() const
+    {
+        QFont f = font();
+        f.setPixelSize(qMax(9, qRound(11 * UiScale::scale())));
+        f.setWeight(QFont::DemiBold);
+        return f;
+    }
+    QRectF faceRect(int i) const
+    {
+        const int sd = side();
+        return QRectF(pad() + i * (sd - overlap()), (height() - sd) / 2.0, sd, sd);
+    }
+
+    QVariantAnimation* m_anim = nullptr;
+    QVector<Face> m_faces;
+    qreal m_ms = 0;
+    bool m_hold = false;
 };
 
 DocHeaderBar::DocHeaderBar(QWidget* parent)
@@ -771,6 +947,7 @@ void DocHeaderBar::relayoutText()
         m_subtitle->clear();
     }
     placeGrannaMark(); // o aviso encosta no texto, que acabou de mudar
+    placePresence();
 }
 
 QRect DocHeaderBar::sceneVarButtonGlobalRect() const
@@ -863,6 +1040,70 @@ QRect DocHeaderBar::grannaMarkGlobalRect() const
     if (!m_granna || m_granna->isHidden())
         return QRect(mapToGlobal(QPoint(width() / 2, height())), QSize(1, 1));
     return QRect(m_granna->mapToGlobal(QPoint(0, 0)), m_granna->size());
+}
+
+void DocHeaderBar::showPresence(const QVector<PresenceFace>& faces)
+{
+    if (faces.isEmpty()) return;
+    if (!m_presence) {
+        m_presence = new PresenceBadge(this);
+        m_presence->onClick = [this](const QString& id, const QRect& r) { emit presenceClicked(id, r); };
+    }
+    const int sd = m_presence->side();
+    const qreal dpr = devicePixelRatioF();
+    QVector<PresenceBadge::Face> out;
+    for (const PresenceFace& f : faces) {
+        // o quadradinho: a foto cortada no meio; sem foto, a inicial na cor
+        QPixmap pm(QSize(sd, sd) * dpr);
+        pm.setDevicePixelRatio(dpr);
+        pm.fill(Qt::transparent);
+        QPainter p(&pm);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        QImage img;
+        const int comma = f.image.indexOf(QLatin1Char(','));
+        if (comma > 0) img.loadFromData(QByteArray::fromBase64(f.image.mid(comma + 1).toLatin1()));
+        if (!img.isNull()) {
+            img = img.scaled(QSize(sd, sd) * dpr, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            p.drawImage(QRectF(0, 0, sd, sd), img,
+                        QRectF((img.width() - sd * dpr) / 2, (img.height() - sd * dpr) / 2, sd * dpr, sd * dpr));
+        } else {
+            p.fillRect(QRect(0, 0, sd, sd), f.color);
+            QFont font = this->font();
+            font.setPixelSize(qMax(9, sd * 4 / 10));
+            font.setWeight(QFont::Bold);
+            p.setFont(font);
+            p.setPen(Qt::white);
+            p.drawText(QRect(0, 0, sd, sd), Qt::AlignCenter, f.name.left(1).toUpper());
+        }
+        p.end();
+        out.append({ f.id, pm, f.color });
+    }
+    m_presence->start(out);
+    placePresence();
+}
+
+void DocHeaderBar::holdPresence(bool hold)
+{
+    if (m_presence) m_presence->setHold(hold);
+}
+
+void DocHeaderBar::placePresence()
+{
+    if (!m_presence || m_presence->isHidden()) return;
+    if (layout()) layout()->activate();
+    // Borda direita do TEXTO (o QLabel pode ser mais largo que ele).
+    int right = INT_MIN;
+    for (QLabel* l : { m_title, m_subtitle }) {
+        if (!l || l->isHidden() || l->text().isEmpty()) continue;
+        const int w = qMin(l->width(), QFontMetrics(l->font()).horizontalAdvance(l->text()));
+        right = qMax(right, l->geometry().center().x() + (w + 1) / 2);
+    }
+    if (right == INT_MIN) right = width() / 2;
+    const int x = right + qRound(kAvatarGap * UiScale::scale()) - m_presence->pad();
+    const int h = m_presence->side() + m_presence->pad() * 2;
+    m_presence->setGeometry(x, (height() - h) / 2, qMin(m_presence->preferredWidth(), qMax(0, width() - x)), h);
+    m_presence->raise();
 }
 
 int DocHeaderBar::grannaPad() const { return qMax(4, qRound(6 * UiScale::scale())); }

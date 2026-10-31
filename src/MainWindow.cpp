@@ -44,6 +44,7 @@
 #include <QScreen>
 #include <QCryptographicHash>
 #include <QPainter>
+#include <QPainterPath>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QShortcut>
@@ -112,6 +113,7 @@
 #include "EditorHost.h"
 #include "EditorLayout.h"
 #include "UiScale.h"
+#include "DialogueVoices.h"
 #include "ElementCreateDialog.h"
 #include "ProjectTags.h"
 #include "DocTagsPicker.h"
@@ -176,7 +178,7 @@
 #include "MiraPersonality.h"
 #include "MarkerPickPopup.h"
 #include "MarkerStore.h"
-#include "PresencePopup.h"
+#include "PresenceUndoPopup.h"
 #include "SelectionPopup.h"
 #include "SettingsPanel.h"
 #include "ExportPanel.h"
@@ -1512,8 +1514,9 @@ void MainWindow::setupEditor()
     connect(elementsStore, &ElementsStore::changed, this, refreshDocTitle);
     projectSaver->setElementsStore(elementsStore);
 
-    // PresencePopup + detecção de presença idioma-agnóstica (scan incremental no event loop).
-    presencePopup = new PresencePopup(elementsStore, this);
+    // Detecção de presença idioma-agnóstica (scan incremental no event loop).
+    // Desde 31/10 sem popup de confirmação: quem aparece é marcado sozinho e o
+    // DocHeader avisa (showPresence); clicar na foto desfaz.
 
     // Timer de debounce: 3s após parar de digitar inicia o scan
     detectionTimer = new QTimer(this);
@@ -1528,10 +1531,11 @@ void MainWindow::setupEditor()
     connect(detectionTimer, &QTimer::timeout, this, [this]() {
         if (!detectionEnabled || !elementsStore || !editorHost || !editor) return;
         const QString key = editorHost->activeKey();
-        if (key.isEmpty()) return;
+        // Só capítulo e cena: na gaveta (a ficha da Klara, uma nota de lore)
+        // o nome aparece por ser o assunto, não porque ela está na cena.
+        if (!key.startsWith(QStringLiteral("ch:"))) return;
 
         CrashLogger::log(QStringLiteral("detectPresence key=%1").arg(key));
-        qDebug() << "[detect] iniciando scan para" << key;
         // Cancela scan anterior e prepara novo estado
         detectionBatchTimer->stop();
         m_scanState = std::make_unique<DetectionScanState>();
@@ -1542,10 +1546,9 @@ void MainWindow::setupEditor()
         s.elements  = elementsStore->elements();
         { const QStringList _p = elementsStore->docElementIds(key);
           s.alreadyPresent = QSet<QString>(_p.cbegin(), _p.cend()); }
-        s.autoIds    = detectionAutoIds;
         s.neverIds   = detectionNeverIds;
         s.rejectedKeys = detectionRejectedKeys;
-        s.markAll    = detectionMarkAll;
+        s.sharedParts = CharacterDetector::sharedNameParts(s.elements);
         s.wordCount  = s.lowerText.split(QRegularExpression(QStringLiteral("\\s+")),
                                           Qt::SkipEmptyParts).size();
         s.idx = 0;
@@ -1565,8 +1568,7 @@ void MainWindow::setupEditor()
             if (elem.type != QStringLiteral("character")) continue;
             if (s.alreadyPresent.contains(elem.id)) continue;
             if (s.rejectedKeys.contains(s.docKey + QLatin1Char(':') + elem.id)) continue;
-            // "Nunca" tem prioridade absoluta — nem markAll nem o próprio
-            // narrador reintroduzem um personagem que o usuário baniu.
+            // "Nunca" tem prioridade absoluta, nem o narrador volta.
             if (s.neverIds.contains(elem.id)) continue;
 
             bool detected = false;
@@ -1579,30 +1581,26 @@ void MainWindow::setupEditor()
                 auto cacheIt = m_presenceRegexCache.find(elem.id);
                 if (cacheIt == m_presenceRegexCache.end()) {
                     QVector<QRegularExpression> regexes;
-                    const QStringList tokens = CharacterDetector::buildTokensPublic(elem);
+                    const QStringList tokens = CharacterDetector::buildTokens(elem, s.sharedParts);
                     regexes.reserve(tokens.size());
-                    for (const QString& token : tokens) {
-                        const QString pattern = QStringLiteral("\\b")
-                            + QRegularExpression::escape(token) + QStringLiteral("\\b");
-                        regexes.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
-                    }
+                    for (const QString& token : tokens) regexes.append(CharacterDetector::tokenRegex(token));
                     cacheIt = m_presenceRegexCache.insert(elem.id, regexes);
                 }
+                // no texto original: só conta o nome escrito como nome (maiúscula)
                 for (const QRegularExpression& re : cacheIt.value()) {
-                    int count = 0;
-                    auto it = re.globalMatch(s.lowerText);
-                    while (it.hasNext()) { it.next(); if (++count >= CharacterDetector::kThreshold) { detected = true; break; } }
-                    if (detected) break;
+                    if (CharacterDetector::countNamed(re, s.plainText, CharacterDetector::kThreshold) >= CharacterDetector::kThreshold) {
+                        detected = true;
+                        break;
+                    }
                 }
             }
 
             if (!detected) continue;
 
             CharacterDetection det{ elem.id, s.docKey };
-            if (elem.narrator || s.markAll || s.autoIds.contains(elem.id))
-                s.result.autoMark.append(det);
-            else
-                s.result.confirm.append(det);
+            // o narrador está em todo capítulo: marca calado
+            if (elem.narrator) s.result.autoMark.append(det);
+            else s.result.announce.append(det);
         }
 
         // Scan completo
@@ -1612,34 +1610,33 @@ void MainWindow::setupEditor()
             const QString scanDocKey = s.docKey; // capturado antes do reset (s vira dangling)
             m_scanState.reset();
 
-            qDebug() << "[detect] scan completo — autoMark:" << res.autoMark.size() << "confirm:" << res.confirm.size();
-
-            if (!res.autoMark.isEmpty() && elementsStore) {
-                qDebug() << "[detect] adicionando autoMark ao elementsStore";
-                // Batch por docKey para emitir changed() uma só vez (evita N×refresh)
-                QHash<QString, QStringList> byDoc;
-                for (const auto& d : res.autoMark)
-                    byDoc[d.docKey].append(d.elementId);
-                for (auto it = byDoc.cbegin(); it != byDoc.cend(); ++it)
-                    elementsStore->addManyDocElements(it.key(), it.value());
+            if ((!res.autoMark.isEmpty() || !res.announce.isEmpty()) && elementsStore) {
+                QStringList ids;
+                for (const auto& d : res.autoMark) ids.append(d.elementId);
+                for (const auto& d : res.announce) ids.append(d.elementId);
+                elementsStore->addManyDocElements(scanDocKey, ids);
             }
-            if (!res.confirm.isEmpty() && presencePopup) {
-                qDebug() << "[detect] enqueue no presencePopup";
-                presencePopup->enqueue(res.confirm);
-                presencePopup->adjustSize();
-                const QRect win = this->geometry();
-                presencePopup->move(
-                    win.x() + win.width()  - presencePopup->width()  - 20,
-                    win.y() + win.height() - presencePopup->height() - 48);
+            // O aviso no DocHeader: só se o capítulo do scan ainda é o aberto.
+            if (!res.announce.isEmpty() && docHeader && editorHost && editorHost->activeKey() == scanDocKey) {
+                const QStringList parts = scanDocKey.split(QLatin1Char(':'));
+                const QString msId = parts.size() >= 2 ? parts.at(1) : QString();
+                const QHash<QString, int> rank = dialogueStore
+                    ? DialogueVoices::rankForManuscript(dialogueStore->dialogues(), msId) : QHash<QString, int>();
+                QVector<DocHeaderBar::PresenceFace> faces;
+                for (const auto& d : res.announce) {
+                    const Element* e = elementsStore->findElement(d.elementId);
+                    if (!e) continue;
+                    // a cor da voz (a mesma do Granna); quem nunca falou ganha uma da paleta pelo id
+                    const int idx = rank.value(e->id, int(qHash(e->id) % 8));
+                    faces.append({ e->id, e->image, e->name, DialogueVoices::color(idx) });
+                }
+                docHeader->showPresence(faces);
             }
 
             // Deriva presença por CENA a partir de quem está confirmado no
-            // capítulo inteiro (chave "ch:<ms>:<chapterId>") — só se for de fato
-            // um capítulo (não gaveta/item).
-            if (scanDocKey.startsWith(QStringLiteral("ch:"))) {
-                const QStringList parts = scanDocKey.split(QLatin1Char(':'));
-                if (parts.size() >= 3) syncScenePresenceForChapter(parts.at(2));
-            }
+            // capítulo inteiro (chave "ch:<ms>:<chapterId>").
+            const QStringList parts = scanDocKey.split(QLatin1Char(':'));
+            if (parts.size() >= 3) syncScenePresenceForChapter(parts.at(2));
         }
     });
 
@@ -1680,26 +1677,6 @@ void MainWindow::setupEditor()
     // Ao carregar novo doc, reinicia o timer e atualiza docKey no painel de consistência
     connect(editorHost, &EditorHost::contentLoaded, this, [this]() {
         if (detectionEnabled) detectionTimer->start();
-    });
-
-    connect(presencePopup, &PresencePopup::markRequested,
-            this, [this](const QString& elementId, const QString& docKey) {
-        if (elementsStore) elementsStore->addDocElement(docKey, elementId);
-    });
-    connect(presencePopup, &PresencePopup::markAllActivated, this, [this]() {
-        detectionMarkAll = true;
-        if (settingsPanel) settingsPanel->setDetectionMarkAll(true);
-        saveDetectionState();
-    });
-    connect(presencePopup, &PresencePopup::ignoredNow,
-            this, [this](const QString& elementId, const QString& docKey) {
-        detectionRejectedKeys.insert(docKey + QLatin1Char(':') + elementId);
-        saveDetectionState();
-    });
-    connect(presencePopup, &PresencePopup::neverRequested,
-            this, [this](const QString& elementId, const QString& /*docKey*/) {
-        detectionNeverIds.insert(elementId);
-        saveDetectionState();
     });
 
     // Diálogos: motor de atribuição roda no mesmo debounce da presença, mas
@@ -2799,6 +2776,7 @@ void MainWindow::setupEditor()
     pageStackLayout->addWidget(docHeader);
     // a faixa do título é o topo da mesma folha: o fundo passa por trás dela
     // (ela fica logo acima do editor, então o y do editor é o dela menos a altura)
+    connect(docHeader, &DocHeaderBar::presenceClicked, this, &MainWindow::onPresenceClicked);
     docHeader->underlay = [this](QPainter& p, const QRect& clip) {
         const QList<PageBg::Region> regions = pageBackgroundRegions();
         if (regions.isEmpty()) return;
@@ -5843,6 +5821,68 @@ void MainWindow::rescanAllChapterScenesPresence()
     timer->start();
 }
 
+void MainWindow::onPresenceClicked(const QString& elementId, const QRect& globalRect)
+{
+    if (!elementsStore || !editorHost || !docHeader) return;
+    const Element* e = elementsStore->findElement(elementId);
+    if (!e) return;
+    const QString docKey = editorHost->activeKey();
+    if (!docKey.startsWith(QStringLiteral("ch:"))) return;
+    // a foto do popup: o mesmo quadradinho do aviso, um pouco maior
+    const int side = qRound(36 * UiScale::scale());
+    const qreal dpr = devicePixelRatioF();
+    QPixmap face(QSize(side, side) * dpr);
+    face.setDevicePixelRatio(dpr);
+    face.fill(Qt::transparent);
+    {
+        QPainter p(&face);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        QPainterPath clip;
+        clip.addRoundedRect(QRectF(0, 0, side, side), side * 0.26, side * 0.26);
+        p.setClipPath(clip);
+        QImage img;
+        const int comma = e->image.indexOf(QLatin1Char(','));
+        if (comma > 0) img.loadFromData(QByteArray::fromBase64(e->image.mid(comma + 1).toLatin1()));
+        if (!img.isNull()) {
+            img = img.scaled(QSize(side, side) * dpr, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            p.drawImage(QRectF(0, 0, side, side), img,
+                        QRectF((img.width() - side * dpr) / 2, (img.height() - side * dpr) / 2, side * dpr, side * dpr));
+        } else {
+            p.fillRect(QRect(0, 0, side, side), DialogueVoices::color(int(qHash(e->id) % 8)));
+            p.setPen(Qt::white);
+            QFont f = font();
+            f.setPixelSize(side * 4 / 10);
+            f.setWeight(QFont::Bold);
+            p.setFont(f);
+            p.drawText(QRect(0, 0, side, side), Qt::AlignCenter, e->name.left(1).toUpper());
+        }
+    }
+    auto* pop = new PresenceUndoPopup(face, e->name, this);
+    docHeader->holdPresence(true);
+    connect(pop, &PresenceUndoPopup::closed, this, [this]() { if (docHeader) docHeader->holdPresence(false); });
+    // tira do capítulo e das cenas dele (a presença por cena é derivada daqui)
+    auto removeHere = [this, docKey, elementId]() {
+        elementsStore->removeDocElement(docKey, elementId);
+        const QStringList parts = docKey.split(QLatin1Char(':'));
+        if (parts.size() >= 3 && projectModel)
+            if (const Chapter* ch = projectModel->findChapter(parts.at(2)))
+                for (const Scene& sc : ch->scenes)
+                    elementsStore->removeDocElement(ElementsStore::elementDocKeyForScene(ch->manuscriptId, ch->id, sc.id), elementId);
+    };
+    connect(pop, &PresenceUndoPopup::notHereChosen, this, [this, docKey, elementId, removeHere]() {
+        detectionRejectedKeys.insert(docKey + QLatin1Char(':') + elementId);
+        removeHere();
+        saveDetectionState();
+    });
+    connect(pop, &PresenceUndoPopup::neverChosen, this, [this, elementId, removeHere]() {
+        detectionNeverIds.insert(elementId);
+        removeHere();
+        saveDetectionState();
+    });
+    pop->popupBelow(globalRect);
+}
+
 void MainWindow::saveDetectionState()
 {
     if (projectRoot.isEmpty()) return;
@@ -5850,7 +5890,6 @@ void MainWindow::saveDetectionState()
     qs.beginGroup(QStringLiteral("detectionState"));
     qs.beginGroup(QString::fromLatin1(
         QCryptographicHash::hash(projectRoot.toUtf8(), QCryptographicHash::Md5).toHex()));
-    qs.setValue(QStringLiteral("markAll"), detectionMarkAll);
     qs.setValue(QStringLiteral("neverIds"),
                 QStringList(detectionNeverIds.cbegin(), detectionNeverIds.cend()));
     qs.setValue(QStringLiteral("rejectedKeys"),
@@ -5889,30 +5928,28 @@ void MainWindow::syncScenePresenceForChapter(const QString& chapterId)
         t.replace(QStringLiteral("&amp;"),  QStringLiteral("&"));
         t.replace(QStringLiteral("&lt;"),   QStringLiteral("<"));
         t.replace(QStringLiteral("&gt;"),   QStringLiteral(">"));
-        return t.toLower();
+        return t;   // com maiúsculas: o nome conta só escrito como nome
     };
     QStringList sceneLower;
     sceneLower.reserve(sceneHtmls.size());
     for (const QString& seg : sceneHtmls) sceneLower.append(stripHtml(seg));
 
     const QList<Element>& allElements = elementsStore->elements();
+    const QSet<QString> shared = CharacterDetector::sharedNameParts(allElements);
     QHash<QString, QStringList> byScene; // sceneDocKey -> elementIds
     for (const QString& elemId : presentIds) {
         const Element* elem = nullptr;
         for (const auto& e : allElements) if (e.id == elemId) { elem = &e; break; }
         if (!elem || elem->type != QStringLiteral("character") || elem->narrator) continue;
 
-        const QStringList tokens = CharacterDetector::buildTokensPublic(*elem);
+        const QStringList tokens = CharacterDetector::buildTokens(*elem, shared);
         if (tokens.isEmpty()) continue;
 
         for (int si = 0; si < sceneLower.size() && si < ch->scenes.size(); ++si) {
             bool found = false;
             for (const QString& tok : tokens) {
                 if (tok.size() < 3) continue;
-                const QString pattern = QStringLiteral("\\b")
-                    + QRegularExpression::escape(tok) + QStringLiteral("\\b");
-                QRegularExpression re(pattern, QRegularExpression::CaseInsensitiveOption);
-                if (re.match(sceneLower[si]).hasMatch()) { found = true; break; }
+                if (CharacterDetector::countNamed(CharacterDetector::tokenRegex(tok), sceneLower[si], 1) > 0) { found = true; break; }
             }
             if (found) {
                 const QString sceneKey = ElementsStore::elementDocKeyForScene(
@@ -6866,7 +6903,7 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
 
     if (elementsStore) elementsStore->load();
 
-    // Restaura estado de detecção (markAll/nunca/ignorados) salvo por projeto —
+    // Restaura estado de detecção (nunca/ignorados) salvo por projeto —
     // decisão do usuário nunca deve precisar ser repetida (ver saveDetectionState).
     {
         QSettings qs;
@@ -6874,14 +6911,12 @@ bool MainWindow::loadProjectFrom(const QString& root, QString* errorOut)
         const QString phash = QString::fromLatin1(
             QCryptographicHash::hash(root.toUtf8(), QCryptographicHash::Md5).toHex());
         qs.beginGroup(phash);
-        detectionMarkAll = qs.value(QStringLiteral("markAll"), false).toBool();
         const QStringList neverList = qs.value(QStringLiteral("neverIds")).toStringList();
         detectionNeverIds = QSet<QString>(neverList.cbegin(), neverList.cend());
         const QStringList rejectedList = qs.value(QStringLiteral("rejectedKeys")).toStringList();
         detectionRejectedKeys = QSet<QString>(rejectedList.cbegin(), rejectedList.cend());
         qs.endGroup();
         qs.endGroup();
-        if (settingsPanel) settingsPanel->setDetectionMarkAll(detectionMarkAll);
     }
 
     rememberLastProject(root);
@@ -8655,10 +8690,6 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("editor/detectionEnabled"), enabled);
             if (!enabled && detectionTimer) detectionTimer->stop();
         });
-        connect(settingsPanel, &SettingsPanel::detectionMarkAllChanged, this, [this](bool markAll) {
-            detectionMarkAll = markAll;
-            saveDetectionState();
-        });
         connect(settingsPanel, &SettingsPanel::autoNavEnabledChanged, this, [this](bool enabled) {
             m_autoNavEnabled = enabled;
             QSettings().setValue(QStringLiteral("editor/autoNavEnabled"), enabled);
@@ -8746,7 +8777,6 @@ void MainWindow::onSettingsRequested()
     settingsPanel->setSpellEnabled(!lang.isEmpty());
     if (!lang.isEmpty()) settingsPanel->setSpellLanguage(lang);
     settingsPanel->setDetectionEnabled(detectionEnabled);
-    settingsPanel->setDetectionMarkAll(detectionMarkAll);
     settingsPanel->setAutoNavEnabled(m_autoNavEnabled);
     settingsPanel->setUnifiedGoalEnabled(wordCounter
         ? wordCounter->isUnifiedGoalEnabled()

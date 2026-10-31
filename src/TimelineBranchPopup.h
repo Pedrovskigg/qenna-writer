@@ -12,7 +12,7 @@ class QVBoxLayout;
 // (TimelineDef) um evento anômalo deve ir — usado só no resíduo em que o
 // detector de ramificações automáticas não consegue decidir sozinho (empate
 // de distância cronológica + elenco). Mesmo padrão visual/comportamental do
-// PresencePopup: canto inferior direito, não-modal, fila um item por vez.
+// o antigo popup de presença (saiu em 31/10): canto inferior direito, não-modal, fila um item por vez.
 class TimelineBranchPopup : public QFrame {
     Q_OBJECT
 public:

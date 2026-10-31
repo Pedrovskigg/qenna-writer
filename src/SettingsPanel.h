@@ -34,9 +34,7 @@ public:
     QString spellLanguage() const;
 
     bool detectionEnabled() const;
-    bool detectionMarkAll() const;
     void setDetectionEnabled(bool enabled);
-    void setDetectionMarkAll(bool markAll);
 
     bool autoNavEnabled() const;
     void setAutoNavEnabled(bool enabled);
@@ -85,7 +83,6 @@ signals:
     void spellLanguageChanged(const QString& code);
     void detectionEnabledChanged(bool enabled);
     void dialogueDetectionEnabledChanged(bool enabled);
-    void detectionMarkAllChanged(bool markAll);
     void autoNavEnabledChanged(bool enabled);
     void unifiedGoalEnabledChanged(bool enabled);
     void maxDocsChanged(int n);
@@ -154,7 +151,6 @@ private:
     QCheckBox* m_spellCheck;
     QComboBox* m_langCombo;
     QCheckBox* m_detectionCheck    = nullptr;
-    QCheckBox* m_detectionAllCheck = nullptr;
     QPushButton* m_rescanScenesBtn = nullptr;
     QCheckBox* m_autoNavCheck               = nullptr;
     QCheckBox* m_unifiedGoalCheck           = nullptr;

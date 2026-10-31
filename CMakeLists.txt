@@ -158,8 +158,8 @@ qt_add_executable(qenna-writer
     src/DialogueDetector.h
     src/DialogueStore.cpp
     src/DialogueStore.h
-    src/PresencePopup.cpp
-    src/PresencePopup.h
+    src/PresenceUndoPopup.cpp
+    src/PresenceUndoPopup.h
     src/DocCache.cpp
     src/DocCache.h
     src/EditorHost.cpp

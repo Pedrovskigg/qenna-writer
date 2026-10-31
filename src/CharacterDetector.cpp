@@ -1,27 +1,82 @@
 #include "CharacterDetector.h"
 
-#include <QRegularExpression>
+#include <QHash>
 
-QStringList CharacterDetector::buildTokens(const Element& e)
+namespace {
+
+// Partículas de nome: aparecem em qualquer texto, não denunciam ninguém.
+bool isParticle(const QString& lower)
+{
+    static const QSet<QString> particles = {
+        QStringLiteral("de"), QStringLiteral("da"), QStringLiteral("do"), QStringLiteral("das"), QStringLiteral("dos"),
+        QStringLiteral("e"), QStringLiteral("y"), QStringLiteral("di"), QStringLiteral("du"), QStringLiteral("des"),
+        QStringLiteral("del"), QStringLiteral("della"), QStringLiteral("delle"), QStringLiteral("dei"),
+        QStringLiteral("van"), QStringLiteral("von"), QStringLiteral("der"), QStringLiteral("den"), QStringLiteral("zu"),
+        QStringLiteral("la"), QStringLiteral("le"), QStringLiteral("les"), QStringLiteral("los"), QStringLiteral("las"),
+        QStringLiteral("el"), QStringLiteral("al"), QStringLiteral("of"), QStringLiteral("the"),
+        QStringLiteral("bin"), QStringLiteral("ibn"),
+    };
+    return particles.contains(lower);
+}
+
+// "III", "IV", "XII": algarismo romano escrito em maiúsculas, como num nome.
+bool isRoman(const QString& part)
+{
+    static const QRegularExpression re(QStringLiteral("^[IVXLCDM]+$"));
+    return re.match(part).hasMatch();
+}
+
+// Pedaços do nome: separa no espaço e na barra ("Langdon/River" = dois nomes).
+QStringList nameParts(const QString& name)
+{
+    static const QRegularExpression ws(QStringLiteral("[\\s/]+"));
+    return name.trimmed().split(ws, Qt::SkipEmptyParts);
+}
+
+} // namespace
+
+QSet<QString> CharacterDetector::sharedNameParts(const QList<Element>& elements)
+{
+    QHash<QString, int> seen;
+    for (const Element& e : elements) {
+        if (e.type != QStringLiteral("character")) continue;
+        QSet<QString> mine;
+        for (const QString& p : nameParts(e.name)) {
+            const QString l = p.toLower();
+            if (l.length() >= 3 && !isParticle(l) && !isRoman(p)) mine.insert(l);
+        }
+        for (const QString& l : std::as_const(mine)) ++seen[l];
+    }
+    QSet<QString> out;
+    for (auto it = seen.cbegin(); it != seen.cend(); ++it)
+        if (it.value() >= 2) out.insert(it.key());
+    return out;
+}
+
+QStringList CharacterDetector::buildTokens(const Element& e, const QSet<QString>& sharedParts)
 {
     QStringList tokens;
 
-    const QStringList nameParts = e.name.trimmed().split(
-        QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
-    for (const QString& part : nameParts) {
-        if (part.length() >= 3)
-            tokens.append(part.toLower());
+    const QStringList parts = nameParts(e.name);
+    for (int i = 0; i < parts.size(); ++i) {
+        const QString& part = parts[i];
+        const QString l = part.toLower();
+        if (l.length() < 3 || isParticle(l) || isRoman(part)) continue;
+        // sobrenome da família: sozinho dispararia todos os Lloyd de uma vez
+        if (i > 0 && sharedParts.contains(l)) continue;
+        tokens.append(l);
     }
+    // o nome inteiro também conta ("Uther Lloyd")
+    if (parts.size() > 1) tokens.append(e.name.simplified().toLower());
 
     for (const QString& alias : e.aliases) {
-        const QString a = alias.trimmed();
-        if (a.isEmpty()) continue;
-        const QStringList parts = a.split(
-            QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts);
-        const int minLen = (parts.size() == 1) ? 2 : 3;
-        for (const QString& part : parts) {
-            if (part.length() >= minLen)
-                tokens.append(part.toLower());
+        const QStringList ap = nameParts(alias);
+        if (ap.isEmpty()) continue;
+        const int minLen = (ap.size() == 1) ? 2 : 3;
+        for (const QString& part : ap) {
+            const QString l = part.toLower();
+            if (l.length() >= minLen && !isParticle(l) && !isRoman(part))
+                tokens.append(l);
         }
     }
 
@@ -29,57 +84,20 @@ QStringList CharacterDetector::buildTokens(const Element& e)
     return tokens;
 }
 
-ScanResult CharacterDetector::scan(const QString& plainText,
-                                   const QString& docKey,
-                                   const QList<Element>& elements,
-                                   const QSet<QString>& alreadyPresent,
-                                   const QSet<QString>& autoIds,
-                                   const QSet<QString>& neverIds,
-                                   const QSet<QString>& rejectedKeys,
-                                   bool markAll)
+int CharacterDetector::countNamed(const QRegularExpression& re, const QString& text, int limit)
 {
-    const QString lowerText = plainText.toLower();
-    const int wordCount = lowerText.split(
-        QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts).size();
-
-    ScanResult result;
-
-    for (const Element& elem : elements) {
-        if (elem.type != QStringLiteral("character")) continue;
-        if (alreadyPresent.contains(elem.id)) continue;
-        if (rejectedKeys.contains(docKey + QLatin1Char(':') + elem.id)) continue;
-
-        bool detected = false;
-
-        if (elem.narrator) {
-            detected = (wordCount >= kNarratorMinWords);
-        } else {
-            const QStringList tokens = buildTokens(elem);
-            for (const QString& token : tokens) {
-                // Simples word boundary sem lookahead Unicode pesado
-                const QString pattern = QStringLiteral("\\b") + QRegularExpression::escape(token)
-                                      + QStringLiteral("\\b");
-                QRegularExpression re(pattern, QRegularExpression::CaseInsensitiveOption);
-                int count = 0;
-                QRegularExpressionMatchIterator it = re.globalMatch(lowerText);
-                while (it.hasNext()) {
-                    it.next();
-                    ++count;
-                    if (count >= kThreshold) { detected = true; break; }
-                }
-                if (detected) break;
-            }
-        }
-
-        if (!detected) continue;
-
-        const CharacterDetection det{ elem.id, docKey };
-
-        if (elem.narrator || markAll || autoIds.contains(elem.id))
-            result.autoMark.append(det);
-        else if (!neverIds.contains(elem.id))
-            result.confirm.append(det);
+    int n = 0;
+    for (auto it = re.globalMatch(text); it.hasNext() && n < limit;) {
+        const QRegularExpressionMatch m = it.next();
+        const QString hit = m.captured(0);
+        if (!hit.isEmpty() && hit.at(0).isUpper()) ++n;
     }
+    return n;
+}
 
-    return result;
+QRegularExpression CharacterDetector::tokenRegex(const QString& token)
+{
+    return QRegularExpression(QStringLiteral("\\b") + QRegularExpression::escape(token) + QStringLiteral("\\b"),
+                              QRegularExpression::CaseInsensitiveOption
+                                  | QRegularExpression::UseUnicodePropertiesOption);
 }

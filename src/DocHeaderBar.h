@@ -2,6 +2,7 @@
 
 #include <QColor>
 #include <QString>
+#include <QVector>
 #include <QWidget>
 
 #include <functional>
@@ -11,6 +12,7 @@ class QPainter;
 #include "ScreenplayFormat.h"
 
 class GrannaBadge;
+class PresenceBadge;
 class QHBoxLayout;
 class QLabel;
 class QToolButton;
@@ -99,6 +101,21 @@ public:
     void holdGrannaMark(bool hold);
     QRect grannaMarkGlobalRect() const;
 
+    // Aviso de presença (31/10, no lugar do popup do canto): quem acabou de
+    // aparecer no capítulo. À direita do título (o Granna fica à esquerda),
+    // em quadradinhos de cantos redondos (o diálogo é redondo) com o contorno
+    // se desenhando na cor do personagem; vários chegam juntos, sobrepostos.
+    // Some sozinho; mouse em cima segura; clicar numa foto emite
+    // presenceClicked() com o lugar dela na tela.
+    struct PresenceFace {
+        QString id;
+        QString image;   // data URL; vazia = a inicial na cor
+        QString name;
+        QColor color;
+    };
+    void showPresence(const QVector<PresenceFace>& faces);
+    void holdPresence(bool hold);
+
 signals:
     void sceneVarRequested();
     void avatarChangeRequested();
@@ -107,6 +124,7 @@ signals:
     void grannaMarkClicked();
     // Um aviso que some sozinho (não o fixo) terminou de sumir.
     void grannaAnnounceEnded();
+    void presenceClicked(const QString& elementId, const QRect& globalRect);
     void sheetMenuRequested();
 
 protected:
@@ -124,6 +142,7 @@ private:
     void refreshGuide();
     int guideReserve() const;
     void placeGrannaMark();
+    void placePresence();
     int grannaPad() const;
     int grannaSlide() const;
 
@@ -155,6 +174,7 @@ private:
     QColor m_placeholderColor;
     QColor m_grannaAccent;
     GrannaBadge* m_granna = nullptr;
+    PresenceBadge* m_presence = nullptr;
     QWidget* m_groupTag = nullptr;
     bool m_groupWanted = false;
     QWidget* m_povTag = nullptr;

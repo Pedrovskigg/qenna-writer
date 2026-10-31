@@ -19,7 +19,7 @@ public:
 signals:
     // Emitido quando o usuário desmarca um elemento que estava presente —
     // deixa o chamador registrar a recusa junto da detecção automática
-    // (mesmo mecanismo do "ignorar" do PresencePopup), pra remoção manual
+    // (o mesmo mecanismo do "Não está aqui" do aviso de presença), pra remoção manual
     // não ser desfeita pelo próximo scan que encontrar o nome no texto.
     void elementRemoved(QString elementId, QString docKey);
 

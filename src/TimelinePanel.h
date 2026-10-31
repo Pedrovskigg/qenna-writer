@@ -279,7 +279,7 @@ private:
     PresenceProvider m_presenceProvider;
 
     // Popup de desambiguação de ramificações — fila, canto inferior-direito,
-    // mesmo padrão do PresencePopup. Criado sob demanda (só quando o
+    // mesmo padrão do antigo popup de presença. Criado sob demanda (só quando o
     // algoritmo de fato encontra um caso ambíguo).
     TimelineBranchPopup* m_branchPopup = nullptr;
     TimelineBranchPopup* ensureBranchPopup();

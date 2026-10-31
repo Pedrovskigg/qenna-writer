@@ -603,20 +603,15 @@ SettingsPanel::SettingsPanel(QWidget* parent)
 
     // ================= Personagens =================
     m_detectionCheck = new ToggleSwitch(this);
-    addRow(Characters, tr("Detectar personagens automaticamente"), tr("Sugere marcar quem aparece na cena."), m_detectionCheck,
-           tr("Quando ativado, o app detecta nomes de personagens no texto e sugere marcar a presença deles na cena."));
-    m_detectionAllCheck = new ToggleSwitch(this);
-    addRow(Characters, tr("Marcar todos sem confirmar"), tr("Marca direto, sem perguntar."), m_detectionAllCheck, QString(), true);
+    addRow(Characters, tr("Detectar personagens automaticamente"), tr("Marca quem aparece no capítulo e avisa no cabeçalho."), m_detectionCheck,
+           tr("Quando ativado, o app procura os nomes dos personagens no capítulo e marca a presença de quem aparece. "
+              "A foto de quem chegou aparece ao lado do título; clicar nela desfaz."));
     m_rescanScenesBtn = new QPushButton(tr("Rodar"), this);
     addRow(Characters, tr("Detectar presença por cena em todos os capítulos"), tr("Pra capítulos antigos. Um por vez, sem travar."), m_rescanScenesBtn,
            tr("Preenche a presença por CENA (não só por capítulo) usando quem já está "
               "confirmado — útil pra capítulos antigos que você ainda não reabriu "
               "nesta versão. Roda um capítulo por vez, não trava o app."));
-    connect(m_detectionCheck, &QCheckBox::toggled, this, [this](bool checked) {
-        m_detectionAllCheck->setEnabled(checked);
-        emit detectionEnabledChanged(checked);
-    });
-    connect(m_detectionAllCheck, &QCheckBox::toggled, this, [this](bool checked) { emit detectionMarkAllChanged(checked); });
+    connect(m_detectionCheck, &QCheckBox::toggled, this, [this](bool checked) { emit detectionEnabledChanged(checked); });
     connect(m_rescanScenesBtn, &QPushButton::clicked, this, [this]() { emit rescanAllScenesRequested(); });
 
     // Separado da presença: antes, desligar "Detectar personagens" desligava
@@ -1537,22 +1532,9 @@ bool SettingsPanel::detectionEnabled() const
     return m_detectionCheck ? m_detectionCheck->isChecked() : true;
 }
 
-bool SettingsPanel::detectionMarkAll() const
-{
-    return m_detectionAllCheck ? m_detectionAllCheck->isChecked() : false;
-}
-
 void SettingsPanel::setDetectionEnabled(bool enabled)
 {
-    if (m_detectionCheck) {
-        m_detectionCheck->setChecked(enabled);
-        if (m_detectionAllCheck) m_detectionAllCheck->setEnabled(enabled);
-    }
-}
-
-void SettingsPanel::setDetectionMarkAll(bool markAll)
-{
-    if (m_detectionAllCheck) m_detectionAllCheck->setChecked(markAll);
+    if (m_detectionCheck) m_detectionCheck->setChecked(enabled);
 }
 
 bool SettingsPanel::autoNavEnabled() const

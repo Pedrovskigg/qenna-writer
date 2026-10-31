@@ -109,7 +109,6 @@ class PageGlow;
 class QToolButton;
 class FindBar;
 class GlobalSearchPanel;
-class PresencePopup;
 
 namespace carto { class Panel; }
 
@@ -483,10 +482,13 @@ private:
     void appendDialogueScanEntry(const QString& kind, const DialogueStore::Dialogue& d, const QString& who);
     QString dialogueScanSpeaker(const DialogueStore::Dialogue& d) const;
     void finishDialogueScanToast(int total);
-    // Persiste markAll/neverIds/rejectedKeys em QSettings, por projeto (mesma
-    // chave/grupo já usados pro markAll) — chamar sempre que qualquer um dos
-    // três mudar, pra decisão do usuário nunca precisar ser repetida.
+    // Persiste neverIds/rejectedKeys em QSettings, por projeto — chamar
+    // sempre que um dos dois mudar, pra decisão do usuário nunca precisar ser
+    // repetida.
     void saveDetectionState();
+    // Clique numa foto do aviso de presença no DocHeader: "Não está aqui" ou
+    // "Nunca detectar".
+    void onPresenceClicked(const QString& elementId, const QRect& globalRect);
 
     SpellEditor *editor;
     TopToolbar *toolbar;
@@ -720,10 +722,7 @@ private:
     int m_dialogueScanNew = 0;
     int m_dialogueScanChanged = 0;
     int m_dialogueScanRemoved = 0;
-    class PresencePopup *presencePopup = nullptr;
     bool detectionEnabled = true;
-    bool detectionMarkAll = false;
-    QSet<QString> detectionAutoIds;
     QSet<QString> detectionNeverIds;
     QSet<QString> detectionRejectedKeys;
     // Estado do scan incremental (válido enquanto detectionBatchTimer estiver ativo)
@@ -733,10 +732,9 @@ private:
         QString docKey;
         QList<Element> elements;
         QSet<QString> alreadyPresent;
-        QSet<QString> autoIds;
         QSet<QString> neverIds;
         QSet<QString> rejectedKeys;
-        bool markAll = false;
+        QSet<QString> sharedParts;   // sobrenome que dois ou mais têm: sozinho não conta
         int wordCount = 0;
         int idx = 0;
         ScanResult result;
