@@ -55,6 +55,7 @@ public:
 
     std::function<void(const NewMapChoice&, Mode)> accepted;
     std::function<void()> dismissed;
+    std::function<void()> wantGalaxy;   // a pessoa escolheu Galáxia na chave de cima
 
 protected:
     void paintEvent(QPaintEvent*) override;
@@ -80,6 +81,8 @@ private:
     QLabel* m_title = nullptr;
     QLabel* m_sub = nullptr;
     QToolButton* m_close = nullptr;
+    QToolButton* m_tabEarth = nullptr;
+    QToolButton* m_tabGalaxy = nullptr;
     NewMapPreview* m_preview = nullptr;
     QLabel* m_metaSize = nullptr;
     QLabel* m_metaSeed = nullptr;

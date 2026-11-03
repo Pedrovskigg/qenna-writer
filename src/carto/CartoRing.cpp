@@ -86,7 +86,7 @@ void Ring::paintEvent(QPaintEvent*)
         const RingItem& it = m_items[k];
         const double a0 = (double(k) / n) * 2 * M_PI - M_PI / 2 - M_PI / n + 0.025;
         const double a1 = (double(k + 1) / n) * 2 * M_PI - M_PI / 2 - M_PI / n - 0.025;
-        const bool on = it.id == m_active, hov = k == m_hover && it.enabled;
+        const bool on = it.id == m_active || it.id == m_extra, hov = k == m_hover && it.enabled;
         QPainterPath path;
         path.moveTo(C + QPointF(R0 * std::cos(a0), R0 * std::sin(a0)));
         path.lineTo(C + QPointF(R1 * std::cos(a0), R1 * std::sin(a0)));

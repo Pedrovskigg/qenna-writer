@@ -73,7 +73,7 @@ void Store::loadManifest()
     const QJsonObject root = QJsonDocument::fromJson(f.readAll()).object();
     for (const QJsonValue& v : root.value(QStringLiteral("maps")).toArray()) {
         const QJsonObject o = v.toObject();
-        MapMeta m{ o.value(QStringLiteral("id")).toString(), o.value(QStringLiteral("name")).toString(), o.value(QStringLiteral("file")).toString() };
+        MapMeta m{ o.value(QStringLiteral("id")).toString(), o.value(QStringLiteral("name")).toString(), o.value(QStringLiteral("file")).toString(), o.value(QStringLiteral("kind")).toString() };
         if (!m.id.isEmpty() && !m.file.isEmpty()) m_maps.append(m);
     }
     m_activeId = root.value(QStringLiteral("activeMapId")).toString();
@@ -83,20 +83,25 @@ void Store::saveManifest() const
 {
     if (m_root.isEmpty()) return;
     QJsonArray arr;
-    for (const MapMeta& m : m_maps)
-        arr.append(QJsonObject{ { QStringLiteral("id"), m.id }, { QStringLiteral("name"), m.name }, { QStringLiteral("file"), m.file } });
+    for (const MapMeta& m : m_maps) {
+        QJsonObject o{ { QStringLiteral("id"), m.id }, { QStringLiteral("name"), m.name }, { QStringLiteral("file"), m.file } };
+        if (!m.kind.isEmpty()) o.insert(QStringLiteral("kind"), m.kind);
+        arr.append(o);
+    }
     const QJsonObject root{ { QStringLiteral("maps"), arr }, { QStringLiteral("activeMapId"), m_activeId } };
     QSaveFile f(manifestPath());
     if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) return;
     f.write(QJsonDocument(root).toJson(QJsonDocument::Indented));
     f.commit();
 }
-MapMeta Store::createMap(const QString& name)
+MapMeta Store::createMap(const QString& name, const QString& kind)
 {
     MapMeta m;
     m.id = QUuid::createUuid().toString(QUuid::WithoutBraces);
     m.name = name;
-    m.file = QStringLiteral("mapas/%1.qmap").arg(m.id);
+    m.kind = kind;
+    m.file = (kind == QLatin1String("galaxy") ? QStringLiteral("mapas/%1.qgal") : QStringLiteral("mapas/%1.qmap")).arg(m.id);
+    QDir(m_root).mkpath(QStringLiteral("mapas"));
     m_maps.append(m);
     m_activeId = m.id;
     saveManifest();

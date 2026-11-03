@@ -29,6 +29,7 @@ public:
     // Só posiciona a janela da primeira vez que abre; chamadas seguintes só
     // trazem pra frente, preservando onde/como o usuário deixou a janela.
     void openNear(const QRect& anchorGlobal, Qt::Edge barSide = Qt::TopEdge);
+    void openTopic(const QString& id);   // abre direto num tópico (o "?" de outra janela)
 
 private slots:
     void onTopicSelected();
@@ -88,6 +89,8 @@ private:
     QString pensarioContent() const;
     QString bondsContent() const;
     QString worldMapContent() const;
+    QString fantasyMapContent() const;
+    QString galaxyMapsContent() const;
     QString glossaryContent() const;
     QString statsContent() const;
     QString ambienceContent() const;

@@ -8,6 +8,8 @@
 #include "CartoIcons.h"
 #include "CartoRing.h"
 #include "../SheetDialogs.h"
+#include "../galaxy/GalaxyNewGalaxy.h"
+#include "../galaxy/GalaxyPanel.h"
 #include "../Theme.h"
 
 #include <QApplication>
@@ -120,6 +122,137 @@ Panel::~Panel()
     flushSaves();
 }
 
+void Panel::buildGalaxyHost()
+{
+    m_galaxy = new galaxy::Panel(this);
+    m_galaxy->hide();
+    m_galaxy->fillMapMenu = [this](QMenu& menu) { fillMapList(menu); };
+    m_galaxy->renamed = [this](const QString& n) { if (!m_mapId.isEmpty()) m_store.renameMap(m_mapId, n); };
+    connect(m_galaxy, &galaxy::Panel::regenerateRequested, this, [this]() { openNewGalaxy(true); });
+    m_newGalaxy = new galaxy::NewGalaxy(this);
+    m_newGalaxy->dismissed = [this]() { if (m_galaxyOpen) m_galaxy->setFocus(); else m_canvas->setFocus(); };
+    m_newGalaxy->wantEarth = [this]() {
+        // a chave Terra da janela: volta pra Novo mapa
+        const bool first = m_firstRun;
+        m_newGalaxy->hide();
+        openNewMap(first ? NewMap::Mode::First : NewMap::Mode::New);
+    };
+    m_newGalaxy->accepted = [this](const galaxy::GalOpts& o, const QString& name, galaxy::NewGalaxy::Mode mode) {
+        if (mode == galaxy::NewGalaxy::Mode::Regen && m_galaxyOpen) {
+            m_galaxy->regenerate(o, name.isEmpty() ? m_galaxy->mapName() : name);
+            m_store.renameMap(m_mapId, m_galaxy->displayName());
+            return;
+        }
+        const QString title = name.isEmpty() ? tr("Galáxia") : name;
+        // o mapa em branco que estava de fundo da primeira janela não fica pra trás
+        if (m_firstRun) {
+            m_firstRun = false;
+            m_saveTimer->stop();
+            m_canvas->waitIdle();
+            flushSaves();
+            m_store.removeMap(m_mapId);
+            m_hasWorld = false;
+            m_mapId.clear();
+        } else if (m_saveTimer->isActive()) saveNow();
+        dropEarth();
+        const MapMeta m = m_store.createMap(title, QStringLiteral("galaxy"));
+        m_mapId = m.id;
+        m_galaxyOpen = true;
+        m_galaxy->setGeometry(rect());
+        m_galaxy->show();
+        m_galaxy->raise();
+        m_galaxy->startNew(o, m_store.absolutePath(m.id), name);
+        m_store.renameMap(m.id, m_galaxy->displayName());
+        m_galaxy->setFocus();
+    };
+}
+bool Panel::isGalaxyMap(const QString& id) const
+{
+    const int i = m_store.indexOf(id);
+    return i >= 0 && m_store.maps()[i].kind == QLatin1String("galaxy");
+}
+void Panel::openGalaxy(const QString& id)
+{
+    if (m_saveTimer->isActive()) saveNow();
+    const int i = m_store.indexOf(id);
+    if (i < 0) return;
+    dropEarth();
+    m_mapId = id;
+    m_store.setActiveId(id);
+    m_galaxyOpen = true;
+    m_galaxy->setGeometry(rect());
+    m_galaxy->show();
+    m_galaxy->raise();
+    if (!m_galaxy->openFile(m_store.absolutePath(id), m_store.maps()[i].name)) {
+        // arquivo faltando ou estragado: não finge que abriu
+        leaveGalaxy();
+        flash(tr("Não deu pra abrir essa galáxia: o arquivo dela sumiu ou está estragado."));
+        return;
+    }
+    m_galaxy->setFocus();
+}
+void Panel::dropEarth()
+{
+    m_canvas->waitIdle();
+    flushSaves();
+    m_newMap->dismiss();
+    m_canvas->setDoc(nullptr, false);
+    m_hasWorld = false;
+    m_undo.clear(); m_redo.clear();
+}
+void Panel::leaveGalaxy()
+{
+    if (!m_galaxyOpen) return;
+    m_galaxy->closeMap();
+    m_galaxy->hide();
+    m_galaxyOpen = false;
+}
+void Panel::openNewGalaxy(bool regen)
+{
+    if (m_newMap->isVisible()) m_newMap->hide();
+    int count = 0;
+    if (regen && m_galaxy->isOpen()) count = m_galaxy->systemCount();
+    m_newGalaxy->open(regen ? galaxy::NewGalaxy::Mode::Regen : m_firstRun ? galaxy::NewGalaxy::Mode::First : galaxy::NewGalaxy::Mode::New, m_galaxy->isOpen() ? &m_galaxy->options() : nullptr, count);
+}
+// a lista de mapas e as ações, iguais nos dois lados (Terra e Galáxia)
+void Panel::fillMapList(QMenu& menu)
+{
+    for (const MapMeta& m : m_store.maps()) {
+        QAction* a = menu.addAction(m.name);
+        a->setCheckable(true);
+        a->setChecked(m.id == m_mapId);
+        connect(a, &QAction::triggered, this, [this, id = m.id]() {
+            if (id == m_mapId) return;
+            if (m_saveTimer->isActive()) saveNow();
+            leaveGalaxy();
+            openMap(id);
+        });
+    }
+    menu.addSeparator();
+    menu.addAction(tr("Novo mapa…"), this, [this]() { if (m_galaxyOpen) openNewGalaxy(false); else openNewMap(NewMap::Mode::New); });
+    menu.addAction(m_galaxyOpen ? tr("Regenerar galáxia") : tr("Regenerar mapa"), this, [this]() { if (m_galaxyOpen) openNewGalaxy(true); else openNewMap(NewMap::Mode::Regen); });
+    menu.addAction(tr("Renomear…"), this, [this]() {
+        if (m_galaxyOpen) { m_galaxy->beginRename(); return; }
+        m_title->hide(); m_titleEdit->setText(m_title->text()); m_titleEdit->show(); m_titleEdit->setFocus(); m_titleEdit->selectAll(); positionOverlays();
+    });
+    QAction* del = menu.addAction(tr("Excluir este mapa…"), this, [this]() {
+        const int i = m_store.indexOf(m_mapId);
+        if (i < 0) return;
+        if (!Sheets::confirm(this, tr("Excluir mapa"), tr("Excluir o mapa \"%1\"?").arg(m_store.maps()[i].name),
+                             tr("O mapa some do projeto. Um backup do projeto traz ele de volta."), tr("Excluir"))) return;
+        m_saveTimer->stop();
+        m_canvas->waitIdle();
+        flushSaves();   // uma gravação atrasada não pode recriar o arquivo apagado
+        if (m_galaxyOpen) { m_galaxy->forgetFile(); leaveGalaxy(); }
+        m_store.removeMap(m_mapId);
+        m_hasWorld = false;
+        m_mapId.clear();
+        if (m_store.maps().isEmpty()) { newBlankMap(); m_firstRun = true; openNewMap(NewMap::Mode::First); }
+        else openMap(m_store.activeId());
+    });
+    del->setEnabled(m_store.maps().size() > 0);
+}
+
 void Panel::flushSaves() { if (m_savePool) m_savePool->waitForDone(); }
 
 // ── montagem ──
@@ -222,6 +355,8 @@ void Panel::buildUi()
     m_exportBtn = makeBtn(this, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
     m_exportBtn->setCheckable(true);
     connect(m_exportBtn, &QToolButton::clicked, this, [this]() { m_export->setVisible(!m_export->isVisible()); positionOverlays(); syncUi(); });
+    m_helpBtn = makeBtn(this, QStringLiteral("galHelp"), tr("Como usar o Mapa"));
+    connect(m_helpBtn, &QToolButton::clicked, this, [this]() { if (m_openHelp) m_openHelp(QStringLiteral("mapa")); });
 
     // Astrolábio + pílulas da hora e da ferramenta
     m_astro = new Astrolabe(this);
@@ -296,7 +431,8 @@ void Panel::buildUi()
     buildExportCard();
     // Novo mapa (29/10): no primeiro mapa do projeto, no "Novo mapa…" e no "Regenerar mapa"
     m_newMap = new NewMap(this);
-    m_newMap->accepted = [this](const NewMapChoice& c, NewMap::Mode mode) { applyNewMap(c, mode != NewMap::Mode::New); };
+    m_newMap->accepted = [this](const NewMapChoice& c, NewMap::Mode mode) { m_firstRun = false; leaveGalaxy(); applyNewMap(c, mode != NewMap::Mode::New); };
+    m_newMap->wantGalaxy = [this]() { openNewGalaxy(false); };
     m_newMap->dismissed = [this]() { m_canvas->setFocus(); syncUi(); };
 
     m_ring = new Ring(this);
@@ -347,6 +483,7 @@ void Panel::buildUi()
     connect(m_canvas, &Canvas::selectionChanged, this, &Panel::syncUi);
     m_dock->raise();
     applyUiMode();
+    buildGalaxyHost();
 }
 
 void Panel::buildBrushCard()
@@ -680,10 +817,12 @@ void Panel::positionOverlays()
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
     if (m_explore) m_explore->place();
     // a janela de Novo mapa fica por cima de tudo (a doca e o Explorar sobem quando se arrumam)
+    if (m_galaxy && m_galaxy->isVisible()) { m_galaxy->setGeometry(rect()); m_galaxy->raise(); }
     if (m_newMap->isVisible()) {
         m_newMap->setGeometry(rect());
         m_newMap->raise();
     }
+    if (m_newGalaxy && m_newGalaxy->isVisible()) { m_newGalaxy->setGeometry(rect()); m_newGalaxy->raise(); }
 }
 
 void Panel::placeDock()
@@ -792,6 +931,8 @@ void Panel::setProjectRoot(const QString& root)
 {
     if (m_saveTimer->isActive()) saveNow();
     m_canvas->waitIdle();
+    leaveGalaxy();
+    m_firstRun = false;
     m_store.setProjectRoot(root);
     m_mapId.clear();
     m_hasWorld = false;
@@ -801,7 +942,12 @@ void Panel::setProjectRoot(const QString& root)
     if (isVisible()) ensureMap();
 }
 
-void Panel::setProjectLink(const ProjectLink& link) { if (m_explore) { m_explore->setLink(link); m_explore->syncGroups(nullptr); } }
+void Panel::setProjectLink(const ProjectLink& link)
+{
+    if (m_explore) { m_explore->setLink(link); m_explore->syncGroups(nullptr); }
+    if (m_galaxy) m_galaxy->setProjectLink(link);
+    m_openHelp = link.openHelp;
+}
 
 void Panel::showEvent(QShowEvent*)
 {
@@ -811,10 +957,11 @@ void Panel::showEvent(QShowEvent*)
 
 void Panel::ensureMap()
 {
-    if (m_hasWorld || m_store.projectRoot().isEmpty()) return;
+    if (m_hasWorld || m_galaxyOpen || m_store.projectRoot().isEmpty()) return;
     if (m_store.maps().isEmpty()) {
         // o primeiro mapa do projeto nasce em branco: o usuário desenha ou gera
         newBlankMap();
+        m_firstRun = true;
         openNewMap(NewMap::Mode::First);
         return;
     }
@@ -825,6 +972,7 @@ QString Panel::autoTitle() const { return m_hasWorld ? mapTitle(m_doc.world) : t
 
 void Panel::openMap(const QString& id)
 {
+    if (isGalaxyMap(id)) { openGalaxy(id); return; }
     m_canvas->waitIdle();
     World w;
     MapViewState v;
@@ -898,35 +1046,7 @@ void Panel::openNewMap(NewMap::Mode mode)
 void Panel::showMapMenu()
 {
     QMenu menu(this);
-    for (const MapMeta& m : m_store.maps()) {
-        QAction* a = menu.addAction(m.name);
-        a->setCheckable(true);
-        a->setChecked(m.id == m_mapId);
-        connect(a, &QAction::triggered, this, [this, id = m.id]() {
-            if (id == m_mapId) return;
-            if (m_saveTimer->isActive()) saveNow();
-            openMap(id);
-        });
-    }
-    menu.addSeparator();
-    menu.addAction(tr("Novo mapa…"), this, [this]() { openNewMap(NewMap::Mode::New); });
-    menu.addAction(tr("Regenerar mapa"), this, [this]() { openNewMap(NewMap::Mode::Regen); });
-    menu.addAction(tr("Renomear…"), this, [this]() { m_title->hide(); m_titleEdit->setText(m_title->text()); m_titleEdit->show(); m_titleEdit->setFocus(); m_titleEdit->selectAll(); positionOverlays(); });
-    QAction* del = menu.addAction(tr("Excluir este mapa…"), this, [this]() {
-        const int i = m_store.indexOf(m_mapId);
-        if (i < 0) return;
-        if (!Sheets::confirm(this, tr("Excluir mapa"), tr("Excluir o mapa \"%1\"?").arg(m_store.maps()[i].name),
-                             tr("O mapa some do projeto. Um backup do projeto traz ele de volta."), tr("Excluir"))) return;
-        m_saveTimer->stop();
-        m_canvas->waitIdle();
-        flushSaves();   // uma gravação atrasada não pode recriar o arquivo apagado
-        m_store.removeMap(m_mapId);
-        m_hasWorld = false;
-        m_mapId.clear();
-        if (m_store.maps().isEmpty()) { newBlankMap(); openNewMap(NewMap::Mode::First); }
-        else openMap(m_store.activeId());
-    });
-    del->setEnabled(m_store.maps().size() > 0);
+    fillMapList(menu);
     menu.exec(m_mapsBtn->mapToGlobal(QPoint(0, m_mapsBtn->height() + 4)));
 }
 
@@ -936,7 +1056,7 @@ void Panel::saveNow()
 {
     CARTO_PROF("salvar (painel)");
     m_saveTimer->stop();
-    if (!m_hasWorld || m_mapId.isEmpty()) return;
+    if (!m_hasWorld || m_mapId.isEmpty() || isGalaxyMap(m_mapId)) return;
     m_view.ang = m_canvas->angle();
     m_view.pitch = m_canvas->pitch();
     m_view.mode = m_canvas->mode();
@@ -951,10 +1071,12 @@ void Panel::hideEvent(QHideEvent*)
 {
     setPlaying(false);
     if (m_saveTimer->isActive()) saveNow();
+    if (m_galaxyOpen) m_galaxy->saveNow();
 }
 void Panel::closeEvent(QCloseEvent* e)
 {
     if (m_saveTimer->isActive()) saveNow();
+    if (m_galaxyOpen) m_galaxy->saveNow();
     flushSaves();
     emit closeRequested();
     e->accept();
@@ -1218,6 +1340,7 @@ void Panel::restore(bool undoing)
 // ── teclado e arrastos ──
 void Panel::keyPressEvent(QKeyEvent* e)
 {
+    if (m_galaxyOpen) { if (!m_galaxy->handleKey(e)) QWidget::keyPressEvent(e); return; }
     const int k = e->key();
     const bool ctrl = e->modifiers() & Qt::ControlModifier;
     if (m_explore && k == Qt::Key_Escape && m_explore->escape()) { syncUi(); return; }

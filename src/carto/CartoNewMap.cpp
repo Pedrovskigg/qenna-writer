@@ -310,6 +310,28 @@ void NewMap::build()
     head->addWidget(m_close, 0, Qt::AlignTop);
     outer->addLayout(head);
 
+    // Terra ou Galáxia: o mapa novo pode ser um mundo ou uma galáxia inteira
+    auto* kinds = new QHBoxLayout();
+    kinds->setContentsMargins(22, 10, 22, 0);
+    kinds->setSpacing(4);
+    const auto kindBtn = [&](const QString& text) {
+        auto* b = new QToolButton(m_card);
+        b->setObjectName(QStringLiteral("cartoSeg"));
+        b->setText(text);
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFocusPolicy(Qt::NoFocus);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        kinds->addWidget(b);
+        return b;
+    };
+    m_tabEarth = kindBtn(tr("Terra"));
+    m_tabEarth->setChecked(true);
+    m_tabGalaxy = kindBtn(tr("Galáxia"));
+    connect(m_tabEarth, &QToolButton::clicked, this, [this]() { m_tabEarth->setChecked(true); });
+    connect(m_tabGalaxy, &QToolButton::clicked, this, [this]() { m_tabGalaxy->setChecked(false); if (wantGalaxy) wantGalaxy(); });
+    outer->addLayout(kinds);
+
     auto caption = [](QWidget* parent, const QString& text) {
         auto* c = new QLabel(text, parent);
         c->setObjectName(QStringLiteral("cartoCaption"));
@@ -505,6 +527,8 @@ void NewMap::applyTheme()
 
 void NewMap::open(Mode mode, const World* current, const QString& currentName, const QString& terrainStyle)
 {
+    m_tabEarth->setVisible(mode != Mode::Regen);
+    m_tabGalaxy->setVisible(mode != Mode::Regen);
     m_mode = mode;
     m_style = terrainStyle;
     m_loading = true;

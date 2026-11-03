@@ -92,7 +92,7 @@ void Panel::buildCartelaUi()
     m_cbarSep->setObjectName(QStringLiteral("cartoSep"));
     m_cbarSep->setFixedSize(18, 1);
     cb->addWidget(m_cbarSep, 0, Qt::AlignHCenter);
-    for (QToolButton* b : { m_fitBtn, m_rulerBtn, m_exportBtn, m_setBtn }) cb->addWidget(b);
+    for (QToolButton* b : { m_fitBtn, m_rulerBtn, m_exportBtn, m_setBtn, m_helpBtn }) cb->addWidget(b);
     // vistas, inclinação e hora (o Astrolábio faz isso no outro modo)
     m_cview = new QFrame(this);
     m_cview->setObjectName(QStringLiteral("cartoCard"));

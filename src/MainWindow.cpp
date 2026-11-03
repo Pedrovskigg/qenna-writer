@@ -10070,6 +10070,7 @@ void MainWindow::connectCartoProject()
         w->show(); w->raise(); w->activateWindow();
     };
     l.save = [this]() { if (projectSaver) projectSaver->saveProject(); };
+    l.openHelp = [this](const QString& topic) { if (helpPanel) helpPanel->openTopic(topic); };
     cartoPanel->setProjectLink(l);
 }
 

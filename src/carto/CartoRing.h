@@ -24,6 +24,7 @@ public:
     // abre centrado em `at` (coordenadas do pai); `active` = fatia em destaque; centro mostra o rótulo
     void openAt(QPoint at, const QString& active, const QString& centerTitle, const QString& centerSub);
     QPoint center() const { return m_c; }
+    void setActiveExtra(const QString& id) { m_extra = id; update(); }   // outra fatia acesa (o Tráfego, que liga e desliga sem ser ferramenta)
 
 signals:
     void picked(const QString& id, QPoint center);
@@ -39,7 +40,7 @@ private:
     int sliceAt(QPointF p) const;
     QVector<RingItem> m_items;
     QPoint m_c;
-    QString m_active, m_title, m_sub;
+    QString m_active, m_title, m_sub, m_extra;
     int m_hover = -1;
 };
 

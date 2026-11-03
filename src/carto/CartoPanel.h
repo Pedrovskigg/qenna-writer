@@ -29,6 +29,8 @@ class QSlider;
 class QSpinBox;
 class QToolButton;
 
+namespace galaxy { class Panel; class NewGalaxy; }
+
 namespace carto {
 
 class Astrolabe;
@@ -110,6 +112,14 @@ private:
     void applyNewMap(const NewMapChoice& c, bool replace);
     QString fullLockedWhy() const;
     void showMapMenu();
+    // a galáxia é mais um mapa da lista: abre por cima de tudo (o Galaxy Maps)
+    void buildGalaxyHost();
+    void fillMapList(QMenu& menu);
+    bool isGalaxyMap(const QString& id) const;
+    void openGalaxy(const QString& id);
+    void leaveGalaxy();
+    void dropEarth();
+    void openNewGalaxy(bool regen);
     void scheduleSave();
     void saveNow();
     QString autoTitle() const;
@@ -183,6 +193,8 @@ private:
     QHash<QString, QToolButton*> m_viewBtns;
     QToolButton* m_rulerBtn = nullptr;
     QToolButton* m_exportBtn = nullptr;
+    QToolButton* m_helpBtn = nullptr;
+    std::function<void(const QString&)> m_openHelp;
     QHash<QString, QToolButton*> m_uiBtns;
     QToolButton* m_cartelaChk = nullptr;
     QToolButton* m_spritesChk = nullptr;
@@ -234,6 +246,10 @@ private:
     // ajustes
     QFrame* m_settings = nullptr;
     QButtonGroup* m_styleGroup = nullptr;
+    galaxy::Panel* m_galaxy = nullptr;
+    galaxy::NewGalaxy* m_newGalaxy = nullptr;
+    bool m_galaxyOpen = false;
+    bool m_firstRun = false;      // o mapa em branco de fundo da janela de Novo mapa (o projeto ainda não tinha mapa)
 
     QString m_tool = QStringLiteral("pan");
     Brush m_brush = Brush::Land;

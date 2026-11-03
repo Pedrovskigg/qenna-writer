@@ -455,6 +455,33 @@ qt_add_executable(qenna-writer
     src/carto/CartoBuild.cpp
     src/carto/CartoBuild.h
     src/carto/CartoExplore.cpp
+    src/galaxy/GalaxyCore.cpp
+    src/galaxy/GalaxyCoreText.cpp
+    src/galaxy/GalaxyTexture.cpp
+    src/galaxy/GalaxyNames.cpp
+    src/galaxy/GalaxyModels.cpp
+    src/galaxy/GalaxyStructures.cpp
+    src/galaxy/GalaxyViews.cpp
+    src/galaxy/GalaxyPresets.cpp
+    src/galaxy/GalaxyDoc.cpp
+    src/galaxy/GalaxyDocIO.cpp
+    src/galaxy/GalaxyCanvas.cpp
+    src/galaxy/GalaxyCanvasArt.cpp
+    src/galaxy/GalaxyBlackHole.cpp
+    src/galaxy/GalaxyCanvasRegions.cpp
+    src/galaxy/GalaxyCanvasTraffic.cpp
+    src/galaxy/GalaxyCanvasTools.cpp
+    src/galaxy/GalaxyWidgets.cpp
+    src/galaxy/GalaxyPanel.cpp
+    src/galaxy/GalaxyPanelBuild.cpp
+    src/galaxy/GalaxyPanelLinks.cpp
+    src/galaxy/GalaxyPanelPeek.cpp
+    src/galaxy/GalaxyPanelRealm.cpp
+    src/galaxy/GalaxyPanelSide.cpp
+    src/galaxy/GalaxyPanelDocs.cpp
+    src/galaxy/GalaxyPanelEdit.cpp
+    src/galaxy/GalaxyCaderno.cpp
+    src/galaxy/GalaxyNewGalaxy.cpp
     src/carto/CartoExplore.h
     src/carto/CartoAstrolabe.cpp
     src/carto/CartoAstrolabe.h
@@ -542,6 +569,9 @@ qt_add_executable(qenna-writer
     resources/whatsnew.qrc
     $<$<PLATFORM_ID:Windows>:resources/mira.rc>
 )
+
+# O Galaxy Maps gera a galáxia e pinta esferas e modelos pixel a pixel: otimizado mesmo no Debug
+set_source_files_properties(src/galaxy/GalaxyBlackHole.cpp src/galaxy/GalaxyCore.cpp src/galaxy/GalaxyTexture.cpp src/galaxy/GalaxyNames.cpp src/galaxy/GalaxyModels.cpp src/galaxy/GalaxyStructures.cpp src/galaxy/GalaxyViews.cpp src/galaxy/GalaxyPresets.cpp src/galaxy/GalaxyDoc.cpp src/galaxy/GalaxyCanvas.cpp src/galaxy/GalaxyCanvasArt.cpp src/galaxy/GalaxyCanvasRegions.cpp src/galaxy/GalaxyCanvasTraffic.cpp src/galaxy/GalaxyCanvasTools.cpp src/galaxy/GalaxyWidgets.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 # O planeta do Citadel é pintado pixel a pixel na montagem do tema: otimizado mesmo no Debug, senão trava ~1 s ao trocar de tema
 set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")

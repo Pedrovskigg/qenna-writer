@@ -15,6 +15,7 @@ public:
     explicit Astrolabe(QWidget* parent = nullptr);
     void setState(double ang, double pitch, double hour, const QString& mode);
     void setLockedMode(const QString& mode);   // vista apagada (vazio = nenhuma)
+    void setGalaxy(bool on);                   // no Galaxy Maps: Céu no lugar de Terreno, e o aro é um ciclo inteiro, sem dia e noite
 
     QString artMode() const { return m_artMode; }
 
@@ -41,6 +42,7 @@ private:
     QString m_mode = QStringLiteral("full");
     QString m_artMode = QStringLiteral("ink");
     QString m_locked;
+    bool m_galaxy = false;
     enum class Drag { None, Hour, Tilt, Rot } m_drag = Drag::None;
     double m_a0 = 0, m_ang0 = 0;
     bool m_moved = false, m_near = false;
@@ -52,6 +54,7 @@ class ArtPicker : public QWidget {
 public:
     explicit ArtPicker(QWidget* parent);
     void openAt(QPoint globalAnchor, const QString& current, bool below = false);   // a lista sobe (ou desce) a partir do ponto
+    void setGalaxy(bool on) { m_galaxy = on; }   // os textos falam de estrelas, não de terra
 
 signals:
     void picked(const QString& mode);
@@ -67,6 +70,7 @@ private:
     int rowAt(QPointF p) const;
     QString m_current;
     int m_hover = -1;
+    bool m_galaxy = false;
 };
 
 QString artModeName(const QString& m);    // "Pergaminho", "Carta náutica"...

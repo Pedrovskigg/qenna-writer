@@ -232,6 +232,7 @@ constexpr int kBondOptionThumbWidth   = 260; // nativo 166
 constexpr int kBondCreatorThumbWidth  = 420; // nativo 363
 constexpr int kBondDisplayThumbWidth  = 380; // nativo 365, recorte alto (365x715)
 constexpr int kMapPanelThumbWidth     = 700; // nativo 798
+constexpr int kGalaxyThumbWidth       = 720; // nativo 1200
 constexpr int kMapNoTextureThumbWidth = 680; // nativo 710
 constexpr int kMapPinThumbWidth       = 480; // nativo 511
 constexpr int kGlossaryTabThumbWidth    = 320; // nativo 380, recorte alto (380x560)
@@ -303,6 +304,8 @@ void HelpPanel::buildTopics()
         { QStringLiteral("estatisticas"), tr("Estatísticas") },
         { QStringLiteral("vinculos"), tr("Vínculos") },
         { QStringLiteral("mapa-mundi"), tr("Mapa-múndi") },
+        { QStringLiteral("mapa"), tr("Mapa") },
+        { QStringLiteral("galaxy-maps"), tr("Galaxy Maps") },
         { QStringLiteral("glossario"), tr("Glossário") },
         { QStringLiteral("som-imersivo"), tr("Som Imersivo") },
         { QStringLiteral("lembretes"), tr("Lembretes") },
@@ -320,7 +323,7 @@ void HelpPanel::buildTopics()
             QStringLiteral("estatisticas"), QStringLiteral("funcao-timeline"), QStringLiteral("criar-documentos") } },
         { tr("Mundo"),     QStringLiteral(":/icons/worldmap.svg"),
           { QStringLiteral("gavetas"), QStringLiteral("construtor"), QStringLiteral("vinculos"),
-            QStringLiteral("mapa-mundi"), QStringLiteral("menu-referencia") } },
+            QStringLiteral("mapa"), QStringLiteral("galaxy-maps"), QStringLiteral("mapa-mundi"), QStringLiteral("menu-referencia") } },
         { tr("Publicar"),  QStringLiteral(":/icons/ereader.svg"),
           { QStringLiteral("exportacao"), QStringLiteral("criar-capas"), QStringLiteral("funcao-temas") } },
     };
@@ -638,6 +641,8 @@ QString HelpPanel::contentFor(const QString& id) const
     if (id == QStringLiteral("estatisticas")) return statsContent();
     if (id == QStringLiteral("vinculos")) return bondsContent();
     if (id == QStringLiteral("mapa-mundi")) return worldMapContent();
+    if (id == QStringLiteral("mapa")) return fantasyMapContent();
+    if (id == QStringLiteral("galaxy-maps")) return galaxyMapsContent();
     if (id == QStringLiteral("glossario")) return glossaryContent();
     if (id == QStringLiteral("som-imersivo")) return ambienceContent();
     if (id == QStringLiteral("lembretes")) return remindersContent();
@@ -2339,6 +2344,134 @@ QString HelpPanel::worldMapContent() const
     return html;
 }
 
+// Mapa de fantasia: espelho em help-panel/world-map/.
+QString HelpPanel::fantasyMapContent() const
+{
+    QString html;
+    const auto shot = [&](const QString& name) {
+        html += QStringLiteral(
+            "<p align='center'>"
+            "<a href='zoom:/help/mapa/%1.png' style='text-decoration:none;'>"
+            "<img src=':/help/mapa/%1.png' width='%2'>"
+            "<br><span style='font-size:11px;color:%3;'>%4</span>"
+            "</a>"
+            "</p>"
+        ).arg(name, QString::number(kGalaxyThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    };
+    html += QStringLiteral("<p>%1</p>").arg(tr("O Mapa é onde o mundo da sua história ganha forma: continentes, serras, rios, climas, reinos, castelos, estradas e o nome de cada lugar. Ele gera um mundo inteiro a partir de uma semente, e você pode deixar como veio, mexer em tudo ou desenhar do zero. Não confunda com o Mapa-múndi do Pensário, que é a Terra de verdade: este aqui é o seu mundo."));
+    html += QStringLiteral("<p>%1</p>").arg(tr("Parece muito na primeira vez, mas dá pra começar só arrastando pra mover e usando a rodinha pra chegar perto. O resto você pega quando precisar. Tudo se salva sozinho no projeto, e Ctrl+Z desfaz o que você desenha, constrói e nomeia no mapa."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Criando um mapa."),
+             tr("Clique no botão Mapa na barra lateral. No primeiro mapa do projeto, a janela Novo mapa já abre sozinha: dê um nome e escolha o tamanho, o estilo (Continente, Arquipélago, Oceânico ou Vazio, que é só mar pra desenhar à mão), o bioma dominante e quanto é oceano. A prévia acompanha, e a mesma semente sempre dá o mesmo mundo. \"Gerar territórios e locais\" já traz reinos, cidades, estradas e nomes; desmarcado, vem só o relevo e o resto é com você. A setinha ao lado do título troca de mapa, cria outro, regenera, renomeia ou exclui. Um projeto pode ter vários mapas. Se a sua história se passa no espaço, a chave Galáxia, no alto da janela, cria outro tipo de mapa (veja o tópico Galaxy Maps)."));
+    shot(QStringLiteral("new-map"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("Andando pelo mapa."),
+             tr("Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar. Arrastar com o botão direito gira e inclina, Q e E giram de 15 em 15 graus, e a tecla F enquadra o mapa inteiro de novo. Com um pincel ou outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo."));
+    shot(QStringLiteral("overview"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("O anel de ferramentas."),
+             tr("Um clique com o botão direito, sem arrastar, abre o anel: Mover, Gerar, Área, Pincel, Clima, Territórios, Construir, Nomes e Explorar. A pílula no canto de baixo mostra o que está na sua mão e abre o mesmo anel. Pelo teclado: H move, A área, B pincel, C clima, T territórios, K construir, N nomes, X explorar e R régua. Cada ferramenta leva o mapa pra vista em que ela funciona, e as opções aparecem numa doca que dá pra arrastar pelo título. Esc fecha uma coisa de cada vez e, no fim, volta pro Mover."));
+    shot(QStringLiteral("ring"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+        .arg(tr("O Astrolábio e as vistas."),
+             tr("O instrumento no canto de baixo junta o que muda o jeito de ver. No disco ficam as vistas: Completo (o terreno com tudo em cima), Atlas (cores lisas, cada reino com a sua), Terreno (só o chão, onde se desenha) e as seis de arte: Tinta, Pergaminho, Carta náutica, Topográfico, Aquarela e Planta de guerra. Clicar de novo na vista de arte abre a lista. O Completo abre quando o mapa tem um território, uma construção ou um nome. Arraste o meio pra girar, clique na agulha pro norte e use o arco da direita pra inclinar. Quem preferir botões pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita), onde também dá pra trocar o visual do terreno e esconder árvores, casas e castelos."));
+    shot(QStringLiteral("view-ink"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Dia e noite."),
+             tr("O sol anda pelo aro do Astrolábio: arraste pra mudar a hora, ou aperte P pra passar o dia sozinho. A hora muda a luz do relevo, e de noite as janelas, as tochas e os faróis acendem."));
+    shot(QStringLiteral("night"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+        .arg(tr("Desenhando o terreno."),
+             tr("Área: arraste um retângulo e nasce terra ali dentro. Pincel: Terra, Mar, Montanha, Suavizar e Rio mexem no relevo. Clima: mostra o mapa de clima por cima e dá os pincéis Úmido, Seco e Frio, que decidem o que a terra vira em cada lugar. Shift inverte o pincel (Terra vira Mar), [ e ] mudam o tamanho, e as teclas de 1 a 8 escolhem o pincel. Desenhar é sempre na vista Terreno, e a ferramenta leva você pra lá."));
+    shot(QStringLiteral("brush"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>7- %1</b><br>%2</p>")
+        .arg(tr("Territórios."),
+             tr("Com \"Gerar territórios e locais\", os reinos nascem do terreno, e você edita do seu jeito. Semear: clique no mapa pra plantar o território selecionado, e ele cresce pelo terreno, com a fronteira caindo nas serras, nos vales e na costa; arraste a semente pra mover, e Shift+clique apaga. Pintar: pinte uma área pro território, e a borda continua seguindo o relevo. Neutro: pinte terra sem dono, que vira barreira. O Alcance controla até onde cada um chega. Na lista, você troca a cor e o nome ou apaga, e \"+ Novo território\" cria outro."));
+    shot(QStringLiteral("territories"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
+        .arg(tr("Construindo."),
+             tr("Com Construir, o catálogo abre embaixo: Castelos (um estilo por povo, do humano ao élfico, anão e sombrio), Únicos, Pincéis (vila, cidade, plantação, floresta, rochedos, muralha, estrada e apagar), Mais, Lendas, Mar e Monumentos. Escolha uma cartinha e clique no mapa. Com a setinha, clique numa construção pra selecionar: a pílula em cima dela dá o nome, o giro, o tamanho e o apagar, e arrastar muda de lugar. Q e E giram, [ e ] mudam o tamanho, e Delete apaga. A estrada vai \"Pelo vale\", achando o caminho entre dois cliques, ou \"À mão\". A engrenagem tem a Escala das construções (o mesmo continente parece maior) e a opção de esconder as cidades e estradas sugeridas."));
+    shot(QStringLiteral("build"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
+        .arg(tr("Nomes."),
+             tr("O mapa sugere nomes pelo relevo: oceano, mares, serras, florestas, ilhas. Clique num nome pra trocar o texto ou o tamanho e arraste pra mover. \"Sugestão\" volta pro nome que o mapa deu, e Esconder tira ele do mapa. Clique num lugar vazio pra criar um nome seu; se arrastar enquanto clica, ele segue o traço, ótimo pra rio e serra. Dá pra escolher letras de terra ou de água e quantos nomes o mapa sugere."));
+    shot(QStringLiteral("names"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>10- %1</b><br>%2</p>")
+        .arg(tr("Explorar: os documentos no mapa."),
+             tr("Com Explorar (X), cada território vira um lugar da sua história. O cartão mostra uma árvore: o mapa, os territórios e, dentro deles, as construções que você batizou e os grupos que criar. Clicar no território leva o mapa até ele e mostra os documentos: \"Novo documento\" cria um numa gaveta ou no Criador de Mundos, e \"Adicionar existente\" traz um do projeto. Dá pra arrastar um documento pra outro grupo da árvore. \"Grupo dentro de…\" cria uma cidade ou uma família. \"Filtrar por tag\" mostra só o que tem aquela tag e onde está no mapa. Os territórios são os mesmos grupos da barra lateral."));
+    shot(QStringLiteral("explore"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>11- %1</b><br>%2</p>")
+        .arg(tr("O leitor e as conexões."),
+             tr("Clicar num documento abre o leitor ao lado do mapa, onde dá pra ler, editar, ampliar ou abrir no editor principal. O botão de conexões liga um território a outro: a ligação vira um arco no mapa, e clicar nela abre os dois lados e o texto da conexão lado a lado, bom pra guerras, tratados e rotas."));
+    shot(QStringLiteral("explore-reader"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>12- %1</b><br>%2</p>")
+        .arg(tr("Régua e imagem pro livro."),
+             tr("A régua (R) mede o caminho: clique pra marcar e dê um duplo clique pra terminar. Ela mostra a distância em léguas e quilômetros e quanto tempo leva a pé, a cavalo ou de barco. O botão de imagem, na barra da direita, exporta a vista de agora como PNG, sem os botões, em 1×, 2× ou 3×, com ou sem a Cartela. Na vista Tinta, vira o mapa das primeiras páginas do livro."));
+    shot(QStringLiteral("ruler"));
+    return html;
+}
+
+// Galaxy Maps: espelho em help-panel/galaxy-maps/.
+QString HelpPanel::galaxyMapsContent() const
+{
+    QString html;
+    const auto shot = [&](const QString& name) {
+        html += QStringLiteral(
+            "<p align='center'>"
+            "<a href='zoom:/help/galaxy-maps/%1.png' style='text-decoration:none;'>"
+            "<img src=':/help/galaxy-maps/%1.png' width='%2'>"
+            "<br><span style='font-size:11px;color:%3;'>%4</span>"
+            "</a>"
+            "</p>"
+        ).arg(name, QString::number(kGalaxyThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
+    };
+    html += QStringLiteral("<p>%1</p>").arg(tr("O Galaxy Maps é o mapa de quem escreve no espaço: uma galáxia inteira que você atravessa com a rodinha do mouse, do braço espiral até a lua de um planeta. Os planetas têm temperatura, ano e atmosfera calculados pela estrela deles, e cada lugar pode guardar os documentos da sua história."));
+    html += QStringLiteral("<p>%1</p>").arg(tr("Parece muito na primeira vez, mas dá pra começar só com duas coisas: arrastar pra mover e usar a rodinha pra chegar perto. O resto você pega quando precisar. Colocar, mover e apagar voltam com Ctrl+Z, e a galáxia se salva sozinha."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
+        .arg(tr("Criando uma galáxia."),
+             tr("Abra o Mapa na barra lateral, clique na setinha ao lado do título e em \"Novo mapa…\". Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha). Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços, tamanho, quantidade de sistemas e de mundos habitáveis. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia."));
+    shot(QStringLiteral("new-galaxy"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("Andando pelo mapa."),
+             tr("Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar: de longe cada sistema é um ponto, chegando perto ele abre em órbitas, e o planeta vira uma esfera girando; onde mora gente, as cidades acendem no lado da noite. Arrastar com o botão direito gira e inclina o mapa, e a tecla F enquadra tudo de novo. Com outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo. Passe o mouse em cima de um sistema, em Mover ou Explorar, e um card no canto mostra os planetas e os dados dele, sem precisar de zoom. Dá pra desligar nos Ajustes."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("O anel de ferramentas."),
+             tr("Um clique com o botão direito, sem arrastar, abre o anel com as ferramentas: Mover, Territórios, Construir, Nomes, Explorar, Editar e Tráfego. A pílula no canto de baixo mostra qual está na sua mão e abre o mesmo anel. Se preferir o teclado: H move, T territórios, K construir, N nomes, X explorar, R régua e C o Caderno. Esc desfaz uma coisa de cada vez: fecha o que está aberto, solta a peça da mão e, no fim, volta pro Mover."));
+    shot(QStringLiteral("ring"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+        .arg(tr("O Astrolábio e as vistas."),
+             tr("O instrumento no canto de baixo junta tudo o que muda o jeito de ver. No disco ficam as vistas: Completo, Atlas, Céu (só o céu, sem nomes nem órbitas) e as seis de arte (Tinta, Pergaminho, Carta estelar, Topográfico, Aquarela e Planta de guerra), que abrem numa lista quando você clica de novo. Arraste o meio pra girar, clique na agulha pra voltar ao norte, use o arco da direita pra inclinar e o marcador do aro pra adiantar o tempo. P pausa os planetas. Quem preferir botões a um instrumento pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita)."));
+    shot(QStringLiteral("parchment"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Escrevendo sobre um lugar."),
+             tr("Com Explorar (X), clique em qualquer lugar: o painel abre com a foto, os dados e as abas Visão geral, Documentos, Aqui dentro e Dados. A busca no alto leva o mapa até um nome. \"Escrever sobre…\" abre um documento preso àquele lugar, e \"Salvar em\" escolhe onde ele mora: numa gaveta ou no Criador de Mundos, numa pasta com o caminho do lugar. Dá pra mudar depois sem perder o texto. \"Lugar aqui\" e \"Grupo social\" criam o que não está no mapa, como uma cidade ou uma família. O documento vazio não fica pra trás."));
+    shot(QStringLiteral("explore"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+        .arg(tr("Conexões e personagens."),
+             tr("Num território ou sistema, \"+ Nova conexão…\" liga ele a outro: clique no mapa ou escolha na lista. A conexão vira um arco no mapa e abre o lado a lado: os dois lugares nas pontas e, no meio, o texto do que liga os dois, bom pra guerras, tratados e rotas. Em qualquer lugar, \"+ Personagem\" traz uma ficha pra Personagens daqui, como quem mora ali ou quem nasceu ali. Isso fica na própria ficha, em Origem e \"Está em\", e tudo aparece também no Criador de Mundos."));
+    shot(QStringLiteral("links"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>7- %1</b><br>%2</p>")
+        .arg(tr("Territórios."),
+             tr("Com Territórios (T), crie um em \"+ Novo território\", dê um nome e clique num sistema pra plantar: ele leva junto os vizinhos sem dono dentro do Alcance, e Shift+clique tira. Pintar passa o pincel e os sistemas embaixo entram no território; Neutro faz o contrário. Depois, em Explorar, clicar num território aproxima dele e desfoca o resto da galáxia; \"Sair do foco\" volta."));
+    shot(QStringLiteral("territory"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
+        .arg(tr("Construindo."),
+             tr("Com Construir (K), o catálogo abre embaixo: astros, luas e cometas, estações, mundos e megaestruturas. Pegue uma peça e aproxime até um sistema abrir: a sombra da peça mostra onde ela vai cair, e a dica diz o que falta. Clique pra pôr. Perto de um planeta, a peça fica em volta dele; longe, em órbita da estrela. Anel orbital e elevador pedem um planeta, e a Esfera de Dyson vai na estrela. Sem peça na mão, clique pra selecionar e arraste pra mudar de órbita. Q e E giram, [ e ] mudam o tamanho e Delete apaga. Estrela nova pode ser posta em qualquer lugar da galáxia."));
+    shot(QStringLiteral("build"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
+        .arg(tr("Editando os dados."),
+             tr("Editar fica no anel. Clique num planeta e a aba Editar deixa trocar o tipo, a temperatura, a água, a paisagem, a vegetação, as nuvens, a população, os anéis e as luas; num sistema, a estrela, e tudo em volta dela se recalcula. \"Gerar outro visual\" sorteia outra aparência sem mudar o resto."));
+    shot(QStringLiteral("edit"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>10- %1</b><br>%2</p>")
+        .arg(tr("O Caderno."),
+             tr("A tecla C (ou o livrinho na barra da direita) abre a galáxia como um livro de consulta: a árvore de lugares à esquerda, a página do lugar no meio e, enquanto você escreve, a ficha técnica ao lado, pra não precisar sair do texto pra lembrar quanto dura o ano daquele planeta. \"Mostrar\" filtra a árvore por habitáveis, gasosos ou pelo que já tem nome ou documento. Esc sobe um nível, e \"Voltar pro mapa\" sai."));
+    shot(QStringLiteral("caderno"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>11- %1</b><br>%2</p>")
+        .arg(tr("Os detalhes."),
+             tr("N põe e troca nomes: clique no vazio pra escrever um nome solto (o nome de um mar de estrelas, por exemplo) e Delete esconde um nome. R mede a distância em anos-luz: clique pra marcar o caminho e dê um duplo clique pra terminar. Tráfego, no anel, enche as rotas e os sistemas de naves. V troca o brilho da galáxia entre Cheio e Limpo, bom pra ler os nomes. E o quadradinho de imagem na barra da direita exporta um PNG da vista de agora, pronto pro livro."));
+    return html;
+}
+
 // Glossário (aba do Pensário): espelho em help-panel/additional-resources/glossary/.
 QString HelpPanel::glossaryContent() const
 {
@@ -2793,6 +2926,15 @@ void HelpPanel::openImageZoom(const QString& resourcePath)
     dlg->show();
     dlg->raise();
     dlg->activateWindow();
+}
+
+void HelpPanel::openTopic(const QString& id)
+{
+    selectTopic(id);
+    m_positioned = true;
+    show();
+    raise();
+    activateWindow();
 }
 
 void HelpPanel::openNear(const QRect& anchorGlobal, Qt::Edge barSide)

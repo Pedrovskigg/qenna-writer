@@ -54,6 +54,15 @@ QString artModeDesc(const QString& m)
     if (m == QLatin1String("blue")) return Astrolabe::tr("Azul e branco, papel quadriculado: mesa do general");
     return Astrolabe::tr("Nanquim e hachura, preto e branco: o miolo do livro");
 }
+QString galaxyArtDesc(const QString& m)
+{
+    if (m == QLatin1String("parch")) return Astrolabe::tr("Mapa de livro de ficção: papel velho e aguada por baixo do nanquim");
+    if (m == QLatin1String("chart")) return Astrolabe::tr("Carta de navegador: linhas de rumo, rosas dos ventos e quadrícula");
+    if (m == QLatin1String("topo")) return Astrolabe::tr("Curvas e cores pela densidade de estrelas: pra ler os braços da galáxia");
+    if (m == QLatin1String("aqua")) return Astrolabe::tr("Manchas de aquarela no papel, sem contorno: boa pra capa e ilustração");
+    if (m == QLatin1String("blue")) return Astrolabe::tr("Azul e branco, papel quadriculado: mesa do general");
+    return Astrolabe::tr("Nanquim e pontilhado, preto e branco: o miolo do livro");
+}
 }
 
 QString artModeName(const QString& m)
@@ -87,6 +96,12 @@ void Astrolabe::setState(double ang, double pitch, double hour, const QString& m
     m_ang = ang; m_pitch = pitch; m_hour = hour; m_mode = mode;
     if (isArtMode(mode) && mode != m_artMode) { m_artMode = mode; QSettings().setValue(QStringLiteral("carto/artMode"), mode); }
     update();
+}
+
+void Astrolabe::setGalaxy(bool on)
+{
+    m_galaxy = on;
+    setToolTip(tr("Arraste no meio pra girar · clique na agulha pro norte · arco da direita inclina · arraste o marcador do aro pra mudar o tempo"));
 }
 
 void Astrolabe::setLockedMode(const QString& mode)
@@ -123,9 +138,11 @@ void Astrolabe::paintEvent(QPaintEvent*)
     QPen track(panel2, 13); track.setCapStyle(Qt::FlatCap);
     p.setPen(track); p.setBrush(Qt::NoBrush);
     p.drawEllipse(C, RH, RH);
-    QPen day(QColor(242, 178, 74, 72), 13); day.setCapStyle(Qt::FlatCap);
-    p.setPen(day);
-    p.drawArc(QRectF(C.x() - RH, C.y() - RH, 2 * RH, 2 * RH), 0, 180 * 16);
+    if (!m_galaxy) {
+        QPen day(QColor(242, 178, 74, 72), 13); day.setCapStyle(Qt::FlatCap);
+        p.setPen(day);
+        p.drawArc(QRectF(C.x() - RH, C.y() - RH, 2 * RH, 2 * RH), 0, 180 * 16);
+    }
     p.setPen(QPen(line, 1.2));
     for (int k = 0; k < 8; k++) {
         const double a = (-90 - (k * 3 - 12) * 15) * DEG;
@@ -158,7 +175,7 @@ void Astrolabe::paintEvent(QPaintEvent*)
         QColor off = muted; off.setAlphaF(0.35);
         const QColor col = on ? accent : m == m_locked ? off : muted;
         p.setFont(vf); p.setPen(col);
-        p.drawText(art ? r.adjusted(0, 0, -12, 0) : r, Qt::AlignCenter, viewName(m));
+        p.drawText(art ? r.adjusted(0, 0, -12, 0) : r, Qt::AlignCenter, m_galaxy && m == QLatin1String("terrain") ? tr("Céu") : viewName(m));
         if (art) {
             // a setinha: aqui moram as seis vistas de arte
             QPainterPath caret;
@@ -188,9 +205,9 @@ void Astrolabe::paintEvent(QPaintEvent*)
     p.setBrush(ink); p.drawEllipse(C, 3.5, 3.5);
 
     // o sol (ou a lua) no aro
-    const double ha = (-90 - (m_hour - 12) * 15) * DEG;
+    const double ha = m_galaxy ? (-90 + m_hour / 24 * 360) * DEG : (-90 - (m_hour - 12) * 15) * DEG;
     const QPointF sp = pt(RH, ha);
-    const bool night = timeOfDay(m_hour).night > 0.5;
+    const bool night = !m_galaxy && timeOfDay(m_hour).night > 0.5;
     p.setPen(QPen(panel, 3));
     if (night) {
         p.setBrush(QColor(223, 230, 242)); p.drawEllipse(sp, 9, 9);
@@ -230,7 +247,7 @@ void Astrolabe::mousePressEvent(QMouseEvent* e)
 void Astrolabe::dragTo(QPointF l)
 {
     const double a = std::atan2(l.y(), l.x());
-    if (m_drag == Drag::Hour) emit hourDragged(12 - (a / DEG + 90) / 15, false);
+    if (m_drag == Drag::Hour) emit hourDragged(m_galaxy ? std::fmod(a / DEG + 90 + 360, 360.0) / 15 : 12 - (a / DEG + 90) / 15, false);
     else if (m_drag == Drag::Tilt) {
         const double d = std::max(-60.0, std::min(60.0, a / DEG));
         emit pitchDragged(90 - (d + 60) / 120 * 70, true);
@@ -325,11 +342,11 @@ void ArtPicker::paintEvent(QPaintEvent*)
         QFont tf = font(); tf.setPixelSize(12); tf.setWeight(QFont::DemiBold);
         p.setFont(tf); p.setPen(on ? accent : ink);
         const QRectF tr(s.right() + 10, r.top() + 7, r.right() - s.right() - 16, 16);
-        p.drawText(tr, Qt::AlignLeft | Qt::AlignVCenter, artModeName(ms[i]));
+        p.drawText(tr, Qt::AlignLeft | Qt::AlignVCenter, m_galaxy && ms[i] == QLatin1String("chart") ? ArtPicker::tr("Carta estelar") : artModeName(ms[i]));
         QFont df = font(); df.setPixelSize(11); df.setWeight(QFont::Normal);
         p.setFont(df); p.setPen(muted);
         const QRectF dr(tr.left(), tr.bottom() + 2, tr.width(), kRowH - 26);
-        p.drawText(dr, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, artModeDesc(ms[i]));
+        p.drawText(dr, Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap, m_galaxy ? galaxyArtDesc(ms[i]) : artModeDesc(ms[i]));
     }
 }
 

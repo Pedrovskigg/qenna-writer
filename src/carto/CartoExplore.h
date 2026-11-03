@@ -63,6 +63,7 @@ struct ProjectLink {
     std::function<void(const QString& placeId, const QString& nodeId)> openPlace;   // Criador de Mundos
     std::function<void(const QString& systemId, const QString& nodeId)> openSystem; // Criador de Mundos, um sistema
     std::function<void()> save;                                        // grava o projeto
+    std::function<void(const QString& topic)> openHelp;                // abre a Ajuda num tópico
     bool ok() const { return model && places; }
 };
 

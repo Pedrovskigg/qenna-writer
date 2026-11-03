@@ -17,6 +17,7 @@ struct MapMeta {
     QString id;
     QString name;
     QString file;   // relativo à raiz do projeto, ex. "mapas/<id>.qmap"
+    QString kind;   // vazio = Terra; "galaxy" = Galaxy Maps (arquivo .qgal)
 };
 
 // o que a janela lembra de cada mapa além do mundo
@@ -43,7 +44,8 @@ public:
     QString activeId() const { return m_activeId; }
     void setActiveId(const QString& id) { m_activeId = id; saveManifest(); }
     int indexOf(const QString& id) const;
-    MapMeta createMap(const QString& name);      // registra (o arquivo nasce no primeiro save)
+    MapMeta createMap(const QString& name, const QString& kind = QString());      // registra (o arquivo nasce no primeiro save)
+    QString absolutePath(const QString& id) const { return pathOf(id); }
     void renameMap(const QString& id, const QString& name);
     void removeMap(const QString& id);
 
