@@ -3,6 +3,7 @@
 #include "GalaxyPanel.h"
 #include "GalaxyBlackHole.h"
 #include "GalaxyCaderno.h"
+#include "GalaxyHab.h"
 
 #include "../ProjectModel.h"
 #include "../TerritorioStore.h"
@@ -141,6 +142,11 @@ void Panel::showPeek(const QString& k)
     QWidget* facts = factsGrid(quickFacts(k, o));
     facts->setParent(card);
     lay->addWidget(facts);
+    {
+        auto* bar = new HabBar(card);
+        bar->setCounts(m_canvas->sysHab(s).counts);
+        lay->addWidget(bar);
+    }
 
     const std::vector<Body*> planets = planetsOf(s);
     if (m_peekBallsRev != m_doc.rev) { m_peekBalls.clear(); m_peekBallsRev = m_doc.rev; }
@@ -162,12 +168,13 @@ void Panel::showPeek(const QString& k)
         name->setText(name->fontMetrics().elidedText(m_doc.labelOf(pk), Qt::ElideRight, 112));
         h->addWidget(name);
         auto* kind = textOf(QString(), QStringLiteral("cartoNote"), row);
-        kind->setText(kind->fontMetrics().elidedText(QCoreApplication::translate("galaxy::Core", typeLabel(p.type)), Qt::ElideRight, 92));
+        kind->setText(kind->fontMetrics().elidedText(QCoreApplication::translate("galaxy::Core", typeLabel(p.type)), Qt::ElideRight, 66));
         h->addWidget(kind, 1);
         // Quem tem gente mostra a gente; o resto, a temperatura, em verde na zona habitável.
         auto* val = textOf(p.people != 0 ? tr("%1 hab.").arg(fmtCount(p.people)) : celsius(p.temp), QStringLiteral("cartoNote"), row);
         if (p.people != 0 || p.hz == Hz::Dentro) val->setStyleSheet(QStringLiteral("color: #6fd69a;"));
         h->addWidget(val);
+        { const int cn = habInfo(p, &s, nullptr).cls; if (cn) h->addWidget(habPill(cn, row)); }
         lay->addWidget(row);
     }
     if (planets.size() > kPeekMaxPlanets) lay->addWidget(textOf(tr("E mais %1").arg(planets.size() - kPeekMaxPlanets), QStringLiteral("cartoNote"), card));
@@ -194,7 +201,8 @@ void Panel::showPeek(const QString& k)
 void Panel::placePeek()
 {
     if (!m_peek || !m_peek->isVisible()) return;
-    m_peek->move(m_cbar->x() - 8 - m_peek->width(), 14);
+    const int right = m_habCard && m_habCard->isVisible() ? m_habCard->x() : m_cbar->x();
+    m_peek->move(right - 8 - m_peek->width(), 14);
 }
 // Quantas fichas nasceram ou estão aqui, contando os lugares de dentro.
 int Panel::peopleCount(const QString& k)

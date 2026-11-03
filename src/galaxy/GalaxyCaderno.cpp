@@ -1,4 +1,5 @@
 #include "GalaxyCaderno.h"
+#include "GalaxyHab.h"
 #include "GalaxyPanel.h"
 #include "GalaxyWidgets.h"
 
@@ -173,9 +174,20 @@ bool Caderno::pMatch(const System& s, const Body& p) const
         for (const auto& m : p.moons) if (m_doc->touched(keyM(s, p, *m))) return true;
         return false;
     }
-    if (catOf(p) == m_filter) return true;
-    if (m_filter == QLatin1String("vida")) for (const auto& m : p.moons) if (isLiving(m->type)) return true;
-    return false;
+    const auto cl = [&](const Body& b, const Body* h) { return habInfo(b, &s, h).cls; };
+    if (m_filter == QLatin1String("vida")) {
+        const int c0 = cl(p, nullptr);
+        if (c0 && c0 <= 2) return true;
+        for (const auto& m : p.moons) { const int c1 = cl(*m, &p); if (c1 && c1 <= 2) return true; }
+        return false;
+    }
+    if (m_filter.size() == 2 && m_filter[0] == QLatin1Char('c')) {
+        const int n = m_filter.mid(1).toInt();
+        if (cl(p, nullptr) == n) return true;
+        for (const auto& m : p.moons) if (cl(*m, &p) == n) return true;
+        return false;
+    }
+    return catOf(p) == m_filter;
 }
 bool Caderno::sysVisible(const System& s, const QString& q) const
 {
@@ -298,13 +310,15 @@ void Caderno::render()
         if (s->gone) continue;
         if (m_doc->touched(keyS(*s))) c[QStringLiteral("meus")]++;
         for (Body* p : planetsOf(*s)) {
+            const auto see = [&](int n) { if (n) c[QStringLiteral("c%1").arg(n)]++; if (n && n <= 2) c[QStringLiteral("vida")]++; };
             c[QStringLiteral("tudo")]++;
-            c[catOf(*p)]++;
+            { const QString cat = catOf(*p); if (cat != QLatin1String("vida")) c[cat]++; }
+            see(habInfo(*p, s.get(), nullptr).cls);
             if (m_doc->touched(keyP(*s, *p))) c[QStringLiteral("meus")]++;
-            for (const auto& m : p->moons) { if (isLiving(m->type)) c[QStringLiteral("vida")]++; if (m_doc->touched(keyM(*s, *p, *m))) c[QStringLiteral("meus")]++; }
+            for (const auto& m : p->moons) { see(habInfo(*m, s.get(), p).cls); if (m_doc->touched(keyM(*s, *p, *m))) c[QStringLiteral("meus")]++; }
         }
     }
-    const QList<QPair<QString, QString>> cats = { { "tudo", tr("Tudo") }, { "vida", tr("Habitáveis") }, { "rocha", tr("Rochosos") }, { "gas", tr("Gasosos") }, { "gelo", tr("Gelados") }, { "meus", tr("Com nome ou docs") } };
+    const QList<QPair<QString, QString>> cats = { { "tudo", tr("Tudo") }, { "vida", tr("Habitáveis (classe I ou II)") }, { "c1", tr("Classe %1").arg(habLabel(1)) }, { "c2", tr("Classe %1").arg(habLabel(2)) }, { "c3", tr("Classe %1").arg(habLabel(3)) }, { "c4", tr("Classe %1").arg(habLabel(4)) }, { "c5", tr("Classe %1").arg(habLabel(5)) }, { "c6", tr("Classe %1").arg(habLabel(6)) }, { "rocha", tr("Rochosos") }, { "gas", tr("Gasosos") }, { "gelo", tr("Gelados") }, { "meus", tr("Com nome ou docs") } };
     QString curLabel;
     for (const auto& q : cats) if (q.first == m_filter) curLabel = q.second;
     auto* pick = new QPushButton(QStringLiteral("%1 %2  %3  %4").arg(tr("Mostrar"), curLabel, nf(c.value(m_filter)), m_pick ? QStringLiteral("▴") : QStringLiteral("▾")), headW);
@@ -758,6 +772,7 @@ void Caderno::renderPage(QVBoxLayout* pg)
     QWidget* h = hero(k, o);
     h->setParent(parent);
     pg->addWidget(h);
+    if (o) if (QWidget* hs = m_panel->habSection(k, o)) { hs->setParent(parent); pg->addWidget(hs); }
     const double dpr = devicePixelRatioF();
     // Minimapa do sistema.
     System* sys = nullptr;
@@ -961,7 +976,7 @@ void Caderno::renderFicha(QVBoxLayout* box, const QString& k)
             add(tr("Raio"), QStringLiteral("%1 km").arg(nf(b.radiusKm, 0)));
             add(tr("Gravidade"), QStringLiteral("%1 g").arg(nf(b.gravity, b.gravity < 0.1 ? 3 : 2)));
             if (b.temp != 0) add(tr("Temperatura média"), celsius(b.temp));
-            if (!b.atm.empty()) add(tr("Atmosfera"), coreT(b.atm.c_str()));
+            if (!b.atm.empty() || b.air > 0) add(tr("Atmosfera"), atmText(b));
             sec(tr("Corpo"), r);
             r.clear();
             add(tr("Distância do planeta"), QStringLiteral("%1 km").arg(nf(std::round(b.dist / 100) * 100)));
@@ -975,7 +990,7 @@ void Caderno::renderFicha(QVBoxLayout* box, const QString& k)
             add(tr("Gravidade"), QStringLiteral("%1 g").arg(nf(b.gravity, 2)));
             add(tr("Densidade"), QStringLiteral("%1 g/cm³").arg(nf(b.density, 1)));
             add(tr("Temperatura média"), celsius(b.temp));
-            add(tr("Atmosfera"), coreT(b.atm.c_str()));
+            add(tr("Atmosfera"), atmText(b));
             if (b.look.vegKeyV != Veg::None) add(tr("Vegetação"), coreT(vegLabel(b.look.vegKeyV)));
             sec(tr("Corpo"), r);
             r.clear();
@@ -997,7 +1012,7 @@ void Caderno::renderFicha(QVBoxLayout* box, const QString& k)
         art->addStretch();
         box->addLayout(art);
         std::vector<std::pair<QString, QString>> r;
-        r.push_back({ tr("Classe"), !st.spec.empty() ? QString::fromStdString(st.spec) : QStringLiteral("—") });
+        r.push_back({ tr("Espectro"), !st.spec.empty() ? QString::fromStdString(st.spec) : QStringLiteral("—") });
         if (st.temp != 0) r.push_back({ tr("Temperatura"), QStringLiteral("%1 K").arg(nf(std::round(st.temp))) });
         r.push_back({ tr("Massa"), QStringLiteral("%1 M☉").arg(sig(st.mass)) });
         sec(tr("Estrela"), r);

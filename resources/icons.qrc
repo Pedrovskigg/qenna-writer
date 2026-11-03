@@ -175,7 +175,8 @@
         <file alias="galaxy-maps/new-galaxy.png">../src/assets/help/galaxy-maps/new-galaxy.png</file>
         <file alias="galaxy-maps/links.png">../src/assets/help/galaxy-maps/links.png</file>
         <file alias="galaxy-maps/ring.png">../src/assets/help/galaxy-maps/ring.png</file>
-        <file alias="galaxy-maps/parchment.png">../src/assets/help/galaxy-maps/parchment.png</file>
+        <file alias="galaxy-maps/views.png">../src/assets/help/galaxy-maps/views.png</file>
+        <file alias="galaxy-maps/classes.png">../src/assets/help/galaxy-maps/classes.png</file>
         <file alias="galaxy-maps/explore.png">../src/assets/help/galaxy-maps/explore.png</file>
         <file alias="galaxy-maps/territory.png">../src/assets/help/galaxy-maps/territory.png</file>
         <file alias="galaxy-maps/build.png">../src/assets/help/galaxy-maps/build.png</file>

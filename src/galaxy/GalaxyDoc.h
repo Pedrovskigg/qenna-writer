@@ -69,6 +69,7 @@ struct GalOpts {
     double life = 0.3;
     int count = 0;
     QString preset;
+    std::vector<double> mix;   // quanto de cada classe, de 1 a 6; vazio = o que o sorteio der
 };
 
 constexpr double SPEED_PLANET = TAU / 240, SPEED_MOON = TAU / 90, SPEED_SPIN = TAU / 60, SPEED_BINARY = TAU / 120, SPEED_PULSAR = TAU / 24, SPEED_BELT = TAU / 900, SPEED_COMET = TAU / 700, SPEED_SSTAR = TAU / 300;

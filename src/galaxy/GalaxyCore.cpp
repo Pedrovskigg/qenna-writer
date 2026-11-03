@@ -984,6 +984,11 @@ int addSystems(Galaxy& G, int n)
         G.systems.push_back(std::move(sys));
         added++;
     }
+    if (G.mix.size() == 7 && added) {
+        std::vector<System*> fresh;
+        for (size_t i = G.systems.size() - size_t(added); i < G.systems.size(); i++) fresh.push_back(G.systems[i].get());
+        applyMix(fresh, G.mix, (G.seed ^ 0xc1a55u) + uint32_t(G.systems.size()));
+    }
     return added;
 }
 
@@ -1055,6 +1060,12 @@ std::unique_ptr<Galaxy> makeGalaxy(const GalaxyOpts& o)
     }
     G.cdfStars = makeCdf(wStars); G.cdfYoung = makeCdf(wYoung); G.cdfSys = makeCdf(wSys);
     sampleSystems(G, r);
+    if (o.mix.size() == 7) {
+        G.mix = o.mix;
+        std::vector<System*> list;
+        for (const auto& q : G.systems) list.push_back(q.get());
+        applyMix(list, G.mix, seed ^ 0xc1a55u);
+    }
     Rng rd(uint32_t(uint64_t(seed) * 3u + 1u));
     G.detail = detailStars(G, rd, 26000);
     return Gp;
@@ -1475,6 +1486,274 @@ void orbitPos(const Body& b, double t, double& rr, double& ang)
     rr = b.a * (1 - e * std::cos(E));
     const double nu = 2 * std::atan2(std::sqrt(1 + e) * std::sin(E / 2), std::sqrt(1 - e) * std::cos(E / 2));
     ang = nu + b.w;
+}
+
+// ── classes de planeta ──
+// A régua sai dos dados que o mundo já tem; o autor pode trocar a classe e o ar à mão.
+static bool noGround(Type t) { return t == Type::Gigante || t == Type::Quente || t == Type::GeloG || t == Type::Subnetuno || t == Type::Lava || t == Type::Vulcanica; }
+static bool hostileStar(StarKind k) { return k == StarKind::Neutrons || k == StarKind::BuracoNegro || k == StarKind::O || k == StarKind::B; }
+static bool has(const std::string& s, const char* q) { return s.find(q) != std::string::npos; }
+AirKind airOf(const Body& b)
+{
+    if (b.air > 0) return AirKind::Breathable;
+    const std::string t = b.atm.empty() ? std::string("Nenhuma") : b.atm;
+    AirKind k = has(t, "xigênio") || has(t, "apor d’água") ? AirKind::Breathable
+              : has(t, "denso") || has(t, "ácida") ? AirKind::Poison
+              : has(t, "enhuma") ? AirKind::None
+              : has(t, "fina") || has(t, "Fina") ? AirKind::Thin : AirKind::None;
+    if (b.air < 0 && k == AirKind::Breathable) k = AirKind::Thin;
+    return k;
+}
+HabInfo habInfo(const Body& b, const System* sys, const Body* host)
+{
+    HabInfo out;
+    if (isArtificial(b.type)) { out.why.push_back({ HabWhy::Built, 0 }); return out; }
+    int n;
+    if (noGround(b.type)) {
+        n = 6;
+        const HabWhy::Code c = b.type == Type::Gigante ? HabWhy::NoGroundGas : b.type == Type::Quente ? HabWhy::NoGroundHot : b.type == Type::GeloG ? HabWhy::NoGroundIce
+                             : b.type == Type::Subnetuno ? HabWhy::NoGroundThick : b.type == Type::Lava ? HabWhy::NoGroundLava : HabWhy::NoGroundVolcano;
+        out.why.push_back({ c, 0 });
+    } else {
+        const double T = b.temp != 0 ? b.temp : host && host->teq != 0 ? host->teq : 230, g = b.gravity, C_ = std::round(T - 273.15);
+        const AirKind air = airOf(b);
+        const auto heavy = [&]() { if (g > 1.4) out.why.push_back({ HabWhy::Heavy, g }); else if (g < 0.6) out.why.push_back({ HabWhy::Light, g }); };
+        if (air == AirKind::Breathable) {
+            out.why.push_back({ HabWhy::Breathable, 0 });
+            const bool easy = T >= 268 && T <= 308, ok = T >= 245 && T <= 325, gEasy = g >= 0.6 && g <= 1.4, gOk = g >= 0.35 && g <= 2, hard = T >= 200 && T <= 360 && g <= 3;
+            n = easy && gEasy ? 1 : ok && gOk ? 2 : hard ? 3 : 4;
+            if (!easy) out.why.push_back({ T > 298 ? HabWhy::TooHot : HabWhy::TooCold, C_ });
+            if (!gEasy) heavy();
+        } else if (air == AirKind::Poison) { n = 5; out.why.push_back({ HabWhy::Poison, C_ }); }
+        else {
+            const bool thin = air == AirKind::Thin;
+            out.why.push_back({ thin ? HabWhy::ThinAir : HabWhy::NoAir, 0 });
+            n = thin && T >= 215 && T <= 345 && g >= 0.25 && g <= 2 ? 3 : T >= 90 && T <= 420 && g <= 3 ? 4 : 5;
+            if (T < 215 || T > 345) out.why.push_back({ T > 345 ? HabWhy::TooHot : HabWhy::TooCold, C_ });
+            if (g > 2) heavy();
+        }
+        if (n == 1 && b.locked) { n = 2; out.why.push_back({ HabWhy::Locked, 0 }); }
+        if (n < 5 && sys && !sys->stars.empty() && hostileStar(sys->stars[0].kind)) { n++; out.why.push_back({ HabWhy::Radiation, 0 }); }
+    }
+    out.autoCls = n;
+    out.cls = b.habSet ? b.habSet : n;
+    return out;
+}
+
+// ── divisão das classes na geração ──
+// Os mundos nascem normalmente e os que mais combinam com o pedido são adaptados; estrelas e órbitas não mudam.
+namespace {
+struct MixWorld { Body* b; System* s; Body* h; int cls; };
+std::vector<MixWorld> worldsOf(const std::vector<System*>& systems)
+{
+    std::vector<MixWorld> out;
+    for (System* s : systems) for (const auto& p : s->bodies) {
+        if (p->body != BodyKind::Planeta) continue;
+        out.push_back({ p.get(), s, nullptr, 0 });
+        for (const auto& m : p->moons) out.push_back({ m.get(), s, p.get(), 0 });
+    }
+    return out;
+}
+bool worldAlive(const MixWorld& w)
+{
+    const auto inBodies = [&](const Body* q) { for (const auto& x : w.s->bodies) if (x.get() == q) return true; return false; };
+    if (!w.h) return inBodies(w.b);
+    if (!inBodies(w.h)) return false;
+    for (const auto& m : w.h->moons) if (m.get() == w.b) return true;
+    return false;
+}
+double moonRho(Type t) { return t == Type::Gelada ? 1.9 : t == Type::Vulcanica ? 3.5 : t == Type::Temperada ? 4.8 : 3.0; }
+void moonSize(Body& m, double radKm)
+{
+    const double rho = moonRho(m.type) * 1000;
+    m.radiusKm = radKm;
+    m.massKg = rho * (4.0 / 3) * PI_D * std::pow(radKm * 1000, 3);
+    m.gravity = (G_SI * m.massKg) / std::pow(radKm * 1000, 2) / 9.81;
+}
+void setGravityIn(Body& b, double lo, double hi, Rng& r)
+{
+    if (b.gravity >= lo && b.gravity <= hi) return;
+    // Lua tem limite de tamanho: a gravidade fica onde esse tamanho deixa.
+    if (b.body == BodyKind::Lua) {
+        const double kmPerG = 9.81 / ((4.0 / 3) * PI_D * G_SI * moonRho(b.type) * 1000) / 1000;
+        const double a = std::max(lo, 0.02) * kmPerG, z = std::min(hi * kmPerG, 6800.0);
+        moonSize(b, a >= z ? a : uni(r, a, z));
+        return;
+    }
+    const double g = uni(r, std::max(lo, 0.05), hi);
+    b.mass = std::pow(g, 1 / 0.46); b.radius = std::pow(b.mass, 0.27);
+    bodyDerived(b);
+}
+// Primeiro os mundos sem chão, porque trocar um gigante por um rochoso muda quantas luas existem.
+void balanceNoGround(const std::vector<System*>& systems, double share, Rng& r)
+{
+    std::vector<std::unique_ptr<Body>> dead;   // o que saiu fica guardado até o fim, pra nenhum endereço voltar a valer
+    const auto swapPlanet = [&](MixWorld& w, Cls cls, int& total, int& cur) {
+        const Body* old = w.b;
+        total -= 1 + int(old->moons.size());
+        cur -= noGround(old->type) ? 1 : 0;
+        for (const auto& m : old->moons) cur -= noGround(m->type) ? 1 : 0;
+        auto np = makePlanet(*w.s, r, old->a, false, false, false, &cls);
+        np->idx = old->idx; np->uid = old->uid;
+        if (cls == Cls::Rocha && noGround(np->type)) setType(*w.s, *np, Type::Arido);
+        total += 1 + int(np->moons.size());
+        cur += noGround(np->type) ? 1 : 0;
+        for (const auto& m : np->moons) cur += noGround(m->type) ? 1 : 0;
+        for (auto& x : w.s->bodies) if (x.get() == old) { dead.push_back(std::move(x)); x = std::move(np); break; }
+    };
+    struct Ranked { MixWorld w; double k; };
+    for (int pass = 0; pass < 8; pass++) {
+        std::vector<MixWorld> all = worldsOf(systems);
+        int total = int(all.size()), cur = 0;
+        for (const MixWorld& w : all) if (noGround(w.b->type)) cur++;
+        const auto want = [&]() { return int(std::floor(share * total + 0.5)); };
+        if (cur == want()) return;
+        std::vector<Ranked> pool;
+        if (cur > want()) {
+            for (const MixWorld& w : all) if (noGround(w.b->type)) pool.push_back({ w, (w.h ? 0 : w.b->type == Type::Lava ? 1 : 2) + r() * 0.5 });
+            std::stable_sort(pool.begin(), pool.end(), [](const Ranked& x, const Ranked& y) { return x.k < y.k; });
+            for (Ranked& q : pool) {
+                if (cur <= want()) break;
+                if (!worldAlive(q.w)) continue;
+                if (q.w.h) { setType(*q.w.s, *q.w.b, Type::Rochosa); cur--; }
+                else if (q.w.b->type == Type::Lava) { setType(*q.w.s, *q.w.b, Type::Arido); cur--; }
+                else swapPlanet(q.w, Cls::Rocha, total, cur);
+            }
+        } else {
+            const auto rank = [](const MixWorld& w) {
+                if (w.h) return w.h->cls == Cls::Gas || w.h->cls == Cls::Gelo ? 1 : 3;
+                if (w.b->teq > 600) return 0;
+                return w.b->a > w.s->frostEff ? 2 : 4;
+            };
+            for (const MixWorld& w : all) if (!noGround(w.b->type)) pool.push_back({ w, rank(w) + r() * 0.5 });
+            std::stable_sort(pool.begin(), pool.end(), [](const Ranked& x, const Ranked& y) { return x.k < y.k; });
+            for (Ranked& q : pool) {
+                if (cur >= want()) break;
+                if (!worldAlive(q.w)) continue;
+                if (q.w.h) { setType(*q.w.s, *q.w.b, Type::Vulcanica); cur++; }
+                else if (q.w.b->teq > 600) { setType(*q.w.s, *q.w.b, Type::Lava); cur++; }
+                else { const Cls c = q.w.b->a > q.w.s->frostEff * 4 && r() < 0.5 ? Cls::Gelo : Cls::Gas; swapPlanet(q.w, c, total, cur); }
+            }
+        }
+    }
+}
+// Quão longe um mundo está de uma classe: quem está mais perto é adaptado primeiro.
+double mixFit(const MixWorld& w, int c, Rng& r)
+{
+    const Body& b = *w.b;
+    const double T = b.temp != 0 ? b.temp : w.h && w.h->teq != 0 ? w.h->teq : 230, base = w.h ? w.h->teq : b.teq, g = b.gravity != 0 ? b.gravity : 0.01;
+    double k = r() * 0.15;
+    if (c <= 3) {
+        k += std::fabs(base - (c == 3 ? 250 : 255)) / 120 + std::fabs(std::log(g)) * 0.3;
+        if (w.h) k += w.h->cls == Cls::Gas || w.h->cls == Cls::Gelo ? 0.4 : w.h->radius * RE_KM < 7000 ? 2 : 1;
+        else if (b.cls == Cls::Anao) k += 0.8;
+        if (c == 1 && b.locked) k += 0.5;
+    } else if (c == 4) k += T < 90 ? (90 - T) / 200 : T > 420 ? (T - 420) / 200 : 0;
+    else k += T < 90 || T > 420 ? 0 : 0.2 + std::fabs(base - 330) / 200;
+    return k;
+}
+// Adapta um mundo pra uma classe e devolve a classe que ele ficou de fato.
+int shapeWorld(const MixWorld& w, int c, Rng& r)
+{
+    Body& b = *w.b;
+    System& sys = *w.s;
+    const bool moon = b.body == BodyKind::Lua;
+    const double T0 = b.temp != 0 ? b.temp : w.h && w.h->teq != 0 ? w.h->teq : 230;
+    const int base = hostileStar(sys.stars[0].kind) && c > 1 ? c - 1 : c;
+    const auto into = [&](double lo, double hi) { return T0 >= lo && T0 <= hi ? T0 : uni(r, lo, hi); };
+    const auto living = [&](double T) {
+        if (moon) setType(sys, b, Type::Temperada);
+        else setType(sys, b, r() < 0.35 ? Type::Oceano : Type::Temperado);
+        tuneTemperature(b, T);
+    };
+    const auto dry = [&](double T, const char* atm, bool cold) {
+        if (moon) {
+            const Type want = T < 160 ? Type::Gelada : Type::Rochosa;
+            setType(sys, b, atm ? Type::Rochosa : b.type == Type::Gelada || b.type == Type::Rochosa ? b.type : want);
+            b.atm = atm ? atm : "";
+            b.temp = T;
+        } else {
+            const bool keepDwarf = b.cls == Cls::Anao && !atm;
+            if (!keepDwarf) setType(sys, b, atm && std::string(atm) == typeAtm(Type::Toxico) ? Type::Toxico : cold ? Type::Gelado : atm ? Type::Deserto : Type::Arido);
+            b.atm = atm ? atm : keepDwarf || !cold ? "Nenhuma" : typeAtm(Type::Gelado);
+            b.temp = T;
+        }
+    };
+    if (base == 1) {
+        if (!moon && b.locked) { b.locked = false; b.dayH = logU(r, 9, 140); }
+        const double T = into(272, 304);
+        living(T);
+        setGravityIn(b, 0.62, 1.38, r);
+    } else if (base == 2) {
+        if (!moon && b.locked) { const double T = into(272, 304); living(T); setGravityIn(b, 0.62, 1.38, r); }
+        else {
+            const double g = b.gravity;
+            const bool off = (g >= 0.36 && g < 0.59) || (g > 1.41 && g <= 1.98);
+            const double T = off ? into(246, 324) : T0 >= 288 ? uni(r, 310, 324) : uni(r, 246, 266);
+            living(T);
+            setGravityIn(b, 0.38, 1.95, r);
+        }
+    } else if (base == 3) {
+        const double T = into(218, 342);
+        dry(T, T < 250 ? typeAtm(Type::Gelado) : "Fina, CO₂", T < 250);
+        setGravityIn(b, 0.27, 1.95, r);
+    } else if (base == 4) {
+        const double T = into(95, 415);
+        dry(T, nullptr, false);
+        setGravityIn(b, 0.01, 2.9, r);
+    } else if (T0 < 120) { const double T = uni(r, 40, 88); dry(T, nullptr, false); }
+    else if (T0 > 420) dry(T0, nullptr, false);
+    else { const double T = moon ? uni(r, 480, 740) : std::max(T0, 700.0); dry(T, typeAtm(Type::Toxico), false); }
+    b.texRev++;
+    return habInfo(b, &sys, w.h).cls;
+}
+} // namespace
+void applyMix(const std::vector<System*>& systems, const std::vector<double>& mix, uint32_t seed)
+{
+    if (mix.size() != 7) return;
+    double sum = 0;
+    for (int i = 1; i <= 6; i++) sum += std::max(0.0, mix[size_t(i)]);
+    if (!(sum > 0)) return;
+    Rng r(seed);
+    double share[7] { 0, 0, 0, 0, 0, 0, 0 };
+    for (int i = 1; i <= 6; i++) share[i] = std::max(0.0, mix[size_t(i)]) / sum;
+    balanceNoGround(systems, share[6], r);
+    std::vector<MixWorld> all = worldsOf(systems);
+    if (all.empty()) return;
+    int cur[7] { 0, 0, 0, 0, 0, 0, 0 };
+    for (MixWorld& w : all) { w.cls = habInfo(*w.b, w.s, w.h).cls; cur[w.cls]++; }
+    // A conta exata de cada classe: o que sobrar do arredondamento vai pra quem chegou mais perto.
+    const int rest = int(all.size()) - cur[6];
+    double sum5 = 0;
+    for (int c = 1; c <= 5; c++) sum5 += share[c];
+    if (sum5 == 0) sum5 = 1;
+    int want[7] { 0, 0, 0, 0, 0, 0, cur[6] };
+    std::vector<std::pair<double, int>> frac;
+    int left = rest;
+    for (int c = 1; c <= 5; c++) { const double x = (rest * share[c]) / sum5; want[c] = int(std::floor(x)); left -= want[c]; frac.push_back({ x - want[c], c }); }
+    std::stable_sort(frac.begin(), frac.end(), [](const std::pair<double, int>& x, const std::pair<double, int>& y) { return x.first > y.first; });
+    for (int i = 0; i < left; i++) want[frac[size_t(i % 5)].second]++;
+    const auto shapeTo = [&](MixWorld& w, int c) { const int got = shapeWorld(w, c, r); cur[w.cls]--; cur[got]++; w.cls = got; return got == c; };
+    for (int c = 1; c <= 5; c++) {
+        if (cur[c] >= want[c]) continue;
+        struct Ranked { MixWorld* w; double k; };
+        std::vector<Ranked> pool;
+        for (MixWorld& w : all) if (w.cls != c && w.cls != 6 && cur[w.cls] > want[w.cls] && !(c == 1 && hostileStar(w.s->stars[0].kind))) pool.push_back({ &w, mixFit(w, c, r) });
+        std::stable_sort(pool.begin(), pool.end(), [](const Ranked& x, const Ranked& y) { return x.k < y.k; });
+        for (const Ranked& q : pool) {
+            if (cur[c] >= want[c]) break;
+            if (cur[q.w->cls] > want[q.w->cls]) shapeTo(*q.w, c);
+        }
+    }
+    // Pedido que a régua não alcança (Éden em volta de estrela hostil): o pedido do autor manda.
+    for (int c = 1; c <= 5; c++) {
+        if (cur[c] >= want[c]) continue;
+        for (MixWorld& w : all) {
+            if (cur[c] >= want[c]) break;
+            if (w.cls == c || w.cls == 6 || cur[w.cls] <= want[w.cls]) continue;
+            if (!shapeTo(w, c)) { cur[w.cls]--; cur[c]++; w.cls = c; w.b->habSet = c; }
+        }
+    }
 }
 
 } // namespace galaxy

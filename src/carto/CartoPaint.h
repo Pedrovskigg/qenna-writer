@@ -32,6 +32,13 @@ inline const QStringList& artModes()
     return m;
 }
 inline bool isArtMode(const QString& m) { return artModes().contains(m); }
+// No Galaxy Maps, as nascidas do espaço vêm antes das de papel.
+inline const QStringList& spaceArtModes()
+{
+    static const QStringList l { QStringLiteral("holo"), QStringLiteral("routes"), QStringLiteral("domains"), QStringLiteral("gravity"), QStringLiteral("harmony"), QStringLiteral("thermal"), QStringLiteral("xray"), QStringLiteral("plate") };
+    return l;
+}
+inline bool isGalaxyArt(const QString& m) { return isArtMode(m) || spaceArtModes().contains(m); }
 inline Style styleOfMode(const QString& m)
 {
     if (m == QLatin1String("atlas")) return Style::Atlas;

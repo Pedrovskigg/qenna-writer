@@ -31,13 +31,21 @@ QString viewName(const QString& m)
 {
     if (m == QLatin1String("full")) return Astrolabe::tr("Completo");
     if (m == QLatin1String("atlas")) return Astrolabe::tr("Atlas");
-    if (isArtMode(m)) return artModeShort(m);
+    if (isGalaxyArt(m)) return artModeShort(m);
     return Astrolabe::tr("Terreno");
 }
 // amostra de cada vista de arte: o papel, a tinta (o risco na diagonal)
 struct Swatch { QRgb paper, ink; };
 Swatch swatchOf(const QString& m)
 {
+    if (m == QLatin1String("holo")) return { 0xff02091a, 0xff6ce2f8 };
+    if (m == QLatin1String("routes")) return { 0xfff5f2e9, 0xffdc241f };
+    if (m == QLatin1String("domains")) return { 0xff1d2534, 0xffc98bd9 };
+    if (m == QLatin1String("gravity")) return { 0xff05071a, 0xff80aaff };
+    if (m == QLatin1String("harmony")) return { 0xff0a163a, 0xffe9c984 };
+    if (m == QLatin1String("thermal")) return { 0xff280b54, 0xfff57d15 };
+    if (m == QLatin1String("xray")) return { 0xff01030c, 0xff82c4fa };
+    if (m == QLatin1String("plate")) return { 0xffe4e5dd, 0xff121418 };
     if (m == QLatin1String("parch")) return { 0xffead6ae, 0xff4a301e };
     if (m == QLatin1String("chart")) return { 0xffeee2c4, 0xffa43428 };
     if (m == QLatin1String("topo")) return { 0xffcfdca0, 0xff6e4e34 };
@@ -56,6 +64,14 @@ QString artModeDesc(const QString& m)
 }
 QString galaxyArtDesc(const QString& m)
 {
+    if (m == QLatin1String("holo")) return Astrolabe::tr("A mesa de comando: luz projetada, anéis de distância e altura de verdade quando inclina");
+    if (m == QLatin1String("routes")) return Astrolabe::tr("O metrô da galáxia: linhas e estações, pra ver como se vai de um lugar a outro");
+    if (m == QLatin1String("domains")) return Astrolabe::tr("O tabuleiro político: cada sistema é uma casa, e cada império pinta as dele");
+    if (m == QLatin1String("gravity")) return Astrolabe::tr("A malha do espaço afundando em cada massa: inclina pra ver os poços");
+    if (m == QLatin1String("harmony")) return Astrolabe::tr("Atlas celeste antigo: azul e ouro, borda em graus e constelações");
+    if (m == QLatin1String("thermal")) return Astrolabe::tr("Telescópio de calor: poeira acesa, e cada mundo na cor da temperatura dele");
+    if (m == QLatin1String("xray")) return Astrolabe::tr("Só o que é violento brilha: buracos negros, pulsares e estrelas gigantes");
+    if (m == QLatin1String("plate")) return Astrolabe::tr("O negativo de observatório: estrela preta no vidro e anotação a tinta");
     if (m == QLatin1String("parch")) return Astrolabe::tr("Mapa de livro de ficção: papel velho e aguada por baixo do nanquim");
     if (m == QLatin1String("chart")) return Astrolabe::tr("Carta de navegador: linhas de rumo, rosas dos ventos e quadrícula");
     if (m == QLatin1String("topo")) return Astrolabe::tr("Curvas e cores pela densidade de estrelas: pra ler os braços da galáxia");
@@ -67,6 +83,14 @@ QString galaxyArtDesc(const QString& m)
 
 QString artModeName(const QString& m)
 {
+    if (m == QLatin1String("holo")) return Astrolabe::tr("Holograma");
+    if (m == QLatin1String("routes")) return Astrolabe::tr("Rotas");
+    if (m == QLatin1String("domains")) return Astrolabe::tr("Domínios");
+    if (m == QLatin1String("gravity")) return Astrolabe::tr("Gravidade");
+    if (m == QLatin1String("harmony")) return Astrolabe::tr("Harmonia");
+    if (m == QLatin1String("thermal")) return Astrolabe::tr("Infravermelho");
+    if (m == QLatin1String("xray")) return Astrolabe::tr("Raio-X");
+    if (m == QLatin1String("plate")) return Astrolabe::tr("Chapa de vidro");
     if (m == QLatin1String("parch")) return Astrolabe::tr("Pergaminho");
     if (m == QLatin1String("chart")) return Astrolabe::tr("Carta náutica");
     if (m == QLatin1String("topo")) return Astrolabe::tr("Topográfico");
@@ -78,6 +102,8 @@ QString artModeShort(const QString& m)
 {
     if (m == QLatin1String("chart")) return Astrolabe::tr("Carta");
     if (m == QLatin1String("blue")) return Astrolabe::tr("Planta");
+    if (m == QLatin1String("thermal")) return Astrolabe::tr("Infra");
+    if (m == QLatin1String("plate")) return Astrolabe::tr("Chapa");
     return artModeName(m);
 }
 
@@ -94,13 +120,14 @@ Astrolabe::Astrolabe(QWidget* parent) : QWidget(parent)
 void Astrolabe::setState(double ang, double pitch, double hour, const QString& mode)
 {
     m_ang = ang; m_pitch = pitch; m_hour = hour; m_mode = mode;
-    if (isArtMode(mode) && mode != m_artMode) { m_artMode = mode; QSettings().setValue(QStringLiteral("carto/artMode"), mode); }
+    if ((m_galaxy ? isGalaxyArt(mode) : isArtMode(mode)) && mode != m_artMode) { m_artMode = mode; QSettings().setValue(m_galaxy ? QStringLiteral("galaxy/artMode") : QStringLiteral("carto/artMode"), mode); }
     update();
 }
 
 void Astrolabe::setGalaxy(bool on)
 {
     m_galaxy = on;
+    if (on) { const QString am = QSettings().value(QStringLiteral("galaxy/artMode"), QStringLiteral("holo")).toString(); m_artMode = isGalaxyArt(am) ? am : QStringLiteral("holo"); }
     setToolTip(tr("Arraste no meio pra girar · clique na agulha pro norte · arco da direita inclina · arraste o marcador do aro pra mudar o tempo"));
 }
 
@@ -168,7 +195,7 @@ void Astrolabe::paintEvent(QPaintEvent*)
     const ViewSpot spots[4] = { { QStringLiteral("full"), 0, -50, 31 }, { QStringLiteral("atlas"), 50, 0, 31 }, { m_artMode, 0, 50, 45 }, { QStringLiteral("terrain"), -50, 0, 31 } };
     for (const ViewSpot& v : spots) {
         const QString& m = v.mode;
-        const bool on = m == m_mode, art = isArtMode(m);
+        const bool on = m == m_mode, art = m_galaxy ? isGalaxyArt(m) : isArtMode(m);
         const QRectF r(C.x() + v.dx - v.hw, C.y() + v.dy - 10, 2 * v.hw, 20);
         if (on) { p.setPen(Qt::NoPen); p.setBrush(accentSoft); p.drawRoundedRect(r, 10, 10); }
         QFont vf = font(); vf.setPixelSize(11); vf.setBold(on);
@@ -231,7 +258,7 @@ void Astrolabe::mousePressEvent(QMouseEvent* e)
     const double d = std::hypot(l.x(), l.y()), a = std::atan2(l.y(), l.x());
     if (d > 118) { e->ignore(); return; }
     const QString v = d <= 76 ? viewAt(l) : QString();
-    if (!v.isEmpty() && isArtMode(v) && v == m_mode) {   // já está na vista de arte: abre a lista das seis
+    if (!v.isEmpty() && (m_galaxy ? isGalaxyArt(v) : isArtMode(v)) && v == m_mode) {   // já está na vista de arte: abre a lista das seis
         emit artPickRequested(mapToGlobal((QPointF(kMargin + kSize / 2, kMargin + kSize / 2 - 2 + 50 - 12)).toPoint()));
         return;
     }
@@ -279,7 +306,7 @@ void Astrolabe::mouseReleaseEvent(QMouseEvent*)
 
 // ── a lista das vistas de arte ──
 namespace {
-constexpr int kPickW = 300, kRowH = 58, kPickPad = 6;
+constexpr int kPickW = 300, kRowH = 58, kPickPad = 6, kHeadH = 24;
 }
 
 ArtPicker::ArtPicker(QWidget* parent) : QWidget(parent, Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint)
@@ -288,6 +315,21 @@ ArtPicker::ArtPicker(QWidget* parent) : QWidget(parent, Qt::Popup | Qt::Frameles
     setMouseTracking(true);
     setFixedSize(kPickW, kPickPad * 2 + kRowH * static_cast<int>(artModes().size()));
 }
+
+// No Galaxy Maps a lista vira duas colunas: as nascidas do espaço e as de papel.
+void ArtPicker::setGalaxy(bool on)
+{
+    m_galaxy = on;
+    if (on) setFixedSize(kPickW * 2 + kPickPad, kPickPad * 2 + kHeadH + kRowH * static_cast<int>(spaceArtModes().size()));
+}
+QRectF ArtPicker::rowRect(int i) const
+{
+    if (!m_galaxy) return QRectF(kPickPad, kPickPad + i * kRowH, width() - 2 * kPickPad, kRowH);
+    const int nSpace = static_cast<int>(spaceArtModes().size()), col = i < nSpace ? 0 : 1, row = i < nSpace ? i : i - nSpace;
+    const double w = (width() - 3.0 * kPickPad) / 2;
+    return QRectF(kPickPad + col * (w + kPickPad), kPickPad + kHeadH + row * kRowH, w, kRowH);
+}
+QStringList ArtPicker::modes() const { return m_galaxy ? spaceArtModes() + artModes() : artModes(); }
 
 void ArtPicker::openAt(QPoint a, const QString& current, bool below)
 {
@@ -306,8 +348,9 @@ void ArtPicker::openAt(QPoint a, const QString& current, bool below)
 
 int ArtPicker::rowAt(QPointF p) const
 {
-    const int i = static_cast<int>(std::floor((p.y() - kPickPad) / kRowH));
-    return p.x() >= 0 && p.x() <= width() && i >= 0 && i < static_cast<int>(artModes().size()) ? i : -1;
+    const QStringList ms = modes();
+    for (int i = 0; i < ms.size(); i++) if (rowRect(i).contains(p)) return i;
+    return -1;
 }
 
 void ArtPicker::paintEvent(QPaintEvent*)
@@ -318,9 +361,16 @@ void ArtPicker::paintEvent(QPaintEvent*)
                  muted = Theme::toColor(Theme::textMuted()), accent = Theme::toColor(Theme::accentDefault());
     p.setPen(QPen(line, 1)); p.setBrush(panel);
     p.drawRoundedRect(QRectF(0.5, 0.5, width() - 1, height() - 1), 12, 12);
-    const QStringList& ms = artModes();
+    const QStringList ms = modes();
+    if (m_galaxy) {
+        QFont hf = font(); hf.setPixelSize(10); hf.setWeight(QFont::DemiBold); hf.setLetterSpacing(QFont::AbsoluteSpacing, 1.2);
+        p.setFont(hf); p.setPen(muted);
+        const double w = (width() - 3.0 * kPickPad) / 2;
+        p.drawText(QRectF(kPickPad + 8, kPickPad, w - 8, kHeadH), Qt::AlignLeft | Qt::AlignVCenter, ArtPicker::tr("Nascidas do espaço").toUpper());
+        p.drawText(QRectF(kPickPad * 2 + w + 8, kPickPad, w - 8, kHeadH), Qt::AlignLeft | Qt::AlignVCenter, ArtPicker::tr("Papel, como no Mapa").toUpper());
+    }
     for (int i = 0; i < ms.size(); i++) {
-        const QRectF r(kPickPad, kPickPad + i * kRowH, width() - 2 * kPickPad, kRowH);
+        const QRectF r = rowRect(i);
         const bool on = ms[i] == m_current;
         if (on || i == m_hover) {
             QColor bg = on ? accent : mix(panel, ink, 0.07);
@@ -360,7 +410,7 @@ void ArtPicker::mousePressEvent(QMouseEvent* e)
 {
     const int i = rowAt(e->position());
     hide();
-    if (i >= 0 && rect().contains(e->position().toPoint())) emit picked(artModes()[i]);
+    if (i >= 0 && rect().contains(e->position().toPoint())) emit picked(modes()[i]);
 }
 
 void ArtPicker::keyPressEvent(QKeyEvent* e)

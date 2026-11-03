@@ -212,6 +212,8 @@ void Panel::buildUi()
     m_rulerBtn->setCheckable(true);
     connect(m_rulerBtn, &QToolButton::clicked, this, [this]() { setTool(m_tool == QLatin1String("ruler") ? QStringLiteral("pan") : QStringLiteral("ruler")); });
     cb->addWidget(m_rulerBtn);
+    buildHab();
+    cb->addWidget(m_habBtn);
     m_cadernoBtn = makeBtn(m_cbar, QStringLiteral("galBook"), tr("Caderno (C)"));
     connect(m_cadernoBtn, &QToolButton::clicked, this, [this]() { openCaderno(m_canvas->sel); });
     cb->addWidget(m_cadernoBtn);
@@ -560,6 +562,10 @@ void Panel::applyTheme()
     setStyleSheet(Theme::qss(QStringLiteral(
         "QWidget#galaxyPanel { background: %8; }"
         "QFrame#gmPeek { background: %1; border: 1px solid %2; border-radius: 12px; }"
+        "QPushButton#gmHabRow { background: transparent; border: none; border-radius: 8px; text-align: left; }"
+        "QPushButton#gmHabRow:hover { background: rgba(255,255,255,0.05); }"
+        "QPushButton#gmHabRow:checked { background: %9; }"
+        "QPushButton#gmHabBest { background: transparent; border: none; text-align: left; }"
         "QLabel#gmPeekName { color: %3; font-size: 15px; font-weight: 600; background: transparent; }"
         "QLabel#gmPeekMine { color: %5; font-size: 12px; font-weight: 600; background: transparent; }"
         "QLabel#gmTip { background: %1; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 12px; padding: 5px 9px; }"
@@ -648,7 +654,7 @@ bool Panel::openFile(const QString& path, const QString& name)
     m_name = name;
     afterOpen();
     const QJsonObject v = root[QStringLiteral("ui")].toObject();
-    if (v.contains(QStringLiteral("view"))) setViewMode(v[QStringLiteral("view")].toString());
+    if (v.contains(QStringLiteral("view"))) { const QString vw = v[QStringLiteral("view")].toString(); setViewMode(vw == QLatin1String("full") || vw == QLatin1String("atlas") || vw == QLatin1String("terrain") || skinOf(vw) ? vw : QStringLiteral("full")); }
     return true;
 }
 void Panel::startNew(const GalOpts& opts, const QString& path, const QString& name)
@@ -788,6 +794,7 @@ void Panel::positionOverlays()
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
     if (m_caderno && m_caderno->isVisible()) { m_caderno->setGeometry(rect()); m_caderno->raise(); }
     for (QWidget* w : { static_cast<QWidget*>(m_cbar), static_cast<QWidget*>(m_settings), static_cast<QWidget*>(m_export) }) w->raise();
+    syncHabCard();
     m_tip->raise();
     m_toast->raise();
 }
@@ -938,6 +945,7 @@ void Panel::syncUi()
     for (auto it = m_expBtns.begin(); it != m_expBtns.end(); ++it) it.value()->setChecked(it.key().toInt() == int(m_expScale));
     m_expSize->setText(tr("%1 × %2 px").arg(nf(width() * m_expScale), nf(height() * m_expScale)));
     m_setBtn->setChecked(m_settings->isVisible());
+    syncHabCard();
     m_exportBtn->setChecked(m_export->isVisible());
     m_rulerBtn->setChecked(m_tool == QLatin1String("ruler"));
     m_panBtn->setChecked(m_tool == QLatin1String("pan"));
@@ -1072,6 +1080,7 @@ void Panel::openCaderno(const QString& key)
     m_caderno->show();
     m_caderno->raise();
     m_canvas->tool = Tool::Caderno;
+    syncHabCard();
 }
 void Panel::closeCaderno()
 {
@@ -1110,6 +1119,7 @@ bool Panel::handleKey(QKeyEvent* e)
     case Qt::Key_X: toggle(QStringLiteral("explore")); break;
     case Qt::Key_C: openCaderno(m_canvas->sel); break;
     case Qt::Key_R: toggle(QStringLiteral("ruler")); break;
+    case Qt::Key_L: setHabOn(!m_canvas->hab); break;
     case Qt::Key_S: setSpritesOn(!m_canvas->sprites); break;
     case Qt::Key_G: emit regenerateRequested(); break;
     case Qt::Key_F: m_canvas->fitMap(); break;
@@ -1139,6 +1149,8 @@ bool Panel::escapeOne()
     if (m_tool == QLatin1String("build") && m_canvas->removable(m_canvas->sel)) { m_canvas->select(m_doc.parentOf(m_canvas->sel), false); return true; }
     if ((m_tool == QLatin1String("explore") || m_tool == QLatin1String("edit")) && m_canvas->sel != QLatin1String("GAL")) { const QString p = m_doc.parentOf(m_canvas->sel); if (!p.isEmpty()) { m_canvas->select(p, true); return true; } }
     if (m_tool != QLatin1String("pan")) { setTool(QStringLiteral("pan")); return true; }
+    if (m_canvas->habOnly) { m_canvas->setHabOnly(0); renderHabCard(); return true; }
+    if (m_canvas->hab) { setHabOn(false); return true; }
     return false;
 }
 void Panel::deleteSelected()

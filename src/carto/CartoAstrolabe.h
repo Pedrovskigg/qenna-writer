@@ -54,7 +54,7 @@ class ArtPicker : public QWidget {
 public:
     explicit ArtPicker(QWidget* parent);
     void openAt(QPoint globalAnchor, const QString& current, bool below = false);   // a lista sobe (ou desce) a partir do ponto
-    void setGalaxy(bool on) { m_galaxy = on; }   // os textos falam de estrelas, não de terra
+    void setGalaxy(bool on);   // os textos falam de estrelas, não de terra, e a lista ganha as vistas do espaço
 
 signals:
     void picked(const QString& mode);
@@ -68,6 +68,8 @@ protected:
 
 private:
     int rowAt(QPointF p) const;
+    QRectF rowRect(int i) const;
+    QStringList modes() const;
     QString m_current;
     int m_hover = -1;
     bool m_galaxy = false;

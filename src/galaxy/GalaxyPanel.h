@@ -165,6 +165,16 @@ private:
     void startRename(QWidget* holder, const QString& k);
     void addGroup(QVBoxLayout* into, const QString& k, const QString& kind);
 
+    // classes de planeta (GalaxyPanelHab.cpp)
+    void buildHab();
+    void setHabOn(bool on);
+    void syncHabCard();
+    void renderHabCard();
+    QWidget* habSection(const QString& k, const Ref& o);
+    QWidget* habEditSection(Body* b, System* s, Body* host);
+    QToolButton* m_habBtn = nullptr;
+    QFrame* m_habCard = nullptr;
+
     // prévia rápida (GalaxyPanelPeek.cpp)
     void buildPeek();
     void peekChanged(const QString& key);

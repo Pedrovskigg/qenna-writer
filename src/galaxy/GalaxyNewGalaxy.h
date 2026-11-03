@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QWidget>
 
+#include <array>
 #include <functional>
 
 class QComboBox;
@@ -49,6 +50,23 @@ private:
     void change();
     void leavePreset();
     void preview();
+    void previewMix();
+    void setHand(bool on);
+    void syncMix();
+    void setMixShare(int n, double value);
+    void mixMoved();
+    QWidget* m_handBox = nullptr;
+    class MixBar* m_mixBar = nullptr;
+    QLabel* m_mixText = nullptr;
+    class HabBar* m_natBar = nullptr;
+    QToolButton* m_handCheck = nullptr;
+    QLineEdit* m_mixIn[7] {};
+    QLabel* m_mixCount[7] {};
+    QTimer m_mixTimer;
+    int m_mixTok = 0, m_worlds = 0;
+    std::array<int, 7> m_natural {};
+    bool m_hasNatural = false, m_hand = false;
+    std::vector<int> m_touched;
     QFrame* m_card = nullptr;
     QLabel* m_title = nullptr;
     QWidget* m_previewBox = nullptr;
@@ -76,6 +94,7 @@ private:
     int m_tok = 0;
     bool m_loading = false;
     friend class NewGalaxyPreview;
+    friend class MixBar;
 };
 
 } // namespace galaxy

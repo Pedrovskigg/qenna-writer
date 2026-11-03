@@ -310,6 +310,7 @@ void Panel::renderEdit(QVBoxLayout* body, const QString& k, const Ref& o)
             edited(p);
         }));
         if (p->look.hasRock) row(look, tr("Paisagem"), sel(stylePairs(rockStylesOf(p->type)), QString::fromLatin1(lookStyleKey(p->look.style)), [this, s, p](const QString& q) { LookStyle st; if (lookStyleFromKey(q.toStdString(), st)) { rockRestyle(*s, *p, st); edited(p); } }));
+        if (!art) { QWidget* he = habEditSection(p, s, nullptr); he->setParent(look->parentWidget()->parentWidget()); look->parentWidget()->parentWidget()->layout()->addWidget(he); }
         auto* clima = sect(tr("Clima"));
         range(clima, tr("Temperatura média"), 0, 1000, tempToS(p->temp), [](double v) { return celsius(sToTemp(v)); }, [this, p](double v) { tuneTemperature(*p, sToTemp(v)); edited(p); });
         if (isLiving(p->type)) livingRows(clima, p);
@@ -360,6 +361,7 @@ void Panel::renderEdit(QVBoxLayout* body, const QString& k, const Ref& o)
         btn(look, tr("Gerar outro visual"), [this, s, m]() { m_canvas->invalidateBody(*m); regenLook(*s, *m, randSeed()); edited(m); });
         row(look, tr("Tipo"), sel(typePairs(MOON_TYPES), QString::fromLatin1(typeKey(m->type)), [this, s, m](const QString& v) { Type t; if (typeFromKey(v.toStdString(), t)) { m_canvas->invalidateBody(*m); setType(*s, *m, t); edited(m); } }));
         if (m->look.hasRock) row(look, tr("Paisagem"), sel(stylePairs(rockStylesOf(m->type)), QString::fromLatin1(lookStyleKey(m->look.style)), [this, s, m](const QString& q) { LookStyle st; if (lookStyleFromKey(q.toStdString(), st)) { rockRestyle(*s, *m, st); edited(m); } }));
+        { QWidget* he = habEditSection(m, s, o.body); he->setParent(look->parentWidget()->parentWidget()); look->parentWidget()->parentWidget()->layout()->addWidget(he); }
         if (m->type == Type::Temperada) { auto* clima = sect(tr("Clima")); livingRows(clima, m); }
         popSect(m);
         removeBtn(tr("Remover esta lua"));

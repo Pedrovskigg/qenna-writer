@@ -1,4 +1,5 @@
 #include "GalaxyNewGalaxy.h"
+#include "GalaxyHab.h"
 #include "GalaxyPanel.h"
 #include "GalaxyPresets.h"
 
@@ -10,7 +11,10 @@
 #include <QHBoxLayout>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QGridLayout>
 #include <QLineEdit>
+#include <QLocale>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPointer>
@@ -57,12 +61,154 @@ QString sizeLabel(Size s)
     default: return Panel::tr("Imensa");
     }
 }
-QString lifeLabel(double v) { return v <= 0 ? Panel::tr("Realista") : v < 0.35 ? Panel::tr("Alguns a mais") : v < 0.7 ? Panel::tr("Muitos") : Panel::tr("Cheio de vida"); }
+QString lifeLabel(double v) { return v <= 0 ? Panel::tr("Cruel") : v < 0.35 ? Panel::tr("Dura") : v < 0.7 ? Panel::tr("Generosa") : Panel::tr("Cheia de vida"); }
+double mixRound(double v) { return std::floor(v * 10 + 0.5) / 10; }
+QString mixText(double v) { return QLocale().toString(mixRound(v), 'g', 4); }
+// Inteiros que somam 100, respeitando a proporção e sem zerar classe que existe.
+std::vector<double> mixFromCounts(const std::array<int, 7>& c)
+{
+    int sum = 0;
+    for (int n = 1; n <= 6; n++) sum += c[size_t(n)];
+    if (!sum) return { 0, 2, 3, 2, 43, 31, 19 };
+    std::vector<double> m(7, 0);
+    std::vector<std::pair<double, int>> rest;
+    int left = 100;
+    for (int n = 1; n <= 6; n++) {
+        const double x = (double(c[size_t(n)]) / sum) * 100;
+        m[size_t(n)] = c[size_t(n)] ? std::max(1.0, std::floor(x)) : 0;
+        left -= int(m[size_t(n)]);
+        rest.push_back({ x - std::floor(x), n });
+    }
+    std::stable_sort(rest.begin(), rest.end(), [](const std::pair<double, int>& a, const std::pair<double, int>& b) { return a.first > b.first; });
+    for (int i = 0; left > 0; i = (i + 1) % 6) if (c[size_t(rest[size_t(i)].second)]) { m[size_t(rest[size_t(i)].second)]++; left--; }
+    for (int n = 6; left < 0; n = n == 1 ? 6 : n - 1) if (m[size_t(n)] > 1) { m[size_t(n)]--; left++; }
+    return m;
+}
 inline bool spiralStyle(Style s) { return s == Style::Espiral || s == Style::Barrada; }
 }
 
+// A barra de arrastar: cada limite divide duas classes. Passar por cima de outro limite vai empurrando,
+// e limites empilhados saem pela direção do arrasto, pra classe zerada poder voltar.
+class MixBar : public QWidget {
+public:
+    explicit MixBar(NewGalaxy* o, QWidget* parent) : QWidget(parent), m_o(o)
+    {
+        setFixedHeight(36);
+        setMouseTracking(true);
+        setFocusPolicy(Qt::StrongFocus);
+    }
+    std::array<double, 5> cuts() const { std::array<double, 5> c {}; double a = 0; for (int n = 1; n <= 5; n++) { a += m_o->m_d.mix[size_t(n)]; c[size_t(n - 1)] = mixRound(a); } return c; }
+    void setCuts(const std::array<double, 5>& c)
+    {
+        double last = 0;
+        for (int n = 1; n <= 5; n++) { m_o->m_d.mix[size_t(n)] = mixRound(c[size_t(n - 1)] - last); last = c[size_t(n - 1)]; }
+        m_o->m_d.mix[6] = mixRound(100 - last);
+    }
+protected:
+    double inset() const { return 8; }
+    double xOf(double pct) const { return inset() + (width() - 2 * inset()) * pct / 100; }
+    double pctOf(double x) const { return clamp((x - inset()) / (width() - 2 * inset()) * 100, 0, 100); }
+    void moveCut(int i, double v)
+    {
+        auto c = cuts();
+        c[size_t(i)] = v;
+        for (int j = i + 1; j < 5; j++) c[size_t(j)] = std::max(c[size_t(j)], v);
+        for (int j = i - 1; j >= 0; j--) c[size_t(j)] = std::min(c[size_t(j)], v);
+        setCuts(c);
+        m_o->mixMoved();
+    }
+    void paintEvent(QPaintEvent*) override
+    {
+        if (m_o->m_d.mix.size() != 7) return;
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        const QRectF tr(inset(), 3, width() - 2 * inset(), height() - 6);
+        QPainterPath clip;
+        clip.addRoundedRect(tr, 7, 7);
+        p.save();
+        p.setClipPath(clip);
+        QFont f(QStringLiteral("IBM Plex Mono")); f.setPixelSize(11); f.setWeight(QFont::Bold);
+        p.setFont(f);
+        double left = 0;
+        for (int n = 1; n <= 6; n++) {
+            const double w = m_o->m_d.mix[size_t(n)];
+            if (w > 0) {
+                const QRectF seg(xOf(left), tr.top(), xOf(left + w) - xOf(left), tr.height());
+                p.fillRect(seg, habColor(n));
+                if (w >= 5) { p.setPen(QColor(0x0a, 0x0d, 0x14)); p.drawText(seg, Qt::AlignCenter, QString::fromLatin1(habRoman(n))); }
+            }
+            left += w;
+        }
+        p.restore();
+        const auto c = cuts();
+        for (int i = 0; i < 5; i++) {
+            const double x = xOf(c[size_t(i)]);
+            const QRectF h(x - 2, 0, 4, height());
+            p.setPen(QPen(QColor(5, 8, 14, 190), 1));
+            p.setBrush(i == m_active || i == m_hover ? Theme::toColor(Theme::accentDefault()) : QColor(0xf4, 0xf7, 0xfc));
+            p.drawRoundedRect(h, 2, 2);
+        }
+    }
+    int cutAt(double x) const
+    {
+        const auto c = cuts();
+        int best = -1;
+        double bd = 9;
+        for (int i = 0; i < 5; i++) { const double d = std::fabs(xOf(c[size_t(i)]) - x); if (d < bd) { bd = d; best = i; } }
+        return best;
+    }
+    void mousePressEvent(QMouseEvent* e) override
+    {
+        if (e->button() != Qt::LeftButton || m_o->m_d.mix.size() != 7) return;
+        setFocus();
+        const int i = cutAt(e->position().x());
+        if (i < 0) return;
+        const auto c = cuts();
+        m_stack.clear();
+        for (int j = 0; j < 5; j++) if (std::fabs(c[size_t(j)] - c[size_t(i)]) < 0.05) m_stack.push_back(j);
+        m_active = m_stack.size() == 1 ? i : -1;
+        m_dragging = true;
+        m_startX = e->position().x();
+        update();
+    }
+    void mouseMoveEvent(QMouseEvent* e) override
+    {
+        const double x = e->position().x();
+        if (!m_dragging) {
+            const int h = m_o->m_d.mix.size() == 7 ? cutAt(x) : -1;
+            if (h != m_hover) { m_hover = h; setCursor(h >= 0 ? Qt::SizeHorCursor : Qt::ArrowCursor); update(); }
+            return;
+        }
+        // Limites empilhados: a direção do arrasto escolhe qual deles sai.
+        if (m_active < 0) {
+            if (std::fabs(x - m_startX) < 2) return;
+            m_active = x > m_startX ? m_stack.back() : m_stack.front();
+        }
+        moveCut(m_active, std::floor(pctOf(x) + 0.5));
+    }
+    void mouseReleaseEvent(QMouseEvent*) override { m_dragging = false; m_active = -1; update(); }
+    void leaveEvent(QEvent*) override { if (m_hover >= 0) { m_hover = -1; update(); } }
+    void keyPressEvent(QKeyEvent* e) override
+    {
+        const int step = e->key() == Qt::Key_Right ? 1 : e->key() == Qt::Key_Left ? -1 : 0;
+        if (e->key() == Qt::Key_Tab) { m_key = (m_key + 1) % 5; m_hover = m_key; update(); return; }
+        if (!step || m_o->m_d.mix.size() != 7) { QWidget::keyPressEvent(e); return; }
+        m_hover = m_key;
+        moveCut(m_key, clamp(std::floor(cuts()[size_t(m_key)] + 0.5) + step, 0, 100));
+    }
+    bool focusNextPrevChild(bool) override { return false; }
+private:
+    NewGalaxy* m_o;
+    std::vector<int> m_stack;
+    int m_active = -1, m_hover = -1, m_key = 0;
+    bool m_dragging = false;
+    double m_startX = 0;
+};
+
 NewGalaxy::NewGalaxy(QWidget* parent) : QWidget(parent)
 {
+    m_mixTimer.setSingleShot(true);
+    connect(&m_mixTimer, &QTimer::timeout, this, &NewGalaxy::previewMix);
     setFocusPolicy(Qt::StrongFocus);
     setAttribute(Qt::WA_StyledBackground, false);
     m_timer.setSingleShot(true);
@@ -82,13 +228,13 @@ void NewGalaxy::build()
     left->setSpacing(6);
     m_previewBox = new NewGalaxyPreview(this);
     m_previewBox->setParent(m_card);
-    m_previewBox->setMinimumSize(360, 360);
+    m_previewBox->setMinimumSize(300, 300);
     left->addWidget(m_previewBox, 1);
     m_info = new QLabel(m_card);
     m_info->setObjectName(QStringLiteral("cartoNote"));
     m_info->setAlignment(Qt::AlignCenter);
     left->addWidget(m_info);
-    root->addLayout(left, 3);
+    root->addLayout(left, 1);
     auto* scroll = new QScrollArea(m_card);
     scroll->setFrameShape(QFrame::NoFrame);
     scroll->setWidgetResizable(true);
@@ -97,7 +243,7 @@ void NewGalaxy::build()
     scroll->viewport()->setAutoFillBackground(false);
     auto* form = new QWidget(scroll);
     auto* f = new QVBoxLayout(form);
-    f->setContentsMargins(0, 0, 8, 0);
+    f->setContentsMargins(0, 0, 14, 0);
     f->setSpacing(10);
     auto* head = new QHBoxLayout();
     m_title = new QLabel(form);
@@ -221,7 +367,7 @@ void NewGalaxy::build()
     cnh->addWidget(m_count);
     f->addLayout(cnh);
     auto* lh = new QHBoxLayout();
-    lh->addWidget(cap(tr("MUNDOS HABITÁVEIS"), form));
+    lh->addWidget(cap(tr("MISTURA DE MUNDOS"), form));
     lh->addStretch();
     m_lifeV = new QLabel(form);
     m_lifeV->setObjectName(QStringLiteral("cartoValue"));
@@ -229,8 +375,73 @@ void NewGalaxy::build()
     f->addLayout(lh);
     m_life = new QSlider(Qt::Horizontal, form);
     m_life->setRange(0, 100);
-    connect(m_life, &QSlider::valueChanged, this, [this](int v) { if (m_loading) return; m_d.life = v / 100.0; m_lifeV->setText(lifeLabel(m_d.life)); });
+    connect(m_life, &QSlider::valueChanged, this, [this](int v) { if (m_loading) return; m_d.life = v / 100.0; m_lifeV->setText(lifeLabel(m_d.life)); m_d.mix.clear(); m_mixTimer.start(120); });
     f->addWidget(m_life);
+    m_handBox = new QWidget(form);
+    {
+        auto* hb = new QVBoxLayout(m_handBox);
+        hb->setContentsMargins(0, 0, 0, 0);
+        hb->setSpacing(8);
+        m_mixBar = new MixBar(this, m_handBox);
+        hb->addWidget(m_mixBar);
+        auto* grid = new QGridLayout();
+        grid->setHorizontalSpacing(12);
+        grid->setVerticalSpacing(6);
+        for (int n = 1; n <= 6; n++) {
+            auto* cell = new QWidget(m_handBox);
+            cell->setToolTip(habDesc(n));
+            auto* h = new QHBoxLayout(cell);
+            h->setContentsMargins(0, 0, 0, 0);
+            h->setSpacing(6);
+            h->addWidget(habPill(n, cell));
+            auto* col = new QVBoxLayout();
+            col->setSpacing(0);
+            auto* nm = new QLabel(habName(n), cell);
+            nm->setObjectName(QStringLiteral("cartoValue"));
+            col->addWidget(nm);
+            m_mixCount[n] = new QLabel(cell);
+            m_mixCount[n]->setObjectName(QStringLiteral("cartoNote"));
+            m_mixCount[n]->setStyleSheet(QStringLiteral("font-size: 10px;"));
+            col->addWidget(m_mixCount[n]);
+            h->addLayout(col, 1);
+            m_mixIn[n] = new QLineEdit(cell);
+            m_mixIn[n]->setObjectName(QStringLiteral("cartoField"));
+            m_mixIn[n]->setFixedWidth(46);
+            m_mixIn[n]->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+            connect(m_mixIn[n], &QLineEdit::editingFinished, this, [this, n]() {
+                if (m_loading || m_d.mix.size() != 7) return;
+                QString t = m_mixIn[n]->text();
+                t.replace(QLatin1Char(','), QLatin1Char('.'));
+                bool ok = false;
+                const double v = t.toDouble(&ok);
+                if (ok && std::fabs(mixRound(v) - m_d.mix[size_t(n)]) > 0.01) { setMixShare(n, v); mixMoved(); }
+                else syncMix();
+            });
+            h->addWidget(m_mixIn[n]);
+            auto* pc = new QLabel(QStringLiteral("%"), cell);
+            pc->setObjectName(QStringLiteral("cartoNote"));
+            h->addWidget(pc);
+            grid->addWidget(cell, (n - 1) / 2, (n - 1) % 2);
+        }
+        hb->addLayout(grid);
+    }
+    m_handBox->hide();
+    f->addWidget(m_handBox);
+    m_natBar = new HabBar(form);
+    f->addWidget(m_natBar);
+    m_mixText = new QLabel(form);
+    m_mixText->setObjectName(QStringLiteral("cartoNote"));
+    m_mixText->setWordWrap(true);
+    f->addWidget(m_mixText);
+    m_handCheck = new QToolButton(form);
+    m_handCheck->setObjectName(QStringLiteral("cartoCheck"));
+    m_handCheck->setCheckable(true);
+    m_handCheck->setText(tr("Definir o espaço de cada classe"));
+    m_handCheck->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_handCheck->setCursor(Qt::PointingHandCursor);
+    m_handCheck->setFocusPolicy(Qt::NoFocus);
+    connect(m_handCheck, &QToolButton::clicked, this, [this](bool on) { setHand(on); });
+    f->addWidget(m_handCheck);
     f->addWidget(cap(tr("SEMENTE"), form));
     auto* sr = new QHBoxLayout();
     sr->setSpacing(6);
@@ -254,6 +465,7 @@ void NewGalaxy::build()
     m_go->setCursor(Qt::PointingHandCursor);
     connect(m_go, &QPushButton::clicked, this, [this]() {
         GalOpts o = m_d;
+        if (!m_hand) o.mix.clear();
         const QString name = m_nameText.trimmed();
         const Mode md = m_mode;
         hide();
@@ -263,7 +475,7 @@ void NewGalaxy::build()
     });
     f->addWidget(m_go);
     scroll->setWidget(form);
-    root->addWidget(scroll, 2);
+    root->addWidget(scroll, 1);
 }
 void NewGalaxy::applyTheme()
 {
@@ -277,8 +489,10 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     const bool regen = mode == Mode::Regen;
     d.preset = regen && current ? current->preset : QString();
     d.count = regen ? currentCount : sizeSystems(d.size);
-    if (!regen) d.seed = QRandomGenerator::global()->bounded(1000000000);
+    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); }
     m_d = d;
+    m_hand = d.mix.size() == 7;
+    m_hasNatural = false; m_worlds = 0; m_touched.clear();
     m_nameText.clear();
     m_title->setText(regen ? tr("Regenerar galáxia") : tr("Nova galáxia"));
     m_note->setText(regen ? tr("Regenerar troca a galáxia inteira, e o que foi construído e escrito nela vai junto. Logo depois dá pra desfazer.") : QString());
@@ -294,6 +508,7 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     raise();
     setFocus();
     preview();
+    previewMix();
 }
 void NewGalaxy::dismiss()
 {
@@ -320,11 +535,109 @@ void NewGalaxy::sync()
     for (auto it = m_sizes.begin(); it != m_sizes.end(); ++it) it.value()->setChecked(it.key() == int(m_d.size));
     m_count->setValue(m_d.count);
     m_life->setValue(qRound(m_d.life * 100));
-    m_lifeV->setText(lifeLabel(m_d.life));
+    m_life->setVisible(!m_hand);
+    m_lifeV->setText(m_hand ? tr("Na mão") : lifeLabel(m_d.life));
+    m_handBox->setVisible(m_hand);
+    m_natBar->setVisible(!m_hand);
+    {
+        const QColor muted = Theme::toColor(Theme::textMuted()), a = Theme::toColor(Theme::accentDefault());
+        m_handCheck->setChecked(m_hand);
+        m_handCheck->setIcon(carto::icon(m_hand ? QStringLiteral("check") : QStringLiteral("box"), muted, a));
+    }
     if (!m_seed->hasFocus()) m_seed->setText(QString::number(m_d.seed));
     m_loading = false;
 }
-void NewGalaxy::change() { sync(); m_timer.start(); }
+void NewGalaxy::change() { sync(); syncMix(); m_timer.start(); m_mixTimer.start(180); }
+// A mistura sai do mesmo gerador, numa amostra da galáxia, e é contada pro tamanho inteiro.
+void NewGalaxy::previewMix()
+{
+    const int tok = ++m_mixTok;
+    GalaxyOpts g;
+    g.seed = m_d.seed; g.style = m_d.style; g.size = m_d.size; g.arms = m_d.arms; g.life = m_d.life; g.count = std::min(m_d.count, 120);
+    if (const Preset* p = presetById(m_d.preset)) g.tune = p->tune;
+    if (m_hand && m_d.mix.size() == 7) g.mix = m_d.mix;
+    const double k = double(m_d.count) / g.count;
+    const bool hand = m_hand;
+    QPointer<NewGalaxy> self(this);
+    QThreadPool::globalInstance()->start([self, g, tok, k, hand]() {
+        auto gal = makeGalaxy(g);
+        std::array<int, 7> c {};
+        for (const auto& s : gal->systems) for (const auto& p : s->bodies) {
+            if (p->body != BodyKind::Planeta) continue;
+            c[size_t(habInfo(*p, s.get(), nullptr).cls)]++;
+            for (const auto& m : p->moons) c[size_t(habInfo(*m, s.get(), p.get()).cls)]++;
+        }
+        if (!self) return;
+        QMetaObject::invokeMethod(self.data(), [self, c, tok, k, hand]() {
+            if (!self || tok != self->m_mixTok) return;
+            int sum = 0;
+            for (int n = 1; n <= 6; n++) sum += c[size_t(n)];
+            self->m_worlds = int(sum * k + 0.5);
+            if (hand) {
+                self->m_mixText->setText(Panel::tr("Cerca de %n mundo(s) nesta galáxia. Estrelas e órbitas não mudam: os mundos que mais combinam com cada classe são adaptados a ela.", "", self->m_worlds));
+                self->syncMix();
+                return;
+            }
+            self->m_natural = c; self->m_hasNatural = true;
+            self->m_natBar->setCounts(c);
+            const int roomy = int((c[1] + c[2]) * k + 0.5);
+            self->m_mixText->setText(Panel::tr("Cerca de %n mundo(s) de classe I ou II, %1 de III ou IV e %2 de V ou VI.", "", roomy).arg(nf((c[3] + c[4]) * k), nf((c[5] + c[6]) * k)));
+        }, Qt::QueuedConnection);
+    });
+}
+// Ligar parte da mistura que estava na tela; desligar e ligar de novo guarda o que foi definido.
+void NewGalaxy::setHand(bool on)
+{
+    m_hand = on;
+    if (on && m_d.mix.size() != 7) { m_d.mix = m_hasNatural ? mixFromCounts(m_natural) : std::vector<double> { 0, 2, 3, 2, 43, 31, 19 }; m_touched.clear(); }
+    sync();
+    syncMix();
+    previewMix();
+}
+void NewGalaxy::syncMix()
+{
+    if (!m_hand || m_d.mix.size() != 7) return;
+    const bool was = m_loading;
+    m_loading = true;
+    for (int n = 1; n <= 6; n++) {
+        if (!m_mixIn[n]->hasFocus()) m_mixIn[n]->setText(mixText(m_d.mix[size_t(n)]));
+        const int v = int(m_worlds * m_d.mix[size_t(n)] / 100 + 0.5);
+        m_mixCount[n]->setText(m_d.mix[size_t(n)] > 0 && m_worlds ? tr("≈ %n mundo(s)", "", v) : tr("nenhum"));
+    }
+    m_loading = was;
+    m_mixBar->update();
+}
+void NewGalaxy::mixMoved() { syncMix(); m_mixTimer.start(220); }
+// Digitar numa classe tira dos valores que ainda não foram digitados; só mexe nos outros se não der.
+void NewGalaxy::setMixShare(int n, double value)
+{
+    std::vector<double>& m = m_d.mix;
+    const double v = clamp(mixRound(value), 0, 100);
+    double delta = v - m[size_t(n)];
+    m[size_t(n)] = v;
+    m_touched.erase(std::remove(m_touched.begin(), m_touched.end(), n), m_touched.end());
+    m_touched.push_back(n);
+    if (m_touched.size() > 5) m_touched.erase(m_touched.begin());
+    std::vector<int> fresh, held;
+    for (int x = 1; x <= 6; x++) { if (x == n) continue; (std::find(m_touched.begin(), m_touched.end(), x) != m_touched.end() ? held : fresh).push_back(x); }
+    for (const std::vector<int>* group : { &fresh, &held }) {
+        if (group->empty() || std::fabs(delta) < 0.01) continue;
+        double sum = 0;
+        for (int x : *group) sum += m[size_t(x)];
+        if (delta > 0) {
+            const double take = std::min(delta, sum);
+            if (sum > 0) for (int x : *group) m[size_t(x)] -= take * (m[size_t(x)] / sum);
+            delta -= take;
+        } else {
+            for (int x : *group) m[size_t(x)] += sum > 0 ? -delta * (m[size_t(x)] / sum) : -delta / double(group->size());
+            delta = 0;
+        }
+    }
+    double total = 0;
+    int big = 0;
+    for (int x = 1; x <= 6; x++) { m[size_t(x)] = mixRound(m[size_t(x)]); total += m[size_t(x)]; if (x != n && (!big || m[size_t(x)] > m[size_t(big)])) big = x; }
+    if (big) m[size_t(big)] = mixRound(m[size_t(big)] + 100 - total);
+}
 // Mexer na forma transforma a pronta numa galáxia sua; semente, quantidade e vida não.
 void NewGalaxy::leavePreset()
 {

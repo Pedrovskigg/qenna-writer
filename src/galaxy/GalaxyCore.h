@@ -173,6 +173,8 @@ struct Body {
     std::unique_ptr<Star> star;
     // o que o autor pôs
     double people = 0;
+    int air = 0;      // 0: vale o que a atmosfera diz; 1: dá pra respirar; -1: não dá
+    int habSet = 0;   // a classe escolhida à mão (0 = a da conta)
     // no esquema do mapa (preenchido pelo layout)
     double layOrb = 0, layR = 0, layW = 0, layA0 = 0, layX = 0, layY = 0, layExt = 0, layMoonW = 0;
     bool layHasW = false, layHasA0 = false;
@@ -225,6 +227,7 @@ struct GalaxyOpts {
     double life = 0.3;
     int count = 0;    // 0 = o do tamanho
     Tune tune;
+    std::vector<double> mix;   // quanto de cada classe, de 1 a 6 (índice 0 fica de fora); vazio = o que o sorteio der
 };
 
 struct Grid { std::vector<float> l, y, d, w; };
@@ -249,6 +252,7 @@ struct Galaxy {
     Cdf cdfStars, cdfYoung, cdfSys;
     std::vector<std::unique_ptr<System>> systems;
     DetailStars detail;
+    std::vector<double> mix;
 };
 
 std::unique_ptr<Galaxy> makeGalaxy(const GalaxyOpts& opts);
@@ -282,6 +286,19 @@ const std::vector<LookStyle>& rockStylesOf(Type t);
 const char* rockDesc(LookStyle s);
 extern const std::vector<LookStyle> LIVING_STYLES;
 extern const std::vector<StarKind> STAR_KINDS;
+
+// ── classes de planeta ──
+// A régua de quanto custa viver num mundo, de 1 (Éden) a 6 (Sem chão). Mundo construído fica fora: classe 0.
+enum class AirKind { Breathable, Poison, Thin, None };
+AirKind airOf(const Body& b);
+struct HabWhy {
+    enum Code { Built, NoGroundGas, NoGroundHot, NoGroundIce, NoGroundThick, NoGroundLava, NoGroundVolcano, Breathable, TooHot, TooCold, Heavy, Light, Poison, ThinAir, NoAir, Locked, Radiation } code;
+    double v;   // a temperatura em °C ou a gravidade, quando o motivo fala de uma
+};
+struct HabInfo { int cls = 0, autoCls = 0; std::vector<HabWhy> why; };
+HabInfo habInfo(const Body& b, const System* sys, const Body* host);
+// O autor diz quanto quer de cada classe: os mundos que mais combinam são adaptados, sem mexer em estrelas nem órbitas.
+void applyMix(const std::vector<System*>& systems, const std::vector<double>& mix, uint32_t seed);
 
 // ── texturas ──
 struct Atm { V3 c; double k; };

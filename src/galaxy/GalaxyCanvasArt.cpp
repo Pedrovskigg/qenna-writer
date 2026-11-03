@@ -30,7 +30,7 @@ Canvas::ArtAssets& Canvas::artAssets()
     if (it != m_art.per.end()) return *it.value();
     auto A = std::make_shared<ArtAssets>();
     const uint32_t seed = doc->gal->seed;
-    A->wash = washImage(m_art.field, *m_sk, seed);
+    A->wash = washImage(m_art.field, *m_sk, seed, doc->galImg);
     A->curves = contours(m_art.field, m_sk->curves);
     if (m_sk->stipN > 0) { A->stip = stipple(m_art.field, *m_sk, seed); A->hasStip = true; }
     A->tile = paperTile(*m_sk);
@@ -42,7 +42,7 @@ void Canvas::drawArtBackdrop(QPainter& p, double zoomK)
 {
     const QPointF vc = viewCenter();
     const int W = width(), H = height();
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(vc.x()).arg(vc.y()).arg(m_sk->id + QString::number(m_frame.width()) + QLatin1Char('x') + QString::number(m_frame.height()) + QString::number(doc->galImg.cacheKey()));
+    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(vc.x()).arg(vc.y()).arg(m_sk->id + QString::number(m_frame.width()) + QLatin1Char('x') + QString::number(m_frame.height()) + QString::number(doc->galImg.cacheKey()) + (m_sk->paint != SpacePaint::None ? spaceRegionKey() : QString()));
     if (key != m_art.key) {
         ArtAssets& A = artAssets();
         m_art.key = key;
@@ -114,6 +114,7 @@ void Canvas::drawArtBackdrop(QPainter& p, double zoomK)
             }
             g.restore();
         }
+        if (m_sk->paint != SpacePaint::None) paintSpace(g, a, b, cc, d, ox, oy, zoomK);
         if (m_sk->vignette) {
             QRadialGradient gr(W / 2.0, H / 2.0, std::hypot(W, H) * 0.56);
             const double t0 = (std::min(W, H) * 0.42) / (std::hypot(W, H) * 0.56);
@@ -193,6 +194,7 @@ void Canvas::drawRhumbs(QPainter& g, double a, double b, double cc, double d, do
 // A estrela de longe: um sinal de atlas, que diz o tipo.
 void Canvas::drawArtStarFar(QPainter& p, const System& s, double x, double y)
 {
+    if (m_sk->sign != StarSign::Atlas) { drawSpaceStar(p, s, x, y); return; }
     const Star& st = s.stars[0];
     const QColor fill = cssOf(m_sk->colored ? mul(sysColor(s), 0.72) : m_sk->ink);
     const double r = s.isCore ? 5.5 : 1.6 + std::min(1.8, (st.radius != 0 ? st.radius : 1) * 0.42);
@@ -242,7 +244,8 @@ void Canvas::artSun(QPainter& p, double x, double y, double r, const std::array<
         p.drawLine(QPointF(x + std::cos(t) * r * 1.12, y + std::sin(t) * r * 1.12), QPointF(x + std::cos(t) * r * L, y + std::sin(t) * r * L));
     }
     p.setPen(Qt::NoPen);
-    if (m_sk->colored) {
+    if (m_sk->hasSun) p.setBrush(cssOf(m_sk->sun));
+    else if (m_sk->colored) {
         QRadialGradient gr(x, y, r);
         gr.setColorAt(0, cssOf(mixRgb(c, { 255, 255, 255 }, 0.6))); gr.setColorAt(1, cssOf(mixRgb(c, m_sk->paper, 0.2)));
         p.setBrush(gr);
@@ -270,8 +273,9 @@ void Canvas::drawArtStarOpen(QPainter& p, const System& s, double x, double y, d
         QPen pen(cssOf(inkCol, 0.75)); pen.setWidthF(0.8);
         p.setPen(pen); p.setBrush(Qt::NoBrush);
         for (int i = 0; i < 6; i++) { const double q = R * (0.95 + i * 0.36); p.drawEllipse(QPointF(x, y), q, q * ky); }
-        p.setPen(Qt::NoPen); p.setBrush(m_sk->darkPaper ? cssOf(m_sk->ink) : cssOf(inkCol));
+        p.setPen(Qt::NoPen); p.setBrush(m_sk->space ? m_sk->paperC() : m_sk->darkPaper ? cssOf(m_sk->ink) : cssOf(inkCol));
         p.drawEllipse(QPointF(x, y), R * 0.62, R * 0.62);
+        if (m_sk->space) { QPen rim(cssOf(inkCol)); rim.setWidthF(1.1); p.setPen(rim); p.setBrush(Qt::NoBrush); p.drawEllipse(QPointF(x, y), R * 0.62, R * 0.62); }
         return;
     }
     if (s.kind == StarKind::Binaria && s.stars.size() > 1) {
@@ -292,6 +296,13 @@ void Canvas::drawArtStarOpen(QPainter& p, const System& s, double x, double y, d
         p.drawEllipse(QPointF(x, y), sr * 3.4, sr * 3.4 * std::max(0.3, cT));
     }
 }
+// Na térmica, de 40 K (-233 °C) a 1200 K (+927 °C), em escala de razão.
+double Canvas::heatOf(const Body& b) const
+{
+    if (!m_sk || !m_sk->thermal) return -1;
+    const double T = b.temp != 0 ? b.temp : b.teq != 0 ? b.teq : 150;
+    return std::max(0.05, std::min(1.0, std::log(T / 40) / std::log(30.0)));
+}
 // O corpo: a textura de verdade do planeta, passada pela técnica da vista.
 const QImage* Canvas::artThumb(const Body& b, int D)
 {
@@ -303,7 +314,7 @@ const QImage* Canvas::artThumb(const Body& b, int D)
     auto it = m_artThumbs.find(k);
     if (it != m_artThumbs.end() && it->gen == gen) return &it->img;
     QImage rgba = base->convertToFormat(QImage::Format_RGBA8888);
-    stylize(rgba.bits(), D, D, *m_sk);
+    stylize(rgba.bits(), D, D, *m_sk, false, 0, heatOf(b));
     ArtThumb e;
     e.img = rgba.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     e.gen = gen;
@@ -334,7 +345,8 @@ void Canvas::drawArtBody(QPainter& p, const Body& b, double x, double y, double 
     const QImage* img = artThumb(b, D);
     if (img) p.drawImage(QRectF(x - r, y - r, r * 2, r * 2), *img);
     else { p.setPen(Qt::NoPen); p.setBrush(m_sk->colored ? cssOf(typeCol(b.type)) : m_sk->paperC()); p.drawEllipse(QPointF(x, y), r, r); }
-    if (m_sk->hatch) {
+    if (m_sk->shadeNone) { /* a própria técnica já é a sombra */ }
+    else if (m_sk->hatch) {
         // A sombra em hachura: cordas paralelas no lado de lá da estrela, cada vez mais juntas.
         const double vx = -uy, vy = ux;
         const int n = std::min(26, int(std::floor(r / 1.6)));
@@ -345,7 +357,7 @@ void Canvas::drawArtBody(QPainter& p, const Body& b, double x, double y, double 
             p.drawLine(QPointF(cx - vx * L, cy - vy * L), QPointF(cx + vx * L, cy + vy * L));
         }
     } else {
-        const Rgb S = m_sk->soft ? Rgb { 66, 62, 100 } : Rgb { 60, 44, 34 };
+        const Rgb S = m_sk->hasShadow ? m_sk->shadow : m_sk->soft ? Rgb { 66, 62, 100 } : Rgb { 60, 44, 34 };
         QLinearGradient g(x + ux * r, y + uy * r, x - ux * r, y - uy * r);
         g.setColorAt(0, cssOf(S, 0)); g.setColorAt(0.5, cssOf(S, 0.04)); g.setColorAt(1, cssOf(S, m_sk->soft ? 0.5 : 0.62));
         p.setPen(Qt::NoPen); p.setBrush(g);
@@ -393,6 +405,7 @@ QColor Canvas::regionInk(const Region& r) const
     const QColor c(r.color);
     if (!m_sk) return c;
     if (m_sk->mono) return m_sk->inkC();
+    if (m_sk->darkPaper) return c;
     return QColor(int(c.red() * 0.6 + 0.5), int(c.green() * 0.6 + 0.5), int(c.blue() * 0.6 + 0.5));
 }
 

@@ -71,6 +71,7 @@ void Canvas::setDoc(Doc* d)
 }
 void Canvas::clearCaches()
 {
+    m_habCache.clear();
     m_tex.clear(); m_thumbs.clear(); m_thumbQ.clear(); m_artThumbs.clear(); m_ringTex.clear(); m_live.clear();
     m_terr.clear(); m_prims.clear(); m_toned.clear(); m_stamps.clear();
     m_tr.key.clear(); m_tr.sys.clear(); m_tr.routes.clear();
@@ -79,6 +80,7 @@ void Canvas::clearCaches()
 }
 void Canvas::docChanged()
 {
+    m_habCache.clear();
     m_tr.key.clear(); m_tr.sys.clear(); m_fx.key.clear(); m_prims.clear();
     m_dirty = true;
     update();
@@ -93,6 +95,7 @@ void Canvas::invalidateBody(const Body& b)
 }
 void Canvas::refreshAfterEdit(Body* b)
 {
+    m_habCache.clear();
     if (b) invalidateBody(*b);
     m_tr.key.clear(); m_tr.sys.clear();
     m_dirty = true;
@@ -380,7 +383,7 @@ void Canvas::drawLive(QPainter& p, const Body& b, double x, double y, double r, 
     const V3 v { ux / n, -uy / n, vz / n };
     const Atm* atm = atmOf(b);
     shadeSphere(L.img.bits(), L.tab, tex, b.spinU + doc->simT * SPEED_SPIN * (b.retro ? -1 : 1), &v, atm);
-    if (m_sk) stylize(L.img.bits(), D, D, *m_sk, false, 0.14);
+    if (m_sk) stylize(L.img.bits(), D, D, *m_sk, false, 0.14, heatOf(b));
     if (!m_sk && atm) {
         QRadialGradient gr(x, y, r * 1.07);
         const double t0 = 0.98 / 1.07;
@@ -544,6 +547,7 @@ void Canvas::render(QPainter& p)
         drawBackdrop(p, zoomK);
         if (layTerr()) { std::vector<Region*> all; for (const auto& r : doc->regions) all.push_back(r.get()); drawRegions(p, zoomK, all); }
     }
+    if (hab) drawHabHeat(p, fr, z, cT, zoomK);
     m_openSystems.clear();
     for (const auto& s : g.systems) if (!s->gone && (!fr || fr->systems.contains(s->id))) drawSystemNode(p, *s, labels, z, cT, fr ? 4000 : 0);
     if (!fr) drawDeepBuilds(p, labels, z, cT);
@@ -559,14 +563,14 @@ void Canvas::render(QPainter& p)
         if (zoomK > 18) continue;
         if (fr && m_focusAmt > 0.98) continue;
         if (r->systems.isEmpty()) continue;
-        double sumX = 0, minY = 1e9;
-        for (int id : r->systems) { const System& s = *g.systems[size_t(id)]; double px, py; proj(s.x, s.y, 0, px, py); sumX += px; minY = std::min(minY, py); }
+        double sumX = 0, sumY = 0, minY = 1e9;
+        for (int id : r->systems) { const System& s = *g.systems[size_t(id)]; double px, py; proj(s.x, s.y, 0, px, py); sumX += px; sumY += py; minY = std::min(minY, py); }
         const double x = sumX / r->systems.size();
         QString spaced;
         const QString up = r->name.toUpper();
         for (int i = 0; i < up.size(); i++) { if (i) spaced += QLatin1Char(' '); spaced += up[i]; }
-        Label l; l.text = spaced; l.x = x; l.y = std::max(24.0, minY - 0.06 * z * cT - 12); l.center = true; l.pri = 5000 - zoomK * 100;
-        const QFont f = uiFont(600, 13);
+        Label l; l.text = spaced; l.x = x; l.y = m_sk && m_sk->regionCenter ? sumY / r->systems.size() + 7 : std::max(24.0, minY - 0.06 * z * cT - 12); l.center = true; l.pri = 5000 - zoomK * 100;
+        const QFont f = uiFont(600, m_sk && m_sk->regionPx ? m_sk->regionPx : 13);
         l.font = f; l.color = regionInk(*r); l.key = r->key; l.alpha = (1 - smooth(8, 18, zoomK)) * (fr ? 1 - m_focusAmt : 1); l.hasAlpha = true;
         labels.push_back(l);
     }
@@ -578,7 +582,7 @@ void Canvas::drawBackdrop(QPainter& p, double zoomK)
 {
     if (m_sk) { drawArtBackdrop(p, zoomK); return; }
     const QPointF vc = viewCenter();
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(vc.x()).arg(vc.y()).arg(view + QString::number(skyClean) + QString::number(m_frame.width()));
+    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(vc.x()).arg(vc.y()).arg(view + QString::number(skyClean) + QString::number(hab) + QString::number(m_frame.width()));
     if (key != m_bgKey) {
         m_bgKey = key;
         if (m_bg.size() != m_frame.size()) m_bg = QImage(m_frame.size(), QImage::Format_RGB32);
@@ -587,7 +591,7 @@ void Canvas::drawBackdrop(QPainter& p, double zoomK)
         QPainter g(&m_bg);
         g.setRenderHint(QPainter::SmoothPixmapTransform, true);
         // A galáxia em si: imagem pintada pelo núcleo, que some quando você está dentro de um sistema.
-        const double gAlpha = (1 - smooth(5, 28, zoomK) * 0.98) * (view == QLatin1String("atlas") ? 0.2 : skyClean ? 0.42 : 1);
+        const double gAlpha = (1 - smooth(5, 28, zoomK) * 0.98) * (view == QLatin1String("atlas") ? 0.2 : skyClean ? 0.42 : 1) * (hab ? 0.3 : 1);
         if (gAlpha > 0.005) {
             const double E = EXT;
             double p0x, p0y, p1x, p1y, p2x, p2y;
@@ -662,7 +666,8 @@ void Canvas::drawSystemNode(QPainter& p, System& s, std::vector<Label>& labels, 
     if (open < 1) {
         const double sz = s.isCore ? 16 : 7 + std::min(6.0, (s.stars[0].radius != 0 ? s.stars[0].radius : 1) * 1.2);
         p.setOpacity(1 - open);
-        if (m_sk) drawArtStarFar(p, s, x, y);
+        if (hab) drawHabFar(p, s, x, y, 1 - open);
+        else if (m_sk) drawArtStarFar(p, s, x, y);
         else {
             p.setCompositionMode(QPainter::CompositionMode_Plus);
             p.drawImage(QRectF(x - sz * 1.6, y - sz * 1.6, sz * 3.2, sz * 3.2), glow(c));
@@ -877,6 +882,7 @@ void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double o
                 double mdn = std::hypot(mdx, mdy);
                 if (mdn == 0) mdn = 1;
                 drawBody(p, m, mx, my, mr, mdx / mdn, mdy / mdn);
+                if (hab) habMark(p, m, s, pp, mx, my, mr, true);
                 if (sel == mk) ring(p, mx, my, mr + 4);
                 m_hits.push_back({ mk, mx, my, std::max(7.0, mr + 2) });
                 if (layNames() && mr > 3.5) {
@@ -920,7 +926,8 @@ void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double o
         }
         if (sel == pk) ring(p, px, py, pr + 5);
         m_hits.push_back({ pk, px, py, std::max(8.0, pr + 2) });
-        if (isLiving(pp->type) && pr > 3 && pr < 60) {
+        if (hab) habMark(p, *pp, s, nullptr, px, py, pr, false);
+        else if (isLiving(pp->type) && pr > 3 && pr < 60) {
             QPen pen(m_sk ? m_sk->hzC(0.8) : rgbaC(111, 214, 154, 0.55)); pen.setWidthF(1);
             p.setPen(pen); p.setBrush(Qt::NoBrush);
             p.drawEllipse(QPointF(px, py), pr + 2.5, pr + 2.5);
@@ -1071,9 +1078,9 @@ void Canvas::placeLabels(QPainter& p, std::vector<Label>& labels)
         if (l.x < -100 || l.x > width() + 100 || l.y < -20 || l.y > height() + 20) continue;
         QFont font = l.font;
         if (m_sk) {
-            font = QFont(QStringLiteral("IM FELL English SC"));
-            font.setPixelSize(l.font.pixelSize() + 1);
-            font.setWeight(l.font.weight());
+            if (!m_sk->face.isEmpty()) font = QFont(m_sk->face);
+            font.setPixelSize(l.font.pixelSize() + m_sk->labelPlus);
+            font.setWeight(m_sk->plainWeight ? QFont::Normal : l.font.weight());
         }
         const QFontMetricsF fm(font);
         const double w = fm.horizontalAdvance(l.text), h = 14;
@@ -1085,7 +1092,7 @@ void Canvas::placeLabels(QPainter& p, std::vector<Label>& labels)
         placed.push_back(box);
         // Contornar texto a cada quadro é caro: cada nome vira um carimbo guardado.
         QColor col = l.color;
-        if (m_sk && (l.color.rgb() == QColor(0xe4, 0xeb, 0xf5).rgb() || l.color.rgb() == QColor(0xf2, 0xe6, 0xc8).rgb() || l.color.alpha() < 255)) col = m_sk->inkC();
+        if (m_sk && (l.color.rgb() == QColor(0xe4, 0xeb, 0xf5).rgb() || l.color.rgb() == QColor(0xf2, 0xe6, 0xc8).rgb() || l.color.alpha() < 255)) col = m_sk->hasLabelInk ? QColor(m_sk->labelInk[0], m_sk->labelInk[1], m_sk->labelInk[2]) : m_sk->inkC();
         const QString sk = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(l.text, halo, font.family()).arg(font.pixelSize()).arg(font.weight()).arg(col.rgba());
         auto it = m_stamps.find(sk);
         if (it == m_stamps.end()) {
@@ -1202,6 +1209,7 @@ QImage Canvas::exportImage(double scale, bool withTitle)
             p.setFont(uiFont(400, 13));
             p.setPen(shadow); p.drawText(QPointF(25, 61), sub);
             p.setPen(m_sk ? m_sk->inkC() : QColor(0xc8, 0xd2, 0xe0)); p.drawText(QPointF(24, 60), sub);
+            if (hab) drawHabLegend(p);
         }
     }
     QImage out = m_frame;

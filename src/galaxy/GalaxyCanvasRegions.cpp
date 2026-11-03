@@ -204,6 +204,7 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
 }
 void Canvas::drawRegions(QPainter& p, double zoomK, const std::vector<Region*>& list, double mul)
 {
+    if (m_sk && m_sk->noTerr) return;   // nos Domínios, as casas já são o território
     const double k = 1 - smooth(8, 60, zoomK);
     if (k < 0.02) return;
     p.save();
@@ -242,11 +243,28 @@ void Canvas::paintFocus(QPainter& p, Region& r, double zoomK, double cT, std::ve
         boxBlur(m_fx.blur, 2);
         // A parte nítida é recortada pela própria fronteira, com o fundo mais calmo pros sistemas chamarem o olho.
         TerrLayer& terr = territoryLayer(r);
+        const QImage cells = m_sk && m_sk->noTerr ? domainMask(r) : QImage();
         QImage patch = sharp.convertToFormat(QImage::Format_ARGB32_Premultiplied);
         patch.setDevicePixelRatio(1);
         {
             QPainter pg(&patch);
-            if (terr.empty) { pg.setCompositionMode(QPainter::CompositionMode_Clear); pg.fillRect(patch.rect(), Qt::transparent); }
+            if (!cells.isNull()) {
+                // Nos Domínios, o recorte é o das casas do império, não o da mancha.
+                pg.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                QImage full(patch.size(), QImage::Format_ARGB32_Premultiplied);
+                full.fill(Qt::transparent);
+                {
+                    QPainter q(&full);
+                    q.setRenderHint(QPainter::SmoothPixmapTransform, true);
+                    double p0x, p0y, p1x, p1y, p2x, p2y;
+                    proj(-EXT, EXT, 0, p0x, p0y); proj(EXT, EXT, 0, p1x, p1y); proj(-EXT, -EXT, 0, p2x, p2y);
+                    const double T = cells.width();
+                    q.setTransform(QTransform(m_dpr * (p1x - p0x) / T, m_dpr * (p1y - p0y) / T, m_dpr * (p2x - p0x) / T, m_dpr * (p2y - p0y) / T, m_dpr * p0x, m_dpr * p0y));
+                    q.drawImage(0, 0, cells);
+                }
+                pg.drawImage(0, 0, full);
+            }
+            else if (terr.empty) { pg.setCompositionMode(QPainter::CompositionMode_Clear); pg.fillRect(patch.rect(), Qt::transparent); }
             else {
                 // Sem máscara fora do retângulo do território, tudo some lá também.
                 pg.setCompositionMode(QPainter::CompositionMode_DestinationIn);

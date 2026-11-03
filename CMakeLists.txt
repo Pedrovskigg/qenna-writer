@@ -476,6 +476,10 @@ qt_add_executable(qenna-writer
     src/galaxy/GalaxyPanelBuild.cpp
     src/galaxy/GalaxyPanelLinks.cpp
     src/galaxy/GalaxyPanelPeek.cpp
+    src/galaxy/GalaxyCanvasSpace.cpp
+    src/galaxy/GalaxyHab.cpp
+    src/galaxy/GalaxyCanvasHab.cpp
+    src/galaxy/GalaxyPanelHab.cpp
     src/galaxy/GalaxyPanelRealm.cpp
     src/galaxy/GalaxyPanelSide.cpp
     src/galaxy/GalaxyPanelDocs.cpp
@@ -571,7 +575,7 @@ qt_add_executable(qenna-writer
 )
 
 # O Galaxy Maps gera a galáxia e pinta esferas e modelos pixel a pixel: otimizado mesmo no Debug
-set_source_files_properties(src/galaxy/GalaxyBlackHole.cpp src/galaxy/GalaxyCore.cpp src/galaxy/GalaxyTexture.cpp src/galaxy/GalaxyNames.cpp src/galaxy/GalaxyModels.cpp src/galaxy/GalaxyStructures.cpp src/galaxy/GalaxyViews.cpp src/galaxy/GalaxyPresets.cpp src/galaxy/GalaxyDoc.cpp src/galaxy/GalaxyCanvas.cpp src/galaxy/GalaxyCanvasArt.cpp src/galaxy/GalaxyCanvasRegions.cpp src/galaxy/GalaxyCanvasTraffic.cpp src/galaxy/GalaxyCanvasTools.cpp src/galaxy/GalaxyWidgets.cpp PROPERTIES COMPILE_OPTIONS "-O2")
+set_source_files_properties(src/galaxy/GalaxyBlackHole.cpp src/galaxy/GalaxyCanvasSpace.cpp src/galaxy/GalaxyCore.cpp src/galaxy/GalaxyTexture.cpp src/galaxy/GalaxyNames.cpp src/galaxy/GalaxyModels.cpp src/galaxy/GalaxyStructures.cpp src/galaxy/GalaxyViews.cpp src/galaxy/GalaxyPresets.cpp src/galaxy/GalaxyDoc.cpp src/galaxy/GalaxyCanvas.cpp src/galaxy/GalaxyCanvasArt.cpp src/galaxy/GalaxyCanvasRegions.cpp src/galaxy/GalaxyCanvasTraffic.cpp src/galaxy/GalaxyCanvasTools.cpp src/galaxy/GalaxyWidgets.cpp PROPERTIES COMPILE_OPTIONS "-O2")
 
 # O planeta do Citadel é pintado pixel a pixel na montagem do tema: otimizado mesmo no Debug, senão trava ~1 s ao trocar de tema
 set_source_files_properties(src/AnimGenresB.cpp PROPERTIES COMPILE_OPTIONS "-O2")

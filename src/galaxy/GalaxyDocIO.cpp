@@ -122,6 +122,8 @@ QJsonObject bodyToJson(const Body& b)
     o["dist"] = b.dist; o["radiusKm"] = b.radiusKm; o["massKg"] = b.massKg;
     if (b.star) o["star"] = starToJson(*b.star);
     o["people"] = b.people;
+    if (b.air) o["air"] = b.air;
+    if (b.habSet) o["habSet"] = b.habSet;
     o["layA0"] = b.layA0; o["layW"] = b.layW; o["layHasW"] = b.layHasW; o["layHasA0"] = b.layHasA0;
     o["spinU"] = b.spinU; o["pitchU"] = b.pitchU; o["spun"] = b.spunByUser;
     return o;
@@ -148,6 +150,7 @@ std::unique_ptr<Body> bodyFrom(const QJsonObject& o)
     b->dist = o["dist"].toDouble(); b->radiusKm = o["radiusKm"].toDouble(); b->massKg = o["massKg"].toDouble();
     if (o.contains("star")) b->star = std::make_unique<Star>(starFrom(o["star"].toObject()));
     b->people = o["people"].toDouble();
+    b->air = o["air"].toInt(); b->habSet = o["habSet"].toInt();
     b->layA0 = o["layA0"].toDouble(); b->layW = o["layW"].toDouble(); b->layHasW = o["layHasW"].toBool(); b->layHasA0 = o["layHasA0"].toBool();
     b->spinU = o["spinU"].toDouble(); b->pitchU = o["pitchU"].toDouble(0.3); b->spunByUser = o["spun"].toBool();
     return b;
@@ -211,6 +214,7 @@ QJsonObject Doc::toJson() const
     QJsonObject rec;
     rec["seed"] = double(opts.seed); rec["style"] = QString::fromLatin1(styleKey(opts.style)); rec["size"] = QString::fromLatin1(sizeKey(opts.size));
     rec["arms"] = opts.arms; rec["life"] = opts.life; rec["count"] = opts.count; rec["preset"] = opts.preset;
+    if (opts.mix.size() == 7) { QJsonArray mx; for (double v : opts.mix) mx.push_back(v); rec["mix"] = mx; }
     o["recipe"] = rec;
     QJsonArray batches;
     for (int n : addedBatches) batches.push_back(n);
@@ -271,6 +275,7 @@ bool Doc::fromJson(const QJsonObject& o)
     for (Style s : { Style::Espiral, Style::Barrada, Style::Eliptica, Style::Irregular, Style::Anel }) if (st == styleKey(s)) g.style = s;
     for (Size s : { Size::Pequena, Size::Media, Size::Grande, Size::Imensa }) if (sz == sizeKey(s)) g.size = s;
     g.arms = rec["arms"].toInt(4); g.life = rec["life"].toDouble(0.3); g.count = rec["count"].toInt(); g.preset = rec["preset"].toString();
+    if (rec.contains("mix")) { const QJsonArray mx = rec["mix"].toArray(); if (mx.size() == 7) for (const QJsonValue& v : mx) g.mix.push_back(v.toDouble()); }
     generate(g);
     // A pronta já pôs os nomes e rótulos dela: o que vale agora é o que está guardado.
     userNames.clear(); labels.clear();

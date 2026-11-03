@@ -258,6 +258,7 @@ void Canvas::pushUndo(const QString& label, std::function<void()> undoFn, std::f
 }
 void Canvas::afterHistory()
 {
+    m_habCache.clear();
     m_tr.key.clear(); m_tr.sys.clear(); m_fx.key.clear(); m_prims.clear();
     if (!doc->resolve(sel)) sel = QStringLiteral("GAL");
     m_dirty = true;

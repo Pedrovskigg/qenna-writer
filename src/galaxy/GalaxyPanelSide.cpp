@@ -1,6 +1,7 @@
 // Explorar: a busca, o painel com abas (Visão geral · Documentos · Aqui dentro · Dados) e o cartão minimizado.
 
 #include "GalaxyPanel.h"
+#include "GalaxyHab.h"
 #include "GalaxyBlackHole.h"
 #include "../TerritorioStore.h"
 #include "GalaxyCaderno.h"
@@ -254,7 +255,7 @@ std::vector<std::pair<QString, QString>> Panel::quickFacts(const QString&, const
     } else if (o.kind == RefKind::System) {
         const System& s = *o.sys;
         const int np = int(planetsOf(s).size()), nl = livingCount(s);
-        add(tr("Classe"), !s.stars[0].spec.empty() ? QString::fromStdString(s.stars[0].spec) : QStringLiteral("—"));
+        add(tr("Espectro"), !s.stars[0].spec.empty() ? QString::fromStdString(s.stars[0].spec) : QStringLiteral("—"));
         add(tr("Planetas"), np ? QString::number(np) : tr("Nenhum"));
         add(tr("Mundos vivos"), nl ? QString::number(nl) : tr("Nenhum"));
         if (s.hasHz) add(tr("Zona habitável"), QStringLiteral("%1–%2 UA").arg(sig(s.hz[0]), sig(s.hz[1])));
@@ -420,7 +421,7 @@ QWidget* Panel::physSection(const Ref& o, bool flat)
         add(tr("Raio"), QStringLiteral("%1 km").arg(nf(b.radiusKm, 0)));
         add(tr("Gravidade"), QStringLiteral("%1 g").arg(nf(b.gravity, b.gravity < 0.1 ? 3 : 2)));
         if (b.temp != 0) add(tr("Temperatura média"), celsius(b.temp));
-        if (!b.atm.empty()) add(tr("Atmosfera"), QCoreApplication::translate("galaxy::Core", b.atm.c_str()));
+        if (!b.atm.empty() || b.air > 0) add(tr("Atmosfera"), atmText(b));
         add(tr("Distância do planeta"), QStringLiteral("%1 km").arg(nf(std::round(b.dist / 100) * 100)));
         add(tr("Uma volta"), periodText(b.P));
     } else {
@@ -430,7 +431,7 @@ QWidget* Panel::physSection(const Ref& o, bool flat)
         add(tr("Gravidade"), QStringLiteral("%1 g").arg(nf(b.gravity, 2)));
         add(tr("Densidade"), QStringLiteral("%1 g/cm³").arg(nf(b.density, 1)));
         add(tr("Temperatura média"), celsius(b.temp));
-        add(tr("Atmosfera"), QCoreApplication::translate("galaxy::Core", b.atm.c_str()));
+        add(tr("Atmosfera"), atmText(b));
         if (b.look.vegKeyV != Veg::None) add(tr("Vegetação"), QCoreApplication::translate("galaxy::Core", vegLabel(b.look.vegKeyV)));
         add(tr("Distância da estrela"), QStringLiteral("%1 UA").arg(sig(b.a)));
         add(tr("Ano"), periodText(b.P));
@@ -815,6 +816,7 @@ void Panel::renderTabGeneral(QVBoxLayout* body, const QString& k, const Ref& o)
     auto* facts = factsGrid(quickFacts(k, o));
     facts->setParent(parent);
     body->addWidget(facts);
+    if (QWidget* hs = habSection(k, o)) { hs->setParent(parent); body->addWidget(hs); }
     const auto own = m_doc.docsOf(k);
     const auto eyebrow = [&](const QString& t, int n) {
         auto* h = new QHBoxLayout();

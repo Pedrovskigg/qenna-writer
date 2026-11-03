@@ -62,7 +62,7 @@ public:
 
     // estado que a interface mexe
     QString view = QStringLiteral("full");
-    QString artMode = QStringLiteral("ink");
+    QString artMode = QStringLiteral("holo");
     bool skyClean = false, sprites = true, frameOn = false, play = true;
     int trafficLevel = 2;
     double worldScale = 1;      // escala das construções
@@ -133,6 +133,16 @@ public:
     const Texture& textureOf(const Body& b, int w);
     QImage smallBall(const Body& b, int px, const V3& L = V3 { -0.62, 0.3, 0.72 }, double dpr = 1);
     void invalidateBody(const Body& b);
+
+    // classes de planeta (GalaxyCanvasHab.cpp)
+    bool hab = false;
+    int habOnly = 0;
+    void setHab(bool on);
+    void setHabOnly(int n);
+    struct SysHab { std::array<int, 7> counts {}; int best = 0; QString bestKey; };
+    const SysHab& sysHab(const System& s);
+    std::array<int, 7> habTally(const std::vector<const System*>& ss);
+    void habDirty();
 
     // exportar
     QImage exportImage(double scale, bool withTitle);
@@ -212,6 +222,15 @@ private:
     QColor accent(double a) const;
     QFont uiFont(int weight, double px) const;
 
+    // classes de planeta (GalaxyCanvasHab.cpp)
+    QHash<int, SysHab> m_habCache;
+    QHash<int, QImage> m_habGlows;
+    const QImage& habGlow(int n);
+    void drawHabHeat(QPainter& p, Region* fr, double z, double cT, double zoomK);
+    void drawHabFar(QPainter& p, const System& s, double x, double y, double alpha);
+    void habMark(QPainter& p, const Body& b, const System& s, const Body* host, double px, double py, double pr, bool moon);
+    void drawHabLegend(QPainter& p);
+
     // tráfego (GalaxyCanvasTraffic.cpp)
     struct Route { System* a; System* b; int id; QString color; bool gate; };
     struct Ship { int i, kind; double size, T, ph; };
@@ -259,6 +278,35 @@ private:
     const QImage* artThumb(const Body& b, int D);
     void drawArtBody(QPainter& p, const Body& b, double x, double y, double r, double ux, double uy);
     void toned(QPainter& p, const QString& id, double x, double y, double R, const std::function<void(QPainter&)>& fn);
+    double heatOf(const Body& b) const;
+
+    // as vistas nascidas do espaço (GalaxyCanvasSpace.cpp)
+    struct Lanes {
+        const Galaxy* gal = nullptr; int n = 0;
+        std::vector<System*> list;
+        struct Edge { int a, b; double len; };
+        std::vector<Edge> edges, shorts, twigs, stars;
+        std::vector<std::vector<int>> lines;
+        QHash<int, int> lineCount;
+        double med = 0.1;
+    } m_lanes;
+    const Lanes& lanes();
+    struct DomainCells { QString key; QImage img; std::vector<int> ids, owner; int S = 0; } m_domain;
+    QHash<QString, QImage> m_domainMasks;
+    QHash<QString, QImage> m_flares;
+    QString spaceRegionKey() const;
+    void paintSpace(QPainter& g, double a, double b, double cc, double d, double ox, double oy, double zoomK);
+    void paintHolo(QPainter& g, double zoomK);
+    void paintRoutes(QPainter& g, double zoomK);
+    void paintDomains(QPainter& g, double zoomK);
+    void paintGravity(QPainter& g, double a, double cc, double zoomK);
+    void paintHarmony(QPainter& g, double zoomK);
+    void paintThermal(QPainter& g);
+    void paintPlate(QPainter& g);
+    const DomainCells& domainCells();
+    QImage domainMask(const Region& r);
+    const QImage& flare(const Rgb& c);
+    void drawSpaceStar(QPainter& p, const System& s, double x, double y);
 
     // camadas e caches
     QImage m_frame, m_bg;

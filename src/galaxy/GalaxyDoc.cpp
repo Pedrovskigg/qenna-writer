@@ -43,7 +43,7 @@ void Doc::generate(const GalOpts& o)
 {
     opts = o;
     GalaxyOpts g;
-    g.seed = o.seed; g.style = o.style; g.size = o.size; g.arms = o.arms; g.life = o.life; g.count = o.count;
+    g.seed = o.seed; g.style = o.style; g.size = o.size; g.arms = o.arms; g.life = o.life; g.count = o.count; g.mix = o.mix;
     if (const Preset* p = presetById(o.preset)) g.tune = p->tune;
     gal = makeGalaxy(g);
     galImg = galaxyImage(*gal, 1400);
