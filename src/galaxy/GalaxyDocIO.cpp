@@ -231,6 +231,7 @@ QJsonObject Doc::toJson() const
     for (const auto& r : regions) {
         QJsonObject q;
         q["key"] = r->key; q["name"] = r->name; q["color"] = r->color;
+        if (r->autoPop) { q["autoPop"] = true; q["popMask"] = r->popMask; }
         QJsonArray sy;
         for (int id : r->systems) sy.push_back(id);
         q["systems"] = sy;
@@ -258,11 +259,22 @@ QJsonObject Doc::toJson() const
     if (!plc.isEmpty()) o["places"] = plc;
     QJsonArray edited, gone;
     for (const auto& s : gal->systems) {
-        if (s->gone) gone.push_back(s->id);
+        if (s->gone && !veiled.contains(s->id)) gone.push_back(s->id);
         if (s->edited || s->hand) edited.push_back(systemToJson(*s));
     }
     o["edited"] = edited;
     o["gone"] = gone;
+    if (opts.organic) {
+        o["organic"] = true;
+        QJsonArray vs;
+        for (int id : veiled) vs.push_back(id);
+        o["veiled"] = vs;
+    }
+    if (!autoSys.isEmpty()) {
+        QJsonArray as;
+        for (int id : autoSys) as.push_back(id);
+        o["autoSys"] = as;
+    }
     return o;
 }
 bool Doc::fromJson(const QJsonObject& o)
@@ -292,6 +304,7 @@ bool Doc::fromJson(const QJsonObject& o)
         const QJsonObject q = v.toObject();
         auto r = std::make_unique<Region>();
         r->key = q["key"].toString(); r->name = q["name"].toString(); r->color = q["color"].toString();
+        r->autoPop = q["autoPop"].toBool(); r->popMask = q["popMask"].toInt(r->popMask);
         for (const QJsonValue& id : q["systems"].toArray()) r->systems.insert(id.toInt());
         regions.push_back(std::move(r));
     }
@@ -324,6 +337,9 @@ bool Doc::fromJson(const QJsonObject& o)
         systemFrom(q, s);
     }
     for (const QJsonValue& v : o["gone"].toArray()) { const int id = v.toInt(-1); if (id >= 0 && id < int(gal->systems.size())) gal->systems[size_t(id)]->gone = true; }
+    opts.organic = o["organic"].toBool();
+    for (const QJsonValue& v : o["veiled"].toArray()) { const int id = v.toInt(-1); if (id >= 0 && id < int(gal->systems.size())) veil(*gal->systems[size_t(id)]); }
+    for (const QJsonValue& v : o["autoSys"].toArray()) autoSys.insert(v.toInt(-1));
     layoutSystems();
     rev++;
     return true;

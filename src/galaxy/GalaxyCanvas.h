@@ -117,6 +117,13 @@ public:
     int realmReach = 20, realmBrush = 22;
     void realmClick(double mx, double my, bool shift);
     void assignSystems(const std::vector<System*>& list, Region* r, const QString& label);
+    // Autopopular: povoa os mundos do território nas classes escolhidas. Devolve quantos mundos ganharam gente.
+    struct PopWas { Body* b; double people, pop; };
+    struct PopSys { System* s; bool edited, wasAuto; };
+    struct PopRecord { std::vector<PopWas> bodies; std::vector<Build*> builds; std::vector<PopSys> systems; };
+    int populate(const Region& r, const std::vector<System*>& list, PopRecord& rec);
+    void unpopulate(PopRecord& rec);
+    int populateRegion(Region& r);
 
     // régua e nomes
     std::vector<QPointF> rulerPts;
@@ -407,6 +414,8 @@ private:
     struct Preview { std::shared_ptr<System> sys; Body* body = nullptr; };
     std::map<std::string, Preview> m_previews;
     QHash<int, QString> m_painted;
+    std::vector<int> m_paintRevealed;
+    System* nearestVeiled(double mx, double my, double reach) const;
 };
 
 // Divide [0, rows) entre os núcleos e espera acabar; poucas linhas ficam na thread de quem chamou.

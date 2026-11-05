@@ -735,14 +735,46 @@ void Canvas::removeThing(const QString& k)
 }
 
 // ── territórios ──
+// Na Semeação Orgânica não há sistema à vista pra clicar: vale o escondido mais perto do clique.
+System* Canvas::nearestVeiled(double mx, double my, double reach) const
+{
+    double wx, wy;
+    toWorld(mx, my, wx, wy);
+    System* best = nullptr;
+    double bd = std::max(reach, 60 / cam.z);
+    for (int id : doc->veiled) {
+        System* s = doc->gal->systems[size_t(id)].get();
+        const double d = std::hypot(s->x - wx, s->y - wy);
+        if (d < bd) { bd = d; best = s; }
+    }
+    return best;
+}
 void Canvas::assignSystems(const std::vector<System*>& list, Region* r, const QString& label)
 {
     struct Was { System* s; Region* o; };
     auto was = std::make_shared<std::vector<Was>>();
-    for (System* s : list) { Region* o = doc->regionOfSys(*s); if (o != r) was->push_back({ s, o }); }
+    auto shown = std::make_shared<std::vector<System*>>();
+    auto entering = std::make_shared<std::vector<System*>>();
+    auto pop = std::make_shared<PopRecord>();
+    for (System* s : list) {
+        Region* o = doc->regionOfSys(*s);
+        if (o == r) continue;
+        was->push_back({ s, o });
+        entering->push_back(s);
+        if (doc->isVeiled(*s)) shown->push_back(s);
+    }
     if (was->empty()) return;
-    const auto put = [was, r] { for (const Was& w : *was) { if (w.o) w.o->systems.remove(w.s->id); if (r) r->systems.insert(w.s->id); } };
-    const auto back = [was, r] { for (const Was& w : *was) { if (r) r->systems.remove(w.s->id); if (w.o) w.o->systems.insert(w.s->id); } };
+    Doc* d = doc;
+    const auto put = [this, was, shown, entering, pop, r, d] {
+        for (System* s : *shown) d->reveal(*s);
+        for (const Was& w : *was) { if (w.o) w.o->systems.remove(w.s->id); if (r) r->systems.insert(w.s->id); }
+        if (r && r->autoPop) populate(*r, *entering, *pop);
+    };
+    const auto back = [this, was, shown, pop, r, d] {
+        unpopulate(*pop);
+        for (const Was& w : *was) { if (r) r->systems.remove(w.s->id); if (w.o) w.o->systems.insert(w.s->id); }
+        for (System* s : *shown) d->veil(*s);
+    };
     put();
     m_tr.key.clear(); m_fx.key.clear(); m_dirty = true;
     pushUndo(label, back, put);
@@ -752,21 +784,34 @@ void Canvas::realmClick(double mx, double my, bool shift)
 {
     const QString h = pickAt(mx, my);
     const Ref o = doc->resolve(h);
-    if (!o || !o.sys || o.sys->isCore) return;
+    if (o.sys && o.sys->isCore) return;
     if (shift) {
+        if (!o.sys) return;
         Region* old = doc->regionOfSys(*o.sys);
         if (old) assignSystems({ o.sys }, nullptr, tr("%1 saiu de %2.").arg(doc->labelOf(keyS(*o.sys)), old->name));
         return;
     }
+    const double lim = realmReach >= 400 ? 1e9 : realmReach / 1000.0;
+    System* origin = o.sys;
+    if (!origin) {
+        if (!doc->opts.organic) return;
+        Region* active = nullptr;
+        for (const auto& q : doc->regions) if (q->key == realmActive) active = q.get();
+        if (!active) { emit toast(tr("Crie um território primeiro."), false); return; }
+        origin = nearestVeiled(mx, my, std::min(lim, 0.25));
+        if (!origin) { emit toast(tr("Não há sistema escondido por aqui."), false); return; }
+    }
     Region* r = nullptr;
     for (const auto& q : doc->regions) if (q->key == realmActive) r = q.get();
     if (!r) { emit toast(tr("Crie um território primeiro."), false); return; }
-    const double lim = realmReach >= 400 ? 1e9 : realmReach / 1000.0;
-    std::vector<System*> list { o.sys };
+    std::vector<System*> list { origin };
     if (realmReach > 20) for (const auto& s : doc->gal->systems) {
-        if (s.get() != o.sys && !s->gone && !s->isCore && !doc->regionOfSys(*s) && std::hypot(s->x - o.sys->x, s->y - o.sys->y) < lim) list.push_back(s.get());
+        const bool here = !s->gone || doc->isVeiled(*s);
+        if (s.get() != origin && here && !s->isCore && !doc->regionOfSys(*s) && std::hypot(s->x - origin->x, s->y - origin->y) < lim) list.push_back(s.get());
     }
-    assignSystems(list, r, list.size() > 1 ? tr("%1 sistemas agora são de %2.").arg(list.size()).arg(r->name) : tr("%1 agora é de %2.").arg(doc->labelOf(keyS(*o.sys)), r->name));
+    const QString firstName = doc->isVeiled(*origin) ? QString() : doc->labelOf(keyS(*origin));
+    if (list.size() > 1 || firstName.isEmpty()) assignSystems(list, r, list.size() > 1 ? tr("%1 sistemas agora são de %2.").arg(list.size()).arg(r->name) : tr("Um sistema novo em %1.").arg(r->name));
+    else assignSystems(list, r, tr("%1 agora é de %2.").arg(firstName, r->name));
 }
 void Canvas::realmPaintAt(double mx, double my)
 {
@@ -775,12 +820,15 @@ void Canvas::realmPaintAt(double mx, double my)
     if (realmMode == RealmMode::Paint && !r) return;
     auto& seen = m_drag ? m_drag->painted : m_painted;
     for (const auto& s : doc->gal->systems) {
-        if (s->gone || s->isCore || seen.contains(s->id)) continue;
+        // O pincel de território revela o que estava escondido; o Neutro nunca faz aparecer nada.
+        const bool hiddenOne = doc->isVeiled(*s);
+        if ((s->gone && !(hiddenOne && r)) || s->isCore || seen.contains(s->id)) continue;
         double x, y;
         proj(s->x, s->y, s->layH, x, y);
         if (std::hypot(x - mx, y - my) > realmBrush) continue;
         Region* o = doc->regionOfSys(*s);
         if (o == r) continue;
+        if (hiddenOne) { doc->reveal(*s); m_paintRevealed.push_back(s->id); }
         seen.insert(s->id, o ? o->key : QString());
         if (o) o->systems.remove(s->id);
         if (r) r->systems.insert(s->id);
@@ -793,14 +841,130 @@ void Canvas::realmPaintEnd()
     if (realmMode != RealmMode::Neutral) for (const auto& q : doc->regions) if (q->key == realmActive) r = q.get();
     const QHash<int, QString> list = m_painted;
     m_painted.clear();
+    const std::vector<int> shown = m_paintRevealed;
+    m_paintRevealed.clear();
     Doc* d = doc;
+    auto pop = std::make_shared<PopRecord>();
     const auto regionBy = [d](const QString& k) -> Region* { for (const auto& q : d->regions) if (q->key == k) return q.get(); return nullptr; };
-    const auto put = [list, r, regionBy] { for (auto it = list.begin(); it != list.end(); ++it) { if (Region* o = regionBy(it.value())) o->systems.remove(it.key()); if (r) r->systems.insert(it.key()); } };
-    const auto back = [list, r, regionBy] { for (auto it = list.begin(); it != list.end(); ++it) { if (r) r->systems.remove(it.key()); if (Region* o = regionBy(it.value())) o->systems.insert(it.key()); } };
+    const auto populateNow = [this, list, r, d, pop] {
+        if (!r || !r->autoPop) return;
+        std::vector<System*> entering;
+        for (auto it = list.begin(); it != list.end(); ++it) entering.push_back(d->gal->systems[size_t(it.key())].get());
+        populate(*r, entering, *pop);
+    };
+    const auto put = [list, r, regionBy, shown, d, populateNow] {
+        for (int id : shown) d->reveal(*d->gal->systems[size_t(id)]);
+        for (auto it = list.begin(); it != list.end(); ++it) { if (Region* o = regionBy(it.value())) o->systems.remove(it.key()); if (r) r->systems.insert(it.key()); }
+        populateNow();
+    };
+    const auto back = [this, list, r, regionBy, shown, d, pop] {
+        unpopulate(*pop);
+        for (auto it = list.begin(); it != list.end(); ++it) { if (r) r->systems.remove(it.key()); if (Region* o = regionBy(it.value())) o->systems.insert(it.key()); }
+        for (int id : shown) d->veil(*d->gal->systems[size_t(id)]);
+    };
+    populateNow();
     m_tr.key.clear(); m_fx.key.clear();
     pushUndo(r ? tr("%1 sistemas agora são de %2.").arg(list.size()).arg(r->name) : tr("%1 sistemas sem dono.").arg(list.size()), back, put);
     emit toolDockChanged();
     m_dirty = true;
+}
+// ── Autopopular ──
+// Tudo sai da semente do mundo: desfazer e refazer dão o mesmo resultado.
+namespace {
+struct PopRng {
+    uint32_t a;
+    explicit PopRng(uint32_t seed) : a(seed * 2654435761u + 0x9e3779b9u) {}
+    double operator()()
+    {
+        a += 0x6d2b79f5u;
+        uint32_t t = a;
+        t = (t ^ (t >> 15)) * (t | 1u);
+        t ^= t + (t ^ (t >> 7)) * (t | 61u);
+        return double(t ^ (t >> 14)) / 4294967296.0;
+    }
+};
+}
+int Canvas::populate(const Region& r, const std::vector<System*>& list, PopRecord& rec)
+{
+    int worlds = 0;
+    for (System* s : list) {
+        if (s->isCore || s->hand) continue;
+        // Sistema que o autor já editou fica como está.
+        if (s->edited && !doc->autoSys.contains(s->id)) continue;
+        const std::vector<Build*> here = doc->buildsIn(*s);
+        bool any = false;
+        for (Body* p : planetsOf(*s)) {
+            if (isArtificial(p->type) || p->people > 0 || doc->touched(keyP(*s, *p))) continue;
+            const int uid = p->uid ? p->uid : p->idx;
+            if (std::any_of(here.begin(), here.end(), [uid](const Build* b) { return b->host == uid; })) continue;
+            const int cls = habInfo(*p, s, nullptr).cls;
+            if (cls < 1 || cls > 6 || !(r.popMask & (1 << cls))) continue;
+            PopRng rnd(p->look.seed ^ uint32_t(s->id * 7919));
+            // Quanta gente: Éden lotado, os mais duros só com postos avançados. Conta por área, como no Editar.
+            const double R = std::max(0.05, p->radius);
+            static const double LO[7] = { 0, 8.7, 7.5, 6.0, 4.5, 4.0, 4.0 }, HI[7] = { 0, 9.9, 9.0, 8.0, 6.5, 5.5, 6.0 };
+            const double people = std::min(1.6e12 * R * R, std::pow(10, LO[cls] + (HI[cls] - LO[cls]) * rnd()) * R * R);
+            rec.bodies.push_back({ p, p->people, p->look.pop });
+            invalidateBody(*p);
+            p->people = people;
+            p->look.pop = lightLevel(people, R);
+            p->texRev++;
+            worlds++;
+            any = true;
+            // O que orbita acompanha o tamanho do lugar.
+            const auto put = [&](const char* type, const char* size, double rp) {
+                const StructDef* def = structOf(type);
+                auto b = std::make_unique<Build>();
+                b->key = QStringLiteral("B%1").arg(doc->seq++);
+                b->type = type;
+                b->seed = uint32_t(rnd() * 4294967295.0);
+                b->scale = def->sizes ? (size[0] == 'p' ? 0.65 : 1) : 1;
+                b->size = def->sizes ? QString::fromLatin1(size) : QString();
+                b->rot0 = rnd() * TAU;
+                b->sys = s->id; b->host = uid;
+                b->rp = rp; b->w = SPEED_MOON / (1 + rp * 0.3);
+                b->a0 = rnd() * TAU;
+                rec.builds.push_back(doc->addBuild(std::move(b)));
+            };
+            double rp = 1.7;
+            const auto orbit = [&]() { const double v = rp; rp = std::min(5.0, rp + 0.55); return v; };
+            const bool huge = people >= 1e9;
+            put("sat", "m", orbit());
+            if (cls <= 2) put("sat", "m", orbit());
+            if (cls <= 3 && rnd() < 0.7) put("posto", "p", orbit());
+            if (huge && rnd() < 0.7) put("roda", "m", orbit());
+            if (huge && rnd() < 0.35) put("estaleiro", "p", orbit());
+            if (rnd() < (huge ? 0.55 : 0.2)) put("frota", "p", orbit());
+            if (huge && rnd() < (people >= 3e9 ? 0.55 : 0.3)) put("anelOrbital", "m", 1.9);
+            else if (huge && rnd() < 0.2) put("elevador", "m", 1.9);
+        }
+        if (any) {
+            rec.systems.push_back({ s, s->edited, doc->autoSys.contains(s->id) });
+            s->edited = true;
+            doc->autoSys.insert(s->id);
+        }
+    }
+    if (worlds) { m_habCache.clear(); m_tr.key.clear(); m_tr.sys.clear(); m_fx.key.clear(); m_dirty = true; }
+    return worlds;
+}
+void Canvas::unpopulate(PopRecord& rec)
+{
+    for (Build* b : rec.builds) doc->dropBuild(b);
+    for (const PopWas& w : rec.bodies) { invalidateBody(*w.b); w.b->people = w.people; w.b->look.pop = w.pop; w.b->texRev++; }
+    for (const PopSys& w : rec.systems) { w.s->edited = w.edited; if (!w.wasAuto) doc->autoSys.remove(w.s->id); }
+    rec = PopRecord();
+    m_habCache.clear(); m_tr.key.clear(); m_tr.sys.clear(); m_fx.key.clear(); m_dirty = true;
+}
+int Canvas::populateRegion(Region& r)
+{
+    std::vector<System*> list;
+    for (int id : r.systems) list.push_back(doc->gal->systems[size_t(id)].get());
+    auto rec = std::make_shared<PopRecord>();
+    const int worlds = populate(r, list, *rec);
+    if (!worlds) return 0;
+    Region* rp = &r;
+    pushUndo(tr("%1 mundos povoados em %2.").arg(worlds).arg(r.name), [this, rec] { unpopulate(*rec); }, [this, rec, rp, list] { populate(*rp, list, *rec); });
+    return worlds;
 }
 void Canvas::rulerClick(double mx, double my)
 {

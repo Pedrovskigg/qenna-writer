@@ -2,6 +2,8 @@
 
 #include "GalaxyPanel.h"
 
+#include "GalaxyHab.h"
+
 #include "../Theme.h"
 #include "../carto/CartoIcons.h"
 
@@ -194,10 +196,63 @@ void Panel::renderRealmDock()
     l->addLayout(sr);
     auto* note = new QLabel(C.realmMode == RealmMode::Paint ? tr("Pinte área pro território selecionado: os sistemas embaixo do pincel entram nele.")
                             : C.realmMode == RealmMode::Neutral ? tr("Pinte espaço sem dono: os sistemas embaixo do pincel saem do território.")
-                                                                : tr("Clique num sistema pra plantar o território selecionado: ele leva junto os vizinhos sem dono dentro do alcance. Shift+clique tira."), m_dockBody);
+                                                                : m_doc.opts.organic ? tr("Clique em qualquer ponto do céu: o sistema mais perto aparece no território selecionado, com os vizinhos dentro do alcance. Shift+clique tira.")
+                                                                                     : tr("Clique num sistema pra plantar o território selecionado: ele leva junto os vizinhos sem dono dentro do alcance. Shift+clique tira."), m_dockBody);
     note->setObjectName(QStringLiteral("cartoNote"));
     note->setWordWrap(true);
     l->addWidget(note);
+    // Autopopular, por território.
+    Region* active = nullptr;
+    for (const auto& q : m_doc.regions) if (q->key == C.realmActive) active = q.get();
+    if (active) {
+        Region* r = active;
+        auto* pop = new QToolButton(m_dockBody);
+        pop->setObjectName(QStringLiteral("cartoCheck"));
+        pop->setCheckable(true);
+        pop->setChecked(r->autoPop);
+        pop->setText(tr("Autopopular"));
+        pop->setToolTip(tr("Os mundos das classes escolhidas ganham gente, satélites, estações e frotas ao entrar neste território. Mundo que você já editou fica como está."));
+        pop->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        pop->setIcon(carto::icon(r->autoPop ? QStringLiteral("check") : QStringLiteral("box"), muted, accent));
+        pop->setCursor(Qt::PointingHandCursor);
+        pop->setFocusPolicy(Qt::NoFocus);
+        pop->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        connect(pop, &QToolButton::clicked, this, [this, r](bool on) {
+            r->autoPop = on;
+            if (on) m_canvas->populateRegion(*r);
+            scheduleSave();
+            QTimer::singleShot(0, this, [this]() { renderRealmDock(); });
+        });
+        l->addWidget(pop);
+        if (r->autoPop) {
+            for (int rowStart : { 1, 4 }) {
+                auto* classes = new QHBoxLayout();
+                classes->setSpacing(4);
+                for (int n = rowStart; n < rowStart + 3; n++) {
+                    auto* b = new QToolButton(m_dockBody);
+                    b->setObjectName(QStringLiteral("cartoSeg"));
+                    b->setText(habLabel(n));
+                    b->setToolTip(habDesc(n));
+                    b->setCheckable(true);
+                    b->setChecked(r->popMask & (1 << n));
+                    b->setCursor(Qt::PointingHandCursor);
+                    b->setFocusPolicy(Qt::NoFocus);
+                    b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+                    connect(b, &QToolButton::clicked, this, [this, r, n](bool on) {
+                        if (on) r->popMask |= 1 << n; else r->popMask &= ~(1 << n);
+                        if (on) m_canvas->populateRegion(*r);
+                        scheduleSave();
+                    });
+                    classes->addWidget(b);
+                }
+                l->addLayout(classes);
+            }
+            auto* popNote = new QLabel(tr("Desligar para de povoar, mas não tira o que já foi povoado. Ctrl+Z desfaz."), m_dockBody);
+            popNote->setObjectName(QStringLiteral("cartoNote"));
+            popNote->setWordWrap(true);
+            l->addWidget(popNote);
+        }
+    }
     m_dockBody->show();
     placeDock();
 }

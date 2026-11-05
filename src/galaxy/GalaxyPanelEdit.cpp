@@ -53,7 +53,7 @@ bool Panel::editable(const Ref& o) const
 void Panel::edited(Body* b)
 {
     const Ref o = m_doc.resolve(m_canvas->sel);
-    if (o.sys) o.sys->edited = true;
+    if (o.sys) { o.sys->edited = true; m_doc.autoSys.remove(o.sys->id); }
     if (b) { m_canvas->invalidateBody(*b); b->texRev++; }
     m_canvas->refreshAfterEdit(nullptr);
     scheduleSave();
@@ -182,12 +182,18 @@ void Panel::renderEdit(QVBoxLayout* body, const QString& k, const Ref& o)
         connect(add, &QPushButton::clicked, this, [this, n, msg]() {
             const size_t before = m_doc.gal->systems.size();
             const int want = n->value(), got = addSystems(*m_doc.gal, want);
-            for (size_t i = before; i < m_doc.gal->systems.size(); i++) m_doc.gal->systems[i]->edited = true;
+            for (size_t i = before; i < m_doc.gal->systems.size(); i++) {
+                System& fresh = *m_doc.gal->systems[i];
+                fresh.edited = true;
+                m_doc.autoSys.insert(fresh.id);   // foi o programa que fez: o Autopopular ainda pode mexer
+                if (m_doc.opts.organic) m_doc.veil(fresh);
+            }
             m_doc.layoutSystems();
             m_canvas->docChanged();
             syncTitle();
             scheduleSave();
-            msg->setText(got == want ? tr("%1 sistemas novos. Agora são %2.").arg(got).arg(m_doc.gal->systems.size()) : tr("Couberam %1. A galáxia está ficando cheia.").arg(got));
+            if (m_doc.opts.organic) msg->setText(tr("%1 sistemas novos esperando os territórios.").arg(got));
+            else msg->setText(got == want ? tr("%1 sistemas novos. Agora são %2.").arg(got).arg(m_doc.gal->systems.size()) : tr("Couberam %1. A galáxia está ficando cheia.").arg(got));
         });
         h->addWidget(add);
         sec->addLayout(h);

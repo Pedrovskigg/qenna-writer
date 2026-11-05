@@ -191,6 +191,8 @@ private:
     QHash<QString, QPixmap> m_peekBalls;
     uint32_t m_peekBallsRev = 0;
     QToolButton* m_lyPeek = nullptr;
+    QToolButton* m_organicBtn = nullptr;
+    void setOrganic(bool on);
 
     // conexões e personagens (GalaxyPanelLinks.cpp)
     struct GLink { QString id, a, b, label; QColor color; };

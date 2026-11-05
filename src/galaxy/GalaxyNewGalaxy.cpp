@@ -442,6 +442,16 @@ void NewGalaxy::build()
     m_handCheck->setFocusPolicy(Qt::NoFocus);
     connect(m_handCheck, &QToolButton::clicked, this, [this](bool on) { setHand(on); });
     f->addWidget(m_handCheck);
+    m_organicCheck = new QToolButton(form);
+    m_organicCheck->setObjectName(QStringLiteral("cartoCheck"));
+    m_organicCheck->setCheckable(true);
+    m_organicCheck->setText(QCoreApplication::translate("galaxy::Panel", "Semeação Orgânica"));
+    m_organicCheck->setToolTip(QCoreApplication::translate("galaxy::Panel", "As galáxias por padrão possuem centenas de sistemas. Com essa opção ativa, o mapa galáctico irá revelar apenas os sistemas tocados pelos territórios conforme eles são desenhados, gerando menos ruído visual e lugares \"vazios\" na sua galáxia."));
+    m_organicCheck->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    m_organicCheck->setCursor(Qt::PointingHandCursor);
+    m_organicCheck->setFocusPolicy(Qt::NoFocus);
+    connect(m_organicCheck, &QToolButton::clicked, this, [this](bool on) { m_d.organic = on; sync(); });
+    f->addWidget(m_organicCheck);
     f->addWidget(cap(tr("SEMENTE"), form));
     auto* sr = new QHBoxLayout();
     sr->setSpacing(6);
@@ -489,7 +499,7 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     const bool regen = mode == Mode::Regen;
     d.preset = regen && current ? current->preset : QString();
     d.count = regen ? currentCount : sizeSystems(d.size);
-    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); }
+    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); d.organic = false; }
     m_d = d;
     m_hand = d.mix.size() == 7;
     m_hasNatural = false; m_worlds = 0; m_touched.clear();
@@ -543,6 +553,8 @@ void NewGalaxy::sync()
         const QColor muted = Theme::toColor(Theme::textMuted()), a = Theme::toColor(Theme::accentDefault());
         m_handCheck->setChecked(m_hand);
         m_handCheck->setIcon(carto::icon(m_hand ? QStringLiteral("check") : QStringLiteral("box"), muted, a));
+        m_organicCheck->setChecked(m_d.organic);
+        m_organicCheck->setIcon(carto::icon(m_d.organic ? QStringLiteral("check") : QStringLiteral("box"), muted, a));
     }
     if (!m_seed->hasFocus()) m_seed->setText(QString::number(m_d.seed));
     m_loading = false;

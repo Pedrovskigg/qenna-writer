@@ -60,6 +60,7 @@ private:
     QLabel* m_mixText = nullptr;
     class HabBar* m_natBar = nullptr;
     QToolButton* m_handCheck = nullptr;
+    QToolButton* m_organicCheck = nullptr;
     QLineEdit* m_mixIn[7] {};
     QLabel* m_mixCount[7] {};
     QTimer m_mixTimer;

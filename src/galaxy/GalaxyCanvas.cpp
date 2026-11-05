@@ -361,6 +361,7 @@ quint64 Canvas::stateStamp() const
     h = qHashMulti(h, trafficLevel, worldScale, int(tool), sel, focusKey, padLeft, padBottom, hab, habOnly);
     h = qHashMulti(h, int(realmMode), realmActive, realmReach, realmBrush, nameSel, buildSize, pickingLink, m_hover);
     h = qHashMulti(h, rulerDone, rulerPts.size(), m_links.size(), bool(placing), m_hasGhost, m_ghost.ok, m_ghost.wx, m_ghost.wy);
+    if (doc) h = qHashMulti(h, doc->rev);
     return quint64(h);
 }
 void Canvas::resizeEvent(QResizeEvent*)

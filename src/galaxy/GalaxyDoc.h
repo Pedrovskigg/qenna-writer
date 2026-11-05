@@ -20,7 +20,13 @@
 
 namespace galaxy {
 
-struct Region { QString key, name, color; QSet<int> systems; };
+struct Region {
+    QString key, name, color;
+    QSet<int> systems;
+    // Autopopular: os mundos destas classes ganham gente e construções ao entrar no território (bit n = classe n).
+    bool autoPop = false;
+    int popMask = (1 << 1) | (1 << 2);
+};
 struct Group { QString key, name, kind, parent; };   // kind: "Lugar" ou "Social"
 // O documento mora no projeto; aqui fica só a ligação com o lugar do mapa.
 struct DocLink {
@@ -70,6 +76,7 @@ struct GalOpts {
     int count = 0;
     QString preset;
     std::vector<double> mix;   // quanto de cada classe, de 1 a 6; vazio = o que o sorteio der
+    bool organic = false;      // Semeação Orgânica: os sistemas aparecem conforme os territórios crescem
 };
 
 constexpr double SPEED_PLANET = TAU / 240, SPEED_MOON = TAU / 90, SPEED_SPIN = TAU / 60, SPEED_BINARY = TAU / 120, SPEED_PULSAR = TAU / 24, SPEED_BELT = TAU / 900, SPEED_COMET = TAU / 700, SPEED_SSTAR = TAU / 300;
@@ -93,6 +100,16 @@ public:
     int seq = 1;
     std::vector<int> addedBatches;     // "Mais sistemas": cada chamada, pra refazer igual
     uint32_t rev = 0;                  // sobe a cada mudança que os caches precisam ver
+    // Semeação Orgânica: a galáxia existe inteira, mas estes sistemas ainda não apareceram. Eles usam a mesma marca
+    // do sistema removido (gone), que o mapa, a busca e as contas já respeitam; este conjunto é o que os diferencia.
+    QSet<int> veiled;
+    QSet<int> autoSys;                 // sistemas cuja única edição veio do programa: o Autopopular ainda pode mexer
+    bool isVeiled(const System& s) const { return veiled.contains(s.id); }
+    void veil(System& s) { veiled.insert(s.id); s.gone = true; rev++; }
+    void reveal(System& s) { if (veiled.remove(s.id)) { s.gone = false; rev++; } }
+    void setOrganic(bool on);
+    void restoreVeil(bool organic, const QSet<int>& ids);
+    QSet<int> organicKeep() const;     // o que a história já tocou: nunca é escondido
     double simT = 0;
 
     // Gera de novo pela receita. keepUser = false limpa o que o autor pôs.

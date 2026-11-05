@@ -416,6 +416,8 @@ void Panel::buildSettings()
     m_lySprites = check(tr("Estações e colossos (S)"), [this](bool on) { setSpritesOn(on); });
     m_lyFrame = check(tr("Moldura da galáxia"), [this](bool on) { m_canvas->frameOn = on; m_canvas->docChanged(); syncUi(); });
     m_lyPeek = check(tr("Prévia ao passar o mouse"), [this](bool on) { setPeekOn(on); });
+    m_organicBtn = check(tr("Semeação Orgânica"), [this](bool on) { setOrganic(on); });
+    m_organicBtn->setToolTip(tr("As galáxias por padrão possuem centenas de sistemas. Com essa opção ativa, o mapa galáctico irá revelar apenas os sistemas tocados pelos territórios conforme eles são desenhados, gerando menos ruído visual e lugares \"vazios\" na sua galáxia."));
     m_lyTraffic = check(tr("Tráfego de naves"), [this](bool on) { setTrafficOn(on); });
     m_trafficLevel = new QComboBox(m_settings);
     m_trafficLevel->setObjectName(QStringLiteral("cartoCombo"));
@@ -671,6 +673,26 @@ void Panel::startNew(const GalOpts& opts, const QString& path, const QString& na
     m_name = name;
     afterOpen();
     saveNow();
+    if (opts.organic) emit m_canvas->toast(tr("Semeação Orgânica: abra Territórios e semeie o primeiro sistema."), false);
+}
+// Ligar esconde o que a história ainda não tocou; desligar mostra tudo. Nada se perde nos dois sentidos.
+void Panel::setOrganic(bool on)
+{
+    if (!isOpen() || m_doc.opts.organic == on) return;
+    const bool wasOn = m_doc.opts.organic;
+    const QSet<int> was = m_doc.veiled;
+    m_doc.setOrganic(on);
+    const QSet<int> now = m_doc.veiled;
+    const auto after = [this]() {
+        if (!m_doc.resolve(m_canvas->sel)) m_canvas->select(QStringLiteral("GAL"), false);
+        m_canvas->docChanged();
+        syncTitle();
+        syncUi();
+    };
+    after();
+    m_canvas->pushUndo(on ? tr("Semeação Orgânica ligada: %1 sistemas guardados.").arg(now.size()) : tr("Semeação Orgânica desligada: todos os sistemas à vista."),
+        [this, wasOn, was, after]() { m_doc.restoreVeil(wasOn, was); after(); },
+        [this, on, now, after]() { m_doc.restoreVeil(on, now); after(); });
 }
 // Regenerar troca tudo: o estado de antes fica guardado inteiro no desfazer.
 void Panel::regenerate(const GalOpts& opts, const QString& name)
@@ -952,6 +974,7 @@ void Panel::syncUi()
     setCheck(m_lySprites, m_canvas->sprites);
     setCheck(m_lyFrame, m_canvas->frameOn);
     setCheck(m_lyPeek, m_peekOn);
+    setCheck(m_organicBtn, isOpen() && m_doc.opts.organic);
     setCheck(m_lyTraffic, m_canvas->ly.traffic);
     setCheck(m_expTitle, m_expWithTitle);
     m_trafficLevel->setVisible(m_canvas->ly.traffic);

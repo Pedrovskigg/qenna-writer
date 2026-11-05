@@ -51,10 +51,57 @@ void Doc::generate(const GalOpts& o)
     genNames.clear();
     placeIds.clear(); userNames.clear(); regions.clear(); groups.clear(); docs.clear(); builds.clear(); labels.clear(); hidden.clear();
     addedBatches.clear();
+    veiled.clear(); autoSys.clear();
     seq = 1;
     simT = 0;
     if (!o.preset.isEmpty()) applyPreset();
     layoutSystems();
+    if (o.organic) setOrganic(true);
+    rev++;
+}
+
+// ── Semeação Orgânica ──
+// O número do sistema dentro de uma chave de lugar (S12, P12.3, M12.3.1, C12.1, K12.1).
+static int systemOfKey(const QString& key)
+{
+    if (key.size() < 2) return -1;
+    const QChar t = key[0];
+    if (t != QLatin1Char('S') && t != QLatin1Char('P') && t != QLatin1Char('M') && t != QLatin1Char('C') && t != QLatin1Char('K')) return -1;
+    bool ok = false;
+    const int id = key.mid(1, key.indexOf(QLatin1Char('.')) - 1).toInt(&ok);
+    return ok ? id : -1;
+}
+QSet<int> Doc::organicKeep() const
+{
+    QSet<int> keep;
+    const auto add = [&](const QString& key) { const int id = systemOfKey(key); if (id >= 0) keep.insert(id); };
+    for (auto it = userNames.constBegin(); it != userNames.constEnd(); ++it) add(it.key());
+    for (auto it = placeIds.constBegin(); it != placeIds.constEnd(); ++it) add(it.key());
+    for (const auto& d : docs) add(d->owner);
+    for (const auto& g : groups) add(g->parent);
+    for (const auto& b : builds) if (b->sys >= 0) keep.insert(b->sys);
+    for (const auto& r : regions) keep.unite(r->systems);
+    for (const auto& s : gal->systems) if ((s->edited && !autoSys.contains(s->id)) || s->hand) keep.insert(s->id);
+    return keep;
+}
+void Doc::setOrganic(bool on)
+{
+    opts.organic = on;
+    if (on) {
+        const QSet<int> keep = organicKeep();
+        for (const auto& s : gal->systems) if (!s->gone && !s->isCore && !keep.contains(s->id)) veil(*s);
+    } else {
+        for (int id : veiled) gal->systems[size_t(id)]->gone = false;
+        veiled.clear();
+    }
+    rev++;
+}
+void Doc::restoreVeil(bool organic, const QSet<int>& ids)
+{
+    for (int id : veiled) gal->systems[size_t(id)]->gone = false;
+    veiled = ids;
+    for (int id : veiled) gal->systems[size_t(id)]->gone = true;
+    opts.organic = organic;
     rev++;
 }
 
@@ -299,10 +346,12 @@ Group* Doc::newGroup(const QString& parent, const QString& name, const QString& 
 void Doc::layoutSystems()
 {
     auto& S = gal->systems;
+    // O sistema escondido conta: o desenho de cada um não pode mudar de tamanho quando o vizinho aparece.
+    const auto present = [this](const System& q) { return !q.gone || veiled.contains(q.id); };
     for (const auto& s : S) {
-        if (s->gone) continue;
+        if (!present(*s)) continue;
         double nn = 1;
-        for (const auto& o : S) if (o != s && !o->gone) { const double d = std::hypot(o->x - s->x, o->y - s->y); if (d < nn) nn = d; }
+        for (const auto& o : S) if (o != s && present(*o)) { const double d = std::hypot(o->x - s->x, o->y - s->y); if (d < nn) nn = d; }
         s->layR = std::min(0.03, std::max(0.005, nn * 0.38));
         s->layH = s->z * 1.6;
         layoutSystem(*s);
