@@ -1,6 +1,7 @@
 #include "GalaxyPanel.h"
 #include "GalaxyCaderno.h"
 
+#include "../TerritorioStore.h"
 #include "../Theme.h"
 #include "../carto/CartoAstrolabe.h"
 #include "../carto/CartoCartela.h"
@@ -105,6 +106,8 @@ Panel::Panel(QWidget* parent) : QWidget(parent)
 {
     setObjectName(QStringLiteral("galaxyPanel"));
     setAttribute(Qt::WA_StyledBackground, true);
+    // O mapa cobre o painel inteiro: sem isso, o Mapa de fantasia aqui embaixo se repinta junto a cada quadro.
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
     setFocusPolicy(Qt::StrongFocus);
     m_saveTimer = new QTimer(this);
     m_saveTimer->setSingleShot(true);
@@ -708,10 +711,21 @@ void Panel::closeMap()
     m_path.clear();
     m_name.clear();
     m_openDoc = nullptr;
+    m_editorFlush = nullptr;
+}
+// O que o editor do mapa deixou pendente vai pro disco de uma vez só, quando a pessoa para de escrever.
+void Panel::flushDocSave()
+{
+    if (m_editorFlush) m_editorFlush();
+    if (m_docPlacesDirty && m_link.places) m_link.places->save();
+    m_docPlacesDirty = false;
+    if (m_docProjectDirty && m_link.save) m_link.save();
+    m_docProjectDirty = false;
 }
 void Panel::saveNow()
 {
     m_saveTimer->stop();
+    flushDocSave();
     if (!m_doc.gal || m_path.isEmpty()) return;
     QJsonObject o = m_doc.toJson();
     QJsonObject ui;
@@ -720,7 +734,8 @@ void Panel::saveNow()
     QSaveFile f(m_path);
     if (f.open(QIODevice::WriteOnly)) { f.write(QJsonDocument(o).toJson(QJsonDocument::Compact)); f.commit(); }
 }
-void Panel::scheduleSave() { m_saveTimer->start(); }
+// Toda edição do documento passa aqui: o que mudou também precisa aparecer, mesmo com o mapa parado.
+void Panel::scheduleSave() { m_saveTimer->start(); if (m_canvas) m_canvas->markDirty(); }
 void Panel::setProjectLink(const carto::ProjectLink& link) { m_link = link; }
 int Panel::systemCount() const
 {

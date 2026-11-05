@@ -668,6 +668,7 @@ void Panel::addGroup(QVBoxLayout* into, const QString& k, const QString& kind)
 void Panel::renderPanel(bool keepScroll)
 {
     syncLinkView();
+    if (m_editorFlush) { m_editorFlush(); m_editorFlush = nullptr; }
     if (!isOpen()) { m_side->hide(); m_mini->hide(); return; }
     const bool open = panelShown();
     const bool mini = open && m_panelMini && !m_openDoc;

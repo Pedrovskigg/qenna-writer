@@ -233,6 +233,7 @@ void Canvas::wheelEvent(QWheelEvent* e)
     e->accept();
     setPeek(QString());
     m_fly.reset();
+    m_lastWheelT = m_clock.elapsed();
     const double delta = e->angleDelta().y() != 0 ? e->angleDelta().y() : e->angleDelta().x();
     // Shift + roda gira o mapa, como no Mapa.
     if (e->modifiers() & Qt::ShiftModifier) { cam.yaw += delta * 0.0025; m_tiltAnim.reset(); m_dirty = true; emit cameraMoved(); return; }

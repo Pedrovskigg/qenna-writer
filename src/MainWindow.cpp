@@ -5456,6 +5456,8 @@ void MainWindow::onAddImageRequested()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    // O editor do mapa grava com calma: antes de decidir se há o que salvar, o que está na espera entra.
+    if (cartoPanel) cartoPanel->flushPending();
     if (!projectSaver) {
         QMainWindow::closeEvent(event);
         return;
@@ -10050,6 +10052,11 @@ void MainWindow::connectCartoProject()
             if (vm.type == EditorHost::DrawerDoc && vm.itemId == itemId) editorHost->reloadFromCache();
         }
         if (projectSaver) projectSaver->saveProject();
+    };
+    l.itemReload = [this](const QString& itemId) {
+        if (!editorHost) return;
+        const auto vm = editorHost->viewMode();
+        if (vm.type == EditorHost::DrawerDoc && vm.itemId == itemId) editorHost->reloadFromCache();
     };
     l.openItem = [this](const QString& itemId) {
         if (!editorHost) return;

@@ -354,6 +354,10 @@ private:
     bool m_panelOpen = false, m_panelMini = false;
     QString m_tab = QStringLiteral("geral");
     DocLink* m_openDoc = nullptr;
+    // escrever no editor do mapa: a tecla só mexe na memória; o disco espera a pessoa parar
+    std::function<void()> m_editorFlush;
+    bool m_docPlacesDirty = false, m_docProjectDirty = false;
+    void flushDocSave();
     QString m_lastDest = QStringLiteral("criador");
     QString m_panelKey;
     QStringList m_resList;

@@ -942,6 +942,10 @@ void Panel::setProjectRoot(const QString& root)
     if (isVisible()) ensureMap();
 }
 
+void Panel::flushPending()
+{
+    if (m_galaxyOpen) m_galaxy->saveNow();
+}
 void Panel::setProjectLink(const ProjectLink& link)
 {
     if (m_explore) { m_explore->setLink(link); m_explore->syncGroups(nullptr); }

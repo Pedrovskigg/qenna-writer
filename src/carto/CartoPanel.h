@@ -51,6 +51,7 @@ public:
     ~Panel() override;
     void setProjectRoot(const QString& root);
     void setProjectLink(const ProjectLink& link);   // Explorar: o projeto (gavetas, grupos, Criador de Mundos)
+    void flushPending();                            // grava já o que estava esperando (o programa vai fechar)
 
 signals:
     void closeRequested();

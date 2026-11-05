@@ -2,8 +2,14 @@
 #include "GalaxyBlackHole.h"
 #include "GalaxyModels.h"
 
+#include <QApplication>
 #include <QFontDatabase>
+#include <QLineEdit>
+#include <QPlainTextEdit>
 #include <QPointer>
+#include <QSemaphore>
+#include <QTextEdit>
+#include <QThread>
 #include <QThreadPool>
 #include <QLinearGradient>
 #include <QPaintEvent>
@@ -11,6 +17,7 @@
 #include <QRadialGradient>
 
 #include <algorithm>
+#include <atomic>
 
 namespace galaxy {
 
@@ -40,7 +47,48 @@ Body liteBody(const Body& b)
     if (b.star) c.star = std::make_unique<Star>(*b.star);
     return c;
 }
+inline const Frame& frameFor(const Body& b, Frame& spare)
+{
+    if (b.frame.ax[2] != 0 || b.frame.ax[0] != 0) return b.frame;
+    spare = frameOf(0, 0);
+    return spare;
+}
+// Divide linhas entre os núcleos. Pool próprio: a thread do programa espera aqui, e não pode ficar
+// atrás de uma textura de 150 ms na fila geral. Fatias pequenas porque o meio da esfera pesa mais que as pontas.
+QThreadPool& rowPool()
+{
+    static QThreadPool* pool = [] {
+        auto* q = new QThreadPool;
+        q->setMaxThreadCount(std::clamp(QThread::idealThreadCount() - 1, 1, 7));
+        return q;
+    }();
+    return *pool;
+}
+SphereTable sphereTableFast(int D, double yaw, double pitch, const Frame& fr)
+{
+    SphereTable T = sphereTableAlloc(D);
+    inRows(D, [&](int a, int b) { sphereTableRows(T, yaw, pitch, fr, a, b); });
+    return T;
+}
+// Enquanto alguém escreve o mapa fica parado; a poucas teclas de distância, volta a andar devagar.
+constexpr qint64 TYPING_QUIET_MS = 900, TEXT_FOCUS_FRAME_MS = 80;
 } // namespace
+
+void inRows(int rows, const std::function<void(int, int)>& fn)
+{
+    QThreadPool& pool = rowPool();
+    const int helpers = pool.maxThreadCount();
+    if (rows < 96 || helpers < 1) { fn(0, rows); return; }
+    const int parts = (helpers + 1) * 3;
+    std::atomic<int> next { 0 };
+    const auto work = [&]() {
+        for (int i = next++; i < parts; i = next++) fn(rows * i / parts, rows * (i + 1) / parts);
+    };
+    QSemaphore done;
+    for (int i = 0; i < helpers; i++) pool.start([&]() { work(); done.release(); });
+    work();
+    done.acquire(helpers);
+}
 
 Canvas::Canvas(QWidget* parent) : QWidget(parent)
 {
@@ -52,6 +100,17 @@ Canvas::Canvas(QWidget* parent) : QWidget(parent)
     connect(&m_timer, &QTimer::timeout, this, &Canvas::tick);
     m_timer.setTimerType(Qt::PreciseTimer);
     m_timer.start(16);
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget*, QWidget* now) { onFocusChanged(now); });
+}
+// Qualquer campo de texto do programa conta, inclusive o editor principal: é a mesma thread que pinta o mapa.
+void Canvas::onFocusChanged(QWidget* now)
+{
+    disconnect(m_typeConn);
+    m_textFocus = false;
+    const auto typed = [this]() { m_lastTypeT = m_clock.elapsed(); };
+    if (auto* t = qobject_cast<QTextEdit*>(now)) { m_textFocus = !t->isReadOnly(); m_typeConn = connect(t, &QTextEdit::textChanged, this, typed); }
+    else if (auto* t2 = qobject_cast<QPlainTextEdit*>(now)) { m_textFocus = !t2->isReadOnly(); m_typeConn = connect(t2, &QPlainTextEdit::textChanged, this, typed); }
+    else if (auto* l = qobject_cast<QLineEdit*>(now)) { m_textFocus = !l->isReadOnly(); m_typeConn = connect(l, &QLineEdit::textEdited, this, typed); }
 }
 Canvas::~Canvas() = default;
 
@@ -72,7 +131,7 @@ void Canvas::setDoc(Doc* d)
 void Canvas::clearCaches()
 {
     m_habCache.clear();
-    m_tex.clear(); m_thumbs.clear(); m_thumbQ.clear(); m_artThumbs.clear(); m_ringTex.clear(); m_live.clear();
+    m_tex.clear(); m_thumbs.clear(); m_thumbQ.clear(); m_artThumbs.clear(); m_ringTex.clear(); m_live.clear(); m_hzSprites.clear();
     m_terr.clear(); m_prims.clear(); m_toned.clear(); m_stamps.clear();
     m_tr.key.clear(); m_tr.sys.clear(); m_tr.routes.clear();
     m_fx.key.clear(); m_bgKey.clear(); m_art.key.clear(); m_art.per.clear(); m_art.gal = nullptr;
@@ -267,15 +326,43 @@ void Canvas::tick()
 {
     if (!doc || !doc->gal || cdOpen() || !isVisible()) return;
     const qint64 now = m_clock.elapsed();
+    // A mão no mapa ou um voo em curso mandam. Fora isso, quem está escrevendo tem a vez.
+    const bool handOnMap = m_drag || now - m_lastWheelT < 300;
+    const bool animating = m_fly || m_tiltAnim || m_focusAmt != (focusKey.isEmpty() ? 0.0 : 1.0);
+    // Algo mudou por fora (um botão do painel, uma camada ligada): vale na hora, sem esperar ninguém.
+    const quint64 stamp = stateStamp();
+    const bool acted = stamp != m_lastStamp;
+    m_lastStamp = stamp;
+    if (acted) m_dirty = true;
+    if (!handOnMap && !animating && !acted) {
+        if (now - m_lastTypeT < TYPING_QUIET_MS) return;
+        if (m_textFocus && now - m_lastFrameT < TEXT_FOCUS_FRAME_MS) return;
+    }
+    // Quadro pesado deixa folga: sem isso, o programa só pinta e o teclado e o mouse ficam na fila.
+    if (double(now - m_lastFrameT) < std::min(40.0, m_frameCost * 0.4)) return;
     const double dt = std::min(0.1, double(now - m_lastT) / 1000);
     m_lastT = now;
     if (play) doc->simT += dt;
     const bool a = stepTilt(now), b = stepFly(now), c = stepFocus(dt);
     const bool moving = a || b || c;
     if (moving) { emit cameraMoved(); }
-    if (play || moving || m_dirty || !m_thumbQ.empty()) { m_dirty = false; update(); }
+    // A câmera parou: o planeta e a fronteira voltam pra resolução cheia.
+    const bool busy = cameraBusy();
+    if (m_wasBusy && !busy) m_dirty = true;
+    m_wasBusy = busy;
+    // Só redesenha sozinho o que se move na tela: de longe, a galáxia inteira é uma foto.
+    if ((play && m_animVisible) || moving || m_dirty || !m_thumbQ.empty()) { m_dirty = false; update(); }
 }
 void Canvas::tickNow() { tick(); repaint(); }
+quint64 Canvas::stateStamp() const
+{
+    size_t h = qHashMulti(0, cam.x, cam.y, cam.z, cam.h, cam.tilt, cam.yaw, cam.follow);
+    h = qHashMulti(h, ly.terr, ly.names, ly.orb, ly.traffic, view, artMode, skyClean, sprites, frameOn);
+    h = qHashMulti(h, trafficLevel, worldScale, int(tool), sel, focusKey, padLeft, padBottom, hab, habOnly);
+    h = qHashMulti(h, int(realmMode), realmActive, realmReach, realmBrush, nameSel, buildSize, pickingLink, m_hover);
+    h = qHashMulti(h, rulerDone, rulerPts.size(), m_links.size(), bool(placing), m_hasGhost, m_ghost.ok, m_ghost.wx, m_ghost.wy);
+    return quint64(h);
+}
 void Canvas::resizeEvent(QResizeEvent*)
 {
     m_dirty = true;
@@ -322,35 +409,65 @@ const Texture& Canvas::textureOf(const Body& b, int w)
     if (w > e.bw && w > e.pend) requestTexture(b, w, e, k);
     return *e.best;
 }
+// A miniatura sai em segundo plano. Enquanto não chega, vale a do mesmo planeta em outro tamanho:
+// um instante meio borrado no zoom é melhor que um quadro travado (ou um disco liso).
 const QImage* Canvas::thumb(const Body& b, int D)
 {
-    const QString lk = texKey(b) + QLatin1Char(':') + QString::number(D);
+    const QString tk = texKey(b), lk = tk + QLatin1Char(':') + QString::number(D);
     const int want = D <= 40 ? 128 : D <= 110 ? 256 : 512;
+    TexEntry& e = m_tex[tk];
+    if (want > e.bw && want > e.pend) requestTexture(b, want, e, tk);
     ThumbEntry& t = m_thumbs[lk];
-    if (!t.img.isNull() && (t.texW >= want || t.queued)) return &t.img;
-    if (!t.queued) { t.queued = true; m_thumbQ.push_back({ lk, &b, D, want }); }
-    return t.img.isNull() ? nullptr : &t.img;
+    if (!t.queued && (t.img.isNull() || t.texW < std::min(want, std::max(e.bw, 128)))) {
+        t.queued = true;
+        ThumbJob j;
+        j.key = lk; j.texK = tk; j.D = D; j.tex = e.best; j.atm = atmOf(b);
+        Frame spare;
+        j.frame = frameFor(b, spare);
+        if (!j.tex) j.lite = std::make_shared<Body>(liteBody(b));
+        m_thumbQ.push_back(std::move(j));
+        // Zoom rápido enfileira tamanhos que já passaram: os mais velhos saem primeiro.
+        while (m_thumbQ.size() > 48) {
+            auto old = m_thumbs.find(m_thumbQ.front().key);
+            if (old != m_thumbs.end()) old->queued = false;
+            m_thumbQ.pop_front();
+        }
+    }
+    if (!t.img.isNull()) return &t.img;
+    for (int v : { D * 2, D / 2, D * 4, D / 4, D * 8, D / 8 }) {
+        if (v < 16 || v > 512) continue;
+        auto it = m_thumbs.constFind(tk + QLatin1Char(':') + QString::number(v));
+        if (it != m_thumbs.constEnd() && !it->img.isNull()) return &it->img;
+    }
+    return nullptr;
 }
-void Canvas::pumpThumbs(double budgetMs)
+void Canvas::pumpThumbs()
 {
-    QElapsedTimer t0;
-    t0.start();
-    while (!m_thumbQ.empty() && double(t0.elapsed()) < budgetMs) {
-        const ThumbJob j = m_thumbQ.front();
-        m_thumbQ.pop_front();
-        auto it = m_thumbs.find(j.key);
-        if (it == m_thumbs.end()) continue;
-        const Texture& tex = textureOf(*j.b, j.want);
-        const int tw = tex.w;
-        const SphereTable tab = sphereTable(j.D, 0, 0.3, j.b->frame.ax[2] != 0 || j.b->frame.ax[0] != 0 ? j.b->frame : frameOf(0, 0));
-        QImage img(j.D, j.D, QImage::Format_RGBA8888);
-        img.fill(Qt::transparent);
-        shadeSphere(img.bits(), tab, tex, 0.6, &FRONT, atmOf(*j.b));
-        it->img = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-        it->texW = tw; it->gen++;
-        it->queued = false;
-        if (tw < j.want) m_dirty = true;
-        m_dirty = true;
+    // O tamanho pedido por último é o que está na tela agora.
+    while (!m_thumbQ.empty() && m_thumbRunning < 3) {
+        ThumbJob j = std::move(m_thumbQ.back());
+        m_thumbQ.pop_back();
+        if (!m_thumbs.contains(j.key)) continue;
+        m_thumbRunning++;
+        QPointer<Canvas> self(this);
+        QThreadPool::globalInstance()->start([self, j]() {
+            auto tex = j.tex ? j.tex : std::make_shared<Texture>(bodyTexture(*j.lite, 128, 64));
+            const SphereTable tab = sphereTable(j.D, 0, 0.3, j.frame);
+            QImage img(j.D, j.D, QImage::Format_RGBA8888);
+            img.fill(Qt::transparent);
+            shadeSphere(img.bits(), tab, *tex, 0.6, &FRONT, j.atm);
+            QImage done = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            if (!self) return;
+            QMetaObject::invokeMethod(self.data(), [self, tex, done, key = j.key, texK = j.texK]() {
+                if (!self) return;
+                self->m_thumbRunning--;
+                auto it = self->m_thumbs.find(key);
+                if (it != self->m_thumbs.end()) { it->img = done; it->texW = tex->w; it->gen++; it->queued = false; }
+                auto te = self->m_tex.find(texK);
+                if (te != self->m_tex.end() && !te->best) { te->best = tex; te->bw = tex->w; }
+                self->m_dirty = true;
+            }, Qt::QueuedConnection);
+        });
     }
 }
 QImage Canvas::smallBall(const Body& b, int px, const V3& L, double dprV)
@@ -369,20 +486,25 @@ QImage Canvas::smallBall(const Body& b, int px, const V3& L, double dprV)
 // Esfera viva: só pros corpos grandes na tela (no máximo dois por quadro).
 void Canvas::drawLive(QPainter& p, const Body& b, double x, double y, double r, double ux, double uy)
 {
-    const int D = int(std::min(560.0, std::max(64.0, std::floor((r * 2 * std::min(m_dpr, 1.25)) / 32 + 0.5) * 32)));
+    int D = int(std::min(560.0, std::max(64.0, std::floor((r * 2 * std::min(m_dpr, 1.25)) / 32 + 0.5) * 32)));
     const QString k = texKey(b);
     const double pitch = std::floor((b.spunByUser ? b.pitchU : 0.3) * 40 + 0.5) / 40;
     LiveEntry& L = m_live[k];
+    // Durante o zoom a esfera de agora estica um pouco em vez de refazer a tabela a cada passo da roda.
+    if (cameraBusy() && L.D > 0 && D > L.D * 0.66 && D < L.D * 1.6) D = L.D;
     if (L.D != D || L.pitch != pitch) {
         L.D = D; L.pitch = pitch;
-        L.tab = sphereTable(D, 0, pitch, b.frame.ax[2] != 0 || b.frame.ax[0] != 0 ? b.frame : frameOf(0, 0));
+        Frame spare;
+        L.tab = sphereTableFast(D, 0, pitch, frameFor(b, spare));
         L.img = QImage(D, D, QImage::Format_RGBA8888);
     }
     const Texture& tex = textureOf(b, D > 300 ? 1024 : 512);
     const double vz = 0.32, n = std::sqrt(ux * ux + uy * uy + vz * vz);
     const V3 v { ux / n, -uy / n, vz / n };
     const Atm* atm = atmOf(b);
-    shadeSphere(L.img.bits(), L.tab, tex, b.spinU + doc->simT * SPEED_SPIN * (b.retro ? -1 : 1), &v, atm);
+    const double spin = b.spinU + doc->simT * SPEED_SPIN * (b.retro ? -1 : 1);
+    uchar* liveBits = L.img.bits();
+    inRows(D, [&](int j0, int j1) { shadeSphereRows(liveBits, L.tab, tex, spin, &v, atm, j0, j1); });
     if (m_sk) stylize(L.img.bits(), D, D, *m_sk, false, 0.14, heatOf(b));
     if (!m_sk && atm) {
         QRadialGradient gr(x, y, r * 1.07);
@@ -439,8 +561,11 @@ const QImage& Canvas::ringTex(const Body& b)
     QImage img(S, S, QImage::Format_RGBA8888);
     img.fill(Qt::transparent);
     const double k0 = rg.inner / rg.outer;
-    for (int j = 0; j < S; j++) {
-        uchar* d = img.scanLine(j);
+    uchar* ringBits = img.bits();
+    const qsizetype ringBpl = img.bytesPerLine();
+    inRows(S, [&](int rowA, int rowB) {
+    for (int j = rowA; j < rowB; j++) {
+        uchar* d = ringBits + ringBpl * j;
         for (int i = 0; i < S; i++) {
             const double x = ((i + 0.5) / S) * 2 - 1, y = ((j + 0.5) / S) * 2 - 1, rr = std::hypot(x, y);
             if (rr > 1 || rr < k0) continue;
@@ -452,6 +577,7 @@ const QImage& Canvas::ringTex(const Body& b)
             d[i * 4] = uchar(rg.tint[0] * 255); d[i * 4 + 1] = uchar(rg.tint[1] * 255); d[i * 4 + 2] = uchar(rg.tint[2] * 255); d[i * 4 + 3] = uchar(std::min(1.0, v * rg.alpha) * 255);
         }
     }
+    });
     return m_ringTex.insert(k, img.convertToFormat(QImage::Format_ARGB32_Premultiplied)).value();
 }
 void Canvas::ringOn(QPainter& g, const Body& b, double x, double y, double r, bool front, double ky)
@@ -515,16 +641,25 @@ void Canvas::ring(QPainter& p, double x, double y, double r)
 }
 
 // ── desenho ──
-void Canvas::paintEvent(QPaintEvent*)
+void Canvas::paintEvent(QPaintEvent* e)
 {
     if (!doc || !doc->gal) { QPainter p(this); p.fillRect(rect(), QColor(3, 5, 10)); return; }
     m_dpr = devicePixelRatioF();
     const int PW = int(width() * m_dpr + 0.5), PH = int(height() * m_dpr + 0.5);
-    if (m_frame.width() != PW || m_frame.height() != PH) { m_frame = QImage(PW, PH, QImage::Format_ARGB32_Premultiplied); m_frame.setDevicePixelRatio(m_dpr); m_fx.key.clear(); m_bgKey.clear(); m_art.key.clear(); }
-    {
-        QPainter p(&m_frame);
-        render(p);
-        drawLinks(p);
+    const bool resized = m_frame.width() != PW || m_frame.height() != PH;
+    if (resized) { m_frame = QImage(PW, PH, QImage::Format_ARGB32_Premultiplied); m_frame.setDevicePixelRatio(m_dpr); m_fx.key.clear(); m_bgKey.clear(); m_art.key.clear(); }
+    // Pedido de um pedaço da tela é o que está por cima que mudou (o cursor piscando, um botão aceso):
+    // o quadro pronto serve. O mapa só se pinta de novo quando é ele que pede, e aí pede a tela toda.
+    if (resized || e->rect() == rect()) {
+        QElapsedTimer cost;
+        cost.start();
+        {
+            QPainter p(&m_frame);
+            render(p);
+            drawLinks(p);
+        }
+        m_frameCost = cost.nsecsElapsed() / 1e6;
+        m_lastFrameT = m_clock.elapsed();
     }
     QPainter w(this);
     w.drawImage(QRectF(0, 0, width(), height()), m_frame);
@@ -535,6 +670,7 @@ void Canvas::render(QPainter& p)
     p.setRenderHint(QPainter::SmoothPixmapTransform, true);
     p.fillRect(rect(), m_sk ? m_sk->paperC() : QColor(3, 5, 10));
     m_hits.clear(); m_liveHits.clear(); m_ringHits.clear(); m_liveBudget = 2; m_art.budget = 1;
+    m_animVisible = layTraffic();
     beginFrame(7);   // quanto tempo por quadro os modelos 3D podem gastar se atualizando
     m_selPath = doc->pathOf(sel);
     Galaxy& g = *doc->gal;
@@ -575,7 +711,7 @@ void Canvas::render(QPainter& p)
         labels.push_back(l);
     }
     placeLabels(p, labels);
-    pumpThumbs(10);
+    pumpThumbs();
 }
 // O fundo do mapa: a galáxia pintada e as estrelas de perto.
 void Canvas::drawBackdrop(QPainter& p, double zoomK)
@@ -739,8 +875,80 @@ void Canvas::drawStar(QPainter& p, const System& s, double x, double y, double s
     }
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 }
+// Linha fina de órbita: em sistema pequeno na tela são centenas por quadro e o traçado do QPainter pesa.
+// Aqui escreve direto na imagem (antisserrilhada, com a mesma espessura); de perto continua o QPainter.
+void Canvas::orbitLine(QPainter& p, double x, double y, double r, double cT, const QColor& c, double w)
+{
+    const double ry = std::max(0.5, r * cT);
+    if (r * m_dpr > 320 || m_exporting || p.device() != &m_frame || p.hasClipping() || !p.transform().isIdentity() || p.compositionMode() != QPainter::CompositionMode_SourceOver) {
+        ellipseAt(p, x, y, r, cT);
+        return;
+    }
+    const double cx = x * m_dpr, cy = y * m_dpr, rx = r * m_dpr, ryd = ry * m_dpr;
+    const int W = m_frame.width(), H = m_frame.height();
+    if (rx < 0.5 || cx + rx < 0 || cx - rx >= W || cy + ryd < 0 || cy - ryd >= H) return;
+    const double a = c.alphaF() * p.opacity() * std::min(1.0, w * m_dpr);
+    if (a <= 0.002) return;
+    const int cr = c.red(), cg = c.green(), cb = c.blue();
+    uchar* bits = m_frame.bits();
+    const qsizetype bpl = m_frame.bytesPerLine();
+    const auto put = [&](int px, int py, double cov) {
+        if (px < 0 || py < 0 || px >= W || py >= H) return;
+        const int sa = int(a * cov * 256);
+        if (sa <= 0) return;
+        QRgb& q = reinterpret_cast<QRgb*>(bits + bpl * py)[px];
+        const int inv = 256 - sa;
+        q = qRgba((cr * sa + qRed(q) * inv) >> 8, (cg * sa + qGreen(q) * inv) >> 8, (cb * sa + qBlue(q) * inv) >> 8, ((255 * sa) + qAlpha(q) * inv) >> 8);
+    };
+    const double rx2 = rx * rx, ry2 = ryd * ryd, hyp = std::sqrt(rx2 + ry2);
+    // Onde a curva é mais deitada anda por colunas; onde é mais em pé, por linhas. A inclinação corrige a espessura.
+    const double xt = rx2 / hyp, yt = ry2 / hyp;
+    for (int px = std::max(0, int(std::ceil(cx - xt - 0.5))), xe = std::min(W - 1, int(std::floor(cx + xt - 0.5))); px <= xe; px++) {
+        const double dx = px + 0.5 - cx, yy = ryd * std::sqrt(std::max(0.0, 1 - dx * dx / rx2));
+        const double slope = yy > 0 ? (ry2 * dx) / (rx2 * yy) : 0, k = std::min(1.0, std::sqrt(1 + slope * slope) * 0.85);
+        for (double fy : { cy - yy - 0.5, cy + yy - 0.5 }) {
+            const int iy = int(std::floor(fy));
+            const double f = fy - iy;
+            put(px, iy, (1 - f) * k); put(px, iy + 1, f * k);
+        }
+    }
+    for (int py = std::max(0, int(std::ceil(cy - yt - 0.5))), ye = std::min(H - 1, int(std::floor(cy + yt - 0.5))); py <= ye; py++) {
+        const double dy = py + 0.5 - cy, xx = rx * std::sqrt(std::max(0.0, 1 - dy * dy / ry2));
+        const double slope = xx > 0 ? (rx2 * dy) / (ry2 * xx) : 0, k = std::min(1.0, std::sqrt(1 + slope * slope) * 0.85);
+        for (double fx : { cx - xx - 0.5, cx + xx - 0.5 }) {
+            const int ix = int(std::floor(fx));
+            const double f = fx - ix;
+            put(ix, py, (1 - f) * k); put(ix + 1, py, f * k);
+        }
+    }
+}
+// A faixa da zona habitável em sistema pequeno: um anel já pintado, em vez de preencher duas elipses a cada quadro.
+const QImage& Canvas::hzSprite(const QColor& c, double k, double destPx)
+{
+    const int S = destPx <= 64 ? 64 : destPx <= 128 ? 128 : 256, bucket = int(std::floor(k * 64 + 0.5));
+    const QString key = QStringLiteral("%1|%2|%3").arg(S).arg(c.rgb()).arg(bucket);
+    auto it = m_hzSprites.find(key);
+    if (it != m_hzSprites.end()) return it.value();
+    if (m_hzSprites.size() > 96) m_hzSprites.clear();
+    QImage img(S, S, QImage::Format_ARGB32_Premultiplied);
+    const double R = S / 2.0, k0 = bucket / 64.0;
+    uchar* spriteBits = img.bits();
+    const qsizetype spriteBpl = img.bytesPerLine();
+    inRows(S, [&](int rowA, int rowB) {
+        for (int j = rowA; j < rowB; j++) {
+            QRgb* row = reinterpret_cast<QRgb*>(spriteBits + spriteBpl * j);
+            for (int i = 0; i < S; i++) {
+                const double d = std::hypot(i + 0.5 - R, j + 0.5 - R) / R;
+                const double cov = clamp((1 - d) * R + 0.5, 0, 1) * clamp((d - k0) * R + 0.5, 0, 1);
+                row[i] = qPremultiply(qRgba(c.red(), c.green(), c.blue(), int(cov * 255 + 0.5)));
+            }
+        }
+    });
+    return m_hzSprites.insert(key, img).value();
+}
 void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double open, double z, double cT, std::vector<Label>& labels)
 {
+    m_animVisible = true;
     const QString k = keyS(s);
     const double simT = doc->simT;
     p.setOpacity(open);
@@ -749,14 +957,23 @@ void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double o
     const auto planets = planetsOf(s);
     // Órbitas e zona habitável.
     if (layOrb()) {
-        QPen pen(m_sk ? m_sk->inkC(0.42 * (0.5 + 0.5 * deep)) : rgbaC(150, 180, 220, 0.16 * (0.5 + 0.5 * deep)));
-        pen.setWidthF(m_sk ? 0.8 : 1);
+        const QColor orbitC = m_sk ? m_sk->inkC(0.42 * (0.5 + 0.5 * deep)) : rgbaC(150, 180, 220, 0.16 * (0.5 + 0.5 * deep));
+        const double orbitW = m_sk ? 0.8 : 1;
+        QPen pen(orbitC);
+        pen.setWidthF(orbitW);
         p.setPen(pen); p.setBrush(Qt::NoBrush);
-        for (Body* q : planets) ellipseAt(p, x, y, q->layOrb * z, cT);
+        for (Body* q : planets) orbitLine(p, x, y, q->layOrb * z, cT, orbitC, orbitW);
         if (s.hasHz && !planets.empty()) {
             const double r0 = std::max(s.layR * 0.12, doc->toR(s, s.hz[0])), r1 = std::min(s.layR * 1.05, doc->toR(s, s.hz[1]));
             const double a = 0.06 * deep;
-            if (r1 > r0 && a > 0.003) {
+            const double bandPx = r1 * z * 2 * m_dpr;
+            if (r1 > r0 && a > 0.003 && bandPx <= 300 && !m_exporting) {
+                const QColor bandC = m_sk ? m_sk->hzC(1) : QColor(111, 214, 154);
+                const double was = p.opacity(), ak = m_sk ? a * (m_sk->mono ? 0.9 : 1.8) : a;
+                p.setOpacity(was * ak);
+                p.drawImage(QRectF(x - r1 * z, y - r1 * z * cT, r1 * z * 2, r1 * z * cT * 2), hzSprite(bandC, r0 / r1, bandPx));
+                p.setOpacity(was);
+            } else if (r1 > r0 && a > 0.003) {
                 QPainterPath band;
                 band.addEllipse(QPointF(x, y), r1 * z, r1 * z * cT);
                 band.addEllipse(QPointF(x, y), r0 * z, r0 * z * cT);
@@ -770,7 +987,8 @@ void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double o
     for (size_t bi = 0; bi < s.belts.size(); bi++) {
         const Belt& belt = s.belts[bi];
         const double r0 = doc->toR(s, belt.a0), r1 = doc->toR(s, belt.a1);
-        const int n = std::min(260, int(std::floor(belt.n / 3.0 + 0.5)));
+        // Em sistema pequeno na tela a poeira acumula num pixel só: menos grãos, a mesma densidade à vista.
+        const int n = int(std::min(260, int(std::floor(belt.n / 3.0 + 0.5))) * clamp(s.layR * z / 260, 0.12, 1));
         const QColor c = m_sk ? m_sk->inkC(!belt.kuiper ? 0.6 : 0.42) : !belt.kuiper ? rgbaC(200, 185, 165, 0.55) : rgbaC(190, 220, 240, 0.45);
         for (int i = 0; i < n; i++) {
             const double h1 = std::sin(i * 12.9898 + double(bi) * 78.233) * 43758.5453, u = h1 - std::floor(h1), h2 = std::sin(i * 39.346 + double(bi) * 11.135) * 24634.6345, v = h2 - std::floor(h2);
@@ -900,7 +1118,8 @@ void Canvas::drawSystemOpen(QPainter& p, System& s, double x, double y, double o
                 p.setPen(pen); p.setBrush(Qt::NoBrush);
                 const int nm = int(pp->moons.size());
                 const bool tight = m_sk && nm > 2 && (pp->moons[size_t(nm - 1)]->layOrb - pp->moons[0]->layOrb) * z / (nm - 1) < 5;
-                for (int i = 0; i < nm; i++) { if (tight && i && i < nm - 1) continue; ellipseAt(p, px, py, pp->moons[size_t(i)]->layOrb * z, cT); }
+                const QColor moonC = pen.color();
+                for (int i = 0; i < nm; i++) { if (tight && i && i < nm - 1) continue; orbitLine(p, px, py, pp->moons[size_t(i)]->layOrb * z, cT, moonC, pen.widthF()); }
                 p.setOpacity(open);
             }
             drawMoons(true);
@@ -1035,6 +1254,7 @@ void Canvas::paintPiece(QPainter& p, Build& b, double px, double py, double r, d
         p.setOpacity(1);
         return;
     }
+    m_animVisible = true;
     const double rot = pieceRot(b), pitch = piecePitch(b);
     drawModel(p, b.type, b.seed, px, py, r, rot, pitch, lx, ly2, alpha, m_dpr, b.key);
     if (!m_sk) drawAnimated(p, b.type, b.seed, px, py, r, rot, pitch, doc->simT, alpha, b.flash);
@@ -1071,6 +1291,8 @@ void Canvas::placeLabels(QPainter& p, std::vector<Label>& labels)
     std::vector<QRectF> placed;
     const QString halo = m_sk ? m_sk->id : QStringLiteral("d");
     if (m_stamps.size() > 3000) m_stamps.clear();
+    QElapsedTimer stampTime;
+    stampTime.start();
     for (Label& l : labels) {
         double alpha = l.hasAlpha ? l.alpha : 1;
         if (alpha < 0.05) continue;
@@ -1096,6 +1318,8 @@ void Canvas::placeLabels(QPainter& p, std::vector<Label>& labels)
         const QString sk = QStringLiteral("%1|%2|%3|%4|%5|%6").arg(l.text, halo, font.family()).arg(font.pixelSize()).arg(font.weight()).arg(col.rgba());
         auto it = m_stamps.find(sk);
         if (it == m_stamps.end()) {
+            // Muitos nomes aparecendo de uma vez (o zoom abriu espaço): uns agora, o resto no próximo quadro.
+            if (!m_exporting && stampTime.elapsed() >= 3) { m_dirty = true; continue; }
             const int iw = int(w) + 10, ih = int(fm.height()) + 8;
             QImage st(int(iw * m_dpr), int(ih * m_dpr), QImage::Format_ARGB32_Premultiplied);
             st.fill(Qt::transparent);

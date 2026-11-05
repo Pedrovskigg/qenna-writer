@@ -19,6 +19,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPointer>
 #include <QPushButton>
 #include <QTextBlock>
 #include <QTextCursor>
@@ -139,13 +140,12 @@ void Panel::docWriteHtml(DocLink* d, const QString& html)
     docMaterialize(d);
     d->html = html;
     if (d->gaveta && !d->itemId.isEmpty()) {
-        if (m_link.syncEditor) m_link.syncEditor();
         if (m_link.cache) m_link.cache->set(DocCache::itemKey(d->itemId), html, true);
-        if (m_link.itemEdited) m_link.itemEdited(d->itemId);
-        if (m_link.save) m_link.save();
+        if (m_link.itemReload) m_link.itemReload(d->itemId);
+        m_docProjectDirty = true;
     } else if (!d->gaveta && !d->nodeId.isEmpty()) {
         m_link.places->updateNode(d->placeId, d->nodeId, d->title, html);
-        m_link.places->save();
+        m_docPlacesDirty = true;
     }
     scheduleSave();
 }
@@ -155,10 +155,10 @@ void Panel::docSetTitle(DocLink* d, const QString& title)
     docMaterialize(d);
     if (d->gaveta && !d->itemId.isEmpty()) {
         m_link.model->updateDrawerItemMeta(d->itemId, d->title, QString());
-        if (m_link.save) m_link.save();
+        m_docProjectDirty = true;
     } else if (!d->gaveta && !d->nodeId.isEmpty()) {
         m_link.places->updateNode(d->placeId, d->nodeId, d->title, docHtml(d));
-        m_link.places->save();
+        m_docPlacesDirty = true;
     }
     scheduleSave();
 }
@@ -182,6 +182,8 @@ void Panel::docMoveTo(DocLink* d, const QString& dest)
 void Panel::docDropIfEmpty(DocLink* d)
 {
     if (!d) return;
+    // Digitou e fechou logo em seguida: o texto na espera conta, senão o documento some com ele.
+    if (m_editorFlush) { m_editorFlush(); m_editorFlush = nullptr; }
     const bool real = d->gaveta ? !d->itemId.isEmpty() : !d->nodeId.isEmpty();
     if (real || !d->html.isEmpty() || d->title != tr("Documento sem título")) return;
     for (size_t i = 0; i < m_doc.docs.size(); i++) if (m_doc.docs[i].get() == d) { m_doc.docs.erase(m_doc.docs.begin() + long(i)); break; }
@@ -315,10 +317,15 @@ QWidget* Panel::editorFor(DocLink* d, const std::function<void()>& back, QWidget
     auto* timer = new QTimer(f);
     timer->setSingleShot(true);
     timer->setInterval(600);
-    connect(timer, &QTimer::timeout, this, [this, d, body]() {
-        const bool empty = body->toPlainText().trimmed().isEmpty() && !body->toHtml().contains(QStringLiteral("<img"));
-        docWriteHtml(d, empty ? QString() : body->toHtml());
-    });
+    const auto writeBody = [this, d, body]() {
+        const QString html = body->toHtml();
+        const bool empty = body->toPlainText().trimmed().isEmpty() && !html.contains(QStringLiteral("<img"));
+        docWriteHtml(d, empty ? QString() : html);
+    };
+    connect(timer, &QTimer::timeout, this, writeBody);
+    // O texto que ainda está na espera não se perde se o editor sumir (fechar o mapa, trocar de painel).
+    QPointer<QTimer> pending(timer);
+    m_editorFlush = [pending, writeBody]() { if (pending && pending->isActive()) { pending->stop(); writeBody(); } };
     connect(body, &QTextEdit::textChanged, timer, qOverload<>(&QTimer::start));
     connect(title, &QLineEdit::textEdited, this, [this, d, title]() { docSetTitle(d, title->text().trimmed()); });
     connect(dest, &QComboBox::activated, this, [this, d, dest, whereTxt, timer, body]() {
@@ -328,6 +335,7 @@ QWidget* Panel::editorFor(DocLink* d, const std::function<void()>& back, QWidget
     });
     connect(backB, &QPushButton::clicked, this, [this, timer, body, d, back]() {
         if (timer->isActive()) { timer->stop(); docWriteHtml(d, body->toHtml()); }
+        m_editorFlush = nullptr;
         back();
     });
     QTimer::singleShot(0, d->title == tr("Documento sem título") ? static_cast<QWidget*>(title) : static_cast<QWidget*>(body), [title, body, d, this]() { if (d->title == tr("Documento sem título")) title->setFocus(); else body->setFocus(); });

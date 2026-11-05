@@ -59,6 +59,7 @@ public:
     Doc* doc = nullptr;
     void setDoc(Doc* d);
     void docChanged();          // algo mudou por fora: refaz os caches do que depende disso
+    void markDirty() { m_dirty = true; }   // algo que aparece mudou: pinta de novo no próximo quadro
 
     // estado que a interface mexe
     QString view = QStringLiteral("full");
@@ -176,7 +177,7 @@ signals:
     void docEdited();                            // algo mudou no documento: hora de marcar pra salvar
 
 protected:
-    void paintEvent(QPaintEvent*) override;
+    void paintEvent(QPaintEvent* e) override;
     void resizeEvent(QResizeEvent*) override;
     void mousePressEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
@@ -308,6 +309,21 @@ private:
     const QImage& flare(const Rgb& c);
     void drawSpaceStar(QPainter& p, const System& s, double x, double y);
 
+    // ritmo: quem está escrevendo tem a vez, e o quadro nunca toma o tempo todo do programa
+    void onFocusChanged(QWidget* now);
+    QMetaObject::Connection m_typeConn;
+    bool m_textFocus = false;
+    qint64 m_lastTypeT = -100000, m_lastWheelT = -100000, m_lastFrameT = 0;
+    double m_frameCost = 0;
+    bool m_animVisible = true, m_wasBusy = false;
+    quint64 m_lastStamp = 0;
+    quint64 stateStamp() const;   // o retrato do que muda o desenho: o mapa não redesenha sozinho quando nada se move
+    bool cameraBusy() const { return m_fly || m_tiltAnim || m_drag || m_clock.elapsed() - m_lastWheelT < 180; }
+    // órbitas e zona habitável de sistema pequeno na tela: sem o traçado caro do QPainter
+    void orbitLine(QPainter& p, double x, double y, double r, double cT, const QColor& c, double w);
+    const QImage& hzSprite(const QColor& c, double k, double destPx);
+    QHash<QString, QImage> m_hzSprites;
+
     // camadas e caches
     QImage m_frame, m_bg;
     QString m_bgKey;
@@ -316,7 +332,7 @@ private:
     bool m_exporting = false;
     struct TexEntry { std::shared_ptr<Texture> best; int bw = 0, pend = 0; uint32_t rev = 0; };
     QHash<QString, TexEntry> m_tex;
-    struct ThumbJob { QString key; const Body* b; int D; int want; };
+    struct ThumbJob { QString key, texK; std::shared_ptr<Body> lite; std::shared_ptr<Texture> tex; Frame frame; const Atm* atm = nullptr; int D = 0; };
     struct ThumbEntry { QImage img; int texW = 0; bool queued = false; int gen = 0; };
     QHash<QString, ThumbEntry> m_thumbs;
     std::deque<ThumbJob> m_thumbQ;
@@ -330,7 +346,8 @@ private:
     QHash<QString, QImage> m_stamps;
     QString texKey(const Body& b) const;
     const QImage* thumb(const Body& b, int D);
-    void pumpThumbs(double budgetMs);
+    void pumpThumbs();
+    int m_thumbRunning = 0;
     void requestTexture(const Body& b, int w, TexEntry& e, const QString& k);
     int m_texRunning = 0;
 
@@ -391,6 +408,9 @@ private:
     std::map<std::string, Preview> m_previews;
     QHash<int, QString> m_painted;
 };
+
+// Divide [0, rows) entre os núcleos e espera acabar; poucas linhas ficam na thread de quem chamou.
+void inRows(int rows, const std::function<void(int, int)>& fn);
 
 QString fmtLy(double units, double ly);
 QString bodyTypeName(Type t);

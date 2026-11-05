@@ -129,13 +129,14 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
 {
     const bool withMask = m_focusShown == r.key;
     const QPointF vc = viewCenter();
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(width()).arg(height()).arg(QStringLiteral("%1,%2,%3,%4,%5,%6").arg(vc.x()).arg(vc.y()).arg(r.color).arg(signatureOf(r)).arg(int(withMask)).arg(m_sk ? m_sk->id : QString()));
+    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(width()).arg(height()).arg(QStringLiteral("%1,%2,%3,%4,%5,%6").arg(vc.x()).arg(vc.y()).arg(r.color).arg(signatureOf(r)).arg(int(withMask)).arg(m_sk ? m_sk->id : QString()) + (cameraBusy() ? QStringLiteral("~") : QString()));
     TerrLayer& e = m_terr[r.key];
     if (e.key == key) return e;
     e.key = key;
     const RegionPrims& P = regionPrims(r);
     const double z = cam.z, cT = std::cos(cam.tilt);
-    const int G = TERR_GRID, W = width(), H = height();
+    // Com a câmera andando a grade é mais larga: quatro vezes menos conta, e a fronteira afina quando ela para.
+    const int G = cameraBusy() ? TERR_GRID * 2 : TERR_GRID, W = width(), H = height();
     const double GLOW = TERR_GLOW;
     const double padX = (REGION_RAD + REGION_MELT) * z + GLOW + G, padY = (REGION_RAD + REGION_MELT) * z * std::max(cT, 0.4) + GLOW + G;
     double fx0 = W, fy0 = H, fx1 = 0, fy1 = 0;
@@ -143,19 +144,51 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
     const int x0 = std::max(0, int(std::floor(fx0))), y0 = std::max(0, int(std::floor(fy0))), x1 = std::min(W, int(std::ceil(fx1))), y1 = std::min(H, int(std::ceil(fy1)));
     e.empty = x1 <= x0 || y1 <= y0;
     if (e.empty) return e;
-    const int w = x1 - x0, h = y1 - y0, gw = (w + G - 1) / G, gh = (h + G - 1) / G;
+    const int w0 = x1 - x0, h0 = y1 - y0, gw = (w0 + G - 1) / G, gh = (h0 + G - 1) / G;
     // Da tela pro mundo: a inversa exata da projeção do chão da galáxia.
     double ox, oy, ex0, ex1, ey0, ey1;
     proj(0, 0, 0, ox, oy); proj(1, 0, 0, ex0, ex1); proj(0, 1, 0, ey0, ey1);
     const double a = ex0 - ox, b = ey0 - ox, c = ex1 - oy, d = ey1 - oy, det = a * d - b * c;
     const double ia = d / det, ib = -b / det, ic = -c / det, id = a / det;
     const int row = gw + 1;
-    e.field.resize(size_t(row) * size_t(gh + 1));
+    e.field.assign(size_t(row) * size_t(gh + 1), 1e18f);
     float* fd = e.field.data();
-    for (int j = 0; j <= gh; j++) for (int i = 0; i <= gw; i++) {
-        const double X = x0 + i * G - ox, Y = y0 + j * G - oy;
-        fd[j * row + i] = float(regionDist(P, ia * X + ib * Y, ic * X + id * Y) * z);
-    }
+    // O campo em cada ponto da grade é a mistura de todas as peças, mas uma peça distante não muda nada que
+    // apareça: cada uma só calcula no próprio retângulo, com folga pro brilho, pra mistura e pra interpolação.
+    // A ordem das peças é a de regionDist, então o resultado é o mesmo.
+    const double reach = (GLOW + G * 3.0) / z + 2 * REGION_MELT;
+    const auto stamp = [&](int rowA, int rowB, double wx0, double wy0, double wx1, double wy1, const auto& dist) {
+        double sx0 = 1e18, sy0 = 1e18, sx1 = -1e18, sy1 = -1e18;
+        for (double wx : { wx0, wx1 }) for (double wy : { wy0, wy1 }) {
+            const double sx = ox + a * wx + b * wy, sy = oy + c * wx + d * wy;
+            sx0 = std::min(sx0, sx); sx1 = std::max(sx1, sx); sy0 = std::min(sy0, sy); sy1 = std::max(sy1, sy);
+        }
+        const int i0 = int(std::max(0.0, std::floor((sx0 - x0) / G))), i1 = int(std::min(double(gw), std::ceil((sx1 - x0) / G)));
+        const int j0 = std::max(rowA, int(std::floor((sy0 - y0) / G))), j1 = std::min(rowB - 1, int(std::ceil((sy1 - y0) / G)));
+        for (int j = j0; j <= j1; j++) {
+            const double Y = y0 + j * G - oy;
+            float* line = fd + j * row;
+            for (int i = i0; i <= i1; i++) {
+                const double X = x0 + i * G - ox;
+                line[i] = float(smin(line[i], dist(ia * X + ib * Y, ic * X + id * Y)));
+            }
+        }
+    };
+    // Cada núcleo cuida de uma faixa de linhas da grade, sempre com todas as peças, na mesma ordem.
+    inRows(gh + 1, [&](int rowA, int rowB) {
+        for (const System* p : P.pts) {
+            const double px = p->x, py = p->y, R = REGION_RAD + reach;
+            stamp(rowA, rowB, px - R, py - R, px + R, py + R, [px, py](double wx, double wy) { const double u = wx - px, v = wy - py; return std::sqrt(u * u + v * v) - REGION_RAD; });
+        }
+        for (const auto& s : P.links) {
+            const double R = REGION_NECK + reach;
+            stamp(rowA, rowB, std::min(s.x, s.x + s.dx) - R, std::min(s.y, s.y + s.dy) - R, std::max(s.x, s.x + s.dx) + R, std::max(s.y, s.y + s.dy) + R, [&s](double wx, double wy) {
+                const double u = wx - s.x, v = wy - s.y, t = std::max(0.0, std::min(1.0, (u * s.dx + v * s.dy) / s.l)), m = u - s.dx * t, n = v - s.dy * t;
+                return std::sqrt(m * m + n * n) - REGION_NECK;
+            });
+        }
+        for (int j = rowA; j < rowB; j++) { float* line = fd + j * row; for (int i = 0; i < row; i++) line[i] *= float(z); }
+    });
     // Tabela de cor pela distância, em quartos de pixel.
     const double RIM = std::max(10.0, std::min(90.0, 0.03 * z));
     const QColor rc = regionInk(r);
@@ -167,22 +200,39 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
         const double fill = q < 0 ? 0.03 + 0.2 * std::pow(1 - smooth(0, RIM, -q), 2) : 0.1 * (1 - smooth(0, GLOW, q));
         const int A = int(std::floor(std::max(m_sk && m_sk->mono ? fill * 0.55 : fill, line * 0.9) * 255 + 0.5));
         const double K = m_sk ? 0 : line * 0.3;
-        lut[size_t(n)] = uint32_t(A) << 24 | uint32_t(cb + (255 - cb) * K + 0.5) << 16 | uint32_t(cg + (255 - cg) * K + 0.5) << 8 | uint32_t(cr + (255 - cr) * K + 0.5);
-        lutM[size_t(n)] = uint32_t((1 - smooth(-1.5, 1.5, q)) * 255 + 0.5) << 24 | 0xffffffu;
+        lut[size_t(n)] = qPremultiply(qRgba(int(cr + (255 - cr) * K + 0.5), int(cg + (255 - cg) * K + 0.5), int(cb + (255 - cb) * K + 0.5), A));
+        lutM[size_t(n)] = qPremultiply(qRgba(255, 255, 255, int((1 - smooth(-1.5, 1.5, q)) * 255 + 0.5)));
     }
-    QImage img(w, h, QImage::Format_RGBA8888), imgM;
-    img.fill(Qt::transparent);
-    if (withMask) { imgM = QImage(w, h, QImage::Format_RGBA8888); imgM.fill(Qt::transparent); }
+    // Só o retângulo que tem território de verdade: imagem menor, e menos pixels pra misturar a cada quadro.
+    int gi0 = gw, gi1 = -1, gj0 = gh, gj1 = -1;
+    for (int j = 0; j < gh; j++) {
+        const float* l0 = fd + j * row;
+        const float* l1 = l0 + row;
+        for (int i = 0; i < gw; i++) {
+            if (std::min({ l0[i], l0[i + 1], l1[i], l1[i + 1] }) >= GLOW) continue;
+            gi0 = std::min(gi0, i); gi1 = std::max(gi1, i); gj0 = std::min(gj0, j); gj1 = std::max(gj1, j);
+        }
+    }
+    e.empty = gi1 < 0;
+    if (e.empty) return e;
+    const int xb = gi0 * G, yb = gj0 * G, w = std::min(w0, (gi1 + 1) * G) - xb, h = std::min(h0, (gj1 + 1) * G) - yb;
+    QImage img(w, h, QImage::Format_ARGB32_Premultiplied), imgM;
+    img.fill(0u);
+    if (withMask) { imgM = QImage(w, h, QImage::Format_ARGB32_Premultiplied); imgM.fill(0u); }
     const uint32_t core = lut[0], coreM = lutM[0];
-    for (int j = 0; j < gh; j++) for (int i = 0; i < gw; i++) {
+    uchar* imgBits = img.bits();
+    uchar* maskBits = withMask ? imgM.bits() : nullptr;
+    const qsizetype imgBpl = img.bytesPerLine(), maskBpl = withMask ? imgM.bytesPerLine() : 0;
+    inRows(gj1 - gj0 + 1, [&](int bandA, int bandB) {
+    for (int j = gj0 + bandA; j < gj0 + bandB; j++) for (int i = gi0; i <= gi1; i++) {
         const int k = j * row + i;
         const double d00 = fd[k], d10 = fd[k + 1], d01 = fd[k + row], d11 = fd[k + row + 1];
         const double lo = std::min({ d00, d10, d01, d11 }), hi = std::max({ d00, d10, d01, d11 });
         if (lo >= GLOW) continue;   // fora de tudo
-        const int xs = i * G, ys = j * G, xe = std::min(w, xs + G), ye = std::min(h, ys + G);
+        const int xs = i * G, ys = j * G, xe = std::min(w0, xs + G), ye = std::min(h0, ys + G);
         for (int y = ys; y < ye; y++) {
-            uint32_t* px = reinterpret_cast<uint32_t*>(img.scanLine(y));
-            uint32_t* pxM = withMask ? reinterpret_cast<uint32_t*>(imgM.scanLine(y)) : nullptr;
+            uint32_t* px = reinterpret_cast<uint32_t*>(imgBits + imgBpl * (y - yb)) - xb;
+            uint32_t* pxM = withMask ? reinterpret_cast<uint32_t*>(maskBits + maskBpl * (y - yb)) - xb : nullptr;
             if (hi <= -RIM) {   // miolo: cor única
                 for (int x = xs; x < xe; x++) { px[x] = core; if (pxM) pxM[x] = coreM; }
                 continue;
@@ -197,9 +247,10 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
             }
         }
     }
-    e.img = img.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    e.mask = withMask ? imgM.convertToFormat(QImage::Format_ARGB32_Premultiplied) : QImage();
-    e.x = x0; e.y = y0; e.w = w; e.h = h;
+    });
+    e.img = img;
+    e.mask = imgM;
+    e.x = x0 + xb; e.y = y0 + yb; e.w = w; e.h = h;
     return e;
 }
 void Canvas::drawRegions(QPainter& p, double zoomK, const std::vector<Region*>& list, double mul)

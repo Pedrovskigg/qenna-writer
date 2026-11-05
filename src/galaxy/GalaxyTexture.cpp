@@ -697,15 +697,26 @@ Texture starTexture(const Star& star, uint32_t seed, int w, int h)
 }
 
 // Tabela por pixel do disco: normal na câmera e (lat, lon) no corpo, sem o giro do dia.
-SphereTable sphereTable(int D, double yaw, double pitch, const Frame& fr)
+SphereTable sphereTableAlloc(int D)
 {
     SphereTable T;
     T.D = D;
     const size_t n = size_t(D) * size_t(D);
     T.lat.assign(n, 0.f); T.lon.assign(n, 0.f); T.alpha.assign(n, 0.f); T.nx.assign(n, 0.f); T.ny.assign(n, 0.f); T.nz.assign(n, 0.f);
+    return T;
+}
+SphereTable sphereTable(int D, double yaw, double pitch, const Frame& fr)
+{
+    SphereTable T = sphereTableAlloc(D);
+    sphereTableRows(T, yaw, pitch, fr, 0, D);
+    return T;
+}
+void sphereTableRows(SphereTable& T, double yaw, double pitch, const Frame& fr, int j0, int j1)
+{
+    const int D = T.D;
     const double R = D / 2.0;
     const double cy = std::cos(yaw), sy = std::sin(yaw), sp = std::sin(pitch), cp = std::cos(pitch);
-    for (int j = 0; j < D; j++) {
+    for (int j = j0; j < j1; j++) {
         for (int i = 0; i < D; i++) {
             const double x = (i + 0.5 - R) / R, yu = (R - (j + 0.5)) / R, d2 = x * x + yu * yu;
             const size_t k = size_t(j * D + i);
@@ -721,16 +732,34 @@ SphereTable sphereTable(int D, double yaw, double pitch, const Frame& fr)
             T.lat[k] = float(std::asin(clamp(bz, -1, 1))); T.lon[k] = float(std::atan2(by, bx));
         }
     }
-    return T;
+}
+
+namespace {
+// std::pow custa caro em cada pixel: as potências da luz saem de tabelas lidas com interpolação.
+struct PowTable {
+    double v[1026];
+    explicit PowTable(double e) { for (int i = 0; i <= 1025; i++) v[i] = std::pow(i / 1024.0, e); }
+    double at(double x) const
+    {
+        const double f = (x <= 0 ? 0 : x >= 1 ? 1 : x) * 1024;
+        const int i = int(f);
+        return v[i] + (v[i + 1] - v[i]) * (f - i);
+    }
+};
 }
 
 // Pinta a esfera em `out` (RGBA D×D). Lc = direção da luz na câmera; nullptr = o corpo brilha sozinho.
 void shadeSphere(uint8_t* out, const SphereTable& T, const Texture& tex, double spin, const V3* Lc, const Atm* atm)
 {
-    const size_t n = size_t(T.D) * size_t(T.D);
+    shadeSphereRows(out, T, tex, spin, Lc, atm, 0, T.D);
+}
+void shadeSphereRows(uint8_t* out, const SphereTable& T, const Texture& tex, double spin, const V3* Lc, const Atm* atm, int j0, int j1)
+{
+    static const PowTable POW_LIT(1.15), POW_LIMB(2.2), POW_GLOW(0.55);
+    const size_t k0 = size_t(j0) * size_t(T.D), k1 = size_t(j1) * size_t(T.D);
     const int tw = tex.w, th = tex.h;
     const uint8_t* rgb = tex.rgb.data();
-    for (size_t k = 0; k < n; k++) {
+    for (size_t k = k0; k < k1; k++) {
         const double a = T.alpha[k];
         const size_t o = k * 4;
         if (a <= 0) { out[o + 3] = 0; continue; }
@@ -753,7 +782,7 @@ void shadeSphere(uint8_t* out, const SphereTable& T, const Texture& tex, double 
             const double dl = nx * L[0] + ny * L[1] + nz * L[2];
             // Crepúsculo largo: a luz cai devagar até a noite, sem degrau no terminador.
             const double day = smooth(-0.3, 0.35, dl);
-            const double lit = 0.025 + 0.975 * std::pow(smooth(-0.3, 1.0, dl), 1.15);
+            const double lit = 0.025 + 0.975 * POW_LIT.at(smooth(-0.3, 1.0, dl));
             const double em = (tex.emi[idx] / 255.0) * (1 - day * 0.65) * 1.3;
             r = r * (lit + em); g = g * (lit + em * 0.8); b = b * (lit + em * 0.6);
             if (!tex.spec.empty()) {
@@ -765,7 +794,8 @@ void shadeSphere(uint8_t* out, const SphereTable& T, const Texture& tex, double 
                     if (hn == 0) hn = 1;
                     hx /= hn; hy /= hn; hz /= hn;
                     const double nh = std::max(0.0, nx * hx + ny * hy + nz * hz);
-                    const double sp = std::pow(nh, 18) * 0.07 * sm * smooth(0, 0.25, dl) * 255;
+                    const double nh2 = nh * nh, nh4 = nh2 * nh2, nh8 = nh4 * nh4, nh16 = nh8 * nh8;
+                    const double sp = nh16 * nh2 * 0.07 * sm * smooth(0, 0.25, dl) * 255;
                     r += sp; g += sp * 0.97; b += sp * 0.9;
                 }
             }
@@ -787,17 +817,18 @@ void shadeSphere(uint8_t* out, const SphereTable& T, const Texture& tex, double 
             }
             if (atm) {
                 // Atmosfera: perto da borda o chão some numa névoa azul (mistura, não reflexo), só no lado do dia.
-                const double lim = std::pow(1 - nz, 2.2), dayK = smooth(-0.2, 0.4, dl);
+                const double lim = POW_LIMB.at(1 - nz), dayK = smooth(-0.2, 0.4, dl);
                 const double haze = lim * atm->k * 0.55 * dayK;
                 const double hk = 0.45 + 0.55 * std::max(0.0, dl);
                 r = mix(r, atm->c[0] * 255 * hk, haze);
                 g = mix(g, atm->c[1] * 255 * hk, haze);
                 b = mix(b, atm->c[2] * 255 * hk, haze);
-                const double edge = std::pow(1 - nz, 6) * atm->k * dayK * 70;
+                const double rim1 = 1 - nz, rim3 = rim1 * rim1 * rim1;
+                const double edge = rim3 * rim3 * atm->k * dayK * 70;
                 r += atm->c[0] * edge; g += atm->c[1] * edge; b += atm->c[2] * edge;
             }
         } else {
-            const double ld = 0.42 + 0.58 * std::pow(nz, 0.55);
+            const double ld = 0.42 + 0.58 * POW_GLOW.at(nz);
             r *= ld * 1.1; g *= ld * 1.1; b *= ld * 1.1;
         }
         out[o] = u8c(r); out[o + 1] = u8c(g); out[o + 2] = u8c(b); out[o + 3] = u8c(a * 255);

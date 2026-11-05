@@ -383,13 +383,15 @@ void Canvas::paintGravity(QPainter& g, double a, double cc, double zoomK)
     const double E = EXT, far_ = 1 - smooth(4, 16, zoomK);
     const auto at = [&](double x, double y) { return std::fabs(x) > E || std::fabs(y) > E ? 0.0 : sampleField(F, (x + E) / (2 * E), (E - y) / (2 * E)); };
     if (far_ > 0.01) {
-        size_t o = 0;
-        for (int j = 0; j < M; j++) for (int i = 0; i < M; i++, o++) {
-            const double x = (x0 + i) * st, y = (y0 + j) * st, t = at(x, y), q = st * 1.5;
-            T[o] = float(t);
-            DX[o] = float((at(x + q, y) - at(x - q, y)) * st * 2.2 * far_); DY[o] = float((at(x, y + q) - at(x, y - q)) * st * 2.2 * far_);
-            DIP[o] = float(std::pow(t, 0.8) * 0.2 * far_);
-        }
+        inRows(M, [&](int rowA, int rowB) {
+            size_t o = size_t(rowA) * size_t(M);
+            for (int j = rowA; j < rowB; j++) for (int i = 0; i < M; i++, o++) {
+                const double x = (x0 + i) * st, y = (y0 + j) * st, t = at(x, y), q = st * 1.5;
+                T[o] = float(t);
+                DX[o] = float((at(x + q, y) - at(x - q, y)) * st * 2.2 * far_); DY[o] = float((at(x, y + q) - at(x, y - q)) * st * 2.2 * far_);
+                DIP[o] = float(std::pow(t, 0.8) * 0.2 * far_);
+            }
+        });
     }
     for (const auto& sp : doc->gal->systems) {
         const System& s = *sp;
@@ -412,13 +414,15 @@ void Canvas::paintGravity(QPainter& g, double a, double cc, double zoomK)
     std::vector<uint8_t> B(count);
     {
         const double lim = st * 0.62;
-        size_t o = 0;
-        for (int j = 0; j < M; j++) for (int i = 0; i < M; i++, o++) {
-            double qx, qy;
-            proj((x0 + i) * st + clamp(DX[o], -lim, lim), (y0 + j) * st + clamp(DY[o], -lim, lim), -std::min(double(DIP[o]), 0.34), qx, qy);
-            X[o] = float(qx); Y[o] = float(qy);
-            B[o] = uint8_t(std::min(4, int(std::floor(std::pow(double(T[o]), 0.8) * far_ * 4.6 + WELL[o] * 1.7))));
-        }
+        inRows(M, [&](int rowA, int rowB) {
+            size_t o = size_t(rowA) * size_t(M);
+            for (int j = rowA; j < rowB; j++) for (int i = 0; i < M; i++, o++) {
+                double qx, qy;
+                proj((x0 + i) * st + clamp(DX[o], -lim, lim), (y0 + j) * st + clamp(DY[o], -lim, lim), -std::min(double(DIP[o]), 0.34), qx, qy);
+                X[o] = float(qx); Y[o] = float(qy);
+                B[o] = uint8_t(std::min(4, int(std::floor(std::pow(double(T[o]), 0.8) * far_ * 4.6 + WELL[o] * 1.7))));
+            }
+        });
     }
     const double lw[5] = { 0.5, 0.65, 0.8, 1, 1.2 }, al[5] = { 0.1, 0.24, 0.42, 0.66, 0.92 };
     QVector<QLineF> lines[5];
@@ -430,12 +434,16 @@ void Canvas::paintGravity(QPainter& g, double a, double cc, double zoomK)
             if (j + 1 < M) lines[std::max(B[o], B[o + MM])].push_back(QLineF(X[o], Y[o], X[o + MM], Y[o + MM]));
         }
     }
+    // A malha tem dezenas de milhares de linhas: com a câmera andando, sem suavizar; ela suaviza quando para.
+    const bool wasAa = g.testRenderHint(QPainter::Antialiasing);
+    if (cameraBusy() && !m_exporting) g.setRenderHint(QPainter::Antialiasing, false);
     for (int lv = 0; lv < 5; lv++) {
         const Rgb c = lv >= 3 ? mixRgb(m_sk->ink, { 255, 255, 255 }, lv == 4 ? 0.65 : 0.25) : m_sk->ink;
         QPen pen(cssOf(c, al[lv])); pen.setWidthF(lw[lv]);
         g.setPen(pen);
         g.drawLines(lines[lv]);
     }
+    g.setRenderHint(QPainter::Antialiasing, wasAa);
 }
 
 // ── Harmonia ──

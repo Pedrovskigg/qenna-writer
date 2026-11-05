@@ -319,5 +319,9 @@ struct SphereTable {
 SphereTable sphereTable(int D, double yaw, double pitch, const Frame& fr);
 // Lc = direção da luz na câmera; nullptr = o corpo brilha sozinho. out = RGBA D×D
 void shadeSphere(uint8_t* out, const SphereTable& T, const Texture& tex, double spin, const V3* Lc, const Atm* atm);
+// As mesmas contas por faixa de linhas [j0, j1), pra dividir entre os núcleos. A tabela nasce de sphereTableAlloc.
+SphereTable sphereTableAlloc(int D);
+void sphereTableRows(SphereTable& T, double yaw, double pitch, const Frame& fr, int j0, int j1);
+void shadeSphereRows(uint8_t* out, const SphereTable& T, const Texture& tex, double spin, const V3* Lc, const Atm* atm, int j0, int j1);
 
 } // namespace galaxy

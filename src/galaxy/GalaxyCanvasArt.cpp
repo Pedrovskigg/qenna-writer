@@ -308,13 +308,15 @@ const QImage* Canvas::artThumb(const Body& b, int D)
 {
     const QImage* base = thumb(b, D);
     if (!base) return nullptr;
-    const QString lk = texKey(b) + QLatin1Char(':') + QString::number(D);
+    // Enquanto o tamanho certo não fica pronto, base pode ser a de outro tamanho.
+    const int bw = base->width();
+    const QString lk = texKey(b) + QLatin1Char(':') + QString::number(bw);
     const int gen = m_thumbs.value(lk).gen;
     const QString k = m_sk->id + QLatin1Char(':') + lk;
     auto it = m_artThumbs.find(k);
     if (it != m_artThumbs.end() && it->gen == gen) return &it->img;
     QImage rgba = base->convertToFormat(QImage::Format_RGBA8888);
-    stylize(rgba.bits(), D, D, *m_sk, false, 0, heatOf(b));
+    stylize(rgba.bits(), bw, bw, *m_sk, false, 0, heatOf(b));
     ArtThumb e;
     e.img = rgba.convertToFormat(QImage::Format_ARGB32_Premultiplied);
     e.gen = gen;

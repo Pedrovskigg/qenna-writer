@@ -59,6 +59,7 @@ struct ProjectLink {
     QString root;
     std::function<void()> syncEditor;                                  // o editor principal descarrega no cache
     std::function<void(const QString& itemId)> itemEdited;             // doc de gaveta mudou por fora: recarrega o editor se for ele
+    std::function<void(const QString& itemId)> itemReload;             // só recarrega o editor, se for ele, sem gravar (quem chama grava depois)
     std::function<void(const QString& itemId)> openItem;               // abre no editor (ficha abre a janela da ficha)
     std::function<void(const QString& placeId, const QString& nodeId)> openPlace;   // Criador de Mundos
     std::function<void(const QString& systemId, const QString& nodeId)> openSystem; // Criador de Mundos, um sistema
