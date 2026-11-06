@@ -34,6 +34,7 @@ namespace carto { class Astrolabe; class ArtPicker; class Ring; class Rose; }
 namespace galaxy {
 
 class Caderno;
+class Livre;
 
 class Panel : public QWidget {
     Q_OBJECT
@@ -73,6 +74,7 @@ protected:
 
 private:
     friend class Caderno;
+    friend class Livre;
     // montagem (GalaxyPanel.cpp)
     void buildUi();
     QToolButton* makeBtn(QWidget* parent, const QString& icon, const QString& tip, const QString& text = QString());
@@ -248,6 +250,10 @@ private:
     // o caderno
     void openCaderno(const QString& key);
     void closeCaderno();
+    // a Criação Livre
+    void openLivre(const QString& key);
+    void closeLivre();
+    bool livreShown() const;
 
     Doc m_doc;
     QString m_path, m_name;
@@ -366,6 +372,8 @@ private:
     int m_resIdx = 0;
 
     Caderno* m_caderno = nullptr;
+    Livre* m_livre = nullptr;
+    QToolButton* m_livreBtn = nullptr;
 };
 
 // fábrica de texto e número, igual ao Lab

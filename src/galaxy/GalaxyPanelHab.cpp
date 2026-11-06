@@ -50,7 +50,7 @@ void Panel::setHabOn(bool on)
 void Panel::syncHabCard()
 {
     if (!m_habCard) return;
-    const bool hide = !m_canvas->hab || m_settings->isVisible() || m_export->isVisible() || m_tool == QLatin1String("realm") || (m_caderno && m_caderno->isVisible());
+    const bool hide = !m_canvas->hab || m_settings->isVisible() || m_export->isVisible() || m_tool == QLatin1String("realm") || (m_caderno && m_caderno->isVisible()) || livreShown();
     m_habCard->setVisible(!hide);
     if (m_habBtn) m_habBtn->setChecked(m_canvas->hab);
     if (!hide) {

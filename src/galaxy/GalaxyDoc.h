@@ -26,8 +26,17 @@ struct Region {
     // Autopopular: os mundos destas classes ganham gente e construções ao entrar no território (bit n = classe n).
     bool autoPop = false;
     int popMask = (1 << 1) | (1 << 2);
+    // Criação Livre: a forma pintada à mão, em carimbos (x, y e raio no espaço do mundo)
+    std::vector<std::array<double, 3>> stamps;
 };
-struct Group { QString key, name, kind, parent; };   // kind: "Lugar" ou "Social"
+// O território tem forma no mapa: algum sistema à vista ou a forma pintada à mão.
+inline bool regionShown(const Region& r, const Galaxy& g)
+{
+    if (!r.stamps.empty()) return true;
+    for (int id : r.systems) if (id >= 0 && id < int(g.systems.size()) && !g.systems[size_t(id)]->gone) return true;
+    return false;
+}
+struct Group { QString key, name, kind, parent, form; };   // kind: "Lugar" ou "Social"; form: Cidade, Região, Palácio...
 // O documento mora no projeto; aqui fica só a ligação com o lugar do mapa.
 struct DocLink {
     int id = 0;
@@ -36,6 +45,7 @@ struct DocLink {
     QString drawer;      // gaveta
     QString itemId;      // item da gaveta, no projeto
     QString placeId, nodeId;   // nó no Criador de Mundos
+    int parent = 0;      // Criação Livre: documento dentro de outro documento (o id dele); 0 = direto no lugar
 };
 struct Build {
     QString key;
@@ -77,6 +87,7 @@ struct GalOpts {
     QString preset;
     std::vector<double> mix;   // quanto de cada classe, de 1 a 6; vazio = o que o sorteio der
     bool organic = false;      // Semeação Orgânica: os sistemas aparecem conforme os territórios crescem
+    bool free = false;         // Criação Livre: a galáxia nasce vazia e só existe o que o autor cria
 };
 
 constexpr double SPEED_PLANET = TAU / 240, SPEED_MOON = TAU / 90, SPEED_SPIN = TAU / 60, SPEED_BINARY = TAU / 120, SPEED_PULSAR = TAU / 24, SPEED_BELT = TAU / 900, SPEED_COMET = TAU / 700, SPEED_SSTAR = TAU / 300;
@@ -111,6 +122,19 @@ public:
     void restoreVeil(bool organic, const QSet<int>& ids);
     QSet<int> organicKeep() const;     // o que a história já tocou: nunca é escondido
     double simT = 0;
+
+    // Criação Livre
+    // Mundo solto: mora num sistema feito à mão só pra ele, que o mapa não mostra até o autor dar um lugar pro mundo.
+    QSet<int> solo;
+    bool isSolo(const System& s) const { return solo.contains(s.id); }
+    QSet<QString> ghosts;              // o que o Gerar sugeriu e ainda espera o sim (tracejado)
+    QSet<QString> capitals;            // mundo: capital do território; lugar ou construção: capital de onde está
+    QHash<QString, QHash<QString, QString>> fichas, fichasGen;   // a ficha técnica que o autor escreve; a gerada, até ele aceitar
+    QHash<QString, QString> linkTypes; // vínculo do Criador → tipo da conexão (Aliança, Rota...)
+    System* addHandSystem(double x, double y, StarKind kind, uint32_t seed);
+    bool freeSpot(const Region* r, double& x, double& y, uint32_t seed) const;   // onde nasce um sistema novo
+    // O mundo mudou de sistema: tudo que apontava pra chave velha (nome, documentos, lugares, peças) passa pra nova.
+    void rekey(const QString& from, const QString& to);
 
     // Gera de novo pela receita. keepUser = false limpa o que o autor pôs.
     void generate(const GalOpts& o);

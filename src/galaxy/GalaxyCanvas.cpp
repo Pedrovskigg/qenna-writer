@@ -248,7 +248,9 @@ void Canvas::frameOfKey(const QString& key, double& x, double& y, double& z)
         double x0 = 9, x1 = -9, y0 = 9, y1 = -9;
         // O enquadramento é do território inteiro, com a fronteira longe da etiqueta e dos botões.
         const double pad = 0.06 + 0.012;
-        for (int id : o.region->systems) { const System& s = *doc->gal->systems[size_t(id)]; x0 = std::min(x0, s.x - pad); x1 = std::max(x1, s.x + pad); y0 = std::min(y0, s.y - pad); y1 = std::max(y1, s.y + pad); }
+        for (int id : o.region->systems) { const System& s = *doc->gal->systems[size_t(id)]; if (s.gone) continue; x0 = std::min(x0, s.x - pad); x1 = std::max(x1, s.x + pad); y0 = std::min(y0, s.y - pad); y1 = std::max(y1, s.y + pad); }
+        for (const auto& st : o.region->stamps) { x0 = std::min(x0, st[0] - st[2]); x1 = std::max(x1, st[0] + st[2]); y0 = std::min(y0, st[1] - st[2]); y1 = std::max(y1, st[1] + st[2]); }
+        if (x0 > x1) { x0 = -1; x1 = 1; y0 = -1; y1 = 1; }
         x = (x0 + x1) / 2; y = (y0 + y1) / 2; z = std::min((width() - left - 150) / (x1 - x0), (bottom - 130) / (y1 - y0));
         break;
     }
@@ -274,7 +276,7 @@ void Canvas::select(const QString& key0, bool flyThere)
     sel = key;
     const Ref o = doc->resolve(key);
     // Clicar numa região foca nela; ir pra fora dela sai do foco; descer pra dentro mantém.
-    if (flyThere && o.kind == RefKind::Region && !o.region->systems.isEmpty()) setFocus2(key);
+    if (flyThere && o.kind == RefKind::Region && regionShown(*o.region, *doc->gal)) setFocus2(key);
     else if (!focusKey.isEmpty() && !doc->pathOf(key).contains(focusKey)) setFocus2(QString());
     if (flyThere) {
         double x, y, z;
@@ -699,14 +701,24 @@ void Canvas::render(QPainter& p)
     if (layTerr()) for (const auto& r : doc->regions) {
         if (zoomK > 18) continue;
         if (fr && m_focusAmt > 0.98) continue;
-        if (r->systems.isEmpty()) continue;
+        if (!regionShown(*r, g)) continue;
         double sumX = 0, sumY = 0, minY = 1e9;
-        for (int id : r->systems) { const System& s = *g.systems[size_t(id)]; double px, py; proj(s.x, s.y, 0, px, py); sumX += px; sumY += py; minY = std::min(minY, py); }
-        const double x = sumX / r->systems.size();
+        int nIn = 0;
+        for (int id : r->systems) { const System& s = *g.systems[size_t(id)]; if (s.gone) continue; double px, py; proj(s.x, s.y, 0, px, py); sumX += px; sumY += py; minY = std::min(minY, py); nIn++; }
+        // a forma pintada à mão também conta
+        if (!r->stamps.empty()) {
+            double wx = 0, wy = 0, w = 0, top = 1e9;
+            for (const auto& st : r->stamps) { wx += st[0] * st[2]; wy += st[1] * st[2]; w += st[2]; double px, py; proj(st[0], st[1] - st[2], 0, px, py); top = std::min(top, py); }
+            double px, py;
+            proj(wx / w, wy / w, 0, px, py);
+            const int k = std::max(1, nIn);
+            sumX += px * k; sumY += py * k; minY = std::min(minY, top + 0.06 * z * cT); nIn += k;
+        }
+        const double x = sumX / nIn;
         QString spaced;
         const QString up = r->name.toUpper();
         for (int i = 0; i < up.size(); i++) { if (i) spaced += QLatin1Char(' '); spaced += up[i]; }
-        Label l; l.text = spaced; l.x = x; l.y = m_sk && m_sk->regionCenter ? sumY / r->systems.size() + 7 : std::max(24.0, minY - 0.06 * z * cT - 12); l.center = true; l.pri = 5000 - zoomK * 100;
+        Label l; l.text = spaced; l.x = x; l.y = m_sk && m_sk->regionCenter ? sumY / nIn + 7 : std::max(24.0, minY - 0.06 * z * cT - 12); l.center = true; l.pri = 5000 - zoomK * 100;
         const QFont f = uiFont(600, m_sk && m_sk->regionPx ? m_sk->regionPx : 13);
         l.font = f; l.color = regionInk(*r); l.key = r->key; l.alpha = (1 - smooth(8, 18, zoomK)) * (fr ? 1 - m_focusAmt : 1); l.hasAlpha = true;
         labels.push_back(l);

@@ -485,6 +485,13 @@ qt_add_executable(qenna-writer
     src/galaxy/GalaxyPanelDocs.cpp
     src/galaxy/GalaxyPanelEdit.cpp
     src/galaxy/GalaxyCaderno.cpp
+    src/galaxy/GalaxyLivre.cpp
+    src/galaxy/GalaxyLivreData.cpp
+    src/galaxy/GalaxyLivreSide.cpp
+    src/galaxy/GalaxyLivreLive.cpp
+    src/galaxy/GalaxyLivreDraw.cpp
+    src/galaxy/GalaxyLivreCompose.cpp
+    src/galaxy/GalaxyLivreSheet.cpp
     src/galaxy/GalaxyNewGalaxy.cpp
     src/carto/CartoExplore.h
     src/carto/CartoAstrolabe.cpp

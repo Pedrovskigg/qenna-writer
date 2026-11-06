@@ -1936,7 +1936,7 @@ void MainWindow::setupEditor()
         // suas, e o helper soma todas (ver setEditorSelectionsLayer).
         connect(readAloud, &ReadAloudController::highlightRange, this,
                 [this](int start, int len) mutable {
-            if (!editor) return;
+            if (!editor || readAloudExternal) return;
             if (len <= 0) {
                 setEditorSelectionsLayer(QStringLiteral("readAloud"), {});
                 return;
@@ -5341,6 +5341,7 @@ void MainWindow::readAloudSelectionOrFromCursor()
 void MainWindow::startReadAloud(int start, int end)
 {
     if (!readAloud || !readAloud->isAvailable() || !editor) return;
+    readAloudExternal = false;
 
     // Idioma acompanha o do corretor: ouvir a própria prosa com a voz de outro
     // idioma não revisa nada. Sem voz instalada pro idioma, o controller
@@ -10071,6 +10072,24 @@ void MainWindow::connectCartoProject()
         w->openNode(placeId, nodeId);
         w->show(); w->raise(); w->activateWindow();
     };
+    // a folha da Criação Livre usa o mesmo corretor, sinônimos, glossário, leitura em voz alta e fontes
+    l.spell = spellChecker;
+    l.synonyms = [this](const QString& w) -> QStringList { return editor && editor->synonymProvider() ? editor->synonymProvider()(w) : QStringList(); };
+    l.addGlossary = [this](const QString& w, QPoint gp) { if (glossaryAddPopup) glossaryAddPopup->presentAt(gp, w); };
+    l.readAloud = [this](QTextDocument* doc, int start, int end, QRect anchor) {
+        if (!readAloud || !readAloud->isAvailable() || !doc) return;
+        // uma cópia: a folha pode trocar de documento enquanto a voz lê
+        delete readAloudExternalDoc;
+        readAloudExternalDoc = doc->clone(this);
+        readAloudExternal = true;
+        QString lang = projectModel ? projectModel->spellLanguage() : QString();
+        if (lang.isEmpty()) lang = QStringLiteral("pt_BR");
+        readAloud->setLanguageCode(lang);
+        if (readAloudPanel) { readAloudPanel->setStatusText(QString()); readAloudPanel->showNear(anchor, Qt::TopEdge); }
+        if (end >= 0) readAloud->speakRange(readAloudExternalDoc, start, end);
+        else readAloud->speakDocument(readAloudExternalDoc, start);
+    };
+    l.fonts = [this]() { return availableFontFamilies; };
     l.openSystem = [this](const QString& systemId, const QString& nodeId) {
         TerritorioWindow* w = ensureTerritorioWindow();
         w->openConstrutorNode(systemId, nodeId);

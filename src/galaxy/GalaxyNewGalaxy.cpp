@@ -281,6 +281,29 @@ void NewGalaxy::build()
     connect(m_tabGal, &QToolButton::clicked, this, [this]() { m_tabGal->setChecked(true); });
     f->addLayout(tabs);
     const auto cap = [&](const QString& t, QWidget* parent) { auto* c = new QLabel(t, parent); c->setObjectName(QStringLiteral("cartoCaption")); return c; };
+    // Gerada ou Criação Livre: na livre a galáxia nasce vazia e só existe o que o autor cria
+    f->addWidget(cap(tr("COMO ELA NASCE"), form));
+    auto* fr = new QHBoxLayout();
+    fr->setSpacing(4);
+    const auto seg = [&](const QString& text, bool free) {
+        auto* b = new QToolButton(form);
+        b->setObjectName(QStringLiteral("cartoSeg"));
+        b->setText(text);
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFocusPolicy(Qt::NoFocus);
+        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        connect(b, &QToolButton::clicked, this, [this, free]() { m_d.free = free; if (free) m_d.organic = false; sync(); preview(); });
+        fr->addWidget(b);
+        return b;
+    };
+    m_genBtn = seg(tr("Gerada"), false);
+    m_freeBtn = seg(tr("Criação Livre"), true);
+    f->addLayout(fr);
+    m_freeNote = new QLabel(form);
+    m_freeNote->setObjectName(QStringLiteral("cartoNote"));
+    m_freeNote->setWordWrap(true);
+    f->addWidget(m_freeNote);
     f->addWidget(cap(tr("GALÁXIA PRONTA"), form));
     m_preset = new QComboBox(form);
     m_preset->setObjectName(QStringLiteral("cartoCombo"));
@@ -358,16 +381,19 @@ void NewGalaxy::build()
     }
     f->addLayout(szr);
     auto* cnh = new QHBoxLayout();
-    cnh->addWidget(cap(tr("SISTEMAS"), form));
+    m_genOnly << cap(tr("SISTEMAS"), form);
+    cnh->addWidget(m_genOnly.last());
     cnh->addStretch();
     m_count = new QSpinBox(form);
     m_count->setObjectName(QStringLiteral("cartoSpin"));
     m_count->setRange(1, 800);
     connect(m_count, &QSpinBox::editingFinished, this, [this]() { if (m_loading || m_count->value() == m_d.count) return; m_d.count = m_count->value(); change(); });
     cnh->addWidget(m_count);
+    m_genOnly << m_count;
     f->addLayout(cnh);
     auto* lh = new QHBoxLayout();
-    lh->addWidget(cap(tr("MISTURA DE MUNDOS"), form));
+    m_genOnly << cap(tr("MISTURA DE MUNDOS"), form);
+    lh->addWidget(m_genOnly.last());
     lh->addStretch();
     m_lifeV = new QLabel(form);
     m_lifeV->setObjectName(QStringLiteral("cartoValue"));
@@ -475,7 +501,8 @@ void NewGalaxy::build()
     m_go->setCursor(Qt::PointingHandCursor);
     connect(m_go, &QPushButton::clicked, this, [this]() {
         GalOpts o = m_d;
-        if (!m_hand) o.mix.clear();
+        if (!m_hand || o.free) o.mix.clear();
+        if (o.free) o.organic = false;
         const QString name = m_nameText.trimmed();
         const Mode md = m_mode;
         hide();
@@ -499,7 +526,7 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     const bool regen = mode == Mode::Regen;
     d.preset = regen && current ? current->preset : QString();
     d.count = regen ? currentCount : sizeSystems(d.size);
-    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); d.organic = false; }
+    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); d.organic = false; d.free = false; }
     m_d = d;
     m_hand = d.mix.size() == 7;
     m_hasNatural = false; m_worlds = 0; m_touched.clear();
@@ -545,10 +572,20 @@ void NewGalaxy::sync()
     for (auto it = m_sizes.begin(); it != m_sizes.end(); ++it) it.value()->setChecked(it.key() == int(m_d.size));
     m_count->setValue(m_d.count);
     m_life->setValue(qRound(m_d.life * 100));
-    m_life->setVisible(!m_hand);
+    const bool gen = !m_d.free;
+    m_genBtn->setChecked(gen);
+    m_freeBtn->setChecked(!gen);
+    m_freeNote->setText(gen ? tr("O app gera centenas de sistemas, planetas e luas. Você nomeia, escreve e muda o que quiser.")
+                            : tr("A galáxia nasce vazia. Você cria os planetas, os sistemas e os territórios na ordem que quiser, escrevendo a história de cada um no mesmo lugar. O app só gera o que você pedir."));
+    for (QWidget* w : m_genOnly) w->setVisible(gen);
+    m_life->setVisible(gen && !m_hand);
+    m_lifeV->setVisible(gen);
     m_lifeV->setText(m_hand ? tr("Na mão") : lifeLabel(m_d.life));
-    m_handBox->setVisible(m_hand);
-    m_natBar->setVisible(!m_hand);
+    m_handBox->setVisible(gen && m_hand);
+    m_natBar->setVisible(gen && !m_hand);
+    m_mixText->setVisible(gen);
+    m_handCheck->setVisible(gen);
+    m_organicCheck->setVisible(gen);
     {
         const QColor muted = Theme::toColor(Theme::textMuted()), a = Theme::toColor(Theme::accentDefault());
         m_handCheck->setChecked(m_hand);
@@ -682,7 +719,7 @@ void NewGalaxy::preview()
         QMetaObject::invokeMethod(self.data(), [self, img, tok, ly, count]() {
             if (!self || tok != self->m_tok) return;
             self->m_img = img;
-            self->m_info->setText(Panel::tr("%1 anos-luz · %2 sistemas").arg(nf(ly), nf(count)));
+            self->m_info->setText(self->m_d.free ? Panel::tr("%1 anos-luz · nasce vazia").arg(nf(ly)) : Panel::tr("%1 anos-luz · %2 sistemas").arg(nf(ly), nf(count)));
             self->m_previewBox->update();
         }, Qt::QueuedConnection);
     });

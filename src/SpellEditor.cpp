@@ -397,16 +397,18 @@ void SpellEditor::contextMenuEvent(QContextMenuEvent* event)
                     emit synonymChosen(s);
                 });
             }
-            if (!quick.isEmpty()) synMenu->addSeparator();
+            if (!quick.isEmpty() && m_fullSynonyms) synMenu->addSeparator();
 
+            if (m_fullSynonyms) {
             QAction* moreAct = synMenu->addAction(
                 quick.isEmpty() ? tr("Procurar sinônimos...") : tr("Todos os sinônimos..."));
             connect(moreAct, &QAction::triggered, this, [this, word, globalPos, ensureSelected]() {
                 ensureSelected();
                 emit synonymsRequested(word, globalPos);
             });
+            }
 
-            menu->insertMenu(stdAnchor, synMenu);
+            if (!synMenu->actions().isEmpty()) menu->insertMenu(stdAnchor, synMenu);
         }
     }
 

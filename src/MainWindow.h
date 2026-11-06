@@ -571,6 +571,8 @@ private:
     // movimento de cursor) — comparar o tamanho separa edição de verdade de
     // repintura, senão a leitura morreria sozinha a cada parágrafo.
     int readAloudDocChars = -1;
+    bool readAloudExternal = false;             // lendo a folha da Criação Livre: o realce não é do editor principal
+    QTextDocument* readAloudExternalDoc = nullptr;
     // Texto plano do manuscrito ativo, usado só pra ordenar sinônimos por
     // contexto. Montado sob demanda e zerado a cada save — ficar alguns
     // parágrafos atrasado não muda a ordenação, e reconstruir a cada consulta

@@ -144,9 +144,10 @@ bool Canvas::anchorOf(const QString& key, double& x, double& y, double& h) const
 {
     const Ref o = doc->resolve(key);
     if (o.kind == RefKind::System) { x = o.sys->x; y = o.sys->y; h = o.sys->layH; return true; }
-    if (o.kind != RefKind::Region || o.region->systems.isEmpty()) return false;
+    if (o.kind != RefKind::Region || !regionShown(*o.region, *doc->gal)) return false;
     double x0 = 9, x1 = -9, y0 = 9, y1 = -9;
-    for (int id : o.region->systems) { const System& s = *doc->gal->systems[size_t(id)]; x0 = std::min(x0, s.x); x1 = std::max(x1, s.x); y0 = std::min(y0, s.y); y1 = std::max(y1, s.y); }
+    for (int id : o.region->systems) { const System& s = *doc->gal->systems[size_t(id)]; if (s.gone) continue; x0 = std::min(x0, s.x); x1 = std::max(x1, s.x); y0 = std::min(y0, s.y); y1 = std::max(y1, s.y); }
+    for (const auto& st : o.region->stamps) { x0 = std::min(x0, st[0]); x1 = std::max(x1, st[0]); y0 = std::min(y0, st[1]); y1 = std::max(y1, st[1]); }
     x = (x0 + x1) / 2; y = (y0 + y1) / 2; h = 0;
     return true;
 }

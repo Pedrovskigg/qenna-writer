@@ -1,5 +1,6 @@
 #include "GalaxyPanel.h"
 #include "GalaxyCaderno.h"
+#include "GalaxyLivre.h"
 
 #include "../TerritorioStore.h"
 #include "../Theme.h"
@@ -220,6 +221,9 @@ void Panel::buildUi()
     m_cadernoBtn = makeBtn(m_cbar, QStringLiteral("galBook"), tr("Caderno (C)"));
     connect(m_cadernoBtn, &QToolButton::clicked, this, [this]() { openCaderno(m_canvas->sel); });
     cb->addWidget(m_cadernoBtn);
+    m_livreBtn = makeBtn(m_cbar, QStringLiteral("galWrite"), tr("Criação Livre (W)"));
+    connect(m_livreBtn, &QToolButton::clicked, this, [this]() { openLivre(m_canvas->sel); });
+    cb->addWidget(m_livreBtn);
     m_exportBtn = makeBtn(m_cbar, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
     m_exportBtn->setCheckable(true);
     connect(m_exportBtn, &QToolButton::clicked, this, [this]() { m_settings->hide(); m_export->setVisible(!m_export->isVisible()); positionOverlays(); syncUi(); });
@@ -360,6 +364,8 @@ void Panel::buildUi()
 
     m_caderno = new Caderno(this, m_canvas, &m_doc);
     m_caderno->hide();
+    m_livre = new Livre(this, m_canvas, &m_doc);
+    m_livre->hide();
 }
 void Panel::buildSettings()
 {
@@ -549,7 +555,10 @@ void Panel::wireCanvas()
     connect(m_canvas, &Canvas::clickedPlace, this, [this](const QString&) { openPanel(); });
     connect(m_canvas, &Canvas::requestRing, this, [this](const QPointF& at, const QString&) { openRing(at, m_tool == QLatin1String("ruler") ? QString() : m_canvas->pickAt(at.x(), at.y())); });
     connect(m_canvas, &Canvas::hintChanged, this, [this]() { syncHint(); m_toolBtn->setText(toolLabel() + QStringLiteral("  ▴")); syncBuildChecks(); });
-    connect(m_canvas, &Canvas::toast, this, [this](const QString& text, bool undo) { if (text.isEmpty()) m_toast->hide(); else showToast(text, undo); });
+    connect(m_canvas, &Canvas::toast, this, [this](const QString& text, bool undo) {
+        if (livreShown()) { m_livre->toast(text, undo); return; }
+        if (text.isEmpty()) m_toast->hide(); else showToast(text, undo);
+    });
     connect(m_canvas, &Canvas::toolDockChanged, this, [this]() { if (m_tool == QLatin1String("realm")) renderRealmDock(); });
     connect(m_canvas, &Canvas::nameClickRequested, this, [this](double mx, double my, const QString& key, bool) { nameClick(mx, my, key); });
     connect(m_canvas, &Canvas::focusChanged, this, &Panel::syncFocusBar);
@@ -640,6 +649,7 @@ void Panel::applyTheme()
     if (m_toolBtn) m_toolBtn->setIcon(carto::icon(QStringLiteral("ring"), ink, a));
     if (auto* sb = static_cast<ScaleBar*>(m_scaleBar)) sb->color = muted;
     if (m_caderno) m_caderno->applyTheme();
+    if (m_livre) m_livre->applyTheme();
     syncUi();
     if (isOpen()) { m_artCache.clear(); renderBuildBar(); renderPanel(true); }
 }
@@ -658,6 +668,7 @@ bool Panel::openFile(const QString& path, const QString& name)
     m_path = path;
     m_name = name;
     afterOpen();
+    if (m_doc.opts.free) openLivre(QString());
     const QJsonObject v = root[QStringLiteral("ui")].toObject();
     if (v.contains(QStringLiteral("view"))) { const QString vw = v[QStringLiteral("view")].toString(); setViewMode(vw == QLatin1String("full") || vw == QLatin1String("atlas") || vw == QLatin1String("terrain") || skinOf(vw) ? vw : QStringLiteral("full")); }
     return true;
@@ -674,6 +685,7 @@ void Panel::startNew(const GalOpts& opts, const QString& path, const QString& na
     afterOpen();
     saveNow();
     if (opts.organic) emit m_canvas->toast(tr("Semeação Orgânica: abra Territórios e semeie o primeiro sistema."), false);
+    if (opts.free) openLivre(QString());
 }
 // Ligar esconde o que a história ainda não tocou; desligar mostra tudo. Nada se perde nos dois sentidos.
 void Panel::setOrganic(bool on)
@@ -727,6 +739,7 @@ void Panel::afterOpen()
 }
 void Panel::closeMap()
 {
+    if (livreShown()) { m_livre->closeIt(); m_livre->hide(); m_canvas->setUpdatesEnabled(true); }
     if (m_saveTimer->isActive() || !m_path.isEmpty()) saveNow();
     m_canvas->setDoc(nullptr);
     m_doc = Doc();
@@ -830,10 +843,12 @@ void Panel::positionOverlays()
     placeDock();
     if (m_ring->isVisible()) m_ring->setGeometry(rect());
     if (m_caderno && m_caderno->isVisible()) { m_caderno->setGeometry(rect()); m_caderno->raise(); }
+    if (livreShown()) { m_livre->setGeometry(rect()); m_livre->raise(); }
     for (QWidget* w : { static_cast<QWidget*>(m_cbar), static_cast<QWidget*>(m_settings), static_cast<QWidget*>(m_export) }) w->raise();
     syncHabCard();
     m_tip->raise();
     m_toast->raise();
+    if (livreShown()) m_livre->raise();   // a Criação Livre cobre o mapa inteiro, chrome junto
 }
 void Panel::placeDock()
 {
@@ -946,10 +961,13 @@ void Panel::syncFocusBar()
     m_focusBar->setVisible(r != nullptr);
     if (!r) return;
     m_focusSwatch->setStyleSheet(QStringLiteral("background: %1; border-radius: 5px;").arg(r->color));
-    m_focusName->setText(tr("%1 · %2 sistemas").arg(r->name).arg(r->systems.size()));
+    int shown = 0;
+    for (int id : r->systems) if (!m_doc.gal->systems[size_t(id)]->gone) shown++;   // o abrigo de mundo solto não aparece no mapa
+    m_focusName->setText(tr("%1 · %2 sistemas").arg(r->name).arg(shown));
     m_focusBar->adjustSize();
     m_focusBar->move(int(m_canvas->viewCenter().x()) - m_focusBar->width() / 2, 14);
     m_focusBar->raise();
+    if (livreShown()) m_livre->raise();
 }
 void Panel::syncTip(const QString& key, const QPointF& at)
 {
@@ -975,6 +993,9 @@ void Panel::syncUi()
     setCheck(m_lyFrame, m_canvas->frameOn);
     setCheck(m_lyPeek, m_peekOn);
     setCheck(m_organicBtn, isOpen() && m_doc.opts.organic);
+    // Criação Livre: a terceira ferramenta só existe na galáxia que nasceu livre, e ali a Semeação não faz sentido
+    m_livreBtn->setVisible(isOpen() && m_doc.opts.free);
+    m_organicBtn->setVisible(!(isOpen() && m_doc.opts.free));
     setCheck(m_lyTraffic, m_canvas->ly.traffic);
     setCheck(m_expTitle, m_expWithTitle);
     m_trafficLevel->setVisible(m_canvas->ly.traffic);
@@ -1120,6 +1141,29 @@ void Panel::openCaderno(const QString& key)
     m_canvas->tool = Tool::Caderno;
     syncHabCard();
 }
+// ── a Criação Livre ──
+bool Panel::livreShown() const { return m_livre && m_livre->isVisible(); }
+void Panel::openLivre(const QString& key)
+{
+    if (!isOpen()) return;
+    if (m_caderno && m_caderno->isVisible()) { m_caderno->closeIt(); m_caderno->hide(); }
+    m_livre->setGeometry(rect());
+    m_livre->show();
+    m_livre->raise();
+    m_livre->open(key == QLatin1String("GAL") ? QString() : key);
+    m_canvas->tool = Tool::Caderno;
+    m_canvas->setUpdatesEnabled(false);   // o mapa fica parado embaixo: nada de gastar quadro com o que ninguém vê
+    syncHabCard();
+}
+void Panel::closeLivre()
+{
+    m_livre->closeIt();
+    m_livre->hide();
+    m_canvas->setUpdatesEnabled(true);
+    m_canvas->docChanged();
+    setTool(QStringLiteral("pan"));
+    m_canvas->setFocus();
+}
 void Panel::closeCaderno()
 {
     const QString back = m_caderno->returnTool();
@@ -1140,9 +1184,14 @@ bool Panel::handleKey(QKeyEvent* e)
         if (k == Qt::Key_Escape && f == m_query) { m_results->hide(); m_canvas->setFocus(); return true; }
         return false;
     }
-    if (ctrl && k == Qt::Key_Z && !(e->modifiers() & Qt::ShiftModifier)) { m_canvas->undo(); return true; }
-    if (ctrl && (k == Qt::Key_Y || (k == Qt::Key_Z && (e->modifiers() & Qt::ShiftModifier)))) { m_canvas->redo(); return true; }
+    if (ctrl && k == Qt::Key_Z && !(e->modifiers() & Qt::ShiftModifier)) { m_canvas->undo(); if (livreShown()) m_livre->refresh(); return true; }
+    if (ctrl && (k == Qt::Key_Y || (k == Qt::Key_Z && (e->modifiers() & Qt::ShiftModifier)))) { m_canvas->redo(); if (livreShown()) m_livre->refresh(); return true; }
     if (ctrl || (e->modifiers() & Qt::AltModifier)) return false;
+    if (livreShown()) {
+        if (k == Qt::Key_Escape) { if (!m_livre->escape()) closeLivre(); return true; }
+        if (k == Qt::Key_W) { closeLivre(); return true; }
+        return false;
+    }
     if (m_caderno && m_caderno->isVisible()) {
         if (k == Qt::Key_Escape) { if (!m_caderno->escape()) closeCaderno(); return true; }
         if (k == Qt::Key_C) { closeCaderno(); return true; }
@@ -1156,6 +1205,7 @@ bool Panel::handleKey(QKeyEvent* e)
     case Qt::Key_N: toggle(QStringLiteral("names")); break;
     case Qt::Key_X: toggle(QStringLiteral("explore")); break;
     case Qt::Key_C: openCaderno(m_canvas->sel); break;
+    case Qt::Key_W: if (!m_doc.opts.free) return false; openLivre(m_canvas->sel); break;
     case Qt::Key_R: toggle(QStringLiteral("ruler")); break;
     case Qt::Key_L: setHabOn(!m_canvas->hab); break;
     case Qt::Key_S: setSpritesOn(!m_canvas->sprites); break;

@@ -52,11 +52,87 @@ void Doc::generate(const GalOpts& o)
     placeIds.clear(); userNames.clear(); regions.clear(); groups.clear(); docs.clear(); builds.clear(); labels.clear(); hidden.clear();
     addedBatches.clear();
     veiled.clear(); autoSys.clear();
+    solo.clear(); ghosts.clear(); capitals.clear(); fichas.clear(); fichasGen.clear(); linkTypes.clear();
     seq = 1;
     simT = 0;
     if (!o.preset.isEmpty()) applyPreset();
     layoutSystems();
-    if (o.organic) setOrganic(true);
+    // Criação Livre: a galáxia gerada fica guardada (a forma e o desenho dela continuam), mas nenhum sistema aparece.
+    if (o.free) { for (const auto& s : gal->systems) if (!s->isCore) veil(*s); }
+    else if (o.organic) setOrganic(true);
+    rev++;
+}
+
+// ── Criação Livre ──
+System* Doc::addHandSystem(double x, double y, StarKind kind, uint32_t seed)
+{
+    Galaxy& g = *gal;
+    auto sys = std::make_unique<System>();
+    sys->id = int(g.systems.size()); sys->x = x; sys->y = y; sys->seed = seed; sys->young = 0.3; sys->rCore = std::hypot(x, y);
+    sys->stars = { starOf(kind, 0, seed) }; sys->kind = kind; sys->amax = 0.05; sys->age = sys->stars[0].age; sys->edited = true; sys->hand = true;
+    refreshSystem(*sys);
+    System* raw = sys.get();
+    g.systems.push_back(std::move(sys));
+    layoutSystems();
+    rev++;
+    return raw;
+}
+// Um lugar pro sistema novo: dentro da forma pintada do território, se ela existir; senão, onde a galáxia gerada
+// tinha um sistema guardado (assim os novos seguem os braços e o miolo dela). Longe dos que já estão à vista.
+bool Doc::freeSpot(const Region* r, double& x, double& y, uint32_t seed) const
+{
+    Rng rng(seed);
+    const auto clear = [&](double px, double py) {
+        for (const auto& s : gal->systems) if ((!s->gone || solo.contains(s->id)) && std::hypot(s->x - px, s->y - py) < 0.035) return false;
+        return std::hypot(px, py) < 1.05;
+    };
+    std::vector<const System*> spare;
+    for (const auto& s : gal->systems) if (veiled.contains(s->id)) spare.push_back(s.get());
+    for (int tries = 0; tries < 80; tries++) {
+        double px = 0, py = 0;
+        if (r && !r->stamps.empty()) {
+            const auto& st = r->stamps[size_t(rng() * double(r->stamps.size())) % r->stamps.size()];
+            const double a = rng() * TAU, d = std::sqrt(rng()) * st[2] * 0.85;
+            px = st[0] + std::cos(a) * d; py = st[1] + std::sin(a) * d;
+        } else if (!spare.empty()) {
+            const System* s = spare[size_t(rng() * double(spare.size())) % spare.size()];
+            px = s->x + (rng() - 0.5) * 0.01; py = s->y + (rng() - 0.5) * 0.01;
+        } else {
+            const double a = rng() * TAU, d = 0.15 + rng() * 0.75;
+            px = std::cos(a) * d; py = std::sin(a) * d;
+        }
+        if (clear(px, py) || tries == 79) { x = px; y = py; return true; }
+    }
+    return false;
+}
+void Doc::rekey(const QString& from, const QString& to)
+{
+    if (from == to || from.isEmpty() || to.isEmpty()) return;
+    // P12.3 → P40.1 leva junto as luas: M12.3.x → M40.1.x
+    const QString moonFrom = from.startsWith(QLatin1Char('P')) ? QStringLiteral("M") + from.mid(1) + QLatin1Char('.') : QString();
+    const QString moonTo = to.startsWith(QLatin1Char('P')) ? QStringLiteral("M") + to.mid(1) + QLatin1Char('.') : QString();
+    const auto map = [&](const QString& k) -> QString {
+        if (k == from) return to;
+        if (!moonFrom.isEmpty() && k.startsWith(moonFrom)) return moonTo + k.mid(moonFrom.size());
+        return k;
+    };
+    const auto remapHash = [&](auto& h) {
+        std::remove_reference_t<decltype(h)> out;
+        for (auto it = h.begin(); it != h.end(); ++it) out.insert(map(it.key()), it.value());
+        h = out;
+    };
+    const auto remapSet = [&](QSet<QString>& s) { QSet<QString> out; for (const QString& k : s) out.insert(map(k)); s = out; };
+    remapHash(userNames); remapHash(placeIds); remapHash(fichas); remapHash(fichasGen);
+    remapSet(hidden); remapSet(ghosts); remapSet(capitals);
+    for (auto& d : docs) d->owner = map(d->owner);
+    for (auto& g : groups) g->parent = map(g->parent);
+    // as peças em volta do mundo vão com ele
+    if (from.startsWith(QLatin1Char('P')) && to.startsWith(QLatin1Char('P'))) {
+        const QStringList a = from.mid(1).split(QLatin1Char('.')), b = to.mid(1).split(QLatin1Char('.'));
+        if (a.size() == 2 && b.size() == 2)
+            for (auto& bd : builds) if (bd->sys == a[0].toInt() && bd->host == a[1].toInt()) { bd->sys = b[0].toInt(); bd->host = b[1].toInt(); }
+    }
+    genNames.clear();
     rev++;
 }
 
@@ -201,7 +277,7 @@ Ref Doc::resolve(const QString& key) const
     const int n0 = parts[0].toInt(&ok);
     if (!ok || n0 < 0 || n0 >= int(gal->systems.size())) return o;
     System* sys = gal->systems[size_t(n0)].get();
-    if (sys->gone) return o;
+    if (sys->gone && !solo.contains(sys->id)) return o;
     o.sys = sys;
     if (t == QLatin1Char('S')) { o.kind = RefKind::System; return o; }
     const int n1 = parts.size() > 1 ? parts[1].toInt() : 0;
@@ -266,7 +342,11 @@ QString Doc::parentOf(const QString& key) const
     const Ref o = resolve(key);
     switch (o.kind) {
     case RefKind::Moon: return keyP(*o.sys, *o.body);
-    case RefKind::Planet: return keyS(*o.sys);
+    case RefKind::Planet: {
+        // mundo solto (Criação Livre): o sistema dele é só abrigo, o caminho pula ele
+        if (solo.contains(o.sys->id)) { const Region* r = regionOfSys(*o.sys); return r ? r->key : QStringLiteral("GAL"); }
+        return keyS(*o.sys);
+    }
     case RefKind::System: { const Region* r = regionOfSys(*o.sys); return r ? r->key : QStringLiteral("GAL"); }
     case RefKind::Region: return QStringLiteral("GAL");
     case RefKind::Group: return o.group->parent;

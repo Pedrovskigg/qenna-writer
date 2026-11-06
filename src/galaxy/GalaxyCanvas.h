@@ -254,7 +254,7 @@ private:
     std::vector<System*> m_openSystems;
 
     // territórios e foco (GalaxyCanvasRegions.cpp)
-    struct RegionPrims { int n = 0; std::vector<System*> pts; struct Link { double x, y, dx, dy, l; }; std::vector<Link> links; };
+    struct RegionPrims { int n = 0; std::vector<System*> pts; struct Link { double x, y, dx, dy, l; }; std::vector<Link> links; std::vector<std::array<double, 3>> stamps; };
     struct TerrLayer { QString key; QImage img, mask; int x = 0, y = 0, w = 0, h = 0; bool empty = true; std::vector<float> field; };
     QHash<QString, RegionPrims> m_prims;
     QHash<QString, TerrLayer> m_terr;

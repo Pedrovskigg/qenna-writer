@@ -14,10 +14,13 @@ inline double smin(double a, double b)
     const double h = std::max(REGION_MELT - std::fabs(a - b), 0.0) / REGION_MELT;
     return std::min(a, b) - h * h * REGION_MELT * 0.25;
 }
-int signatureOf(const Region& r)
+int signatureOf(const Region& r, const Galaxy& g)
 {
     uint32_t sig = uint32_t(r.systems.size());
-    for (int id : r.systems) sig += uint32_t(id + 1) * 2654435761u;
+    for (int id : r.systems) sig += uint32_t(id + 1) * 2654435761u * (g.systems[size_t(id)]->gone ? 3u : 1u);
+    // a forma pintada à mão (Criação Livre)
+    sig ^= uint32_t(r.stamps.size()) * 40503u;
+    for (const auto& s : r.stamps) sig = sig * 31u + uint32_t(qint64(s[0] * 1e5)) * 7u + uint32_t(qint64(s[1] * 1e5)) * 13u + uint32_t(qint64(s[2] * 1e5));
     return int(sig);
 }
 // Desfoque em caixa, três passadas: chega perto de um blur de verdade e é barato na imagem de ¼.
@@ -79,14 +82,15 @@ QImage shrink(const QImage& src, int sw, int sh)
 // eles, fundidos com suavidade. Pintura, clique e foco usam a mesma forma.
 const Canvas::RegionPrims& Canvas::regionPrims(const Region& r)
 {
-    const int sig = signatureOf(r);
+    const int sig = signatureOf(r, *doc->gal);
     auto it = m_prims.find(r.key);
     if (it != m_prims.end() && it->n == sig) return it.value();
     RegionPrims P;
     P.n = sig;
     QList<int> ids = r.systems.values();
     std::sort(ids.begin(), ids.end());
-    for (int id : ids) P.pts.push_back(doc->gal->systems[size_t(id)].get());
+    for (int id : ids) if (!doc->gal->systems[size_t(id)]->gone) P.pts.push_back(doc->gal->systems[size_t(id)].get());
+    P.stamps = r.stamps;
     std::vector<System*> left(P.pts.begin() + (P.pts.empty() ? 0 : 1), P.pts.end()), inside;
     if (!P.pts.empty()) inside.push_back(P.pts[0]);
     while (!left.empty()) {
@@ -112,6 +116,7 @@ double Canvas::regionDist(const RegionPrims& P, double x, double y) const
         const double a = x - s.x, b = y - s.y, u = std::max(0.0, std::min(1.0, (a * s.dx + b * s.dy) / s.l)), e = a - s.dx * u, f = b - s.dy * u;
         d = smin(d, std::sqrt(e * e + f * f) - REGION_NECK);
     }
+    for (const auto& s : P.stamps) { const double a = x - s[0], b = y - s[1]; d = smin(d, std::sqrt(a * a + b * b) - s[2]); }
     return d;
 }
 // A região embaixo do ponteiro: o território inteiro é clicável, não só o nome.
@@ -120,7 +125,7 @@ QString Canvas::regionAt(double sx, double sy)
     if (!layTerr() || cam.z / fitZ() > 18) return QString();
     double wx, wy;
     toWorld(sx, sy, wx, wy);
-    for (const auto& r : doc->regions) if (!r->systems.isEmpty() && regionDist(regionPrims(*r), wx, wy) < 0) return r->key;
+    for (const auto& r : doc->regions) if (regionShown(*r, *doc->gal) && regionDist(regionPrims(*r), wx, wy) < 0) return r->key;
     return QString();
 }
 // O território na tela: linha fina da fronteira, cor forte na borda que some pro miolo e um brilho leve por fora.
@@ -129,7 +134,7 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
 {
     const bool withMask = m_focusShown == r.key;
     const QPointF vc = viewCenter();
-    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(width()).arg(height()).arg(QStringLiteral("%1,%2,%3,%4,%5,%6").arg(vc.x()).arg(vc.y()).arg(r.color).arg(signatureOf(r)).arg(int(withMask)).arg(m_sk ? m_sk->id : QString()) + (cameraBusy() ? QStringLiteral("~") : QString()));
+    const QString key = QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9").arg(cam.x, 0, 'g', 12).arg(cam.y, 0, 'g', 12).arg(cam.z, 0, 'g', 12).arg(cam.h, 0, 'g', 10).arg(cam.tilt, 0, 'g', 10).arg(cam.yaw, 0, 'g', 10).arg(width()).arg(height()).arg(QStringLiteral("%1,%2,%3,%4,%5,%6").arg(vc.x()).arg(vc.y()).arg(r.color).arg(signatureOf(r, *doc->gal)).arg(int(withMask)).arg(m_sk ? m_sk->id : QString()) + (cameraBusy() ? QStringLiteral("~") : QString()));
     TerrLayer& e = m_terr[r.key];
     if (e.key == key) return e;
     e.key = key;
@@ -141,6 +146,12 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
     const double padX = (REGION_RAD + REGION_MELT) * z + GLOW + G, padY = (REGION_RAD + REGION_MELT) * z * std::max(cT, 0.4) + GLOW + G;
     double fx0 = W, fy0 = H, fx1 = 0, fy1 = 0;
     for (const System* s : P.pts) { double x, y; proj(s->x, s->y, 0, x, y); fx0 = std::min(fx0, x - padX); fy0 = std::min(fy0, y - padY); fx1 = std::max(fx1, x + padX); fy1 = std::max(fy1, y + padY); }
+    for (const auto& s : P.stamps) {
+        double x, y;
+        proj(s[0], s[1], 0, x, y);
+        const double px = (s[2] + REGION_MELT) * z + GLOW + G, py = (s[2] + REGION_MELT) * z * std::max(cT, 0.4) + GLOW + G;
+        fx0 = std::min(fx0, x - px); fy0 = std::min(fy0, y - py); fx1 = std::max(fx1, x + px); fy1 = std::max(fy1, y + py);
+    }
     const int x0 = std::max(0, int(std::floor(fx0))), y0 = std::max(0, int(std::floor(fy0))), x1 = std::min(W, int(std::ceil(fx1))), y1 = std::min(H, int(std::ceil(fy1)));
     e.empty = x1 <= x0 || y1 <= y0;
     if (e.empty) return e;
@@ -186,6 +197,10 @@ Canvas::TerrLayer& Canvas::territoryLayer(const Region& r)
                 const double u = wx - s.x, v = wy - s.y, t = std::max(0.0, std::min(1.0, (u * s.dx + v * s.dy) / s.l)), m = u - s.dx * t, n = v - s.dy * t;
                 return std::sqrt(m * m + n * n) - REGION_NECK;
             });
+        }
+        for (const auto& st : P.stamps) {
+            const double px = st[0], py = st[1], sr = st[2], R = sr + reach;
+            stamp(rowA, rowB, px - R, py - R, px + R, py + R, [px, py, sr](double wx, double wy) { const double u = wx - px, v = wy - py; return std::sqrt(u * u + v * v) - sr; });
         }
         for (int j = rowA; j < rowB; j++) { float* line = fd + j * row; for (int i = 0; i < row; i++) line[i] *= float(z); }
     });
@@ -260,7 +275,7 @@ void Canvas::drawRegions(QPainter& p, double zoomK, const std::vector<Region*>& 
     if (k < 0.02) return;
     p.save();
     for (Region* r : list) {
-        if (r->systems.isEmpty()) continue;
+        if (!regionShown(*r, *doc->gal)) continue;
         TerrLayer& e = territoryLayer(*r);
         if (e.empty) continue;
         p.setOpacity(std::min(1.0, k * mul * (m_selPath.contains(r->key) || m_hover == r->key ? 1 : 0.72) * (view == QLatin1String("atlas") ? 1.5 : 1)));

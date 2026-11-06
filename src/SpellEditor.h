@@ -28,6 +28,9 @@ public:
     // Injetado de fora pra não amarrar o editor ao dicionário.
     using SynonymProvider = std::function<QStringList(const QString&)>;
     void setSynonymProvider(SynonymProvider fn) { m_synProvider = std::move(fn); }
+    SynonymProvider synonymProvider() const { return m_synProvider; }
+    // Sem o painel grande de sinônimos (ele mora no editor principal): fica só o submenu rápido.
+    void setFullSynonyms(bool on) { m_fullSynonyms = on; }
 
     // Expõe setViewportMargins (protected em QAbstractScrollArea) para a
     // MainWindow ajustar o respiro interno da "página" de escrita.
@@ -128,6 +131,7 @@ private:
 
     SpellChecker* m_checker = nullptr;
     SynonymProvider m_synProvider;
+    bool m_fullSynonyms = true;
     bool m_screenplayMode = false;
     QSet<QString> m_screenplayCues;
     // Última linha digitada à mão: ao sair dela (Enter, clique, setas) a Cena,

@@ -30,6 +30,8 @@ class ElementsStore;
 class TerritorioStore;
 class ConstrutorStore;
 class DocCache;
+class SpellChecker;
+class QTextDocument;
 class QComboBox;
 class QFrame;
 class QLabel;
@@ -65,6 +67,12 @@ struct ProjectLink {
     std::function<void(const QString& systemId, const QString& nodeId)> openSystem; // Criador de Mundos, um sistema
     std::function<void()> save;                                        // grava o projeto
     std::function<void(const QString& topic)> openHelp;                // abre a Ajuda num tópico
+    // o que a folha da Criação Livre pega emprestado do editor principal
+    SpellChecker* spell = nullptr;                                     // o corretor (sublinhado e sugestões)
+    std::function<QStringList(const QString&)> synonyms;               // o submenu rápido de sinônimos
+    std::function<void(const QString& word, QPoint globalPos)> addGlossary;
+    std::function<void(QTextDocument* doc, int start, int end, QRect anchorGlobal)> readAloud;
+    std::function<QStringList()> fonts;                                // as fontes do Qenna (as mesmas do seletor do editor)
     bool ok() const { return model && places; }
 };
 

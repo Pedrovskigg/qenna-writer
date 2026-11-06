@@ -61,6 +61,9 @@ private:
     class HabBar* m_natBar = nullptr;
     QToolButton* m_handCheck = nullptr;
     QToolButton* m_organicCheck = nullptr;
+    QToolButton *m_genBtn = nullptr, *m_freeBtn = nullptr;
+    QLabel* m_freeNote = nullptr;
+    QList<QWidget*> m_genOnly;
     QLineEdit* m_mixIn[7] {};
     QLabel* m_mixCount[7] {};
     QTimer m_mixTimer;

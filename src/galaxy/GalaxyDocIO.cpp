@@ -214,6 +214,7 @@ QJsonObject Doc::toJson() const
     QJsonObject rec;
     rec["seed"] = double(opts.seed); rec["style"] = QString::fromLatin1(styleKey(opts.style)); rec["size"] = QString::fromLatin1(sizeKey(opts.size));
     rec["arms"] = opts.arms; rec["life"] = opts.life; rec["count"] = opts.count; rec["preset"] = opts.preset;
+    if (opts.free) rec["free"] = true;
     if (opts.mix.size() == 7) { QJsonArray mx; for (double v : opts.mix) mx.push_back(v); rec["mix"] = mx; }
     o["recipe"] = rec;
     QJsonArray batches;
@@ -232,6 +233,7 @@ QJsonObject Doc::toJson() const
         QJsonObject q;
         q["key"] = r->key; q["name"] = r->name; q["color"] = r->color;
         if (r->autoPop) { q["autoPop"] = true; q["popMask"] = r->popMask; }
+        if (!r->stamps.empty()) { QJsonArray st; for (const auto& x : r->stamps) st.push_back(QJsonArray { x[0], x[1], x[2] }); q["stamps"] = st; }
         QJsonArray sy;
         for (int id : r->systems) sy.push_back(id);
         q["systems"] = sy;
@@ -239,12 +241,13 @@ QJsonObject Doc::toJson() const
     }
     o["regions"] = regs;
     QJsonArray grs;
-    for (const auto& g : groups) { QJsonObject q; q["key"] = g->key; q["name"] = g->name; q["kind"] = g->kind; q["parent"] = g->parent; grs.push_back(q); }
+    for (const auto& g : groups) { QJsonObject q; q["key"] = g->key; q["name"] = g->name; q["kind"] = g->kind; q["parent"] = g->parent; if (!g->form.isEmpty()) q["form"] = g->form; grs.push_back(q); }
     o["groups"] = grs;
     QJsonArray dcs;
     for (const auto& d : docs) {
         QJsonObject q;
         q["id"] = d->id; q["owner"] = d->owner; q["title"] = d->title; q["text"] = d->text; q["html"] = d->html; q["gaveta"] = d->gaveta; q["drawer"] = d->drawer; q["itemId"] = d->itemId; q["placeId"] = d->placeId; q["nodeId"] = d->nodeId;
+        if (d->parent) q["parent"] = d->parent;
         dcs.push_back(q);
     }
     o["docs"] = dcs;
@@ -264,12 +267,25 @@ QJsonObject Doc::toJson() const
     }
     o["edited"] = edited;
     o["gone"] = gone;
-    if (opts.organic) {
-        o["organic"] = true;
+    if (opts.organic || opts.free) {
+        if (opts.organic) o["organic"] = true;
         QJsonArray vs;
         for (int id : veiled) vs.push_back(id);
         o["veiled"] = vs;
     }
+    // Criação Livre
+    const auto keys = [](const QSet<QString>& set) { QJsonArray a; for (const QString& k : set) a.push_back(k); return a; };
+    const auto table = [](const QHash<QString, QHash<QString, QString>>& h) {
+        QJsonObject out;
+        for (auto it = h.constBegin(); it != h.constEnd(); ++it) { QJsonObject f; for (auto j = it.value().constBegin(); j != it.value().constEnd(); ++j) f[j.key()] = j.value(); out[it.key()] = f; }
+        return out;
+    };
+    if (!solo.isEmpty()) { QJsonArray a; for (int id : solo) a.push_back(id); o["solo"] = a; }
+    if (!ghosts.isEmpty()) o["ghosts"] = keys(ghosts);
+    if (!capitals.isEmpty()) o["capitals"] = keys(capitals);
+    if (!fichas.isEmpty()) o["fichas"] = table(fichas);
+    if (!fichasGen.isEmpty()) o["fichasGen"] = table(fichasGen);
+    if (!linkTypes.isEmpty()) { QJsonObject lt; for (auto it = linkTypes.constBegin(); it != linkTypes.constEnd(); ++it) lt[it.key()] = it.value(); o["linkTypes"] = lt; }
     if (!autoSys.isEmpty()) {
         QJsonArray as;
         for (int id : autoSys) as.push_back(id);
@@ -287,6 +303,7 @@ bool Doc::fromJson(const QJsonObject& o)
     for (Style s : { Style::Espiral, Style::Barrada, Style::Eliptica, Style::Irregular, Style::Anel }) if (st == styleKey(s)) g.style = s;
     for (Size s : { Size::Pequena, Size::Media, Size::Grande, Size::Imensa }) if (sz == sizeKey(s)) g.size = s;
     g.arms = rec["arms"].toInt(4); g.life = rec["life"].toDouble(0.3); g.count = rec["count"].toInt(); g.preset = rec["preset"].toString();
+    g.free = rec["free"].toBool();
     if (rec.contains("mix")) { const QJsonArray mx = rec["mix"].toArray(); if (mx.size() == 7) for (const QJsonValue& v : mx) g.mix.push_back(v.toDouble()); }
     generate(g);
     // A pronta já pôs os nomes e rótulos dela: o que vale agora é o que está guardado.
@@ -306,18 +323,19 @@ bool Doc::fromJson(const QJsonObject& o)
         r->key = q["key"].toString(); r->name = q["name"].toString(); r->color = q["color"].toString();
         r->autoPop = q["autoPop"].toBool(); r->popMask = q["popMask"].toInt(r->popMask);
         for (const QJsonValue& id : q["systems"].toArray()) r->systems.insert(id.toInt());
+        for (const QJsonValue& x : q["stamps"].toArray()) { const QJsonArray a = x.toArray(); if (a.size() == 3) r->stamps.push_back({ a[0].toDouble(), a[1].toDouble(), a[2].toDouble() }); }
         regions.push_back(std::move(r));
     }
     for (const QJsonValue& v : o["groups"].toArray()) {
         const QJsonObject q = v.toObject();
         auto r = std::make_unique<Group>();
-        r->key = q["key"].toString(); r->name = q["name"].toString(); r->kind = q["kind"].toString(); r->parent = q["parent"].toString();
+        r->key = q["key"].toString(); r->name = q["name"].toString(); r->kind = q["kind"].toString(); r->parent = q["parent"].toString(); r->form = q["form"].toString();
         groups.push_back(std::move(r));
     }
     for (const QJsonValue& v : o["docs"].toArray()) {
         const QJsonObject q = v.toObject();
         auto d = std::make_unique<DocLink>();
-        d->id = q["id"].toInt(); d->owner = q["owner"].toString(); d->title = q["title"].toString(); d->text = q["text"].toString(); d->html = q["html"].toString(); d->gaveta = q["gaveta"].toBool(); d->drawer = q["drawer"].toString(); d->itemId = q["itemId"].toString(); d->placeId = q["placeId"].toString(); d->nodeId = q["nodeId"].toString();
+        d->id = q["id"].toInt(); d->owner = q["owner"].toString(); d->title = q["title"].toString(); d->text = q["text"].toString(); d->html = q["html"].toString(); d->gaveta = q["gaveta"].toBool(); d->drawer = q["drawer"].toString(); d->itemId = q["itemId"].toString(); d->placeId = q["placeId"].toString(); d->nodeId = q["nodeId"].toString(); d->parent = q["parent"].toInt();
         docs.push_back(std::move(d));
     }
     for (const QJsonValue& v : o["builds"].toArray()) builds.push_back(buildFrom(v.toObject()));
@@ -340,6 +358,15 @@ bool Doc::fromJson(const QJsonObject& o)
     opts.organic = o["organic"].toBool();
     for (const QJsonValue& v : o["veiled"].toArray()) { const int id = v.toInt(-1); if (id >= 0 && id < int(gal->systems.size())) veil(*gal->systems[size_t(id)]); }
     for (const QJsonValue& v : o["autoSys"].toArray()) autoSys.insert(v.toInt(-1));
+    for (const QJsonValue& v : o["solo"].toArray()) { const int id = v.toInt(-1); if (id >= 0 && id < int(gal->systems.size())) { solo.insert(id); gal->systems[size_t(id)]->gone = true; } }
+    for (const QJsonValue& v : o["ghosts"].toArray()) ghosts.insert(v.toString());
+    for (const QJsonValue& v : o["capitals"].toArray()) capitals.insert(v.toString());
+    const auto readTable = [](const QJsonObject& t, QHash<QString, QHash<QString, QString>>& out) {
+        for (auto it = t.constBegin(); it != t.constEnd(); ++it) { QHash<QString, QString> f; const QJsonObject q = it.value().toObject(); for (auto j = q.constBegin(); j != q.constEnd(); ++j) f.insert(j.key(), j.value().toString()); out.insert(it.key(), f); }
+    };
+    readTable(o["fichas"].toObject(), fichas);
+    readTable(o["fichasGen"].toObject(), fichasGen);
+    { const QJsonObject lt = o["linkTypes"].toObject(); for (auto it = lt.constBegin(); it != lt.constEnd(); ++it) linkTypes.insert(it.key(), it.value().toString()); }
     layoutSystems();
     rev++;
     return true;
