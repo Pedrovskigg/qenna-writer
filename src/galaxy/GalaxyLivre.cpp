@@ -2,6 +2,7 @@
 // A esquerda e a direita se refazem a cada mudança; a folha só quando troca o que está aberto, pro cursor não pular.
 
 #include "GalaxyLivre.h"
+#include "GalaxyLivreMap.h"
 #include "GalaxyDoc.h"
 #include "GalaxyCanvas.h"
 #include "GalaxyHab.h"
@@ -27,6 +28,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMimeData>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
@@ -330,7 +332,18 @@ Livre::Livre(Panel* panel, Canvas* canvas, Doc* doc) : QWidget(panel), m_panel(p
     auto* top = new QHBoxLayout();
     top->setSpacing(10);
     top->addWidget(lab(tr("CRIAÇÃO LIVRE"), QStringLiteral("lvBrand"), this));
-    m_brandName = lab(QString(), QStringLiteral("lvSub"), this);
+    // o nome da galáxia abre a mesma lista de mapas do mapa: trocar de mapa, criar um novo (Terra ou Galáxia), renomear
+    m_brandName = btn(QString(), QStringLiteral("lvBrandName"), this);
+    m_brandName->setToolTip(tr("Trocar de mapa ou criar um novo"));
+    connect(m_brandName, &QPushButton::clicked, this, [this]() {
+        if (!m_panel->fillMapMenu) return;
+        flushSheet();
+        QMenu menu(this);
+        m_panel->fillMapMenu(menu);
+        menu.exec(m_brandName->mapToGlobal(QPoint(0, m_brandName->height() + 4)));
+        // renomear acontece no título do mapa: abre o mapa pra caixa de texto aparecer
+        if (m_panel->m_titleEdit && m_panel->m_titleEdit->isVisible() && isVisible()) QTimer::singleShot(0, m_panel, [this]() { m_panel->closeLivre(); m_panel->m_titleEdit->setFocus(); });
+    });
     top->addWidget(m_brandName);
     top->addStretch();
     auto* back = btn(tr("Ver no mapa"), QStringLiteral("lvTopBtn"), this);
@@ -343,19 +356,28 @@ Livre::Livre(Panel* panel, Canvas* canvas, Doc* doc) : QWidget(panel), m_panel(p
     auto* cols = new QHBoxLayout(m_cols);
     cols->setContentsMargins(0, 0, 0, 0);
     cols->setSpacing(2);
-    m_left = new QScrollArea(m_cols);
-    m_left->setObjectName(QStringLiteral("lvPane"));
+    // a esquerda: a prateleira rola; o minimapa fica no pé
+    m_leftCol = new QWidget(m_cols);
+    m_leftCol->setObjectName(QStringLiteral("lvLeftCol"));
+    m_leftCol->setAttribute(Qt::WA_StyledBackground, true);
+    m_leftCol->setFixedWidth(m_leftW);
+    auto* lc = new QVBoxLayout(m_leftCol);
+    lc->setContentsMargins(1, 1, 1, 1);
+    lc->setSpacing(0);
+    m_left = new QScrollArea(m_leftCol);
+    m_left->setObjectName(QStringLiteral("lvPaneIn"));
     m_left->setWidgetResizable(true);
     m_left->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_left->setFixedWidth(m_leftW);
-    cols->addWidget(m_left);
+    lc->addWidget(m_left, 1);
+    buildMapSection(lc);
+    cols->addWidget(m_leftCol);
     // as duas bordas: a da prateleira e a da direita
     auto* gl = new Grip(m_cols);
     auto leftStart = std::make_shared<int>(0);
     gl->pressed = [this, leftStart]() { *leftStart = m_leftW; };
-    gl->moved = [this, leftStart](int dx) { m_leftW = std::clamp(*leftStart + dx, 240, 480); m_left->setFixedWidth(m_leftW); if (m_nav->isVisible()) placeNav(); };
+    gl->moved = [this, leftStart](int dx) { m_leftW = std::clamp(*leftStart + dx, 240, 480); m_leftCol->setFixedWidth(m_leftW); if (m_nav->isVisible()) placeNav(); };
     gl->released = [this]() { QSettings().setValue(QStringLiteral("galaxy/livreLeftW"), m_leftW); };
-    gl->reset = [this]() { m_leftW = 292; m_left->setFixedWidth(m_leftW); QSettings().setValue(QStringLiteral("galaxy/livreLeftW"), m_leftW); if (m_nav->isVisible()) placeNav(); };
+    gl->reset = [this]() { m_leftW = 292; m_leftCol->setFixedWidth(m_leftW); QSettings().setValue(QStringLiteral("galaxy/livreLeftW"), m_leftW); if (m_nav->isVisible()) placeNav(); };
     cols->addWidget(gl);
     m_center = new QWidget(m_cols);
     m_center->setObjectName(QStringLiteral("lvCenter"));
@@ -435,6 +457,26 @@ void Livre::applyTheme()
         "QPushButton#lvTopBtn { background: $hover; border: 1px solid $line; border-radius: 8px; color: $ink; font-size: 12px; padding: 6px 12px; }"
         "QPushButton#lvTopBtn:hover { border-color: $accent; }"
         "QScrollArea#lvPane { background: $pane; border: 1px solid $line; border-radius: 12px; }"
+        "QPushButton#lvBrandName { background: transparent; border: none; border-radius: 6px; color: $muted; font-size: 13px; padding: 3px 7px; }"
+        "QPushButton#lvBrandName:hover { background: $hover; color: $ink; }"
+        "QWidget#lvLeftCol { background: $pane; border: 1px solid $line; border-radius: 12px; }"
+        "QWidget#lvMapSec { background: transparent; border: none; border-top: 1px solid $line; }"
+        "QPushButton#lvMapTitle { background: transparent; border: none; color: $ink; font-size: 12px; font-weight: 600; padding: 2px 4px 2px 2px; text-align: left; }"
+        "QPushButton#lvMapTitle:hover { color: $accent; }"
+        "QLabel#lvMapSub { color: $muted; font-size: 11.5px; }"
+        "QToolButton#lvMapExp { background: transparent; border: none; border-radius: 6px; padding: 4px; }"
+        "QToolButton#lvMapExp:hover { background: $hover; }"
+        "QToolButton#lvMapBtn { background: rgba(10,14,22,0.78); color: #dfe6f0; border: 1px solid rgba(236,241,250,0.14); border-radius: 6px; font-size: 11px; font-weight: 600; min-width: 24px; min-height: 22px; max-height: 22px; padding: 0 5px; }"
+        "QToolButton#lvMapBtn:hover { background: rgba(30,38,52,0.92); color: #ffffff; }"
+        "QToolButton#lvMapBtn[on=\"true\"] { color: $accent; border-color: $accent; }"
+        "QToolButton#lvMapBtn[big=\"true\"] { min-width: 32px; min-height: 30px; max-height: 30px; font-size: 13px; border-radius: 8px; }"
+        "QFrame#lvMapOv { background: #03050a; }"
+        "QWidget#lvMapBar { background: $pane; border-bottom: 1px solid $line; }"
+        "QLabel#lvMapBigTitle { color: $ink; font-size: 17px; font-weight: 600; }"
+        "QWidget#lvMapFoot { background: #03050a; }"
+        "QLabel#lvMapHint { color: rgba(236,241,250,0.62); font-size: 12px; }"
+        "QPushButton#lvMapGo { background: $accent; color: #0b1220; border: none; border-radius: 15px; padding: 6px 16px; font-weight: 700; font-size: 13px; }"
+        "QPushButton#lvMapGo:hover { background: $accent; }"
         "QScrollArea#lvPane > QWidget > QWidget { background: transparent; }"
         "QWidget#lvRightCol { background: $pane; border: 1px solid $line; border-radius: 12px; }"
         "QScrollArea#lvPaneIn { background: transparent; border: none; }"
@@ -645,6 +687,7 @@ bool Livre::escape()
 {
     if (m_pop) { closePop(); return true; }
     if (m_draw) return true;
+    if (m_bigMap) { closeBigMap(); return true; }
     if (m_bigView) { closeBigView(); return true; }
     if (m_fichaOpen && m_rightHead->isVisible()) { m_fichaOpen = false; renderRight(); return true; }
     if (m_nav->isVisible() && !m_navPinned) { m_navOpen = false; m_nav->hide(); return true; }
@@ -676,6 +719,7 @@ void Livre::resizeEvent(QResizeEvent* e)
     if (m_nav->isVisible()) placeNav();
     if (m_draw) m_draw->setGeometry(rect());
     if (m_bigView) m_bigView->setGeometry(rect());
+    if (m_bigMap) m_bigMap->setGeometry(rect());
     closePop();
 }
 
@@ -686,7 +730,7 @@ void Livre::render()
     if (!m_sel.isEmpty() && !valid(m_sel)) m_sel.clear();
     closePop();
     hidePeek();
-    m_brandName->setText(m_doc->labelOf(QStringLiteral("GAL")));
+    m_brandName->setText(m_doc->labelOf(QStringLiteral("GAL")) + QStringLiteral("  ▾"));
     if (m_edFor != m_sel) {
         flushSheet();
         renderCenter();
@@ -702,6 +746,7 @@ void Livre::render()
     renderLeft();
     renderRight();
     renderNav();
+    syncMap();
     if (!m_justMade.isEmpty()) QTimer::singleShot(900, this, [this]() { if (!m_justMade.isEmpty()) { m_justMade.clear(); renderLeft(); } });
 }
 

@@ -38,6 +38,7 @@ class Canvas;
 class Doc;
 class Panel;
 class Livre;
+class LivreMap;
 struct DocLink;
 struct Region;
 
@@ -139,6 +140,7 @@ protected:
 
 private:
     friend class LiveWorld;
+    friend class LivreMap;
     // ── dados (GalaxyLivreData.cpp) ──
     QString createWorld(const QString& name, const QString& parent, Type t, bool ghost);
     QString createSystem(const QString& name, const QString& parent, StarKind kind, bool ghost);
@@ -269,6 +271,13 @@ private:
     // ── território desenhado (GalaxyLivreDraw.cpp) ──
     void openDraw(const QString& terr);
 
+    // ── o minimapa (GalaxyLivreMap.cpp) ──
+    void buildMapSection(QVBoxLayout* into);
+    void syncMap();
+    void openBigMap();
+    void closeBigMap();
+    std::vector<std::pair<QString, QString>> mapLinks() const;   // as conexões entre lugares da galáxia
+
     Panel* m_panel;
     Canvas* m_canvas;
     Doc* m_doc;
@@ -295,13 +304,21 @@ private:
     uint32_t m_nameN = 0;
 
     QWidget* m_cols = nullptr;
+    QWidget* m_leftCol = nullptr;      // a coluna da esquerda: a prateleira (rola) e o minimapa no pé
     QScrollArea* m_left = nullptr;
+    QWidget* m_mapSec = nullptr;
+    QPushButton* m_mapFold = nullptr;
+    QLabel* m_mapSub = nullptr;
+    LivreMap* m_map = nullptr;
+    QFrame* m_bigMap = nullptr;        // o mapa em tela grande
+    LivreMap* m_bigMapView = nullptr;
+    QPushButton* m_bigMapGo = nullptr;
     QWidget* m_center = nullptr;
     QScrollArea* m_right = nullptr;
     QWidget* m_rightCol = nullptr;     // a coluna da direita: o topo grudado (fechar a ficha) e a rolagem
     QWidget* m_rightHead = nullptr;
     QFrame* m_nav = nullptr;
-    QLabel* m_brandName = nullptr;
+    QPushButton* m_brandName = nullptr;   // o nome da galáxia: abre a lista de mapas
     QPointer<QTextEdit> m_body;
     QPointer<QLineEdit> m_name;
     QTimer m_sheetTimer;

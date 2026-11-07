@@ -1,4 +1,5 @@
 #include "GalaxyDoc.h"
+#include "GalaxyOrganic.h"
 #include "GalaxyPresets.h"
 #include "GalaxyStructures.h"
 
@@ -77,33 +78,11 @@ System* Doc::addHandSystem(double x, double y, StarKind kind, uint32_t seed)
     rev++;
     return raw;
 }
-// Um lugar pro sistema novo: dentro da forma pintada do território, se ela existir; senão, onde a galáxia gerada
-// tinha um sistema guardado (assim os novos seguem os braços e o miolo dela). Longe dos que já estão à vista.
+// Um lugar pro sistema novo: espalhado pelo território (o mais longe de quem já está lá, com folga da borda) ou,
+// solto, num lugar com estrelas, longe dos outros e fora dos territórios. A regra mora em GalaxyOrganic.
 bool Doc::freeSpot(const Region* r, double& x, double& y, uint32_t seed) const
 {
-    Rng rng(seed);
-    const auto clear = [&](double px, double py) {
-        for (const auto& s : gal->systems) if ((!s->gone || solo.contains(s->id)) && std::hypot(s->x - px, s->y - py) < 0.035) return false;
-        return std::hypot(px, py) < 1.05;
-    };
-    std::vector<const System*> spare;
-    for (const auto& s : gal->systems) if (veiled.contains(s->id)) spare.push_back(s.get());
-    for (int tries = 0; tries < 80; tries++) {
-        double px = 0, py = 0;
-        if (r && !r->stamps.empty()) {
-            const auto& st = r->stamps[size_t(rng() * double(r->stamps.size())) % r->stamps.size()];
-            const double a = rng() * TAU, d = std::sqrt(rng()) * st[2] * 0.85;
-            px = st[0] + std::cos(a) * d; py = st[1] + std::sin(a) * d;
-        } else if (!spare.empty()) {
-            const System* s = spare[size_t(rng() * double(spare.size())) % spare.size()];
-            px = s->x + (rng() - 0.5) * 0.01; py = s->y + (rng() - 0.5) * 0.01;
-        } else {
-            const double a = rng() * TAU, d = 0.15 + rng() * 0.75;
-            px = std::cos(a) * d; py = std::sin(a) * d;
-        }
-        if (clear(px, py) || tries == 79) { x = px; y = py; return true; }
-    }
-    return false;
+    return spreadSpot(*this, r, x, y, seed);
 }
 void Doc::rekey(const QString& from, const QString& to)
 {

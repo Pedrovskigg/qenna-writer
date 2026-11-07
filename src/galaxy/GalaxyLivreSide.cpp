@@ -6,6 +6,7 @@
 #include "GalaxyDoc.h"
 #include "GalaxyCanvas.h"
 #include "GalaxyHab.h"
+#include "GalaxyOrganic.h"
 #include "GalaxyPanel.h"
 #include "GalaxyStructures.h"
 
@@ -1639,35 +1640,39 @@ QWidget* Livre::terrMapEl(const QString& k, QWidget* parent)
     mini2->paint = [d, key, has](QPainter& p, QRectF rc) {
         p.setClipRect(rc);
         p.fillRect(rc, QColor(4, 6, 11));
-        double x0 = -1.1, y0 = -1.1, x1 = 1.1, y1 = 1.1;
         const Region* r = nullptr;
         for (const auto& x : d->regions) if (x->key == key) r = x.get();
-        if (r && !r->stamps.empty()) {
-            x0 = 9; y0 = 9; x1 = -9; y1 = -9;
-            for (const auto& s : r->stamps) { x0 = std::min(x0, s[0] - s[2] * 1.5); y0 = std::min(y0, s[1] - s[2] * 1.5); x1 = std::max(x1, s[0] + s[2] * 1.5); y1 = std::max(y1, s[1] + s[2] * 1.5); }
-            const double cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, half = std::max({ (x1 - x0) / 2, (y1 - y0) / 2, 0.2 }) * 1.15;
-            x0 = cx - half; x1 = cx + half; y0 = cy - half; y1 = cy + half;
+        // enquadra o território (a forma pintada ou a área em volta dos mundos); sem nada, a galáxia inteira
+        double x0 = -1.1, y0 = -1.1, x1 = 1.1, y1 = 1.1;
+        if (r) {
+            double a, b, c, e;
+            if (terrBox(terrField(*d, *r), a, b, c, e)) {
+                const double cx = (a + c) / 2, cy = (b + e) / 2, half = std::max({ (c - a) / 2, (e - b) / 2, 0.2 }) * 1.15;
+                x0 = cx - half; x1 = cx + half; y0 = cy - half; y1 = cy + half;
+            }
         }
         const double sc = std::max(rc.width() / (x1 - x0), rc.height() / (y1 - y0));
-        const QPointF o(rc.center().x() - (x0 + x1) / 2 * sc, rc.center().y() - (y0 + y1) / 2 * sc);
+        // y pra cima, como no mapa
+        const QPointF o(rc.center().x() - (x0 + x1) / 2 * sc, rc.center().y() + (y0 + y1) / 2 * sc);
         p.setOpacity(0.55);
         p.drawImage(QRectF(o.x() - EXT * sc, o.y() - EXT * sc, 2 * EXT * sc, 2 * EXT * sc), d->galImg);
         p.setOpacity(1);
+        const double dpr = p.device() ? p.device()->devicePixelRatioF() : 1.0;
+        const double A[6] = { o.x() * dpr, o.y() * dpr, (o.x() + sc) * dpr, o.y() * dpr, o.x() * dpr, (o.y() - sc) * dpr };
+        const int W = int(std::ceil(rc.right() * dpr)), H = int(std::ceil(rc.bottom() * dpr));
         for (const auto& x : d->regions) {
-            if (x->stamps.empty()) continue;
-            QColor c(x->color);
-            c.setAlphaF(x->key == key ? 0.55 : 0.22);
-            QPainterPath path;
-            path.setFillRule(Qt::WindingFill);
-            for (const auto& s : x->stamps) path.addEllipse(QPointF(o.x() + s[0] * sc, o.y() + s[1] * sc), s[2] * sc, s[2] * sc);
-            p.setPen(Qt::NoPen);
-            p.setBrush(c);
-            p.drawPath(path.simplified());
+            const TerrField F = terrField(*d, *x);
+            if (terrEmpty(F)) continue;
+            const TerrImage im = terrImage(*d, F, QColor(x->color.isEmpty() ? QStringLiteral("#8e9db4") : x->color), A, W, H, sc * dpr, dpr, false);
+            if (im.empty) continue;
+            p.setOpacity(x->key == key ? 1.0 : 0.45);
+            p.drawImage(QRectF(im.x / dpr, im.y / dpr, im.img.width() / dpr, im.img.height() / dpr), im.img);
+            p.setOpacity(1);
         }
         if (!has) {
             p.setPen(QColor(230, 236, 245, 200));
-            QFont f = p.font(); f.setPixelSize(12); p.setFont(f);
-            p.drawText(rc, Qt::AlignCenter, Livre::tr("Sem forma ainda"));
+            QFont f = p.font(); f.setPixelSize(11); p.setFont(f);
+            p.drawText(rc.adjusted(8, 0, -8, -8), Qt::AlignHCenter | Qt::AlignBottom | Qt::TextWordWrap, Livre::tr("Sem forma desenhada: o mapa usa a área em volta dos mundos"));
         }
     };
     l->addWidget(mini2);

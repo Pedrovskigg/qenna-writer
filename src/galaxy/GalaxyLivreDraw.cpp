@@ -4,6 +4,7 @@
 #include "GalaxyLivre.h"
 #include "GalaxyCanvas.h"
 #include "GalaxyDoc.h"
+#include "GalaxyOrganic.h"
 
 #include "../Theme.h"
 
@@ -51,8 +52,9 @@ public:
     Region* region() const { for (const auto& r : m_doc->regions) if (r->key == m_key) return r.get(); return nullptr; }
 protected:
     double base() const { return std::max(width(), height()) * 0.95 * z; }
-    QPointF toScreen(double x, double y) const { const double s = base() / 2; return QPointF(width() / 2.0 + (x - cx) * s, height() / 2.0 + (y - cy) * s); }
-    void toWorld(QPointF p, double& x, double& y) const { const double s = base() / 2; x = cx + (p.x() - width() / 2.0) / s; y = cy + (p.y() - height() / 2.0) / s; }
+    // y pra cima, como no mapa (a imagem da galáxia tem o +y no topo)
+    QPointF toScreen(double x, double y) const { const double s = base() / 2; return QPointF(width() / 2.0 + (x - cx) * s, height() / 2.0 - (y - cy) * s); }
+    void toWorld(QPointF p, double& x, double& y) const { const double s = base() / 2; x = cx + (p.x() - width() / 2.0) / s; y = cy - (p.y() - height() / 2.0) / s; }
     void paintEvent(QPaintEvent*) override
     {
         QPainter p(this);
@@ -64,22 +66,24 @@ protected:
         p.setOpacity(0.55);
         p.drawImage(QRectF(o.x() - EXT * s, o.y() - EXT * s, 2 * EXT * s, 2 * EXT * s), m_doc->galImg);
         p.setOpacity(1);
+        // os territórios com a fronteira orgânica (a mesma do minimapa); o que se pinta fica em evidência
+        const double dpr = devicePixelRatioF();
+        const QPointF a0 = toScreen(0, 0), a1 = toScreen(1, 0), a2 = toScreen(0, 1);
+        const double A[6] = { a0.x() * dpr, a0.y() * dpr, a1.x() * dpr, a1.y() * dpr, a2.x() * dpr, a2.y() * dpr };
+        const int W = int(std::lround(width() * dpr)), H = int(std::lround(height() * dpr));
         for (const auto& r : m_doc->regions) {
-            if (r->stamps.empty()) continue;
+            const TerrField F = terrField(*m_doc, *r);
+            if (terrEmpty(F)) continue;
             const bool me = r->key == m_key;
-            QPainterPath path;
-            path.setFillRule(Qt::WindingFill);
-            for (const auto& st : r->stamps) path.addEllipse(toScreen(st[0], st[1]), st[2] * s, st[2] * s);
-            path = path.simplified();
-            QColor fill(r->color), edge(r->color);
-            fill.setAlphaF(me ? 0.34 : 0.14);
-            edge.setAlphaF(me ? 0.95 : 0.35);
-            p.setPen(QPen(edge, me ? 2 : 1));
-            p.setBrush(fill);
-            p.drawPath(path);
-            double wx = 0, wy = 0, w = 0;
-            for (const auto& st : r->stamps) { wx += st[0] * st[2]; wy += st[1] * st[2]; w += st[2]; }
-            const QPointF c = toScreen(wx / w, wy / w);
+            const TerrImage im = terrImage(*m_doc, F, QColor(r->color.isEmpty() ? QStringLiteral("#8e9db4") : r->color), A, W, H, s * dpr, dpr, m_paint || m_pan);
+            if (!im.empty) {
+                p.setOpacity(me ? 1.0 : 0.45);
+                p.drawImage(QRectF(im.x / dpr, im.y / dpr, im.img.width() / dpr, im.img.height() / dpr), im.img);
+                p.setOpacity(1);
+            }
+            double wx = 0, wy = 0;
+            if (!terrCenter(F, wx, wy)) continue;
+            const QPointF c = toScreen(wx, wy);
             QFont f = font(); f.setPixelSize(int(std::clamp(base() / 70, 10.0, 16.0))); f.setWeight(QFont::DemiBold); f.setLetterSpacing(QFont::AbsoluteSpacing, 1.5);
             p.setFont(f);
             const QRectF tr(c.x() - 160, c.y() - 12, 320, 24);
@@ -131,7 +135,7 @@ protected:
     {
         m_mouse = e->position();
         m_hover = true;
-        if (m_pan) { const double s = base() / 2; cx = m_panX - (e->position().x() - m_panAt.x()) / s; cy = m_panY - (e->position().y() - m_panAt.y()) / s; update(); return; }
+        if (m_pan) { const double s = base() / 2; cx = m_panX - (e->position().x() - m_panAt.x()) / s; cy = m_panY + (e->position().y() - m_panAt.y()) / s; update(); return; }
         if (m_paint) paintAt(e->position(), (e->modifiers() & Qt::ShiftModifier) || tool == QLatin1String("erase"));
         else update();
     }
@@ -261,20 +265,30 @@ void Livre::openDraw(const QString& terr)
         if (x && x->stamps != before) {
             const Stamps after = x->stamps;
             Doc* d = m_doc;
-            // Na galáxia livre os sistemas do território não têm lugar escolhido: os que ficaram fora da forma vão pra dentro.
+            // Na galáxia livre os sistemas do território não têm lugar escolhido: com a forma nova, eles se
+            // reespalham por ela inteira (cada um no ponto mais longe dos que já foram postos, com folga da borda).
             struct Moved { System* s; double x0, y0, x1, y1; };
             auto moved = std::make_shared<std::vector<Moved>>();
             if (m_doc->opts.free && !after.empty()) {
-                for (int id : x->systems) {
+                QList<int> ids;
+                for (int id : x->systems) { const System* s = m_doc->gal->systems[size_t(id)].get(); if (s->hand && (!s->gone || m_doc->isSolo(*s))) ids << id; }
+                std::sort(ids.begin(), ids.end());
+                QSet<int> waiting(ids.begin(), ids.end());
+                for (int id : ids) {
                     System* s = m_doc->gal->systems[size_t(id)].get();
-                    if (!s->hand) continue;
-                    bool in = false;
-                    for (const auto& st : after) if (std::hypot(s->x - st[0], s->y - st[1]) < st[2] * 0.9) in = true;
-                    if (in) continue;
                     double nx = s->x, ny = s->y;
-                    if (m_doc->freeSpot(x, nx, ny, s->seed ^ 0x9e3779b9u)) moved->push_back({ s, s->x, s->y, nx, ny });
+                    const bool ok = spreadSpot(*m_doc, x, nx, ny, s->seed ^ 0x9e3779b9u, waiting);   // ele mesmo ainda não conta
+                    waiting.remove(id);
+                    if (ok) { moved->push_back({ s, s->x, s->y, nx, ny }); s->x = nx; s->y = ny; s->rCore = std::hypot(nx, ny); }
                 }
-                for (const Moved& m : *moved) { m.s->x = m.x1; m.s->y = m.y1; m.s->rCore = std::hypot(m.x1, m.y1); }
+                // mundos soltos que a forma nova cobriu saem pra fora (solto não mora dentro de território)
+                const TerrField F = terrField(*m_doc, *x);
+                for (const auto& sy : m_doc->gal->systems) {
+                    System* s = sy.get();
+                    if (!m_doc->isSolo(*s) || m_doc->regionOfSys(*s) || terrDist(F, s->x, s->y) > 0.04) continue;
+                    double nx = s->x, ny = s->y;
+                    if (spreadSpot(*m_doc, nullptr, nx, ny, s->seed ^ 0x51ed270bu, { s->id })) { moved->push_back({ s, s->x, s->y, nx, ny }); s->x = nx; s->y = ny; s->rCore = std::hypot(nx, ny); }
+                }
                 if (!moved->empty()) m_doc->layoutSystems();
             }
             undoable(tr("Forma de %1 desenhada.").arg(x->name),
