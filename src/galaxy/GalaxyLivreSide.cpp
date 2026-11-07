@@ -355,11 +355,14 @@ QWidget* Livre::systemView(const QString& sysKey, QWidget* parent)
         in->installEventFilter(this);
         connect(in, &QLineEdit::returnPressed, this, [this, in, sysKey]() {
             const QString n = in->text().trimmed();
-            if (n.isEmpty()) return;
+            if (n.isEmpty() || !m_sysAdd) return;
             m_sysAdd = false;
-            m_sel = createWorld(n, sysKey, Type::Temperado, false);
-            render();
-            goBody();
+            // fora do Enter: o render refaz a ficha e apaga este campo, que ainda está tratando a tecla
+            QTimer::singleShot(0, this, [this, n, sysKey]() {
+                m_sel = createWorld(n, sysKey, Type::Temperado, false);
+                render();
+                goBody();
+            });
         });
         l->addWidget(in);
         QTimer::singleShot(0, in, [in]() { in->setFocus(); });

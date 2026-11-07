@@ -961,12 +961,15 @@ QWidget* Livre::addBallEl(const QString& slot, const QString& parent, QWidget* w
         v->addStretch();
         connect(in, &QLineEdit::returnPressed, this, [this, in, parent]() {
             const QString n = in->text().trimmed();
-            if (n.isEmpty()) return;
+            if (n.isEmpty() || m_shelfAdd.isEmpty()) return;
             m_shelfAdd.clear();
-            m_sel = createWorld(n, parent, Type::Temperado, false);
-            m_navOpen = true;
-            render();
-            goBody();
+            // fora do Enter: o render refaz a prateleira e apaga este campo, que ainda está tratando a tecla
+            QTimer::singleShot(0, this, [this, n, parent]() {
+                m_sel = createWorld(n, parent, Type::Temperado, false);
+                m_navOpen = true;
+                render();
+                goBody();
+            });
         });
         in->installEventFilter(this);
         in->setProperty("lvEscape", QStringLiteral("shelf"));
