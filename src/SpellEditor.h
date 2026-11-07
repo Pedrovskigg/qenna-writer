@@ -57,6 +57,11 @@ public:
     QList<QRect> paperRects(const QRect& area) const;
     int pagePitch() const { return paperHeight() + kPageGap; }
     int paperHeight() const;
+    // Quantas folhas o documento ocupa no modo de página: a mesma conta das folhas
+    // pintadas (o contador de páginas usa, também num documento montado por fora).
+    // pitch 0 = a altura da página do próprio documento.
+    static int sheetsIn(const QTextDocument* d, int pitch = 0);
+    int sheetCount() const { return sheetsIn(document(), pagePitch()); }
     static constexpr int kPageGap = 28;      // vão entre uma folha e a seguinte
     static constexpr int kPageMargin = 76;   // margem da folha (em cima e dos lados)
 

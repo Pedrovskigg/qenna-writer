@@ -7,6 +7,8 @@
 #include <QString>
 #include <QTime>
 
+#include <functional>
+
 class ProjectModel;
 class DocCache;
 class EditorHost;
@@ -138,7 +140,15 @@ public:
     // Estatísticas
     int currentStreak() const;
     int longestStreak() const;
-    int estimatedPages() const;   // palavras do escopo ativo / 250; roteiro: páginas de verdade
+    int estimatedPages() const;   // palavras do escopo ativo / 250; roteiro: páginas de verdade; modo de página: as folhas do editor
+    // Modo de página: quem sabe quantas folhas cada documento ocupa é a MainWindow
+    // (mesma fonte, entrelinha, recuo e largura do editor). stamp: a "cara" da
+    // folha agora (vazia = modo de página desligado, volta a ser palavras / 250);
+    // mudou, as contagens guardadas caem. open: folhas do documento aberto no
+    // editor, ao vivo. paginate: folhas de um HTML montado por fora.
+    void setSheetCounter(std::function<QString()> stamp, std::function<int()> open,
+                         std::function<int(const QString& html, bool manuscript)> paginate);
+    void refreshSheets() { scheduleEmit(); }
     bool isScreenplay() const;
     void writingAverages(int& activeDays, int& wordsPerDay, int& minutesPerDay) const;
 
@@ -164,6 +174,17 @@ private:
     // Páginas do roteiro: paginar o texto inteiro custa caro, então guarda o
     // resultado até o texto (ou o escopo) mudar.
     int screenplayPages() const;
+    // Modo de página: soma as folhas do escopo. Capítulo aberto conta ao vivo; os
+    // outros são paginados por fora e guardados. Pra não travar, cada chamada
+    // pagina no máximo ~40 ms; o resto entra por palavras / 250 e a conta
+    // termina nas chamadas seguintes. -1 = modo de página desligado.
+    int sheetPages() const;
+    std::function<QString()> m_sheetStamp;
+    std::function<int()> m_sheetOpen;
+    std::function<int(const QString&, bool)> m_sheetPaginate;
+    mutable QString m_sheetStampSeen;
+    mutable QHash<QString, int> m_chapterSheets;
+    mutable QHash<QString, int> m_itemSheets;
     void recountScreenplayPages();
     QString screenplayPagesKey(QStringList* htmls) const;
     // Páginas do roteiro: o último valor contado fica na tela; quando o texto

@@ -158,6 +158,9 @@ private:
     void formatPastedRange(int from, int to);
     void applyTextColor();
     void applyEditorFont();
+    // Modo de página: em quantas folhas um HTML cai, montado como o editor monta (contador de páginas).
+    int sheetsLikeEditor(const QString& html, bool manuscript) const;
+    QString sheetStamp() const;
     void updateDocCachePinnedKeys();
 
     // Camadas de ExtraSelections do editor — focus mode (cor do bloco focado)

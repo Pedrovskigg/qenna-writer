@@ -144,6 +144,16 @@ int SpellEditor::paperHeight() const
     return qMax(400, qRound(width() * 297.0 / 210.0));
 }
 
+int SpellEditor::sheetsIn(const QTextDocument* d, int pitch)
+{
+    if (pitch <= 0) pitch = qRound(d->pageSize().height());
+    if (pitch <= 0) return 1;
+    const qreal docH = d->documentLayout()->documentSize().height();
+    // Última linha de texto = altura do documento menos a margem de baixo.
+    const int lastText = qMax(0, int(docH) - kPageMargin - 1);
+    return lastText / pitch + 1;
+}
+
 void SpellEditor::setPageMode(bool on)
 {
     if (m_pageMode == on) { applyPageLayout(); return; }
@@ -170,11 +180,8 @@ void SpellEditor::extendScrollToLastPage()
 {
     if (!m_pageMode || m_adjustingRange) return;
     QScrollBar* sb = verticalScrollBar();
-    const qreal docH = document()->documentLayout()->documentSize().height();
     const int pitch = pagePitch();
-    // Última linha de texto = altura do documento menos a margem de baixo.
-    const int lastText = qMax(0, int(docH) - kPageMargin - 1);
-    const int pages = lastText / pitch + 1;
+    const int pages = sheetsIn(document(), pitch);
     const int wanted = qMax(0, pages * pitch - viewport()->height());
     if (sb->maximum() >= wanted) return;
     m_adjustingRange = true;

@@ -2351,6 +2351,11 @@ void MainWindow::setupEditor()
 
     drawerListPanel->setElementsStore(elementsStore);
     wordCounter = new WordCounter(projectModel, docCache, editorHost, this);
+    // Modo de página: o contador de páginas conta as folhas de verdade do editor.
+    wordCounter->setSheetCounter(
+        [this]() { return sheetStamp(); },
+        [this]() { return editor ? editor->sheetCount() : 0; },
+        [this](const QString& html, bool manuscript) { return sheetsLikeEditor(html, manuscript); });
     // O texto mudou: a contagem de cada termo do glossário pode ter mudado.
     connect(wordCounter, &WordCounter::countsChanged, this, [this]() {
         if (glossaryIndex) glossaryIndex->invalidate();
@@ -4478,6 +4483,8 @@ void MainWindow::applyEditorStyle()
         .arg(paged ? QStringLiteral("transparent") : pageBgCss, Theme::accentDefault(), pagePadding));
     editor->setPaperColor(pageBg);
     editor->setPageMode(paged);
+    // a contagem de folhas segue a cara da folha (fonte, entrelinha, modo ligado ou não)
+    if (wordCounter) wordCounter->refreshSheets();
     if (editor->viewport()) {
         // Viewport precisa ser transparente pro QSS (com alpha) aparecer;
         // se autoFillBackground=true, ele pinta a cor opaca por baixo.
@@ -4616,6 +4623,56 @@ void MainWindow::applyTextColor()
     doc->setModified(wasModified);
 
     if (editor->viewport()) editor->viewport()->update();
+}
+
+// A "cara" da folha no modo de página: o que muda onde o texto quebra de folha.
+// Vazia = modo de página desligado (o contador volta a ser palavras / 250).
+QString MainWindow::sheetStamp() const
+{
+    if (!editor || !editor->isPageMode()) return QString();
+    const int msAlign = projectModel ? projectModel->defaultManuscriptAlignment() : 0;
+    const int drAlign = projectModel ? projectModel->defaultDrawerAlignment() : 0;
+    return QStringLiteral("%1|%2|%3|%4|%5|%6|%7|%8|%9")
+        .arg(currentFontFamily).arg(currentFontSize).arg(currentLineHeight)
+        .arg(int(firstLineIndentEnabled)).arg(paragraphSpacingBefore).arg(paragraphSpacingAfter)
+        .arg(qRound(editor->document()->pageSize().width())).arg(editor->pagePitch())
+        .arg(QStringLiteral("%1/%2").arg(msAlign).arg(drAlign));
+}
+
+// Monta o HTML num documento por fora do jeito que o applyEditorStyle monta o
+// do editor (fonte, entrelinha, recuo, espaço entre parágrafos, alinhamento,
+// quebra de cena e a folha do modo de página) e conta as folhas.
+int MainWindow::sheetsLikeEditor(const QString& html, bool manuscript) const
+{
+    if (!editor) return 0;
+    QTextDocument d;
+    d.setUndoRedoEnabled(false);
+    d.setDefaultFont(sizedFont(currentFontFamily, currentFontSize));
+    const int defAlign = projectModel
+        ? (manuscript ? projectModel->defaultManuscriptAlignment() : projectModel->defaultDrawerAlignment())
+        : 0;
+    QTextOption opt = editor->document()->defaultTextOption();
+    opt.setAlignment(defAlign != 0 ? static_cast<Qt::Alignment>(defAlign) : Qt::AlignLeft);
+    d.setDefaultTextOption(opt);
+    d.setIndentWidth(editor->document()->indentWidth());
+    d.setHtml(html);
+    d.setDocumentMargin(editor->document()->documentMargin());
+    d.setPageSize(QSizeF(editor->document()->pageSize().width(), editor->pagePitch()));
+    QTextCursor c(&d);
+    c.select(QTextCursor::Document);
+    QTextBlockFormat bf;
+    bf.setLineHeight(currentLineHeight, QTextBlockFormat::ProportionalHeight);
+    bf.setTextIndent(firstLineIndentEnabled ? 30 : 0);
+    bf.setTopMargin(paragraphSpacingBefore);
+    bf.setBottomMargin(paragraphSpacingAfter);
+    if (defAlign != 0) bf.setAlignment(static_cast<Qt::Alignment>(defAlign));
+    c.mergeBlockFormat(bf);
+    SceneBreaks::applySpacing(&d, false);
+    QTextCharFormat cf;
+    cf.setFontFamilies({currentFontFamily});
+    cf.setFontPointSize(currentFontSize);
+    c.mergeCharFormat(cf);
+    return SpellEditor::sheetsIn(&d, editor->pagePitch());
 }
 
 void MainWindow::applyEditorFont()

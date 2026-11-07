@@ -9,6 +9,7 @@
 #include "SceneUtils.h"
 
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonValue>
@@ -195,6 +196,8 @@ void WordCounter::setProjectRoot(const QString& root) {
     m_itemCounts.clear();
     m_chapterCharCounts.clear();
     m_itemCharCounts.clear();
+    m_chapterSheets.clear();
+    m_itemSheets.clear();
     m_goalWordSnapshot.clear();
     scheduleEmit();
 }
@@ -208,11 +211,13 @@ void WordCounter::onCacheContentChanged(const QString& key) {
             const QString chId = key.mid(secondColon + 1);
             m_chapterCounts.remove(chId);
             m_chapterCharCounts.remove(chId);
+            m_chapterSheets.remove(chId);
         }
     } else if (key.startsWith(QStringLiteral("it:"))) {
         const QString itemId = key.mid(3);
         m_itemCounts.remove(itemId);
         m_itemCharCounts.remove(itemId);
+        m_itemSheets.remove(itemId);
     }
     scheduleEmit();
 }
@@ -237,6 +242,7 @@ void WordCounter::onDrawersChanged() {
         };
         sweep(m_itemCounts);
         sweep(m_itemCharCounts);
+        sweep(m_itemSheets);
     }
     scheduleEmit();
 }
@@ -247,6 +253,8 @@ void WordCounter::onProjectLoaded() {
     m_itemCounts.clear();
     m_chapterCharCounts.clear();
     m_itemCharCounts.clear();
+    m_chapterSheets.clear();
+    m_itemSheets.clear();
     m_goalWordSnapshot.clear();
     loadSettingsFromModel();
     scheduleEmit();
@@ -980,9 +988,74 @@ int WordCounter::estimatedPages() const {
     if (isScreenplay() && m_activeSheetItem.isEmpty() && m_settings.scope != QStringLiteral("drawers")
         && m_settings.scope != QStringLiteral("all"))
         return screenplayPages();
+    if (!isScreenplay() && m_activeSheetItem.isEmpty()) {
+        const int sheets = sheetPages();
+        if (sheets >= 0) return sheets;
+    }
     const int w = countActiveScopeWords();
     if (w <= 0) return 0;
     return qMax(1, (w + 249) / 250);
+}
+
+void WordCounter::setSheetCounter(std::function<QString()> stamp, std::function<int()> open,
+                                  std::function<int(const QString&, bool)> paginate) {
+    m_sheetStamp = std::move(stamp);
+    m_sheetOpen = std::move(open);
+    m_sheetPaginate = std::move(paginate);
+    scheduleEmit();
+}
+
+int WordCounter::sheetPages() const {
+    if (!m_model || !m_sheetStamp || !m_sheetOpen || !m_sheetPaginate) return -1;
+    const QString stamp = m_sheetStamp();
+    if (stamp.isEmpty()) return -1;
+    if (stamp != m_sheetStampSeen) {
+        m_chapterSheets.clear();
+        m_itemSheets.clear();
+        m_sheetStampSeen = stamp;
+    }
+    const EditorHost::ViewMode vm = m_host ? m_host->viewMode() : EditorHost::ViewMode{};
+    QElapsedTimer clock;
+    clock.start();
+    bool pending = false;
+    // Documento sem palavras não conta folha (o editor mostra uma em branco, mas
+    // não é página do livro).
+    auto chapterSheets = [&](const QString& id) -> int {
+        const int words = countChapter(id);
+        if (words <= 0) return 0;
+        if (vm.type == EditorHost::ChapterDoc && vm.chapterId == id) return m_sheetOpen();
+        const auto it = m_chapterSheets.constFind(id);
+        if (it != m_chapterSheets.constEnd()) return it.value();
+        if (clock.elapsed() > 40) { pending = true; return (words + 249) / 250; }
+        const int n = m_sheetPaginate(chapterHtml(id), true);
+        m_chapterSheets.insert(id, n);
+        return n;
+    };
+    auto itemSheets = [&](const DrawerItem& item) -> int {
+        const int words = countItem(item.id);
+        if (words <= 0) return 0;
+        if (item.isSheet) return (words + 249) / 250;   // ficha não vira folha no editor
+        if (vm.type == EditorHost::DrawerDoc && vm.itemId == item.id) return m_sheetOpen();
+        const auto it = m_itemSheets.constFind(item.id);
+        if (it != m_itemSheets.constEnd()) return it.value();
+        if (clock.elapsed() > 40) { pending = true; return (words + 249) / 250; }
+        const int n = m_sheetPaginate(itemHtml(item.id), false);
+        m_itemSheets.insert(item.id, n);
+        return n;
+    };
+    const QString sc = m_settings.scope;
+    if (sc == QStringLiteral("active")) {
+        if (vm.type != EditorHost::ChapterDoc && vm.type != EditorHost::SceneDoc && vm.type != EditorHost::DrawerDoc) return 0;
+        return countActiveScopeWords() > 0 ? m_sheetOpen() : 0;
+    }
+    int total = 0;
+    if (sc != QStringLiteral("drawers"))
+        for (const auto& ch : m_model->chapters()) total += chapterSheets(ch.id);
+    if (sc == QStringLiteral("drawers") || sc == QStringLiteral("all"))
+        for (const auto& d : m_model->drawers())
+            for (const auto& item : d.items) total += itemSheets(item);
+    if (pending) QTimer::singleShot(0, const_cast<WordCounter*>(this), &WordCounter::scheduleEmit);
+    return total;
 }
 
 void WordCounter::writingAverages(int& activeDays, int& wordsPerDay, int& minutesPerDay) const {
