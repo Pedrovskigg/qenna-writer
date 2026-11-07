@@ -1108,7 +1108,14 @@ void CharacterSheetPanel::rebuild()
     outerLay->addStretch();
 
     m_content = outer;
-    m_scroll->setWidget(m_content);  // substitui e destrói o conteúdo anterior
+    // O conteúdo antigo sai com deleteLater, não destruído na hora: quem pede
+    // o rebuild costuma ser um botão lá de dentro (o × de um dado ou seção),
+    // ainda no meio do próprio clique. Destruí-lo ali crashava o app.
+    if (QWidget* old = m_scroll->takeWidget()) {
+        old->hide();
+        old->deleteLater();
+    }
+    m_scroll->setWidget(m_content);
     refreshPhoto();
 
     if (m_findBar && m_findBar->isVisible())
