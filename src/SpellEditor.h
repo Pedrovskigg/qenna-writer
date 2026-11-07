@@ -38,6 +38,28 @@ public:
     // caracteres da página-padrão (senão o diálogo esparrama na tela larga).
     void setPageMargins(int left, int top, int right, int bottom);
 
+    // Modo de página (o "Layout de Impressão" do Word): o texto corre em folhas
+    // de altura fixa (A4 na largura da página), com um vão entre elas. Quem
+    // empurra pra folha seguinte a linha que cruza a borda é o próprio Qt
+    // (QTextDocument com pageSize de altura finita); aqui só se pintam as folhas
+    // e se estica a rolagem até o pé da última. A margem da folha vai na
+    // documentMargin, que o toHtml() não grava (margem no rootFrame faria o
+    // capítulo ser salvo embrulhado numa <table>).
+    void setPageMode(bool on);
+    bool isPageMode() const { return m_pageMode; }
+    // Cor da folha (com a opacidade do tema): no modo de página o editor é
+    // transparente e pinta só as folhas, pra mesa aparecer nos vãos.
+    void setPaperColor(const QColor& c) { m_paperColor = c; viewport()->update(); update(); }
+    // Reaplica a geometria das folhas no documento atual (o QTextEdit zera a
+    // altura da página a cada resize).
+    void applyPageLayout();
+    // Folhas visíveis, em coordenadas do editor (inclui as margens em volta do viewport).
+    QList<QRect> paperRects(const QRect& area) const;
+    int pagePitch() const { return paperHeight() + kPageGap; }
+    int paperHeight() const;
+    static constexpr int kPageGap = 28;      // vão entre uma folha e a seguinte
+    static constexpr int kPageMargin = 76;   // margem da folha (em cima e dos lados)
+
     // Modo roteiro: Tab/Shift+Tab ciclam o elemento do bloco atual (Cena/Ação/
     // Personagem/Diálogo/Parênteses/Transição) e Enter avança pro elemento
     // lógico seguinte. Setado pela MainWindow via applyEditorStyle() — só true
@@ -110,6 +132,7 @@ protected:
     void focusOutEvent(QFocusEvent* event) override;
     void insertFromMimeData(const QMimeData* source) override;
     void resizeEvent(QResizeEvent* event) override;
+    void changeEvent(QEvent* event) override;
 
 private:
     // Autocorreção de nomes. A troca acontece depois da tecla que termina a
@@ -139,6 +162,11 @@ private:
     QTextCursor m_typedBlock;
     bool m_uppercasing = false;
     QMargins m_pageMargins;
+    bool m_pageMode = false;
+    bool m_adjustingRange = false;
+    QColor m_paperColor = Qt::white;
+    void paintPaper(QPainter& p, const QRect& area);
+    void extendScrollToLastPage();
     OverlayPainter m_overlay;
     std::function<void()> m_beforePaint;
     std::function<void(QPainter&, const QRect&)> m_underlay;

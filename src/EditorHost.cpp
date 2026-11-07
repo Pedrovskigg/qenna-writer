@@ -6,6 +6,7 @@
 #include "ProjectStorage.h"
 #include "SceneUtils.h"
 
+#include <QScrollBar>
 #include <QClipboard>
 #include <QEvent>
 #include <QFile>
@@ -432,6 +433,10 @@ void EditorHost::replaceContent(const QString& html) {
         m_editor->setHtml(html);
         normalizeRefAnchors();
     }
+    // O setHtml chama ensureCursorVisible no meio da carga; no modo de página
+    // (margem do documento de 76 px) isso deixava o capítulo aberto já rolado
+    // e a primeira folha sem a margem de cima. Documento novo abre no topo.
+    m_editor->verticalScrollBar()->setValue(0);
     doc->setUndoRedoEnabled(undoWas);
     m_editor->setUpdatesEnabled(true);
     emit contentLoaded();

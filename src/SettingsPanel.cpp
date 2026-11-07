@@ -484,6 +484,14 @@ SettingsPanel::SettingsPanel(QWidget* parent)
                                 "janela inteira e acompanha o seu tamanho; arrastando para a esquerda, "
                                 "a folha ganha uma altura fixa e o fundo aparece em volta. Vale para "
                                 "todos os projetos.");
+    // Modo de página: o texto em folhas separadas, como no Layout de Impressão do Word.
+    auto* pageModeCheck = new ToggleSwitch(this);
+    pageModeCheck->setChecked(QSettings().value(QStringLiteral("editor/pageMode"), false).toBool());
+    addRow(Writing, tr("Modo de página"), tr("O texto em folhas separadas, como no Word."), pageModeCheck,
+           tr("Divide o capítulo em folhas de papel (A4 na largura da página), com um vão entre "
+              "elas, como o Layout de Impressão do Word. A folha tem a margem dela, então o "
+              "comprimento e a margem topo/base não se aplicam. Só muda a tela: o arquivo e a "
+              "exportação continuam iguais. Vale para todos os projetos."));
     addRow(Writing, tr("Largura da página"), tr("Largura da folha de escrita."),
            sliderBox(m_pageWidthSlider, m_pageWidthValue, this), pageHint);
     addRow(Writing, tr("Comprimento da página"), tr("\"Tela cheia\" acompanha a janela."),
@@ -493,6 +501,16 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     addRow(Writing, tr("Margem topo/base"), tr("Respiro em cima e embaixo."),
            sliderBox(m_vMarginSlider, m_vMarginValue, this), pageHint);
     syncPageLayoutFromManager();
+    // No modo de página a folha tem altura e margem próprias.
+    auto syncPageModeRows = [this](bool on) {
+        m_pageHeightSlider->setEnabled(!on);
+        m_vMarginSlider->setEnabled(!on);
+    };
+    syncPageModeRows(pageModeCheck->isChecked());
+    connect(pageModeCheck, &QCheckBox::toggled, this, [this, syncPageModeRows](bool on) {
+        syncPageModeRows(on);
+        emit pageModeChanged(on);
+    });
 
     // Desenho da quebra de cena no editor (ver SceneBreaks)
     auto* breakCombo = new QComboBox(this);

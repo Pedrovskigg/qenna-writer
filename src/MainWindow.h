@@ -208,6 +208,10 @@ private:
     // Altura que a faixa de titulo rouba da folha; 0 quando ela nao existe.
     int docHeaderExtent() const;
     void applyPageShadow();
+    // Modo de página (folhas separadas, tipo o Layout de Impressão do Word).
+    // Preferência global (QSettings editor/pageMode), como a largura da página.
+    bool pageModeEnabled() const;
+    void setPageModeEnabled(bool on);
     void applyBackgroundFromTheme();
     void applySpellLanguageFromModel();
     // Aviso curto no rodapé do editor, some sozinho.
@@ -704,6 +708,7 @@ private:
     int m_wheelOverscroll = 0;
     AutoNavHint *m_autoNavHint = nullptr;
     PageGlow *m_pageGlow = nullptr;
+    mutable int m_pageMode = -1;   // -1 = ainda não lido do QSettings
     QTimer *m_autoNavProgressTimer = nullptr;
     int m_autoNavProgressMs = 0;
     QString m_autoNavTargetTitle;

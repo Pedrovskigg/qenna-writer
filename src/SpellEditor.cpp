@@ -119,12 +119,106 @@ SpellEditor::SpellEditor(QWidget* parent)
     document()->documentLayout()->registerHandler(
         QTextFormat::ImageObject, new SmoothImageHandler(this));
     connect(this, &QTextEdit::cursorPositionChanged, this, &SpellEditor::onScreenplayCursorMoved);
+    // Modo de página: o QTextEdit mede a rolagem até a última linha; a folha
+    // vai além dela (até o pé da página). Toda vez que ele refaz a conta, estica.
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() { extendScrollToLastPage(); });
+    // Ao rolar, o Qt só arrasta os pixels do viewport; as faixas das folhas
+    // que caem nas margens em volta dele (o padding dos lados) ficavam paradas,
+    // com o vão entre as folhas no lugar antigo. Repinta essas faixas também.
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this]() {
+        if (m_pageMode) update(QRegion(rect()) - QRegion(viewport()->geometry()));
+    });
 }
 
 void SpellEditor::setPageMargins(int left, int top, int right, int bottom)
 {
     m_pageMargins = QMargins(left, top, right, bottom);
     updateScreenplayColumn();
+}
+
+// ── Modo de página ───────────────────────────────────────────────────────────
+
+int SpellEditor::paperHeight() const
+{
+    // A4 (210 × 297) na largura da página.
+    return qMax(400, qRound(width() * 297.0 / 210.0));
+}
+
+void SpellEditor::setPageMode(bool on)
+{
+    if (m_pageMode == on) { applyPageLayout(); return; }
+    m_pageMode = on;
+    updateScreenplayColumn();
+    applyPageLayout();
+    viewport()->update();
+    update();
+}
+
+void SpellEditor::applyPageLayout()
+{
+    QTextDocument* doc = document();
+    // 4 px é a margem padrão do Qt (a que o editor sempre usou).
+    const qreal margin = m_pageMode ? kPageMargin : 4.0;
+    if (!qFuzzyCompare(doc->documentMargin(), margin)) doc->setDocumentMargin(margin);
+    const qreal h = m_pageMode ? pagePitch() : -1.0;
+    if (!qFuzzyCompare(doc->pageSize().height(), h))
+        doc->setPageSize(QSizeF(doc->pageSize().width(), h));
+    extendScrollToLastPage();
+}
+
+void SpellEditor::extendScrollToLastPage()
+{
+    if (!m_pageMode || m_adjustingRange) return;
+    QScrollBar* sb = verticalScrollBar();
+    const qreal docH = document()->documentLayout()->documentSize().height();
+    const int pitch = pagePitch();
+    // Última linha de texto = altura do documento menos a margem de baixo.
+    const int lastText = qMax(0, int(docH) - kPageMargin - 1);
+    const int pages = lastText / pitch + 1;
+    const int wanted = qMax(0, pages * pitch - viewport()->height());
+    if (sb->maximum() >= wanted) return;
+    m_adjustingRange = true;
+    sb->setRange(0, wanted);
+    m_adjustingRange = false;
+}
+
+QList<QRect> SpellEditor::paperRects(const QRect& area) const
+{
+    QList<QRect> out;
+    if (!m_pageMode) return out;
+    const int pitch = pagePitch();
+    const int paperH = paperHeight();
+    // y do documento → y do editor.
+    const int off = viewport()->y() - verticalScrollBar()->value();
+    const int first = qMax(0, (area.top() - off) / pitch);
+    const int last = (area.bottom() - off) / pitch;
+    for (int k = first; k <= last; ++k) {
+        const QRect r(0, off + k * pitch, width(), paperH);
+        if (r.intersects(area)) out << r;
+    }
+    return out;
+}
+
+void SpellEditor::paintPaper(QPainter& p, const QRect& area)
+{
+    const QList<QRect> pages = paperRects(area);
+    for (const QRect& r : pages) p.fillRect(r.intersected(area), m_paperColor);
+    // O fundo da folha (imagem/cor do capítulo ou do tema) só dentro das folhas.
+    if (m_underlay && !pages.isEmpty()) {
+        QRegion clip;
+        for (const QRect& r : pages) clip += r;
+        p.save();
+        p.setClipRegion(clip.intersected(area), Qt::IntersectClip);
+        m_underlay(p, area);
+        p.restore();
+    }
+}
+
+void SpellEditor::changeEvent(QEvent* event)
+{
+    QTextEdit::changeEvent(event);
+    if (m_pageMode && (event->type() == QEvent::FontChange || event->type() == QEvent::StyleChange))
+        applyPageLayout();
 }
 
 void SpellEditor::setScreenplayMode(bool on)
@@ -141,11 +235,20 @@ void SpellEditor::resizeEvent(QResizeEvent* event)
 {
     QTextEdit::resizeEvent(event);
     updateScreenplayColumn();
+    // O QTextEdit acabou de pôr a altura da página em -1 (sem folhas).
+    if (m_pageMode) applyPageLayout();
 }
 
 void SpellEditor::updateScreenplayColumn()
 {
     QMargins m = m_pageMargins;
+    if (m_pageMode) {
+        // As folhas rolam de ponta a ponta: sem respiro em cima e embaixo (a
+        // margem da folha é a do documento). Dos lados fica a margem escolhida:
+        // a MainWindow troca o padding do QSS pra o texto não mudar de lugar.
+        m.setTop(0);
+        m.setBottom(0);
+    }
     if (m_screenplayMode) {
         // Largura que o texto teria só com a margem da página.
         const QMargins cur = viewportMargins();
@@ -489,12 +592,13 @@ void SpellEditor::mousePressEvent(QMouseEvent* event)
 bool SpellEditor::event(QEvent* e)
 {
     const bool r = QTextEdit::event(e);
-    if (e->type() == QEvent::Paint && m_underlay) {
+    if (e->type() == QEvent::Paint && (m_underlay || m_pageMode)) {
         const QRegion margins = static_cast<QPaintEvent*>(e)->region() - QRegion(viewport()->geometry());
         if (!margins.isEmpty()) {
             QPainter p(this);
             p.setClipRegion(margins);
-            m_underlay(p, margins.boundingRect());
+            if (m_pageMode) paintPaper(p, margins.boundingRect());
+            else m_underlay(p, margins.boundingRect());
         }
     }
     return r;
@@ -503,7 +607,12 @@ bool SpellEditor::event(QEvent* e)
 void SpellEditor::paintEvent(QPaintEvent* event)
 {
     if (m_beforePaint) m_beforePaint();
-    if (m_underlay) {
+    if (m_pageMode) {
+        QPainter under(viewport());
+        const QPoint at = viewport()->pos();
+        under.translate(-at);
+        paintPaper(under, event->rect().translated(at));
+    } else if (m_underlay) {
         QPainter under(viewport());
         const QPoint at = viewport()->pos();
         under.translate(-at);

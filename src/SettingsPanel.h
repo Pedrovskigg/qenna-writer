@@ -84,6 +84,8 @@ signals:
     void detectionEnabledChanged(bool enabled);
     void dialogueDetectionEnabledChanged(bool enabled);
     void autoNavEnabledChanged(bool enabled);
+    // Modo de página (folhas separadas, tipo Word) ligado/desligado.
+    void pageModeChanged(bool on);
     void unifiedGoalEnabledChanged(bool enabled);
     void maxDocsChanged(int n);
     void mentionManuscriptsEnabledChanged(bool enabled);

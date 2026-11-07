@@ -4462,13 +4462,26 @@ void MainWindow::applyEditorStyle()
     const QString pageBgCss = QStringLiteral("rgba(%1,%2,%3,%4)")
         .arg(pageBg.red()).arg(pageBg.green()).arg(pageBg.blue())
         .arg(QString::number(pageBg.alphaF(), 'f', 3));
+    // Modo de página: o editor fica transparente e pinta só as folhas (com a
+    // mesma cor e opacidade), pra mesa aparecer no vão entre uma e outra.
+    const bool paged = pageModeEnabled();
+    // O QSS global dá "padding: 80px 100px" a todo QTextEdit (Theme.cpp): é o
+    // respiro de verdade da folha. No modo de página o de cima/baixo sai (senão
+    // abre um buraco entre a faixa do título e a 1ª folha, e cada folha seria
+    // deslocada) e o dos lados desconta a margem da folha, pro texto ficar no
+    // mesmo x nos dois modos: 100 + 4 (margem do Qt) = 28 + 76.
+    const QString pagePadding = paged
+        ? QStringLiteral(" padding: 0px %1px;").arg(qMax(0, 100 + 4 - SpellEditor::kPageMargin))
+        : QString();
     editor->setStyleSheet(QStringLiteral(
-        "QTextEdit { background-color: %1; selection-background-color: %2; }")
-        .arg(pageBgCss, Theme::accentDefault()));
+        "QTextEdit { background-color: %1; selection-background-color: %2;%3 }")
+        .arg(paged ? QStringLiteral("transparent") : pageBgCss, Theme::accentDefault(), pagePadding));
+    editor->setPaperColor(pageBg);
+    editor->setPageMode(paged);
     if (editor->viewport()) {
         // Viewport precisa ser transparente pro QSS (com alpha) aparecer;
         // se autoFillBackground=true, ele pinta a cor opaca por baixo.
-        const bool wantTranslucent = opacity < 100;
+        const bool wantTranslucent = opacity < 100 || paged;
         editor->viewport()->setAutoFillBackground(!wantTranslucent);
         QPalette vp = editor->viewport()->palette();
         vp.setColor(QPalette::Base, wantTranslucent ? Qt::transparent : baseBg);
@@ -8693,6 +8706,7 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("editor/detectionEnabled"), enabled);
             if (!enabled && detectionTimer) detectionTimer->stop();
         });
+        connect(settingsPanel, &SettingsPanel::pageModeChanged, this, &MainWindow::setPageModeEnabled);
         connect(settingsPanel, &SettingsPanel::autoNavEnabledChanged, this, [this](bool enabled) {
             m_autoNavEnabled = enabled;
             QSettings().setValue(QStringLiteral("editor/autoNavEnabled"), enabled);
@@ -8953,10 +8967,28 @@ void MainWindow::updateEditorContainerMargins()
                             10 + floatingChromeInset(Qt::RightEdge), 0);
 }
 
+bool MainWindow::pageModeEnabled() const
+{
+    if (m_pageMode < 0) m_pageMode = QSettings().value(QStringLiteral("editor/pageMode"), false).toBool() ? 1 : 0;
+    return m_pageMode == 1;
+}
+
+void MainWindow::setPageModeEnabled(bool on)
+{
+    if (pageModeEnabled() == on) return;
+    m_pageMode = on ? 1 : 0;
+    QSettings().setValue(QStringLiteral("editor/pageMode"), on);
+    applyEditorLayout();
+    applyEditorStyle();
+    applyPageShadow();
+}
+
 void MainWindow::applyEditorLayout()
 {
     const int pw = EditorLayout::pageWidth();
-    const int ph = EditorLayout::pageHeight(); // 0 = automático (preenche viewport)
+    // 0 = automático (preenche viewport). No modo de página a folha tem a
+    // altura dela (A4) e a coluna sempre preenche a janela.
+    const int ph = pageModeEnabled() ? 0 : EditorLayout::pageHeight();
     const int hm = EditorLayout::horizontalMargin();
     const int vm = EditorLayout::verticalMargin();
 
@@ -8996,7 +9028,7 @@ void MainWindow::resizeEditorColumnToViewport()
     if (!editorScroll || !editorColumn) return;
     const int vpH = editorScroll->viewport()->height();
     const int colW = editorColumn->width();
-    const int ph = EditorLayout::pageHeight();
+    const int ph = pageModeEnabled() ? 0 : EditorLayout::pageHeight();
     // Comprimento "Automático" (0): a coluna preenche a viewport (folha rola o
     // conteúdo internamente). Comprimento fixo: a coluna usa a altura da folha;
     // o QScrollArea a centraliza verticalmente, e a imagem de fundo aparece em
@@ -9067,8 +9099,10 @@ void MainWindow::positionPageGlow()
         PanelGlass::setPage(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()), fill);
     }
     // Temas Animados: a mesa não repinta em cima da folha e pinta a sombra dela.
+    // No modo de página a folha não é um retângulo só: a mesa aparece (e anima)
+    // nos vãos entre as folhas, então ela não pode pular a área da coluna.
     if (backgroundWidget)
-        backgroundWidget->setSheetRect(sheet.isEmpty() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()));
+        backgroundWidget->setSheetRect(sheet.isEmpty() || pageModeEnabled() ? QRect() : QRect(vp->mapTo(this, sheet.topLeft()), sheet.size()));
 
     const QColor c = parseColor(Theme::pageShadowColor());
     if (!Theme::pageGlowEnabled() || c.alpha() == 0) {
