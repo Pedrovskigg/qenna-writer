@@ -226,6 +226,7 @@ private:
     void pickStruct(QWidget* anchor, const QString& parent, const QString& replace);   // replace vazio = nova construção
     void pickConnect(QWidget* anchor, const QString& root);
     void pickColor(QWidget* anchor, const QString& k);
+    void ctxMenu(QWidget* anchor, const QString& k, const QPoint& globalPos);   // o botão direito (GalaxyLivreSide.cpp)
     QWidget* whereForm(bool* gaveta, QString* drawer, const QString& owner, const QString& goText, const std::function<void()>& done, const std::function<void()>& cancel, QWidget* parent);
     void moveDocWhere(QWidget* anchor, DocLink* d);
 
@@ -268,6 +269,20 @@ public:
     static double orbitRank(Type t);
 private:
 
+    // ── a aba de planeta novo (GalaxyLivreNew.cpp) ──
+    // Colada na prateleira: nome, tipo e construções. Criar faz tudo de uma vez, com um Desfazer só.
+    struct NewWorld { QString parent, name, hint; Type type = Type::Temperado; std::vector<std::string> builds; };
+    void openNewWorld(const QString& parent);
+    void syncNewWorld();
+    void placeNewWorld();
+    void closeNewWorld();
+    void createNewWorld();
+    QString newWhereText() const;
+    NewWorld m_nw;
+    QFrame* m_newTab = nullptr;
+    QPointer<QLabel> m_nwBall, m_nwTitle, m_nwWhere, m_nwSummary, m_nwBuildCount;
+    QPointer<QLineEdit> m_nwName;
+
     // ── território desenhado (GalaxyLivreDraw.cpp) ──
     void openDraw(const QString& terr);
 
@@ -284,8 +299,7 @@ private:
     QString m_sel, m_edFor, m_lastNavRoot, m_justMade;
     QSet<QString> m_closed;              // grupos dobrados na prateleira ("loose" = Soltos)
     bool m_fichaOpen = false, m_navOpen = false, m_navPinned = false, m_navSearch = false;
-    QString m_navQuery, m_navAdd, m_rowAdd, m_shelfAdd;
-    bool m_sysAdd = false;
+    QString m_navQuery, m_navAdd, m_rowAdd;
     struct Ask { QString name, parent; } m_ask;
     bool m_lastGaveta = false;
     QString m_lastDrawer;

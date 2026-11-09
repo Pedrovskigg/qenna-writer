@@ -491,6 +491,7 @@ qt_add_executable(qenna-writer
     src/galaxy/GalaxyLivreLive.cpp
     src/galaxy/GalaxyLivreDraw.cpp
     src/galaxy/GalaxyLivreCompose.cpp
+    src/galaxy/GalaxyLivreNew.cpp
     src/galaxy/GalaxyLivreSheet.cpp
     src/galaxy/GalaxyLivreMap.cpp
     src/galaxy/GalaxyOrganic.cpp

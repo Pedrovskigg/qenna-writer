@@ -11007,20 +11007,20 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2486"/>
-        <location filename="../src/MainWindow.cpp" line="3473"/>
+        <location filename="../src/MainWindow.cpp" line="2491"/>
+        <location filename="../src/MainWindow.cpp" line="3478"/>
         <source>Nenhum manuscrito</source>
         <translation>Ningún manuscrito</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2487"/>
-        <location filename="../src/MainWindow.cpp" line="3474"/>
+        <location filename="../src/MainWindow.cpp" line="2492"/>
+        <location filename="../src/MainWindow.cpp" line="3479"/>
         <source>Você precisa criar um manuscrito antes de adicionar capítulos. Vamos criar um agora.</source>
         <translation>Necesitas crear un manuscrito antes de agregar capítulos. Vamos a crear uno ahora.</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="755"/>
-        <location filename="../src/MainWindow.cpp" line="6818"/>
+        <location filename="../src/MainWindow.cpp" line="6875"/>
         <source>Qenna Writer</source>
         <translation>Qenna Writer</translation>
     </message>
@@ -11073,13 +11073,13 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <location filename="../src/MainWindow.cpp" line="1217"/>
         <location filename="../src/MainWindow.cpp" line="1230"/>
         <location filename="../src/MainWindow.cpp" line="1424"/>
-        <location filename="../src/MainWindow.cpp" line="3628"/>
-        <location filename="../src/MainWindow.cpp" line="4370"/>
-        <location filename="../src/MainWindow.cpp" line="6004"/>
-        <location filename="../src/MainWindow.cpp" line="6093"/>
-        <location filename="../src/MainWindow.cpp" line="10347"/>
-        <location filename="../src/MainWindow.cpp" line="10412"/>
+        <location filename="../src/MainWindow.cpp" line="3633"/>
+        <location filename="../src/MainWindow.cpp" line="4375"/>
+        <location filename="../src/MainWindow.cpp" line="6061"/>
+        <location filename="../src/MainWindow.cpp" line="6150"/>
+        <location filename="../src/MainWindow.cpp" line="10404"/>
         <location filename="../src/MainWindow.cpp" line="10469"/>
+        <location filename="../src/MainWindow.cpp" line="10526"/>
         <source>Cena %1</source>
         <translation>Escena %1</translation>
     </message>
@@ -11094,22 +11094,22 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation>Nueva escena creada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2422"/>
+        <location filename="../src/MainWindow.cpp" line="2427"/>
         <source>Erro ao salvar</source>
         <translation>Error al guardar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2423"/>
+        <location filename="../src/MainWindow.cpp" line="2428"/>
         <source>Não foi possível salvar o projeto:
 %1</source>
         <translation>No se pudo guardar el proyecto:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3517"/>
-        <location filename="../src/MainWindow.cpp" line="3533"/>
-        <location filename="../src/MainWindow.cpp" line="3608"/>
-        <location filename="../src/MainWindow.cpp" line="4004"/>
+        <location filename="../src/MainWindow.cpp" line="3522"/>
+        <location filename="../src/MainWindow.cpp" line="3538"/>
+        <location filename="../src/MainWindow.cpp" line="3613"/>
+        <location filename="../src/MainWindow.cpp" line="4009"/>
         <source>(sem título)</source>
         <translation>(sin título)</translation>
     </message>
@@ -11159,21 +11159,21 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation>Justificar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10345"/>
-        <location filename="../src/MainWindow.cpp" line="10356"/>
-        <location filename="../src/MainWindow.cpp" line="10410"/>
-        <location filename="../src/MainWindow.cpp" line="10421"/>
+        <location filename="../src/MainWindow.cpp" line="10402"/>
+        <location filename="../src/MainWindow.cpp" line="10413"/>
         <location filename="../src/MainWindow.cpp" line="10467"/>
         <location filename="../src/MainWindow.cpp" line="10478"/>
+        <location filename="../src/MainWindow.cpp" line="10524"/>
+        <location filename="../src/MainWindow.cpp" line="10535"/>
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6005"/>
-        <location filename="../src/MainWindow.cpp" line="6094"/>
-        <location filename="../src/MainWindow.cpp" line="10348"/>
-        <location filename="../src/MainWindow.cpp" line="10413"/>
+        <location filename="../src/MainWindow.cpp" line="6062"/>
+        <location filename="../src/MainWindow.cpp" line="6151"/>
+        <location filename="../src/MainWindow.cpp" line="10405"/>
         <location filename="../src/MainWindow.cpp" line="10470"/>
+        <location filename="../src/MainWindow.cpp" line="10527"/>
         <source>%1 — %2</source>
         <translation>%1 — %2</translation>
     </message>
@@ -11245,7 +11245,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2307"/>
-        <location filename="../src/MainWindow.cpp" line="6806"/>
+        <location filename="../src/MainWindow.cpp" line="6863"/>
         <source>Lembrete</source>
         <translation>Recordatorio</translation>
     </message>
@@ -11256,7 +11256,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="2333"/>
-        <location filename="../src/MainWindow.cpp" line="8783"/>
+        <location filename="../src/MainWindow.cpp" line="8840"/>
         <source>Projeto salvo em:
 %1</source>
         <translation>Proyecto guardado en:
@@ -11278,50 +11278,50 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation>Ya pasó un tiempo desde la última copia de seguridad de &quot;%1&quot;. Abre Configuración &gt; Copia de seguridad para guardar una copia.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3534"/>
+        <location filename="../src/MainWindow.cpp" line="3539"/>
         <source>Excluir manuscrito</source>
         <translation>Eliminar manuscrito</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3535"/>
+        <location filename="../src/MainWindow.cpp" line="3540"/>
         <source>Excluir &quot;%1&quot;? Todos os capítulos serão removidos. Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar &quot;%1&quot;? Se eliminarán todos los capítulos. Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3609"/>
+        <location filename="../src/MainWindow.cpp" line="3614"/>
         <source>Excluir capítulo</source>
         <translation>Eliminar capítulo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3610"/>
+        <location filename="../src/MainWindow.cpp" line="3615"/>
         <source>Excluir &quot;%1&quot;? O texto do capítulo será removido. Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar &quot;%1&quot;? Se eliminará el texto del capítulo. Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3666"/>
-        <location filename="../src/MainWindow.cpp" line="3670"/>
+        <location filename="../src/MainWindow.cpp" line="3671"/>
+        <location filename="../src/MainWindow.cpp" line="3675"/>
         <source>Excluir cena</source>
         <translation>Eliminar escena</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3667"/>
+        <location filename="../src/MainWindow.cpp" line="3672"/>
         <source>Não dá pra excluir a única cena de um capítulo. Apague o texto manualmente se quiser limpar.</source>
         <translation>No puedes eliminar la única escena de un capítulo. Borra el texto manualmente si quieres vaciarlo.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3671"/>
+        <location filename="../src/MainWindow.cpp" line="3676"/>
         <source>Excluir esta cena? O texto da cena será removido.</source>
         <translation>¿Eliminar esta escena? Se eliminará el texto de la escena.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3712"/>
-        <location filename="../src/MainWindow.cpp" line="9986"/>
+        <location filename="../src/MainWindow.cpp" line="3717"/>
+        <location filename="../src/MainWindow.cpp" line="10043"/>
         <source>Mover cena</source>
         <translation>Mover escena</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3713"/>
-        <location filename="../src/MainWindow.cpp" line="9987"/>
+        <location filename="../src/MainWindow.cpp" line="3718"/>
+        <location filename="../src/MainWindow.cpp" line="10044"/>
         <source>Não dá pra mover a única cena de um capítulo. O capítulo ficaria sem texto.</source>
         <translation>No se puede mover la única escena de un capítulo: el capítulo se quedaría sin texto.</translation>
     </message>
@@ -11334,7 +11334,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation type="vanished">Nombre del elemento:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3821"/>
+        <location filename="../src/MainWindow.cpp" line="3826"/>
         <source>Nova pasta</source>
         <translation>Nueva carpeta</translation>
     </message>
@@ -11343,7 +11343,7 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation type="vanished">Nombre de la carpeta:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3941"/>
+        <location filename="../src/MainWindow.cpp" line="3946"/>
         <source>Adicionar elemento</source>
         <translation>Añadir elemento</translation>
     </message>
@@ -11352,102 +11352,102 @@ Deseja instalá-lo agora? (rápido, sem precisar de internet)</source>
         <translation type="vanished">Tipo de elemento:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4005"/>
+        <location filename="../src/MainWindow.cpp" line="4010"/>
         <source>Excluir item</source>
         <translation>Eliminar elemento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4006"/>
+        <location filename="../src/MainWindow.cpp" line="4011"/>
         <source>Excluir &quot;%1&quot; da gaveta? Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar &quot;%1&quot; del cajón? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4088"/>
+        <location filename="../src/MainWindow.cpp" line="4093"/>
         <source>Editar gaveta…</source>
         <translation>Editar cajón…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4100"/>
         <location filename="../src/MainWindow.cpp" line="4105"/>
         <location filename="../src/MainWindow.cpp" line="4110"/>
+        <location filename="../src/MainWindow.cpp" line="4115"/>
         <source>Excluir gaveta</source>
         <translation>Eliminar cajón</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4106"/>
+        <location filename="../src/MainWindow.cpp" line="4111"/>
         <source>Esta gaveta não está vazia. Esvazie os itens e pastas antes de excluí-la.</source>
         <translation>Este cajón no está vacío. Vacía sus elementos y carpetas antes de eliminarlo.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4109"/>
-        <location filename="../src/MainWindow.cpp" line="9676"/>
-        <location filename="../src/MainWindow.cpp" line="10371"/>
-        <location filename="../src/MainWindow.cpp" line="11179"/>
+        <location filename="../src/MainWindow.cpp" line="4114"/>
+        <location filename="../src/MainWindow.cpp" line="9733"/>
+        <location filename="../src/MainWindow.cpp" line="10428"/>
+        <location filename="../src/MainWindow.cpp" line="11236"/>
         <source>(sem nome)</source>
         <translation>(sin nombre)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4111"/>
+        <location filename="../src/MainWindow.cpp" line="4116"/>
         <source>Excluir a gaveta &quot;%1&quot;?</source>
         <translation>¿Eliminar el cajón &quot;%1&quot;?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5287"/>
+        <location filename="../src/MainWindow.cpp" line="5344"/>
         <source>%1 advérbios em -mente neste trecho</source>
         <translation>%1 adverbios en -mente en este pasaje</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5290"/>
+        <location filename="../src/MainWindow.cpp" line="5347"/>
         <source>repete &quot;%1&quot;, %2 palavras atrás</source>
         <translation>repite &quot;%1&quot;, %2 palabras antes</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5329"/>
+        <location filename="../src/MainWindow.cpp" line="5386"/>
         <source>Parágrafo longo (%1 palavras). Considere dividir.</source>
         <translation>Párrafo largo (%1 palabras). Considera dividirlo.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5375"/>
+        <location filename="../src/MainWindow.cpp" line="5432"/>
         <source>Esta voz não marca palavra por palavra — o realce acompanha a frase.</source>
         <translation>Esta voz no marca palabra por palabra — el resaltado sigue la frase.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5404"/>
+        <location filename="../src/MainWindow.cpp" line="5461"/>
         <source>Selecionar imagem</source>
         <translation>Seleccionar imagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5406"/>
+        <location filename="../src/MainWindow.cpp" line="5463"/>
         <source>Imagens (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</source>
         <translation>Imágenes (*.png *.jpg *.jpeg *.gif *.bmp *.webp)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5419"/>
+        <location filename="../src/MainWindow.cpp" line="5476"/>
         <source>Inserir imagem</source>
         <translation>Insertar imagen</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5420"/>
+        <location filename="../src/MainWindow.cpp" line="5477"/>
         <source>Não foi possível salvar a imagem recortada. A imagem original será inserida sem o recorte.</source>
         <translation>No se pudo guardar la imagen recortada. Se insertará la imagen original sin el recorte.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5490"/>
+        <location filename="../src/MainWindow.cpp" line="5547"/>
         <source>Descartar rascunho?</source>
         <translation>¿Descartar borrador?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5491"/>
+        <location filename="../src/MainWindow.cpp" line="5548"/>
         <source>Você tem uma ideia não salva. Se sair agora, o texto será perdido. Descartar mesmo assim?</source>
         <translation>Tienes una idea sin guardar. Si sales ahora, el texto se perderá. ¿Descartar de todos modos?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5509"/>
+        <location filename="../src/MainWindow.cpp" line="5566"/>
         <source>Salvar projeto</source>
         <translation>Guardar proyecto</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5510"/>
+        <location filename="../src/MainWindow.cpp" line="5567"/>
         <source>Falha ao salvar o projeto:
 %1
 
@@ -11462,27 +11462,27 @@ Fechar mesmo assim?</source>
         <translation type="vanished">Detectar presencia por escena en todos los capítulos</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5834"/>
+        <location filename="../src/MainWindow.cpp" line="5891"/>
         <source>Escaneando… (%1/%2)</source>
         <translation>Escaneando… (%1/%2)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6367"/>
+        <location filename="../src/MainWindow.cpp" line="6424"/>
         <source>Escaneando diálogos… (%1/%2 capítulos)</source>
         <translation>Escaneando diálogos… (%1/%2 capítulos)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6807"/>
+        <location filename="../src/MainWindow.cpp" line="6864"/>
         <source>Lembretes (%1)</source>
         <translation>Recordatorios (%1)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6811"/>
+        <location filename="../src/MainWindow.cpp" line="6868"/>
         <source>+ %1 mais</source>
         <translation>+ %1 más</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6818"/>
+        <location filename="../src/MainWindow.cpp" line="6875"/>
         <source>Qenna Writer — %1</source>
         <translation>Qenna Writer — %1</translation>
     </message>
@@ -11491,32 +11491,32 @@ Fechar mesmo assim?</source>
         <translation type="vanished">Cambios sin guardar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6835"/>
+        <location filename="../src/MainWindow.cpp" line="6892"/>
         <source>Você tem uma ideia não salva. Salvar antes de continuar?</source>
         <translation>Tienes una idea sin guardar. ¿Guardar antes de continuar?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6836"/>
+        <location filename="../src/MainWindow.cpp" line="6893"/>
         <source>Há alterações no projeto atual. Salvar antes de continuar?</source>
         <translation>Hay cambios en el proyecto actual. ¿Guardar antes de continuar?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6856"/>
+        <location filename="../src/MainWindow.cpp" line="6913"/>
         <source>Caminho do projeto vazio.</source>
         <translation>Ruta de proyecto vacía.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6860"/>
+        <location filename="../src/MainWindow.cpp" line="6917"/>
         <source>Pasta do projeto não existe: %1</source>
         <translation>La carpeta del proyecto no existe: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6866"/>
+        <location filename="../src/MainWindow.cpp" line="6923"/>
         <source>Esta pasta é %1, não um projeto — abri-la aqui criaria arquivos do Qenna Writer dentro dela e depois excluí-la apagaria tudo que já existe lá. Escolha (ou crie) uma subpasta dedicada ao projeto.</source>
         <translation>Esta carpeta es %1, no un proyecto — abrirla aquí crearía archivos de Qenna Writer dentro de ella, y eliminarla después borraría todo lo que ya existe allí. Elige (o crea) una subcarpeta dedicada al proyecto.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6897"/>
+        <location filename="../src/MainWindow.cpp" line="6954"/>
         <source>Carregando…</source>
         <translation>Cargando…</translation>
     </message>
@@ -11529,37 +11529,37 @@ Fechar mesmo assim?</source>
         <translation type="vanished">¿Instalar Cover Creator (%1)?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7253"/>
+        <location filename="../src/MainWindow.cpp" line="7310"/>
         <source>Nova versão disponível: %1</source>
         <translation>Nueva versión disponible: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7293"/>
+        <location filename="../src/MainWindow.cpp" line="7350"/>
         <source>Baixar e instalar</source>
         <translation>Descargar e instalar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7332"/>
+        <location filename="../src/MainWindow.cpp" line="7389"/>
         <source>Tentar novamente</source>
         <translation>Intentar de nuevo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7371"/>
+        <location filename="../src/MainWindow.cpp" line="7428"/>
         <source>Baixando…</source>
         <translation>Descargando…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7388"/>
+        <location filename="../src/MainWindow.cpp" line="7445"/>
         <source>Não foi possível salvar o instalador no disco.</source>
         <translation>No se pudo guardar el instalador en el disco.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7434"/>
+        <location filename="../src/MainWindow.cpp" line="7491"/>
         <source>arquivo incompleto (conexão interrompida).</source>
         <translation>archivo incompleto (conexión interrumpida).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7435"/>
+        <location filename="../src/MainWindow.cpp" line="7492"/>
         <source>Falha ao baixar atualização: %1</source>
         <translation>Error al descargar la actualización: %1</translation>
     </message>
@@ -11580,22 +11580,22 @@ Fechar mesmo assim?</source>
         <translation type="vanished">No se pudo descargar Cover Creator ahora. Verifica tu conexión a internet e intenta de nuevo desde el botón &quot;Crear portada&quot;.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7665"/>
+        <location filename="../src/MainWindow.cpp" line="7722"/>
         <source>Não é possível excluir</source>
         <translation>No se puede eliminar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7666"/>
+        <location filename="../src/MainWindow.cpp" line="7723"/>
         <source>Este é o projeto aberto no momento. Feche-o antes de excluí-lo.</source>
         <translation>Este es el proyecto abierto actualmente. Ciérralo antes de eliminarlo.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7671"/>
+        <location filename="../src/MainWindow.cpp" line="7728"/>
         <source>Erro ao excluir</source>
         <translation>Error al eliminar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7695"/>
+        <location filename="../src/MainWindow.cpp" line="7752"/>
         <source>Tudo atualizado</source>
         <translation>Todo actualizado</translation>
     </message>
@@ -11604,49 +11604,49 @@ Fechar mesmo assim?</source>
         <translation type="vanished">Qenna Writer y Cover Creator están en la versión más reciente.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8024"/>
-        <location filename="../src/MainWindow.cpp" line="8122"/>
+        <location filename="../src/MainWindow.cpp" line="8081"/>
+        <location filename="../src/MainWindow.cpp" line="8179"/>
         <source>Pasta já existe</source>
         <translation>La carpeta ya existe</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8025"/>
-        <location filename="../src/MainWindow.cpp" line="8123"/>
+        <location filename="../src/MainWindow.cpp" line="8082"/>
+        <location filename="../src/MainWindow.cpp" line="8180"/>
         <source>A pasta &apos;%1&apos; já existe e não está vazia. Usar mesmo assim?
 Conteúdo existente pode ser sobrescrito.</source>
         <translation>La carpeta &apos;%1&apos; ya existe y no está vacía. ¿Usarla de todos modos?
 El contenido existente puede sobrescribirse.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8033"/>
-        <location filename="../src/MainWindow.cpp" line="8065"/>
-        <location filename="../src/MainWindow.cpp" line="8131"/>
-        <location filename="../src/MainWindow.cpp" line="8172"/>
+        <location filename="../src/MainWindow.cpp" line="8090"/>
+        <location filename="../src/MainWindow.cpp" line="8122"/>
+        <location filename="../src/MainWindow.cpp" line="8188"/>
+        <location filename="../src/MainWindow.cpp" line="8229"/>
         <source>Erro</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8034"/>
-        <location filename="../src/MainWindow.cpp" line="8132"/>
+        <location filename="../src/MainWindow.cpp" line="8091"/>
+        <location filename="../src/MainWindow.cpp" line="8189"/>
         <source>Falha ao criar o projeto:
 %1</source>
         <translation>Error al crear el proyecto:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8066"/>
+        <location filename="../src/MainWindow.cpp" line="8123"/>
         <source>Projeto criado, mas falha ao salvar índice inicial:
 %1</source>
         <translation>Proyecto creado, pero no se pudo guardar el índice inicial:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="11107"/>
+        <location filename="../src/MainWindow.cpp" line="11164"/>
         <source>Salvar “%1” em</source>
         <translation>Guardar «%1» en</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="11179"/>
+        <location filename="../src/MainWindow.cpp" line="11236"/>
         <source>✓ Salvo em %1</source>
         <translation>✓ Guardado en %1</translation>
     </message>
@@ -11655,143 +11655,143 @@ El contenido existente puede sobrescribirse.</translation>
         <translation type="vanished">Cajón de destino</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7590"/>
+        <location filename="../src/MainWindow.cpp" line="7647"/>
         <source>Abrir projeto</source>
         <translation>Abrir proyecto</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7565"/>
+        <location filename="../src/MainWindow.cpp" line="7622"/>
         <source>Abertura automática ativada</source>
         <translation>Apertura automática activada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7566"/>
+        <location filename="../src/MainWindow.cpp" line="7623"/>
         <source>O app agora sempre abrirá esse projeto de forma automática. Caso queira desabilitar isso depois, basta desmarcar essa opção.</source>
         <translation>La app ahora siempre abrirá este proyecto automáticamente. Si quieres desactivarlo después, basta con desmarcar esta opción.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3084"/>
-        <location filename="../src/MainWindow.cpp" line="7596"/>
-        <location filename="../src/MainWindow.cpp" line="7628"/>
+        <location filename="../src/MainWindow.cpp" line="3089"/>
+        <location filename="../src/MainWindow.cpp" line="7653"/>
+        <location filename="../src/MainWindow.cpp" line="7685"/>
         <source>Erro ao abrir</source>
         <translation>Error al abrir</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3085"/>
-        <location filename="../src/MainWindow.cpp" line="7597"/>
-        <location filename="../src/MainWindow.cpp" line="7629"/>
+        <location filename="../src/MainWindow.cpp" line="3090"/>
+        <location filename="../src/MainWindow.cpp" line="7654"/>
+        <location filename="../src/MainWindow.cpp" line="7686"/>
         <source>Não foi possível abrir o projeto:
 %1</source>
         <translation>No se pudo abrir el proyecto:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3797"/>
+        <location filename="../src/MainWindow.cpp" line="3802"/>
         <source>Novo documento</source>
         <translation>Nuevo documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3797"/>
+        <location filename="../src/MainWindow.cpp" line="3802"/>
         <source>Nome do documento</source>
         <translation>Nombre del documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3821"/>
+        <location filename="../src/MainWindow.cpp" line="3826"/>
         <source>Nome da pasta</source>
         <translation>Nombre de la carpeta</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3941"/>
+        <location filename="../src/MainWindow.cpp" line="3946"/>
         <source>Adicionar</source>
         <translation>Añadir</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="5825"/>
+        <location filename="../src/MainWindow.cpp" line="5882"/>
         <source>Rodar</source>
         <translation>Ejecutar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7672"/>
+        <location filename="../src/MainWindow.cpp" line="7729"/>
         <source>Não foi possível mover o projeto para a lixeira.
 %1</source>
         <translation>No se pudo mover el proyecto a la papelera.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8173"/>
+        <location filename="../src/MainWindow.cpp" line="8230"/>
         <source>Projeto criado, mas falha ao salvar o conteúdo:
 %1</source>
         <translation>Proyecto creado, pero falló al guardar el contenido:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8270"/>
+        <location filename="../src/MainWindow.cpp" line="8327"/>
         <source>Voltando para</source>
         <translation>Volviendo a</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8270"/>
+        <location filename="../src/MainWindow.cpp" line="8327"/>
         <source>Avançando para</source>
         <translation>Avanzando a</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8515"/>
+        <location filename="../src/MainWindow.cpp" line="8572"/>
         <source>Nunca fez backup deste projeto.</source>
         <translation>Nunca se hizo una copia de seguridad de este proyecto.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8517"/>
+        <location filename="../src/MainWindow.cpp" line="8574"/>
         <source>Último backup: agora mesmo.</source>
         <translation>Última copia de seguridad: recién ahora.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8518"/>
+        <location filename="../src/MainWindow.cpp" line="8575"/>
         <source>Último backup: há %1 min.</source>
         <translation>Última copia de seguridad: hace %1 min.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8520"/>
+        <location filename="../src/MainWindow.cpp" line="8577"/>
         <source>Último backup: há %1h.</source>
         <translation>Última copia de seguridad: hace %1h.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8522"/>
+        <location filename="../src/MainWindow.cpp" line="8579"/>
         <source>Último backup: há %1 dia(s).</source>
         <translation>Última copia de seguridad: hace %1 día(s).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8773"/>
+        <location filename="../src/MainWindow.cpp" line="8830"/>
         <source>Escolha uma pasta</source>
         <translation>Elige una carpeta</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8774"/>
+        <location filename="../src/MainWindow.cpp" line="8831"/>
         <source>Escolha primeiro uma pasta de destino para o backup.</source>
         <translation>Primero elige una carpeta de destino para la copia de seguridad.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8782"/>
+        <location filename="../src/MainWindow.cpp" line="8839"/>
         <source>Backup concluído</source>
         <translation>Copia de seguridad completa</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8785"/>
+        <location filename="../src/MainWindow.cpp" line="8842"/>
         <source>Erro ao fazer backup</source>
         <translation>Error al hacer la copia de seguridad</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8852"/>
+        <location filename="../src/MainWindow.cpp" line="8909"/>
         <source>Bíblia do universo exportada</source>
         <translation>Biblia del universo exportada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8873"/>
+        <location filename="../src/MainWindow.cpp" line="8930"/>
         <source>Exportado com sucesso</source>
         <translation>Exportado con éxito</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="8854"/>
-        <location filename="../src/MainWindow.cpp" line="8890"/>
+        <location filename="../src/MainWindow.cpp" line="8911"/>
+        <location filename="../src/MainWindow.cpp" line="8947"/>
         <source>Exportar</source>
         <translation>Exportar</translation>
     </message>
@@ -11800,273 +11800,273 @@ El contenido existente puede sobrescribirse.</translation>
         <translation type="vanished">Cargando área de Temas…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9521"/>
-        <location filename="../src/MainWindow.cpp" line="9564"/>
+        <location filename="../src/MainWindow.cpp" line="9578"/>
+        <location filename="../src/MainWindow.cpp" line="9621"/>
         <source>Excluir vínculo</source>
         <translation>Eliminar vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9522"/>
-        <location filename="../src/MainWindow.cpp" line="9565"/>
+        <location filename="../src/MainWindow.cpp" line="9579"/>
+        <location filename="../src/MainWindow.cpp" line="9622"/>
         <source>Excluir este vínculo? Esta ação não pode ser desfeita.</source>
         <translation>¿Eliminar este vínculo? Esta acción no se puede deshacer.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9656"/>
+        <location filename="../src/MainWindow.cpp" line="9713"/>
         <source>Documento do vínculo</source>
         <translation>Documento del vínculo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9664"/>
+        <location filename="../src/MainWindow.cpp" line="9721"/>
         <source>Nome do documento:</source>
         <translation>Nombre del documento:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9670"/>
+        <location filename="../src/MainWindow.cpp" line="9727"/>
         <source>Gaveta de destino:</source>
         <translation>Cajón de destino:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7205"/>
-        <location filename="../src/MainWindow.cpp" line="9688"/>
+        <location filename="../src/MainWindow.cpp" line="7262"/>
+        <location filename="../src/MainWindow.cpp" line="9745"/>
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
         <location filename="../src/MainWindow.cpp" line="1141"/>
-        <location filename="../src/MainWindow.cpp" line="3798"/>
-        <location filename="../src/MainWindow.cpp" line="3822"/>
-        <location filename="../src/MainWindow.cpp" line="9689"/>
+        <location filename="../src/MainWindow.cpp" line="3803"/>
+        <location filename="../src/MainWindow.cpp" line="3827"/>
+        <location filename="../src/MainWindow.cpp" line="9746"/>
         <source>Criar</source>
         <translation>Crear</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="4663"/>
+        <location filename="../src/MainWindow.cpp" line="4720"/>
         <source>Sequência %1</source>
         <translation>Secuencia %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6198"/>
+        <location filename="../src/MainWindow.cpp" line="6255"/>
         <source>Figurante</source>
         <translation>Figurante</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6199"/>
+        <location filename="../src/MainWindow.cpp" line="6256"/>
         <source>Sempre que o texto disser &quot;%1&quot;, quem fala é %2?</source>
         <translation>Siempre que el texto diga &quot;%1&quot;, ¿quien habla es %2?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6200"/>
+        <location filename="../src/MainWindow.cpp" line="6257"/>
         <source>&quot;%1&quot; vira apelido de %2, e as outras falas com essa tag se resolvem sozinhas.</source>
         <translation>&quot;%1&quot; pasa a ser alias de %2, y las demás líneas con esa acotación se resuelven solas.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6202"/>
+        <location filename="../src/MainWindow.cpp" line="6259"/>
         <source>Sim, é %1</source>
         <translation>Sí, es %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6251"/>
+        <location filename="../src/MainWindow.cpp" line="6308"/>
         <source>Conhecendo o elenco… (%1/%2 capítulos)</source>
         <translation>Conociendo al reparto… (%1/%2 capítulos)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6269"/>
+        <location filename="../src/MainWindow.cpp" line="6326"/>
         <source>%1 · capítulo que não existe mais</source>
         <translation>%1 · capítulo que ya no existe</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6314"/>
+        <location filename="../src/MainWindow.cpp" line="6371"/>
         <source>Fechar</source>
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6371"/>
+        <location filename="../src/MainWindow.cpp" line="6428"/>
         <source>&lt;span style=&apos;color:%1&apos;&gt;+%2 novas&lt;/span&gt; · &lt;span style=&apos;color:%3&apos;&gt;%4 trocaram de locutor&lt;/span&gt; · &lt;span style=&apos;color:%5&apos;&gt;−%6 saíram&lt;/span&gt;</source>
         <translation>&lt;span style=&apos;color:%1&apos;&gt;+%2 nuevas&lt;/span&gt; · &lt;span style=&apos;color:%3&apos;&gt;%4 cambiaron de hablante&lt;/span&gt; · &lt;span style=&apos;color:%5&apos;&gt;−%6 salieron&lt;/span&gt;</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6404"/>
+        <location filename="../src/MainWindow.cpp" line="6461"/>
         <source>Personagem</source>
         <translation>Personaje</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6405"/>
+        <location filename="../src/MainWindow.cpp" line="6462"/>
         <source>%1 (provável)</source>
         <translation>%1 (probable)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6407"/>
+        <location filename="../src/MainWindow.cpp" line="6464"/>
         <source>%1 (figurante)</source>
         <translation>%1 (figurante)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6408"/>
+        <location filename="../src/MainWindow.cpp" line="6465"/>
         <source>sem locutor</source>
         <translation>sin hablante</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6462"/>
+        <location filename="../src/MainWindow.cpp" line="6519"/>
         <source>%1 → %2</source>
         <translation>%1 → %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6477"/>
+        <location filename="../src/MainWindow.cpp" line="6534"/>
         <source>%1 · versão antiga de uma fala editada</source>
         <translation>%1 · versión antigua de una línea editada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6478"/>
+        <location filename="../src/MainWindow.cpp" line="6535"/>
         <source>%1 · saiu do texto</source>
         <translation>%1 · ya no está en el texto</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6486"/>
+        <location filename="../src/MainWindow.cpp" line="6543"/>
         <source>Pronto: %1 de %1 capítulos lidos</source>
         <translation>Listo: %1 de %1 capítulos leídos</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="6489"/>
+        <location filename="../src/MainWindow.cpp" line="6546"/>
         <source>Nada mudou: as falas salvas já batiam com o texto.</source>
         <translation>Nada cambió: las líneas guardadas ya coincidían con el texto.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7252"/>
+        <location filename="../src/MainWindow.cpp" line="7309"/>
         <source>A atualização pra %1 não terminou</source>
         <translation>La actualización a %1 no terminó</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7292"/>
+        <location filename="../src/MainWindow.cpp" line="7349"/>
         <source>Concluir instalação</source>
         <translation>Terminar la instalación</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7292"/>
+        <location filename="../src/MainWindow.cpp" line="7349"/>
         <source>Baixar e concluir</source>
         <translation>Descargar y terminar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7293"/>
+        <location filename="../src/MainWindow.cpp" line="7350"/>
         <source>Instalar</source>
         <translation>Instalar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7461"/>
+        <location filename="../src/MainWindow.cpp" line="7518"/>
         <source>Não consegui salvar o projeto antes de atualizar: %1</source>
         <translation>No pude guardar el proyecto antes de actualizar: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="7696"/>
+        <location filename="../src/MainWindow.cpp" line="7753"/>
         <source>O Qenna Writer está na versão mais recente.</source>
         <translation>Qenna Writer está en la versión más reciente.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="9707"/>
+        <location filename="../src/MainWindow.cpp" line="9764"/>
         <source>%1 — %2 de %3</source>
         <translation>%1 — %2 de %3</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10051"/>
+        <location filename="../src/MainWindow.cpp" line="10108"/>
         <source>(evento sem título)</source>
         <translation>(evento sin título)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10283"/>
-        <location filename="../src/MainWindow.cpp" line="10294"/>
+        <location filename="../src/MainWindow.cpp" line="10340"/>
+        <location filename="../src/MainWindow.cpp" line="10351"/>
         <source>da cena</source>
         <translation>de la escena</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10287"/>
-        <location filename="../src/MainWindow.cpp" line="10288"/>
-        <location filename="../src/MainWindow.cpp" line="10307"/>
+        <location filename="../src/MainWindow.cpp" line="10344"/>
+        <location filename="../src/MainWindow.cpp" line="10345"/>
+        <location filename="../src/MainWindow.cpp" line="10364"/>
         <source>Narrativa</source>
         <translation>Narrativa</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10291"/>
+        <location filename="../src/MainWindow.cpp" line="10348"/>
         <source>sem capítulo: vai pros Soltos</source>
         <translation>sin capítulo: va a Sueltos</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10292"/>
+        <location filename="../src/MainWindow.cpp" line="10349"/>
         <source>sem data: fica onde a cena está</source>
         <translation>sin fecha: queda donde está la escena</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10293"/>
+        <location filename="../src/MainWindow.cpp" line="10350"/>
         <source>quando: &lt;b&gt;%1&lt;/b&gt; · %2</source>
         <translation>cuándo: &lt;b&gt;%1&lt;/b&gt; · %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10294"/>
+        <location filename="../src/MainWindow.cpp" line="10351"/>
         <source>do capítulo</source>
         <translation>del capítulo</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10298"/>
+        <location filename="../src/MainWindow.cpp" line="10355"/>
         <source>Evento “%1” na linha</source>
         <translation>Evento «%1» en la línea</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10308"/>
+        <location filename="../src/MainWindow.cpp" line="10365"/>
         <source>✓ Na Timeline · %1</source>
         <translation>✓ En la Timeline · %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10309"/>
+        <location filename="../src/MainWindow.cpp" line="10366"/>
         <source>✓ Na Timeline · %1, %2</source>
         <translation>✓ En la Timeline · %1, %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10310"/>
+        <location filename="../src/MainWindow.cpp" line="10367"/>
         <source>ver</source>
         <translation>ver</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10361"/>
-        <location filename="../src/MainWindow.cpp" line="10426"/>
+        <location filename="../src/MainWindow.cpp" line="10418"/>
         <location filename="../src/MainWindow.cpp" line="10483"/>
+        <location filename="../src/MainWindow.cpp" line="10540"/>
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10936"/>
+        <location filename="../src/MainWindow.cpp" line="10993"/>
         <source>Renomear</source>
         <translation>Renombrar</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10937"/>
+        <location filename="../src/MainWindow.cpp" line="10994"/>
         <source>Não foi possível renomear.</source>
         <translation>No se pudo renombrar.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10965"/>
+        <location filename="../src/MainWindow.cpp" line="11022"/>
         <source>Capítulo sem título</source>
         <translation>Capítulo sin título</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10969"/>
+        <location filename="../src/MainWindow.cpp" line="11026"/>
         <source>Documento sem título</source>
         <translation>Documento sin título</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10995"/>
+        <location filename="../src/MainWindow.cpp" line="11052"/>
         <source>Salvar imagem gerada</source>
         <translation>Guardar imagen generada</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10996"/>
+        <location filename="../src/MainWindow.cpp" line="11053"/>
         <source>PNG (*.png)</source>
         <translation>PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="11073"/>
+        <location filename="../src/MainWindow.cpp" line="11130"/>
         <source>Criar documento</source>
         <translation>Crear documento</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="11074"/>
+        <location filename="../src/MainWindow.cpp" line="11131"/>
         <source>Crie uma gaveta antes de usar este recurso.</source>
         <translation>Crea un cajón antes de usar esta función.</translation>
     </message>
@@ -12103,24 +12103,24 @@ El contenido existente puede sobrescribirse.</translation>
         <translation>Alinear</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10716"/>
-        <location filename="../src/MainWindow.cpp" line="10726"/>
-        <location filename="../src/MainWindow.cpp" line="10756"/>
+        <location filename="../src/MainWindow.cpp" line="10773"/>
+        <location filename="../src/MainWindow.cpp" line="10783"/>
+        <location filename="../src/MainWindow.cpp" line="10813"/>
         <source>Editar fala</source>
         <translation>Editar línea</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10717"/>
+        <location filename="../src/MainWindow.cpp" line="10774"/>
         <source>Esta fala mudou ou saiu do texto desde que o Pensário foi aberto. Atualize a lista e tente de novo.</source>
         <translation>Esta línea cambió o salió del texto desde que se abrió el Pensario. Actualiza la lista e inténtalo de nuevo.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10757"/>
+        <location filename="../src/MainWindow.cpp" line="10814"/>
         <source>Não foi possível abrir o texto de origem desta fala. Nada foi alterado.</source>
         <translation>No se pudo abrir el texto de origen de esta línea. No se cambió nada.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="10727"/>
+        <location filename="../src/MainWindow.cpp" line="10784"/>
         <source>Não foi possível localizar esta fala com segurança no texto de origem. Ela não foi alterada; abra o texto para conferir a ocorrência.</source>
         <translation>No se pudo localizar esta línea con seguridad en el texto de origen. No se modificó; abre el texto para comprobar cuál es la aparición.</translation>
     </message>
@@ -29151,47 +29151,47 @@ Si no tienes una clave de API o simplemente no quieres usar el asistente, no hay
 <context>
     <name>SpellEditor</name>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="440"/>
+        <location filename="../src/SpellEditor.cpp" line="447"/>
         <source>(sem sugestões)</source>
         <translation>(sin sugerencias)</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="461"/>
+        <location filename="../src/SpellEditor.cpp" line="468"/>
         <source>Adicionar &quot;%1&quot; ao dicionário</source>
         <translation>Añadir &quot;%1&quot; al diccionario</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="495"/>
+        <location filename="../src/SpellEditor.cpp" line="502"/>
         <source>Sinônimos</source>
         <translation>Sinónimos</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="507"/>
+        <location filename="../src/SpellEditor.cpp" line="514"/>
         <source>Procurar sinônimos...</source>
         <translation>Buscar sinónimos...</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="507"/>
+        <location filename="../src/SpellEditor.cpp" line="514"/>
         <source>Todos os sinônimos...</source>
         <translation>Todos los sinónimos...</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="536"/>
+        <location filename="../src/SpellEditor.cpp" line="543"/>
         <source>Adicionar ao Glossário...</source>
         <translation>Añadir al Glosario...</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="537"/>
+        <location filename="../src/SpellEditor.cpp" line="544"/>
         <source>Adicionar &quot;%1&quot; ao Glossário...</source>
         <translation>Añadir &quot;%1&quot; al Glosario...</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="560"/>
+        <location filename="../src/SpellEditor.cpp" line="567"/>
         <source>Ler seleção em voz alta</source>
         <translation>Leer la selección en voz alta</translation>
     </message>
     <message>
-        <location filename="../src/SpellEditor.cpp" line="560"/>
+        <location filename="../src/SpellEditor.cpp" line="567"/>
         <source>Ler em voz alta a partir daqui</source>
         <translation>Leer en voz alta desde aquí</translation>
     </message>
@@ -34845,22 +34845,22 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
 <context>
     <name>WordCounter</name>
     <message>
-        <location filename="../src/WordCounter.cpp" line="1167"/>
+        <location filename="../src/WordCounter.cpp" line="1240"/>
         <source>Capítulo</source>
         <translation>Capítulo</translation>
     </message>
     <message>
-        <location filename="../src/WordCounter.cpp" line="1168"/>
+        <location filename="../src/WordCounter.cpp" line="1241"/>
         <source>Capítulo removido</source>
         <translation>Capítulo eliminado</translation>
     </message>
     <message>
-        <location filename="../src/WordCounter.cpp" line="1173"/>
+        <location filename="../src/WordCounter.cpp" line="1246"/>
         <source>Documento</source>
         <translation>Documento</translation>
     </message>
     <message>
-        <location filename="../src/WordCounter.cpp" line="1174"/>
+        <location filename="../src/WordCounter.cpp" line="1247"/>
         <source>Documento removido</source>
         <translation>Documento eliminado</translation>
     </message>
@@ -40530,82 +40530,191 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
 <context>
     <name>galaxy::Livre</name>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="173"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="175"/>
         <source>Arraste pra mudar a largura</source>
         <translation>Arrastra para cambiar el ancho</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="334"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="336"/>
         <source>CRIAÇÃO LIVRE</source>
         <translation>CREACIÓN LIBRE</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="337"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="339"/>
         <source>Trocar de mapa ou criar um novo</source>
         <translation>Cambiar de mapa o crear uno nuevo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="349"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="351"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1683"/>
         <source>Ver no mapa</source>
         <translation>Ver en el mapa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="350"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="352"/>
         <source>O que você cria aqui aparece no mapa da galáxia.</source>
         <translation>Lo que creas aquí aparece en el mapa de la galaxia.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="408"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="410"/>
         <source>Voltar pra ficha resumida (Esc)</source>
         <translation>Volver a la ficha resumida (Esc)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="412"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="414"/>
         <source>FICHA TÉCNICA COMPLETA</source>
         <translation>FICHA TÉCNICA COMPLETA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="434"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="436"/>
         <location filename="../src/galaxy/GalaxyLivreDraw.cpp" line="237"/>
         <source>Desfazer</source>
         <translation>Deshacer</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="854"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="874"/>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="768"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="560"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="563"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="569"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="544"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="547"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="553"/>
         <source>Capital</source>
         <translation>Capital</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="896"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="916"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1638"/>
         <source>Ficar com este</source>
         <translation>Quedarme con este</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="902"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="329"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="751"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="922"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="330"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="735"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1639"/>
         <source>Dispensar</source>
         <translation>Descartar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="955"/>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="178"/>
         <source>Nome</source>
         <translation>Nombre</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="958"/>
         <source>Enter cria</source>
-        <translation>Enter crea</translation>
+        <translation type="vanished">Enter crea</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="977"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="976"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1677"/>
         <source>Novo planeta aqui</source>
         <translation>Nuevo planeta aquí</translation>
+    </message>
+    <message>
+        <source>Mundo solto, fora de qualquer território</source>
+        <translation type="vanished">Mundo suelto, fuera de cualquier territorio</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="77"/>
+        <source>Solto, fora de qualquer território</source>
+        <translation>Suelto, fuera de cualquier territorio</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="78"/>
+        <source>No sistema %1</source>
+        <translation>En el sistema %1</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="79"/>
+        <source>Em %1</source>
+        <translation>En %1</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="128"/>
+        <source>NOVO PLANETA</source>
+        <translation>NUEVO PLANETA</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="160"/>
+        <source>NOME</source>
+        <translation>NOMBRE</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="175"/>
+        <source>Sortear um nome</source>
+        <translation>Sortear un nombre</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="180"/>
+        <source>Em branco, ele nasce com o nome sugerido.</source>
+        <translation>En blanco, nace con el nombre sugerido.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="189"/>
+        <source>TIPO DO PLANETA</source>
+        <translation>TIPO DE PLANETA</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="219"/>
+        <source>CONSTRUÇÕES</source>
+        <translation>CONSTRUCCIONES</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="255"/>
+        <source>Opcional. Dá pra pôr ou tirar depois, na janela do planeta.</source>
+        <translation>Opcional. Puedes añadir o quitar después, en la ventana del planeta.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="271"/>
+        <source>Criar planeta</source>
+        <translation>Crear planeta</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="272"/>
+        <source>Criar e abrir a folha dele (Enter)</source>
+        <translation>Crear y abrir su hoja (Enter)</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="301"/>
+        <source>1 construção</source>
+        <translation>1 construcción</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="302"/>
+        <source>%1 construções</source>
+        <translation>%1 construcciones</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="304"/>
+        <source>nenhuma</source>
+        <translation>ninguna</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="304"/>
+        <source>1 escolhida</source>
+        <translation>1 elegida</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="304"/>
+        <source>%1 escolhidas</source>
+        <translation>%1 elegidas</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="351"/>
+        <source>%1 nasceu com 1 construção.</source>
+        <translation>%1 nació con 1 construcción.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="351"/>
+        <source>%1 nasceu com %2 construções.</source>
+        <translation>%1 nació con %2 construcciones.</translation>
+    </message>
+    <message>
+        <source>Nome do planeta</source>
+        <translation type="vanished">Nombre del planeta</translation>
+    </message>
+    <message>
+        <source>Criar</source>
+        <translation type="vanished">Crear</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivre.cpp" line="980"/>
@@ -40613,12 +40722,13 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Nuevo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1010"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1009"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1644"/>
         <source>Abrir</source>
         <translation>Abrir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1010"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1009"/>
         <source>Dobrar</source>
         <translation>Plegar</translation>
     </message>
@@ -40638,17 +40748,17 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>%1 mundos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1064"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1065"/>
         <source>%1 vizinhos sugeridos, esperando o sim na direita.</source>
         <translation>%1 vecinos sugeridos, esperando tu sí a la derecha.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1203"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1204"/>
         <source>mencionado em 1 folha</source>
         <translation>mencionado en 1 hoja</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1203"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1204"/>
         <source>mencionado em %1 folhas</source>
         <translation>mencionado en %1 hojas</translation>
     </message>
@@ -40661,33 +40771,33 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Nombre del planeta, Enter crea</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1103"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1104"/>
         <source>mundo</source>
         <translation>mundo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1103"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1104"/>
         <source>mundos</source>
         <translation>mundos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1105"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1106"/>
         <source>+ Território</source>
         <translation>+ Territorio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1115"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1116"/>
         <location filename="../src/galaxy/GalaxyLivreData.cpp" line="574"/>
         <source>Soltos</source>
         <translation>Sueltos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1126"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1127"/>
         <source>Criador</source>
         <translation>Creador</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1133"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1134"/>
         <source>Salvo em: %1</source>
         <translation>Guardado en: %1</translation>
     </message>
@@ -40855,7 +40965,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreSheet.cpp" line="432"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="201"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="202"/>
         <source>Duplo</source>
         <translation>Doble</translation>
     </message>
@@ -40929,40 +41039,40 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Escribe aquí.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1194"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1195"/>
         <source>Ainda sem texto.</source>
         <translation>Todavía sin texto.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1200"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1201"/>
         <source>Salvo em %1</source>
         <translation>Guardado en %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1201"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1202"/>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="492"/>
         <source>1 documento</source>
         <translation>1 documento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1201"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1202"/>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="492"/>
         <source>%1 documentos</source>
         <translation>%1 documentos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1202"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1203"/>
         <source>1 coisa dentro</source>
         <translation>1 cosa dentro</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1202"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="1203"/>
         <source>%1 coisas dentro</source>
         <translation>%1 cosas dentro</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreData.cpp" line="118"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="235"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="236"/>
         <source>Galáxia</source>
         <translation>Galaxia</translation>
     </message>
@@ -41139,20 +41249,20 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreData.cpp" line="853"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>Cidade</source>
         <translation>Ciudad</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreData.cpp" line="853"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>Região</source>
         <translation>Región</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreData.cpp" line="853"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="698"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="682"/>
         <source>Base</source>
         <translation>Base</translation>
     </message>
@@ -41203,7 +41313,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreDraw.cpp" line="216"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1284"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1268"/>
         <source>Mover</source>
         <translation>Mover</translation>
     </message>
@@ -41233,38 +41343,37 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Forma de %1 dibujada.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="291"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="740"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="292"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="724"/>
         <source>Classe %1</source>
         <translation>Clase %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="327"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="328"/>
         <source>%1 vizinhos sugeridos.</source>
         <translation>%1 vecinos sugeridos.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="328"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="329"/>
         <source>Ficar com todos</source>
         <translation>Quedarme con todos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="337"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="338"/>
         <source>Vizinhos dispensados.</source>
         <translation>Vecinos descartados.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="353"/>
         <source>Nome, Enter cria</source>
-        <translation>Nombre, Enter crea</translation>
+        <translation type="vanished">Nombre, Enter crea</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="367"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="351"/>
         <source>Novo planeta</source>
         <translation>Nuevo planeta</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="381"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="364"/>
         <source>Sem sistema</source>
         <translation>Sin sistema</translation>
     </message>
@@ -41336,7 +41445,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="768"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="383"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="366"/>
         <source>Mundo solto</source>
         <translation>Mundo suelto</translation>
     </message>
@@ -41351,64 +41460,64 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Haz clic para ir allí. La rueda acerca, arrastrar mueve, el botón derecho (o Ctrl) gira e inclina, doble clic encuadra todo.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="383"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="366"/>
         <source>Mundo solto em %1</source>
         <translation>Mundo suelto en %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="442"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="596"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="426"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="580"/>
         <source>FICHA TÉCNICA</source>
         <translation>FICHA TÉCNICA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="451"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="435"/>
         <source>Outra variação</source>
         <translation>Otra variación</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="453"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1490"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="437"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1474"/>
         <source>+ Lua</source>
         <translation>+ Luna</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="454"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1491"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="438"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1475"/>
         <source>+ Construção</source>
         <translation>+ Construcción</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="457"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="441"/>
         <source>Trocar modelo</source>
         <translation>Cambiar modelo</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="109"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="464"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="448"/>
         <source>Afastar</source>
         <translation>Alejar</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="111"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="468"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="452"/>
         <source>Aproximar</source>
         <translation>Acercar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="483"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="467"/>
         <source>Arraste para girar. Role para aproximar; dois cliques voltam ao normal. Clique numa lua ou construção para abrir.</source>
         <translation>Arrastra para girar. Desplázate para acercar; doble clic vuelve a la normalidad. Haz clic en una luna o construcción para abrirla.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="493"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="477"/>
         <source>Nome da lua, Enter cria</source>
         <translation>Nombre de la luna, Enter crea</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="130"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="535"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1038"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="519"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1022"/>
         <source>Tipo</source>
         <translation>Tipo</translation>
     </message>
@@ -41558,139 +41667,139 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>%1 vecinos sugeridos esperando tu sí</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="535"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="539"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="543"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="547"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="553"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="560"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="519"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="523"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="527"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="531"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="537"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="544"/>
         <source>escolher</source>
         <translation>elegir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="538"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="740"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="522"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="724"/>
         <source> (auto)</source>
         <translation> (auto)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="539"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1070"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="523"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1054"/>
         <source>Classe</source>
         <translation>Clase</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="200"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="543"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1084"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="527"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1068"/>
         <source>Estrela</source>
         <translation>Estrella</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="547"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="553"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="531"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="537"/>
         <source>O que é</source>
         <translation>Qué es</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>O QUE É</source>
         <translation>QUÉ ES</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>Palácio</source>
         <translation>Palacio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>Ruína</source>
         <translation>Ruina</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="550"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="534"/>
         <source>Sem definir</source>
         <translation>Sin definir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="556"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="540"/>
         <source>Fica em</source>
         <translation>Está en</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreSheet.cpp" line="139"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="556"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="540"/>
         <source>solto</source>
         <translation>suelto</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="564"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="548"/>
         <source>Ainda não tem nenhum mundo aqui dentro.</source>
         <translation>Todavía no hay ningún mundo aquí dentro.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="569"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="553"/>
         <source>sim</source>
         <translation>sí</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="569"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="553"/>
         <source>não</source>
         <translation>no</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="590"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="574"/>
         <source>Trocar a cor</source>
         <translation>Cambiar el color</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="603"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="587"/>
         <source>Abrir ficha técnica completa</source>
         <translation>Abrir ficha técnica completa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="648"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="632"/>
         <source>Água</source>
         <translation>Agua</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="649"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="633"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
         <source>Nuvens</source>
         <translation>Nubes</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="649"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="633"/>
         <source>Céu limpo</source>
         <translation>Cielo despejado</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="649"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="633"/>
         <source>Algumas</source>
         <translation>Algunas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="649"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="633"/>
         <source>Muitas</source>
         <translation>Muchas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="649"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="633"/>
         <source>Fechado</source>
         <translation>Cerrado</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="666"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="650"/>
         <source>Paisagem</source>
         <translation>Paisaje</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="683"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="667"/>
         <source>Luzes</source>
         <translation>Luces</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="683"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="667"/>
         <source>Apagado</source>
         <translation>Apagado</translation>
     </message>
@@ -41699,545 +41808,593 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Tiene anillos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="953"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="937"/>
         <source>Sem anéis</source>
         <translation>Sin anillos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="692"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="676"/>
         <source>Anéis</source>
         <translation>Anillos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
         <source>Mar fundo</source>
         <translation>Mar profundo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
         <source>Mar raso</source>
         <translation>Mar poco profundo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Vegetação</source>
         <translation>Vegetación</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
         <source>Terra seca</source>
         <translation>Tierra seca</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="198"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="697"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="199"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
         <source>Gelo</source>
         <translation>Hielo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="698"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="682"/>
         <source>Superfície</source>
         <translation>Superficie</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="698"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="682"/>
         <source>Relevo</source>
         <translation>Relieve</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="699"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="683"/>
         <source>Faixa %1</source>
         <translation>Franja %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="407"/>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="409"/>
         <source>Fechar ficha</source>
         <translation>Cerrar ficha</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="734"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="718"/>
         <source>%1 fica em %2</source>
         <translation>%1 está en %2</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="749"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="733"/>
         <source>1 campo gerado.</source>
         <translation>1 campo generado.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="749"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="733"/>
         <source>%1 campos gerados.</source>
         <translation>%1 campos generados.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="750"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="734"/>
         <source>Ficar com tudo</source>
         <translation>Quedarme con todo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="766"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="750"/>
         <source>APARÊNCIA</source>
         <translation>APARIENCIA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="770"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="754"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Corpo</source>
         <translation>Cuerpo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="770"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="754"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Raio</source>
         <translation>Radio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="770"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="754"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Gravidade</source>
         <translation>Gravedad</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="770"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="754"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Temperatura média</source>
         <translation>Temperatura media</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="770"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="754"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Atmosfera</source>
         <translation>Atmósfera</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="771"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="755"/>
         <source>Órbita</source>
         <translation>Órbita</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="771"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="755"/>
         <source>Distância do planeta</source>
         <translation>Distancia al planeta</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="771"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="755"/>
         <source>Uma volta</source>
         <translation>Una vuelta</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="771"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="755"/>
         <source>Rotação</source>
         <translation>Rotación</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Massa</source>
         <translation>Masa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="665"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>População</source>
         <translation>Población</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="197"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="198"/>
         <source>Dourado</source>
         <translation>Dorado</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="199"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="200"/>
         <source>Poeira</source>
         <translation>Polvo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="200"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="201"/>
         <source>Fino</source>
         <translation>Fino</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="202"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="203"/>
         <source>Escuro</source>
         <translation>Oscuro</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="203"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="204"/>
         <source>Rosado</source>
         <translation>Rosado</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="204"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="205"/>
         <source>Esmeralda</source>
         <translation>Esmeralda</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="679"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="474"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="458"/>
         <source>Ver em tela grande</source>
         <translation>Ver en grande</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="676"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="660"/>
         <source>Ninguém mora aqui.</source>
         <translation>Nadie vive aquí.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Tão pouca gente pra esse tamanho que nada aparece visto do espaço.</source>
         <translation>Tan poca gente para este tamaño que nada se ve desde el espacio.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Cidades esparsas: pontinhos isolados no lado da noite.</source>
         <translation>Ciudades dispersas: puntitos aislados en el lado nocturno.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Menos gente por área que a Terra de hoje.</source>
         <translation>Menos gente por área que la Tierra de hoy.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Mais ou menos a densidade da Terra de hoje.</source>
         <translation>Más o menos la densidad de la Tierra de hoy.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Bem mais povoado que a Terra: as luzes viram redes contínuas.</source>
         <translation>Mucho más poblado que la Tierra: las luces se vuelven redes continuas.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="678"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="662"/>
         <source>Planeta-cidade: quase toda a terra firme é cidade.</source>
         <translation>Planeta-ciudad: casi toda la tierra firme es ciudad.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="681"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="665"/>
         <source>Ninguém</source>
         <translation>Nadie</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="689"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="673"/>
         <source>Trocar o anel</source>
         <translation>Cambiar el anillo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="689"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="673"/>
         <source>Sem anéis · escolher</source>
         <translation>Sin anillos · elegir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="773"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="757"/>
         <source>Densidade</source>
         <translation>Densidad</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Órbita e rotação</source>
         <translation>Órbita y rotación</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Distância da estrela</source>
         <translation>Distancia a la estrella</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Excentricidade</source>
         <translation>Excentricidad</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Ano</source>
         <translation>Año</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Dia</source>
         <translation>Día</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="774"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="758"/>
         <source>Inclinação do eixo</source>
         <translation>Inclinación del eje</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="802"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="786"/>
         <source>Gerar o que está vazio</source>
         <translation>Generar lo que está vacío</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="816"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="800"/>
         <source>GERAR</source>
         <translation>GENERAR</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="831"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="815"/>
         <source>CONEXÃO</source>
         <translation>CONEXIÓN</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="834"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="818"/>
         <source>Mora no Criador de Mundos, como os vínculos entre territórios.</source>
         <translation>Vive en el Creador de Mundos, como los vínculos entre territorios.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="861"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="845"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1689"/>
         <source>Excluir</source>
         <translation>Eliminar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="878"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="862"/>
         <source>Nada aqui dentro ainda.</source>
         <translation>Nada aquí dentro todavía.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="882"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="866"/>
         <source>A galáxia está vazia.</source>
         <translation>La galaxia está vacía.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="913"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="897"/>
         <source>Anéis de %1</source>
         <translation>Anillos de %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="943"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="927"/>
         <source>Anel %1.</source>
         <translation>Anillo %1.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="962"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="946"/>
         <source>Sem anéis.</source>
         <translation>Sin anillos.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="966"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="950"/>
         <source>Outras versões</source>
         <translation>Otras versiones</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1675"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1645"/>
+        <source>Renomear</source>
+        <translation>Renombrar</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1647"/>
+        <source>Trocar tipo…</source>
+        <translation>Cambiar tipo…</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1648"/>
+        <source>Mover para…</source>
+        <translation>Mover a…</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1650"/>
+        <source>Trocar estrela…</source>
+        <translation>Cambiar estrella…</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1652"/>
+        <source>Trocar modelo…</source>
+        <translation>Cambiar modelo…</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1657"/>
+        <source>Deixar de ser capital</source>
+        <translation>Dejar de ser capital</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1657"/>
+        <source>Tornar capital</source>
+        <translation>Hacer capital</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1662"/>
+        <source>Nova lua</source>
+        <translation>Nueva luna</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1674"/>
+        <source>Nova construção…</source>
+        <translation>Nueva construcción…</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1744"/>
         <source>Sem forma desenhada: o mapa usa a área em volta dos mundos</source>
         <translation>Sin forma dibujada: el mapa usa el área alrededor de los mundos</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreMap.cpp" line="781"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1000"/>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="141"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="984"/>
         <source>Fechar (Esc)</source>
         <translation>Cerrar (Esc)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1074"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1058"/>
         <source>Automática</source>
         <translation>Automática</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1097"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1081"/>
         <source>Fica onde?</source>
         <translation>¿Dónde está?</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1098"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1082"/>
         <source>Solto, em lugar nenhum</source>
         <translation>Suelto, en ningún lugar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1103"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1087"/>
         <source>Criar um sistema com este nome</source>
         <translation>Crear un sistema con este nombre</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1105"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1089"/>
         <source>Sistema de %1</source>
         <translation>Sistema de %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1118"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1102"/>
         <source>Que construção vai orbitar %1?</source>
         <translation>¿Qué construcción va a orbitar %1?</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1118"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1102"/>
         <source>Que construção vai ficar em %1?</source>
         <translation>¿Qué construcción va a estar en %1?</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1175"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1159"/>
         <source>Conectar %1 a</source>
         <translation>Conectar %1 a</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1178"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1162"/>
         <source>Buscar planeta, sistema ou território</source>
         <translation>Buscar planeta, sistema o territorio</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreSheet.cpp" line="279"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1199"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1535"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1183"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1519"/>
         <source>Nada com esse nome.</source>
         <translation>Nada con ese nombre.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1211"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1195"/>
         <source>Cor</source>
         <translation>Color</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1238"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1222"/>
         <source>Numa gaveta</source>
         <translation>En un cajón</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1239"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1223"/>
         <source>No Criador de Mundos</source>
         <translation>En el Creador de Mundos</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1244"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1228"/>
         <source>Gaveta</source>
         <translation>Cajón</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1259"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1243"/>
         <source>Vai para a gaveta escolhida, ligado a %1.</source>
         <translation>Va al cajón elegido, vinculado a %1.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1259"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1243"/>
         <source>Vira um documento do lugar %1 no Criador de Mundos.</source>
         <translation>Se convierte en un documento del lugar %1 en el Creador de Mundos.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivreCompose.cpp" line="302"/>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1266"/>
+        <location filename="../src/galaxy/GalaxyLivreNew.cpp" line="268"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1250"/>
         <source>Cancelar</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1283"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1267"/>
         <source>Onde este documento mora</source>
         <translation>Dónde vive este documento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1289"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1273"/>
         <source>Agora está em: %1.</source>
         <translation>Ahora está en: %1.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1328"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1312"/>
         <source>Onde salvar “%1”?</source>
         <translation>¿Dónde guardar «%1»?</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1334"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1318"/>
         <source>Criar e abrir</source>
         <translation>Crear y abrir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1373"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1357"/>
         <source>Novo documento dentro de %1</source>
         <translation>Nuevo documento dentro de %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1384"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1368"/>
         <source>Documento em %1, Enter</source>
         <translation>Documento en %1, Enter</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1424"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1408"/>
         <source>Buscar nesta gaveta</source>
         <translation>Buscar en este cajón</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1427"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1411"/>
         <source>Soltar a gaveta</source>
         <translation>Soltar el cajón</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1427"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1411"/>
         <source>Fixar: não fecha ao clicar fora</source>
         <translation>Fijar: no se cierra al hacer clic fuera</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1430"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1414"/>
         <source>Fechar</source>
         <translation>Cerrar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1472"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1456"/>
         <source>Buscar em %1…</source>
         <translation>Buscar en %1…</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1481"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1465"/>
         <source>Criar novo documento</source>
         <translation>Crear nuevo documento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1489"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1473"/>
         <source>+ Lugar</source>
         <translation>+ Lugar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1504"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1488"/>
         <source>Nome do documento</source>
         <translation>Nombre del documento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1504"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1488"/>
         <source>Nome da lua</source>
         <translation>Nombre de la luna</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1504"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1488"/>
         <source>Nome do lugar</source>
         <translation>Nombre del lugar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1505"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1489"/>
         <source>%1, Enter cria</source>
         <translation>%1, Enter crea</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1528"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1512"/>
         <source>DOCUMENTOS</source>
         <translation>DOCUMENTOS</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1535"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1519"/>
         <source>Nenhum ainda.</source>
         <translation>Ninguno todavía.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1541"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1525"/>
         <source>CONEXÕES</source>
         <translation>CONEXIONES</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1572"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1556"/>
         <source>Nenhuma ainda.</source>
         <translation>Ninguna todavía.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1574"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1558"/>
         <source>+ Conectar a…</source>
         <translation>+ Conectar a…</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1575"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1559"/>
         <source>Conectar %1 a outro planeta, sistema ou território</source>
         <translation>Conectar %1 a otro planeta, sistema o territorio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1631"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1700"/>
         <source>FORMA NO MAPA</source>
         <translation>FORMA EN EL MAPA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1637"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1706"/>
         <source>Desenhar %1</source>
         <translation>Dibujar %1</translation>
     </message>
@@ -42246,12 +42403,13 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation type="vanished">Sin forma todavía</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1679"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1748"/>
         <source>Redesenhar território</source>
         <translation>Redibujar territorio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1679"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1654"/>
+        <location filename="../src/galaxy/GalaxyLivreSide.cpp" line="1748"/>
         <source>Desenhar território</source>
         <translation>Dibujar territorio</translation>
     </message>
@@ -42457,13 +42615,13 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="474"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="425"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="439"/>
         <source>Semeação Orgânica</source>
         <translation>Siembra Orgánica</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="475"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="426"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="440"/>
         <source>As galáxias por padrão possuem centenas de sistemas. Com essa opção ativa, o mapa galáctico irá revelar apenas os sistemas tocados pelos territórios conforme eles são desenhados, gerando menos ruído visual e lugares &quot;vazios&quot; na sua galáxia.</source>
         <translation>Por defecto, las galaxias tienen cientos de sistemas. Con esta opción activa, el mapa galáctico solo revela los sistemas que tocan los territorios a medida que se dibujan, con menos ruido visual y menos lugares &quot;vacíos&quot; en tu galaxia.</translation>
     </message>
@@ -42591,6 +42749,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="224"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="356"/>
         <source>Criação Livre (W)</source>
         <translation>Creación Libre (W)</translation>
     </message>
@@ -42611,7 +42770,7 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="266"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="523"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="537"/>
         <source>Passar o tempo (P)</source>
         <translation>Pasar el tiempo (P)</translation>
     </message>
@@ -42632,363 +42791,368 @@ del día siguiente, siempre se reinicia a esa hora.</translation>
         <translation>Salir del foco</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="355"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="892"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="352"/>
+        <source>Voltar pra Criação Livre</source>
+        <translation>Volver a Creación Libre</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="369"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="913"/>
         <source>Mover</source>
         <translation>Mover</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="356"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="419"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="885"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="370"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="433"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="906"/>
         <location filename="../src/galaxy/GalaxyPanelRealm.cpp" line="36"/>
         <source>Territórios</source>
         <translation>Territorios</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="357"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="886"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="371"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="907"/>
         <source>Construir</source>
         <translation>Construir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="358"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="420"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="889"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="372"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="434"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="910"/>
         <source>Nomes</source>
         <translation>Nombres</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="359"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="887"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="373"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="908"/>
         <source>Explorar</source>
         <translation>Explorar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="360"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="888"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="374"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="909"/>
         <location filename="../src/galaxy/GalaxyPanelLinks.cpp" line="622"/>
         <location filename="../src/galaxy/GalaxyPanelSide.cpp" line="781"/>
         <source>Editar</source>
         <translation>Editar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="361"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="375"/>
         <source>Tráfego</source>
         <translation>Tráfico</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="378"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="392"/>
         <source>Ajustes do mapa</source>
         <translation>Ajustes del mapa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="400"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="414"/>
         <source>VISUAL DA GALÁXIA</source>
         <translation>ASPECTO DE LA GALAXIA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="401"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="415"/>
         <source>Cheio</source>
         <translation>Lleno</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="401"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="415"/>
         <source>Limpo</source>
         <translation>Limpio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="401"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="415"/>
         <source>O brilho inteiro da galáxia (V)</source>
         <translation>Todo el brillo de la galaxia (V)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="401"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="415"/>
         <source>O brilho baixo: as estrelas e os nomes aparecem mais (V)</source>
         <translation>Brillo bajo: las estrellas y los nombres destacan más (V)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="402"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="416"/>
         <source>INTERFACE</source>
         <translation>INTERFAZ</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="403"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="417"/>
         <source>Astrolábio</source>
         <translation>Astrolabio</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="403"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="417"/>
         <source>Cartela</source>
         <translation>Cartela</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="404"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="418"/>
         <source>O instrumento no canto junta vista, rotação, inclinação e tempo; as ferramentas abrem num anel</source>
         <translation>El instrumento de la esquina reúne vista, rotación, inclinación y tiempo; las herramientas se abren en un anillo</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="404"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="418"/>
         <source>Vistas e inclinação no cartão, ferramentas na barra do lado; a bússola no canto gira o mapa</source>
         <translation>Vistas e inclinación en la tarjeta, herramientas en la barra lateral; la brújula de la esquina gira el mapa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="421"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="435"/>
         <source>Órbitas</source>
         <translation>Órbitas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="422"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="436"/>
         <source>Estações e colossos (S)</source>
         <translation>Estaciones y colosos (S)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="423"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="437"/>
         <source>Moldura da galáxia</source>
         <translation>Marco de la galaxia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="424"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="438"/>
         <source>Prévia ao passar o mouse</source>
         <translation>Vista previa al pasar el ratón</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="427"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="441"/>
         <source>Tráfego de naves</source>
         <translation>Tráfico de naves</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="430"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="444"/>
         <source>Pouco movimento</source>
         <translation>Poco movimiento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="431"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="445"/>
         <source>Movimento normal</source>
         <translation>Movimiento normal</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="432"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="446"/>
         <source>Muito movimento</source>
         <translation>Mucho movimiento</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="447"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="461"/>
         <source>Exportar imagem</source>
         <translation>Exportar imagen</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="450"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="464"/>
         <location filename="../src/galaxy/GalaxyPanelBuild.cpp" line="87"/>
         <source>TAMANHO</source>
         <translation>TAMAÑO</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="455"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="469"/>
         <source>Do tamanho da tela</source>
         <translation>Tamaño de la pantalla</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="455"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="469"/>
         <source>Dobro: bom pra imprimir</source>
         <translation>Doble: bueno para imprimir</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="455"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="469"/>
         <source>Triplo: pra página inteira do livro</source>
         <translation>Triple: para una página entera del libro</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="459"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="473"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="479"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="493"/>
         <source>Título e escala</source>
         <translation>Título y escala</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="484"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="498"/>
         <source>Salvar PNG…</source>
         <translation>Guardar PNG…</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="542"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="556"/>
         <source>INCLINAÇÃO</source>
         <translation>INCLINACIÓN</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="543"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="557"/>
         <source>TEMPO</source>
         <translation>TIEMPO</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="687"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="703"/>
         <source>Semeação Orgânica: abra Territórios e semeie o primeiro sistema.</source>
         <translation>Siembra Orgánica: abre Territorios y siembra el primer sistema.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="705"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="721"/>
         <source>Semeação Orgânica ligada: %1 sistemas guardados.</source>
         <translation>Siembra Orgánica activada: %1 sistemas guardados.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="705"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="721"/>
         <source>Semeação Orgânica desligada: todos os sistemas à vista.</source>
         <translation>Siembra Orgánica desactivada: todos los sistemas a la vista.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="716"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="732"/>
         <source>Galáxia nova no lugar.</source>
         <translation>Nueva galaxia en su lugar.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="885"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="906"/>
         <location filename="../src/galaxy/GalaxyPanelRealm.cpp" line="161"/>
         <source>Pintar</source>
         <translation>Pintar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="885"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="906"/>
         <location filename="../src/galaxy/GalaxyPanelRealm.cpp" line="162"/>
         <source>Neutro</source>
         <translation>Neutral</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="885"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="906"/>
         <location filename="../src/galaxy/GalaxyPanelRealm.cpp" line="160"/>
         <source>Semear</source>
         <translation>Sembrar</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="890"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="911"/>
         <source>Régua</source>
         <translation>Regla</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="891"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="912"/>
         <location filename="../src/galaxy/GalaxyPanelSide.cpp" line="752"/>
         <source>Caderno</source>
         <translation>Cuaderno</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="896"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="917"/>
         <source>Explorar: clique num lugar pra ver e escrever sobre ele · a busca leva o mapa até lá · arraste pra mover · Esc fecha</source>
         <translation>Explorar: haz clic en un lugar para verlo y escribir sobre él · la búsqueda lleva el mapa hasta allí · arrastra para mover · Esc cierra</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="897"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="918"/>
         <source>Editar: clique num sistema, planeta ou lua · arraste pra mover · botão direito: ferramentas</source>
         <translation>Editar: haz clic en un sistema, planeta o luna · arrastra para mover · botón derecho: herramientas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="898"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="919"/>
         <source>Territórios: semear, pintar ou neutro (na doca) · Ctrl+Z desfaz · botão direito: ferramentas</source>
         <translation>Territorios: sembrar, pintar o neutral (en el panel) · Ctrl+Z deshace · botón derecho: herramientas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="899"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="920"/>
         <source>Nomes: clique num nome pra editar, arraste um nome solto pra mover · clique no mapa pra pôr um nome novo · Delete esconde</source>
         <translation>Nombres: haz clic en un nombre para editarlo, arrastra un nombre suelto para moverlo · haz clic en el mapa para poner uno nuevo · Supr oculta</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="900"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="921"/>
         <source>Régua: clique pra marcar o caminho · duplo clique termina · Esc limpa</source>
         <translation>Regla: haz clic para marcar el camino · doble clic termina · Esc borra</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="903"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="924"/>
         <source>Construir: clique numa peça pra selecionar e arrastar · Q e E giram · [ e ] tamanho · Delete apaga · Ctrl+Z desfaz</source>
         <translation>Construir: haz clic en una pieza para seleccionarla y arrastrarla · Q y E giran · [ y ] tamaño · Supr borra · Ctrl+Z deshace</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="904"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="925"/>
         <source>Clique em qualquer lugar da galáxia pra pôr uma estrela nova · Esc solta a peça</source>
         <translation>Haz clic en cualquier lugar de la galaxia para poner una estrella nueva · Esc suelta la pieza</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="906"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="927"/>
         <source>Clique em cima de um planeta. Esc solta a peça.</source>
         <translation>Haz clic sobre un planeta. Esc suelta la pieza.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="907"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="928"/>
         <source>Clique dentro de um sistema pra pôr em órbita, ou no espaço aberto. Esc solta a peça.</source>
         <translation>Haz clic dentro de un sistema para ponerla en órbita, o en el espacio abierto. Esc suelta la pieza.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="908"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="929"/>
         <source>Clique dentro de um sistema, na órbita que quiser. Esc solta a peça.</source>
         <translation>Haz clic dentro de un sistema, en la órbita que quieras. Esc suelta la pieza.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="910"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="931"/>
         <source>Arraste pra mover · roda: zoom · botão direito: ferramentas (arrastado gira e inclina)</source>
         <translation>Arrastra para mover · rueda: zoom · botón derecho: herramientas (arrastrando gira e inclina)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="921"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="942"/>
         <source>semente %1</source>
         <translation>semilla %1</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="933"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="954"/>
         <source>Ciclo %1 · %2</source>
         <translation>Ciclo %1 · %2</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="933"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="954"/>
         <source>andando</source>
         <translation>en marcha</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="933"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="954"/>
         <source>parado</source>
         <translation>parado</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="943"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="964"/>
         <source>Órbitas em esquema</source>
         <translation>Órbitas en esquema</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="953"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="974"/>
         <source>%1 mil anos-luz</source>
         <translation>%1 mil años luz</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="953"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="974"/>
         <source>%1 anos-luz</source>
         <translation>%1 años luz</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="966"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="987"/>
         <source>%1 · %2 sistemas</source>
         <translation>%1 · %2 sistemas</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1005"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1027"/>
         <source>%1 × %2 px</source>
         <translation>%1 × %2 px</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1127"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1149"/>
         <source>Exportar mapa</source>
         <translation>Exportar mapa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1127"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1149"/>
         <source>Imagem PNG (*.png)</source>
         <translation>Imagen PNG (*.png)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1130"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1152"/>
         <source>Não deu pra salvar a imagem nesse lugar.</source>
         <translation>No se pudo guardar la imagen en ese lugar.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1132"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="1154"/>
         <source>Imagem salva: %1</source>
         <translation>Imagen guardada: %1</translation>
     </message>

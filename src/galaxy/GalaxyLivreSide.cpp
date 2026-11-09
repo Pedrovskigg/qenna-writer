@@ -23,6 +23,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QMenu>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPushButton>
@@ -294,7 +295,7 @@ QWidget* Livre::orbitRow(const QString& w, bool moon, QWidget* parent)
     colv->addWidget(sl);
     h->addLayout(colv, 1);
     if (ghost) h->addWidget(ghostActs(w, r));
-    else { connect(r, &QPushButton::clicked, this, [this, w]() { select(w); }); peekable(r, w); }
+    else { connect(r, &QPushButton::clicked, this, [this, w]() { select(w); }); peekable(r, w); r->setProperty("lvCtx", w); }
     r->setMinimumHeight(std::max(px, 30) + 12);
     return r;
 }
@@ -347,31 +348,10 @@ QWidget* Livre::systemView(const QString& sysKey, QWidget* parent)
         l->addWidget(orbitRow(w, false, v));
         for (const QString& m : children(w)) if (kindOf(m) == LK::Moon) l->addWidget(orbitRow(m, true, v));
     }
-    if (m_sysAdd) {
-        auto* in = new QLineEdit(v);
-        in->setObjectName(QStringLiteral("lvInline"));
-        in->setPlaceholderText(tr("Nome, Enter cria"));
-        in->setProperty("lvEscape", QStringLiteral("sys"));
-        in->installEventFilter(this);
-        connect(in, &QLineEdit::returnPressed, this, [this, in, sysKey]() {
-            const QString n = in->text().trimmed();
-            if (n.isEmpty() || !m_sysAdd) return;
-            m_sysAdd = false;
-            // fora do Enter: o render refaz a ficha e apaga este campo, que ainda está tratando a tecla
-            QTimer::singleShot(0, this, [this, n, sysKey]() {
-                m_sel = createWorld(n, sysKey, Type::Temperado, false);
-                render();
-                goBody();
-            });
-        });
-        l->addWidget(in);
-        QTimer::singleShot(0, in, [in]() { in->setFocus(); });
-    } else {
-        auto* add = btn(QStringLiteral("  +   ") + tr("Novo planeta"), QStringLiteral("lvOrbit"), v);
-        add->setStyleSheet(QStringLiteral("QPushButton#lvOrbit { color: %1; font-size: 12px; padding: 8px 4px; }").arg(Theme::textMuted()));
-        connect(add, &QPushButton::clicked, this, [this]() { m_sysAdd = true; QTimer::singleShot(0, this, &Livre::renderRight); });
-        l->addWidget(add);
-    }
+    auto* add = btn(QStringLiteral("  +   ") + tr("Novo planeta"), QStringLiteral("lvOrbit"), v);
+    add->setStyleSheet(QStringLiteral("QPushButton#lvOrbit { color: %1; font-size: 12px; padding: 8px 4px; }").arg(Theme::textMuted()));
+    connect(add, &QPushButton::clicked, this, [this, sysKey]() { QTimer::singleShot(0, this, [this, sysKey]() { openNewWorld(sysKey); }); });
+    l->addWidget(add);
     return v;
 }
 QWidget* Livre::aloneView(const QString& world, QWidget* parent)
@@ -408,6 +388,7 @@ QWidget* Livre::listRow(const QString& k, QWidget* parent)
         for (int i = 0; i < std::min<int>(8, ws.size()); i++) { auto* d = new QLabel(r); d->setFixedSize(13, 13); d->setPixmap(ball(ws[i], 13)); d->setAttribute(Qt::WA_TransparentForMouseEvents); h->addWidget(d); }
         connect(r, &QPushButton::clicked, this, [this, k]() { select(k); });
         peekable(r, k);
+        r->setProperty("lvCtx", k);
     }
     r->setMinimumHeight(34);
     return r;
@@ -1597,6 +1578,8 @@ void Livre::renderNav()
     const bool searching = f && f->property("lvNavQ").toBool();
     const int pos = searching ? static_cast<QLineEdit*>(f)->cursorPosition() : 0;
     if (QLayout* old = m_nav->layout()) { clearLay(old); delete old; }
+    // a aba de planeta novo ocupa o mesmo lugar; a gaveta volta quando ela fecha
+    if (m_newTab) { m_nav->hide(); return; }
     if (root.isEmpty() || !m_navOpen || !valid(root)) { m_nav->hide(); return; }
     auto* l = new QVBoxLayout(m_nav);
     l->setContentsMargins(0, 0, 0, 0);
@@ -1622,6 +1605,89 @@ void Livre::placeNav()
     const int h = std::min(maxH, std::max(200, want));
     m_nav->setFixedHeight(h);
     m_nav->move(lb.right() + 8, std::clamp(top, 10, std::max(10, height() - h - 20)));
+}
+
+// ── o botão direito ──
+// Renomear cai no nome da folha (o mesmo campo de sempre); os seletores abrem onde o clique aconteceu.
+// Excluir tem Desfazer no aviso, como o Excluir da direita.
+void Livre::ctxMenu(QWidget* anchor, const QString& k, const QPoint& globalPos)
+{
+    if (!valid(k)) return;
+    closePop();
+    hidePeek();
+    const LK t = kindOf(k);
+    QMenu menu(this);
+    menu.setStyleSheet(Theme::qss(QStringLiteral(R"(
+        QMenu { background: %1; color: %2; border: 1px solid %3; border-radius: @radius-panel; padding: 4px; }
+        QMenu::item { padding: 6px 16px; border-radius: @radius-item; }
+        QMenu::item:selected { background: %4; color: %5; }
+        QMenu::item:disabled { color: %6; }
+        QMenu::separator { height: 1px; background: %3; margin: 4px 6px; }
+    )")).arg(Theme::panelBackground(), Theme::textPrimary(), Theme::panelBorder(), Theme::hoverOverlay(), Theme::textBright(), Theme::textMuted()));
+    QPointer<QWidget> at = anchor;
+    // tudo depois do menu fechar: as ações refazem a prateleira onde o clique aconteceu
+    const auto later = [this](std::function<void()> fn) { QTimer::singleShot(0, this, std::move(fn)); };
+    const auto pickAt = [this, at](std::function<void(QWidget*)> fn) {
+        QTimer::singleShot(0, this, [at, fn]() { if (at) fn(at); });
+    };
+    auto* title = menu.addAction(label(k));
+    title->setEnabled(false);
+    menu.addSeparator();
+
+    if (isGhost(k)) {
+        connect(menu.addAction(tr("Ficar com este")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { accept(k); }); });
+        connect(menu.addAction(tr("Dispensar")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { dismiss(k); }); });
+        menu.exec(globalPos);
+        return;
+    }
+
+    connect(menu.addAction(tr("Abrir")), &QAction::triggered, this, [this, k]() { m_navOpen = true; select(k); });
+    connect(menu.addAction(tr("Renomear")), &QAction::triggered, this, [this, k]() { select(k); focusName(k); });
+    if (t == LK::Planet || t == LK::Moon) {
+        connect(menu.addAction(tr("Trocar tipo…")), &QAction::triggered, this, [this, k, pickAt]() { pickAt([this, k](QWidget* a) { pickType(a, k); }); });
+        if (t == LK::Planet) connect(menu.addAction(tr("Mover para…")), &QAction::triggered, this, [this, k, pickAt]() { pickAt([this, k](QWidget* a) { pickWhere(a, k); }); });
+    } else if (t == LK::Sys) {
+        connect(menu.addAction(tr("Trocar estrela…")), &QAction::triggered, this, [this, k, pickAt]() { pickAt([this, k](QWidget* a) { pickStar(a, k); }); });
+    } else if (t == LK::Build) {
+        connect(menu.addAction(tr("Trocar modelo…")), &QAction::triggered, this, [this, k, pickAt]() { pickAt([this, k](QWidget* a) { pickStruct(a, parentKey(k), k); }); });
+    } else if (t == LK::Terr) {
+        connect(menu.addAction(tr("Desenhar território")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { openDraw(k); }); });
+    }
+    if (canBeCapital(k)) {
+        connect(menu.addAction(isCapital(k) ? tr("Deixar de ser capital") : tr("Tornar capital")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { toggleCapital(k); render(); }); });
+    }
+
+    menu.addSeparator();
+    if (t == LK::Planet) {
+        connect(menu.addAction(tr("Nova lua")), &QAction::triggered, this, [this, k, later]() {
+            later([this, k]() {
+                const Type mt = MOON_TYPES[QRandomGenerator::global()->bounded(int(MOON_TYPES.size()))];
+                const QString m = createMoon(ghostName(QStringLiteral("moon")), k, mt, false);
+                if (m.isEmpty()) return;
+                m_sel = m;
+                render();
+                focusName(m);
+            });
+        });
+    }
+    if (t == LK::Planet || t == LK::Sys) {
+        connect(menu.addAction(tr("Nova construção…")), &QAction::triggered, this, [this, k, pickAt]() { pickAt([this, k](QWidget* a) { pickStruct(a, k, QString()); }); });
+    }
+    if (t == LK::Sys || t == LK::Terr) {
+        connect(menu.addAction(tr("Novo planeta aqui")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { openNewWorld(k); }); });
+    }
+    // no mapa: só o que aparece lá (mundo solto mora escondido)
+    const System* sy = sysOf(k);
+    const bool onMap = t == LK::Terr || (sy && !m_doc->isSolo(*sy) && (t == LK::Planet || t == LK::Moon || t == LK::Sys || t == LK::Build));
+    if (onMap) {
+        connect(menu.addAction(tr("Ver no mapa")), &QAction::triggered, this, [this, k]() {
+            QTimer::singleShot(0, m_panel, [this, k]() { m_panel->closeLivre(); m_canvas->select(k, true); });
+        });
+    }
+
+    menu.addSeparator();
+    connect(menu.addAction(tr("Excluir")), &QAction::triggered, this, [this, k, later]() { later([this, k]() { flushSheet(); removeItem(k); }); });
+    menu.exec(globalPos);
 }
 
 // ── território com forma ──

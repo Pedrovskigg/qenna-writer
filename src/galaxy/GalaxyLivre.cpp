@@ -17,11 +17,13 @@
 
 #include <QApplication>
 #include <QBuffer>
+#include <QContextMenuEvent>
 #include <QCoreApplication>
 #include <QDir>
 #include <QDrag>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QKeyEvent>
@@ -375,7 +377,7 @@ Livre::Livre(Panel* panel, Canvas* canvas, Doc* doc) : QWidget(panel), m_panel(p
     auto* gl = new Grip(m_cols);
     auto leftStart = std::make_shared<int>(0);
     gl->pressed = [this, leftStart]() { *leftStart = m_leftW; };
-    gl->moved = [this, leftStart](int dx) { m_leftW = std::clamp(*leftStart + dx, 240, 480); m_leftCol->setFixedWidth(m_leftW); if (m_nav->isVisible()) placeNav(); };
+    gl->moved = [this, leftStart](int dx) { m_leftW = std::clamp(*leftStart + dx, 240, 480); m_leftCol->setFixedWidth(m_leftW); if (m_nav->isVisible()) placeNav(); if (m_newTab) placeNewWorld(); };
     gl->released = [this]() { QSettings().setValue(QStringLiteral("galaxy/livreLeftW"), m_leftW); };
     gl->reset = [this]() { m_leftW = 292; m_leftCol->setFixedWidth(m_leftW); QSettings().setValue(QStringLiteral("galaxy/livreLeftW"), m_leftW); if (m_nav->isVisible()) placeNav(); };
     cols->addWidget(gl);
@@ -525,6 +527,21 @@ void Livre::applyTheme()
         "QPushButton#lvPlus:hover { border-color: $accent; color: $accent; }"
         "QFrame#lvTileDrop { border: 1.5px solid transparent; border-radius: 11px; }"
         "QFrame#lvTileDrop[drop=\"true\"] { border: 1.5px dashed $accent; }"
+        "QPushButton#lvPlus[on=\"true\"] { background: $accentSoft; border: 1.5px solid $accent; color: $accent; }"
+        // a aba de planeta novo
+        "QFrame#lvNewTab { background: $pane; border: 1px solid $line2; border-radius: 12px; }"
+        "QWidget#lvNewStripe { background: $accent; border-top-left-radius: 11px; border-top-right-radius: 11px; }"
+        "QWidget#lvNewHead { background: transparent; border: none; border-bottom: 1px solid $line; }"
+        "QLabel#lvNewTitle { color: $ink; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; font-weight: 600; }"
+        "QLabel#lvNewWhere { color: $muted; font-size: 12px; }"
+        "QLabel#lvNewType { color: $accent; font-size: 12px; font-weight: 600; }"
+        "QLineEdit#lvNewName { background: $hover; border: 1px solid $line; border-radius: 9px; color: $ink; font-family: 'Source Serif 4', Georgia, serif; font-size: 16px; font-weight: 600; padding: 7px 10px; }"
+        "QLineEdit#lvNewName:focus { border-color: $accent; }"
+        "QToolButton#lvNewDice { background: $hover; border: 1px solid $line; border-radius: 9px; }"
+        "QToolButton#lvNewDice:hover { border-color: $accent; }"
+        "QWidget#lvNewFoot { background: transparent; border: none; border-top: 1px solid $line; }"
+        "QPushButton#lvNewGo { background: $accent; border: none; border-radius: 9px; color: white; font-size: 13px; font-weight: 600; padding: 8px 18px; }"
+        "QPushButton#lvNewGo:hover { background: $accent; }"
         "QLineEdit#lvInline { background: $pane; border: 1px solid $accent; border-radius: 8px; color: $ink; font-size: 12px; padding: 4px 8px; }"
         "QToolButton#lvGhostOk, QToolButton#lvGhostNo { background: $pane; border: 1px solid $line; border-radius: 10px; color: $ink; font-size: 11px; padding: 0; }"
         "QToolButton#lvGhostOk:hover { border-color: $accent; color: $accent; }"
@@ -682,10 +699,12 @@ void Livre::closeIt()
     closePop();
     hidePeek();
     m_nav->hide();
+    if (m_newTab) { m_newTab->deleteLater(); m_newTab = nullptr; }
 }
 bool Livre::escape()
 {
     if (m_pop) { closePop(); return true; }
+    if (m_newTab) { closeNewWorld(); return true; }
     if (m_draw) return true;
     if (m_bigMap) { closeBigMap(); return true; }
     if (m_bigView) { closeBigView(); return true; }
@@ -717,6 +736,7 @@ void Livre::resizeEvent(QResizeEvent* e)
     QWidget::resizeEvent(e);
     if (m_toast->isVisible()) m_toast->move((width() - m_toast->width()) / 2, height() - m_toast->height() - 26);
     if (m_nav->isVisible()) placeNav();
+    if (m_newTab) placeNewWorld();
     if (m_draw) m_draw->setGeometry(rect());
     if (m_bigView) m_bigView->setGeometry(rect());
     if (m_bigMap) m_bigMap->setGeometry(rect());
@@ -921,6 +941,7 @@ QWidget* Livre::ballEl(const QString& k, QWidget* parent)
     const bool ghost = isGhost(k);
     auto* b = new Ball(ball(k, 54), label(k), docs, m_sel == k, ghost, isCapital(k), m_justMade == k, holder);
     b->setProperty("lvKey", k);
+    b->setProperty("lvCtx", k);
     v->addWidget(b, 0, Qt::AlignHCenter);
     if (ghost) v->addWidget(ghostActs(k, holder), 0, Qt::AlignHCenter);
     else {
@@ -941,50 +962,25 @@ QWidget* Livre::ballEl(const QString& k, QWidget* parent)
     }
     return holder;
 }
-// O "+" da prateleira: vira campo de nome; Enter cria e o cursor já cai na folha.
+// O "+" da prateleira abre a aba de planeta novo do lado dela (GalaxyLivreNew.cpp).
 QWidget* Livre::addBallEl(const QString& slot, const QString& parent, QWidget* where)
 {
+    Q_UNUSED(slot);
     auto* w = new QWidget(where);
     w->setFixedSize(78, 96);
     auto* v = new QVBoxLayout(w);
     v->setContentsMargins(0, 6, 0, 0);
     v->setSpacing(4);
-    if (m_shelfAdd == slot) {
-        auto* in = new QLineEdit(w);
-        in->setObjectName(QStringLiteral("lvInline"));
-        in->setPlaceholderText(tr("Nome"));
-        in->setFixedWidth(76);
-        v->addWidget(in, 0, Qt::AlignHCenter);
-        auto* hint = lab(tr("Enter cria"), QStringLiteral("lvSmall"), w);
-        hint->setAlignment(Qt::AlignHCenter);
-        v->addWidget(hint);
-        v->addStretch();
-        connect(in, &QLineEdit::returnPressed, this, [this, in, parent]() {
-            const QString n = in->text().trimmed();
-            if (n.isEmpty() || m_shelfAdd.isEmpty()) return;
-            m_shelfAdd.clear();
-            // fora do Enter: o render refaz a prateleira e apaga este campo, que ainda está tratando a tecla
-            QTimer::singleShot(0, this, [this, n, parent]() {
-                m_sel = createWorld(n, parent, Type::Temperado, false);
-                m_navOpen = true;
-                render();
-                goBody();
-            });
-        });
-        in->installEventFilter(this);
-        in->setProperty("lvEscape", QStringLiteral("shelf"));
-        QTimer::singleShot(0, in, [in]() { in->setFocus(); });
-    } else {
-        auto* plus = btn(QStringLiteral("+"), QStringLiteral("lvPlus"), w);
-        plus->setFixedSize(54, 54);
-        plus->setToolTip(tr("Novo planeta aqui"));
-        connect(plus, &QPushButton::clicked, this, [this, slot]() { m_shelfAdd = slot; QTimer::singleShot(0, this, &Livre::renderLeft); });
-        v->addWidget(plus, 0, Qt::AlignHCenter);
-        auto* l = lab(tr("Novo"), QStringLiteral("lvSmall"), w);
-        l->setAlignment(Qt::AlignHCenter);
-        v->addWidget(l);
-        v->addStretch();
-    }
+    auto* plus = btn(QStringLiteral("+"), QStringLiteral("lvPlus"), w);
+    plus->setFixedSize(54, 54);
+    plus->setToolTip(tr("Novo planeta aqui"));
+    plus->setProperty("on", m_newTab && m_nw.parent == parent);
+    connect(plus, &QPushButton::clicked, this, [this, parent]() { QTimer::singleShot(0, this, [this, parent]() { openNewWorld(parent); }); });
+    v->addWidget(plus, 0, Qt::AlignHCenter);
+    auto* l = lab(tr("Novo"), QStringLiteral("lvSmall"), w);
+    l->setAlignment(Qt::AlignHCenter);
+    v->addWidget(l);
+    v->addStretch();
     return w;
 }
 QWidget* Livre::groupEl(const QString& title, const QString& id, QWidget* parent)
@@ -1035,6 +1031,7 @@ QWidget* Livre::groupEl(const QString& title, const QString& id, QWidget* parent
     } else if (!worlds.isEmpty()) { auto* c = lab(QString::number(worlds.size()), QStringLiteral("lvSmall"), hd); c->setAttribute(Qt::WA_TransparentForMouseEvents); hh->addWidget(c); }
     if (!id.isEmpty()) {
         hd->setProperty("lvKey", id);
+        hd->setProperty("lvCtx", id);
         connect(hd, &QPushButton::clicked, this, [this, id]() { m_navOpen = true; select(id); });
         peekable(hd, id);
     } else connect(hd, &QPushButton::clicked, this, [this, key, closed]() { if (closed) m_closed.remove(key); else m_closed.insert(key); QTimer::singleShot(0, this, &Livre::renderLeft); });
@@ -1064,6 +1061,7 @@ QWidget* Livre::groupEl(const QString& title, const QString& id, QWidget* parent
         hv->setSpacing(0);
         auto* tile = new SysTile(starShown(sy ? sy->stars[0].kind : StarKind::G), sy && sy->stars[0].kind == StarKind::BuracoNegro, std::move(pl), label(sk), sub, pending, m_sel == sk, isGhost(sk), m_justMade == sk, holder);
         tile->setProperty("lvKey", sk);
+        tile->setProperty("lvCtx", sk);
         if (pending) tile->setToolTip(tr("%1 vizinhos sugeridos, esperando o sim na direita.").arg(pending));
         hv->addWidget(tile, 0, Qt::AlignHCenter);
         if (isGhost(sk)) hv->addWidget(ghostActs(sk, holder), 0, Qt::AlignHCenter);
@@ -1304,12 +1302,24 @@ bool Livre::eventFilter(QObject* o, QEvent* e)
         }
         return false;
     }
+    // botão direito em planeta, lua, sistema, território ou construção: o menu dele
+    if (t == QEvent::ContextMenu) {
+        for (QWidget* w = qobject_cast<QWidget*>(o); w && w != this; w = w->parentWidget()) {
+            const QString k = w->property("lvCtx").toString();
+            if (k.isEmpty()) continue;
+            if (!valid(k)) return false;
+            const QPoint at = static_cast<QContextMenuEvent*>(e)->globalPos();
+            QPointer<QWidget> anchor = w;
+            QTimer::singleShot(0, this, [this, anchor, k, at]() { if (anchor) ctxMenu(anchor, k, at); });
+            return true;
+        }
+        return false;
+    }
     if (t == QEvent::KeyPress) {
         auto* k = static_cast<QKeyEvent*>(e);
         if (k->key() == Qt::Key_Escape) {
             const QString what = o->property("lvEscape").toString();
-            if (what == QLatin1String("shelf")) { m_shelfAdd.clear(); QTimer::singleShot(0, this, &Livre::renderLeft); return true; }
-            if (what == QLatin1String("sys")) { m_sysAdd = false; QTimer::singleShot(0, this, &Livre::renderRight); return true; }
+            if (what == QLatin1String("new")) { QTimer::singleShot(0, this, &Livre::closeNewWorld); return true; }
             if (what == QLatin1String("nav")) { m_navAdd.clear(); m_rowAdd.clear(); m_ask = {}; QTimer::singleShot(0, this, &Livre::renderNav); return true; }
             if (what == QLatin1String("orb")) { o->deleteLater(); return true; }
             if (what == QLatin1String("navq")) { m_navSearch = false; m_navQuery.clear(); QTimer::singleShot(0, this, &Livre::renderNav); return true; }

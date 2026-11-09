@@ -374,6 +374,8 @@ private:
     Caderno* m_caderno = nullptr;
     Livre* m_livre = nullptr;
     QToolButton* m_livreBtn = nullptr;
+    QFrame* m_livreBack = nullptr;          // "Voltar pra Criação Livre", do lado do nome, só em galáxia livre
+    QPushButton* m_livreBackBtn = nullptr;
 };
 
 // fábrica de texto e número, igual ao Lab

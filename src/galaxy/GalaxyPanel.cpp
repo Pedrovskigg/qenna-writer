@@ -345,6 +345,20 @@ void Panel::buildUi()
     fl->addWidget(m_focusSwatch); fl->addWidget(m_focusName); fl->addWidget(fo);
     m_focusBar->hide();
 
+    // galáxia livre: a volta pra Criação Livre fica escrita do lado do nome, não só no lápis da barra
+    m_livreBack = makeFloat(QStringLiteral("cartoLivreBack"));
+    auto* lbl = new QHBoxLayout(m_livreBack);
+    lbl->setContentsMargins(4, 0, 4, 0);
+    m_livreBackBtn = new QPushButton(QStringLiteral("‹  ") + tr("Voltar pra Criação Livre"), m_livreBack);
+    m_livreBackBtn->setObjectName(QStringLiteral("gmLivreBack"));
+    m_livreBackBtn->setCursor(Qt::PointingHandCursor);
+    m_livreBackBtn->setFocusPolicy(Qt::NoFocus);
+    m_livreBackBtn->setToolTip(tr("Criação Livre (W)"));
+    m_livreBackBtn->setIconSize(QSize(16, 16));
+    connect(m_livreBackBtn, &QPushButton::clicked, this, [this]() { openLivre(m_canvas->sel); });
+    lbl->addWidget(m_livreBackBtn);
+    m_livreBack->hide();
+
     buildSide();
     buildPeek();
     buildBuildBar();
@@ -585,6 +599,8 @@ void Panel::applyTheme()
         "QLabel#gmTip { background: %1; border: 1px solid %2; border-radius: 8px; color: %3; font-size: 12px; padding: 5px 9px; }"
         "QPushButton#gmLink { background: transparent; border: none; color: %5; font-size: 12px; font-weight: 600; padding: 3px 6px; text-align: left; }"
         "QPushButton#gmLink:hover { text-decoration: underline; }"
+        "QPushButton#gmLivreBack { background: transparent; border: none; border-radius: 9px; color: %5; font-size: 13px; font-weight: 600; padding: 6px 12px 6px 8px; }"
+        "QPushButton#gmLivreBack:hover { background: %4; }"
         "QFrame#gmSearch { background: %1; border: 1px solid %2; border-radius: 22px; }"
         "QLineEdit#gmQuery { background: transparent; border: none; color: %3; font-size: 14px; padding: 0; }"
         "QFrame#gmResults, QFrame#gmPanel, QFrame#gmMini { background: %1; border: 1px solid %2; border-radius: 12px; }"
@@ -792,6 +808,11 @@ void Panel::positionOverlays()
         if (w->layout()) { QCoreApplication::sendPostedEvents(w, QEvent::LayoutRequest); w->layout()->invalidate(); w->layout()->activate(); }
     m_titlePill->adjustSize();
     m_titlePill->move(16, 14);
+    if (m_livreBack && m_livreBack->isVisibleTo(this)) {
+        m_livreBack->adjustSize();
+        m_livreBack->setFixedHeight(m_titlePill->height());
+        m_livreBack->move(m_titlePill->geometry().right() + 9, 14);
+    }
     m_cbar->adjustSize();
     m_cbar->move(W - m_cbar->width() - 16, 14);
     const int cardRight = m_cbar->x() - 8;
@@ -995,6 +1016,7 @@ void Panel::syncUi()
     setCheck(m_organicBtn, isOpen() && m_doc.opts.organic);
     // Criação Livre: a terceira ferramenta só existe na galáxia que nasceu livre, e ali a Semeação não faz sentido
     m_livreBtn->setVisible(isOpen() && m_doc.opts.free);
+    if (m_livreBack && m_livreBack->isVisibleTo(this) != (isOpen() && m_doc.opts.free)) { m_livreBack->setVisible(isOpen() && m_doc.opts.free); positionOverlays(); }
     m_organicBtn->setVisible(!(isOpen() && m_doc.opts.free));
     setCheck(m_lyTraffic, m_canvas->ly.traffic);
     setCheck(m_expTitle, m_expWithTitle);
