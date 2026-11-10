@@ -189,8 +189,9 @@ private:
     void createDocFromCard(const CanvasCard& c);
     void openCard(const CanvasCard& c);
     // Pôster de personagem/cenário/objeto flutuando no quadro (sem modal).
+    // pageChoice = false: o card já traz o texto da página, então a escolha Ficha/Documento some
     void openElementSheet(const QString& type, const QString& title,
-                          const std::function<void(class ElementCreateDialog*)>& onAccept);
+                          const std::function<void(class ElementCreateDialog*)>& onAccept, bool pageChoice = true);
     void newCharacterOnBoard(const QPointF* at = nullptr);
     QPointer<QDialog> m_elementSheet;
 

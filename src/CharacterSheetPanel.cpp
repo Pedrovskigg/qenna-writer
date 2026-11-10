@@ -1,4 +1,7 @@
 #include "CharacterSheetPanel.h"
+#include <QTextDocument>
+#include <QTextBlock>
+#include <QRegularExpression>
 #include "SheetDialogs.h"
 
 #include "AvatarUtils.h"
@@ -50,6 +53,9 @@ constexpr const char* kKeyLastLayout = "sheet/lastLayout";
 const QString kDossie     = QStringLiteral("dossie");
 const QString kInfobox    = QStringLiteral("infobox");
 const QString kProntuario = QStringLiteral("prontuario");
+const QString kRevista    = QStringLiteral("revista");
+const QString kAbas       = QStringLiteral("abas");
+bool knownLayout(const QString& v) { return v == kDossie || v == kInfobox || v == kProntuario || v == kRevista || v == kAbas; }
 
 // O ⋮⋮ das seções fica pendurado na margem da página, à esquerda do título:
 // cada bloco que não é seção ganha esse recuo pra tudo alinhar pelo texto.
@@ -187,6 +193,7 @@ public:
         });
     }
 
+    void setRadius(qreal r) { m_radius = r; update(); }
     void setImage(const QPixmap& pm)
     {
         m_pix = pm;
@@ -230,7 +237,7 @@ protected:
         p.setRenderHint(QPainter::SmoothPixmapTransform);
         const QRectF r = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
         QPainterPath box;
-        box.addRoundedRect(r, 6, 6);
+        box.addRoundedRect(r, m_radius, m_radius);
 
         const bool has = !m_pix.isNull();
         if (has) {
@@ -320,6 +327,7 @@ protected:
     }
 
 private:
+    qreal m_radius = 6;
     QList<std::function<void()>> pillActions() const
     {
         if (!m_pix.isNull()) return { onPick, onGenerate, onRemove };
@@ -404,13 +412,13 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
 QString CharacterSheetPanel::defaultLayout()
 {
     const QString v = QSettings().value(QLatin1String(kKeyLastLayout), kDossie).toString();
-    return (v == kInfobox || v == kProntuario) ? v : kDossie;
+    return knownLayout(v) ? v : kDossie;
 }
 
 QString CharacterSheetPanel::layoutId() const
 {
     const QString& v = m_sheet.layout;
-    return (v == kDossie || v == kInfobox || v == kProntuario) ? v : defaultLayout();
+    return knownLayout(v) ? v : defaultLayout();
 }
 
 void CharacterSheetPanel::setLayout(const QString& id)
@@ -464,6 +472,16 @@ void CharacterSheetPanel::applyStyle()
         "QPushButton#shTocBtn { border: 1px solid %7; border-radius: 12px; background: transparent;"
         "  color: %3; padding: 3px 11px; font-size: 12px; }"
         "QPushButton#shTocBtn:hover { color: %2; border-color: %8; }"
+        "QWidget#shHero { border-bottom: 1px solid %7; }"
+        "QLabel#shQuote { color: %2; border: none; border-left: 3px solid %4; padding: 0 0 0 16px; background: transparent; }"
+        "QLabel#shQuoteCap { color: %3; padding-left: 19px; }"
+        "QLineEdit#shSecTitle[kicker=\"true\"] { color: %4; }"
+        "QWidget#shFactsBox { background: %9; border-radius: 8px; }"
+        "QWidget#shTabs { background: %1; border-bottom: 1px solid %7; }"
+        "QPushButton#shTab { border: none; border-bottom: 2px solid transparent; border-radius: 0; background: transparent;"
+        "  color: %3; padding: 9px 13px 8px; font-size: 13px; }"
+        "QPushButton#shTab:hover { color: %2; }"
+        "QPushButton#shTab[on=\"true\"] { color: %2; border-bottom-color: %4; font-weight: 600; }"
         "QWidget#shToast { background: %2; border-radius: 8px; }"
         "QLabel#shToastText { color: %10; font-size: 12.5px; }"
         "QPushButton#shToastUndo { border: none; background: transparent; color: %10; font-weight: 700;"
@@ -683,6 +701,7 @@ void CharacterSheetPanel::addField(const QString& kind)
     f.order = m_sheet.fields.size();
     m_sheet.fields.append(f);
     m_focusAfterRebuild = f.id;
+    if (kind == QStringLiteral("text") && layoutId() == kAbas) setCurrentTab(f.id);
     commitNow();
     rebuild();
 }
@@ -1036,6 +1055,26 @@ QWidget* CharacterSheetPanel::buildSection(const SheetField& f)
         setFieldValue(id, te->toHtml());
         scheduleSave();
     });
+    // botão direito no texto: o menu de sempre e, na Revista, "Usar como destaque"
+    te->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(te, &QTextEdit::customContextMenuRequested, this, [this, te](const QPoint& pos) {
+        QMenu* menu = te->createStandardContextMenu(pos);
+        if (layoutId() == kRevista) {
+            QString pick = te->textCursor().selectedText();
+            if (pick.trimmed().isEmpty()) pick = te->cursorForPosition(pos).block().text();
+            pick = pick.replace(QChar(0x2029), QLatin1Char(' ')).simplified();
+            if (!pick.isEmpty()) {
+                menu->addSeparator();
+                menu->addAction(tr("Usar como destaque"), this, [this, pick]() {
+                    m_sheet.quote = pick;
+                    commitNow();
+                    QTimer::singleShot(0, this, &CharacterSheetPanel::rebuild);
+                });
+            }
+        }
+        menu->exec(te->viewport()->mapToGlobal(pos));
+        delete menu;
+    });
     m_textEdits << te;
     m_searchFields << title << te;
     g->addWidget(te, 1, 1);
@@ -1097,6 +1136,8 @@ void CharacterSheetPanel::rebuild()
     const QString form = layoutId();
     if (form == kInfobox) buildInfobox(page);
     else if (form == kProntuario) buildProntuario(page);
+    else if (form == kRevista) buildRevista(page);
+    else if (form == kAbas) buildAbas(page);
     else buildDossie(page);
 
     m_dropLine = new QFrame(page);
@@ -1320,6 +1361,244 @@ void CharacterSheetPanel::buildProntuario(QWidget* page)
     }
 }
 
+// A fala em destaque da Revista: a escolhida pelo autor, ou a primeira da seção de diálogos.
+QString CharacterSheetPanel::quoteText(QString* caption) const
+{
+    if (caption) caption->clear();
+    if (!m_sheet.quote.trimmed().isEmpty()) return m_sheet.quote.trimmed();
+    static const QRegularExpression re(QStringLiteral("di[aá]logo|\\bfala"), QRegularExpression::CaseInsensitiveOption);
+    for (const SheetField& f : m_sheet.fields) {
+        if (f.kind != QStringLiteral("text") || !re.match(f.label).hasMatch()) continue;
+        QTextDocument d;
+        d.setHtml(f.value);
+        for (const QString& line : d.toPlainText().split(QLatin1Char('\n'))) {
+            const QString t = line.simplified();
+            if (t.isEmpty()) continue;
+            if (caption) *caption = f.label.trimmed();
+            return t.size() > 260 ? t.left(258).trimmed() + QStringLiteral("…") : t;
+        }
+    }
+    return QString();
+}
+
+// Revista: o retrato em pé ocupa a altura do topo; do lado, o papel, o nome grande, os apelidos e a fala
+// em destaque. Os dados numa faixa, e as seções numa coluna estreita de ler, com o título em versalete.
+void CharacterSheetPanel::buildRevista(QWidget* page)
+{
+    const int hm = qMax(44, EditorLayout::horizontalMargin());
+    const bool narrow = page->width() < 700;
+    auto* root = new QVBoxLayout(page);
+    root->setContentsMargins(0, 0, 0, 60);
+    root->setSpacing(0);
+
+    auto* hero = new QWidget;
+    hero->setObjectName(QStringLiteral("shHero"));
+    hero->setAttribute(Qt::WA_StyledBackground, true);
+    auto* hl = new QHBoxLayout(hero);
+    hl->setContentsMargins(0, 0, 0, 0);
+    hl->setSpacing(0);
+    const int photoW = narrow ? 220 : 330;
+    QWidget* photo = buildPhoto(QSize(photoW, photoW * 4 / 3));
+    static_cast<SheetPhoto*>(photo)->setRadius(0);
+    hl->addWidget(photo, 0, Qt::AlignTop);
+    auto* idBox = new QWidget;
+    auto* iv = new QVBoxLayout(idBox);
+    iv->setContentsMargins(narrow ? 24 : 44, 30, hm, 32);
+    iv->setSpacing(12);
+    iv->addStretch(1);
+    iv->addWidget(buildIdentity(narrow ? 40 : 54, Qt::AlignLeft, true));
+    if (!m_names.isEmpty() && m_names.last()) {
+        QFont nf(QStringLiteral("Playfair Display"));
+        nf.setPixelSize(narrow ? 40 : 56);
+        m_names.last()->setFont(nf);
+    }
+    QString cap;
+    const QString q = quoteText(&cap);
+    if (!q.isEmpty()) {
+        iv->addSpacing(10);
+        auto* ql = new QLabel(q);
+        ql->setObjectName(QStringLiteral("shQuote"));
+        ql->setWordWrap(true);
+        ql->setTextFormat(Qt::PlainText);
+        QFont qf(QStringLiteral("Playfair Display"));
+        qf.setPixelSize(21);
+        qf.setItalic(true);
+        ql->setFont(qf);
+        ql->setToolTip(tr("No texto de uma seção, botão direito › Usar como destaque"));
+        iv->addWidget(ql);
+        if (!cap.isEmpty()) {
+            auto* cl = new QLabel(cap.toUpper());
+            cl->setObjectName(QStringLiteral("shQuoteCap"));
+            QFont cf = Tracks::uiFont(10, QFont::DemiBold);
+            cf.setLetterSpacing(QFont::AbsoluteSpacing, 1.4);
+            cl->setFont(cf);
+            iv->addWidget(cl);
+        }
+    }
+    hl->addWidget(idBox, 1);
+    root->addWidget(hero);
+
+    // a faixa de dados, como a do Dossiê
+    auto* factsWrap = new QWidget;
+    auto* fw = new QVBoxLayout(factsWrap);
+    fw->setContentsMargins(hm, 20, hm, 18);
+    fw->setSpacing(18);
+    auto* grid = new QGridLayout;
+    grid->setHorizontalSpacing(26);
+    grid->setVerticalSpacing(18);
+    const int cols = page->width() - 2 * hm >= 560 ? 3 : 2;
+    int i = 0;
+    for (const SheetField& f : fieldsOfKind(QStringLiteral("data"))) { grid->addWidget(buildFact(f, FactStyle::Dossie), i / cols, i % cols); ++i; }
+    grid->addWidget(buildAdd(QStringLiteral("data")), i / cols, i % cols, Qt::AlignLeft | Qt::AlignVCenter);
+    for (int c = 0; c < cols; ++c) grid->setColumnStretch(c, 1);
+    fw->addLayout(grid);
+    fw->addWidget(buildRule());
+    root->addWidget(factsWrap);
+
+    // as seções numa coluna estreita, com o título pequeno em versalete na cor de destaque
+    auto* col = new QWidget;
+    col->setMaximumWidth(kGripW + 640);
+    auto* cv = new QVBoxLayout(col);
+    cv->setContentsMargins(0, 22, 0, 0);
+    cv->setSpacing(34);
+    QFont kf = Tracks::uiFont(11.5, QFont::DemiBold);
+    kf.setCapitalization(QFont::AllUppercase);
+    kf.setLetterSpacing(QFont::AbsoluteSpacing, 2.2);
+    for (const SheetField& f : fieldsOfKind(QStringLiteral("text"))) {
+        QWidget* s = buildSection(f);
+        if (auto* t = s->findChild<QLineEdit*>(QStringLiteral("shSecTitle"))) { t->setFont(kf); t->setProperty("kicker", true); }
+        cv->addWidget(s);
+    }
+    cv->addWidget(indented(buildAdd(QStringLiteral("text"))), 0, Qt::AlignLeft);
+    auto* colWrap = new QWidget;
+    auto* cw = new QHBoxLayout(colWrap);
+    cw->setContentsMargins(qMax(0, hm - kGripW), 0, hm, 0);
+    cw->addStretch(1);
+    cw->addWidget(col, 100);
+    cw->addStretch(1);
+    root->addWidget(colWrap);
+    root->addStretch();
+}
+
+QString CharacterSheetPanel::currentTab() const
+{
+    const QString t = QSettings().value(QStringLiteral("sheet/tab/") + m_itemId).toString();
+    if (t == QLatin1String("all")) return t;
+    for (const SheetField& f : m_sheet.fields) if (f.kind == QStringLiteral("text") && f.id == t) return t;
+    for (const SheetField& f : m_sheet.fields) if (f.kind == QStringLiteral("text")) return f.id;
+    return QStringLiteral("all");
+}
+void CharacterSheetPanel::setCurrentTab(const QString& id)
+{
+    QSettings().setValue(QStringLiteral("sheet/tab/") + m_itemId, id);
+}
+
+// Abas: a foto, o nome e os dados num bloco compacto; embaixo, uma aba por seção (e "Tudo").
+// A ficha lembra a última aba aberta.
+void CharacterSheetPanel::buildAbas(QWidget* page)
+{
+    const int hm = qMax(44, EditorLayout::horizontalMargin());
+    auto* root = new QVBoxLayout(page);
+    root->setContentsMargins(hm - kGripW, 28, hm, 60);
+    root->setSpacing(0);
+
+    auto* head = new QWidget;
+    auto* hl = new QHBoxLayout(head);
+    hl->setContentsMargins(0, 0, 0, 0);
+    hl->setSpacing(20);
+    // a foto um pouco menor que a do Prontuário e o nome alinhado pelo topo dela (pedidos do Pe, 09/11)
+    hl->addWidget(buildPhoto(QSize(175, 219)), 0, Qt::AlignTop);
+    // como uma carteirinha: os primeiros dados ficam do lado da foto, embaixo do nome, e
+    // ocupam o espaço que sobrava ali (pedido do Pe, 09/11); o resto vai pra caixa de baixo
+    auto* idCol = new QWidget;
+    auto* iv = new QVBoxLayout(idCol);
+    iv->setContentsMargins(0, 0, 0, 0);
+    iv->setSpacing(16);
+    iv->addWidget(buildIdentity(34, Qt::AlignLeft, true));
+    const QList<SheetField> data = fieldsOfKind(QStringLiteral("data"));
+    // folha estreita: dois dados empilhados (em duas colunas eles cortavam); larga: quatro, dois a dois
+    const int idCols = page->width() - 2 * hm - 195 >= 440 ? 2 : 1;
+    const int besidePhoto = qMin(idCols * 2, int(data.size()));
+    const auto makeFact = [&](const SheetField& f) {
+        QWidget* fact = buildFact(f, FactStyle::Dossie);
+        if (auto* v = fact->findChild<QLineEdit*>(QStringLiteral("shValue"))) v->setFont(contentFont(16));
+        return fact;
+    };
+    auto* idGrid = new QGridLayout;
+    idGrid->setContentsMargins(0, 0, 0, 0);
+    idGrid->setHorizontalSpacing(24);
+    idGrid->setVerticalSpacing(12);
+    for (int k = 0; k < besidePhoto; ++k) idGrid->addWidget(makeFact(data.at(k)), k / idCols, k % idCols);
+    if (besidePhoto == data.size())   // sem caixa embaixo: o "+ dado" fica aqui mesmo
+        idGrid->addWidget(buildAdd(QStringLiteral("data")), besidePhoto / idCols, besidePhoto % idCols, Qt::AlignLeft | Qt::AlignVCenter);
+    for (int c = 0; c < idCols; ++c) idGrid->setColumnStretch(c, 1);
+    iv->addLayout(idGrid);
+    hl->addWidget(idCol, 1, Qt::AlignTop);
+    root->addWidget(indented(head));
+    root->addSpacing(22);
+
+    if (besidePhoto < data.size()) {
+        auto* facts = new QWidget;
+        facts->setObjectName(QStringLiteral("shFactsBox"));
+        facts->setAttribute(Qt::WA_StyledBackground, true);
+        auto* grid = new QGridLayout(facts);
+        grid->setContentsMargins(16, 14, 16, 14);
+        grid->setHorizontalSpacing(24);
+        grid->setVerticalSpacing(12);
+        const int cols = page->width() - 2 * hm >= 560 ? 3 : 2;
+        int i = 0;
+        for (int k = besidePhoto; k < data.size(); ++k, ++i) grid->addWidget(makeFact(data.at(k)), i / cols, i % cols);
+        grid->addWidget(buildAdd(QStringLiteral("data")), i / cols, i % cols, Qt::AlignLeft | Qt::AlignVCenter);
+        for (int c = 0; c < cols; ++c) grid->setColumnStretch(c, 1);
+        root->addWidget(indented(facts));
+        root->addSpacing(22);
+    }
+
+    const QList<SheetField> secs = fieldsOfKind(QStringLiteral("text"));
+    const QString tab = currentTab();
+    // a barra de abas gruda no topo enquanto o texto rola
+    auto* tabs = new QWidget(page);
+    tabs->setObjectName(QStringLiteral("shTabs"));
+    tabs->setAttribute(Qt::WA_StyledBackground, true);
+    auto* flow = new FlowLayout(tabs, 0);
+    flow->setContentsMargins(0, 0, 0, 0);
+    const auto addTab = [&](const QString& id, const QString& text) {
+        auto* b = new QPushButton(text);
+        b->setObjectName(QStringLiteral("shTab"));
+        b->setCursor(Qt::PointingHandCursor);
+        b->setFocusPolicy(Qt::NoFocus);
+        b->setProperty("on", id == tab);
+        connect(b, &QPushButton::clicked, this, [this, id]() {
+            setCurrentTab(id);
+            const int y = m_scroll->verticalScrollBar()->value();
+            QTimer::singleShot(0, this, [this, y]() {
+                rebuild();
+                QTimer::singleShot(0, this, [this, y]() { m_scroll->verticalScrollBar()->setValue(y); });
+            });
+        });
+        flow->addWidget(b);
+    };
+    for (const SheetField& f : secs) addTab(f.id, f.label.trimmed().isEmpty() ? tr("Sem título") : f.label.trimmed());
+    if (secs.size() > 1) addTab(QStringLiteral("all"), tr("Tudo"));
+    auto* tabsHolder = new QWidget;
+    tabsHolder->installEventFilter(this);
+    root->addWidget(indented(tabsHolder));
+    m_stickies << Sticky{ tabs, tabsHolder, 0 };
+    if (secs.isEmpty()) tabs->hide();
+    root->addSpacing(26);
+
+    auto* panel = new QWidget;
+    panel->setMaximumWidth(kGripW + 660);
+    auto* pv = new QVBoxLayout(panel);
+    pv->setContentsMargins(0, 0, 0, 0);
+    pv->setSpacing(30);
+    for (const SheetField& f : secs)
+        if (tab == QLatin1String("all") || f.id == tab) pv->addWidget(buildSection(f));
+    pv->addWidget(indented(buildAdd(QStringLiteral("text"))), 0, Qt::AlignLeft);
+    root->addWidget(panel);
+    root->addStretch();
+}
+
 // Os que grudam no topo: o widget flutua por cima do lugar que ocupa no layout
 // (o "holder", que só reserva o espaço) e desce junto com a rolagem até
 // encostar no pé da folha.
@@ -1385,7 +1664,8 @@ void CharacterSheetPanel::openMenu(const QRect& anchorGlobal)
     cap->setEnabled(false);
     auto* group = new QActionGroup(&m);
     const QList<QPair<QString, QString>> forms = {
-        { kDossie, tr("Dossiê") }, { kInfobox, tr("Infobox") }, { kProntuario, tr("Prontuário") } };
+        { kDossie, tr("Dossiê") }, { kInfobox, tr("Infobox") }, { kProntuario, tr("Prontuário") },
+        { kRevista, tr("Revista") }, { kAbas, tr("Abas") } };
     for (const auto& form : forms) {
         QAction* a = m.addAction(form.second);
         a->setCheckable(true);
@@ -1394,6 +1674,8 @@ void CharacterSheetPanel::openMenu(const QRect& anchorGlobal)
         const QString id = form.first;
         connect(a, &QAction::triggered, this, [this, id]() { setLayout(id); });
     }
+    if (layoutId() == kRevista && !m_sheet.quote.isEmpty())
+        m.addAction(tr("Voltar à fala automática no destaque"), this, [this]() { m_sheet.quote.clear(); commitNow(); rebuild(); });
     m.addSeparator();
     m.addAction(tr("Adicionar dado"), this, [this]() { addField(QStringLiteral("data")); });
     m.addAction(tr("Adicionar seção"), this, [this]() { addField(QStringLiteral("text")); });

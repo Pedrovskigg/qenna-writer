@@ -159,9 +159,12 @@ struct SheetField {
 // Foto/nome/apelido NÃO ficam aqui — vêm do Element vinculado (elementId).
 struct CharacterSheet {
     int columns = 2;            // leiaute antigo (1 ou 2 colunas); só lido pra compatibilidade
-    // Forma de exibição: "dossie" | "infobox" | "prontuario". Vazio = ainda não
+    // Forma de exibição: "dossie" | "infobox" | "prontuario" | "revista" | "abas". Vazio = ainda não
     // escolhida (a ficha adota a última forma usada ao abrir).
     QString layout;
+    // A fala em destaque da forma Revista, escolhida no botão direito ("Usar como destaque").
+    // Vazio = a primeira fala da seção de diálogos.
+    QString quote;
     QList<SheetField> fields;
     bool isEmpty() const { return fields.isEmpty(); }
 };

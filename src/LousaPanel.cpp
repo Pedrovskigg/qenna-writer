@@ -1925,8 +1925,13 @@ void LousaPanel::newCharacterOnBoard(const QPointF* at)
         DrawerItem newItem;
         newItem.id            = ProjectModel::uid();
         newItem.title         = elem.name;
-        newItem.hasInlineHtml = true;
-        newItem.html          = QStringLiteral("<p></p>");
+        if (dlg->createAsSheet()) {
+            newItem.isSheet = true;
+            newItem.sheet   = ProjectModel::defaultCharacterSheet();
+        } else {
+            newItem.hasInlineHtml = true;
+            newItem.html          = QStringLiteral("<p></p>");
+        }
         newItem.elementType   = QStringLiteral("character");
         newItem.elementId     = elementId;
         newItem.role          = elem.role;
@@ -3040,7 +3045,7 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
             it.role          = elem.role;
             it.tags          = dlg->tags();
             m_projectModel->addDrawerItem(destKey, it);
-        });
+        }, false);   // o texto do card é a página
     } else {
         DrawerItem it;
         it.id            = ProjectModel::uid();
@@ -3056,12 +3061,13 @@ void LousaPanel::createDocFromCard(const CanvasCard& c)
 // enquanto preenche. Uma de cada vez; o resto acontece quando ela é confirmada.
 
 void LousaPanel::openElementSheet(const QString& type, const QString& title,
-                                  const std::function<void(ElementCreateDialog*)>& onAccept)
+                                  const std::function<void(ElementCreateDialog*)>& onAccept, bool pageChoice)
 {
     if (m_elementSheet) m_elementSheet->reject();
     auto* dlg = new ElementCreateDialog(type, this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
     if (!title.isEmpty()) dlg->presetTitle(title);
+    if (!pageChoice) dlg->hidePageChoice();
     m_elementSheet = dlg;
     connect(dlg, &QDialog::accepted, this, [dlg, onAccept]() { onAccept(dlg); });
     dlg->openInside(m_view);

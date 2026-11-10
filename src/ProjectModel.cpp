@@ -292,6 +292,7 @@ QJsonObject characterSheetToJson(const CharacterSheet& s) {
     QJsonObject o;
     o.insert(QStringLiteral("columns"), s.columns);
     if (!s.layout.isEmpty()) o.insert(QStringLiteral("layout"), s.layout);
+    if (!s.quote.isEmpty()) o.insert(QStringLiteral("quote"), s.quote);
     QJsonArray arr;
     for (const auto& f : s.fields) arr.append(sheetFieldToJson(f));
     o.insert(QStringLiteral("fields"), arr);
@@ -302,6 +303,7 @@ CharacterSheet characterSheetFromJson(const QJsonObject& o) {
     CharacterSheet s;
     s.columns = o.value(QStringLiteral("columns")).toInt(2);
     s.layout = o.value(QStringLiteral("layout")).toString();
+    s.quote = o.value(QStringLiteral("quote")).toString();
     const QJsonArray arr = o.value(QStringLiteral("fields")).toArray();
     for (const auto& fv : arr) s.fields.append(sheetFieldFromJson(fv.toObject()));
     return s;

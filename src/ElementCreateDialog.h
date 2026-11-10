@@ -44,8 +44,14 @@ public:
 
     QString title() const;
     QString role() const;
-    // true = criar a página do personagem como Ficha estruturada (só personagem).
+    // true = criar a página do personagem como Ficha estruturada (só personagem). Ficha é o padrão.
     bool createAsSheet() const;
+    // Esconde a escolha Ficha/Documento livre: quem chama já tem o conteúdo da página (texto salvo,
+    // card da Lousa) ou está editando um personagem que já existe. Aí createAsSheet() é sempre false.
+    void hidePageChoice();
+    // O padrão de Configurações › Personagens: personagem novo vem como Ficha (true, de fábrica) ou Documento livre.
+    static bool newCharacterAsSheet();
+    static void setNewCharacterAsSheet(bool on);
     // Modelo de ficha escolhido (vazio = "Vazio (padrão)", sem modelo).
     QString selectedTemplateId() const;
     QString imageDataUrl() const { return m_imageDataUrl; }
@@ -98,6 +104,7 @@ private:
     QButtonGroup* m_genderGroup = nullptr;  // 0 = Masculino, 1 = Feminino; nenhum = não marcado
     QButtonGroup* m_trackGroup = nullptr;
     QButtonGroup* m_pageGroup = nullptr;
+    QWidget*      m_pageBox = nullptr;
     QWidget*      m_templateBox = nullptr;
     class SheetChoice* m_templateChoice = nullptr;
 };

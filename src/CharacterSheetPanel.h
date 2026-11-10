@@ -92,6 +92,11 @@ private:
     void buildDossie(QWidget* page);
     void buildInfobox(QWidget* page);
     void buildProntuario(QWidget* page);
+    void buildRevista(QWidget* page);     // retrato em pé, nome grande e a fala em destaque
+    void buildAbas(QWidget* page);        // cabeçalho curto e uma seção por vez
+    QString quoteText(QString* caption) const;
+    QString currentTab() const;           // Abas: a seção aberta ("all" = todas)
+    void setCurrentTab(const QString& id);
     void buildFindBar();                  // cria a barra de busca local (Ctrl+F)
     void onFindChanged(const QString& q); // recalcula matches nos campos
     void applyFindHighlights();           // pinta os matches nos blocos de texto

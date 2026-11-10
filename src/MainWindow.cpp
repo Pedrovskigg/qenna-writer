@@ -11187,6 +11187,7 @@ void MainWindow::saveSelectionDocTo(const QString& destKey)
         auto* dlg = new ElementCreateDialog(elemType, this);
         dlg->setAttribute(Qt::WA_DeleteOnClose);
         dlg->presetTitle(title);
+        dlg->hidePageChoice();   // o texto selecionado é a página
         m_elementSheet = dlg;
         connect(dlg, &QDialog::accepted, this, [this, dlg, destKey, elemType, html]() {
             if (!projectModel->findDrawer(destKey)) return;   // a gaveta sumiu enquanto a folha estava aberta

@@ -27,6 +27,7 @@
 #include <QPainterPath>
 #include <QPixmap>
 #include <QPushButton>
+#include <QSettings>
 #include <QToolButton>
 #include <QToolTip>
 #include <QHelpEvent>
@@ -695,23 +696,26 @@ void ElementCreateDialog::buildUi()
         gt->addLayout(tr1);
         fields->addLayout(gt);
 
-        // tipo de página (documento livre é o padrão: pedido dele, não gosta de Ficha pré-selecionada)
-        auto* gp = new QVBoxLayout;
+        // tipo de página: o que vem marcado sai de Configurações › Personagens ("Novos personagens vêm como").
+        // Ficha é o padrão de fábrica desde 09/11/2026 (pedido do Pe, depois do rework das fichas).
+        m_pageBox = new QWidget(c);
+        auto* gp = new QVBoxLayout(m_pageBox);
+        gp->setContentsMargins(0, 0, 0, 0);
         gp->setSpacing(5);
-        gp->addWidget(sectionLabel(tr("Página"), c));
+        gp->addWidget(sectionLabel(tr("Página"), m_pageBox));
         auto* pr = new QHBoxLayout;
         pr->setSpacing(5);
         m_pageGroup = new QButtonGroup(this);
-        auto* freeBtn = pill(tr("Documento livre"), c);
-        auto* sheet = pill(tr("Ficha (campos prontos)"), c);
+        auto* sheet = pill(tr("Ficha (campos prontos)"), m_pageBox);
+        auto* freeBtn = pill(tr("Documento livre"), m_pageBox);
         m_pageGroup->addButton(freeBtn, 0);
         m_pageGroup->addButton(sheet, 1);
-        freeBtn->setChecked(true);
-        pr->addWidget(freeBtn);
+        (newCharacterAsSheet() ? sheet : freeBtn)->setChecked(true);
         pr->addWidget(sheet);
+        pr->addWidget(freeBtn);
         pr->addStretch(1);
         gp->addLayout(pr);
-        fields->addLayout(gp);
+        fields->addWidget(m_pageBox);
         connect(m_pageGroup, &QButtonGroup::idClicked, this, [this]() { updatePageTypeUi(); });
 
         // modelo de ficha (só com Ficha e havendo modelos)
@@ -800,6 +804,7 @@ void ElementCreateDialog::setInitial(const QString& title, const QString& role, 
                                      const QString& gender)
 {
     m_editMode = true;
+    hidePageChoice();
     m_titleEdit->setText(title);
     if (m_aliasesEdit) m_aliasesEdit->setText(aliases.join(QStringLiteral(", ")));
     if (m_rolePick && !role.trimmed().isEmpty()) {
@@ -906,7 +911,7 @@ void ElementCreateDialog::pickSilhouette()
 
 void ElementCreateDialog::updatePageTypeUi()
 {
-    if (!m_templateBox) return;
+    if (!m_templateBox || (m_pageBox && m_pageBox->isHidden())) return;
     m_templateBox->setVisible(createAsSheet() && !m_sheetTemplates.isEmpty());
     adjustSize();
 }
@@ -952,9 +957,26 @@ void ElementCreateDialog::setRole(const QString& id)
         }
 }
 
+bool ElementCreateDialog::newCharacterAsSheet()
+{
+    return QSettings().value(QStringLiteral("characters/newAsSheet"), true).toBool();
+}
+void ElementCreateDialog::setNewCharacterAsSheet(bool on)
+{
+    QSettings().setValue(QStringLiteral("characters/newAsSheet"), on);
+}
+
 bool ElementCreateDialog::createAsSheet() const
 {
-    return m_pageGroup && m_pageGroup->checkedId() == 1;
+    return m_pageGroup && m_pageBox && !m_pageBox->isHidden() && m_pageGroup->checkedId() == 1;
+}
+
+void ElementCreateDialog::hidePageChoice()
+{
+    if (!m_pageBox) return;
+    m_pageBox->hide();
+    if (m_templateBox) m_templateBox->hide();
+    adjustSize();
 }
 
 QString ElementCreateDialog::selectedTemplateId() const

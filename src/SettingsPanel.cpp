@@ -1,4 +1,5 @@
 #include "SettingsPanel.h"
+#include "ElementCreateDialog.h"
 #include "SceneBreaks.h"
 #include "SheetDialogs.h"
 #include "GlossaryInText.h"
@@ -220,7 +221,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         tr("Tamanho, barras, tema e idioma."),
         tr("A folha, o cursor e os capítulos."),
         tr("Sublinhados no texto e dicionário."),
-        tr("Presença nas cenas e menções com @."),
+        tr("Como nascem, presença nas cenas e menções com @."),
         tr("Tempo e resumo das cenas."),
         tr("Provedor, chave e imagem de personagem. O app nunca exige IA."),
         tr("Cópia zipada do projeto inteiro."),
@@ -620,6 +621,19 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     });
 
     // ================= Personagens =================
+    auto* newAsCombo = new QComboBox(this);
+    newAsCombo->addItem(tr("Ficha"), true);
+    newAsCombo->addItem(tr("Documento livre"), false);
+    newAsCombo->setCurrentIndex(ElementCreateDialog::newCharacterAsSheet() ? 0 : 1);
+    addRow(Characters, tr("Novos personagens vêm como"), tr("O que já vem marcado ao criar um personagem."),
+           new Segmented(newAsCombo, this),
+           tr("Ficha: a página do personagem nasce com campos prontos (idade, origem, gênero, ocupação, "
+              "história, conexões...), que dá pra editar, tirar e reordenar. Documento livre: uma página "
+              "em branco, como um capítulo. Na hora de criar, dá pra escolher o outro."));
+    connect(newAsCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [newAsCombo](int idx) {
+        ElementCreateDialog::setNewCharacterAsSheet(newAsCombo->itemData(idx).toBool());
+    });
+
     m_detectionCheck = new ToggleSwitch(this);
     addRow(Characters, tr("Detectar personagens automaticamente"), tr("Marca quem aparece no capítulo e avisa no cabeçalho."), m_detectionCheck,
            tr("Quando ativado, o app procura os nomes dos personagens no capítulo e marca a presença de quem aparece. "
