@@ -17552,6 +17552,13 @@ QString globalStyleSheet()
             background-color: %2;
             border: 1px solid %3;
         }
+        #fontPickerSearch {
+            background-color: %10;
+            color: %4;
+            border: 1px solid %3;
+            border-radius: @radius-item;
+            padding: 6px 10px;
+        }
         #fontPickerList {
             background-color: %2;
             color: %4;
