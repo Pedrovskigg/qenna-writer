@@ -700,8 +700,9 @@ void TopToolbar::buildOverflowMenu()
 {
     // Ordem de colapso: índice 0 é o primeiro a sumir pra dentro de "⋯" quando
     // falta espaço; os últimos (miraButton, construtorButton...) só colapsam
-    // em janelas realmente minúsculas. Escrita/formatação (grupo da esquerda)
-    // e Projeto/Configurações nunca entram aqui — ficam sempre visíveis.
+    // em janelas realmente minúsculas. Só o coração da escrita nunca entra aqui:
+    // Início, Salvar, Configurações, fonte, tamanho, entrelinha, alinhamento e
+    // negrito/itálico/sublinhado.
     m_collapsePriority = {
         immersiveSoundButton,
         fullscreenButton,
@@ -715,13 +716,26 @@ void TopToolbar::buildOverflowMenu()
         pensarioButton,
         construtorButton,
         miraButton,
+        // Segunda leva: só em janela bem estreita, quando a primeira não bastou.
+        // Sem isto, a soma dos botões fixos passava da janela e eles se
+        // sobrepunham (936px a 100%).
+        readAloudButton,
+        repetitionsButton,
+        exportButton,
+        helpButton,
+        newProjectButton,
+        openProjectButton,
+        imageButton,
+        indentButton,
+        strikethroughButton,
     };
 
     for (QToolButton *btn : std::as_const(m_collapsePriority)) {
         if (!btn) continue;
         // text() quando existe: alguns botoes tem tooltip de varias linhas com
-        // descricao, e a descricao inteira nao cabe num item de menu.
-        const QString label = btn->text().isEmpty() ? btn->toolTip() : btn->text();
+        // descricao, e a descricao inteira nao cabe num item de menu. Texto de
+        // um caractere ("?", "¶") é o desenho do botão, não um nome.
+        const QString label = btn->text().size() <= 1 ? btn->toolTip() : btn->text();
         auto *action = new QAction(btn->icon(), label, m_overflowMenu);
         action->setCheckable(btn->isCheckable());
         connect(action, &QAction::triggered, this, [btn]() { btn->click(); });
@@ -734,6 +748,8 @@ void TopToolbar::buildOverflowMenu()
     connect(m_overflowMenu, &QMenu::aboutToShow, this, [this]() {
         for (auto it = m_overflowActions.constBegin(); it != m_overflowActions.constEnd(); ++it) {
             if (it.value()->isCheckable()) it.value()->setChecked(it.key()->isChecked());
+            // O ícone muda com o tema e com o estado (foco ligado/desligado).
+            it.value()->setIcon(it.key()->icon());
         }
     });
 }
@@ -757,9 +773,8 @@ void TopToolbar::applyUiScale()
         setFixedHeight(barH);
         // Maximum na horizontal: a barra nunca passa da largura do proprio
         // conteudo (fica uma faixa centralizada no topo, em vez de esticar de
-        // ponta a ponta e deixar um vazio enorme no meio), mas ainda PODE ser
-        // espremida numa janela estreita — e e isso que faz o updateOverflow()
-        // perceber que precisa colapsar botoes pro menu "...".
+        // ponta a ponta e deixar um vazio enorme no meio). Quem decide o que
+        // cabe e o updateOverflow(), medindo contra a janela.
         setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     }
 
@@ -1239,6 +1254,26 @@ void TopToolbar::applyTheme()
     }
 }
 
+bool TopToolbar::event(QEvent *event)
+{
+    const bool handled = QWidget::event(event);
+    if (event->type() == QEvent::Show) {
+        // A barra tem a largura do conteúdo: alargar a janela não a redimensiona,
+        // e sem ouvir a janela os botões nunca voltavam do "⋯".
+        if (QWidget *win = window()) win->installEventFilter(this);
+        updateOverflow();
+    } else if (event->type() == QEvent::LayoutRequest && !isVertical() && m_mainLayout) {
+        // O conteúdo mudou de largura sem a barra mudar (nome de fonte maior,
+        // por exemplo). A comparação é o que encerra o ciclo: o próprio
+        // updateOverflow gera outro LayoutRequest ao remedir.
+        if (m_mainLayout->minimumSize().width() != m_overflowNeedSeen
+            || availableBarWidth() != m_overflowAvailSeen) {
+            updateOverflow();
+        }
+    }
+    return handled;
+}
+
 void TopToolbar::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
@@ -1276,6 +1311,8 @@ void TopToolbar::mousePressEvent(QMouseEvent *event)
 // clique, não substituto dele.
 bool TopToolbar::eventFilter(QObject *watched, QEvent *event)
 {
+    if (event->type() == QEvent::Resize && watched == window()) updateOverflow();
+
     if (m_editMode && event->type() == QEvent::MouseButtonPress) {
         // Um filtro de aplicação vê eventos de QWindow também, não só de
         // widget; só os de widget interessam aqui.
@@ -1427,19 +1464,41 @@ void TopToolbar::refreshLayoutAndOverflow()
 
 void TopToolbar::collapseToOverflow(QToolButton *btn)
 {
-    if (!btn || !btn->isVisible()) return;
+    if (!btn || isCollapsed(btn)) return;
     btn->hide(); // QLayout ignora widgets escondidos — libera o espaço sozinho
-    QAction *action = m_overflowActions.value(btn);
-    if (action && !m_overflowMenu->actions().contains(action))
+    if (QAction *action = m_overflowActions.value(btn))
         m_overflowMenu->addAction(action);
 }
 
 void TopToolbar::restoreFromOverflow(QToolButton *btn)
 {
-    if (!btn || btn->isVisible()) return;
+    if (!btn || !isCollapsed(btn)) return;
     btn->show();
     QAction *action = m_overflowActions.value(btn);
     if (action) m_overflowMenu->removeAction(action);
+}
+
+// Perguntar ao menu, não a isVisible(): com a barra escondida (modo focado,
+// janela ainda nascendo) todo botão diz que não está visível.
+bool TopToolbar::isCollapsed(QToolButton *btn) const
+{
+    QAction *action = m_overflowActions.value(btn);
+    return action && m_overflowMenu->actions().contains(action);
+}
+
+// Largura mínima do conteúdo, medida agora. Esconder um botão só atualiza o
+// grupo dele na próxima volta do event loop; sem invalidar os grupos aqui, a
+// conta enxergava a largura de antes e parava de colapsar na hora errada.
+int TopToolbar::measureContentWidth()
+{
+    for (ToolbarGroupWidget *g : std::as_const(m_groupWidgets)) {
+        if (!g || !g->layout()) continue;
+        g->layout()->invalidate();
+        g->updateGeometry();
+    }
+    m_mainLayout->invalidate();
+    m_mainLayout->activate();
+    return m_mainLayout->minimumSize().width();
 }
 
 // Colapsa botões dispensáveis pra dentro do menu "⋯" quando a barra horizontal
@@ -1471,40 +1530,59 @@ int TopToolbar::availableBarWidth() const
 void TopToolbar::updateOverflow()
 {
     if (!overflowButton || !m_mainLayout || m_collapsePriority.isEmpty()) return;
-    // A conta é toda em X — numa barra vertical o eixo apertado é o Y, e lá o
-    // pior caso é cortar embaixo, sem corromper nada. Ver ToolbarGroupWidget.
-    if (isVertical()) return;
     // Mostrar/esconder botão redimensiona a barra, o que dispara resizeEvent, que
     // chama isto de novo — sem a trava, uma volta vira uma cascata.
     if (m_inOverflowUpdate) return;
     m_inOverflowUpdate = true;
     const auto releaseGuard = qScopeGuard([this]() { m_inOverflowUpdate = false; });
 
-    auto tooWide = [this]() {
-        m_mainLayout->invalidate();
-        m_mainLayout->activate();
-        return m_mainLayout->minimumSize().width() > availableBarWidth();
+    // O "⋯" ocupa lugar: precisa entrar na conta assim que tiver o que mostrar.
+    auto syncDots = [this]() {
+        overflowButton->setVisible(!m_overflowMenu->actions().isEmpty());
     };
+
+    // A conta é toda em X — numa barra vertical o eixo apertado é o Y, e lá o
+    // pior caso é cortar embaixo, sem corromper nada. Ver ToolbarGroupWidget.
+    if (isVertical()) {
+        for (QToolButton *btn : std::as_const(m_collapsePriority)) restoreFromOverflow(btn);
+        syncDots();
+        return;
+    }
+    // Janela que ainda não apareceu tem largura de mentira. O Show refaz a conta.
+    const QWidget *win = window();
+    if (!win || !win->isVisible()) return;
+
+    const int available = availableBarWidth();
+    auto tooWide = [this, available]() { return measureContentWidth() > available; };
 
     // Encolhe: do menos essencial pro mais essencial, um por vez, até caber.
     for (QToolButton *btn : std::as_const(m_collapsePriority)) {
         if (!tooWide()) break;
         collapseToOverflow(btn);
+        syncDots();
     }
 
     // Cresce: tenta devolver o mais essencial dos colapsados primeiro; se não
     // coube, desfaz e para — os que sobraram são ainda menos essenciais.
     for (int i = m_collapsePriority.size() - 1; i >= 0; --i) {
         QToolButton *btn = m_collapsePriority.at(i);
-        if (!btn || btn->isVisible()) continue;
+        if (!btn || !isCollapsed(btn)) continue;
         restoreFromOverflow(btn);
+        syncDots();
         if (tooWide()) {
             collapseToOverflow(btn);
+            syncDots();
             break;
         }
     }
 
-    overflowButton->setVisible(!m_overflowMenu->actions().isEmpty());
+    // Último recurso, com a janela menor que o núcleo que nunca colapsa: a barra
+    // mantém sua largura e corta na borda. Cortar é feio, sobrepor é pior.
+    const int needed = measureContentWidth();
+    setMinimumWidth(needed);
+    m_overflowNeedSeen = needed;
+    m_overflowAvailSeen = available;
+    positionModeBadges();
 }
 
 void TopToolbar::setFontFamilies(const QStringList &families, const QString &current)

@@ -8673,6 +8673,9 @@ void MainWindow::layoutToolbarHolder()
         // um "fantasma" da barra antiga — e, sendo opaco e por cima, ainda
         // bloqueava o clique no pedaco da LeftBar que cobria (visivel no modo
         // focado, com as duas barras reveladas ao mesmo tempo).
+        // Este metodo roda no filtro do LayoutRequest, ANTES de a barra processar
+        // o evento: sem o updateGeometry o holder le o tamanho antigo dela.
+        toolbar->updateGeometry();
         const QSize hint = toolbarHolder->sizeHint();
         const int w = qMin(hint.width(), width());
         // Centralizada na PAGINA, nao na janela. A pagina e centralizada dentro

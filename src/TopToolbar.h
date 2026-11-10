@@ -76,6 +76,7 @@ public:
     void setCurrentAlignment(Qt::Alignment alignment);
 
 protected:
+    bool event(QEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     // Clicar em qualquer lugar que nao seja um icone arrastavel SAI do modo de
     // reorganizacao (mesma logica de "tocar fora" do celular). A entrada e o
@@ -221,8 +222,13 @@ private:
     // Trava de reentrancia: updateOverflow muda visibilidade de botao, o que
     // dispara resizeEvent, que chama updateOverflow de novo.
     bool m_inOverflowUpdate = false;
+    // Última conta feita: LayoutRequest só refaz o overflow se algo mudou.
+    int m_overflowNeedSeen = -1;
+    int m_overflowAvailSeen = -1;
     void collapseToOverflow(QToolButton* btn);
     void restoreFromOverflow(QToolButton* btn);
+    bool isCollapsed(QToolButton* btn) const;
+    int measureContentWidth();
     QToolButton* overflowButton = nullptr;
     QMenu* m_overflowMenu = nullptr;
     QList<QToolButton*> m_collapsePriority;
