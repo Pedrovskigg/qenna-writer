@@ -420,6 +420,14 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
 
     m_rootLayout->addStretch();
 
+    // ---- Persiana: o botão do pé recolhe a barra pra baixo ----
+    m_collapseBtn = new QToolButton(this);
+    m_collapseBtn->setCursor(Qt::PointingHandCursor);
+    m_collapseBtn->setAutoRaise(true);
+    m_collapseBtn->setStyleSheet(fixedButtonQss());
+    connect(m_collapseBtn, &QToolButton::clicked, this, [this]() { setCollapsed(!m_collapsed); });
+    m_rootLayout->addWidget(m_collapseBtn, 0, Qt::AlignHCenter);
+
     if (m_model) {
         connect(m_model, &ProjectModel::drawersChanged, this, &LeftBar::rebuildDrawerButtons);
         connect(m_model, &ProjectModel::loaded, this, &LeftBar::rebuildDrawerButtons);
@@ -431,6 +439,10 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
             this, &LeftBar::applyUiScale);
     applyUiScale(); // aplica a escala persistida (botões/ícones no tamanho certo)
+
+    if (QSettings().value(QStringLiteral("ui/leftBarCollapsed"), false).toBool())
+        setCollapsed(true, /*animated=*/false);
+    refreshCollapseButton();
 }
 
 void LeftBar::applyUiScale() {
@@ -452,11 +464,17 @@ void LeftBar::applyUiScale() {
         }
     }
     if (m_newDrawerBtn) m_newDrawerBtn->setFixedSize(btn, btn);
+    refreshCollapseButton();
+    if (m_collapsed && !m_rolling) setFixedHeight(collapsedHeight());
     rebuildDrawerButtons(); // recria os botões de gaveta já no tamanho novo
 }
 
 void LeftBar::applyTheme() {
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+    if (m_chromeHidden || m_rolling)
+        setStyleSheet(QStringLiteral("#leftBar { background: transparent; border: none; }"));
+    else
+        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+    refreshCollapseButton();
     for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it) {
         if (auto* btn = it.value()) {
             btn->setStyleSheet(fixedButtonQss());
@@ -495,16 +513,11 @@ void LeftBar::setChromeHidden(bool hidden) {
     // Modo focado recolhendo a barra no meio de uma reorganização: sai da
     // edição antes, senão os grupos voltariam tracejados quando ela reaparecer.
     if (hidden) setEditMode(false);
+    // Persiana no meio do caminho: termina já, senão a foto fica pintada por
+    // cima da barra transparente do modo focado.
+    if (m_rolling) finishRoll();
     m_chromeHidden = hidden;
-    for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it)
-        if (it.value()) it.value()->setVisible(!hidden);
-    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets))
-        if (g && !g->isEmpty()) g->setVisible(!hidden);
-    for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)
-        if (it.value()) it.value()->setVisible(!hidden);
-    if (m_newDrawerBtn) m_newDrawerBtn->setVisible(!hidden);
-    for (auto* sep : m_groupSeparators)
-        if (sep) sep->setVisible(!hidden);
+    applyContentVisibility();
     if (hidden)
         setStyleSheet(QStringLiteral("#leftBar { background: transparent; }"));
     else
@@ -731,12 +744,12 @@ void LeftBar::rebuildGroupLayout() {
         ToolbarGroupWidget* g = m_groupWidgets.value(gid);
         if (!g) continue;
         if (g->isEmpty() && !m_editMode) { g->hide(); continue; }
-        g->setVisible(!m_chromeHidden);
+        g->setVisible(contentShown());
         m_groupsLayout->addWidget(g, 0, Qt::AlignHCenter);
         // Separador DEPOIS de cada grupo, inclusive o último: é ele que divide
         // os botões fixos do "+" e das gavetas, como sempre foi.
         auto* sep = makeGroupSeparator(this);
-        sep->setVisible(!m_chromeHidden);
+        sep->setVisible(contentShown());
         m_groupSeparators.append(sep);
         m_groupsLayout->addWidget(sep);
     }
@@ -897,6 +910,7 @@ void LeftBar::clearDropIndicator() {
 }
 
 void LeftBar::dragEnterEvent(QDragEnterEvent* event) {
+    if (m_collapsed || m_rolling) return;   // recolhida não tem gaveta pra reordenar
     if (event->mimeData()->hasFormat(QLatin1String(kDrawerMime))) {
         event->acceptProposedAction();
     }
@@ -936,7 +950,9 @@ void LeftBar::rebuildDrawerButtons() {
         // Preferência: drawerIcon (escolha do usuário). Fallback:
         // drawerElementIcon (herdado do tipo). Vazio => letra.
         const QString iconId = !d.drawerIcon.isEmpty() ? d.drawerIcon : d.drawerElementIcon;
-        m_drawerLayout->addWidget(makeDrawerButton(d.key, d.title, d.color, iconId));
+        auto* b = makeDrawerButton(d.key, d.title, d.color, iconId);
+        b->setVisible(contentShown());
+        m_drawerLayout->addWidget(b);
     }
     refreshActiveStates();
     // Faixa aberta: os botões novos ainda vão ganhar posição no layout.
@@ -979,6 +995,161 @@ void LeftBar::resizeEvent(QResizeEvent* event) {
     if (m_labels && m_labels->isVisible()) updateLabelsGeometry();
 }
 
+void LeftBar::showEvent(QShowEvent* event) {
+    QWidget::showEvent(event);
+    syncLayoutAlignment();
+}
+
+// ================= Persiana =================
+
+void LeftBar::applyContentVisibility() {
+    const bool on = contentShown();
+    for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it)
+        if (it.value()) it.value()->setVisible(on);
+    for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets))
+        if (g && (!g->isEmpty() || m_editMode)) g->setVisible(on);
+    for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)
+        if (it.value()) it.value()->setVisible(on);
+    if (m_newDrawerBtn) m_newDrawerBtn->setVisible(on);
+    for (auto* sep : std::as_const(m_groupSeparators))
+        if (sep) sep->setVisible(on);
+    if (m_collapseBtn) m_collapseBtn->setVisible(!m_chromeHidden && !m_rolling);
+}
+
+void LeftBar::refreshCollapseButton() {
+    if (!m_collapseBtn) return;
+    const int w = btnSizePx();
+    const int h = qMax(18, qRound(w * 0.6));
+    m_collapseBtn->setFixedSize(w, h);
+    m_collapseBtn->setStyleSheet(fixedButtonQss());
+    // A seta aponta pra onde a barra vai: aberta, recolhe descendo; recolhida, sobe.
+    const QIcon ic = loadLeftbarIcon(m_collapsed ? QStringLiteral("collapse-up.svg")
+                                                 : QStringLiteral("collapse-down.svg"));
+    if (!ic.isNull()) {
+        m_collapseBtn->setIcon(ic);
+        const int ico = qRound(iconSizePx() * 0.85);
+        m_collapseBtn->setIconSize(QSize(ico, ico));
+    }
+    m_collapseBtn->setToolTip(m_collapsed ? tr("Mostrar a barra") : tr("Recolher a barra"));
+}
+
+int LeftBar::collapsedHeight() const {
+    const QMargins m = m_rootLayout ? m_rootLayout->contentsMargins() : QMargins();
+    const int btnH = m_collapseBtn ? m_collapseBtn->height() : qRound(btnSizePx() * 0.6);
+    return m.top() + btnH + m.bottom();
+}
+
+int LeftBar::expandedHeight() const {
+    // A altura que o layout do pai daria pra barra esticada.
+    if (QWidget* p = parentWidget()) {
+        if (QLayout* l = p->layout()) {
+            const int h = l->contentsRect().height();
+            if (h > 0) return h;
+        }
+        return qMax(collapsedHeight(), p->height() - 20);
+    }
+    return height();
+}
+
+void LeftBar::syncLayoutAlignment() {
+    QWidget* p = parentWidget();
+    QLayout* l = p ? p->layout() : nullptr;
+    if (!l) return;
+    // Aberta e parada: sem alinhamento, o layout estica até o chão. Recolhida
+    // ou animando: presa no pé (onde mora o botão), com a altura que a
+    // persiana mandar.
+    const bool pinBottom = m_collapsed || m_rolling;
+    l->setAlignment(this, pinBottom ? Qt::AlignBottom : Qt::Alignment());
+}
+
+void LeftBar::setCollapsed(bool collapsed, bool animated) {
+    if (m_rolling) finishRoll();
+    if (m_collapsed == collapsed) return;
+    hideLabels(false);
+    if (collapsed) setEditMode(false);
+    QSettings().setValue(QStringLiteral("ui/leftBarCollapsed"), collapsed);
+
+    if (!animated || !isVisible() || m_chromeHidden) {
+        m_collapsed = collapsed;
+        refreshCollapseButton();
+        if (collapsed) setFixedHeight(collapsedHeight());
+        else { setMinimumHeight(0); setMaximumHeight(QWIDGETSIZE_MAX); }
+        applyContentVisibility();
+        syncLayoutAlignment();
+        return;
+    }
+
+    // A foto é sempre da barra ABERTA. Recolhendo, ela já está aberta; abrindo,
+    // estica um instante (sem pintar) só pra tirar a foto e volta.
+    const int fromH = height();
+    const int fullH = collapsed ? fromH : expandedHeight();
+    if (!collapsed) {
+        m_collapsed = false;
+        refreshCollapseButton();
+        applyContentVisibility();
+        setMinimumHeight(0); setMaximumHeight(QWIDGETSIZE_MAX);
+        resize(width(), fullH);   // o layout próprio reposiciona na hora (evento de resize)
+        m_rootLayout->activate();
+    }
+    m_rollSnapshot = grab();
+    m_collapsed = collapsed;
+    refreshCollapseButton();
+    const int toH = collapsed ? collapsedHeight() : fullH;
+
+    m_rolling = true;
+    applyContentVisibility();
+    applyTheme();               // fundo transparente: quem pinta agora é a foto
+    setFixedHeight(fromH);
+    resize(width(), fromH);
+    syncLayoutAlignment();
+
+    auto* a = new QVariantAnimation(this);
+    a->setDuration(collapsed ? 240 : 280);
+    a->setStartValue(fromH);
+    a->setEndValue(toH);
+    a->setEasingCurve(collapsed ? QEasingCurve::InOutCubic : QEasingCurve::OutCubic);
+    connect(a, &QVariantAnimation::valueChanged, this, [this](const QVariant& v) {
+        setFixedHeight(v.toInt());
+        update();
+    });
+    connect(a, &QVariantAnimation::finished, this, [this]() { finishRoll(); });
+    m_rollAnim = a;
+    a->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void LeftBar::finishRoll() {
+    if (m_rollAnim) { QVariantAnimation* a = m_rollAnim; m_rollAnim.clear(); a->stop(); }
+    if (!m_rolling) return;
+    m_rolling = false;
+    m_rollSnapshot = QPixmap();
+    if (m_collapsed) setFixedHeight(collapsedHeight());
+    else { setMinimumHeight(0); setMaximumHeight(QWIDGETSIZE_MAX); }
+    syncLayoutAlignment();
+    applyTheme();
+    applyContentVisibility();
+    update();
+}
+
+void LeftBar::paintEvent(QPaintEvent* event) {
+    QWidget::paintEvent(event);
+    if (!m_rolling || m_rollSnapshot.isNull()) return;
+    // A barra aberta parada no lugar, colada pelo pé: o pé (com o botão) não
+    // se mexe e a borda de cima desce cobrindo os botões, como uma persiana.
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    const qreal r = qMin<qreal>(Theme::panelRadius(), qMin(width(), height()) / 2.0);
+    const QRectF box = QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5);
+    QPainterPath shape;
+    shape.addRoundedRect(box, r, r);
+    p.setClipPath(shape);
+    const int snapH = qRound(m_rollSnapshot.height() / m_rollSnapshot.devicePixelRatio());
+    p.drawPixmap(0, height() - snapH, m_rollSnapshot);
+    p.setClipping(false);
+    p.setPen(QPen(Theme::toColor(Theme::panelBorderFor(Theme::PanelKey::LeftBar)), 1));
+    p.setBrush(Qt::NoBrush);
+    p.drawPath(shape);
+}
+
 void LeftBar::hideEvent(QHideEvent* event) {
     hideLabels(false);
     QWidget::hideEvent(event);
@@ -998,7 +1169,7 @@ void LeftBar::updateLabelsGeometry() {
 }
 
 void LeftBar::showLabels() {
-    if (!labelsEnabled() || m_editMode || m_chromeHidden || !isVisible() || QApplication::mouseButtons() != Qt::NoButton) return;
+    if (!labelsEnabled() || m_editMode || m_chromeHidden || m_collapsed || m_rolling || !isVisible() || QApplication::mouseButtons() != Qt::NoButton) return;
     QWidget* host = parentWidget();
     if (!host) return;
     if (!m_labels || m_labels->parentWidget() != host) {

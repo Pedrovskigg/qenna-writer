@@ -8381,8 +8381,10 @@ void MainWindow::positionWordCountPanel()
     wordCountPanel->setAvailableHeight(avail);
 
     wordCountPanel->adjustSize();
-    const int leftBarOffset = LeftBar::barWidth() + 10 + 10; // largura LeftBar + spacing do layout + margem
-    const int x = leftBarOffset;
+    // Logo depois da LeftBar (ou da borda, com ela na direita), com o mesmo respiro.
+    int x = 10;
+    if (leftBar && leftBar->isVisible() && leftBar->barSide() != Qt::RightEdge)
+        x = parent->mapFrom(leftBar->parentWidget(), leftBar->geometry().topRight()).x() + 1 + 10;
     const int y = parent->height() - wordCountPanel->height() - bottomMargin;
     wordCountPanel->move(x, y);
 }
@@ -8551,8 +8553,11 @@ void MainWindow::positionSidePanels()
     // barra na direita eles crescem pra esquerda, senao sairiam pela borda.
     const bool leftBarOnRight = (leftBar->barSide() == Qt::RightEdge);
     auto panelX = [&](const QWidget* panel) {
-        if (!leftBarOnRight) return margin + leftBar->width() + margin;
-        return parent->width() - margin - leftBar->width() - margin - panel->width();
+        // Pela posição real da barra: ela encosta na borda, e a margem do
+        // layout não é mais a mesma dos dois lados.
+        const QRect bar(parent->mapFrom(leftBar->parentWidget(), leftBar->geometry().topLeft()), leftBar->size());
+        if (!leftBarOnRight) return bar.right() + 1 + margin;
+        return bar.left() - margin - panel->width();
     };
 
     // DrawerListPanel: respeita altura escolhida pelo usuário (se houver),
@@ -8743,6 +8748,7 @@ void MainWindow::applyLeftBarSide()
     if (onRight) lay->addWidget(leftBar);
     else         lay->insertWidget(0, leftBar);
     leftBar->show(); // removeWidget nao esconde, mas insertWidget apos reparent sim
+    leftBar->syncLayoutAlignment(); // recolhida, a barra precisa continuar presa no topo
 
     relayoutEditorForChrome();
     positionSidePanels();
@@ -9127,8 +9133,11 @@ void MainWindow::updateEditorContainerMargins()
     // Sem respiro vertical: a folha começa colada na base/lado da toolbar e
     // vai até o fim da janela. Assim, no comprimento máximo (ou "Tela cheia"),
     // a página bate exatamente nos limites da janela — sem folgas.
-    lay->setContentsMargins(10, floatingChromeInset(Qt::TopEdge),
-                            10 + floatingChromeInset(Qt::RightEdge), 0);
+    // A LeftBar encosta na borda da janela (pedido do Pe, 09/11). Do outro lado
+    // fica o respiro de sempre. Subir até o topo também foi testado e não casou.
+    const bool barOnRight = leftBar && leftBar->barSide() == Qt::RightEdge;
+    lay->setContentsMargins(barOnRight ? 10 : 0, floatingChromeInset(Qt::TopEdge),
+                            (barOnRight ? 0 : 10) + floatingChromeInset(Qt::RightEdge), 0);
 }
 
 bool MainWindow::pageModeEnabled() const

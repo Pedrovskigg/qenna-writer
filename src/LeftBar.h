@@ -2,7 +2,9 @@
 
 #include <QHash>
 #include <QList>
+#include <QPixmap>
 #include <QPoint>
+#include <QPointer>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
@@ -10,6 +12,7 @@
 class QFrame;
 class QEnterEvent;
 class QTimer;
+class QVariantAnimation;
 class LeftBarLabels;
 class ToolbarGroupWidget;
 
@@ -71,6 +74,16 @@ public:
     static bool labelsEnabled();
     static void setLabelsEnabled(bool on);
 
+    // Persiana: o botão no pé da barra recolhe tudo pra baixo e deixa só uma
+    // alcinha no pé, com o botão no mesmo lugar; clicar nela sobe de novo. A
+    // largura não muda (a página não pula) e a escolha fica salva em
+    // ui/leftBarCollapsed.
+    bool isCollapsed() const { return m_collapsed; }
+    void setCollapsed(bool collapsed, bool animated = true);
+    // Recolhida, a barra precisa de Qt::AlignBottom no layout do pai (senão fica
+    // centralizada na altura). Quem tira e repõe a barra no layout chama isto.
+    void syncLayoutAlignment();
+
 signals:
     void barSideChanged(Qt::Edge side);
     void fixedActionTriggered(LeftBar::FixedAction action);
@@ -86,6 +99,8 @@ protected:
     void moveEvent(QMoveEvent* event) override;
     void resizeEvent(QResizeEvent* event) override;
     void hideEvent(QHideEvent* event) override;
+    void showEvent(QShowEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
@@ -99,6 +114,19 @@ private slots:
 private:
     Qt::Edge m_barSide = Qt::LeftEdge;
     bool m_chromeHidden = false;
+
+    // Persiana
+    bool contentShown() const { return !m_chromeHidden && !m_collapsed && !m_rolling; }
+    void applyContentVisibility();
+    void refreshCollapseButton();
+    void finishRoll();
+    int collapsedHeight() const;
+    int expandedHeight() const;
+    QToolButton* m_collapseBtn = nullptr;
+    bool m_collapsed = false;
+    bool m_rolling = false;          // animando: os botões somem e quem pinta é a foto
+    QPixmap m_rollSnapshot;          // a barra aberta, parada no lugar durante a animação
+    QPointer<QVariantAnimation> m_rollAnim;
 
     // Etiquetas
     void showLabels();
