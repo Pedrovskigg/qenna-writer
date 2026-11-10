@@ -169,6 +169,7 @@ qt_add_executable(qenna-writer
     src/DrawerListPanel.cpp
     src/DrawerListPanel.h
     src/DrawerListPanelStyles.cpp
+    src/DrawerDocStyles.cpp
     src/DrawerViews.cpp
     src/DrawerViews.h
     src/DrawerCreateDialog.cpp

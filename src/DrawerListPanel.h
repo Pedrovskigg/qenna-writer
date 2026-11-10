@@ -35,8 +35,9 @@ public:
     enum SortMode { SortCreation, SortAlpha, SortRole, SortAppearances };
     // Estilos da gaveta — cada gaveta lembra o seu, e o menu só oferece o que
     // cabe no tipo dela (Retratos, Polaroid, Crachás e Galeria só pra gaveta
-    // de elemento).
-    enum class Style { Classic, Portraits, Polaroid, Badges, Gallery, Dossier, Table };
+    // de elemento; Árvore, Fichário, Sumário e Caderno corrido só pra gaveta de documento).
+    enum class Style { Classic, Portraits, Polaroid, Badges, Gallery, Dossier, Table,
+                       DocTree, DocCards, DocToc, DocNotebook };
 
     // Cascata das linhas (gaveta abrindo, troca de estilo ou de gaveta).
     void playIntro(int delayMs = 70);
@@ -116,6 +117,20 @@ private:
     void buildDossier(const QList<DrawerItem>& items);
     void buildTable(const QList<DrawerItem>& items);
     void buildCompare();
+    // ---- formas da gaveta de documento (DrawerDocStyles.cpp) ----
+    // A gaveta inteira à vista, com as pastas como seções (ou galhos, na Árvore).
+    struct DocInfo { int words = 0; QString excerpt; };
+    static bool isDocStyle(Style s);
+    DocInfo docInfo(const DrawerItem& it) const;
+    QList<DrawerItem> docItems() const;              // a gaveta toda, filtrada pela tag e na ordem escolhida
+    QStringList docTags() const;
+    QWidget* makeTagBar();
+    void wireDocWidget(QWidget* w, const QString& itemId);
+    QWidget* makeFolderHeader(const QString& folderId, const QString& text, const QString& right, int kind);
+    void buildDocTree();
+    void buildDocCards();
+    void buildDocToc();
+    void buildDocNotebook();
     void wireView(class DwBondDragBase* v);
     void openCompare(const QString& a, const QString& b);
     void closeCompare();
@@ -206,7 +221,7 @@ private:
     QPushButton* m_createBtn;
     QPushButton* m_folderBtn;
     QWidget* m_folderStrip = nullptr;
-    QHBoxLayout* m_folderStripLayout = nullptr;
+    class QLayout* m_folderStripLayout = nullptr;   // quebra linha: pasta de nome comprido não corta mais
 
     // Estado de UI por painel (não persiste entre projetos)
     SortMode m_sortMode = SortCreation;
@@ -219,6 +234,12 @@ private:
     Style m_style = Style::Classic;
     bool m_toolAppears = false;
     bool m_toolHover = true;
+    bool m_toolTags = false;               // gaveta de documento: filtrar por tag
+    bool m_toolSize = false;               // gaveta de documento: tamanho de cada um
+    QString m_tagFilter;
+    QString m_activeDocId;                 // o último aberto pela gaveta (marcado nas formas de documento)
+    QSet<QString> m_foldedFolders;         // pastas dobradas na Árvore, por gaveta
+    mutable QHash<QString, DocInfo> m_docInfo;
     QWidget* m_altHost = nullptr;          // Dossiê, Tabela e Lado a lado ocupam o painel todo
     class QVBoxLayout* m_altLayout = nullptr;
     QString m_dossierSel;

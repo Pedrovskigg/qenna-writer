@@ -139,6 +139,10 @@ QString DrawerListPanel::styleId(Style s) {
     case Style::Gallery:   return QStringLiteral("gallery");
     case Style::Dossier:   return QStringLiteral("dossier");
     case Style::Table:     return QStringLiteral("table");
+    case Style::DocTree:     return QStringLiteral("doctree");
+    case Style::DocCards:    return QStringLiteral("doccards");
+    case Style::DocToc:      return QStringLiteral("doctoc");
+    case Style::DocNotebook: return QStringLiteral("docnotebook");
     }
     return QStringLiteral("classic");
 }
@@ -152,6 +156,10 @@ bool DrawerListPanel::styleAllowed(Style s) const {
     case Style::Polaroid:
     case Style::Badges:
     case Style::Gallery:   return currentDrawerIsElement();
+    case Style::DocTree:
+    case Style::DocCards:
+    case Style::DocToc:
+    case Style::DocNotebook: return !currentDrawerIsElement();
     }
     return false;
 }
@@ -159,7 +167,7 @@ bool DrawerListPanel::styleAllowed(Style s) const {
 DrawerListPanel::Style DrawerListPanel::storedStyleFor(const QString& drawerKey) const {
     const QString id = QSettings().value(QStringLiteral("ui/drawerStyle/") + drawerKey).toString();
     for (Style s : { Style::Classic, Style::Portraits, Style::Polaroid, Style::Badges, Style::Gallery,
-                     Style::Dossier, Style::Table })
+                     Style::Dossier, Style::Table, Style::DocTree, Style::DocCards, Style::DocToc, Style::DocNotebook })
         if (styleId(s) == id) return styleAllowed(s) ? s : Style::Classic;
     return Style::Classic;
 }
@@ -179,6 +187,10 @@ int DrawerListPanel::defaultWidthFor(Style s) const {
     case Style::Gallery:   return 360;
     case Style::Dossier:   return 640;
     case Style::Table:     return 600;
+    case Style::DocTree:     return 320;
+    case Style::DocCards:    return 360;
+    case Style::DocToc:      return 340;
+    case Style::DocNotebook: return 400;
     }
     return 300;
 }
@@ -200,7 +212,10 @@ void DrawerListPanel::setStyle(Style s) {
     QSettings().setValue(QStringLiteral("ui/drawerStyle/") + m_currentKey, styleId(s));
     m_compareA.clear();
     m_compareB.clear();
+    // as formas de documento mostram a gaveta inteira: não há "dentro da pasta"
+    if (isDocStyle(s)) m_currentFolderId.clear();
     applyStyleWidth();
+    rebuildFolderStrip();
     rebuildContents();
     if (animate) playIntro(60);
 }
@@ -248,6 +263,10 @@ void DrawerListPanel::showMoreMenu() {
             { Style::Gallery,   tr("Galeria de rostos"), tr("O elenco em grade de retratos; o mouse sobre um rosto acende quem tem vínculo com ele") },
             { Style::Dossier,   tr("Dossiê"),   tr("Lista de um lado, a ficha ou o documento inteiro do outro") },
             { Style::Table,     tr("Tabela"),   tr("Uma linha por item, colunas que ordenam") },
+            { Style::DocTree,     tr("Árvore"),   tr("Pastas e documentos como no explorador de arquivos, tudo à vista") },
+            { Style::DocCards,    tr("Fichário"), tr("Um cartão por documento, com as primeiras linhas") },
+            { Style::DocToc,      tr("Sumário"),  tr("Como o sumário de um livro: as pastas viram partes") },
+            { Style::DocNotebook, tr("Caderno corrido"), tr("Pra reler: o título e o primeiro parágrafo de cada um") },
         };
         for (const Opt& o : opts) {
             if (!styleAllowed(o.s)) continue;
@@ -334,6 +353,27 @@ void DrawerListPanel::showMoreMenu() {
             m_toolHover = on;
             QSettings().setValue(QStringLiteral("ui/drawerPanel/tool/hover"), on);
             if (!on) disarmHover();
+        });
+    }
+    if (isDocStyle(m_style)) {
+        QAction* t = menu.addAction(tr("Filtrar por tag"));
+        t->setCheckable(true);
+        t->setChecked(m_toolTags);
+        t->setToolTip(tr("Uma fileira com as tags dos documentos desta gaveta, pra mostrar só os de uma"));
+        connect(t, &QAction::toggled, this, [this](bool on) {
+            m_toolTags = on;
+            m_tagFilter.clear();
+            QSettings().setValue(QStringLiteral("ui/drawerPanel/tool/tags"), on);
+            rebuildContents();
+        });
+        QAction* z = menu.addAction(tr("Tamanho de cada documento"));
+        z->setCheckable(true);
+        z->setChecked(m_toolSize);
+        z->setToolTip(tr("As palavras de cada documento, com uma barrinha"));
+        connect(z, &QAction::toggled, this, [this](bool on) {
+            m_toolSize = on;
+            QSettings().setValue(QStringLiteral("ui/drawerPanel/tool/size"), on);
+            rebuildContents();
         });
     }
     if (currentDrawerIsElement()) {
@@ -1410,6 +1450,7 @@ void DrawerListPanel::onDocContentChanged(const QString& key)
     const QString id = key.mid(3);
     m_previewCache.remove(id);
     m_previewCache.remove(QStringLiteral("w:") + id);
+    m_docInfo.remove(id);
     m_wordsDirty.insert(id);
     if (!m_wordsTimer) {
         m_wordsTimer = new QTimer(this);

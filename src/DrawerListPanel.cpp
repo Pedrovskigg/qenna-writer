@@ -1,4 +1,5 @@
 #include "DrawerListPanel.h"
+#include "FlowLayout.h"
 #include "SheetDialogs.h"
 #include "DrawerViews.h"
 #include "BondsLayer.h"
@@ -206,7 +207,7 @@ QString createButtonQss(const QString& accent) {
         QPushButton:pressed {
             background: %5;
         }
-    )")).arg(accent, accent, bgHoverStr, bgStr, bgHoverStr);
+    )")).arg(Theme::textBright(), accent, bgHoverStr, bgStr, bgHoverStr);
 }
 
 QPixmap circlePlusPixmap(const QColor& color, int size = 18) {
@@ -300,6 +301,8 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
         QSettings qs;
         m_toolAppears = qs.value(QStringLiteral("ui/drawerPanel/tool/appears"), false).toBool();
         m_toolHover = qs.value(QStringLiteral("ui/drawerPanel/tool/hover"), true).toBool();
+        m_toolTags = qs.value(QStringLiteral("ui/drawerPanel/tool/tags"), false).toBool();
+        m_toolSize = qs.value(QStringLiteral("ui/drawerPanel/tool/size"), false).toBool();
     }
 
     // ---- Header ----
@@ -403,9 +406,7 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
 
     // Strip horizontal: chips de pastas + botão "+ Pasta", igual Mira 1.
     m_folderStrip = new QWidget(actionBar);
-    m_folderStripLayout = new QHBoxLayout(m_folderStrip);
-    m_folderStripLayout->setContentsMargins(0, 0, 0, 0);
-    m_folderStripLayout->setSpacing(6);
+    m_folderStripLayout = new FlowLayout(m_folderStrip, 6);
     m_folderBtn = new QPushButton(tr("+ Pasta"), m_folderStrip);
     m_folderBtn->setCursor(Qt::PointingHandCursor);
     m_folderBtn->setStyleSheet(folderPillQss());
@@ -413,9 +414,8 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     connect(m_folderBtn, &QPushButton::clicked, this, [this]() {
         if (!m_currentKey.isEmpty()) emit newFolderRequested(m_currentKey, m_currentFolderId);
     });
-    // Chips de pasta vão à esquerda; m_folderBtn fica logo depois; stretch enche o resto.
-    m_folderStripLayout->addWidget(m_folderBtn, 0, Qt::AlignLeft);
-    m_folderStripLayout->addStretch();
+    // Chips de pasta vão à esquerda e m_folderBtn logo depois; o que não cabe desce de linha.
+    m_folderStripLayout->addWidget(m_folderBtn);
     actionLayout->addWidget(m_folderStrip);
 
     root->addWidget(actionBar);
@@ -465,6 +465,19 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     if (m_model) {
         connect(m_model, &ProjectModel::drawersChanged, this, &DrawerListPanel::onDrawersChanged);
     }
+    // o documento aberto pela gaveta fica marcado nas formas de documento
+    connect(this, &DrawerListPanel::itemActivated, this, [this](const QString&, const QString& id) {
+        m_activeDocId = id;
+        if (!isDocStyle(m_style) || !m_listHost) return;
+        for (QWidget* w : m_listHost->findChildren<QWidget*>()) {
+            const QVariant d = w->property("docId");
+            if (!d.isValid()) continue;
+            w->setProperty("on", d.toString() == id);
+            w->style()->unpolish(w);
+            w->style()->polish(w);
+            w->update();
+        }
+    });
 
     updateSortButton();
     updateViewButton();
@@ -550,6 +563,9 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
         // Reset view mode default por gaveta: grid pra element drawer, list pra genérica.
         m_gridView = currentDrawerIsElement();
         m_style = storedStyleFor(drawerKey);
+        m_tagFilter.clear();
+        m_foldedFolders.clear();
+        for (const QString& f : QSettings().value(QStringLiteral("ui/drawerFolded/") + drawerKey).toStringList()) m_foldedFolders.insert(f);
         m_dossierSel.clear();
         m_compareA.clear();
         m_compareB.clear();
@@ -602,6 +618,7 @@ void DrawerListPanel::closePanel() {
 void DrawerListPanel::onDrawersChanged() {
     // Documento editado/renomeado: o texto guardado pra busca envelheceu.
     m_searchTextCache.clear();
+    m_docInfo.clear();
     if (m_currentKey.isEmpty()) return;
     if (m_model && !m_model->findDrawer(m_currentKey)) {
         closePanel();
@@ -698,31 +715,23 @@ bool DrawerListPanel::currentDrawerIsElement() const {
 void DrawerListPanel::rebuildFolderStrip() {
     if (!m_folderStripLayout || !m_folderBtn) return;
 
-    // Limpa todos os itens menos o m_folderBtn e o stretch final.
-    QList<QLayoutItem*> toRemove;
-    for (int i = 0; i < m_folderStripLayout->count(); ++i) {
-        QLayoutItem* it = m_folderStripLayout->itemAt(i);
-        if (!it) continue;
-        QWidget* w = it->widget();
-        if (w == m_folderBtn) continue;
-        if (!w && it->spacerItem()) continue; // stretch
-        toRemove.append(it);
-    }
-    for (QLayoutItem* it : toRemove) {
-        m_folderStripLayout->removeItem(it);
-        if (auto* w = it->widget()) w->deleteLater();
+    // Tira tudo; o m_folderBtn volta no fim, depois das pastas.
+    while (QLayoutItem* it = m_folderStripLayout->takeAt(0)) {
+        if (QWidget* w = it->widget(); w && w != m_folderBtn) { w->hide(); w->deleteLater(); }
         delete it;
     }
+    const auto finish = [this](bool showFolderBtn) {
+        m_folderStripLayout->addWidget(m_folderBtn);
+        m_folderBtn->setVisible(showFolderBtn);
+        m_folderStripLayout->invalidate();
+        if (m_folderStrip) m_folderStrip->updateGeometry();
+    };
 
-    if (!m_model || m_currentKey.isEmpty()) {
-        m_folderBtn->setVisible(true);
-        return;
-    }
+    if (!m_model || m_currentKey.isEmpty()) { finish(true); return; }
     const Drawer* drawer = m_model->findDrawer(m_currentKey);
-    if (!drawer) {
-        m_folderBtn->setVisible(true);
-        return;
-    }
+    if (!drawer) { finish(true); return; }
+    // Árvore, Fichário, Sumário e Caderno mostram as pastas dentro da gaveta: aqui fica só o "+ Pasta".
+    if (isDocStyle(m_style)) { finish(true); return; }
 
     // Ícone de pasta tintado com a cor do texto (mesmo pipeline da TopBar).
     static const QIcon folderIcon = IconUtils::loadToolbarIcon(
@@ -744,15 +753,12 @@ void DrawerListPanel::rebuildFolderStrip() {
             rebuildFolderStrip();
             rebuildContents();
         });
-        // Insere antes do m_folderBtn (que ficamos invisível neste modo).
-        const int idx = m_folderStripLayout->indexOf(m_folderBtn);
-        m_folderStripLayout->insertWidget(qMax(0, idx), back, 0, Qt::AlignLeft);
-        m_folderBtn->setVisible(false);
+        m_folderStripLayout->addWidget(back);
+        finish(false);
         return;
     }
 
-    // Raiz: pastas filhas de "" como chips, e o m_folderBtn fica visível ao lado.
-    m_folderBtn->setVisible(true);
+    // Raiz: pastas filhas de "" como chips, e o m_folderBtn visível depois delas.
     QList<Folder> roots;
     for (const auto& f : drawer->folders) {
         if (f.parentId.isEmpty()) roots.append(f);
@@ -760,9 +766,6 @@ void DrawerListPanel::rebuildFolderStrip() {
     std::sort(roots.begin(), roots.end(), [](const Folder& a, const Folder& b) {
         return QString::localeAwareCompare(a.title, b.title) < 0;
     });
-
-    const int folderBtnIdx = m_folderStripLayout->indexOf(m_folderBtn);
-    int insertAt = qMax(0, folderBtnIdx);
     for (const auto& f : roots) {
         const QString fid = f.id;
         auto* chip = new QPushButton(f.title, m_folderStrip);
@@ -771,6 +774,7 @@ void DrawerListPanel::rebuildFolderStrip() {
         chip->setCursor(Qt::PointingHandCursor);
         chip->setStyleSheet(folderChipQss());
         chip->setMinimumHeight(24);
+        chip->setToolTip(f.title);
         chip->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(chip, &QPushButton::clicked, this, [this, fid]() {
             enterFolder(fid);
@@ -780,8 +784,9 @@ void DrawerListPanel::rebuildFolderStrip() {
             showFolderContextMenu(fid, chip->mapToGlobal(pos));
         });
         installDropTargetOnFolderChip(chip, fid);
-        m_folderStripLayout->insertWidget(insertAt++, chip, 0, Qt::AlignLeft);
+        m_folderStripLayout->addWidget(chip);
     }
+    finish(true);
 }
 
 void DrawerListPanel::updateActionBar() {
@@ -990,6 +995,10 @@ void DrawerListPanel::rebuildContents() {
         else if (m_style == Style::Polaroid) buildPolaroid(its);
         else if (m_style == Style::Badges) buildBadges(its);
         else if (m_style == Style::Gallery) buildGallery(its);
+        else if (m_style == Style::DocTree) buildDocTree();
+        else if (m_style == Style::DocCards) buildDocCards();
+        else if (m_style == Style::DocToc) buildDocToc();
+        else if (m_style == Style::DocNotebook) buildDocNotebook();
         return;
     }
 
