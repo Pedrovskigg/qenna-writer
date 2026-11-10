@@ -4464,23 +4464,11 @@ void MainWindow::applyEditorStyle()
     const QColor baseBg = QColor(Theme::editorBackground());
     QColor pageBg = baseBg;
     pageBg.setAlpha((opacity * 255) / 100);
-    const QString pageBgCss = QStringLiteral("rgba(%1,%2,%3,%4)")
+    m_editorPageBgCss = QStringLiteral("rgba(%1,%2,%3,%4)")
         .arg(pageBg.red()).arg(pageBg.green()).arg(pageBg.blue())
         .arg(QString::number(pageBg.alphaF(), 'f', 3));
-    // Modo de página: o editor fica transparente e pinta só as folhas (com a
-    // mesma cor e opacidade), pra mesa aparecer no vão entre uma e outra.
     const bool paged = pageModeEnabled();
-    // O QSS global dá "padding: 80px 100px" a todo QTextEdit (Theme.cpp): é o
-    // respiro de verdade da folha. No modo de página o de cima/baixo sai (senão
-    // abre um buraco entre a faixa do título e a 1ª folha, e cada folha seria
-    // deslocada) e o dos lados desconta a margem da folha, pro texto ficar no
-    // mesmo x nos dois modos: 100 + 4 (margem do Qt) = 28 + 76.
-    const QString pagePadding = paged
-        ? QStringLiteral(" padding: 0px %1px;").arg(qMax(0, 100 + 4 - SpellEditor::kPageMargin))
-        : QString();
-    editor->setStyleSheet(QStringLiteral(
-        "QTextEdit { background-color: %1; selection-background-color: %2;%3 }")
-        .arg(paged ? QStringLiteral("transparent") : pageBgCss, Theme::accentDefault(), pagePadding));
+    editor->setStyleSheet(editorPageCss());
     editor->setPaperColor(pageBg);
     editor->setPageMode(paged);
     // a contagem de folhas segue a cara da folha (fonte, entrelinha, modo ligado ou não)
@@ -9043,8 +9031,51 @@ void MainWindow::setPageModeEnabled(bool on)
     applyPageShadow();
 }
 
+// O QSS global dá "padding: 80px 100px" a todo QTextEdit (Theme.cpp): é o
+// respiro de verdade da folha, e numa folha larga fica elegante. Mas ele é fixo
+// e não aparece nas Configurações: numa tela pequena a folha encolhe, ele não, e
+// o texto virava uma coluninha no meio (560 de folha, 272 de texto). Ele cede
+// primeiro, até o texto ter uma largura confortável; a margem que o usuário
+// escolheu não é tocada.
+int MainWindow::editorSidePadding() const
+{
+    constexpr int kFullSidePadding = 100;
+    constexpr int kComfortableTextWidth = 620;
+    constexpr int kQtDocumentMargin = 4;
+    constexpr int kMinBreathing = 40; // o texto nunca encosta na borda da folha
+    const int margin = EditorLayout::horizontalMargin();
+    const int room = EditorLayout::pageWidth() / 2 - margin - kQtDocumentMargin - kComfortableTextWidth / 2;
+    return qBound(qMax(0, kMinBreathing - margin), room, kFullSidePadding);
+}
+
+QString MainWindow::editorPageCss() const
+{
+    // Modo de página: o editor fica transparente e pinta só as folhas (com a
+    // mesma cor e opacidade), pra mesa aparecer no vão entre uma e outra.
+    const bool paged = pageModeEnabled();
+    const int side = editorSidePadding();
+    QString padding;
+    if (paged) {
+        // O de cima/baixo sai (senão abre um buraco entre a faixa do título e a
+        // 1ª folha, e cada folha seria deslocada) e o dos lados desconta a
+        // margem da folha, pro texto ficar no mesmo x nos dois modos:
+        // 100 + 4 (margem do Qt) = 28 + 76.
+        padding = QStringLiteral(" padding: 0px %1px;").arg(qMax(0, side + 4 - SpellEditor::kPageMargin));
+    } else if (side < 100) {
+        padding = QStringLiteral(" padding: %1px %2px;").arg(qMax(40, 80 * side / 100)).arg(side);
+    }
+    return QStringLiteral(
+        "QTextEdit { background-color: %1; selection-background-color: %2;%3 }")
+        .arg(paged ? QStringLiteral("transparent") : m_editorPageBgCss, Theme::accentDefault(), padding);
+}
+
 void MainWindow::applyEditorLayout()
 {
+    // O respiro depende da largura da folha. Pelo caminho inteiro, e não só
+    // trocando o QSS: repolir o editor zera a cor do texto na paleta (branco), e
+    // é o applyEditorStyle que a devolve.
+    if (editor && !m_editorPageBgCss.isEmpty() && editor->styleSheet() != editorPageCss())
+        applyEditorStyle();
     const int pw = EditorLayout::pageWidth();
     // 0 = automático (preenche viewport). No modo de página a folha tem a
     // altura dela (A4) e a coluna sempre preenche a janela.

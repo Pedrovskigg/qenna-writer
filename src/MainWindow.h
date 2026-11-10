@@ -203,6 +203,9 @@ private:
     void onEditorLayoutChanged();
     void onUiScaleChanged();
     void applyEditorLayout();
+    int editorSidePadding() const;
+    QString editorPageCss() const;
+    QString m_editorPageBgCss;
     void resizeEditorColumnToViewport();
     // Altura útil da "folha" visível (viewport do editorScroll menos elementos
     // fora da folha). É o teto natural do comprimento de página: acima disso a
