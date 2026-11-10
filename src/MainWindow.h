@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "BackupService.h"
 #include "PovPicker.h"
 #include "CharacterDetector.h"
 #include <QPointer>
@@ -637,6 +638,17 @@ private:
     // Backup completo de projeto (ver BackupService) — mesmo padrão de poll
     // a cada 60s do m_reminderPollTimer, checando se já passou do intervalo
     // configurado desde o último backup/lembrete do projeto aberto agora.
+    enum class BackupToastState { Working, Done, Failed };
+    void startBackup(bool automatic);
+    void showBackupToast(const QString& title, const QString& body, BackupToastState state);
+    QPointer<BackupService::Job> m_backupJob;
+    QFrame *m_backupToast = nullptr;
+    QLabel *m_backupToastTitle = nullptr;
+    QLabel *m_backupToastBody = nullptr;
+    QProgressBar *m_backupToastBar = nullptr;
+    QToolButton *m_backupToastCancel = nullptr;
+    QToolButton *m_backupToastClose = nullptr;
+    QTimer *m_backupToastTimer = nullptr;
     QTimer *m_backupPollTimer = nullptr;
     bool m_backupFailWarnedThisSession = false;
     GroupsPanel *groupsPanel = nullptr;

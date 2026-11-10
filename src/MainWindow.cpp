@@ -2327,14 +2327,7 @@ void MainWindow::setupEditor()
         if (now - lastBackup < intervalMs) return;
 
         if (s.mode == BackupService::Mode::Automatic) {
-            QString zipPath, err;
-            if (BackupService::runBackupNow(projectRoot, s.folder, &zipPath, &err)) {
-                m_backupFailWarnedThisSession = false;
-                showReminderToast(tr("Backup automático"), tr("Projeto salvo em:\n%1").arg(zipPath));
-            } else if (!m_backupFailWarnedThisSession) {
-                m_backupFailWarnedThisSession = true;
-                showReminderToast(tr("Backup automático falhou"), err);
-            }
+            startBackup(/*automatic=*/true);
         } else {
             // Modo lembrete: só reavisa depois de outro intervalo inteiro,
             // pra não repetir o toast a cada 60s enquanto o usuário ignora.
@@ -7115,12 +7108,144 @@ void MainWindow::showReminderToast(const QString& title, const QString& body)
 
 void MainWindow::positionReminderToast()
 {
-    if (!m_reminderToast) return;
     const int margin = 16;
     const QRect r = rect();
-    m_reminderToast->move(
-        r.right()  - m_reminderToast->width()  - margin,
-        r.bottom() - m_reminderToast->height() - margin);
+    int bottom = r.bottom() - margin;
+    if (m_reminderToast) {
+        m_reminderToast->move(r.right() - m_reminderToast->width() - margin,
+                              bottom - m_reminderToast->height());
+        if (m_reminderToast->isVisible()) bottom -= m_reminderToast->height() + 10;
+    }
+    // Um lembrete pode chegar no meio do backup: um fica em cima do outro.
+    if (m_backupToast)
+        m_backupToast->move(r.right() - m_backupToast->width() - margin, bottom - m_backupToast->height());
+}
+
+void MainWindow::startBackup(bool automatic)
+{
+    if (m_backupJob || projectRoot.isEmpty()) return;
+
+    auto* job = new BackupService::Job(projectRoot, BackupService::loadSettings().folder, this);
+    m_backupJob = job;
+    refreshBackupStatusLabel();
+
+    // Automático repetindo depois de já ter avisado da falha: tenta em silêncio.
+    const bool quiet = automatic && m_backupFailWarnedThisSession;
+
+    connect(job, &BackupService::Job::progress, this, [this, quiet](int percent, int done, int total) {
+        if (quiet || !m_backupToast) return;
+        m_backupToastBody->setText(tr("%1 de %2 arquivos · %3%").arg(done).arg(total).arg(percent));
+        m_backupToastBar->setValue(percent);
+    });
+    connect(job, &BackupService::Job::finished, this,
+            [this, job, automatic, quiet](bool ok, const QString& zipPath, const QString& error) {
+        m_backupJob = nullptr;
+        job->deleteLater();
+        refreshBackupStatusLabel();
+
+        const QString saved = tr("Projeto salvo em:\n%1").arg(zipPath);
+        if (ok && automatic) {
+            m_backupFailWarnedThisSession = false;
+            showBackupToast(tr("Backup automático"), saved, BackupToastState::Done);
+        } else if (ok) {
+            showBackupToast(tr("Backup concluído"), saved, BackupToastState::Done);
+        } else if (error.isEmpty() || quiet) {
+            if (m_backupToast) m_backupToast->hide();
+        } else if (automatic) {
+            m_backupFailWarnedThisSession = true;
+            showBackupToast(tr("Backup automático falhou"), error, BackupToastState::Failed);
+        } else {
+            showBackupToast(tr("Erro ao fazer backup"), error, BackupToastState::Failed);
+        }
+    });
+
+    if (!quiet) showBackupToast(tr("Fazendo backup…"), tr("Preparando os arquivos"), BackupToastState::Working);
+    job->start();
+}
+
+void MainWindow::showBackupToast(const QString& title, const QString& body, BackupToastState state)
+{
+    if (!m_backupToast) {
+        m_backupToast = new QFrame(this);
+        m_backupToast->setObjectName(QStringLiteral("backupToast"));
+        m_backupToast->setFixedWidth(300);
+
+        auto* shadow = new QGraphicsDropShadowEffect(m_backupToast);
+        shadow->setBlurRadius(18);
+        shadow->setColor(QColor(0, 0, 0, 160));
+        shadow->setOffset(0, 3);
+        m_backupToast->setGraphicsEffect(shadow);
+
+        auto* root = new QVBoxLayout(m_backupToast);
+        root->setContentsMargins(14, 10, 14, 12);
+        root->setSpacing(6);
+
+        auto* topRow = new QHBoxLayout();
+        topRow->setSpacing(6);
+        m_backupToastTitle = new QLabel(m_backupToast);
+        m_backupToastTitle->setObjectName(QStringLiteral("btTitle"));
+        topRow->addWidget(m_backupToastTitle, 1);
+        m_backupToastCancel = new QToolButton(m_backupToast);
+        m_backupToastCancel->setText(tr("Cancelar"));
+        m_backupToastCancel->setObjectName(QStringLiteral("btCancel"));
+        m_backupToastCancel->setCursor(Qt::PointingHandCursor);
+        connect(m_backupToastCancel, &QToolButton::clicked, this, [this]() {
+            if (m_backupJob) m_backupJob->cancel();
+        });
+        topRow->addWidget(m_backupToastCancel);
+        m_backupToastClose = new QToolButton(m_backupToast);
+        m_backupToastClose->setText(QStringLiteral("×"));
+        m_backupToastClose->setObjectName(QStringLiteral("btClose"));
+        m_backupToastClose->setCursor(Qt::PointingHandCursor);
+        connect(m_backupToastClose, &QToolButton::clicked, m_backupToast, &QFrame::hide);
+        topRow->addWidget(m_backupToastClose);
+        root->addLayout(topRow);
+
+        m_backupToastBody = new QLabel(m_backupToast);
+        m_backupToastBody->setObjectName(QStringLiteral("btBody"));
+        m_backupToastBody->setWordWrap(true);
+        root->addWidget(m_backupToastBody);
+
+        m_backupToastBar = new QProgressBar(m_backupToast);
+        m_backupToastBar->setObjectName(QStringLiteral("btBar"));
+        m_backupToastBar->setRange(0, 100);
+        m_backupToastBar->setTextVisible(false);
+        m_backupToastBar->setFixedHeight(5);
+        root->addWidget(m_backupToastBar);
+
+        m_backupToastTimer = new QTimer(this);
+        m_backupToastTimer->setSingleShot(true);
+        connect(m_backupToastTimer, &QTimer::timeout, m_backupToast, &QFrame::hide);
+    }
+
+    m_backupToast->setStyleSheet(Theme::qss(QStringLiteral(
+        "QFrame#backupToast { background: %1; border: 1px solid %2; border-radius: @radius-panel; }"
+        "QLabel#btTitle { color: %3; font-size: 13px; font-weight: 600; }"
+        "QLabel#btBody  { color: %4; font-size: 12px; }"
+        "QToolButton#btClose { background: transparent; border: none; color: %4; font-size: 16px; font-weight: 300; }"
+        "QToolButton#btCancel { background: transparent; border: none; color: %4; font-size: 12px; }"
+        "QToolButton#btClose:hover, QToolButton#btCancel:hover { color: %3; }"
+        "QProgressBar#btBar { background: %2; border: none; border-radius: 2px; }"
+        "QProgressBar#btBar::chunk { background: %5; border-radius: 2px; }"
+    ).arg(Theme::panelBackground(), Theme::panelBorder(), Theme::textPrimary(),
+          Theme::textMuted(), Theme::accentDefault())));
+
+    const bool working = state == BackupToastState::Working;
+    m_backupToastTitle->setText(title);
+    m_backupToastBody->setText(body);
+    m_backupToastCancel->setVisible(working);
+    m_backupToastClose->setVisible(!working);
+    m_backupToastBar->setVisible(working);
+    if (working) m_backupToastBar->setValue(0);
+
+    m_backupToast->adjustSize();
+    m_backupToast->show();
+    m_backupToast->raise();
+    positionReminderToast();
+
+    // Erro fica até a pessoa fechar: é o aviso de que não existe cópia nova.
+    m_backupToastTimer->stop();
+    if (state == BackupToastState::Done) m_backupToastTimer->start(6000);
 }
 
 static QString formatUpdateNotes(const QString& markdown, int maxChars = 6000)
@@ -8539,7 +8664,7 @@ void MainWindow::relayoutChrome()
     positionExternalScrollBar();
     positionFindBar();
     positionGlobalSearchPanel();
-    if (m_reminderToast && m_reminderToast->isVisible()) positionReminderToast();
+    positionReminderToast();
     if (m_updateToast && m_updateToast->isVisible()) positionUpdateToast();
     if (readModeEnabled) positionReadModeHotzones();
     // RefMenuPanel: drag/resize livres. O showEvent dele já mantém dentro do pai
@@ -8710,7 +8835,7 @@ void MainWindow::refreshBackupStatusLabel()
     if (!settingsPanel) return;
     settingsPanel->setBackupStatusText(
         projectRoot.isEmpty() ? QString() : backupStatusLabelText(BackupService::lastBackupAt(projectRoot)));
-    settingsPanel->setBackupRunButtonEnabled(!projectRoot.isEmpty());
+    settingsPanel->setBackupRunButtonEnabled(!projectRoot.isEmpty() && !m_backupJob);
 }
 
 void MainWindow::onSettingsRequested()
@@ -8822,16 +8947,7 @@ void MainWindow::onSettingsRequested()
                     tr("Escolha primeiro uma pasta de destino para o backup."));
                 return;
             }
-            settingsPanel->setBackupRunButtonEnabled(false);
-            QString zipPath, err;
-            const bool ok = BackupService::runBackupNow(projectRoot, s.folder, &zipPath, &err);
-            refreshBackupStatusLabel();
-            if (ok) {
-                QMessageBox::information(settingsPanel, tr("Backup concluído"),
-                    tr("Projeto salvo em:\n%1").arg(zipPath));
-            } else {
-                QMessageBox::warning(settingsPanel, tr("Erro ao fazer backup"), err);
-            }
+            startBackup(/*automatic=*/false);
         });
         // Lê preferências globais (não por projeto)
         m_autoNavEnabled = QSettings().value(QStringLiteral("editor/autoNavEnabled"), true).toBool();

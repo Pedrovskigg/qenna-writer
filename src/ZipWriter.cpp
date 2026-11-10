@@ -1,5 +1,7 @@
 #include "ZipWriter.h"
 
+#include <QIODevice>
+
 namespace {
 
 quint32 crc32(const QByteArray& data) {
@@ -47,7 +49,7 @@ void ZipWriter::addFile(const QString& path, const QByteArray& data, bool compre
     e.name = path.toUtf8();
     e.crc = crc32(data);
     e.uncompSize = quint32(data.size());
-    e.offset = quint32(m_local.size());
+    e.offset = m_flushed + quint32(m_local.size());
 
     // Deflate via qCompress: ele devolve [4 bytes tamanho][stream zlib][adler32].
     // O ZIP (method 8) quer o DEFLATE cru — removemos os 4 bytes do Qt + 2 do
@@ -79,6 +81,17 @@ void ZipWriter::addFile(const QString& path, const QByteArray& data, bool compre
     m_local.append(payload);
 
     m_entries.append(e);
+
+    if (m_device) {
+        flushToDevice(m_local);
+        m_local.clear();
+    }
+}
+
+void ZipWriter::flushToDevice(const QByteArray& bytes) {
+    if (m_failed) return;
+    if (m_device->write(bytes) != bytes.size()) m_failed = true;
+    m_flushed += quint32(bytes.size());
 }
 
 QByteArray ZipWriter::finish() {
@@ -105,7 +118,7 @@ QByteArray ZipWriter::finish() {
     }
 
     QByteArray out = m_local;
-    const quint32 centralOffset = quint32(out.size());
+    const quint32 centralOffset = m_flushed + quint32(out.size());
     out.append(central);
 
     // End of central directory record.
@@ -117,5 +130,9 @@ QByteArray ZipWriter::finish() {
     putU32(out, quint32(central.size()));            // central dir size
     putU32(out, centralOffset);                      // central dir offset
     putU16(out, 0);                                  // comment length
+    if (m_device) {
+        flushToDevice(out);
+        return {};
+    }
     return out;
 }

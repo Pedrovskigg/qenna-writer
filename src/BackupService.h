@@ -1,6 +1,12 @@
 #pragma once
 
+#include <QFile>
+#include <QObject>
 #include <QString>
+#include <QStringList>
+
+class QTimer;
+class ZipWriter;
 
 // Backup completo de projeto (zip da pasta inteira) — feature que existia no
 // Mira 1 (via PowerShell Compress-Archive) e nunca foi portada pro Qenna.
@@ -45,10 +51,43 @@ void markBackupDone(const QString& projectRoot, qint64 whenMs);
 void markReminderShown(const QString& projectRoot, qint64 whenMs);
 
 // Zipa a pasta inteira do projeto em destFolder/<nome do projeto> - backup
-// <dd-MM-yyyy HHmm>.zip. Cria destFolder se não existir. Se destFolder for
-// uma subpasta do próprio projectRoot, ela é excluída do conteúdo zipado
-// (pra não incluir o zip dentro dele mesmo).
-bool runBackupNow(const QString& projectRoot, const QString& destFolder,
-                   QString* outZipPath = nullptr, QString* error = nullptr);
+// <dd-MM-yyyy HHmm>.zip, em fatias curtas, sem travar a janela. Cria destFolder
+// se não existir. Se destFolder for uma subpasta do próprio projectRoot, ela é
+// excluída do conteúdo zipado (pra não incluir o zip dentro dele mesmo).
+class Job : public QObject {
+    Q_OBJECT
+public:
+    Job(const QString& projectRoot, const QString& destFolder, QObject* parent = nullptr);
+    ~Job() override;
+
+    void start();
+    void cancel();
+
+signals:
+    void progress(int percent, int filesDone, int filesTotal);
+    // error vazio com ok=false quer dizer que foi cancelado.
+    void finished(bool ok, const QString& zipPath, const QString& error);
+
+private:
+    void processSlice();
+    void completeArchive();
+    void fail(const QString& error);
+    void finishWith(bool ok, const QString& error);
+    void discardPartialFile();
+
+    QString m_root;
+    QString m_dest;
+    QString m_zipPath;
+    bool m_destIsBlank = false;
+    bool m_finished = false;
+    bool m_partHandled = false;
+    QStringList m_files;
+    int m_next = 0;
+    qint64 m_totalBytes = 0;
+    qint64 m_doneBytes = 0;
+    QFile m_part;
+    ZipWriter* m_zip = nullptr;
+    QTimer* m_timer = nullptr;
+};
 
 } // namespace BackupService

@@ -4,6 +4,8 @@
 #include <QList>
 #include <QString>
 
+class QIODevice;
+
 // Escritor de ZIP mínimo, método "stored" (sem compressão). Suficiente para
 // empacotar arquivos que já são comprimidos por dentro (ODT/EPUB/DOCX são zips),
 // onde recomprimir renderia pouco. Nomes de arquivo em UTF-8 (bit 11 do flag),
@@ -15,10 +17,21 @@ public:
     // (obrigatório p/ o "mimetype" do EPUB e bom p/ dados já comprimidos).
     void addFile(const QString& path, const QByteArray& data, bool compress = true);
 
-    // Monta e devolve o arquivo .zip completo.
+    // Com um dispositivo, cada arquivo vai direto pro disco em vez de acumular na
+    // memória (projeto com muitas imagens passa de 1 GB). Chamar antes do addFile.
+    void setDevice(QIODevice* device) { m_device = device; }
+    bool failed() const { return m_failed; }
+
+    // Monta e devolve o arquivo .zip completo. Com dispositivo, grava o final
+    // nele e devolve vazio.
     QByteArray finish();
 
 private:
+    void flushToDevice(const QByteArray& bytes);
+    QIODevice* m_device = nullptr;
+    bool m_failed = false;
+    quint32 m_flushed = 0;     // bytes já gravados no dispositivo
+
     struct Entry {
         QByteArray name;   // UTF-8
         quint32 crc = 0;
