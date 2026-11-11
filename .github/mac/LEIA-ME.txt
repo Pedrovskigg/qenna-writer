@@ -1,7 +1,7 @@
-QENNA WRITER FOR MAC (BETA)
-===========================
+QENNA WRITER FOR MAC
+====================
 
-Thank you for testing! This is an early build of the Mac version.
+Thank you for downloading Qenna Writer!
 
 1. Drag "Qenna Writer" onto the "Applications" folder in this window.
 
@@ -20,14 +20,14 @@ Thank you for testing! This is an early build of the Mac version.
 
    Then open the app again.
 
-Found a bug? Tell us what you did right before it happened. A screenshot
-helps a lot.
+Found a bug? Write to qennawriter@gmail.com and tell us what you did right
+before it happened. A screenshot helps a lot.
 
 
-QENNA WRITER PARA MAC (BETA)
-============================
+QENNA WRITER PARA MAC
+=====================
 
-Obrigado por testar! Esta é uma versão inicial do Qenna pra Mac.
+Obrigado por baixar o Qenna Writer!
 
 1. Arraste o "Qenna Writer" pra pasta "Aplicativos" nesta janela.
 
@@ -46,5 +46,5 @@ Obrigado por testar! Esta é uma versão inicial do Qenna pra Mac.
 
    Depois abra o app de novo.
 
-Achou um bug? Conte o que você fez logo antes de acontecer. Um print
-ajuda muito.
+Achou um bug? Escreva pra qennawriter@gmail.com e conte o que você fez logo
+antes de acontecer. Um print ajuda muito.

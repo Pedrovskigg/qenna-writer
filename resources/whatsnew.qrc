@@ -5,7 +5,14 @@
         <file alias="whatsnew_es.md">whatsnew/whatsnew_es.md</file>
         <file alias="whatsnew_it.md">whatsnew/whatsnew_it.md</file>
         <file alias="whatsnew_fr.md">whatsnew/whatsnew_fr.md</file>
-        <file alias="mapa.jpg">whatsnew/mapa.jpg</file>
-        <file alias="mapa-tinta.jpg">whatsnew/mapa-tinta.jpg</file>
+        <file alias="galaxy-criacao.jpg">whatsnew/galaxy-criacao.jpg</file>
+        <file alias="galaxy-navegador.jpg">whatsnew/galaxy-navegador.jpg</file>
+        <file alias="galaxy-astronomo.jpg">whatsnew/galaxy-astronomo.jpg</file>
+        <file alias="galaxy-planeta-ficha.jpg">whatsnew/galaxy-planeta-ficha.jpg</file>
+        <file alias="galaxy-construcoes.jpg">whatsnew/galaxy-construcoes.jpg</file>
+        <file alias="galaxy-sistema.jpg">whatsnew/galaxy-sistema.jpg</file>
+        <file alias="galaxy-astronomo-ficha.jpg">whatsnew/galaxy-astronomo-ficha.jpg</file>
+        <file alias="ficha-prontuario.jpg">whatsnew/ficha-prontuario.jpg</file>
+        <file alias="ficha-abas.jpg">whatsnew/ficha-abas.jpg</file>
     </qresource>
 </RCC>

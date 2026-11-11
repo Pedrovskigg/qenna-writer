@@ -1,116 +1,179 @@
-**Qenna Writer - BIG UPDATE - 1.5**
+**Qenna Writer - BIG UPDATE - 2.0**
 
-Hello guys!
+Sul, Sul!
+How are we doing, my dears?
+The new version of Qenna Writer just kicked the door down to put the house in order.
+This update brings a new feature that's **REALLY FREAKING COOL**, some smaller new features and a few fixes.
 
-The new Qenna update is here, bringing the hottest news of the moment.
-I worked really hard on this version. More precisely, not on the version itself, but on what it brings.
+Before we get there, I want to thank the users who volunteered to help develop the Mac version of Qenna Writer!
+Thank you, truly! The feedback and the bugs you found were essential to get this port out of the drawer. It worked!
+And remember: even though the Mac version isn't in beta anymore, it's still completely open, just like the Windows one. Any bug or problem you find, just throw it my way: qennawriter@gmail.com
 
-But first...
+Alright, let's get to what matters! And of course, the big fish of this update.
+*Or star...*
 
-## Heads up
+We, the Qenna team (made up of me, Grace and my 12 personalities), are proud to present...
 
-Friends, I have some sad news: the Cover Creator (the one you downloaded separately from Qenna and all that) is being discontinued.
-The reason is simpler and more direct than it seems: we built a capable cover maker right inside Qenna, and it's easier to bring what's missing into it than to keep two apps alive at the same time.
-So it won't be updated anymore. If you use it, don't worry. The repository won't be deleted and it will always be there, it just won't get updates.
-Soon, the cover maker we built inside Qenna will have every feature that more complete creator had. So it'll be a natural migration. Probably in the next releases.
+## Qenna Writer: Galaxy Map
 
-Qenna Writer's integrations and connections with Qenna Cover have been removed from the app. But it still works on its own. Just open it, or create a shortcut to it straight from its root folder.
+![The galaxy map creation screen](qrc:/whatsnew/galaxy-criacao.jpg)
 
-If you liked it, I get it. It was really cool. I'll miss it too, but we're not losing anything. The plan is to make Qenna's own Cover Creator even better than it. And it's going to work. *I'll make it work*.
+Qenna's last update brought something phenomenal: the map maker. Built with fantasy works in mind, the map maker came with lots of tools aimed at that genre.
+But my dear friends who, like me, love, adore and embrace good old science fiction and space operas were left in the corner of the party.
+Not anymore.
 
-And also: if you're reading this, it means the macOS version of Qenna has already been sent to the testers! Now we wait for the verdict. I'm confident: if all goes well, Qenna will officially get its macOS version.
+Qenna's Galaxy Map works almost the same way as the regular fantasy map. You can define territories, groups, subgroups, create connections, explore, read, edit and so on. The things you already know.
+Except now on a **Galactic** scale.
 
-*moving on...*
+Create planets, moons, solar systems. Edit them, write about them, add structures to your galaxy and planets. Forge and develop the whole universe of your story any way you want.
 
-You know, there's a feature I came up with near the end of the late Mira Writing's life, but ended up setting aside for a few reasons. It's a somewhat... niche feature, let's say. And also extremely complex and laborious to build.
-The Map Maker. The concept worked great and had come a long way, but... the complexity didn't pay off. So I left it in the fridge (*literally, the file where I keep Qenna's ideas is called "the fridge"*) and forgot about it.
-Then, a long time later, when I started working on this version, I was thinking about new ideas and things I could bring to make Qenna even more complete than it already is.
-And I bumped into it, a long time later.
-And *holy shit*, I'd never noticed how far it had come. Looking at that file with almost 3 thousand lines, I just thought... why not?
+The Galaxy Map has two ways to create:
+**Navigator** mode and **Astronomer** mode.
 
-And after a lot of work translating all of that from JSX to C++...
+![Navigator mode](qrc:/whatsnew/galaxy-navegador.jpg)
 
-Ladies and Gentlemen!
-I bring you... Not just a brilliant, complete and complex feature, but something that can make your story even more memorable and immensely fun to create.
-Qenna Writer is proud to present...
+![Astronomer mode](qrc:/whatsnew/galaxy-astronomo.jpg)
 
-## Qenna's Map
+Navigator mode gives you a fully interactive, navigable and functional 3D universe. It gives you more visual freedom and more room to move around inside your own galaxy. On the other hand, it also means more work and more things to do before your story really gets going there.
+Astronomer mode works through text and documents. Write and create only what you want and watch your universe take shape through your words. It doesn't have the same interactive depth as Navigator, but it gives you more creative freedom. And yes, it still has a few 3D toys too.
 
-![Qenna's Map](qrc:/whatsnew/mapa.jpg)
+Both modes have the same goal: creating your universe. Only the way you work changes. Feel free to pick whichever you want and create however you want. No limits.
 
-Yes, friends! Qenna Writer now has a map maker, and not just any map maker. No way.
-Qenna's map maker has an insane level of depth, from the depth of the terrain to the sprites and FREE drawing on the map, so you can create it however you want, however your story demands.
-Seriously, if Tolkien had seen this while writing LOTR, he'd have had a fit. The creative freedom you have to build something here is insane.
+In detail:
 
-**• Geographic realism**
-Natural hills, rivers, coastlines, elevation. Everything is generated in a realistic, in-depth way, simulated from the relief: altitude, latitude and humidity decide the climate and the biome of every piece of the map.
-There's no .png drawing of a mountain standing in for mountains here, my lovelies. Your mountain **really is a MOUNTAIN**, made from the map's elevation.
+**• Choose your galaxy**
+The Milky Way (including our own backyard, the Solar System), Andromeda, M87, Sombrero, or create your own.
 
-**• Create your map freely**
-Generate a random map procedurally or draw one by hand, however you like.
-Rivers, seas, biomes, temperatures, mountains, forests. Whatever you want can be created. At the size and shape you want. The only limit is your creativity.
-And on top of that, you can...
+**• Real physics**
+No need to research, figure out or invent physical data for your universe when the story calls for it.
+The Galaxy Map generates physical data for every body it creates, based on solid theory. Mass, gravity, planet type, rotation and orbital periods and much more. It's all generated and handed to you in a few clicks.
 
-**• Build**
-Create cities, castles, ruins. Every feature on the map tells the story of your world, so make the most of it.
-I ended up going deeper into this than I should have, and in a way that was a good thing. The creative freedom the map gives you is absurd.
+**• See it however you like**
+Full, Atlas, Sky, Infrared, Ink. There are different ways to view the map, and each one gives you an almost unique experience that can match the style of your story even better.
 
-**• Sizes**
-From small maps to gigantic continents. Create whatever your story demands.
-*Bigger maps can use more of your PC's resources, like processing power and RAM. I optimized it as much as I could, but occasional hiccups can happen.*
+**• Structures**
+Orbital Rings, Fleets, Orbital Cities, bases, all the way up to gigantic Dyson spheres. Add them and write about whatever you want.
 
-**• YOUR WORLD INSIDE YOUR MAP**
-Manage territories, draw borders, attach documents, characters, roots, lore and origins. Connected to the World Builder, drawers and groups.
-Your map isn't just a visual reference. It's **interactive** and tells **the story of your world**.
-You can create, explore and read documents, groups and information without leaving the map.
+**• Planet Classes**
+Habitability from I to VI, so it's easy to tell which planets are likely to host life.
 
-**• Different looks**
-Realistic, territorial, cartographic, topographic, nautical and several others. However you like. View your map the way that pleases you.
-On top of that, there are day and night cycles too!
+**• Organic Seeding and Populations**
+Systems appear across the galaxy as territories grow, and planets can populate themselves.
 
-![The same map in the Ink view](qrc:/whatsnew/mapa-tinta.jpg)
+Everything exports to PNG. On top of that, every document created and written inside the maps has a proper home. You can choose to save them in drawers or in the World Builder.
 
-The Map Maker is an **INSANE** tool.
-Possibly the most ambitious and brilliant tool I've ever added to Qenna. The Board looks like child's play next to it.
-I'm not a big fan of writing fantasy with huge worlds and gigantic lore myself, but having this in my hands is really tempting me to dust off a few projects.
+I won't go on much longer here, the screenshots speak for themselves. If you have more questions about how the map works, it already has its own section in the Help Panel!
 
-And also:
-**•** The Map can be exported as a PNG.
+![A planet with its sheet open](qrc:/whatsnew/galaxy-planeta-ficha.jpg)
 
-This is just the beginning, friends. This tool will get even more turbocharged in the next versions. Wait and see. I'm not playing around.
+![A planet with an orbital ring, a fleet, a city and a station](qrc:/whatsnew/galaxy-construcoes.jpg)
 
-*And other than that...*
+![A whole system, with a Dyson sphere at its center](qrc:/whatsnew/galaxy-sistema.jpg)
 
-## More news
+![Astronomer mode with a planet's sheet](qrc:/whatsnew/galaxy-astronomo-ficha.jpg)
 
-**• New animated Themes**
-Route 66, a rework of Last Exit (which made it one of the best in the category), Citadel, Eve of Battle, Outpost, Hoard and Rooftop.
-They're all beautiful and well optimized. Worth a look.
+And besides that, friends:
 
-**• POV selector**
-For projects with different points of view, you can now set the POV of each chapter. It's in the chapter creator/editor, which, by the way, now opens with a double click on the chapter title.
-Always taking requests! *Thanks, Mars!*
+## What's new
 
-**• Groups expansion**
-You can now create subgroups inside existing groups to take the categorization and organization of your docs even further.
+**○ Rework: Character sheets**
+Character sheets got a complete rework.
+During the Mac beta, Mars sent me a screenshot reporting a bug where the top of the character area was being cut off by the sheets.
+And well, sheets are an... ancient feature of the app. They had been the same thing, working the same way, since they launched. That even included a few bugs. Like the page staying dark no matter the theme, among others.
+So I did what I do best in this app. A rework.
+
+**• New character sheets**
+More complete, customizable and good-looking.
+Create fields however you like, delete them and keep your sheets with only the information you want.
+
+![The sheet in the Case file style](qrc:/whatsnew/ficha-prontuario.jpg)
+
+![The same sheet in the Tabs style](qrc:/whatsnew/ficha-abas.jpg)
+
+**• Different styles**
+Tabs, Magazine, Case file, Infobox and Dossier. Each sheet style highlights and presents the information in a different way. Pick the one you like and switch anytime, too!
+
+**○ 30 new themes**
+*No animation this time. Back to the roots.*
+Before making anything, I measured the colors of the 443 themes the app already had. The result: 68% of everything was black, white or gray, and another 13% was dark blue. A light, colored page? Not a single one. So this batch was born with a rule I named Tork: the higher it is, the further the theme runs from the colors Qenna already used.
+
+**• Solid color**
+16 themes across light, yellowed, dark and colorful, calmer ones, each born from something in real life. The butcher paper of Butcher Paper, the shorthand notebook of Steno Pad, the pink form copy of Third Copy, the 60s telephone of Princess Phone and so on.
+
+**• Photos**
+14 new patterned themes, made from photos that had been sitting here for months. The golden sea of clouds of Cloud Sea, the lightning striking the sea in Heat Lightning, the old library of Reading Room, the rainy bus window of Bus Window. And Last Light, in black and white, with only the mountain peak still in color.
+Cloud Sea arrives already wearing the Developer’s pick badge.
+
+**○ Page mode**
+Turn it on in the settings. The editor starts splitting your text into pages, just like Word. The page count in the counter was updated too and now reflects the real number of pages.
+
+**○ Page background**
+*Suggested by Mars.*
+You can now add background images to the page of a chapter or scene. The option is in the create/edit chapter window. Building on that, a global version of it was also added to the themes!
+
+**○ New drawer styles for plain documents**
+Documents without elements that are just documents (I explained that well, right?)
+Drawers without elements now have new views too. Tree, Card file, Contents and Notebook.
+
+**○ Font picker cleaned up**
+We tidied up. The font picker was painfully ugly and messy enough to make you cry. Not anymore.
+Fonts are now organized into recent, standard and categories. Easier to browse and pick what you want.
+
+**○ New Map window**
+*THIS WAS SUPPOSED TO SHIP IN THE LAST VERSION AND I FORGOT, AAAAAA!*
+Maps, both the galactic and the regular one, now have a creation window. With a preview and some customization before they're generated.
+
+**○ Free tags**
+War, monarchy, bloodline, betrayal: now you add whatever tags you want, wherever you want. They live in the create and edit windows of documents, characters, settings, objects and in the World Builder's places and systems. Enter or comma adds one, and Tab completes the suggestion.
+And on the Map, Explore got "Filter by tag". Pick one and see which territories it shows up in. It's never been easier to find out where that war of yours is happening.
+
+**○ Silhouettes for characters without a photo**
+*What would we do without Mars?*
+In one of the emails she sent me while testing Qenna on Mac, Mars showed me her characters drawer, where she used silhouettes as their images. I thought that was amazing and thought... why not?
+When creating or editing characters, in the image area, you now have a silhouettes option where you can pick the one that best fits your character. Not all of them came out perfect, okay? But it's prettier than that gray square with the public restroom guy.
+
+**○ Unnecessary**
+But why not?
+There's now a button to collapse and open the left bar, at the very bottom of it.
+
+**○ New setting: App zoom**
+Unlike the interface size, which only scales the bars, this option scales everything. The drawers window, the buttons and text inside them and everything else. Useful for small screens. The change applies when you reopen Qenna.
+
+*And for the house repairs...*
 
 ## Fixes
 
-**•** Fixed some bugs and visual glitches in the earlier animated themes.
-I don't remember every one I touched, because I'm an animal and didn't write them down as I fixed them, but there were a few, and they were about the windows. If you use any of them, you'll notice the difference.
+**○ Fixed interface and page issues on small screens.**
+The top bar could collapse in on itself and the buttons ended up overlapping. We've gone after this bug in past versions, but since it came back, we went after it again. Now whatever doesn't fit goes into the bar's "⋯" menu, and the buttons come back on their own when there's room.
+There was also a bug with the margins. On small resolutions or large interfaces, the margins could get too wide and squeeze the text into the middle. Fixed too! *Thank you, Hyder!*
 
-**•** Fixed a bug in the cover maker where the author's name couldn't be split into two lines. Now it can (and the title too).
+**○ Backups no longer freeze the app**
+When making backups, the app could freeze for several moments, making it look like it had crashed.
+Qenna is shy, so if you kept rushing her, things could go wrong. Now there's a notice that the backup is in progress.
 
-**•** Pasted text came in without the project's paragraph indent. Fixed.
+**○ Improved Presence Detector**
+No more annoying popup in the corner. Character presence is always detected automatically and shown in the header, just like the app already does with saved dialogues, but with a different animation so you can tell the two apart.
+Oh, and there was another bug in it: names with an accent at the start or end were never detected. Fixed.
 
-**•** "What's New" with the new logo!
+**○ Mac version bugs fixed**
+**• The floating selection bar disappeared when clicked**
+Clicking made the bar disappear instead of triggering its buttons. Fixed.
+**• Blurry icons on Retina screens**
+They're now drawn at the screen's resolution. This also improves things on Windows at zoom levels of 125% and up.
+**• Character names overlapped their images in drawers**
+Fixed. Now a single line with an ellipsis shows if the name is longer than the card. Applies to Windows too.
+**• Panel options and text too small**
+Fixed with the App zoom setting. If you notice it, just go to Settings > Appearance and adjust the zoom.
+**• Character sheet overlap bug (duplicated page)**
+Fixed by the sheet rework.
 
-I know this release took a bit longer than usual, but trust me, it was worth it!
-And another thing: no spoilers, but the map maker was just the beginning of something **bigger**.
-I want Qenna Writer to be more than just another tool for you to write in. I want it to be the place where your ENTIRE project lives, in every detail. And we're going to walk in that direction!
+There's one pending bug: Qenna on Mac may show an "error on close" message after being closed normally. I couldn't figure out why. If it happens to you, could you click "Report..." and send me what you get, please?
+This bug only happens on Mac.
 
-Thanks for the trust, my lovelies!
+And about the Mac bugs: if you find any other, or if any of these still happens, let me know!
 
-Always a pleasure,
-**— P.H. Lobato — Guardian of the Lands of Qenna**
-*literally now, since Qenna has lands hahaha*
+That's all for today, comrades!
+Drink water, exercise and all that. Everything I don't do.
+
+*With love, patience and Rock n' Roll,*
+**— P.H. Lobato, Guardian of the Galaxies of Qenna**

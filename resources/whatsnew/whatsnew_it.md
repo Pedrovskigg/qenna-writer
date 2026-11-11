@@ -1,116 +1,179 @@
-**Qenna Writer - BIG UPDATE - 1.5**
+**Qenna Writer - BIG UPDATE - 2.0**
 
-Hello guys!
+Sul, Sul!
+Come stiamo, miei cari?
+La nuova versione di Qenna Writer è arrivata sfondando la porta per rimettere ordine in casa.
+In questo aggiornamento portiamo una funzione nuova **DAVVERO PAZZESCA**, altre funzioni più piccole e qualche correzione.
 
-Il nuovo aggiornamento di Qenna è arrivato, con le novità più calde del momento.
-Ho lavorato sodo su questa versione. Più precisamente, non su di lei in sé, ma su quello che porta.
+Prima di arrivarci, voglio ringraziare gli utenti che si sono offerti di aiutare nello sviluppo della versione Mac di Qenna Writer!
+Grazie davvero! I feedback e i bug che avete trovato sono stati fondamentali per tirare fuori questo port dal cassetto. Ce l'abbiamo fatta!
+E ricordate: anche se la versione Mac non è più in beta, resta completamente aperta come quella per Windows. Qualsiasi bug o problema troviate, scrivetemi pure: qennawriter@gmail.com
 
-Prima di tutto...
+Bene, veniamo al dunque! E ovviamente al pesce grosso di questo aggiornamento.
+*O stella...*
 
-## Avviso
+Noi, il team di Qenna (composto da me, Grace e le mie 12 personalità), siamo orgogliosi di presentarvi...
 
-Amici, ho una notizia triste: il Cover Creator (quello che si scaricava a parte da Qenna e tutto il resto) verrà dismesso.
-Il motivo è più semplice e diretto di quanto sembri: abbiamo creato un creatore di copertine valido dentro Qenna stesso, ed è più facile portargli quello che manca che mantenere due app contemporaneamente.
-Quindi non riceverà più aggiornamenti. Se lo usi, non preoccuparti. Il repository non verrà cancellato e continuerà sempre a esistere, solo che non verrà più aggiornato.
-Presto il creatore di copertine che abbiamo fatto dentro Qenna avrà tutte le funzioni che aveva quel creatore più completo. Quindi sarà una migrazione naturale. Probabilmente nelle prossime versioni.
+## Qenna Writer: Galaxy Map
 
-Le integrazioni e i collegamenti di Qenna Writer con Qenna Cover sono stati rimossi dal programma. Però lui funziona ancora da solo. Basta aprirlo o creare un collegamento direttamente dalla sua cartella principale.
+![La schermata di creazione della mappa galattica](qrc:/whatsnew/galaxy-criacao.jpg)
 
-Se ti piaceva, ti capisco. Era davvero bello. Mancherà anche a me, ma non stiamo perdendo niente. Il piano è rendere il creatore di copertine di Qenna persino migliore di lui. E andrà bene. *Farò in modo che vada bene*.
+L'ultimo aggiornamento di Qenna ha portato qualcosa di fenomenale: il creatore di mappe. Pensato per le opere fantasy, offriva tanti strumenti dedicati a quel genere.
+Ma i miei cari amici che, come me, amano, adorano e abbracciano la buona vecchia fantascienza e le space opera, erano rimasti in un angolo della festa.
+Ora non più.
 
-E poi: se stai leggendo questo, vuol dire che la versione macOS di Qenna è già stata inviata ai tester! Ora aspettiamo il verdetto. Sono fiducioso: se tutto va bene, Qenna avrà ufficialmente la sua versione per macOS.
+La Mappa Galattica di Qenna funziona quasi come la classica mappa fantasy. Puoi definire territori, gruppi, sottogruppi, creare collegamenti, esplorare, leggere, modificare e così via. Le cose che già conoscete.
+Ma ora su scala **Galattica**.
 
-*andando avanti...*
+Crea pianeti, lune, sistemi solari. Modificali, scrivi di loro, aggiungi costruzioni alla tua galassia e ai tuoi pianeti. Forgia e sviluppa tutto l'universo della tua storia come preferisci.
 
-Sapete, c'è una funzione che mi è venuta in mente verso la fine della vita del defunto Mira Writing, ma che ho finito per mettere da parte per alcuni motivi. È una funzione un po'... di nicchia, diciamo. Ed è anche estremamente complessa e faticosa da creare.
-Il Creatore di Mappe. Il concetto funzionava benissimo ed era arrivato molto lontano, ma... la complessità non ripagava. Così l'ho lasciato in frigo (*letteralmente, il file dove tengo le idee di Qenna si chiama "il frigo"*) e me ne sono dimenticato.
-Poi, molto tempo dopo, quando ho iniziato a lavorare a questa versione, stavo pensando a nuove idee e a cose che potevo portare per rendere Qenna ancora più completo di quanto già sia.
-E ci sono inciampato di nuovo, molto tempo dopo.
-E *holy shit*, non mi ero mai accorto di quanto fosse arrivato lontano. Guardando quel file di quasi 3 mila righe, ho solo pensato... perché no?
+La Mappa Galattica ha due modalità di creazione:
+la modalità **Navigatore** e la modalità **Astronomo**.
 
-E dopo tanto lavoro e dopo aver tradotto tutto da JSX a C++...
+![La modalità Navigatore](qrc:/whatsnew/galaxy-navegador.jpg)
 
-Signore e signori!
-Vi presento... Non solo una funzione geniale, completa e complessa, ma qualcosa capace di rendere la vostra storia ancora più memorabile e immensamente divertente da creare.
-Qenna Writer è orgoglioso di presentarvi...
+![La modalità Astronomo](qrc:/whatsnew/galaxy-astronomo.jpg)
 
-## Qenna's Map
+La modalità Navigatore ti offre un universo 3D completamente interattivo, navigabile e funzionale. Ti dà più libertà visiva e di movimento dentro la tua galassia. In compenso, ti dà anche più lavoro e più cose da fare prima che la tua storia prenda davvero il via lì.
+La modalità Astronomo lavora con testi e documenti. Scrivi e crea solo quello che vuoi e guarda il tuo universo prendere forma attraverso le tue parole. Non ha la stessa profondità interattiva del Navigatore, ma offre più libertà creativa. E sì, ha comunque qualche giocattolo 3D.
 
-![Qenna's Map](qrc:/whatsnew/mapa.jpg)
+Entrambe le modalità hanno lo stesso obiettivo: creare il tuo universo. Cambia solo il modo di lavorare. Sentiti libero di scegliere quella che vuoi e di creare come vuoi. Senza limiti.
 
-Sì, amici! Qenna Writer ora ha un creatore di mappe, e non un creatore di mappe qualsiasi. Assolutamente no.
-Il creatore di mappe di Qenna ha un livello di profondità pazzesco, che va dalla profondità del terreno fino agli sprite e al disegno LIBERO della mappa, per crearla come vuoi, come la tua storia richiede.
-Sul serio, se Tolkien avesse visto questo mentre scriveva LOTR, gli sarebbe preso un colpo. La libertà creativa che hai per costruire qui è pazzesca.
+Nel dettaglio:
 
-**• Realismo geografico**
-Colline naturali, fiumi, coste, rilievo. Tutto viene generato in modo realistico e approfondito, simulato a partire dal rilievo: altitudine, latitudine e umidità decidono il clima e il bioma di ogni parte della mappa.
-Qui non c'è un disegno .png di montagna per rappresentare le montagne, cari miei. La tua montagna **è davvero una MONTAGNA**, creata con il rilievo della mappa.
+**• Scegli la tua galassia**
+La Via Lattea (compreso il nostro cortile di casa, il Sistema Solare), Andromeda, M87, Sombrero, oppure creane una tua.
 
-**• Crea la tua mappa liberamente**
-Genera una mappa casuale in modo procedurale o disegnane una a mano, come preferisci.
-Fiumi, mari, biomi, temperature, montagne, foreste. Tutto quello che vuoi si può creare. Della dimensione e della forma che vuoi. L'unico limite è la tua creatività.
-E in più, puoi...
+**• Fisica reale**
+Niente più ricerche, scoperte o invenzioni di dati fisici del tuo universo quando la storia lo richiede.
+Il Galaxy Map genera i dati fisici dei corpi celesti che crea, su solide basi teoriche. Massa, gravità, tipo di pianeta, periodi di rotazione e di orbita e molto altro. Tutto generato e a tua disposizione in pochi clic.
 
-**• Costruire**
-Crea città, castelli, rovine. Ogni elemento della mappa racconta la storia del tuo mondo, quindi approfittane.
-Ho finito per approfondire questa parte più del dovuto, e in un certo senso è stato un bene. La libertà creativa che la mappa ti dà è assurda.
+**• Guardala come vuoi**
+Completo, Atlante, Cielo, Infrarosso, Inchiostro. Ci sono diversi modi di vedere la mappa e ognuno ti dà un'esperienza quasi unica, che può adattarsi ancora meglio allo stile della tua storia.
 
-**• Dimensioni**
-Da mappe piccole a continenti giganteschi. Crea quello che la tua storia richiede.
-*Le mappe più grandi possono consumare più risorse del tuo PC, come processore e RAM. L'ho ottimizzato il più possibile, ma possono capitare piccoli rallentamenti.*
+**• Costruzioni**
+Anelli orbitali, flotte, città orbitali, basi e perfino gigantesche sfere di Dyson. Aggiungi e scrivi di quello che vuoi.
 
-**• IL TUO MONDO DENTRO LA TUA MAPPA**
-Gestisci territori, crea confini, allega documenti, personaggi, radici, lore e origini. Collegato al Creatore di Mondi, ai cassetti e ai gruppi.
-La tua mappa non è solo un riferimento visivo. È **interattiva** e racconta **la storia del tuo mondo**.
-Puoi creare, esplorare e leggere documenti, gruppi e informazioni senza uscire dalla mappa.
+**• Classi di pianeti**
+Abitabilità da I a VI, per capire facilmente quali pianeti sono adatti alla vita.
+
+**• Semina organica e popolazioni**
+I sistemi compaiono nella galassia man mano che i territori crescono, e i pianeti possono popolarsi da soli.
+
+Tutto esportabile in PNG. Inoltre, ogni documento creato e scritto dentro le mappe ha una destinazione precisa. Puoi salvarli nei cassetti o nel Creatore di Mondi.
+
+Non mi dilungo oltre, gli screenshot parlano da soli. Se hai altri dubbi su come funziona la mappa, ha già la sua sezione nel Pannello della Guida!
+
+![Un pianeta con la sua scheda aperta](qrc:/whatsnew/galaxy-planeta-ficha.jpg)
+
+![Un pianeta con anello orbitale, flotta, città e stazione](qrc:/whatsnew/galaxy-construcoes.jpg)
+
+![Un sistema intero, con una sfera di Dyson al centro](qrc:/whatsnew/galaxy-sistema.jpg)
+
+![La modalità Astronomo con la scheda di un pianeta](qrc:/whatsnew/galaxy-astronomo-ficha.jpg)
+
+E per il resto, amici:
+
+## Novità
+
+**○ Rework: Schede dei personaggi**
+Le schede dei personaggi hanno avuto un rework completo.
+Durante la beta per Mac, Mars mi ha mandato uno screenshot con un bug in cui la parte alta dei personaggi veniva tagliata dalle schede.
+E beh, le schede sono una funzione... arcaica dell'app. Erano sempre le stesse e funzionavano allo stesso modo da quando sono uscite. Bug compresi. Come la pagina che restava scura qualunque fosse il tema, e altri.
+Così ho fatto quello che mi riesce meglio in questa app. Un rework.
+
+**• Nuove schede dei personaggi**
+Più complete, personalizzabili e belle.
+Crea i campi che vuoi, eliminali e tieni nelle schede solo le informazioni che ti servono.
+
+![La scheda nello stile Fascicolo](qrc:/whatsnew/ficha-prontuario.jpg)
+
+![La stessa scheda nello stile Schede](qrc:/whatsnew/ficha-abas.jpg)
 
 **• Stili diversi**
-Realistico, territoriale, cartografico, topografico, nautico e molti altri. Come preferisci. Guarda la tua mappa nel modo che ti piace di più.
-E in più ci sono i cicli di giorno e notte!
+Schede, Rivista, Fascicolo, Infobox e Dossier. Ogni stile mette in risalto e presenta le informazioni in modo diverso. Scegli quello che preferisci e cambialo quando vuoi!
 
-![La stessa mappa nella vista Inchiostro](qrc:/whatsnew/mapa-tinta.jpg)
+**○ 30 temi nuovi**
+*Niente animazioni stavolta. Ritorno alle origini.*
+Prima di creare qualsiasi cosa, ho misurato i colori dei 443 temi che l'app aveva già. Risultato: il 68% di tutto era nero, bianco o grigio, e un altro 13% era blu scuro. Un foglio chiaro colorato? Nemmeno uno. Così questa infornata è nata con una regola che ho battezzato Tork: più è alto, più il tema si allontana dai colori che Qenna usava già.
 
-Il Creatore di Mappe è uno strumento **ASSURDO**.
-Forse lo strumento più ambizioso e geniale che abbia mai aggiunto a Qenna. Accanto a lui, la Board sembra un gioco da bambini.
-Io non sono un grande amante della fantasy con mondi enormi e lore gigantesca, ma avere questo tra le mani mi sta davvero tentando a rispolverare alcuni progetti.
+**• Tinta unita**
+16 temi tra chiari, ingialliti, scuri e colorati, più tranquilli, ognuno nato da qualcosa della vita reale. La carta da macellaio di Butcher Paper, il blocco da stenografia di Steno Pad, la copia rosa del modulo di Third Copy, il telefono anni '60 di Princess Phone e così via.
 
-E inoltre:
-**•** La Mappa si può esportare in PNG.
+**• Foto**
+14 nuovi temi con immagine, fatti con foto che erano qui da mesi. Il mare di nuvole dorate di Cloud Sea, i fulmini che cadono sul mare in Heat Lightning, l'antica biblioteca di Reading Room, il finestrino dell'autobus sotto la pioggia di Bus Window. E Last Light, in bianco e nero, con solo la cima della montagna ancora a colori.
+Cloud Sea arriva già con il sigillo Consigliato dallo sviluppatore.
 
-Questo è solo l'inizio, amici. Questo strumento sarà ancora più potenziato nelle prossime versioni. Aspettate e vedrete. Non sto scherzando.
+**○ Modalità pagina**
+Si attiva nelle impostazioni. L'editor inizia a dividere il testo in pagine, come Word. Anche il conteggio delle pagine nel contatore è stato aggiornato e ora riflette il numero reale di pagine.
 
-*E per il resto...*
+**○ Sfondo del foglio**
+*Suggerimento di Mars.*
+Ora puoi aggiungere immagini di sfondo alla pagina di un capitolo o di una scena. L'opzione si trova nella finestra di creazione/modifica dei capitoli. In più, ne è stata aggiunta anche una versione globale dentro i temi!
 
-## Altre novità
+**○ Nuovi stili di cassetti per documenti semplici**
+Documenti senza elementi che sono solo documenti (spiegato bene, vero?)
+I cassetti senza elementi ora hanno nuove viste. Albero, Schedario, Indice e Quaderno continuo.
 
-**• Nuovi Themes animati**
-Route 66, un rework di Last Exit (che lo ha reso uno dei migliori della categoria), Citadel, Eve of Battle, Outpost, Hoard e Rooftop.
-Sono tutti bellissimi e ben ottimizzati. Vale la pena dare un'occhiata.
+**○ Selettore dei font sistemato**
+Abbiamo fatto pulizia. Il selettore dei font era brutto da far male e disordinato da piangere. Non più.
+Ora i font sono organizzati per recenti, tipi standard e categorie. Più facile da sfogliare e scegliere quello che vuoi.
 
-**• Selettore di POV**
-Per i progetti con diversi punti di vista, ora puoi impostare il POV di ogni capitolo. Si trova nel creatore/editor dei capitoli, che, tra l'altro, ora si apre con un doppio clic sul titolo del capitolo.
-Sempre ascoltando le richieste! *Grazie, Mars!*
+**○ Finestra Nuova mappa**
+*QUESTA DOVEVA ARRIVARE NELLA VERSIONE PRECEDENTE E ME NE SONO DIMENTICATO, AAAAAA!*
+Le mappe, sia quella galattica sia quella normale, ora hanno una finestra di creazione. Con anteprima e un po' di personalizzazione prima di essere generate.
 
-**• Espansione dei gruppi**
-Ora puoi creare sottogruppi dentro i gruppi esistenti, per portare ancora più in là la classificazione e l'organizzazione dei tuoi doc.
+**○ Tag liberi**
+Guerra, monarchia, stirpe, tradimento: ora metti i tag che vuoi, dove vuoi. Si trovano nella creazione e nella modifica di documenti, personaggi, ambientazioni, oggetti e nei luoghi e sistemi del Creatore di Mondi. Invio o virgola aggiungono, e Tab completa il suggerimento.
+E nella Mappa, Esplora ha guadagnato "Filtra per tag". Scegline uno e guarda in quali territori compare. Non è mai stato così facile scoprire dove si sta combattendo quella tua guerra.
 
-## Fix
+**○ Sagome per i personaggi senza foto**
+*Cosa saremmo senza Mars?*
+In una delle email che mi ha mandato mentre testava Qenna su Mac, Mars mi ha mostrato il suo cassetto dei personaggi, dove usava delle sagome come immagini. L'ho trovato fantastico e ho pensato... perché no?
+Quando crei o modifichi un personaggio, nell'area dell'immagine, ora hai l'opzione delle sagome, per scegliere quella che si adatta meglio al tuo personaggio. Non sono venute tutte perfette, eh? Ma è più bello di quel quadratino grigio con l'omino del bagno pubblico.
 
-**•** Corretti alcuni bug ed errori visivi dei themes animati precedenti.
-Non ricordo a memoria tutti quelli che ho toccato, perché sono un animale e non li ho annotati mentre li sistemavo, ma sono stati alcuni, e riguardavano le finestre. Se ne usi qualcuno, noterai la differenza.
+**○ Superfluo**
+Ma perché no?
+Ora c'è un pulsante per chiudere e aprire la barra sinistra, in fondo alla barra stessa.
 
-**•** Corretto un bug nel creatore di copertine per cui il nome dell'autore non si poteva dividere su due righe. Ora si può (e anche il titolo).
+**○ Nuova opzione nelle impostazioni: Zoom dell'app**
+A differenza della dimensione dell'interfaccia, che ingrandisce solo le barre, questa opzione ingrandisce tutto. La finestra dei cassetti, i pulsanti e i testi al loro interno e tutto il resto. Utile per gli schermi piccoli. La modifica vale alla riapertura di Qenna.
 
-**•** Il testo incollato arrivava senza il rientro di paragrafo del progetto. Corretto.
+*E per le riparazioni di casa...*
 
-**•** "What's New" con il nuovo logo!
+## Correzioni
 
-So che questa versione ha richiesto un po' più del solito, ma credetemi, ne è valsa la pena!
-E un'altra cosa: niente spoiler, ma il creatore di mappe è stato solo l'inizio di qualcosa di **più grande**.
-Voglio che Qenna Writer non sia solo un altro strumento per scrivere. Voglio che sia il posto dove vive il tuo progetto INTERO, in ogni dettaglio. E andremo in quella direzione!
+**○ Corretti errori di interfaccia e di pagina sugli schermi piccoli.**
+La barra superiore poteva implodere e i pulsanti finivano sovrapposti. Avevamo già affrontato questo bug nelle versioni passate, ma visto che è tornato, l'abbiamo affrontato di nuovo. Ora quello che non ci sta va nel menu "⋯" della barra, e i pulsanti tornano da soli quando c'è spazio.
+C'era anche un bug con i margini. Con risoluzioni piccole o interfacce grandi, i margini potevano diventare troppo larghi e schiacciare il testo al centro. Corretto anche questo! *Grazie, Hyder!*
 
-Grazie per la fiducia, cari miei!
+**○ I backup non bloccano più l'app**
+Durante i backup, l'app poteva restare bloccata per diversi istanti, dando l'impressione di essersi piantata.
+Qenna è timida, quindi se le mettevi fretta, poteva andare storto. Ora c'è un avviso che il backup è in corso.
 
-Sempre un piacere,
-**— P.H. Lobato — Guardiano delle Terre di Qenna**
-*letteralmente adesso, visto che Qenna ha delle terre ahahah*
+**○ Rilevatore di presenza migliorato**
+Niente più quel popup fastidioso nell'angolo. La presenza dei personaggi viene sempre rilevata automaticamente e segnalata nell'intestazione, come l'app fa già con i dialoghi salvati, ma con un'animazione diversa per distinguere le due cose.
+Ah! C'era un altro bug: i nomi con un accento all'inizio o alla fine non venivano mai rilevati. Corretto.
+
+**○ Bug della versione Mac corretti**
+**• La barra di selezione fluttuante spariva al clic**
+Il clic faceva sparire la barra invece di attivare i pulsanti. Corretto.
+**• Icone sfocate sugli schermi Retina**
+Ora vengono disegnate alla risoluzione dello schermo. Migliora anche su Windows con zoom dal 125% in su.
+**• I nomi dei personaggi si sovrapponevano alle immagini nei cassetti**
+Corretto. Ora compare una sola riga con i puntini di sospensione se il nome supera la scheda. Vale anche per Windows.
+**• Opzioni e testi dei pannelli troppo piccoli**
+Corretto con l'opzione Zoom dell'app. Se lo noti, vai su Impostazioni > Aspetto e regola lo zoom.
+**• Bug di sovrapposizione della scheda personaggio (foglio duplicato)**
+Corretto con il rework delle schede.
+
+C'è un bug ancora aperto: Qenna su Mac può mostrare "Errore alla chiusura dell'app" dopo essere stata chiusa normalmente. Non sono riuscito a scoprire il motivo. Se ti succede, puoi cliccare su "Report..." e mandarmi quello che ricevi, per favore?
+Questo bug succede solo su Mac.
+
+E a proposito dei bug del Mac: se ne trovate altri o se qualcuno di questi succede ancora, fatemelo sapere!
+
+Per oggi è tutto, compagni!
+Bevete acqua, fate esercizio e tutto il resto. Tutto quello che io non faccio.
+
+*Con amore, pazienza e Rock n' Roll,*
+**— P.H. Lobato, Guardiano delle Galassie di Qenna**
