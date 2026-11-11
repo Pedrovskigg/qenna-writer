@@ -17,13 +17,37 @@ a world-building tool (the Builder), writing goals and stats, and more, all
 wrapped in a fully themeable editor with Focus Mode.
 
 Qenna Writer is free — no subscriptions, no paywalled features. Made by one
-writer, for other writers.
+writer, for other writers. It runs on **Windows 10/11** and, since 2.0,
+on **macOS 12 or later** (Apple silicon and Intel).
 
-## New in 1.5: the Map
+## New in 2.0: the Galaxy Map
+
+<img width="1500" height="938" alt="Qenna Writer's Galaxy Map: a spiral galaxy seen from above, with dozens of named star systems along its arms" src="docs/img/galaxy-full.webp" />
+
+The Map, for stories set among the stars. Territories, groups, connections
+and documents work just like on the fantasy map, now on a galactic scale:
+systems, planets, moons and whatever gets built around them. Start from the
+Milky Way (Solar System included), Andromeda, M87 or the Sombrero, or
+generate your own.
+
+- **Two modes.** Navigator is the 3D map: fly between systems, follow
+  orbits and build in plain sight. Astronomer works through writing: worlds
+  grouped by territory, the document in the middle, the system on the side.
+- **Real physics.** Mass, radius, gravity, density, temperature, day and
+  year length are generated for every body, with a habitability class from
+  I to VI. Keep them, change them or ignore them.
+- **Structures.** Orbital rings, fleets, orbital cities, stations, up to
+  Dyson spheres. Each one is a place you can name and write about.
+- Full, Atlas, Sky, Infrared and Ink views, organic seeding as territories
+  grow, documents saved to a drawer or the World Builder, and PNG export.
+
+<img width="1500" height="938" alt="Astronomer mode: worlds grouped by territory, a document about a planet, and its system with a 3D view of the planet and its orbital ring" src="docs/img/galaxy-astronomer.webp" />
+
+## The Map
 
 <img width="1500" height="880" alt="Qenna Writer's Map: a generated continent with mountains, forests, roads, cities and kingdoms" src="docs/img/map-full.webp" />
 
-Qenna Writer now draws maps. Generate a continent from a seed or paint one
+Since 1.5, Qenna Writer draws maps. Generate a continent from a seed or paint one
 by hand; the terrain is real relief (a mountain is height, not a picture of
 a mountain), and altitude, latitude and humidity decide the climate and the
 biome of every patch of ground.
