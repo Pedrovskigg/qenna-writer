@@ -2427,50 +2427,65 @@ QString HelpPanel::galaxyMapsContent() const
     };
     html += QStringLiteral("<p>%1</p>").arg(tr("O Galaxy Maps é o mapa de quem escreve no espaço: uma galáxia inteira que você atravessa com a rodinha do mouse, do braço espiral até a lua de um planeta. Os planetas têm temperatura, ano e atmosfera calculados pela estrela deles, e cada lugar pode guardar os documentos da sua história."));
     html += QStringLiteral("<p>%1</p>").arg(tr("Parece muito na primeira vez, mas dá pra começar só com duas coisas: arrastar pra mover e usar a rodinha pra chegar perto. O resto você pega quando precisar. Colocar, mover e apagar voltam com Ctrl+Z, e a galáxia se salva sozinha."));
+    html += QStringLiteral("<p>%1</p>").arg(tr("O Galaxy Maps tem dois modos, e você escolhe um ao criar a galáxia: o Astrônomo, pra quem quer escrever, e o Navegador, pra quem quer explorar."));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>1- %1</b><br>%2</p>")
         .arg(tr("Criando uma galáxia."),
-             tr("Abra o Mapa na barra lateral, clique na setinha ao lado do título e em \"Novo mapa…\". Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha). Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços, tamanho, quantidade de sistemas e mistura de mundos. Marque \"Definir o espaço de cada classe\" pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia."));
+             tr("Abra o Mapa na barra lateral, clique na setinha ao lado do título e em \"Novo mapa…\". Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha) e depois o modo, nos dois cartões: passe o mouse em cima de um deles pra ver os prós e os contras. Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços e tamanho. No Navegador, você também define a quantidade de sistemas e a mistura de mundos, e pode marcar \"Definir o espaço de cada classe\" pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia."));
     shot(QStringLiteral("new-galaxy"));
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>2- %1</b><br>%2</p>")
+        .arg(tr("Os dois modos."),
+             tr("O Navegador já nasce com centenas de sistemas, planetas e luas, e tudo acontece em cima do mapa: você entra nos sistemas, constrói e escreve sobre o que encontrar. O Astrônomo nasce vazio e só existe o que você criar, na ordem que quiser; a tela é feita pra escrever, com o mapa a um clique. O modo é escolhido ao criar: a tela do Astrônomo só existe nas galáxias que nasceram nele. Os passos 3 a 5 são do Astrônomo e, do 6 em diante, do Navegador."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+        .arg(tr("Astrônomo: criando."),
+             tr("A coluna da esquerda guarda o que você criou: os territórios, com os mundos e sistemas de cada um, e os mundos soltos. \"+ Território\" cria um império, e o \"+\" abre a aba de planeta novo, colada na coluna: nome (o dado sorteia um), tipo e construções. Enter cria e Esc fecha. O botão direito em qualquer coisa mostra o que dá pra fazer com ela: renomear, trocar o tipo, mover, tornar capital, ver no mapa, excluir. O que você cria e muda aqui volta com Ctrl+Z."));
+    shot(QStringLiteral("astronomer-new"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+        .arg(tr("Astrônomo: escrevendo."),
+             tr("Selecione um lugar e a folha dele abre no meio, com as fontes do app, formatação, corretor, Modo Foco, imagens e menções com @. A direita mostra onde você está e o planeta em 3D: arraste pra girar, use a rodinha pra aproximar e dê dois cliques pra voltar ao normal. \"+ Lua\" e \"+ Construção\" ficam ali mesmo, e \"Abrir ficha técnica completa\" mostra a aparência, a órbita e os outros dados. O app só gera o que você pedir: \"Gerar o que está vazio\", na ficha completa, preenche os campos em branco, e você escolhe se fica com o resultado ou dispensa."));
+    shot(QStringLiteral("astronomer"));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+        .arg(tr("Astrônomo: o mapa."),
+             tr("No pé da coluna da esquerda fica o minimapa, só com o que você criou: a rodinha aproxima, arrastar move, o botão direito (ou Ctrl) gira, e clicar num lugar leva até ele. \"Ver no mapa\" abre o mapa da galáxia inteira, o mesmo do Navegador; \"Voltar pro Astrônomo\", ao lado do nome da galáxia, traz você de volta, e a tecla W faz o mesmo."));
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
         .arg(tr("Andando pelo mapa."),
              tr("Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar: de longe cada sistema é um ponto, chegando perto ele abre em órbitas, e o planeta vira uma esfera girando; onde mora gente, as cidades acendem no lado da noite. Arrastar com o botão direito gira e inclina o mapa, e a tecla F enquadra tudo de novo. Com outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo. Passe o mouse em cima de um sistema, em Mover ou Explorar, e um card no canto mostra os planetas e os dados dele, sem precisar de zoom. Dá pra desligar nos Ajustes."));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>7- %1</b><br>%2</p>")
         .arg(tr("O anel de ferramentas."),
              tr("Um clique com o botão direito, sem arrastar, abre o anel com as ferramentas: Mover, Territórios, Construir, Nomes, Explorar, Editar e Tráfego. A pílula no canto de baixo mostra qual está na sua mão e abre o mesmo anel. Se preferir o teclado: H move, T territórios, K construir, N nomes, X explorar, R régua e C o Caderno. Esc desfaz uma coisa de cada vez: fecha o que está aberto, solta a peça da mão e, no fim, volta pro Mover."));
     shot(QStringLiteral("ring"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>4- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
         .arg(tr("O Astrolábio e as vistas."),
              tr("O instrumento no canto de baixo junta tudo o que muda o jeito de ver. No disco ficam as vistas: Completo, Atlas, Céu (só o céu, sem nomes nem órbitas) e as de arte, que abrem numa lista quando você clica de novo. São oito nascidas do espaço (Holograma, Rotas, Domínios, Gravidade, Harmonia, Infravermelho, Raio-X e Chapa de vidro) e seis de papel, como as do Mapa (Tinta, Pergaminho, Carta estelar, Topográfico, Aquarela e Planta de guerra). Cada uma mostra uma coisa: Rotas, como se vai de um lugar a outro; Domínios, quem manda onde; Infravermelho, a temperatura de cada mundo; Raio-X, onde mora o perigo. Arraste o meio pra girar, clique na agulha pra voltar ao norte, use o arco da direita pra inclinar e o marcador do aro pra adiantar o tempo. P pausa os planetas. Quem preferir botões a um instrumento pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita)."));
     shot(QStringLiteral("views"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>5- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
         .arg(tr("As classes de planeta."),
              tr("Cada mundo tem uma classe, que diz quanto custa viver nele: I Éden, II Áspero, III Marginal, IV Hostil, V Letal e VI Sem chão. A conta sai da temperatura, da gravidade, do ar e da estrela. A tecla L (ou o botão na barra da direita) acende a vista: a galáxia escurece, cada sistema brilha na cor do melhor mundo que tem e, de perto, cada mundo ganha o selo da classe. Clique numa classe no cartão pra ver só ela. O painel e o Caderno mostram a classe e o porquê, e em Editar você escolhe a classe na mão ou marca que dá pra respirar o ar daquele mundo. A sua escolha fica, mesmo se a temperatura mudar depois."));
     shot(QStringLiteral("classes"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>6- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>10- %1</b><br>%2</p>")
         .arg(tr("Escrevendo sobre um lugar."),
              tr("Com Explorar (X), clique em qualquer lugar: o painel abre com a foto, os dados e as abas Visão geral, Documentos, Aqui dentro e Dados. A busca no alto leva o mapa até um nome. \"Escrever sobre…\" abre um documento preso àquele lugar, e \"Salvar em\" escolhe onde ele mora: numa gaveta ou no Criador de Mundos, numa pasta com o caminho do lugar. Dá pra mudar depois sem perder o texto. \"Lugar aqui\" e \"Grupo social\" criam o que não está no mapa, como uma cidade ou uma família. O documento vazio não fica pra trás."));
     shot(QStringLiteral("explore"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>7- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>11- %1</b><br>%2</p>")
         .arg(tr("Conexões e personagens."),
              tr("Num território ou sistema, \"+ Nova conexão…\" liga ele a outro: clique no mapa ou escolha na lista. A conexão vira um arco no mapa e abre o lado a lado: os dois lugares nas pontas e, no meio, o texto do que liga os dois, bom pra guerras, tratados e rotas. Em qualquer lugar, \"+ Personagem\" traz uma ficha pra Personagens daqui, como quem mora ali ou quem nasceu ali. Isso fica na própria ficha, em Origem e \"Está em\", e tudo aparece também no Criador de Mundos."));
     shot(QStringLiteral("links"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>8- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>12- %1</b><br>%2</p>")
         .arg(tr("Territórios."),
              tr("Com Territórios (T), crie um em \"+ Novo território\", dê um nome e clique num sistema pra plantar: ele leva junto os vizinhos sem dono dentro do Alcance, e Shift+clique tira. Pintar passa o pincel e os sistemas embaixo entram no território; Neutro faz o contrário. Depois, em Explorar, clicar num território aproxima dele e desfoca o resto da galáxia; \"Sair do foco\" volta."));
     shot(QStringLiteral("territory"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>9- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>13- %1</b><br>%2</p>")
         .arg(tr("Construindo."),
              tr("Com Construir (K), o catálogo abre embaixo: astros, luas e cometas, estações, mundos e megaestruturas. Pegue uma peça e aproxime até um sistema abrir: a sombra da peça mostra onde ela vai cair, e a dica diz o que falta. Clique pra pôr. Perto de um planeta, a peça fica em volta dele; longe, em órbita da estrela. Anel orbital e elevador pedem um planeta, e a Esfera de Dyson vai na estrela. Sem peça na mão, clique pra selecionar e arraste pra mudar de órbita. Q e E giram, [ e ] mudam o tamanho e Delete apaga. Estrela nova pode ser posta em qualquer lugar da galáxia."));
     shot(QStringLiteral("build"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>10- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>14- %1</b><br>%2</p>")
         .arg(tr("Editando os dados."),
              tr("Editar fica no anel. Clique num planeta e a aba Editar deixa trocar o tipo, a temperatura, a água, a paisagem, a vegetação, as nuvens, a população, os anéis e as luas; num sistema, a estrela, e tudo em volta dela se recalcula. \"Gerar outro visual\" sorteia outra aparência sem mudar o resto."));
     shot(QStringLiteral("edit"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>11- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>15- %1</b><br>%2</p>")
         .arg(tr("O Caderno."),
              tr("A tecla C (ou o livrinho na barra da direita) abre a galáxia como um livro de consulta: a árvore de lugares à esquerda, a página do lugar no meio e, enquanto você escreve, a ficha técnica ao lado, pra não precisar sair do texto pra lembrar quanto dura o ano daquele planeta. \"Mostrar\" filtra a árvore por habitáveis, gasosos ou pelo que já tem nome ou documento. Esc sobe um nível, e \"Voltar pro mapa\" sai."));
     shot(QStringLiteral("caderno"));
-    html += QStringLiteral("<p style='margin-bottom:12px;'><b>12- %1</b><br>%2</p>")
+    html += QStringLiteral("<p style='margin-bottom:12px;'><b>16- %1</b><br>%2</p>")
         .arg(tr("Os detalhes."),
              tr("N põe e troca nomes: clique no vazio pra escrever um nome solto (o nome de um mar de estrelas, por exemplo) e Delete esconde um nome. R mede a distância em anos-luz: clique pra marcar o caminho e dê um duplo clique pra terminar. Tráfego, no anel, enche as rotas e os sistemas de naves. V troca o brilho da galáxia entre Cheio e Limpo, bom pra ler os nomes. E o quadradinho de imagem na barra da direita exporta um PNG da vista de agora, pronto pro livro."));
     return html;

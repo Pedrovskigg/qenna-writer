@@ -173,6 +173,8 @@
         <file alias="mapa/explore-reader.png">../src/assets/help/mapa/explore-reader.png</file>
         <file alias="mapa/ruler.png">../src/assets/help/mapa/ruler.png</file>
         <file alias="galaxy-maps/new-galaxy.png">../src/assets/help/galaxy-maps/new-galaxy.png</file>
+        <file alias="galaxy-maps/astronomer-new.png">../src/assets/help/galaxy-maps/astronomer-new.png</file>
+        <file alias="galaxy-maps/astronomer.png">../src/assets/help/galaxy-maps/astronomer.png</file>
         <file alias="galaxy-maps/links.png">../src/assets/help/galaxy-maps/links.png</file>
         <file alias="galaxy-maps/ring.png">../src/assets/help/galaxy-maps/ring.png</file>
         <file alias="galaxy-maps/views.png">../src/assets/help/galaxy-maps/views.png</file>
