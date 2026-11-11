@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Qenna Writer</title>
-<meta name="description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows, sem conta, sem assinatura.">
+<meta name="description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows e Mac, sem conta, sem assinatura.">
 <link rel="canonical" href="https://qennawriter.com/pt/">
 <link rel="alternate" hreflang="en" href="https://qennawriter.com/">
 <link rel="alternate" hreflang="pt-BR" href="https://qennawriter.com/pt/">
 <link rel="alternate" hreflang="x-default" href="https://qennawriter.com/">
 <link rel="icon" href="../favicon.ico">
 <meta property="og:title" content="Qenna Writer">
-<meta property="og:description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows, sem conta, sem assinatura.">
+<meta property="og:description" content="Programa gratuito para escrever romance e roteiro. Capitulos, cenas, personagens, mundo e revisao no mesmo lugar. Windows e Mac, sem conta, sem assinatura.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://qennawriter.com/pt/">
 <style>
@@ -322,6 +322,7 @@
     font-family: inherit; font-size: clamp(20px, 2.6vw, 24px); font-weight: 600;
     letter-spacing: -.005em; text-transform: none; color: var(--ink); margin: 46px 0 10px;
   }
+  .cta-pair { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .hero-new { margin-top: 2px !important; }
   .hero-new a { color: var(--red); font-weight: 500; }
 
@@ -336,7 +337,8 @@
   <div class="bar-in">
     <span class="wordmark">Qenna Writer</span>
     <nav class="bar-links">
-      <a href="#mapa">O Mapa</a>
+      <a href="#galaxia">Galáxia</a>
+      <a class="hide-sm" href="#mapa">O Mapa</a>
       <a class="hide-sm" href="#recursos">Recursos</a>
       <a class="hide-sm" href="#licenca">Licença</a>
       <a href="https://github.com/Pedrovskigg/qenna-writer">Código</a>
@@ -350,10 +352,13 @@
   <img class="mark" src="../img/wordmark.webp" alt="Qenna — cada letra do nome desenhada como um mundo diferente: fantasia, thriller, ficção científica, romance e terror" width="1500" height="455" fetchpriority="high">
   <p class="thesis">O livro inteiro num programa só.</p>
   <div class="cta-row">
-    <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
-    <p class="meta"><span id="ver">v1.5.0</span> &middot; Windows 10/11 &middot; ~280 MB &middot; gratuito, sem assinatura</p>
+    <div class="cta-pair">
+      <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
+      <a class="cta" href="/pt/obrigado.html#mac">Baixar para Mac</a>
+    </div>
+    <p class="meta"><span id="ver">v2.0.0</span> &middot; Windows 10/11 &middot; macOS 12 ou mais novo &middot; gratuito, sem assinatura</p>
     <p class="meta meta-alt"><a href="#recursos">Ver antes de baixar</a> &middot; <a href="https://github.com/Pedrovskigg/qenna-writer">Ler o código</a></p>
-    <p class="meta hero-new">Novo na 1.5: <a href="#mapa">o Mapa</a></p>
+    <p class="meta hero-new">Novo na 2.0: <a href="#galaxia">o Mapa Galáctico</a></p>
   </div>
 </section>
 
@@ -396,8 +401,7 @@
 </article>
 
 <article class="leaf flag" id="mapa">
-  <div class="leaf-head"><span><span class="num">Novo</span> &nbsp;O Mapa</span><span>Qenna Writer 1.5</span></div>
-  <p class="flag-tag">Novo na 1.5</p>
+  <div class="leaf-head"><span>O Mapa</span><span>Qenna Writer</span></div>
   <h2>O mundo onde a sua história acontece, num mapa que dá pra explorar</h2>
   <p class="lede">Gere um continente a partir de uma semente ou pinte um à mão. O terreno é relevo de verdade: <strong>montanha é altura, não desenho de montanha</strong>. A altitude, a latitude e a umidade decidem o clima e o bioma de cada pedaço de chão, e daí vêm os rios, as costas e as florestas.</p>
   <div class="bleed">
@@ -461,6 +465,62 @@
   </ul>
 </article>
 
+<article class="leaf flag" id="galaxia">
+  <div class="leaf-head"><span><span class="num">Novo</span> &nbsp;O Mapa Galáctico</span><span>Qenna Writer 2.0</span></div>
+  <p class="flag-tag">Novo na 2.0</p>
+  <h2>O mesmo mapa, para histórias que se passam entre as estrelas</h2>
+  <p class="lede">Territórios, grupos, conexões e documentos funcionam como no mapa de fantasia, só que agora em escala galáctica: sistemas, planetas, luas e o que for construído em volta deles. Comece pela Via Láctea (com o Sistema Solar), Andrômeda, M87 ou Sombrero, ou gere uma galáxia sua.</p>
+  <div class="bleed">
+    <img src="../img/galaxy-full.webp" alt="O Mapa Galáctico do Qenna Writer: uma galáxia espiral vista de cima, com dezenas de sistemas estelares com nome ao longo dos braços e uma bússola de vistas no canto" width="1500" height="938" loading="lazy">
+  </div>
+  <p class="shot-cap" style="text-align:left;margin-top:14px">The Threadvale Reach: uma galáxia espiral média gerada a partir de uma semente, na vista Completo.</p>
+
+  <h3 class="sub">Dois jeitos de construir</h3>
+  <p class="lede">Ao criar uma galáxia, você escolhe um modo. O <strong>Navegador</strong> é o mapa 3D: voe entre sistemas, acompanhe as órbitas e construa à vista. O <strong>Astrônomo</strong> trabalha pela escrita: os seus mundos agrupados por território, o documento no meio e o sistema ao lado, com um mapinha 3D que vem junto.</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/galaxy-new-hover.webp" alt="A janela Nova galáxia: Terra ou Galáxia, os modos Navegador e Astrônomo, galáxia pronta, estilo, braços, tamanho e semente, com uma caixa dos prós e contras do Navegador" width="1500" height="938" loading="lazy">
+      <figcaption>A janela Nova galáxia. Cada modo mostra os prós e os contras antes da escolha.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/galaxy-astronomer.webp" alt="O modo Astrônomo: mundos agrupados por território à esquerda, um documento sobre o planeta Anthor no meio e o sistema Nalon com o Anthor em 3D e o seu anel orbital à direita" width="1500" height="938" loading="lazy">
+      <figcaption>Astrônomo: territórios à esquerda, a página no meio, o sistema e a ficha à direita.</figcaption>
+    </figure>
+  </div>
+
+  <h3 class="sub">Cada mundo vem com os seus números</h3>
+  <p class="lede">Massa, raio, gravidade, densidade, temperatura, duração do dia e do ano: cada astro ganha dados gerados com física de verdade, e uma classe de habitabilidade de I a VI. <strong>Fique com os números, mude ou ignore</strong>; quem decide é a história.</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/galaxy-planet-sheet.webp" alt="A ficha de um planeta aberta ao lado do mapa: um globo que gira, o nome Pylsha, botões de centralizar, escrever, renomear e situar, e um resumo com temperatura, gravidade, ano, dia e classe" width="1500" height="938" loading="lazy">
+      <figcaption>A ficha de um planeta: resumo, documentos, o que está em órbita e os dados.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/galaxy-planet-data.webp" alt="A aba Dados da ficha do planeta, com massa, raio, gravidade, densidade, temperatura média e atmosfera" width="1500" height="938" loading="lazy">
+      <figcaption>A aba Dados. Gerada num clique, editável como qualquer campo.</figcaption>
+    </figure>
+  </div>
+
+  <h3 class="sub">Construa em órbita</h3>
+  <p class="lede">Anéis orbitais, frotas, cidades orbitais, estações, até uma esfera de Dyson em volta de uma estrela. Cada uma é um lugar próprio: dê nome e escreva sobre ela.</p>
+  <div class="cols">
+    <figure>
+      <img src="../img/galaxy-structures.webp" alt="O planeta Pylsha envolto num anel orbital, com uma frota, uma cidade orbital e uma estação em volta" width="1500" height="938" loading="lazy">
+      <figcaption>Pylsha, com anel orbital, frota, cidade e estação.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/galaxy-system.webp" alt="Um sistema estelar inteiro visto de cima, com as órbitas dos planetas em volta de uma estrela fechada numa esfera de Dyson" width="1500" height="938" loading="lazy">
+      <figcaption>Um sistema inteiro, em volta de uma estrela fechada numa esfera de Dyson.</figcaption>
+    </figure>
+  </div>
+  <ul class="ticks" style="margin-top:28px">
+    <li><strong>Vistas</strong>: Completo, Atlas, Céu, Infravermelho e Tinta.</li>
+    <li><strong>Semeação orgânica</strong>: os sistemas surgem conforme os territórios crescem, e os planetas podem se autopopular.</li>
+    <li><strong>Os documentos escritos no mapa</strong> vão para uma gaveta ou para o Criador de Mundos, você escolhe.</li>
+    <li><strong>Exportação em PNG</strong>, e um guia dos dois modos no painel de Ajuda.</li>
+  </ul>
+</article>
+
 <article class="leaf">
   <div class="leaf-head"><span><span class="num">II</span> &nbsp;O manuscrito inteiro de uma vez</span><span>Qenna Writer</span></div>
   <h2>Cada capítulo vira uma ficha, com os números dentro</h2>
@@ -477,6 +537,16 @@
   <p class="lede">A gaveta de Personagens guarda ficha, foto e papel de cada um. O Qenna cruza isso com o texto e conta sozinho: em quantas cenas o personagem aparece, quantas falas tem, com quem contracena mais.</p>
   <div class="bleed">
     <img src="../img/shot-characters.webp" alt="A gaveta de Personagens aberta ao lado do editor, com fichas ilustradas e o papel de cada personagem" width="1300" height="685" loading="lazy">
+  </div>
+  <div class="cols" style="margin-top:26px">
+    <figure>
+      <img src="../img/sheet-casefile.webp" alt="Uma ficha de personagem no estilo Prontuário: foto, papel, nome e apelidos com os campos curtos embaixo, à esquerda, e as seções longas à direita com um índice no alto" width="1500" height="938" loading="lazy">
+      <figcaption>Uma ficha de personagem no estilo Prontuário.</figcaption>
+    </figure>
+    <figure>
+      <img src="../img/sheet-tabs.webp" alt="A mesma ficha no estilo Abas: foto e campos curtos no alto, uma aba por seção embaixo" width="1500" height="938" loading="lazy">
+      <figcaption>A mesma ficha em Abas. E ainda Revista, Infobox e Dossiê, com os campos que você escolher.</figcaption>
+    </figure>
   </div>
   <ul class="ticks" style="margin-top:28px">
     <li><strong>Detecção de presença</strong> por capítulo e por cena.</li>
@@ -533,7 +603,7 @@
 
 <article class="leaf">
   <div class="leaf-head"><span><span class="num">V</span> &nbsp;Do seu jeito</span><span>Qenna Writer</span></div>
-  <h2>382 temas, ou um feito do zero</h2>
+  <h2>473 temas, ou um feito do zero</h2>
   <p class="lede">A cor da página e a cor do painel são independentes — dá para ter interface escura em volta de uma página branca, ou o contrário. Dá para definir um tema de dia e um de noite e deixar o Qenna trocar sozinho no horário.</p>
   <div class="cols">
     <figure>
@@ -654,8 +724,11 @@
   <blockquote>"Você não deveria ter que pagar para escrever boas histórias, nem pelas ferramentas que ajudam a escrevê-las. O único pagamento que o Qenna Writer pede é: escreva boas histórias."</blockquote>
   <p class="attrib">— P.H. Lobato, criador do Qenna Writer</p>
   <div class="cta-row" style="margin-top:34px">
-    <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
-    <p class="meta"><span id="ver2">v1.5.0</span> &middot; Windows 10/11 &middot; ~280 MB</p>
+    <div class="cta-pair">
+      <a class="cta" href="/pt/obrigado.html">Baixar para Windows</a>
+      <a class="cta" href="/pt/obrigado.html#mac">Baixar para Mac</a>
+    </div>
+    <p class="meta"><span id="ver2">v2.0.0</span> &middot; Windows 10/11 &middot; macOS 12 ou mais novo</p>
   </div>
 </section>
 

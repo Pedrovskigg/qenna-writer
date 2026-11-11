@@ -397,6 +397,15 @@
     padding: 5px 12px; white-space: nowrap;
   }
   .keyseq span { color: var(--ink-faint); }
+  .warnbox code {
+    display: block; margin: 4px 0 16px; padding: 10px 12px; border-radius: 3px;
+    border: 1px solid var(--rule-firm); color: var(--ink); overflow-x: auto;
+    font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 13px; white-space: pre-wrap; word-break: break-all;
+  }
+  [data-os="mac"] { display: none; }
+  html.mac [data-os="mac"] { display: block; }
+  html.mac span[data-os="mac"] { display: inline; }
+  html.mac [data-os="win"] { display: none; }
 </style>
 </head>
 <body>
@@ -416,11 +425,21 @@
   <div class="thanks-in">
     <p class="started">O download começou</p>
     <h1>Obrigado. Enquanto ele baixa, leia isto.</h1>
-    <p class="sub">São duas coisas: o que o Windows vai te dizer daqui a pouco, e por que este programa existe.</p>
-    <p class="fallback">v1.5.0 &middot; ~280 MB &middot; não começou? <a href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe">baixar de novo</a></p>
+    <p class="sub">São duas coisas: o que o <span data-os="win">Windows</span><span data-os="mac">macOS</span> vai te dizer daqui a pouco, e por que este programa existe.</p>
+    <p class="fallback"><span class="ver">v2.0.0</span> &middot; <span data-os="win">~300 MB</span><span data-os="mac">~420 MB &middot; macOS 12 ou mais novo</span> &middot; não começou? <a id="dl" href="https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe">baixar de novo</a></p>
   </div>
 
-  <div class="warnbox">
+  <div class="warnbox" data-os="mac">
+    <h3>Antes de abrir</h3>
+    <p>Arraste o <strong>Qenna Writer</strong> para a pasta Aplicativos. Na primeira vez que você abrir, o macOS vai dizer que <strong>não consegue verificar o desenvolvedor</strong>. Ele não encontrou nada de errado no arquivo: o Qenna só não tem o certificado pago da Apple.</p>
+    <div class="keyseq">
+      <b>Ajustes do Sistema</b><span>&rarr;</span><b>Privacidade e Segurança</b><span>&rarr;</span><b>Abrir Mesmo Assim</b>
+    </div>
+    <p>Isso só precisa ser feito uma vez. Se o macOS disser que o app <strong>"está danificado e não pode ser aberto"</strong>, abra o Terminal, cole esta linha e aperte Enter:</p>
+    <code>xattr -cr "/Applications/Qenna Writer.app"</code>
+    <p>Lembrando: caso tenha dúvidas, o código-fonte do Qenna sempre pode ser lido e acessado <a href="https://github.com/Pedrovskigg/qenna-writer">aqui</a>.</p>
+  </div>
+  <div class="warnbox" data-os="win">
     <h3>Antes de instalar</h3>
     <p>Quando você abrir o instalador, o Windows vai mostrar uma tela azul escrito <strong>"O Windows protegeu o computador"</strong>. Ele não encontrou nada de errado no arquivo — ele só não reconhece quem assinou.</p>
     <div class="keyseq">
@@ -473,10 +492,18 @@
   // então aqui fica só o link manual acima.
   (function () {
     var EXE = 'https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-setup.exe';
+    var DMG = 'https://github.com/Pedrovskigg/Qenna-Writer-releases/releases/latest/download/qenna-writer-mac.dmg';
+    var mac = location.hash === '#mac';
+    if (mac) {
+      document.documentElement.classList.add('mac');
+      var dl = document.getElementById('dl');
+      if (dl) dl.href = DMG;
+      document.querySelectorAll('a[href$="obrigado.html"], a[href$="thank-you.html"]').forEach(function (a) { a.href += '#mac'; });
+    }
     if (location.hostname.indexOf('qennawriter') !== -1) {
       var f = document.createElement('iframe');
       f.style.display = 'none';
-      f.src = EXE;
+      f.src = mac ? DMG : EXE;
       document.body.appendChild(f);
     }
     try {
@@ -484,8 +511,8 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (d) {
           if (!d || !d.tag_name) return;
-          var el = document.querySelector('.fallback');
-          if (el) el.innerHTML = el.innerHTML.replace('v1.5.0', String(d.tag_name));
+          var el = document.querySelector('.fallback .ver');
+          if (el) el.textContent = String(d.tag_name);
         })
         .catch(function () {});
     } catch (e) {}
