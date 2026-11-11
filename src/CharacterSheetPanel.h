@@ -118,6 +118,7 @@ private:
     void refreshIdentity();               // nome, apelidos e papel
     void updateStickies();                // infobox, trilho e índice acompanham a rolagem
     void showToast(const QString& text, std::function<void()> undo = {});
+    void undoLast();                      // Ctrl+Z e o "Desfazer" do aviso
 
     QWidget* buildPhoto(const QSize& size);
     QWidget* buildIdentity(int namePx, Qt::Alignment align, bool withAlias);
@@ -163,6 +164,7 @@ private:
     QPushButton* m_toastUndo = nullptr;
     QTimer* m_toastTimer = nullptr;
     std::function<void()> m_undo;
+    QList<std::function<void()>> m_removedFields;   // campos excluídos desta ficha, do mais antigo ao mais novo
 
     // Busca local (Ctrl+F)
     QWidget* m_findBar = nullptr;

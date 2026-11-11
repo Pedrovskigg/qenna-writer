@@ -34,6 +34,7 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
+#include <QShortcut>
 #include <QTextCharFormat>
 #include <QTextCursor>
 #include <QTextEdit>
@@ -387,10 +388,12 @@ CharacterSheetPanel::CharacterSheetPanel(ProjectModel* model, ElementsStore* ele
     m_toastUndo = new QPushButton(tr("Desfazer"));
     m_toastUndo->setObjectName(QStringLiteral("shToastUndo"));
     m_toastUndo->setCursor(Qt::PointingHandCursor);
-    connect(m_toastUndo, &QPushButton::clicked, this, [this]() {
-        m_toast->hide();
-        if (auto undo = std::exchange(m_undo, {})) undo();
-    });
+    connect(m_toastUndo, &QPushButton::clicked, this, &CharacterSheetPanel::undoLast);
+    // Ctrl+Z com o foco num campo que não tem o que desfazer também chega aqui:
+    // ver o ShortcutOverride no eventFilter.
+    auto* undoShortcut = new QShortcut(QKeySequence::Undo, this);
+    undoShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(undoShortcut, &QShortcut::activated, this, &CharacterSheetPanel::undoLast);
     th->addWidget(m_toastUndo);
     m_toast->hide();
     m_toastTimer = new QTimer(this);
@@ -641,6 +644,7 @@ void CharacterSheetPanel::openItem(const QString& itemId)
     }
     m_toast->hide();
     m_undo = {};
+    m_removedFields.clear();
     rebuild();
     m_scroll->verticalScrollBar()->setValue(0);
 }
@@ -713,11 +717,19 @@ void CharacterSheetPanel::removeField(const QString& id)
         const SheetField gone = m_sheet.fields.takeAt(i);
         commitNow();
         rebuild();
+        setFocus(); // o campo que tinha o foco acabou de ser refeito: o Ctrl+Z precisa ter pra onde ir
         const QString name = gone.label.trimmed().isEmpty() ? tr("Campo") : gone.label.trimmed();
-        showToast(tr("\"%1\" removido").arg(name), [this, gone, i]() {
+        // Devolver um campo não apaga nada, então isso continua valendo depois
+        // que o aviso some. Modelo e foto, que restauram o estado anterior,
+        // só desfazem enquanto o aviso está na tela.
+        m_removedFields.append([this, gone, i]() {
             m_sheet.fields.insert(qMin(i, int(m_sheet.fields.size())), gone);
             commitNow();
             rebuild();
+            setFocus();
+        });
+        showToast(tr("\"%1\" removido").arg(name), [this]() {
+            if (!m_removedFields.isEmpty()) m_removedFields.takeLast()();
         });
         return;
     }
@@ -1158,6 +1170,8 @@ void CharacterSheetPanel::rebuild()
     }
     m_scroll->setWidget(m_content);
     refreshPhoto();
+    for (QLineEdit* field : m_content->findChildren<QLineEdit*>()) field->installEventFilter(this);
+    for (QTextEdit* field : m_content->findChildren<QTextEdit*>()) field->installEventFilter(this);
 
     if (m_findBar && m_findBar->isVisible())
         onFindChanged(m_findInput->text());
@@ -1626,6 +1640,17 @@ void CharacterSheetPanel::updateStickies()
     if (m_dropLine) m_dropLine->raise();
 }
 
+void CharacterSheetPanel::undoLast()
+{
+    if (m_undo) {
+        m_toast->hide();
+        m_toastTimer->stop();
+        std::exchange(m_undo, {})();
+        return;
+    }
+    if (!m_removedFields.isEmpty()) m_removedFields.takeLast()();
+}
+
 void CharacterSheetPanel::showToast(const QString& text, std::function<void()> undo)
 {
     m_undo = std::move(undo);
@@ -1702,6 +1727,19 @@ void CharacterSheetPanel::openMenu(const QRect& anchorGlobal)
 bool CharacterSheetPanel::eventFilter(QObject* watched, QEvent* event)
 {
     const QEvent::Type t = event->type();
+    // Campo de texto sempre reivindica o Ctrl+Z, mesmo sem nada pra desfazer, e
+    // aí o campo excluído não voltava. Com o texto sem histórico, ele cede a vez.
+    if (t == QEvent::ShortcutOverride && static_cast<QKeyEvent*>(event)->matches(QKeySequence::Undo)
+        && (m_undo || !m_removedFields.isEmpty())) {
+        auto* line = qobject_cast<QLineEdit*>(watched);
+        auto* text = qobject_cast<QTextEdit*>(watched);
+        const bool fieldCanUndo = (line && line->isUndoAvailable())
+            || (text && text->document()->isUndoAvailable());
+        if ((line || text) && !fieldCanUndo) {
+            event->ignore();
+            return true;
+        }
+    }
     // Esc fecha a busca local.
     if (watched == m_findInput && t == QEvent::KeyPress) {
         auto* ke = static_cast<QKeyEvent*>(event);
