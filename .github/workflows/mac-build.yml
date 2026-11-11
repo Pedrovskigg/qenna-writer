@@ -7,7 +7,7 @@ on:
 
 jobs:
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     # rascunho de release só aparece pra quem pode escrever no repo (os sons)
     permissions:
       contents: write
