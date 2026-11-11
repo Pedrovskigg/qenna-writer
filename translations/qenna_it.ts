@@ -5351,7 +5351,7 @@ Non chiudere il programma se smette di rispondere.</translation>
     <name>HelpPanel</name>
     <message>
         <location filename="../src/HelpPanel.cpp" line="261"/>
-        <location filename="../src/HelpPanel.cpp" line="2913"/>
+        <location filename="../src/HelpPanel.cpp" line="2928"/>
         <source>Ajuda</source>
         <translation>Guida</translation>
     </message>
@@ -5624,19 +5624,19 @@ Non chiudere il programma se smette di rispondere.</translation>
         <location filename="../src/HelpPanel.cpp" line="2342"/>
         <location filename="../src/HelpPanel.cpp" line="2359"/>
         <location filename="../src/HelpPanel.cpp" line="2426"/>
-        <location filename="../src/HelpPanel.cpp" line="2501"/>
-        <location filename="../src/HelpPanel.cpp" line="2522"/>
+        <location filename="../src/HelpPanel.cpp" line="2516"/>
         <location filename="../src/HelpPanel.cpp" line="2537"/>
-        <location filename="../src/HelpPanel.cpp" line="2561"/>
-        <location filename="../src/HelpPanel.cpp" line="2594"/>
-        <location filename="../src/HelpPanel.cpp" line="2619"/>
-        <location filename="../src/HelpPanel.cpp" line="2638"/>
-        <location filename="../src/HelpPanel.cpp" line="2665"/>
-        <location filename="../src/HelpPanel.cpp" line="2691"/>
+        <location filename="../src/HelpPanel.cpp" line="2552"/>
+        <location filename="../src/HelpPanel.cpp" line="2576"/>
+        <location filename="../src/HelpPanel.cpp" line="2609"/>
+        <location filename="../src/HelpPanel.cpp" line="2634"/>
+        <location filename="../src/HelpPanel.cpp" line="2653"/>
+        <location filename="../src/HelpPanel.cpp" line="2680"/>
         <location filename="../src/HelpPanel.cpp" line="2706"/>
-        <location filename="../src/HelpPanel.cpp" line="2734"/>
-        <location filename="../src/HelpPanel.cpp" line="2746"/>
-        <location filename="../src/HelpPanel.cpp" line="2757"/>
+        <location filename="../src/HelpPanel.cpp" line="2721"/>
+        <location filename="../src/HelpPanel.cpp" line="2749"/>
+        <location filename="../src/HelpPanel.cpp" line="2761"/>
+        <location filename="../src/HelpPanel.cpp" line="2772"/>
         <source>Clique para expandir</source>
         <translation>Clicca per espandere</translation>
     </message>
@@ -7033,7 +7033,7 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation type="vanished">Lo strumento nell&apos;angolo in basso riunisce tutto ciò che cambia il modo di vedere. Sul disco ci sono le viste: Completa, Atlante, Cielo (solo il cielo, senza nomi né orbite) e le sei artistiche (Inchiostro, Pergamena, Carta stellare, Topografica, Acquerello e Piano di guerra), che si aprono in un elenco cliccando di nuovo. Trascina il centro per ruotare, clicca sull&apos;ago per tornare al nord, usa l&apos;arco a destra per inclinare e l&apos;indicatore sul bordo per far avanzare il tempo. P mette in pausa i pianeti. Se preferisci i pulsanti a uno strumento, passa a Cartiglio nelle Impostazioni (l&apos;ingranaggio nella barra a destra).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2454"/>
+        <location filename="../src/HelpPanel.cpp" line="2469"/>
         <source>Conexões e personagens.</source>
         <translation>Connessioni e personaggi.</translation>
     </message>
@@ -7042,7 +7042,7 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation type="vanished">Su un territorio o sistema, &quot;+ Nuova connessione…&quot; lo collega a un altro: clicca sulla mappa o scegli dall&apos;elenco. La connessione diventa un arco sulla mappa e apre la vista affiancata: i due luoghi alle estremità e, al centro, il testo di ciò che li lega, utile per guerre, trattati e rotte. In qualsiasi luogo, &quot;+ Personaggio&quot; porta una scheda in Personaggi di qui, come chi vive lì o è nato lì. Questo resta nella scheda stessa, in Posizione attuale e Origine, e tutto appare anche nel Creatore di Mondi.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2463"/>
+        <location filename="../src/HelpPanel.cpp" line="2478"/>
         <source>Com Construir (K), o catálogo abre embaixo: astros, luas e cometas, estações, mundos e megaestruturas. Pegue uma peça e aproxime até um sistema abrir: a sombra da peça mostra onde ela vai cair, e a dica diz o que falta. Clique pra pôr. Perto de um planeta, a peça fica em volta dele; longe, em órbita da estrela. Anel orbital e elevador pedem um planeta, e a Esfera de Dyson vai na estrela. Sem peça na mão, clique pra selecionar e arraste pra mudar de órbita. Q e E giram, [ e ] mudam o tamanho e Delete apaga. Estrela nova pode ser posta em qualquer lugar da galáxia.</source>
         <translation>Con Costruisci (K), il catalogo si apre in basso: astri, lune e comete, stazioni, mondi e megastrutture. Prendi un pezzo e avvicinati finché un sistema non si apre: l&apos;ombra del pezzo mostra dove cadrà, e il suggerimento dice cosa manca. Clicca per metterlo. Vicino a un pianeta, il pezzo gli sta attorno; lontano, in orbita attorno alla stella. Anello orbitale e ascensore chiedono un pianeta, e la Sfera di Dyson va sulla stella. Senza pezzi in mano, clicca per selezionare e trascina per cambiare orbita. Q ed E ruotano, [ e ] cambiano la dimensione e Canc elimina. Una stella nuova si può mettere ovunque nella galassia.</translation>
     </message>
@@ -7425,62 +7425,112 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation>Una battuta probabile può essere sbagliata, soprattutto in una scena con tre persone che parlano. Clic destro sulla scheda per confermare o cambiare chi parla: quello che correggi non viene mai annullato. Le battute di chi non è nel cast (&quot;il portiere&quot;) vanno in Comparse; assegnarne una a un personaggio può trasformare l&apos;inciso in un suo alias. E la × toglie una riga che non è una battuta, e non torna più.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2431"/>
+        <location filename="../src/HelpPanel.cpp" line="2430"/>
+        <source>O Galaxy Maps tem dois modos, e você escolhe um ao criar a galáxia: o Astrônomo, pra quem quer escrever, e o Navegador, pra quem quer explorar.</source>
+        <translation>Galaxy Maps ha due modalità, e ne scegli una quando crei la galassia: Astronomo, per chi vuole scrivere, e Navigatore, per chi vuole esplorare.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2432"/>
         <source>Criando uma galáxia.</source>
         <translation>Creare una galassia.</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="2368"/>
-        <location filename="../src/HelpPanel.cpp" line="2435"/>
+        <location filename="../src/HelpPanel.cpp" line="2450"/>
         <source>Andando pelo mapa.</source>
         <translation>Muoversi sulla mappa.</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="2372"/>
-        <location filename="../src/HelpPanel.cpp" line="2438"/>
+        <location filename="../src/HelpPanel.cpp" line="2453"/>
         <source>O anel de ferramentas.</source>
         <translation>L&apos;anello degli strumenti.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2439"/>
+        <location filename="../src/HelpPanel.cpp" line="2454"/>
         <source>Um clique com o botão direito, sem arrastar, abre o anel com as ferramentas: Mover, Territórios, Construir, Nomes, Explorar, Editar e Tráfego. A pílula no canto de baixo mostra qual está na sua mão e abre o mesmo anel. Se preferir o teclado: H move, T territórios, K construir, N nomes, X explorar, R régua e C o Caderno. Esc desfaz uma coisa de cada vez: fecha o que está aberto, solta a peça da mão e, no fim, volta pro Mover.</source>
         <translation>Un clic destro, senza trascinare, apre l&apos;anello con gli strumenti: Sposta, Territori, Costruisci, Nomi, Esplora, Modifica e Traffico. La pillola nell&apos;angolo in basso mostra quale hai in mano e apre lo stesso anello. Se preferisci la tastiera: H sposta, T territori, K costruisci, N nomi, X esplora, R righello e C il Quaderno. Esc annulla una cosa per volta: chiude ciò che è aperto, lascia il pezzo in mano e, alla fine, torna a Sposta.</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="2376"/>
-        <location filename="../src/HelpPanel.cpp" line="2442"/>
+        <location filename="../src/HelpPanel.cpp" line="2457"/>
         <source>O Astrolábio e as vistas.</source>
         <translation>L&apos;Astrolabio e le viste.</translation>
     </message>
     <message>
+        <location filename="../src/HelpPanel.cpp" line="2433"/>
+        <source>Abra o Mapa na barra lateral, clique na setinha ao lado do título e em &quot;Novo mapa…&quot;. Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha) e depois o modo, nos dois cartões: passe o mouse em cima de um deles pra ver os prós e os contras. Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços e tamanho. No Navegador, você também define a quantidade de sistemas e a mistura de mundos, e pode marcar &quot;Definir o espaço de cada classe&quot; pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia.</source>
+        <translation>Apri la Mappa nella barra laterale, clicca la freccetta accanto al titolo e poi &quot;Nuova mappa…&quot;. Nella finestra, scegli Galassia nel selettore in alto (alla prima mappa del progetto, questa finestra si apre da sola) e poi la modalità, sulle due schede: passa il mouse su una per vederne pro e contro. In Galassia pronta trovi la Via Lattea, con il Sistema Solare al suo posto, e altre galassie reali; oppure inventa la tua con stile, bracci e dimensioni. Nel Navigatore definisci anche il numero di sistemi e la miscela di mondi, e puoi attivare &quot;Definisci lo spazio di ogni classe&quot; per dire quanto avrà la galassia di ogni classe di pianeta: trascina i divisori della barra o scrivi la percentuale. L&apos;anteprima segue le tue scelte. Lo stesso seme dà sempre la stessa galassia.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2436"/>
+        <source>Os dois modos.</source>
+        <translation>Le due modalità.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2437"/>
+        <source>O Navegador já nasce com centenas de sistemas, planetas e luas, e tudo acontece em cima do mapa: você entra nos sistemas, constrói e escreve sobre o que encontrar. O Astrônomo nasce vazio e só existe o que você criar, na ordem que quiser; a tela é feita pra escrever, com o mapa a um clique. O modo é escolhido ao criar: a tela do Astrônomo só existe nas galáxias que nasceram nele. Os passos 3 a 5 são do Astrônomo e, do 6 em diante, do Navegador.</source>
+        <translation>Il Navigatore nasce con centinaia di sistemi, pianeti e lune, e tutto accade sulla mappa: entri nei sistemi, costruisci e scrivi di ciò che trovi. L&apos;Astronomo nasce vuoto ed esiste solo ciò che crei, nell&apos;ordine che vuoi; la schermata è fatta per scrivere, con la mappa a un clic. La modalità si sceglie alla creazione: la schermata dell&apos;Astronomo esiste solo nelle galassie nate in essa. I passi da 3 a 5 sono dell&apos;Astronomo e, dal 6 in poi, del Navigatore.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2439"/>
+        <source>Astrônomo: criando.</source>
+        <translation>Astronomo: creare.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2440"/>
+        <source>A coluna da esquerda guarda o que você criou: os territórios, com os mundos e sistemas de cada um, e os mundos soltos. &quot;+ Território&quot; cria um império, e o &quot;+&quot; abre a aba de planeta novo, colada na coluna: nome (o dado sorteia um), tipo e construções. Enter cria e Esc fecha. O botão direito em qualquer coisa mostra o que dá pra fazer com ela: renomear, trocar o tipo, mover, tornar capital, ver no mapa, excluir. O que você cria e muda aqui volta com Ctrl+Z.</source>
+        <translation>La colonna di sinistra conserva ciò che hai creato: i territori, con i mondi e i sistemi di ciascuno, e i mondi sparsi. &quot;+ Territorio&quot; crea un impero, e il &quot;+&quot; apre la scheda del nuovo pianeta, accanto alla colonna: nome (il dado ne sorteggia uno), tipo e costruzioni. Invio crea ed Esc chiude. Il tasto destro su qualsiasi cosa mostra ciò che puoi farne: rinominare, cambiare il tipo, spostare, renderla capitale, vedere sulla mappa, eliminare. Ciò che crei e modifichi qui si annulla con Ctrl+Z.</translation>
+    </message>
+    <message>
         <location filename="../src/HelpPanel.cpp" line="2443"/>
+        <source>Astrônomo: escrevendo.</source>
+        <translation>Astronomo: scrivere.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2444"/>
+        <source>Selecione um lugar e a folha dele abre no meio, com as fontes do app, formatação, corretor, Modo Foco, imagens e menções com @. A direita mostra onde você está e o planeta em 3D: arraste pra girar, use a rodinha pra aproximar e dê dois cliques pra voltar ao normal. &quot;+ Lua&quot; e &quot;+ Construção&quot; ficam ali mesmo, e &quot;Abrir ficha técnica completa&quot; mostra a aparência, a órbita e os outros dados. O app só gera o que você pedir: &quot;Gerar o que está vazio&quot;, na ficha completa, preenche os campos em branco, e você escolhe se fica com o resultado ou dispensa.</source>
+        <translation>Seleziona un luogo e la sua pagina si apre al centro, con i font dell&apos;app, la formattazione, il correttore, la Modalità Focus, le immagini e le menzioni con @. La destra mostra dove ti trovi e il pianeta in 3D: trascina per ruotare, usa la rotellina per avvicinare e fai doppio clic per tornare alla normalità. &quot;+ Luna&quot; e &quot;+ Costruzione&quot; sono lì, e &quot;Apri scheda tecnica completa&quot; mostra l&apos;aspetto, l&apos;orbita e gli altri dati. L&apos;app genera solo ciò che chiedi: &quot;Genera ciò che è vuoto&quot;, nella scheda completa, riempie i campi vuoti, e scegli tu se tenere il risultato o scartarlo.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2447"/>
+        <source>Astrônomo: o mapa.</source>
+        <translation>Astronomo: la mappa.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2448"/>
+        <source>No pé da coluna da esquerda fica o minimapa, só com o que você criou: a rodinha aproxima, arrastar move, o botão direito (ou Ctrl) gira, e clicar num lugar leva até ele. &quot;Ver no mapa&quot; abre o mapa da galáxia inteira, o mesmo do Navegador; &quot;Voltar pro Astrônomo&quot;, ao lado do nome da galáxia, traz você de volta, e a tecla W faz o mesmo.</source>
+        <translation>In fondo alla colonna di sinistra c&apos;è la minimappa, solo con ciò che hai creato: la rotellina avvicina, trascinare sposta, il tasto destro (o Ctrl) ruota, e cliccare su un luogo ti ci porta. &quot;Vedi sulla mappa&quot; apre la mappa dell&apos;intera galassia, la stessa del Navigatore; &quot;Torna ad Astronomo&quot;, accanto al nome della galassia, ti riporta indietro, e il tasto W fa lo stesso.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2458"/>
         <source>O instrumento no canto de baixo junta tudo o que muda o jeito de ver. No disco ficam as vistas: Completo, Atlas, Céu (só o céu, sem nomes nem órbitas) e as de arte, que abrem numa lista quando você clica de novo. São oito nascidas do espaço (Holograma, Rotas, Domínios, Gravidade, Harmonia, Infravermelho, Raio-X e Chapa de vidro) e seis de papel, como as do Mapa (Tinta, Pergaminho, Carta estelar, Topográfico, Aquarela e Planta de guerra). Cada uma mostra uma coisa: Rotas, como se vai de um lugar a outro; Domínios, quem manda onde; Infravermelho, a temperatura de cada mundo; Raio-X, onde mora o perigo. Arraste o meio pra girar, clique na agulha pra voltar ao norte, use o arco da direita pra inclinar e o marcador do aro pra adiantar o tempo. P pausa os planetas. Quem preferir botões a um instrumento pode trocar pra Cartela nos Ajustes (a engrenagem na barra da direita).</source>
         <translation>Lo strumento nell&apos;angolo in basso riunisce tutto ciò che cambia il modo di vedere. Sul disco ci sono le viste: Completa, Atlante, Cielo (solo il cielo, senza nomi né orbite) e quelle artistiche, che si aprono in un elenco cliccando di nuovo. Otto sono nate dallo spazio (Ologramma, Rotte, Domini, Gravità, Armonia, Infrarosso, Raggi X e Lastra di vetro) e sei sono su carta, come quelle della Mappa (Inchiostro, Pergamena, Carta stellare, Topografica, Acquerello e Piano di guerra). Ognuna mostra una cosa: Rotte, come si va da un luogo all&apos;altro; Domini, chi comanda dove; Infrarosso, la temperatura di ogni mondo; Raggi X, dove abita il pericolo. Trascina il centro per ruotare, clicca sull&apos;ago per tornare al nord, usa l&apos;arco a destra per inclinare e l&apos;indicatore sul bordo per far avanzare il tempo. P mette in pausa i pianeti. Se preferisci i pulsanti a uno strumento, passa a Cartiglio nelle Impostazioni (l&apos;ingranaggio nella barra a destra).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2450"/>
+        <location filename="../src/HelpPanel.cpp" line="2465"/>
         <source>Escrevendo sobre um lugar.</source>
         <translation>Scrivere di un luogo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2451"/>
+        <location filename="../src/HelpPanel.cpp" line="2466"/>
         <source>Com Explorar (X), clique em qualquer lugar: o painel abre com a foto, os dados e as abas Visão geral, Documentos, Aqui dentro e Dados. A busca no alto leva o mapa até um nome. &quot;Escrever sobre…&quot; abre um documento preso àquele lugar, e &quot;Salvar em&quot; escolhe onde ele mora: numa gaveta ou no Criador de Mundos, numa pasta com o caminho do lugar. Dá pra mudar depois sem perder o texto. &quot;Lugar aqui&quot; e &quot;Grupo social&quot; criam o que não está no mapa, como uma cidade ou uma família. O documento vazio não fica pra trás.</source>
         <translation>Con Esplora (X), clicca su un luogo qualsiasi: il pannello si apre con la foto, i dati e le schede Panoramica, Documenti, Qui dentro e Dati. La ricerca in alto porta la mappa a un nome. &quot;Scrivi di…&quot; apre un documento legato a quel luogo, e &quot;Salva in&quot; sceglie dove vive: in un cassetto o nel Creatore di Mondi, in una cartella con il percorso del luogo. Puoi cambiarlo dopo senza perdere il testo. &quot;Luogo qui&quot; e &quot;Gruppo sociale&quot; creano ciò che non è sulla mappa, come una città o una famiglia. Il documento vuoto non resta.</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="2388"/>
-        <location filename="../src/HelpPanel.cpp" line="2458"/>
+        <location filename="../src/HelpPanel.cpp" line="2473"/>
         <source>Territórios.</source>
         <translation>Territori.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2459"/>
+        <location filename="../src/HelpPanel.cpp" line="2474"/>
         <source>Com Territórios (T), crie um em &quot;+ Novo território&quot;, dê um nome e clique num sistema pra plantar: ele leva junto os vizinhos sem dono dentro do Alcance, e Shift+clique tira. Pintar passa o pincel e os sistemas embaixo entram no território; Neutro faz o contrário. Depois, em Explorar, clicar num território aproxima dele e desfoca o resto da galáxia; &quot;Sair do foco&quot; volta.</source>
         <translation>Con Territori (T), creane uno in &quot;+ Nuovo territorio&quot;, dagli un nome e clicca su un sistema per piantarlo: porta con sé i vicini senza padrone a portata, e Maiusc+clic toglie. Dipingi passa il pennello e i sistemi sotto entrano nel territorio; Neutro fa il contrario. Poi, in Esplora, cliccare su un territorio lo avvicina e sfoca il resto della galassia; &quot;Esci dal focus&quot; torna indietro.</translation>
     </message>
     <message>
         <location filename="../src/HelpPanel.cpp" line="2392"/>
-        <location filename="../src/HelpPanel.cpp" line="2462"/>
+        <location filename="../src/HelpPanel.cpp" line="2477"/>
         <source>Construindo.</source>
         <translation>Costruire.</translation>
     </message>
@@ -7490,12 +7540,11 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation>Mappa</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2432"/>
         <source>Abra o Mapa na barra lateral, clique na setinha ao lado do título e em &quot;Novo mapa…&quot;. Na janela, escolha Galáxia na chave de cima (no primeiro mapa do projeto, essa janela já abre sozinha). Em Galáxia pronta há a Via Láctea, com o Sistema Solar no lugar dele, e outras galáxias reais; ou invente a sua com estilo, braços, tamanho, quantidade de sistemas e mistura de mundos. Marque &quot;Definir o espaço de cada classe&quot; pra dizer quanto a galáxia vai ter de cada classe de planeta: arraste as divisórias da barra ou digite a porcentagem. A prévia acompanha o que você escolhe. A mesma semente sempre dá a mesma galáxia.</source>
-        <translation>Apri la Mappa nella barra laterale, clicca sulla freccetta accanto al titolo e su &quot;Nuova mappa…&quot;. Nella finestra, scegli Galassia nel selettore in alto (per la prima mappa del progetto, questa finestra si apre da sola). In Galassia pronta trovi la Via Lattea, con il Sistema Solare al suo posto, e altre galassie reali; oppure inventa la tua con stile, bracci, dimensione, numero di sistemi e miscela di mondi. Spunta &quot;Definisci lo spazio di ogni classe&quot; per dire quanto avrà la galassia di ogni classe di pianeta: trascina i divisori della barra o scrivi la percentuale. L&apos;anteprima segue le tue scelte. Lo stesso seme dà sempre la stessa galassia.</translation>
+        <translation type="vanished">Apri la Mappa nella barra laterale, clicca sulla freccetta accanto al titolo e su &quot;Nuova mappa…&quot;. Nella finestra, scegli Galassia nel selettore in alto (per la prima mappa del progetto, questa finestra si apre da sola). In Galassia pronta trovi la Via Lattea, con il Sistema Solare al suo posto, e altre galassie reali; oppure inventa la tua con stile, bracci, dimensione, numero di sistemi e miscela di mondi. Spunta &quot;Definisci lo spazio di ogni classe&quot; per dire quanto avrà la galassia di ogni classe di pianeta: trascina i divisori della barra o scrivi la percentuale. L&apos;anteprima segue le tue scelte. Lo stesso seme dà sempre la stessa galassia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2436"/>
+        <location filename="../src/HelpPanel.cpp" line="2451"/>
         <source>Arraste com o botão esquerdo pra mover e use a rodinha pra aproximar: de longe cada sistema é um ponto, chegando perto ele abre em órbitas, e o planeta vira uma esfera girando; onde mora gente, as cidades acendem no lado da noite. Arrastar com o botão direito gira e inclina o mapa, e a tecla F enquadra tudo de novo. Com outra ferramenta na mão, o botão do meio (ou Alt + arrastar) continua movendo. Passe o mouse em cima de um sistema, em Mover ou Explorar, e um card no canto mostra os planetas e os dados dele, sem precisar de zoom. Dá pra desligar nos Ajustes.</source>
         <translation>Trascina con il tasto sinistro per spostarti e usa la rotella per avvicinarti: da lontano ogni sistema è un punto, da vicino si apre in orbite, e il pianeta diventa una sfera che gira; dove vive gente, le città si accendono sul lato notturno. Trascinare con il tasto destro ruota e inclina la mappa, e il tasto F inquadra di nuovo tutto. Con un altro strumento in mano, il tasto centrale (o Alt + trascina) continua a spostare. Passa il mouse su un sistema, in Sposta o Esplora, e una scheda nell&apos;angolo mostra i suoi pianeti e i dati, senza zoom. Puoi disattivarla nelle Impostazioni.</translation>
     </message>
@@ -7504,107 +7553,107 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation type="vanished">Lo strumento nell&apos;angolo in basso riunisce tutto ciò che cambia il modo di vedere. Sul disco ci sono le viste: Completa, Atlante, Cielo (solo il cielo, senza nomi né orbite) e quelle artistiche, che si aprono in un elenco cliccando di nuovo. Nove sono nate dallo spazio (Ologramma, Rotte, Domini, Gravità, Pulsar, Armonia, Infrarosso, Raggi X e Lastra di vetro) e sei sono su carta, come quelle della Mappa (Inchiostro, Pergamena, Carta stellare, Topografica, Acquerello e Piano di guerra). Ognuna mostra una cosa: Rotte, come si va da un luogo all&apos;altro; Domini, chi comanda dove; Infrarosso, la temperatura di ogni mondo; Raggi X, dove abita il pericolo. Trascina il centro per ruotare, clicca sull&apos;ago per tornare al nord, usa l&apos;arco a destra per inclinare e l&apos;indicatore sul bordo per far avanzare il tempo. P mette in pausa i pianeti. Se preferisci i pulsanti a uno strumento, passa a Cartiglio nelle Impostazioni (l&apos;ingranaggio nella barra a destra).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2446"/>
+        <location filename="../src/HelpPanel.cpp" line="2461"/>
         <source>As classes de planeta.</source>
         <translation>Le classi dei pianeti.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2447"/>
+        <location filename="../src/HelpPanel.cpp" line="2462"/>
         <source>Cada mundo tem uma classe, que diz quanto custa viver nele: I Éden, II Áspero, III Marginal, IV Hostil, V Letal e VI Sem chão. A conta sai da temperatura, da gravidade, do ar e da estrela. A tecla L (ou o botão na barra da direita) acende a vista: a galáxia escurece, cada sistema brilha na cor do melhor mundo que tem e, de perto, cada mundo ganha o selo da classe. Clique numa classe no cartão pra ver só ela. O painel e o Caderno mostram a classe e o porquê, e em Editar você escolhe a classe na mão ou marca que dá pra respirar o ar daquele mundo. A sua escolha fica, mesmo se a temperatura mudar depois.</source>
         <translation>Ogni mondo ha una classe, che dice quanto costa viverci: I Eden, II Aspro, III Marginale, IV Ostile, V Letale e VI Senza suolo. Il calcolo nasce da temperatura, gravità, aria e stella. Il tasto L (o il pulsante nella barra a destra) accende la vista: la galassia si scurisce, ogni sistema brilla nel colore del suo mondo migliore e, da vicino, ogni mondo riceve il sigillo della classe. Clicca su una classe nella scheda per vedere solo quella. Il pannello e il Quaderno mostrano la classe e il perché, e in Modifica puoi scegliere la classe a mano o segnare che l&apos;aria di quel mondo è respirabile. La tua scelta resta, anche se poi la temperatura cambia.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2455"/>
+        <location filename="../src/HelpPanel.cpp" line="2470"/>
         <source>Num território ou sistema, &quot;+ Nova conexão…&quot; liga ele a outro: clique no mapa ou escolha na lista. A conexão vira um arco no mapa e abre o lado a lado: os dois lugares nas pontas e, no meio, o texto do que liga os dois, bom pra guerras, tratados e rotas. Em qualquer lugar, &quot;+ Personagem&quot; traz uma ficha pra Personagens daqui, como quem mora ali ou quem nasceu ali. Isso fica na própria ficha, em Origem e &quot;Está em&quot;, e tudo aparece também no Criador de Mundos.</source>
         <translation>Su un territorio o sistema, &quot;+ Nuova connessione…&quot; lo collega a un altro: clicca sulla mappa o scegli dall&apos;elenco. La connessione diventa un arco sulla mappa e apre la vista affiancata: i due luoghi alle estremità e, al centro, il testo di ciò che li lega, utile per guerre, trattati e rotte. In qualsiasi luogo, &quot;+ Personaggio&quot; porta una scheda in Personaggi di qui, come chi vive lì o è nato lì. Questo resta nella scheda stessa, in Origine e &quot;Si trova in&quot;, e tutto appare anche nel Creatore di Mondi.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2466"/>
+        <location filename="../src/HelpPanel.cpp" line="2481"/>
         <source>Editando os dados.</source>
         <translation>Modificare i dati.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2467"/>
+        <location filename="../src/HelpPanel.cpp" line="2482"/>
         <source>Editar fica no anel. Clique num planeta e a aba Editar deixa trocar o tipo, a temperatura, a água, a paisagem, a vegetação, as nuvens, a população, os anéis e as luas; num sistema, a estrela, e tudo em volta dela se recalcula. &quot;Gerar outro visual&quot; sorteia outra aparência sem mudar o resto.</source>
         <translation>Modifica è sull&apos;anello. Clicca su un pianeta e la scheda Modifica permette di cambiare tipo, temperatura, acqua, paesaggio, vegetazione, nuvole, popolazione, anelli e lune; su un sistema, la stella, e tutto attorno si ricalcola. &quot;Genera un altro aspetto&quot; sorteggia un nuovo aspetto senza cambiare il resto.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2470"/>
+        <location filename="../src/HelpPanel.cpp" line="2485"/>
         <source>O Caderno.</source>
         <translation>Il Quaderno.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2471"/>
+        <location filename="../src/HelpPanel.cpp" line="2486"/>
         <source>A tecla C (ou o livrinho na barra da direita) abre a galáxia como um livro de consulta: a árvore de lugares à esquerda, a página do lugar no meio e, enquanto você escreve, a ficha técnica ao lado, pra não precisar sair do texto pra lembrar quanto dura o ano daquele planeta. &quot;Mostrar&quot; filtra a árvore por habitáveis, gasosos ou pelo que já tem nome ou documento. Esc sobe um nível, e &quot;Voltar pro mapa&quot; sai.</source>
         <translation>Il tasto C (o il libretto nella barra a destra) apre la galassia come un libro di consultazione: l&apos;albero dei luoghi a sinistra, la pagina del luogo al centro e, mentre scrivi, la scheda tecnica a lato, per non uscire dal testo a ricordare quanto dura l&apos;anno di quel pianeta. &quot;Mostra&quot; filtra l&apos;albero per abitabili, gassosi o ciò che ha già un nome o un documento. Esc sale di un livello, e &quot;Torna alla mappa&quot; esce.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2474"/>
+        <location filename="../src/HelpPanel.cpp" line="2489"/>
         <source>Os detalhes.</source>
         <translation>I dettagli.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2475"/>
+        <location filename="../src/HelpPanel.cpp" line="2490"/>
         <source>N põe e troca nomes: clique no vazio pra escrever um nome solto (o nome de um mar de estrelas, por exemplo) e Delete esconde um nome. R mede a distância em anos-luz: clique pra marcar o caminho e dê um duplo clique pra terminar. Tráfego, no anel, enche as rotas e os sistemas de naves. V troca o brilho da galáxia entre Cheio e Limpo, bom pra ler os nomes. E o quadradinho de imagem na barra da direita exporta um PNG da vista de agora, pronto pro livro.</source>
         <translation>N mette e cambia i nomi: clicca sul vuoto per scrivere un nome libero (il nome di un mare di stelle, per esempio) e Canc nasconde un nome. R misura la distanza in anni luce: clicca per segnare il percorso e fai doppio clic per finire. Traffico, sull&apos;anello, riempie rotte e sistemi di navi. V cambia lo splendore della galassia tra Pieno e Pulito, utile per leggere i nomi. E il quadratino con l&apos;immagine nella barra a destra esporta un PNG della vista attuale, pronto per il libro.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2483"/>
+        <location filename="../src/HelpPanel.cpp" line="2498"/>
         <source>O Glossário guarda as palavras que só existem no seu livro: siglas, facções, lugares, títulos, gírias. Ele mora numa aba própria do Pensário (F4 pra abrir), e alimenta o corretor ortográfico, a Mira e a Bíblia do universo.</source>
         <translation>Il Glossario conserva le parole che esistono solo nel tuo libro: sigle, fazioni, luoghi, titoli, gergo. Ha una scheda tutta sua nel Pensarium (F4 per aprirlo), e alimenta il correttore ortografico, Mira e la Bibbia dell’universo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2488"/>
+        <location filename="../src/HelpPanel.cpp" line="2503"/>
         <source>Adicionando pelo texto.</source>
         <translation>Aggiungere dal testo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2489"/>
+        <location filename="../src/HelpPanel.cpp" line="2504"/>
         <source>Selecione a palavra no editor e use &quot;Adicionar ao Glossário&quot; no menu de seleção (o mesmo item aparece no botão direito de uma palavra que o corretor sublinhou). O popup já mostra a frase em que o termo aparece pela primeira vez no livro, quantas vezes ele aparece e em quantos capítulos; &quot;Ir até a primeira vez&quot; leva direto pra lá.</source>
         <translation>Seleziona la parola nell’editor e usa «Aggiungi al Glossario» nel menu di selezione (la stessa voce compare con il tasto destro su una parola sottolineata dal correttore). Il popup mostra già la frase in cui il termine compare per la prima volta nel libro, quante volte compare e in quanti capitoli; «Vai alla prima volta» ti porta dritto lì.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2502"/>
+        <location filename="../src/HelpPanel.cpp" line="2517"/>
         <source>Escolha um tipo (sigla, grupo, lugar, título, objeto ou gíria) e escreva a definição. Se o termo tem outras formas no texto, liste em &quot;Também escrito como&quot;, separadas por vírgula: &quot;CAL&quot; e &quot;Comando Alto Leste&quot; viram um termo só, e as contagens somam. Tudo além do termo é opcional. Selecionando uma palavra que já está no glossário (ou uma das outras grafias dela), o popup abre direto na edição.</source>
         <translation>Scegli un tipo (sigla, gruppo, luogo, titolo, oggetto o gergo) e scrivi la definizione. Se il termine ha altre forme nel testo, elencale in «Scritto anche come», separate da virgole: «RWG» e «River Weavers&apos; Guild» diventano un unico termine, e i conteggi si sommano. Tutto tranne il termine è facoltativo. Selezionando una parola che è già nel glossario (o una delle sue altre grafie), il popup si apre direttamente in modifica.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2509"/>
+        <location filename="../src/HelpPanel.cpp" line="2524"/>
         <source>A aba Glossário.</source>
         <translation>La scheda Glossario.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2510"/>
+        <location filename="../src/HelpPanel.cpp" line="2525"/>
         <source>Os termos ficam em ordem alfabética, com o alfabeto na borda direita pra pular de letra. Cada verbete mostra o tipo, as outras grafias, a definição e a primeira vez que o termo aparece. Clique num termo pra editar; o botão direito tem Editar, Ir até a primeira vez e Remover termo. A busca no topo procura nos termos, nas outras grafias e nas definições, e &quot;+ Novo termo&quot; cria um do zero.</source>
         <translation>I termini sono in ordine alfabetico, con l’alfabeto sul bordo destro per saltare da una lettera all’altra. Ogni voce mostra il tipo, le altre grafie, la definizione e la prima volta in cui compare il termine. Clicca su un termine per modificarlo; il tasto destro offre Modifica, Vai alla prima volta e Rimuovi termine. La ricerca in alto cerca nei termini, nelle altre grafie e nelle definizioni, e «+ Nuovo termine» ne crea uno da zero.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2524"/>
+        <location filename="../src/HelpPanel.cpp" line="2539"/>
         <source>Termo no texto.</source>
         <translation>Termine nel testo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2525"/>
+        <location filename="../src/HelpPanel.cpp" line="2540"/>
         <source>No editor, os termos do glossário ganham um sublinhado pontilhado discreto. Pare o mouse em cima pra ver a ficha: tipo, definição, a primeira vez e quantas vezes aparece. &quot;1ª vez&quot; leva ao primeiro uso e &quot;Glossário&quot; abre o verbete na aba. Se preferir o texto limpo, desligue em Configurações › Corretor › Termos do glossário no texto.</source>
         <translation>Nell’editor, i termini del glossario hanno una sottolineatura punteggiata discreta. Passaci sopra con il mouse per vedere la scheda: tipo, definizione, la prima volta e quante volte compare. «1ª volta» ti porta al primo uso e «Glossario» apre la voce nella scheda. Se preferisci il testo pulito, disattivala in Impostazioni › Correttore › Termini del glossario nel testo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2538"/>
+        <location filename="../src/HelpPanel.cpp" line="2553"/>
         <source>Uma sigla toda em maiúsculas só é reconhecida em maiúsculas: ROTA é o termo, e &quot;rota&quot; continua sendo palavra comum. E o corretor para de marcar como erro cada termo e cada grafia dele, então vale cadastrar os nomes inventados nem que seja só por isso.</source>
         <translation>Una sigla tutta in maiuscolo viene riconosciuta solo in maiuscolo: PORTA è il termine, e «porta» resta una parola comune. E il correttore smette di segnare come errore ogni termine e ogni sua grafia, quindi vale la pena registrare i nomi inventati anche solo per questo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2823"/>
+        <location filename="../src/HelpPanel.cpp" line="2838"/>
         <source>‹ ANTERIOR</source>
         <translation>‹ PRECEDENTE</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2824"/>
+        <location filename="../src/HelpPanel.cpp" line="2839"/>
         <source>PRÓXIMO ›</source>
         <translation>SUCCESSIVO ›</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2842"/>
+        <location filename="../src/HelpPanel.cpp" line="2857"/>
         <source>NESTE TÓPICO</source>
         <translation>IN QUESTO ARGOMENTO</translation>
     </message>
@@ -7798,142 +7847,142 @@ Non chiudere il programma se smette di rispondere.</translation>
         <translation type="vanished">Un dettaglio non ovvio: i termini del Glossario non vengono evidenziati nel testo, ma il correttore ortografico smette di sottolinearli come errori — quindi vale la pena registrare nomi o termini inventati anche solo per questo vantaggio, anche se non riaprirai mai più il pannello.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2551"/>
+        <location filename="../src/HelpPanel.cpp" line="2566"/>
         <source>O botão de Estatísticas fica na barra superior do editor, junto dos botões de Construtor, Pensário e Menu de Referência. Clique nele pra abrir o painel.</source>
         <translation>Il pulsante Statistiche si trova nella barra superiore dell&apos;editor, insieme ai pulsanti Costruttore, Pensarium e Menu di Riferimento. Cliccaci per aprire il pannello.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2563"/>
+        <location filename="../src/HelpPanel.cpp" line="2578"/>
         <source>O painel tem duas partes: uma visão geral do projeto, e um mergulho fundo em cada personagem.</source>
         <translation>Il pannello ha due parti: una panoramica del progetto e un&apos;analisi approfondita di ogni personaggio.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2568"/>
+        <location filename="../src/HelpPanel.cpp" line="2583"/>
         <source>Visão geral.</source>
         <translation>Panoramica.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2569"/>
+        <location filename="../src/HelpPanel.cpp" line="2584"/>
         <source>Logo no topo, uma fileira com a foto de todos os personagens do projeto. Clicar em qualquer um deles abre a página individual dele (item 2 abaixo).</source>
         <translation>Proprio in alto, una fila con la foto di tutti i personaggi del progetto. Cliccando su uno qualsiasi si apre la sua pagina individuale (punto 2 qui sotto).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2572"/>
+        <location filename="../src/HelpPanel.cpp" line="2587"/>
         <source>Embaixo da fileira, um gráfico de barrinhas mostra a &quot;Participação&quot; de cada personagem — a porcentagem de cenas do projeto em que ele aparece (mesma detecção automática por nome que já existia).</source>
         <translation>Sotto la fila, un grafico a barre mostra la &quot;Partecipazione&quot; di ogni personaggio — la percentuale di scene del progetto in cui compare (lo stesso rilevamento automatico per nome che esisteva già).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2576"/>
+        <location filename="../src/HelpPanel.cpp" line="2591"/>
         <source>Mais embaixo, &quot;Manuscrito, por capítulo&quot; — um gráfico de barras com um capítulo por coluna, numerados na ordem da obra. Um menu no canto (&quot;Palavras ▾&quot;) deixa escolher a métrica: palavras por capítulo, ou % de diálogo em relação à narração. Clicar numa barra abre as estatísticas daquele capítulo específico (a mesma janela que já existe no Manuscrito).</source>
         <translation>Più in basso, &quot;Manoscritto, per capitolo&quot; — un grafico a barre con un capitolo per colonna, numerati nell&apos;ordine dell&apos;opera. Un menu nell&apos;angolo (&quot;Parole ▾&quot;) permette di scegliere la metrica: parole per capitolo, oppure % di dialogo rispetto alla narrazione. Cliccando su una barra si aprono le statistiche di quel capitolo specifico (la stessa finestra che esiste già nel Manoscritto).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2582"/>
+        <location filename="../src/HelpPanel.cpp" line="2597"/>
         <source>Por fim, &quot;Resumo do projeto&quot;: total de palavras, quantos capítulos e cenas tem o manuscrito atual, qual foi o maior e o menor capítulo (em palavras), quantos Vínculos existem por tipo, e um resumo da sua sequência de escrita (streak atual, recorde, páginas estimadas).</source>
         <translation>Infine, &quot;Riepilogo del progetto&quot;: totale di parole, quanti capitoli e scene ha il manoscritto attuale, il capitolo più lungo e quello più corto (in parole), quanti Legami esistono per tipo e un riepilogo della tua serie di scrittura (serie attuale, record, pagine stimate).</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2597"/>
+        <location filename="../src/HelpPanel.cpp" line="2612"/>
         <source>Por personagem.</source>
         <translation>Per personaggio.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2598"/>
+        <location filename="../src/HelpPanel.cpp" line="2613"/>
         <source>Clicando numa foto na fileira, você entra na página daquele personagem. Um botão de voltar (←) no cabeçalho do painel te traz de volta pra visão geral.</source>
         <translation>Cliccando su una foto della fila entri nella pagina di quel personaggio. Un pulsante indietro (←) nell&apos;intestazione del pannello ti riporta alla panoramica.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2601"/>
+        <location filename="../src/HelpPanel.cpp" line="2616"/>
         <source>Aqui você encontra: a foto e o nome, um resumo de presença (em quantas cenas/capítulos ele aparece), quantas falas e palavras faladas o Detector de Diálogos já achou pra ele, e dois botões — Status e Local — que fazem exatamente o que faziam no antigo Modo Consistência (que não existe mais — tudo que ele fazia foi pra cá). Se o personagem estiver marcado como Morto ou Desaparecido mas ainda aparecer em alguma cena depois disso, um aviso chama atenção pra essa inconsistência.</source>
         <translation>Qui trovi: la foto e il nome, un riepilogo della presenza (in quante scene/capitoli compare), quante battute e parole pronunciate il Rilevatore di dialoghi ha già trovato per lui, e due pulsanti — Stato e Luogo — che fanno esattamente ciò che facevano nella vecchia Modalità Coerenza (che non esiste più — tutto ciò che faceva è finito qui). Se il personaggio è segnato come Morto o Scomparso ma compare ancora in qualche scena successiva, un avviso segnala l&apos;incoerenza.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2608"/>
+        <location filename="../src/HelpPanel.cpp" line="2623"/>
         <source>Logo abaixo, a lista de Vínculos daquele personagem (mesmos vínculos que você já cria arrastando um personagem em cima do outro na gaveta) — aqui é só consulta, criar/editar vínculo continua sendo na gaveta mesmo.</source>
         <translation>Subito sotto, l&apos;elenco dei Legami di quel personaggio (gli stessi legami che crei trascinando un personaggio sopra un altro nel cassetto) — qui è solo consultazione, creare/modificare un legame si fa sempre nel cassetto.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2622"/>
+        <location filename="../src/HelpPanel.cpp" line="2637"/>
         <source>Química.</source>
         <translation>Intesa.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2623"/>
+        <location filename="../src/HelpPanel.cpp" line="2638"/>
         <source>Essa é nova: uma lista mostrando com quem aquele personagem mais &quot;contracenou&quot; — quantas cenas, capítulos e falas cruzadas ele tem com cada outro personagem do elenco. Um menu deixa escolher qual dessas três métricas ordena a lista.</source>
         <translation>Questa è nuova: un elenco che mostra con chi quel personaggio ha &quot;recitato&quot; di più — quante scene, capitoli e battute incrociate condivide con ogni altro personaggio del cast. Un menu permette di scegliere quale di queste tre metriche ordina l&apos;elenco.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2627"/>
+        <location filename="../src/HelpPanel.cpp" line="2642"/>
         <source>Clicando num nome da lista, abre um popup só com os diálogos entre aquele par de personagens, com um menu no topo pra pular direto pra um capítulo específico. O popup pode ser arrastado pelo título, pra tirar ele do meio do caminho.</source>
         <translation>Cliccando su un nome dell&apos;elenco si apre un popup con i soli dialoghi tra quella coppia di personaggi, con un menu in alto per saltare direttamente a un capitolo specifico. Il popup può essere trascinato dal titolo, per toglierlo di mezzo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2641"/>
+        <location filename="../src/HelpPanel.cpp" line="2656"/>
         <source>Ficha / documento.</source>
         <translation>Scheda / documento.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2642"/>
+        <location filename="../src/HelpPanel.cpp" line="2657"/>
         <source>Por último, o conteúdo real da ficha (ou do documento livre, se o personagem não usa ficha estruturada) daquele personagem, exibido ali mesmo — sem precisar abrir a gaveta. Só o texto: fotos que estejam dentro da ficha/doc não aparecem aqui (a foto do personagem já está lá em cima). A área tem altura limitada e rola por dentro se o conteúdo for grande.</source>
         <translation>Infine, il contenuto effettivo della scheda (o del documento libero, se il personaggio non usa una scheda strutturata) di quel personaggio, mostrato lì stesso — senza dover aprire il cassetto. Solo il testo: le foto dentro la scheda/documento non compaiono qui (la foto del personaggio è già in alto). L&apos;area ha un&apos;altezza limitata e scorre al suo interno se il contenuto è lungo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2656"/>
+        <location filename="../src/HelpPanel.cpp" line="2671"/>
         <source>Fica na barra superior, ao lado do botão de Lembretes.</source>
         <translation>Si trova nella barra superiore, accanto al pulsante Promemoria.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2667"/>
+        <location filename="../src/HelpPanel.cpp" line="2682"/>
         <source>O app varre uma pasta de sons do seu computador e lista os arquivos de áudio encontrados nela. Só uma faixa toca por vez (escolher uma nova troca a que estava tocando), em loop contínuo, com um controle de volume único pra todas. Sua faixa e volume escolhidos ficam salvos e voltam a mesma coisa da próxima vez que você abrir o app.</source>
         <translation>L&apos;app esamina una cartella di suoni sul tuo computer ed elenca i file audio che vi trova. Suona una sola traccia alla volta (sceglierne una nuova sostituisce quella in riproduzione), in loop continuo, con un unico controllo del volume per tutte. La traccia e il volume scelti vengono salvati e tornano uguali la prossima volta che apri l&apos;app.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2681"/>
+        <location filename="../src/HelpPanel.cpp" line="2696"/>
         <source>Fica na barra superior, ao lado do Som Imersivo. Um aviso vermelho aparece no botão quando você tem lembretes ativos.</source>
         <translation>Si trova nella barra superiore, accanto a Suono immersivo. Quando hai promemoria attivi, sul pulsante compare un avviso rosso.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2693"/>
+        <location filename="../src/HelpPanel.cpp" line="2708"/>
         <source>Digite o texto do lembrete e aperte Enter (ou o &quot;+&quot;) pra criá-lo. Se marcar &quot;Notificar às&quot;, escolha um horário do dia — ao chegar nesse horário, um aviso aparece dentro do próprio app (não é uma notificação do Windows). Lembretes não têm data específica (só horário), nem prioridade, nem vínculo com capítulos ou documentos — são só lembretes de texto livre mesmo.</source>
         <translation>Scrivi il testo del promemoria e premi Invio (o il &quot;+&quot;) per crearlo. Se selezioni &quot;Notifica alle&quot;, scegli un orario del giorno — a quell&apos;ora compare un avviso dentro l&apos;app stessa (non è una notifica di Windows). I promemoria non hanno una data specifica (solo l&apos;orario), né priorità, né collegamento a capitoli o documenti — sono semplici promemoria di testo libero.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2708"/>
+        <location filename="../src/HelpPanel.cpp" line="2723"/>
         <source>Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de &quot;Concluídos&quot; que pode ser expandida ou escondida, com opção de limpar tudo de uma vez.</source>
         <translation>Spunta la casella di un promemoria per completarlo; passa a un elenco &quot;Completati&quot; che si può espandere o nascondere, con l&apos;opzione di svuotarlo tutto in una volta.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2719"/>
+        <location filename="../src/HelpPanel.cpp" line="2734"/>
         <source>Caso você tenha escrito uma cena, gostou dela, mas por algum motivo quer reescrevê-la, dá pra fazer isso sem perder a cena que já escreveu — e é mais simples do que parece.</source>
         <translation>Se hai scritto una scena, ti è piaciuta, ma per qualche motivo vuoi riscriverla, puoi farlo senza perdere la scena già scritta — ed è più semplice di quanto sembri.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2723"/>
+        <location filename="../src/HelpPanel.cpp" line="2738"/>
         <source>No painel de Manuscrito, acesse a sua cena diretamente — essa opção não é acessível em capítulos completos, só em cenas isoladas. Então você precisa abrir a cena sozinha no editor, não o capítulo inteiro.</source>
         <translation>Nel pannello Manoscritto, apri direttamente la tua scena — questa opzione non è disponibile per i capitoli interi, solo per le scene singole. Quindi devi aprire la scena da sola nell&apos;editor, non l&apos;intero capitolo.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2736"/>
+        <location filename="../src/HelpPanel.cpp" line="2751"/>
         <source>Quando a cena abrir sozinha, aparece um botão discreto ao lado do nome dela, na barra superior. Clique nele — sim, ele é bem pequeno e discreto mesmo, é de propósito.</source>
         <translation>Quando la scena si apre da sola, accanto al suo nome nella barra superiore compare un pulsante discreto. Cliccaci — sì, è davvero piccolo e discreto, apposta.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2748"/>
+        <location filename="../src/HelpPanel.cpp" line="2763"/>
         <source>Ao clicar, aparecem três opções: nova, primária e apagar.</source>
         <translation>Cliccando compaiono tre opzioni: nuova, principale ed elimina.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2759"/>
+        <location filename="../src/HelpPanel.cpp" line="2774"/>
         <source>&lt;b&gt;+ nova&lt;/b&gt; cria outra variação da cena: um popup pede um nome pra ela e, ao confirmar, a variação já abre em branco no editor, pronta pra escrever.</source>
         <translation>&lt;b&gt;+ nuova&lt;/b&gt; crea un&apos;altra variante della scena: un popup chiede un nome e, alla conferma, la variante si apre vuota nell&apos;editor, pronta per la scrittura.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2762"/>
+        <location filename="../src/HelpPanel.cpp" line="2777"/>
         <source>&lt;b&gt;★ primária&lt;/b&gt; define qual variação é a principal — é ela que aparece quando o capítulo inteiro é aberto de uma vez e também a que sai na exportação.</source>
         <translation>&lt;b&gt;★ principale&lt;/b&gt; definisce quale variante è quella principale — è quella che compare quando l&apos;intero capitolo viene aperto in una volta ed è anche quella che viene esportata.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2765"/>
+        <location filename="../src/HelpPanel.cpp" line="2780"/>
         <source>&lt;b&gt;✕ apagar&lt;/b&gt; exclui a variação que está aberta no momento.</source>
         <translation>&lt;b&gt;✕ elimina&lt;/b&gt; cancella la variante aperta in quel momento.</translation>
     </message>
@@ -40819,9 +40868,13 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Trascina per cambiare la larghezza</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyLivre.cpp" line="336"/>
         <source>CRIAÇÃO LIVRE</source>
-        <translation>CREAZIONE LIBERA</translation>
+        <translation type="vanished">CREAZIONE LIBERA</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyLivre.cpp" line="336"/>
+        <source>ASTRÔNOMO</source>
+        <translation>ASTRONOMO</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyLivre.cpp" line="339"/>
@@ -42701,82 +42754,136 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
 <context>
     <name>galaxy::NewGalaxy</name>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="259"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="328"/>
         <source>Fechar</source>
         <translation>Chiudi</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="277"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="346"/>
         <source>Terra</source>
         <translation>Terra</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="278"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="347"/>
         <source>Galáxia</source>
         <translation>Galassia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="285"/>
         <source>COMO ELA NASCE</source>
-        <translation>COME NASCE</translation>
+        <translation type="vanished">COME NASCE</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="300"/>
         <source>Gerada</source>
-        <translation>Generata</translation>
+        <translation type="vanished">Generata</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="301"/>
         <source>Criação Livre</source>
-        <translation>Creazione Libera</translation>
+        <translation type="vanished">Creazione Libera</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="307"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="296"/>
+        <source>PRÓS</source>
+        <translation>PRO</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="299"/>
+        <source>CONTRAS</source>
+        <translation>CONTRO</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="354"/>
+        <source>ESCOLHA O MODO</source>
+        <translation>SCEGLI LA MODALITÀ</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="364"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="640"/>
+        <source>Navegador</source>
+        <translation>Navigatore</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="364"/>
+        <source>A galáxia é sua para domar. Explore livremente, navegue pelas estrelas e construa o seu universo, tudo em tempo real e à vista.</source>
+        <translation>La galassia è tua da domare. Esplora liberamente, naviga tra le stelle e costruisci il tuo universo, tutto in tempo reale e sotto i tuoi occhi.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="365"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="640"/>
+        <source>Astrônomo</source>
+        <translation>Astronomo</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="365"/>
+        <source>Estude o seu universo e documente-o por completo. Crie seus planetas, sistemas e impérios galácticos e forje sua história.</source>
+        <translation>Studia il tuo universo e documentalo fino in fondo. Crea pianeti, sistemi e imperi galattici e forgia la tua storia.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="374"/>
+        <source>NOTA DO DEV</source>
+        <translation>NOTA DELLO SVILUPPATORE</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="391"/>
+        <source>Eu amo o Navegador. Ele é lindo, divertido de explorar, criar e editar os planetas. Se você procura um explorador galáctico que faria a NASA baixar o app para ver como se faz, ele é o seu cara. É incrível.</source>
+        <translation>Adoro il Navigatore. È bellissimo, ed è divertente esplorare, creare e modificare i pianeti. Se cerchi un esploratore galattico che farebbe scaricare l&apos;app alla NASA per vedere come si fa, è quello che fa per te. È incredibile.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="392"/>
+        <source>Mas se você quer escrever para valer, colocar os textos na mesa, conectar, gerenciar e construir a lore e a história do seu universo, o Astrônomo é mais pensado para isso.</source>
+        <translation>Ma se vuoi scrivere sul serio, mettere i testi sul tavolo, collegare, gestire e costruire la lore e la storia del tuo universo, l&apos;Astronomo è pensato di più per questo.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="393"/>
+        <source>Entretanto, ambos têm o mesmo objetivo: criar o universo da sua história. A única coisa que muda entre eles é como você faz.</source>
+        <translation>Comunque, entrambi hanno lo stesso obiettivo: creare l&apos;universo della tua storia. L&apos;unica cosa che cambia tra i due è come lo fai.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="401"/>
         <source>GALÁXIA PRONTA</source>
         <translation>GALASSIA PRONTA</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="310"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="404"/>
         <source>Nenhuma, vou inventar a minha</source>
         <translation>Nessuna, invento la mia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="339"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="433"/>
         <source>NOME</source>
         <translation>NOME</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="342"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="436"/>
         <source>Sem nome, ela se chama pelo estilo</source>
         <translation>Senza nome, si chiama con lo stile</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="345"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="439"/>
         <source>ESTILO</source>
         <translation>STILE</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="356"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="450"/>
         <source>BRAÇOS</source>
         <translation>BRACCI</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="367"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="461"/>
         <source>TAMANHO</source>
         <translation>DIMENSIONE</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="384"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="478"/>
         <source>SISTEMAS</source>
         <translation>SISTEMI</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="395"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="489"/>
         <source>MISTURA DE MUNDOS</source>
         <translation>MISCELA DI MONDI</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="465"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="559"/>
         <source>Definir o espaço de cada classe</source>
         <translation>Definisci lo spazio di ogni classe</translation>
     </message>
@@ -42785,53 +42892,71 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">MONDI ABITABILI</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="481"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="575"/>
         <source>SEMENTE</source>
         <translation>SEME</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="488"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="582"/>
         <source>Sortear</source>
         <translation>Sorteggia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="534"/>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="537"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="642"/>
+        <source>Bem menos trabalho manual e de exploração do que no Navegador. A galáxia começa vazia e só existe o que você criar, com o mapa a um clique, mas o foco é o texto na página. Crie planetas, luas e construções, escreva a história delas, conecte-as umas às outras e forje seu universo. Os astros e construções continuam em 3D, visíveis e editáveis o tempo todo.</source>
+        <translation>Molto meno lavoro manuale e di esplorazione rispetto al Navigatore. La galassia parte vuota ed esiste solo ciò che crei, con la mappa a un clic, ma al centro c&apos;è il testo sulla pagina. Crea pianeti, lune e costruzioni, scrivi la loro storia, collegale tra loro e forgia il tuo universo. Astri e costruzioni restano in 3D, visibili e modificabili in ogni momento.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="643"/>
+        <source>Uma verdadeira aventura visual, divertida de acompanhar. Entre nos sistemas e na órbita dos planetas. Veja, edite e crie o que quiser em uma galáxia já pronta. Faça enormes construções orbitais, gigantes gasosos e até luas habitáveis. Escreva sobre elas enquanto assiste, na sua frente, ao seu universo ganhar vida.</source>
+        <translation>Una vera avventura visiva, divertente da seguire. Entra nei sistemi e nell&apos;orbita dei pianeti. Guarda, modifica e crea ciò che vuoi in una galassia già pronta. Realizza enormi costruzioni orbitali, giganti gassosi e persino lune abitabili. Scrivi di loro mentre guardi, davanti a te, il tuo universo prendere vita.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="645"/>
+        <source>O foco aqui é a escrita, com bem menos deleite visual e interatividade 3D do que no Navegador. Mas... você ainda pode ficar girando e vendo os seus planetas.</source>
+        <translation>Qui il centro è la scrittura, con molta meno delizia visiva e interattività 3D rispetto al Navigatore. Ma... puoi comunque restare a far girare e guardare i tuoi pianeti.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="646"/>
+        <source>Interface mais trabalhosa e muito trabalho manual, não só para construir sua galáxia, mas para torná-la sua. Há muito o que fazer e explorar, o que pode causar a sensação de excesso de trabalho para quem tem pressa de ver a história se formar.</source>
+        <translation>Interfaccia più impegnativa e molto lavoro manuale, non solo per costruire la tua galassia, ma per renderla tua. C&apos;è molto da fare ed esplorare, il che può dare la sensazione di troppo lavoro a chi ha fretta di veder nascere la storia.</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="668"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="673"/>
         <source>Regenerar galáxia</source>
         <translation>Rigenera galassia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="534"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="668"/>
         <source>Nova galáxia</source>
         <translation>Nuova galassia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="535"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="669"/>
         <source>Regenerar troca a galáxia inteira, e o que foi construído e escrito nela vai junto. Logo depois dá pra desfazer.</source>
         <translation>Rigenerare sostituisce l&apos;intera galassia, insieme a ciò che vi è stato costruito e scritto. Subito dopo puoi annullare.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="537"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="673"/>
         <source>Criar galáxia</source>
         <translation>Crea galassia</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="578"/>
         <source>O app gera centenas de sistemas, planetas e luas. Você nomeia, escreve e muda o que quiser.</source>
-        <translation>L&apos;app genera centinaia di sistemi, pianeti e lune. Tu dai i nomi, scrivi e cambi ciò che vuoi.</translation>
+        <translation type="vanished">L&apos;app genera centinaia di sistemi, pianeti e lune. Tu dai i nomi, scrivi e cambi ciò che vuoi.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="579"/>
         <source>A galáxia nasce vazia. Você cria os planetas, os sistemas e os territórios na ordem que quiser, escrevendo a história de cada um no mesmo lugar. O app só gera o que você pedir.</source>
-        <translation>La galassia nasce vuota. Crei i pianeti, i sistemi e i territori nell&apos;ordine che vuoi, scrivendo la storia di ognuno nello stesso posto. L&apos;app genera solo ciò che chiedi.</translation>
+        <translation type="vanished">La galassia nasce vuota. Crei i pianeti, i sistemi e i territori nell&apos;ordine che vuoi, scrivendo la storia di ognuno nello stesso posto. L&apos;app genera solo ciò che chiedi.</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="583"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="717"/>
         <source>Na mão</source>
         <translation>A mano</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="654"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="788"/>
         <source>≈ %n mundo(s)</source>
         <translation>
             <numerusform>≈ %n mondo</numerusform>
@@ -42839,12 +42964,12 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="654"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="788"/>
         <source>nenhum</source>
         <translation>nessuno</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="701"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="835"/>
         <source>Gerando a prévia…</source>
         <translation>Generazione dell&apos;anteprima…</translation>
     </message>
@@ -42852,19 +42977,19 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
 <context>
     <name>galaxy::Panel</name>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="58"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="59"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="54"/>
         <source>Pequena</source>
         <translation>Piccola</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="59"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="60"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="55"/>
         <source>Média</source>
         <translation>Media</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="60"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="61"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="56"/>
         <location filename="../src/galaxy/GalaxyPanelBuild.cpp" line="95"/>
         <location filename="../src/galaxy/GalaxyPanelBuild.cpp" line="336"/>
@@ -42872,45 +42997,45 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Grande</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="61"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="62"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="57"/>
         <source>Imensa</source>
         <translation>Immensa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="64"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="65"/>
         <source>Cruel</source>
         <translation>Crudele</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="64"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="65"/>
         <source>Dura</source>
         <translation>Dura</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="64"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="65"/>
         <source>Generosa</source>
         <translation>Generosa</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="64"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="65"/>
         <source>Cheia de vida</source>
         <translation>Piena di vita</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="474"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="568"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="439"/>
         <source>Semeação Orgânica</source>
         <translation>Semina Organica</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="475"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="569"/>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="440"/>
         <source>As galáxias por padrão possuem centenas de sistemas. Com essa opção ativa, o mapa galáctico irá revelar apenas os sistemas tocados pelos territórios conforme eles são desenhados, gerando menos ruído visual e lugares &quot;vazios&quot; na sua galáxia.</source>
         <translation>Per impostazione predefinita le galassie hanno centinaia di sistemi. Con questa opzione attiva, la mappa galattica rivela solo i sistemi toccati dai territori man mano che li disegni, con meno rumore visivo e meno luoghi &quot;vuoti&quot; nella tua galassia.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="626"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="760"/>
         <source>Cerca de %n mundo(s) nesta galáxia. Estrelas e órbitas não mudam: os mundos que mais combinam com cada classe são adaptados a ela.</source>
         <translation>
             <numerusform>Circa %n mondo in questa galassia. Stelle e orbite non cambiano: i mondi più adatti a ogni classe vengono adattati ad essa.</numerusform>
@@ -42918,7 +43043,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="633"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="767"/>
         <source>Cerca de %n mundo(s) de classe I ou II, %1 de III ou IV e %2 de V ou VI.</source>
         <translation>
             <numerusform>Circa %n mondo di classe I o II, %1 di III o IV e %2 di V o VI.</numerusform>
@@ -42926,7 +43051,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="722"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="856"/>
         <source>%1 anos-luz · nasce vazia</source>
         <translation>%1 anni luce · nasce vuota</translation>
     </message>
@@ -42947,7 +43072,7 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation type="vanished">Pieno di vita</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="722"/>
+        <location filename="../src/galaxy/GalaxyNewGalaxy.cpp" line="856"/>
         <source>%1 anos-luz · %2 sistemas</source>
         <translation>%1 anni luce · %2 sistemi</translation>
     </message>
@@ -43032,10 +43157,8 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Quaderno (C)</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="224"/>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="356"/>
         <source>Criação Livre (W)</source>
-        <translation>Creazione Libera (W)</translation>
+        <translation type="vanished">Creazione Libera (W)</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="227"/>
@@ -43075,9 +43198,19 @@ orario. Dai giorni successivi, si azzera sempre a quest&apos;ora.</translation>
         <translation>Esci dal focus</translation>
     </message>
     <message>
-        <location filename="../src/galaxy/GalaxyPanel.cpp" line="352"/>
         <source>Voltar pra Criação Livre</source>
-        <translation>Torna a Creazione Libera</translation>
+        <translation type="vanished">Torna a Creazione Libera</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="224"/>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="356"/>
+        <source>Astrônomo (W)</source>
+        <translation>Astronomo (W)</translation>
+    </message>
+    <message>
+        <location filename="../src/galaxy/GalaxyPanel.cpp" line="352"/>
+        <source>Voltar pro Astrônomo</source>
+        <translation>Torna ad Astronomo</translation>
     </message>
     <message>
         <location filename="../src/galaxy/GalaxyPanel.cpp" line="369"/>
