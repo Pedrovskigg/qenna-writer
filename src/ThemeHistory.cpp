@@ -9,6 +9,16 @@ namespace Theme {
 const QList<QPair<QString, QStringList>>& releaseHistory()
 {
     static const QList<QPair<QString, QStringList>> h = {
+        { QStringLiteral("2.0.0"), {
+            QStringLiteral("enamel-ward"), QStringLiteral("blue-book"), QStringLiteral("third-copy"), QStringLiteral("soft-overcast"),
+            QStringLiteral("butcher-paper"), QStringLiteral("steno-pad"), QStringLiteral("tatami"), QStringLiteral("second-edition"),
+            QStringLiteral("tawny-port"), QStringLiteral("olive-drab"), QStringLiteral("adobe-night"), QStringLiteral("soft-graphite"),
+            QStringLiteral("pool-tile"), QStringLiteral("princess-phone"), QStringLiteral("hydrangea"), QStringLiteral("deep-lagoon"),
+            QStringLiteral("above-the-weather"), QStringLiteral("aerial-survey"), QStringLiteral("fitz-roy"), QStringLiteral("last-light"),
+            QStringLiteral("heat-lightning"), QStringLiteral("bus-window"), QStringLiteral("last-train"), QStringLiteral("singing-dunes"),
+            QStringLiteral("marble-portico"), QStringLiteral("frost-feather"), QStringLiteral("underpass"), QStringLiteral("rotunda"),
+            QStringLiteral("reading-room"), QStringLiteral("cloud-sea"),
+        } },
         { QStringLiteral("1.5.0"), {
             QStringLiteral("anim-route66"), QStringLiteral("anim-evebattle"), QStringLiteral("anim-outpost"), QStringLiteral("anim-hoard"),
             QStringLiteral("anim-rooftop"), QStringLiteral("anim-citadel"),
