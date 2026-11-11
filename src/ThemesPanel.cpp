@@ -98,7 +98,7 @@ const QHash<QString, QStringList>& recommended()
                                           QStringLiteral("e-ink-gray"), QStringLiteral("brutalismo") } },
         { QStringLiteral("estampados"), { QStringLiteral("redemption"), QStringLiteral("paper-city-yellowed"), QStringLiteral("tokyo-noir"), QStringLiteral("one-dark-skyline"),
                                           QStringLiteral("solarized-highlands"), QStringLiteral("arquivo"),
-                                          QStringLiteral("desk-mahogany") } },
+                                          QStringLiteral("desk-mahogany"), QStringLiteral("cloud-sea") } },
         { QStringLiteral("warm"),       { QStringLiteral("gruvbox-dark"), QStringLiteral("cafe"), QStringLiteral("lamparina"),
                                           QStringLiteral("fig-preserve"), QStringLiteral("acafrao") } },
         { QStringLiteral("colorful"),   { QStringLiteral("blacklight"), QStringLiteral("rose-pine"), QStringLiteral("outrun"),

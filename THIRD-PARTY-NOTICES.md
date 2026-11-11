@@ -239,3 +239,24 @@ itself.
   - `f17.png`: photo by See Plus, https://unsplash.com/photos/Fd8lBcvbgR0
   - `f18.png`: photo by Dwayne Joe, https://unsplash.com/photos/kRVZWfFsWvg
   - `f19.png`: photo by Lola Azizada, https://unsplash.com/photos/HyoTmwZQwWU
+
+## Theme background photos (2.0)
+
+The background images of these themes are derived from photographs. Some are
+used as published and some were recolored.
+
+- **License:** Unsplash License (https://unsplash.com/license)
+  - Above the Weather, Aerial Survey: photo by Nicolas Prieto, https://unsplash.com/photos/sMJaf08ugD0
+  - Fitz Roy, Last Light: photo by Andrew Svk, https://unsplash.com/photos/150fZ07GQqs
+- **License:** Pexels License (https://www.pexels.com/license/)
+  - Heat Lightning: photo by Kaan Demircan, https://www.pexels.com/photo/11019539/
+  - Bus Window: photo by Darius Krause, https://www.pexels.com/photo/2242461/
+  - Last Train: photo by George Zografidis, https://www.pexels.com/photo/13865985/
+  - Singing Dunes: photo by Marjan Taghipour, https://www.pexels.com/photo/13620627/
+  - Marble Portico: photo by Melih Özmen, https://www.pexels.com/photo/38440456/
+  - Frost Feather: photo by Snapwire, https://www.pexels.com/photo/205792/
+  - Underpass: photo by stelios ΒΚ, https://www.pexels.com/photo/38973829/
+  - Rotunda: photo by Willian Santos, https://www.pexels.com/photo/7443909/
+  - Reading Room: photo by Louie Cepeda, https://www.pexels.com/photo/28436227/
+- **License:** Pixabay Content License (https://pixabay.com/service/license-summary/)
+  - Cloud Sea: photo by yoshitaka2, https://pixabay.com/photos/clouds-7530090/
