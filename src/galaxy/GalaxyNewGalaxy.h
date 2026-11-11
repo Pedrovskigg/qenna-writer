@@ -61,8 +61,13 @@ private:
     class HabBar* m_natBar = nullptr;
     QToolButton* m_handCheck = nullptr;
     QToolButton* m_organicCheck = nullptr;
-    QToolButton *m_genBtn = nullptr, *m_freeBtn = nullptr;
-    QLabel* m_freeNote = nullptr;
+    void showModeInfo(bool on, bool astronomer);
+    class ModeCard *m_navCard = nullptr, *m_astroCard = nullptr;
+    void setDevNoteOpen(bool open);
+    QWidget* m_devNote = nullptr;
+    QFrame *m_devBody = nullptr, *m_modeInfo = nullptr;
+    QToolButton* m_devToggle = nullptr;
+    QLabel *m_infoName = nullptr, *m_infoPros = nullptr, *m_infoCons = nullptr;
     QList<QWidget*> m_genOnly;
     QLineEdit* m_mixIn[7] {};
     QLabel* m_mixCount[7] {};

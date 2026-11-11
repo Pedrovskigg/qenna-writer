@@ -333,7 +333,7 @@ Livre::Livre(Panel* panel, Canvas* canvas, Doc* doc) : QWidget(panel), m_panel(p
     root->setSpacing(10);
     auto* top = new QHBoxLayout();
     top->setSpacing(10);
-    top->addWidget(lab(tr("CRIAÇÃO LIVRE"), QStringLiteral("lvBrand"), this));
+    top->addWidget(lab(tr("ASTRÔNOMO"), QStringLiteral("lvBrand"), this));
     // o nome da galáxia abre a mesma lista de mapas do mapa: trocar de mapa, criar um novo (Terra ou Galáxia), renomear
     m_brandName = btn(QString(), QStringLiteral("lvBrandName"), this);
     m_brandName->setToolTip(tr("Trocar de mapa ou criar um novo"));

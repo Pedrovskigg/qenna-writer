@@ -21,6 +21,7 @@
 #include <QPushButton>
 #include <QRandomGenerator>
 #include <QScrollArea>
+#include <QSettings>
 #include <QSlider>
 #include <QSpinBox>
 #include <QThreadPool>
@@ -205,6 +206,49 @@ private:
     double m_startX = 0;
 };
 
+// Um dos dois jeitos de criar a galáxia: nome e frase sempre à vista. Prós e contras saem por cima da prévia.
+class ModeCard : public QWidget {
+public:
+    ModeCard(const QString& name, const QString& pitch, QWidget* parent) : QWidget(parent)
+    {
+        setCursor(Qt::PointingHandCursor);
+        auto* l = new QVBoxLayout(this);
+        l->setContentsMargins(14, 12, 14, 12);
+        l->setSpacing(4);
+        auto* title = new QLabel(name, this);
+        title->setObjectName(QStringLiteral("cartoCardTitle"));
+        title->setStyleSheet(QStringLiteral("font-size: 17px;"));
+        title->setAttribute(Qt::WA_TransparentForMouseEvents);
+        l->addWidget(title);
+        auto* text = new QLabel(pitch, this);
+        text->setObjectName(QStringLiteral("cartoNote"));
+        text->setWordWrap(true);
+        text->setAttribute(Qt::WA_TransparentForMouseEvents);
+        l->addWidget(text);
+        l->addStretch();
+    }
+    std::function<void()> chosen;
+    std::function<void(bool)> hovering;
+    void setSelected(bool on) { if (on == m_selected) return; m_selected = on; update(); }
+protected:
+    void paintEvent(QPaintEvent*) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        const QColor accent = Theme::toColor(Theme::accentDefault());
+        QColor fill = accent;
+        fill.setAlpha(m_selected ? 38 : m_hover ? 16 : 0);
+        p.setBrush(fill);
+        p.setPen(QPen(m_selected || m_hover ? accent : Theme::toColor(Theme::panelBorder()), m_selected ? 2 : 1));
+        p.drawRoundedRect(QRectF(rect()).adjusted(1, 1, -1, -1), 10, 10);
+    }
+    void enterEvent(QEnterEvent*) override { m_hover = true; update(); if (hovering) hovering(true); }
+    void leaveEvent(QEvent*) override { m_hover = false; update(); if (hovering) hovering(false); }
+    void mousePressEvent(QMouseEvent* e) override { if (e->button() == Qt::LeftButton && chosen) chosen(); }
+private:
+    bool m_selected = false, m_hover = false;
+};
+
 NewGalaxy::NewGalaxy(QWidget* parent) : QWidget(parent)
 {
     m_mixTimer.setSingleShot(true);
@@ -230,6 +274,31 @@ void NewGalaxy::build()
     m_previewBox->setParent(m_card);
     m_previewBox->setMinimumSize(300, 300);
     left->addWidget(m_previewBox, 1);
+    m_modeInfo = new QFrame(m_previewBox);
+    m_modeInfo->setObjectName(QStringLiteral("galModeInfo"));
+    m_modeInfo->setAttribute(Qt::WA_TransparentForMouseEvents);
+    m_modeInfo->hide();
+    {
+        auto* info = new QVBoxLayout(m_modeInfo);
+        info->setContentsMargins(16, 14, 16, 14);
+        info->setSpacing(4);
+        const auto addLabel = [&](const QString& name, const QString& css) {
+            auto* l = new QLabel(m_modeInfo);
+            l->setObjectName(name);
+            l->setStyleSheet(css);
+            l->setWordWrap(true);
+            info->addWidget(l);
+            return l;
+        };
+        const QString body = QStringLiteral("font-size: 13px;");
+        m_infoName = addLabel(QStringLiteral("cartoCardTitle"), QStringLiteral("font-size: 18px;"));
+        info->addSpacing(6);
+        addLabel(QStringLiteral("cartoCaption"), QString())->setText(tr("PRÓS"));
+        m_infoPros = addLabel(QStringLiteral("cartoValue"), body);
+        info->addSpacing(8);
+        addLabel(QStringLiteral("cartoCaption"), QString())->setText(tr("CONTRAS"));
+        m_infoCons = addLabel(QStringLiteral("cartoValue"), body);
+    }
     m_info = new QLabel(m_card);
     m_info->setObjectName(QStringLiteral("cartoNote"));
     m_info->setAlignment(Qt::AlignCenter);
@@ -281,29 +350,54 @@ void NewGalaxy::build()
     connect(m_tabGal, &QToolButton::clicked, this, [this]() { m_tabGal->setChecked(true); });
     f->addLayout(tabs);
     const auto cap = [&](const QString& t, QWidget* parent) { auto* c = new QLabel(t, parent); c->setObjectName(QStringLiteral("cartoCaption")); return c; };
-    // Gerada ou Criação Livre: na livre a galáxia nasce vazia e só existe o que o autor cria
-    f->addWidget(cap(tr("COMO ELA NASCE"), form));
-    auto* fr = new QHBoxLayout();
-    fr->setSpacing(4);
-    const auto seg = [&](const QString& text, bool free) {
-        auto* b = new QToolButton(form);
-        b->setObjectName(QStringLiteral("cartoSeg"));
-        b->setText(text);
-        b->setCheckable(true);
-        b->setCursor(Qt::PointingHandCursor);
-        b->setFocusPolicy(Qt::NoFocus);
-        b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-        connect(b, &QToolButton::clicked, this, [this, free]() { m_d.free = free; if (free) m_d.organic = false; sync(); preview(); });
-        fr->addWidget(b);
-        return b;
+    // Navegador ou Astrônomo: no Astrônomo a galáxia nasce vazia e só existe o que o autor cria
+    f->addWidget(cap(tr("ESCOLHA O MODO"), form));
+    auto* modes = new QHBoxLayout();
+    modes->setSpacing(10);
+    const auto modeCard = [&](const QString& name, const QString& pitch, bool free) {
+        auto* c = new ModeCard(name, pitch, form);
+        c->chosen = [this, free]() { m_d.free = free; if (free) m_d.organic = false; sync(); preview(); };
+        c->hovering = [this, free](bool on) { showModeInfo(on, free); };
+        modes->addWidget(c, 1);
+        return c;
     };
-    m_genBtn = seg(tr("Gerada"), false);
-    m_freeBtn = seg(tr("Criação Livre"), true);
-    f->addLayout(fr);
-    m_freeNote = new QLabel(form);
-    m_freeNote->setObjectName(QStringLiteral("cartoNote"));
-    m_freeNote->setWordWrap(true);
-    f->addWidget(m_freeNote);
+    m_navCard = modeCard(tr("Navegador"), tr("A galáxia é sua para domar. Explore livremente, navegue pelas estrelas e construa o seu universo, tudo em tempo real e à vista."), false);
+    m_astroCard = modeCard(tr("Astrônomo"), tr("Estude o seu universo e documente-o por completo. Crie seus planetas, sistemas e impérios galácticos e forje sua história."), true);
+    f->addLayout(modes);
+    m_devNote = new QWidget(form);
+    {
+        auto* wrap = new QVBoxLayout(m_devNote);
+        wrap->setContentsMargins(0, 0, 0, 0);
+        wrap->setSpacing(6);
+        m_devToggle = new QToolButton(m_devNote);
+        m_devToggle->setObjectName(QStringLiteral("galDevToggle"));
+        m_devToggle->setText(tr("NOTA DO DEV"));
+        m_devToggle->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+        m_devToggle->setIconSize(QSize(14, 14));
+        m_devToggle->setCursor(Qt::PointingHandCursor);
+        m_devToggle->setFocusPolicy(Qt::NoFocus);
+        connect(m_devToggle, &QToolButton::clicked, this, [this]() {
+            const bool open = m_devBody->isHidden();
+            QSettings().setValue(QStringLiteral("galaxy/devNoteOpen"), open);
+            setDevNoteOpen(open);
+        });
+        wrap->addWidget(m_devToggle, 0, Qt::AlignLeft);
+        m_devBody = new QFrame(m_devNote);
+        m_devBody->setObjectName(QStringLiteral("galDevNote"));
+        wrap->addWidget(m_devBody);
+        auto* note = new QVBoxLayout(m_devBody);
+        note->setContentsMargins(12, 2, 0, 2);
+        note->setSpacing(6);
+        for (const QString& paragraph : { tr("Eu amo o Navegador. Ele é lindo, divertido de explorar, criar e editar os planetas. Se você procura um explorador galáctico que faria a NASA baixar o app para ver como se faz, ele é o seu cara. É incrível."),
+                                          tr("Mas se você quer escrever para valer, colocar os textos na mesa, conectar, gerenciar e construir a lore e a história do seu universo, o Astrônomo é mais pensado para isso."),
+                                          tr("Entretanto, ambos têm o mesmo objetivo: criar o universo da sua história. A única coisa que muda entre eles é como você faz.") }) {
+            auto* p = new QLabel(paragraph, m_devBody);
+            p->setObjectName(QStringLiteral("cartoNote"));
+            p->setWordWrap(true);
+            note->addWidget(p);
+        }
+    }
+    f->addWidget(m_devNote);
     f->addWidget(cap(tr("GALÁXIA PRONTA"), form));
     m_preset = new QComboBox(form);
     m_preset->setObjectName(QStringLiteral("cartoCombo"));
@@ -496,7 +590,7 @@ void NewGalaxy::build()
     m_note->setWordWrap(true);
     f->addWidget(m_note);
     f->addStretch();
-    m_go = new QPushButton(form);
+    m_go = new QPushButton(m_card);
     m_go->setObjectName(QStringLiteral("cartoGo"));
     m_go->setCursor(Qt::PointingHandCursor);
     connect(m_go, &QPushButton::clicked, this, [this]() {
@@ -510,13 +604,52 @@ void NewGalaxy::build()
         m_timer.stop();
         if (accepted) accepted(o, name, md);
     });
-    f->addWidget(m_go);
     scroll->setWidget(form);
-    root->addWidget(scroll, 1);
+    // Fora da rolagem: o botão de criar fica sempre à vista, por mais texto que venha antes.
+    auto* right = new QVBoxLayout();
+    right->setSpacing(10);
+    right->addWidget(scroll, 1);
+    right->addWidget(m_go);
+    root->addLayout(right, 1);
 }
 void NewGalaxy::applyTheme()
 {
     m_close->setIcon(carto::icon(QStringLiteral("close"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault()), 16));
+    m_modeInfo->setStyleSheet(QStringLiteral(
+        "QFrame#galModeInfo { background: %1; border: 1px solid %2; border-radius: 10px; }")
+        .arg(Theme::panelBackground(), Theme::panelBorder()));
+    m_devBody->setStyleSheet(QStringLiteral("QFrame#galDevNote { border: none; border-left: 2px solid %1; }")
+        .arg(Theme::accentDefault()));
+    m_devToggle->setStyleSheet(QStringLiteral(
+        "QToolButton#galDevToggle { background: transparent; border: none; padding: 0; color: %1;"
+        " font-size: 10px; font-weight: 600; letter-spacing: 1px; }"
+        "QToolButton#galDevToggle:hover { color: %2; }")
+        .arg(Theme::textMuted(), Theme::accentDefault()));
+    setDevNoteOpen(QSettings().value(QStringLiteral("galaxy/devNoteOpen"), false).toBool());
+}
+void NewGalaxy::setDevNoteOpen(bool open)
+{
+    m_devBody->setVisible(open);
+    m_devToggle->setIcon(carto::icon(open ? QStringLiteral("chevDown") : QStringLiteral("chevRight"),
+                                     Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault()), 14));
+}
+// Os prós e contras cobrem a prévia, que já ocupa esse lugar: a janela não muda de tamanho nem pula.
+void NewGalaxy::showModeInfo(bool on, bool astronomer)
+{
+    if (!on) { m_modeInfo->hide(); return; }
+    m_infoName->setText(astronomer ? tr("Astrônomo") : tr("Navegador"));
+    m_infoPros->setText(astronomer
+        ? tr("Bem menos trabalho manual e de exploração do que no Navegador. A galáxia começa vazia e só existe o que você criar, com o mapa a um clique, mas o foco é o texto na página. Crie planetas, luas e construções, escreva a história delas, conecte-as umas às outras e forje seu universo. Os astros e construções continuam em 3D, visíveis e editáveis o tempo todo.")
+        : tr("Uma verdadeira aventura visual, divertida de acompanhar. Entre nos sistemas e na órbita dos planetas. Veja, edite e crie o que quiser em uma galáxia já pronta. Faça enormes construções orbitais, gigantes gasosos e até luas habitáveis. Escreva sobre elas enquanto assiste, na sua frente, ao seu universo ganhar vida."));
+    m_infoCons->setText(astronomer
+        ? tr("O foco aqui é a escrita, com bem menos deleite visual e interatividade 3D do que no Navegador. Mas... você ainda pode ficar girando e vendo os seus planetas.")
+        : tr("Interface mais trabalhosa e muito trabalho manual, não só para construir sua galáxia, mas para torná-la sua. Há muito o que fazer e explorar, o que pode causar a sensação de excesso de trabalho para quem tem pressa de ver a história se formar."));
+    for (QLabel* l : m_modeInfo->findChildren<QLabel*>()) l->ensurePolished();
+    const int w = m_previewBox->width() - 24;
+    const int h = std::min(m_modeInfo->layout()->totalHeightForWidth(w), m_previewBox->height() - 24);
+    m_modeInfo->setGeometry(12, (m_previewBox->height() - h) / 2, w, h);
+    m_modeInfo->show();
+    m_modeInfo->raise();
 }
 void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
 {
@@ -526,7 +659,8 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     const bool regen = mode == Mode::Regen;
     d.preset = regen && current ? current->preset : QString();
     d.count = regen ? currentCount : sizeSystems(d.size);
-    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); d.organic = false; d.free = false; }
+    // O Astrônomo vem escolhido: é o modo que a maioria vai usar de verdade.
+    if (!regen) { d.seed = QRandomGenerator::global()->bounded(1000000000); d.mix.clear(); d.organic = false; d.free = true; }
     m_d = d;
     m_hand = d.mix.size() == 7;
     m_hasNatural = false; m_worlds = 0; m_touched.clear();
@@ -534,6 +668,8 @@ void NewGalaxy::open(Mode mode, const GalOpts* current, int currentCount)
     m_title->setText(regen ? tr("Regenerar galáxia") : tr("Nova galáxia"));
     m_note->setText(regen ? tr("Regenerar troca a galáxia inteira, e o que foi construído e escrito nela vai junto. Logo depois dá pra desfazer.") : QString());
     m_note->setVisible(regen);
+    m_devNote->setVisible(!regen);
+    m_modeInfo->hide();
     m_go->setText(regen ? tr("Regenerar galáxia") : tr("Criar galáxia"));
     m_tabEarth->setVisible(!regen);
     m_tabGal->setVisible(!regen);
@@ -573,10 +709,8 @@ void NewGalaxy::sync()
     m_count->setValue(m_d.count);
     m_life->setValue(qRound(m_d.life * 100));
     const bool gen = !m_d.free;
-    m_genBtn->setChecked(gen);
-    m_freeBtn->setChecked(!gen);
-    m_freeNote->setText(gen ? tr("O app gera centenas de sistemas, planetas e luas. Você nomeia, escreve e muda o que quiser.")
-                            : tr("A galáxia nasce vazia. Você cria os planetas, os sistemas e os territórios na ordem que quiser, escrevendo a história de cada um no mesmo lugar. O app só gera o que você pedir."));
+    m_navCard->setSelected(gen);
+    m_astroCard->setSelected(!gen);
     for (QWidget* w : m_genOnly) w->setVisible(gen);
     m_life->setVisible(gen && !m_hand);
     m_lifeV->setVisible(gen);

@@ -221,7 +221,7 @@ void Panel::buildUi()
     m_cadernoBtn = makeBtn(m_cbar, QStringLiteral("galBook"), tr("Caderno (C)"));
     connect(m_cadernoBtn, &QToolButton::clicked, this, [this]() { openCaderno(m_canvas->sel); });
     cb->addWidget(m_cadernoBtn);
-    m_livreBtn = makeBtn(m_cbar, QStringLiteral("galWrite"), tr("Criação Livre (W)"));
+    m_livreBtn = makeBtn(m_cbar, QStringLiteral("galWrite"), tr("Astrônomo (W)"));
     connect(m_livreBtn, &QToolButton::clicked, this, [this]() { openLivre(m_canvas->sel); });
     cb->addWidget(m_livreBtn);
     m_exportBtn = makeBtn(m_cbar, QStringLiteral("image"), tr("Exportar imagem (PNG pro livro)"));
@@ -349,11 +349,11 @@ void Panel::buildUi()
     m_livreBack = makeFloat(QStringLiteral("cartoLivreBack"));
     auto* lbl = new QHBoxLayout(m_livreBack);
     lbl->setContentsMargins(4, 0, 4, 0);
-    m_livreBackBtn = new QPushButton(QStringLiteral("‹  ") + tr("Voltar pra Criação Livre"), m_livreBack);
+    m_livreBackBtn = new QPushButton(QStringLiteral("‹  ") + tr("Voltar pro Astrônomo"), m_livreBack);
     m_livreBackBtn->setObjectName(QStringLiteral("gmLivreBack"));
     m_livreBackBtn->setCursor(Qt::PointingHandCursor);
     m_livreBackBtn->setFocusPolicy(Qt::NoFocus);
-    m_livreBackBtn->setToolTip(tr("Criação Livre (W)"));
+    m_livreBackBtn->setToolTip(tr("Astrônomo (W)"));
     m_livreBackBtn->setIconSize(QSize(16, 16));
     connect(m_livreBackBtn, &QPushButton::clicked, this, [this]() { openLivre(m_canvas->sel); });
     lbl->addWidget(m_livreBackBtn);
