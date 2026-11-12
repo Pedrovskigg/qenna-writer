@@ -27854,6 +27854,19 @@ No es algo 100% preciso, pero te da una buena idea. Si quieres el e-pub real de 
     </message>
 </context>
 <context>
+    <name>SelectionPopup</name>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="445"/>
+        <source>Voltar: a barra segue o mouse</source>
+        <translation>Volver: la barra sigue al ratón</translation>
+    </message>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="446"/>
+        <source>Girar só pelas pontas</source>
+        <translation>Girar solo por los bordes</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPanel</name>
     <message>
         <source>Ativar corretor ortográfico</source>

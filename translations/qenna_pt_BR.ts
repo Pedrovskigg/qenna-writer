@@ -25909,6 +25909,19 @@ Não é algo 100% preciso, mas dá para se ter uma ideia. Caso queira realmente 
     </message>
 </context>
 <context>
+    <name>SelectionPopup</name>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="445"/>
+        <source>Voltar: a barra segue o mouse</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="446"/>
+        <source>Girar só pelas pontas</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SettingsPanel</name>
     <message>
         <location filename="../src/SettingsPanel.cpp" line="198"/>

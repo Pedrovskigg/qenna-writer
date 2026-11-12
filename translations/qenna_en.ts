@@ -27854,6 +27854,19 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
     </message>
 </context>
 <context>
+    <name>SelectionPopup</name>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="445"/>
+        <source>Voltar: a barra segue o mouse</source>
+        <translation>Back to normal: the bar follows the mouse</translation>
+    </message>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="446"/>
+        <source>Girar só pelas pontas</source>
+        <translation>Scroll only from the edges</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPanel</name>
     <message>
         <source>Ativar corretor ortográfico</source>

@@ -27854,6 +27854,19 @@ Ce n&apos;est pas précis à 100 %, mais cela donne une bonne idée. Si vous vou
     </message>
 </context>
 <context>
+    <name>SelectionPopup</name>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="445"/>
+        <source>Voltar: a barra segue o mouse</source>
+        <translation>Revenir : la barre suit la souris</translation>
+    </message>
+    <message>
+        <location filename="../src/SelectionPopup.cpp" line="446"/>
+        <source>Girar só pelas pontas</source>
+        <translation>Défiler seulement par les bords</translation>
+    </message>
+</context>
+<context>
     <name>SettingsPanel</name>
     <message>
         <source>Ativar corretor ortográfico</source>
