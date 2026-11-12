@@ -45,6 +45,8 @@ public:
         bool themeBinding = false; // escolha "do tema" guarda a referência
         bool alpha = false;        // mostra o controle de opacidade
         bool resetAvailable = false;
+        QList<QColor> suggested;   // ex.: as cores da foto de fundo; vira a primeira seção
+        QString suggestedTitle;
     };
 
     ColorPopover(const ColorPick::Choice& current, const Options& opt, QWidget* parent = nullptr);
@@ -92,6 +94,7 @@ private:
     QLabel*      m_title = nullptr;
     QLabel*      m_sub = nullptr;
     QLabel*      m_themeNote = nullptr;
+    QWidget*     m_suggestRow = nullptr;
     QWidget*     m_themeRow = nullptr;
     QWidget*     m_paletteGrid = nullptr;
     QWidget*     m_recentSec = nullptr;

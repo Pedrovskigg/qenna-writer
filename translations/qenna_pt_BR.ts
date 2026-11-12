@@ -2057,209 +2057,209 @@ Aproveite.</source>
 <context>
     <name>CharacterSheetPanel</name>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="511"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="514"/>
         <source>Buscar na ficha…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="294"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="295"/>
         <source>Trocar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="295"/>
-        <location filename="../src/CharacterSheetPanel.cpp" line="298"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="296"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="299"/>
         <source>Gerar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="296"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="297"/>
         <source>Remover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="297"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="298"/>
         <source>Escolher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="387"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="388"/>
         <source>Desfazer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="698"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="702"/>
         <source>Novo dado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="698"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="702"/>
         <source>Nova seção</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="716"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="721"/>
         <source>Campo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="717"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="731"/>
         <source>&quot;%1&quot; removido</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="773"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="785"/>
         <source>Modelo &quot;%1&quot; aplicado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="784"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="796"/>
         <source>Salvar como modelo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="784"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="796"/>
         <source>Nome do modelo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="788"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="800"/>
         <source>Modelo &quot;%1&quot; salvo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="837"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="849"/>
         <source>Foto removida</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="910"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="922"/>
         <source>Duplo clique pra editar nome, apelidos e papel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="940"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="952"/>
         <source>Rótulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="967"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="979"/>
         <source>Remover dado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1006"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1018"/>
         <source>Arrastar pra mudar a ordem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1016"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1028"/>
         <source>Título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1025"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1037"/>
         <source>Remover seção</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1068"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1080"/>
         <source>Usar como destaque</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1089"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1101"/>
         <source>+ seção</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1089"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1101"/>
         <source>+ dado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1314"/>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1581"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1328"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1595"/>
         <source>Sem título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1427"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1441"/>
         <source>No texto de uma seção, botão direito › Usar como destaque</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1582"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1596"/>
         <source>Tudo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1663"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1688"/>
         <source>Exibir como</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1667"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1692"/>
         <source>Dossiê</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1667"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1692"/>
         <source>Infobox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1667"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1692"/>
         <source>Prontuário</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1668"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1693"/>
         <source>Revista</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1668"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1693"/>
         <source>Abas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1678"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1703"/>
         <source>Voltar à fala automática no destaque</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1680"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1705"/>
         <source>Adicionar dado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1681"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1706"/>
         <source>Adicionar seção</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1683"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1708"/>
         <source>Usar modelo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1692"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1717"/>
         <source>Salvar como modelo…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1695"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1720"/>
         <source>Buscar na ficha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="1046"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="1058"/>
         <source>Escreva aqui…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/CharacterSheetPanel.cpp" line="864"/>
+        <location filename="../src/CharacterSheetPanel.cpp" line="876"/>
         <source>Personagem</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2297,43 +2297,48 @@ Aproveite.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="340"/>
+        <location filename="../src/ColorPopover.cpp" line="341"/>
+        <source>Sugeridas</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ColorPopover.cpp" line="347"/>
         <source>Do tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="345"/>
+        <location filename="../src/ColorPopover.cpp" line="352"/>
         <source>Paleta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="355"/>
+        <location filename="../src/ColorPopover.cpp" line="362"/>
         <source>Recentes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="371"/>
+        <location filename="../src/ColorPopover.cpp" line="378"/>
         <source>Personalizada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="449"/>
+        <location filename="../src/ColorPopover.cpp" line="456"/>
         <source>Restaurar padrão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="462"/>
+        <location filename="../src/ColorPopover.cpp" line="469"/>
         <source>desfaz</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="511"/>
-        <location filename="../src/ColorPopover.cpp" line="528"/>
+        <location filename="../src/ColorPopover.cpp" line="523"/>
+        <location filename="../src/ColorPopover.cpp" line="540"/>
         <source>acompanha o tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ColorPopover.cpp" line="572"/>
+        <location filename="../src/ColorPopover.cpp" line="584"/>
         <source>cor do tema · %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -28607,53 +28612,53 @@ Essa ação não pode ser desfeita.</source>
 <context>
     <name>ThemeEditorDialog</name>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="749"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="764"/>
         <source>Texto da UI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="746"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="761"/>
         <source>Cor do app</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1085"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1157"/>
         <source>Centralizar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1086"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1225"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1158"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1275"/>
         <source>Repetir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1087"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1159"/>
         <source>Esticar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1088"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1160"/>
         <source>Ajustar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1089"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1161"/>
         <source>Preencher</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="605"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="620"/>
         <source>Painéis e barras</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="528"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="539"/>
         <source>Salvar</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="523"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="534"/>
         <source>Cancelar</source>
         <translation type="unfinished"></translation>
     </message>
@@ -28673,426 +28678,442 @@ Essa ação não pode ser desfeita.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="491"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="502"/>
         <source>Nome do tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="501"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="512"/>
         <source>Escrita</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="501"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="621"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="512"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="636"/>
         <source>Gavetas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="501"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="512"/>
         <source>Editor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="513"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="524"/>
         <source>Antes e depois</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="514"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="525"/>
         <source>Compara com o tema de partida. Arraste a linha pra mover.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="517"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="528"/>
         <source>↶ Desfazer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="534"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="545"/>
         <source>Tema sem nome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="549"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="562"/>
         <source>Editando</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="568"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="604"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="619"/>
         <source>Fundo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="568"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="747"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="762"/>
         <source>Painéis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="568"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="606"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="755"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="621"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="770"/>
         <source>Ícones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="568"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="607"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="752"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="583"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="622"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="767"/>
         <source>Folha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="569"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="584"/>
         <source>Título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="569"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="609"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="753"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="956"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="584"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="624"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="768"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1012"/>
         <source>Texto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="569"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="610"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="751"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="584"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="625"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="766"/>
         <source>Destaque</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="608"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="623"/>
         <source>Título do capítulo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="617"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="632"/>
         <source>Barra de cima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="618"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="633"/>
         <source>Barra lateral</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="619"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="634"/>
         <source>Referência</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="620"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="635"/>
         <source>Contador</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="627"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="642"/>
         <source>Só a barra de cima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="628"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="643"/>
         <source>Só a barra lateral</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="629"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="644"/>
         <source>Só a Referência</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="630"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="645"/>
         <source>Só o contador</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="631"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="646"/>
         <source>Só as gavetas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="748"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="759"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="763"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="774"/>
         <source>Borda</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="750"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="957"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="765"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1013"/>
         <source>Texto apagado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="754"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1253"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="769"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1303"/>
         <source>Sombra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="756"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="771"/>
         <source>Cor do título</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="757"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="772"/>
         <source>Cor do degradê</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="758"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1271"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="773"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="920"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1321"/>
         <source>Cor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="861"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="808"/>
+        <source>Da foto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="886"/>
         <source>Degradê</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="869"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
         <source>Nenhum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="869"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
         <source>Embaixo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="869"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="894"/>
         <source>Em cima</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="870"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="895"/>
         <source>Os dois</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="870"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="895"/>
         <source>Vinheta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="901"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="927"/>
         <source>Tamanho</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="909"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="935"/>
         <source>Grão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="910"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="936"/>
         <source>Tamanho do grão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="953"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1009"/>
         <source>Contraste com a folha</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="973"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1029"/>
         <source>Cores da foto → &lt;b&gt;%1&lt;/b&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1001"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1057"/>
         <source>Imagem…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1001"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1057"/>
         <source>Trocar foto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1031"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1087"/>
         <source>Imagem na folha…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1034"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1090"/>
         <source>Trocar imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1208"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1127"/>
+        <source>Cor e foto</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1127"/>
+        <source>Degradê e grão</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1258"/>
         <source>Remover</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1238"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1288"/>
         <source>Parada</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1239"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1289"/>
         <source>Fica parada ao rolar o texto (senão rola junto)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1032"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1205"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1088"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1255"/>
         <source>Uma imagem por cima da cor da folha, em todo documento. Capítulo, cena ou livro com fundo próprio passam na frente.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1072"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1143"/>
         <source>Remover foto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1082"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1154"/>
         <source>Modo da foto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1111"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1186"/>
         <source>Vale pra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1116"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1191"/>
         <source>Todos os painéis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1151"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1226"/>
         <source>Arredondamento, opacidade e vidro continuam valendo pra todos. &quot;Todos os painéis&quot; devolve este painel pra cor global.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1156"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1231"/>
         <source>Arredondamento</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1156"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1158"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1215"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1231"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1233"/>
         <location filename="../src/ThemeEditorDialog.cpp" line="1265"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1266"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1315"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1316"/>
         <source>px</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="899"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1157"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1214"/>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1251"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="925"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1232"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1264"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1301"/>
         <source>Opacidade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1158"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1233"/>
         <source>Vidro</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1165"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1240"/>
         <source>Voltar pra cor do texto apagado</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1171"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1246"/>
         <source>Barra de cima (inclusive os botões de fonte, tamanho e entrelinha), barra lateral e os botões dos painéis. As gavetas mantêm a cor que você deu a cada uma.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1180"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1250"/>
         <source>Cor e sombra</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1181"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1250"/>
         <source>Imagem</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1215"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1265"/>
         <source>Desfoque</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1221"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1271"/>
         <source>Ocupa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1224"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1274"/>
         <source>Folha toda</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1226"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1276"/>
         <source>Só no topo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1265"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1315"/>
         <source>Raio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1266"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1316"/>
         <source>Desloc. Y</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1276"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1326"/>
         <source>Fonte</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1298"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1348"/>
         <source>Voltar pro padrão</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1305"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1355"/>
         <source>O título no alto da folha. Padrão: a cor do texto, em Lora.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1321"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1371"/>
         <source>Cores das gavetas</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1326"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1376"/>
         <source>Usar a cor da própria gaveta</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1327"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1377"/>
         <source>Usar a cor do tema</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1354"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1404"/>
         <source>Aparece no anel do contador, no item aberto da barra e, dentro das gavetas, no botão de criar, nas etiquetas e nas barrinhas.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1355"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1405"/>
         <source>Aparece no anel do contador e no item aberto da barra. Dentro das gavetas vale a cor que você deu a cada uma (veja em Gavetas).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1013"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1069"/>
         <source>Imagens (*.png *.jpg *.jpeg *.bmp *.webp *.tiff)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/ThemeEditorDialog.cpp" line="1014"/>
+        <location filename="../src/ThemeEditorDialog.cpp" line="1070"/>
         <source>Escolher imagem de fundo</source>
         <translation type="unfinished"></translation>
     </message>

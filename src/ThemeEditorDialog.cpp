@@ -459,6 +459,17 @@ ThemeEditorDialog::ThemeEditorDialog(const Theme::MiraTheme& base, QWidget* pare
 
     buildUi();
     applyStyle();
+    // Com o QSS já aplicado, as pílulas da coluna "Editando" têm a medida
+    // de verdade: trava a largura uma vez só, pra faixa não dar tranco ao
+    // trocar de grupo.
+    if (auto* who = findChild<QWidget*>(QStringLiteral("creatorWho"))) {
+        int col[4] = { 0, 0, 0, 0 };   // a grade é de 4 colunas; cada uma mede a pílula mais larga
+        for (int i = 0; i < m_pills.size(); ++i) {
+            m_pills.at(i)->ensurePolished();
+            col[i % 4] = qMax(col[i % 4], m_pills.at(i)->sizeHint().width());
+        }
+        who->setFixedWidth(qMax(250, col[0] + col[1] + col[2] + col[3] + 3 * 4 + 18));
+    }
     setScene(ThemeScene::Writing);
     setGroup(Sheet);
     refreshPreview();
@@ -542,6 +553,8 @@ void ThemeEditorDialog::buildUi()
     r2->setSpacing(22);
     auto* who = new QWidget(this);
     who->setObjectName(QStringLiteral("creatorWho"));
+    // 250 no mínimo; o construtor alarga até caber as pílulas (em inglês e
+    // francês "Background"/"Arrière-plan" marcada saía mordida)
     who->setFixedWidth(250);
     auto* wl = new QVBoxLayout(who);
     wl->setContentsMargins(0, 0, 18, 0);
@@ -560,6 +573,8 @@ void ThemeEditorDialog::buildUi()
     gf.setPixelSize(18);
     gf.setWeight(QFont::DemiBold);
     m_groupTitle->setFont(gf);
+    // o título muda a cada grupo; não pode puxar a coluna e empurrar a faixa
+    m_groupTitle->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
     wl->addWidget(m_groupTitle);
     auto* pills = new QGridLayout;
     pills->setHorizontalSpacing(4);
@@ -782,6 +797,16 @@ void ThemeEditorDialog::pickColor(const QString& key, QWidget* anchor)
     ColorPopover::Options opt;
     opt.title = colorLabel(key);
     opt.alpha = colorHasAlpha(key);
+    // Com foto de fundo, as cores dela vêm primeiro no balão (ideia do Pe:
+    // a sugestão só existia na faixa do Fundo)
+    if (!m_theme.backgroundImage.isEmpty()) {
+        if (m_photoFor != m_theme.backgroundImage) {
+            m_photoFor = m_theme.backgroundImage;
+            m_photoColors = photoColors(m_theme.backgroundImage);
+        }
+        opt.suggested = m_photoColors;
+        opt.suggestedTitle = tr("Da foto");
+    }
     auto* pop = new ColorPopover(cur, opt, this);
     const bool alpha = opt.alpha;
     auto normalized = [alpha](QColor col) { if (!alpha) col.setAlpha(255); return col; };
@@ -883,7 +908,7 @@ void ThemeEditorDialog::addOverlayControls()
             refreshPreview();
             rebuildControls();
         });
-        grid->addWidget(b, i / 3, i % 3);
+        grid->addWidget(b, i / 2, i % 2);   // duas colunas: cabe em tela pequena
     }
     bl->addLayout(grid);
     bl->addStretch(1);
@@ -891,7 +916,8 @@ void ThemeEditorDialog::addOverlayControls()
     m_controlsLay->addWidget(box, 0, Qt::AlignVCenter);
 
     if (t.bgOverlayType != Theme::OverlayNone) {
-        m_controlsLay->addWidget(swatch(QStringLiteral("bgOverlayColor")), 0, Qt::AlignVCenter);
+        // "Cor" curto: do lado das pílulas do degradê já se entende de quê
+        m_controlsLay->addWidget(swatch(QStringLiteral("bgOverlayColor"), tr("Cor")), 0, Qt::AlignVCenter);
         auto* knobs = new QWidget(m_controls);
         auto* kl = new QVBoxLayout(knobs);
         kl->setContentsMargins(0, 0, 0, 0);
@@ -910,6 +936,36 @@ void ThemeEditorDialog::addOverlayControls()
     gl->addWidget(slider(tr("Tamanho do grão"), 1, 12, t.bgGrainSize, QStringLiteral("×"),
                          [this](int v) { m_theme.bgGrainSize = v; }));
     m_controlsLay->addWidget(grain, 0, Qt::AlignVCenter);
+}
+
+// Duas abas coladas (esquerda | direita) que trocam o conteúdo da faixa.
+QWidget* ThemeEditorDialog::segTabs(const QString& left, const QString& right, bool rightOn,
+                                    const std::function<void(bool)>& onPick)
+{
+    auto* box = new QWidget(m_controls);
+    auto* seg = new QHBoxLayout(box);
+    seg->setContentsMargins(0, 0, 0, 0);
+    seg->setSpacing(0);
+    auto* a = new QPushButton(left, box);
+    auto* b = new QPushButton(right, box);
+    int w = 0;
+    for (auto* btn : { a, b }) {
+        btn->setObjectName(QStringLiteral("segBtn"));
+        btn->setCheckable(true);
+        btn->setCursor(Qt::PointingHandCursor);
+        btn->setMinimumWidth(QFontMetrics(px(11)).horizontalAdvance(btn->text()) + 26);
+        w += btn->minimumWidth();
+        seg->addWidget(btn);
+    }
+    a->setProperty("pos", QStringLiteral("left"));
+    b->setProperty("pos", QStringLiteral("right"));
+    a->setChecked(!rightOn);
+    b->setChecked(rightOn);
+    box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    box->setFixedWidth(w);
+    connect(a, &QPushButton::clicked, this, [this, onPick]() { onPick(false); rebuildControls(); });
+    connect(b, &QPushButton::clicked, this, [this, onPick]() { onPick(true); rebuildControls(); });
+    return box;
 }
 
 QWidget* ThemeEditorDialog::link(const QString& text, const std::function<void()>& onClick)
@@ -1066,15 +1122,31 @@ void ThemeEditorDialog::rebuildControls()
 
     switch (m_group) {
     case Background: {
+        // Duas abas, como na Folha: com foto e degradê tudo numa faixa só
+        // passava de 1200 px e o Qt espremia as pílulas do degradê.
+        add(segTabs(tr("Cor e foto"), tr("Degradê e grão"), m_bgOverlay, [this](bool on) { m_bgOverlay = on; }));
+        if (m_bgOverlay) {
+            addOverlayControls();
+            break;
+        }
         add(swatch(QStringLiteral("appBackground")));
-        add(imageButton());
-        if (!t.backgroundImage.isEmpty()) {
-            add(link(tr("Remover foto"), [this]() {
+        if (t.backgroundImage.isEmpty()) {
+            add(imageButton());
+        } else {
+            // "Remover foto" embaixo da miniatura, e o modo em cima das cores
+            // da foto: empilhados, pra faixa caber em tela pequena.
+            auto* pic = new QWidget(m_controls);
+            auto* pl = new QVBoxLayout(pic);
+            pl->setContentsMargins(0, 0, 0, 0);
+            pl->setSpacing(2);
+            pl->addWidget(imageButton());
+            pl->addWidget(link(tr("Remover foto"), [this]() {
                 pushUndo();
                 m_theme.backgroundImage.clear();
                 refreshPreview();
                 rebuildControls();
-            }));
+            }), 0, Qt::AlignLeft);
+            add(pic);
             auto* box = new QWidget(m_controls);
             auto* bl = new QVBoxLayout(box);
             bl->setContentsMargins(0, 0, 0, 0);
@@ -1094,11 +1166,14 @@ void ThemeEditorDialog::rebuildControls()
                 refreshPreview();
             });
             bl->addWidget(lab);
-            bl->addWidget(combo);
+            bl->addWidget(combo, 0, Qt::AlignLeft);
+            if (QWidget* pal = photoPalette()) {
+                pal->setParent(box);
+                pal->layout()->setContentsMargins(0, 8, 0, 0);
+                bl->addWidget(pal);
+            }
             add(box);
-            add(photoPalette());
         }
-        addOverlayControls();
         break;
     }
     case Panels: {
@@ -1172,32 +1247,7 @@ void ThemeEditorDialog::rebuildControls()
         break;
     case Sheet: {
         // duas abas: a cor e a sombra de sempre, e a imagem por cima da cor
-        {
-            auto* box = new QWidget(m_controls);
-            auto* seg = new QHBoxLayout(box);
-            seg->setContentsMargins(0, 0, 0, 0);
-            seg->setSpacing(0);
-            auto* color = new QPushButton(tr("Cor e sombra"), box);
-            auto* image = new QPushButton(tr("Imagem"), box);
-            int w = 0;
-            for (auto* b : { color, image }) {
-                b->setObjectName(QStringLiteral("segBtn"));
-                b->setCheckable(true);
-                b->setCursor(Qt::PointingHandCursor);
-                b->setMinimumWidth(QFontMetrics(px(11)).horizontalAdvance(b->text()) + 26);
-                w += b->minimumWidth();
-                seg->addWidget(b);
-            }
-            color->setProperty("pos", QStringLiteral("left"));
-            image->setProperty("pos", QStringLiteral("right"));
-            color->setChecked(!m_sheetImage);
-            image->setChecked(m_sheetImage);
-            box->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-            box->setFixedWidth(w);
-            connect(color, &QPushButton::clicked, this, [this]() { m_sheetImage = false; rebuildControls(); });
-            connect(image, &QPushButton::clicked, this, [this]() { m_sheetImage = true; rebuildControls(); });
-            add(box);
-        }
+        add(segTabs(tr("Cor e sombra"), tr("Imagem"), m_sheetImage, [this](bool on) { m_sheetImage = on; }));
         if (m_sheetImage) {
             // Imagem da folha: a cor da página com uma imagem por cima, em todo documento
             add(pageImageButton());

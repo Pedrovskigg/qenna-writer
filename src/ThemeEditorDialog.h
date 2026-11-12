@@ -62,6 +62,7 @@ private:
     QWidget* slider(const QString& label, int min, int max, int value, const QString& unit,
                     const std::function<void(int)>& apply);
     void addOverlayControls();
+    QWidget* segTabs(const QString& left, const QString& right, bool rightOn, const std::function<void(bool)>& onPick);
     QWidget* link(const QString& text, const std::function<void()>& onClick);
     QWidget* hint(const QString& text, int maxWidth = 380);
     QWidget* contrastBox();
@@ -80,6 +81,7 @@ private:
     Group m_group = Sheet;
     QString m_panel;                  // painel clicado (PanelKey) no grupo Painéis
     bool m_sheetImage = false;        // grupo Folha: aba "Imagem" (senão "Cor e sombra")
+    bool m_bgOverlay = false;         // grupo Fundo: aba "Degradê e grão" (senão "Cor e foto")
     QString m_activeKey = QStringLiteral("accentDefault");  // cor que recebe as cores da foto
     int m_scene = 0;
     QList<QColor> m_photoColors;

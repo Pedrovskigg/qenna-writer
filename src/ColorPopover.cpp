@@ -337,6 +337,13 @@ void ColorPopover::build()
         v->addSpacing(6);
     };
 
+    if (!m_opt.suggested.isEmpty()) {
+        section(m_opt.suggestedTitle.isEmpty() ? tr("Sugeridas") : m_opt.suggestedTitle);
+        m_suggestRow = new QWidget(m_panel);
+        m_suggestRow->installEventFilter(this);
+        v->addWidget(m_suggestRow);
+        v->addSpacing(10);
+    }
     section(tr("Do tema"), &m_themeNote);
     m_themeRow = new QWidget(m_panel);
     m_themeRow->installEventFilter(this);
@@ -497,6 +504,11 @@ void ColorPopover::rebuildSwatches()
             g->addWidget(b, i / cols, i % cols);
         }
     };
+    if (m_suggestRow) {
+        QList<Choice> sug;
+        for (const QColor& c : std::as_const(m_opt.suggested)) sug << Choice{ c, QString() };
+        fill(m_suggestRow, sug, 8);
+    }
     QList<Choice> theme;
     for (const QString& k : ColorPick::themeKeys()) theme << Choice{ ColorPick::themeColor(k), k };
     fill(m_themeRow, theme, 8);
@@ -536,7 +548,7 @@ bool ColorPopover::eventFilter(QObject* obj, QEvent* ev)
             if (!m_opt.themeBinding) c.themeKey.clear();
             preview(c);
         }
-    } else if ((obj == m_themeRow || obj == m_paletteGrid || obj == m_recentRow) && ev->type() == QEvent::Leave) {
+    } else if ((obj == m_suggestRow || obj == m_themeRow || obj == m_paletteGrid || obj == m_recentRow) && ev->type() == QEvent::Leave) {
         preview(m_current);
     }
     return QWidget::eventFilter(obj, ev);
