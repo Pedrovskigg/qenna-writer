@@ -8,14 +8,18 @@
 #include <QString>
 #include <QStringList>
 #include <QWidget>
+#include <functional>
 class QToolButton;
 class QLineEdit;
 class QFrame;
 class QMenu;
 class QAction;
 class QBoxLayout;
+class QSpacerItem;
 class FontPickerPopup;
 class ToolbarGroupWidget;
+class CarouselViewport;
+class QStackedWidget;
 class QWidget;
 
 class TopToolbar : public QWidget
@@ -25,6 +29,16 @@ class TopToolbar : public QWidget
 public:
     enum class AlignScope { ThisDoc, AllDocs, Manuscript, Drawers };
     Q_ENUM(AlignScope)
+    // Estilo da barra (12/11/2026). Clássica = a de sempre, desde o Mira
+    // Writing em JSX. As outras três são a faixa estilo Word: completa,
+    // simplificada (uma linha) e só as abas. Escolha em Configurações e no
+    // botão de modo da própria faixa; salva em ui/topToolbarStyle.
+    // 13/11/2026, saídas do lab Escala Word–Qenna: Simplificada com sotaque
+    // (o Q no lugar do Arquivo, a linha de comandos num cartão) e Fichário
+    // (abas de fichário que se emendam na faixa). As duas têm uma linha só.
+    enum class BarStyle { Classic = 0, RibbonFull = 1, RibbonSimple = 2, RibbonTabs = 3,
+                          RibbonAccent = 4, RibbonBinder = 5, RibbonReel = 6 };
+    Q_ENUM(BarStyle)
 
     // side: Qt::TopEdge (padrão, horizontal) ou Qt::RightEdge (vertical, na
     // lateral direita). Fixo pra vida do objeto — trocar de lado é decisão de
@@ -37,6 +51,35 @@ public:
     // Espessura fixa da barra (48px) — largura quando vertical, altura quando
     // horizontal. MainWindow usa isso pra reservar espaço de layout.
     int thickness() const;
+
+    BarStyle barStyle() const { return m_barStyle; }
+    void setBarStyle(BarStyle style);
+    // A faixa só existe com a barra em cima; na lateral vale a clássica.
+    bool ribbonActive() const { return m_barStyle != BarStyle::Classic && !isVertical(); }
+    // Faixa de uma linha só (simplificada e as duas com cara de Qenna).
+    bool ribbonOneLine() const { return m_barStyle == BarStyle::RibbonSimple || m_barStyle == BarStyle::RibbonAccent
+                                        || m_barStyle == BarStyle::RibbonBinder || m_barStyle == BarStyle::RibbonReel; }
+    // Largura que a faixa quer ter (a da folha). A MainWindow informa.
+    void setRibbonTargetWidth(int px);
+    // Posição da faixa: de ponta a ponta (teto da janela, emendada na LeftBar)
+    // ou flutuante (da largura da folha, presa em cima dela). Salva em
+    // ui/topToolbarRibbonFloating.
+    bool ribbonFloating() const { return m_ribbonFloating; }
+    void setRibbonFloating(bool on);
+    // De ponta a ponta de fato (faixa ativa e não flutuante).
+    bool ribbonEdgeToEdge() const { return ribbonActive() && !m_ribbonFloating && !ribbonHugsContent(); }
+    // Rolo (13/11): flutua como a clássica, da largura do próprio conteúdo e
+    // centralizado na folha, valha o que valer a Posição.
+    bool ribbonHugsContent() const { return ribbonActive() && m_barStyle == BarStyle::RibbonReel; }
+    // Recuo do conteúdo da faixa pra começar alinhado com a borda da LeftBar
+    // (o canto em cima dela fica vazio, na cor da faixa).
+    void setRibbonSideInsets(int left, int right);
+    // Centro da folha, em coordenadas da barra (Fichário de ponta a ponta:
+    // abas e botões se centralizam com a página). A MainWindow informa.
+    void setRibbonPageCenter(int x);
+    // Teto do comprimento da folha (o mesmo das Configurações: a altura útil da
+    // janela). No máximo, "Tela cheia". A MainWindow fornece.
+    std::function<int()> pageHeightMaximum;
 
     void setFontFamilies(const QStringList &families, const QString &current);
     void setFontSize(qreal pt);
@@ -88,6 +131,10 @@ protected:
 
 signals:
     void barSideChanged(Qt::Edge side);
+    void barStyleChanged(TopToolbar::BarStyle style);
+    void ribbonPlacementChanged(bool floating);
+    // Grupo Página da faixa: liga/desliga o modo de página (a MainWindow aplica).
+    void pageModeToggled(bool on);
     void fontFamilyChanged(const QString &family);
     void fontSizeChanged(qreal pt);
     void lineHeightChanged(int percent);
@@ -184,7 +231,7 @@ private:
     void buildSpacingMenu();
     void buildAlignMenu();
     void updateAlignButtonIcon();
-    void refreshLayoutAndOverflow();
+    void refreshLayout();
     void updateSizeMenuState();
     void updateSpacingMenuChecks();
     // Texto vira tooltip quando vertical (ícone-only) — "17.5" ou "1.3" não
@@ -210,29 +257,14 @@ private:
     void applyUiScale();
     int currentIconPx() const;
 
-    // Menu de overflow — botões dispensáveis (tema, tela cheia, som imersivo,
-    // ferramentas de worldbuilding etc.) somem pra dentro de "⋯" quando a
-    // janela é estreita demais pra caber tudo, do menos essencial pro mais
-    // essencial (índice 0 primeiro), e voltam na ordem inversa conforme sobra
-    // espaço de novo. Ver updateOverflow().
-    void buildOverflowMenu();
-    void updateOverflow();
-    // Largura de referencia ESTAVEL pro overflow (ver definicao).
-    int availableBarWidth() const;
-    // Trava de reentrancia: updateOverflow muda visibilidade de botao, o que
-    // dispara resizeEvent, que chama updateOverflow de novo.
-    bool m_inOverflowUpdate = false;
-    // Última conta feita: LayoutRequest só refaz o overflow se algo mudou.
-    int m_overflowNeedSeen = -1;
-    int m_overflowAvailSeen = -1;
-    void collapseToOverflow(QToolButton* btn);
-    void restoreFromOverflow(QToolButton* btn);
-    bool isCollapsed(QToolButton* btn) const;
-    int measureContentWidth();
-    QToolButton* overflowButton = nullptr;
-    QMenu* m_overflowMenu = nullptr;
-    QList<QToolButton*> m_collapsePriority;
-    QHash<QToolButton*, QAction*> m_overflowActions;
+    // Carrossel (12/11/2026, ideia do Pe): quando a janela não tem largura
+    // pra todos os botões, a fileira gira em vez de esconder botão num menu
+    // "⋯". m_content é onde os grupos moram; o carrossel recorta e gira.
+    QWidget* m_content = nullptr;
+    CarouselViewport* m_carousel = nullptr;
+    QBoxLayout* m_outerLayout = nullptr;
+    // Traz o botão pro miolo antes de ancorar um painel nele.
+    void revealButton(QToolButton* btn) const;
 
     QList<QPair<QToolButton*, QString>> iconBindings;
     QList<QToolButton*> m_squareButtons; // botões de tamanho padrão (ver applyUiScale)
@@ -264,11 +296,70 @@ private:
 
     Qt::Edge m_barSide = Qt::TopEdge;
 
+    // ---------------- Faixa estilo Word (TopToolbarRibbon.cpp) ----------------
+    // Os botões são OS MESMOS da clássica (mesmos menus e sinais); a faixa só
+    // muda a casa deles. Voltar pra clássica devolve tudo pros grupos.
+    BarStyle m_barStyle = BarStyle::Classic;
+    BarStyle m_lastRibbonStyle = BarStyle::RibbonSimple;
+    QWidget* m_ribbon = nullptr;
+    QWidget* m_ribbonTabsRow = nullptr;
+    QToolButton* m_ribbonFile = nullptr;
+    QSpacerItem* m_ribbonQGap = nullptr;    // Fichário: vão entre o Q e a primeira aba
+    QList<QToolButton*> m_ribbonTabs;
+    int m_ribbonTab = 0;
+    QToolButton* m_ribbonSave = nullptr;
+    QToolButton* m_ribbonModeBtn = nullptr;
+    QToolButton* m_ribbonCollapse = nullptr;
+    QWidget* m_ribbonBody = nullptr;
+    CarouselViewport* m_ribbonCarousel = nullptr;
+    QStackedWidget* m_ribbonStack = nullptr;
+    QWidget* m_ribbonParking = nullptr;     // botões que a faixa não mostra (vivos, escondidos)
+    QToolButton* m_ribbonAlign[4] = { nullptr, nullptr, nullptr, nullptr };
+    QToolButton* m_ribbonScope = nullptr;
+    QToolButton* m_pageButton = nullptr;
+    bool m_ribbonPeek = false;              // só abas: a faixa desceu por cima do texto
+    bool m_peekFilter = false;
+    int m_ribbonTargetWidth = 0;
+    bool m_ribbonFloating = false;
+    // Fichário com Rolo (13/11, lab Escala, Tambor 3): sem abas; um rolo de
+    // nomes na ponta, como um cadeado de segredo, troca a seção, e a faixa
+    // vira junto como um tambor. As ferramentas de cada seção ficam paradas.
+    bool m_ribbonReelMode = false;
+    QWidget* m_ribbonReel = nullptr;
+    QWidget* m_ribbonFlip = nullptr;
+    qint64 m_lastReelWheel = 0;
+    void stepRibbonSection(int delta);
+    bool wheelRibbonSection(int angleDeltaY);
+    int m_ribbonInsetL = 0;
+    int m_ribbonInsetR = 0;
+    int m_ribbonPageCenter = 0;
+    QHash<QToolButton*, int> m_ribbonTabOf;
+    QHash<QToolButton*, QString> m_classicText;
+    QHash<QToolButton*, Qt::ToolButtonStyle> m_classicStyle;
+    void buildRibbonChrome();
+    void applyBarStyle();
+    void rebuildRibbonPages();
+    void setRibbonTab(int idx);
+    void setRibbonPeek(bool on);
+    void showBackstage();
+    void showPagePopup();
+    void styleRibbonButton(QToolButton* b, int role, const QString& label);
+    void restoreClassicButtons();
+    void syncRibbonAlign();
+    void syncRibbonModeMenu();
+    int ribbonHeight(bool withPeek) const;
+    void applyRibbonMargins();
+    void applyBinderIndent();
+    QRect anchorRect(QToolButton* b) const;
+    QString ribbonQss() const;
+    QString ribbonRootQss() const;
+    QString ribbonLookQss() const;
+    static QIcon toolbarIcon(const QString& name, int px);
+
     // ---------------- Reorganização da barra (grupos arrastáveis) ----------------
     // Cada grupo (Projeto/Editor/Ferramentas/Mídia/Worldbuilding/Sistema) é uma
     // unidade de arrastar (ToolbarGroupWidget) — a ordem entre eles persiste em
-    // QSettings. overflowButton fica DE FORA do sistema de
-    // grupos, sempre fixos (início/fim), igual antes.
+    // QSettings.
     QBoxLayout* m_mainLayout = nullptr;
     QHash<QString, ToolbarGroupWidget*> m_groupWidgets;
     QStringList m_groupOrder;

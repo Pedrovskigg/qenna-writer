@@ -14,6 +14,7 @@ class QEnterEvent;
 class QTimer;
 class QVariantAnimation;
 class LeftBarLabels;
+class CarouselViewport;
 class ToolbarGroupWidget;
 
 class QVBoxLayout;
@@ -72,6 +73,8 @@ public:
     // Etiquetas: com o mouse em cima, uma faixa sai da barra com o nome de
     // cada botão e a contagem das gavetas. Configurações › Interface liga/desliga.
     static bool labelsEnabled();
+    // Mouse em cima da faixa de etiquetas aberta.
+    bool labelsUnderMouse() const;
     static void setLabelsEnabled(bool on);
 
     // Persiana: o botão no pé da barra recolhe tudo pra baixo e deixa só uma
@@ -83,6 +86,9 @@ public:
     // Recolhida, a barra precisa de Qt::AlignBottom no layout do pai (senão fica
     // centralizada na altura). Quem tira e repõe a barra no layout chama isto.
     void syncLayoutAlignment();
+    // Emendada embaixo da faixa estilo Word (que vai de ponta a ponta): sem a
+    // borda de cima nem a da beira da janela, as duas viram uma peça só em L.
+    void setJoinedTop(bool on);
 
 signals:
     void barSideChanged(Qt::Edge side);
@@ -114,6 +120,8 @@ private slots:
 private:
     Qt::Edge m_barSide = Qt::LeftEdge;
     bool m_chromeHidden = false;
+    bool m_joinedTop = false;
+    QString panelStyle() const;
 
     // Persiana
     bool contentShown() const { return !m_chromeHidden && !m_collapsed && !m_rolling; }
@@ -176,6 +184,14 @@ private:
 
     ProjectModel* m_model;
     QVBoxLayout* m_drawerLayout;
+    // Carrossel das gavetas (12/11/2026, ideia do Pe): com gaveta demais pra
+    // altura da barra, a lista gira. Os botões fixos, o "+" e a persiana
+    // ficam parados; só a lista de gavetas mora aqui dentro.
+    QWidget* m_drawerContent = nullptr;
+    CarouselViewport* m_drawerCarousel = nullptr;
+    // A gaveta aparece inteira no miolo do carrossel (as das pontas curvas
+    // e as escondidas não ganham etiqueta).
+    bool drawerInCarouselWindow(QToolButton* b) const;
     QVBoxLayout* m_rootLayout;
     bool m_mirrored = false;
 

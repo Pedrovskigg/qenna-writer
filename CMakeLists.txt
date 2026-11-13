@@ -64,6 +64,7 @@ qt_add_executable(qenna-writer
     src/ThemeExportDialog.cpp
     src/ThemeExportDialog.h
     src/TopToolbar.cpp
+    src/TopToolbarRibbon.cpp
     src/TopToolbar.h
     src/IconUtils.cpp
     src/IconUtils.h
@@ -231,6 +232,8 @@ qt_add_executable(qenna-writer
     src/WhatsNewDialog.h
     src/SelectionPopup.cpp
     src/SelectionPopup.h
+    src/CarouselViewport.cpp
+    src/CarouselViewport.h
     src/MarkerStore.cpp
     src/MarkerStore.h
     src/MarkerPickPopup.cpp

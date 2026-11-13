@@ -340,6 +340,48 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         emit topToolbarSideChanged(m_toolbarSideCombo->itemData(idx).toInt());
     });
 
+    // Estilo da barra (12/11/2026): a clássica de sempre ou a faixa estilo Word.
+    m_toolbarStyleCombo = new QComboBox(this);
+    m_toolbarStyleCombo->addItem(tr("Clássica"), 0);
+    m_toolbarStyleCombo->addItem(tr("Abas completas"), 1);
+    m_toolbarStyleCombo->addItem(tr("Abas simples"), 2);
+    m_toolbarStyleCombo->addItem(tr("Abas em cartão"), 4);
+    m_toolbarStyleCombo->addItem(tr("Abas de pasta"), 5);
+    m_toolbarStyleCombo->addItem(tr("Giratória"), 6);
+    m_toolbarStyleCombo->addItem(tr("Só as abas"), 3);
+    {
+        const int saved = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 0).toInt();
+        const int idx = m_toolbarStyleCombo->findData(saved);
+        if (idx >= 0) m_toolbarStyleCombo->setCurrentIndex(idx);
+    }
+    // Seis estilos não cabem em pílulas (máximo de 4 por linha): lista suspensa.
+    addRow(Appearance, tr("Estilo da barra"), tr("A clássica ou a faixa com abas, como no Word."),
+           m_toolbarStyleCombo,
+           tr("Clássica: a barra de sempre, com todos os botões numa fileira. As outras "
+              "organizam os botões em abas (Editor, Revisão, Mundo, Ambiente), com o Arquivo "
+              "ou o Q na ponta. Abas completas mostram grupos com nome e botões grandes; abas "
+              "simples, em cartão e de pasta cabem numa linha; a Giratória troca de aba num rolo "
+              "de nomes; só as abas deixa a tela limpa e a faixa desce quando você clica numa "
+              "aba. Com a barra na lateral, vale a clássica."));
+    connect(m_toolbarStyleCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit topToolbarStyleChanged(m_toolbarStyleCombo->itemData(idx).toInt());
+    });
+
+    m_ribbonPlaceCombo = new QComboBox(this);
+    m_ribbonPlaceCombo->addItem(tr("De ponta a ponta"), 0);
+    m_ribbonPlaceCombo->addItem(tr("Flutuante"), 1);
+    m_ribbonPlaceCombo->setCurrentIndex(QSettings().value(QStringLiteral("ui/topToolbarRibbonFloating"), false).toBool() ? 1 : 0);
+    addRow(Appearance, tr("Posição da faixa"), tr("No teto da janela ou flutuando em cima da folha."),
+           new Segmented(m_ribbonPlaceCombo, this),
+           tr("De ponta a ponta: a faixa vira o teto da janela, como no Word, e a barra lateral "
+              "desce emendada nela. Flutuante: a faixa tem a largura da folha e fica solta em "
+              "cima dela. Só vale quando o estilo da barra é uma das faixas."));
+    connect(m_ribbonPlaceCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit ribbonFloatingChanged(m_ribbonPlaceCombo->itemData(idx).toInt() == 1);
+    });
+
     // Só esquerda/direita: deitada em cima ou embaixo, o conteúdo dela
     // (gavetas, capítulos) atrapalharia o centro da tela.
     m_leftBarSideCombo = new QComboBox(this);
@@ -487,6 +529,7 @@ SettingsPanel::SettingsPanel(QWidget* parent)
                                 "todos os projetos.");
     // Modo de página: o texto em folhas separadas, como no Layout de Impressão do Word.
     auto* pageModeCheck = new ToggleSwitch(this);
+    m_pageModeCheck = pageModeCheck;
     pageModeCheck->setChecked(QSettings().value(QStringLiteral("editor/pageMode"), false).toBool());
     addRow(Writing, tr("Modo de página"), tr("O texto em folhas separadas, como no Word."), pageModeCheck,
            tr("Divide o capítulo em folhas de papel (A4 na largura da página), com um vão entre "
@@ -518,6 +561,14 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     breakCombo->addItem(tr("Nó da Timeline"), int(SceneBreaks::Knot));
     breakCombo->addItem(tr("Nome da cena"), int(SceneBreaks::Name));
     breakCombo->setCurrentIndex(SceneBreaks::style() == SceneBreaks::Name ? 1 : 0);
+    m_sceneBreakCombo = breakCombo;
+    // A faixa da barra também troca a quebra de cena: o seletor daqui acompanha.
+    connect(SceneBreaks::notifier(), &SceneBreaks::Notifier::styleChanged, this, [breakCombo]() {
+        const int want = SceneBreaks::style() == SceneBreaks::Name ? 1 : 0;
+        if (breakCombo->currentIndex() == want) return;
+        QSignalBlocker block(breakCombo);
+        breakCombo->setCurrentIndex(want);
+    });
     addRow(Writing, tr("Quebra de cena"), tr("Como a divisão entre cenas aparece no texto."),
            new Segmented(breakCombo, this),
            tr("Nó da Timeline: a bolinha da Timeline entre dois fios, na cor da linha da cena "
@@ -1186,6 +1237,31 @@ void SettingsPanel::setTopToolbarSide(int side)
     const int idx = m_toolbarSideCombo->findData(side);
     if (idx >= 0) m_toolbarSideCombo->setCurrentIndex(idx);
     m_blockSignals = false;
+}
+
+void SettingsPanel::setTopToolbarStyle(int style)
+{
+    if (!m_toolbarStyleCombo) return;
+    m_blockSignals = true;
+    const int idx = m_toolbarStyleCombo->findData(style);
+    if (idx >= 0) m_toolbarStyleCombo->setCurrentIndex(idx);
+    m_blockSignals = false;
+}
+
+void SettingsPanel::setRibbonFloating(bool floating)
+{
+    if (!m_ribbonPlaceCombo) return;
+    m_blockSignals = true;
+    m_ribbonPlaceCombo->setCurrentIndex(floating ? 1 : 0);
+    m_blockSignals = false;
+}
+
+void SettingsPanel::setPageModeChecked(bool on)
+{
+    if (!m_pageModeCheck || m_pageModeCheck->isChecked() == on) return;
+    // Sem bloquear o sinal: o toggled também liga/desliga as linhas de
+    // comprimento e margem; o MainWindow ignora a troca repetida.
+    m_pageModeCheck->setChecked(on);
 }
 
 void SettingsPanel::setLeftBarSide(int side)

@@ -12,6 +12,7 @@
 #include <QFrame>
 #include <QGraphicsOpacityEffect>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
 #include <QLocale>
@@ -24,11 +25,15 @@
 #include <QSettings>
 #include <QScopeGuard>
 #include <QSignalBlocker>
+#include <QStackedWidget>
 #include <QStyle>
+#include <QTimer>
+#include <QWheelEvent>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidgetAction>
 
+#include "CarouselViewport.h"
 #include "FontPickerPopup.h"
 #include "IconUtils.h"
 #include "Theme.h"
@@ -114,8 +119,16 @@ int fontButtonPointSize(qreal editorPt)
 
 }
 
+QIcon TopToolbar::toolbarIcon(const QString &name, int px)
+{
+    return loadIcon(name, px);
+}
+
 int TopToolbar::thickness() const
 {
+    // Só abas com a faixa descida: ela passa POR CIMA do texto, a reserva de
+    // espaço continua a das abas.
+    if (ribbonActive() && m_ribbonPeek) return ribbonHeight(false);
     // Não usa a constante kBarHeight direto — a espessura real muda com a
     // escala de UI (ver applyUiScale()); ler a dimensão fixada de verdade
     // evita as duas ficarem dessincronizadas.
@@ -174,6 +187,11 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     setAttribute(Qt::WA_StyledBackground, true);
     if (isVertical()) setFixedWidth(kBarHeight);
     else setFixedHeight(kBarHeight);
+
+    // Os grupos (e as luzinhas) moram num conteúdo que o carrossel recorta e
+    // gira quando a janela não dá largura pra todos. Ver CarouselViewport.
+    m_content = new QWidget(this);
+    m_content->setObjectName(QStringLiteral("topToolbarContent"));
 
     reminderBadge   = makeBadge(QStringLiteral("reminderBadge"));
     pensarioBadge   = makeBadge(QStringLiteral("pensarioBadge"));
@@ -281,8 +299,8 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     readModeButton->setObjectName(QStringLiteral("ttbMode"));
     readModeButton->setIcon(readModeOffIcon);
     // Nome no text() e descricao no toolTip(): o botao e icone-only, entao o
-    // text() nao e desenhado — ele serve pro rotulo no menu "..." de overflow
-    // (ver buildOverflowMenu), onde a descricao inteira nao caberia.
+    // text() nao e desenhado — e o nome curto do botao, onde a descricao
+    // inteira nao caberia.
     readModeButton->setText(tr("Editor Focado (Modo clássico)"));
     readModeButton->setToolTip(tr("Editor Focado (Modo clássico)\n"
                                   "Modo editor focado com barras que recuam. Igual na "
@@ -428,28 +446,21 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     // local) porque rebuildGroupLayout() precisa reconstruí-lo sempre que a
     // ordem muda, não só uma vez na construção.
     const bool vertical = isVertical();
-    m_mainLayout = new QBoxLayout(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight, this);
+    m_mainLayout = new QBoxLayout(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight, m_content);
     m_mainLayout->setContentsMargins(vertical ? 4 : 14, vertical ? 14 : 4, vertical ? 4 : 14, vertical ? 14 : 4);
     m_mainLayout->setSpacing(6);
 
-    buildGroups();
+    m_carousel = new CarouselViewport(vertical ? Qt::Vertical : Qt::Horizontal, this);
+    m_carousel->setMinimumLength(240);
+    m_carousel->setContent(m_content);
+    m_outerLayout = new QBoxLayout(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight, this);
+    m_outerLayout->setContentsMargins(0, 0, 0, 0);
+    m_outerLayout->setSpacing(0);
+    m_outerLayout->addWidget(m_carousel);
+    // As luzinhas seguem os botões quando o conteúdo se reacomoda.
+    m_content->installEventFilter(this);
 
-    // Botão de overflow ("⋯") — só aparece quando updateOverflow() precisa
-    // esconder algum botão dispensável por falta de espaço. Fica no fim da
-    // barra, sempre com o menu vazio até que isso aconteça. Fora do sistema
-    // de grupos (não arrasta, sempre por último).
-    overflowButton = new QToolButton(this);
-    overflowButton->setObjectName(QStringLiteral("ttbSystem"));
-    overflowButton->setAutoRaise(true);
-    overflowButton->setCursor(Qt::PointingHandCursor);
-    overflowButton->setFixedSize(kIconButtonSize, kIconButtonSize);
-    overflowButton->setText(QStringLiteral("⋯"));
-    overflowButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    overflowButton->setToolTip(tr("Mais opções"));
-    overflowButton->setPopupMode(QToolButton::InstantPopup);
-    overflowButton->setVisible(false);
-    m_overflowMenu = new QMenu(overflowButton);
-    overflowButton->setMenu(m_overflowMenu);
+    buildGroups();
 
     m_groupOrder = loadGroupOrder();
     m_groupButtons = loadButtonLayout();
@@ -458,7 +469,6 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     buildSizeMenu();
     buildSpacingMenu();
     buildAlignMenu();
-    buildOverflowMenu();
     applyRootStyle();
     for (ToolbarGroupWidget* g : std::as_const(m_groupWidgets)) {
         if (g) g->applyTheme(QColor(Theme::textMuted()), QColor(Theme::accentDefault()));
@@ -475,7 +485,7 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
         searchButton, alignButton, imageButton, reminderButton,
         immersiveSoundButton, themePanelButton, settingsButton, fullscreenButton,
         refMenuButton, pensarioButton, construtorButton, miraButton,
-        overflowButton, indentButton,
+        indentButton,
     };
 
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged,
@@ -483,6 +493,14 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
     connect(UiScale::Manager::instance(), &UiScale::Manager::scaleChanged,
             this, &TopToolbar::applyUiScale);
     applyUiScale(); // aplica a escala persistida (icones recarregados no tamanho certo)
+
+    m_ribbonFloating = QSettings().value(QStringLiteral("ui/topToolbarRibbonFloating"), false).toBool();
+    const int savedStyle = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 0).toInt();
+    if (savedStyle >= 1 && savedStyle <= 6) {
+        m_barStyle = BarStyle(savedStyle);
+        if (m_barStyle != BarStyle::RibbonTabs) m_lastRibbonStyle = m_barStyle;
+        applyBarStyle();
+    }
 }
 
 void TopToolbar::buildGroups()
@@ -594,6 +612,7 @@ QHash<QString, QStringList> TopToolbar::loadButtonLayout() const
 void TopToolbar::rebuildGroupLayout()
 {
     if (!m_mainLayout) return;
+    if (ribbonActive()) return;   // na faixa os botões moram nas páginas dela
 
     QLayoutItem* item;
     while ((item = m_mainLayout->takeAt(0)) != nullptr) delete item; // nao deleta os widgets
@@ -644,7 +663,6 @@ void TopToolbar::rebuildGroupLayout()
         m_mainLayout->addWidget(sep);
         if (vertical && i == 1) m_mainLayout->addStretch(1);
     }
-    if (overflowButton) m_mainLayout->addWidget(overflowButton);
 
     // Mesmo raciocinio de centralizacao de sempre, agora nos GRUPOS (que ja
     // centralizam seus proprios botoes por dentro, ver ToolbarGroupWidget)
@@ -666,6 +684,7 @@ void TopToolbar::rebuildGroupLayout()
 void TopToolbar::setEditMode(bool on)
 {
     if (m_editMode == on) return;
+    if (on && ribbonActive()) return;   // reorganizar é coisa da clássica
     m_editMode = on;
     // Só enquanto edita: um filtro de aplicação permanente veria TODO evento do
     // app pra nada, e este aqui existe só pra perceber o clique que encerra.
@@ -696,64 +715,6 @@ void TopToolbar::onGroupDropped(const QString& draggedId, const QString& targetI
     rebuildGroupLayout();
 }
 
-void TopToolbar::buildOverflowMenu()
-{
-    // Ordem de colapso: índice 0 é o primeiro a sumir pra dentro de "⋯" quando
-    // falta espaço; os últimos (miraButton, construtorButton...) só colapsam
-    // em janelas realmente minúsculas. Só o coração da escrita nunca entra aqui:
-    // Início, Salvar, Configurações, fonte, tamanho, entrelinha, alinhamento e
-    // negrito/itálico/sublinhado.
-    m_collapsePriority = {
-        immersiveSoundButton,
-        fullscreenButton,
-        themePanelButton,
-        reminderButton,
-        readModeButton,
-        searchButton,
-        focusButton,
-        statisticsButton,
-        refMenuButton,
-        pensarioButton,
-        construtorButton,
-        miraButton,
-        // Segunda leva: só em janela bem estreita, quando a primeira não bastou.
-        // Sem isto, a soma dos botões fixos passava da janela e eles se
-        // sobrepunham (936px a 100%).
-        readAloudButton,
-        repetitionsButton,
-        exportButton,
-        helpButton,
-        newProjectButton,
-        openProjectButton,
-        imageButton,
-        indentButton,
-        strikethroughButton,
-    };
-
-    for (QToolButton *btn : std::as_const(m_collapsePriority)) {
-        if (!btn) continue;
-        // text() quando existe: alguns botoes tem tooltip de varias linhas com
-        // descricao, e a descricao inteira nao cabe num item de menu. Texto de
-        // um caractere ("?", "¶") é o desenho do botão, não um nome.
-        const QString label = btn->text().size() <= 1 ? btn->toolTip() : btn->text();
-        auto *action = new QAction(btn->icon(), label, m_overflowMenu);
-        action->setCheckable(btn->isCheckable());
-        connect(action, &QAction::triggered, this, [btn]() { btn->click(); });
-        m_overflowActions.insert(btn, action);
-    }
-
-    // Sincroniza o "check" dos itens colapsáveis checkable (focusButton,
-    // fullscreenButton) toda vez que o menu abre — o QAction proxy não recebe
-    // o toggled do botão real automaticamente.
-    connect(m_overflowMenu, &QMenu::aboutToShow, this, [this]() {
-        for (auto it = m_overflowActions.constBegin(); it != m_overflowActions.constEnd(); ++it) {
-            if (it.value()->isCheckable()) it.value()->setChecked(it.key()->isChecked());
-            // O ícone muda com o tema e com o estado (foco ligado/desligado).
-            it.value()->setIcon(it.key()->icon());
-        }
-    });
-}
-
 int TopToolbar::currentIconPx() const
 {
     return qMax(10, qRound(kIconSize * UiScale::scale()));
@@ -762,6 +723,12 @@ int TopToolbar::currentIconPx() const
 
 void TopToolbar::applyUiScale()
 {
+    if (ribbonActive()) {
+        // A faixa tem os próprios tamanhos (botão grande, combo, inline):
+        // remonta as páginas na escala nova em vez de fixar os quadrados.
+        rebuildRibbonPages();
+        return;
+    }
     const qreal s = UiScale::scale();
     const int barH = qMax(40, qRound(kBarHeight * s));
     const int btnSize = qMax(18, qRound(kIconButtonSize * s));
@@ -773,8 +740,8 @@ void TopToolbar::applyUiScale()
         setFixedHeight(barH);
         // Maximum na horizontal: a barra nunca passa da largura do proprio
         // conteudo (fica uma faixa centralizada no topo, em vez de esticar de
-        // ponta a ponta e deixar um vazio enorme no meio). Quem decide o que
-        // cabe e o updateOverflow(), medindo contra a janela.
+        // ponta a ponta e deixar um vazio enorme no meio). Sem largura pra
+        // todos, o carrossel gira a fileira (ver CarouselViewport).
         setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
     }
 
@@ -824,7 +791,7 @@ void TopToolbar::applyUiScale()
     }
     if (layout()) layout()->activate();
 
-    refreshLayoutAndOverflow();
+    refreshLayout();
 }
 
 // Fonte/tamanho/espaçamento são os únicos botões que mudam de NATUREZA com o
@@ -867,6 +834,8 @@ void TopToolbar::setBarSide(Qt::Edge side)
     for (ToolbarGroupWidget *g : std::as_const(m_groupWidgets)) {
         if (g) g->setOrientation(vertical ? Qt::Vertical : Qt::Horizontal);
     }
+    if (m_outerLayout) m_outerLayout->setDirection(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
+    if (m_carousel) m_carousel->setOrientation(vertical ? Qt::Vertical : Qt::Horizontal);
     rebuildGroupLayout();
 
     // A barra tinha altura OU largura fixa; setFixedWidth/Height mexe em min E
@@ -892,7 +861,9 @@ void TopToolbar::setBarSide(Qt::Edge side)
 
     applyUiScale();     // re-fixa tamanhos e o eixo certo da barra
     updateAlignButtonIcon();
-    refreshLayoutAndOverflow();
+    refreshLayout();
+    // Na lateral a faixa não existe (vale a clássica); de volta ao topo, ela volta.
+    applyBarStyle();
 
     emit barSideChanged(m_barSide);
 }
@@ -984,6 +955,7 @@ void TopToolbar::applyRootStyle()
     // background liso (appBackground, sem borda/raio), inconsistente com o
     // resto do chrome do app. Botões continuam transparentes com hover sutil;
     // as cores dos ícones já vêm tintadas via loadIcon().
+    const QString ribbonRules = ribbonQss() + ribbonRootQss();
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#topToolbar {
             background: %1;
@@ -1042,7 +1014,7 @@ void TopToolbar::applyRootStyle()
         QString::number(isVertical() ? 10 : 11), // 9 — texto do tamanho/espaçamento
         Theme::iconColor(),          // 10 — cor discreta desse mesmo texto (= textMuted sem cor de ícone)
         verticalGeometryReset()      // 11 — anula min-width do QSS global (ver abaixo)
-    ));
+    ) + ribbonRules);
 
     if (reminderBadge) {
         reminderBadge->setStyleSheet(Theme::qss(QStringLiteral(
@@ -1076,13 +1048,16 @@ void TopToolbar::applyRootStyle()
 void TopToolbar::reloadIcons()
 {
     const int px = currentIconPx();
-    focusOffIcon = loadModeIcon(QStringLiteral("focusmode-off.svg"), px);
-    focusOnIcon  = loadModeIcon(QStringLiteral("focusmode-on.svg"), px);
+    // Na faixa completa os dois modos são botões grandes: ícone no tamanho dele.
+    const int focusPx = (ribbonActive() && focusButton && focusButton->iconSize().width() > px) ? focusButton->iconSize().width() : px;
+    const int readPx = (ribbonActive() && readModeButton && readModeButton->iconSize().width() > px) ? readModeButton->iconSize().width() : px;
+    focusOffIcon = loadModeIcon(QStringLiteral("focusmode-off.svg"), focusPx);
+    focusOnIcon  = loadModeIcon(QStringLiteral("focusmode-on.svg"), focusPx);
     if (focusButton) {
         focusButton->setIcon(focusCheckedCache ? focusOnIcon : focusOffIcon);
     }
-    readModeOffIcon = loadModeIcon(QStringLiteral("focusededitor-off.svg"), px);
-    readModeOnIcon  = loadModeIcon(QStringLiteral("focusededitor-on.svg"), px);
+    readModeOffIcon = loadModeIcon(QStringLiteral("focusededitor-off.svg"), readPx);
+    readModeOnIcon  = loadModeIcon(QStringLiteral("focusededitor-on.svg"), readPx);
     if (readModeButton) {
         readModeButton->setIcon(readModeOn ? readModeOnIcon : readModeOffIcon);
     }
@@ -1125,6 +1100,7 @@ void TopToolbar::setCurrentAlignment(Qt::Alignment alignment)
     else if (alignment & Qt::AlignJustify) target = m_alignBtnJustify;
     else                                   target = m_alignBtnLeft;
     if (target) target->setChecked(true);
+    syncRibbonAlign();
 }
 
 void TopToolbar::buildAlignMenu()
@@ -1256,28 +1232,13 @@ void TopToolbar::applyTheme()
 
 bool TopToolbar::event(QEvent *event)
 {
-    const bool handled = QWidget::event(event);
-    if (event->type() == QEvent::Show) {
-        // A barra tem a largura do conteúdo: alargar a janela não a redimensiona,
-        // e sem ouvir a janela os botões nunca voltavam do "⋯".
-        if (QWidget *win = window()) win->installEventFilter(this);
-        updateOverflow();
-    } else if (event->type() == QEvent::LayoutRequest && !isVertical() && m_mainLayout) {
-        // O conteúdo mudou de largura sem a barra mudar (nome de fonte maior,
-        // por exemplo). A comparação é o que encerra o ciclo: o próprio
-        // updateOverflow gera outro LayoutRequest ao remedir.
-        if (m_mainLayout->minimumSize().width() != m_overflowNeedSeen
-            || availableBarWidth() != m_overflowAvailSeen) {
-            updateOverflow();
-        }
-    }
-    return handled;
+    return QWidget::event(event);
 }
 
 void TopToolbar::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    refreshLayoutAndOverflow();
+    refreshLayout();
     positionReminderBadge();
     positionPensarioBadge();
     positionModeBadges();
@@ -1311,8 +1272,46 @@ void TopToolbar::mousePressEvent(QMouseEvent *event)
 // clique, não substituto dele.
 bool TopToolbar::eventFilter(QObject *watched, QEvent *event)
 {
-    if (event->type() == QEvent::Resize && watched == window()) updateOverflow();
+    // Fichário com Rolo: a roda do mouse em cima da faixa gira o rolo.
+    if (m_ribbonReelMode && watched == m_ribbonBody && event->type() == QEvent::Wheel) {
+        if (wheelRibbonSection(static_cast<QWheelEvent*>(event)->angleDelta().y())) return true;
+    }
+    // O conteúdo se reacomodou (botão escondido, nome de fonte maior): as
+    // luzinhas acompanham os botões.
+    if (watched == m_content && (event->type() == QEvent::Resize || event->type() == QEvent::LayoutRequest)) {
+        QTimer::singleShot(0, this, [this]() {
+            positionReminderBadge();
+            positionPensarioBadge();
+            positionModeBadges();
+        });
+    }
 
+    // Setinha da faixa acompanha o botão quando ele muda de tamanho.
+    if (event->type() == QEvent::Resize) {
+        if (auto *tb = qobject_cast<QToolButton*>(watched)) {
+            if (auto *caret = tb->findChild<QLabel*>(QStringLiteral("ribbonCaret"), Qt::FindDirectChildrenOnly))
+                caret->move(tb->width() - caret->width() - qRound(5 * UiScale::scale()), (tb->height() - caret->height()) / 2);
+        }
+    }
+    // Duplo clique numa aba da faixa: recolhe pra só abas (ou volta).
+    if (event->type() == QEvent::MouseButtonDblClick && m_ribbonTabs.contains(qobject_cast<QToolButton*>(watched))) {
+        setBarStyle(m_barStyle == BarStyle::RibbonTabs ? m_lastRibbonStyle : BarStyle::RibbonTabs);
+        return true;
+    }
+    // Só abas, faixa descida: clicar fora (no texto, na LeftBar) ou Esc recolhe.
+    if (m_ribbonPeek) {
+        if (event->type() == QEvent::KeyPress && static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape) {
+            setRibbonPeek(false);
+        } else if (event->type() == QEvent::MouseButtonPress) {
+            auto *w = qobject_cast<QWidget*>(watched);
+            if (w && w->window() == window() && w != this && !isAncestorOf(w)) setRibbonPeek(false);
+        } else if (event->type() == QEvent::MouseButtonRelease) {
+            // Um comando direto (sem menu) dentro da faixa descida: feito, ela sobe.
+            auto *b = qobject_cast<QToolButton*>(watched);
+            if (b && m_ribbonStack && m_ribbonStack->isAncestorOf(b) && !b->menu() && b != fontButton && b != m_pageButton)
+                QTimer::singleShot(0, this, [this]() { setRibbonPeek(false); });
+        }
+    }
     if (m_editMode && event->type() == QEvent::MouseButtonPress) {
         // Um filtro de aplicação vê eventos de QWindow também, não só de
         // widget; só os de widget interessam aqui.
@@ -1325,35 +1324,31 @@ bool TopToolbar::eventFilter(QObject *watched, QEvent *event)
 QRect TopToolbar::immersiveSoundButtonGlobalRect() const
 {
     if (!immersiveSoundButton) return QRect();
-    const QPoint topLeft = immersiveSoundButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, immersiveSoundButton->size());
+    return anchorRect(immersiveSoundButton);
 }
 
 QRect TopToolbar::readAloudButtonGlobalRect() const
 {
     if (!readAloudButton) return QRect();
-    const QPoint topLeft = readAloudButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, readAloudButton->size());
+    return anchorRect(readAloudButton);
 }
 
 QRect TopToolbar::repetitionsButtonGlobalRect() const
 {
     if (!repetitionsButton) return QRect();
-    return QRect(repetitionsButton->mapToGlobal(QPoint(0, 0)), repetitionsButton->size());
+    return anchorRect(repetitionsButton);
 }
 
 QRect TopToolbar::reminderButtonGlobalRect() const
 {
     if (!reminderButton) return QRect();
-    const QPoint topLeft = reminderButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, reminderButton->size());
+    return anchorRect(reminderButton);
 }
 
 QRect TopToolbar::helpButtonGlobalRect() const
 {
     if (!helpButton) return QRect();
-    const QPoint topLeft = helpButton->mapToGlobal(QPoint(0, 0));
-    return QRect(topLeft, helpButton->size());
+    return anchorRect(helpButton);
 }
 
 void TopToolbar::setReminderBadge(bool active)
@@ -1366,7 +1361,7 @@ void TopToolbar::setReminderBadge(bool active)
 
 QLabel *TopToolbar::makeBadge(const QString &objectName)
 {
-    auto *b = new QLabel(this);
+    auto *b = new QLabel(m_content);
     b->setObjectName(objectName);
     b->setFixedSize(9, 9);
     b->setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -1376,13 +1371,15 @@ QLabel *TopToolbar::makeBadge(const QString &objectName)
 
 void TopToolbar::positionBadge(QLabel *badge, QToolButton *button)
 {
-    if (!badge || !button || !badge->isVisible()) return;
-    // mapTo(this, ...) e NAO geometry(): desde que os botoes passaram a morar
-    // dentro de ToolbarGroupWidget, geometry() e relativa ao GRUPO, enquanto o
-    // badge continua filho da barra. Comparar os dois punha a luzinha num lugar
-    // qualquer — mesmo motivo do mapTo em positionDocTitle na epoca.
-    const QPoint tl = button->mapTo(this, QPoint(0, 0));
-    badge->move(tl.x() + button->width() - 10, tl.y() + 2);
+    if (!badge || !button) return;
+    // A luzinha mora DENTRO do botão: vai junto pra onde ele for (grupo da
+    // clássica, página da faixa, carrossel) e some quando ele some.
+    if (badge->parentWidget() != button) {
+        const bool want = !badge->isHidden();
+        badge->setParent(button);
+        badge->setVisible(want);
+    }
+    badge->move(button->width() - 10, 2);
     badge->raise();
 }
 
@@ -1401,18 +1398,18 @@ void TopToolbar::positionPensarioBadge()
 void TopToolbar::positionModeBadges()
 {
     if (readModeBadge) {
-        readModeBadge->setVisible(readModeOn && readModeButton && readModeButton->isVisible());
+        readModeBadge->setVisible(readModeOn && readModeButton);
         positionBadge(readModeBadge, readModeButton);
     }
     if (focusModeBadge) {
-        focusModeBadge->setVisible(focusCheckedCache && focusButton && focusButton->isVisible());
+        focusModeBadge->setVisible(focusCheckedCache && focusButton);
         positionBadge(focusModeBadge, focusButton);
     }
     // Identacao de primeira linha entra aqui e nao no grupo do negrito/italico:
     // ela e uma preferencia do documento inteiro, ligada ou desligada, e nao uma
     // formatacao aplicada ao trecho selecionado.
     if (indentBadge) {
-        indentBadge->setVisible(indentButton && indentButton->isChecked() && indentButton->isVisible());
+        indentBadge->setVisible(indentButton && indentButton->isChecked());
         positionBadge(indentBadge, indentButton);
     }
 }
@@ -1456,133 +1453,21 @@ void TopToolbar::pulsePensarioBadge()
 // activate() é o que avisa o QBoxLayout pra recalcular posições depois que
 // applyUiScale() redimensiona botões — sem isso os vizinhos de baixo ficam com
 // geometria antiga, sobrepondo quem está acima.
-void TopToolbar::refreshLayoutAndOverflow()
+void TopToolbar::refreshLayout()
 {
+    if (m_mainLayout) m_mainLayout->activate();
     if (auto *lay = layout()) lay->activate();
-    updateOverflow();
-}
-
-void TopToolbar::collapseToOverflow(QToolButton *btn)
-{
-    if (!btn || isCollapsed(btn)) return;
-    btn->hide(); // QLayout ignora widgets escondidos — libera o espaço sozinho
-    if (QAction *action = m_overflowActions.value(btn))
-        m_overflowMenu->addAction(action);
-}
-
-void TopToolbar::restoreFromOverflow(QToolButton *btn)
-{
-    if (!btn || !isCollapsed(btn)) return;
-    btn->show();
-    QAction *action = m_overflowActions.value(btn);
-    if (action) m_overflowMenu->removeAction(action);
-}
-
-// Perguntar ao menu, não a isVisible(): com a barra escondida (modo focado,
-// janela ainda nascendo) todo botão diz que não está visível.
-bool TopToolbar::isCollapsed(QToolButton *btn) const
-{
-    QAction *action = m_overflowActions.value(btn);
-    return action && m_overflowMenu->actions().contains(action);
-}
-
-// Largura mínima do conteúdo, medida agora. Esconder um botão só atualiza o
-// grupo dele na próxima volta do event loop; sem invalidar os grupos aqui, a
-// conta enxergava a largura de antes e parava de colapsar na hora errada.
-int TopToolbar::measureContentWidth()
-{
-    for (ToolbarGroupWidget *g : std::as_const(m_groupWidgets)) {
-        if (!g || !g->layout()) continue;
-        g->layout()->invalidate();
-        g->updateGeometry();
-    }
-    m_mainLayout->invalidate();
-    m_mainLayout->activate();
-    return m_mainLayout->minimumSize().width();
-}
-
-// Colapsa botões dispensáveis pra dentro do menu "⋯" quando a barra horizontal
-// não tem largura pra todos.
-//
-// O critério antes era "sobrar 180px entre o imageButton e o readModeButton",
-// porque esse vão era onde o título do documento morava. Duas coisas mataram
-// isso: o título saiu da barra (ver refreshLayoutAndOverflow) e os botões
-// passaram a ser arrastáveis — medir a distância entre dois botões nomeados
-// deixou de significar qualquer coisa quando o usuário pode trocá-los de lugar.
-// Agora a pergunta é direta: o conteúdo cabe na barra?
-// Largura de referência ESTÁVEL pra decidir o overflow: a da janela, não a da
-// própria barra.
-//
-// Desde que a barra horizontal passou a ter a largura do conteúdo
-// (QSizePolicy::Maximum), medir contra `width()` virou realimentação: colapsar
-// um botão encolhe o conteúdo, o que encolhe a barra, o que faz o conteúdo
-// "caber" de novo, o que manda restaurar o botão, o que cresce... e o
-// resizeEvent fecha o ciclo. Na prática a barra piscava sem parar, com os
-// botões pulando sozinhos.
-int TopToolbar::availableBarWidth() const
-{
-    // 24 = margens laterais do holder (12 de cada lado, ver MainWindow).
-    constexpr int kHolderSideMargins = 24;
-    const QWidget *win = window();
-    return qMax(0, (win ? win->width() : width()) - kHolderSideMargins);
-}
-
-void TopToolbar::updateOverflow()
-{
-    if (!overflowButton || !m_mainLayout || m_collapsePriority.isEmpty()) return;
-    // Mostrar/esconder botão redimensiona a barra, o que dispara resizeEvent, que
-    // chama isto de novo — sem a trava, uma volta vira uma cascata.
-    if (m_inOverflowUpdate) return;
-    m_inOverflowUpdate = true;
-    const auto releaseGuard = qScopeGuard([this]() { m_inOverflowUpdate = false; });
-
-    // O "⋯" ocupa lugar: precisa entrar na conta assim que tiver o que mostrar.
-    auto syncDots = [this]() {
-        overflowButton->setVisible(!m_overflowMenu->actions().isEmpty());
-    };
-
-    // A conta é toda em X — numa barra vertical o eixo apertado é o Y, e lá o
-    // pior caso é cortar embaixo, sem corromper nada. Ver ToolbarGroupWidget.
-    if (isVertical()) {
-        for (QToolButton *btn : std::as_const(m_collapsePriority)) restoreFromOverflow(btn);
-        syncDots();
-        return;
-    }
-    // Janela que ainda não apareceu tem largura de mentira. O Show refaz a conta.
-    const QWidget *win = window();
-    if (!win || !win->isVisible()) return;
-
-    const int available = availableBarWidth();
-    auto tooWide = [this, available]() { return measureContentWidth() > available; };
-
-    // Encolhe: do menos essencial pro mais essencial, um por vez, até caber.
-    for (QToolButton *btn : std::as_const(m_collapsePriority)) {
-        if (!tooWide()) break;
-        collapseToOverflow(btn);
-        syncDots();
-    }
-
-    // Cresce: tenta devolver o mais essencial dos colapsados primeiro; se não
-    // coube, desfaz e para — os que sobraram são ainda menos essenciais.
-    for (int i = m_collapsePriority.size() - 1; i >= 0; --i) {
-        QToolButton *btn = m_collapsePriority.at(i);
-        if (!btn || !isCollapsed(btn)) continue;
-        restoreFromOverflow(btn);
-        syncDots();
-        if (tooWide()) {
-            collapseToOverflow(btn);
-            syncDots();
-            break;
-        }
-    }
-
-    // Último recurso, com a janela menor que o núcleo que nunca colapsa: a barra
-    // mantém sua largura e corta na borda. Cortar é feio, sobrepor é pior.
-    const int needed = measureContentWidth();
-    setMinimumWidth(needed);
-    m_overflowNeedSeen = needed;
-    m_overflowAvailSeen = available;
+    positionReminderBadge();
+    positionPensarioBadge();
     positionModeBadges();
+}
+
+// Um painel vai se ancorar no botão: se ele está numa ponta curva (ou fora
+// da janela do carrossel), traz pro miolo na hora, senão o painel nasceria
+// apontando pra um lugar que não aparece.
+void TopToolbar::revealButton(QToolButton *btn) const
+{
+    if (m_carousel && btn) m_carousel->ensureVisible(btn, /*animated=*/false);
 }
 
 void TopToolbar::setFontFamilies(const QStringList &families, const QString &current)

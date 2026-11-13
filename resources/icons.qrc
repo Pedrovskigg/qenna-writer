@@ -201,6 +201,10 @@
     <qresource prefix="/icons">
         <file alias="add-image.svg">../src/assets/icons/add-image.svg</file>
         <file alias="carousel-arrows.svg">../src/assets/icons/carousel-arrows.svg</file>
+        <file alias="caret-down.svg">../src/assets/icons/caret-down.svg</file>
+        <file alias="ribbon-collapse.svg">../src/assets/icons/ribbon-collapse.svg</file>
+        <file alias="ribbon-mode.svg">../src/assets/icons/ribbon-mode.svg</file>
+        <file alias="page-setup.svg">../src/assets/icons/page-setup.svg</file>
         <file alias="newmanuscript.svg">../src/assets/icons/newmanuscript.svg</file>
         <file alias="manuscriptbook.svg">../src/assets/icons/manuscriptbook.svg</file>
         <file alias="align-left.svg">../src/assets/icons/align-left.svg</file>

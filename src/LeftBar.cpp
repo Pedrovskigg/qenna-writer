@@ -1,4 +1,5 @@
 #include "LeftBar.h"
+#include "CarouselViewport.h"
 #include "IconUtils.h"
 #include "PanelMotion.h"
 #include "ProjectModel.h"
@@ -367,7 +368,7 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     setObjectName(QStringLiteral("leftBar"));
     setAttribute(Qt::WA_StyledBackground, true);
     setFixedWidth(barWidthPx());
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+    setStyleSheet(panelStyle());
     setAcceptDrops(true);
 
     m_rootLayout = new QVBoxLayout(this);
@@ -413,12 +414,23 @@ LeftBar::LeftBar(ProjectModel* model, QWidget* parent)
     m_rootLayout->addWidget(m_newDrawerBtn);
 
     // ---- Gavetas ----
-    m_drawerLayout = new QVBoxLayout();
+    // Moram num carrossel que ocupa o vão até a persiana: cabendo, ficam
+    // empilhadas no topo como sempre; passando da altura, a lista gira.
+    m_drawerContent = new QWidget(this);
+    m_drawerContent->setObjectName(QStringLiteral("leftBarDrawers"));
+    m_drawerLayout = new QVBoxLayout(m_drawerContent);
     m_drawerLayout->setContentsMargins(0, 0, 0, 0);
     m_drawerLayout->setSpacing(4);
-    m_rootLayout->addLayout(m_drawerLayout);
-
-    m_rootLayout->addStretch();
+    m_drawerCarousel = new CarouselViewport(Qt::Vertical, this);
+    m_drawerCarousel->setContent(m_drawerContent);
+    // A faixa de etiquetas é continuação da barra: andar nela também gira.
+    m_drawerCarousel->extraHover = [this](const QPoint& g) {
+        return m_labels && m_labels->isVisible() && m_labels->rect().contains(m_labels->mapFromGlobal(g));
+    };
+    connect(m_drawerCarousel, &CarouselViewport::scrolled, this, [this]() {
+        if (m_labels && m_labels->isVisible()) refreshLabels();
+    });
+    m_rootLayout->addWidget(m_drawerCarousel, 1);
 
     // ---- Persiana: o botão do pé recolhe a barra pra baixo ----
     m_collapseBtn = new QToolButton(this);
@@ -469,11 +481,27 @@ void LeftBar::applyUiScale() {
     rebuildDrawerButtons(); // recria os botões de gaveta já no tamanho novo
 }
 
+QString LeftBar::panelStyle() const {
+    QString qss = Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar);
+    if (m_joinedTop && !m_collapsed) {
+        const bool right = (m_barSide == Qt::RightEdge);
+        qss += QStringLiteral("#leftBar { border-top: none; border-top-left-radius: 0px; border-top-right-radius: 0px; %1 }")
+                   .arg(right ? QStringLiteral("border-right: none;") : QStringLiteral("border-left: none;"));
+    }
+    return qss;
+}
+
+void LeftBar::setJoinedTop(bool on) {
+    if (m_joinedTop == on) return;
+    m_joinedTop = on;
+    if (!m_chromeHidden && !m_rolling) setStyleSheet(panelStyle());
+}
+
 void LeftBar::applyTheme() {
     if (m_chromeHidden || m_rolling)
         setStyleSheet(QStringLiteral("#leftBar { background: transparent; border: none; }"));
     else
-        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+        setStyleSheet(panelStyle());
     refreshCollapseButton();
     for (auto it = m_fixedButtons.constBegin(); it != m_fixedButtons.constEnd(); ++it) {
         if (auto* btn = it.value()) {
@@ -521,7 +549,7 @@ void LeftBar::setChromeHidden(bool hidden) {
     if (hidden)
         setStyleSheet(QStringLiteral("#leftBar { background: transparent; }"));
     else
-        setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+        setStyleSheet(panelStyle());
 }
 
 void LeftBar::setMirrored(bool mirrored) {
@@ -533,7 +561,7 @@ void LeftBar::setMirrored(bool mirrored) {
 void LeftBar::applyMirrorStyle() {
     // O lado físico (esquerda/direita) na janela é decidido pelo MainWindow.
     // Aqui o painel tem borda completa (radius); por ora nada muda visualmente.
-    setStyleSheet(Theme::panelQss(QStringLiteral("leftBar"), Theme::PanelKey::LeftBar));
+    setStyleSheet(panelStyle());
 }
 
 void LeftBar::setActiveFixedAction(FixedAction action) {
@@ -546,6 +574,9 @@ void LeftBar::setActiveDrawer(const QString& drawerKey) {
     m_activeDrawer = drawerKey;
     m_activeFixed = -1;
     refreshActiveStates();
+    // Gaveta aberta por outro caminho (busca, menu): aparece no carrossel.
+    if (m_drawerCarousel)
+        if (QToolButton* b = m_drawerButtons.value(drawerKey)) m_drawerCarousel->ensureVisible(b, true);
 }
 
 void LeftBar::clearSelection() {
@@ -954,10 +985,15 @@ void LeftBar::rebuildDrawerButtons() {
         b->setVisible(contentShown());
         m_drawerLayout->addWidget(b);
     }
+    m_drawerLayout->addStretch(1);
     refreshActiveStates();
     // Faixa aberta: os botões novos ainda vão ganhar posição no layout.
     if (m_labels && m_labels->isVisible())
         QTimer::singleShot(0, this, [this]() { if (m_labels && m_labels->isVisible()) refreshLabels(); });
+}
+
+bool LeftBar::labelsUnderMouse() const {
+    return m_labels && m_labels->isVisible() && m_labels->rect().contains(m_labels->mapFromGlobal(QCursor::pos()));
 }
 
 bool LeftBar::labelsEnabled() {
@@ -1011,6 +1047,7 @@ void LeftBar::applyContentVisibility() {
     for (auto it = m_drawerButtons.constBegin(); it != m_drawerButtons.constEnd(); ++it)
         if (it.value()) it.value()->setVisible(on);
     if (m_newDrawerBtn) m_newDrawerBtn->setVisible(on);
+    if (m_drawerCarousel) m_drawerCarousel->setVisible(on);
     for (auto* sep : std::as_const(m_groupSeparators))
         if (sep) sep->setVisible(on);
     if (m_collapseBtn) m_collapseBtn->setVisible(!m_chromeHidden && !m_rolling);
@@ -1076,6 +1113,7 @@ void LeftBar::setCollapsed(bool collapsed, bool animated) {
         else { setMinimumHeight(0); setMaximumHeight(QWIDGETSIZE_MAX); }
         applyContentVisibility();
         syncLayoutAlignment();
+        if (!m_chromeHidden) setStyleSheet(panelStyle());   // recolhida solta da faixa
         return;
     }
 
@@ -1187,6 +1225,13 @@ void LeftBar::showLabels() {
     for (QToolButton* b : findChildren<QToolButton*>()) b->installEventFilter(this);
 }
 
+bool LeftBar::drawerInCarouselWindow(QToolButton* b) const {
+    if (!b || !m_drawerCarousel || !m_drawerCarousel->isOverflowing()) return true;
+    const QRect flat = m_drawerCarousel->flatRect();
+    const int mid = b->mapTo(m_drawerCarousel, QPoint(0, b->height() / 2)).y();
+    return mid >= flat.top() && mid <= flat.bottom();
+}
+
 void LeftBar::refreshLabels() {
     if (!m_labels) return;
     QList<LeftBarLabels::Row> rows;
@@ -1243,7 +1288,7 @@ void LeftBar::refreshLabels() {
     if (m_model) {
         for (const auto& d : m_model->drawers()) {
             QToolButton* b = m_drawerButtons.value(d.key);
-            if (!b || !b->isVisible()) continue;
+            if (!b || !b->isVisible() || !drawerInCarouselWindow(b)) continue;
             LeftBarLabels::Row r = rowFor(b, d.title, d.items.isEmpty() ? QString() : QString::number(d.items.size()));
             const QString key = d.key;
             r.context = [this, key](const QPoint& pos) { hideLabels(false); emit drawerContextRequested(key, pos); };
@@ -1264,6 +1309,15 @@ void LeftBar::refreshLabels() {
         if (!r.count.isEmpty()) w += QFontMetricsF(cf).horizontalAdvance(r.count) + 8;
         need = qMax(need, w);
     }
+    // Com o carrossel girando, as gavetas escondidas também entram na conta:
+    // a faixa não muda de largura a cada gaveta que passa.
+    if (m_model && m_drawerCarousel && m_drawerCarousel->isOverflowing()) {
+        for (const auto& d : m_model->drawers()) {
+            qreal w = QFontMetricsF(nf).horizontalAdvance(d.title);
+            if (!d.items.isEmpty()) w += QFontMetricsF(cf).horizontalAdvance(QString::number(d.items.size())) + 8;
+            need = qMax(need, w);
+        }
+    }
     QFont hf(QStringLiteral("Segoe UI"));
     hf.setPixelSize(qMax(7, qRound(8.5 * s)));
     hf.setBold(true);
@@ -1273,6 +1327,8 @@ void LeftBar::refreshLabels() {
     int bottom = 0;
     for (const auto& r : std::as_const(rows)) bottom = qMax(bottom, r.y + r.h);
     m_labelsHeight = bottom > 0 ? bottom + qRound(10 * s) : 0;
+    // Girando, a lista vai até o pé: a faixa acompanha a barra inteira.
+    if (m_drawerCarousel && m_drawerCarousel->isOverflowing()) m_labelsHeight = 0;
     m_labels->setContent(rows, heads, m_barSide == Qt::RightEdge);
     updateLabelsGeometry();
 }

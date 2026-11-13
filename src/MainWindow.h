@@ -299,6 +299,7 @@ private:
     // toolbar->barSide(). Chamado nos 3 lugares que antes duplicavam essa
     // conta na mão (setCentralWidget, resizeEvent, onUiScaleChanged).
     void layoutToolbarHolder();
+    void syncRibbonPageCenter();
     // Reage a uma troca de lado da barra AO VIVO (holder, faixa de titulo,
     // insets dos paineis, layout do editor). Ver TopToolbar::setBarSide.
     void applyToolbarSide();

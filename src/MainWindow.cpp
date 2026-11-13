@@ -788,6 +788,17 @@ MainWindow::MainWindow(QWidget *parent)
     // Troca de lado ao vivo: a TopToolbar cuida de si mesma e avisa; o resto da
     // janela (holder, faixa de titulo, insets, folha) reage aqui.
     connect(toolbar, &TopToolbar::barSideChanged, this, [this]() { applyToolbarSide(); });
+    // Estilo da barra (clássica ou faixa): a altura muda, o resto da janela acompanha.
+    connect(toolbar, &TopToolbar::barStyleChanged, this, [this](TopToolbar::BarStyle st) {
+        applyToolbarSide();
+        if (settingsPanel) settingsPanel->setTopToolbarStyle(int(st));
+    });
+    connect(toolbar, &TopToolbar::pageModeToggled, this, &MainWindow::setPageModeEnabled);
+    connect(toolbar, &TopToolbar::ribbonPlacementChanged, this, [this](bool floating) {
+        applyToolbarSide();
+        if (settingsPanel) settingsPanel->setRibbonFloating(floating);
+    });
+    toolbar->pageHeightMaximum = [this]() { return availableSheetHeight(); };
 
     resize(1100, 800);
     setWindowState(windowState() | Qt::WindowMaximized);
@@ -5577,6 +5588,10 @@ bool MainWindow::chromeBusy() const
         aiChatPanel, ambiencePanel, helpPanel, remindersPanel, settingsPanel,
         themesPanel, projectInfoPanel, characterSheetPanel, globalSearchPanel,
         timelinePanel, lousaPanel, groupsPanel, bondViewPanel, readerPreviewPanel,
+        // Abertos pela LeftBar, mas filhos da janela (não são popup): sem eles
+        // aqui, a barra recuava no modo focado com o cartão da Nova gaveta ou
+        // a prévia do Info ainda em uso.
+        drawerQuickPopup, projectInfoHover,
     };
     for (const QWidget* w : panels)
         if (w && w->isVisible()) return true;
@@ -5678,6 +5693,9 @@ void MainWindow::hideLeftBarChrome()
     if (!leftBar || leftBar->chromeHidden()) return;
     if (chromeBusy()) { scheduleChromeHide(leftBar); return; }
     if (leftBar->rect().contains(leftBar->mapFromGlobal(QCursor::pos()))) return;
+    // Mouse na faixa de etiquetas: ela é continuação da barra. Tenta de novo
+    // depois, porque sair da faixa não gera Leave na barra.
+    if (leftBar->labelsUnderMouse()) { scheduleChromeHide(leftBar); return; }
     fadeChrome(leftBar, /*appearing=*/false, [this]() { leftBar->setChromeHidden(true); });
 }
 
@@ -5700,6 +5718,7 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         && (event->type() == QEvent::Move || event->type() == QEvent::Resize)) {
         positionPageGlow();
         if (characterSheetPanel && characterSheetPanel->isVisible()) positionCharacterSheet();
+        syncRibbonPageCenter();
     }
     // O DocHeader mudou de altura (etiquetas aparecendo) e a página encolheu:
     // a ficha, que mora no lugar dela, acompanha.
@@ -8764,9 +8783,14 @@ void MainWindow::applyToolbarSide()
     if (toolbarHolder) {
         if (auto* hl = qobject_cast<QBoxLayout*>(toolbarHolder->layout())) {
             hl->setDirection(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
-            hl->setContentsMargins(vertical ? 0 : 12, vertical ? 12 : 0,
-                                   vertical ? 4 : 12, vertical ? 12 : 4);
+            if (toolbar->ribbonEdgeToEdge()) hl->setContentsMargins(0, 0, 0, 0);   // faixa: teto da janela
+            else hl->setContentsMargins(vertical ? 0 : 12, vertical ? 12 : 0,
+                                        vertical ? 4 : 12, vertical ? 12 : 4);
         }
+    }
+    // A faixa vai de ponta a ponta e a LeftBar desce emendada nela.
+    if (leftBar) leftBar->setJoinedTop(toolbar->ribbonEdgeToEdge());
+    if (toolbarHolder) {
         layoutToolbarHolder();
         toolbarHolder->raise();
     }
@@ -8777,6 +8801,18 @@ void MainWindow::applyToolbarSide()
     positionFindBar();
     positionGlobalSearchPanel();
     QTimer::singleShot(0, this, [this]() { layoutToolbarHolder(); });
+}
+
+// Fichário de ponta a ponta: a barra centraliza abas e botões com a folha.
+// A faixa começa na beira da janela (holder em x = 0), então a coordenada da
+// janela serve direto pra barra.
+void MainWindow::syncRibbonPageCenter()
+{
+    if (!toolbar || !toolbar->ribbonEdgeToEdge()) return;
+    int cx = 0;
+    if (editor && editor->isVisible() && editor->width() > 0)
+        cx = editor->mapTo(this, QPoint(editor->width() / 2, 0)).x();
+    toolbar->setRibbonPageCenter(cx);
 }
 
 void MainWindow::layoutToolbarHolder()
@@ -8794,6 +8830,34 @@ void MainWindow::layoutToolbarHolder()
         // focado, com as duas barras reveladas ao mesmo tempo).
         // Este metodo roda no filtro do LayoutRequest, ANTES de a barra processar
         // o evento: sem o updateGeometry o holder le o tamanho antigo dela.
+        // Faixa estilo Word: o teto da janela, de ponta a ponta, como no Word.
+        // Margens do holder e emenda da LeftBar conferidas AQUI, e não só na
+        // troca de estilo: abrindo o app já com a faixa salva, a troca nunca
+        // acontece e o holder ficava com o respiro de 12 px da clássica.
+        if (auto* hl = qobject_cast<QBoxLayout*>(toolbarHolder->layout())) {
+            const QMargins want = toolbar->ribbonEdgeToEdge() ? QMargins(0, 0, 0, 0) : QMargins(12, 0, 12, 4);
+            if (hl->contentsMargins() != want) hl->setContentsMargins(want);
+        }
+        if (leftBar) leftBar->setJoinedTop(toolbar->ribbonEdgeToEdge());
+        // Faixa flutuante: da largura da folha, centralizada nela (o resto do
+        // caminho é o mesmo da clássica, logo abaixo).
+        if (toolbar->ribbonActive() && !toolbar->ribbonEdgeToEdge()) {
+            const int pageW = (editor && editor->isVisible()) ? editor->width() : 0;
+            toolbar->setRibbonSideInsets(0, 0);
+            // Fichário: largura do conteúdo, como a clássica (0 = sem mínimo).
+            toolbar->setRibbonTargetWidth(toolbar->ribbonHugsContent() ? 0 : qMax(0, qMin(pageW, width() - 26)));
+        }
+        if (toolbar->ribbonEdgeToEdge()) {
+            // O conteúdo começa alinhado com a borda da LeftBar emendada embaixo.
+            const int lbW = (leftBar && leftBar->isVisibleTo(this)) ? leftBar->width() : 0;
+            const bool lbRight = leftBar && leftBar->barSide() == Qt::RightEdge;
+            toolbar->setRibbonSideInsets(lbRight ? 0 : lbW, lbRight ? lbW : 0);
+            toolbar->setRibbonTargetWidth(width());
+            syncRibbonPageCenter();
+            toolbar->updateGeometry();
+            toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+            return;
+        }
         toolbar->updateGeometry();
         const QSize hint = toolbarHolder->sizeHint();
         const int w = qMin(hint.width(), width());
@@ -8923,6 +8987,12 @@ void MainWindow::onSettingsRequested()
             QSettings().setValue(QStringLiteral("ui/topToolbarSide"), int(newSide));
             toolbar->setBarSide(newSide);
         });
+        connect(settingsPanel, &SettingsPanel::topToolbarStyleChanged, this, [this](int value) {
+            if (toolbar) toolbar->setBarStyle(TopToolbar::BarStyle(qBound(0, value, 6)));
+        });
+        connect(settingsPanel, &SettingsPanel::ribbonFloatingChanged, this, [this](bool floating) {
+            if (toolbar) toolbar->setRibbonFloating(floating);
+        });
         connect(settingsPanel, &SettingsPanel::leftBarSideChanged, this, [this](int value) {
             const Qt::Edge newSide = (value == 1) ? Qt::RightEdge : Qt::LeftEdge;
             if (!leftBar || leftBar->barSide() == newSide) return;
@@ -8977,6 +9047,8 @@ void MainWindow::onSettingsRequested()
     // folha seria cortada fora da janela; no máximo, ela bate exatamente na tela.
     settingsPanel->setPageHeightMaximum(availableSheetHeight());
     settingsPanel->setTopToolbarSide(toolbar && toolbar->barSide() == Qt::RightEdge ? 1 : 0);
+    if (toolbar) settingsPanel->setTopToolbarStyle(int(toolbar->barStyle()));
+    if (toolbar) settingsPanel->setRibbonFloating(toolbar->ribbonFloating());
     settingsPanel->setLeftBarSide(leftBar && leftBar->barSide() == Qt::RightEdge ? 1 : 0);
     {
         const BackupService::Settings bs = BackupService::loadSettings();
@@ -9151,6 +9223,7 @@ void MainWindow::setPageModeEnabled(bool on)
     if (pageModeEnabled() == on) return;
     m_pageMode = on ? 1 : 0;
     QSettings().setValue(QStringLiteral("editor/pageMode"), on);
+    if (settingsPanel) settingsPanel->setPageModeChecked(on);
     applyEditorLayout();
     applyEditorStyle();
     applyPageShadow();

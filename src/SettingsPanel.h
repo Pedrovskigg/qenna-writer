@@ -64,6 +64,11 @@ public:
 
     // 0 = Qt::TopEdge (padrão), 1 = Qt::RightEdge — ver TopToolbar::barSide().
     void setTopToolbarSide(int side);
+    // 0 clássica, 1 faixa completa, 2 simplificada, 3 só abas (TopToolbar::BarStyle).
+    void setTopToolbarStyle(int style);
+    void setRibbonFloating(bool floating);
+    // A faixa também liga o modo de página: a chave daqui acompanha.
+    void setPageModeChecked(bool on);
     void setLeftBarSide(int side);
 
     // --- Backup completo de projeto ---
@@ -98,6 +103,8 @@ signals:
     // alterações + reinicia (troca de lado não é ao vivo, ver TopToolbar).
     // value: 0=Qt::TopEdge, 1=Qt::RightEdge.
     void topToolbarSideChanged(int value);
+    void topToolbarStyleChanged(int style);
+    void ribbonFloatingChanged(bool floating);
     void leftBarSideChanged(int value);
 
     // --- Backup completo de projeto ---
@@ -177,6 +184,10 @@ private:
     QComboBox* m_imgQualityCombo = nullptr;
     QComboBox* m_imgSizeCombo    = nullptr;
     QComboBox*   m_toolbarSideCombo    = nullptr;
+    QComboBox*   m_toolbarStyleCombo   = nullptr;
+    QComboBox*   m_ribbonPlaceCombo    = nullptr;
+    QCheckBox*   m_pageModeCheck       = nullptr;
+    QComboBox*   m_sceneBreakCombo     = nullptr;
     QComboBox*   m_leftBarSideCombo   = nullptr;
     QComboBox*   m_backupModeCombo     = nullptr;
     QLineEdit*   m_backupFolderEdit    = nullptr;
