@@ -17549,6 +17549,66 @@ void Manager::loadBundled()
         t.animScene = QStringLiteral("johnmary");
         m_themes.append(t);
     }
+    // ---- Contribuição (2026-11-12): Dark Knight, feito pelo Gabriel Tobias, amigo do Pe, no Criador de Temas ----
+    {
+        MiraTheme t;
+        t.id = QStringLiteral("anim-dark-knight");
+        t.name = QStringLiteral("Dark Knight");
+        t.bundled = true;
+        t.panelRadius = 2;
+        t.appBackground = QStringLiteral("#050505");
+        t.panelBackground = QStringLiteral("#181111");
+        t.panelBorder = QStringLiteral("rgba(212,24,30,0.35)");
+        t.textPrimary = QStringLiteral("#e8e2e2");
+        t.textMuted = QStringLiteral("#5e4c4c");
+        t.textBright = QStringLiteral("#ffffff");
+        t.hoverOverlay = QStringLiteral("rgba(212,24,30,0.08)");
+        t.pressedOverlay = QStringLiteral("rgba(212,24,30,0.05)");
+        t.subtleBorder = QStringLiteral("#2b1616");
+        t.accentDefault = QStringLiteral("#d4181e");
+        t.hoverStrong = QStringLiteral("rgba(212,24,30,0.16)");
+        t.borderStrong = QStringLiteral("rgba(232,226,226,0.22)");
+        t.focusBorder = QStringLiteral("rgba(212,24,30,0.6)");
+        t.inputBackground = QStringLiteral("rgba(0,0,0,0.35)");
+        t.disabledText = QStringLiteral("rgba(232,226,226,0.3)");
+        t.selectionRing = QStringLiteral("#d4181e");
+        t.accentSuccess = QStringLiteral("#e0312f");
+        t.accentSuccessSoft = QStringLiteral("rgba(224,49,47,0.13)");
+        t.accentSuccessBorderSoft = QStringLiteral("rgba(224,49,47,0.5)");
+        t.accentDanger = QStringLiteral("#ff4d4d");
+        t.accentDangerSoft = QStringLiteral("rgba(255,77,77,0.14)");
+        t.accentDangerBorderSoft = QStringLiteral("rgba(255,77,77,0.5)");
+        t.accentWarning = QStringLiteral("#d4a537");
+        t.accentInfo = QStringLiteral("#ef3a3a");
+        t.accentInfoSoft = QStringLiteral("rgba(239,58,58,0.18)");
+        t.accentInfoBorderSoft = QStringLiteral("rgba(239,58,58,0.55)");
+        t.editorBackground = QStringLiteral("#0f0b0b");
+        t.editorTextColor = QStringLiteral("#e8e2e2");
+        t.editorOpacity = 100;
+        t.panelOpacity = 100;
+        t.iconColor = QStringLiteral("#9b8b8b");
+        t.docHeaderColor = QStringLiteral("#d4181e");
+        t.pageShadowEnabled = true;
+        t.pageShadowColor = QStringLiteral("rgba(0,0,0,0.8)");
+        t.pageShadowRadius = 34;
+        t.pageShadowOffset = 14;
+        t.pageGlowEnabled = true;
+        t.backgroundMode = BgZoom;
+        t.bgOverlayType = OverlayBoth;
+        t.bgOverlayColor = QStringLiteral("#6e0f10");
+        t.bgOverlayOpacity = 55;
+        t.bgOverlaySize = 100;
+        t.bgGrain = 16;
+        t.animScene = QStringLiteral("city");
+        t.animTod = QStringLiteral("theme");
+        t.animRain = QStringLiteral("rain");
+        t.uuid = QStringLiteral("c0191364-3a58-41c7-8478-a7ecf561a2a3");
+        t.author = QStringLiteral("Gabriel Tobias");
+        t.license = QStringLiteral("free");
+        t.themeVersion = 2;
+        t.minAppVersion = QStringLiteral("2.0.0");
+        m_themes.append(t);
+    }
 
     // ---- Categorias pro filtro do painel de Temas ----
     // light = claros neutros/frios | warm = amarelados/quentes |

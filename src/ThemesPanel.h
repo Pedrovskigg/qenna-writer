@@ -136,6 +136,7 @@ private:
     QLabel* m_nameLabel = nullptr;
     QToolButton* m_favButton = nullptr;
     QLabel* m_recBadge = nullptr;
+    QLabel* m_authorLabel = nullptr;   // "por Fulano" + descrição, quando o tema tem autor
     ThemesPanelDetail::LoreCard* m_loreCard = nullptr;
     ThemesPanelDetail::Dot* m_dotText = nullptr;
     ThemesPanelDetail::Dot* m_dotMuted = nullptr;

@@ -1283,6 +1283,13 @@ QWidget* ThemesPanel::buildSide()
     });
     nameRow->addWidget(m_favButton);
     lay->addLayout(nameRow);
+    // Crédito de quem fez o tema (contribuições de fábrica e temas importados).
+    m_authorLabel = new QLabel(side);
+    m_authorLabel->setObjectName(QStringLiteral("themeAuthor"));
+    m_authorLabel->setTextFormat(Qt::RichText);
+    m_authorLabel->setWordWrap(true);
+    m_authorLabel->hide();
+    lay->addWidget(m_authorLabel);
     m_recBadge = new QLabel(side);
     m_recBadge->setObjectName(QStringLiteral("recBadge"));
     m_recBadge->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
@@ -1574,6 +1581,15 @@ void ThemesPanel::refreshSide()
                              .arg(cur.name.toHtmlEscaped(), shown->name.toHtmlEscaped(), Theme::subtleBorder()));
 
     m_nameLabel->setText(shown->name);
+    if (shown->author.isEmpty()) {
+        m_authorLabel->hide();
+    } else {
+        QString credit = tr("por %1").arg(shown->author.toHtmlEscaped());
+        if (!shown->description.isEmpty())
+            credit += QStringLiteral("<br><i>%1</i>").arg(shown->description.toHtmlEscaped());
+        m_authorLabel->setText(credit);
+        m_authorLabel->show();
+    }
     m_recBadge->setText(QStringLiteral("★  ") + (isTonyPick(shown->id) ? tr("Escolha do Tony")
                                                                         : tr("Recomendação do desenvolvedor")));
     m_recBadge->setVisible(isRecommended(shown->id));
@@ -2148,6 +2164,7 @@ void ThemesPanel::applyStyle()
         QLabel#themeName { color: %3; }
         QToolButton#favBtn { border: none; background: transparent; font-size: 17px; padding: 0px 2px; }
         QLabel#sectionHead { color: %4; }
+        QLabel#themeAuthor { color: %4; font-size: 12px; }
         QLabel#recBadge {
             color: %9; background: %12; border: 1px solid %13;
             border-radius: @radius-control; padding: 3px 9px; font-size: 11px; font-weight: 600;
