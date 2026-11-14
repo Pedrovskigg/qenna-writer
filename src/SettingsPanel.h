@@ -106,6 +106,9 @@ signals:
     void topToolbarStyleChanged(int style);
     void ribbonFloatingChanged(bool floating);
     void leftBarSideChanged(int value);
+    void rightBarToggled(bool on);
+    // Largura da barra flutuante: 0 automática, 1 da folha, 2 personalizada.
+    void topToolbarWidthChanged(int mode, int px);
 
     // --- Backup completo de projeto ---
     void backupModeChanged(int mode);

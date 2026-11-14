@@ -5,6 +5,8 @@
 #include "GlossaryInText.h"
 #include "IconUtils.h"
 #include "LeftBar.h"
+#include "RightBar.h"
+#include "Relevo.h"
 #include "NameAutocorrect.h"
 #include "PanelMotion.h"
 #include "SmoothCaret.h"
@@ -372,11 +374,44 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     m_ribbonPlaceCombo->addItem(tr("De ponta a ponta"), 0);
     m_ribbonPlaceCombo->addItem(tr("Flutuante"), 1);
     m_ribbonPlaceCombo->setCurrentIndex(QSettings().value(QStringLiteral("ui/topToolbarRibbonFloating"), false).toBool() ? 1 : 0);
-    addRow(Appearance, tr("Posição da faixa"), tr("No teto da janela ou flutuando em cima da folha."),
+    addRow(Appearance, tr("Posição da barra"), tr("No teto da janela ou flutuando em cima da folha."),
            new Segmented(m_ribbonPlaceCombo, this),
-           tr("De ponta a ponta: a faixa vira o teto da janela, como no Word, e a barra lateral "
-              "desce emendada nela. Flutuante: a faixa tem a largura da folha e fica solta em "
-              "cima dela. Só vale quando o estilo da barra é uma das faixas."));
+           tr("De ponta a ponta: a barra vira o teto da janela, como no Word, e a barra lateral "
+              "desce emendada nela. Flutuante: a barra fica solta em cima da folha, com a "
+              "largura escolhida logo abaixo. Vale pra todos os estilos; com a barra na "
+              "lateral, não vale."));
+
+    // Largura da barra flutuante (13/11, pedido do Pe).
+    auto* widthModeCombo = new QComboBox(this);
+    widthModeCombo->addItem(tr("Automática"), 0);
+    widthModeCombo->addItem(tr("Da folha"), 1);
+    widthModeCombo->addItem(tr("Personalizada"), 2);
+    widthModeCombo->setCurrentIndex(qBound(0, QSettings().value(QStringLiteral("ui/topToolbarWidthMode"), 0).toInt(), 2));
+    addRow(Appearance, tr("Largura da barra"), tr("Com a barra flutuante."),
+           new Segmented(widthModeCombo, this),
+           tr("Automática: cada estilo com a largura de sempre (a clássica do tamanho dos "
+              "botões, as abas da largura da folha). Da folha: a barra acompanha a largura da "
+              "folha. Personalizada: você escolhe no controle abaixo. Se os botões não couberem, "
+              "a barra gira como um carrossel."));
+    auto* widthSlider = new QSlider(Qt::Horizontal, this);
+    widthSlider->setRange(40, 240);   // em dezenas de px: 400 a 2400
+    widthSlider->setValue(qBound(40, QSettings().value(QStringLiteral("ui/topToolbarWidthPx"), 900).toInt() / 10, 240));
+    auto* widthValue = valueLabel(this);
+    addRow(Appearance, tr("Largura personalizada"), tr("A largura da barra quando ela é personalizada."),
+           sliderBox(widthSlider, widthValue, this));
+    auto syncWidth = [widthModeCombo, widthSlider, widthValue]() {
+        widthValue->setText(tr("%1 px").arg(widthSlider->value() * 10));
+        widthSlider->setEnabled(widthModeCombo->currentData().toInt() == 2);
+    };
+    syncWidth();
+    auto emitWidth = [this, widthModeCombo, widthSlider, syncWidth]() {
+        syncWidth();
+        if (m_blockSignals) return;
+        emit topToolbarWidthChanged(widthModeCombo->currentData().toInt(), widthSlider->value() * 10);
+    };
+    connect(widthModeCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, emitWidth);
+    connect(widthSlider, &QSlider::valueChanged, this, emitWidth);
+
     connect(m_ribbonPlaceCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
         if (m_blockSignals) return;
         emit ribbonFloatingChanged(m_ribbonPlaceCombo->itemData(idx).toInt() == 1);
@@ -393,6 +428,25 @@ SettingsPanel::SettingsPanel(QWidget* parent)
         if (m_blockSignals) return;
         emit leftBarSideChanged(m_leftBarSideCombo->itemData(idx).toInt());
     });
+
+    auto* rightBarCheck = new ToggleSwitch(this);
+    rightBarCheck->setChecked(RightBar::enabledInSettings());
+    addRow(Appearance, tr("Barra da direita"), tr("As ferramentas do projeto do outro lado da folha."), rightBarCheck,
+           tr("Criador de Mundos, Referência, Pensário, Lembretes, Estatísticas e a assistente "
+              "ganham uma barra própria, irmã da barra lateral, do outro lado da folha, e saem "
+              "da barra de cima. Desligado, voltam pra barra de cima."));
+    connect(rightBarCheck, &QCheckBox::toggled, this, [this](bool on) {
+        RightBar::setEnabledInSettings(on);
+        emit rightBarToggled(on);
+    });
+
+    auto* relevoCheck = new ToggleSwitch(this);
+    relevoCheck->setChecked(Relevo::enabled());
+    addRow(Appearance, tr("Barras em relevo"), tr("Paradas, as barras ficam gravadas na mesa."), relevoCheck,
+           tr("Sem o mouse em cima, a barra de cima e as laterais perdem a caixa e os botões "
+              "ficam gravados no fundo, em baixo-relevo, deixando o tema aparecer. O mouse chega "
+              "e a barra acorda inteira. Os botões nunca saem do lugar."));
+    connect(relevoCheck, &QCheckBox::toggled, this, [](bool on) { Relevo::setEnabled(on); });
 
     auto* labelsCheck = new ToggleSwitch(this);
     labelsCheck->setChecked(LeftBar::labelsEnabled());

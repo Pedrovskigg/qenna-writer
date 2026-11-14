@@ -494,8 +494,14 @@ TopToolbar::TopToolbar(QWidget *parent, Qt::Edge side)
             this, &TopToolbar::applyUiScale);
     applyUiScale(); // aplica a escala persistida (icones recarregados no tamanho certo)
 
-    m_ribbonFloating = QSettings().value(QStringLiteral("ui/topToolbarRibbonFloating"), false).toBool();
     const int savedStyle = QSettings().value(QStringLiteral("ui/topToolbarStyle"), 0).toInt();
+    {
+        const QSettings st;
+        const QString key = QStringLiteral("ui/topToolbarRibbonFloating");
+        m_ribbonFloating = st.contains(key) ? st.value(key).toBool()
+                                            : defaultFloatingFor(savedStyle >= 1 && savedStyle <= 6 ? BarStyle(savedStyle) : BarStyle::Classic);
+    }
+    applyRootStyle();   // a moldura depende da posição, que só agora é conhecida
     if (savedStyle >= 1 && savedStyle <= 6) {
         m_barStyle = BarStyle(savedStyle);
         if (m_barStyle != BarStyle::RibbonTabs) m_lastRibbonStyle = m_barStyle;
@@ -626,7 +632,10 @@ void TopToolbar::rebuildGroupLayout()
         if (!g) continue;
         g->clearButtons();
         for (const QString& bid : m_groupButtons.value(gid)) {
-            if (QToolButton* b = m_buttonsById.value(bid)) g->addButton(b, bid);
+            QToolButton* b = m_buttonsById.value(bid);
+            if (!b) continue;
+            if (m_rightBarButtons.contains(b)) { b->hide(); continue; }   // mora na RightBar
+            g->addButton(b, bid);
         }
         g->refreshEmptyPlaceholder();
     }
@@ -1337,6 +1346,68 @@ QRect TopToolbar::repetitionsButtonGlobalRect() const
 {
     if (!repetitionsButton) return QRect();
     return anchorRect(repetitionsButton);
+}
+
+void TopToolbar::setProjectButtonsInRightBar(bool on)
+{
+    const QList<QToolButton*> project = { construtorButton, refMenuButton, pensarioButton,
+                                          reminderButton, statisticsButton, miraButton };
+    QSet<QToolButton*> want;
+    if (on) want = QSet<QToolButton*>(project.begin(), project.end());
+    if (want == m_rightBarButtons) return;
+    m_rightBarButtons = want;
+    if (m_editMode) setEditMode(false);
+    for (QToolButton* b : project) if (b) b->setVisible(!on);
+    if (ribbonActive()) rebuildRibbonPages();
+    else rebuildGroupLayout();
+    refreshLayout();
+    updateGeometry();
+}
+
+void TopToolbar::setClassicSpan(int width, int centerX)
+{
+    width = qMax(0, width);
+    if (width == m_classicSpanW && centerX == m_classicCenterX && (width > 0) == m_classicSpanApplied) {
+        applyClassicSpan();   // o conteúdo pode ter mudado de largura (fonte, tamanho)
+        return;
+    }
+    m_classicSpanW = width;
+    m_classicCenterX = centerX;
+    applyClassicSpan();
+}
+
+void TopToolbar::applyClassicSpan()
+{
+    if (!m_outerLayout || !m_carousel) return;
+    const bool use = m_classicSpanW > 0 && !ribbonActive() && !isVertical();
+    if (!use) {
+        if (!m_classicSpanApplied) return;
+        m_classicSpanApplied = false;
+        m_outerLayout->setContentsMargins(0, 0, 0, 0);
+        if (!isVertical()) {
+            // Volta a ter a largura do conteúdo (ver applyUiScale).
+            setMinimumWidth(0);
+            setMaximumWidth(QWIDGETSIZE_MAX);
+            if (!ribbonActive()) setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+        }
+        updateGeometry();
+        return;
+    }
+    m_classicSpanApplied = true;
+    const int w = m_classicSpanW;
+    if (minimumWidth() != w || maximumWidth() != w) setFixedWidth(w);
+    if (sizePolicy().horizontalPolicy() != QSizePolicy::Fixed) setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    // Sobrando espaço, os botões vão pro centro pedido; faltando, o carrossel gira.
+    const int contentW = m_carousel->sizeHint().width();
+    const int free = w - contentW;
+    int l = 0, r = 0;
+    if (free > 0) {
+        const int cx = m_classicCenterX >= 0 ? m_classicCenterX : w / 2;
+        l = qBound(0, cx - contentW / 2, free);
+        r = free - l;
+    }
+    if (m_outerLayout->contentsMargins() != QMargins(l, 0, r, 0))
+        m_outerLayout->setContentsMargins(l, 0, r, 0);
 }
 
 QRect TopToolbar::reminderButtonGlobalRect() const

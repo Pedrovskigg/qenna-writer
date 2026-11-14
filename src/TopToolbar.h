@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QList>
 #include <QPair>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 #include <QWidget>
@@ -67,10 +68,18 @@ public:
     bool ribbonFloating() const { return m_ribbonFloating; }
     void setRibbonFloating(bool on);
     // De ponta a ponta de fato (faixa ativa e não flutuante).
-    bool ribbonEdgeToEdge() const { return ribbonActive() && !m_ribbonFloating && !ribbonHugsContent(); }
+    // Posição da barra (13/11): de ponta a ponta ou flutuante vale pra todos os
+    // estilos, a clássica e a Giratória inclusive. Com a barra na lateral não vale.
+    bool ribbonEdgeToEdge() const { return ribbonActive() && !m_ribbonFloating; }
+    bool classicEdgeToEdge() const { return !ribbonActive() && !m_ribbonFloating && !isVertical(); }
+    bool barEdgeToEdge() const { return ribbonEdgeToEdge() || classicEdgeToEdge(); }
+    // Largura da clássica: 0 = a do conteúdo (a de sempre). Com largura, os
+    // botões ficam centralizados em centerX (coordenada da barra; -1 = meio) e
+    // o carrossel gira se não couberem.
+    void setClassicSpan(int width, int centerX);
     // Rolo (13/11): flutua como a clássica, da largura do próprio conteúdo e
     // centralizado na folha, valha o que valer a Posição.
-    bool ribbonHugsContent() const { return ribbonActive() && m_barStyle == BarStyle::RibbonReel; }
+    bool ribbonHugsContent() const { return ribbonActive() && m_barStyle == BarStyle::RibbonReel && m_ribbonFloating; }
     // Recuo do conteúdo da faixa pra começar alinhado com a borda da LeftBar
     // (o canto em cima dela fica vazio, na cor da faixa).
     void setRibbonSideInsets(int left, int right);
@@ -116,6 +125,11 @@ public:
 
     void setReminderBadge(bool active);
     void pulsePensarioBadge();
+    // RightBar ligada (13/11/2026): Criador de Mundos, Referência, Pensário,
+    // Lembretes, Estatísticas e a assistente moram nela e saem daqui (da
+    // clássica e das abas). A organização salva da clássica não muda.
+    void setProjectButtonsInRightBar(bool on);
+    bool projectButtonsInRightBar() const { return !m_rightBarButtons.isEmpty(); }
     void setCurrentAlignment(Qt::Alignment alignment);
 
 protected:
@@ -262,6 +276,13 @@ private:
     // "⋯". m_content é onde os grupos moram; o carrossel recorta e gira.
     QWidget* m_content = nullptr;
     CarouselViewport* m_carousel = nullptr;
+    int m_classicSpanW = 0;
+    int m_classicCenterX = -1;
+    bool m_classicSpanApplied = false;
+    void applyClassicSpan();
+    // Sem escolha salva, cada estilo nasce como sempre foi: a clássica e a
+    // Giratória flutuando, as abas de ponta a ponta.
+    static bool defaultFloatingFor(BarStyle style) { return style == BarStyle::Classic || style == BarStyle::RibbonReel; }
     QBoxLayout* m_outerLayout = nullptr;
     // Traz o botão pro miolo antes de ancorar um painel nele.
     void revealButton(QToolButton* btn) const;
@@ -369,6 +390,7 @@ private:
     // Composição atual de cada grupo (groupId -> ids de botão, em ordem).
     QHash<QString, QStringList> m_groupButtons;
     bool m_editMode = false;
+    QSet<QToolButton*> m_rightBarButtons;   // vazio = todos aqui
 
     void buildGroups();
     void rebuildGroupLayout();

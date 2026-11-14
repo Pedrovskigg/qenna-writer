@@ -40,6 +40,7 @@ class QPropertyAnimation;
 // TopToolbar já incluído acima (necessário para TopToolbar::AlignScope)
 class ImageOverlay;
 class LeftBar;
+class RightBar;
 class DrawerListPanel;
 class ManuscriptPanel;
 class ProjectDrawerPanel;
@@ -506,6 +507,13 @@ private:
     TopToolbar *toolbar;
     ImageOverlay *imageOverlay;
     LeftBar *leftBar;
+    RightBar *rightBar = nullptr;
+    // Largura da barra flutuante (13/11): 0 = automática (a de cada estilo),
+    // 1 = a da folha, 2 = personalizada (m_barWidthPx).
+    int m_barWidthMode = 0;
+    int m_barWidthPx = 900;
+    bool rightBarShown() const;
+    QRect reminderAnchor(Qt::Edge* side) const;
     DrawerListPanel *drawerListPanel;
     ManuscriptPanel *manuscriptPanel;
     ProjectDrawerPanel *projectDrawerPanel = nullptr;   // botão Informações da LeftBar

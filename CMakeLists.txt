@@ -167,6 +167,10 @@ qt_add_executable(qenna-writer
     src/EditorHost.h
     src/LeftBar.cpp
     src/LeftBar.h
+    src/RightBar.cpp
+    src/RightBar.h
+    src/Relevo.cpp
+    src/Relevo.h
     src/DrawerListPanel.cpp
     src/DrawerListPanel.h
     src/DrawerListPanelStyles.cpp

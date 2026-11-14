@@ -517,6 +517,7 @@ void TopToolbar::setRibbonFloating(bool on)
     if (on) setRibbonSideInsets(0, 0);
     applyRootStyle();
     if (ribbonActive()) rebuildRibbonPages();
+    else applyClassicSpan();
     emit ribbonPlacementChanged(on);
 }
 
@@ -572,7 +573,7 @@ QString TopToolbar::ribbonLookQss() const
     const QColor chip = mixColor(Theme::toColor(Theme::appBackground()), Theme::toColor(Theme::textPrimary()), 0.08);
     return Theme::qss(QStringLiteral(R"(
         QToolButton#ribbonFile[qmark="true"] { background: transparent; border: 1px solid transparent; border-radius: @radius-control;
-                                               padding: 0px 16px 0px 4px; }
+                                               padding: 0px 13px 0px 5px; }
         QToolButton#ribbonFile[qmark="true"]:hover { background: %1; border-color: %2; }
         QToolButton#ribbonTab[look="accent"] { font-size: 13px; padding: 0px 11px; }
         QWidget#ribbonBody[look="accent"] { background: %3; border: 1px solid %2; border-radius: 8px; }
@@ -598,8 +599,8 @@ QString TopToolbar::ribbonLookQss() const
 QString TopToolbar::ribbonRootQss() const
 {
     // Faixa = teto da janela: sem moldura dos lados nem cantos, só a linha de baixo.
-    // Flutuante, ela fica com a moldura de painel de sempre.
-    if (!ribbonEdgeToEdge()) return QString();
+    // Flutuante, ela fica com a moldura de painel de sempre. Vale pra clássica também.
+    if (!barEdgeToEdge()) return QString();
     return QStringLiteral("QWidget#topToolbar { border: none; border-bottom: 1px solid %1; border-radius: 0px; }")
         .arg(Theme::panelBorderFor(Theme::PanelKey::TopToolbar));
 }
@@ -827,6 +828,9 @@ void TopToolbar::setBarStyle(BarStyle style)
     if (style != BarStyle::Classic && style != BarStyle::RibbonTabs) m_lastRibbonStyle = style;
     m_barStyle = style;
     QSettings().setValue(QStringLiteral("ui/topToolbarStyle"), int(style));
+    // Posição nunca escolhida: o estilo novo nasce do jeito dele.
+    if (!QSettings().contains(QStringLiteral("ui/topToolbarRibbonFloating")))
+        m_ribbonFloating = defaultFloatingFor(style);
     applyBarStyle();
     emit barStyleChanged(style);
 }
@@ -957,6 +961,7 @@ void TopToolbar::rebuildRibbonPages()
 
     auto put = [this](QBoxLayout* lay, QToolButton* b, int role, const QString& label, int tab) {
         if (!b) return;
+        if (m_rightBarButtons.contains(b)) return;   // mora na RightBar (fica no estacionamento)
         styleRibbonButton(b, role, label);
         lay->addWidget(b, 0, role == Big ? Qt::AlignTop : Qt::AlignVCenter);
         m_ribbonTabOf.insert(b, tab);
@@ -1137,7 +1142,8 @@ void TopToolbar::rebuildRibbonPages()
     m_ribbonFile->setProperty("qmark", qMark);
     if (qMark) {
         m_ribbonFile->setText(QString());
-        const int qh = binder ? sc(18) : sc(21);
+        // Menor (13/11, pedido do Pe): o bloco do Q pesava na barra de ícones finos.
+        const int qh = binder ? sc(14) : sc(16);
         m_ribbonFile->setIcon(solidQ(Theme::toColor(Theme::accentDefault()), qh));
         m_ribbonFile->setIconSize(QSize(qRound(qh * 483.0 / 727.0), qh));   // proporção da letra
         m_ribbonFile->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -1175,6 +1181,10 @@ void TopToolbar::rebuildRibbonPages()
     for (QToolButton* b : std::as_const(managed)) if (b) placeCaret(b);
     placeCaret(m_ribbonFile);
 
+    // RightBar ligada: os botões da aba Mundo moram nela e a aba some.
+    const bool worldEmpty = m_rightBarButtons.contains(construtorButton);
+    if (m_ribbonTabs.size() > 2) m_ribbonTabs.at(2)->setVisible(!worldEmpty);
+    if (worldEmpty && m_ribbonTab == 2) m_ribbonTab = 0;
     setRibbonTab(qBound(0, m_ribbonTab, 3));
     setFixedHeight(ribbonHeight(true));
     m_ribbonCarousel->updateGeometry();

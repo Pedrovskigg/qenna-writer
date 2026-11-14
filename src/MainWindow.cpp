@@ -129,6 +129,8 @@
 #include "ImageInsertDialog.h"
 #include "ImageOverlay.h"
 #include "LeftBar.h"
+#include "RightBar.h"
+#include "Relevo.h"
 #include "ManuscriptPanel.h"
 #include "OutlinePanel.h"
 #include "ProjectInfoHover.h"
@@ -792,6 +794,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(toolbar, &TopToolbar::barStyleChanged, this, [this](TopToolbar::BarStyle st) {
         applyToolbarSide();
         if (settingsPanel) settingsPanel->setTopToolbarStyle(int(st));
+        if (settingsPanel) settingsPanel->setRibbonFloating(toolbar->ribbonFloating());
     });
     connect(toolbar, &TopToolbar::pageModeToggled, this, &MainWindow::setPageModeEnabled);
     connect(toolbar, &TopToolbar::ribbonPlacementChanged, this, [this](bool floating) {
@@ -810,6 +813,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_autoNavEnabled  = QSettings().value(QStringLiteral("editor/autoNavEnabled"),  true).toBool();
     detectionEnabled  = QSettings().value(QStringLiteral("editor/detectionEnabled"), true).toBool();
     m_dialogueDetectionEnabled = QSettings().value(QStringLiteral("editor/dialogueDetectionEnabled"), true).toBool();
+
+    m_barWidthMode = qBound(0, QSettings().value(QStringLiteral("ui/topToolbarWidthMode"), 0).toInt(), 2);
+    m_barWidthPx = qBound(400, QSettings().value(QStringLiteral("ui/topToolbarWidthPx"), 900).toInt(), 2400);
 
     setupEditor();
     setupToolbar();
@@ -889,6 +895,22 @@ void MainWindow::setupEditor()
     // porque ele mexe no layout do container.
     leftBar->setBarSide(loadLeftBarSide());
     connect(leftBar, &LeftBar::barSideChanged, this, [this]() { applyLeftBarSide(); });
+    // RightBar: a irmã do outro lado. Entra no layout junto com a LeftBar (ver
+    // applyLeftBarSide), e os botões dela ligam nos mesmos sinais da barra de cima.
+    rightBar = new RightBar(this);
+    rightBar->hide();
+
+    // Relevo (Configurações › Aparência): as três barras dormem gravadas na
+    // mesa e acordam com o mouse.
+    {
+        auto* rl = new RelevoController(leftBar);
+        rl->extraHover = [this]() { return leftBar && leftBar->labelsUnderMouse(); };
+        rl->canRest = [this]() { return leftBar && !leftBar->chromeHidden(); };
+        auto* rr = new RelevoController(rightBar);
+        rr->extraHover = [this]() { return rightBar && rightBar->labelsUnderMouse(); };
+        rr->canRest = [this]() { return rightBar && !rightBar->chromeHidden(); };
+        new RelevoController(toolbar);
+    }
     drawerListPanel = new DrawerListPanel(projectModel, this);
     // Busca dentro da gaveta: precisa do cache (documento aberto tem a versão
     // mais nova, ainda não salva) e da raiz do projeto (pra ler o resto).
@@ -2273,6 +2295,7 @@ void MainWindow::setupEditor()
             pensarioPanel->refresh();
         } else if (toolbar) {
             toolbar->pulsePensarioBadge();
+            if (rightBar) rightBar->pulsePensarioBadge();
         }
     });
 
@@ -2297,12 +2320,15 @@ void MainWindow::setupEditor()
             remindersPanel->hide();
             return;
         }
-        remindersPanel->showNear(toolbar->reminderButtonGlobalRect(), toolbar->barSide());
+        Qt::Edge remSide = toolbar->barSide();
+        const QRect remAnchor = reminderAnchor(&remSide);
+        remindersPanel->showNear(remAnchor, remSide);
     });
     connect(remindersStore, &RemindersStore::changed, this, [this]() {
         if (!remindersStore) return;
         remindersStore->save();
         if (toolbar) toolbar->setReminderBadge(remindersStore->hasActive());
+        if (rightBar) rightBar->setReminderBadge(remindersStore->hasActive());
     });
 
     m_reminderPollTimer = new QTimer(this);
@@ -3103,16 +3129,51 @@ void MainWindow::setupEditor()
     // Enciclopédia), no modo em que foi usado por último: Lugares ou Sistemas.
     connect(toolbar, &TopToolbar::construtorToggleRequested, this, [this]() {
         TerritorioWindow* w = ensureTerritorioWindow();
+        if (rightBar) rightBar->watchPanel(RightBar::Construtor, w);
         w->show();
         w->raise();
         w->activateWindow();
     });
+
+    // RightBar: cada botão dispara o mesmo sinal do botão da barra de cima, então
+    // os dois caminhos fazem exatamente a mesma coisa.
+    if (rightBar) {
+        connect(rightBar, &RightBar::toolTriggered, this, [this](RightBar::Tool t) {
+            if (!toolbar) return;
+            switch (t) {
+            case RightBar::Construtor: emit toolbar->construtorToggleRequested(); break;
+            case RightBar::Reference:  emit toolbar->refMenuToggleRequested(); break;
+            case RightBar::Pensario:   emit toolbar->pensarioToggleRequested(); break;
+            case RightBar::Reminders:  emit toolbar->reminderRequested(); break;
+            case RightBar::Statistics: emit toolbar->statisticsRequested(); break;
+            case RightBar::Assistant:  emit toolbar->miraToggleRequested(); break;
+            }
+        });
+        rightBar->isToolOpen = [this](RightBar::Tool t) -> bool {
+            switch (t) {
+            case RightBar::Construtor: return territorioWindow && territorioWindow->isVisible();
+            case RightBar::Reference:  return refMenuPanel && refMenuPanel->isVisible();
+            case RightBar::Pensario:   return pensarioPanel && pensarioPanel->isPanelOpen();
+            case RightBar::Reminders:  return remindersPanel && remindersPanel->isVisible();
+            case RightBar::Statistics: return statsPanel && statsPanel->isPanelOpen();
+            case RightBar::Assistant:  return aiChatPanel && aiChatPanel->isPanelOpen();
+            }
+            return false;
+        };
+        rightBar->watchPanel(RightBar::Reference, refMenuPanel);
+        rightBar->watchPanel(RightBar::Pensario, pensarioPanel);
+        rightBar->watchPanel(RightBar::Reminders, remindersPanel);
+        rightBar->watchPanel(RightBar::Statistics, statsPanel);
+        rightBar->watchPanel(RightBar::Assistant, aiChatPanel);
+        if (remindersStore) rightBar->setReminderBadge(remindersStore->hasActive());
+    }
     if (markerStore) {
         connect(markerStore, &MarkerStore::markersChanged, this, [this](const QString&) {
             if (pensarioPanel && pensarioPanel->isPanelOpen()) {
                 pensarioPanel->refresh();
             } else if (toolbar) {
                 toolbar->pulsePensarioBadge();
+                if (rightBar) rightBar->pulsePensarioBadge();
             }
         });
     }
@@ -3216,7 +3277,9 @@ void MainWindow::setupEditor()
             remindersPanel->hide();
             return;
         }
-        remindersPanel->showNear(toolbar->reminderButtonGlobalRect(), toolbar->barSide());
+        Qt::Edge remSide = toolbar->barSide();
+        const QRect remAnchor = reminderAnchor(&remSide);
+        remindersPanel->showNear(remAnchor, remSide);
     });
     auto* homeShortcut = new QShortcut(QKeySequence(Qt::Key_F12), this);
     connect(homeShortcut, &QShortcut::activated, this, [this]() {
@@ -5117,6 +5180,7 @@ void MainWindow::setReadMode(bool enabled)
         // Toolbar flutuante: esconder o holder inteiro libera o topo da janela.
         if (toolbarHolder) toolbarHolder->hide();
         if (leftBar) leftBar->setChromeHidden(true);
+        if (rightBar) rightBar->setAutoHide(true);
         if (wordCountPanel) wordCountPanel->hide();
 
         // Hotzones finas e transparentes pra revelar cada barra no hover.
@@ -5141,6 +5205,7 @@ void MainWindow::setReadMode(bool enabled)
             toolbarHolder->raise();
         }
         if (leftBar) leftBar->setChromeHidden(false);
+        if (rightBar) rightBar->setAutoHide(false);
         if (wordCountPanel && hasProjectLoaded()) {
             wordCountPanel->show();
             positionWordCountPanel();
@@ -6852,6 +6917,7 @@ void MainWindow::applyProjectRoot(const QString& root)
         remindersStore->setProjectRoot(root);
         remindersStore->load();
         if (toolbar) toolbar->setReminderBadge(remindersStore->hasActive());
+        if (rightBar) rightBar->setReminderBadge(remindersStore->hasActive());
         // Toast de boas-vindas: lista os lembretes ativos ao abrir o projeto.
         if (remindersStore->hasActive()) {
             QTimer::singleShot(800, this, [this]() {
@@ -8764,10 +8830,31 @@ void MainWindow::applyLeftBarSide()
     // Tirar e reinserir e o que move a barra de lado: no QHBoxLayout, quem esta
     // no indice 0 fica na esquerda e quem esta no fim fica na direita.
     lay->removeWidget(leftBar);
+    if (rightBar) lay->removeWidget(rightBar);
     if (onRight) lay->addWidget(leftBar);
     else         lay->insertWidget(0, leftBar);
     leftBar->show(); // removeWidget nao esconde, mas insertWidget apos reparent sim
     leftBar->syncLayoutAlignment(); // recolhida, a barra precisa continuar presa no topo
+
+    // RightBar: sempre do lado oposto ao da LeftBar.
+    if (rightBar) {
+        const bool rbOn = RightBar::enabledInSettings();
+        if (rbOn) {
+            rightBar->setBarSide(onRight ? Qt::LeftEdge : Qt::RightEdge);
+            // Plaquinha do tamanho dos ícones, no alto: começa na mesma altura
+            // da LeftBar (pedido do Pe, 13/11).
+            if (onRight) lay->insertWidget(0, rightBar, 0, Qt::AlignTop);
+            else         lay->addWidget(rightBar, 0, Qt::AlignTop);
+            rightBar->show();
+            if (readModeEnabled) rightBar->setAutoHide(true);
+        } else {
+            rightBar->hide();
+        }
+        if (toolbar) {
+            toolbar->setProjectButtonsInRightBar(rbOn);
+            rightBar->setJoinedTop(toolbar->barEdgeToEdge());
+        }
+    }
 
     relayoutEditorForChrome();
     positionSidePanels();
@@ -8783,13 +8870,14 @@ void MainWindow::applyToolbarSide()
     if (toolbarHolder) {
         if (auto* hl = qobject_cast<QBoxLayout*>(toolbarHolder->layout())) {
             hl->setDirection(vertical ? QBoxLayout::TopToBottom : QBoxLayout::LeftToRight);
-            if (toolbar->ribbonEdgeToEdge()) hl->setContentsMargins(0, 0, 0, 0);   // faixa: teto da janela
+            if (toolbar->barEdgeToEdge()) hl->setContentsMargins(0, 0, 0, 0);   // barra: teto da janela
             else hl->setContentsMargins(vertical ? 0 : 12, vertical ? 12 : 0,
                                         vertical ? 4 : 12, vertical ? 12 : 4);
         }
     }
     // A faixa vai de ponta a ponta e a LeftBar desce emendada nela.
-    if (leftBar) leftBar->setJoinedTop(toolbar->ribbonEdgeToEdge());
+    if (leftBar) leftBar->setJoinedTop(toolbar->barEdgeToEdge());
+    if (rightBar) rightBar->setJoinedTop(toolbar->barEdgeToEdge());
     if (toolbarHolder) {
         layoutToolbarHolder();
         toolbarHolder->raise();
@@ -8819,6 +8907,7 @@ void MainWindow::layoutToolbarHolder()
 {
     if (!toolbarHolder) return;
     if (toolbar && toolbar->isVertical()) {
+        toolbar->setClassicSpan(0, -1);   // largura de barra deitada não vale de pé
         const int w = toolbarHolder->sizeHint().width();
         toolbarHolder->setGeometry(width() - w, 0, w, height());
     } else {
@@ -8835,23 +8924,44 @@ void MainWindow::layoutToolbarHolder()
         // troca de estilo: abrindo o app já com a faixa salva, a troca nunca
         // acontece e o holder ficava com o respiro de 12 px da clássica.
         if (auto* hl = qobject_cast<QBoxLayout*>(toolbarHolder->layout())) {
-            const QMargins want = toolbar->ribbonEdgeToEdge() ? QMargins(0, 0, 0, 0) : QMargins(12, 0, 12, 4);
+            const QMargins want = toolbar->barEdgeToEdge() ? QMargins(0, 0, 0, 0) : QMargins(12, 0, 12, 4);
             if (hl->contentsMargins() != want) hl->setContentsMargins(want);
         }
-        if (leftBar) leftBar->setJoinedTop(toolbar->ribbonEdgeToEdge());
+        if (leftBar) leftBar->setJoinedTop(toolbar->barEdgeToEdge());
+        if (rightBar) rightBar->setJoinedTop(toolbar->barEdgeToEdge());
+        // Largura da barra flutuante escolhida nas Configurações (0 = a do estilo).
+        const int pageWNow = (editor && editor->isVisible()) ? editor->width() : 0;
+        auto floatingWidth = [&](int natural) {
+            int w = natural;
+            if (m_barWidthMode == 1) w = pageWNow;
+            else if (m_barWidthMode == 2) w = m_barWidthPx;
+            return w > 0 ? qMax(0, qMin(w, width() - 26)) : 0;
+        };
+        // Clássica de ponta a ponta: a janela inteira, com os botões centralizados na folha.
+        if (toolbar->classicEdgeToEdge()) {
+            int cx = width() / 2;
+            if (editor && editor->isVisible() && editor->width() > 0)
+                cx = editor->mapTo(this, QPoint(editor->width() / 2, 0)).x();
+            toolbar->setClassicSpan(width(), cx);
+            toolbar->updateGeometry();
+            toolbarHolder->setGeometry(0, 0, width(), toolbarHolder->sizeHint().height());
+            return;
+        }
+        toolbar->setClassicSpan(toolbar->ribbonActive() ? 0 : floatingWidth(0), -1);
         // Faixa flutuante: da largura da folha, centralizada nela (o resto do
         // caminho é o mesmo da clássica, logo abaixo).
         if (toolbar->ribbonActive() && !toolbar->ribbonEdgeToEdge()) {
             const int pageW = (editor && editor->isVisible()) ? editor->width() : 0;
             toolbar->setRibbonSideInsets(0, 0);
             // Fichário: largura do conteúdo, como a clássica (0 = sem mínimo).
-            toolbar->setRibbonTargetWidth(toolbar->ribbonHugsContent() ? 0 : qMax(0, qMin(pageW, width() - 26)));
+            toolbar->setRibbonTargetWidth(floatingWidth(toolbar->ribbonHugsContent() ? 0 : pageW));
         }
         if (toolbar->ribbonEdgeToEdge()) {
             // O conteúdo começa alinhado com a borda da LeftBar emendada embaixo.
             const int lbW = (leftBar && leftBar->isVisibleTo(this)) ? leftBar->width() : 0;
             const bool lbRight = leftBar && leftBar->barSide() == Qt::RightEdge;
-            toolbar->setRibbonSideInsets(lbRight ? 0 : lbW, lbRight ? lbW : 0);
+            const int rbW = rightBarShown() ? rightBar->width() : 0;
+            toolbar->setRibbonSideInsets(lbRight ? rbW : lbW, lbRight ? lbW : rbW);
             toolbar->setRibbonTargetWidth(width());
             syncRibbonPageCenter();
             toolbar->updateGeometry();
@@ -8897,7 +9007,25 @@ int MainWindow::chromeInset(Qt::Edge edge) const
     const bool toolbarShown = toolbarHolder && toolbarHolder->isVisible();
     if (toolbarShown && toolbar && toolbar->barSide() == edge) inset += toolbar->thickness();
     if (leftBar && leftBar->isVisible() && leftBar->barSide() == edge) inset += leftBar->width();
+    if (rightBar && rightBar->isVisible() && rightBar->barSide() == edge) inset += rightBar->width();
     return inset;
+}
+
+bool MainWindow::rightBarShown() const
+{
+    return rightBar && !rightBar->isHidden() && RightBar::enabledInSettings();
+}
+
+// Onde o painel de Lembretes abre: no botão da RightBar quando ela está ligada,
+// senão no da barra de cima.
+QRect MainWindow::reminderAnchor(Qt::Edge* side) const
+{
+    if (rightBarShown()) {
+        if (side) *side = rightBar->barSide();
+        return rightBar->toolGlobalRect(RightBar::Reminders);
+    }
+    if (side && toolbar) *side = toolbar->barSide();
+    return toolbar ? toolbar->reminderButtonGlobalRect() : QRect();
 }
 
 void MainWindow::refreshBackupStatusLabel()
@@ -8992,6 +9120,14 @@ void MainWindow::onSettingsRequested()
         });
         connect(settingsPanel, &SettingsPanel::ribbonFloatingChanged, this, [this](bool floating) {
             if (toolbar) toolbar->setRibbonFloating(floating);
+        });
+        connect(settingsPanel, &SettingsPanel::rightBarToggled, this, [this](bool) { applyLeftBarSide(); });
+        connect(settingsPanel, &SettingsPanel::topToolbarWidthChanged, this, [this](int mode, int px) {
+            m_barWidthMode = qBound(0, mode, 2);
+            m_barWidthPx = qBound(400, px, 2400);
+            QSettings().setValue(QStringLiteral("ui/topToolbarWidthMode"), m_barWidthMode);
+            QSettings().setValue(QStringLiteral("ui/topToolbarWidthPx"), m_barWidthPx);
+            layoutToolbarHolder();
         });
         connect(settingsPanel, &SettingsPanel::leftBarSideChanged, this, [this](int value) {
             const Qt::Edge newSide = (value == 1) ? Qt::RightEdge : Qt::LeftEdge;
@@ -9208,8 +9344,10 @@ void MainWindow::updateEditorContainerMargins()
     // A LeftBar encosta na borda da janela (pedido do Pe, 09/11). Do outro lado
     // fica o respiro de sempre. Subir até o topo também foi testado e não casou.
     const bool barOnRight = leftBar && leftBar->barSide() == Qt::RightEdge;
-    lay->setContentsMargins(barOnRight ? 10 : 0, floatingChromeInset(Qt::TopEdge),
-                            (barOnRight ? 0 : 10) + floatingChromeInset(Qt::RightEdge), 0);
+    // A RightBar também encosta na borda dela.
+    const bool rb = rightBarShown();
+    lay->setContentsMargins((barOnRight && !rb) ? 10 : 0, floatingChromeInset(Qt::TopEdge),
+                            ((barOnRight || rb) ? 0 : 10) + floatingChromeInset(Qt::RightEdge), 0);
 }
 
 bool MainWindow::pageModeEnabled() const
