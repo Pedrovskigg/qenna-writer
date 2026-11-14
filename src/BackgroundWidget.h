@@ -47,6 +47,9 @@ public:
     // repinta em cima dela; nos temas Animados a sombra da folha é pintada
     // aqui (o QGraphicsDropShadowEffect refaria o desfoque a cada quadro).
     void setSheetRect(const QRect& r);
+    // A mesa pinta a sombra da folha também fora dos Animados (no Mac, ver
+    // MainWindow::applyPageShadow).
+    void setPaintsSheetShadow(bool on);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
@@ -77,6 +80,7 @@ private:
     QTimer* m_timer = nullptr;
     QElapsedTimer m_clock;
     QRect m_sheet;
+    bool m_paintShadow = false;
     QImage m_shadow;
     QImage m_low;          // a mesa em resolução menor (qualidade abaixo de 100%)
     QString m_shadowKey;

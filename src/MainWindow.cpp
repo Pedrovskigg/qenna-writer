@@ -1498,6 +1498,11 @@ void MainWindow::setupEditor()
     auto repaintPage = [this]() { editor->update(); editor->viewport()->update(); if (docHeader) docHeader->update(); };
     connect(projectModel, &ProjectModel::chaptersChanged, this, repaintPage);
     connect(projectModel, &ProjectModel::manuscriptsChanged, this, repaintPage);
+    // Trocar de documento troca o fundo da folha (cor por capítulo): a faixa do
+    // título também tem que repintar inteira, não só onde um rótulo mudou —
+    // ficava com a cor do capítulo anterior (relato da Lady Oscar, 14/11/2026).
+    connect(editorHost, &EditorHost::viewModeChanged, this, repaintPage);
+    connect(editorHost, &EditorHost::contentLoaded, this, repaintPage);
     connect(Theme::Manager::instance(), &Theme::Manager::themeChanged, this, repaintPage);
     editor->setOverlayPainter([this](QPainter& p, const QRect& clip) {
         // Roteiro: o cabeçalho de cena já é a quebra — nada de traço por cima.
@@ -9547,6 +9552,23 @@ void MainWindow::positionPageGlow()
     m_pageGlow->raise();
 }
 
+// No Mac a sombra da folha é pintada pela mesa (BackgroundWidget), como nos
+// temas Animados, e não por um QGraphicsDropShadowEffect na coluna do editor.
+// O efeito guarda uma foto da coluna e, no Mac com tela Retina, nem sempre
+// percebe o que mudou por dentro: relato da Marley/Lady Oscar (14/11/2026) de
+// riscos depois de arrastar a largura do texto ou fechar painéis, e do Enter
+// que só aparecia na segunda vez. QENNA_DESK_SHADOW=1 força o caminho no
+// Windows, pra conferir.
+static bool deskPaintsPageShadow()
+{
+#ifdef Q_OS_MACOS
+    return Theme::pageShadowEnabled();
+#else
+    static const bool forced = qEnvironmentVariableIntValue("QENNA_DESK_SHADOW") == 1;
+    return forced && Theme::pageShadowEnabled();
+#endif
+}
+
 void MainWindow::applyPageShadow()
 {
     if (!editorColumn) return;
@@ -9554,7 +9576,9 @@ void MainWindow::applyPageShadow()
     // Nos temas Animados a sombra é pintada pelo BackgroundWidget: o efeito do
     // Qt refaria o desfoque da página inteira a cada quadro da animação.
     const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
-    if (Theme::pageShadowEnabled() && !animated) {
+    const bool desk = deskPaintsPageShadow();
+    if (backgroundWidget) backgroundWidget->setPaintsSheetShadow(desk && !animated);
+    if (Theme::pageShadowEnabled() && !animated && !desk) {
         auto* effect = qobject_cast<QGraphicsDropShadowEffect*>(editorColumn->graphicsEffect());
         if (!effect) {
             effect = new QGraphicsDropShadowEffect(editorColumn);
@@ -9577,7 +9601,8 @@ void MainWindow::applyBackgroundFromTheme()
     // Degradê ou grão na mesa também precisam do fundo pintado por baixo de
     // tudo, mesmo sem foto: tratam-se como a imagem daqui pra baixo.
     const bool animated = !Theme::Manager::instance()->current().animScene.isEmpty();
-    const bool painted = hasImage || animated || BackgroundOverlay::active(Theme::Manager::instance()->current());
+    const bool painted = hasImage || animated || BackgroundOverlay::active(Theme::Manager::instance()->current())
+                         || deskPaintsPageShadow(); // a mesa pinta a sombra da folha (Mac)
 
     if (backgroundWidget) {
         backgroundWidget->setBackground(hasImage ? img : QString(), mode);

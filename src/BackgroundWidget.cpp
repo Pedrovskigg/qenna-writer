@@ -134,7 +134,7 @@ void BackgroundWidget::paintEvent(QPaintEvent* event)
     }
     // 4) Degradê e grão do tema por cima da mesa (cor ou foto).
     BackgroundOverlay::paint(p, QRectF(rect()), Theme::Manager::instance()->current());
-    if (m_anim) paintSheetShadow(p);
+    if (m_anim || m_paintShadow) paintSheetShadow(p);
 }
 
 void BackgroundWidget::paintImage(QPainter& p)
@@ -229,7 +229,16 @@ void BackgroundWidget::setSheetRect(const QRect& r)
         const double s = sceneScale();
         m_anim->resize(width() / s, zonesFor(m_sheet, size(), s));
         update();
+    } else if (m_paintShadow) {
+        update(); // a sombra anda com a folha
     }
+}
+
+void BackgroundWidget::setPaintsSheetShadow(bool on)
+{
+    if (on == m_paintShadow) return;
+    m_paintShadow = on;
+    update();
 }
 
 void BackgroundWidget::resizeEvent(QResizeEvent* event)
