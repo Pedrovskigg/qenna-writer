@@ -79,25 +79,35 @@ void BackgroundWidget::rebuildScaled()
         m_scaledFor = QSize();
         return;
     }
-    if (m_scaledFor == target && !m_scaled.isNull()) return;
+    const qreal dpr = devicePixelRatioF();
+    if (m_scaledFor == target && m_scaledDpr == dpr && !m_scaled.isNull()) return;
 
+    // Escala pro tamanho em pixels DE VERDADE da tela (14/11/2026). Antes ia
+    // pro tamanho lógico: com o Windows em 125/150% ou num Mac Retina a foto
+    // encolhia pra 1536×864 (ou metade, no Retina) e o pintor esticava de
+    // volta — fundo borrado. Em 100% nada muda.
+    const QSize px = (QSizeF(target) * dpr).toSize();
     switch (m_mode) {
     case Theme::BgCenter:
     case Theme::BgTile:
         m_scaled = m_source; // sem escalonar
         break;
     case Theme::BgStretch:
-        m_scaled = m_source.scaled(target, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        m_scaled = m_source.scaled(px, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        m_scaled.setDevicePixelRatio(dpr);
         break;
     case Theme::BgFit:
-        m_scaled = m_source.scaled(target, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_scaled = m_source.scaled(px, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        m_scaled.setDevicePixelRatio(dpr);
         break;
     case Theme::BgZoom:
     default:
-        m_scaled = m_source.scaled(target, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        m_scaled = m_source.scaled(px, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        m_scaled.setDevicePixelRatio(dpr);
         break;
     }
     m_scaledFor = target;
+    m_scaledDpr = dpr;
 }
 
 void BackgroundWidget::paintEvent(QPaintEvent* event)
@@ -134,11 +144,12 @@ void BackgroundWidget::paintImage(QPainter& p)
     if (m_scaled.isNull()) return;
 
     const QSize w = size();
+    // Tamanho em pontos da tela (o pixmap pode ter 1,25× ou 2× pixels).
+    const QSizeF ds = m_scaled.deviceIndependentSize();
+    const QPointF centered((w.width() - ds.width()) / 2.0, (w.height() - ds.height()) / 2.0);
     switch (m_mode) {
     case Theme::BgCenter: {
-        const int x = (w.width()  - m_scaled.width())  / 2;
-        const int y = (w.height() - m_scaled.height()) / 2;
-        p.drawPixmap(x, y, m_scaled);
+        p.drawPixmap(centered, m_scaled);
         break;
     }
     case Theme::BgTile: {
@@ -149,17 +160,13 @@ void BackgroundWidget::paintImage(QPainter& p)
         p.drawPixmap(rect(), m_scaled);
         break;
     case Theme::BgFit: {
-        const int x = (w.width()  - m_scaled.width())  / 2;
-        const int y = (w.height() - m_scaled.height()) / 2;
-        p.drawPixmap(x, y, m_scaled);
+        p.drawPixmap(centered, m_scaled);
         break;
     }
     case Theme::BgZoom:
     default: {
         // imagem maior que área — recorta centralizado
-        const int x = (w.width()  - m_scaled.width())  / 2;
-        const int y = (w.height() - m_scaled.height()) / 2;
-        p.drawPixmap(x, y, m_scaled);
+        p.drawPixmap(centered, m_scaled);
         break;
     }
     }

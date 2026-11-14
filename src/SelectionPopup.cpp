@@ -195,13 +195,35 @@ protected:
         ensurePix();
         if (m_pix.isNull()) return;
         QPainter p(this);
-        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
         const qreal dpr = m_pix.devicePixelRatio();
         const qreal W = width(), H = height();
         const qreal stripW = m_strip->width();
         const qreal mx = maxScroll();
         const qreal lAmt = qMin(1.0, m_x / 40.0), rAmt = qMin(1.0, (mx - m_x) / 40.0);
         QColor bg = tc(Theme::panelBackground());
+
+        // Miolo 1:1 (14/11/2026, "tá farinhado, parece DLSS"): onde a curva
+        // desvia menos de meio pixel da reta, a fita entra inteira, sem filtro
+        // e com a origem presa ao pixel da tela. Antes TUDO era fatiado em
+        // colunas de 2 px esticadas pra 2,6 px com filtro suave, inclusive o
+        // meio, que nem curva — e os ícones saíam borrados.
+        const qreal half = W / 2.0;
+        const qreal off = std::round(m_x * dpr) / dpr; // posição na fita da coluna 0
+        auto bent = [&](qreal u) { return std::abs(src(u) - (m_x + u)) >= 0.5; };
+        qreal uL = std::floor(half), uR = std::ceil(half);
+        while (uL > 0 && !bent(uL - 1)) uL -= 1;
+        while (uR < W && !bent(uR + 1)) uR += 1;
+        uL = std::round(uL * dpr) / dpr;
+        uR = std::round(uR * dpr) / dpr;
+        {
+            const qreal d0 = std::max(uL, -off), d1 = std::min(uR, stripW - off);
+            if (d1 > d0) {
+                p.drawPixmap(QRectF(d0, 0, d1 - d0, H), m_pix,
+                             QRectF((off + d0) * dpr, 0, (d1 - d0) * dpr, H * dpr));
+            }
+        }
+
+        p.setRenderHint(QPainter::SmoothPixmapTransform, true);
         constexpr qreal S = 2.0;
         for (qreal u = 0; u < W; u += S) {
             const qreal u1 = qMin(W, u + S);
@@ -212,10 +234,22 @@ protected:
             s1 = std::clamp(s1, 0.0, stripW);
             if (s1 - s0 <= 0.01) continue;
             const qreal cm = (c0 + c1) / 2.0;
-            const qreal k = 0.88 + 0.12 * cm;
-            const qreal th = H * k;
-            p.drawPixmap(QRectF(u, (H - th) / 2.0, u1 - u + 0.6, th), m_pix,
-                         QRectF(s0 * dpr, 0, (s1 - s0) * dpr, H * dpr));
+            // Só as pontas curvas são fatiadas; o miolo já foi copiado acima.
+            if (u1 <= uL || u >= uR) {
+                const qreal k = 0.88 + 0.12 * cm;
+                const qreal th = H * k;
+                const qreal du0 = u, du1 = u1 <= uL ? qMin(uL, u1 + 0.6) : u1 + 0.6;
+                p.drawPixmap(QRectF(du0, (H - th) / 2.0, du1 - du0, th), m_pix,
+                             QRectF(s0 * dpr, 0, (s1 - s0) * dpr, H * dpr));
+            } else if (u < uL || u1 > uR) {
+                // Coluna que cruza a borda do miolo: desenha só a parte de fora.
+                const qreal a0 = u < uL ? u : uR, a1 = u < uL ? uL : u1;
+                const qreal t0 = src(a0), t1 = src(a1);
+                if (t1 > t0)
+                    p.drawPixmap(QRectF(a0, 0, a1 - a0, H), m_pix,
+                                 QRectF(std::clamp(t0, 0.0, stripW) * dpr, 0,
+                                        (std::clamp(t1, 0.0, stripW) - std::clamp(t0, 0.0, stripW)) * dpr, H * dpr));
+            }
             // Apaga conforme curva, e some de vez rente à borda.
             qreal a = (1.0 - cm) * 0.95;
             const bool left = u < W / 2.0;

@@ -69,6 +69,7 @@ private:
     QPixmap m_source;   // imagem decodificada em tamanho nativo
     QPixmap m_scaled;   // cache do resultado pra tamanho atual da janela
     QSize   m_scaledFor; // qual size o cache foi gerado
+    qreal   m_scaledDpr = 1.0; // e pra qual escala de tela (125%, Retina…)
     QColor  m_fill;
 
     std::unique_ptr<AnimBg::Stack> m_anim;
