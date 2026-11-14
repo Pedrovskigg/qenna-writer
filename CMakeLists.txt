@@ -300,6 +300,8 @@ qt_add_executable(qenna-writer
     src/BondPopup.h
     src/BondViewPanel.cpp
     src/BondViewPanel.h
+    src/AmbienceArt.cpp
+    src/AmbienceArt.h
     src/AmbienceManager.cpp
     src/AmbienceManager.h
     src/AmbiencePanel.cpp

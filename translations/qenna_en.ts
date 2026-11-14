@@ -833,25 +833,256 @@ Enjoy.</translation>
     </message>
 </context>
 <context>
+    <name>AmbienceManager</name>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="200"/>
+        <source>Natureza</source>
+        <translation>Nature</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="201"/>
+        <source>Chuva e mar</source>
+        <translation>Rain and sea</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="202"/>
+        <source>Lugares</source>
+        <translation>Places</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="203"/>
+        <source>Música calma</source>
+        <translation>Calm music</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="204"/>
+        <source>Aventura</source>
+        <translation>Adventure</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="205"/>
+        <source>Suspense</source>
+        <translation>Suspense</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="206"/>
+        <source>Suas músicas</source>
+        <translation>Your music</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="343"/>
+        <source>Minha mistura %1</source>
+        <translation>My mix %1</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="576"/>
+        <source>Café chuvoso</source>
+        <translation>Rainy café</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="579"/>
+        <source>Acampamento</source>
+        <translation>Campsite</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbienceManager.cpp" line="582"/>
+        <source>Tempestade</source>
+        <translation>Storm</translation>
+    </message>
+</context>
+<context>
     <name>AmbiencePanel</name>
     <message>
-        <location filename="../src/AmbiencePanel.cpp" line="75"/>
+        <location filename="../src/AmbiencePanel.cpp" line="191"/>
+        <source>1 som</source>
+        <translation>1 sound</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="191"/>
+        <source>%1 sons</source>
+        <translation>%1 sounds</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="725"/>
         <source>Som ambiente</source>
         <translation>Ambient sound</translation>
     </message>
     <message>
-        <location filename="../src/AmbiencePanel.cpp" line="106"/>
-        <location filename="../src/AmbiencePanel.cpp" line="249"/>
+        <location filename="../src/AmbiencePanel.cpp" line="729"/>
+        <source>Abrir pasta</source>
+        <translation>Open folder</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="737"/>
+        <source>Pasta de sons não encontrada</source>
+        <translation>Sounds folder not found</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="814"/>
+        <location filename="../src/AmbiencePanel.cpp" line="933"/>
+        <source>Mesa</source>
+        <translation>Mixer</translation>
+    </message>
+    <message>
+        <source>Misturas prontas</source>
+        <translation type="vanished">Ready-made mixes</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="828"/>
+        <source>Misturas</source>
+        <translation>Mixes</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="832"/>
+        <source>Salvar esta mistura</source>
+        <translation>Save this mix</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="844"/>
+        <source>Nome da mistura</source>
+        <translation>Mix name</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="847"/>
+        <source>Salvar</source>
+        <translation>Save</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="851"/>
+        <source>Cancelar</source>
+        <translation>Cancel</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="872"/>
+        <source>A mesa está vazia. Escolha uma mistura pronta ou abra um cartão.</source>
+        <translation>The mixer is empty. Pick a ready-made mix or open a card.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="881"/>
+        <source>Volume geral</source>
+        <translation>Master volume</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="927"/>
+        <source>Escolha um som primeiro.</source>
+        <translation>Pick a sound first.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="934"/>
+        <source>Volume de cada som, misturas prontas e desligar sozinho</source>
+        <translation>Volume per sound, ready-made mixes and sleep timer</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="975"/>
+        <source>Já tem 3 sons. Tire um na Mesa.</source>
+        <translation>Already 3 sounds. Remove one in the Mixer.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="984"/>
+        <source>Nenhum som aqui. Coloque arquivos .mp3 ou .ogg na pasta de sons.</source>
+        <translation>No sounds here. Put .mp3 or .ogg files in the sounds folder.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="986"/>
+        <source>Uma música por vez: escolher outra troca a que está tocando.</source>
+        <translation>One song at a time: picking another replaces the one playing.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="988"/>
+        <source>Clique pra somar à mistura. Até 3 sons junto com a música.</source>
+        <translation>Click to add to the mix. Up to 3 sounds alongside the music.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="990"/>
+        <source>Música troca a que está tocando; som soma à mistura.</source>
+        <translation>Music replaces the one playing; sounds add to the mix.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1010"/>
+        <source>Duplo clique renomeia; o × exclui</source>
+        <translation>Double-click to rename; the × deletes it</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1016"/>
+        <source>Mistura excluída</source>
+        <translation>Mix deleted</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1087"/>
+        <source>Já existe uma mistura com esse nome.</source>
+        <translation>A mix with that name already exists.</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1094"/>
+        <source>Mistura atualizada</source>
+        <translation>Mix updated</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1094"/>
+        <source>Mistura salva</source>
+        <translation>Mix saved</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1127"/>
+        <source>Música</source>
+        <translation>Music</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1127"/>
+        <source>Som</source>
+        <translation>Sound</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1142"/>
+        <source>Volume deste som</source>
+        <translation>Volume of this sound</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1147"/>
+        <source>Tirar da mistura</source>
+        <translation>Remove from mix</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1167"/>
+        <source>Nada tocando</source>
+        <translation>Nothing playing</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1168"/>
+        <source>Escolha um cartão</source>
+        <translation>Pick a card</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1173"/>
+        <source>+ %1 na mistura</source>
+        <translation>+ %1 in the mix</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1192"/>
+        <source>Desliga sozinho em %1 min (clique pra mudar)</source>
+        <translation>Turns off in %1 min (click to change)</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1193"/>
+        <source>Desligar sozinho</source>
+        <translation>Sleep timer</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1202"/>
         <source>Reproduzir</source>
         <translation>Play</translation>
     </message>
     <message>
-        <location filename="../src/AmbiencePanel.cpp" line="195"/>
-        <source>Pasta de sons não encontrada: %1</source>
-        <translation>Sound folder not found: %1</translation>
+        <location filename="../src/AmbiencePanel.cpp" line="1257"/>
+        <source>Desfazer</source>
+        <translation>Undo</translation>
     </message>
     <message>
-        <location filename="../src/AmbiencePanel.cpp" line="249"/>
+        <source>Pasta de sons não encontrada: %1</source>
+        <translation type="vanished">Sound folder not found: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/AmbiencePanel.cpp" line="1202"/>
         <source>Pausar</source>
         <translation>Pause</translation>
     </message>
@@ -5356,7 +5587,7 @@ Don&apos;t close the program if it stops responding.</translation>
     <name>HelpPanel</name>
     <message>
         <location filename="../src/HelpPanel.cpp" line="261"/>
-        <location filename="../src/HelpPanel.cpp" line="2928"/>
+        <location filename="../src/HelpPanel.cpp" line="2938"/>
         <source>Ajuda</source>
         <translation>Help</translation>
     </message>
@@ -5627,11 +5858,11 @@ Don&apos;t close the program if it stops responding.</translation>
         <location filename="../src/HelpPanel.cpp" line="2634"/>
         <location filename="../src/HelpPanel.cpp" line="2653"/>
         <location filename="../src/HelpPanel.cpp" line="2680"/>
-        <location filename="../src/HelpPanel.cpp" line="2706"/>
-        <location filename="../src/HelpPanel.cpp" line="2721"/>
-        <location filename="../src/HelpPanel.cpp" line="2749"/>
-        <location filename="../src/HelpPanel.cpp" line="2761"/>
-        <location filename="../src/HelpPanel.cpp" line="2772"/>
+        <location filename="../src/HelpPanel.cpp" line="2716"/>
+        <location filename="../src/HelpPanel.cpp" line="2731"/>
+        <location filename="../src/HelpPanel.cpp" line="2759"/>
+        <location filename="../src/HelpPanel.cpp" line="2771"/>
+        <location filename="../src/HelpPanel.cpp" line="2782"/>
         <source>Clique para expandir</source>
         <translation>Click to expand</translation>
     </message>
@@ -7573,17 +7804,37 @@ Don&apos;t close the program if it stops responding.</translation>
         <translation>An all-caps acronym is only recognized in capitals: WARD is the term, and &quot;ward&quot; stays an ordinary word. And the spell checker stops flagging each term and each of its spellings as an error, so it’s worth adding your invented names for that alone.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2838"/>
+        <location filename="../src/HelpPanel.cpp" line="2682"/>
+        <source>Os sons ficam em seis cartões: Natureza, Chuva e mar, Lugares, Música calma, Aventura e Suspense. Abra um cartão e clique num som pra tocar. Dá pra misturar: uma música por vez (escolher outra troca a que está tocando) e até 3 sons junto com ela, como chuva, fogueira ou cidade. Clicar de novo num som tira ele da mistura.</source>
+        <translation>The sounds live in six cards: Nature, Rain and sea, Places, Calm music, Adventure and Suspense. Open a card and click a sound to play it. You can mix: one song at a time (picking another replaces the one playing) and up to 3 sounds alongside it, like rain, a campfire or the city. Click a sound again to take it out of the mix.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2687"/>
+        <source>Em Mesa você ajusta o volume de cada som e o volume geral, escolhe uma mistura pronta e pode pedir pro som desligar sozinho em 15, 30 ou 60 minutos. A mistura e os volumes ficam salvos pra próxima vez que você abrir o app.</source>
+        <translation>In Mixer you set the volume of each sound and the master volume, pick a ready-made mix, and can have the sound turn off by itself in 15, 30 or 60 minutes. The mix and volumes are saved for the next time you open the app.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2691"/>
+        <source>Gostou de uma combinação? Clique em Salvar esta mistura e dê um nome: ela vira uma pílula ao lado das prontas. Salvar com o mesmo nome atualiza a mistura; duplo clique na pílula renomeia, e o × dela exclui (com Desfazer logo em seguida).</source>
+        <translation>Like a combination? Click Save this mix and give it a name: it becomes a pill next to the ready-made ones. Saving with the same name updates the mix; double-click the pill to rename it, and its × deletes it (with Undo right after).</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2695"/>
+        <source>Pra usar suas próprias músicas, coloque arquivos .mp3 ou .ogg na pasta de sons (botão Abrir pasta). Elas aparecem num cartão novo, Suas músicas.</source>
+        <translation>To use your own music, put .mp3 or .ogg files in the sounds folder (Open folder button). They show up in a new card, Your music.</translation>
+    </message>
+    <message>
+        <location filename="../src/HelpPanel.cpp" line="2848"/>
         <source>‹ ANTERIOR</source>
         <translation>‹ PREVIOUS</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2839"/>
+        <location filename="../src/HelpPanel.cpp" line="2849"/>
         <source>PRÓXIMO ›</source>
         <translation>NEXT ›</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2857"/>
+        <location filename="../src/HelpPanel.cpp" line="2867"/>
         <source>NESTE TÓPICO</source>
         <translation>IN THIS TOPIC</translation>
     </message>
@@ -7862,57 +8113,56 @@ Don&apos;t close the program if it stops responding.</translation>
         <translation>It&apos;s on the top bar, next to the Reminders button.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2682"/>
         <source>O app varre uma pasta de sons do seu computador e lista os arquivos de áudio encontrados nela. Só uma faixa toca por vez (escolher uma nova troca a que estava tocando), em loop contínuo, com um controle de volume único pra todas. Sua faixa e volume escolhidos ficam salvos e voltam a mesma coisa da próxima vez que você abrir o app.</source>
-        <translation>The app scans a folder of sounds on your computer and lists the audio files it finds in it. Only one track plays at a time (picking a new one switches whatever was playing), on continuous loop, with a single volume control for all of them. Your chosen track and volume are saved and come back the same way next time you open the app.</translation>
+        <translation type="vanished">The app scans a folder of sounds on your computer and lists the audio files it finds in it. Only one track plays at a time (picking a new one switches whatever was playing), on continuous loop, with a single volume control for all of them. Your chosen track and volume are saved and come back the same way next time you open the app.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2696"/>
+        <location filename="../src/HelpPanel.cpp" line="2706"/>
         <source>Fica na barra superior, ao lado do Som Imersivo. Um aviso vermelho aparece no botão quando você tem lembretes ativos.</source>
         <translation>It&apos;s on the top bar, next to Immersive Sound. A red warning shows on the button when you have active reminders.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2708"/>
+        <location filename="../src/HelpPanel.cpp" line="2718"/>
         <source>Digite o texto do lembrete e aperte Enter (ou o &quot;+&quot;) pra criá-lo. Se marcar &quot;Notificar às&quot;, escolha um horário do dia — ao chegar nesse horário, um aviso aparece dentro do próprio app (não é uma notificação do Windows). Lembretes não têm data específica (só horário), nem prioridade, nem vínculo com capítulos ou documentos — são só lembretes de texto livre mesmo.</source>
         <translation>Type the reminder&apos;s text and press Enter (or the &quot;+&quot;) to create it. If you check &quot;Notify at&quot;, pick a time of day — when that time arrives, an alert shows up inside the app itself (not a Windows notification). Reminders don&apos;t have a specific date (only a time), nor priority, nor a link to chapters or documents — they&apos;re just plain free-text reminders.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2723"/>
+        <location filename="../src/HelpPanel.cpp" line="2733"/>
         <source>Marque o quadradinho de um lembrete pra concluí-lo; ele vai pra uma lista de &quot;Concluídos&quot; que pode ser expandida ou escondida, com opção de limpar tudo de uma vez.</source>
         <translation>Check a reminder&apos;s checkbox to complete it; it moves to a &quot;Completed&quot; list that can be expanded or collapsed, with an option to clear it all at once.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2734"/>
+        <location filename="../src/HelpPanel.cpp" line="2744"/>
         <source>Caso você tenha escrito uma cena, gostou dela, mas por algum motivo quer reescrevê-la, dá pra fazer isso sem perder a cena que já escreveu — e é mais simples do que parece.</source>
         <translation>If you&apos;ve written a scene, liked it, but for some reason want to rewrite it, you can do that without losing the scene you already wrote — and it&apos;s simpler than it sounds.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2738"/>
+        <location filename="../src/HelpPanel.cpp" line="2748"/>
         <source>No painel de Manuscrito, acesse a sua cena diretamente — essa opção não é acessível em capítulos completos, só em cenas isoladas. Então você precisa abrir a cena sozinha no editor, não o capítulo inteiro.</source>
         <translation>In the Manuscript panel, open your scene directly — this option isn&apos;t available for whole chapters, only for isolated scenes. So you need to open the scene by itself in the editor, not the whole chapter.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2751"/>
+        <location filename="../src/HelpPanel.cpp" line="2761"/>
         <source>Quando a cena abrir sozinha, aparece um botão discreto ao lado do nome dela, na barra superior. Clique nele — sim, ele é bem pequeno e discreto mesmo, é de propósito.</source>
         <translation>When the scene opens by itself, a discreet button appears next to its name on the top bar. Click it — yes, it really is small and discreet on purpose.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2763"/>
+        <location filename="../src/HelpPanel.cpp" line="2773"/>
         <source>Ao clicar, aparecem três opções: nova, primária e apagar.</source>
         <translation>Clicking it shows three options: new, primary and delete.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2774"/>
+        <location filename="../src/HelpPanel.cpp" line="2784"/>
         <source>&lt;b&gt;+ nova&lt;/b&gt; cria outra variação da cena: um popup pede um nome pra ela e, ao confirmar, a variação já abre em branco no editor, pronta pra escrever.</source>
         <translation>&lt;b&gt;+ new&lt;/b&gt; creates another variation of the scene: a popup asks for a name and, once confirmed, the variation opens blank in the editor, ready to write.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2777"/>
+        <location filename="../src/HelpPanel.cpp" line="2787"/>
         <source>&lt;b&gt;★ primária&lt;/b&gt; define qual variação é a principal — é ela que aparece quando o capítulo inteiro é aberto de uma vez e também a que sai na exportação.</source>
         <translation>&lt;b&gt;★ primary&lt;/b&gt; sets which variation is the main one — it&apos;s the one shown when the whole chapter is opened at once, and also the one included in export.</translation>
     </message>
     <message>
-        <location filename="../src/HelpPanel.cpp" line="2780"/>
+        <location filename="../src/HelpPanel.cpp" line="2790"/>
         <source>&lt;b&gt;✕ apagar&lt;/b&gt; exclui a variação que está aberta no momento.</source>
         <translation>&lt;b&gt;✕ delete&lt;/b&gt; removes the variation that&apos;s currently open.</translation>
     </message>
@@ -27739,19 +27989,16 @@ It&apos;s not 100% accurate, but it gives you a good idea. If you actually want 
         <translation>Reminders</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="443"/>
         <source>Anotações</source>
-        <translation>Notes</translation>
+        <translation type="vanished">Notes</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="443"/>
         <source>Progresso</source>
-        <translation>Progress</translation>
+        <translation type="vanished">Progress</translation>
     </message>
     <message>
-        <location filename="../src/RightBar.cpp" line="443"/>
         <source>Conversa</source>
-        <translation>Chat</translation>
+        <translation type="vanished">Chat</translation>
     </message>
 </context>
 <context>

@@ -242,7 +242,7 @@ constexpr int kStatsTopbarButtonThumbWidth = 460; // nativo 507
 constexpr int kStatsPanelThumbWidth = 480; // nativo 555, recorte alto (555x937)
 constexpr int kStatsCharPanelThumbWidth = 470; // nativo 546, recorte alto (546x918)
 constexpr int kStatsChemistryDialogThumbWidth = 680; // nativo 980
-constexpr int kAmbiencePanelThumbWidth = 380; // nativo 321
+constexpr int kAmbiencePanelThumbWidth = 318; // nativo 318 (rework de 14/11/2026)
 constexpr int kReminderPanelThumbWidth = 420; // nativo 389
 constexpr int kReminderNotificationThumbWidth = 380; // nativo 295
 constexpr int kSceneVarManuscriptThumbWidth = 400; // nativo 282
@@ -2680,11 +2680,21 @@ QString HelpPanel::ambienceContent() const
     ).arg(QString::number(kAmbiencePanelThumbWidth), Theme::textMuted(), tr("Clique para expandir"));
 
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "O app varre uma pasta de sons do seu computador e lista os arquivos de áudio "
-        "encontrados nela. Só uma faixa toca por vez (escolher uma nova troca a que estava "
-        "tocando), em loop contínuo, com um controle de volume único pra todas. Sua faixa e "
-        "volume escolhidos ficam salvos e voltam a mesma coisa da próxima vez que você abrir o "
-        "app."));
+        "Os sons ficam em seis cartões: Natureza, Chuva e mar, Lugares, Música calma, Aventura "
+        "e Suspense. Abra um cartão e clique num som pra tocar. Dá pra misturar: uma música por "
+        "vez (escolher outra troca a que está tocando) e até 3 sons junto com ela, como chuva, "
+        "fogueira ou cidade. Clicar de novo num som tira ele da mistura."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Em Mesa você ajusta o volume de cada som e o volume geral, escolhe uma mistura pronta "
+        "e pode pedir pro som desligar sozinho em 15, 30 ou 60 minutos. A mistura e os volumes "
+        "ficam salvos pra próxima vez que você abrir o app."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Gostou de uma combinação? Clique em Salvar esta mistura e dê um nome: ela vira uma "
+        "pílula ao lado das prontas. Salvar com o mesmo nome atualiza a mistura; duplo clique na "
+        "pílula renomeia, e o × dela exclui (com Desfazer logo em seguida)."));
+    html += QStringLiteral("<p>%1</p>").arg(tr(
+        "Pra usar suas próprias músicas, coloque arquivos .mp3 ou .ogg na pasta de sons (botão "
+        "Abrir pasta). Elas aparecem num cartão novo, Suas músicas."));
 
     return html;
 }
