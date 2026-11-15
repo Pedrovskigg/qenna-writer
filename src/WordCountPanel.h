@@ -8,8 +8,11 @@ class QToolButton;
 class QPushButton;
 class QFrame;
 class QSpinBox;
-class QComboBox;
-class QProgressBar;
+class QStackedWidget;
+class CounterTabBar;
+class CounterSegmented;
+class CounterThinBar;
+class CounterDayStrip;
 class QScrollArea;
 class WordCounter;
 class EditorHost;
@@ -54,9 +57,6 @@ private:
     void buildUi();
     void updateToggleArrow();
     void updateScrollSizing();   // ajusta a altura do scroll (min(conteúdo, disponível))
-    void scrollToBottom();       // rola para o fim (calendário visível por padrão)
-    QFrame* buildGoalSection();
-    QFrame* buildSprintSection();
     void startSprint();
     void stopSprint();
     void tickSprint();
@@ -95,47 +95,58 @@ private:
     static constexpr int kPanelWidth = 256;
     static constexpr int kScrollBarW = 8;   // gutter reservado para a barra de rolagem
 
-    // Goal
-    QLabel* m_goalStatus;        // "Hoje: 0 / 15 min (0%)"
-    QProgressBar* m_goalProgress;
-    QLabel* m_goalResetLine;     // "Reinicia em X h Y min"
-    QComboBox* m_goalScopeCombo;
-    QComboBox* m_goalTypeCombo;
-    QSpinBox* m_goalValueSpin;
-    QLabel* m_goalValueLabel;    // "Palavras" ou "Minutos"
-    QToolButton* m_goalResetBtn;
-    QToolButton* m_folgaBtn = nullptr;
+    // Modo full em abas (Contador Lab, 15/11/2026): Meta · Sprint · Mês,
+    // mais a página das folgas, que abre de dentro da Meta.
+    enum Page { PageGoal = 0, PageSprint = 1, PageMonth = 2, PageFolgas = 3 };
+    QWidget* buildGoalPage();
+    QWidget* buildSprintPage();
+    QWidget* buildMonthPage();
+    QWidget* buildFolgasPage();
+    void showPage(int page);
+    void refreshSprintPage();
+    void openGoalResetMenu();
+    void stepFolgaCadence(int delta);
+    QFrame* makeStepper(QSpinBox* spin, QWidget* parent);
 
-    // Stats line
-    QLabel* m_statStreak = nullptr;
-    QLabel* m_statRecord = nullptr;
-    QLabel* m_statToday = nullptr;
-    QLabel* m_statPages = nullptr;
-    QLabel* m_statAvgWords = nullptr;
-    QLabel* m_statAvgTime = nullptr;
+    CounterTabBar* m_tabs = nullptr;
+    QStackedWidget* m_stack = nullptr;
 
-    // Folgas panel (inline)
-    QFrame* m_folgaPanel = nullptr;
-    QComboBox* m_folgaEveryCombo = nullptr;
+    // Meta
+    QLabel* m_goalNumLabel = nullptr;     // "0 / 550 palavras"
+    QLabel* m_goalResetLine = nullptr;    // "reinicia em X" (duplo clique = horário)
+    CounterThinBar* m_goalBar = nullptr;
+    QLabel* m_statNum[4] = {};
+    QLabel* m_statCap[4] = {};
+    CounterDayStrip* m_strip = nullptr;
+    CounterSegmented* m_goalScopeSeg = nullptr;
+    CounterSegmented* m_goalTypeSeg = nullptr;
+    QSpinBox* m_goalValueSpin = nullptr;
+    QToolButton* m_folgaLink = nullptr;
+
+    // Folgas (página)
     QLabel* m_folgaStatus = nullptr;
+    QLabel* m_folgaValue = nullptr;       // "7 dias" no seletor ‹ ›
     QLabel* m_folgaLockLine = nullptr;
 
     // Sprint de escrita
-    QFrame* m_sprintBody = nullptr;
     QTimer* m_sprintTimer = nullptr;
     bool m_sprintActive = false;
+    bool m_sprintEnded = false;           // mostra o resultado até mexer em algo
+    int m_sprintWritten = 0;
     int m_sprintSecondsLeft = 0;
     int m_sprintStartSession = 0;
-    QLabel* m_sprintTimerLabel = nullptr;
+    QLabel* m_sprintBig = nullptr;        // 25:00 / palavras do sprint encerrado
+    QLabel* m_sprintCaption = nullptr;
+    QWidget* m_sprintSetup = nullptr;     // duração + meta
+    QWidget* m_sprintRun = nullptr;       // palavras + barra
     QLabel* m_sprintWordsLabel = nullptr;
+    CounterThinBar* m_sprintBar = nullptr;
     QPushButton* m_sprintActionBtn = nullptr;
     QSpinBox* m_sprintMinutesSpin = nullptr;
     QSpinBox* m_sprintWordsSpin = nullptr;
 
-    // Calendário
-    QToolButton* m_calendarToggleBtn = nullptr;
+    // Calendário (aba Mês)
     WordCounterCalendar* m_calendar = nullptr;
-    bool m_calendarVisible = false;
 
     bool m_expanded = true;
     bool m_fullMode = false;

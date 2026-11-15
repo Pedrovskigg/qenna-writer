@@ -37,6 +37,7 @@ private:
     // a meta ainda não ter resetado.
     QDate goalToday() const;
     int starsForDay(const QString& dateKey) const;
+    double fractionForDay(const QString& dateKey) const;  // progresso / meta
     QString tooltipForDay(const QString& dateKey) const;
     void showDayDetails(const QString& dateKey);
 
@@ -46,5 +47,7 @@ private:
     QToolButton* m_todayBtn;
     QLabel* m_monthLabel;
     QGridLayout* m_grid;
+    QLabel* m_summary = nullptr;    // "6 de 15 dias com meta"
+    QList<QLabel*> m_legendSwatches;
     QDate m_currentMonth;  // 1º dia do mês mostrado
 };

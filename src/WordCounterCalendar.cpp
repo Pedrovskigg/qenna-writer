@@ -1,5 +1,6 @@
 #include "WordCounterCalendar.h"
 
+#include "CounterPanelParts.h"
 #include "CrashLogger.h"
 #include "Theme.h"
 #include "WordCounter.h"
@@ -64,7 +65,8 @@ WordCounterCalendar::WordCounterCalendar(WordCounter* counter, QWidget* parent)
 void WordCounterCalendar::buildUi()
 {
     auto* outer = new QVBoxLayout(this);
-    outer->setContentsMargins(12, 10, 12, 12);
+    // Mora na aba Mês do painel do contador: sem caixa própria.
+    outer->setContentsMargins(0, 0, 0, 0);
     outer->setSpacing(6);
 
     // Header: ← Mês de Ano  [Hoje]  →
@@ -93,9 +95,10 @@ void WordCounterCalendar::buildUi()
     m_nextBtn->setCursor(Qt::PointingHandCursor);
     connect(m_nextBtn, &QToolButton::clicked, this, [this]() { shiftMonth(1); });
 
+    // "Hoje" saiu do cabeçalho: o › para no mês de hoje.
+    m_todayBtn->setVisible(false);
     header->addWidget(m_prevBtn);
     header->addWidget(m_monthLabel, /*stretch=*/1);
-    header->addWidget(m_todayBtn);
     header->addWidget(m_nextBtn);
     outer->addLayout(header);
 
@@ -125,74 +128,73 @@ void WordCounterCalendar::buildUi()
     }
     outer->addLayout(m_grid);
 
+    // Rodapé: quantos dias bateram a meta + legenda das cores.
+    auto* foot = new QHBoxLayout();
+    foot->setSpacing(3);
+    foot->setContentsMargins(0, 2, 0, 0);
+    m_summary = new QLabel(this);
+    m_summary->setObjectName(QStringLiteral("wcpCalLegend"));
+    foot->addWidget(m_summary);
+    foot->addStretch();
+    auto* less = new QLabel(tr("menos"), this);
+    less->setObjectName(QStringLiteral("wcpCalLegend"));
+    foot->addWidget(less);
+    for (int i = 0; i < 5; ++i) {
+        auto* sw = new QLabel(this);
+        sw->setFixedSize(9, 9);
+        m_legendSwatches.append(sw);
+        foot->addWidget(sw);
+    }
+    auto* more = new QLabel(tr("mais"), this);
+    more->setObjectName(QStringLiteral("wcpCalLegend"));
+    foot->addWidget(more);
+    outer->addLayout(foot);
+
     applyThemeStyle();
 }
 
 void WordCounterCalendar::applyThemeStyle()
 {
-    const QString bgPanel    = Theme::panelBackground();
-    const QString bgCard     = Theme::chromeBackground();
     const QString bgHover    = Theme::hoverOverlay();
-    const QString border     = Theme::panelBorder();
     const QString borderSub  = Theme::subtleBorder();
     const QString txtPrimary = Theme::textPrimary();
     const QString txtMuted   = Theme::textMuted();
     const QString txtBright  = Theme::textBright();
-    const QString accent     = Theme::accentDefault();
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
-        QWidget#wcpCalendar {
-            background: %1;
-            border: 1px solid %4;
-            border-radius: @radius-control;
-        }
+        QWidget#wcpCalendar { background: transparent; border: none; }
         QLabel#wcpCalMonth {
-            color: %8; font-size: 12px; font-weight: 600;
+            color: %5; font-size: 12px; font-weight: 600;
         }
         QLabel#wcpCalDow {
-            color: %7; font-size: 10px; font-weight: 600;
+            color: %4; font-size: 9px; font-weight: 600;
         }
-        QToolButton#wcpCalNav, QToolButton#wcpCalToday {
-            background: %2; color: %6;
-            border: 1px solid %5; border-radius: @radius-control;
-            padding: 2px 6px; min-height: 18px;
+        QLabel#wcpCalLegend { color: %4; font-size: 10px; }
+        QToolButton#wcpCalNav {
+            background: transparent; color: %4; border: none;
+            border-radius: @radius-control; font-size: 15px;
+            min-width: 26px; max-width: 26px; min-height: 24px; max-height: 24px; padding: 0;
         }
-        QToolButton#wcpCalNav:hover, QToolButton#wcpCalToday:hover {
-            background: %3; color: %8;
-        }
+        QToolButton#wcpCalNav:hover { background: %1; color: %5; }
+        QToolButton#wcpCalNav:disabled { color: %2; background: transparent; }
         QLabel#wcpCalDay {
-            background: %2;
-            border: 1px solid %5;
-            border-radius: @radius-item;
-            color: %6;
-            padding: 2px;
-            min-height: 30px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            padding: 0;
         }
-        QLabel#wcpCalDay[isToday="true"] {
-            border: 1px solid %9;
-        }
-        QLabel#wcpCalDay[isEmpty="true"] {
-            background: transparent;
-            border: 1px solid transparent;
-        }
-        QLabel#wcpCalDay[offType="legit"] {
-            border: 1px dashed %6;
-            background: %3;
-        }
-        QLabel#wcpCalDay[offType="stolen"] {
-            border: 1px dashed %10;
-        }
+        QLabel#wcpCalDay[isToday="true"] { border: 2px solid %5; }
+        QLabel#wcpCalDay[isEmpty="true"] { background: transparent; }
+        QLabel#wcpCalDay[offType="legit"] { border: 1px dashed %3; }
+        QLabel#wcpCalDay[offType="stolen"] { border: 1px dashed %6; }
     )"))
-        .arg(bgPanel,    // 1
-             bgCard,     // 2
-             bgHover,    // 3
-             border,     // 4
-             borderSub,  // 5
-             txtPrimary, // 6
-             txtMuted,   // 7
-             txtBright,  // 8
-             accent,     // 9
-             Theme::accentWarning()) // 10
+        // Numeração sem buraco: o arg() de vários valores preenche os menores
+        // %N que existirem, e um buraco faz as cores escorregarem.
+        .arg(bgHover,    // 1
+             borderSub,  // 2
+             txtPrimary, // 3
+             txtMuted,   // 4
+             txtBright,  // 5
+             Theme::accentWarning()) // 6
     );
     // refresh rebui​lda os labels dos dias (que têm cor inline) com cores do tema.
     refresh();
@@ -243,6 +245,23 @@ int WordCounterCalendar::starsForDay(const QString& key) const
     return qBound(0, words / tWords, 5);
 }
 
+double WordCounterCalendar::fractionForDay(const QString& key) const
+{
+    if (!m_counter) return 0;
+    const auto s = m_counter->settings();
+    const QJsonObject day = s.progress.value(key).toObject();
+    if (day.isEmpty()) return 0;
+    const QString type = day.value(QStringLiteral("goalType")).toString(s.goalType);
+    if (type == QStringLiteral("time")) {
+        const double timeMs = day.value(QStringLiteral("timeMs")).toDouble(0);
+        const int tMin = day.value(QStringLiteral("goalTargetMinutes")).toInt(s.goalTargetMinutes);
+        return tMin > 0 ? timeMs / (tMin * 60000.0) : 0;
+    }
+    const int words = day.value(QStringLiteral("words")).toInt(0);
+    const int tWords = day.value(QStringLiteral("goalTargetWords")).toInt(s.goalTargetWords);
+    return tWords > 0 ? double(words) / tWords : 0;
+}
+
 void WordCounterCalendar::refresh()
 {
     if (!m_monthLabel || !m_grid) return;
@@ -269,6 +288,17 @@ void WordCounterCalendar::refresh()
     int firstDow = firstOfMonth.dayOfWeek() % 7; // segunda=1→1, domingo=7→0
     const int daysInMonth = firstOfMonth.daysInMonth();
     const QDate today = goalToday();
+    if (m_nextBtn)
+        m_nextBtn->setEnabled(m_currentMonth < QDate(today.year(), today.month(), 1));
+    auto rgba = [](const QColor& c) {
+        return QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(c.alpha());
+    };
+    for (int i = 0; i < m_legendSwatches.size(); ++i) {
+        static const int kLegend[5] = { 0, 1, 2, 3, 5 };
+        m_legendSwatches[i]->setStyleSheet(QStringLiteral("background:%1; border-radius:2px;")
+            .arg(rgba(counterLevelColor(kLegend[i], 0))));
+    }
+    int metDays = 0, pastDays = 0;
 
     int row = 1;
     int col = firstDow;
@@ -278,6 +308,7 @@ void WordCounterCalendar::refresh()
         empty->setObjectName(QStringLiteral("wcpCalDay"));
         empty->setAttribute(Qt::WA_StyledBackground, true);
         empty->setProperty("isEmpty", "true");
+        empty->setFixedHeight(28);
         m_grid->addWidget(empty, row, i);
     }
     for (int d = 1; d <= daysInMonth; ++d) {
@@ -299,21 +330,32 @@ void WordCounterCalendar::refresh()
             offType == WordCounter::OffDayType::Legit ? "legit" :
             offType == WordCounter::OffDayType::Stolen ? "stolen" : "none");
 
-        const QString numColor  = isToday ? Theme::textBright() : Theme::textPrimary();
-        const QString starColor = QStringLiteral("#e6c45a");
+        // Cor pela meta (quadradinhos do Contador Lab): mais forte, mais vezes a meta.
+        const bool future = date > today;
+        const double frac = future ? 0 : fractionForDay(key);
+        if (!future) {
+            ++pastDays;
+            if (stars > 0) ++metDays;
+        }
+        const QColor bg = future ? QColor(Qt::transparent) : counterLevelColor(stars, frac);
+        const QString numColor = future ? Theme::textMuted()
+                               : stars >= 3 ? QStringLiteral("#ffffff")
+                               : isToday ? Theme::textBright() : Theme::textPrimary();
+        cell->setStyleSheet(QStringLiteral("background:%1;").arg(rgba(bg)));
+        cell->setFixedHeight(28);
         QString moon;
         if (offType == WordCounter::OffDayType::Legit)
-            moon = QStringLiteral(" <span style='color:%1;'>☾</span>").arg(Theme::textBright());
+            moon = QStringLiteral("<span style='color:%1;'>&#9790;</span>").arg(Theme::toColor(Theme::textBright()).name());
         else if (offType == WordCounter::OffDayType::Stolen)
-            moon = QStringLiteral(" <span style='color:%1;'>☾</span>").arg(Theme::accentWarning());
+            moon = QStringLiteral("<span style='color:%1;'>&#9790;</span>").arg(Theme::toColor(Theme::accentWarning()).name());
 
-        // Apenas o número do dia no texto — estrelas NÃO entram no texto para não
-        // afetar o sizeHint da célula (mesma abordagem do Mira 1: position absolute).
         cell->setText(QStringLiteral(
-            "<span style='color:%1; font-size:11px; font-weight:600;'>%2%3</span>")
-            .arg(numColor).arg(d).arg(moon));
+            "<span style='color:%1; font-size:10px; font-weight:500;'>%2</span>%3")
+            .arg(Theme::toColor(numColor).name()).arg(d).arg(moon));
 
-        // Estrelas como filhos absolutos (não participam do layout).
+        // Estrelas como filhos absolutos (não participam do layout). São a
+        // identidade do calendário do Qenna: ficam por cima da cor da meta.
+        const QString starColor = QStringLiteral("#e6c45a");
         // Padrão dado: 1=centro, 2=TL+TR, 3=TL+TR+centro, 4=4 cantos, 5=tudo.
         // starIdx: 0=TL 1=TR 2=centro 3=BL 4=BR
         static const bool kShow[6][5] = {
@@ -378,6 +420,18 @@ void WordCounterCalendar::refresh()
         ++col;
         if (col >= 7) { col = 0; ++row; }
     }
+    // Sempre 6 linhas: o painel não muda de altura de um mês pro outro.
+    while (row <= 6) {
+        auto* empty = new QLabel(QString(), this);
+        empty->setObjectName(QStringLiteral("wcpCalDay"));
+        empty->setAttribute(Qt::WA_StyledBackground, true);
+        empty->setProperty("isEmpty", "true");
+        empty->setFixedHeight(28);
+        m_grid->addWidget(empty, row, col);
+        ++col;
+        if (col >= 7) { col = 0; ++row; }
+    }
+    if (m_summary) m_summary->setText(tr("%1 de %2 dias com meta").arg(metDays).arg(pastDays));
     emit geometryChanged();
 }
 

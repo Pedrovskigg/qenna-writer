@@ -1151,31 +1151,34 @@ QString HelpPanel::dailyGoalCounterContent() const
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>2- %1</b><br>%2</p>")
         .arg(tr("Meta diária."),
-             tr("Você define uma meta — em palavras ou em tempo (minutos escrevendo) — e "
-                "escolhe se ela conta só os capítulos, só as gavetas, ou os dois juntos. Uma "
-                "barra de progresso mostra \"Hoje: X / Y palavras\" (ou minutos), e embaixo "
-                "dela aparece quanto tempo falta até a meta reiniciar (à meia-noite). Um botão "
-                "de reiniciar deixa você zerar o progresso do dia manualmente, se precisar."));
+             tr("O modo completo tem três abas: Meta, Sprint e Mês. Na aba Meta você define "
+                "uma meta — em palavras ou em tempo (minutos escrevendo) — e escolhe se ela "
+                "conta só os capítulos, só as gavetas, ou tudo. Uma barra fina mostra quanto do "
+                "dia já saiu, ao lado de quanto tempo falta pra meta reiniciar. Em \"Reset\", "
+                "no pé da aba, você escolhe o horário em que o dia vira ou zera o progresso de "
+                "hoje, se precisar."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "Tem também um pequeno grid de estatísticas ali do lado — streak atual, recorde, se "
-        "você já bateu a meta hoje, páginas, e sua média de palavras por dia."));
+        "Logo abaixo ficam quatro números (sequência atual, recorde, média de palavras e média "
+        "de tempo por dia) e as barrinhas dos últimos 14 dias: quanto mais alta e mais forte a "
+        "cor, mais da meta você fez naquele dia."));
     html += QStringLiteral("<p style='margin-bottom:12px;'>%1</p>").arg(tr(
         "E existe um sistema de folgas: dependendo de quantos dias seguidos você bate a meta, "
         "o app libera dias de descanso que não quebram seu streak."));
 
     html += QStringLiteral("<p style='margin-bottom:12px;'><b>3- %1</b><br>%2</p>")
         .arg(tr("Sprint de escrita."),
-             tr("Um sprint é uma corrida contra o tempo: você define uma duração (padrão 25 "
-                "minutos) e uma meta de palavras (padrão 300), aperta \"Iniciar sprint\", e um "
-                "cronômetro regressivo aparece junto com a contagem de palavras escritas desde "
-                "que você começou. Ao final (ou quando você encerrar manualmente), o app avisa "
-                "se você bateu a meta do sprint ou não."));
+             tr("Um sprint é uma corrida contra o tempo: na aba Sprint você define uma duração "
+                "(padrão 25 minutos) e uma meta de palavras (padrão 300), aperta \"Iniciar "
+                "sprint\", e um cronômetro regressivo aparece junto com a contagem de palavras "
+                "escritas desde que você começou. Se você trocar de aba, um pontinho na aba "
+                "Sprint avisa que ele continua correndo. Ao final (ou quando você encerrar), o "
+                "app mostra quantas palavras saíram e se você bateu a meta do sprint."));
 
     html += QStringLiteral("<p style='margin-bottom:4px;'><b>4- %1</b></p>")
         .arg(tr("Calendário."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
-        "No fim do modo completo, um botão \"Exibir calendário\" abre um calendário mensal. "
-        "Cada dia mostra até 5 estrelinhas — quanto mais vezes você bateu sua meta diária "
+        "A aba Mês mostra um calendário mensal. A cor de cada dia esquenta conforme a meta, e "
+        "cada dia mostra até 5 estrelinhas — quanto mais vezes você bateu sua meta diária "
         "naquele dia, mais estrelas. Dias de folga aparecem com um ícone de lua. Clicando num "
         "dia, você vê os detalhes: quantas palavras escreveu e quanto tempo passou escrevendo. "
         "Clicando com o botão direito, você pode marcar ou desmarcar aquele dia como folga, "
@@ -1227,12 +1230,13 @@ QString HelpPanel::dailyGoalCounterContent() const
         "O sistema de folgas é simples de entender e dinâmico."));
     html += QStringLiteral("<p style='margin-bottom:4px;'>%1</p>").arg(tr(
         "Ele é desbloqueado após sua primeira semana completa (7 dias) batendo a meta diária "
-        "— a partir daí você pode configurar o seu sistema de folgas. Ele funciona assim: "
+        "— a partir daí você pode configurar o seu sistema de folgas no link \"Folgas\", no "
+        "pé da aba Meta. Ele funciona assim: "
         "cada vez que você bater sua meta diária ou manter sua streak pelo tempo configurado "
         "nele, você ganha direito a uma folga, que pode ser marcada no calendário. No dia de "
         "folga marcado, se nada for escrito, sua streak não é perdida — afinal foi uma folga."));
     html += QStringLiteral("<p>%1</p>").arg(tr(
-        "Você pode marcar folgas no calendário clicando com o botão direito no dia que deseja "
+        "Você pode marcar folgas no calendário da aba Mês clicando com o botão direito no dia que deseja "
         "folgar. Também é possível guardar folgas e depois tirá-las todas de uma vez quando "
         "quiser."));
 

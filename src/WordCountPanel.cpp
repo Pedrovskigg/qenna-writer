@@ -3,6 +3,7 @@
 #include "EditorHost.h"
 #include "MiniCounterWidget.h"
 #include "CounterFaceWidget.h"
+#include "CounterPanelParts.h"
 #include "PanelMotion.h"
 #include "ProjectModel.h"
 #include "Theme.h"
@@ -12,7 +13,7 @@
 
 #include <QApplication>
 #include <QScreen>
-#include <QComboBox>
+#include <QCursor>
 #include <QContextMenuEvent>
 #include <QDate>
 #include <QDialog>
@@ -27,12 +28,16 @@
 #include <QLabel>
 #include <QLocale>
 #include <QMouseEvent>
-#include <QProgressBar>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
 #include <QSpinBox>
+#include <QStackedWidget>
+#include <QStyle>
 #include <QTimeEdit>
 #include <QTimer>
 #include <QToolButton>
@@ -55,6 +60,62 @@ QLocale statsLocale() {
     const QString lang = qs.value(QStringLiteral("app/language")).toString();
     return lang.isEmpty() ? QLocale(QLocale::Portuguese, QLocale::Brazil) : QLocale(lang);
 }
+
+// Cor do tema em #rrggbb, pro rich text (que não entende rgba()).
+QString hex(const QString& css) { return Theme::toColor(css).name(); }
+
+// Rótulo de campo em versalete ("CONTA", "POR DIA"). A fonte vai no código
+// porque QSS não tem letter-spacing; o QSS só dá a cor.
+QLabel* makeCap(const QString& text, QWidget* parent)
+{
+    auto* l = new QLabel(text, parent);
+    l->setObjectName(QStringLiteral("wcpCap"));
+    QFont f = l->font();
+    f.setPixelSize(10);
+    f.setWeight(QFont::DemiBold);
+    f.setCapitalization(QFont::AllUppercase);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, 1.0);
+    l->setFont(f);
+    return l;
+}
+
+QToolButton* makeLink(const QString& text, QWidget* parent)
+{
+    auto* b = new QToolButton(parent);
+    b->setObjectName(QStringLiteral("wcpLink"));
+    b->setText(text);
+    b->setAutoRaise(true);
+    b->setCursor(Qt::PointingHandCursor);
+    return b;
+}
+
+// Play e stop desenhados (sem emoji nem caractere que o Windows pinta colorido).
+QIcon glyphIcon(bool play, const QColor& c)
+{
+    const qreal dpr = 2.0;
+    QPixmap pm(QSize(12, 12) * dpr);
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setPen(Qt::NoPen);
+    p.setBrush(c);
+    if (play) {
+        QPainterPath path;
+        path.moveTo(2.5, 1.5);
+        path.lineTo(10.5, 6);
+        path.lineTo(2.5, 10.5);
+        path.closeSubpath();
+        p.drawPath(path);
+    } else {
+        p.drawRoundedRect(QRectF(2, 2, 8, 8), 1.5, 1.5);
+    }
+    return QIcon(pm);
+}
+
+// Cadências de folga, na ordem do seletor ‹ ›. 0 = ilimitado, 999 = nunca.
+const int kFolgaOptions[] = { 0, 1, 2, 3, 5, 7, 10, 15, 999 };
+constexpr int kFolgaCount = int(sizeof(kFolgaOptions) / sizeof(kFolgaOptions[0]));
 }
 
 WordCountPanel::WordCountPanel(WordCounter* counter, EditorHost* host, ProjectModel* model, QWidget* parent)
@@ -136,50 +197,36 @@ void WordCountPanel::buildUi()
     // os stats longos quebram em 2 linhas dentro da coluna, como no Mira 1.
     m_body->setFixedWidth(kPanelWidth);
 
-    // Full body — só visível em full mode.
+    // Full body — só visível em full mode. Emenda no rosto: o painel vira um
+    // só, com as abas logo abaixo do anel (Contador Lab, opção "Abas").
     m_fullBody = new QFrame(this);
     m_fullBody->setObjectName(QStringLiteral("wcpFullBody"));
     m_fullBody->setAttribute(Qt::WA_StyledBackground, true);
     m_fullBody->setFixedWidth(kPanelWidth);
     auto* fullLayout = new QVBoxLayout(m_fullBody);
-    fullLayout->setContentsMargins(0, 8, 0, 0);
-    fullLayout->setSpacing(8);
-    fullLayout->addWidget(buildGoalSection());
-    fullLayout->addWidget(buildSprintSection());
+    fullLayout->setContentsMargins(0, 0, 0, 0);
+    fullLayout->setSpacing(0);
 
-    // Toggle "Exibir calendário" + calendário (hidden by default)
-    m_calendarToggleBtn = new QToolButton(m_fullBody);
-    m_calendarToggleBtn->setObjectName(QStringLiteral("wcpCalToggleBtn"));
-    m_calendarToggleBtn->setText(QStringLiteral("▸ ") + tr("Exibir calendário"));
-    m_calendarToggleBtn->setCursor(Qt::PointingHandCursor);
-    m_calendarToggleBtn->setAutoRaise(true);
-    connect(m_calendarToggleBtn, &QToolButton::clicked, this, [this]() {
-        // Fotografa antes de mexer: o tamanho novo só chega no giro seguinte.
-        const PanelMotion::MorphStart motion = PanelMotion::beginMorph(this);
-        m_calendarVisible = !m_calendarVisible;
-        if (m_calendar) m_calendar->setVisible(m_calendarVisible);
-        m_calendarToggleBtn->setText((m_calendarVisible ? QStringLiteral("▾ ") : QStringLiteral("▸ ")) + tr("Exibir calendário"));
-        // Adia para o próximo ciclo do event loop: o layout recalcula o sizeHint
-        // correto ANTES do adjustSize, evitando que m_body estique para preencher
-        // o espaço sobrante do calendário que acabou de ser ocultado.
-        QMetaObject::invokeMethod(this, [this, motion]() {
-            updateScrollSizing();
-            adjustSize();
-            emit geometryChanged();
-            PanelMotion::endMorph(motion);
-            if (m_calendarVisible) scrollToBottom(); // calendário visível por padrão
-        }, Qt::QueuedConnection);
-    });
-    fullLayout->addWidget(m_calendarToggleBtn);
+    m_tabs = new CounterTabBar(m_fullBody);
+    m_tabs->setTabs({ tr("Meta"), tr("Sprint"), tr("Mês") });
+    m_tabs->onChanged = [this](int i) {
+        QSettings().setValue(QStringLiteral("wordCounter/fullTab"), i);
+        showPage(i);
+    };
+    fullLayout->addWidget(m_tabs);
 
-    m_calendar = new WordCounterCalendar(m_counter, m_fullBody);
-    m_calendar->setVisible(false);
-    connect(m_calendar, &WordCounterCalendar::geometryChanged, this, [this]() {
-        updateScrollSizing();
-        adjustSize();
-        emit geometryChanged();
-    });
-    fullLayout->addWidget(m_calendar);
+    // A pilha tem a altura da página mais alta: trocar de aba não mexe no painel.
+    m_stack = new QStackedWidget(m_fullBody);
+    m_stack->setObjectName(QStringLiteral("wcpStack"));
+    m_stack->addWidget(buildGoalPage());
+    m_stack->addWidget(buildSprintPage());
+    m_stack->addWidget(buildMonthPage());
+    m_stack->addWidget(buildFolgasPage());
+    fullLayout->addWidget(m_stack);
+
+    const int tab = qBound(0, QSettings().value(QStringLiteral("wordCounter/fullTab"), 0).toInt(), 2);
+    m_tabs->setCurrent(tab);
+    m_stack->setCurrentIndex(tab);
 
     m_fullBody->setVisible(false);
 
@@ -231,6 +278,8 @@ void WordCountPanel::applyThemeStyle()
     const QString txtMuted   = Theme::textMuted();
     const QString txtBright  = Theme::textBright();
     const QString accent     = Theme::accentDefault();
+    // Controles de 26 px: raio no máximo 12, senão o QSS desenha torto.
+    const QString ctrlRadius = QStringLiteral("%1px").arg(qMin(Theme::controlRadius(), 12));
 
     setStyleSheet(Theme::qss(QStringLiteral(R"(
         QWidget#wordCountPanel { background: transparent; }
@@ -248,11 +297,22 @@ void WordCountPanel::applyThemeStyle()
         QScrollArea#wcpScroll QScrollBar::sub-line:vertical { height: 0; }
         QScrollArea#wcpScroll QScrollBar::add-page:vertical,
         QScrollArea#wcpScroll QScrollBar::sub-page:vertical { background: transparent; }
-        QFrame#wcpBody, QFrame#wcpFullBody, QFrame#wcpSection {
+        QFrame#wcpBody, QFrame#wcpFullBody {
             background: %1;
             border: 1px solid %4;
             border-radius: @radius-panel;
         }
+        QFrame#wcpBody[joined="true"] {
+            border-bottom: none;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        QFrame#wcpFullBody {
+            border-top: 1px solid %5;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        QStackedWidget#wcpStack, QStackedWidget#wcpStack > QWidget { background: transparent; }
         QToolButton#wcpToggle {
             background: %1;
             color: %6;
@@ -264,82 +324,47 @@ void WordCountPanel::applyThemeStyle()
             padding: 0;
         }
         QToolButton#wcpToggle:hover { color: %8; }
-        QLabel#wcpSectionTitle {
-            color: %8; font-size: 12px; font-weight: 600;
-        }
+        QLabel#wcpSectionTitle { color: %8; font-size: 13px; font-weight: 600; }
+        QLabel#wcpGoalNum { color: %6; font-size: 12px; }
         QLabel#wcpMeta { color: %7; font-size: 11px; }
-        QProgressBar#wcpProgress {
-            background: %2;
-            border: 1px solid %5;
-            border-radius: 3px;
-            height: 6px;
-            text-align: center;
-            color: transparent;
+        QLabel#wcpCap { color: %7; }
+        QLabel#wcpStatNum { color: %8; font-size: 14px; font-weight: 600; }
+        QLabel#wcpStatCap { color: %7; font-size: 10px; }
+        QLabel#wcpSprintBig { color: %8; font-size: 38px; font-weight: 600; }
+        QToolButton#wcpLink {
+            background: transparent; border: none; padding: 0;
+            color: %7; font-size: 12px;
         }
-        QProgressBar#wcpProgress::chunk {
-            background: %9;
-            border-radius: 2px;
+        QToolButton#wcpLink:hover { color: %8; }
+        QFrame#wcpStepper { background: %2; border: none; border-radius: %11; }
+        QFrame#wcpStepper QSpinBox {
+            background: transparent; border: none; padding: 0;
+            color: %8; font-size: 12px; font-weight: 600; min-height: 26px;
+            selection-background-color: %3; selection-color: %8;
         }
-        QComboBox, QSpinBox {
-            background: %2;
-            color: %8;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-            padding: 3px 6px;
-            min-height: 26px;
+        QLabel#wcpFolgaValue { color: %8; font-size: 12px; font-weight: 600; }
+        QLabel#wcpFolgaValue[lazyass="true"] { color: %10; }
+        QToolButton#wcpStepBtn {
+            background: transparent; border: none; padding: 0;
+            color: %7; font-size: 14px;
+            min-width: 26px; max-width: 26px; min-height: 26px; max-height: 26px;
+            border-radius: %11;
         }
-        QComboBox::drop-down { border: none; width: 16px; }
-        QComboBox[lazyass="true"] {
-            border: 1px solid %10;
-            color: %10;
+        QToolButton#wcpStepBtn:hover { color: %8; background: %3; }
+        QPushButton#wcpPrimaryBtn {
+            background: %9; color: #ffffff; border: none; border-radius: %11;
+            font-size: 12px; font-weight: 600; padding: 7px 12px;
         }
+        QPushButton#wcpSoftBtn {
+            background: %3; color: %6; border: none; border-radius: %11;
+            font-size: 12px; font-weight: 600; padding: 7px 12px;
+        }
+        QPushButton#wcpSoftBtn:hover { background: %12; color: %8; }
         QLabel#wcpLazyass {
             color: %10;
             font-size: 11px;
             font-style: italic;
         }
-        QFrame#wcpFolgaPanel {
-            background: %2;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-        }
-        QToolButton#wcpCalToggleBtn {
-            background: transparent;
-            color: %7;
-            border: none;
-            font-size: 11px;
-            padding: 4px 0;
-            text-align: left;
-        }
-        QToolButton#wcpCalToggleBtn:hover { color: %6; }
-        QToolButton#wcpSpinBtn {
-            background: %2;
-            color: %6;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-            font-size: 8px;
-            min-width: 20px;
-            max-width: 24px;
-            min-height: 12px;
-            max-height: 14px;
-            padding: 0;
-        }
-        QToolButton#wcpSpinBtn:hover { background: %3; color: %8; }
-        QComboBox QAbstractItemView {
-            background: %1;
-            color: %8;
-            selection-background-color: %3;
-            border: 1px solid %4;
-        }
-        QToolButton#wcpResetBtn {
-            background: %2;
-            color: %6;
-            border: 1px solid %5;
-            border-radius: @radius-control;
-            padding: 3px 6px;
-            min-width: 22px;
-        }
-        QToolButton#wcpResetBtn:hover { background: %3; color: %8; }
     )"))
         .arg(bgPanel,    // 1
              bgCard,     // 2
@@ -349,204 +374,153 @@ void WordCountPanel::applyThemeStyle()
              txtPrimary, // 6
              txtMuted,   // 7
              txtBright,  // 8
-             accent,     // 9
-             Theme::accentWarning()) // 10
+             accent)     // 9
+        .arg(Theme::accentWarning(), // 10
+             ctrlRadius,             // 11
+             Theme::hoverStrong())   // 12
     );
+    // Os ícones e o rich text levam cor do tema embutida.
+    refreshSprintPage();
+    refresh();
 }
 
-QFrame* WordCountPanel::buildGoalSection()
+QFrame* WordCountPanel::makeStepper(QSpinBox* spin, QWidget* parent)
 {
-    auto* section = new QFrame(m_fullBody);
-    section->setObjectName(QStringLiteral("wcpSection"));
-    section->setAttribute(Qt::WA_StyledBackground, true);
-    auto* lay = new QVBoxLayout(section);
-    lay->setContentsMargins(12, 10, 12, 12);
-    lay->setSpacing(6);
-
-    auto* headerRow = new QHBoxLayout();
-    auto* title = new QLabel(tr("Meta diária"), section);
-    title->setObjectName(QStringLiteral("wcpSectionTitle"));
-    headerRow->addWidget(title);
-    headerRow->addStretch();
-    m_folgaBtn = new QToolButton(section);
-    m_folgaBtn->setObjectName(QStringLiteral("wcpResetBtn"));
-    m_folgaBtn->setText(QStringLiteral("F"));
-    m_folgaBtn->setCursor(Qt::PointingHandCursor);
-    m_folgaBtn->setToolTip(tr("Configurar folgas"));
-    m_folgaBtn->setCheckable(true);
-    connect(m_folgaBtn, &QToolButton::toggled, this, [this](bool on) {
-        if (m_folgaPanel) {
-            m_folgaPanel->setVisible(on);
-            if (!on) setLazyassMode(false); // Mira 1: fechar painel F desativa lazyass
-            updateScrollSizing(); // recalcula a altura do scroll com o painel de folgas
-            adjustSize();
-            emit geometryChanged();
-        }
-    });
-    headerRow->addWidget(m_folgaBtn);
-
-    m_goalResetBtn = new QToolButton(section);
-    m_goalResetBtn->setObjectName(QStringLiteral("wcpResetBtn"));
-    m_goalResetBtn->setText(QStringLiteral("↻"));
-    m_goalResetBtn->setCursor(Qt::PointingHandCursor);
-    m_goalResetBtn->setToolTip(tr("Reiniciar o dia da meta"));
-    connect(m_goalResetBtn, &QToolButton::clicked, this, [this]() {
-        if (m_counter) m_counter->resetGoalDay();
-    });
-    headerRow->addWidget(m_goalResetBtn);
-    lay->addLayout(headerRow);
-
-    // Painel de folgas (inline, escondido por default)
-    m_folgaPanel = new QFrame(section);
-    m_folgaPanel->setObjectName(QStringLiteral("wcpFolgaPanel"));
-    m_folgaPanel->setAttribute(Qt::WA_StyledBackground, true);
-    m_folgaPanel->setVisible(false);
-    auto* folgaLayout = new QVBoxLayout(m_folgaPanel);
-    folgaLayout->setContentsMargins(10, 8, 10, 10);
-    folgaLayout->setSpacing(6);
-
-    auto* folgaTitle = new QLabel(tr("Folgas"), m_folgaPanel);
-    folgaTitle->setObjectName(QStringLiteral("wcpMeta"));
-    folgaLayout->addWidget(folgaTitle);
-
-    m_folgaStatus = new QLabel(QString(), m_folgaPanel);
-    m_folgaStatus->setObjectName(QStringLiteral("wcpMeta"));
-    m_folgaStatus->setWordWrap(true);
-    folgaLayout->addWidget(m_folgaStatus);
-
-    auto* everyRow = new QHBoxLayout();
-    auto* everyLabel = new QLabel(tr("A cada"), m_folgaPanel);
-    everyLabel->setObjectName(QStringLiteral("wcpMeta"));
-    everyRow->addWidget(everyLabel);
-    m_folgaEveryCombo = new QComboBox(m_folgaPanel);
-    m_folgaEveryCombo->addItem(tr("0 (ilimitado)"), 0);
-    for (int n : {1, 2, 3, 5, 7, 10, 15}) {
-        m_folgaEveryCombo->addItem(tr("%1 dias").arg(n), n);
-    }
-    m_folgaEveryCombo->addItem(tr("Nunca"), 999);
-    connect(m_folgaEveryCombo, &QComboBox::currentIndexChanged, this, [this](int) {
-        if (m_updatingFromSettings || !m_counter) return;
-        const int v = m_folgaEveryCombo->currentData().toInt();
-        if (v == m_counter->settings().offDayEvery) return;
-        if (m_counter->isOffDayChangeLocked() && !m_lazyassMode) {
-            // Reverte selection visual e mostra aviso (Mira 1 trava com modal — vou usar status inline).
-            refreshFromSettings();
-            if (m_folgaStatus) {
-                m_folgaStatus->setText(tr("Bloqueado: faltam %1 dia(s) batendo a meta antes de poder mudar.")
-                    .arg(m_counter->daysUntilOffDayChange()));
-            }
-            return;
-        }
-        const auto answer = QMessageBox::question(this, tr("Trocar cadência"),
-            tr("Tem certeza? Você só poderá trocar de novo depois de bater %1 dias de meta.")
-                .arg(v == 999 || v == 0 ? 0 : v),
-            QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-        if (answer != QMessageBox::Yes) {
-            refreshFromSettings();
-            return;
-        }
-        m_counter->setOffDayEvery(v);
-        refreshFromSettings();
-    });
-    everyRow->addWidget(m_folgaEveryCombo);
-    everyRow->addStretch();
-    folgaLayout->addLayout(everyRow);
-
-    m_folgaLockLine = new QLabel(QString(), m_folgaPanel);
-    m_folgaLockLine->setObjectName(QStringLiteral("wcpMeta"));
-    m_folgaLockLine->setWordWrap(true);
-    folgaLayout->addWidget(m_folgaLockLine);
-
-    m_lazyassLabel = new QLabel(QString(), m_folgaPanel);
-    m_lazyassLabel->setObjectName(QStringLiteral("wcpLazyass"));
-    m_lazyassLabel->setVisible(false);
-    folgaLayout->addWidget(m_lazyassLabel);
-
-    lay->addWidget(m_folgaPanel);
-
-    m_goalStatus = new QLabel(QStringLiteral(""), section);
-    m_goalStatus->setObjectName(QStringLiteral("wcpMeta"));
-    lay->addWidget(m_goalStatus);
-
-    m_goalProgress = new QProgressBar(section);
-    m_goalProgress->setObjectName(QStringLiteral("wcpProgress"));
-    m_goalProgress->setRange(0, 100);
-    m_goalProgress->setValue(0);
-    m_goalProgress->setTextVisible(false);
-    m_goalProgress->setFixedHeight(8);
-    lay->addWidget(m_goalProgress);
-
-    m_goalResetLine = new QLabel(QStringLiteral(""), section);
-    m_goalResetLine->setObjectName(QStringLiteral("wcpMeta"));
-    m_goalResetLine->setCursor(Qt::PointingHandCursor);
-    m_goalResetLine->setToolTip(tr("Duplo clique para escolher o horário do reset"));
-    lay->addWidget(m_goalResetLine);
-
-    // Linha de estatísticas (2 rows × 3 cols)
-    auto* statsGrid = new QGridLayout();
-    statsGrid->setHorizontalSpacing(8);
-    statsGrid->setVerticalSpacing(2);
-    auto makeStat = [section](QLabel** out) {
-        auto* lbl = new QLabel(QString(), section);
-        lbl->setObjectName(QStringLiteral("wcpMeta"));
-        lbl->setWordWrap(true); // stats longos quebram em 2 linhas em vez de alargar o painel
-        *out = lbl;
-        return lbl;
+    // "− 550 +": o número continua digitável; os botões andam um passo.
+    auto* box = new QFrame(parent);
+    box->setObjectName(QStringLiteral("wcpStepper"));
+    box->setAttribute(Qt::WA_StyledBackground, true);
+    box->setFixedHeight(26);
+    auto* h = new QHBoxLayout(box);
+    h->setContentsMargins(0, 0, 0, 0);
+    h->setSpacing(0);
+    auto mk = [box, spin](const QString& text, int dir) {
+        auto* b = new QToolButton(box);
+        b->setObjectName(QStringLiteral("wcpStepBtn"));
+        b->setText(text);
+        b->setAutoRepeat(true);
+        b->setAutoRepeatDelay(350);
+        b->setAutoRepeatInterval(80);
+        b->setCursor(Qt::PointingHandCursor);
+        QObject::connect(b, &QToolButton::clicked, spin, [spin, dir]() { spin->stepBy(dir); });
+        return b;
     };
-    statsGrid->setColumnStretch(0, 1);
-    statsGrid->setColumnStretch(1, 1);
-    statsGrid->setColumnStretch(2, 1);
-    statsGrid->addWidget(makeStat(&m_statStreak),   0, 0);
-    statsGrid->addWidget(makeStat(&m_statRecord),   0, 1);
-    statsGrid->addWidget(makeStat(&m_statToday),    0, 2);
-    statsGrid->addWidget(makeStat(&m_statPages),    1, 0);
-    statsGrid->addWidget(makeStat(&m_statAvgWords), 1, 1);
-    statsGrid->addWidget(makeStat(&m_statAvgTime),  1, 2);
-    lay->addLayout(statsGrid);
+    spin->setParent(box);
+    spin->setButtonSymbols(QAbstractSpinBox::NoButtons);
+    spin->setAlignment(Qt::AlignCenter);
+    spin->setFrame(false);
+    spin->setMinimumWidth(30);
+    spin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    h->addWidget(mk(QStringLiteral("\u2212"), -1));
+    h->addWidget(spin, 1);
+    h->addWidget(mk(QStringLiteral("+"), 1));
+    return box;
+}
 
-    auto* selectsGrid = new QGridLayout();
-    selectsGrid->setHorizontalSpacing(8);
-    selectsGrid->setVerticalSpacing(2);
+QWidget* WordCountPanel::buildGoalPage()
+{
+    auto* page = new QWidget(m_stack);
+    auto* lay = new QVBoxLayout(page);
+    lay->setContentsMargins(14, 12, 14, 13);
+    lay->setSpacing(0);
 
-    auto* contaLabel = new QLabel(tr("Conta"), section);
-    contaLabel->setObjectName(QStringLiteral("wcpMeta"));
-    auto* tipoLabel = new QLabel(tr("Tipo"), section);
-    tipoLabel->setObjectName(QStringLiteral("wcpMeta"));
-    selectsGrid->addWidget(contaLabel, 0, 0);
-    selectsGrid->addWidget(tipoLabel, 0, 1);
+    // "0 / 550 palavras" ............ "reinicia em 13h 12min"
+    auto* top = new QHBoxLayout();
+    top->setSpacing(6);
+    m_goalNumLabel = new QLabel(page);
+    m_goalNumLabel->setObjectName(QStringLiteral("wcpGoalNum"));
+    m_goalNumLabel->setTextFormat(Qt::RichText);
+    top->addWidget(m_goalNumLabel, 1, Qt::AlignBottom);
+    m_goalResetLine = new QLabel(page);
+    m_goalResetLine->setObjectName(QStringLiteral("wcpMeta"));
+    m_goalResetLine->setTextFormat(Qt::RichText);
+    m_goalResetLine->setCursor(Qt::PointingHandCursor);
+    m_goalResetLine->installEventFilter(this);
+    top->addWidget(m_goalResetLine, 0, Qt::AlignRight | Qt::AlignBottom);
+    lay->addLayout(top);
+    lay->addSpacing(6);
+    m_goalBar = new CounterThinBar(page);
+    lay->addWidget(m_goalBar);
+    lay->addSpacing(13);
 
-    m_goalScopeCombo = new QComboBox(section);
-    m_goalScopeCombo->addItem(tr("Somente capítulos"), QStringLiteral("manuscript"));
-    m_goalScopeCombo->addItem(tr("Documentos das gavetas"), QStringLiteral("all-items"));
-    m_goalScopeCombo->addItem(tr("Tudo"), QStringLiteral("all-items-manuscript"));
-    connect(m_goalScopeCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+    // Quatro números: sequência, recorde, média/dia, tempo por dia.
+    auto* stats = new QGridLayout();
+    stats->setHorizontalSpacing(0);
+    stats->setVerticalSpacing(1);
+    const QString caps[4] = { tr("sequência"), tr("recorde"), tr("média/dia"), tr("por dia") };
+    const QString tips[4] = {
+        tr("Dias seguidos batendo a meta"),
+        tr("A maior sequência que você já fez"),
+        tr("Média de palavras nos dias em que você escreveu"),
+        tr("Média de tempo nos dias em que você escreveu"),
+    };
+    for (int i = 0; i < 4; ++i) {
+        m_statNum[i] = new QLabel(QStringLiteral("0"), page);
+        m_statNum[i]->setObjectName(QStringLiteral("wcpStatNum"));
+        m_statNum[i]->setAlignment(Qt::AlignCenter);
+        m_statNum[i]->setToolTip(tips[i]);
+        m_statCap[i] = new QLabel(caps[i], page);
+        m_statCap[i]->setObjectName(QStringLiteral("wcpStatCap"));
+        m_statCap[i]->setAlignment(Qt::AlignCenter);
+        m_statCap[i]->setToolTip(tips[i]);
+        stats->addWidget(m_statNum[i], 0, i);
+        stats->addWidget(m_statCap[i], 1, i);
+        stats->setColumnStretch(i, 1);
+    }
+    lay->addLayout(stats);
+    lay->addSpacing(12);
+
+    // Últimos 14 dias (pedido dele no lab: "fica perfeito").
+    auto openMonth = [this]() {
+        QSettings().setValue(QStringLiteral("wordCounter/fullTab"), int(PageMonth));
+        showPage(PageMonth);
+    };
+    auto* stripHead = new QHBoxLayout();
+    stripHead->setSpacing(6);
+    stripHead->addWidget(makeCap(tr("Últimos 14 dias"), page));
+    stripHead->addStretch();
+    auto* monthLink = makeLink(tr("Mês ›"), page);
+    connect(monthLink, &QToolButton::clicked, this, openMonth);
+    stripHead->addWidget(monthLink);
+    lay->addLayout(stripHead);
+    lay->addSpacing(6);
+    m_strip = new CounterDayStrip(page);
+    m_strip->onClicked = openMonth;
+    lay->addWidget(m_strip);
+    lay->addSpacing(13);
+
+    // O que conta pra meta.
+    lay->addWidget(makeCap(tr("Conta"), page));
+    lay->addSpacing(5);
+    m_goalScopeSeg = new CounterSegmented(page);
+    m_goalScopeSeg->setOptions({ tr("Capítulos"), tr("Gavetas"), tr("Tudo") },
+                               { tr("Somente capítulos"), tr("Documentos das gavetas"),
+                                 tr("Capítulos e documentos das gavetas") });
+    m_goalScopeSeg->onChanged = [this](int i) {
         if (m_updatingFromSettings || !m_counter) return;
-        m_counter->setGoalScope(m_goalScopeCombo->currentData().toString());
-    });
+        static const char* const kScopes[] = { "manuscript", "all-items", "all-items-manuscript" };
+        m_counter->setGoalScope(QString::fromLatin1(kScopes[qBound(0, i, 2)]));
+    };
+    lay->addWidget(m_goalScopeSeg);
+    lay->addSpacing(11);
 
-    m_goalTypeCombo = new QComboBox(section);
-    m_goalTypeCombo->addItem(tr("Palavras"), QStringLiteral("words"));
-    m_goalTypeCombo->addItem(tr("Tempo"), QStringLiteral("time"));
-    connect(m_goalTypeCombo, &QComboBox::currentIndexChanged, this, [this](int) {
+    auto* two = new QGridLayout();
+    two->setHorizontalSpacing(8);
+    two->setVerticalSpacing(5);
+    two->addWidget(makeCap(tr("Tipo"), page), 0, 0);
+    two->addWidget(makeCap(tr("Por dia"), page), 0, 1);
+    m_goalTypeSeg = new CounterSegmented(page);
+    m_goalTypeSeg->setOptions({ tr("Palavras"), tr("Tempo") });
+    m_goalTypeSeg->onChanged = [this](int i) {
         if (m_updatingFromSettings || !m_counter) return;
-        m_counter->setGoalType(m_goalTypeCombo->currentData().toString());
+        m_counter->setGoalType(i == 1 ? QStringLiteral("time") : QStringLiteral("words"));
         refreshFromSettings();
         refresh();
-    });
-
-    selectsGrid->addWidget(m_goalScopeCombo, 1, 0);
-    selectsGrid->addWidget(m_goalTypeCombo, 1, 1);
-
-    m_goalValueLabel = new QLabel(tr("Palavras"), section);
-    m_goalValueLabel->setObjectName(QStringLiteral("wcpMeta"));
-    selectsGrid->addWidget(m_goalValueLabel, 2, 0);
-
-    m_goalValueSpin = new QSpinBox(section);
+    };
+    two->addWidget(m_goalTypeSeg, 1, 0);
+    m_goalValueSpin = new QSpinBox(page);
     m_goalValueSpin->setRange(1, 100000);
     m_goalValueSpin->setSingleStep(50);
-    m_goalValueSpin->setFixedWidth(80);
-    m_goalValueSpin->setAlignment(Qt::AlignCenter);
-    m_goalValueSpin->setButtonSymbols(QAbstractSpinBox::NoButtons);
     connect(m_goalValueSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int v) {
         if (m_updatingFromSettings || !m_counter) return;
         if (m_counter->settings().goalType == QStringLiteral("time")) {
@@ -555,44 +529,158 @@ QFrame* WordCountPanel::buildGoalSection()
             m_counter->setGoalTargetWords(v);
         }
     });
+    two->addWidget(makeStepper(m_goalValueSpin, page), 1, 1);
+    two->setColumnStretch(0, 1);
+    two->setColumnStretch(1, 1);
+    lay->addLayout(two);
+    lay->addStretch(1);
+    lay->addSpacing(12);
 
-    auto* spinUp = new QToolButton(section);
-    spinUp->setObjectName(QStringLiteral("wcpSpinBtn"));
-    spinUp->setText(QStringLiteral("▲"));
-    spinUp->setAutoRepeat(true);
-    spinUp->setAutoRepeatInterval(80);
-    spinUp->setCursor(Qt::PointingHandCursor);
-    connect(spinUp, &QToolButton::clicked, this, [this]() {
-        m_goalValueSpin->setValue(m_goalValueSpin->value() + m_goalValueSpin->singleStep());
+    // Rodapé: folgas e o menu do reset (horário e reiniciar o dia).
+    auto* foot = new QHBoxLayout();
+    foot->setSpacing(6);
+    m_folgaLink = makeLink(QString(), page);
+    connect(m_folgaLink, &QToolButton::clicked, this, [this]() { showPage(PageFolgas); });
+    foot->addWidget(m_folgaLink);
+    foot->addStretch();
+    auto* resetLink = makeLink(tr("Reset ›"), page);
+    resetLink->setToolTip(tr("Horário do reset e reiniciar o dia"));
+    connect(resetLink, &QToolButton::clicked, this, &WordCountPanel::openGoalResetMenu);
+    foot->addWidget(resetLink);
+    lay->addLayout(foot);
+    return page;
+}
+
+QWidget* WordCountPanel::buildMonthPage()
+{
+    auto* page = new QWidget(m_stack);
+    auto* lay = new QVBoxLayout(page);
+    lay->setContentsMargins(14, 10, 14, 13);
+    lay->setSpacing(0);
+    m_calendar = new WordCounterCalendar(m_counter, page);
+    lay->addWidget(m_calendar);
+    lay->addStretch(1);
+    return page;
+}
+
+QWidget* WordCountPanel::buildFolgasPage()
+{
+    // Abre pelo link "Folgas" da aba Meta; "Pronto" volta pra ela.
+    auto* page = new QWidget(m_stack);
+    auto* lay = new QVBoxLayout(page);
+    lay->setContentsMargins(14, 12, 14, 13);
+    lay->setSpacing(0);
+
+    auto* head = new QHBoxLayout();
+    auto* title = new QLabel(tr("Folgas"), page);
+    title->setObjectName(QStringLiteral("wcpSectionTitle"));
+    head->addWidget(title);
+    head->addStretch();
+    auto* done = makeLink(tr("Pronto"), page);
+    connect(done, &QToolButton::clicked, this, [this]() { showPage(PageGoal); });
+    head->addWidget(done);
+    lay->addLayout(head);
+    lay->addSpacing(10);
+
+    m_folgaStatus = new QLabel(page);
+    m_folgaStatus->setObjectName(QStringLiteral("wcpGoalNum"));
+    m_folgaStatus->setWordWrap(true);
+    lay->addWidget(m_folgaStatus);
+    lay->addSpacing(12);
+
+    lay->addWidget(makeCap(tr("A cada"), page));
+    lay->addSpacing(5);
+    auto* picker = new QFrame(page);
+    picker->setObjectName(QStringLiteral("wcpStepper"));
+    picker->setAttribute(Qt::WA_StyledBackground, true);
+    picker->setFixedHeight(26);
+    auto* ph = new QHBoxLayout(picker);
+    ph->setContentsMargins(0, 0, 0, 0);
+    ph->setSpacing(0);
+    auto mk = [this, picker](const QString& text, int dir) {
+        auto* b = new QToolButton(picker);
+        b->setObjectName(QStringLiteral("wcpStepBtn"));
+        b->setText(text);
+        b->setCursor(Qt::PointingHandCursor);
+        connect(b, &QToolButton::clicked, this, [this, dir]() { stepFolgaCadence(dir); });
+        return b;
+    };
+    m_folgaValue = new QLabel(picker);
+    m_folgaValue->setObjectName(QStringLiteral("wcpFolgaValue"));
+    m_folgaValue->setAlignment(Qt::AlignCenter);
+    ph->addWidget(mk(QStringLiteral("‹"), -1));
+    ph->addWidget(m_folgaValue, 1);
+    ph->addWidget(mk(QStringLiteral("›"), 1));
+    lay->addWidget(picker);
+    lay->addSpacing(8);
+
+    m_folgaLockLine = new QLabel(page);
+    m_folgaLockLine->setObjectName(QStringLiteral("wcpMeta"));
+    m_folgaLockLine->setWordWrap(true);
+    lay->addWidget(m_folgaLockLine);
+
+    m_lazyassLabel = new QLabel(QString(), page);
+    m_lazyassLabel->setObjectName(QStringLiteral("wcpLazyass"));
+    m_lazyassLabel->setVisible(false);
+    lay->addWidget(m_lazyassLabel);
+    lay->addSpacing(12);
+
+    auto* hint = new QLabel(tr("Pra folgar num dia, clique nele com o botão direito na aba Mês."), page);
+    hint->setObjectName(QStringLiteral("wcpMeta"));
+    hint->setWordWrap(true);
+    lay->addWidget(hint);
+    lay->addStretch(1);
+    return page;
+}
+
+void WordCountPanel::showPage(int page)
+{
+    if (!m_stack) return;
+    // Sair das folgas desliga o lazyass (no Mira 1, fechar o painel F fazia isso).
+    if (m_stack->currentIndex() == PageFolgas && page != PageFolgas) setLazyassMode(false);
+    m_stack->setCurrentIndex(page);
+    if (m_tabs) m_tabs->setCurrent(page == PageFolgas ? int(PageGoal) : page);
+    refreshSprintPage();   // o pontinho da aba Sprint depende da aba aberta
+}
+
+void WordCountPanel::stepFolgaCadence(int delta)
+{
+    if (!m_counter) return;
+    const int cur = m_counter->settings().offDayEvery;
+    int idx = 0;
+    for (int i = 0; i < kFolgaCount; ++i)
+        if (kFolgaOptions[i] == cur) idx = i;
+    const int next = qBound(0, idx + delta, kFolgaCount - 1);
+    if (next == idx) return;
+    const int v = kFolgaOptions[next];
+    if (m_counter->isOffDayChangeLocked() && !m_lazyassMode) {
+        if (m_folgaStatus) {
+            m_folgaStatus->setText(tr("Bloqueado: faltam %1 dia(s) batendo a meta antes de poder mudar.")
+                .arg(m_counter->daysUntilOffDayChange()));
+        }
+        return;
+    }
+    const auto answer = QMessageBox::question(this, tr("Trocar cadência"),
+        tr("Tem certeza? Você só poderá trocar de novo depois de bater %1 dias de meta.")
+            .arg(v == 999 || v == 0 ? 0 : v),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if (answer != QMessageBox::Yes) return;
+    m_counter->setOffDayEvery(v);
+    refreshFromSettings();
+}
+
+void WordCountPanel::openGoalResetMenu()
+{
+    if (!m_counter) return;
+    QMenu menu(this);
+    auto* timeAct = menu.addAction(tr("Horário do reset… (%1)")
+        .arg(m_counter->goalResetTime().toString(QStringLiteral("HH:mm"))));
+    connect(timeAct, &QAction::triggered, this, &WordCountPanel::openGoalResetTimeDialog);
+    auto* resetAct = menu.addAction(tr("Reiniciar o dia da meta"));
+    connect(resetAct, &QAction::triggered, this, [this]() {
+        if (m_counter) m_counter->resetGoalDay();
     });
-    auto* spinDown = new QToolButton(section);
-    spinDown->setObjectName(QStringLiteral("wcpSpinBtn"));
-    spinDown->setText(QStringLiteral("▼"));
-    spinDown->setAutoRepeat(true);
-    spinDown->setAutoRepeatInterval(80);
-    spinDown->setCursor(Qt::PointingHandCursor);
-    connect(spinDown, &QToolButton::clicked, this, [this]() {
-        m_goalValueSpin->setValue(m_goalValueSpin->value() - m_goalValueSpin->singleStep());
-    });
-
-    auto* spinRow = new QHBoxLayout();
-    spinRow->setSpacing(3);
-    spinRow->setContentsMargins(0, 0, 0, 0);
-    spinRow->addWidget(m_goalValueSpin);
-    auto* btnsCol = new QVBoxLayout();
-    btnsCol->setSpacing(2);
-    btnsCol->setContentsMargins(0, 0, 0, 0);
-    btnsCol->addWidget(spinUp);
-    btnsCol->addWidget(spinDown);
-    spinRow->addLayout(btnsCol);
-    spinRow->addStretch();
-
-    auto* spinWrap = new QWidget(section);
-    spinWrap->setLayout(spinRow);
-    selectsGrid->addWidget(spinWrap, 3, 0, 1, 2);
-
-    lay->addLayout(selectsGrid);
-    return section;
+    menu.exec(QCursor::pos());
 }
 
 void WordCountPanel::updateToggleArrow()
@@ -625,7 +713,8 @@ void WordCountPanel::setFullMode(bool full)
         adjustSize();
         emit geometryChanged();
     });
-    if (full && m_calendarVisible) scrollToBottom();
+    // As folgas são um desvio da aba Meta: fechar o painel volta pra ela.
+    if (!full && m_stack && m_stack->currentIndex() == PageFolgas) showPage(PageGoal);
 }
 
 // O mini só existe no compacto: aberto o modo full, volta o cabeçalho
@@ -642,6 +731,15 @@ void WordCountPanel::updateBodyVisibility()
     if (m_scrollArea) m_scrollArea->setVisible(m_expanded && !mini);
     if (m_body) m_body->setVisible(m_expanded);
     if (m_fullBody) m_fullBody->setVisible(m_expanded && m_fullMode);
+    // Aberto, o rosto e as abas são um painel só (o rosto perde os cantos de baixo).
+    if (m_body) {
+        const bool joined = m_expanded && m_fullMode;
+        if (m_body->property("joined").toBool() != joined) {
+            m_body->setProperty("joined", joined);
+            m_body->style()->unpolish(m_body);
+            m_body->style()->polish(m_body);
+        }
+    }
 
     // No modo full com um mini escolhido, o cabeçalho é o clássico.
     if (m_face)
@@ -731,17 +829,6 @@ void WordCountPanel::updateScrollSizing()
     m_scrollArea->setFixedHeight(qMax(0, h));
 }
 
-void WordCountPanel::scrollToBottom()
-{
-    if (!m_scrollArea) return;
-    // Adia: a barra só conhece o máximo após o relayout deste ciclo.
-    QMetaObject::invokeMethod(this, [this]() {
-        if (m_scrollArea)
-            m_scrollArea->verticalScrollBar()->setValue(
-                m_scrollArea->verticalScrollBar()->maximum());
-    }, Qt::QueuedConnection);
-}
-
 bool WordCountPanel::eventFilter(QObject* watched, QEvent* event)
 {
     // Auto-close: clicar no editor ou em qualquer lugar fora do painel recolhe o
@@ -782,8 +869,9 @@ bool WordCountPanel::eventFilter(QObject* watched, QEvent* event)
         openGoalResetTimeDialog();
         return true;
     }
-    // Cheat code global: Ctrl + l-a-z-y-a-s-s. Só checa enquanto o painel F está aberto.
-    if (event->type() == QEvent::KeyPress && m_folgaPanel && m_folgaPanel->isVisible()) {
+    // Cheat code global: Ctrl + l-a-z-y-a-s-s. Só checa com a página das folgas aberta.
+    if (event->type() == QEvent::KeyPress && m_fullBody && m_fullBody->isVisible()
+        && m_stack && m_stack->currentIndex() == PageFolgas) {
         auto* ke = static_cast<QKeyEvent*>(event);
         if (ke->modifiers() & Qt::ControlModifier) {
             const QString t = ke->text().toLower();
@@ -808,10 +896,10 @@ void WordCountPanel::setLazyassMode(bool on)
         m_lazyassLabel->setVisible(on);
         m_lazyassLabel->setText(on ? tr("🤫 lazyass mode") : QString());
     }
-    if (m_folgaEveryCombo) {
-        m_folgaEveryCombo->setProperty("lazyass", on ? "true" : "false");
-        m_folgaEveryCombo->style()->unpolish(m_folgaEveryCombo);
-        m_folgaEveryCombo->style()->polish(m_folgaEveryCombo);
+    if (m_folgaValue) {
+        m_folgaValue->setProperty("lazyass", on ? "true" : "false");
+        m_folgaValue->style()->unpolish(m_folgaValue);
+        m_folgaValue->style()->polish(m_folgaValue);
     }
 }
 
@@ -822,27 +910,36 @@ void WordCountPanel::refreshFromSettings()
     const auto s = m_counter->settings();
 
 
-    // Goal scope combo
-    if (m_goalScopeCombo) {
-        const int idx = m_goalScopeCombo->findData(s.goalScope);
-        if (idx >= 0) m_goalScopeCombo->setCurrentIndex(idx);
+    // O que conta pra meta e o tipo.
+    if (m_goalScopeSeg) {
+        int idx = 0;
+        if (s.goalScope == QStringLiteral("all-items")) idx = 1;
+        else if (s.goalScope == QStringLiteral("all-items-manuscript")) idx = 2;
+        m_goalScopeSeg->setCurrent(idx);
     }
-    if (m_goalTypeCombo) {
-        const int idx = m_goalTypeCombo->findData(s.goalType);
-        if (idx >= 0) m_goalTypeCombo->setCurrentIndex(idx);
-    }
-    if (m_goalValueSpin && m_goalValueLabel) {
-        const bool isTime = s.goalType == QStringLiteral("time");
-        m_goalValueLabel->setText(isTime ? tr("Minutos") : tr("Palavras"));
-        m_goalValueSpin->setRange(1, isTime ? 1440 : 100000);
-        m_goalValueSpin->setSingleStep(isTime ? 5 : 50);
-        const int v = isTime ? s.goalTargetMinutes : s.goalTargetWords;
+    const bool goalIsTime = s.goalType == QStringLiteral("time");
+    if (m_goalTypeSeg) m_goalTypeSeg->setCurrent(goalIsTime ? 1 : 0);
+    if (m_goalValueSpin) {
+        m_goalValueSpin->setRange(1, goalIsTime ? 1440 : 100000);
+        m_goalValueSpin->setSingleStep(goalIsTime ? 5 : 50);
+        m_goalValueSpin->setSuffix(goalIsTime ? tr(" min") : QString());
+        const int v = goalIsTime ? s.goalTargetMinutes : s.goalTargetWords;
         m_goalValueSpin->setValue(qMax(1, v));
     }
 
-    if (m_folgaEveryCombo) {
-        const int idx = m_folgaEveryCombo->findData(s.offDayEvery);
-        m_folgaEveryCombo->setCurrentIndex(idx >= 0 ? idx : 0);
+    // Folgas: o link da aba Meta e a página.
+    {
+        const int every = s.offDayEvery;
+        QString value;
+        if (every == 0)        value = tr("0 (ilimitado)");
+        else if (every == 999) value = tr("Nunca");
+        else                   value = tr("%1 dias").arg(every);
+        if (m_folgaValue) m_folgaValue->setText(value);
+        if (m_folgaLink) {
+            if (every == 0)        m_folgaLink->setText(tr("Folgas: ilimitadas"));
+            else if (every == 999) m_folgaLink->setText(tr("Folgas: nunca"));
+            else                   m_folgaLink->setText(tr("Folgas: a cada %1 dias").arg(every));
+        }
     }
     if (m_folgaStatus && m_counter) {
         const int rem = m_counter->remainingFolgas();
@@ -1044,113 +1141,157 @@ void WordCountPanel::refresh()
         }
     }
 
-    // Meta diária (modo full)
-    if (m_goalStatus && m_goalProgress) {
-        const bool isTime = s.goalType == QStringLiteral("time");
-        if (isTime) {
-            const qint64 tMs = m_counter->progressTimeMs();
-            const int tMin = static_cast<int>(tMs / 60000);
-            const int target = qMax(1, s.goalTargetMinutes);
-            const int pct = static_cast<int>((tMs * 100.0) / (target * 60000.0));
-            m_goalStatus->setText(tr("Hoje: %1 / %2 minutos (%3%)")
-                .arg(tMin).arg(s.goalTargetMinutes).arg(pct));
-            m_goalProgress->setValue(qMin(100, pct));
+    // Aba Meta (modo full)
+    const bool met = m_counter->isGoalMet();
+    if (m_goalNumLabel) {
+        QString num, rest;
+        if (goalIsTime) {
+            num = loc.toString(m_counter->progressTimeMs() / 60000);
+            rest = tr("/ %1 minutos").arg(loc.toString(s.goalTargetMinutes));
         } else {
-            const int w = m_counter->progressWords();
-            const int target = qMax(1, s.goalTargetWords);
-            const int pct = static_cast<int>((w * 100.0) / target);
-            m_goalStatus->setText(tr("Hoje: %1 / %2 palavras (%3%)")
-                .arg(loc.toString(w)).arg(loc.toString(s.goalTargetWords)).arg(pct));
-            m_goalProgress->setValue(qMin(100, pct));
+            num = loc.toString(m_counter->progressWords());
+            rest = tr("/ %1 palavras").arg(loc.toString(s.goalTargetWords));
         }
+        m_goalNumLabel->setText(QStringLiteral(
+            "<span style='color:%1; font-size:14px; font-weight:600;'>%2</span>"
+            " <span style='color:%3;'>%4</span>")
+            .arg(hex(Theme::textBright()), num.toHtmlEscaped(), hex(Theme::textMuted()), rest.toHtmlEscaped()));
     }
+    if (m_goalBar) m_goalBar->setValue(goalPct / 100.0, met);
     if (m_goalResetLine) {
-        const qint64 rem = m_counter->goalDayRemainingMs();
-        m_goalResetLine->setText(tr("Reinicia em %1").arg(fmtDuration(rem)));
+        const QString rem = fmtDuration(m_counter->goalDayRemainingMs());
+        if (met) {
+            m_goalResetLine->setText(QStringLiteral("<span style='color:%1;'>%2</span>")
+                .arg(hex(Theme::accentSuccess()), tr("meta batida").toHtmlEscaped()));
+        } else {
+            m_goalResetLine->setText(tr("reinicia em %1").arg(rem).toHtmlEscaped());
+        }
+        m_goalResetLine->setToolTip(tr("Reinicia em %1").arg(rem) + QStringLiteral("\n")
+                                    + tr("Duplo clique para escolher o horário do reset"));
     }
 
-    // Estatísticas
-    if (m_statStreak) {
-        const int streak = m_counter->currentStreak();
-        const int record = m_counter->longestStreak();
-        const bool todayMet = m_counter->isGoalMet();
+    // Quatro números
+    if (m_statNum[0]) {
         int activeDays = 0, wordsPerDay = 0, minutesPerDay = 0;
         m_counter->writingAverages(activeDays, wordsPerDay, minutesPerDay);
-        const int pages = m_counter->estimatedPages();
-
-        m_statStreak->setText(tr("Streak: %1").arg(streak));
-        m_statRecord->setText(tr("Recorde: %1").arg(record));
-        m_statToday->setText(tr("Hoje: %1").arg(todayMet ? tr("sim") : tr("não")));
-        m_statPages->setText(tr("Páginas: %1").arg(loc.toString(pages)));
-        m_statAvgWords->setText(tr("Média: %1 palavras/dia").arg(loc.toString(wordsPerDay)));
-        m_statAvgTime->setText(tr("Tempo: %1 min/dia").arg(minutesPerDay));
+        m_statNum[0]->setText(loc.toString(m_counter->currentStreak()));
+        m_statNum[1]->setText(loc.toString(m_counter->longestStreak()));
+        m_statNum[2]->setText(loc.toString(wordsPerDay));
+        m_statNum[3]->setText(tr("%1 min").arg(minutesPerDay));
     }
+
+    // Últimos 14 dias (o dia da meta é a referência, como na Semana).
+    if (m_strip) {
+        QVector<CounterDayStrip::Day> days;
+        for (int i = 13; i >= 0; --i) {
+            const QDate d = goalDay.addDays(-i);
+            const QString key = d.toString(QStringLiteral("yyyy-MM-dd"));
+            const QJsonObject o = s.progress.value(key).toObject();
+            CounterDayStrip::Day day;
+            day.today = (i == 0);
+            day.offDay = m_counter->offDayType(key) != WordCounter::OffDayType::None;
+            double frac = 0;
+            if (!o.isEmpty()) {
+                const QString type = o.value(QStringLiteral("goalType")).toString(s.goalType);
+                if (type == QStringLiteral("time")) {
+                    const double tMs = o.value(QStringLiteral("timeMs")).toDouble(0);
+                    const int tMin = o.value(QStringLiteral("goalTargetMinutes")).toInt(s.goalTargetMinutes);
+                    frac = tMin > 0 ? tMs / (tMin * 60000.0) : 0;
+                } else {
+                    const int w = o.value(QStringLiteral("words")).toInt(0);
+                    const int tw = o.value(QStringLiteral("goalTargetWords")).toInt(s.goalTargetWords);
+                    frac = tw > 0 ? double(w) / tw : 0;
+                }
+            }
+            day.fraction = frac;
+            day.stars = qBound(0, int(frac), 5);
+            QString what;
+            if (day.offDay)       what = tr("Folga");
+            else if (o.isEmpty()) what = tr("Nenhuma escrita");
+            else                  what = tr("%1% da meta").arg(int(frac * 100));
+            day.tooltip = (i == 0 ? tr("Hoje") : loc.toString(d, QStringLiteral("d MMM")))
+                          + QStringLiteral(" · ") + what;
+            days.append(day);
+        }
+        m_strip->setDays(days);
+    }
+
+    if (m_sprintActive) refreshSprintPage();
 
     setToolTip(tr("Clique para abrir a meta diária\nBotão direito para personalizar o contador"));
 }
 
-QFrame* WordCountPanel::buildSprintSection()
+QWidget* WordCountPanel::buildSprintPage()
 {
-    auto* section = new QFrame(m_fullBody);
-    section->setObjectName(QStringLiteral("wcpSection"));
-    section->setAttribute(Qt::WA_StyledBackground, true);
-    m_sprintBody = section;
-    auto* lay = new QVBoxLayout(section);
-    lay->setContentsMargins(12, 10, 12, 12);
-    lay->setSpacing(6);
+    auto* page = new QWidget(m_stack);
+    auto* lay = new QVBoxLayout(page);
+    lay->setContentsMargins(14, 12, 14, 13);
+    lay->setSpacing(0);
 
-    auto* title = new QLabel(tr("Sprint de escrita"), section);
-    title->setObjectName(QStringLiteral("wcpSectionTitle"));
-    lay->addWidget(title);
+    m_sprintBig = new QLabel(page);
+    m_sprintBig->setObjectName(QStringLiteral("wcpSprintBig"));
+    m_sprintBig->setAlignment(Qt::AlignCenter);
+    lay->addSpacing(2);
+    lay->addWidget(m_sprintBig);
+    m_sprintCaption = new QLabel(page);
+    m_sprintCaption->setObjectName(QStringLiteral("wcpMeta"));
+    m_sprintCaption->setAlignment(Qt::AlignCenter);
+    m_sprintCaption->setWordWrap(true);
+    lay->addWidget(m_sprintCaption);
+    lay->addSpacing(16);
 
-    // Configuração em 2 linhas (como as outras seções) — spinbox estica para
-    // preencher a largura disponível sem empurrar o painel.
-    auto* configGrid = new QGridLayout();
-    configGrid->setSpacing(4);
-    configGrid->setColumnStretch(1, 1);
-
-    auto* durLabel = new QLabel(tr("Duração:"), section);
-    durLabel->setObjectName(QStringLiteral("wcpMeta"));
-    m_sprintMinutesSpin = new QSpinBox(section);
+    // Parado: duração e meta. A escolha fica salva (vale pra todos os projetos).
+    QSettings qs;
+    m_sprintSetup = new QWidget(page);
+    auto* grid = new QGridLayout(m_sprintSetup);
+    grid->setContentsMargins(0, 0, 0, 0);
+    grid->setHorizontalSpacing(8);
+    grid->setVerticalSpacing(5);
+    grid->addWidget(makeCap(tr("Duração"), m_sprintSetup), 0, 0);
+    grid->addWidget(makeCap(tr("Meta"), m_sprintSetup), 0, 1);
+    m_sprintMinutesSpin = new QSpinBox(m_sprintSetup);
     m_sprintMinutesSpin->setRange(1, 120);
-    m_sprintMinutesSpin->setValue(25);
+    m_sprintMinutesSpin->setSingleStep(5);
     m_sprintMinutesSpin->setSuffix(tr(" min"));
-    configGrid->addWidget(durLabel,           0, 0);
-    configGrid->addWidget(m_sprintMinutesSpin, 0, 1);
-
-    auto* metaLabel = new QLabel(tr("Meta:"), section);
-    metaLabel->setObjectName(QStringLiteral("wcpMeta"));
-    m_sprintWordsSpin = new QSpinBox(section);
+    m_sprintMinutesSpin->setValue(qBound(1, qs.value(QStringLiteral("wordCounter/sprintMinutes"), 25).toInt(), 120));
+    m_sprintWordsSpin = new QSpinBox(m_sprintSetup);
     m_sprintWordsSpin->setRange(0, 10000);
-    m_sprintWordsSpin->setValue(300);
-    m_sprintWordsSpin->setSuffix(tr(" palavras"));
     m_sprintWordsSpin->setSingleStep(50);
-    configGrid->addWidget(metaLabel,          1, 0);
-    configGrid->addWidget(m_sprintWordsSpin,  1, 1);
+    m_sprintWordsSpin->setValue(qBound(0, qs.value(QStringLiteral("wordCounter/sprintWords"), 300).toInt(), 10000));
+    grid->addWidget(makeStepper(m_sprintMinutesSpin, m_sprintSetup), 1, 0);
+    grid->addWidget(makeStepper(m_sprintWordsSpin, m_sprintSetup), 1, 1);
+    grid->setColumnStretch(0, 1);
+    grid->setColumnStretch(1, 1);
+    connect(m_sprintMinutesSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int v) {
+        QSettings().setValue(QStringLiteral("wordCounter/sprintMinutes"), v);
+        m_sprintEnded = false;
+        refreshSprintPage();
+    });
+    connect(m_sprintWordsSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int v) {
+        QSettings().setValue(QStringLiteral("wordCounter/sprintWords"), v);
+        m_sprintEnded = false;
+        refreshSprintPage();
+    });
+    lay->addWidget(m_sprintSetup);
 
-    lay->addLayout(configGrid);
+    // Correndo: palavras do sprint e a barra.
+    m_sprintRun = new QWidget(page);
+    auto* run = new QVBoxLayout(m_sprintRun);
+    run->setContentsMargins(0, 0, 0, 0);
+    run->setSpacing(6);
+    m_sprintWordsLabel = new QLabel(m_sprintRun);
+    m_sprintWordsLabel->setObjectName(QStringLiteral("wcpGoalNum"));
+    m_sprintWordsLabel->setTextFormat(Qt::RichText);
+    run->addWidget(m_sprintWordsLabel);
+    m_sprintBar = new CounterThinBar(m_sprintRun);
+    run->addWidget(m_sprintBar);
+    m_sprintRun->setVisible(false);
+    lay->addWidget(m_sprintRun);
 
-    // Labels de status (visíveis só durante sprint ativo)
-    auto* statusRow = new QHBoxLayout();
-    statusRow->setSpacing(10);
-
-    m_sprintTimerLabel = new QLabel(section);
-    m_sprintTimerLabel->setObjectName(QStringLiteral("wcpSectionTitle"));
-    m_sprintTimerLabel->setVisible(false);
-    statusRow->addWidget(m_sprintTimerLabel);
-
-    m_sprintWordsLabel = new QLabel(section);
-    m_sprintWordsLabel->setObjectName(QStringLiteral("wcpMeta"));
-    m_sprintWordsLabel->setVisible(false);
-    statusRow->addWidget(m_sprintWordsLabel);
-
-    statusRow->addStretch();
-    lay->addLayout(statusRow);
-
-    // Botão iniciar/parar
-    m_sprintActionBtn = new QPushButton(tr("Iniciar sprint"), section);
-    m_sprintActionBtn->setObjectName(QStringLiteral("wcpScopeBtn"));
+    lay->addStretch(1);
+    m_sprintActionBtn = new QPushButton(page);
     m_sprintActionBtn->setCursor(Qt::PointingHandCursor);
+    m_sprintActionBtn->setIconSize(QSize(12, 12));
     connect(m_sprintActionBtn, &QPushButton::clicked, this, [this]() {
         if (m_sprintActive) stopSprint(); else startSprint();
     });
@@ -1161,28 +1302,68 @@ QFrame* WordCountPanel::buildSprintSection()
     m_sprintTimer->setInterval(1000);
     connect(m_sprintTimer, &QTimer::timeout, this, &WordCountPanel::tickSprint);
 
-    return section;
+    return page;
+}
+
+void WordCountPanel::refreshSprintPage()
+{
+    if (!m_sprintBig || !m_sprintActionBtn) return;
+    const QLocale loc = statsLocale();
+    const int goal = m_sprintWordsSpin ? m_sprintWordsSpin->value() : 300;
+    const int minutes = m_sprintMinutesSpin ? m_sprintMinutesSpin->value() : 25;
+    auto mmss = [](int secs) {
+        secs = qMax(0, secs);
+        return QStringLiteral("%1:%2").arg(secs / 60, 2, 10, QLatin1Char('0'))
+                                      .arg(secs % 60, 2, 10, QLatin1Char('0'));
+    };
+
+    if (m_sprintActive) {
+        const int written = m_counter
+            ? qMax(0, m_counter->sessionWordsManuscript() - m_sprintStartSession) : 0;
+        m_sprintBig->setText(mmss(m_sprintSecondsLeft));
+        m_sprintCaption->setText(tr("restam de %1 min").arg(minutes));
+        m_sprintWordsLabel->setText(QStringLiteral(
+            "<span style='color:%1; font-size:14px; font-weight:600;'>%2</span>"
+            " <span style='color:%3;'>%4</span>")
+            .arg(hex(Theme::textBright()), loc.toString(written), hex(Theme::textMuted()),
+                 tr("/ %1 palavras").arg(loc.toString(goal)).toHtmlEscaped()));
+        m_sprintBar->setValue(goal > 0 ? double(written) / goal : 1.0, written >= goal);
+    } else if (m_sprintEnded) {
+        m_sprintBig->setText(loc.toString(m_sprintWritten));
+        m_sprintCaption->setText(m_sprintWritten >= goal ? tr("palavras no sprint · meta batida")
+                                                         : tr("palavras no sprint"));
+    } else {
+        m_sprintBig->setText(mmss(minutes * 60));
+        m_sprintCaption->setText(tr("escreva sem parar até o tempo acabar"));
+    }
+    if (m_sprintSetup) m_sprintSetup->setVisible(!m_sprintActive);
+    if (m_sprintRun) m_sprintRun->setVisible(m_sprintActive);
+
+    const QString objName = m_sprintActive ? QStringLiteral("wcpSoftBtn") : QStringLiteral("wcpPrimaryBtn");
+    m_sprintActionBtn->setText(m_sprintActive ? tr("Encerrar sprint") : tr("Iniciar sprint"));
+    m_sprintActionBtn->setIcon(glyphIcon(!m_sprintActive,
+        m_sprintActive ? Theme::toColor(Theme::textPrimary()) : QColor(Qt::white)));
+    if (m_sprintActionBtn->objectName() != objName) {
+        m_sprintActionBtn->setObjectName(objName);
+        m_sprintActionBtn->style()->unpolish(m_sprintActionBtn);
+        m_sprintActionBtn->style()->polish(m_sprintActionBtn);
+    }
+
+    if (m_tabs) {
+        const bool pulse = m_sprintActive && m_stack && m_stack->currentIndex() != PageSprint;
+        m_tabs->setPulse(pulse ? int(PageSprint) : -1);
+    }
 }
 
 void WordCountPanel::startSprint()
 {
     if (!m_counter || m_sprintActive) return;
     m_sprintActive = true;
+    m_sprintEnded = false;
     m_sprintSecondsLeft = (m_sprintMinutesSpin ? m_sprintMinutesSpin->value() : 25) * 60;
     m_sprintStartSession = m_counter->sessionWordsManuscript();
-
-    if (m_sprintMinutesSpin) m_sprintMinutesSpin->setEnabled(false);
-    if (m_sprintWordsSpin)   m_sprintWordsSpin->setEnabled(false);
-    if (m_sprintActionBtn)   m_sprintActionBtn->setText(tr("Encerrar sprint"));
-    if (m_sprintTimerLabel)  m_sprintTimerLabel->setVisible(true);
-    if (m_sprintWordsLabel)  m_sprintWordsLabel->setVisible(true);
-
-    tickSprint();
     m_sprintTimer->start();
-
-    updateScrollSizing();
-    adjustSize();
-    emit geometryChanged();
+    refreshSprintPage();
 }
 
 void WordCountPanel::stopSprint()
@@ -1190,50 +1371,23 @@ void WordCountPanel::stopSprint()
     if (!m_sprintActive) return;
     m_sprintTimer->stop();
     m_sprintActive = false;
-
-    const int wordsWritten = m_counter
+    m_sprintWritten = m_counter
         ? qMax(0, m_counter->sessionWordsManuscript() - m_sprintStartSession)
         : 0;
-    const int goalWords = m_sprintWordsSpin ? m_sprintWordsSpin->value() : 300;
-    const bool goalMet = wordsWritten >= goalWords;
-
-    if (m_sprintMinutesSpin) m_sprintMinutesSpin->setEnabled(true);
-    if (m_sprintWordsSpin)   m_sprintWordsSpin->setEnabled(true);
-    if (m_sprintActionBtn)   m_sprintActionBtn->setText(tr("Iniciar sprint"));
-
-    if (m_sprintTimerLabel) {
-        m_sprintTimerLabel->setText(goalMet ? tr("✓ Meta batida!") : tr("Sprint encerrado"));
-    }
-    if (m_sprintWordsLabel) {
-        m_sprintWordsLabel->setText(tr("%1 palavras escritas").arg(wordsWritten));
-    }
+    m_sprintEnded = true;
+    refreshSprintPage();
 }
 
 void WordCountPanel::tickSprint()
 {
     if (!m_sprintActive) return;
-
-    // Timer
-    if (m_sprintTimerLabel) {
-        const int m = m_sprintSecondsLeft / 60;
-        const int s = m_sprintSecondsLeft % 60;
-        m_sprintTimerLabel->setText(QStringLiteral("%1:%2")
-            .arg(m, 2, 10, QLatin1Char('0'))
-            .arg(s, 2, 10, QLatin1Char('0')));
-    }
-
-    // Palavras escritas neste sprint
-    if (m_sprintWordsLabel && m_counter) {
-        const int written = qMax(0, m_counter->sessionWordsManuscript() - m_sprintStartSession);
-        const int goal    = m_sprintWordsSpin ? m_sprintWordsSpin->value() : 300;
-        m_sprintWordsLabel->setText(tr("%1 / %2 palavras").arg(written).arg(goal));
-    }
-
+    --m_sprintSecondsLeft;
     if (m_sprintSecondsLeft <= 0) {
+        m_sprintSecondsLeft = 0;
         stopSprint();
         return;
     }
-    --m_sprintSecondsLeft;
+    refreshSprintPage();
 }
 
 void WordCountPanel::openGoalResetTimeDialog()
