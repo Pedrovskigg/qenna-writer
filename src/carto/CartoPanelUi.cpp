@@ -286,6 +286,15 @@ void Panel::buildExportCard()
     m_export->hide();
 }
 
+double Panel::exportScale() const
+{
+    const double dpr = std::max(1.0, devicePixelRatioF());
+    double s = m_expScale * dpr;
+    const int longSide = std::max(m_canvas->width(), m_canvas->height());
+    if (longSide > 0) s = std::min(s, 7680.0 / longSide);
+    return std::max(1.0, s);
+}
+
 void Panel::exportPng()
 {
     if (!m_hasWorld) return;
@@ -296,21 +305,24 @@ void Panel::exportPng()
     if (path.isEmpty()) return;
     const bool withCartela = m_expWithCartela;
     const bool wasMin = m_cartela->minimized();
+    const double scale = exportScale();
     std::vector<QRectF> avoid;
     if (withCartela) {
         m_cartela->setMinimized(false);
         const QSize cs = m_cartela->sizeHint();
         avoid.push_back(QRectF(16, m_canvas->height() - cs.height() - 14, cs.width(), cs.height()).adjusted(-6, -6, 6, 6));
     }
-    QImage img = m_canvas->exportImage(m_expScale, [&](QPainter& p) {
+    QImage img = m_canvas->exportImage(scale, [&](QPainter& p) {
         if (!withCartela) return;
         // a Cartela inteira (aberta, sem o botão de recolher) no canto, como num mapa impresso
         m_cartela->setInteractive(false);
+        m_cartela->setRenderScale(scale);
         m_cartela->setMinimized(false);
         syncCartela();
         const QSize cs = m_cartela->sizeHint();
         m_cartela->resize(cs);
         m_cartela->render(&p, QPoint(16, m_canvas->height() - cs.height() - 14), QRegion(), QWidget::DrawChildren);
+        m_cartela->setRenderScale(0);
         m_cartela->setInteractive(true);
         m_cartela->setMinimized(wasMin);
     }, avoid);

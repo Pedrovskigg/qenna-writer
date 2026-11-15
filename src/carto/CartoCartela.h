@@ -14,6 +14,7 @@ namespace carto {
 struct CartelaItem { QString icon, label; };
 
 class Cartela : public QWidget {
+    double m_renderScale = 0;
     Q_OBJECT
 public:
     explicit Cartela(QWidget* parent = nullptr);
@@ -24,6 +25,9 @@ public:
     void setMinimized(bool on);
     bool minimized() const { return m_min; }
     void setInteractive(bool on) { m_interactive = on; update(); }   // no PNG: sem botão de recolher
+    // No PNG a cartela é pintada na imagem exportada (2x, 3x...): os ícones da
+    // legenda precisam nascer nessa densidade, não na da tela. 0 = a da tela.
+    void setRenderScale(double s) { m_renderScale = s; }
     QSize sizeHint() const override;
 
 signals:

@@ -150,7 +150,7 @@ void Cartela::paintEvent(QPaintEvent*)
             p.setBrush(QColor(40, 33, 28, 23));
             p.drawRoundedRect(r, 5, 5);
         }
-        p.drawPixmap(QPointF(r.left() + 5, r.center().y() - 8.5), iconPixmap(m_items[i].icon, kInk, 17, devicePixelRatioF()));
+        p.drawPixmap(QPointF(r.left() + 5, r.center().y() - 8.5), iconPixmap(m_items[i].icon, kInk, 17, m_renderScale > 0 ? m_renderScale : devicePixelRatioF()));
         p.setPen(kInk);
         p.drawText(QRectF(r.left() + 29, r.top(), r.width() - 30, r.height()), Qt::AlignVCenter | Qt::AlignLeft, m_items[i].label);
     }

@@ -908,7 +908,7 @@ void Panel::syncUi()
     if (m_exportBtn && m_export) {
         m_exportBtn->setChecked(m_export->isVisible());
         for (auto it = m_expScaleBtns.begin(); it != m_expScaleBtns.end(); ++it) it.value()->setChecked(std::fabs(it.key().toDouble() - m_expScale) < 0.01);
-        m_expSize->setText(tr("%1 × %2 px").arg(qRound(m_canvas->width() * m_expScale)).arg(qRound(m_canvas->height() * m_expScale)));
+        m_expSize->setText(tr("%1 × %2 px").arg(qRound(m_canvas->width() * exportScale())).arg(qRound(m_canvas->height() * exportScale())));
         m_expCartela->setIcon(icon(m_expWithCartela ? QStringLiteral("check") : QStringLiteral("box"), Theme::toColor(Theme::textMuted()), Theme::toColor(Theme::accentDefault())));
     }
     // dicas

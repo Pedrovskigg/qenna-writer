@@ -89,6 +89,10 @@ private:
     void applyUiMode();
     void syncCartela();
     void exportPng();
+    // Escala real da imagem: o "1×" é o que a tela mostra, então multiplica
+    // pela densidade dela (Retina = 2, Windows a 125% = 1,25). Teto de 7680 px
+    // no lado maior pra imagem não estourar a memória.
+    double exportScale() const;
     void cartelaPicked(int i);
     QString regionName();
     void flash(const QString& msg);
