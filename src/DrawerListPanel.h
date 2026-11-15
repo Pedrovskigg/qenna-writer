@@ -4,6 +4,7 @@
 #include "ProjectModel.h"
 
 #include <QFrame>
+#include <QPair>
 #include <QHash>
 #include <QSet>
 #include <QList>
@@ -52,6 +53,11 @@ public:
 
     void openDrawer(const QString& drawerKey, const QString& folderId = QString());
     void closePanel();
+    // LeftBar "Gavetas com cor": o cabeçalho herda a cor da gaveta.
+    void setHeaderTint(bool on);
+    // LeftBar "Lê a cena": faixa logo abaixo do cabeçalho com os itens dessa
+    // gaveta que aparecem na folha aberta (id, título). Vazio esconde.
+    void setSceneHighlight(const QString& heading, const QList<QPair<QString, QString>>& items);
     bool isPanelOpen() const { return !m_currentKey.isEmpty(); }
     QString currentDrawerKey() const { return m_currentKey; }
     bool heightIsUserSet() const { return m_heightUserSet; }
@@ -190,6 +196,11 @@ private:
     QString m_currentKey;
     QString m_currentFolderId;
     QLabel* m_titleLabel;
+    QWidget* m_header = nullptr;
+    bool m_headerTint = false;
+    void applyHeaderLook();
+    QWidget* m_sceneStrip = nullptr;
+    class QLayout* m_sceneStripLayout = nullptr;
     QVBoxLayout* m_listLayout;
     QScrollArea* m_scroll;
     QWidget* m_listHost = nullptr;

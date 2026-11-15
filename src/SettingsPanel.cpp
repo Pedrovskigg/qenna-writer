@@ -168,6 +168,36 @@ QString highlighted(const QString& plain, const QString& query) {
         + plain.mid(i + query.size()).toHtmlEscaped();
 }
 
+// A roda do mouse rolando as Configurações não muda controle nenhum por
+// acidente (14/11/2026: o Pe diminuiu o Tamanho da interface sem perceber,
+// só rolando a página). Slider, lista e número só aceitam a roda depois de
+// um clique neles; antes disso, a roda segue pra página rolar.
+class WheelGuard : public QObject {
+public:
+    using QObject::QObject;
+protected:
+    bool eventFilter(QObject* o, QEvent* e) override {
+        if (e->type() == QEvent::Wheel) {
+            auto* w = qobject_cast<QWidget*>(o);
+            if (w && !w->hasFocus()) { e->ignore(); return true; }
+        }
+        return QObject::eventFilter(o, e);
+    }
+};
+
+void guardWheel(QWidget* root) {
+    static WheelGuard* guard = new WheelGuard(qApp);
+    QList<QWidget*> all = root->findChildren<QWidget*>();
+    all.prepend(root);
+    for (QWidget* w : std::as_const(all)) {
+        if (qobject_cast<QScrollBar*>(w)) continue;
+        if (qobject_cast<QAbstractSlider*>(w) || qobject_cast<QComboBox*>(w) || qobject_cast<QAbstractSpinBox*>(w)) {
+            w->setFocusPolicy(Qt::StrongFocus);
+            w->installEventFilter(guard);
+        }
+    }
+}
+
 QLabel* valueLabel(QWidget* parent) {
     auto* l = new QLabel(parent);
     l->setObjectName(QStringLiteral("pageValueLabel"));
@@ -427,6 +457,45 @@ SettingsPanel::SettingsPanel(QWidget* parent)
     connect(m_leftBarSideCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
         if (m_blockSignals) return;
         emit leftBarSideChanged(m_leftBarSideCombo->itemData(idx).toInt());
+    });
+
+    // Estilos da barra lateral (14/11/2026, LeftBar Lab). Cinco não cabem em
+    // pílulas (máximo de 4 por linha): lista suspensa.
+    m_leftBarStyleCombo = new QComboBox(this);
+    m_leftBarStyleCombo->addItem(tr("Clássica"), int(LeftBar::BarStyle::Classic));
+    m_leftBarStyleCombo->addItem(tr("Gavetas com cor"), int(LeftBar::BarStyle::Colors));
+    m_leftBarStyleCombo->addItem(tr("Barra com nomes"), int(LeftBar::BarStyle::Named));
+    m_leftBarStyleCombo->addItem(tr("Tambor de gavetas"), int(LeftBar::BarStyle::Drum));
+    m_leftBarStyleCombo->addItem(tr("Lê a cena"), int(LeftBar::BarStyle::Scene));
+    {
+        const int idx = m_leftBarStyleCombo->findData(int(LeftBar::savedStyle()));
+        if (idx >= 0) m_leftBarStyleCombo->setCurrentIndex(idx);
+    }
+    addRow(Appearance, tr("Estilo da barra lateral"), tr("O jeito das gavetas e dos nomes na barra lateral."),
+           m_leftBarStyleCombo,
+           tr("Clássica: a barra de sempre. Gavetas com cor: as gavetas ficam numa bandeja, cada uma "
+              "com a cor dela, separadas das ferramentas. Barra com nomes: a barra fica larga, com o "
+              "nome do projeto e tudo escrito, e as gavetas abrem como árvore ali mesmo; o botão do pé "
+              "recolhe. Tambor de gavetas: as gavetas giram num tambor com a roda do mouse. Lê a cena: "
+              "as gavetas acendem com quem e o que aparece na folha aberta. Clique com o botão direito "
+              "na barra pra trocar na hora."));
+    connect(m_leftBarStyleCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit leftBarStyleChanged(m_leftBarStyleCombo->itemData(idx).toInt());
+    });
+
+    m_leftBarLengthCombo = new QComboBox(this);
+    m_leftBarLengthCombo->addItem(tr("De ponta a ponta"), int(LeftBar::BarLength::Full));
+    m_leftBarLengthCombo->addItem(tr("Placa"), int(LeftBar::BarLength::Plate));
+    m_leftBarLengthCombo->setCurrentIndex(LeftBar::savedLength() == LeftBar::BarLength::Plate ? 1 : 0);
+    addRow(Appearance, tr("Comprimento da barra lateral"), tr("Até o chão ou só a altura do que ela tem."),
+           new Segmented(m_leftBarLengthCombo, this),
+           tr("De ponta a ponta: a barra vai do topo até o pé da janela. Placa: a barra fica do "
+              "tamanho do que ela tem, e o fundo do tema aparece livre embaixo dela. Vale pra todos "
+              "os estilos."));
+    connect(m_leftBarLengthCombo, qOverload<int>(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_blockSignals) return;
+        emit leftBarLengthChanged(m_leftBarLengthCombo->itemData(idx).toInt());
     });
 
     auto* rightBarCheck = new ToggleSwitch(this);
@@ -1099,6 +1168,7 @@ QWidget* SettingsPanel::addRow(int category, const QString& title, const QString
         g->addWidget(d, 1, 0);
     }
     control->setParent(row);
+    guardWheel(control);
     g->addWidget(control, 0, 1, d ? 2 : 1, 1, Qt::AlignRight | Qt::AlignVCenter);
     g->setColumnStretch(0, 1);
     if (!longHint.isEmpty()) {
@@ -1316,6 +1386,20 @@ void SettingsPanel::setPageModeChecked(bool on)
     // Sem bloquear o sinal: o toggled também liga/desliga as linhas de
     // comprimento e margem; o MainWindow ignora a troca repetida.
     m_pageModeCheck->setChecked(on);
+}
+
+void SettingsPanel::setLeftBarLook(int style, int length)
+{
+    m_blockSignals = true;
+    if (m_leftBarStyleCombo) {
+        const int idx = m_leftBarStyleCombo->findData(style);
+        if (idx >= 0) m_leftBarStyleCombo->setCurrentIndex(idx);
+    }
+    if (m_leftBarLengthCombo) {
+        const int idx = m_leftBarLengthCombo->findData(length);
+        if (idx >= 0) m_leftBarLengthCombo->setCurrentIndex(idx);
+    }
+    m_blockSignals = false;
 }
 
 void SettingsPanel::setLeftBarSide(int side)

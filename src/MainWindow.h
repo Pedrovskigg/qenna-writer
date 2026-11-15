@@ -377,6 +377,10 @@ private:
     // Nomes dos personagens já com presença confirmada no documento aberto
     // (cena ou capítulo) — contexto barato injetado automaticamente na IA.
     QString currentSceneCharacterNames() const;
+    // LeftBar "Lê a cena": os elementos da folha aberta vão pra barra e pra
+    // faixa "Nesta cena" do painel da gaveta.
+    void refreshLeftBarScene();
+    void refreshDrawerSceneStrip();
     // Abre a fonte de uma menção do Construtor no editor ("Ctrl+F" auto).
     void openConstrutorMentionInEditor(const ConstrutorStore::Mention& mention);
     // Reconstrói o ViewMode a partir de uma origem (capítulo/cena/gaveta) e faz

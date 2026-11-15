@@ -6,6 +6,7 @@
 #include <QPoint>
 #include <QPointer>
 #include <QString>
+#include <QPair>
 #include <QStringList>
 #include <QWidget>
 
@@ -14,6 +15,12 @@ class QEnterEvent;
 class QTimer;
 class QVariantAnimation;
 class LeftBarLabels;
+class LeftBarDrum;
+class LeftBarNamed;
+class LeftBarTag;
+class LeftBarSceneCard;
+class LeftBarThread;
+struct LeftBarDrawerInfo;
 class CarouselViewport;
 class ToolbarGroupWidget;
 
@@ -21,6 +28,7 @@ class QVBoxLayout;
 class QToolButton;
 class QEvent;
 class ProjectModel;
+struct Drawer;
 
 class LeftBar : public QWidget {
     Q_OBJECT
@@ -38,6 +46,40 @@ public:
     Q_ENUM(FixedAction)
 
     explicit LeftBar(ProjectModel* model, QWidget* parent = nullptr);
+
+    // Estilos (14/11/2026, LeftBar Lab aprovado pelo Pe). A Clássica é a de
+    // sempre e continua padrão; os outros mudam só o jeito das gavetas e dos
+    // nomes. Os valores vão pro QSettings (ui/leftBarStyle): não renumerar.
+    enum class BarStyle {
+        Classic = 0,   // a de sempre
+        Colors  = 1,   // Gavetas com cor: ladrilhos coloridos numa bandeja
+        Named   = 2,   // Barra com nomes: larga, tudo escrito, gavetas em árvore
+        Drum    = 3,   // Tambor de gavetas
+        Scene   = 4,   // A barra que lê a cena
+    };
+    Q_ENUM(BarStyle)
+    static constexpr int kLastStyle = 4;
+    // Comprimento (ui/leftBarLength): do topo até o chão, ou só a altura do
+    // que a barra tem, como a RightBar (a Plaquinha do lab).
+    enum class BarLength { Full = 0, Plate = 1 };
+    Q_ENUM(BarLength)
+
+    static BarStyle savedStyle();
+    static BarLength savedLength();
+    BarStyle barStyle() const { return m_style; }
+    void setBarStyle(BarStyle style);
+    BarLength barLength() const { return m_length; }
+    void setBarLength(BarLength length);
+
+    // A barra que lê a cena: os elementos (Element::id) da folha aberta e o
+    // título do trecho ("Nesta cena", "Neste capítulo"; vazio = nenhuma folha).
+    void setSceneElements(const QStringList& elementIds, const QString& heading);
+    QString sceneHeading() const { return m_sceneHeading; }
+    // Itens (id, título) da gaveta que aparecem na folha aberta.
+    QList<QPair<QString, QString>> sceneItems(const QString& drawerKey) const;
+    // Onde a barra ocupa de verdade (a Barra com nomes larga abre por cima da
+    // mesa): os painéis ao lado se posicionam por aqui. Coordenadas do pai.
+    QRect outerGeometry() const;
 
     // A LeftBar so faz sentido colada numa lateral: deitada em cima ou embaixo,
     // o conteudo dela (gavetas, capitulos) atrapalharia o centro da tela. Por
@@ -96,9 +138,14 @@ signals:
     void drawerSelected(QString drawerKey);
     void newDrawerRequested();
     void drawerContextRequested(QString drawerKey, QPoint globalPos);
+    void drawerItemActivated(QString drawerKey, QString itemId);   // a árvore da Barra com nomes
+    void barStyleChanged(LeftBar::BarStyle style);
+    void barLengthChanged(LeftBar::BarLength length);
+    void widthChanged();   // a Barra com nomes abriu ou recolheu
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    bool event(QEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
@@ -111,6 +158,7 @@ protected:
     void dragMoveEvent(QDragMoveEvent* event) override;
     void dragLeaveEvent(QDragLeaveEvent* event) override;
     void dropEvent(QDropEvent* event) override;
+    void contextMenuEvent(QContextMenuEvent* event) override;
 
 private slots:
     void rebuildDrawerButtons();
@@ -121,10 +169,58 @@ private:
     Qt::Edge m_barSide = Qt::LeftEdge;
     bool m_chromeHidden = false;
     bool m_joinedTop = false;
-    QString panelStyle() const;
+    QString panelStyle(const QString& objectName = QStringLiteral("leftBar")) const;
+
+    // ---- Estilos ----
+    BarStyle m_style = BarStyle::Classic;
+    BarLength m_length = BarLength::Full;
+    bool m_namedNarrow = false;          // Barra com nomes recolhida = a de sempre
+    qreal m_namedReveal = -1;            // animando a largura (0 = fina, 1 = larga)
+    QPointer<QVariantAnimation> m_widthAnim;
+    LeftBarDrum* m_drum = nullptr;
+    LeftBarNamed* m_named = nullptr;
+    QPointer<LeftBarTag> m_drumTag;
+    QPointer<LeftBarSceneCard> m_sceneCard;
+    QPointer<LeftBarThread> m_thread;
+    QTimer* m_sceneCardTimer = nullptr;
+    QPointer<QToolButton> m_sceneCardBtn;
+    QStringList m_sceneElements;
+    QString m_sceneHeading;
+    bool namedWide() const { return m_style == BarStyle::Named && (!m_namedNarrow || m_namedReveal >= 0); }
+    int targetWidth() const;
+    void applyStyle();
+    void placeNamed();
+    void showStyleMenu(const QPoint& globalPos);
+    void setNamedNarrow(bool narrow, bool animated);
+    QList<LeftBarDrawerInfo> drawerInfos() const;
+    void refreshNamed();
+    void refreshDrum();
+    void updateDrumTag(bool animate = false);
+    void updateThread();
+    void updateFloaters();
+    void showSceneCard(QToolButton* btn);
+    void hideSceneCard();
+    bool drawerInScene(const QString& drawerKey, int* count = nullptr) const;
+    bool sceneContext() const { return !m_sceneHeading.isEmpty(); }
+    void styleDrawerButton(QToolButton* btn, const Drawer& d);
+    void placeNewDrawerButton();
+    QWidget* host() const { return parentWidget(); }
+    // Placa: a altura do conteúdo; recolhida, a barra guarda a altura e só o
+    // pé aparece (máscara), pra o botão da persiana não sair do lugar.
+    bool isPlate() const { return m_length == BarLength::Plate; }
+    int plateHeight() const;
+    void updatePlateGeometry();
+    int m_plateVisibleH = -1;            // -1 = inteira
+    int m_plateCachedH = 0;              // altura da placa aberta (vale também recolhida)
+    bool m_platePassQueued = false;
+    QPointer<QWidget> m_filteredParent;  // o pai avisa quando muda de tamanho
+    void setPlateVisible(int h);
+    void remeasurePlate();
+    QRect visibleBox() const;
 
     // Persiana
     bool contentShown() const { return !m_chromeHidden && !m_collapsed && !m_rolling; }
+    bool classicShown() const { return contentShown() && !namedWide(); }
     void applyContentVisibility();
     void refreshCollapseButton();
     void finishRoll();

@@ -70,6 +70,9 @@ public:
     // A faixa também liga o modo de página: a chave daqui acompanha.
     void setPageModeChecked(bool on);
     void setLeftBarSide(int side);
+    // Estilo (LeftBar::BarStyle) e comprimento (LeftBar::BarLength) da barra
+    // lateral, quando mudam pelo clique direito na própria barra.
+    void setLeftBarLook(int style, int length);
 
     // --- Backup completo de projeto ---
     // mode: 0=Desligado, 1=Automático, 2=Só lembrete (ver BackupService::Mode).
@@ -106,6 +109,8 @@ signals:
     void topToolbarStyleChanged(int style);
     void ribbonFloatingChanged(bool floating);
     void leftBarSideChanged(int value);
+    void leftBarStyleChanged(int style);
+    void leftBarLengthChanged(int length);
     void rightBarToggled(bool on);
     // Largura da barra flutuante: 0 automática, 1 da folha, 2 personalizada.
     void topToolbarWidthChanged(int mode, int px);
@@ -192,6 +197,8 @@ private:
     QCheckBox*   m_pageModeCheck       = nullptr;
     QComboBox*   m_sceneBreakCombo     = nullptr;
     QComboBox*   m_leftBarSideCombo   = nullptr;
+    QComboBox*   m_leftBarStyleCombo  = nullptr;
+    QComboBox*   m_leftBarLengthCombo = nullptr;
     QComboBox*   m_backupModeCombo     = nullptr;
     QLineEdit*   m_backupFolderEdit    = nullptr;
     QPushButton* m_backupFolderBtn     = nullptr;

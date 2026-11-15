@@ -372,6 +372,15 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     headerLayout->addWidget(btnClose);
 
     root->addWidget(header);
+    m_header = header;
+
+    // ---- "Nesta cena" (LeftBar que lê a cena): escondida até ter o que mostrar ----
+    m_sceneStrip = new QWidget(this);
+    m_sceneStrip->setObjectName(QStringLiteral("drawerSceneStrip"));
+    m_sceneStripLayout = new FlowLayout(m_sceneStrip, 6);
+    m_sceneStripLayout->setContentsMargins(12, 10, 12, 2);
+    m_sceneStrip->hide();
+    root->addWidget(m_sceneStrip);
 
     // ---- Campo de busca (escondido até a lupa ser ligada) ----
     m_searchEdit = new QLineEdit(this);
@@ -523,8 +532,64 @@ DrawerListPanel::DrawerListPanel(ProjectModel* model, QWidget* parent)
     hide();
 }
 
+void DrawerListPanel::setHeaderTint(bool on) {
+    if (m_headerTint == on) return;
+    m_headerTint = on;
+    applyHeaderLook();
+}
+
+void DrawerListPanel::applyHeaderLook() {
+    if (!m_header) return;
+    if (m_headerTint && !m_currentKey.isEmpty()) {
+        const QColor c(currentDrawerColor());
+        const auto rgba = [&c](qreal a) {
+            return QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(QString::number(a, 'f', 2));
+        };
+        m_header->setStyleSheet(QStringLiteral(
+            "#drawerListHeader { background: %1; border-bottom: 1px solid %2;"
+            " border-top-left-radius: %3px; border-top-right-radius: %3px; }")
+            .arg(rgba(0.14), rgba(0.30)).arg(Theme::panelRadius()));
+    } else {
+        m_header->setStyleSheet(QStringLiteral(
+            "#drawerListHeader { border-bottom: 1px solid %1; }").arg(Theme::panelBorder()));
+    }
+}
+
+void DrawerListPanel::setSceneHighlight(const QString& heading, const QList<QPair<QString, QString>>& items) {
+    if (!m_sceneStrip || !m_sceneStripLayout) return;
+    while (QLayoutItem* it = m_sceneStripLayout->takeAt(0)) {
+        if (QWidget* w = it->widget()) { w->hide(); w->deleteLater(); }
+        delete it;
+    }
+    if (heading.isEmpty() || items.isEmpty() || m_currentKey.isEmpty()) { m_sceneStrip->hide(); return; }
+    const QColor c(currentDrawerColor());
+    const auto rgba = [&c](qreal a) {
+        return QStringLiteral("rgba(%1,%2,%3,%4)").arg(c.red()).arg(c.green()).arg(c.blue()).arg(QString::number(a, 'f', 2));
+    };
+    auto* lab = new QLabel(heading.toUpper(), m_sceneStrip);
+    lab->setStyleSheet(QStringLiteral("color: %1; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 4px 2px 0 0;")
+                           .arg(Theme::textMuted()));
+    m_sceneStripLayout->addWidget(lab);
+    for (const auto& item : items) {
+        auto* chip = new QPushButton(item.second, m_sceneStrip);
+        chip->setCursor(Qt::PointingHandCursor);
+        chip->setMinimumHeight(24);
+        chip->setStyleSheet(QStringLiteral(
+            "QPushButton { background: %1; color: %2; border: 1px solid %3; border-radius: 11px; padding: 2px 10px; font-size: 12px; }"
+            "QPushButton:hover { background: %4; }")
+            .arg(rgba(0.14), Theme::textBright(), rgba(0.35), rgba(0.24)));
+        const QString id = item.first;
+        connect(chip, &QPushButton::clicked, this, [this, id]() {
+            if (!m_currentKey.isEmpty()) emit itemActivated(m_currentKey, id);
+        });
+        m_sceneStripLayout->addWidget(chip);
+    }
+    m_sceneStrip->show();
+}
+
 void DrawerListPanel::applyTheme() {
     setStyleSheet(Theme::panelQss(QStringLiteral("drawerListPanel"), Theme::PanelKey::Drawers));
+    applyHeaderLook();
     // Os elementos internos (header, cards, chips, action bar) são reconstruídos
     // ao reabrir o painel — basta reaplicar a base do painel pro background/border
     // novo aparecerem imediatamente.
@@ -579,6 +644,7 @@ void DrawerListPanel::openDrawer(const QString& drawerKey, const QString& folder
     updateViewButton();
     rebuildFolderStrip();
     rebuildContents();
+    applyHeaderLook();
     show();
     if (switching) playIntro(60);
 }

@@ -3309,11 +3309,38 @@ void MainWindow::setupEditor()
             leftBar->clearSelection();
         } else {
             drawerListPanel->openDrawer(key);
+            refreshDrawerSceneStrip();
             positionSidePanels();
             drawerListPanel->raise();
             leftBar->setActiveDrawer(key);
         }
     });
+    // Estilos da LeftBar (14/11/2026): a árvore da Barra com nomes abre o item
+    // como o painel da gaveta abriria; a largura mexe nos painéis ao lado.
+    connect(leftBar, &LeftBar::drawerItemActivated, this, [this](const QString& /*drawerKey*/, const QString& itemId) {
+        EditorHost::ViewMode vm;
+        vm.type = EditorHost::DrawerDoc;
+        vm.itemId = itemId;
+        editorHost->setViewMode(vm);
+    });
+    connect(leftBar, &LeftBar::widthChanged, this, [this]() {
+        positionSidePanels();
+        positionWordCountPanel();
+    });
+    connect(leftBar, &LeftBar::barStyleChanged, this, [this](LeftBar::BarStyle st) {
+        drawerListPanel->setHeaderTint(st == LeftBar::BarStyle::Colors);
+        if (settingsPanel) settingsPanel->setLeftBarLook(int(st), int(leftBar->barLength()));
+        refreshLeftBarScene();
+    });
+    connect(leftBar, &LeftBar::barLengthChanged, this, [this](LeftBar::BarLength ln) {
+        if (settingsPanel) settingsPanel->setLeftBarLook(int(leftBar->barStyle()), int(ln));
+        positionSidePanels();
+    });
+    drawerListPanel->setHeaderTint(leftBar->barStyle() == LeftBar::BarStyle::Colors);
+    connect(editorHost, &EditorHost::viewModeChanged, this, &MainWindow::refreshLeftBarScene);
+    connect(elementsStore, &ElementsStore::changed, this, &MainWindow::refreshLeftBarScene);
+    connect(projectModel, &ProjectModel::drawersChanged, this, &MainWindow::refreshLeftBarScene);
+    refreshLeftBarScene();
     connect(leftBar, &LeftBar::fixedActionTriggered, this, [this](LeftBar::FixedAction action) {
         if (action == LeftBar::Manuscripts) {
             drawerListPanel->closePanel();
@@ -8474,7 +8501,7 @@ void MainWindow::positionWordCountPanel()
     // Logo depois da LeftBar (ou da borda, com ela na direita), com o mesmo respiro.
     int x = 10;
     if (leftBar && leftBar->isVisible() && leftBar->barSide() != Qt::RightEdge)
-        x = parent->mapFrom(leftBar->parentWidget(), leftBar->geometry().topRight()).x() + 1 + 10;
+        x = parent->mapFrom(leftBar->parentWidget(), leftBar->outerGeometry().topRight()).x() + 1 + 10;
     const int y = parent->height() - wordCountPanel->height() - bottomMargin;
     wordCountPanel->move(x, y);
 }
@@ -8645,7 +8672,8 @@ void MainWindow::positionSidePanels()
     auto panelX = [&](const QWidget* panel) {
         // Pela posição real da barra: ela encosta na borda, e a margem do
         // layout não é mais a mesma dos dois lados.
-        const QRect bar(parent->mapFrom(leftBar->parentWidget(), leftBar->geometry().topLeft()), leftBar->size());
+        const QRect outer = leftBar->outerGeometry();
+        const QRect bar(parent->mapFrom(leftBar->parentWidget(), outer.topLeft()), outer.size());
         if (!leftBarOnRight) return bar.right() + 1 + margin;
         return bar.left() - margin - panel->width();
     };
@@ -9011,7 +9039,7 @@ int MainWindow::chromeInset(Qt::Edge edge) const
     int inset = 0;
     const bool toolbarShown = toolbarHolder && toolbarHolder->isVisible();
     if (toolbarShown && toolbar && toolbar->barSide() == edge) inset += toolbar->thickness();
-    if (leftBar && leftBar->isVisible() && leftBar->barSide() == edge) inset += leftBar->width();
+    if (leftBar && leftBar->isVisible() && leftBar->barSide() == edge) inset += leftBar->outerGeometry().width();
     if (rightBar && rightBar->isVisible() && rightBar->barSide() == edge) inset += rightBar->width();
     return inset;
 }
@@ -9127,6 +9155,12 @@ void MainWindow::onSettingsRequested()
             if (toolbar) toolbar->setRibbonFloating(floating);
         });
         connect(settingsPanel, &SettingsPanel::rightBarToggled, this, [this](bool) { applyLeftBarSide(); });
+        connect(settingsPanel, &SettingsPanel::leftBarStyleChanged, this, [this](int value) {
+            if (leftBar) leftBar->setBarStyle(LeftBar::BarStyle(qBound(0, value, LeftBar::kLastStyle)));
+        });
+        connect(settingsPanel, &SettingsPanel::leftBarLengthChanged, this, [this](int value) {
+            if (leftBar) leftBar->setBarLength(value == 1 ? LeftBar::BarLength::Plate : LeftBar::BarLength::Full);
+        });
         connect(settingsPanel, &SettingsPanel::topToolbarWidthChanged, this, [this](int mode, int px) {
             m_barWidthMode = qBound(0, mode, 2);
             m_barWidthPx = qBound(400, px, 2400);
@@ -9191,6 +9225,7 @@ void MainWindow::onSettingsRequested()
     if (toolbar) settingsPanel->setTopToolbarStyle(int(toolbar->barStyle()));
     if (toolbar) settingsPanel->setRibbonFloating(toolbar->ribbonFloating());
     settingsPanel->setLeftBarSide(leftBar && leftBar->barSide() == Qt::RightEdge ? 1 : 0);
+    if (leftBar) settingsPanel->setLeftBarLook(int(leftBar->barStyle()), int(leftBar->barLength()));
     {
         const BackupService::Settings bs = BackupService::loadSettings();
         settingsPanel->setBackupMode(static_cast<int>(bs.mode));
@@ -10052,6 +10087,42 @@ QString MainWindow::currentSceneCharacterNames() const
         }
     }
     return names.join(QStringLiteral(", "));
+}
+
+void MainWindow::refreshLeftBarScene()
+{
+    if (!leftBar) return;
+    if (leftBar->barStyle() != LeftBar::BarStyle::Scene || !elementsStore || !editorHost || !projectModel) {
+        leftBar->setSceneElements({}, QString());
+        refreshDrawerSceneStrip();
+        return;
+    }
+    const auto vm = editorHost->viewMode();
+    QString docKey, heading;
+    if (vm.type == EditorHost::SceneDoc) {
+        const Chapter* ch = projectModel->findChapter(vm.chapterId);
+        if (ch && vm.sceneIndex >= 0 && vm.sceneIndex < ch->scenes.size()) {
+            docKey = ElementsStore::elementDocKeyForScene(vm.manuscriptId, vm.chapterId, ch->scenes[vm.sceneIndex].id);
+            heading = tr("Nesta cena");
+        }
+    } else if (vm.type == EditorHost::ChapterDoc) {
+        docKey = ElementsStore::elementDocKeyForChapter(vm.manuscriptId, vm.chapterId);
+        heading = tr("Neste capítulo");
+    }
+    const QStringList ids = docKey.isEmpty() ? QStringList() : elementsStore->docElementIds(docKey);
+    leftBar->setSceneElements(ids, heading);
+    refreshDrawerSceneStrip();
+}
+
+void MainWindow::refreshDrawerSceneStrip()
+{
+    if (!drawerListPanel || !leftBar) return;
+    const QString key = drawerListPanel->currentDrawerKey();
+    if (key.isEmpty() || leftBar->barStyle() != LeftBar::BarStyle::Scene) {
+        drawerListPanel->setSceneHighlight(QString(), {});
+        return;
+    }
+    drawerListPanel->setSceneHighlight(leftBar->sceneHeading(), leftBar->sceneItems(key));
 }
 
 void MainWindow::openAISelectionChat()
